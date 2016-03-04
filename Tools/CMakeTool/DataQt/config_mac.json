@@ -1,0 +1,59 @@
+{
+    "platforms": [
+        {
+            "name": "OS X",
+            "checked": true,
+            "value": "$CMAKE_PATH -G \"Xcode\" $BUILD_FOLDER_PATH/.. %1",
+            "defaults": [ "" ],
+            "options" : [
+            	{
+            	    "name": "Unity build",
+            	    "type": "checkbox",
+            	    "checked": true,
+            	    "substring number": 1,
+            	    "value": "-DUNITY_BUILD=true"
+            	}
+            ]
+        },
+        {
+            "name": "IOS",
+            "checked": false,
+            "value": "$CMAKE_PATH -G \"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $BUILD_FOLDER_PATH/.. %1",
+            "defaults": [ "" ],
+            "options" : [
+            	{
+            	    "name": "Unity build",
+            	    "type": "checkbox",
+            	    "checked": true,
+            	    "substring number": 1,
+            	    "value": "-DUNITY_BUILD=true"
+            	}
+            ]
+        },
+        {
+            "name": "Android",
+            "checked": false,
+            "value": "$CMAKE_PATH -G \"%1Unix Makefiles\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $BUILD_FOLDER_PATH/.. %2",
+            "defaults": [
+                "Eclipse CDT4 - ",
+                ""
+            ],
+            "options": [
+                {
+                    "name": "console",
+                    "type": "checkbox",
+                    "checked": false,
+                    "substring number": 1,
+                    "value": ""
+                },
+                {
+                    "name": "Unity build",
+            	    "type": "checkbox",
+            	    "checked": true,
+            	    "substring number": 2,
+            	    "value": "-DUNITY_BUILD=true"
+                }
+            ]
+        }
+    ]
+}

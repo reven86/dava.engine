@@ -80,7 +80,7 @@
         {
             "name": "Windows 10",
             "checked": false,
-            "value": "$DAVA_FRAMEWORK_PATH/Tools/WinStoreCMake/mk_project.bat $BUILD_FOLDER_PATH/.. %1",
+            "value": "$DAVA_FRAMEWORK_PATH/Tools/WinStoreCMake/mk_project.bat $BUILD_FOLDER_PATH/.. %1 %2",
             "defaults": [
                 "", ""
             ],

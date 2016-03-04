@@ -36,7 +36,7 @@ FileSystemHelper::FileSystemHelper(QObject* parent)
 {
 }
 
-QString FileSystemHelper::ResolveUrl(const QString& url)
+QString FileSystemHelper::ResolveUrl(const QString& url) const
 {
     QRegularExpression regExp;
 #ifdef Q_OS_MAC
@@ -49,7 +49,7 @@ QString FileSystemHelper::ResolveUrl(const QString& url)
     return resolvedUrl;
 }
 
-bool FileSystemHelper::IsDirExists(const QString& dirPath)
+bool FileSystemHelper::IsDirExists(const QString& dirPath) const
 {
     if (dirPath.isEmpty())
     {
@@ -59,24 +59,23 @@ bool FileSystemHelper::IsDirExists(const QString& dirPath)
     return dir.exists();
 }
 
-bool FileSystemHelper::IsFileExists(const QString& filePath)
+bool FileSystemHelper::IsFileExists(const QString& filePath) const
 {
     QFileInfo fileInfo(filePath);
     return fileInfo.isFile() && fileInfo.exists();
 }
 
-QString FileSystemHelper::FindCMakeBin(const QString& path)
+QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frameworkDirName) const
 {
-    QString davaFolder = "dava.framework";
-    int index = path.indexOf(davaFolder);
+    int index = path.indexOf(frameworkDirName);
     if (index == -1)
     {
         return "";
     }
-    QString davaPath = path.left(path.indexOf(index + davaFolder.length()));
+    QString davaPath = path.left(path.indexOf(index + frameworkDirName.length()));
     QString cmakePath = davaPath + "/Tools/Bin" +
 #ifdef Q_OS_MAC
-    "/CMake.app/Contents/bin/cmake";
+    "/CMake.app" + GetAdditionalCMakePath();
 #elif defined Q_OS_WIN
     "/cmake/bin/cmake.exe";
 #endif //Q_OS_MAC Q_OS_WIN
@@ -87,7 +86,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path)
     return QDir::toNativeSeparators(cmakePath);
 }
 
-bool FileSystemHelper::ClearFolderContent(const QString& folderPath)
+bool FileSystemHelper::ClearFolderContent(const QString& folderPath) const
 {
     QDir dir(folderPath);
     if (folderPath.isEmpty() || !dir.exists())
@@ -99,4 +98,13 @@ bool FileSystemHelper::ClearFolderContent(const QString& folderPath)
         return dir.mkpath(folderPath);
     }
     return false;
+}
+
+QString FileSystemHelper::GetAdditionalCMakePath() const
+{
+#ifdef Q_OS_MAC
+    return "/Contents/bin/cmake";
+#else
+    return "";
+#endif //Q_OS_MAC
 }

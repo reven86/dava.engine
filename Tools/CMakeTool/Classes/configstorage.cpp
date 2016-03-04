@@ -36,11 +36,11 @@
 ConfigStorage::ConfigStorage(QObject* parent)
     : QObject(parent)
 {
-    configFilePath =
+    configFilePath = qApp->applicationDirPath() +
 #ifdef Q_OS_WIN
-    ":/config_windows.txt";
+    "../CMakeTool/Data/config_windows.json";
 #elif defined Q_OS_MAC
-    ":/config_mac.txt";
+    "/../Resources/Data/config_mac.json";
 #else
 #ERROR "usupported platform"
 #endif //platform

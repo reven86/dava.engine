@@ -5,11 +5,13 @@ import QtQuick.Layouts 1.0
 import Cpp.Utils 1.0
 
 RowLayout {
+    id: rowLayout
     property alias labelText: label.text
     property alias dialogTitle: fileDialog.title
     property bool selectFolders: false;
     property alias inputComponent: loader.sourceComponent
     property string path: loader.item.text
+    Binding {target: rowLayout; property: "path"; value: loader.item.text}
     onPathChanged: loader.item.text = path
     Layout.minimumWidth: label.width + button.width + image.width + spacing * 3 + 50
     Layout.minimumHeight: Math.max(label.height, button.height, image.height, loader.item.height)
@@ -48,7 +50,14 @@ RowLayout {
         id: button
         iconSource: "qrc:///Icons/openfolder.png"
         onClicked: {
-            fileDialog.folder = loader.item.text;
+            var folder = loader.item.text;
+            if(folder.length === 0) {
+                return;
+            }
+            if(folder[0] === "/") {
+                folder = folder.substring(1);
+            }
+            fileDialog.folder = "file:///" + folder
             fileDialog.open();
         }
     }

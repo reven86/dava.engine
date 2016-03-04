@@ -11,7 +11,5 @@
         <file>UIComponents/MutableContentItem.qml</file>
         <file>UIComponents/ColumnLayoutOutput.qml</file>
         <file>Scripts/commandLine.js</file>
-        <file>config_mac.txt</file>
-        <file>config_windows.txt</file>
     </qresource>
 </RCC>

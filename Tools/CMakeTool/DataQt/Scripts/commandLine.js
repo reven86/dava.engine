@@ -1,27 +1,27 @@
-function createOutput(mainObject, outputComplete) {
+function createOutput() {
     if(!mainObject) {
         return qsTr("create output called before programm being loaded")
     }
 
 	outputComplete = true;
     var outputText = "";
-    if(!mainObject["currentPlatform"]) {
+    if(mainObject["currentPlatform"] === undefined) {
         outputComplete = false;
         return qsTr("current platform must be specified!");
     }
     var index = mainObject["currentPlatform"];
     var platformObject = mainObject["platforms"][index];
     outputText += platformObject.value;
-    outputText += " -B" + rowLayout_buildFolder.text;
+    outputText += " -B" + rowLayout_buildFolder.path;
 
     var substrings = [];
     var defaults = platformObject.defaults;
-    var localOptionsObject = platformObject.options;
+    var localOptionsObject = mainObject["currentOptions"];
     if(defaults && Array.isArray(defaults)) {
         if(defaults.length > localOptionsObject.count) {
             errorDialog.informativeText = qsTr("Internal error: local options size less than default substrings size!");
             errorDialog.open();
-            return;
+            return "";
         }
         for(var i = 0, length = defaults.length; i < length; ++i) {
             substrings[i] = defaults[i];
@@ -29,9 +29,7 @@ function createOutput(mainObject, outputComplete) {
 
         for(var i = 0, length = localOptionsObject.length; i < length; ++i) {
             var localOption = localOptionsObject[i];
-            if(localOption.checked) {
-                substrings[localOption["substring number"] - 1] = localOption.value;
-            }
+            substrings[localOption.index] = localOption.value;
         }
     }
     for(var i = 0, length = substrings.length; i < length; ++i) {
@@ -75,4 +73,5 @@ function createOutput(mainObject, outputComplete) {
         }
         return outputText;
     }
+    return outputText;
 }

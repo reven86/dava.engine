@@ -51,26 +51,20 @@ ApplicationWindow {
         onTriggered: updateOutputStringImpl();
     }
 
-    function extractCMakePathFromPath(path) {
-        var cmakePath = fileSystemHelper.FindCMakeBin(textField_DAVAFolder.text);
-        if(cmakePath.length !== 0) {
-            textField_CMakeFolder.text = cmakePath;
-        }
-    }
-
     function updateOutputString() {
         timer.start();
     }
 
     function updateOutputStringImpl() {
-        columnLayoutOutput.outputText = JSTools.createOutput(mainObject, outputComplete);
+        var outputText = JSTools.createOutput();
+        columnLayoutOutput.outputText = outputText;
     }
 
     Component.onCompleted: {
         try {
             var configuration = configStorage.GetJSONTextFromConfigFile()
             mainObject = JSON.parse(configuration);
-            mutableContent.mainObject = mainObject
+            mutableContent.processMainObject();
         }
         catch(error) {
             errorDialog.informativeText = error.message;
@@ -98,6 +92,7 @@ ApplicationWindow {
         objectName: "splitView"
 
         Item {
+            id: wrapperItem
             width: settings.mainWrapperWidth;
             Component.onDestruction: {
                 settings.mainWrapperWidth = width
@@ -155,6 +150,11 @@ ApplicationWindow {
                         placeholderText: qsTr("path to CMake folder")
                         Settings {property alias text: textField_cmakeFolder.text }
                         onTextChanged: {
+                            var suffix = ".app";
+                            if(text.indexOf(suffix, text.length - suffix.length) !== -1) {
+                                textField_cmakeFolder.text = text +fileSystemHelper.GetAdditionalCMakePath();
+                            }
+
                             updateOutputString()
                         }
                     }
@@ -163,7 +163,7 @@ ApplicationWindow {
 
                         onPathChanged: {
                             var path = rowLayout_davaFolder.path;
-                            var cmakePath = fileSystemHelper.FindCMakeBin(path);
+                            var cmakePath = fileSystemHelper.FindCMakeBin(path, davaFolderName);
                             if(cmakePath.length !== 0) {
                                 rowLayout_cmakeFolder.path = cmakePath;
                             }
@@ -173,10 +173,14 @@ ApplicationWindow {
 
                 MutableContentItem {
                     id: mutableContent
+                    onDataUpdated: updateOutputString()
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
                 }
 
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
+                    Layout.fillWidth: true
                 }
 
             }
