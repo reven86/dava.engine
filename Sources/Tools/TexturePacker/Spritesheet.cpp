@@ -453,7 +453,7 @@ protected:
         int32 bestX = 0;
         List<SpriteBoundsRect>::const_iterator rectFound = freeRects.cend();
 
-        for (List<SpriteBoundsRect>::const_iterator& freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
+        for (List<SpriteBoundsRect>::const_iterator freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
         {
             int32 restWidth = freeRect->spriteRect.dx - spriteSize.dx;
             int32 restHeight = freeRect->spriteRect.dy - spriteSize.dy;
@@ -485,7 +485,7 @@ protected:
         int32 bestShortSide = 0;
         List<SpriteBoundsRect>::const_iterator rectFound = freeRects.cend();
 
-        for (List<SpriteBoundsRect>::const_iterator& freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
+        for (List<SpriteBoundsRect>::const_iterator freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
         {
             int32 restWidth = freeRect->spriteRect.dx - spriteSize.dx;
             int32 restHeight = freeRect->spriteRect.dy - spriteSize.dy;
@@ -519,7 +519,7 @@ protected:
         int32 bestShortSide = 0;
         List<SpriteBoundsRect>::const_iterator rectFound = freeRects.cend();
 
-        for (List<SpriteBoundsRect>::const_iterator& freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
+        for (List<SpriteBoundsRect>::const_iterator freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
         {
             int32 restWidth = freeRect->spriteRect.dx - spriteSize.dx;
             int32 restHeight = freeRect->spriteRect.dy - spriteSize.dy;
@@ -550,7 +550,7 @@ protected:
         int32 bestLongSide = 0;
         List<SpriteBoundsRect>::const_iterator rectFound = freeRects.cend();
 
-        for (List<SpriteBoundsRect>::const_iterator& freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
+        for (List<SpriteBoundsRect>::const_iterator freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
         {
             int32 restWidth = freeRect->spriteRect.dx - spriteSize.dx;
             int32 restHeight = freeRect->spriteRect.dy - spriteSize.dy;
@@ -582,7 +582,7 @@ protected:
         int32 bestShortSide = 0;
         List<SpriteBoundsRect>::const_iterator rectFound = freeRects.cend();
 
-        for (List<SpriteBoundsRect>::const_iterator& freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
+        for (List<SpriteBoundsRect>::const_iterator freeRect = freeRects.cbegin(); freeRect != freeRects.cend(); ++freeRect)
         {
             int32 restWidth = freeRect->spriteRect.dx - spriteSize.dx;
             int32 restHeight = freeRect->spriteRect.dy - spriteSize.dy;
