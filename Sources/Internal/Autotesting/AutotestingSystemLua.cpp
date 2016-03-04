@@ -35,7 +35,7 @@
 #include "Autotesting/AutotestingDB.h"
 
 #include "Utils/Utils.h"
-#include "Ui/UIControlHelpers.h"
+#include "UI/UIControlHelpers.h"
 #include "Platform/DeviceInfo.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -772,7 +772,10 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
 void AutotestingSystemLua::ScrollToControl(const String& path) const
 {
     UIControl* control = FindControl(path);
-    UIControlHelpers::ScrollToControl(control);
+    if (control)
+    {
+        UIControlHelpers::ScrollToControl(control);
+    }
 }
 
 void AutotestingSystemLua::ProcessInput(const UIEvent& input)

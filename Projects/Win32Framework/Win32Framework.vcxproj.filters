@@ -834,9 +834,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Frustum.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h">
       <Filter>Internal\Utils</Filter>
     </ClInclude>
@@ -2168,9 +2165,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp">
       <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp">
-      <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp">
       <Filter>Internal\Utils</Filter>
