@@ -58,12 +58,14 @@ void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiAppl
     defMng->registerDefinition(new TypeClassDefinition<PropertyPanel>());
 
     view = uiFramework.createView("Views/PropertyPanel.qml", IUIFramework::ResourceType::Url, this);
+    view->registerListener(this);
     uiApplication.addView(*view);
 }
 
 void PropertyPanel::Finalize()
 {
     SetObject(nullptr);
+    view->deregisterListener(this);
     view.reset();
 }
 
@@ -84,7 +86,15 @@ void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup
     }
     else
     {
-        SetObject(selected->GetFirstEntity());
+        selectedObject = selected->GetFirstEntity();
+        if (visible)
+        {
+            SetObject(selectedObject);
+        }
+        else
+        {
+            isSelectionDirty = true;
+        }
     }
 }
 
@@ -109,4 +119,21 @@ void PropertyPanel::SetObject(DAVA::InspBase* object)
 
     IClassDefinition* definition = defMng->getDefinition(getClassIdentifier<PropertyPanel>());
     definition->bindProperty("PropertyTree", this).setValue(Variant());
+}
+
+void PropertyPanel::onFocusIn(IView* view_)
+{
+    DVASSERT(view_ == view.get());
+    visible = true;
+    if (isSelectionDirty)
+    {
+        SetObject(selectedObject);
+        isSelectionDirty = false;
+    }
+}
+
+void PropertyPanel::onFocusOut(IView* view_)
+{
+    DVASSERT(view_ == view.get());
+    visible = false;
 }
