@@ -45,6 +45,11 @@ ScrollAreaController::ScrollAreaController(QObject* parent)
     UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
 }
 
+ScrollAreaController::~ScrollAreaController()
+{
+    UIScreenManager::Instance()->ResetScreen();
+}
+
 void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
 {
     if (nullptr != nestedControl)

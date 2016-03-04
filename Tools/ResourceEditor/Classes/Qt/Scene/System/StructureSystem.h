@@ -33,6 +33,7 @@
 #include "Commands2/Command2.h"
 #include "Scene/EntityGroup.h"
 #include "StringConstants.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -43,15 +44,6 @@
 #include "UI/UIEvent.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Functional/Function.h"
-
-class StructureSystemDelegate
-{
-public:
-    virtual ~StructureSystemDelegate() = default;
-
-    virtual void WillRemove(DAVA::Entity* removedEntity) = 0;
-    virtual void DidRemoved(DAVA::Entity* removedEntity) = 0;
-};
 
 class StructureSystem : public DAVA::SceneSystem
 {

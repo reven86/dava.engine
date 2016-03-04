@@ -27,39 +27,35 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SWITCH_NODE_H__
-#define __DAVAENGINE_SWITCH_NODE_H__
+#ifndef __DAVAENGINE_UI_LOADING_SCREEN_H__
+#define __DAVAENGINE_UI_LOADING_SCREEN_H__
 
-#include "Scene3D/Entity.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIScreen.h"
 
 namespace DAVA
 {
-class SwitchNode : public Entity
+class UILoadingScreen : public UIScreen
 {
-protected:
-    ~SwitchNode()
-    {
-    }
-
 public:
-    SwitchNode();
+    UILoadingScreen() = default;
+    ~UILoadingScreen() override;
 
-    virtual Entity* Clone(Entity* dstNode = NULL);
-    virtual void Update(float32 timeElapsed);
-    virtual void AddNode(Entity* node);
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void SetScreenToLoad(int32 screenId);
 
-    void SetSwitchIndex(int32 switchIndex);
-    int32 GetSwitchIndex();
+    void Update(float32 timeElapsed) override;
+    void OnActive() override;
+    void OnInactive() override;
+
+protected:
+    void ThreadMessage(BaseObject* obj, void* userData, void* callerData);
+    RefPtr<Thread> thread;
 
 private:
-    int32 oldSwitchIndex;
-    int32 newSwitchIndex;
-
-    void ReapplySwitch();
+    int32 nextScreenId = -1;
 };
 };
 
-#endif //__DAVAENGINE_SWITCH_NODE_H__
+
+
+#endif // __DAVAENGINE_UI_LOADING_SCREEN_H__

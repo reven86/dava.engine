@@ -1278,7 +1278,7 @@
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIListCell.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UILoadingTransition.cpp">
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UILoadingScreen.cpp">
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIMoveInTransition.cpp">
@@ -2974,7 +2974,7 @@
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIListCell.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UILoadingTransition.h">
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UILoadingScreen.h">
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIMoveInTransition.h">

@@ -181,7 +181,7 @@ DAVA_DEPRECATED(void RenderObjectsFlusher::Flush())
     while (!rhi::SyncObjectSignaled(currentFrame))
     {
         Renderer::BeginFrame();
-        RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
+        RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
         Renderer::EndFrame();
     }
 }
