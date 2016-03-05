@@ -505,6 +505,32 @@ function WaitControl(name, time)
     return result
 end
 
+function WaitControls(controls, waitAll, waitTime)
+    waitTime = waitTime or TIMEOUT
+    waitAll = waitAll == nil and true or false
+    Log((waitAll and 'Wait all controls' or 'Wait one control form list'), "DEBUG")
+    local find_controls_lua = function(controls, waitAll)
+        local loadedControls = 0
+        for _, control in pairs(controls)do
+            if autotestingSystem:FindControl(control) or autotestingSystem:FindControlOnPopUp(control) then
+                if not waitAll then
+                   return true
+                end
+                loadedControls = loadedControls + 1
+            end
+        end
+        if table.getn(controls) == loadedControls then
+            return true
+        end
+        return false
+    end
+    local result = WaitUntil(waitTime, find_controls_lua, controls, waitAll)
+    if not result then
+        Log((waitAll and 'One or more controls not found' or 'Nothing found'), "DEBUG")
+    end
+    return result
+end
+
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
     Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
