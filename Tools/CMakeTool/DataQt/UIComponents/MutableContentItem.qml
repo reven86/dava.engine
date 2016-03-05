@@ -6,17 +6,20 @@ import Cpp.Utils 1.0
 import Qt.labs.settings 1.0
 
 Item {
-    function processMainObject() {
-        var arrayPlatforms = mainObject["platforms"];
+    id: mutableContentItem;
+    property var configuration;
+    signal dataUpdated();
+
+    function processConfiguration(configuration) {
+        mutableContentItem.configuration = configuration;
+        var arrayPlatforms = configuration["platforms"];
         if(arrayPlatforms && Array.isArray(arrayPlatforms)) {
             for(var i = 0, length = arrayPlatforms.length; i < length; ++i) {
                 listModel_platforms.append(arrayPlatforms[i]);
             }
         }
     }
-
-    signal dataUpdated();
-
+   
     Layout.minimumHeight: label_platforms.height + Math.max(listView_platforms.contentHeight, listView_localOptions.contentHeight) + columnLayout_platforms.spacing
 
     RowLayout {
@@ -51,11 +54,11 @@ Item {
                     text: model.name
                     exclusiveGroup: exclusiveGroup_platforms
                     onCheckedChanged: {
-                        if(checked) {
-                            mainObject["currentPlatform"] = index;
-                            mainObject["currentOptions"] = [];
+                        if(checked && configuration) {
+                            configuration["currentPlatform"] = index;
+                            configuration["currentOptions"] = [];
                             listModel_localOptions.clear();
-                            var localObject = mainObject["platforms"][index];
+                            var localObject = configuration["platforms"][index];
                             var options = JSON.parse(JSON.stringify(localObject["options"])); //make a copy
                             if(options && Array.isArray(options)) {
                                 for(var i = 0, length = options.length; i < length; ++i) {
@@ -74,7 +77,7 @@ Item {
                     id: platformSettings
                     property int platformIndex;
                 }
-                Component.onDestruction: platformSettings.platformIndex = mainObject["currentPlatform"];
+                Component.onDestruction: platformSettings.platformIndex = configuration["currentPlatform"];
             }
         }
 
@@ -97,7 +100,7 @@ Item {
                 onContentWidthChanged: console.log(contentWidth)
                 spacing: 10
                 function processDataChanged(checked, value) { //private function
-                    var options = mainObject["currentOptions"];
+                    var options = configuration["currentOptions"];
                     if(checked) {
                         options.push(value)
                     } else {
@@ -158,7 +161,7 @@ Item {
                     property var checkedObjects;
                 }
                 Component.onDestruction: {
-                    optionsSettings.checkedObjects = mainObject["currentOptions"];
+                    optionsSettings.checkedObjects = configuration["currentOptions"];
                 }
             }
         }

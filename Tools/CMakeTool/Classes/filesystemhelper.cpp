@@ -49,14 +49,14 @@ QString FileSystemHelper::ResolveUrl(const QString& url) const
     return resolvedUrl;
 }
 
-QString FileSystemHelper::NormalizeDirPath(const QString& path) const
+QString FileSystemHelper::NormalizePath(const QString& path) const
 {
     QDir dir(path);
     if(dir.exists())
     {
         return QDir::toNativeSeparators(dir.canonicalPath());
     }
-    return path;
+    return QDir::toNativeSeparators(path);
 }
 
 bool FileSystemHelper::IsDirExists(const QString& dirPath) const

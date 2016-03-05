@@ -15,7 +15,6 @@ ApplicationWindow {
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2
-    //minimumWidth: wrapper.Layout.minimumWidth + 100 + splitView.anchors.margins * 2  //100 for output text area
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
     Settings {
         id: settings
@@ -41,8 +40,7 @@ ApplicationWindow {
         id: fileSystemHelper;
     }
 
-    property bool outputComplete: false
-    property var mainObject; //main JS object, contained in config file
+    property var configuration; //main JS object, contained in config file
 
     Timer {
         id: timer;
@@ -56,15 +54,25 @@ ApplicationWindow {
     }
 
     function updateOutputStringImpl() {
-        var outputText = JSTools.createOutput();
-        columnLayoutOutput.outputText = outputText;
+        if(configuration) {
+            var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
+            var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
+            var davaPath = fileSystemHelper.NormalizePath(rowLayout_davaFolder.path)
+            try {
+                var outputText = JSTools.createOutput(configuration, fileSystemHelper, buildPath, cmakePath, davaPath);
+                columnLayoutOutput.outputComplete = true;
+                columnLayoutOutput.outputText = outputText;
+            } catch(errorText) {
+                columnLayoutOutput.outputComplete = false;
+                columnLayoutOutput.outputText = errorText.toString();
+            }
+        }
     }
 
     Component.onCompleted: {
         try {
-            var configuration = configStorage.GetJSONTextFromConfigFile()
-            mainObject = JSON.parse(configuration);
-            mutableContent.processMainObject();
+            configuration = JSON.parse(configStorage.GetJSONTextFromConfigFile());
+            mutableContent.processConfiguration(configuration);
         }
         catch(error) {
             errorDialog.informativeText = error.message;

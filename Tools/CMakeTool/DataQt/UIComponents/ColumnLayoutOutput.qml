@@ -8,7 +8,7 @@ Item {
     id: wrapper
     property alias outputText: textField_output.text
     Layout.minimumHeight: label.height +  textField_output.height + rowLayout.height + rowLayout_output.spacing * 2
-
+    property var outputComplete;
     ColumnLayout {
         id: rowLayout_output
         anchors.fill: parent
@@ -36,7 +36,7 @@ Item {
                 text: qsTr("run cmake")
                 enabled: textField_output.text.length !== 0 && outputComplete
                 onClicked: {
-                    processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizeDirPath(rowLayout_buildFolder.path))
+                    processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))
                 }
             }
             CheckBox {

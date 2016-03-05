@@ -16,7 +16,6 @@ ComboBox {
         id: listModel
     }
 
-
     Settings {
         id: settings
         property var modelArray;
@@ -40,8 +39,8 @@ ComboBox {
             var newItem = editText;
             for(var i = model.count - 1; i >= 0; --i) {
                 var item = model.get(i).text;
-                item = fileSystemHelper.NormalizeDirPath(item);
-                var normalizedNewItem = fileSystemHelper.NormalizeDirPath(newItem);
+                item = fileSystemHelper.NormalizePath(item);
+                var normalizedNewItem = fileSystemHelper.NormalizePath(newItem);
                 if(item === normalizedNewItem) {
                     currentIndex = i;
                     return;
