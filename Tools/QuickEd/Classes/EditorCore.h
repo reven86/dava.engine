@@ -69,7 +69,7 @@ private slots:
     void SaveDocument(int index);
     void SaveAllDocuments();
 
-    void Exit();
+    bool OnExit();
     void RecentMenu(QAction*);
     void OnCurrentTabChanged(int index);
 

@@ -524,9 +524,13 @@ int MainWindow::AddTab(Document* document, int index)
 
 void MainWindow::closeEvent(QCloseEvent* ev)
 {
+    if (!CloseRequested()) //we cannot access to EditorCore directly by parent
+    {
+        ev->ignore();
+        return;
+    }
     SaveMainWindowState();
-    emit CloseRequested();
-    ev->ignore();
+    ev->accept();
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)

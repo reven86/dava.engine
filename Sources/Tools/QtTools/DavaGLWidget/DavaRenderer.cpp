@@ -62,10 +62,7 @@ DavaRenderer::DavaRenderer()
     DAVA::QtLayer::Instance()->OnResume();
 }
 
-DavaRenderer::~DavaRenderer()
-{
-    DAVA::QtLayer::Instance()->Release();
-}
+DavaRenderer::~DavaRenderer() = default;
 
 void DavaRenderer::paint()
 {
