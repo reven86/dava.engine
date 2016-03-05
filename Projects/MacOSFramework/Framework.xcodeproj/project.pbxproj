@@ -2534,12 +2534,6 @@
 		028C1A111BD66A6000B2266F /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CB91BD66A5F00B2266F /* UI3DView.h */; };
 		028C1A121BD66A6000B2266F /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CB91BD66A5F00B2266F /* UI3DView.h */; };
 		028C1A131BD66A6000B2266F /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CB91BD66A5F00B2266F /* UI3DView.h */; };
-		028C1A141BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */; };
-		028C1A151BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */; };
-		028C1A161BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */; };
-		028C1A171BD66A6000B2266F /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */; };
-		028C1A181BD66A6000B2266F /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */; };
-		028C1A191BD66A6000B2266F /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */; };
 		028C1A1A1BD66A6000B2266F /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBC1BD66A5F00B2266F /* UIButton.cpp */; };
 		028C1A1B1BD66A6000B2266F /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBC1BD66A5F00B2266F /* UIButton.cpp */; };
 		028C1A1C1BD66A6000B2266F /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBC1BD66A5F00B2266F /* UIButton.cpp */; };
@@ -3801,8 +3795,6 @@
 		028C0CB71BD66A5F00B2266F /* TheoraPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraPlayer.h; sourceTree = "<group>"; };
 		028C0CB81BD66A5F00B2266F /* UI3DView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UI3DView.cpp; sourceTree = "<group>"; };
 		028C0CB91BD66A5F00B2266F /* UI3DView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UI3DView.h; sourceTree = "<group>"; };
-		028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
-		028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAggregatorControl.h; sourceTree = "<group>"; };
 		028C0CBC1BD66A5F00B2266F /* UIButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIButton.cpp; sourceTree = "<group>"; };
 		028C0CBD1BD66A5F00B2266F /* UIButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIButton.h; sourceTree = "<group>"; };
 		028C0CBE1BD66A5F00B2266F /* UIControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControl.cpp; sourceTree = "<group>"; };
@@ -5261,8 +5253,6 @@
 				028C0CB71BD66A5F00B2266F /* TheoraPlayer.h */,
 				028C0CB81BD66A5F00B2266F /* UI3DView.cpp */,
 				028C0CB91BD66A5F00B2266F /* UI3DView.h */,
-				028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */,
-				028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */,
 				028C0CBC1BD66A5F00B2266F /* UIButton.cpp */,
 				028C0CBD1BD66A5F00B2266F /* UIButton.h */,
 				028C0CBE1BD66A5F00B2266F /* UIControl.cpp */,
@@ -5685,7 +5675,6 @@
 				028C1B271BD66A6100B2266F /* VectorSpinnerAdapter.h in Headers */,
 				028C10201BD66A6000B2266F /* XMLParser.h in Headers */,
 				028C0E671BD66A6000B2266F /* Result.h in Headers */,
-				028C1A191BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C19651BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0FF61BD66A6000B2266F /* LocalizationSystem.h in Headers */,
 				028C0FBA1BD66A6000B2266F /* File.h in Headers */,
@@ -6134,7 +6123,6 @@
 				028C195A1BD66A6000B2266F /* SoundSystem.h in Headers */,
 				028C11BF1BD66A6000B2266F /* LogConsumer.h in Headers */,
 				028C181F1BD66A6000B2266F /* SwitchToRenerObjectConverter.h in Headers */,
-				028C1A171BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C0D871BD66A6000B2266F /* dlmalloc.h in Headers */,
 				028C0DEA1BD66A6000B2266F /* DynamicObjectCache.h in Headers */,
 				028C0FCD1BD66A6000B2266F /* FileSystem.h in Headers */,
@@ -6727,7 +6715,6 @@
 				028C1B261BD66A6100B2266F /* VectorSpinnerAdapter.h in Headers */,
 				028C101F1BD66A6000B2266F /* XMLParser.h in Headers */,
 				028C0E661BD66A6000B2266F /* Result.h in Headers */,
-				028C1A181BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C19641BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0FF51BD66A6000B2266F /* LocalizationSystem.h in Headers */,
 				028C0FB91BD66A6000B2266F /* File.h in Headers */,
@@ -7470,7 +7457,6 @@
 				028C18BD1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF31BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11131BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
-				028C1A161BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13AA1BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				028C14CD1BD66A6000B2266F /* Frustum.cpp in Sources */,
 				028C0F331BD66A6000B2266F /* DVAssertMessageApple.mm in Sources */,
@@ -7920,7 +7906,6 @@
 				028C18BB1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF11BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11111BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
-				028C1A141BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13A81BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				15373F221C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C14CB1BD66A6000B2266F /* Frustum.cpp in Sources */,
@@ -8371,7 +8356,6 @@
 				028C18BC1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF21BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11121BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
-				028C1A151BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13A91BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				15373F231C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C14CC1BD66A6000B2266F /* Frustum.cpp in Sources */,
