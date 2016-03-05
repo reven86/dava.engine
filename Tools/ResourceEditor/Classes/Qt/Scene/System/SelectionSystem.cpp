@@ -705,40 +705,35 @@ DAVA::AABBox3 SceneSelectionSystem::GetUntransformedBoundingBox(DAVA::BaseObject
 
 DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableObject& object, const DAVA::Matrix4& transform) const
 {
-    DAVA::AABBox3 ret = DAVA::AABBox3(DAVA::Vector3(0, 0, 0), 0);
+    DAVA::AABBox3 entityBox = collisionSystem->GetBoundingBox(object.GetContainedObject());
 
     if (object.CanBeCastedTo<DAVA::Entity>())
     {
-        // we will get selection bbox from collision system
-        auto entity = object.AsEntity();
-        DAVA::AABBox3 entityBox = collisionSystem->GetBoundingBox(entity);
-
         // add childs boxes into entity box
+        auto entity = object.AsEntity();
         for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); i++)
         {
-            DAVA::Entity* childEntity = entity->GetChild(i);
-            DAVA::AABBox3 childBox = GetTransformedBoundingBox(SelectableObject(childEntity), childEntity->GetLocalTransform());
-            if (entityBox.IsEmpty())
+            SelectableObject childEntity(entity->GetChild(i));
+            DAVA::AABBox3 childBox = GetTransformedBoundingBox(childEntity, childEntity.GetLocalTransform());
+            if (childBox.IsEmpty() == false)
             {
-                entityBox = childBox;
+                if (entityBox.IsEmpty())
+                {
+                    entityBox = childBox;
+                }
+                else
+                {
+                    entityBox.AddAABBox(childBox);
+                }
             }
-            else if (!childBox.IsEmpty())
-            {
-                entityBox.AddAABBox(childBox);
-            }
-        }
-
-        // we should return box with specified transformation
-        if (!entityBox.IsEmpty())
-        {
-            entityBox.GetTransformedBox(transform, ret);
         }
     }
-    else
+
+    DAVA::AABBox3 ret = DAVA::AABBox3(DAVA::Vector3(0.0f, 0.0f, 0.0f), 0.0f);
+    if (entityBox.IsEmpty() == false)
     {
-        // REZNIK TODO : get bounding box for other objects
+        entityBox.GetTransformedBox(transform, ret);
     }
-
     return ret;
 }
 
