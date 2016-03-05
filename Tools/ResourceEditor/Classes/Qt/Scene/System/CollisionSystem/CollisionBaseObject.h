@@ -31,12 +31,7 @@
 #define __SCENE_COLLISION_BASE_OBJECT_H__
 
 #include "bullet/btBulletCollisionCommon.h"
-#include "Scene3D/Entity.h"
-
-namespace DAVA
-{
-class Entity;
-}
+#include "Scene/SelectableObject.h"
 
 class CollisionBaseObject
 {
@@ -61,8 +56,8 @@ public:
     };
 
 public:
-    CollisionBaseObject(DAVA::Entity* ent, btCollisionWorld* word)
-        : entity(ent)
+    CollisionBaseObject(DAVA::BaseObject* _object, btCollisionWorld* word)
+        : object(_object)
         , btWord(word)
     {
     }
@@ -74,16 +69,15 @@ public:
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
     virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;
 
-    inline CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
-    inline DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;
+    CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
+    DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;
 
-    DAVA::Entity* entity;
-    DAVA::AABBox3 boundingBox;
     btCollisionObject* btObject = nullptr;
-    btCollisionWorld* btWord;
+    btCollisionWorld* btWord = nullptr;
+    SelectableObject object;
 };
 
-CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const
+inline CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const
 {
     char cornersData[8 * sizeof(DAVA::Vector3)];
     DAVA::Vector3* corners = reinterpret_cast<DAVA::Vector3*>(cornersData);
@@ -109,7 +103,7 @@ CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBo
 
 inline DAVA::Plane CollisionBaseObject::TransformPlaneToLocalSpace(const DAVA::Plane& plane) const
 {
-    DAVA::Matrix4 transform = entity->GetWorldTransform();
+    DAVA::Matrix4 transform = object.GetWorldTransform();
     transform.Transpose();
     return DAVA::Plane(DAVA::Vector4(plane.n.x, plane.n.y, plane.n.z, plane.d) * transform);
 }

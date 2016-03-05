@@ -28,8 +28,8 @@
 
 #include "Scene/System/CollisionSystem/CollisionBox.h"
 
-CollisionBox::CollisionBox(DAVA::Entity* entity, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize)
-    : CollisionBaseObject(entity, word)
+CollisionBox::CollisionBox(DAVA::BaseObject* _object, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize)
+    : CollisionBaseObject(_object, word)
 {
     if (word != nullptr)
     {
@@ -43,7 +43,7 @@ CollisionBox::CollisionBox(DAVA::Entity* entity, btCollisionWorld* word, DAVA::V
         btObject->setWorldTransform(trans);
         btWord->addCollisionObject(btObject);
 
-        boundingBox = DAVA::AABBox3(DAVA::Vector3(), boxSize);
+        object.SetBoundingBox(DAVA::AABBox3(DAVA::Vector3(), boxSize));
     }
 }
 
@@ -59,7 +59,7 @@ CollisionBox::~CollisionBox()
 
 CollisionBaseObject::ClassifyPlaneResult CollisionBox::ClassifyToPlane(const DAVA::Plane& plane)
 {
-    return ClassifyBoundingBoxToPlane(boundingBox, TransformPlaneToLocalSpace(plane));
+    return ClassifyBoundingBoxToPlane(object.GetBoundingBox(), TransformPlaneToLocalSpace(plane));
 }
 
 CollisionBaseObject::ClassifyPlanesResult CollisionBox::ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes)

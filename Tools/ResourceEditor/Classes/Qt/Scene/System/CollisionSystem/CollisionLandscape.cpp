@@ -72,7 +72,7 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity* entity, btCollisionWorld* w
             btObject->setCollisionShape(btTerrain);
             btWord->addCollisionObject(btObject);
 
-            boundingBox = landBox;
+            object.SetBoundingBox(landBox);
         }
     }
 }

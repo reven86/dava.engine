@@ -74,7 +74,7 @@ public:
     void SetDrawMode(int mode);
     int GetDrawMode() const;
 
-    DAVA::AABBox3 GetBoundingBox(DAVA::Entity* entity);
+    DAVA::AABBox3 GetBoundingBox(DAVA::BaseObject* entity);
 
     const SelectableObjectGroup::CollectionType& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
     const SelectableObjectGroup::CollectionType& ObjectsRayTestFromCamera();
@@ -101,6 +101,7 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
     CollisionBaseObject* BuildFromEntity(DAVA::Entity* entity);
+    CollisionBaseObject* BuildFromObject(const SelectableObject& object);
     void DestroyFromEntity(DAVA::BaseObject* entity);
 
 private:
@@ -112,8 +113,8 @@ private:
     DAVA::Vector3 lastLandCollision;
     DAVA::Set<DAVA::BaseObject*> entitiesToAdd;
     DAVA::Set<DAVA::BaseObject*> entitiesToRemove;
-    DAVA::Map<DAVA::BaseObject*, CollisionBaseObject*> entityToCollision;
-    DAVA::Map<btCollisionObject*, DAVA::Entity*> collisionToEntity;
+    DAVA::Map<DAVA::BaseObject*, CollisionBaseObject*> objectToCollision;
+    DAVA::Map<btCollisionObject*, DAVA::BaseObject*> collisionToObject;
     DAVA::Entity* curLandscapeEntity = nullptr;
     SelectableObjectGroup::CollectionType rayIntersectedEntities;
     SelectableObjectGroup planeClippedObjects;
