@@ -395,18 +395,32 @@ bool IsMemoryAddressAccessible(void* blockStart)
     }
     return false;
 #elif defined(__DAVAENGINE_IPHONE__)
-    vm_address_t addr = reinterpret_cast<vm_address_t>(blockStart);
-    vm_size_t size = 0;
+// https://sourceforge.net/p/predef/wiki/Architectures/
+#if defined(__aarch64__)
+    vm_region_basic_info_data_64_t info;
+    mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT_64;
+    vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
+#else
     vm_region_basic_info_data_t info;
     mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT;
+    vm_region_flavor_t flavor = VM_REGION_BASIC_INFO;
+#endif
+    vm_address_t addr = reinterpret_cast<vm_address_t>(blockStart);
+    vm_size_t size = 0;
     mach_port_t obj;
-    kern_return_t status = vm_region(mach_task_self(),
-                                     &addr,
-                                     &size,
-                                     VM_REGION_BASIC_INFO,
-                                     reinterpret_cast<vm_region_info_t>(&info),
-                                     &count,
-                                     &obj);
+    
+#if defined(__aarch64__)
+    kern_return_t status = vm_region_64(
+#else
+    kern_return_t status = vm_region(
+#endif
+    mach_task_self(),
+    &addr,
+    &size,
+    flavor,
+    reinterpret_cast<vm_region_info_t>(&info),
+    &count,
+    &obj);
     if (0 == status &&
         addr <= reinterpret_cast<vm_address_t>(blockStart) &&
         (info.protection & (VM_PROT_READ | VM_PROT_WRITE)) == (VM_PROT_READ | VM_PROT_WRITE))
