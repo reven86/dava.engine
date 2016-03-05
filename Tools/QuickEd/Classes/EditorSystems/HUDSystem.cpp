@@ -263,28 +263,32 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     static const float32 axtraSizeValue = 50.0f;
     DVASSERT(magnetControls.size() == magnetTargetControls.size());
 
-    const int magnetsSize = magnetControls.size();
-    const int sizeDiff = magnetLines.size() - magnetControls.size();
-    if (sizeDiff < 0)
+    const size_t magnetsSize = magnetControls.size();
+    const size_t newMagnetsSize = magnetLines.size();
+    if (newMagnetsSize < magnetsSize)
     {
-        const auto& linesEnd = magnetControls.end();
-        const auto& targetRectsEnd = magnetTargetControls.end();
-
-        for (int i = magnetsSize + sizeDiff; i < magnetsSize; ++i)
+        auto linesRIter = magnetControls.rbegin();
+        auto rectsRIter = magnetTargetControls.rbegin();
+        size_t count = magnetsSize - newMagnetsSize;
+        for (size_t i = 0; i < count; ++i)
         {
-            UIControl* lineControl = magnetControls.at(i).Get();
-            UIControl* targetRectControl = magnetTargetControls.at(i).Get();
+            UIControl* lineControl = (*linesRIter++).Get();
+            UIControl* targetRectControl = (*rectsRIter++).Get();
             hudControl->RemoveControl(lineControl);
             hudControl->RemoveControl(targetRectControl);
         }
-        magnetControls.erase(linesEnd + sizeDiff, linesEnd);
-        magnetTargetControls.erase(targetRectsEnd + sizeDiff, targetRectsEnd);
+        const auto& linesEnd = magnetControls.end();
+        const auto& targetRectsEnd = magnetTargetControls.end();
+        magnetControls.erase(linesEnd - count, linesEnd);
+        magnetTargetControls.erase(targetRectsEnd - count, targetRectsEnd);
     }
-    else if (sizeDiff > 0)
+    else if (newMagnetsSize > magnetsSize)
     {
-        magnetControls.reserve(sizeDiff);
-        magnetTargetControls.reserve(sizeDiff);
-        for (int i = 0; i < sizeDiff; ++i)
+        size_t count = newMagnetsSize - magnetsSize;
+
+        magnetControls.reserve(count);
+        magnetTargetControls.reserve(count);
+        for (int i = 0; i < count; ++i)
         {
             MagnetLineControl* lineControl = new MagnetLineControl();
             hudControl->AddControl(lineControl);
@@ -295,6 +299,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
             magnetTargetControls.emplace_back(rectControl);
         }
     }
+    DVASSERT(magnetLines.size() == magnetControls.size() && magnetControls.size() == magnetTargetControls.size());
     for (int i = 0, size = magnetLines.size(); i < size; ++i)
     {
         const MagnetLineInfo& line = magnetLines.at(i);

@@ -47,7 +47,7 @@ void LazyUpdater::Update()
 
     if (!timer->isActive())
     {
-        OnTimer();
+        QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
     }
 }
 
