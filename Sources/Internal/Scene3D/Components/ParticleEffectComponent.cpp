@@ -45,8 +45,7 @@ ParticleEmitterData::ParticleEmitterData()
 }
 
 ParticleEmitterData::ParticleEmitterData(ParticleEmitter* _emitter)
-    :
-    emitter(_emitter)
+    : emitter(_emitter)
 {
 }
 
