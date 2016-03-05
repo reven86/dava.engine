@@ -27,43 +27,17 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITOR_LAUNCHER_H__
-#define __RESOURCEEDITOR_LAUNCHER_H__
+#ifndef __BASE_TRANSFORM_PROXIES_H
+#define __BASE_TRANSFORM_PROXIES_H
 
-#include "Scene/BaseTransformProxies.h"
-#include "Project/ProjectManager.h"
-#include "Main/mainwindow.h"
+#include "SelectableObject.h"
 
-#include <QObject>
-
-class ResourceEditorLauncher : public QObject
+class EntityTransformProxy : public SelectableObject::TransformProxy
 {
-    Q_OBJECT
-
-public slots:
-    void Launch();
-
 public:
-    ~ResourceEditorLauncher();
+    const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject* object) override;
+    const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject* object) override;
+    void SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix) override;
 };
 
-inline void ResourceEditorLauncher::Launch()
-{
-    SelectableObject::AddTransformProxyForClass<DAVA::Entity, EntityTransformProxy>();
-
-    DVASSERT(ProjectManager::Instance() != nullptr);
-    ProjectManager::Instance()->OpenLastProject();
-    ProjectManager::Instance()->UpdateParticleSprites();
-    ProjectManager::Instance()->OnSceneViewInitialized();
-
-    DVASSERT(QtMainWindow::Instance() != nullptr);
-    QtMainWindow::Instance()->SetupTitle();
-    QtMainWindow::Instance()->OnSceneNew();
-}
-
-inline ResourceEditorLauncher::~ResourceEditorLauncher()
-{
-    SelectableObject::RemoveAllTransformProxies();
-}
-
-#endif // __RESOURCEEDITOR_LAUNCHER_H__
+#endif // __BASE_TRANSFORM_PROXIES_H

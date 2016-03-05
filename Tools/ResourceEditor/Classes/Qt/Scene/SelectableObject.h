@@ -31,9 +31,26 @@
 #define __SELECTABLE_OBJECT_H__
 
 #include "Scene3D/Entity.h"
+#include <type_traits>
 
 class SelectableObject
 {
+public:
+    class TransformProxy
+    {
+    public:
+        virtual ~TransformProxy()
+        {
+        }
+        virtual const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject*) = 0;
+        virtual const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject*) = 0;
+        virtual void SetLocalTransform(DAVA::BaseObject*, const DAVA::Matrix4&) = 0;
+    };
+
+    template <typename CLASS, typename PROXY>
+    static void AddTransformProxyForClass();
+    static void RemoveAllTransformProxies();
+
 public:
     SelectableObject() = default;
     explicit SelectableObject(DAVA::BaseObject* baseObject);
@@ -60,10 +77,14 @@ public:
     const DAVA::AABBox3& GetBoundingBox() const;
     void SetBoundingBox(const DAVA::AABBox3& box);
 
+    bool IsTransformable() const;
     const DAVA::Matrix4& GetLocalTransform() const;
+    const DAVA::Matrix4& GetWorldTransform() const;
     void SetLocalTransform(const DAVA::Matrix4& transform);
 
-    const DAVA::Matrix4& GetWorldTransform() const;
+private:
+    static void AddConcreteProxy(DAVA::MetaInfo* classInfo, TransformProxy* proxy);
+    static TransformProxy* GetTransformProxyForClass(const DAVA::MetaInfo* classInfo);
 
 private:
     DAVA::BaseObject* object = nullptr;
@@ -85,10 +106,6 @@ inline T* SelectableObject::Cast() const
     {
         return static_cast<T*>(object);
     }
-    /*
-    DAVA::Logger::Error("SelectableObject cast to %s failed, actually contains %s",
-                        DAVA::MetaInfo::Instance<T>()->GetTypeName(), object->GetTypeInfo()->Type()->GetTypeName());
-	*/
     return nullptr;
 }
 
@@ -105,6 +122,14 @@ inline const DAVA::AABBox3& SelectableObject::GetBoundingBox() const
 inline DAVA::Entity* SelectableObject::AsEntity() const
 {
     return Cast<DAVA::Entity>();
+}
+
+template <typename CLASS, typename PROXY>
+inline void SelectableObject::AddTransformProxyForClass()
+{
+    static_assert(std::is_base_of<SelectableObject::TransformProxy, PROXY>::value,
+                  "Transform proxy should be derived from SelectableObject::TransformProxy");
+    AddConcreteProxy(DAVA::MetaInfo::Instance<CLASS>(), new PROXY());
 }
 
 #endif // __SELECTABLE_OBJECT_H__

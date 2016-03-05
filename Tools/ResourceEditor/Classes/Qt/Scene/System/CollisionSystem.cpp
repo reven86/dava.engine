@@ -294,12 +294,13 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
         for (auto obj : entitiesToAdd)
         {
             CollisionBaseObject* collisionObject = nullptr;
+
             SelectableObject wrapper(obj);
             if (wrapper.CanBeCastedTo<DAVA::Entity>())
             {
                 collisionObject = BuildFromEntity(wrapper.AsEntity());
             }
-            else
+            else if (wrapper.IsTransformable())
             {
                 collisionObject = BuildFromObject(wrapper);
             }

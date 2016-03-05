@@ -26,44 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __RESOURCEEDITOR_LAUNCHER_H__
-#define __RESOURCEEDITOR_LAUNCHER_H__
-
 #include "Scene/BaseTransformProxies.h"
-#include "Project/ProjectManager.h"
-#include "Main/mainwindow.h"
 
-#include <QObject>
-
-class ResourceEditorLauncher : public QObject
+const DAVA::Matrix4& EntityTransformProxy::GetWorldTransform(DAVA::BaseObject* object)
 {
-    Q_OBJECT
-
-public slots:
-    void Launch();
-
-public:
-    ~ResourceEditorLauncher();
-};
-
-inline void ResourceEditorLauncher::Launch()
-{
-    SelectableObject::AddTransformProxyForClass<DAVA::Entity, EntityTransformProxy>();
-
-    DVASSERT(ProjectManager::Instance() != nullptr);
-    ProjectManager::Instance()->OpenLastProject();
-    ProjectManager::Instance()->UpdateParticleSprites();
-    ProjectManager::Instance()->OnSceneViewInitialized();
-
-    DVASSERT(QtMainWindow::Instance() != nullptr);
-    QtMainWindow::Instance()->SetupTitle();
-    QtMainWindow::Instance()->OnSceneNew();
+    return static_cast<DAVA::Entity*>(object)->GetWorldTransform();
 }
 
-inline ResourceEditorLauncher::~ResourceEditorLauncher()
+const DAVA::Matrix4& EntityTransformProxy::GetLocalTransform(DAVA::BaseObject* object)
 {
-    SelectableObject::RemoveAllTransformProxies();
+    return static_cast<DAVA::Entity*>(object)->GetLocalTransform();
 }
 
-#endif // __RESOURCEEDITOR_LAUNCHER_H__
+void EntityTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix)
+{
+    return static_cast<DAVA::Entity*>(object)->SetLocalTransform(matrix);
+}

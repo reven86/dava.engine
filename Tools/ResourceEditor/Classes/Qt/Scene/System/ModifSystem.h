@@ -75,8 +75,8 @@ public:
     bool InCloneState() const;
     bool InCloneDoneState() const;
 
-    bool ModifCanStart(const SelectableObjectGroup& selectedEntities) const;
-    bool ModifCanStartByMouse(const SelectableObjectGroup& selectedEntities) const;
+    bool ModifCanStart(const SelectableObjectGroup& objects) const;
+    bool ModifCanStartByMouse(const SelectableObjectGroup& objects) const;
 
     void RemoveEntity(DAVA::Entity* entity) override;
     void Process(DAVA::float32 timeElapsed) override;

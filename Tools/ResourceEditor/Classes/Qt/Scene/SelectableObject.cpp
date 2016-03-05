@@ -30,6 +30,7 @@
 
 SelectableObject::SelectableObject(DAVA::BaseObject* baseObject)
 {
+    DVASSERT(baseObject != nullptr);
     object = DAVA::SafeRetain(baseObject);
 }
 
@@ -88,25 +89,52 @@ void SelectableObject::SetBoundingBox(const DAVA::AABBox3& box)
 
 const DAVA::Matrix4& SelectableObject::GetLocalTransform() const
 {
-    auto entity = Cast<DAVA::Entity>();
-    if (entity == nullptr)
-        return DAVA::Matrix4::IDENTITY;
-    return entity->GetLocalTransform();
-}
-
-void SelectableObject::SetLocalTransform(const DAVA::Matrix4& transform)
-{
-    auto entity = Cast<DAVA::Entity>();
-    if (entity != nullptr)
-    {
-        entity->SetLocalTransform(transform);
-    }
+    auto proxy = GetTransformProxyForClass(object->GetTypeInfo()->Type());
+    return (proxy == nullptr) ? DAVA::Matrix4::IDENTITY : proxy->GetLocalTransform(object);
 }
 
 const DAVA::Matrix4& SelectableObject::GetWorldTransform() const
 {
-    auto entity = Cast<DAVA::Entity>();
-    if (entity == nullptr)
-        return DAVA::Matrix4::IDENTITY;
-    return entity->GetWorldTransform();
+    auto proxy = GetTransformProxyForClass(object->GetTypeInfo()->Type());
+    return (proxy == nullptr) ? DAVA::Matrix4::IDENTITY : proxy->GetWorldTransform(object);
+}
+
+void SelectableObject::SetLocalTransform(const DAVA::Matrix4& transform)
+{
+    auto proxy = GetTransformProxyForClass(object->GetTypeInfo()->Type());
+    if (proxy != nullptr)
+    {
+        proxy->SetLocalTransform(object, transform);
+    }
+}
+
+bool SelectableObject::IsTransformable() const
+{
+    return GetTransformProxyForClass(object->GetTypeInfo()->Type()) != nullptr;
+}
+
+/*
+ * Transform proxy stuff
+ */
+static DAVA::Map<const DAVA::MetaInfo*, SelectableObject::TransformProxy*> transformProxies;
+
+void SelectableObject::AddConcreteProxy(DAVA::MetaInfo* classInfo, SelectableObject::TransformProxy* proxy)
+{
+    DVASSERT(transformProxies.count(classInfo) == 0);
+    transformProxies.emplace(classInfo, proxy);
+}
+
+SelectableObject::TransformProxy* SelectableObject::GetTransformProxyForClass(const DAVA::MetaInfo* classInfo)
+{
+    auto i = transformProxies.find(classInfo);
+    return (i == transformProxies.end()) ? nullptr : i->second;
+}
+
+void SelectableObject::RemoveAllTransformProxies()
+{
+    for (auto& tp : transformProxies)
+    {
+        delete tp.second;
+    }
+    transformProxies.clear();
 }

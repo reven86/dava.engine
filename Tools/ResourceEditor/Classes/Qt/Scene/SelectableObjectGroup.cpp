@@ -139,6 +139,17 @@ const SelectableObject& SelectableObjectGroup::GetFirst() const
     return objects.empty() ? empty : objects.front();
 }
 
+bool SelectableObjectGroup::IsTransformable() const
+{
+    for (const auto& obj : objects)
+    {
+        if (!obj.IsTransformable())
+            return false;
+    }
+
+    return true;
+}
+
 DAVA::Vector3 SelectableObjectGroup::GetFirstTranslationVector() const
 {
     if (objects.empty())

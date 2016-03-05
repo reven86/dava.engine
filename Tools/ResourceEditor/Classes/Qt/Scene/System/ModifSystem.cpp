@@ -423,14 +423,14 @@ void EntityModificationSystem::EndModification()
     isOrthoModif = false;
 }
 
-bool EntityModificationSystem::ModifCanStart(const SelectableObjectGroup& selectedEntities) const
+bool EntityModificationSystem::ModifCanStart(const SelectableObjectGroup& objects) const
 {
-    if (selectedEntities.IsEmpty())
+    if (objects.IsEmpty() || !objects.IsTransformable())
         return false;
 
     // check if we have some locked items in selection
     bool hasLocked = false;
-    for (auto entity : selectedEntities.ObjectsOfType<DAVA::Entity>())
+    for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
     {
         if (entity->GetLocked())
         {
@@ -441,9 +441,9 @@ bool EntityModificationSystem::ModifCanStart(const SelectableObjectGroup& select
     return !hasLocked;
 }
 
-bool EntityModificationSystem::ModifCanStartByMouse(const SelectableObjectGroup& selectedEntities) const
+bool EntityModificationSystem::ModifCanStartByMouse(const SelectableObjectGroup& objects) const
 {
-    if (ModifCanStart(selectedEntities) == false)
+    if (ModifCanStart(objects) == false)
         return false;
 
     // we can start modification if mouse is over hood
@@ -463,7 +463,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const SelectableObjectGroup&
 
     for (const auto& collisionItem : collisionEntities)
     {
-        for (const auto& selectedItem : selectedEntities.GetContent())
+        for (const auto& selectedItem : objects.GetContent())
         {
             if (selectedItem == collisionItem)
                 return true;
