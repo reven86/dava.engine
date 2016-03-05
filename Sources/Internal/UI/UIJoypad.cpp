@@ -30,7 +30,6 @@
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
 #include "Logger/Logger.h"
-#include "FileSystem/YamlNode.h"
 
 namespace DAVA
 {
@@ -327,63 +326,6 @@ void UIJoypad::InputCancelled(UIEvent* currentInput)
         needRecalcAnalog = true;
         needRecalcDigital = true;
     }
-}
-
-void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode* node, DAVA::UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* stickSpriteNode = node->Get("stickSprite");
-    const YamlNode* stickFrameNode = node->Get("stickFrame");
-    const YamlNode* deadAreaSizeNode = node->Get("deadAreaSize");
-    const YamlNode* digitalSenseNode = node->Get("digitalSense");
-
-    if (stickSpriteNode)
-    {
-        int32 spriteFrame = 0;
-        if (stickFrameNode)
-        {
-            spriteFrame = stickFrameNode->AsInt32();
-        }
-
-        SetStickSprite(stickSpriteNode->AsString(), spriteFrame);
-    }
-
-    if (deadAreaSizeNode)
-    {
-        SetDeadAreaSize(deadAreaSizeNode->AsFloat());
-    }
-
-    if (digitalSenseNode)
-    {
-        SetDigitalSense(digitalSenseNode->AsFloat());
-    }
-}
-
-YamlNode* UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader* loader)
-{
-    ScopedPtr<UIJoypad> baseControl(new UIJoypad());
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    // Sprite
-    if (stick && stick->GetSprite())
-    {
-        node->Set("stickSprite", Sprite::GetPathString(stick->GetSprite()));
-        node->Set("stickFrame", stick->GetFrame());
-    }
-
-    if (baseControl->GetDeadAreaSize() != GetDeadAreaSize())
-    {
-        node->Set("deadAreaSize", GetDeadAreaSize());
-    }
-
-    if (baseControl->GetDigitalSense() != GetDigitalSense())
-    {
-        node->Set("digitalSense", GetDigitalSense());
-    }
-
-    return node;
 }
 
 float32 UIJoypad::GetDeadAreaSize() const

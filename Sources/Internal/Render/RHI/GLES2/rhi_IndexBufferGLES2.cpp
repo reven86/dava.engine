@@ -360,7 +360,7 @@ SetToRHI(Handle ib)
         if (self->updatePending)
         {
             DVASSERT(self->mappedData);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, self->size, self->mappedData, self->usage);
+            GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, self->size, self->mappedData, self->usage));
             self->updatePending = false;
         }
     }

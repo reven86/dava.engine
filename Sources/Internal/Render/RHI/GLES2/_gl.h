@@ -58,6 +58,12 @@
 
     #include "ios_gl.h"
 
+    #include "arm/arch.h"
+
+    #ifdef _ARM_ARCH_7
+        #define __DAVAENGINE_ARM_7__
+    #endif
+
 #elif defined(__DAVAENGINE_ANDROID__)
 
 	#include <GLES2/gl2.h>
@@ -66,6 +72,15 @@
     #define GetGLErrorString(code) "<unknown>"
 
 	#include "android_gl.h"
+
+#ifdef __arm__
+    #include <machine/cpu-features.h>
+    #if __ARM_ARCH__ == 7
+        #ifdef USE_NEON
+            #define __DAVAENGINE_ARM_7__
+        #endif
+    #endif
+#endif
 
 #else
 
@@ -201,15 +216,35 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
     if (err != GL_NO_ERROR) \
         Log::Error("gl", "FAILED  %s (%i) : %s\n", #expr, err, gluErrorString(err)); \
 }
+
 #else
-#define GL_CALL(expr) expr
-/*
+
+#if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
+
+extern volatile DAVA::uint8 pre_call_registers[64];
+
 #define GL_CALL(expr) \
 { \
-profiler::ScopedTiming( PROF_STRING_ID("gl-call"), "gl-call" ); \
-    expr ; \
+	if (_GLES2_ValidateNeonCalleeSavedRegisters) \
+	{ \
+		asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                         : "memory"); \
+        expr; \
+        asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                         : "q4", "q5", "q6", "q7"); \
+	} \
+	else \
+	{ \
+		expr; \
+	}\
 }
-*/
+
+#else
+
+#define GL_CALL(expr) expr;
+
+#endif
+
 #endif
 
 extern GLuint _GLES2_Binded_FrameBuffer;
@@ -238,5 +273,6 @@ extern HDC _GLES2_WindowDC;
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
 extern bool _GLES2_UseUserProvidedIndices;
+extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

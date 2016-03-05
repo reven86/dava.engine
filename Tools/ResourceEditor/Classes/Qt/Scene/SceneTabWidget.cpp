@@ -93,6 +93,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
     QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Updated(SceneEditor2*)), this, SLOT(SceneUpdated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2*, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2*, bool)));
 
     SetCurrentTab(0);
@@ -442,7 +443,7 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
     }
 }
 
-void SceneTabWidget::SceneSaved(SceneEditor2* scene)
+void SceneTabWidget::SceneUpdated(SceneEditor2* scene)
 {
     // update scene name on tabBar
     for (int i = 0; i < tabBar->count(); ++i)
@@ -454,6 +455,11 @@ void SceneTabWidget::SceneSaved(SceneEditor2* scene)
             break;
         }
     }
+}
+
+void SceneTabWidget::SceneSaved(SceneEditor2* scene)
+{
+    SceneUpdated(scene);
 }
 
 void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified)

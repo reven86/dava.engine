@@ -102,14 +102,14 @@ public:
 
     // autotesting api
     UIControl* GetScreen();
-    UIControl* FindControl(const String& path);
-    UIControl* FindControl(const String& path, UIControl* screen);
-    UIControl* FindControlOnPopUp(const String& path);
-    UIControl* FindControl(UIControl* srcControl, const String& controlName);
-    UIControl* FindControl(UIControl* srcControl, int32 index);
-    UIControl* FindControl(UIList* srcList, int32 index);
+    UIControl* FindControl(const String& path) const;
+    UIControl* FindControl(const String& path, UIControl* screen) const;
+    UIControl* FindControlOnPopUp(const String& path) const;
+    UIControl* FindControl(UIControl* srcControl, const String& controlName) const;
+    UIControl* FindControl(UIControl* srcControl, int32 index) const;
+    UIControl* FindControl(UIList* srcList, int32 index) const;
 
-    bool IsCenterInside(UIControl* parent, UIControl* child);
+    bool IsCenterInside(UIControl* parent, UIControl* child) const;
     bool IsSelected(UIControl* control) const;
 
     bool IsListHorisontal(UIControl* control);
@@ -122,6 +122,8 @@ public:
     void TouchDown(const Vector2& point, int32 touchId, int32 tapCount);
     void TouchMove(const Vector2& point, int32 touchId);
     void TouchUp(int32 touchId);
+
+    void ScrollToControl(const String& path) const;
 
     // Keyboard action
     void KeyPress(int32 keyChar);
@@ -158,7 +160,7 @@ public:
 
 protected:
 #if !defined(SWIG)
-    inline void ParsePath(const String& path, Vector<String>& parsedPath);
+    inline void ParsePath(const String& path, Vector<String>& parsedPath) const;
 
     bool LoadScript(const String& luaScript);
     bool LoadScriptFromFile(const FilePath& luaFilePath);
