@@ -26,65 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef DATA_STORAGE_STEAM_H
+#define DATA_STORAGE_STEAM_H
+
+#if defined(__DAVAENGINE_STEAM__)
 
 #include "DataStorage/DataStorage.h"
 
 #include "Utils/Utils.h"
+
+#include "Platform/Steam.h"
+
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-using namespace Windows::Storage;
-using namespace Windows::Foundation;
+#if defined(__DAVAENGINE_STEAM__)
 
-class DataStorageWin : public IDataStorage
+class DynamicMemoryFile;
+class DataStorageSteam : public IDataStorage
 {
+private:
+    const String storageFileName = "CloudArchive";
+
 public:
-    DataStorageWin();
+    DataStorageSteam();
     String GetStringValue(const String& key) override;
     int64 GetLongValue(const String& key) override;
     void SetStringValue(const String& key, const String& value) override;
     void SetLongValue(const String& key, int64 value) override;
     void RemoveEntry(const String& key) override;
     void Clear() override;
-    void Push() override
-    {
-    }
+    void Push() override;
 
 private:
-    ApplicationDataContainer ^ roamingSettings = nullptr;
-};
-#endif // Win UAP
+    ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
+    void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
 
-#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_STEAM__)
-
-class DataStorageWin : public IDataStorage
-{
-public:
-    String GetStringValue(const String& key) override
-    {
-        return String();
-    }
-    int64 GetLongValue(const String& key) override
-    {
-        return 0;
-    }
-    void SetStringValue(const String& key, const String& value) override
-    {
-    }
-    void SetLongValue(const String& key, int64 value) override
-    {
-    }
-    void RemoveEntry(const String& key) override
-    {
-    }
-    void Clear() override
-    {
-    }
-    void Push() override
-    {
-    }
+    Steam::Storage* remoteStorage = nullptr;
+    ScopedPtr<KeyedArchive> values;
+    bool isValuesChanged = false;
 };
 
-#endif //windows
+#endif //__DAVAENGINE_STEAM__
 }
+
+#endif
+
+#endif
