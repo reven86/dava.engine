@@ -42,7 +42,7 @@ public:
     using Updater = DAVA::Function<void()>;
 
 public:
-    LazyUpdater(Updater updater, int updateInterval = 0, QObject* parent = nullptr);
+    LazyUpdater(Updater updater, QObject* parent = nullptr, int updateInterval = 0);
 
     void Update();
 

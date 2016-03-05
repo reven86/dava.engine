@@ -31,7 +31,7 @@
 
 #include <QTimer>
 
-LazyUpdater::LazyUpdater(Updater _updater, int updateInterval, QObject* parent /* = nullptr */)
+LazyUpdater::LazyUpdater(Updater _updater, QObject* parent, int updateInterval)
     : QObject(parent)
     , updater(_updater)
     , timer(new QTimer(this))
