@@ -28,9 +28,11 @@
 
 
 #include "processwrapper.h"
+#include "filesystemhelper.h"
 #include <QProgressDialog>
 #include <QTimer>
 #include <QRegularExpression>
+#include <QDir>
 
 ProcessWrapper::ProcessWrapper(QObject* parent)
     : QObject(parent)
@@ -45,9 +47,9 @@ ProcessWrapper::~ProcessWrapper()
 {
 }
 
-void ProcessWrapper::LaunchCmake(QString command)
+void ProcessWrapper::LaunchCmake(const QString &command, bool needClean, const QString &buildFolder)
 {
-    taskQueue.enqueue(command);
+    taskQueue.enqueue(Task(command, needClean, buildFolder));
     if (process.state() == QProcess::NotRunning)
     {
         StartNextCommand();
@@ -61,7 +63,8 @@ void ProcessWrapper::BlockingStopAllTasks()
     performTimer.setInterval(100);
     performTimer.setSingleShot(false);
     QProgressDialog progressDialog(tr("Finishing tasks: %1").arg(startTasksSize + 1), tr("Cancel"), 0, startTasksSize);
-    connect(this, &ProcessWrapper::processOutput, &progressDialog, &QProgressDialog::setLabelText);
+    connect(this, &ProcessWrapper::processStandardOutput, &progressDialog, &QProgressDialog::setLabelText);
+    connect(this, &ProcessWrapper::processStandardError, &progressDialog, &QProgressDialog::setLabelText);
     connect(&performTimer, &QTimer::timeout, [&progressDialog, this, startTasksSize]() {
         if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
         {
@@ -89,13 +92,11 @@ void ProcessWrapper::OnReadyReadStandardOutput()
 {
     QString text = process.readAllStandardOutput();
     emit processStandardOutput(text);
-    emit processOutput(text);
 }
 
 void ProcessWrapper::OnReadyReadStandardError()
 {
     QString text = process.readAllStandardError();
-    emit processOutput(text);
     emit processStandardError(text);
 }
 
@@ -156,7 +157,38 @@ void ProcessWrapper::StartNextCommand()
         return;
     }
     emit processStandardOutput(""); //emit an empty string to make whitespace between build logs
-    QString command = taskQueue.dequeue();
+    const Task &task = taskQueue.dequeue();
+    if (task.needClean)
+    {
+        CleanBuildFolder(task.buildFolder);
+    }
     Q_ASSERT(process.state() == QProcess::NotRunning);
-    process.start(command);
+    process.start(task.command);
 }
+
+bool ProcessWrapper::CleanBuildFolder(const QString &buildFolder) const
+{
+    QString keyFile = "CMakeCache.txt";
+    FileSystemHelper::eErrorCode errCode = FileSystemHelper::ClearFolderIfKeyFileExists(buildFolder, keyFile);
+    QString text = tr("Clear build folder: ");
+    switch (errCode)
+    {
+    case FileSystemHelper::NO_ERRORS: text += tr("succesful"); break;
+    case FileSystemHelper::FOLDER_NAME_EMPTY: text += tr("path is empty!"); break;
+    case FileSystemHelper::FOLDER_NOT_EXISTS: text += tr("folder is not exists!"); break;
+    case FileSystemHelper::FOLDER_NOT_CONTAIN_KEY_FILE: text += tr("folder is not conain file %1, will not clear").arg(keyFile); break;
+    case FileSystemHelper::CAN_NOT_REMOVE: text += tr("can not remove :("); break;
+    case FileSystemHelper::CAN_NOT_CREATE_BUILD_FOLDER: text += tr("can not create build folder after recoursive removing"); break;
+    default: Q_ASSERT(false && "unhandled error code"); break;
+    }
+    if (errCode == FileSystemHelper::NO_ERRORS)
+    {
+        emit processStandardOutput(text);
+    }
+    else
+    {
+        emit processStandardError(text);
+    }
+    return errCode == FileSystemHelper::NO_ERRORS;
+}
+

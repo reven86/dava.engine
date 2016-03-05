@@ -96,18 +96,34 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     return QDir::toNativeSeparators(cmakePath);
 }
 
-bool FileSystemHelper::ClearFolderContent(const QString& folderPath) const
+FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString &keyFile)
 {
-    QDir dir(folderPath);
-    if (folderPath.isEmpty() || !dir.exists())
+    if (folderPath.isEmpty())
     {
-        return false;
+        return FOLDER_NAME_EMPTY;
     }
+    QDir dir(folderPath);
+    if (!dir.exists())
+    {
+        return FOLDER_NOT_EXISTS;
+    }
+    if (!dir.exists(keyFile))
+    {
+        return FOLDER_NOT_CONTAIN_KEY_FILE;
+    }
+
     if (dir.removeRecursively())
     {
-        return dir.mkpath(folderPath);
+        if (dir.mkpath(folderPath))
+        {
+            return NO_ERRORS;
+        }
+        else
+        {
+            return CAN_NOT_CREATE_BUILD_FOLDER;
+        }
     }
-    return false;
+    return CAN_NOT_REMOVE;
 }
 
 QString FileSystemHelper::GetAdditionalCMakePath() const

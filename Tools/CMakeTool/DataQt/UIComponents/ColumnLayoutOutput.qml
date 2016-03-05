@@ -36,16 +36,7 @@ Item {
                 text: qsTr("run cmake")
                 enabled: textField_output.text.length !== 0 && outputComplete
                 onClicked: {
-                    if(checkBox_clean.checked) {
-                        if(fileSystemHelper.ClearFolderContent(rowLayout_buildFolder.path)) {
-                            textArea_processText.append(qsTr("build folder cleared succesful"));
-                        } else {
-                            textArea_processText.append("<font color=\"DarkRed\">"
-                                              + qsTr("failed to clear build folder") + "</font>");
-                            return;
-                        }
-                    }
-                    processWrapper.LaunchCmake(textField_output.text)
+                    processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizeDirPath(rowLayout_buildFolder.path))
                 }
             }
             CheckBox {
