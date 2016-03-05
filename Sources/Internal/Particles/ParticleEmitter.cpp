@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 bool ParticleEmitter::FORCE_DEEP_CLONE = false;
 const float ParticleEmitter::PARTICLE_EMITTER_DEFAULT_LIFE_TIME = 100.0f;
 
