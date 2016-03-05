@@ -43,11 +43,15 @@ namespace DAVA
 {
 class ParticleEmitter;
 class ModifiablePropertyLineBase;
+
 struct ParticleEmitterData
 {
     RefPtr<ParticleEmitter> emitter;
     FilePath originalFilepath;
     Vector3 spawnPosition;
+
+    ParticleEmitterData();
+    explicit ParticleEmitterData(ParticleEmitter* _emitter);
 };
 
 class ParticleEffectComponent : public Component
@@ -162,6 +166,8 @@ public: //mostly editor commands
 
     int32 GetEmitterDataId(const ParticleEmitterData& emitter) const;
     const ParticleEmitterData& GetEmitterData(int32 id) const;
+
+    void AddEmitterData(ParticleEmitter* emitter);
     void AddEmitterData(const ParticleEmitterData& emitter);
     void InsertEmitterDataAt(const ParticleEmitterData& emitter, int32 position);
     void RemoveEmitterData(const ParticleEmitterData& emitter);

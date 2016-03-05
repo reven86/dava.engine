@@ -43,10 +43,10 @@ class CommandAddParticleEmitter : public CommandAction
 {
 public:
     CommandAddParticleEmitter(DAVA::Entity* effect);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
-    DAVA::Entity* effectEntity;
+    DAVA::Entity* effectEntity = nullptr;
 };
 
 // Start/stop/restart Particle Effect.
@@ -55,8 +55,8 @@ class CommandStartStopParticleEffect : public CommandAction
 public:
     CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart);
 
-    virtual DAVA::Entity* GetEntity() const;
-    virtual void Redo();
+    DAVA::Entity* GetEntity() const override;
+    void Redo() override;
 
     bool GetStarted() const
     {
@@ -65,7 +65,8 @@ public:
 
 protected:
     DAVA::Entity* effectEntity;
-    bool isStart;
+    bool isStart = false;
+    ;
 };
 
 class CommandRestartParticleEffect : public CommandAction
@@ -73,11 +74,11 @@ class CommandRestartParticleEffect : public CommandAction
 public:
     CommandRestartParticleEffect(DAVA::Entity* effect);
 
-    virtual DAVA::Entity* GetEntity() const;
-    virtual void Redo();
+    DAVA::Entity* GetEntity() const override;
+    void Redo() override;
 
 protected:
-    DAVA::Entity* effectEntity;
+    DAVA::Entity* effectEntity = nullptr;
 };
 
 // Add new layer to Particle Emitter.
@@ -85,7 +86,7 @@ class CommandAddParticleEmitterLayer : public CommandAction
 {
 public:
     CommandAddParticleEmitterLayer(ParticleEmitter* emitter);
-    virtual void Redo();
+    void Redo() override;
 
     ParticleLayer* GetCreatedLayer() const
     {
@@ -97,8 +98,8 @@ public:
     }
 
 protected:
-    ParticleEmitter* selectedEmitter;
-    ParticleLayer* createdLayer;
+    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleLayer* createdLayer = nullptr;
 };
 
 // Remove a layer from Particle Emitter.
@@ -106,18 +107,18 @@ class CommandRemoveParticleEmitterLayer : public CommandAction
 {
 public:
     CommandRemoveParticleEmitterLayer(ParticleEmitter* emitter, ParticleLayer* layer);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
-    ParticleEmitter* selectedEmitter;
-    ParticleLayer* selectedLayer;
+    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleLayer* selectedLayer = nullptr;
 };
 
 class CommandRemoveParticleEmitter : public CommandAction
 {
 public:
     CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     ParticleEffectComponent* selectedEffect;
@@ -129,11 +130,11 @@ class CommandCloneParticleEmitterLayer : public CommandAction
 {
 public:
     CommandCloneParticleEmitterLayer(ParticleEmitter* emitter, ParticleLayer* layer);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
-    ParticleEmitter* selectedEmitter;
-    ParticleLayer* selectedLayer;
+    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleLayer* selectedLayer = nullptr;
 };
 
 // Add new force to Particle Emitter layer.
@@ -141,10 +142,10 @@ class CommandAddParticleEmitterForce : public CommandAction
 {
 public:
     CommandAddParticleEmitterForce(ParticleLayer* layer);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
-    ParticleLayer* selectedLayer;
+    ParticleLayer* selectedLayer = nullptr;
 };
 
 // Remove a force from Particle Emitter layer.
@@ -152,11 +153,11 @@ class CommandRemoveParticleEmitterForce : public CommandAction
 {
 public:
     CommandRemoveParticleEmitterForce(ParticleLayer* layer, ParticleForce* force);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
-    ParticleLayer* selectedLayer;
-    ParticleForce* selectedForce;
+    ParticleLayer* selectedLayer = nullptr;
+    ParticleForce* selectedForce = nullptr;
 };
 
 class CommandUpdateEffect : public CommandAction
@@ -164,12 +165,11 @@ class CommandUpdateEffect : public CommandAction
 public:
     CommandUpdateEffect(ParticleEffectComponent* particleEffect);
     void Init(float32 playbackSpeed);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
-    ParticleEffectComponent* particleEffect;
-
-    float32 playbackSpeed;
+    ParticleEffectComponent* particleEffect = nullptr;
+    float32 playbackSpeed = 1.0f;
 };
 
 class CommandUpdateEmitter : public CommandAction
@@ -194,7 +194,7 @@ public:
         return emitter;
     };
 
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     FastName name;
@@ -217,7 +217,7 @@ class CommandUpdateEmitterPosition : public CommandAction
 public:
     CommandUpdateEmitterPosition(ParticleEffectComponent* effect, ParticleEmitter* emitter);
     void Init(const Vector3& position);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     ParticleEmitter* emitter;
@@ -293,7 +293,7 @@ public:
               float32 pivotPointX,
               float32 pivotPointY);
 
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     ParticleEmitter* emitter;
@@ -351,7 +351,7 @@ public:
     CommandUpdateParticleLayerTime(ParticleLayer* layer);
     void Init(float32 startTime, float32 endTime);
 
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     float32 startTime;
@@ -362,7 +362,7 @@ class CommandUpdateParticleLayerEnabled : public CommandUpdateParticleLayerBase
 {
 public:
     CommandUpdateParticleLayerEnabled(ParticleLayer* layer, bool isEnabled);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     bool isEnabled;
@@ -372,7 +372,7 @@ class CommandUpdateParticleLayerLods : public CommandUpdateParticleLayerBase
 {
 public:
     CommandUpdateParticleLayerLods(ParticleLayer* layer, const Vector<bool>& lods);
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     Vector<bool> lods;
@@ -386,7 +386,7 @@ public:
     void Init(RefPtr<PropertyLine<Vector3>> force,
               RefPtr<PropertyLine<float32>> forcesOverLife);
 
-    virtual void Redo();
+    void Redo() override;
 
     ParticleLayer* GetLayer() const
     {
@@ -410,7 +410,7 @@ class CommandLoadParticleEmitterFromYaml : public CommandAction
 {
 public:
     CommandLoadParticleEmitterFromYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path);
-    virtual void Redo();
+    void Redo() override;
 
     ParticleEmitter* GetEmitter() const
     {
@@ -427,7 +427,7 @@ class CommandSaveParticleEmitterToYaml : public CommandAction
 {
 public:
     CommandSaveParticleEmitterToYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path);
-    virtual void Redo();
+    void Redo() override;
 
     ParticleEmitter* GetEmitter() const
     {
@@ -445,7 +445,7 @@ class CommandLoadInnerParticleEmitterFromYaml : public CommandAction
 {
 public:
     CommandLoadInnerParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path);
-    virtual void Redo();
+    void Redo() override;
 
     ParticleEmitter* GetEmitter() const
     {
@@ -461,7 +461,7 @@ class CommandSaveInnerParticleEmitterToYaml : public CommandAction
 {
 public:
     CommandSaveInnerParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path);
-    virtual void Redo();
+    void Redo() override;
 
     ParticleEmitter* GetEmitter() const
     {

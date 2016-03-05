@@ -40,6 +40,16 @@
 
 namespace DAVA
 {
+ParticleEmitterData::ParticleEmitterData()
+{
+}
+
+ParticleEmitterData::ParticleEmitterData(ParticleEmitter* _emitter)
+    :
+    emitter(_emitter)
+{
+}
+
 ParticleEffectComponent::ParticleEffectComponent()
 {
     repeatsCount = -1;
@@ -496,6 +506,11 @@ const ParticleEmitterData& ParticleEffectComponent::GetEmitterData(int32 id) con
 {
     DVASSERT((id >= 0) && (id < (int32)emitterDatas.size()));
     return emitterDatas[id];
+}
+
+void ParticleEffectComponent::AddEmitterData(ParticleEmitter* emitter)
+{
+    emitterDatas.emplace_back(emitter);
 }
 
 void ParticleEffectComponent::AddEmitterData(const ParticleEmitterData& emitter)

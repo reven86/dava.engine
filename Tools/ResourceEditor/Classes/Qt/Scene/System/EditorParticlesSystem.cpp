@@ -49,14 +49,6 @@
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
 {
-    selectedEffectEntity = NULL;
-    selectedEmitter = NULL;
-}
-
-void EditorParticlesSystem::SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter)
-{
-    selectedEffectEntity = effectEntity;
-    selectedEmitter = emitter;
 }
 
 EditorParticlesSystem::~EditorParticlesSystem()
@@ -65,75 +57,85 @@ EditorParticlesSystem::~EditorParticlesSystem()
 
 void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
-    SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
+    DVASSERT(effectEntity != nullptr)
 
-    if (collisionSystem)
+    SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
+    DAVA::AABBox3 worldBox;
+    DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
+    collBox.GetTransformedBox(effectEntity->GetWorldTransform(), worldBox);
+    DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(worldBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
+}
+
+void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitter* emitter, DAVA::Entity* owner)
+{
+    DVASSERT((emitter != nullptr) && (owner != nullptr));
+
+    SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
+    ParticleEffectComponent* effect = GetEffectComponent(owner);
+
+    DAVA::Vector3 center = effect->GetSpawnPosition(effect->GetEmitterId(emitter));
+    TransformPerserveLength(center, DAVA::Matrix3(owner->GetWorldTransform()));
+    center += owner->GetWorldTransform().GetTranslationVector();
+
+    DAVA::AABBox3 boundingBox = collisionSystem->GetBoundingBox(owner);
+    DAVA::float32 radius = (boundingBox.max - boundingBox.min).Length() / 3;
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, radius, DAVA::Color(1.0f, 1.0f, 1.0f, 0.5f), RenderHelper::DRAW_SOLID_DEPTH);
+
+    DrawVectorArrow(owner, emitter, center);
+
+    switch (emitter->emitterType)
     {
-        if (NULL != effectEntity)
-        {
-            DAVA::AABBox3 wordBox;
-            DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
-            collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);
-            // Get sphere radius (size) of debug effect
-            DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(wordBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
-        }
+    case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
+    case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
+    {
+        DrawSizeCircle(owner, emitter, center);
+        break;
     }
+    case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
+    {
+        DrawSizeCircleShockWave(owner, emitter, center);
+        break;
+    }
+
+    case DAVA::ParticleEmitter::EMITTER_RECT:
+    {
+        DrawSizeBox(owner, emitter, center);
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+void EditorParticlesSystem::SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter)
+{
+    selectedEffectEntity = effectEntity;
+    selectedEmitter = emitter;
 }
 
 void EditorParticlesSystem::Draw()
 {
-    // Draw debug information for non-selected entities
-    for (size_t i = 0; i < entities.size(); ++i)
+    for (auto entity : entities)
     {
-        DrawDebugInfoForEffect(entities[i]);
-    }
-
-    // Draw debug information for selected entities
-    if ((selectedEmitter != NULL) && (selectedEffectEntity != NULL))
-    {
-        // Draw additional effects according to emitter type
-        DAVA::Matrix3 effectMatrix(selectedEffectEntity->GetWorldTransform());
-        ParticleEffectComponent* effect = GetEffectComponent(selectedEffectEntity);
-        DAVA::Vector3 center = effect->GetSpawnPosition(effect->GetEmitterId(selectedEmitter));
-        TransformPerserveLength(center, effectMatrix);
-        center += selectedEffectEntity->GetWorldTransform().GetTranslationVector();
-
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, 0.1f, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
-        DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
-
-        switch (selectedEmitter->emitterType)
+        if ((entity == selectedEffectEntity) && (selectedEmitter != nullptr))
         {
-        case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
-        case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
-        {
-            DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
+            DrawEmitter(selectedEmitter, selectedEffectEntity);
         }
-        break;
-        case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
+        else
         {
-            DrawSizeCircleShockWave(selectedEffectEntity, selectedEmitter, center);
-        }
-        break;
-
-        case DAVA::ParticleEmitter::EMITTER_RECT:
-        {
-            DrawSizeBox(selectedEffectEntity, selectedEmitter, center);
-        }
-        break;
-
-        default:
-            break;
+            DrawDebugInfoForEffect(entity);
         }
     }
 }
 
 void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center)
 {
-    //float32 time = emitter->GetTime();
     float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
     float32 emitterRadius = (emitter->radius) ? emitter->radius->GetValue(time) : 0.0f;
-    Vector3 emissionVector(0, 0, 1);
+    Vector3 emissionVector(0.0f, 0.0f, 1.0f);
+
     if (emitter->emissionVector)
         emissionVector = emitter->emissionVector->GetValue(time);
 
@@ -247,10 +249,8 @@ void EditorParticlesSystem::RestartParticleEffects()
 
 void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    if (!command)
-    {
+    if (command == nullptr)
         return;
-    }
 
     // Notify that the Particles-related value is changed.
     SceneEditor2* activeScene = (SceneEditor2*)GetScene();
@@ -259,16 +259,14 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
     case CMDID_PARTICLE_EMITTER_UPDATE:
     {
         const CommandUpdateEmitter* castedCmd = static_cast<const CommandUpdateEmitter*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterValueChanged(activeScene,
-                                                                  castedCmd->GetEmitter());
+        SceneSignals::Instance()->EmitParticleEmitterValueChanged(activeScene, castedCmd->GetEmitter());
         break;
     }
 
     case CMDID_PARTICLE_LAYER_UPDATE:
     {
         const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
-        SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
-                                                                castedCmd->GetLayer());
+        SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, castedCmd->GetLayer());
         break;
     }
     case CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES:
@@ -284,26 +282,21 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
     case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
     {
         const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
-        SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
-                                                                castedCmd->GetLayer());
+        SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, castedCmd->GetLayer());
         break;
     }
 
     case CMDID_PARTICLE_FORCE_UPDATE:
     {
         const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
-        SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene,
-                                                                castedCmd->GetLayer(),
-                                                                castedCmd->GetForceIndex());
+        SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene, castedCmd->GetLayer(), castedCmd->GetForceIndex());
         break;
     }
 
     case CMDID_PARTICLE_EFFECT_START_STOP:
     {
         const CommandStartStopParticleEffect* castedCmd = static_cast<const CommandStartStopParticleEffect*>(command);
-        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,
-                                                                 castedCmd->GetEntity(),
-                                                                 castedCmd->GetStarted());
+        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene, castedCmd->GetEntity(), castedCmd->GetStarted());
         break;
     }
 
@@ -312,12 +305,8 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
         const CommandRestartParticleEffect* castedCmd = static_cast<const CommandRestartParticleEffect*>(command);
 
         // An effect was stopped and then started.
-        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,
-                                                                 castedCmd->GetEntity(),
-                                                                 false);
-        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,
-                                                                 castedCmd->GetEntity(),
-                                                                 true);
+        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene, castedCmd->GetEntity(), false);
+        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene, castedCmd->GetEntity(), true);
         break;
     }
 

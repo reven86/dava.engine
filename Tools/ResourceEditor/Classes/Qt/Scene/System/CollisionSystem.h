@@ -74,7 +74,7 @@ public:
     void SetDrawMode(int mode);
     int GetDrawMode() const;
 
-    DAVA::AABBox3 GetBoundingBox(DAVA::BaseObject* entity);
+    DAVA::AABBox3 GetBoundingBox(DAVA::BaseObject* object);
 
     const SelectableObjectGroup::CollectionType& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
     const SelectableObjectGroup::CollectionType& ObjectsRayTestFromCamera();
@@ -100,9 +100,12 @@ private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
+
     CollisionBaseObject* BuildFromEntity(DAVA::Entity* entity);
     CollisionBaseObject* BuildFromObject(const SelectableObject& object);
-    void DestroyFromEntity(DAVA::BaseObject* entity);
+
+    void DestroyFromObject(DAVA::BaseObject* entity);
+    void AddCollisionObject(DAVA::BaseObject* obj, CollisionBaseObject* collision);
 
 private:
     DAVA::Vector3 lastRayFrom;
@@ -111,8 +114,8 @@ private:
     DAVA::Vector3 lastLandRayFrom;
     DAVA::Vector3 lastLandRayTo;
     DAVA::Vector3 lastLandCollision;
-    DAVA::Set<DAVA::BaseObject*> entitiesToAdd;
-    DAVA::Set<DAVA::BaseObject*> entitiesToRemove;
+    DAVA::Set<DAVA::BaseObject*> objectsToAdd;
+    DAVA::Set<DAVA::BaseObject*> objectsToRemove;
     DAVA::Map<DAVA::BaseObject*, CollisionBaseObject*> objectToCollision;
     DAVA::Map<btCollisionObject*, DAVA::BaseObject*> collisionToObject;
     DAVA::Entity* curLandscapeEntity = nullptr;

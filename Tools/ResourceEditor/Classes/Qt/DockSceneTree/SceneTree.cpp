@@ -1097,7 +1097,7 @@ void SceneTree::RemoveEmitter()
     if (nullptr == sceneEditor)
         return;
 
-    DVASSERT((nullptr != selectedEffect) && (nullptr == selectedEmitter));
+    DVASSERT((nullptr != selectedEffect) && (nullptr != selectedEmitter));
     ExecuteModifyingCommand(new CommandRemoveParticleEmitter(selectedEffect, selectedEmitter));
 }
 

@@ -58,9 +58,11 @@ public:
 class ParticleEmitter : public BaseObject
 {
 public:
+    static bool FORCE_DEEP_CLONE;
+    static const float32 PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
     static ParticleEmitter* LoadEmitter(const FilePath& filename);
 
-    enum eType
+    enum eType : uint32
     {
         EMITTER_POINT,
         EMITTER_RECT,
@@ -69,7 +71,7 @@ public:
         EMITTER_SHOCKWAVE
     };
 
-    enum eState
+    enum eState : uint32
     {
         STATE_PLAYING,
         STATE_STOPPING, //emitter is stopping - no new particle generation, still need to update and recalculate
@@ -103,45 +105,44 @@ public:
     void Cleanup(bool needCleanupLayers = true);
     void CleanupLayers();
 
+public:
+    FastName name;
     FilePath configPath;
-    eType emitterType;
+    eType emitterType = EMITTER_POINT;
+    float32 lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
 
     Vector<ParticleLayer*> layers;
-    bool shortEffect;
 
-    float32 lifeTime;
-
-    FastName name;
-
+    RefPtr<PropertyLine<Vector3>> size;
     RefPtr<PropertyLine<Vector3>> emissionVector;
     RefPtr<PropertyLine<float32>> emissionRange;
     RefPtr<PropertyLine<float32>> radius;
-    RefPtr<PropertyLine<Color>> colorOverLife;
-    RefPtr<PropertyLine<Vector3>> size;
-
     RefPtr<PropertyLine<float32>> emissionAngle;
     RefPtr<PropertyLine<float32>> emissionAngleVariation;
+    RefPtr<PropertyLine<Color>> colorOverLife;
+
+    bool shortEffect = false;
 
 protected:
     virtual ~ParticleEmitter();
 
 private:
-    bool requireDeepClone;
-
+    bool requireDeepClone = true;
 
 #if defined(USE_FILEPATH_IN_MAP)
     using EmitterCacheMap = Map<FilePath, ParticleEmitter*>;
-#else //#if defined (USE_FILEPATH_IN_MAP)
+#else
     using EmitterCacheMap = Map<String, ParticleEmitter*>;
-#endif //#if defined (USE_FILEPATH_IN_MAP)
-    void ReleaseFromCache(const FilePath& name);
+#endif
 
+    void ReleaseFromCache(const FilePath& name);
     static EmitterCacheMap emitterCache;
 
 public:
-    static bool FORCE_DEEP_CLONE;
     INTROSPECTION_EXTEND(ParticleEmitter, BaseObject,
                          MEMBER(name, "Name", I_VIEW | I_EDIT | I_SAVE)
+                         MEMBER(lifeTime, "Life Time", I_VIEW | I_EDIT | I_SAVE)
+                         COLLECTION(layers, "Layers", I_VIEW | I_EDIT | I_SAVE)
                          )
 };
 }

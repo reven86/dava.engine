@@ -284,17 +284,30 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::BaseObject* object)
     return aabox;
 }
 
+void SceneCollisionSystem::AddCollisionObject(DAVA::BaseObject* obj, CollisionBaseObject* collision)
+{
+    if (collision == nullptr)
+        return;
+
+    if (objectToCollision.count(obj) > 0)
+    {
+        DestroyFromObject(obj);
+    }
+    objectToCollision[obj] = collision;
+    collisionToObject[collision->btObject] = obj;
+}
+
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 {
     // check in there are entities that should be added or removed
-    if (!(entitiesToAdd.empty() && entitiesToRemove.empty()))
+    if (!(objectsToAdd.empty() && objectsToRemove.empty()))
     {
-        for (auto obj : entitiesToRemove)
+        for (auto obj : objectsToRemove)
         {
-            DestroyFromEntity(obj);
+            DestroyFromObject(obj);
         }
 
-        for (auto obj : entitiesToAdd)
+        for (auto obj : objectsToAdd)
         {
             CollisionBaseObject* collisionObject = nullptr;
 
@@ -307,20 +320,11 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
             {
                 collisionObject = BuildFromObject(wrapper);
             }
-
-            if (collisionObject != nullptr)
-            {
-                if (objectToCollision.count(obj) > 0)
-                {
-                    DestroyFromEntity(obj);
-                }
-                objectToCollision[obj] = collisionObject;
-                collisionToObject[collisionObject->btObject] = obj;
-            }
+            AddCollisionObject(obj, collisionObject);
         }
 
-        entitiesToAdd.clear();
-        entitiesToRemove.clear();
+        objectsToAdd.clear();
+        objectsToRemove.clear();
     }
 
     // reset ray cache on new frame
@@ -470,31 +474,31 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 
 void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 {
-    if (NULL != entity)
-    {
-        entitiesToRemove.erase(entity);
-        entitiesToAdd.insert(entity);
+    if (entity == nullptr)
+        return;
 
-        // build collision object for entity childs
-        for (int i = 0; i < entity->GetChildrenCount(); ++i)
-        {
-            AddEntity(entity->GetChild(i));
-        }
+    objectsToRemove.erase(entity);
+    objectsToAdd.insert(entity);
+
+    // build collision object for entity childs
+    for (int i = 0; i < entity->GetChildrenCount(); ++i)
+    {
+        AddEntity(entity->GetChild(i));
     }
 }
 
 void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    if (NULL != entity)
-    {
-        entitiesToAdd.erase(entity);
-        entitiesToRemove.insert(entity);
+    if (entity == nullptr)
+        return;
 
-        // destroy collision object for entities childs
-        for (int i = 0; i < entity->GetChildrenCount(); ++i)
-        {
-            RemoveEntity(entity->GetChild(i));
-        }
+    objectsToAdd.erase(entity);
+    objectsToRemove.insert(entity);
+
+    // destroy collision object for entities childs
+    for (int i = 0; i < entity->GetChildrenCount(); ++i)
+    {
+        RemoveEntity(entity->GetChild(i));
     }
 }
 
@@ -519,11 +523,18 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
     {
         isLandscape = true;
         cObj = new CollisionLandscape(entity, landCollWorld, landscape);
+        curLandscapeEntity = entity;
     }
 
     DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
     if ((cObj == nullptr) && (particleEffect != nullptr))
     {
+        for (DAVA::int32 i = 0, e = particleEffect->GetEmittersCount(); i < e; ++i)
+        {
+            auto emitter = particleEffect->GetEmitter(i);
+            AddCollisionObject(emitter, BuildFromObject(SelectableObject(emitter)));
+        }
+
         cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxParticleScale);
     }
 
@@ -562,15 +573,10 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
         }
     }
 
-    if (isLandscape)
-    {
-        curLandscapeEntity = entity;
-    }
-
     return cObj;
 }
 
-void SceneCollisionSystem::DestroyFromEntity(DAVA::BaseObject* entity)
+void SceneCollisionSystem::DestroyFromObject(DAVA::BaseObject* entity)
 {
     if (curLandscapeEntity == entity)
     {

@@ -37,9 +37,8 @@
 namespace DAVA
 {
 
-#define PARTICLE_EMITTER_DEFAULT_LIFE_TIME 100.0f
-
 bool ParticleEmitter::FORCE_DEEP_CLONE = false;
+const float ParticleEmitter::PARTICLE_EMITTER_DEFAULT_LIFE_TIME = 100.0f;
 
 PartilceEmitterLoadProxy::PartilceEmitterLoadProxy()
 {
@@ -54,8 +53,6 @@ void PartilceEmitterLoadProxy::Load(KeyedArchive* archive, SerializationContext*
 }
 
 ParticleEmitter::ParticleEmitter()
-    : shortEffect(false)
-    , requireDeepClone(true)
 {
     Cleanup(false);
 }

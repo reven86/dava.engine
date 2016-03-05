@@ -44,15 +44,15 @@ using namespace DAVA;
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Yuri Coder, 03/12/2012. New commands for Particle Editor QT.
 
-CommandUpdateEffect::CommandUpdateEffect(ParticleEffectComponent* particleEffect)
+CommandUpdateEffect::CommandUpdateEffect(ParticleEffectComponent* effect)
     : CommandAction(CMDID_PARTICLE_EFFECT_UPDATE)
+    , particleEffect(effect)
 {
-    this->particleEffect = particleEffect;
 }
 
-void CommandUpdateEffect::Init(float32 playbackSpeed)
+void CommandUpdateEffect::Init(float32 speed)
 {
-    this->playbackSpeed = playbackSpeed;
+    playbackSpeed = speed;
 }
 
 void CommandUpdateEffect::Redo()
@@ -61,10 +61,10 @@ void CommandUpdateEffect::Redo()
     particleEffect->SetPlaybackSpeed(playbackSpeed);
 }
 
-CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitter* emitter)
+CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitter* _emitter)
     : CommandAction(CMDID_PARTICLE_EMITTER_UPDATE)
+    , emitter(_emitter)
 {
-    this->emitter = emitter;
 }
 
 void CommandUpdateEmitter::Init(const FastName& name,
@@ -371,23 +371,18 @@ void CommandUpdateParticleForce::Redo()
 
 CommandAddParticleEmitter::CommandAddParticleEmitter(DAVA::Entity* effect)
     : CommandAction(CMDID_PARTICLE_EMITTER_ADD)
+    , effectEntity(effect)
 {
-    this->effectEntity = effect;
 }
 
 void CommandAddParticleEmitter::Redo()
 {
-    if (!effectEntity)
-    {
+    if (effectEntity == nullptr)
         return;
-    }
 
-    ParticleEffectComponent* effectComponent = cast_if_equal<ParticleEffectComponent*>(effectEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+    ParticleEffectComponent* effectComponent = GetEffectComponent(effectEntity);
     DVASSERT(effectComponent);
-
-    ParticleEmitterData emitterData;
-    emitterData.emitter.Set(new ParticleEmitter());
-    effectComponent->AddEmitterData(emitterData);
+    effectComponent->AddEmitterData(new ParticleEmitter());
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart)
