@@ -44,14 +44,20 @@ namespace DAVA
 class ParticleEmitter;
 class ModifiablePropertyLineBase;
 
-struct ParticleEmitterData
+class ParticleEmitterData : public BaseObject
 {
+public:
     RefPtr<ParticleEmitter> emitter;
     FilePath originalFilepath;
     Vector3 spawnPosition;
 
     ParticleEmitterData();
     explicit ParticleEmitterData(ParticleEmitter* _emitter);
+
+public:
+    INTROSPECTION_EXTEND(ParticleEmitterData, BaseObject,
+                         MEMBER(spawnPosition, "Spawn Position", I_VIEW | I_EDIT | I_SAVE)
+                         )
 };
 
 class ParticleEffectComponent : public Component
@@ -190,6 +196,8 @@ public:
 
                          PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
+
+                         COLLECTION(emitterDatas, "Emitters", I_VIEW | I_EDIT | I_SAVE)
                          );
 };
 }

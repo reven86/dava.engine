@@ -59,11 +59,15 @@ ParticleEffectComponent::ParticleEffectComponent()
     playbackSpeed = 1.0f;
     isPaused = false;
     state = STATE_STOPPED;
+    time = 0.0f;
+
     effectData.infoSources.resize(1);
     effectData.infoSources[0].size = Vector2(1, 1);
+
     effectRenderObject = new ParticleRenderObject(&effectData);
-    effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY); //world transform doesn't effect particle render object drawing - instead particles are generated in corresponding world position
-    time = 0;
+    // world transform doesn't effect particle render object drawing
+    // instead particles are generated in corresponding world position
+    effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY);
 
     if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS))
     {

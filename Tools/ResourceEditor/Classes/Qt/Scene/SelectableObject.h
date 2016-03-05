@@ -18,7 +18,7 @@
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    DIRECT, INDIRECT, INCIDENTAL, SpECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -39,9 +39,7 @@ public:
     class TransformProxy
     {
     public:
-        virtual ~TransformProxy()
-        {
-        }
+        virtual ~TransformProxy() = default;
         virtual const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject*) = 0;
         virtual const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject*) = 0;
         virtual void SetLocalTransform(DAVA::BaseObject*, const DAVA::Matrix4&) = 0;
