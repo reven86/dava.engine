@@ -58,8 +58,6 @@ DAVA_TESTCLASS (DeviceInfoTest)
 
         String timeZone = DeviceInfo::GetTimeZone();
         DVVERIFY("" != timeZone && "Not yet implemented" != timeZone);
-
-
     }
 }
 ;

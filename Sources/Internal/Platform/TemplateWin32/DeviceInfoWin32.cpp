@@ -161,7 +161,7 @@ String DeviceInfoPrivate::GetVersion()
     }
 
     return version;
- }
+}
 
 String DeviceInfoPrivate::GetManufacturer()
 {
@@ -177,7 +177,7 @@ String DeviceInfoPrivate::GetLocale()
 {
     WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
     int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
-   
+
     String locale = WStringToString(WideString(localeBuffer, size));
     return locale;
 }
@@ -191,12 +191,12 @@ String DeviceInfoPrivate::GetRegion()
     return country;
 }
 
-String DeviceInfoPrivate::GetTimeZone() 
+String DeviceInfoPrivate::GetTimeZone()
 {
     _TIME_ZONE_INFORMATION timeZoneInformation;
     DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
 
-    WCHAR *name;
+    WCHAR* name;
     if (TIME_ZONE_ID_STANDARD == ret)
     {
         name = timeZoneInformation.StandardName;
