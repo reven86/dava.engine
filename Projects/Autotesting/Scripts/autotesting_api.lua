@@ -507,7 +507,9 @@ end
 
 function WaitControls(controls, waitAll, waitTime)
     waitTime = waitTime or TIMEOUT
-    waitAll = waitAll == nil and true or false
+    if waitAll == nil then
+        waitAll = true
+    end
     Log((waitAll and 'Wait all controls' or 'Wait one control form list'), "DEBUG")
     local find_controls_lua = function(controls, waitAll)
         local loadedControls = 0
@@ -519,10 +521,7 @@ function WaitControls(controls, waitAll, waitTime)
                 loadedControls = loadedControls + 1
             end
         end
-        if table.getn(controls) == loadedControls then
-            return true
-        end
-        return false
+        return table.getn(controls) == loadedControls
     end
     local result = WaitUntil(waitTime, find_controls_lua, controls, waitAll)
     if not result then
