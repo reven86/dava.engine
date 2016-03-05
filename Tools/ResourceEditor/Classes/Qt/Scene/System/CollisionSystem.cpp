@@ -262,19 +262,22 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::BaseObject* object)
 
     if (object != nullptr)
     {
-        SelectableObject wrapper(object);
         CollisionBaseObject* collObj = objectToCollision[object];
-        if ((collObj == nullptr) && wrapper.CanBeCastedTo<DAVA::Entity>())
+        if (collObj != nullptr)
         {
-            auto entity = wrapper.AsEntity();
-            for (int32 i = 0, e = entity->GetChildrenCount(); i < e; ++i)
+            SelectableObject wrapper(object);
+            if (wrapper.CanBeCastedTo<DAVA::Entity>())
             {
-                aabox.AddAABBox(GetBoundingBox(entity->GetChild(i)));
+                auto entity = wrapper.AsEntity();
+                for (int32 i = 0, e = entity->GetChildrenCount(); i < e; ++i)
+                {
+                    aabox.AddAABBox(GetBoundingBox(entity->GetChild(i)));
+                }
             }
-        }
-        else
-        {
-            aabox = collObj->object.GetBoundingBox();
+            else
+            {
+                aabox = collObj->object.GetBoundingBox();
+            }
         }
     }
 

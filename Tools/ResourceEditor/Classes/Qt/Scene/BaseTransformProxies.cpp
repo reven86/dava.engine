@@ -42,3 +42,18 @@ void EntityTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAV
 {
     return static_cast<DAVA::Entity*>(object)->SetLocalTransform(matrix);
 }
+
+const DAVA::Matrix4& EmitterTransformProxy::GetWorldTransform(DAVA::BaseObject* object)
+{
+    return DAVA::Matrix4::IDENTITY;
+}
+
+const DAVA::Matrix4& EmitterTransformProxy::GetLocalTransform(DAVA::BaseObject* object)
+{
+    return DAVA::Matrix4::IDENTITY;
+}
+
+void EmitterTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix)
+{
+    DAVA::Logger::Info(":)");
+}

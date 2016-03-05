@@ -650,33 +650,27 @@ void SceneSelectionSystem::UpdateHoodPos() const
     }
     else
     {
-        DAVA::Vector3 p;
-        bool lockHoodModif = false;
-
-        switch (curPivotPoint)
-        {
-        case ST_PIVOT_ENTITY_CENTER:
-            p = currentSelection.GetFirstTranslationVector();
-            break;
-
-        default:
-            p = currentSelection.GetCommonTranslationVector();
-            break;
-        }
-
         // check if we have locked entities in selection group
-        // if so - lock modification hood
-        for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
+        // or untransformable objects
+        bool modificationEnabled = currentSelection.IsTransformable();
+        if (modificationEnabled)
         {
-            if (entity->GetLocked())
+            for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
             {
-                lockHoodModif = true;
-                break;
+                if (entity->GetLocked())
+                {
+                    modificationEnabled = false;
+                    break;
+                }
             }
         }
 
-        hoodSystem->LockModif(lockHoodModif);
-        hoodSystem->SetPosition(p);
+        auto hoodCenter = (curPivotPoint == ST_PIVOT_ENTITY_CENTER) ?
+        currentSelection.GetFirstTranslationVector() :
+        currentSelection.GetCommonTranslationVector();
+
+        hoodSystem->LockModif(modificationEnabled == false);
+        hoodSystem->SetPosition(hoodCenter);
         hoodSystem->SetVisible(true);
     }
 

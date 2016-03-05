@@ -50,6 +50,7 @@ public:
 inline void ResourceEditorLauncher::Launch()
 {
     SelectableObject::AddTransformProxyForClass<DAVA::Entity, EntityTransformProxy>();
+    SelectableObject::AddTransformProxyForClass<DAVA::ParticleEmitter, EmitterTransformProxy>();
 
     DVASSERT(ProjectManager::Instance() != nullptr);
     ProjectManager::Instance()->OpenLastProject();

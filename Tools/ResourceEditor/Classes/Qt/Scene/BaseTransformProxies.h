@@ -40,4 +40,12 @@ public:
     void SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix) override;
 };
 
+class EmitterTransformProxy : public SelectableObject::TransformProxy
+{
+public:
+    const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject* object) override;
+    const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject* object) override;
+    void SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix) override;
+};
+
 #endif // __BASE_TRANSFORM_PROXIES_H
