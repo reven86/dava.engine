@@ -31,16 +31,20 @@
 #define QTTOOLS_SPYDRAGWIDGET_H
 
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QLabel>
 #include <QPixmap>
 #include <QCursor>
-
+POP_QT_WARNING_SUPRESSOR
 
 class SpyDragWidget
     : public QLabel
 {
 private:
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 signals:
     void mousePressed();

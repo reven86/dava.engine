@@ -192,7 +192,7 @@ void Light::Load(KeyedArchive* archive, SerializationContext* serializationConte
 //    SceneNode::Draw();
 //}
 
-const bool Light::IsDynamic()
+bool Light::IsDynamic()
 {
     return (flags & IS_DYNAMIC) != 0;
 }

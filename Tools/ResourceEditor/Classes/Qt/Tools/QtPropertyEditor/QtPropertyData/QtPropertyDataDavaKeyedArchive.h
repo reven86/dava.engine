@@ -45,10 +45,10 @@ class QtPropertyDataDavaKeyedArcive : public QtPropertyData
 {
 public:
     QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* archive);
-    virtual ~QtPropertyDataDavaKeyedArcive();
+    ~QtPropertyDataDavaKeyedArcive() override;
 
-    virtual const DAVA::MetaInfo* MetaInfo() const;
-    virtual void* CreateLastCommand() const;
+    const DAVA::MetaInfo* MetaInfo() const override;
+    void* CreateLastCommand() const override;
 
     void FinishTreeCreation() override;
 
@@ -60,8 +60,8 @@ protected:
 
     QtConnections connections;
 
-    virtual QVariant GetValueInternal() const;
-    virtual bool UpdateValueInternal();
+    QVariant GetValueInternal() const override;
+    bool UpdateValueInternal() override;
 
 private:
     void ChildCreate(const DAVA::FastName& key, DAVA::VariantType* value);

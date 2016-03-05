@@ -129,7 +129,7 @@ void
 LinearAnimation<int32>::Update(float32 timeElapsed)
 {
     Animation::Update(timeElapsed);
-    *var = startValue + (int32)((float32)(endValue - startValue) * normalizedTime);
+    *var = startValue + static_cast<int32>(static_cast<float32>(endValue - startValue) * normalizedTime);
 }
 
 //template<Rect>

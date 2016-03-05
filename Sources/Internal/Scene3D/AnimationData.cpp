@@ -28,7 +28,6 @@
 
 
 #include "Scene3D/AnimationData.h"
-#include "Scene3D/SceneNodeAnimationList.h"
 
 namespace DAVA
 {

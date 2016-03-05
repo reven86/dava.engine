@@ -34,24 +34,19 @@
 
 #include "ControlMapper.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QDragMoveEvent>
 #include <QDebug>
+POP_QT_WARNING_SUPRESSOR
 
 namespace DAVA
 {
+// we have to create this wrapper inside DAVA namespace for friend keyworkd works on private keyboard field
 class DavaQtKeyboard
 {
 public:
-    static void OnKeyPressed(Key k)
-    {
-        InputSystem::Instance()->GetKeyboard().OnKeyPressed(k);
-    }
-    static void OnKeyUnpressed(Key k)
-    {
-        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(k);
-    }
     static Key GetDavaKeyForSystemKey(uint32 virtualKey)
     {
         return InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(virtualKey);
@@ -68,39 +63,42 @@ ControlMapper::ControlMapper( QWindow *w )
 {
 }
 
-void ControlMapper::keyPressEvent(QKeyEvent *e)
+DAVA::Key ConvertQtCommandKeysToDava(int qtKey)
 {
-    using namespace DAVA;
-    switch (e->key())
+    DAVA::Key result = DAVA::Key::UNKNOWN;
+    switch (qtKey)
     {
-        case Qt::Key_Alt:
-            DavaQtKeyboard::OnKeyPressed(Key::LALT);
-            return;
-        case Qt::Key_Control:
-            DavaQtKeyboard::OnKeyPressed(Key::LCTRL);
-            return;
-        case Qt::Key_Shift:
-            DavaQtKeyboard::OnKeyPressed(Key::LSHIFT);
-            return;
-        case Qt::Key_CapsLock:
-            DavaQtKeyboard::OnKeyPressed(Key::CAPSLOCK);
-            return;
-        case Qt::Key_Meta:
-            // Ignore Win key on windows, Ctrl key on OSX
-            return;
-        default:
-            break;
+    case Qt::Key_Shift:
+        result = DAVA::Key::LSHIFT;
+        break;
+    case Qt::Key_Control:
+        result = DAVA::Key::LCTRL;
+        break;
+    case Qt::Key_Alt:
+        result = DAVA::Key::LALT;
+        break;
+    case Qt::Key_AltGr:
+        result = DAVA::Key::RALT;
+        break;
+    case Qt::Key_Meta:
+        result = DAVA::Key::LWIN;
+        break;
+    default:
+        if (qtKey >= Qt::Key_A &&
+            qtKey <= Qt::Key_Z)
+        {
+            int key = static_cast<int>(DAVA::Key::KEY_A) + (qtKey - Qt::Key_A);
+            result = static_cast<DAVA::Key>(key);
+            return result;
+        }
+        break;
     }
-    
-#ifdef Q_OS_MAC
-    // OS X doesn't send keyReleaseEvent for hotkeys with Cmd modifier
-    // Temporary disable such keys
-    if ( e->modifiers() & Qt::Modifier::CTRL )
-    {
-        return;
-    }
-#endif
-    
+    return result;
+}
+
+void ControlMapper::keyPressEvent(QKeyEvent* e)
+{
+    using namespace DAVA;   
 #ifdef Q_OS_WIN
     uint32 nativeModif = e->nativeModifiers();
     uint32 nativeScanCode = e->nativeScanCode();
@@ -115,39 +113,27 @@ void ControlMapper::keyPressEvent(QKeyEvent *e)
     }
     const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
 #else
-    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+    qint32 virtKey = e->nativeVirtualKey();
+    auto davaKey = Key::UNKNOWN;
+    if (virtKey != 0)
+    {
+        davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
+    }
+    else
+    {
+        davaKey = ConvertQtCommandKeysToDava(e->key());
+    }
 #endif
 
     if (davaKey != Key::UNKNOWN)
     {
-        QtLayer::Instance()->KeyPressed(davaKey, e->count(), e->timestamp());
+        QtLayer::Instance()->KeyPressed(davaKey, e->timestamp());
     }
 }
 
 void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 {
     using namespace DAVA;
-    switch (e->key())
-    {
-        case Qt::Key_Alt:
-            DavaQtKeyboard::OnKeyUnpressed(Key::LALT);
-            return;
-        case Qt::Key_Control:
-            DavaQtKeyboard::OnKeyUnpressed(Key::LCTRL);
-            return;
-        case Qt::Key_Shift:
-            DavaQtKeyboard::OnKeyUnpressed(Key::LSHIFT);
-            return;
-        case Qt::Key_CapsLock:
-            DavaQtKeyboard::OnKeyUnpressed(Key::CAPSLOCK);
-            return;
-        case Qt::Key_Meta:
-            // Ignore Win key on windows, Ctrl key on OSX
-            return;
-        default:
-            break;
-    }
-
 #ifdef Q_OS_WIN
     uint32 nativeModif = e->nativeModifiers();
     uint32 nativeScanCode = e->nativeScanCode();
@@ -162,11 +148,20 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
     }
     const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
 #else
-    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+    qint32 virtKey = e->nativeVirtualKey();
+    auto davaKey = Key::UNKNOWN;
+    if (virtKey != 0)
+    {
+        davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
+    }
+    else
+    {
+        davaKey = ConvertQtCommandKeysToDava(e->key());
+    }
 #endif
     if (davaKey != Key::UNKNOWN)
     {
-        DavaQtKeyboard::OnKeyUnpressed(davaKey);
+        QtLayer::Instance()->KeyReleased(davaKey, e->timestamp());
     }
 }
 
@@ -217,8 +212,6 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ControlMapper::wheelEvent(QWheelEvent *event)
 {
-    const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
-
     DAVA::UIEvent davaEvent;
     davaEvent.wheelDelta.x = event->pixelDelta().x();
     davaEvent.wheelDelta.y = event->pixelDelta().y();

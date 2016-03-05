@@ -92,6 +92,15 @@ Landscape::Landscape()
 #endif
     vertexLayoutUID = rhi::VertexLayout::UniqueId(vLayout);
 
+    landscapeMaterial = new NMaterial();
+    landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
+    landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
+
+    for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
+    {
+        AllocateRenderBatch();
+    }
+
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
 }
 
@@ -210,9 +219,6 @@ void Landscape::ReleaseGeometryData()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    for (IndexedRenderBatch& batch : renderBatchArray)
-        batch.renderBatch->Release();
-    renderBatchArray.clear();
     activeRenderBatchArray.clear();
 
     for (rhi::HVertexBuffer handle : vertexBuffers)
@@ -298,29 +304,11 @@ bool Landscape::BuildHeightmap()
     return retValue;
 }
 
-void Landscape::AllocateGeometryData()
-{
-    DVASSERT(vertexLayoutUID != rhi::VertexLayout::InvalidUID);
-
-    if (!landscapeMaterial)
-    {
-        landscapeMaterial = new NMaterial();
-        landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
-        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
-    }
-
-    for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
-    {
-        AllocateRenderBatch();
-    }
-}
-
 void Landscape::BuildLandscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     ReleaseGeometryData();
-    AllocateGeometryData();
 
     quadTreeHead.data.x = quadTreeHead.data.y = quadTreeHead.data.lod = 0;
     //quadTreeHead.data.xbuf = quadTreeHead.data.ybuf = 0;
@@ -1062,31 +1050,33 @@ void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationC
     }
 
     DVASSERT(matKey);
-    landscapeMaterial = SafeRetain(static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey)));
-    if (landscapeMaterial)
+    NMaterial* material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey));
+    if (material)
     {
         //Import old params
-        if (!landscapeMaterial->HasLocalProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING))
+        if (!material->HasLocalProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING))
         {
             if (archive->IsKeyExists("tiling_0"))
             {
                 Vector2 tilingValue;
                 tilingValue = archive->GetByteArrayAsType("tiling_0", tilingValue);
-                landscapeMaterial->AddProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING, tilingValue.data, rhi::ShaderProp::TYPE_FLOAT2);
+                material->AddProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING, tilingValue.data, rhi::ShaderProp::TYPE_FLOAT2);
             }
-            else if (landscapeMaterial->HasLocalProperty(NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING))
+            else if (material->HasLocalProperty(NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING))
             {
-                landscapeMaterial->AddProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING, landscapeMaterial->GetLocalPropValue(NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING), rhi::ShaderProp::TYPE_FLOAT2);
+                material->AddProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING, material->GetLocalPropValue(NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING), rhi::ShaderProp::TYPE_FLOAT2);
                 for (int32 i = 0; i < 4; i++)
                 {
                     FastName propName(Format("texture%dTiling", i));
-                    if (landscapeMaterial->HasLocalProperty(propName))
-                        landscapeMaterial->RemoveProperty(propName);
+                    if (material->HasLocalProperty(propName))
+                        material->RemoveProperty(propName);
                 }
             }
         }
 
-        landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
+        material->PreBuildMaterial(PASS_FORWARD);
+
+        SetMaterial(material);
     }
 
     FilePath heightmapPath = serializationContext->GetScenePath() + archive->GetString("hmap");
@@ -1136,7 +1126,9 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
     }
 
     Landscape* newLandscape = static_cast<Landscape*>(newObject);
-    newLandscape->landscapeMaterial = landscapeMaterial->Clone();
+
+    RefPtr<NMaterial> material(landscapeMaterial->Clone());
+    newLandscape->SetMaterial(material.Get());
 
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);

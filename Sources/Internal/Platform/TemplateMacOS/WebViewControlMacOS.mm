@@ -29,7 +29,7 @@
 
 
 #include "Base/Platform.h"
-#if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
 #include "Platform/TemplateMacOS/MainWindowController.h"
@@ -509,4 +509,4 @@ void WebViewControl::OnAppMinimizedRestored(bool minimized)
     }
 }
 
-#endif //defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#endif //defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW

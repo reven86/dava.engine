@@ -169,7 +169,7 @@ void TilemaskEditorPanel::InitUI()
 
 void TilemaskEditorPanel::ConnectToSignals()
 {
-    connect(SceneSignals::Instance(), SIGNAL(TilemaskEditorToggled(SceneEditor2*)),
+    connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)),
             this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));

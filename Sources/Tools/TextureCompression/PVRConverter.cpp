@@ -48,14 +48,14 @@ namespace DAVA
 static String CUBEMAP_TMP_DIR = "~doc:/ResourceEditor_Cubemap_Tmp/";
 
 static Array<String, Texture::CUBE_FACE_COUNT> PVRTOOL_FACE_SUFFIXES =
-{
-    String("1"), //pz
-    String("2"), //nz
-    String("3"), //px
-    String("4"), //nx
-    String("5"), //pz
-    String("6"), //nz
-};
+{ {
+String("1"), //pz
+String("2"), //nz
+String("3"), //px
+String("4"), //nx
+String("5"), //pz
+String("6") //nz
+} };
 
 static DAVA::String PVR_QUALITY_SETTING[] =
 {

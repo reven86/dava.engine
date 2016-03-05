@@ -89,12 +89,6 @@ public:
     SceneNodeAnimationKey currentValue;
 
     Matrix4 invPose;
-
-    void SetParent(SceneNodeAnimationList* list);
-    SceneNodeAnimationList* GetParent();
-
-private:
-    SceneNodeAnimationList* parent;
 };
 
 inline float32 SceneNodeAnimation::GetCurrentTime()

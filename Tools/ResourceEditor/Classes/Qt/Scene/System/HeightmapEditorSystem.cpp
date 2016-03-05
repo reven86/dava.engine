@@ -45,23 +45,10 @@
 
 HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-    , editingIsEnabled(false)
-    , curToolSize(0)
-    , originalHeightmap(NULL)
-    , curToolImage(NULL)
-    , strength(15)
-    , averageStrength(0.5f)
-    , inverseDrawingEnabled(false)
-    , toolImagePath("")
-    , drawingType(HEIGHTMAP_DRAW_ABSOLUTE)
     , copyPasteFrom(-1.f, -1.f)
     , copyPasteTo(-1.f, -1.f)
-    , squareTexture(NULL)
-    , toolImageIndex(0)
-    , curHeight(0.f)
-    , activeDrawingType(drawingType)
 {
-    curToolSize = 30;
+    activeDrawingType = drawingType;
 }
 
 HeightmapEditorSystem::~HeightmapEditorSystem()
@@ -201,6 +188,9 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
 
         case UIEvent::Phase::ENDED:
             FinishEditing();
+            break;
+
+        default:
             break;
         }
     }

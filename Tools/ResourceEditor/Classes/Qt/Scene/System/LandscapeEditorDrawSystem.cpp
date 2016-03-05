@@ -165,17 +165,18 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
-void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
+bool LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 {
     if (!notPassableTerrainProxy || !notPassableTerrainProxy->IsEnabled())
     {
-        return;
+        return false;
     }
 
     notPassableTerrainProxy->SetEnabled(false);
     landscapeProxy->SetToolTexture(nullptr, false);
 
     DisableCustomDraw();
+    return true;
 }
 
 void LandscapeEditorDrawSystem::EnableCursor()
@@ -492,7 +493,7 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
         bool needRemoveBaseLandscape = sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL
                                                                    & ~SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR);
 
-        sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+        sceneEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
         if (needRemoveBaseLandscape)
         {

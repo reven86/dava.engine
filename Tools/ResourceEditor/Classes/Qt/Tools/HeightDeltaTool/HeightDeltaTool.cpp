@@ -37,8 +37,7 @@
 
 #include "Qt/Main/mainwindow.h"
 #include "Project/ProjectManager.h"
-#include "Commands2/PaintHeightDeltaAction.h"
-
+#include "Tools/HeightDeltaTool/PaintHeightDelta.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageFormatInterface.h"
@@ -137,17 +136,8 @@ void HeightDeltaTool::OnRun()
                 colors[0] = SettingsManager::GetValue(Settings::General_HeighMaskTool_Color0).AsColor();
                 colors[1] = SettingsManager::GetValue(Settings::General_HeighMaskTool_Color1).AsColor();
 
-                PaintHeightDeltaAction* action = new PaintHeightDeltaAction(
-                outPath.toStdString(),
-                (DAVA::float32)threshold,
-                heightmap,
-                imageInfo.width,
-                imageInfo.height,
-                bbox.max.z - bbox.min.z,
-                colors);
-
-                action->Redo();
-                DAVA::SafeDelete(action);
+                PaintHeightDelta::Execute(outPath.toStdString(), (DAVA::float32)threshold, heightmap,
+                                          imageInfo.width, imageInfo.height, bbox.max.z - bbox.min.z, colors);
             }
 
             if (heightmap != NULL)
