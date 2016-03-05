@@ -73,7 +73,14 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
-    return "Not yet implemented";
+    WCHAR* lpLocaleName = new WCHAR[LOCALE_NAME_MAX_LENGTH];
+    int size = GetUserDefaultLocaleName(lpLocaleName, LOCALE_NAME_MAX_LENGTH);
+    
+    String locale = WStringToString(WideString(lpLocaleName, size));
+
+    SafeDeleteArray(lpLocaleName);
+
+    return locale;
 }
 
 String DeviceInfoPrivate::GetRegion()
