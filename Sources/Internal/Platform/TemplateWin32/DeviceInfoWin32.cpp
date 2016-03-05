@@ -40,6 +40,8 @@
 #include "winsock2.h"
 #include "Iphlpapi.h"
 
+#include <VersionHelpers.h>
+
 namespace DAVA
 {
 DeviceInfoPrivate::DeviceInfoPrivate()
@@ -58,8 +60,108 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    return "Not yet implemented";
-}
+    String version;
+    if (IsWindowsXPOrGreater())
+    {
+        version = "XP Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindowsXPSP1OrGreater())
+    {
+        version = "XP SP1 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindowsXPSP2OrGreater())
+    {
+        version = "XP SP2 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindowsXPSP3OrGreater())
+    {
+        version = "XP SP3 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindowsVistaOrGreater())
+    {
+        version = "Vista Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindowsVistaSP1OrGreater())
+    {
+        version = "Vista SP1 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindowsVistaSP2OrGreater())
+    {
+        version = "Vista SP2 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindows7OrGreater())
+    {
+        version = "Windows 7 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindows7SP1OrGreater())
+    {
+        version = "Windows 7 SP1 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindows8OrGreater())
+    {
+        version = "Windows 8 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    if (IsWindows8Point1OrGreater())
+    {
+        version = "Windows 8 Point 1 Or Greater";
+    }
+    else
+    {
+        return version;
+    }
+
+    return version;
+ }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
@@ -73,24 +175,45 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
-    WCHAR* lpLocaleName = new WCHAR[LOCALE_NAME_MAX_LENGTH];
-    int size = GetUserDefaultLocaleName(lpLocaleName, LOCALE_NAME_MAX_LENGTH);
-    
-    String locale = WStringToString(WideString(lpLocaleName, size));
-
-    SafeDeleteArray(lpLocaleName);
-
+    WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
+    int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
+   
+    String locale = WStringToString(WideString(localeBuffer, size));
     return locale;
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    return "Not yet implemented";
+    WCHAR coutryBuffer[LOCALE_NAME_MAX_LENGTH];
+    int size = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SLOCALIZEDCOUNTRYNAME, coutryBuffer, LOCALE_NAME_MAX_LENGTH);
+
+    String country = WStringToString(WideString(coutryBuffer, size));
+    return country;
 }
 
-String DeviceInfoPrivate::GetTimeZone()
+String DeviceInfoPrivate::GetTimeZone() 
 {
-    return "Not yet implemented";
+    _TIME_ZONE_INFORMATION timeZoneInformation;
+    DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
+
+    WCHAR *name;
+    if (TIME_ZONE_ID_STANDARD == ret)
+    {
+        name = timeZoneInformation.StandardName;
+    }
+
+    if (TIME_ZONE_ID_DAYLIGHT == ret)
+    {
+        name = timeZoneInformation.DaylightName;
+    }
+
+    if (TIME_ZONE_ID_UNKNOWN == ret)
+    {
+        name = timeZoneInformation.StandardName;
+    }
+
+    String timeZone = WStringToString(WideString(name));
+    return timeZone;
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
