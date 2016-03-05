@@ -653,9 +653,6 @@
 		028C101E1BD66A6000B2266F /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09281BD66A5E00B2266F /* XMLParser.h */; };
 		028C101F1BD66A6000B2266F /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09281BD66A5E00B2266F /* XMLParser.h */; };
 		028C10201BD66A6000B2266F /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09281BD66A5E00B2266F /* XMLParser.h */; };
-		028C10211BD66A6000B2266F /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09291BD66A5E00B2266F /* XMLParser.mm */; };
-		028C10221BD66A6000B2266F /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09291BD66A5E00B2266F /* XMLParser.mm */; };
-		028C10231BD66A6000B2266F /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09291BD66A5E00B2266F /* XMLParser.mm */; };
 		028C10241BD66A6000B2266F /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C092A1BD66A5E00B2266F /* YamlArchive.cpp */; };
 		028C10251BD66A6000B2266F /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C092A1BD66A5E00B2266F /* YamlArchive.cpp */; };
 		028C10261BD66A6000B2266F /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C092A1BD66A5E00B2266F /* YamlArchive.cpp */; };
@@ -3166,7 +3163,6 @@
 		028C09261BD66A5E00B2266F /* VariantType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VariantType.h; sourceTree = "<group>"; };
 		028C09271BD66A5E00B2266F /* XMLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XMLParser.cpp; sourceTree = "<group>"; };
 		028C09281BD66A5E00B2266F /* XMLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLParser.h; sourceTree = "<group>"; };
-		028C09291BD66A5E00B2266F /* XMLParser.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = XMLParser.mm; sourceTree = "<group>"; };
 		028C092A1BD66A5E00B2266F /* YamlArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlArchive.cpp; sourceTree = "<group>"; };
 		028C092B1BD66A5E00B2266F /* YamlArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlArchive.h; sourceTree = "<group>"; };
 		028C092C1BD66A5E00B2266F /* YamlEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlEmitter.cpp; sourceTree = "<group>"; };
@@ -4357,7 +4353,6 @@
 				028C09261BD66A5E00B2266F /* VariantType.h */,
 				028C09271BD66A5E00B2266F /* XMLParser.cpp */,
 				028C09281BD66A5E00B2266F /* XMLParser.h */,
-				028C09291BD66A5E00B2266F /* XMLParser.mm */,
 				028C092A1BD66A5E00B2266F /* YamlArchive.cpp */,
 				028C092B1BD66A5E00B2266F /* YamlArchive.h */,
 				028C092C1BD66A5E00B2266F /* YamlEmitter.cpp */,
@@ -7248,7 +7243,6 @@
 				028C15061BD66A6000B2266F /* RenderObject.cpp in Sources */,
 				028C0F991BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F631BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
-				028C10231BD66A6000B2266F /* XMLParser.mm in Sources */,
 				028C15E71BD66A6000B2266F /* RenderCallbacks.cpp in Sources */,
 				028C18ED1BD66A6000B2266F /* ParticleEffectSystem.cpp in Sources */,
 				028C14C11BD66A6000B2266F /* Camera.cpp in Sources */,
@@ -7695,7 +7689,6 @@
 				028C15041BD66A6000B2266F /* RenderObject.cpp in Sources */,
 				028C0F971BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F611BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
-				028C10211BD66A6000B2266F /* XMLParser.mm in Sources */,
 				028C15E51BD66A6000B2266F /* RenderCallbacks.cpp in Sources */,
 				028C18EB1BD66A6000B2266F /* ParticleEffectSystem.cpp in Sources */,
 				028C14BF1BD66A6000B2266F /* Camera.cpp in Sources */,
@@ -8148,7 +8141,6 @@
 				028C15051BD66A6000B2266F /* RenderObject.cpp in Sources */,
 				028C0F981BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F621BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
-				028C10221BD66A6000B2266F /* XMLParser.mm in Sources */,
 				028C15E61BD66A6000B2266F /* RenderCallbacks.cpp in Sources */,
 				028C18EC1BD66A6000B2266F /* ParticleEffectSystem.cpp in Sources */,
 				028C14C01BD66A6000B2266F /* Camera.cpp in Sources */,
