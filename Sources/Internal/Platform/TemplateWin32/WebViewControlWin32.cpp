@@ -587,6 +587,13 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
         return false;
     }
 
+    // Suppress javascript error messaging
+    hRes = webBrowser->put_Silent(VARIANT_TRUE);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebViewControl::InititalizeBrowserContainer(), cannot set silence mode %i", hRes);
+    }
+
     DVASSERT(nullptr == sink);
     sink = new EventSink(*this);
     sink->SetWebView(control);
