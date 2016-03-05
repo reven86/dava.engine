@@ -38,7 +38,7 @@ ConfigStorage::ConfigStorage(QObject* parent)
 {
     configFilePath = qApp->applicationDirPath() +
 #ifdef Q_OS_WIN
-    "../CMakeTool/Data/config_windows.json";
+    "/Data/config_windows.json";
 #elif defined Q_OS_MAC
     "/../Resources/Data/config_mac.json";
 #else

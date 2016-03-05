@@ -3,7 +3,7 @@
         {
             "name": "Windows",
             "checked": false,
-            "value": "$CMAKE_PATH -G \"Visual Studio 12%1\" $BUILD_FOLDER_PATH/.. %2",
+            "value": "$CMAKE_PATH -G \"Visual Studio 12%1\" $BUILD_FOLDER_PATH\\.. %2",
             "defaults": [
                 "",
                 ""
@@ -28,7 +28,7 @@
         {
             "name": "Android",
             "checked": false,
-            "value": "$CMAKE_PATH -G \"%1%2\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $BUILD_FOLDER_PATH/.. %3",
+            "value": "$CMAKE_PATH -G \"%1%2\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $BUILD_FOLDER_PATH\\.. %3",
             "defaults": [
                 "Eclipse CDT4 - ",
                 "NMake Makefiles",
@@ -61,7 +61,7 @@
         {
             "name": "Windows 10",
             "checked": true,
-            "value": "$DAVA_FRAMEWORK_PATH/Tools/WinStoreCMake/mk_project.bat $BUILD_FOLDER_PATH/.. %1 %2",
+            "value": "$DAVA_FRAMEWORK_PATH/Tools/WinStoreCMake/mk_project.bat $BUILD_FOLDER_PATH\\.. %1 %2",
             "defaults": [
                 "",
                 ""

@@ -40,9 +40,9 @@ ComboBox {
             var newItem = editText;
             for(var i = model.count - 1; i >= 0; --i) {
                 var item = model.get(i).text;
-                if(item === newItem
-                        || item + "/" === newItem
-                        || newItem + "/" === item) {
+                item = fileSystemHelper.NormalizeDirPath(item);
+                var normalizedNewItem = fileSystemHelper.NormalizeDirPath(newItem);
+                if(item === normalizedNewItem) {
                     currentIndex = i;
                     return;
                 }

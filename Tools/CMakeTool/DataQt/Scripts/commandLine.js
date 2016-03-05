@@ -12,7 +12,7 @@ function createOutput() {
     var index = mainObject["currentPlatform"];
     var platformObject = mainObject["platforms"][index];
     outputText += platformObject.value;
-    outputText += " -B" + rowLayout_buildFolder.path;
+    outputText += " -B" + fileSystemHelper.NormalizeDirPath(rowLayout_buildFolder.path);
 
     var substrings = [];
     var defaults = platformObject.defaults;
@@ -38,7 +38,7 @@ function createOutput() {
 
 
     if(outputText.indexOf("$CMAKE_PATH") !== -1) {
-        var cmakePath = rowLayout_cmakeFolder.path;
+        var cmakePath = fileSystemHelper.NormalizeDirPath(rowLayout_cmakeFolder.path);
         if(cmakePath.length === 0 || !fileSystemHelper.IsFileExists(cmakePath)) {
             outputComplete = false;
             return qsTr("cmake path required");
@@ -48,7 +48,7 @@ function createOutput() {
     }
 
     if(outputText.indexOf("$BUILD_FOLDER_PATH") !== -1) {
-        var buildFolder = rowLayout_buildFolder.path;
+        var buildFolder = fileSystemHelper.NormalizeDirPath(rowLayout_buildFolder.path);
         if(buildFolder.length === 0 || !fileSystemHelper.IsDirExists(buildFolder)) {
             outputComplete = false;
             return qsTr("build folder path required")
@@ -61,7 +61,7 @@ function createOutput() {
         }
     }
     if(outputText.indexOf("$DAVA_FRAMEWORK_PATH") !== -1) {
-        var davaFolder = rowLayout_davaFolder.path;
+        var davaFolder = fileSystemHelper.NormalizeDirPath(rowLayout_davaFolder.path);
         if(davaFolder.length === 0 || !fileSystemHelper.IsDirExists(davaFolder)) {
             outputComplete = false;
             return qsTr("DAVA folder path required");
