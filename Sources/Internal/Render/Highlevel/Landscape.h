@@ -234,7 +234,7 @@ protected:
 
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
-    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
+    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 invH0);
     void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 lastSubdivMorph);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
@@ -267,6 +267,8 @@ protected:
 
     float32 zoomFov;
     float32 normalFov;
+
+    float32 tanFovY;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Non-instancing render
