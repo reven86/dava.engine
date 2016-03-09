@@ -71,7 +71,7 @@ public:
     void RebuildIntegralBoundingBox();
     const DAVA::AABBox3& GetIntegralBoundingBox() const;
 
-    bool IsTransformable() const;
+    bool SupportsTransformType(SelectableObject::TransformType transformType) const;
     DAVA::Vector3 GetFirstTranslationVector() const;
     DAVA::Vector3 GetCommonTranslationVector() const;
 

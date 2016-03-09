@@ -139,11 +139,11 @@ const SelectableObject& SelectableObjectGroup::GetFirst() const
     return objects.empty() ? empty : objects.front();
 }
 
-bool SelectableObjectGroup::IsTransformable() const
+bool SelectableObjectGroup::SupportsTransformType(SelectableObject::TransformType transformType) const
 {
     for (const auto& obj : objects)
     {
-        if (!obj.IsTransformable())
+        if (!obj.SupportsTransformType(transformType))
             return false;
     }
 

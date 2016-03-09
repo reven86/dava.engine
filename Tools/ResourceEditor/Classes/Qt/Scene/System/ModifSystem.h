@@ -39,11 +39,11 @@
 #include "UI/UIEvent.h"
 
 #include "Scene/SceneTypes.h"
+#include "Scene/SelectableObjectGroup.h"
 #include "Render/Highlevel/RenderObject.h"
 
 class SceneCollisionSystem;
 class SceneCameraSystem;
-class SelectableObjectGroup;
 class HoodSystem;
 
 class EntityModificationSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
@@ -57,8 +57,8 @@ public:
     ST_Axis GetModifAxis() const;
     void SetModifAxis(ST_Axis axis);
 
-    ST_ModifMode GetModifMode() const;
-    void SetModifMode(ST_ModifMode mode);
+    SelectableObject::TransformType GetTransformType() const;
+    void SetTransformType(SelectableObject::TransformType mode);
 
     bool GetLandscapeSnap() const;
     void SetLandscapeSnap(bool snap);
@@ -165,7 +165,7 @@ private:
     DAVA::float32 crossYZ = 0.0f;
 
     CloneState cloneState = CloneState::CLONE_DONT;
-    ST_ModifMode curMode = ST_ModifMode::ST_MODIF_OFF;
+    SelectableObject::TransformType transformType = SelectableObject::TransformType::NotSpecified;
     ST_Axis curAxis = ST_Axis::ST_AXIS_NONE;
 
     bool inModifState = false;

@@ -28,6 +28,9 @@
 
 #include "Scene/BaseTransformProxies.h"
 
+/*
+ * EntityTransformProxy
+ */
 const DAVA::Matrix4& EntityTransformProxy::GetWorldTransform(DAVA::BaseObject* object)
 {
     return static_cast<DAVA::Entity*>(object)->GetWorldTransform();
@@ -43,6 +46,14 @@ void EntityTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAV
     return static_cast<DAVA::Entity*>(object)->SetLocalTransform(matrix);
 }
 
+bool EntityTransformProxy::SupportsTransformType(SelectableObject::TransformType type) const
+{
+    return true;
+}
+
+/*
+ * EmitterTransformProxy
+ */
 const DAVA::Matrix4& EmitterTransformProxy::GetWorldTransform(DAVA::BaseObject* object)
 {
     return DAVA::Matrix4::IDENTITY;
@@ -56,4 +67,9 @@ const DAVA::Matrix4& EmitterTransformProxy::GetLocalTransform(DAVA::BaseObject* 
 void EmitterTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix)
 {
     DAVA::Logger::Info(":)");
+}
+
+bool EmitterTransformProxy::SupportsTransformType(SelectableObject::TransformType type) const
+{
+    return (type == SelectableObject::TransformType::Translation);
 }

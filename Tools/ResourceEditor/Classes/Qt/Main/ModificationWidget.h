@@ -55,7 +55,7 @@ public:
     ~ModificationWidget();
 
     void SetPivotMode(PivotMode pivotMode);
-    void SetModifMode(ST_ModifMode modifMode);
+    void SetTransformType(SelectableObject::TransformType modifMode);
 
 public slots:
     void OnSnapToLandscapeChanged();
@@ -83,7 +83,7 @@ private:
     DAVAFloat32SpinBox* zAxisModify = nullptr;
     SceneEditor2* curScene = nullptr;
     PivotMode pivotMode = PivotMode::PivotAbsolute;
-    ST_ModifMode modifMode = ST_ModifMode::ST_MODIF_OFF;
+    SelectableObject::TransformType modifMode = SelectableObject::TransformType::NotSpecified;
     bool groupMode = false;
 };
 

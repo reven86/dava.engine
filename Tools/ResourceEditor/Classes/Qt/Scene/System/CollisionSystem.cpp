@@ -316,7 +316,7 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
             {
                 collisionObject = BuildFromEntity(wrapper.AsEntity());
             }
-            else if (wrapper.IsTransformable())
+            else if (wrapper.SupportsTransformType(SelectableObject::TransformType::NotSpecified))
             {
                 collisionObject = BuildFromObject(wrapper);
             }

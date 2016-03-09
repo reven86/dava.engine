@@ -36,6 +36,14 @@
 class SelectableObject
 {
 public:
+    enum class TransformType : DAVA::uint32
+    {
+        NotSpecified,
+        Translation,
+        Rotation,
+        Scale
+    };
+
     class TransformProxy
     {
     public:
@@ -43,6 +51,7 @@ public:
         virtual const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject*) = 0;
         virtual const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject*) = 0;
         virtual void SetLocalTransform(DAVA::BaseObject*, const DAVA::Matrix4&) = 0;
+        virtual bool SupportsTransformType(TransformType) const = 0;
     };
 
     template <typename CLASS, typename PROXY>
@@ -75,7 +84,7 @@ public:
     const DAVA::AABBox3& GetBoundingBox() const;
     void SetBoundingBox(const DAVA::AABBox3& box);
 
-    bool IsTransformable() const;
+    bool SupportsTransformType(TransformType) const;
     const DAVA::Matrix4& GetLocalTransform() const;
     const DAVA::Matrix4& GetWorldTransform() const;
     void SetLocalTransform(const DAVA::Matrix4& transform);

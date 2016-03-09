@@ -51,7 +51,7 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene* scene, SceneColl
     , cameraSystem(camSys)
     , hoodSystem(hoodSys)
 {
-    SetModifMode(ST_MODIF_OFF);
+    SetTransformType(SelectableObject::TransformType::NotSpecified);
     SetModifAxis(ST_AXIS_Z);
 }
 
@@ -71,15 +71,15 @@ ST_Axis EntityModificationSystem::GetModifAxis() const
     return curAxis;
 }
 
-void EntityModificationSystem::SetModifMode(ST_ModifMode mode)
+void EntityModificationSystem::SetTransformType(SelectableObject::TransformType mode)
 {
-    curMode = mode;
-    hoodSystem->SetModifMode(mode);
+    transformType = mode;
+    hoodSystem->SetTransformType(mode);
 }
 
-ST_ModifMode EntityModificationSystem::GetModifMode() const
+SelectableObject::TransformType EntityModificationSystem::GetTransformType() const
 {
-    return curMode;
+    return transformType;
 }
 
 bool EntityModificationSystem::GetLandscapeSnap() const
@@ -179,7 +179,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
                     inModifState = true;
 
                     // select current hood axis as active
-                    if (curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
+                    if ((transformType == SelectableObject::TransformType::Translation) || (transformType == SelectableObject::TransformType::Rotation))
                     {
                         SetModifAxis(hoodSystem->GetPassingAxis());
                     }
@@ -193,7 +193,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
 
                     // check if this is move with copy action
                     int curKeyModifiers = QApplication::keyboardModifiers();
-                    if (curKeyModifiers & Qt::ShiftModifier && curMode == ST_MODIF_MOVE)
+                    if (curKeyModifiers & Qt::ShiftModifier && (transformType == SelectableObject::TransformType::Translation))
                     {
                         cloneState = CLONE_NEED;
                     }
@@ -215,22 +215,22 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
             DAVA::float32 rotateAngle;
             DAVA::float32 scaleForce;
 
-            switch (curMode)
+            switch (transformType)
             {
-            case ST_MODIF_MOVE:
+            case SelectableObject::TransformType::Translation:
             {
                 DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
                 moveOffset = Move(newPos3d);
                 modified = true;
             }
             break;
-            case ST_MODIF_ROTATE:
+            case SelectableObject::TransformType::Rotation:
             {
                 rotateAngle = Rotate(event->point);
                 modified = true;
             }
             break;
-            case ST_MODIF_SCALE:
+            case SelectableObject::TransformType::Scale:
             {
                 scaleForce = Scale(event->point);
                 modified = true;
@@ -425,7 +425,7 @@ void EntityModificationSystem::EndModification()
 
 bool EntityModificationSystem::ModifCanStart(const SelectableObjectGroup& objects) const
 {
-    if (objects.IsEmpty() || !objects.IsTransformable())
+    if (objects.IsEmpty() || !objects.SupportsTransformType(transformType))
         return false;
 
     // check if we have some locked items in selection
@@ -1071,7 +1071,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
 
 bool EntityModificationSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
 {
-    return (GetModifMode() == ST_ModifMode::ST_MODIF_OFF) || !ModifCanStartByMouse(currentSelection);
+    return (transformType == SelectableObject::TransformType::NotSpecified) || !ModifCanStartByMouse(currentSelection);
 }
 
 bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)

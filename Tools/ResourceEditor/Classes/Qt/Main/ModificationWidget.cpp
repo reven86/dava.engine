@@ -88,7 +88,7 @@ void ModificationWidget::SetPivotMode(PivotMode mode)
     ReloadValues();
 }
 
-void ModificationWidget::SetModifMode(ST_ModifMode mode)
+void ModificationWidget::SetTransformType(SelectableObject::TransformType mode)
 {
     modifMode = mode;
     ReloadValues();
@@ -100,7 +100,7 @@ void ModificationWidget::ReloadValues()
     yAxisModify->clear();
     zAxisModify->clear();
 
-    if (modifMode == ST_MODIF_SCALE)
+    if (modifMode == SelectableObject::TransformType::Scale)
     {
         xLabel->setText("Scale:");
 
@@ -122,7 +122,7 @@ void ModificationWidget::ReloadValues()
     if (nullptr != curScene)
     {
         const SelectableObjectGroup& selection = curScene->selectionSystem->GetSelection();
-        if (!selection.IsEmpty() && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
+        if (!selection.IsEmpty() && (modifMode == SelectableObject::TransformType::Translation || modifMode == SelectableObject::TransformType::Rotation || modifMode == SelectableObject::TransformType::Scale))
         {
             xAxisModify->setEnabled(true);
             yAxisModify->setEnabled(true);
@@ -172,7 +172,7 @@ void ModificationWidget::ReloadValues()
                     DAVA::float32 z = 0;
                     switch (modifMode)
                     {
-                    case ST_MODIF_MOVE:
+                    case SelectableObject::TransformType::Translation:
                     {
                         DAVA::Vector3 translation = localMatrix.GetTranslationVector();
                         x = translation.x;
@@ -180,7 +180,7 @@ void ModificationWidget::ReloadValues()
                         z = translation.z;
                     }
                     break;
-                    case ST_MODIF_ROTATE:
+                    case SelectableObject::TransformType::Rotation:
                     {
                         DAVA::Vector3 pos, scale, rotate;
                         if (localMatrix.Decomposition(pos, scale, rotate))
@@ -191,7 +191,7 @@ void ModificationWidget::ReloadValues()
                         }
                     }
                     break;
-                    case ST_MODIF_SCALE:
+                    case SelectableObject::TransformType::Scale:
                     {
                         DAVA::Vector3 pos, scale, rotate;
                         if (localMatrix.Decomposition(pos, scale, rotate))
@@ -247,19 +247,19 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
 
     switch (modifMode)
     {
-    case ST_MODIF_MOVE:
+    case SelectableObject::TransformType::Translation:
     {
         curScene->modifSystem->ApplyMoveValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
     }
 
-    case ST_MODIF_ROTATE:
+    case SelectableObject::TransformType::Rotation:
     {
         curScene->modifSystem->ApplyRotateValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
     }
 
-    case ST_MODIF_SCALE:
+    case SelectableObject::TransformType::Scale:
     {
         curScene->modifSystem->ApplyScaleValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
@@ -304,7 +304,7 @@ void ModificationWidget::OnSnapToLandscapeChanged()
         return;
 
     const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
-    const auto isMoveMode = (modifMode == ST_MODIF_MOVE);
+    const auto isMoveMode = (modifMode == SelectableObject::TransformType::Translation);
     zAxisModify->setReadOnly(isSnappedToLandscape && isMoveMode);
 }
 

@@ -40,12 +40,16 @@ ENUM_DECLARE(SelectionSystemDrawMode)
     ENUM_ADD(SS_DRAW_NO_DEEP_TEST);
 }
 
-SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys)
-    : DAVA::SceneSystem(scene)
-    , collisionSystem(collSys)
-    , hoodSystem(hoodSys)
+SceneSelectionSystem::SceneSelectionSystem(SceneEditor2* editor)
+    : DAVA::SceneSystem(editor)
+    , collisionSystem(editor->collisionSystem)
+    , hoodSystem(editor->hoodSystem)
+    , modificationSystem(editor->modifSystem)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    DVASSERT(collisionSystem != nullptr);
+    DVASSERT(hoodSystem != nullptr);
+    DVASSERT(modificationSystem != nullptr);
+    editor->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -652,7 +656,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
     {
         // check if we have locked entities in selection group
         // or untransformable objects
-        bool modificationEnabled = currentSelection.IsTransformable();
+        bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
         if (modificationEnabled)
         {
             for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())

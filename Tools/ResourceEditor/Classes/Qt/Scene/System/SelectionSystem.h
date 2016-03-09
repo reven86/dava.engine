@@ -44,6 +44,9 @@
 
 class SceneCollisionSystem;
 class HoodSystem;
+class EntityModificationSystem;
+class Command2;
+class SceneEditor2;
 
 enum SelectionSystemDrawMode
 {
@@ -58,13 +61,12 @@ enum SelectionSystemDrawMode
     SS_DRAW_ALL = 0xFFFFFFFF
 };
 
-class Command2;
 class SceneSelectionSystem : public DAVA::SceneSystem
 {
     static const DAVA::uint64 ALL_COMPONENTS_MASK = 0xFFFFFFFFFFFFFFFF;
 
 public:
-    SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys);
+    SceneSelectionSystem(SceneEditor2* editor);
     ~SceneSelectionSystem();
 
     void AddObjectToSelection(DAVA::BaseObject* entity);
@@ -155,6 +157,7 @@ private:
 private:
     SceneCollisionSystem* collisionSystem = nullptr;
     HoodSystem* hoodSystem = nullptr;
+    EntityModificationSystem* modificationSystem = nullptr;
     SelectableObjectGroup currentSelection;
     SelectableObjectGroup recentlySelectedEntities;
     SelectableObjectGroup lastGroupSelection;

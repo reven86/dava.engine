@@ -31,6 +31,7 @@
 #define __ENTITY_MODIFICATION_SYSTEM_HOOD_H__
 
 #include "Scene/SceneTypes.h"
+#include "Scene/SelectableObjectGroup.h"
 #include "Scene/System/HoodSystem/NormalHood.h"
 #include "Scene/System/HoodSystem/MoveHood.h"
 #include "Scene/System/HoodSystem/ScaleHood.h"
@@ -55,8 +56,8 @@ public:
     HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys);
     ~HoodSystem();
 
-    void SetModifMode(ST_ModifMode mode);
-    ST_ModifMode GetModifMode() const;
+    void SetTransformType(SelectableObject::TransformType mode);
+    SelectableObject::TransformType GetTransformType() const;
 
     DAVA::Vector3 GetPosition() const;
     void SetPosition(const DAVA::Vector3& pos);
@@ -107,7 +108,7 @@ private:
     DAVA::Vector3 curPos;
     DAVA::float32 curScale = 1.0f;
     DAVA::Vector3 modifOffset;
-    ST_ModifMode curMode = ST_MODIF_OFF;
+    SelectableObject::TransformType curMode = SelectableObject::TransformType::NotSpecified;
     ST_Axis curAxis = ST_AXIS_NONE;
     ST_Axis moseOverAxis = ST_AXIS_NONE;
     bool lockedScale = false;

@@ -51,7 +51,7 @@ HoodSystem::HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys)
     collWorld->setDebugDrawer(collDebugDraw);
 
     SetModifAxis(ST_AXIS_X);
-    SetModifMode(ST_MODIF_MOVE);
+    SetTransformType(SelectableObject::TransformType::Translation);
 
     moveHood.colorX = DAVA::Color(1, 0, 0, 1);
     moveHood.colorY = DAVA::Color(0, 1, 0, 1);
@@ -171,7 +171,7 @@ DAVA::float32 HoodSystem::GetScale() const
     return curScale;
 }
 
-void HoodSystem::SetModifMode(ST_ModifMode mode)
+void HoodSystem::SetTransformType(SelectableObject::TransformType mode)
 {
     if (!IsLocked())
     {
@@ -185,13 +185,13 @@ void HoodSystem::SetModifMode(ST_ModifMode mode)
             curMode = mode;
             switch (mode)
             {
-            case ST_MODIF_MOVE:
+            case SelectableObject::TransformType::Translation:
                 curHood = &moveHood;
                 break;
-            case ST_MODIF_SCALE:
+            case SelectableObject::TransformType::Scale:
                 curHood = &scaleHood;
                 break;
-            case ST_MODIF_ROTATE:
+            case SelectableObject::TransformType::Rotation:
                 curHood = &rotateHood;
                 break;
             default:
@@ -212,11 +212,11 @@ void HoodSystem::SetModifMode(ST_ModifMode mode)
     }
 }
 
-ST_ModifMode HoodSystem::GetModifMode() const
+SelectableObject::TransformType HoodSystem::GetTransformType() const
 {
     if (lockedModif)
     {
-        return ST_MODIF_OFF;
+        return SelectableObject::TransformType::NotSpecified;
     }
 
     return curMode;
@@ -341,7 +341,7 @@ void HoodSystem::Draw()
         {
             ST_Axis showAsSelected = curAxis;
 
-            if (curMode != ST_MODIF_OFF)
+            if (GetTransformType() != SelectableObject::TransformType::NotSpecified)
             {
                 if (ST_AXIS_NONE != moseOverAxis)
                 {
@@ -403,7 +403,7 @@ void HoodSystem::LockAxis(bool lock)
 
 bool HoodSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
 {
-    return !IsVisible() || (ST_MODIF_OFF == GetModifMode()) || (ST_AXIS_NONE == GetPassingAxis());
+    return !IsVisible() || (GetTransformType() == SelectableObject::TransformType::NotSpecified) || (ST_AXIS_NONE == GetPassingAxis());
 }
 
 bool HoodSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)
