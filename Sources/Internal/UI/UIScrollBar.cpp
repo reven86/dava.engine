@@ -30,8 +30,6 @@
 #include "UI/UIScrollBar.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlHelpers.h"
-#include "UI/UIYamlLoader.h"
-#include "FileSystem/YamlNode.h"
 
 namespace DAVA
 {
@@ -127,65 +125,6 @@ void UIScrollBar::LoadFromYamlNodeCompleted()
     {
         InitControls();
     }
-}
-
-void UIScrollBar::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    RemoveControl(slider);
-
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* orientNode = node->Get("orientation");
-    if (orientNode)
-    {
-        if (orientNode->AsString() == "ORIENTATION_VERTICAL")
-            orientation = ORIENTATION_VERTICAL;
-        else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
-            orientation = ORIENTATION_HORIZONTAL;
-        else
-        {
-            DVASSERT(0 && "Orientation constant is wrong");
-        }
-    }
-    const YamlNode* delegateNode = node->Get("linkedScrollBarDelegate");
-    if (delegateNode)
-    {
-        String delegatePath = delegateNode->AsString();
-        loader->AddScrollBarToLink(this, delegatePath);
-    }
-}
-
-YamlNode* UIScrollBar::SaveToYamlNode(UIYamlLoader* loader)
-{
-    slider->SetName(UISCROLLBAR_SLIDER_NAME);
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    //Temp variables
-    String stringValue;
-
-    //Orientation
-    eScrollOrientation orient = (eScrollOrientation)GetOrientation();
-    switch (orient)
-    {
-    case ORIENTATION_VERTICAL:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    case ORIENTATION_HORIZONTAL:
-        stringValue = "ORIENTATION_HORIZONTAL";
-        break;
-    default:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    }
-    node->Set("orientation", stringValue);
-
-    if (delegate)
-    {
-        UIControl* delegateControl = dynamic_cast<UIControl*>(delegate);
-        node->Set("linkedScrollBarDelegate", UIControlHelpers::GetControlPath(delegateControl));
-    }
-
-    return node;
 }
 
 void UIScrollBar::Input(UIEvent* currentInput)

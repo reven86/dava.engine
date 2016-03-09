@@ -29,7 +29,7 @@
 
 #include "ICloudKeyValue.h"
 
-#if defined(__DAVAENGINE_APPLE__)
+#if defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_STEAM__)
 
 #import "Utils/NSStringUtils.h"
 

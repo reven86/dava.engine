@@ -31,7 +31,6 @@
 #define QUICKED__PROJECT_H__
 
 #include <QObject>
-#include "Model/LegacyEditorUIPackageLoader.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 
@@ -60,7 +59,6 @@ signals:
 private:
     bool OpenInternal(const QString& path);
 
-    LegacyControlData* legacyData;
     EditorFontSystem* editorFontSystem;
     EditorLocalizationSystem* editorLocalizationSystem;
 
