@@ -532,6 +532,8 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
                 }
             }
         }
+
+        patch->radius = Distance(patch->bbox.GetCenter(), patch->bbox.max);
     }
 
     uint32 x2 = x * 2;
@@ -543,7 +545,7 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
     UpdatePatchInfo(level + 1, x2 + 1, y2 + 1);
 }
 
-void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 invH0)
+void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags)
 {
     if (level == subdivLevelCount)
     {
@@ -590,12 +592,43 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     ////////////////////////////////////////////////////////////////////////////////////
 
     const float32 maxHeightError = 0.02f;
+    const float32 maxPatchRadiusError = .5f;
 
     float32 distance = Distance(cameraPos, patch->positionOfMaxError);
     float32 hError = patch->maxError / (distance * tanFovY);
 
-    float32 h1 = patch->maxError * invH0;
-    float32 morphAmount = (hError - h1) / (maxHeightError - h1);
+    Vector3 patchOrigin = patch->bbox.GetCenter();
+    float32 patchDistance = Distance(cameraPos, patchOrigin);
+    float32 rError = patch->radius / (patchDistance * tanFovY);
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    float32 morphAmount = 1.f;
+    if (useLodMorphing && level)
+    {
+        uint32 level0 = level - 1;
+        uint32 x0 = x >> 1;
+        uint32 y0 = y >> 1;
+
+        SubdivisionLevelInfo& levelInfo0 = subdivLevelInfoArray[level0];
+        uint32 offset0 = levelInfo0.offset + (y0 << level0) + x0;
+        PatchQuadInfo* patch0 = &patchQuadArray[offset0];
+        SubdivisionPatchInfo* subdivPatchInfo0 = &subdivPatchArray[offset0];
+
+        Vector3 patch0Origin = patch0->bbox.GetCenter();
+        float32 rDistance0 = patch0->radius / (maxPatchRadiusError * tanFovY);
+        Vector3 rE0 = cameraPos - patch0Origin;
+        Vector3 rCam0 = patch0Origin + rDistance0 * rE0 / rE0.Length();
+        float32 r0 = patch->radius / (Distance(rCam0, patchOrigin) * tanFovY);
+        float32 rMorphAmount = (rError - r0) / (maxPatchRadiusError - r0);
+
+        float32 hDistance0 = patch0->maxError / (maxHeightError * tanFovY);
+        Vector3 hE0 = cameraPos - patch0->positionOfMaxError;
+        Vector3 hCam0 = patch0->positionOfMaxError + hDistance0 * hE0 / hE0.Length();
+        float32 h0 = patch->maxError / (Distance(hCam0, patch->positionOfMaxError) * tanFovY);
+        float32 hMorphAmount = (hError - h0) / (maxHeightError - h0);
+
+        morphAmount = Min(Max(rMorphAmount, hMorphAmount), 1.f);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////
 
@@ -608,20 +641,19 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
 
     //if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
     //if ((minSubdivLevelSize > levelInfo.size) || (supDistance < patchSize))
-    if ((minSubdivLevelSize > levelInfo.size) || (maxHeightError < hError))
+    if ((minSubdivLevelSize > levelInfo.size) || (maxHeightError < hError) || (maxPatchRadiusError < rError))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdivLevel = level;
         subdivPatchInfo->lastSubdivMorph = morphAmount;
 
-        uint32 x2 = x * 2;
-        uint32 y2 = y * 2;
-        float32 invH = maxHeightError / Abs(patch->maxError);
+        uint32 x2 = x << 1;
+        uint32 y2 = y << 1;
 
-        SubdividePatch(level + 1, x2 + 0, y2 + 0, clippingFlags, invH);
-        SubdividePatch(level + 1, x2 + 1, y2 + 0, clippingFlags, invH);
-        SubdividePatch(level + 1, x2 + 0, y2 + 1, clippingFlags, invH);
-        SubdividePatch(level + 1, x2 + 1, y2 + 1, clippingFlags, invH);
+        SubdividePatch(level + 1, x2 + 0, y2 + 0, clippingFlags);
+        SubdividePatch(level + 1, x2 + 1, y2 + 0, clippingFlags);
+        SubdividePatch(level + 1, x2 + 0, y2 + 1, clippingFlags);
+        SubdividePatch(level + 1, x2 + 1, y2 + 1, clippingFlags);
     }
     else
     {
@@ -1231,7 +1263,7 @@ void Landscape::DrawLandscapeInstancing()
         rhi::UnmapVertexBuffer(instanceDataBuffer->buffer);
         instanceDataPtr = nullptr;
 
-        drawIndices = activeRenderBatchArray[0]->indexCount;
+        drawIndices = activeRenderBatchArray[0]->indexCount * activeRenderBatchArray[0]->instanceCount;
     }
 }
 
@@ -1298,7 +1330,7 @@ void Landscape::PrepareToRender(Camera* camera)
         tanFovY = tanf(camera->GetFOV() * PI / 360.f) * camera->GetAspect();
 
         subdivPatchesDrawCount = 0;
-        SubdividePatch(0, 0, 0, 0x3f, 0.f);
+        SubdividePatch(0, 0, 0, 0x3f);
     }
 
     if (useInstancing)
