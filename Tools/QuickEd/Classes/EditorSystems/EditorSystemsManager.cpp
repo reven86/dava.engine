@@ -134,7 +134,7 @@ ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& po
     auto predicate = [point](const ControlNode* node) -> bool {
         auto control = node->GetControl();
         DVASSERT(control != nullptr);
-        return control->GetVisible() && control->IsPointInside(point);
+        return control->IsVisible() && control->IsPointInside(point);
     };
     CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
     return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
