@@ -52,7 +52,6 @@ public:
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
-    SpritesPacker* GetSpritesPacker() const;
     void Start();
 
 private slots:
@@ -69,7 +68,6 @@ private slots:
     void SaveDocument(int index);
     void SaveAllDocuments();
 
-    bool OnExit();
     void RecentMenu(QAction*);
     void OnCurrentTabChanged(int index);
 
@@ -81,12 +79,13 @@ private slots:
 
     void OnApplicationStateChanged(Qt::ApplicationState state);
     void OnFileChanged(const QString& path);
+    bool CloseProject();
 
 private:
     void ApplyFileChanges();
     Document* GetDocument(const QString& path) const;
     void OpenProject(const QString& path);
-    bool CloseProject();
+
     int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
     void SaveDocument(Document* document);
 

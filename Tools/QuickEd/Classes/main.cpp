@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
     Q_INIT_RESOURCE(QtToolsResources);
 
     DAVA::Core::Run(argc, argv);
-    QtLayer qtLayer; //will be deleted with DavaRenderer. Sorry about that.
+    QtLayer qtLayer;
     QObject::connect(&a, &QApplication::applicationStateChanged, [&qtLayer](Qt::ApplicationState state) {
         state == Qt::ApplicationActive ? qtLayer.OnResume() : qtLayer.OnSuspend();
     });
