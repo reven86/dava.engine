@@ -47,8 +47,10 @@ namespace DAVA
 
 namespace RegistryReader
 {
+const WideString oemRegistryPath(L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\OEMInformation");
 const WideString infoRegistryPath(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
-const WideString registeredOrganization(L"RegisteredOrganization");
+const WideString manufacturer(L"Manufacturer");
+const WideString model(L"Model");
 const WideString currentOSVersion(L"CurrentVersion");
 const WideString currentBuildNumber(L"CurrentBuildNumber");
 const WideString currentBuild(L"CurrentBuild");
@@ -103,7 +105,7 @@ String DeviceInfoPrivate::GetVersion()
     }
     String operationSystemName = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::operationSystemName);
 
-    String version = operationSystemName + " " + currentOSVersion + " " + currentBuildNumber + " ";
+    String version = currentOSVersion + "." + currentBuildNumber;
 
     return version;
 }
@@ -112,13 +114,14 @@ String DeviceInfoPrivate::GetVersion()
 String DeviceInfoPrivate::GetManufacturer()
 {
 
-    String manufacturer = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::registeredOrganization);
+    String manufacturer = RegistryReader::GetStringForKey(RegistryReader::oemRegistryPath, RegistryReader::manufacturer);
     return manufacturer;
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-    return "";
+    String model = RegistryReader::GetStringForKey(RegistryReader::oemRegistryPath, RegistryReader::model);
+    return model;
 }
 
 String DeviceInfoPrivate::GetLocale()
