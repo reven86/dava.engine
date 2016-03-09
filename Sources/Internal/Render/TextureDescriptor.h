@@ -216,6 +216,10 @@ public:
 
     bool Reload();
 
+    bool IsPresetValid(const KeyedArchive* presetArchive) const;
+    bool DeserializeFromPreset(const KeyedArchive* presetArchive);
+    bool SerializeToPreset(KeyedArchive* presetArchive) const;
+
 protected:
     const Compression* GetCompressionParams(eGPUFamily forGPU) const;
 

@@ -203,6 +203,7 @@ void _InitDX11()
 
     init_device_and_swapchain_uap(_DX11_InitParam.window);
     _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+    get_device_description(_DeviceCapsDX11.deviceDescription);
 
 #else
 
@@ -323,11 +324,9 @@ void _InitDX11()
 
                     if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
                     {
-                        char info[128];
+                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, _DeviceCapsDX11.deviceDescription, countof(_DeviceCapsDX11.deviceDescription), NULL, NULL);
 
-                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
-
-                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
+                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", _DeviceCapsDX11.deviceDescription, desc.VendorId, desc.DeviceId);
                     }
                 }
             }

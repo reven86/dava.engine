@@ -46,7 +46,7 @@ class DeferredScreenMetricEvents
     static const int32 DEFERRED_INTERVAL_MSEC = 100;
 
 public:
-    using UpdateMetricCallback = std::function<void(bool isSizeUpdate, float32 width, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)>;
+    using UpdateMetricCallback = std::function<void(float32 width, float32 height, float32 scaleX, float32 scaleY)>;
 
     DeferredScreenMetricEvents(bool isPhoneApi, UpdateMetricCallback callback, int32 intervalMs = DEFERRED_INTERVAL_MSEC);
 
@@ -175,7 +175,7 @@ inline void DeferredScreenMetricEvents::DeferredTick()
     if (!lockUpdate)
     {
         timer->Stop();
-        updateCallback(isSizeUpdate, width, height, isScaleUpdate, scaleX, scaleY);
+        updateCallback(width, height, scaleX, scaleY);
         isSizeUpdate = false;
         isScaleUpdate = false;
     }

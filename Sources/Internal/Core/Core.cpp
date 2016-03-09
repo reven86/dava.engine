@@ -64,6 +64,10 @@
 
 #include "Job/JobManager.h"
 
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
 #pragma STDC FENV_ACCESS on
@@ -296,6 +300,10 @@ void Core::CreateSingletons()
 
     new Net::NetCore();
 
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Init();
+#endif
+
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
@@ -338,6 +346,9 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Deinit();
+#endif
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -650,7 +661,7 @@ void Core::SystemProcessFrame()
 
     if (screenMetrics.initialized && screenMetrics.modifiedScreenMetrics)
     {
-        UpdateScreenMetrics();
+        SetUpScreenMetrics();
     }
 
     SystemTimer::Instance()->Start();
@@ -883,7 +894,7 @@ void Core::InitializeScreenMetrics(void* nativeView, float32 width, float32 heig
     virtSystem->EnableReloadResourceOnResize(true);
 }
 
-void Core::ChangedScreenMetrics(float32 width, float32 height, float32 scaleX, float32 scaleY)
+void Core::UpdateScreenMetrics(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
     bool needChanged = false;
     needChanged |= memcmp(&width, &screenMetrics.width, sizeof(float32)) != 0;
@@ -903,7 +914,7 @@ void Core::ChangedScreenMetrics(float32 width, float32 height, float32 scaleX, f
     DVASSERT(screenMetrics.width * screenMetrics.height * screenMetrics.scaleX * screenMetrics.scaleY);
 }
 
-void Core::UpdateScreenMetrics()
+void Core::SetUpScreenMetrics()
 {
     DVASSERT(Renderer::IsInitialized());
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);

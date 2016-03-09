@@ -54,6 +54,7 @@ public:
 
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
+    inline bool IsAppStarted();
 
 private:
     DisplayMode currentMode;
@@ -76,6 +77,7 @@ private:
     void LoadWindowMinimumSizeSettings();
 
     bool willQuit;
+    bool appStarted = false;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
@@ -83,6 +85,11 @@ private:
     float32 minWindowWidth = 0.0f;
     float32 minWindowHeight = 0.0f;
 };
+
+bool CoreWin32Platform::IsAppStarted()
+{
+    return appStarted;
+}
 
 } // end namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)

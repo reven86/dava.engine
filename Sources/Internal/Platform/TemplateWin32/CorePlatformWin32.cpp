@@ -36,6 +36,7 @@
 #include "Concurrency/Thread.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/InputSystem.h"
+#include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/SystemTimer.h"
@@ -268,7 +269,7 @@ void CoreWin32Platform::LoadWindowMinimumSizeSettings()
 void CoreWin32Platform::Run()
 {
     Instance()->SystemAppStarted();
-
+    appStarted = true;
     MSG msg;
     while (1)
     {
@@ -635,14 +636,16 @@ float32 ReadCurrentScaleFactor()
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
+    if (!core->IsAppStarted())
+    {
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     const Vector2& minSizes = core->GetWindowMinimumSize();
     const LONG minWidth = static_cast<LONG>(minSizes.x), minHeight = static_cast<LONG>(minSizes.y);
-    float32 scaleX = 1.f, scaleY = 1.f;
     //TODO: Add system scale
-    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
-    scaleX *= userScale;
-    scaleY *= userScale;
+    float32 scaleX = 1.f, scaleY = 1.f;
+    scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
     RECT rect;
 
     switch (message)
@@ -660,8 +663,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     case WM_ERASEBKGND:
         GetClientRect(hWnd, &rect);
-        scaleY = ReadCurrentScaleFactor();
-        core->ChangedScreenMetrics(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
+        core->UpdateScreenMetrics(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
     case WM_SYSKEYUP:
     // no break
