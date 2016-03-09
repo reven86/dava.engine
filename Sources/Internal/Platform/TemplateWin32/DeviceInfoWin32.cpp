@@ -44,6 +44,41 @@
 
 namespace DAVA
 {
+
+namespace RegistryReader
+{
+const WideString infoRegistryPath(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+const WideString registeredOrganization(L"RegisteredOrganization");
+const WideString currentOSVersion(L"CurrentVersion");
+const WideString currentBuildNumber(L"CurrentBuildNumber");
+const WideString currentBuild(L"CurrentBuild");
+const WideString operationSystemName(L"ProductName");
+
+String GetStringForKey(const WideString& path, const WideString& key)
+{
+    WideString val;
+
+    HKEY hKey;
+    LONG openRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, path.c_str(), 0, KEY_READ, &hKey);
+    if (ERROR_SUCCESS == openRes)
+    {
+        WCHAR szBuffer[512];
+        DWORD dwBufferSize = sizeof(szBuffer);
+        ULONG error;
+        error = RegQueryValueExW(hKey, key.c_str(), 0, NULL, reinterpret_cast<LPBYTE>(szBuffer), &dwBufferSize);
+        if (ERROR_SUCCESS == error)
+        {
+            val = szBuffer;
+        }
+    }
+
+    String ret = WStringToString(val);
+    return ret;
+}
+}
+
+
+
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
 }
@@ -60,117 +95,30 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    String version;
-    if (IsWindowsXPOrGreater())
+    String currentOSVersion = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentOSVersion);
+    String currentBuildNumber = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentBuildNumber);
+    if ("" == currentBuildNumber)
     {
-        version = "XP Or Greater";
+        currentBuildNumber = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentBuild);
     }
-    else
-    {
-        return version;
-    }
+    String operationSystemName = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::operationSystemName);
 
-    if (IsWindowsXPSP1OrGreater())
-    {
-        version = "XP SP1 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindowsXPSP2OrGreater())
-    {
-        version = "XP SP2 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindowsXPSP3OrGreater())
-    {
-        version = "XP SP3 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindowsVistaOrGreater())
-    {
-        version = "Vista Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindowsVistaSP1OrGreater())
-    {
-        version = "Vista SP1 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindowsVistaSP2OrGreater())
-    {
-        version = "Vista SP2 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindows7OrGreater())
-    {
-        version = "Windows 7 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindows7SP1OrGreater())
-    {
-        version = "Windows 7 SP1 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindows8OrGreater())
-    {
-        version = "Windows 8 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
-
-    if (IsWindows8Point1OrGreater())
-    {
-        version = "Windows 8 Point 1 Or Greater";
-    }
-    else
-    {
-        return version;
-    }
+    String version = operationSystemName + " " + currentOSVersion + " " + currentBuildNumber + " ";
 
     return version;
 }
 
+
 String DeviceInfoPrivate::GetManufacturer()
 {
-    return "Not yet implemented";
+
+    String manufacturer = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::registeredOrganization);
+    return manufacturer;
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-    return "Not yet implemented";
+    return "";
 }
 
 String DeviceInfoPrivate::GetLocale()
@@ -210,9 +158,8 @@ String DeviceInfoPrivate::GetTimeZone()
         break;
     case TIME_ZONE_ID_STANDARD:
     case TIME_ZONE_ID_UNKNOWN:
-        name = timeZoneInformation.StandardName;
-        break;
     default:
+        name = timeZoneInformation.StandardName;
         break;
     }
 
