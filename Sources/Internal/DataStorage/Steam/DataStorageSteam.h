@@ -26,37 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef DATA_STORAGE_STEAM_H
+#define DATA_STORAGE_STEAM_H
 
-#ifndef __DAVAENGINE_UI_AGGREGATOR_CONTROL_H__
-#define __DAVAENGINE_UI_AGGREGATOR_CONTROL_H__
+#if defined(__DAVAENGINE_STEAM__)
 
-#include "UIControl.h"
+#include "DataStorage/DataStorage.h"
+
+#include "Utils/Utils.h"
+
+#include "Platform/Steam.h"
 
 namespace DAVA
 {
-class UIAggregatorControl : public UIControl
+
+#if defined(__DAVAENGINE_STEAM__)
+
+class DynamicMemoryFile;
+class DataStorageSteam : public IDataStorage
 {
-protected:
-    ~UIAggregatorControl()
-    {
-    }
+private:
+    const String storageFileName = "CloudArchive";
 
 public:
-    UIAggregatorControl(const Rect& rect = Rect());
-    UIAggregatorControl* Clone() override;
-
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-
-    void AddAggregatorChild(UIControl* uiControl);
-
-    void SetAggregatorPath(const FilePath& path);
-    const FilePath& GetAggregatorPath() const;
+    DataStorageSteam();
+    String GetStringValue(const String& key) override;
+    int64 GetLongValue(const String& key) override;
+    void SetStringValue(const String& key, const String& value) override;
+    void SetLongValue(const String& key, int64 value) override;
+    void RemoveEntry(const String& key) override;
+    void Clear() override;
+    void Push() override;
 
 private:
-    List<UIControl*> aggregatorControls;
-    FilePath aggregatorPath;
+    ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
+    void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
+
+    Steam::Storage* remoteStorage = nullptr;
+    ScopedPtr<KeyedArchive> values;
+    bool isValuesChanged = false;
 };
-};
+
+#endif //__DAVAENGINE_STEAM__
+}
+
+#endif
 
 #endif

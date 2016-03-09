@@ -298,7 +298,7 @@ void SetToRHI(Handle vb)
     if (self->updatePending)
     {
         DVASSERT(self->mappedData);
-        glBufferData(GL_ARRAY_BUFFER, self->size, self->mappedData, self->usage);
+        GL_CALL(glBufferData(GL_ARRAY_BUFFER, self->size, self->mappedData, self->usage));
         self->updatePending = false;
     }
 }
