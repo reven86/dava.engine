@@ -193,7 +193,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
     case Qt::BackgroundRole:
         if (property->GetType() == AbstractProperty::TYPE_HEADER)
         {
-            return Themes::GetViewLineAliternateColor();
+            return Themes::GetViewLineAlternateColor();
         }
         break;
 

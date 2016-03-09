@@ -257,7 +257,7 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
                 return StringToQString(node->GetName());
 
             case Qt::BackgroundRole:
-                return Themes::GetViewLineAliternateColor();
+                return Themes::GetViewLineAlternateColor();
 
             case Qt::FontRole:
             {

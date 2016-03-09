@@ -168,7 +168,7 @@ eTheme GetCurrentTheme()
     return currentTheme;
 }
     
-QColor GetViewLineAliternateColor()
+QColor GetViewLineAlternateColor()
 {
     return currentTheme == Themes::Classic ? QColor(Qt::lightGray) : QColor(0x3f, 0x3f, 0x46);
 }

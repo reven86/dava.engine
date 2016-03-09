@@ -47,7 +47,7 @@ namespace Themes
     void SetCurrentTheme(eTheme theme);
     const QString& GetCurrentThemeStr();
     eTheme GetCurrentTheme();
-    QColor GetViewLineAliternateColor();
+    QColor GetViewLineAlternateColor();
     QColor GetChangedPropertyColor();
     QColor GetPrototypeColor();
     QColor GetStyleSheetNodeColor();

@@ -214,7 +214,7 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
         QStandardItem* item = itemFromIndex(index);
         if (item->parent() == nullptr)
         {
-            return Themes::GetViewLineAliternateColor();
+            return Themes::GetViewLineAlternateColor();
         }
     }
     return QStandardItemModel::data(index, role);
