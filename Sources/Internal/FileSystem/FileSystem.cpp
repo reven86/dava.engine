@@ -434,6 +434,35 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 
 bool FileSystem::IsFile(const FilePath& pathToCheck) const
 {
+    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES ||
+        pathToCheck.GetType() == FilePath::PATH_IN_FILESYSTEM)
+    {
+        const String& str = pathToCheck.GetStringValue();
+        auto start = str.find("~res:/");
+        String relative;
+        if (start == 0)
+        {
+            relative = str.substr(6);
+        } else
+        {
+            start = str.find(localResourcesPath);
+            if (start == 0)
+            {
+                relative = str.substr(strlen(localResourcesPath));
+            }
+        }
+        if (!relative.empty())
+        {
+            for (auto& archive : resourceArchiveList)
+            {
+                if (archive.archive->HasFile(relative))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
 #if defined(__DAVAENGINE_ANDROID__)
     const String& path = pathToCheck.GetAbsolutePathname();
     if (IsAPKPath(path))
@@ -441,11 +470,28 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         return (fileSet.find(path) != fileSet.end());
     }
 #endif
-    FileAPI::Stat s;
-    FilePath::NativeStringType pathStr = pathToCheck.GetNativeAbsolutePathname();
-    if (FileAPI::FileStat(pathStr.c_str(), &s) == 0)
+
+	struct stat s;
+
+    const String& cs = pathToCheck.GetAbsolutePathname();
+    int result = stat(cs.c_str(), &s);
+    if(result == 0)
+	{
+		return (0 != (s.st_mode & S_IFREG));
+	} else
     {
-        return (0 != (s.st_mode & S_IFREG));
+        switch (errno)
+        {
+        case ENOENT:
+            Logger::Error("File %s not found.", cs.c_str());
+            break;
+        case EINVAL:
+            Logger::Error("Invalid parameter to stat.");
+            break;
+        default:
+            /* Should never be reached. */
+            Logger::Error("Unexpected error in _stat.");
+        }
     }
 
     return false;
@@ -699,25 +745,25 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 String FileSystem::ReadFileContents(const FilePath& pathname)
 {
     String fileContents;
-    RefPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
-    if (!fp)
-    {
-        Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
-    }
-    else
-    {
-        uint32 fileSize = fp->GetSize();
+    File * fp = File::Create(pathname, File::OPEN|File::READ);
+	if (!fp)
+	{
+		Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+		return 0;
+	}
+	uint32 fileSize = fp->GetSize();
 
-        fileContents.resize(fileSize);
+	fileContents.reserve(fileSize);
 
-        uint32 dataRead = fp->Read(&fileContents[0], fileSize);
-
-        if (dataRead != fileSize)
-        {
-            Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
-            fileContents.clear();
-        }
-    }
+    uint32 dataRead = fp->ReadString(fileContents);
+    
+	if (dataRead != fileSize)
+	{
+		Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+		return 0;
+	}
+    
+	SafeRelease(fp);
     return fileContents;
 }
 
@@ -813,7 +859,7 @@ bool FileSystem::IsAPKPath(const String& path) const
 void FileSystem::Init()
 {
 #ifdef USE_LOCAL_RESOURCES
-    YamlParser* parser = YamlParser::Create("~zip:/fileSystem.yaml");
+	YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #else
     YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #endif
