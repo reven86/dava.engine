@@ -126,26 +126,6 @@ void UISwitch::InitControls()
     ChangeVisualState(); //forcing visual state change cause it can be skipped in CheckToggleSideChange()
 }
 
-void UISwitch::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    //release default buttons - they have to be loaded from yaml
-    buttonLeft = nullptr;
-    buttonRight = nullptr;
-    toggle = nullptr;
-
-    UIControl::LoadFromYamlNode(node, loader);
-}
-
-YamlNode* UISwitch::SaveToYamlNode(UIYamlLoader* loader)
-{
-    buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
-    toggle->SetName(UISWITCH_BUTTON_TOGGLE_NAME);
-    buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    return node;
-}
-
 void UISwitch::AddControl(UIControl* control)
 {
     // Synchronize the pointers to the buttons each time new control is added.

@@ -34,7 +34,6 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/UIStaticText.h"
