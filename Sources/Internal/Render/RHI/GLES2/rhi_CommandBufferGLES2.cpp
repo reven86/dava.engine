@@ -375,7 +375,7 @@ static bool _GLES2_RenderThreadExitPending = false;
 static DAVA::Spinlock _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
-static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync;
+static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync(true, 0);
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
 
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
