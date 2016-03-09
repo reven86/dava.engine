@@ -45,8 +45,11 @@ void ReportScreen::CreateReportScreen()
     ScopedPtr<UIControl> reportItem(new UIControl());
 
     UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
-    UIYamlLoader::Load(reportItem, ControlHelpers::GetPathToUIYaml("ReportItem.yaml"));
 
+    DefaultUIPackageBuilder builder;
+    UIPackageLoader().LoadPackage(ControlHelpers::GetPathToUIYaml("ReportItem.yaml"), &builder);
+    reportItem = builder.GetPackage()->GetControl("ReportItem");
+    
     uint32 offsetY = 150;
     uint32 testNumber = 0;
 
