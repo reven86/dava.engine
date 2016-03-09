@@ -47,7 +47,7 @@ class InspInfo;
 class SceneEditor2;
 class EntityGroup;
 
-class PropertyPanel : public QObject
+class PropertyPanel : public QObject, public IViewEventListener
 {
     Q_OBJECT
     DECLARE_REFLECTED
@@ -65,8 +65,16 @@ public:
     void SetObject(DAVA::InspBase* object);
 
 private:
+    void onFocusIn(IView* view) override;
+    void onFocusOut(IView* view) override;
+
+private:
     std::unique_ptr<IView> view;
     std::shared_ptr<ITreeModel> model;
+
+    bool visible = false;
+    bool isSelectionDirty = false;
+    DAVA::InspBase* selectedObject = nullptr;
 };
 
 #endif // __RESOURCEEDITOR_PROPERTYPANEL_H__

@@ -7,6 +7,7 @@ if (NOT NGT_ROOT)
 endif()
 
 set (NGT_FOUND 1)
+set (DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
 include (CMake-common)
 include (NGTMacro)
 
