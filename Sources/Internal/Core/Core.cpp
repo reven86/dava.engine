@@ -107,7 +107,6 @@ Core::Core()
     globalFrameIndex = 1;
     isActive = false;
     firstRun = true;
-
     isConsoleMode = false;
     options = new KeyedArchive();
     float32 defaultUserScale = 1.f;
