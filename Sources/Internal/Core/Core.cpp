@@ -882,12 +882,12 @@ void Core::InitializeScreenMetrics(void* nativeView, float32 width, float32 heig
     screenMetrics.initialized = true;
 
     rendererParams.window = screenMetrics.nativeView;
-    rendererParams.width = screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale;
-    rendererParams.height = screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale;
+    rendererParams.width = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
+    rendererParams.height = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
 
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(screenMetrics.width, screenMetrics.height);
-    virtSystem->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
+    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
+    virtSystem->SetPhysicalScreenSize(static_cast<int32>(rendererParams.width), static_cast<int32>(rendererParams.height));
     virtSystem->EnableReloadResourceOnResize(true);
 }
 
