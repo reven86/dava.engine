@@ -287,7 +287,7 @@ namespace DAVA
 
     Path Path::GetExtension() const
     {
-        if (HasExtension())
+        if (!HasExtension())
         {
             return Path();
         }

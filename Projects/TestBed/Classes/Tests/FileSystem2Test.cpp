@@ -38,6 +38,40 @@ FileSystem2Test::FileSystem2Test():
 void FileSystem2Test::StartTest(BaseObject*, void*, void*)
 {
     using namespace DAVA;
+    // Path works with out FileSystem2
+    Path rootDir("~res:/");
+    Path data("data");
+    Path subfolder("subfolder");
+    Path filename("filename.txt");
+
+    Path full(rootDir + data + subfolder + filename);
+    auto filename_ = full.GetFilename();
+    if (filename_ != Path("filename.txt"))
+    {
+        Logger::Error("stem name not match");
+    }
+    auto extension = full.GetExtension();
+    if (extension != Path(".txt"))
+    {
+        Logger::Error("ext name not match");
+    }
+    auto stem_ = full.GetStem();
+    if (stem_ != Path("filename"))
+    {
+        Logger::Error("filename name not match");
+    }
+    if (full.GetRootDirectory() != Path("~res:/"))
+    {
+        Logger::Error("rootDir name not match");
+    }
+    if (full.GetParentPath() != Path("~res:/data/subfolder"))
+    {
+        Logger::Error("parent path name not match");
+    }
+    if (full != "~res:/data/subfolder/filename.txt")
+    {
+        Logger::Error("fullname name not match");
+    }
 
     FileSystem2 fs;
 
