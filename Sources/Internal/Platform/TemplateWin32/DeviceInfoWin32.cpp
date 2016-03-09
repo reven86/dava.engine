@@ -177,42 +177,46 @@ String DeviceInfoPrivate::GetLocale()
 {
     WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
     int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
-   
-    String locale = WStringToString(WideString(localeBuffer, size));
+    String locale;
+    if (0 != size)
+    {
+        locale = WStringToString(localeBuffer);
+    }
     return locale;
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    WCHAR coutryBuffer[LOCALE_NAME_MAX_LENGTH];
-    int size = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SLOCALIZEDCOUNTRYNAME, coutryBuffer, LOCALE_NAME_MAX_LENGTH);
-
-    String country = WStringToString(WideString(coutryBuffer, size));
+    WCHAR countryBuffer[LOCALE_NAME_MAX_LENGTH];
+    int size = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SLOCALIZEDCOUNTRYNAME, countryBuffer, LOCALE_NAME_MAX_LENGTH);
+    String country;
+    if (0 != size)
+    {
+        country = WStringToString(countryBuffer);
+    }
     return country;
 }
 
 String DeviceInfoPrivate::GetTimeZone() 
 {
-    _TIME_ZONE_INFORMATION timeZoneInformation;
+    TIME_ZONE_INFORMATION timeZoneInformation;
     DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
 
     WCHAR *name;
-    if (TIME_ZONE_ID_STANDARD == ret)
+    switch (ret)
     {
-        name = timeZoneInformation.StandardName;
-    }
-
-    if (TIME_ZONE_ID_DAYLIGHT == ret)
-    {
+    case TIME_ZONE_ID_DAYLIGHT:
         name = timeZoneInformation.DaylightName;
-    }
-
-    if (TIME_ZONE_ID_UNKNOWN == ret)
-    {
+        break;
+    case TIME_ZONE_ID_STANDARD:
+    case TIME_ZONE_ID_UNKNOWN:
         name = timeZoneInformation.StandardName;
+        break;
+    default:
+        break;
     }
 
-    String timeZone = WStringToString(WideString(name));
+    String timeZone = WStringToString(name);
     return timeZone;
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()

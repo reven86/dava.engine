@@ -39,10 +39,10 @@ DAVA_TESTCLASS (DeviceInfoTest)
 {
     DAVA_TEST (TestFunction)
     {
-        String veosVersion = DeviceInfo::GetVersion();
-        DVVERIFY("" != veosVersion && "Not yet implemented" != veosVersion);
+        String osVersion = DeviceInfo::GetVersion();
+        TEST_VERIFY("" != osVersion && "Not yet implemented" != osVersion);
 
-        Logger::Debug(veosVersion.c_str());
+        Logger::Debug(osVersion.c_str());
 
         String model = DeviceInfo::GetModel();
         Logger::Debug(model.c_str());
@@ -51,13 +51,13 @@ DAVA_TESTCLASS (DeviceInfoTest)
         DeviceInfo::NetworkInfo ninfo = DeviceInfo::GetNetworkInfo();
 
         String locale = DeviceInfo::GetLocale();
-        DVVERIFY("" != locale && "Not yet implemented" != locale);
+        TEST_VERIFY("" != locale && "Not yet implemented" != locale);
 
         String region = DeviceInfo::GetRegion();
-        DVVERIFY("" != region && "Not yet implemented" != region);
+        TEST_VERIFY("" != region && "Not yet implemented" != region);
 
         String timeZone = DeviceInfo::GetTimeZone();
-        DVVERIFY("" != timeZone && "Not yet implemented" != timeZone);
+        TEST_VERIFY("" != timeZone && "Not yet implemented" != timeZone);
 
 
     }
