@@ -106,9 +106,7 @@ public:
     void SetCenterContent(bool center_);
 
 protected:
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     virtual void LoadFromYamlNodeCompleted();
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
 
     Vector2 GetMaxSize(UIControl* control, Vector2 currentMaxSize, Vector2 parentShift);
     void PushContentToBounds(UIControl* control);

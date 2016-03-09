@@ -67,8 +67,9 @@ const DAVA::String OptionName::Mipmaps("-m");
 
 const DAVA::String OptionName::SaveNormals("-saveNormals");
 const DAVA::String OptionName::CopyConverted("-copyconverted");
-const DAVA::String OptionName::CopyCompression("-copycompression");
 const DAVA::String OptionName::SetCompression("-setcompression");
+const DAVA::String OptionName::SetPreset("-setpreset");
+const DAVA::String OptionName::PresetOpt("-preset");
 
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {
