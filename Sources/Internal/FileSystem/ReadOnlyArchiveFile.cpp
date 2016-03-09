@@ -74,11 +74,11 @@ uint32 ReadOnlyArchiveFile::Read(void* pointerToData, uint32 dataSize)
     }
     return 0;
 }
-uint32 ReadOnlyArchiveFile::GetPos()
+uint32 ReadOnlyArchiveFile::GetPos() const
 {
     return pos_;
 }
-uint32 ReadOnlyArchiveFile::GetSize()
+uint32 ReadOnlyArchiveFile::GetSize() const
 {
     return data_.size;
 }
@@ -118,7 +118,7 @@ bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
     }
     return false;
 }
-bool ReadOnlyArchiveFile::IsEof()
+bool ReadOnlyArchiveFile::IsEof() const
 {
     return pos_ == data_.size;
 }

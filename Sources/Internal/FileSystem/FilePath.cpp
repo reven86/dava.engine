@@ -98,6 +98,11 @@ void FilePath::RemoveResourcesFolder(const FilePath& folder)
     }
 }
 
+const List<FilePath>& FilePath::GetResourcesFolders()
+{
+    return resourceFolders;
+}
+
 #if defined(__DAVAENGINE_WIN_UAP__)
 String GetResourceDirName(const String& arch, const String& dirName, const String& resPrefix)
 {
@@ -123,6 +128,12 @@ void FilePath::InitializeBundleName()
     if (workingDirectory != execDirectory)
     {
         AddResourcesFolder(workingDirectory);
+    }
+
+    FilePath dataDirPath(workingDirectory + "Data/");
+    if (FileSystem::Instance()->Exists(dataDirPath))
+    {
+        AddResourcesFolder(dataDirPath);
     }
 
 #if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION)
@@ -332,7 +343,27 @@ FilePath::~FilePath()
 {
 }
 
+String FilePath::GetAbsolutePathname() const
+{
+    if (pathType == PATH_IN_RESOURCES)
+    {
+        return ResolveResourcesPath();
+    }
+
+    return absolutePathname;
+}
+
 #ifdef __DAVAENGINE_WINDOWS__
+
+FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
+{
+    return UTF8Utils::EncodeToWideString(GetAbsolutePathname());
+}
+
+FilePath FilePath::FromNativeString(const NativeStringType& path)
+{
+    return FilePath(UTF8Utils::EncodeToUTF8(path));
+}
 
 #else
 
@@ -350,10 +381,10 @@ FilePath FilePath::FromNativeString(const NativeStringType& path)
 
 String FilePath::ResolveResourcesPath() const
 {
-    String::size_type find = absolutePathname.find("~res:");
+    String::size_type find = absolutePathname.find("~res:/");
     if (find != String::npos)
     {
-        String relativePathname = /*"Data" + */absolutePathname.substr(6);
+        String relativePathname = absolutePathname.substr(6);
         FilePath path;
 
         if (resourceFolders.size() == 1) // optimization to avoid call path.Exists()

@@ -114,7 +114,7 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
     FILE* file = 0;
     uint32 size = 0;
-    WideString path = filePath.GetAbsolutePathname();
+    FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
 
     if ((attributes & File::OPEN) && (attributes & File::READ))
     {
@@ -128,7 +128,7 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         }
 
         if (!file)
-            return NULL;
+            return nullptr;
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
@@ -137,13 +137,13 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     {
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("wb"));
         if (!file)
-            return NULL;
+            return nullptr;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
         if (!file)
-            return NULL;
+            return nullptr;
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
     }

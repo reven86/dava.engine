@@ -49,10 +49,10 @@ public:
 
     uint32 Write(const void* pointerToData, uint32 dataSize) override;
     uint32 Read(void* pointerToData, uint32 dataSize) override;
-    uint32 GetPos() override;
-    uint32 GetSize() override;
+    uint32 GetPos() const override;
+    uint32 GetSize() const override;
     bool Seek(int32 position, uint32 seekType) override;
-    bool IsEof() override;
+    bool IsEof() const override;
 
 private:
     ResourceArchive::ContentAndSize data_;
