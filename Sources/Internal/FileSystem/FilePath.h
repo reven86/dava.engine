@@ -154,7 +154,7 @@ public:
         \brief Function to retrieve string path value as URL for Web Browser
         \returns path as URL
      */
-    const String AsURL() const;
+    String AsURL() const;
     
     
 	/**

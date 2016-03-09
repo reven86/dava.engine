@@ -98,11 +98,6 @@ void FilePath::RemoveResourcesFolder(const FilePath& folder)
     }
 }
 
-const List<FilePath>& FilePath::GetResourcesFolders()
-{
-    return resourceFolders;
-}
-
 #if defined(__DAVAENGINE_WIN_UAP__)
 String GetResourceDirName(const String& arch, const String& dirName, const String& resPrefix)
 {
@@ -337,27 +332,7 @@ FilePath::~FilePath()
 {
 }
 
-String FilePath::GetAbsolutePathname() const
-{
-    if (pathType == PATH_IN_RESOURCES)
-    {
-        return ResolveResourcesPath();
-    }
-
-    return absolutePathname;
-}
-
 #ifdef __DAVAENGINE_WINDOWS__
-
-FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
-{
-    return UTF8Utils::EncodeToWideString(GetAbsolutePathname());
-}
-
-FilePath FilePath::FromNativeString(const NativeStringType& path)
-{
-    return FilePath(UTF8Utils::EncodeToUTF8(path));
-}
 
 #else
 

@@ -77,10 +77,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         if (pos == 0)
         {
             String relfilename = filenamecpp.substr(item.attachPath.length());
-            int32 size = item.archive->LoadResource(relfilename, 0);
-            if (size == -1)
+            ResourceArchive::ContentAndSize contentAndSize;
+            ;
+            if (!item.archive->LoadFile(relfilename, contentAndSize))
             {
-                return 0;
+                return nullptr;
             }
 		    auto * file =  ReadOnlyArchiveFile::Create(contentAndSize, filename);
 			return file;
@@ -103,7 +104,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     bool isDirectory = FileSystem::Instance()->IsDirectory(filename);
     if (isDirectory)
     {
-        return NULL;
+        return nullptr;
     }
 
     return PureCreate(filename, attributes);
@@ -113,7 +114,7 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
     FILE* file = 0;
     uint32 size = 0;
-    FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
+    WideString path = filePath.GetAbsolutePathname();
 
     if ((attributes & File::OPEN) && (attributes & File::READ))
     {
