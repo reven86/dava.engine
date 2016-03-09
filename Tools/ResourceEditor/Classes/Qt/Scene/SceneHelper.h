@@ -40,14 +40,21 @@ namespace SceneHelper
 class TextureCollector
 {
 public:
-    TextureCollector(bool notNullTextures = true, bool onlyActiveTextures = false);
+    enum Options
+    {
+        Default = 0,
+        IncludeNullTextures = 0x1,
+        OnlyActiveTextures = 0x2
+    };
+
+    TextureCollector(uint32 options = Default);
 
     void Apply(DAVA::NMaterial* material);
     DAVA::TexturesMap& GetTextures();
 
 private:
-    bool notNullTextures;
-    bool onlyActiveTextures;
+    bool includeNullTextures = true;
+    bool onlyActiveTextures = false;
     DAVA::TexturesMap textureMap;
 };
 

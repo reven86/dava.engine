@@ -302,7 +302,7 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog)
 {
     bool allDescriptorsWereExported = true;
 
-    SceneHelper::TextureCollector collector(false /*include null textures*/);
+    SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
     SceneHelper::EnumerateSceneTextures(scene, collector);
 
     for (const auto& scTex : collector.GetTextures())

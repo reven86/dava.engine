@@ -316,7 +316,7 @@ void SceneInfo::CollectSceneData(SceneEditor2* scene)
     {
         scene->GetChildNodes(nodesAtScene);
 
-        SceneHelper::TextureCollector collector(true /*exclude null*/, true /*only for active configs*/);
+        SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::OnlyActiveTextures);
         SceneHelper::EnumerateSceneTextures(activeScene, collector);
         sceneTexturesSize = CalculateTextureSize(collector.GetTextures());
 
@@ -773,7 +773,7 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject* 
 
 void SceneInfo::TexturesReloaded()
 {
-    SceneHelper::TextureCollector collector(true /*exclude null*/, true /*only for active configs*/);
+    SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::OnlyActiveTextures);
     SceneHelper::EnumerateSceneTextures(activeScene, collector);
     sceneTexturesSize = CalculateTextureSize(collector.GetTextures());
 

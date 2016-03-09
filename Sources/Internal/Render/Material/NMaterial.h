@@ -232,6 +232,7 @@ private:
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
     NMaterialProperty* GetMaterialProperty(const FastName& propName);
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
+    void CollectConfigTextures(const MaterialConfig& config, Set<MaterialTextureInfo*>& collection) const;
 
     void AddChildMaterial(NMaterial* material);
     void RemoveChildMaterial(NMaterial* material);

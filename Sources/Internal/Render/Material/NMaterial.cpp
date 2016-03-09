@@ -283,27 +283,13 @@ void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo*>& collection) cons
 {
     for (const auto& config : materialConfigs)
     {
-        for (const auto& lc : config.localTextures)
-        {
-            const auto& path = lc.second->path;
-            if (!path.IsEmpty())
-            {
-                collection.emplace(lc.second);
-            }
-        }
+        CollectConfigTextures(config, collection);
     }
 }
 
 void NMaterial::CollectActiveLocalTextures(Set<MaterialTextureInfo*>& collection) const
 {
-    for (const auto& lc : GetCurrentConfig().localTextures)
-    {
-        const auto& path = lc.second->path;
-        if (!path.IsEmpty())
-        {
-            collection.emplace(lc.second);
-        }
-    }
+    CollectConfigTextures(GetCurrentConfig(), collection);
 }
 
 bool NMaterial::ContainsTexture(Texture* texture) const
@@ -802,6 +788,18 @@ void NMaterial::CollectMaterialFlags(HashMap<FastName, int32>& target)
             target.erase(it.first);
         else
             target[it.first] = it.second;
+    }
+}
+
+void NMaterial::CollectConfigTextures(const MaterialConfig& config, Set<MaterialTextureInfo*>& collection) const
+{
+    for (const auto& lc : config.localTextures)
+    {
+        const auto& path = lc.second->path;
+        if (!path.IsEmpty())
+        {
+            collection.emplace(lc.second);
+        }
     }
 }
 

@@ -123,7 +123,7 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName, Set<String>& 
     SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
 
     {
-        SceneHelper::TextureCollector collector(false /*include null textures*/);
+        SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
         SceneHelper::EnumerateSceneTextures(scene, collector);
         texturesForSave = std::move(collector.GetTextures());
     }

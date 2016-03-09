@@ -30,10 +30,10 @@
 #include "SceneHelper.h"
 #include "Deprecated/SceneValidator.h"
 
-SceneHelper::TextureCollector::TextureCollector(bool notNullTextures_, bool onlyActiveTextures_)
-    : notNullTextures(notNullTextures_)
-    , onlyActiveTextures(onlyActiveTextures_)
+SceneHelper::TextureCollector::TextureCollector(uint32 options)
 {
+    includeNullTextures = (options & IncludeNullTextures) != 0;
+    onlyActiveTextures = (options & OnlyActiveTextures) != 0;
 }
 
 void SceneHelper::TextureCollector::Apply(DAVA::NMaterial* material)
@@ -54,7 +54,7 @@ void SceneHelper::TextureCollector::Apply(DAVA::NMaterial* material)
             continue;
         }
 
-        if ((notNullTextures == true) && (nullptr == texture || texture->isRenderTarget))
+        if ((includeNullTextures == false) && (nullptr == texture || texture->isRenderTarget))
         {
             continue;
         }
