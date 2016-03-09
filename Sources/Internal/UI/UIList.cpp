@@ -32,8 +32,6 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
-#include "FileSystem/YamlNode.h"
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 
 namespace DAVA
@@ -731,33 +729,6 @@ void UIList::OnActive()
     Refresh();
 }
 
-void UIList::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* orientNode = node->Get("orientation");
-    if (orientNode)
-    {
-        if (orientNode->AsString() == "ORIENTATION_VERTICAL")
-            orientation = ORIENTATION_VERTICAL;
-        else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
-            orientation = ORIENTATION_HORIZONTAL;
-        else
-        {
-            DVASSERT(0 && "Orientation constant is wrong");
-        }
-    }
-    // Load aggregator path
-    const YamlNode* aggregatorPathNode = node->Get("aggregatorPath");
-    if (aggregatorPathNode)
-    {
-        aggregatorPath = aggregatorPathNode->AsString();
-    }
-
-    // TODO
-    InitAfterYaml();
-}
-
 UIList* UIList::Clone()
 {
     UIList* c = new UIList(GetRect(), this->orientation);
@@ -782,43 +753,6 @@ const FilePath& UIList::GetAggregatorPath()
 void UIList::SetAggregatorPath(const FilePath& aggregatorPath)
 {
     this->aggregatorPath = aggregatorPath;
-}
-
-YamlNode* UIList::SaveToYamlNode(UIYamlLoader* loader)
-{
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    //Temp variables
-    String stringValue;
-
-    //Orientation
-    eListOrientation orient = (eListOrientation)GetOrientation();
-    switch (orient)
-    {
-    case ORIENTATION_VERTICAL:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    case ORIENTATION_HORIZONTAL:
-        stringValue = "ORIENTATION_HORIZONTAL";
-        break;
-    default:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    }
-    node->Set("orientation", stringValue);
-
-    if (delegate)
-    {
-        // Set aggregator path from current List delegate
-        delegate->SaveToYaml(this, node);
-    }
-
-    // Save aggregator path only if it is not empty
-    if (!aggregatorPath.IsEmpty())
-    {
-        node->Set("aggregatorPath", aggregatorPath.GetFrameworkPath());
-    }
-
-    return node;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar* forScrollBar)

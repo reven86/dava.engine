@@ -423,8 +423,6 @@
 		02E7C7921BD624A7002F026D /* XMLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1FB1BD624A5002F026D /* XMLParser.cpp */; };
 		02E7C7931BD624A7002F026D /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1FC1BD624A5002F026D /* XMLParser.h */; };
 		02E7C7941BD624A7002F026D /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1FC1BD624A5002F026D /* XMLParser.h */; };
-		02E7C7951BD624A7002F026D /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1FD1BD624A5002F026D /* XMLParser.mm */; };
-		02E7C7961BD624A7002F026D /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1FD1BD624A5002F026D /* XMLParser.mm */; };
 		02E7C7971BD624A7002F026D /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1FE1BD624A5002F026D /* YamlArchive.cpp */; };
 		02E7C7981BD624A7002F026D /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1FE1BD624A5002F026D /* YamlArchive.cpp */; };
 		02E7C7991BD624A7002F026D /* YamlArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1FF1BD624A5002F026D /* YamlArchive.h */; };
@@ -1709,10 +1707,6 @@
 		02E7CE381BD624A7002F026D /* UI3DView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C58E1BD624A6002F026D /* UI3DView.cpp */; };
 		02E7CE391BD624A7002F026D /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C58F1BD624A6002F026D /* UI3DView.h */; };
 		02E7CE3A1BD624A7002F026D /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C58F1BD624A6002F026D /* UI3DView.h */; };
-		02E7CE3B1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */; };
-		02E7CE3C1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */; };
-		02E7CE3D1BD624A7002F026D /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5911BD624A6002F026D /* UIAggregatorControl.h */; };
-		02E7CE3E1BD624A7002F026D /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5911BD624A6002F026D /* UIAggregatorControl.h */; };
 		02E7CE3F1BD624A7002F026D /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5921BD624A6002F026D /* UIButton.cpp */; };
 		02E7CE401BD624A7002F026D /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5921BD624A6002F026D /* UIButton.cpp */; };
 		02E7CE411BD624A7002F026D /* UIButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5931BD624A6002F026D /* UIButton.h */; };
@@ -2276,7 +2270,6 @@
 		02E7C1FA1BD624A5002F026D /* VariantType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VariantType.h; sourceTree = "<group>"; };
 		02E7C1FB1BD624A5002F026D /* XMLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XMLParser.cpp; sourceTree = "<group>"; };
 		02E7C1FC1BD624A5002F026D /* XMLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLParser.h; sourceTree = "<group>"; };
-		02E7C1FD1BD624A5002F026D /* XMLParser.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = XMLParser.mm; sourceTree = "<group>"; };
 		02E7C1FE1BD624A5002F026D /* YamlArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlArchive.cpp; sourceTree = "<group>"; };
 		02E7C1FF1BD624A5002F026D /* YamlArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlArchive.h; sourceTree = "<group>"; };
 		02E7C2001BD624A5002F026D /* YamlEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlEmitter.cpp; sourceTree = "<group>"; };
@@ -2921,8 +2914,6 @@
 		02E7C58D1BD624A6002F026D /* TheoraPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraPlayer.h; sourceTree = "<group>"; };
 		02E7C58E1BD624A6002F026D /* UI3DView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UI3DView.cpp; sourceTree = "<group>"; };
 		02E7C58F1BD624A6002F026D /* UI3DView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UI3DView.h; sourceTree = "<group>"; };
-		02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
-		02E7C5911BD624A6002F026D /* UIAggregatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAggregatorControl.h; sourceTree = "<group>"; };
 		02E7C5921BD624A6002F026D /* UIButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIButton.cpp; sourceTree = "<group>"; };
 		02E7C5931BD624A6002F026D /* UIButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIButton.h; sourceTree = "<group>"; };
 		02E7C5941BD624A6002F026D /* UIControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControl.cpp; sourceTree = "<group>"; };
@@ -3483,7 +3474,6 @@
 				02E7C1FA1BD624A5002F026D /* VariantType.h */,
 				02E7C1FB1BD624A5002F026D /* XMLParser.cpp */,
 				02E7C1FC1BD624A5002F026D /* XMLParser.h */,
-				02E7C1FD1BD624A5002F026D /* XMLParser.mm */,
 				02E7C1FE1BD624A5002F026D /* YamlArchive.cpp */,
 				02E7C1FF1BD624A5002F026D /* YamlArchive.h */,
 				02E7C2001BD624A5002F026D /* YamlEmitter.cpp */,
@@ -4415,8 +4405,6 @@
 				02E7C58D1BD624A6002F026D /* TheoraPlayer.h */,
 				02E7C58E1BD624A6002F026D /* UI3DView.cpp */,
 				02E7C58F1BD624A6002F026D /* UI3DView.h */,
-				02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */,
-				02E7C5911BD624A6002F026D /* UIAggregatorControl.h */,
 				02E7C5921BD624A6002F026D /* UIButton.cpp */,
 				02E7C5931BD624A6002F026D /* UIButton.h */,
 				02E7C5941BD624A6002F026D /* UIControl.cpp */,
@@ -5222,7 +5210,6 @@
 				02E7CAF01BD624A7002F026D /* ShadowVolumeRenderLayer.h in Headers */,
 				02E7CE0A1BD624A7002F026D /* UILinearLayoutComponent.h in Headers */,
 				02E7CEAE1BD624A7002F026D /* UIScreenManageriPhoneImpl.h in Headers */,
-				02E7CE3E1BD624A7002F026D /* UIAggregatorControl.h in Headers */,
 				02E7C67C1BD624A6002F026D /* FastName.h in Headers */,
 				02E7CCDE1BD624A7002F026D /* PathComponent.h in Headers */,
 				02E7C9D21BD624A7002F026D /* RenderView.h in Headers */,
@@ -5764,7 +5751,6 @@
 				02E7CAEF1BD624A7002F026D /* ShadowVolumeRenderLayer.h in Headers */,
 				02E7CE091BD624A7002F026D /* UILinearLayoutComponent.h in Headers */,
 				02E7CEAD1BD624A7002F026D /* UIScreenManageriPhoneImpl.h in Headers */,
-				02E7CE3D1BD624A7002F026D /* UIAggregatorControl.h in Headers */,
 				02E7C67B1BD624A6002F026D /* FastName.h in Headers */,
 				02E7CCDD1BD624A7002F026D /* PathComponent.h in Headers */,
 				02E7C9D11BD624A7002F026D /* RenderView.h in Headers */,
@@ -6180,7 +6166,6 @@
 				02E7CC5C1BD624A7002F026D /* GameObject.cpp in Sources */,
 				02E7CF7C1BD639E1002F026D /* DownloadManager.cpp in Sources */,
 				02E7CF291BD639A4002F026D /* Backtrace.cpp in Sources */,
-				02E7CE3C1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */,
 				02E7C68C1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F71BD6248E002F026D /* CRC32.cpp in Sources */,
 				02E7C8701BD624A7002F026D /* NetConfig.cpp in Sources */,
@@ -6364,7 +6349,6 @@
 				02FD81331924997C007762C0 /* DAVAClassRegistrator.cpp in Sources */,
 				02E7CB501BD624A7002F026D /* NMaterialNames.cpp in Sources */,
 				02E7CC1A1BD624A7002F026D /* rhi_ProgGLES2.cpp in Sources */,
-				02E7C7961BD624A7002F026D /* XMLParser.mm in Sources */,
 				7CF246E91C103C5F00A821DC /* UIScreenManagerDefault.cpp in Sources */,
 				02E7CA821BD624A7002F026D /* TextLayout.cpp in Sources */,
 				02E7CD6E1BD624A7002F026D /* LightUpdateSystem.cpp in Sources */,
@@ -6661,7 +6645,6 @@
 				02E7CC5B1BD624A7002F026D /* GameObject.cpp in Sources */,
 				02E7CF7B1BD639E1002F026D /* DownloadManager.cpp in Sources */,
 				02E7CF281BD639A4002F026D /* Backtrace.cpp in Sources */,
-				02E7CE3B1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */,
 				02E7C68B1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F61BD6248E002F026D /* CRC32.cpp in Sources */,
 				02E7C86F1BD624A7002F026D /* NetConfig.cpp in Sources */,
@@ -6849,7 +6832,6 @@
 				021414161819851100925E51 /* DAVAClassRegistrator.cpp in Sources */,
 				02E7CB4F1BD624A7002F026D /* NMaterialNames.cpp in Sources */,
 				02E7CC191BD624A7002F026D /* rhi_ProgGLES2.cpp in Sources */,
-				02E7C7951BD624A7002F026D /* XMLParser.mm in Sources */,
 				7CF246E81C103C5F00A821DC /* UIScreenManagerDefault.cpp in Sources */,
 				02E7CA811BD624A7002F026D /* TextLayout.cpp in Sources */,
 				02E7CD6D1BD624A7002F026D /* LightUpdateSystem.cpp in Sources */,

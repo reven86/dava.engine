@@ -2,7 +2,7 @@
 #compiller flags
 
 if( APPLE )
-    set(CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES} AdHoc CACHE STRING
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo;AdHoc"  CACHE STRING
         "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
         FORCE)
      
