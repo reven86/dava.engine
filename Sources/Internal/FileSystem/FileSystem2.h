@@ -91,6 +91,7 @@ namespace DAVA
 
         void Clear();
         Path RemoveFilename() const;
+        Path RemoveVirtualRoot() const;
         Path ReplaceExtension(const Path& newExtension = Path()) const;
 
         const String& ToStringUtf8() const;

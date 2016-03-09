@@ -29,7 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileSystem2Test.h"
 #include "FileSystem/FileSystem2.h"
 
-FileSystem2Test::FileSystem2Test()
+FileSystem2Test::FileSystem2Test():
+    BaseScreen("FileSystem2Test")
 {
 
 }
@@ -46,24 +47,26 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     // fs.Mount("~res:/", new PakfileDevice(Path("pakfile.tanks1.pak")));
     Path userSaveDir = fs.GetPrefPath();
 
-    fs.MakeDirectory(userSaveDir + Path("Dava/TestDir/Saves"), true);
-    fs.Mount("~doc:/", std::make_shared<OSFileDevice>(userSaveDir + Path("Dava/TestDir/Saves")));
+    bool errorIfExist = false;
+    fs.MakeDirectory(userSaveDir + Path("Saves"), errorIfExist);
+    fs.Mount("~doc:/", std::make_shared<OSFileDevice>(userSaveDir + Path("Saves")));
 
     Path path("~res:/TestData");
 
     if (fs.IsFile(path))
     {
         Logger::Info("path:%s is file", path.ToStringUtf8().c_str());
-    }
-
-    if (fs.IsDirectory(path))
+    } else if (fs.IsDirectory(path))
     {
         Logger::Info("path:%s is directory", path.ToStringUtf8().c_str());
+    } else
+    {
+        Logger::Error("can't find path to resources: %", path.ToStringUtf8().c_str());
     }
 
     Path dirName("MovieTest");
     path += dirName;
-    Logger::Info("path: %s", path.ToStringUtf8().c_str());
+    Logger::Info("path:%s", path.ToStringUtf8().c_str());
 
     Path fileName("bunny.m4v");
     path += fileName;
@@ -80,6 +83,9 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     if (fileSize == file->GetSize())
     {
         Logger::Info("file size match!");
+    } else
+    {
+        Logger::Error("file size not match!");
     }
 }
 
@@ -94,7 +100,7 @@ void FileSystem2Test::LoadResources()
     resetButton->SetDebugDraw(true);
     resetButton->SetStateFont(0xFF, font);
     resetButton->SetStateFontColor(0xFF, Color::White);
-    resetButton->SetStateText(0xFF, L"Generate Floating point exception");
+    resetButton->SetStateText(0xFF, L"Start FileSysem2 TestBed");
     resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FileSystem2Test::StartTest));
     AddControl(resetButton.get());
 }

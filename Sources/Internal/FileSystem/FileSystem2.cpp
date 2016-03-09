@@ -131,7 +131,6 @@ namespace DAVA
         {
             pathname += "/";
             pathname += p.pathname;
-        
         } else
         {
             pathname += p.pathname;
@@ -318,6 +317,16 @@ namespace DAVA
         return Path();
     }
 
+    Path Path::RemoveVirtualRoot() const
+    {
+        if (IsVirtual())
+        {
+            auto firstSlash = pathname.find('/');
+            return pathname.substr(firstSlash + 1);
+        }
+        return *this;
+    }
+
     Path Path::ReplaceExtension(const Path& newExtension /*= Path()*/) const
     {
         if (HasExtension())
@@ -472,6 +481,19 @@ namespace DAVA
         base(base_)
         , priority(priority_)
     {
+        if(!base.IsAbsolute())
+        {
+            Path cwd = FileSystem2::GetCurrentWorkingDirectory();
+            base = cwd + base;
+        }
+
+        if (!OSFileDevice::Exist(base))
+        {
+            String msg("can't create OSFileDevice: ");
+            msg += base.ToStringUtf8();
+            msg += " not found";
+            throw std::runtime_error(msg);
+        }
     }
 
     int32 OSFileDevice::GetPriority()
@@ -490,6 +512,11 @@ namespace DAVA
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
 
+        if (absolute.IsVirtual())
+        {
+            absolute = base + FileSystem2::GetRelativePath(p);
+        }
+
 #ifdef __DAVAENGINE_WINDOWS__
         BOOL result = ::PathFileExistsW(absolute.ToWideString().c_str());
         return result == TRUE;
@@ -501,6 +528,10 @@ namespace DAVA
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
 
+        if (p.IsVirtual())
+        {
+            absolute = base + p.RemoveVirtualRoot();
+        }
 #ifdef __DAVAENGINE_WINDOWS__
         DWORD fileAttibures = ::GetFileAttributesW(absolute.ToWideString().c_str());
         if (fileAttibures != INVALID_FILE_ATTRIBUTES)
@@ -516,6 +547,10 @@ namespace DAVA
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
 
+        if (p.IsVirtual())
+        {
+            absolute = base + p.RemoveVirtualRoot();
+        }
 #ifdef __DAVAENGINE_WINDOWS__
         DWORD fileAttibures = ::GetFileAttributesW(absolute.ToWideString().c_str());
         if (fileAttibures != INVALID_FILE_ATTRIBUTES)
@@ -553,6 +588,10 @@ namespace DAVA
     std::unique_ptr<InputStream> OSFileDevice::Open(const Path& p)
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
+        if (absolute.IsVirtual())
+        {
+            absolute = base + absolute.RemoveVirtualRoot();
+        }
         std::unique_ptr<InputStream> result(new OSInputStream(absolute));
         return result;
     }
@@ -561,6 +600,10 @@ namespace DAVA
     std::unique_ptr<OutputStream> OSFileDevice::Create(const Path& p, bool recreate)
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
+        if (absolute.IsVirtual())
+        {
+            absolute = base + absolute.RemoveVirtualRoot();
+        }
         std::unique_ptr<OutputStream> result(new OSOutputStream(absolute, recreate));
         return result;
     }
@@ -568,6 +611,11 @@ namespace DAVA
     void OSFileDevice::RemoveFile(const Path& p)
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
+
+        if (absolute.IsVirtual())
+        {
+            absolute = base + absolute.RemoveVirtualRoot();
+        }
 
         int result = std::remove(absolute.ToStringUtf8().c_str());
         if (result != 0)
@@ -586,6 +634,12 @@ namespace DAVA
     {
 #ifdef __DAVAENGINE_WINDOWS__
         Path absolute = p.IsAbsolute() ? p : base + p;
+
+        if (absolute.IsVirtual())
+        {
+            absolute = base + absolute.RemoveVirtualRoot();
+        }
+
         int result = ::SHCreateDirectoryExW(nullptr, absolute.ToWideString().c_str(), nullptr);
         String err;
         switch(result)
@@ -629,6 +683,11 @@ namespace DAVA
     void OSFileDevice::DeleteDirectory(const Path& p, bool withContent)
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
+
+        if (absolute.IsVirtual())
+        {
+            absolute = base + absolute.RemoveVirtualRoot();
+        }
 
 #ifdef __DAVAENGINE_WINDOWS__
         if (withContent)
@@ -677,18 +736,38 @@ namespace DAVA
         {
             std::shared_ptr<FileDevice> result;
 
-            auto it = std::find_if(begin(devicesSorted), end(devicesSorted), [&p](std::shared_ptr<FileDevice>& device)
+            if (p.HasRootDirectory())
             {
-                return device->Exist(p);
-            });
+                const Path& root = p.GetRootDirectory();
+                auto& devices = devicesByRootName[root];
+                for(auto& dev : devices)
+                {
+                    if(dev->Exist(p))
+                    {
+                        return dev;
+                    }
+                }
 
-            if (it != end(devicesSorted))
+                if (nativeFS->Exist(p))
+                {
+                    return nativeFS;
+                }
+            } else
             {
-                result = *it;
+                auto it = std::find_if(begin(devicesSorted), end(devicesSorted), [&p](std::shared_ptr<FileDevice>& device)
+                {
+                    return device->Exist(p);
+                });
+
+                if (it != end(devicesSorted))
+                {
+                    result = *it;
+                }
             }
 
             return result;
         }
+        std::shared_ptr<FileDevice> nativeFS;
         // use ONLY std::stable_sort to preserv adding order
         Vector<std::shared_ptr<FileDevice>> devicesSorted;
         UnorderedMap<Path, Vector<std::shared_ptr<FileDevice>>> devicesByRootName;
@@ -697,7 +776,8 @@ namespace DAVA
     FileSystem2::FileSystem2()
     {
         impl.reset(new FileSystem2Impl());
-        Mount("", std::make_shared<OSFileDevice>());
+        impl->nativeFS = std::make_shared<OSFileDevice>();
+        Mount("", impl->nativeFS);
     }
 
     FileSystem2::~FileSystem2()
@@ -800,7 +880,8 @@ namespace DAVA
 
     void FileSystem2::MakeDirectory(const Path& p, bool errorIfExist /*= false*/) const
     {
-        auto& devices = impl->devicesByRootName[p.GetRootDirectory()];
+        const auto& rootDir = p.GetRootDirectory();
+        auto& devices = impl->devicesByRootName[rootDir];
         if (!devices.empty())
         {
             for(auto device : devices)
@@ -810,12 +891,12 @@ namespace DAVA
                     FileDevice::State::READ_WRITE == state)
                 {
                     device->MakeDirectory(p, errorIfExist);
-                    break;
+                    return;
                 }
             };
         }
 
-        throw std::runtime_error("can't create directory: " + p.ToStringUtf8());
+        impl->nativeFS->MakeDirectory(p, errorIfExist);
     }
 
 
@@ -834,7 +915,7 @@ namespace DAVA
         {
             throw std::runtime_error("can't get current working directory");
         }
-        return result;
+        return result.c_str(); // 
 #else
 #error "implement it"
 #endif
@@ -849,7 +930,7 @@ namespace DAVA
         {
             throw std::runtime_error("can't get user preference path");
         }
-        return result;
+        return result.c_str(); // skip null chars
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
         //take local folder as user documents folder
@@ -872,6 +953,10 @@ namespace DAVA
 
     Path FileSystem2::GetRelativePath(const Path& p)
     {
+        if (p.IsVirtual())
+        {
+            return p.RemoveVirtualRoot();
+        }
         return GetRelativePath(p, GetCurrentWorkingDirectory());
     }
 
