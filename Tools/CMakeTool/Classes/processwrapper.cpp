@@ -47,7 +47,7 @@ ProcessWrapper::~ProcessWrapper()
 {
 }
 
-void ProcessWrapper::LaunchCmake(const QString &command, bool needClean, const QString &buildFolder)
+void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const QString& buildFolder)
 {
     taskQueue.enqueue(Task(command, needClean, buildFolder));
     if (process.state() == QProcess::NotRunning)
@@ -157,7 +157,7 @@ void ProcessWrapper::StartNextCommand()
         return;
     }
     emit processStandardOutput(""); //emit an empty string to make whitespace between build logs
-    const Task &task = taskQueue.dequeue();
+    const Task& task = taskQueue.dequeue();
     if (task.needClean)
     {
         CleanBuildFolder(task.buildFolder);
@@ -166,20 +166,34 @@ void ProcessWrapper::StartNextCommand()
     process.start(task.command);
 }
 
-bool ProcessWrapper::CleanBuildFolder(const QString &buildFolder) const
+bool ProcessWrapper::CleanBuildFolder(const QString& buildFolder) const
 {
     QString keyFile = "CMakeCache.txt";
     FileSystemHelper::eErrorCode errCode = FileSystemHelper::ClearFolderIfKeyFileExists(buildFolder, keyFile);
     QString text = tr("Clear build folder: ");
     switch (errCode)
     {
-    case FileSystemHelper::NO_ERRORS: text += tr("succesful"); break;
-    case FileSystemHelper::FOLDER_NAME_EMPTY: text += tr("path is empty!"); break;
-    case FileSystemHelper::FOLDER_NOT_EXISTS: text += tr("folder is not exists!"); break;
-    case FileSystemHelper::FOLDER_NOT_CONTAIN_KEY_FILE: text += tr("folder is not conain file %1, will not clear").arg(keyFile); break;
-    case FileSystemHelper::CAN_NOT_REMOVE: text += tr("can not remove :("); break;
-    case FileSystemHelper::CAN_NOT_CREATE_BUILD_FOLDER: text += tr("can not create build folder after recoursive removing"); break;
-    default: Q_ASSERT(false && "unhandled error code"); break;
+    case FileSystemHelper::NO_ERRORS:
+        text += tr("succesful");
+        break;
+    case FileSystemHelper::FOLDER_NAME_EMPTY:
+        text += tr("path is empty!");
+        break;
+    case FileSystemHelper::FOLDER_NOT_EXISTS:
+        text += tr("folder is not exists!");
+        break;
+    case FileSystemHelper::FOLDER_NOT_CONTAIN_KEY_FILE:
+        text += tr("folder is not conain file %1, will not clear").arg(keyFile);
+        break;
+    case FileSystemHelper::CAN_NOT_REMOVE:
+        text += tr("can not remove :(");
+        break;
+    case FileSystemHelper::CAN_NOT_CREATE_BUILD_FOLDER:
+        text += tr("can not create build folder after recoursive removing");
+        break;
+    default:
+        Q_ASSERT(false && "unhandled error code");
+        break;
     }
     if (errCode == FileSystemHelper::NO_ERRORS)
     {
@@ -191,4 +205,3 @@ bool ProcessWrapper::CleanBuildFolder(const QString &buildFolder) const
     }
     return errCode == FileSystemHelper::NO_ERRORS;
 }
-

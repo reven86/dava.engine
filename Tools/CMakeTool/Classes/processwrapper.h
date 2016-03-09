@@ -42,14 +42,14 @@ public:
     explicit ProcessWrapper(QObject* parent = 0);
     ~ProcessWrapper();
 
-    Q_INVOKABLE void LaunchCmake(const QString &command, bool needClean, const QString &buildFolder);
+    Q_INVOKABLE void LaunchCmake(const QString& command, bool needClean, const QString& buildFolder);
     Q_INVOKABLE void BlockingStopAllTasks();
 
 signals:
-    void processStateChanged(const QString &text);
-    void processErrorChanged(const QString &text);
-    void processStandardOutput(const QString &text) const;
-    void processStandardError(const QString &text) const;
+    void processStateChanged(const QString& text);
+    void processErrorChanged(const QString& text);
+    void processStandardOutput(const QString& text) const;
+    void processStandardError(const QString& text) const;
     void testSignal();
 
 private slots:
@@ -60,13 +60,17 @@ private slots:
 
 private:
     Q_INVOKABLE void StartNextCommand();
-    bool CleanBuildFolder(const QString &buildFolder) const;
+    bool CleanBuildFolder(const QString& buildFolder) const;
 
     QProcess process;
     struct Task
     {
-        Task(const QString &command_, bool needClean_, const QString &buildFolder_) 
-            : command(command_), needClean(needClean_), buildFolder(buildFolder_) {}
+        Task(const QString& command_, bool needClean_, const QString& buildFolder_)
+            : command(command_)
+            , needClean(needClean_)
+            , buildFolder(buildFolder_)
+        {
+        }
         const QString command;
         const bool needClean;
         const QString buildFolder;

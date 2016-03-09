@@ -66,4 +66,3 @@ QString ConfigStorage::GetJSONTextFromConfigFile() const
     }
     return QString();
 }
-

@@ -49,12 +49,12 @@ public:
     };
     explicit FileSystemHelper(QObject* parent = nullptr);
     Q_INVOKABLE QString ResolveUrl(const QString& url) const;
-    Q_INVOKABLE QString NormalizePath(const QString &path) const;
+    Q_INVOKABLE QString NormalizePath(const QString& path) const;
     Q_INVOKABLE bool IsDirExists(const QString& dirPath) const;
     Q_INVOKABLE bool IsFileExists(const QString& filePath) const;
     Q_INVOKABLE QString FindCMakeBin(const QString& pathToDavaFramework, const QString& frameworkDirName) const;
     Q_INVOKABLE QString GetAdditionalCMakePath() const;
-    static eErrorCode ClearFolderIfKeyFileExists(const QString& buildFolder, const QString &keyFile);
+    static eErrorCode ClearFolderIfKeyFileExists(const QString& buildFolder, const QString& keyFile);
 };
 
 #endif // FILESYSTEMHELPER_H

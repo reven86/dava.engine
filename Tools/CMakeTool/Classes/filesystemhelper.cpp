@@ -52,7 +52,7 @@ QString FileSystemHelper::ResolveUrl(const QString& url) const
 QString FileSystemHelper::NormalizePath(const QString& path) const
 {
     QDir dir(path);
-    if(dir.exists())
+    if (dir.exists())
     {
         return QDir::toNativeSeparators(dir.canonicalPath());
     }
@@ -96,7 +96,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     return QDir::toNativeSeparators(cmakePath);
 }
 
-FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString &keyFile)
+FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString& keyFile)
 {
     if (folderPath.isEmpty())
     {
