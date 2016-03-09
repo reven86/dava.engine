@@ -26,52 +26,31 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Particles/ParticleEmitterInstance.h"
 
-#ifndef __SCENE_SAVER_H__
-#define __SCENE_SAVER_H__
-
-#include "CommandLine/SceneUtils/SceneUtils.h"
-
-using namespace DAVA;
-
-class SceneSaver
+namespace DAVA
 {
-public:
-    SceneSaver();
-    virtual ~SceneSaver();
+ParticleEmitterInstance::ParticleEmitterInstance()
+{
+}
 
-    void SetInFolder(const FilePath& folderPathname);
-    void SetOutFolder(const FilePath& folderPathname);
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEmitter* _emitter)
+    : emitter(_emitter)
+{
+}
 
-    void SaveFile(const String& fileName, Set<String>& errorLog);
-    void ResaveFile(const String& fileName, Set<String>& errorLog);
-    void SaveScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
+void ParticleEmitterInstance::SetEmitter(ParticleEmitter* _emitter)
+{
+    emitter.Set(_emitter);
+}
 
-    void EnableCopyConverted(bool enabled);
+void ParticleEmitterInstance::SetFilePath(const FilePath& _filePath)
+{
+    filePath = _filePath;
+}
 
-    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog) const;
-
-private:
-    void ReleaseTextures();
-
-    void CopyTextures(Scene* scene);
-    void CopyTexture(const FilePath& texturePathname);
-
-    void CopyReferencedObject(Entity* node);
-    void CopyEffects(Entity* node);
-    void CopyAllParticlesEmitters(const ParticleEmitterInstance& instance);
-    void CopyEmitterByPath(const FilePath& emitterConfigPath);
-    void CopyEmitter(ParticleEmitter* emitter);
-    Set<FilePath> EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const;
-
-    void CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder, Set<String>& errorLog);
-
-    SceneUtils sceneUtils;
-    TexturesMap texturesForSave;
-    DAVA::Set<DAVA::FilePath> effectFolders;
-    bool copyConverted = false;
-};
-
-
-
-#endif // __SCENE_SAVER_H__
+void ParticleEmitterInstance::SetSpawnPosition(const Vector3& _position)
+{
+    spawnPosition = _position;
+}
+}

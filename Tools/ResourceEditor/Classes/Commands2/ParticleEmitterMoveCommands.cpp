@@ -39,8 +39,8 @@ ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectCompo
     if (nullptr != _emitter && nullptr != oldEffect)
     {
         oldIndex = oldEffect->GetEmitterId(_emitter);
-        emitterData = oldEffect->GetEmitterData(oldIndex);
-        DVASSERT(emitterData.emitter == _emitter);
+        instance = oldEffect->GetEmitterInstance(oldIndex);
+        DVASSERT(instance.GetEmitter() == _emitter);
     }
 }
 
@@ -50,22 +50,22 @@ ParticleEmitterMoveCommand::~ParticleEmitterMoveCommand()
 
 void ParticleEmitterMoveCommand::Undo()
 {
-    if (nullptr != emitterData.emitter.Get())
+    if (nullptr != instance.GetEmitter())
     {
         if (nullptr != newEffect)
         {
-            newEffect->RemoveEmitterData(emitterData);
+            newEffect->RemoveEmitterInstance(instance);
         }
 
         if (nullptr != oldEffect)
         {
             if (-1 != oldIndex)
             {
-                oldEffect->InsertEmitterDataAt(emitterData, oldIndex);
+                oldEffect->InsertEmitterInstanceAt(instance, oldIndex);
             }
             else
             {
-                oldEffect->AddEmitterData(emitterData);
+                oldEffect->AddEmitterInstance(instance);
             }
         }
     }
@@ -73,20 +73,20 @@ void ParticleEmitterMoveCommand::Undo()
 
 void ParticleEmitterMoveCommand::Redo()
 {
-    if (nullptr != emitterData.emitter.Get() && nullptr != newEffect)
-    {
-        if (nullptr != oldEffect)
-        {
-            oldEffect->RemoveEmitterData(emitterData);
-        }
+    if ((instance.GetEmitter() == nullptr) || (newEffect == nullptr))
+        return;
 
-        if (-1 != newIndex)
-        {
-            newEffect->InsertEmitterDataAt(emitterData, newIndex);
-        }
-        else
-        {
-            newEffect->AddEmitterData(emitterData);
-        }
+    if (nullptr != oldEffect)
+    {
+        oldEffect->RemoveEmitterInstance(instance);
+    }
+
+    if (-1 != newIndex)
+    {
+        newEffect->InsertEmitterInstanceAt(instance, newIndex);
+    }
+    else
+    {
+        newEffect->AddEmitterInstance(instance);
     }
 }

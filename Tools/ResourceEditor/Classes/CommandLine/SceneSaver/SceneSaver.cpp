@@ -256,7 +256,7 @@ void SceneSaver::CopyEffects(Entity* node)
     {
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
-            CopyAllParticlesEmitters(effect->GetEmitterData(i));
+            CopyAllParticlesEmitters(effect->GetEmitterInstance(i));
         }
     }
 
@@ -278,14 +278,15 @@ void SceneSaver::CopyEffects(Entity* node)
     effectFolders.clear();
 }
 
-void SceneSaver::CopyAllParticlesEmitters(const ParticleEmitterData& emitterData)
+void SceneSaver::CopyAllParticlesEmitters(const ParticleEmitterInstance& instance)
 {
-    const Set<FilePath>& paths = EnumAlternativeEmittersFilepaths(emitterData.originalFilepath);
+    const Set<FilePath>& paths = EnumAlternativeEmittersFilepaths(instance.GetFilePath());
     for (const FilePath& alternativeFilepath : paths)
     {
-        if (alternativeFilepath == emitterData.emitter->configPath)
+        auto emitter = instance.GetEmitter();
+        if (alternativeFilepath == emitter->configPath)
         {
-            CopyEmitter(emitterData.emitter.Get());
+            CopyEmitter(emitter);
         }
         else
         {

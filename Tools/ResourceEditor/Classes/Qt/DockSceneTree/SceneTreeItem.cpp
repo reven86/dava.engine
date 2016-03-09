@@ -230,7 +230,7 @@ void SceneTreeItemEntity::DoSync(QStandardItem* rootItem, DAVA::Entity* entity)
         // remember all particle emitters
         if (nullptr != effect)
         {
-            for (DAVA::int32 i = 0; i < effect->GetEmittersCount(); ++i)
+            for (DAVA::uint32 i = 0; i < effect->GetEmittersCount(); ++i)
             {
                 emitterSet.insert(effect->GetEmitter(i));
             }
@@ -352,17 +352,16 @@ void SceneTreeItemEntity::DoSync(QStandardItem* rootItem, DAVA::Entity* entity)
 
         if (effect)
         {
-            for (DAVA::int32 i = 0; i < effect->GetEmittersCount(); ++i)
+            for (DAVA::uint32 i = 0; i < effect->GetEmittersCount(); ++i)
             {
-                bool repeatStep;
+                bool repeatStep = false;
+                ;
                 DAVA::ParticleEmitter* emitter = effect->GetEmitter(i);
-
                 do
                 {
+                    repeatStep = false;
                     SceneTreeItem* item = (SceneTreeItem*)rootItem->child(row);
                     DAVA::ParticleEmitter* itemEmitter = SceneTreeItemParticleEmitter::GetEmitter(item);
-
-                    repeatStep = false;
 
                     // remove items that we already add
                     if (emitterSet.contains(itemEmitter))

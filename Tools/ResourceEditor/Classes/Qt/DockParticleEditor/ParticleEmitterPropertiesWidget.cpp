@@ -317,7 +317,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     else
     {
         int32 emitterId = effect->GetEmitterId(emitter);
-        originalYamlPath = QString::fromStdString(effect->GetEmitterData(emitterId).originalFilepath.GetAbsolutePathname());
+        originalYamlPath = QString::fromStdString(effect->GetEmitterInstance(emitterId).GetFilePath().GetAbsolutePathname());
     }
 
     originalEmitterYamlPath->setText(originalYamlPath);

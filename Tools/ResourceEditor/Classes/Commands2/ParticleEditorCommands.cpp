@@ -382,7 +382,7 @@ void CommandAddParticleEmitter::Redo()
 
     ParticleEffectComponent* effectComponent = GetEffectComponent(effectEntity);
     DVASSERT(effectComponent);
-    effectComponent->AddEmitterData(new ParticleEmitter());
+    effectComponent->AddEmitterInstance(new ParticleEmitter());
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart)

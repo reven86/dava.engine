@@ -139,9 +139,9 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial* material)
 
 void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 {
-    for (auto& emitter : component->emitterDatas)
+    for (auto& emitter : component->emitterInstances)
     {
-        for (auto layer : emitter.emitter->layers)
+        for (auto layer : emitter.GetEmitter()->layers)
         {
             if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
                 GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
@@ -196,9 +196,9 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent* effect)
         effect->effectData.infoSources.resize(1);
     }
 
-    for (const auto& data : effect->emitterDatas)
+    for (const auto& instance : effect->emitterInstances)
     {
-        RunEmitter(effect, data.emitter.Get(), data.spawnPosition);
+        RunEmitter(effect, instance.GetEmitter(), instance.GetSpawnPosition());
     }
 
     effect->state = ParticleEffectComponent::STATE_PLAYING;

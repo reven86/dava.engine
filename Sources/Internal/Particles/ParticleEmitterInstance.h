@@ -27,51 +27,52 @@
 =====================================================================================*/
 
 
-#ifndef __SCENE_SAVER_H__
-#define __SCENE_SAVER_H__
+#ifndef __DAVAENGINE_PARTICLE_EMITTER_INSTANCE_H__
+#define __DAVAENGINE_PARTICLE_EMITTER_INSTANCE_H__
 
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "Particles/ParticleEmitter.h"
 
-using namespace DAVA;
-
-class SceneSaver
+namespace DAVA
+{
+class ParticleEmitterInstance : public BaseObject
 {
 public:
-    SceneSaver();
-    virtual ~SceneSaver();
+    ParticleEmitterInstance();
+    explicit ParticleEmitterInstance(ParticleEmitter* _emitter);
 
-    void SetInFolder(const FilePath& folderPathname);
-    void SetOutFolder(const FilePath& folderPathname);
+    ParticleEmitter* GetEmitter() const;
+    const FilePath& GetFilePath() const;
+    const Vector3& GetSpawnPosition() const;
 
-    void SaveFile(const String& fileName, Set<String>& errorLog);
-    void ResaveFile(const String& fileName, Set<String>& errorLog);
-    void SaveScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
-
-    void EnableCopyConverted(bool enabled);
-
-    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog) const;
+    void SetEmitter(ParticleEmitter* emitter);
+    void SetFilePath(const FilePath& filePath);
+    void SetSpawnPosition(const Vector3& position);
 
 private:
-    void ReleaseTextures();
+    RefPtr<ParticleEmitter> emitter;
+    FilePath filePath;
+    Vector3 spawnPosition;
 
-    void CopyTextures(Scene* scene);
-    void CopyTexture(const FilePath& texturePathname);
-
-    void CopyReferencedObject(Entity* node);
-    void CopyEffects(Entity* node);
-    void CopyAllParticlesEmitters(const ParticleEmitterInstance& instance);
-    void CopyEmitterByPath(const FilePath& emitterConfigPath);
-    void CopyEmitter(ParticleEmitter* emitter);
-    Set<FilePath> EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const;
-
-    void CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder, Set<String>& errorLog);
-
-    SceneUtils sceneUtils;
-    TexturesMap texturesForSave;
-    DAVA::Set<DAVA::FilePath> effectFolders;
-    bool copyConverted = false;
+public:
+    INTROSPECTION_EXTEND(ParticleEmitterInstance, BaseObject,
+                         PROPERTY("emitter", "Emitter", GetEmitter, SetEmitter, I_VIEW)
+                         MEMBER(spawnPosition, "Spawn Position", I_VIEW)
+                         )
 };
 
+inline ParticleEmitter* ParticleEmitterInstance::GetEmitter() const
+{
+    return emitter.Get();
+}
 
+inline const FilePath& ParticleEmitterInstance::GetFilePath() const
+{
+    return filePath;
+}
 
-#endif // __SCENE_SAVER_H__
+inline const Vector3& ParticleEmitterInstance::GetSpawnPosition() const
+{
+    return spawnPosition;
+}
+}
+#endif // __DAVAENGINE_PARTICLE_EMITTER_INSTANCE_H__
