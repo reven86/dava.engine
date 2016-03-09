@@ -27,36 +27,32 @@
 =====================================================================================*/
 
 
-#include "LazyUpdater.h"
+#ifndef __TOOL_CONTINUOUS_UPDATER_H__
+#define __TOOL_CONTINUOUS_UPDATER_H__
 
-#include <QTimer>
+#include "Functional/Function.h"
 
-LazyUpdater::LazyUpdater(Updater _updater, QObject* parent, int updateInterval)
-    : QObject(parent)
-    , updater(_updater)
-    , timer(new QTimer(this))
+#include <QObject>
+
+class QTimer;
+class ContinuousUpdater : public QObject
 {
-    timer->setSingleShot(true);
-    timer->setInterval(updateInterval);
-    connect(timer, &QTimer::timeout, this, &LazyUpdater::OnTimer);
-}
+    Q_OBJECT
+public:
+    using Updater = DAVA::Function<void()>;
 
-void LazyUpdater::Update()
-{
-    needUpdate = true;
+public:
+    ContinuousUpdater(Updater updater, QObject* parent = nullptr, int updateInterval = 0);
 
-    if (!timer->isActive())
-    {
-        QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
-    }
-}
+    void Update();
 
-void LazyUpdater::OnTimer()
-{
-    if (needUpdate)
-    {
-        updater();
-        needUpdate = false;
-        timer->start();
-    }
-}
+private slots:
+    void OnTimer();
+
+private:
+    Updater updater;
+    QTimer* timer = nullptr;
+    bool needUpdate = false;
+};
+
+#endif // __TOOL_CONTINUOUS_UPDATER_H__

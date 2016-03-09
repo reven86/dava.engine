@@ -38,7 +38,7 @@
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
-#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 

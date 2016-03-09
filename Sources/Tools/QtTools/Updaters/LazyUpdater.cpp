@@ -27,32 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef __TOOL_LAZY_UPDATER_H__
-#define __TOOL_LAZY_UPDATER_H__
+#include "LazyUpdater.h"
 
-#include "Functional/Function.h"
+#include <QTimer>
 
-#include <QObject>
-
-class QTimer;
-class LazyUpdater : public QObject
+LazyUpdater::LazyUpdater(Updater _updater, QObject* parent /* = nullptr */)
+    : QObject(parent)
+    , updater(_updater)
 {
-    Q_OBJECT
-public:
-    using Updater = DAVA::Function<void()>;
+}
 
-public:
-    LazyUpdater(Updater updater, QObject* parent = nullptr, int updateInterval = 0);
+void LazyUpdater::Update()
+{
+    ++counter;
+    QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
+}
 
-    void Update();
+void LazyUpdater::OnTimer()
+{
+    if (counter > 1)
+    {
+        --counter;
+        return;
+    }
 
-private slots:
-    void OnTimer();
+    counter = 0;
 
-private:
-    Updater updater;
-    QTimer* timer = nullptr;
-    bool needUpdate = false;
-};
-
-#endif // __TOOL_LAZY_UPDATER_H__
+    updater();
+}

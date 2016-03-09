@@ -58,7 +58,7 @@
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
-#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace SceneTreeDetails
