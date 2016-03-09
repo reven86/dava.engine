@@ -44,9 +44,6 @@ public:
 
     void HeghtWasChanged(const DAVA::Rect& changedRect);
 
-    virtual void Save(const DAVA::String& filePathname);
-    virtual bool Load(const DAVA::String& filePathname);
-
     void DrawRelativeRGBA(DAVA::Image* src, DAVA::int32 x, DAVA::int32 y, DAVA::int32 width, DAVA::int32 height, DAVA::float32 k);
     void DrawAverageRGBA(DAVA::Image* mask, DAVA::int32 x, DAVA::int32 y, DAVA::int32 width, DAVA::int32 height, DAVA::float32 k);
     void DrawAbsoluteRGBA(DAVA::Image* mask, DAVA::int32 x, DAVA::int32 y, DAVA::int32 width, DAVA::int32 height, DAVA::float32 time, DAVA::float32 dstHeight);

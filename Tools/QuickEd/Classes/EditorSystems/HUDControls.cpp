@@ -95,7 +95,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
             parent = parent->GetParent();
         }
     }
-    SetVisible(valid);
+    SetVisibilityFlag(valid);
 
     if (valid)
     {
@@ -231,7 +231,7 @@ void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
     Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
     const Rect& controlRect = geometricData.GetUnrotatedRect();
     bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
-    SetVisible(systemVisible && visible);
+    SetVisibilityFlag(systemVisible && visible);
     rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
 
     UIControl* parent = GetParent();
@@ -255,7 +255,7 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
     Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
     Rect controlRect = geometricData.GetUnrotatedRect();
     bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
-    SetVisible(systemVisible && visible);
+    SetVisibilityFlag(systemVisible && visible);
 
     rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
 

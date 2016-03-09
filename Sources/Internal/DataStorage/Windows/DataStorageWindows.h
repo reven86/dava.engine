@@ -56,7 +56,7 @@ private:
 };
 #endif // Win UAP
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_STEAM__)
 
 class DataStorageWin : public IDataStorage
 {

@@ -197,7 +197,7 @@ public:
     static void SetDefaultGPU(eGPUFamily gpuFamily);
     static eGPUFamily GetDefaultGPU();
 
-    inline const eGPUFamily GetSourceFileGPUFamily() const;
+    inline eGPUFamily GetSourceFileGPUFamily() const;
     inline TextureDescriptor* GetDescriptor() const;
 
     PixelFormat GetFormat() const;
@@ -268,7 +268,7 @@ public: // properties for fast access
 
 // Implementation of inline functions
 
-inline const eGPUFamily Texture::GetSourceFileGPUFamily() const
+inline eGPUFamily Texture::GetSourceFileGPUFamily() const
 {
     return loadedAsFile;
 }
