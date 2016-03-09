@@ -294,6 +294,18 @@ void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo*>& collection) cons
     }
 }
 
+void NMaterial::CollectActiveLocalTextures(Set<MaterialTextureInfo*>& collection) const
+{
+    for (const auto& lc : GetCurrentConfig().localTextures)
+    {
+        const auto& path = lc.second->path;
+        if (!path.IsEmpty())
+        {
+            collection.emplace(lc.second);
+        }
+    }
+}
+
 bool NMaterial::ContainsTexture(Texture* texture) const
 {
     for (const auto& config : materialConfigs)

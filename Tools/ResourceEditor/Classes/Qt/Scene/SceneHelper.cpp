@@ -30,9 +30,47 @@
 #include "SceneHelper.h"
 #include "Deprecated/SceneValidator.h"
 
-void SceneHelper::EnumerateSceneTextures(DAVA::Scene* forScene, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode)
+SceneHelper::TextureCollector::TextureCollector(bool notNullTextures_, bool onlyActiveTextures_)
+    : notNullTextures(notNullTextures_)
+    , onlyActiveTextures(onlyActiveTextures_)
 {
-    EnumerateEntityTextures(forScene, forScene, textureCollection, mode);
+}
+
+void SceneHelper::TextureCollector::Apply(DAVA::NMaterial* material)
+{
+    Set<MaterialTextureInfo*> materialTextures;
+    if (onlyActiveTextures)
+        material->CollectActiveLocalTextures(materialTextures);
+    else
+        material->CollectLocalTextures(materialTextures);
+
+    for (auto const& matTex : materialTextures)
+    {
+        const DAVA::FilePath& texturePath = matTex->path;
+        Texture* texture = matTex->texture;
+
+        if (texturePath.IsEmpty() || !SceneValidator::Instance()->IsPathCorrectForProject(texturePath))
+        {
+            continue;
+        }
+
+        if ((notNullTextures == true) && (nullptr == texture || texture->isRenderTarget))
+        {
+            continue;
+        }
+
+        textureMap[FILEPATH_MAP_KEY(texturePath)] = texture;
+    }
+}
+
+DAVA::TexturesMap& SceneHelper::TextureCollector::GetTextures()
+{
+    return textureMap;
+}
+
+void SceneHelper::EnumerateSceneTextures(DAVA::Scene* forScene, TextureCollector& collector)
+{
+    EnumerateEntityTextures(forScene, forScene, collector);
 }
 
 void SceneHelper::BuildMaterialList(DAVA::Entity* forNode, Set<NMaterial*>& materialList, bool includeRuntime)
@@ -54,7 +92,7 @@ void SceneHelper::BuildMaterialList(DAVA::Entity* forNode, Set<NMaterial*>& mate
     }
 }
 
-void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode)
+void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, TextureCollector& collector)
 {
     if (nullptr == forNode || nullptr == forScene)
     {
@@ -75,25 +113,7 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* f
             continue;
         }
 
-        mat->CollectLocalTextures(materialTextures);
-    }
-
-    for (auto const& matTex : materialTextures)
-    {
-        const DAVA::FilePath& texturePath = matTex->path;
-        Texture* texture = matTex->texture;
-
-        if (texturePath.IsEmpty() || !SceneValidator::Instance()->IsPathCorrectForProject(texturePath))
-        {
-            continue;
-        }
-
-        if ((TexturesEnumerateMode::EXCLUDE_NULL == mode) && (nullptr == texture || texture->isRenderTarget))
-        {
-            continue;
-        }
-
-        textureCollection[FILEPATH_MAP_KEY(texturePath)] = texture;
+        collector.Apply(mat);
     }
 }
 
@@ -101,10 +121,10 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DA
 {
     int32 retValue = 0;
     textures.clear();
-    TexturesMap allTextures;
-    EnumerateSceneTextures(forScene, allTextures, TexturesEnumerateMode::EXCLUDE_NULL);
+    TextureCollector collector;
+    EnumerateSceneTextures(forScene, collector);
 
-    for (auto& it : allTextures)
+    for (auto& it : collector.GetTextures())
     {
         DAVA::Texture* texture = it.second;
         if (nullptr == texture)

@@ -302,10 +302,10 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog)
 {
     bool allDescriptorsWereExported = true;
 
-    DAVA::TexturesMap sceneTextures;
-    SceneHelper::EnumerateSceneTextures(scene, sceneTextures, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
+    SceneHelper::TextureCollector collector(false /*include null textures*/);
+    SceneHelper::EnumerateSceneTextures(scene, collector);
 
-    for (const auto& scTex : sceneTextures)
+    for (const auto& scTex : collector.GetTextures())
     {
         const DAVA::FilePath& path = scTex.first;
         if (path.GetType() == DAVA::FilePath::PATH_IN_MEMORY)

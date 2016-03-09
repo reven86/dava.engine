@@ -122,8 +122,11 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName, Set<String>& 
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
     SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
 
-    texturesForSave.clear();
-    SceneHelper::EnumerateSceneTextures(scene, texturesForSave, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
+    {
+        SceneHelper::TextureCollector collector(false /*include null textures*/);
+        SceneHelper::EnumerateSceneTextures(scene, collector);
+        texturesForSave = std::move(collector.GetTextures());
+    }
 
     CopyTextures(scene);
     ReleaseTextures();

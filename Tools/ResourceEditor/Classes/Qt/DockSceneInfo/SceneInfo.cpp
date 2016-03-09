@@ -62,10 +62,12 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     , isUpToDate(false)
 {
     // global scene manager signals
-    connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), SLOT(SceneActivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), SLOT(SceneDeactivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), SLOT(SceneStructureChanged(SceneEditor2*, DAVA::Entity*)));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    SceneSignals* signalDispatcher = SceneSignals::Instance();
+    connect(signalDispatcher, &SceneSignals::Activated, this, &SceneInfo::SceneActivated);
+    connect(signalDispatcher, &SceneSignals::Deactivated, this, &SceneInfo::SceneDeactivated);
+    connect(signalDispatcher, &SceneSignals::StructureChanged, this, &SceneInfo::SceneStructureChanged);
+    connect(signalDispatcher, &SceneSignals::SelectionChanged, this, &SceneInfo::SceneSelectionChanged);
+    connect(signalDispatcher, &SceneSignals::CommandExecuted, this, &SceneInfo::OnCommmandExecuted);
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -314,8 +316,9 @@ void SceneInfo::CollectSceneData(SceneEditor2* scene)
     {
         scene->GetChildNodes(nodesAtScene);
 
-        SceneHelper::EnumerateSceneTextures(activeScene, sceneTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-        sceneTexturesSize = CalculateTextureSize(sceneTextures);
+        SceneHelper::TextureCollector collector(true /*exclude null*/, true /*only for active configs*/);
+        SceneHelper::EnumerateSceneTextures(activeScene, collector);
+        sceneTexturesSize = CalculateTextureSize(collector.GetTextures());
 
         CollectParticlesData();
         particleTexturesSize = CalculateTextureSize(particleTextures);
@@ -327,7 +330,6 @@ void SceneInfo::CollectSceneData(SceneEditor2* scene)
 void SceneInfo::ClearData()
 {
     nodesAtScene.clear();
-    sceneTextures.clear();
     particleTextures.clear();
 
     lodInfoInFrame.Clear();
@@ -670,6 +672,22 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* se
     RefreshSpeedTreeInfoSelection();
 }
 
+void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool /*isRedo*/)
+{
+    switch (command->GetId())
+    {
+    case CMDID_MATERIAL_CHANGE_CURRENT_CONFIG:
+    case CMDID_MATERIAL_CREATE_CONFIG:
+    case CMDID_MATERIAL_REMOVE_TEXTURE:
+    case CMDID_INSP_MEMBER_MODIFY:
+    case CMDID_INSP_DYNAMIC_MODIFY:
+        RefreshAllData(scene);
+        break;
+    default:
+        break;
+    }
+}
+
 void SceneInfo::CollectSelectedRenderObjects(const EntityGroup* selected)
 {
     for (const auto& item : selected->GetContent())
@@ -755,9 +773,9 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject* 
 
 void SceneInfo::TexturesReloaded()
 {
-    sceneTextures.clear();
-    SceneHelper::EnumerateSceneTextures(activeScene, sceneTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-    sceneTexturesSize = CalculateTextureSize(sceneTextures);
+    SceneHelper::TextureCollector collector(true /*exclude null*/, true /*only for active configs*/);
+    SceneHelper::EnumerateSceneTextures(activeScene, collector);
+    sceneTexturesSize = CalculateTextureSize(collector.GetTextures());
 
     RefreshSceneGeneralInfo();
 }
