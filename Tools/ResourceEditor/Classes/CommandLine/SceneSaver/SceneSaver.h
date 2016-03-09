@@ -59,7 +59,7 @@ private:
 
     void CopyReferencedObject(Entity* node);
     void CopyEffects(Entity* node);
-    void CopyAllParticlesEmitters(const ParticleEmitterInstance& instance);
+    void CopyAllParticlesEmitters(ParticleEmitterInstance* instance);
     void CopyEmitterByPath(const FilePath& emitterConfigPath);
     void CopyEmitter(ParticleEmitter* emitter);
     Set<FilePath> EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const;

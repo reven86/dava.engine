@@ -39,14 +39,11 @@ template <class T>
 class RefPtr
 {
 public:
-    RefPtr()
-    {
-        _ptr = 0;
-    }
+    RefPtr() = default;
 
     explicit RefPtr(T* p)
+        : _ptr(p)
     {
-        _ptr = p;
     }
 
     /// reinitializes pointer without incrementing reference
@@ -170,7 +167,7 @@ public:
     }
 
 private:
-    T* _ptr;
+    T* _ptr = nullptr;
 
     template <class Other>
     void assign(const RefPtr<Other>& rp)

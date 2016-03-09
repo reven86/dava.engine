@@ -245,13 +245,13 @@ QMimeData* SceneTreeModel::mimeData(const QModelIndexList& indexes) const
                 break;
                 case SceneTreeItem::EIT_Emitter:
                 {
-                    QVector<DAVA::ParticleEmitter*> data;
+                    QVector<DAVA::ParticleEmitterInstance*> data;
                     foreach (QModelIndex index, indexes)
                     {
                         data.push_back(SceneTreeItemParticleEmitter::GetEmitterStrict(GetItem(index)));
                     }
 
-                    ret = MimeDataHelper2<DAVA::ParticleEmitter>::EncodeMimeData(data);
+                    ret = MimeDataHelper2<DAVA::ParticleEmitterInstance>::EncodeMimeData(data);
                 }
                 break;
                 case SceneTreeItem::EIT_Layer:
@@ -341,16 +341,16 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     case DropingEmitter:
     {
         DAVA::ParticleEffectComponent* effect = GetEffectComponent(SceneTreeItemEntity::GetEntity(parentItem));
-        QVector<DAVA::ParticleEmitter*> emittersV = MimeDataHelper2<DAVA::ParticleEmitter>::DecodeMimeData(data);
+        QVector<DAVA::ParticleEmitterInstance*> emittersV = MimeDataHelper2<DAVA::ParticleEmitterInstance>::DecodeMimeData(data);
         if (NULL != effect && emittersV.size() > 0)
         {
-            DAVA::Vector<DAVA::ParticleEmitter*> emittersGroup;
+            DAVA::Vector<DAVA::ParticleEmitterInstance*> emittersGroup;
             DAVA::Vector<DAVA::ParticleEffectComponent*> effectsGroup;
             emittersGroup.reserve(emittersV.size());
             effectsGroup.reserve(emittersV.size());
             for (int i = 0; i < emittersV.size(); ++i)
             {
-                emittersGroup.push_back((DAVA::ParticleEmitter*)emittersV[i]);
+                emittersGroup.push_back(static_cast<DAVA::ParticleEmitterInstance*>(emittersV[i]));
                 QModelIndex emitterIndex = GetIndex((DAVA::ParticleEmitter*)emittersV[i]);
                 DAVA::ParticleEffectComponent* oldEffect = GetEffectComponent(SceneTreeItemEntity::GetEntity(GetItem(emitterIndex.parent())));
                 effectsGroup.push_back(oldEffect);
@@ -376,7 +376,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
     case DropingLayer:
     {
-        DAVA::ParticleEmitter* emitter = NULL;
+        DAVA::ParticleEmitterInstance* emitter = NULL;
 
         if ((parentItem->ItemType() == SceneTreeItem::EIT_Emitter) || (parentItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
         {
@@ -388,20 +388,20 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
         {
             DAVA::ParticleLayer* beforeLayer = NULL;
 
-            if (row >= 0 && row < (int)emitter->layers.size())
+            if (row >= 0 && row < (int)emitter->GetEmitter()->layers.size())
             {
-                beforeLayer = emitter->layers[row];
+                beforeLayer = emitter->GetEmitter()->layers[row];
             }
 
             DAVA::Vector<DAVA::ParticleLayer*> layersGroup;
-            DAVA::Vector<DAVA::ParticleEmitter*> emittersGroup;
+            DAVA::Vector<DAVA::ParticleEmitterInstance*> emittersGroup;
             layersGroup.reserve(layersV.size());
             emittersGroup.reserve(layersV.size());
             for (int i = 0; i < layersV.size(); ++i)
             {
                 layersGroup.push_back((DAVA::ParticleLayer*)layersV[i]);
                 QModelIndex emitterIndex = GetIndex((DAVA::ParticleLayer*)layersV[i]);
-                DAVA::ParticleEmitter* oldEmitter = SceneTreeItemParticleEmitter::GetEmitter(GetItem(emitterIndex.parent()));
+                DAVA::ParticleEmitterInstance* oldEmitter = SceneTreeItemParticleEmitter::GetEmitter(GetItem(emitterIndex.parent()));
                 emittersGroup.push_back(oldEmitter);
             }
 
@@ -834,8 +834,8 @@ QVariant SceneTreeModel::data(const QModelIndex& _index, int role) const
     case Qt::BackgroundRole:
     {
         SceneTreeItem* item = GetItem(_index);
-        ParticleEmitter* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
-        if (nullptr != emitter && emitter->shortEffect)
+        ParticleEmitterInstance* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+        if (nullptr != emitter && emitter->GetEmitter()->shortEffect)
         {
             static const QVariant brush(QBrush(QColor(255, 0, 0, 20)));
             return brush;

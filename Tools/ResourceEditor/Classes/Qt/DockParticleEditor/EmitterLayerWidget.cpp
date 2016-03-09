@@ -455,15 +455,14 @@ void EmitterLayerWidget::InitWidget(QWidget* widget)
             SLOT(OnValueChanged()));
 }
 
-void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool updateMinimized)
+void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* _effect, ParticleEmitterInstance* _emitter, DAVA::ParticleLayer* _layer, bool updateMinimized)
 {
-    if (!emitter || !layer)
+    if ((emitter == nullptr) || (layer == nullptr))
         return;
 
-    this->effect = effect;
-    this->emitter = emitter;
-    this->layer = layer;
-
+    emitter = _emitter;
+    layer = _layer;
+    effect = _effect;
     SetActiveScene(scene);
     Update(updateMinimized);
 }

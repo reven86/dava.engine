@@ -30,12 +30,14 @@
 
 namespace DAVA
 {
-ParticleEmitterInstance::ParticleEmitterInstance()
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner)
+    : owner(_owner)
 {
 }
 
-ParticleEmitterInstance::ParticleEmitterInstance(ParticleEmitter* _emitter)
-    : emitter(_emitter)
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner, ParticleEmitter* _emitter)
+    : owner(_owner)
+    , emitter(_emitter)
 {
 }
 
@@ -51,6 +53,17 @@ void ParticleEmitterInstance::SetFilePath(const FilePath& _filePath)
 
 void ParticleEmitterInstance::SetSpawnPosition(const Vector3& _position)
 {
+    if (_position.Length() > 0)
+        Logger::Info("!");
+
     spawnPosition = _position;
+}
+
+ParticleEmitterInstance* ParticleEmitterInstance::Clone() const
+{
+    ParticleEmitterInstance* result = new ParticleEmitterInstance(owner, emitter->Clone());
+    result->SetFilePath(GetFilePath());
+    result->SetSpawnPosition(GetSpawnPosition());
+    return result;
 }
 }

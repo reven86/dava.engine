@@ -116,16 +116,16 @@ private slots:
 private:
     void ShowContextMenuEntity(DAVA::Entity* entity, int entityCustomFlags, const QPoint& pos);
 
-    void ShowContextMenuEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, const QPoint& pos);
-    void ShowContextMenuLayer(DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, const QPoint& pos);
+    void ShowContextMenuEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, const QPoint& pos);
+    void ShowContextMenuLayer(DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, const QPoint& pos);
     void ShowContextMenuForce(DAVA::ParticleLayer* layer, DAVA::ParticleForce* force, const QPoint& pos);
-    void ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* parentLayer, const QPoint& pos);
+    void ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* parentLayer, const QPoint& pos);
     // Helpers for Particles.
     // Get the default path to Particles Config.
     QString GetParticlesConfigPath();
 
     // Perform save for selected Emitters.
-    void PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName);
+    void PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter, bool forceAskFileName, const QString& defaultName);
 
     void PerformSaveEffectEmitters(bool forceAskFileName);
 
@@ -154,18 +154,18 @@ private:
 
     void ExecuteModifyingCommand(Command2* command);
 
-    ParticleEffectComponent* selectedEffect;
-    ParticleEmitter* selectedEmitter;
-    ParticleLayer* selectedLayer;
-    ParticleForce* selectedForce;
+private:
+    ParticleEffectComponent* selectedEffect = nullptr;
+    ParticleEmitterInstance* selectedEmitter = nullptr;
+    ParticleLayer* selectedLayer = nullptr;
+    ParticleForce* selectedForce = nullptr;
+    LazyUpdater* treeUpdater = nullptr;
 
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
     SceneTreeDelegate* treeDelegate;
 
-    bool isInSync;
-
-    LazyUpdater* treeUpdater;
+    bool isInSync = false;
 };
 
 template <typename CMD, typename... Args>

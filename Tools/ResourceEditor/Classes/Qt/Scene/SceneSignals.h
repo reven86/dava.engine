@@ -68,13 +68,13 @@ signals:
 
     // particles - selection
     void EffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-    void EmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void InnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void LayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
+    void EmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
+    void InnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
+    void LayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
     void ForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
     // particles - value changed
-    void ParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void ParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
     void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
     void ParticleForceValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer, int32 forceIndex);
 
@@ -82,12 +82,12 @@ signals:
     void ParticleEffectStateChanged(SceneEditor2* scene, DAVA::Entity* effect, bool isStarted);
 
     // particles - loading/saving.
-    void ParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
-    void ParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void ParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
+    void ParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
     // particles - structure changes.
-    void ParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
-    void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void ParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer);
+    void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
     void DropperHeightChanged(SceneEditor2* scene, double height);
     void CustomColorsTextureShouldBeSaved(SceneEditor2* scene);
@@ -186,15 +186,15 @@ public:
     {
         emit EffectSelected(scene, effect);
     };
-    void EmitEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
+    void EmitEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
     {
         emit EmitterSelected(scene, effect, emitter);
     };
-    void EmitInnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
+    void EmitInnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
     {
         emit InnerEmitterSelected(scene, effect, emitter);
     };
-    void EmitLayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
+    void EmitLayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
     {
         emit LayerSelected(scene, effect, emitter, layer, forceRefresh);
     };
@@ -204,7 +204,7 @@ public:
     };
 
     // Particle Editor Value Changed signals.
-    void EmitParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleEmitterValueChanged(scene, emitter);
     }
@@ -224,22 +224,22 @@ public:
         emit ParticleEffectStateChanged(scene, effect, isStarted);
     }
 
-    void EmitParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleEmitterLoaded(scene, emitter);
     }
 
-    void EmitParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleEmitterSaved(scene, emitter);
     }
 
-    void EmitParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer)
+    void EmitParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer)
     {
         emit ParticleLayerAdded(scene, emitter, layer);
     }
 
-    void EmitParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleLayerRemoved(scene, emitter);
     }

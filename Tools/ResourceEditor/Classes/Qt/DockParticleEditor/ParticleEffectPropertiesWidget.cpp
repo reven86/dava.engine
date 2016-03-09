@@ -850,7 +850,8 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
     int32 childrenCount = particleEffect->GetEmittersCount();
     for (int32 emitterId = 0; emitterId < childrenCount; emitterId++)
     {
-        ParticleEmitter* emitter = particleEffect->GetEmitter(emitterId);
+        auto instance = particleEffect->GetEmitterInstance(emitterId);
+        auto emitter = instance->GetEmitter();
         data.emmiter = emitter;
         QTreeWidgetItem* emitterItem = new QTreeWidgetItem(root, TreeItemTypeEmitter);
         emitterItem->setText(0, QString(emitter->name.c_str()));

@@ -362,7 +362,7 @@ void SceneInfo::CollectParticlesData()
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
             ++emittersCount;
-            Vector<ParticleLayer*>& layers = effect->GetEmitter(i)->layers;
+            Vector<ParticleLayer*>& layers = effect->GetEmitterInstance(i)->GetEmitter()->layers;
             for (uint32 lay = 0; lay < layers.size(); ++lay)
             {
                 Sprite* spr = layers[lay]->sprite;

@@ -54,9 +54,9 @@ public:
 protected slots:
     // SceneTree-specific slots.
     void OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-    void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
+    void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
+    void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
+    void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
     void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
     void OnUpdate();
@@ -64,8 +64,8 @@ protected slots:
 
     // Notifications about changes in the Particles items.
     void OnParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
-    void OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
-    void OnParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
+    void OnParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
 signals:
     void ChangeVisible(bool bVisible);
@@ -84,7 +84,7 @@ private:
     void UpdateParticleEditorWidgets();
 
     // Handle the "Emitter Selected" notification for different cases.
-    void HandleEmitterSelected(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, bool forceUpdate);
+    void HandleEmitterSelected(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, bool forceUpdate);
 
     // Update the visible timelines for the particular Particle Emitter elements.
     void UpdateVisibleTimelinesForParticleEmitter();
@@ -101,8 +101,8 @@ private:
 
     // Switch editor to the particular mode.
     void SwitchEditorToEffectMode(SceneEditor2* scene, ParticleEffectComponent* effect);
-    void SwitchEditorToEmitterMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
+    void SwitchEditorToEmitterMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
+    void SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer);
     void SwitchEditorToForceMode(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
     // Reset the editor mode, hide/disconnect appropriate widgets.

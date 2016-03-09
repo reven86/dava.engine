@@ -85,20 +85,20 @@ protected:
 class CommandAddParticleEmitterLayer : public CommandAction
 {
 public:
-    CommandAddParticleEmitterLayer(ParticleEmitter* emitter);
+    CommandAddParticleEmitterLayer(ParticleEmitterInstance* emitter);
     void Redo() override;
 
     ParticleLayer* GetCreatedLayer() const
     {
         return createdLayer;
     };
-    ParticleEmitter* GetParentEmitter() const
+    ParticleEmitterInstance* GetParentEmitter() const
     {
-        return selectedEmitter;
+        return instance;
     }
 
 protected:
-    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleEmitterInstance* instance = nullptr;
     ParticleLayer* createdLayer = nullptr;
 };
 
@@ -106,34 +106,34 @@ protected:
 class CommandRemoveParticleEmitterLayer : public CommandAction
 {
 public:
-    CommandRemoveParticleEmitterLayer(ParticleEmitter* emitter, ParticleLayer* layer);
+    CommandRemoveParticleEmitterLayer(ParticleEmitterInstance* emitter, ParticleLayer* layer);
     void Redo() override;
 
 protected:
-    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleEmitterInstance* instance = nullptr;
     ParticleLayer* selectedLayer = nullptr;
 };
 
 class CommandRemoveParticleEmitter : public CommandAction
 {
 public:
-    CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter);
+    CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter);
     void Redo() override;
 
 protected:
-    ParticleEffectComponent* selectedEffect;
-    ParticleEmitter* selectedEmitter;
+    ParticleEffectComponent* selectedEffect = nullptr;
+    ParticleEmitterInstance* instance = nullptr;
 };
 
 // Clone a layer inside Particle Emitter.
 class CommandCloneParticleEmitterLayer : public CommandAction
 {
 public:
-    CommandCloneParticleEmitterLayer(ParticleEmitter* emitter, ParticleLayer* layer);
+    CommandCloneParticleEmitterLayer(ParticleEmitterInstance* emitter, ParticleLayer* layer);
     void Redo() override;
 
 protected:
-    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleEmitterInstance* instance = nullptr;
     ParticleLayer* selectedLayer = nullptr;
 };
 
@@ -175,7 +175,7 @@ protected:
 class CommandUpdateEmitter : public CommandAction
 {
 public:
-    CommandUpdateEmitter(ParticleEmitter* emitter);
+    CommandUpdateEmitter(ParticleEmitterInstance* emitter);
 
     void Init(const FastName& name,
               ParticleEmitter::eType emitterType,
@@ -189,16 +189,16 @@ public:
               float32 life,
               bool isShortEffect);
 
-    ParticleEmitter* GetEmitter() const
+    ParticleEmitterInstance* GetEmitterInstance() const
     {
-        return emitter;
+        return instance;
     };
 
     void Redo() override;
 
 protected:
     FastName name;
-    ParticleEmitter* emitter;
+    ParticleEmitterInstance* instance = nullptr;
 
     ParticleEmitter::eType emitterType;
     RefPtr<PropertyLine<float32>> emissionRange;
@@ -215,12 +215,12 @@ protected:
 class CommandUpdateEmitterPosition : public CommandAction
 {
 public:
-    CommandUpdateEmitterPosition(ParticleEffectComponent* effect, ParticleEmitter* emitter);
+    CommandUpdateEmitterPosition(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter);
     void Init(const Vector3& position);
     void Redo() override;
 
 protected:
-    ParticleEmitter* emitter;
+    ParticleEmitterInstance* emitter;
     ParticleEffectComponent* effect;
     Vector3 position;
 };
@@ -246,7 +246,7 @@ protected:
 class CommandUpdateParticleLayer : public CommandUpdateParticleLayerBase
 {
 public:
-    CommandUpdateParticleLayer(ParticleEmitter* emitter, ParticleLayer* layer);
+    CommandUpdateParticleLayer(ParticleEmitterInstance* emitter, ParticleLayer* layer);
     void Init(const String& layerName,
               ParticleLayer::eType layerType,
               ParticleLayer::eDegradeStrategy degradeStrategy,
@@ -296,7 +296,7 @@ public:
     void Redo() override;
 
 protected:
-    ParticleEmitter* emitter;
+    ParticleEmitterInstance* emitter;
 
     String layerName;
     ParticleLayer::eType layerType;
@@ -409,34 +409,34 @@ protected:
 class CommandLoadParticleEmitterFromYaml : public CommandAction
 {
 public:
-    CommandLoadParticleEmitterFromYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path);
+    CommandLoadParticleEmitterFromYaml(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter, const FilePath& path);
     void Redo() override;
 
-    ParticleEmitter* GetEmitter() const
+    ParticleEmitterInstance* GetEmitterInstance() const
     {
-        return selectedEmitter.Get();
+        return instance.Get();
     };
 
 protected:
     ParticleEffectComponent* selectedEffect = nullptr;
-    RefPtr<ParticleEmitter> selectedEmitter;
+    RefPtr<ParticleEmitterInstance> instance;
     FilePath filePath;
 };
 
 class CommandSaveParticleEmitterToYaml : public CommandAction
 {
 public:
-    CommandSaveParticleEmitterToYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path);
+    CommandSaveParticleEmitterToYaml(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter, const FilePath& path);
     void Redo() override;
 
-    ParticleEmitter* GetEmitter() const
+    ParticleEmitterInstance* GetEmitterInstance() const
     {
-        return selectedEmitter.Get();
+        return instance.Get();
     };
 
 protected:
     ParticleEffectComponent* selectedEffect = nullptr;
-    RefPtr<ParticleEmitter> selectedEmitter;
+    RefPtr<ParticleEmitterInstance> instance;
     FilePath filePath;
 };
 
@@ -444,32 +444,32 @@ protected:
 class CommandLoadInnerParticleEmitterFromYaml : public CommandAction
 {
 public:
-    CommandLoadInnerParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path);
+    CommandLoadInnerParticleEmitterFromYaml(ParticleEmitterInstance* emitter, const FilePath& path);
     void Redo() override;
 
-    ParticleEmitter* GetEmitter() const
+    ParticleEmitterInstance* GetEmitterInstance() const
     {
-        return selectedEmitter;
+        return instance;
     };
 
 protected:
-    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleEmitterInstance* instance = nullptr;
     FilePath filePath;
 };
 
 class CommandSaveInnerParticleEmitterToYaml : public CommandAction
 {
 public:
-    CommandSaveInnerParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path);
+    CommandSaveInnerParticleEmitterToYaml(ParticleEmitterInstance* emitter, const FilePath& path);
     void Redo() override;
 
-    ParticleEmitter* GetEmitter() const
+    ParticleEmitterInstance* GetEmitterInstance() const
     {
-        return selectedEmitter;
+        return instance;
     };
 
 protected:
-    ParticleEmitter* selectedEmitter = nullptr;
+    ParticleEmitterInstance* instance = nullptr;
     FilePath filePath;
 };
 

@@ -34,11 +34,12 @@
 
 namespace DAVA
 {
+class ParticleEffectComponent;
 class ParticleEmitterInstance : public BaseObject
 {
 public:
-    ParticleEmitterInstance();
-    explicit ParticleEmitterInstance(ParticleEmitter* _emitter);
+    explicit ParticleEmitterInstance(ParticleEffectComponent* owner);
+    ParticleEmitterInstance(ParticleEffectComponent* owner, ParticleEmitter* emitter);
 
     ParticleEmitter* GetEmitter() const;
     const FilePath& GetFilePath() const;
@@ -48,7 +49,12 @@ public:
     void SetFilePath(const FilePath& filePath);
     void SetSpawnPosition(const Vector3& position);
 
+    ParticleEmitterInstance* Clone() const;
+
+    ParticleEffectComponent* GetOwner() const;
+
 private:
+    ParticleEffectComponent* owner = nullptr;
     RefPtr<ParticleEmitter> emitter;
     FilePath filePath;
     Vector3 spawnPosition;
@@ -73,6 +79,11 @@ inline const FilePath& ParticleEmitterInstance::GetFilePath() const
 inline const Vector3& ParticleEmitterInstance::GetSpawnPosition() const
 {
     return spawnPosition;
+}
+
+inline ParticleEffectComponent* ParticleEmitterInstance::GetOwner() const
+{
+    return owner;
 }
 }
 #endif // __DAVAENGINE_PARTICLE_EMITTER_INSTANCE_H__

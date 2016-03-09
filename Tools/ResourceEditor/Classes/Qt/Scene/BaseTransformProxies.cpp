@@ -27,6 +27,8 @@
 =====================================================================================*/
 
 #include "Scene/BaseTransformProxies.h"
+#include "Particles/ParticleEmitterInstance.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
 
 /*
  * EntityTransformProxy
@@ -56,17 +58,49 @@ bool EntityTransformProxy::SupportsTransformType(SelectableObject::TransformType
  */
 const DAVA::Matrix4& EmitterTransformProxy::GetWorldTransform(DAVA::BaseObject* object)
 {
-    return DAVA::Matrix4::IDENTITY;
+    static DAVA::Matrix4 currentMatrix;
+    currentMatrix.Identity();
+
+    auto emitterInstance = static_cast<DAVA::ParticleEmitterInstance*>(object);
+    auto ownerComponent = emitterInstance->GetOwner();
+    if ((ownerComponent == nullptr) || (ownerComponent->GetEntity() == nullptr))
+    {
+        currentMatrix.SetTranslationVector(emitterInstance->GetSpawnPosition());
+    }
+    else
+    {
+        const auto& entityTransform = ownerComponent->GetEntity()->GetWorldTransform();
+        DAVA::Vector3 center = emitterInstance->GetSpawnPosition();
+        TransformPerserveLength(center, DAVA::Matrix3(entityTransform));
+        currentMatrix.SetTranslationVector(center + entityTransform.GetTranslationVector());
+    }
+    return currentMatrix;
 }
 
 const DAVA::Matrix4& EmitterTransformProxy::GetLocalTransform(DAVA::BaseObject* object)
 {
-    return DAVA::Matrix4::IDENTITY;
+    static DAVA::Matrix4 currentMatrix;
+    currentMatrix.Identity();
+
+    auto emitterInstance = static_cast<DAVA::ParticleEmitterInstance*>(object);
+    currentMatrix.SetTranslationVector(emitterInstance->GetSpawnPosition());
+    return currentMatrix;
 }
 
 void EmitterTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix)
 {
-    DAVA::Logger::Info(":)");
+    auto emitterInstance = static_cast<DAVA::ParticleEmitterInstance*>(object);
+    auto ownerComponent = emitterInstance->GetOwner();
+    // if ((ownerComponent == nullptr) || (ownerComponent->GetEntity() == nullptr))
+    {
+        emitterInstance->SetSpawnPosition(DAVA::Vector3(matrix._30, matrix._31, matrix._32));
+    }
+    // else
+    {
+        // const auto& entityTransform = ownerComponent->GetEntity()->GetWorldTransform();
+        // W = E * S + Et
+        // S = (W - Et) * S(-1)
+    }
 }
 
 bool EmitterTransformProxy::SupportsTransformType(SelectableObject::TransformType type) const

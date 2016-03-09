@@ -67,14 +67,16 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(worldBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
-void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitter* emitter, DAVA::Entity* owner)
+void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner)
 {
     DVASSERT((emitter != nullptr) && (owner != nullptr));
+
+    DrawDebugInfoForEffect(owner);
 
     SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
     ParticleEffectComponent* effect = GetEffectComponent(owner);
 
-    DAVA::Vector3 center = effect->GetSpawnPosition(effect->GetEmitterId(emitter));
+    DAVA::Vector3 center = emitter->GetSpawnPosition();
     TransformPerserveLength(center, DAVA::Matrix3(owner->GetWorldTransform()));
     center += owner->GetWorldTransform().GetTranslationVector();
 
@@ -84,7 +86,7 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitter* emitter, DAVA::En
 
     DrawVectorArrow(owner, emitter, center);
 
-    switch (emitter->emitterType)
+    switch (emitter->GetEmitter()->emitterType)
     {
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
@@ -109,7 +111,7 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitter* emitter, DAVA::En
     }
 }
 
-void EditorParticlesSystem::SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter)
+void EditorParticlesSystem::SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter)
 {
     selectedEffectEntity = effectEntity;
     selectedEmitter = emitter;
@@ -130,51 +132,51 @@ void EditorParticlesSystem::Draw()
     }
 }
 
-void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center)
+void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
 {
     float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
-    float32 emitterRadius = (emitter->radius) ? emitter->radius->GetValue(time) : 0.0f;
+    float32 emitterRadius = (emitter->GetEmitter()->radius) ? emitter->GetEmitter()->radius->GetValue(time) : 0.0f;
     Vector3 emissionVector(0.0f, 0.0f, 1.0f);
 
-    if (emitter->emissionVector)
-        emissionVector = emitter->emissionVector->GetValue(time);
+    if (emitter->GetEmitter()->emissionVector)
+        emissionVector = emitter->GetEmitter()->emissionVector->GetValue(time);
 
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emissionVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
-void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center)
+void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
 {
     float32 emitterRadius = 0.0f;
     DAVA::Vector3 emitterVector;
     float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
 
-    if (emitter->radius)
+    if (emitter->GetEmitter()->radius)
     {
-        emitterRadius = emitter->radius->GetValue(time);
+        emitterRadius = emitter->GetEmitter()->radius->GetValue(time);
     }
 
-    if (emitter->emissionVector)
+    if (emitter->GetEmitter()->emissionVector)
     {
         DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
         wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
 
-        emitterVector = emitter->emissionVector->GetValue(time);
+        emitterVector = emitter->GetEmitter()->emissionVector->GetValue(time);
         emitterVector = emitterVector * wMat;
     }
 
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emitterVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
-void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center)
+void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
 {
     // Default value of emitter size
     DAVA::Vector3 emitterSize;
 
     float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
 
-    if (emitter->size)
+    if (emitter->GetEmitter()->size)
     {
-        emitterSize = emitter->size->GetValue(time);
+        emitterSize = emitter->GetEmitter()->size->GetValue(time);
     }
 
     DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
@@ -184,15 +186,15 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::Partic
     drawer->DrawAABoxTransformed(AABBox3(center - emitterSize / 2, center + emitterSize / 2), wMat, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
-void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center)
+void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
 {
     DAVA::Vector3 emitterVector(0.f, 0.f, 1.f);
     DAVA::float32 arrowBaseSize = 5.0f;
 
     float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
-    if (emitter->emissionVector)
+    if (emitter->GetEmitter()->emissionVector)
     {
-        emitterVector = emitter->emissionVector->GetValue(time);
+        emitterVector = emitter->GetEmitter()->emissionVector->GetValue(time);
     }
 
     DAVA::float32 scale = 1.0f;
@@ -259,7 +261,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
     case CMDID_PARTICLE_EMITTER_UPDATE:
     {
         const CommandUpdateEmitter* castedCmd = static_cast<const CommandUpdateEmitter*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterValueChanged(activeScene, castedCmd->GetEmitter());
+        SceneSignals::Instance()->EmitParticleEmitterValueChanged(activeScene, castedCmd->GetEmitterInstance());
         break;
     }
 
@@ -313,28 +315,28 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
     case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
     {
         const CommandLoadParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadParticleEmitterFromYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
+        SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitterInstance());
         break;
     }
 
     case CMDID_PARTICLE_EMITTER_SAVE_TO_YAML:
     {
         const CommandSaveParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveParticleEmitterToYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
+        SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitterInstance());
         break;
     }
 
     case CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML:
     {
         const CommandLoadInnerParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadInnerParticleEmitterFromYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
+        SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitterInstance());
         break;
     }
 
     case CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML:
     {
         const CommandSaveInnerParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveInnerParticleEmitterToYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
+        SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitterInstance());
         break;
     }
 

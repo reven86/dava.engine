@@ -54,7 +54,7 @@ class EmitterLayerWidget : public QWidget, public BaseParticleEditorContentWidge
 public:
     explicit EmitterLayerWidget(QWidget* parent = 0);
 
-    void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
+    void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitterInstance* emitter, ParticleLayer* layer, bool updateMinimized);
     ParticleLayer* GetLayer() const
     {
         return layer;

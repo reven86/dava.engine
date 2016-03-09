@@ -96,13 +96,9 @@ Component* ParticleEffectComponent::Clone(Entity* toEntity)
     newComponent->playbackComplete = playbackComplete;
     newComponent->effectDuration = effectDuration;
     newComponent->clearOnRestart = clearOnRestart;
-    uint32 emittersCount = static_cast<uint32>(emitterInstances.size());
-    newComponent->emitterInstances.resize(emittersCount);
-    for (uint32 i = 0; i < emittersCount; ++i)
+    for (const auto& instance : emitterInstances)
     {
-        newComponent->emitterInstances[i].SetEmitter(emitterInstances[i].GetEmitter()->Clone());
-        newComponent->emitterInstances[i].SetFilePath(emitterInstances[i].GetFilePath());
-        newComponent->emitterInstances[i].SetSpawnPosition(emitterInstances[i].GetSpawnPosition());
+        newComponent->AddEmitterInstance(instance->Clone());
     }
     newComponent->RebuildEffectModifiables();
     newComponent->effectRenderObject->SetFlags(effectRenderObject->GetFlags());
@@ -290,7 +286,7 @@ void ParticleEffectComponent::RebuildEffectModifiables()
     List<ModifiablePropertyLineBase*> modifiables;
     for (auto& instance : emitterInstances)
     {
-        instance.GetEmitter()->GetModifableLines(modifiables);
+        instance->GetEmitter()->GetModifableLines(modifiables);
     }
 
     for (List<ModifiablePropertyLineBase *>::iterator it = modifiables.begin(), e = modifiables.end(); it != e; ++it)
@@ -325,9 +321,9 @@ void ParticleEffectComponent::Serialize(KeyedArchive* archive, SerializationCont
     {
         const auto& instance = emitterInstances[i];
         KeyedArchive* emitterArch = new KeyedArchive();
-        String filename = instance.GetFilePath().GetRelativePathname(serializationContext->GetScenePath());
+        String filename = instance->GetFilePath().GetRelativePathname(serializationContext->GetScenePath());
         emitterArch->SetString("emitter.filename", filename);
-        emitterArch->SetVector3("emitter.position", instance.GetSpawnPosition());
+        emitterArch->SetVector3("emitter.position", instance->GetSpawnPosition());
         emittersArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), emitterArch);
         emitterArch->Release();
     }
@@ -357,20 +353,21 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
             String filename = emitterArch->GetString("emitter.filename");
             if (!filename.empty())
             {
-                emitterInstances[i].SetFilePath(serializationContext->GetScenePath() + filename);
-                FilePath qualityFilepath = emitterInstances[i].GetFilePath();
+                emitterInstances[i] = RefPtr<ParticleEmitterInstance>(new ParticleEmitterInstance(this));
+                emitterInstances[i]->SetFilePath(serializationContext->GetScenePath() + filename);
+                FilePath qualityFilepath = emitterInstances[i]->GetFilePath();
                 const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
                 if (filepathSelector)
                 {
-                    qualityFilepath = filepathSelector->SelectFilepath(emitterInstances[i].GetFilePath());
+                    qualityFilepath = filepathSelector->SelectFilepath(emitterInstances[i]->GetFilePath());
                 }
-                emitterInstances[i].SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
+                emitterInstances[i]->SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
             }
             else
             {
-                emitterInstances[i].SetEmitter(new ParticleEmitter());
+                emitterInstances[i]->SetEmitter(new ParticleEmitter());
             }
-            emitterInstances[i].SetSpawnPosition(emitterArch->GetVector3("emitter.position"));
+            emitterInstances[i]->SetSpawnPosition(emitterArch->GetVector3("emitter.position"));
         }
         uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::VISIBLE);
         effectRenderObject->SetFlags(savedFlags | (effectRenderObject->GetFlags() & ~PARTICLE_FLAGS_SERIALIZATION_CRITERIA));
@@ -400,11 +397,11 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializat
         if (!emitterProxy)
             continue;
 
-        ParticleEmitterInstance instance;
-        instance.SetFilePath(serializationContext->GetScenePath() + emitterProxy->emitterFilename);
+        ParticleEmitterInstance* instance = new ParticleEmitterInstance(this);
+        instance->SetFilePath(serializationContext->GetScenePath() + emitterProxy->emitterFilename);
         if (!emitterProxy->emitterFilename.empty())
         {
-            FilePath qualityFilepath = emitterInstances[i].GetFilePath();
+            FilePath qualityFilepath = emitterInstances[i]->GetFilePath();
             const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
             if (filepathSelector)
             {
@@ -412,17 +409,17 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializat
             }
 
             auto emitter = ParticleEmitter::LoadEmitter(qualityFilepath);
-            instance.SetEmitter(emitter);
+            instance->SetEmitter(emitter);
             if (effectDuration < emitter->lifeTime)
                 effectDuration = emitter->lifeTime;
         }
         else
         {
-            instance.SetEmitter(new ParticleEmitter());
+            instance->SetEmitter(new ParticleEmitter());
         }
-        instance.GetEmitter()->name = child->GetName();
-        instance.SetSpawnPosition(child->GetLocalTransform().GetTranslationVector() * effectScale);
-        emitterInstances.push_back(instance);
+        instance->GetEmitter()->name = child->GetName();
+        instance->SetSpawnPosition(child->GetLocalTransform().GetTranslationVector() * effectScale);
+        emitterInstances.emplace_back(instance);
 
         if (!lodDefined)
         {
@@ -444,11 +441,51 @@ uint32 ParticleEffectComponent::GetEmittersCount() const
     return static_cast<uint32>(emitterInstances.size());
 }
 
-int32 ParticleEffectComponent::GetEmitterId(const ParticleEmitter* emitter) const
+Vector3 ParticleEffectComponent::GetSpawnPosition(int32 id) const
+{
+    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    return emitterInstances[id]->GetSpawnPosition();
+}
+
+void ParticleEffectComponent::SetSpawnPosition(int32 id, const Vector3& position)
+{
+    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    emitterInstances[id]->SetSpawnPosition(position);
+}
+
+DAVA::FilePath ParticleEffectComponent::GetOriginalConfigPath(int32 id) const
+{
+    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    return emitterInstances[id]->GetFilePath();
+}
+
+void ParticleEffectComponent::SetOriginalConfigPath(int32 id, const FilePath& filepath)
+{
+    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    emitterInstances[id]->SetFilePath(filepath);
+}
+
+ParticleEmitterInstance* ParticleEffectComponent::GetEmitterInstance(uint32 id) const
+{
+    DVASSERT(id < emitterInstances.size());
+    return emitterInstances[id].Get();
+}
+
+void ParticleEffectComponent::AddEmitterInstance(ParticleEmitter* emitter)
+{
+    emitterInstances.emplace_back(new ParticleEmitterInstance(this, emitter));
+}
+
+void ParticleEffectComponent::AddEmitterInstance(ParticleEmitterInstance* emitter)
+{
+    emitterInstances.emplace_back(emitter);
+}
+
+int32 ParticleEffectComponent::GetEmitterInstanceId(ParticleEmitterInstance* emitter) const
 {
     for (int32 i = 0, sz = static_cast<int32>(emitterInstances.size()); i < sz; ++i)
     {
-        if (emitterInstances[i].GetEmitter() == emitter)
+        if (emitterInstances[i]->GetEmitter() == emitter->GetEmitter())
         {
             return i;
         }
@@ -456,79 +493,22 @@ int32 ParticleEffectComponent::GetEmitterId(const ParticleEmitter* emitter) cons
     return -1;
 }
 
-ParticleEmitter* ParticleEffectComponent::GetEmitter(uint32 id) const
+void ParticleEffectComponent::InsertEmitterInstanceAt(ParticleEmitterInstance* emitter, uint32 position)
 {
-    DVASSERT(id < emitterInstances.size());
-    return emitterInstances[id].GetEmitter();
+    auto it = emitterInstances.begin();
+    std::advance(it, DAVA::Min(position, GetEmittersCount()));
+    emitterInstances.emplace(it, emitter);
 }
 
-void ParticleEffectComponent::RemoveEmitter(const ParticleEmitter* emitter)
+void ParticleEffectComponent::RemoveEmitterInstance(ParticleEmitterInstance* emitter)
 {
-    auto findPred = [emitter](const ParticleEmitterInstance& qualityEmitter) {
-        return (qualityEmitter.GetEmitter() == emitter);
+    auto findPred = [emitter](const DAVA::RefPtr<ParticleEmitterInstance>& qualityEmitter) {
+        return (qualityEmitter->GetEmitter() == emitter->GetEmitter());
     };
 
     auto it = std::find_if(emitterInstances.begin(), emitterInstances.end(), findPred);
     DVASSERT(it != emitterInstances.end());
-    int32 id = GetEmitterId(emitter);
     emitterInstances.erase(it);
-}
-
-Vector3 ParticleEffectComponent::GetSpawnPosition(int32 id) const
-{
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
-    return emitterInstances[id].GetSpawnPosition();
-}
-
-void ParticleEffectComponent::SetSpawnPosition(int32 id, const Vector3& position)
-{
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
-    emitterInstances[id].SetSpawnPosition(position);
-}
-
-DAVA::FilePath ParticleEffectComponent::GetOriginalConfigPath(int32 id) const
-{
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
-    return emitterInstances[id].GetFilePath();
-}
-
-void ParticleEffectComponent::SetOriginalConfigPath(int32 id, const FilePath& filepath)
-{
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
-    emitterInstances[id].SetFilePath(filepath);
-}
-
-const ParticleEmitterInstance& ParticleEffectComponent::GetEmitterInstance(uint32 id) const
-{
-    DVASSERT(id < emitterInstances.size());
-    return emitterInstances[id];
-}
-
-void ParticleEffectComponent::AddEmitterInstance(ParticleEmitter* emitter)
-{
-    emitterInstances.emplace_back(emitter);
-}
-
-void ParticleEffectComponent::AddEmitterInstance(const ParticleEmitterInstance& emitter)
-{
-    emitterInstances.push_back(emitter);
-}
-
-int32 ParticleEffectComponent::GetEmitterInstanceId(const ParticleEmitterInstance& emitter) const
-{
-    return GetEmitterId(emitter.GetEmitter());
-}
-
-void ParticleEffectComponent::InsertEmitterInstanceAt(const ParticleEmitterInstance& emitter, uint32 position)
-{
-    auto it = emitterInstances.begin();
-    std::advance(it, DAVA::Min(position, GetEmittersCount()));
-    emitterInstances.insert(it, emitter);
-}
-
-void ParticleEffectComponent::RemoveEmitterInstance(const ParticleEmitterInstance& emitter)
-{
-    return RemoveEmitter(emitter.GetEmitter());
 }
 
 /*statistics for editor*/
@@ -588,20 +568,20 @@ void ParticleEffectComponent::ReloadEmitters()
 {
     const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
 
-    for (ParticleEmitterInstance& instance : emitterInstances)
+    for (auto instance : emitterInstances)
     {
-        if (!instance.GetFilePath().IsEmpty())
+        if (!instance->GetFilePath().IsEmpty())
         {
-            FilePath qualityFilepath = instance.GetFilePath();
+            FilePath qualityFilepath = instance->GetFilePath();
 
             if (filepathSelector)
             {
-                qualityFilepath = filepathSelector->SelectFilepath(instance.GetFilePath());
+                qualityFilepath = filepathSelector->SelectFilepath(instance->GetFilePath());
             }
 
-            if (qualityFilepath != instance.GetEmitter()->configPath)
+            if (qualityFilepath != instance->GetEmitter()->configPath)
             {
-                instance.SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
+                instance->SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
             }
         }
     }

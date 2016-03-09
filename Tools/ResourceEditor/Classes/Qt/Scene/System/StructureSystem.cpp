@@ -148,7 +148,7 @@ void StructureSystem::Remove(const SelectableObjectGroup& objects)
     EmitChanged();
 }
 
-void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter)
+void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstance*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     if (sceneEditor == nullptr)
@@ -163,7 +163,7 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& em
     EmitChanged();
 }
 
-void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore)
+void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitterInstance*>& oldEmitters, DAVA::ParticleEmitterInstance* newEmitter, DAVA::ParticleLayer* newBefore)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     if (sceneEditor == nullptr)

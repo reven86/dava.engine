@@ -45,7 +45,7 @@ public:
     virtual void StoreVisualState(KeyedArchive* visualStateProps) = 0;
     virtual void RestoreVisualState(KeyedArchive* visualStateProps) = 0;
 
-    ParticleEmitter* GetEmitter() const
+    ParticleEmitterInstance* GetEmitterInstance() const
     {
         return emitter;
     };
@@ -72,10 +72,9 @@ protected:
     int ConvertFromPlaybackSpeedToSliderValue(float32 playbackSpeed);
     float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
-    ParticleEmitter* emitter;
-    ParticleEffectComponent* effect;
-
-    SceneEditor2* activeScene;
+    ParticleEmitterInstance* emitter = nullptr;
+    ParticleEffectComponent* effect = nullptr;
+    SceneEditor2* activeScene = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__BASEPARTICLEEDITORCONTENTWIDGET__) */

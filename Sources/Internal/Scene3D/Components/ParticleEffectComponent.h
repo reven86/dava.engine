@@ -120,7 +120,7 @@ private:
     Map<String, float32> externalValues;
 
     /*Emitters setup*/
-    Vector<ParticleEmitterInstance> emitterInstances;
+    Vector<RefPtr<ParticleEmitterInstance>> emitterInstances;
 
     ParticleEffectData effectData;
     ParticleRenderObject* effectRenderObject;
@@ -140,9 +140,6 @@ private:
 
 public: //mostly editor commands
     uint32 GetEmittersCount() const;
-    ParticleEmitter* GetEmitter(uint32 id) const;
-    int32 GetEmitterId(const ParticleEmitter* emitter) const;
-    void RemoveEmitter(const ParticleEmitter* emitter);
 
     Vector3 GetSpawnPosition(int32 id) const;
     void SetSpawnPosition(int32 id, const Vector3& position);
@@ -150,13 +147,13 @@ public: //mostly editor commands
     FilePath GetOriginalConfigPath(int32 id) const;
     void SetOriginalConfigPath(int32 id, const FilePath& filepath);
 
-    int32 GetEmitterInstanceId(const ParticleEmitterInstance& emitter) const;
-    const ParticleEmitterInstance& GetEmitterInstance(uint32 id) const;
+    int32 GetEmitterInstanceId(ParticleEmitterInstance* emitter) const;
+    ParticleEmitterInstance* GetEmitterInstance(uint32 id) const;
 
     void AddEmitterInstance(ParticleEmitter* emitter);
-    void AddEmitterInstance(const ParticleEmitterInstance& emitter);
-    void InsertEmitterInstanceAt(const ParticleEmitterInstance& emitter, uint32 position);
-    void RemoveEmitterInstance(const ParticleEmitterInstance& emitter);
+    void AddEmitterInstance(ParticleEmitterInstance* emitter);
+    void InsertEmitterInstanceAt(ParticleEmitterInstance* emitter, uint32 position);
+    void RemoveEmitterInstance(ParticleEmitterInstance* emitter);
 
     float32 GetCurrTime();
 
@@ -176,8 +173,6 @@ public:
 
                          PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
-
-                         COLLECTION(emitterInstances, "Emitters", I_VIEW)
                          );
 };
 }

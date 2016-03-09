@@ -141,7 +141,7 @@ void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 {
     for (auto& emitter : component->emitterInstances)
     {
-        for (auto layer : emitter.GetEmitter()->layers)
+        for (auto layer : emitter->GetEmitter()->layers)
         {
             if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
                 GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
@@ -198,7 +198,7 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent* effect)
 
     for (const auto& instance : effect->emitterInstances)
     {
-        RunEmitter(effect, instance.GetEmitter(), instance.GetSpawnPosition());
+        RunEmitter(effect, instance->GetEmitter(), instance->GetSpawnPosition());
     }
 
     effect->state = ParticleEffectComponent::STATE_PLAYING;

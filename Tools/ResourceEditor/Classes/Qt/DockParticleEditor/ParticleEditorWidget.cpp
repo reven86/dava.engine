@@ -52,17 +52,17 @@ ParticleEditorWidget::ParticleEditorWidget(QWidget* parent /* = 0*/)
             this,
             SLOT(OnEffectSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*)));
     connect(SceneSignals::Instance(),
-            SIGNAL(EmitterSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*)),
+            SIGNAL(EmitterSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)),
             this,
-            SLOT(OnEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*)));
+            SLOT(OnEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)));
     connect(SceneSignals::Instance(),
-            SIGNAL(InnerEmitterSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*)),
+            SIGNAL(InnerEmitterSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)),
             this,
-            SLOT(OnInnerEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*)));
+            SLOT(OnInnerEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)));
     connect(SceneSignals::Instance(),
-            SIGNAL(LayerSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*, DAVA::ParticleLayer*, bool)),
+            SIGNAL(LayerSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*, DAVA::ParticleLayer*, bool)),
             this,
-            SLOT(OnLayerSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*, DAVA::ParticleLayer*, bool)));
+            SLOT(OnLayerSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*, DAVA::ParticleLayer*, bool)));
     connect(SceneSignals::Instance(),
             SIGNAL(ForceSelected(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)),
             this,
@@ -75,13 +75,13 @@ ParticleEditorWidget::ParticleEditorWidget(QWidget* parent /* = 0*/)
             SLOT(OnParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)));
 
     connect(SceneSignals::Instance(),
-            SIGNAL(ParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitter*)),
+            SIGNAL(ParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitterInstance*)),
             this,
-            SLOT(OnParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitter*)));
+            SLOT(OnParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitterInstance*)));
     connect(SceneSignals::Instance(),
-            SIGNAL(ParticleEmitterSaved(SceneEditor2*, DAVA::ParticleEmitter*)),
+            SIGNAL(ParticleEmitterSaved(SceneEditor2*, DAVA::ParticleEmitterInstance*)),
             this,
-            SLOT(OnParticleEmitterSaved(SceneEditor2*, DAVA::ParticleEmitter*)));
+            SLOT(OnParticleEmitterSaved(SceneEditor2*, DAVA::ParticleEmitterInstance*)));
 }
 
 ParticleEditorWidget::~ParticleEditorWidget()
@@ -151,7 +151,7 @@ void ParticleEditorWidget::OnValueChanged()
 
 void ParticleEditorWidget::UpdateParticleEditorWidgets()
 {
-    if (MODE_EMITTER == widgetMode && emitterPropertiesWidget->GetEmitter())
+    if (MODE_EMITTER == widgetMode && emitterPropertiesWidget->GetEmitterInstance())
     {
         UpdateVisibleTimelinesForParticleEmitter();
         return;
@@ -167,7 +167,7 @@ void ParticleEditorWidget::UpdateParticleEditorWidgets()
 void ParticleEditorWidget::UpdateVisibleTimelinesForParticleEmitter()
 {
     // Safety check.
-    if (MODE_EMITTER != widgetMode || !emitterPropertiesWidget->GetEmitter())
+    if (MODE_EMITTER != widgetMode || !emitterPropertiesWidget->GetEmitterInstance())
     {
         return;
     }
@@ -177,7 +177,7 @@ void ParticleEditorWidget::UpdateVisibleTimelinesForParticleEmitter()
     bool angleTimeLineVisible = false;
     bool sizeTimeLineVisible = false;
 
-    switch (emitterPropertiesWidget->GetEmitter()->emitterType)
+    switch (emitterPropertiesWidget->GetEmitterInstance()->GetEmitter()->emitterType)
     {
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
@@ -215,21 +215,21 @@ void ParticleEditorWidget::UpdateWidgetsForLayer()
     emitterLayerWidget->SetSuperemitterMode(isSuperemitter);
 }
 
-void ParticleEditorWidget::OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
+void ParticleEditorWidget::OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
 {
     HandleEmitterSelected(scene, effect, emitter, false);
 }
 
-void ParticleEditorWidget::OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
+void ParticleEditorWidget::OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
 {
     HandleEmitterSelected(scene, effect, emitter, false);
 }
 
-void ParticleEditorWidget::HandleEmitterSelected(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, bool forceUpdate)
+void ParticleEditorWidget::HandleEmitterSelected(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, bool forceUpdate)
 {
     if (emitter &&
         MODE_EMITTER == widgetMode &&
-        (!forceUpdate && (emitterPropertiesWidget->GetEmitter() == emitter)))
+        (!forceUpdate && (emitterPropertiesWidget->GetEmitterInstance()->GetEmitter() == emitter->GetEmitter())))
     {
         return;
     }
@@ -252,11 +252,11 @@ void ParticleEditorWidget::OnEffectSelectedFromSceneTree(SceneEditor2* scene, DA
     SwitchEditorToEffectMode(scene, effect);
 }
 
-void ParticleEditorWidget::OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
+void ParticleEditorWidget::OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
 {
     if (!forceRefresh && MODE_LAYER == widgetMode &&
         emitterLayerWidget->GetLayer() == layer &&
-        emitterLayerWidget->GetEmitter() == emitter &&
+        emitterLayerWidget->GetEmitterInstance()->GetEmitter() == emitter->GetEmitter() &&
         !forceRefresh)
     {
         return;
@@ -290,20 +290,20 @@ void ParticleEditorWidget::OnParticleLayerValueChanged(SceneEditor2* /*scene*/, 
     emitterLayerWidget->Update(false);
 }
 
-void ParticleEditorWidget::OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+void ParticleEditorWidget::OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
 {
     // Handle in the same way emitter is selected to update the values. However
     // cause widget to be force updated.
     HandleEmitterSelected(scene, emitterPropertiesWidget->GetEffect(), emitter, true);
 }
 
-void ParticleEditorWidget::OnParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+void ParticleEditorWidget::OnParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
 {
     // Handle in the same way emitter is selected to update the values. However
     // cause widget to be force updated.
     ParticleEffectComponent* currEffect = emitterPropertiesWidget->GetEffect();
-    ParticleEmitter* currEmitter = emitterPropertiesWidget->GetEmitter();
-    if (currEffect && (currEmitter == emitter))
+    ParticleEmitterInstance* currEmitter = emitterPropertiesWidget->GetEmitterInstance();
+    if (currEffect && (currEmitter->GetEmitter() == emitter->GetEmitter()))
         HandleEmitterSelected(scene, currEffect, emitter, true);
 }
 
@@ -326,7 +326,7 @@ void ParticleEditorWidget::SwitchEditorToEffectMode(SceneEditor2* scene, Particl
     this->widgetMode = MODE_EFFECT;
 }
 
-void ParticleEditorWidget::SwitchEditorToEmitterMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
+void ParticleEditorWidget::SwitchEditorToEmitterMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
 {
     ResetEditorMode();
 
@@ -351,7 +351,7 @@ void ParticleEditorWidget::SwitchEditorToEmitterMode(SceneEditor2* scene, Partic
     UpdateParticleEditorWidgets();
 }
 
-void ParticleEditorWidget::SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer)
+void ParticleEditorWidget::SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer)
 {
     ResetEditorMode();
 

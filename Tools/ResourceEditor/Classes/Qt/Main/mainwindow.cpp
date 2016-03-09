@@ -325,20 +325,22 @@ QString GetSaveFolderForEmitters()
     return particlesPath;
 }
 
-void QtMainWindow::CollectEmittersForSave(ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const String& entityName) const
+void QtMainWindow::CollectEmittersForSave(ParticleEmitterInstance* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const String& entityName) const
 {
     DVASSERT(topLevelEmitter != nullptr);
 
-    for (auto& layer : topLevelEmitter->layers)
+    for (auto& layer : topLevelEmitter->GetEmitter()->layers)
     {
         if (nullptr != layer->innerEmitter)
         {
-            CollectEmittersForSave(layer->innerEmitter, emitters, entityName);
-            emitters.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitter->configPath, entityName));
+            // REZNIK TODO : deal with inner emitters
+            ParticleEmitterInstance instance(nullptr, layer->innerEmitter);
+            CollectEmittersForSave(&instance, emitters, entityName);
+            emitters.emplace_back(EmitterDescriptor(&instance, layer, layer->innerEmitter->configPath, entityName));
         }
     }
 
-    emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
+    emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->GetEmitter()->configPath, entityName));
 }
 
 void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
@@ -364,13 +366,13 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
         ParticleEffectComponent* effect = GetEffectComponent(entityWithEffect);
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
-            CollectEmittersForSave(effect->GetEmitter(i), emittersForSave, entityName);
+            CollectEmittersForSave(effect->GetEmitterInstance(i), emittersForSave, entityName);
         }
     }
 
     for (auto& descriptor : emittersForSave)
     {
-        ParticleEmitter* emitter = descriptor.emitter;
+        ParticleEmitter* emitter = descriptor.emitter->GetEmitter();
         const String& entityName = descriptor.entityName;
 
         FilePath yamlPathForSaving = descriptor.yamlPath;
@@ -378,7 +380,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
         {
             QString particlesPath = GetSaveFolderForEmitters();
 
-            FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+            FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); // to ensure that folder is created
 
             QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
             QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));

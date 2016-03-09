@@ -256,12 +256,12 @@ void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity* ownerNode, Se
         uint32 count = effect->GetEmittersCount();
         for (uint32 i = 0; i < count; ++i)
         {
-            ValidateParticleEmitter(effect->GetEmitter(i), errorsLog, effect->GetEntity());
+            ValidateParticleEmitter(effect->GetEmitterInstance(i), errorsLog, effect->GetEntity());
         }
     }
 }
 
-void SceneValidator::ValidateParticleEmitter(ParticleEmitter* emitter, Set<String>& errorsLog, DAVA::Entity* owner) const
+void SceneValidator::ValidateParticleEmitter(ParticleEmitterInstance* emitter, Set<String>& errorsLog, DAVA::Entity* owner) const
 {
     DVASSERT(emitter);
 
@@ -270,20 +270,19 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitter* emitter, Set<Strin
         return;
     }
 
-    if (emitter->configPath.IsEmpty())
+    if (emitter->GetEmitter()->configPath.IsEmpty())
     {
         PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s",
-                       emitter->name.c_str(), sceneName.c_str());
+                       emitter->GetEmitter()->name.c_str(), sceneName.c_str());
     }
 
-    const Vector<ParticleLayer*>& layers = emitter->layers;
-
-    uint32 count = (uint32)layers.size();
-    for (uint32 i = 0; i < count; ++i)
+    for (auto layer : emitter->GetEmitter()->layers)
     {
-        if (layers[i]->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+        if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            ValidateParticleEmitter(layers[i]->innerEmitter, errorsLog, owner);
+            // REZNIK TODO : deal with inner emitters
+            ParticleEmitterInstance instance(nullptr, layer->innerEmitter);
+            ValidateParticleEmitter(&instance, errorsLog, owner);
         }
     }
 }

@@ -29,7 +29,7 @@
 
 #include "Commands2/ParticleEmitterMoveCommands.h"
 
-ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* _oldEffect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleEffectComponent* _newEffect, int _newIndex)
+ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* _oldEffect, DAVA::ParticleEmitterInstance* _emitter, DAVA::ParticleEffectComponent* _newEffect, int _newIndex)
     : Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
     , oldEffect(_oldEffect)
     , newEffect(_newEffect)
@@ -38,9 +38,9 @@ ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectCompo
 {
     if (nullptr != _emitter && nullptr != oldEffect)
     {
-        oldIndex = oldEffect->GetEmitterId(_emitter);
+        oldIndex = oldEffect->GetEmitterInstanceId(_emitter);
         instance = oldEffect->GetEmitterInstance(oldIndex);
-        DVASSERT(instance.GetEmitter() == _emitter);
+        DVASSERT(instance->GetEmitter() == _emitter->GetEmitter());
     }
 }
 
@@ -50,30 +50,30 @@ ParticleEmitterMoveCommand::~ParticleEmitterMoveCommand()
 
 void ParticleEmitterMoveCommand::Undo()
 {
-    if (nullptr != instance.GetEmitter())
-    {
-        if (nullptr != newEffect)
-        {
-            newEffect->RemoveEmitterInstance(instance);
-        }
+    if (instance->GetEmitter() == nullptr)
+        return;
 
-        if (nullptr != oldEffect)
+    if (nullptr != newEffect)
+    {
+        newEffect->RemoveEmitterInstance(instance);
+    }
+
+    if (nullptr != oldEffect)
+    {
+        if (-1 != oldIndex)
         {
-            if (-1 != oldIndex)
-            {
-                oldEffect->InsertEmitterInstanceAt(instance, oldIndex);
-            }
-            else
-            {
-                oldEffect->AddEmitterInstance(instance);
-            }
+            oldEffect->InsertEmitterInstanceAt(instance, oldIndex);
+        }
+        else
+        {
+            oldEffect->AddEmitterInstance(instance);
         }
     }
 }
 
 void ParticleEmitterMoveCommand::Redo()
 {
-    if ((instance.GetEmitter() == nullptr) || (newEffect == nullptr))
+    if ((instance->GetEmitter() == nullptr) || (newEffect == nullptr))
         return;
 
     if (nullptr != oldEffect)
