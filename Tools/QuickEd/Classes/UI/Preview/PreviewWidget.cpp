@@ -49,6 +49,9 @@
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
 #include "UI/Package/PackageMimeData.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
 
 using namespace DAVA;
 
@@ -551,13 +554,20 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
             }
         }
     }
-    else if (mimeData->hasFormat("text/plain"))
+    else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         DVASSERT(nullptr != document);
         DAVA::Vector2 pos(event->pos().x(), event->pos().y());
         auto node = systemsManager->ControlNodeUnderPoint(pos);
         systemsManager->NodesHovered.Emit({ node });
-        return nullptr != node && (!mimeData->hasFormat(PackageMimeData::MIME_TYPE) || !node->IsReadOnly());
+        if (nullptr != node)
+        {
+            return !node->IsReadOnly(); //canPaste must be here
+        }
+        else
+        {
+            return true;
+        }
     }
     return false;
 }
@@ -572,13 +582,16 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
     systemsManager->NodesHovered.Emit({ nullptr });
     DVASSERT(nullptr != event);
     auto mimeData = event->mimeData();
-    if (mimeData->hasFormat("text/plain"))
+    if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         DAVA::Vector2 pos(event->pos().x(), event->pos().y());
-        auto node = systemsManager->ControlNodeUnderPoint(pos);
-        DVASSERT(nullptr != node);
+        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
+        if (node == nullptr)
+        {
+            node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
+        }
         emit DropRequested(mimeData, action, node, node->GetCount(), &pos);
     }
     else if (mimeData->hasFormat("text/uri-list"))
