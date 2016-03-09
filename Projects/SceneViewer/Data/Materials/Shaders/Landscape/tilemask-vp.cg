@@ -4,13 +4,16 @@
 
 	VPROG_IN_BEGIN
 		VPROG_IN_STREAM_VERTEX
-			VPROG_IN_TEXCOORD0(4)
-			VPROG_IN_TEXCOORD1(4)
+			VPROG_IN_TEXCOORD0(4) //position + edgeShiftDirection
+			VPROG_IN_TEXCOORD1(4) //edge mask
+			VPROG_IN_TEXCOORD2(2) //edgeVertexIndex + edgeMaskNull
 		VPROG_IN_STREAM_INSTANCE
-			VPROG_IN_TEXCOORD4(4)
-			VPROG_IN_TEXCOORD5(4)
-			VPROG_IN_TEXCOORD6(4)
-			VPROG_IN_TEXCOORD7(2)
+			VPROG_IN_TEXCOORD3(3) //patch position + scale
+			VPROG_IN_TEXCOORD4(4) //near patch lodOffset
+		#if LOD_MORPHING
+			VPROG_IN_TEXCOORD5(4) //near patch morph
+			VPROG_IN_TEXCOORD6(3) //patch lod + morph + pixelMappingOffset
+		#endif
 	VPROG_IN_END
 	
 #else
@@ -38,9 +41,6 @@ VPROG_OUT_END
 
 #if USE_INSTANCING
 	DECL_VP_SAMPLER2D(heightmap)
-	#if LOD_MORPHING
-		DECL_VP_SAMPLER2D(heightmapAvg)
-	#endif
 #endif
 
 property float4x4 worldViewProjMatrix          : dynamic,a : ;
@@ -64,48 +64,61 @@ property float4   lightPosition0               : dynamic,a : ;
 
 #include "vp-fog-props.cgh"
 
-#ifndef PATCH_SIZE_QUADS
-	#define PATCH_SIZE_QUADS 16
-#endif
-
 VPROG_BEGIN
 
 #if USE_INSTANCING
 
     float2 in_pos = VP_IN_TEXCOORD0.xy;
-    float2 gluDir = VP_IN_TEXCOORD0.zw;
+    float2 edgeShiftDirection = VP_IN_TEXCOORD0.zw;
     float4 edgeMask = VP_IN_TEXCOORD1;
-    float3 patchOffsetScale = VP_IN_TEXCOORD4.xyz;
-	float centerPixelOffset = VP_IN_TEXCOORD4.w;
-    float lodOffset = dot(edgeMask, VP_IN_TEXCOORD5);
+	float edgeVertexIndex = VP_IN_TEXCOORD2.x;
 	
-    float gluAmount = pow(2.0, lodOffset);
-	float2 pos_i = abs(gluDir - in_pos) * float(PATCH_SIZE_QUADS);
-	float i = dot(pos_i, abs(gluDir));
-	float f = fmod(i, gluAmount);
-	in_pos += gluDir * f / float(PATCH_SIZE_QUADS);
+    float3 patchOffsetScale = VP_IN_TEXCOORD3.xyz;
+	float4 nearPatchLodOffset = VP_IN_TEXCOORD4;
 	
-    float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0, 1]
+	//Calculate vertecies offset for fusing neighboring patches
+	float lodOffset = dot(edgeMask, nearPatchLodOffset);
+    float edgeShiftAmount = pow(2.0, lodOffset);
+	in_pos += edgeShiftDirection * fmod(edgeVertexIndex, edgeShiftAmount);
+	
+    float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0.0, 1.0]
 	
 #if LOD_MORPHING
-
-	centerPixelOffset = centerPixelOffset * gluAmount;
-
-	float baseLod = VP_IN_TEXCOORD7.x + lodOffset;
-	float morphAmount = dot(edgeMask, VP_IN_TEXCOORD6) + (1.0 - dot(float4(1.0, 1.0, 1.0, 1.0), edgeMask)) * VP_IN_TEXCOORD7.y;
 	
-    float heightmapSample0 = FP_A8(VP_TEXTURE2D(heightmapAvg, relativePosition + centerPixelOffset, baseLod));
-	float heightmapSample1 = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, baseLod));
+	float edgeMaskNull = VP_IN_TEXCOORD2.y; //if all components of edgeMask is zero - this value is 0.0, othewise - 1.0. Used for a little optimization.
+	float4 nearPatchMorph = VP_IN_TEXCOORD5;
 	
-	float heightmapSample = lerp(heightmapSample0, heightmapSample1, morphAmount);
+	float baseLod = VP_IN_TEXCOORD6.x;
+	float patchMorph = VP_IN_TEXCOORD6.y;
+	float basePixelOffset = VP_IN_TEXCOORD6.z;
+	
+	//Calculate 'zero-multiplier' that provide fetch zero-mip for vertecies at the edges whith climbs beyound height-texture. 
+	float2 zeroLod = STEP(1.0, relativePosition);
+	float zeroLodMul = 1.0 - min(1.0, zeroLod.x + zeroLod.y);
+
+	//Calculate fetch parameters
+	float sampleLod = (baseLod + lodOffset) * zeroLodMul;
+	float samplePixelOffset = basePixelOffset * edgeShiftAmount * zeroLodMul; //mul by 'edgeShiftAmount' give 0.5 / ( 2 ^ ( baseLod + lodOffset ) )
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod);
+	
+	//Calculate morphed height. 
+	float morphAmount = dot(edgeMask, nearPatchMorph) + patchMorph * edgeMaskNull;
+	// float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895)); // 'accurate' height
+	// float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895)); // 'averaged' height
+	// float height = lerp(h1, h0, morphAmount);
+	
+	// This code make the same thing as the code above, but potentially using fewer multiplications
+	float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
+	float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
 	
 #else
 	
-	float heightmapSample = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, 0.0));
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition, 0.0);
+	float height = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
 	
 #endif
 
-    float3 vx_position = float3( relativePosition - 0.5, heightmapSample ) * boundingBoxSize;
+    float3 vx_position = float3( relativePosition - 0.5, height ) * boundingBoxSize;
 	
     VP_OUT_POSITION = mul( float4(vx_position.x, vx_position.y, vx_position.z, 1.0), worldViewProjMatrix );
     VP_OUT(texCoord) = float2(relativePosition.x, 1.0 - relativePosition.y);
