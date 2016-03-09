@@ -49,31 +49,35 @@ void InitPVRTexTool()
 
 int main(int argc, char* argv[])
 {
-    qInstallMessageHandler(DAVAMessageHandler);
-
-    QApplication a(argc, argv);
-    a.setOrganizationName("DAVA");
-    a.setApplicationName("QuickEd");
-
-    Q_INIT_RESOURCE(QtToolsResources);
-
-    DAVA::Core::Run(argc, argv);
     QtLayer qtLayer;
-    QObject::connect(&a, &QApplication::applicationStateChanged, [&qtLayer](Qt::ApplicationState state) {
-        state == Qt::ApplicationActive ? qtLayer.OnResume() : qtLayer.OnSuspend();
-    });
-    InitPVRTexTool();
+    DAVA::Core::Run(argc, argv);
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
-
-    // Editor Settings might be used by any singleton below during initialization, so
-    // initialize it before any other one.
-    EditorSettings editorSettings;
-
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
 
-    EditorCore editorCore;
+    int returnCode = 0;
+    {
+        qInstallMessageHandler(DAVAMessageHandler);
 
-    editorCore.Start();
+        QApplication a(argc, argv);
+        a.setOrganizationName("DAVA");
+        a.setApplicationName("QuickEd");
 
-    return QApplication::exec();
+        Q_INIT_RESOURCE(QtToolsResources);
+
+        QObject::connect(&a, &QApplication::applicationStateChanged, [&qtLayer](Qt::ApplicationState state) {
+            state == Qt::ApplicationActive ? qtLayer.OnResume() : qtLayer.OnSuspend();
+        });
+        InitPVRTexTool();
+        {
+            // Editor Settings might be used by any singleton below during initialization, so
+            // initialize it before any other one.
+            EditorSettings editorSettings;
+
+            EditorCore editorCore;
+
+            editorCore.Start();
+            returnCode = a.exec();
+        }
+    }
+    return returnCode;
 }
