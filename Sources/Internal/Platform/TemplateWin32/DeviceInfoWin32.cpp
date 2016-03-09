@@ -44,7 +44,6 @@
 
 namespace DAVA
 {
-
 namespace RegistryReader
 {
 const WideString infoRegistryPath(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
@@ -77,8 +76,6 @@ String GetStringForKey(const WideString& path, const WideString& key)
 }
 }
 
-
-
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
 }
@@ -108,10 +105,8 @@ String DeviceInfoPrivate::GetVersion()
     return version;
 }
 
-
 String DeviceInfoPrivate::GetManufacturer()
 {
-
     String manufacturer = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::registeredOrganization);
     return manufacturer;
 }
