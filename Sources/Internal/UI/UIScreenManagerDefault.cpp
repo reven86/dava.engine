@@ -59,16 +59,6 @@ UIScreenManager::~UIScreenManager()
     }
 }
 
-void UIScreenManager::ScreenSizeChanged()
-{
-    UIScreen* screen = GetScreen();
-    if (nullptr != screen)
-    {
-        Rect fullscreenRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-        screen->SystemScreenSizeDidChanged(fullscreenRect);
-    }
-}
-
 void UIScreenManager::SetFirst(int screenId)
 {
     DVASSERT(activeScreenId == -1 && "[UIScreenManager::SetFirst] called twice");
@@ -93,6 +83,12 @@ void UIScreenManager::SetScreen(int screenId, UIScreenTransition* transition)
         activeScreenId = screenId;
         UIControlSystem::Instance()->SetScreen((UIScreen*)screen.value, transition);
     }
+}
+
+void UIScreenManager::ResetScreen()
+{
+    activeScreenId = -1;
+    UIControlSystem::Instance()->Reset();
 }
 
 void UIScreenManager::RegisterScreen(int screenId, UIScreen* screen)

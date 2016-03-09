@@ -44,7 +44,7 @@
 #include "Main/QtUtils.h"
 
 #include "Project/ProjectManager.h"
-#include "Preset/Preset.h"
+#include "Preset.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
@@ -450,7 +450,7 @@ void TextureListDelegate::onLoadPreset()
         return;
     }
 
-    bool loaded = Preset::LoadPresetForTexture(lastSelectedTextureDescriptor);
+    bool loaded = Preset::DialogLoadPresetForTexture(lastSelectedTextureDescriptor);
     if (loaded)
     {
         emit textureDescriptorChanged(lastSelectedTextureDescriptor);
@@ -466,7 +466,7 @@ void TextureListDelegate::onSavePreset()
         return;
     }
 
-    Preset::SavePresetForTexture(lastSelectedTextureDescriptor);
+    Preset::DialogSavePresetForTexture(lastSelectedTextureDescriptor);
 
     lastSelectedTextureDescriptor = nullptr;
 }

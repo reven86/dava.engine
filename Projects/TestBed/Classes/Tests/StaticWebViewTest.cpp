@@ -101,7 +101,7 @@ void StaticWebViewTest::LoadResources()
     webviewDelegate = new MyWebViewDelegate;
 
     webView1 = new UIWebView(Rect(5, 5, 400, 300));
-    webView1->SetVisible(true);
+    webView1->SetVisibilityFlag(true);
     webView1->SetRenderToTexture(true);
     webView1->SetDebugDraw(true);
     webView1->SetDelegate(webviewDelegate);
@@ -109,13 +109,13 @@ void StaticWebViewTest::LoadResources()
     AddControl(webView1);
 
     webView2 = new UIWebView(Rect(410, 50, 400, 300));
-    webView2->SetVisible(true);
+    webView2->SetVisibilityFlag(true);
     webView2->SetDebugDraw(true);
     webView2->OpenFromBuffer(htmlCuteCats, "~res:/TestData/TransparentWebViewTest/");
     AddControl(webView2);
 
     webView3 = new UIWebView(Rect(820, 70, 400, 300));
-    webView3->SetVisible(true);
+    webView3->SetVisibilityFlag(true);
     webView3->SetRenderToTexture(true);
     webView3->SetDebugDraw(true);
     webView3->LoadHtmlString(htmlString);
@@ -286,14 +286,14 @@ void StaticWebViewTest::OnLoadHTMLString(BaseObject* obj, void*, void*)
 
 void StaticWebViewTest::OnButtonVisible(BaseObject*, void*, void*)
 {
-    webView1->SetVisible(true);
-    webView2->SetVisible(true);
-    webView3->SetVisible(true);
+    webView1->SetVisibilityFlag(true);
+    webView2->SetVisibilityFlag(true);
+    webView3->SetVisibilityFlag(true);
 }
 
 void StaticWebViewTest::OnButtonHide(BaseObject*, void*, void*)
 {
-    webView1->SetVisible(false);
-    webView2->SetVisible(false);
-    webView3->SetVisible(false);
+    webView1->SetVisibilityFlag(false);
+    webView2->SetVisibilityFlag(false);
+    webView3->SetVisibilityFlag(false);
 }

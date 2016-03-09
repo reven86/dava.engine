@@ -36,6 +36,11 @@
 
 using namespace DAVA;
 
+namespace DAVA
+{
+class Image;
+}
+
 class LandscapeProxy : public BaseObject
 {
 public:
