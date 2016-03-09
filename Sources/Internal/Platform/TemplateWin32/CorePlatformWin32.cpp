@@ -199,7 +199,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Init application with positioned window
     {
         currentMode = windowedMode;
-        Core::Instance()->InitializeScreenMetrics(reinterpret_cast<void*>(hWindow), currentMode.width, currentMode.height, 1.f, 1.f);
+        Core::Instance()->InitializeScreenMetrics(reinterpret_cast<void*>(hWindow), static_cast<float32>(currentMode.width), static_cast<float32>(currentMode.height), 1.f, 1.f);
 
         clientSize.top = 0;
         clientSize.left = 0;
