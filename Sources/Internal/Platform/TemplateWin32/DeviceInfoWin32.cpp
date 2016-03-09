@@ -161,7 +161,7 @@ String DeviceInfoPrivate::GetVersion()
     }
 
     return version;
- }
+}
 
 String DeviceInfoPrivate::GetManufacturer()
 {
@@ -197,12 +197,12 @@ String DeviceInfoPrivate::GetRegion()
     return country;
 }
 
-String DeviceInfoPrivate::GetTimeZone() 
+String DeviceInfoPrivate::GetTimeZone()
 {
     TIME_ZONE_INFORMATION timeZoneInformation;
     DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
 
-    WCHAR *name;
+    WCHAR* name;
     switch (ret)
     {
     case TIME_ZONE_ID_DAYLIGHT:
