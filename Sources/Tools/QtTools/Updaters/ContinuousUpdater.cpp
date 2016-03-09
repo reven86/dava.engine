@@ -31,9 +31,9 @@
 
 #include <QTimer>
 
-ContinuousUpdater::ContinuousUpdater(Updater _updater, QObject* parent, int updateInterval)
+ContinuousUpdater::ContinuousUpdater(Updater updater_, QObject* parent, int updateInterval)
     : QObject(parent)
-    , updater(_updater)
+    , updater(updater_)
     , timer(new QTimer(this))
 {
     timer->setSingleShot(true);
