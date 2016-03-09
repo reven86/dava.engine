@@ -37,8 +37,6 @@
 namespace DAVA
 {
 
-using namespace ::Windows::UI::Xaml::Controls;
-
 // when app going in fullscreen or back
 // we receive events with intermediate sizes
 class DeferredScreenMetricEvents
@@ -117,7 +115,7 @@ inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Obje
     isSizeUpdate = true;
     if (0.f == scaleX * scaleY)
     {
-        SwapChainPanel^ sw = dynamic_cast<SwapChainPanel^>(swapChain);
+        Windows::UI::Xaml::Controls::SwapChainPanel^ sw = dynamic_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(swapChain);
         DVASSERT(sw);
         scaleX = sw->CompositionScaleX;
         scaleY = sw->CompositionScaleY;

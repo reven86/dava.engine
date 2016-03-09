@@ -533,8 +533,6 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
 DisplayMode Core::GetCurrentDisplayMode()
 {
     return DisplayMode(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
-    //
-    //     return DisplayMode();
 }
 
 void Core::Quit()

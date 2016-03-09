@@ -30,7 +30,6 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
-#include <winnt.h>
 #include "Debug/Profiler.h"
 
 #include "Concurrency/Thread.h"
@@ -162,9 +161,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     HWND hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
                                 realWidth, realHeight, NULL, NULL, hInstance, NULL);
 
-    //     SetNativeView(hWindow);
     SetMenu(hWindow, NULL);
-    //     rendererParams.window = hWindow;
 
     ShowWindow(hWindow, SW_SHOW);
     UpdateWindow(hWindow);
@@ -202,8 +199,6 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Init application with positioned window
     {
         currentMode = windowedMode;
-        //         rendererParams.width = currentMode.width;
-        //         rendererParams.height = currentMode.height;
         Core::Instance()->InitializeScreenMetrics(reinterpret_cast<void*>(hWindow), currentMode.width, currentMode.height, 1.f, 1.f);
 
         clientSize.top = 0;
@@ -607,31 +602,6 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
 #ifndef WHEEL_DELTA
 #define WHEEL_DELTA 120
 #endif
-
-float32 ReadCurrentScaleFactor()
-{
-    float32 res(1.f);
-    DWORD dpi;
-    DWORD dwBufSize = sizeof(dpi);
-    HKEY regKey;
-    LONG result = RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Desktop", 0, KEY_READ, &regKey);
-    if (result != ERROR_SUCCESS)
-    {
-        return res;
-    }
-    //result = RegQueryValueExW(regKey, L"LogPixels", NULL, REG_DWORD, reinterpret_cast<LPBYTE>(&dpi), sizeof(DWORD));
-    result = RegQueryValueExW(regKey, L"LogPixels", NULL, NULL, reinterpret_cast<LPBYTE>(&dpi), &dwBufSize);
-    if (result != ERROR_SUCCESS)
-    {
-        return res;
-    }
-    RegCloseKey(regKey);
-    // TODO: find name dpi 96 const
-    res = static_cast<float32>(dpi) / 96.f;
-    Logger::Info("!!!!!! ReadCurrentScaleFactor %d", (int)res);
-    res = Max(res, 1.f);
-    return res;
-}
 
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
