@@ -345,6 +345,8 @@ private:
     Rect fullscreenRect;
 
     bool removeCurrentScreen = false;
+
+    uint32 resizePerFrame = 0; //used for logging some strange crahses on android
 };
 };
 

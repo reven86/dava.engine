@@ -135,9 +135,7 @@ public:
     void Input(UIEvent* currentInput) override;
     void Update(float32 timeElapsed) override;
 
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
     void LoadFromYamlNodeCompleted() override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
 
     SpinnerAdapter* GetAdater() const
     {

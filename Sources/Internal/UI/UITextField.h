@@ -204,9 +204,6 @@ public:
 
     void Input(UIEvent* currentInput) override;
 
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
-
     /**
      \brief Sets contol input processing ability.
      */

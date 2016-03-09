@@ -33,7 +33,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_APPLE__)
+#if defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_STEAM__)
 
 IDataStorage* DataStorage::Create()
 {
