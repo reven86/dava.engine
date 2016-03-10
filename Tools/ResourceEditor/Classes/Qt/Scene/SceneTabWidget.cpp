@@ -431,7 +431,7 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Select
         case SelectableObject::TransformType::Scale:
             view->setCursor(cursorScale);
             break;
-        case SelectableObject::TransformType::NotSpecified:
+        case SelectableObject::TransformType::Disabled:
         default:
             view->unsetCursor();
             break;

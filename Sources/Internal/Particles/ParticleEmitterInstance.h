@@ -38,8 +38,8 @@ class ParticleEffectComponent;
 class ParticleEmitterInstance : public BaseObject
 {
 public:
-    explicit ParticleEmitterInstance(ParticleEffectComponent* owner);
-    ParticleEmitterInstance(ParticleEffectComponent* owner, ParticleEmitter* emitter);
+    ParticleEmitterInstance(ParticleEffectComponent* owner, bool isInner = false);
+    ParticleEmitterInstance(ParticleEffectComponent* owner, ParticleEmitter* emitter, bool isInner = false);
 
     ParticleEmitter* GetEmitter() const;
     const FilePath& GetFilePath() const;
@@ -50,14 +50,16 @@ public:
     void SetSpawnPosition(const Vector3& position);
 
     ParticleEmitterInstance* Clone() const;
-
     ParticleEffectComponent* GetOwner() const;
+
+    bool IsInnerEmitter() const;
 
 private:
     ParticleEffectComponent* owner = nullptr;
     RefPtr<ParticleEmitter> emitter;
     FilePath filePath;
     Vector3 spawnPosition;
+    bool isInnerEmitter = false;
 
 public:
     INTROSPECTION_EXTEND(ParticleEmitterInstance, BaseObject,
@@ -84,6 +86,11 @@ inline const Vector3& ParticleEmitterInstance::GetSpawnPosition() const
 inline ParticleEffectComponent* ParticleEmitterInstance::GetOwner() const
 {
     return owner;
+}
+
+inline bool ParticleEmitterInstance::IsInnerEmitter() const
+{
+    return isInnerEmitter;
 }
 }
 #endif // __DAVAENGINE_PARTICLE_EMITTER_INSTANCE_H__

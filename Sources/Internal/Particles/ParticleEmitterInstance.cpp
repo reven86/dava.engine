@@ -30,14 +30,16 @@
 
 namespace DAVA
 {
-ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner)
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner, bool isInner)
     : owner(_owner)
+    , isInnerEmitter(isInner)
 {
 }
 
-ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner, ParticleEmitter* _emitter)
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner, ParticleEmitter* _emitter, bool isInner)
     : owner(_owner)
     , emitter(_emitter)
+    , isInnerEmitter(isInner)
 {
 }
 

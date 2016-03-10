@@ -250,9 +250,8 @@ void SceneDumper::DumpEmitter(DAVA::ParticleEmitterInstance* emitter, SceneLinks
 
         if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            // REZNIK TODO : deal with inner bastards
-            ParticleEmitterInstance instance(nullptr, layer->innerEmitter);
-            DumpEmitter(&instance, links, gfxFolders);
+            ScopedPtr<ParticleEmitterInstance> instance(new ParticleEmitterInstance(nullptr, DAVA::SafeRetain(layer->innerEmitter), true));
+            DumpEmitter(instance, links, gfxFolders);
         }
         else
         {

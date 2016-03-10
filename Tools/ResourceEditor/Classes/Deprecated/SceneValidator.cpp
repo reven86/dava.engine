@@ -280,9 +280,8 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitterInstance* emitter, S
     {
         if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            // REZNIK TODO : deal with inner emitters
-            ParticleEmitterInstance instance(nullptr, layer->innerEmitter);
-            ValidateParticleEmitter(&instance, errorsLog, owner);
+            ScopedPtr<ParticleEmitterInstance> instance(new ParticleEmitterInstance(nullptr, DAVA::SafeRetain(layer->innerEmitter), true));
+            ValidateParticleEmitter(instance, errorsLog, owner);
         }
     }
 }

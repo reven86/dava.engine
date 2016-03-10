@@ -48,9 +48,9 @@ void EntityTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAV
     return static_cast<DAVA::Entity*>(object)->SetLocalTransform(matrix);
 }
 
-bool EntityTransformProxy::SupportsTransformType(SelectableObject::TransformType type) const
+bool EntityTransformProxy::SupportsTransformType(DAVA::BaseObject* object, SelectableObject::TransformType type) const
 {
-    return true;
+    return (type == SelectableObject::TransformType::Disabled) || (static_cast<DAVA::Entity*>(object)->GetLocked() == false);
 }
 
 /*
@@ -90,20 +90,14 @@ const DAVA::Matrix4& EmitterTransformProxy::GetLocalTransform(DAVA::BaseObject* 
 void EmitterTransformProxy::SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix)
 {
     auto emitterInstance = static_cast<DAVA::ParticleEmitterInstance*>(object);
-    auto ownerComponent = emitterInstance->GetOwner();
-    // if ((ownerComponent == nullptr) || (ownerComponent->GetEntity() == nullptr))
-    {
-        emitterInstance->SetSpawnPosition(DAVA::Vector3(matrix._30, matrix._31, matrix._32));
-    }
-    // else
-    {
-        // const auto& entityTransform = ownerComponent->GetEntity()->GetWorldTransform();
-        // W = E * S + Et
-        // S = (W - Et) * S(-1)
-    }
+    emitterInstance->SetSpawnPosition(DAVA::Vector3(matrix._30, matrix._31, matrix._32));
 }
 
-bool EmitterTransformProxy::SupportsTransformType(SelectableObject::TransformType type) const
+bool EmitterTransformProxy::SupportsTransformType(DAVA::BaseObject* object, SelectableObject::TransformType type) const
 {
-    return (type == SelectableObject::TransformType::Translation);
+    auto emitterInstance = static_cast<DAVA::ParticleEmitterInstance*>(object);
+    if (emitterInstance->IsInnerEmitter())
+        return false;
+
+    return (type == SelectableObject::TransformType::Disabled) || (type == SelectableObject::TransformType::Translation);
 }

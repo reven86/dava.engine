@@ -38,7 +38,7 @@ class SelectableObject
 public:
     enum class TransformType : DAVA::uint32
     {
-        NotSpecified,
+        Disabled,
         Translation,
         Rotation,
         Scale
@@ -48,10 +48,10 @@ public:
     {
     public:
         virtual ~TransformProxy() = default;
-        virtual const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject*) = 0;
-        virtual const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject*) = 0;
-        virtual void SetLocalTransform(DAVA::BaseObject*, const DAVA::Matrix4&) = 0;
-        virtual bool SupportsTransformType(TransformType) const = 0;
+        virtual const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject* object) = 0;
+        virtual const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject* object) = 0;
+        virtual void SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix) = 0;
+        virtual bool SupportsTransformType(DAVA::BaseObject* object, TransformType transformType) const = 0;
     };
 
     template <typename CLASS, typename PROXY>

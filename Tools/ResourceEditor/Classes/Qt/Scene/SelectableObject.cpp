@@ -111,7 +111,7 @@ void SelectableObject::SetLocalTransform(const DAVA::Matrix4& transform)
 bool SelectableObject::SupportsTransformType(TransformType transformType) const
 {
     auto proxyClass = GetTransformProxyForClass(object->GetTypeInfo()->Type());
-    return (proxyClass != nullptr) && ((transformType == TransformType::NotSpecified) || (proxyClass->SupportsTransformType(transformType)));
+    return (proxyClass != nullptr) && proxyClass->SupportsTransformType(object, transformType);
 }
 
 /*

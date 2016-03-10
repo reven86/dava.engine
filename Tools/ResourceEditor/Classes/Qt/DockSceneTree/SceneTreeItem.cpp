@@ -13,8 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
@@ -39,8 +38,6 @@ SceneTreeItem::SceneTreeItem(eItemType _type)
     : type(_type)
 {
 }
-
-SceneTreeItem::~SceneTreeItem() = default;
 
 QVariant SceneTreeItem::data(int role) const
 {
@@ -114,10 +111,6 @@ SceneTreeItemEntity::SceneTreeItemEntity(DAVA::Entity* _entity)
     , entity(_entity)
 {
     DoSync(this, entity);
-}
-
-SceneTreeItemEntity::~SceneTreeItemEntity()
-{
 }
 
 DAVA::Entity* SceneTreeItemEntity::GetEntity(SceneTreeItem* item)
@@ -435,8 +428,6 @@ SceneTreeItemParticleEmitter::SceneTreeItemParticleEmitter(DAVA::ParticleEffectC
     DoSync(this, emitter);
 }
 
-SceneTreeItemParticleEmitter::~SceneTreeItemParticleEmitter() = default;
-
 DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitter(SceneTreeItem* item)
 {
     DAVA::ParticleEmitterInstance* ret = nullptr;
@@ -463,19 +454,19 @@ DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitterStrict(Sc
 }
 void SceneTreeItemParticleEmitter::DoSync(QStandardItem* rootItem, DAVA::ParticleEmitterInstance* emitter)
 {
-    if (nullptr != rootItem && nullptr != emitter)
-    {
-        SceneTreeItemParticleEmitter* rootEmitterItem = (SceneTreeItemParticleEmitter*)rootItem;
+    if ((nullptr == rootItem) || (nullptr == emitter))
+        return;
 
-        for (int i = 0; i < rootItem->rowCount();)
-        {
-            DVASSERT(((SceneTreeItem*)rootItem->child(i))->ItemType() == SceneTreeItem::EIT_Layer);
-            rootItem->removeRow(i);
-        }
-        for (auto layer : emitter->GetEmitter()->layers)
-        {
-            rootItem->appendRow(new SceneTreeItemParticleLayer(rootEmitterItem->effect, emitter, layer));
-        }
+    SceneTreeItemParticleEmitter* rootEmitterItem = (SceneTreeItemParticleEmitter*)rootItem;
+
+    for (int i = 0; i < rootItem->rowCount();)
+    {
+        DVASSERT(((SceneTreeItem*)rootItem->child(i))->ItemType() == SceneTreeItem::EIT_Layer);
+        rootItem->removeRow(i);
+    }
+    for (auto layer : emitter->GetEmitter()->layers)
+    {
+        rootItem->appendRow(new SceneTreeItemParticleLayer(rootEmitterItem->effect, emitter, layer));
     }
 }
 
@@ -523,8 +514,6 @@ SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectCompo
     DoSync(this, layer);
 }
 
-SceneTreeItemParticleLayer::~SceneTreeItemParticleLayer() = default;
-
 DAVA::ParticleLayer* SceneTreeItemParticleLayer::GetLayer(SceneTreeItem* item)
 {
     DAVA::ParticleLayer* ret = NULL;
@@ -571,9 +560,8 @@ void SceneTreeItemParticleLayer::DoSync(QStandardItem* rootItem, DAVA::ParticleL
                 if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
                 {
                     keepItem = true;
-                    // REZNIK TODO : check if this is safe
-                    DAVA::ParticleEmitterInstance instance(nullptr, layer->innerEmitter);
-                    ((SceneTreeItemParticleInnerEmitter*)item)->DoSync(item, &instance);
+                    DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> instance(new DAVA::ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
+                    ((SceneTreeItemParticleInnerEmitter*)item)->DoSync(item, instance);
                 }
             }
             if (!keepItem)
@@ -598,9 +586,7 @@ void SceneTreeItemParticleLayer::DoSync(QStandardItem* rootItem, DAVA::ParticleL
 
         if (!hadInnerEmmiter && (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
         {
-            // REZNIK TODO : potential crash
-            DAVA::ParticleEmitterInstance instance(nullptr, layer->innerEmitter);
-            rootItem->appendRow(new SceneTreeItemParticleInnerEmitter(rootLayerItem->effect, &instance, layer));
+            rootItem->appendRow(new SceneTreeItemParticleInnerEmitter(rootLayerItem->effect, layer->innerEmitter, layer));
         }
     }
 }
@@ -634,8 +620,6 @@ DAVA::ParticleForce* SceneTreeItemParticleForce::GetForce(SceneTreeItem* item)
     return ret;
 }
 
-SceneTreeItemParticleForce::~SceneTreeItemParticleForce() = default;
-
 QString SceneTreeItemParticleForce::ItemName() const
 {
     return "force";
@@ -651,14 +635,13 @@ const QIcon& SceneTreeItemParticleForce::ItemIcon() const
     return SharedIcon(":/QtIcons/force.png");
 }
 
-SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* _effect, DAVA::ParticleEmitterInstance* _emitter, DAVA::ParticleLayer* _parentLayer)
-    : SceneTreeItemParticleEmitter(_effect, _emitter)
+SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* _effect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleLayer* _parentLayer)
+    : SceneTreeItemParticleEmitter(_effect, new DAVA::ParticleEmitterInstance(_effect, DAVA::SafeRetain(_emitter), true))
     , parent(_parentLayer)
+    , localInstance(emitter)
 {
     type = SceneTreeItem::EIT_InnerEmitter;
 }
-
-SceneTreeItemParticleInnerEmitter::~SceneTreeItemParticleInnerEmitter() = default;
 
 QString SceneTreeItemParticleInnerEmitter::ItemName() const
 {

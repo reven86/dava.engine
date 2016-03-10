@@ -457,12 +457,13 @@ void EmitterLayerWidget::InitWidget(QWidget* widget)
 
 void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* _effect, ParticleEmitterInstance* _emitter, DAVA::ParticleLayer* _layer, bool updateMinimized)
 {
-    if ((emitter == nullptr) || (layer == nullptr))
+    if ((_emitter == nullptr) || (_layer == nullptr))
         return;
 
     emitter = _emitter;
     layer = _layer;
     effect = _effect;
+
     SetActiveScene(scene);
     Update(updateMinimized);
 }

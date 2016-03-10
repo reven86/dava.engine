@@ -165,7 +165,7 @@ private:
     DAVA::float32 crossYZ = 0.0f;
 
     CloneState cloneState = CloneState::CLONE_DONT;
-    SelectableObject::TransformType transformType = SelectableObject::TransformType::NotSpecified;
+    SelectableObject::TransformType transformType = SelectableObject::TransformType::Disabled;
     ST_Axis curAxis = ST_Axis::ST_AXIS_NONE;
 
     bool inModifState = false;

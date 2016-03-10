@@ -83,7 +83,7 @@ private:
     DAVAFloat32SpinBox* zAxisModify = nullptr;
     SceneEditor2* curScene = nullptr;
     PivotMode pivotMode = PivotMode::PivotAbsolute;
-    SelectableObject::TransformType modifMode = SelectableObject::TransformType::NotSpecified;
+    SelectableObject::TransformType modifMode = SelectableObject::TransformType::Disabled;
     bool groupMode = false;
 };
 

@@ -216,7 +216,7 @@ SelectableObject::TransformType HoodSystem::GetTransformType() const
 {
     if (lockedModif)
     {
-        return SelectableObject::TransformType::NotSpecified;
+        return SelectableObject::TransformType::Disabled;
     }
 
     return curMode;
@@ -341,7 +341,7 @@ void HoodSystem::Draw()
         {
             ST_Axis showAsSelected = curAxis;
 
-            if (GetTransformType() != SelectableObject::TransformType::NotSpecified)
+            if (GetTransformType() != SelectableObject::TransformType::Disabled)
             {
                 if (ST_AXIS_NONE != moseOverAxis)
                 {
@@ -403,7 +403,7 @@ void HoodSystem::LockAxis(bool lock)
 
 bool HoodSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
 {
-    return !IsVisible() || (GetTransformType() == SelectableObject::TransformType::NotSpecified) || (ST_AXIS_NONE == GetPassingAxis());
+    return !IsVisible() || (GetTransformType() == SelectableObject::TransformType::Disabled) || (ST_AXIS_NONE == GetPassingAxis());
 }
 
 bool HoodSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)

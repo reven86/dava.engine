@@ -51,7 +51,7 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene* scene, SceneColl
     , cameraSystem(camSys)
     , hoodSystem(hoodSys)
 {
-    SetTransformType(SelectableObject::TransformType::NotSpecified);
+    SetTransformType(SelectableObject::TransformType::Disabled);
     SetModifAxis(ST_AXIS_Z);
 }
 
@@ -918,114 +918,111 @@ void EntityModificationSystem::LockTransform(const SelectableObjectGroup& entiti
 
 void EntityModificationSystem::BakeGeometry(const SelectableObjectGroup& entities, BakeMode mode)
 {
-    // REZNIK TODO : use SelectableObjects here
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
+    if ((sceneEditor == nullptr) && (entities.GetSize() != 1))
+        return;
 
-    if ((sceneEditor != nullptr) && (entities.GetSize() == 1))
+    DAVA::Entity* entity = entities.GetFirst().AsEntity();
+    if (entity == nullptr)
+        return;
+
+    const char* commandMessage = nullptr;
+    switch (mode)
     {
-        DAVA::Entity* entity = entities.GetFirst().AsEntity();
-        if (entity == nullptr)
-            return;
+    case BAKE_ZERO_PIVOT:
+        commandMessage = "Move pivot point to zero";
+        break;
+    case BAKE_CENTER_PIVOT:
+        commandMessage = "Move pivot point to center";
+        break;
+    default:
+        DVASSERT_MSG(0, "Unknown bake mode");
+        return;
+    }
 
-        const char* commandMessage = nullptr;
-        switch (mode)
+    DAVA::RenderObject* ro = GetRenderObject(entity);
+    if (ro != nullptr)
+    {
+        DAVA::Set<DAVA::Entity*> entityList;
+        SearchEntitiesWithRenderObject(ro, sceneEditor, entityList);
+
+        if (entityList.size() > 0)
         {
-        case BAKE_ZERO_PIVOT:
-            commandMessage = "Move pivot point to zero";
-            break;
-        case BAKE_CENTER_PIVOT:
-            commandMessage = "Move pivot point to center";
-            break;
-        default:
-            DVASSERT_MSG(0, "Unknown bake mode");
-            return;
-        }
+            DAVA::Matrix4 bakeTransform;
 
-        DAVA::RenderObject* ro = GetRenderObject(entity);
-        if (ro != nullptr)
-        {
-            DAVA::Set<DAVA::Entity*> entityList;
-            SearchEntitiesWithRenderObject(ro, sceneEditor, entityList);
-
-            if (entityList.size() > 0)
+            switch (mode)
             {
-                DAVA::Matrix4 bakeTransform;
-
-                switch (mode)
-                {
-                case BAKE_ZERO_PIVOT:
-                    bakeTransform = entity->GetLocalTransform();
-                    break;
-                case BAKE_CENTER_PIVOT:
-                    bakeTransform.SetTranslationVector(-ro->GetBoundingBox().GetCenter());
-                    break;
-                }
-
-                sceneEditor->BeginBatch(commandMessage);
-
-                // bake render object
-                sceneEditor->Exec(new BakeGeometryCommand(ro, bakeTransform));
-
-                // inverse bake to be able to move object on same place
-                // after it geometry was baked
-                DAVA::Matrix4 afterBakeTransform = bakeTransform;
-                afterBakeTransform.Inverse();
-
-                // for entities with same render object set new transform
-                // to make them match their previous position
-                DAVA::Set<DAVA::Entity*>::iterator it;
-                for (it = entityList.begin(); it != entityList.end(); ++it)
-                {
-                    DAVA::Entity* en = *it;
-                    DAVA::Matrix4 origTransform = en->GetLocalTransform();
-                    DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
-
-                    sceneEditor->Exec(new TransformCommand(SelectableObject(en), origTransform, newTransform));
-
-                    // also modify childs transform to make them be at
-                    // right position after parent entity changed
-                    for (size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
-                    {
-                        DAVA::Entity* childEntity = en->GetChild(i);
-
-                        DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
-                        DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
-
-                        sceneEditor->Exec(new TransformCommand(SelectableObject(childEntity), childOrigTransform, childNewTransform));
-                    }
-                }
-
-                sceneEditor->EndBatch();
-            }
-        }
-        // just modify child entities
-        else if (entity->GetChildrenCount() > 0)
-        {
-            DAVA::Vector3 newPivotPos = DAVA::Vector3(0, 0, 0);
-            SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
-
-            if (mode == BAKE_CENTER_PIVOT)
-            {
-                newPivotPos = selectionSystem->GetUntransformedBoundingBox(entity).GetCenter();
+            case BAKE_ZERO_PIVOT:
+                bakeTransform = entity->GetLocalTransform();
+                break;
+            case BAKE_CENTER_PIVOT:
+                bakeTransform.SetTranslationVector(-ro->GetBoundingBox().GetCenter());
+                break;
             }
 
             sceneEditor->BeginBatch(commandMessage);
 
-            // transform parent entity
-            DAVA::Matrix4 transform;
-            transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
-            sceneEditor->Exec(new TransformCommand(SelectableObject(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
+            // bake render object
+            sceneEditor->Exec(new BakeGeometryCommand(ro, bakeTransform));
 
-            // transform child entities with inversed parent transformation
-            transform.Inverse();
-            for (size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
+            // inverse bake to be able to move object on same place
+            // after it geometry was baked
+            DAVA::Matrix4 afterBakeTransform = bakeTransform;
+            afterBakeTransform.Inverse();
+
+            // for entities with same render object set new transform
+            // to make them match their previous position
+            DAVA::Set<DAVA::Entity*>::iterator it;
+            for (it = entityList.begin(); it != entityList.end(); ++it)
             {
-                DAVA::Entity* childEntity = entity->GetChild(i);
-                sceneEditor->Exec(new TransformCommand(SelectableObject(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
+                DAVA::Entity* en = *it;
+                DAVA::Matrix4 origTransform = en->GetLocalTransform();
+                DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
+
+                sceneEditor->Exec(new TransformCommand(SelectableObject(en), origTransform, newTransform));
+
+                // also modify childs transform to make them be at
+                // right position after parent entity changed
+                for (size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
+                {
+                    DAVA::Entity* childEntity = en->GetChild(i);
+
+                    DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
+                    DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
+
+                    sceneEditor->Exec(new TransformCommand(SelectableObject(childEntity), childOrigTransform, childNewTransform));
+                }
             }
 
             sceneEditor->EndBatch();
         }
+    }
+    else if (entity->GetChildrenCount() > 0) // just modify child entities
+    {
+        DAVA::Vector3 newPivotPos = DAVA::Vector3(0, 0, 0);
+        SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
+
+        if (mode == BAKE_CENTER_PIVOT)
+        {
+            newPivotPos = selectionSystem->GetUntransformedBoundingBox(entity).GetCenter();
+        }
+
+        sceneEditor->BeginBatch(commandMessage);
+
+        // transform parent entity
+        DAVA::Matrix4 transform;
+        transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
+        sceneEditor->Exec(new TransformCommand(SelectableObject(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
+
+        // transform child entities with inversed parent transformation
+        transform.Inverse();
+        for (size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
+        {
+            DAVA::Entity* childEntity = entity->GetChild(i);
+            sceneEditor->Exec(new TransformCommand(SelectableObject(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
+        }
+
+        sceneEditor->EndBatch();
     }
 }
 
@@ -1081,7 +1078,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
 
 bool EntityModificationSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
 {
-    return (transformType == SelectableObject::TransformType::NotSpecified) || !ModifCanStartByMouse(currentSelection);
+    return (transformType == SelectableObject::TransformType::Disabled) || !ModifCanStartByMouse(currentSelection);
 }
 
 bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)

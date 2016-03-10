@@ -382,7 +382,10 @@ void SceneSelectionSystem::Draw()
     {
         for (const auto& item : currentSelection.GetContent())
         {
-            DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
+            if (item.SupportsTransformType(SelectableObject::TransformType::Disabled))
+            {
+                DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
+            }
         }
     }
 

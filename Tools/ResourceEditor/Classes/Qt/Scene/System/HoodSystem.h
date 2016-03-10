@@ -108,7 +108,7 @@ private:
     DAVA::Vector3 curPos;
     DAVA::float32 curScale = 1.0f;
     DAVA::Vector3 modifOffset;
-    SelectableObject::TransformType curMode = SelectableObject::TransformType::NotSpecified;
+    SelectableObject::TransformType curMode = SelectableObject::TransformType::Disabled;
     ST_Axis curAxis = ST_AXIS_NONE;
     ST_Axis moseOverAxis = ST_AXIS_NONE;
     bool lockedScale = false;

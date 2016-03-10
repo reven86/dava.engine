@@ -67,7 +67,7 @@ public:
     };
 
     SceneTreeItem(eItemType type);
-    ~SceneTreeItem();
+    virtual ~SceneTreeItem() = default;
 
     QVariant data(int role) const;
 
@@ -92,7 +92,6 @@ class SceneTreeItemEntity : public SceneTreeItem
 {
 public:
     SceneTreeItemEntity(DAVA::Entity* entity);
-    ~SceneTreeItemEntity();
 
     static DAVA::Entity* GetEntity(SceneTreeItem* item);
     static void DoSync(QStandardItem* rootItem, DAVA::Entity* entity);
@@ -108,7 +107,6 @@ class SceneTreeItemParticleEmitter : public SceneTreeItem
 {
 public:
     SceneTreeItemParticleEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
-    ~SceneTreeItemParticleEmitter();
 
     static DAVA::ParticleEmitterInstance* GetEmitter(SceneTreeItem* item);
     static DAVA::ParticleEmitterInstance* GetEmitterStrict(SceneTreeItem* item);
@@ -126,7 +124,6 @@ class SceneTreeItemParticleLayer : public SceneTreeItem
 {
 public:
     SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer);
-    ~SceneTreeItemParticleLayer();
 
     static DAVA::ParticleLayer* GetLayer(SceneTreeItem* item);
     static void DoSync(QStandardItem* rootItem, DAVA::ParticleLayer* layer);
@@ -145,7 +142,6 @@ class SceneTreeItemParticleForce : public SceneTreeItem
 {
 public:
     SceneTreeItemParticleForce(DAVA::ParticleLayer* layer, DAVA::ParticleForce* force);
-    ~SceneTreeItemParticleForce();
 
     static DAVA::ParticleForce* GetForce(SceneTreeItem* rootItem);
 
@@ -160,12 +156,12 @@ public:
 class SceneTreeItemParticleInnerEmitter : public SceneTreeItemParticleEmitter
 {
 public:
-    SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* parentLayer);
-    ~SceneTreeItemParticleInnerEmitter();
+    SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* parentLayer);
 
     QString ItemName() const override;
 
     DAVA::ParticleLayer* parent = nullptr;
+    DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> localInstance;
 };
 
 

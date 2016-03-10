@@ -316,7 +316,7 @@ private:
 private:
     struct EmitterDescriptor
     {
-        EmitterDescriptor(ParticleEmitterInstance* _emitter, ParticleLayer* layer, FilePath path, String name)
+        EmitterDescriptor(ParticleEmitter* _emitter, ParticleLayer* layer, FilePath path, String name)
             : emitter(_emitter)
             , ownerLayer(layer)
             , yamlPath(path)
@@ -324,13 +324,13 @@ private:
         {
         }
 
-        ParticleEmitterInstance* emitter = nullptr;
+        ParticleEmitter* emitter = nullptr;
         ParticleLayer* ownerLayer = nullptr;
         FilePath yamlPath;
         String entityName;
     };
 
-    void CollectEmittersForSave(ParticleEmitterInstance* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const String& entityName) const;
+    void CollectEmittersForSave(ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const String& entityName) const;
 };
 
 
