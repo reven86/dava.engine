@@ -27,57 +27,31 @@
 =====================================================================================*/
 
 
-#include <QApplication>
-#include "UI/mainwindow.h"
+#ifndef __QT_TOOLS_THEMES_H__
+#define __QT_TOOLS_THEMES_H__
+    
+#include <QString>
+#include <QStringList>
+#include <QPalette>
 
-#include "EditorCore.h"
-
-#include "Platform/Qt5/QtLayer.h"
-#include "TextureCompression/PVRConverter.h"
-#include "QtTools/Utils/Themes/Themes.h"
-#include "QtTools/Utils/MessageHandler.h"
-#include <QtGlobal>
-
-void InitPVRTexTool()
+namespace Themes
 {
-#if defined(__DAVAENGINE_MACOS__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined(__DAVAENGINE_WIN32__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
-#endif
-    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
-}
+    enum eTheme : int
+    {
+        Classic,
+        Dark
+    };
+    void InitFromQApplication();
+    QStringList ThemesNames();
+    void SetCurrentTheme(const QString& theme);
+    void SetCurrentTheme(eTheme theme);
+    const QString& GetCurrentThemeStr();
+    eTheme GetCurrentTheme();
+    QColor GetViewLineAlternateColor();
+    QColor GetChangedPropertyColor();
+    QColor GetPrototypeColor();
+    QColor GetStyleSheetNodeColor();
+    QColor GetRulerWidgetBackgroungColor();
+};
 
-int main(int argc, char* argv[])
-{
-    qInstallMessageHandler(DAVAMessageHandler);
-
-    QApplication a(argc, argv);
-    a.setOrganizationName("DAVA");
-    a.setApplicationName("QuickEd");
-
-    Themes::InitFromQApplication();
-    Q_INIT_RESOURCE(QtToolsResources);
-
-    QApplication::setQuitOnLastWindowClosed(false);
-
-    DAVA::Core::Run(argc, argv);
-    auto qtLayer = new DAVA::QtLayer(); //will be deleted with DavaRenderer. Sorry about that.
-    QObject::connect(&a, &QApplication::applicationStateChanged, [qtLayer](Qt::ApplicationState state) {
-        state == Qt::ApplicationActive ? qtLayer->OnResume() : qtLayer->OnSuspend();
-    });
-    InitPVRTexTool();
-    DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
-
-    // Editor Settings might be used by any singleton below during initialization, so
-    // initialize it before any other one.
-    new EditorSettings();
-
-    DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
-
-    auto* editorCore = new EditorCore();
-
-    editorCore->Start();
-
-    return QApplication::exec();
-}
+#endif // __QT_TOOLS_THEMES_H__
