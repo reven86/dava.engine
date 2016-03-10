@@ -29,6 +29,7 @@
 
 #include "stdafx.h"
 #include "ColladaSceneNode.h"
+#include "Scene3D/SceneNodeAnimation.h"
 #include <cmath>
 
 namespace DAVA

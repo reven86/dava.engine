@@ -107,12 +107,22 @@ public:
     //! independent on what level filter is set, use ELL_NONE.
     virtual void Log(eLogLevel ll, const char8* text, ...) const;
     virtual void Logv(eLogLevel ll, const char8* text, va_list li) const;
+    virtual void Logv(const FilePath& customLogFilename, eLogLevel ll, const char8* text, va_list li) const;
 
+    // logs which could be written into one log file.
+    // call SetLogFileName to specify destination file.
     static void FrameworkDebug(const char8* text, ...);
     static void Debug(const char8* text, ...);
     static void Warning(const char8* text, ...);
     static void Info(const char8* text, ...);
     static void Error(const char8* text, ...);
+
+    // logs which writes to the given file
+    static void FrameworkDebugToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void DebugToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void WarningToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void InfoToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void ErrorToFile(const FilePath& customLogFileName, const char8* text, ...);
 
     static void AddCustomOutput(DAVA::LoggerOutput* lo);
     static void RemoveCustomOutput(DAVA::LoggerOutput* lo);
@@ -121,6 +131,8 @@ public:
     static void SetTag(const char8* logTag);
 #endif
 
+    static FilePath GetLogPathForFilename(const String& filename);
+    void SetMaxFileSize(uint32 size);
     void EnableConsoleMode();
 
     const char8* GetLogLevelString(eLogLevel ll) const;
@@ -128,16 +140,20 @@ public:
     eLogLevel GetLogLevelFromString(const char8* ll) const;
 
 private:
+    bool CutOldLogFileIfExist(const FilePath& logFile) const;
+
     void PlatformLog(eLogLevel ll, const char8* text) const;
-    void FileLog(eLogLevel ll, const char8* text) const;
+    void FileLog(const FilePath& filepath, eLogLevel ll, const char8* text) const;
     void CustomLog(eLogLevel ll, const char8* text) const;
     void ConsoleLog(eLogLevel ll, const char8* text) const;
     void Output(eLogLevel ll, const char8* formatedMsg) const;
+    void Output(const FilePath& customLogFilename, eLogLevel ll, const char8* formatedMsg) const;
 
     eLogLevel logLevel;
     FilePath logFilename;
     Vector<LoggerOutput*> customOutputs;
     bool consoleModeEnabled;
+    uint32 cutLogSize = 512 * 1024; //0.5 MB;
 };
 
 class LoggerOutput

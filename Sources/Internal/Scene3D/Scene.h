@@ -49,14 +49,11 @@ namespace DAVA
 
 class Texture;
 class StaticMesh;
-class AnimatedMesh;
-class SceneNodeAnimationList;
 class DataNode;
 class ShadowVolumeNode;
 class Light;
 class ShadowRect;
 class QuadTree;
-class MeshInstanceNode;
 class Component;
 class SceneSystem;
 class RenderSystem;
@@ -200,11 +197,6 @@ public:
      */
     virtual Scene* GetScene();
 
-    void AddAnimatedMesh(AnimatedMesh* mesh);
-    void RemoveAnimatedMesh(AnimatedMesh* mesh);
-    AnimatedMesh* GetAnimatedMesh(int32 index);
-    inline int32 GetAnimatedMeshCount();
-
     virtual void HandleEvent(Observable* observable); //Handle RenderOptions
 
     //virtual void StopAllAnimations(bool recursive = true);
@@ -279,7 +271,6 @@ protected:
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
 
-    Vector<AnimatedMesh*> animatedMeshes;
     Vector<Camera*> cameras;
 
     NMaterial* sceneGlobalMaterial;
@@ -291,11 +282,6 @@ protected:
 
     friend class Entity;
 };
-
-int32 Scene::GetAnimatedMeshCount()
-{
-    return (int32)animatedMeshes.size();
-}
 
 int32 Scene::GetCameraCount()
 {

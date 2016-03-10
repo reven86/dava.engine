@@ -35,7 +35,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_APPLE__)
+#if defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_STEAM__)
 
 class ICloudKeyValue : public IDataStorage
 {

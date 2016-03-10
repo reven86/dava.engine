@@ -42,6 +42,9 @@
 #endif
 #endif
 
+// Enable memory profiling - should be defined for non-cmake projects
+//#define DAVA_MEMORY_PROFILING_ENABLE
+
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations
 
 //#define ENABLE_CONTROL_EDIT //allows to drug'n'drop controls for position editing

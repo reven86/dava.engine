@@ -71,8 +71,11 @@ int _GLES2_LastActiveTexture = -1;
 bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
+volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
 DAVA::Mutex _GLES2_ScreenshotCallbackSync;
+
+DAVA::uint8 volatile pre_call_registers[64];
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC _GLES2_WindowDC = 0;
@@ -278,6 +281,15 @@ gles_check_GL_extensions()
             // drawing from memory is worst case scenario,
             // unless running on some buggy piece of shit
             _GLES2_UseUserProvidedIndices = true;
+        }
+
+        if (strcmp(renderer, "NVIDIA Tegra") == 0)
+        {
+            //Without offensive language:
+            //it seems like some GL-functions in SHIELD driver implementation
+            //corrupt 'callee-saved' Neon registers (q4-q7).
+            //So, we just restore it after any GL-call.
+            _GLES2_ValidateNeonCalleeSavedRegisters = true;
         }
     }
 }
