@@ -147,8 +147,8 @@ void ProcessRecourcePacker()
         params.port = (portStr.empty()) ? AssetCache::ASSET_SERVER_PORT : atoi(portStr.c_str());
         params.timeoutms = (timeoutStr.empty() ? 1000 : atoi(timeoutStr.c_str()) * 1000); //in ms
 
-        AssetCache::AssetCacheError connected = cacheClient.ConnectSynchronously(params);
-        if (connected == AssetCache::AssetCacheError::NO_ERRORS)
+        AssetCache::Error connected = cacheClient.ConnectSynchronously(params);
+        if (connected == AssetCache::Error::NO_ERRORS)
         {
             shouldDisconnect = true;
             resourcePacker.SetCacheClient(&cacheClient, "Resource Packer. Repack Sprites");

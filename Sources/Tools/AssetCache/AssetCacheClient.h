@@ -41,7 +41,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
         Request() = default;
         Request(const AssetCache::CacheItemKey& key_, const FilePath& outputFolder_, AssetCache::ePacketID requestID_)
             : key(key_), outputFolder(outputFolder_), requestID(requestID_)
-            , result(AssetCache::AssetCacheError::CODE_NOT_INITIALIZED), recieved(false), processingRequest(false)
+            , result(AssetCache::Error::CODE_NOT_INITIALIZED), recieved(false), processingRequest(false)
         {
         }
 
@@ -50,7 +50,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
             outputFolder = "";
 
             requestID = AssetCache::PACKET_UNKNOWN;
-            result = AssetCache::AssetCacheError::CODE_NOT_INITIALIZED;
+            result = AssetCache::Error::CODE_NOT_INITIALIZED;
 
             recieved = false;
             processingRequest = false;
@@ -60,7 +60,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
         FilePath outputFolder;
 
         AssetCache::ePacketID requestID = AssetCache::PACKET_UNKNOWN;
-        AssetCache::AssetCacheError result = AssetCache::AssetCacheError::NO_ERRORS;
+        AssetCache::Error result = AssetCache::Error::NO_ERRORS;
 
         bool recieved = false;
         bool processingRequest = false;
@@ -77,18 +77,18 @@ public:
     AssetCacheClient(bool emulateNetworkLoop);
     ~AssetCacheClient() override;
 
-    AssetCache::AssetCacheError ConnectSynchronously(const ConnectionParams& connectionParams);
+    AssetCache::Error ConnectSynchronously(const ConnectionParams& connectionParams);
     void Disconnect();
 
-    AssetCache::AssetCacheError AddToCacheSynchronously(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value);
-    AssetCache::AssetCacheError RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outFolder);
+    AssetCache::Error AddToCacheSynchronously(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value);
+    AssetCache::Error RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outFolder);
 
     bool IsConnected() const;
 
 private:
     void ProcessNetwork();
 
-    AssetCache::AssetCacheError WaitRequest();
+    AssetCache::Error WaitRequest();
 
     //ClientNetProxyListener
     void OnAddedToCache(const AssetCache::CacheItemKey& key, bool added) override;

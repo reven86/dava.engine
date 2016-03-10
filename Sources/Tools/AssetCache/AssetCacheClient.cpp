@@ -52,20 +52,22 @@ AssetCacheClient::~AssetCacheClient()
     DVASSERT(isJobStarted == false);
 }
 
-AssetCache::AssetCacheError AssetCacheClient::ConnectSynchronously(const ConnectionParams& connectionParams)
+AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams& connectionParams)
 {
     timeoutms = connectionParams.timeoutms;
-
-    bool connectCalled = client.Connect(connectionParams.ip, connectionParams.port);
-    if (!connectCalled)
-    {
-        return AssetCache::AssetCacheError::ADDRESS_RESOLVER_FAILED;
-    }
 
     isActive = true;
     if (emulateNetworkLoop)
     {
         JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
+    }
+
+
+    bool connectCalled = client.Connect(connectionParams.ip, connectionParams.port);
+    if (!connectCalled)
+    {
+        isActive = false;
+        return AssetCache::Error::ADDRESS_RESOLVER_FAILED;
     }
 
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
@@ -76,11 +78,11 @@ AssetCache::AssetCacheError AssetCacheClient::ConnectSynchronously(const Connect
         {
             Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
             isActive = false;
-            return AssetCache::AssetCacheError::OPERATION_TIMEOUT;
+            return AssetCache::Error::OPERATION_TIMEOUT;
         }
     }
 
-    return AssetCache::AssetCacheError::NO_ERRORS;
+    return AssetCache::Error::NO_ERRORS;
 }
 
 void AssetCacheClient::Disconnect()
@@ -94,14 +96,14 @@ void AssetCacheClient::Disconnect()
     }
 }
 
-AssetCache::AssetCacheError AssetCacheClient::AddToCacheSynchronously(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
+AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
 {
     {
         LockGuard<Mutex> guard(requestLocker);
         request = Request(key, "", AssetCache::PACKET_ADD_REQUEST);
     }
 
-    AssetCache::AssetCacheError resultCode = AssetCache::AssetCacheError::CANNOT_SEND_REQUEST_ADD;
+    AssetCache::Error resultCode = AssetCache::Error::CANNOT_SEND_REQUEST_ADD;
 
     bool requestSent = client.AddToCache(key, value);
     if (requestSent)
@@ -117,14 +119,14 @@ AssetCache::AssetCacheError AssetCacheClient::AddToCacheSynchronously(const Asse
     return resultCode;
 }
 
-AssetCache::AssetCacheError AssetCacheClient::RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outputFolder)
+AssetCache::Error AssetCacheClient::RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outputFolder)
 {
     {
         LockGuard<Mutex> guard(requestLocker);
         request = Request(key, outputFolder, AssetCache::PACKET_GET_REQUEST);
     }
 
-    AssetCache::AssetCacheError resultCode = AssetCache::AssetCacheError::CANNOT_SEND_REQUEST_GET;
+    AssetCache::Error resultCode = AssetCache::Error::CANNOT_SEND_REQUEST_GET;
 
     bool requestSent = client.RequestFromCache(key);
     if (requestSent)
@@ -140,7 +142,7 @@ AssetCache::AssetCacheError AssetCacheClient::RequestFromCacheSynchronously(cons
     return resultCode;
 }
 
-AssetCache::AssetCacheError AssetCacheClient::WaitRequest()
+AssetCache::Error AssetCacheClient::WaitRequest()
 {
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
@@ -160,11 +162,11 @@ AssetCache::AssetCacheError AssetCacheClient::WaitRequest()
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequest.recieved == false) && (currentRequest.processingRequest == false))
         {
-            return AssetCache::AssetCacheError::OPERATION_TIMEOUT;
+            return AssetCache::Error::OPERATION_TIMEOUT;
         }
     }
 
-    if (currentRequest.result == AssetCache::AssetCacheError::NO_ERRORS)
+    if (currentRequest.result == AssetCache::Error::NO_ERRORS)
     {
         while (currentRequest.processingRequest)
         {
@@ -181,7 +183,7 @@ void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool 
     LockGuard<Mutex> guard(requestLocker);
     if (request.requestID == AssetCache::PACKET_ADD_REQUEST && request.key == key)
     {
-        request.result = (added) ? AssetCache::AssetCacheError::NO_ERRORS : AssetCache::AssetCacheError::SERVER_ERROR;
+        request.result = (added) ? AssetCache::Error::NO_ERRORS : AssetCache::Error::SERVER_ERROR;
         request.recieved = true;
         request.processingRequest = false;
     }
@@ -211,14 +213,14 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
         if (value.IsEmpty())
         {
             LockGuard<Mutex> guard(requestLocker);
-            request.result = AssetCache::AssetCacheError::NOT_FOUND_ON_SERVER;
+            request.result = AssetCache::Error::NOT_FOUND_ON_SERVER;
             request.recieved = true;
             request.processingRequest = false;
         }
         else if (value.IsValid() == false)
         {
             LockGuard<Mutex> guard(requestLocker);
-            request.result = AssetCache::AssetCacheError::CORRUPTED_DATA;
+            request.result = AssetCache::Error::CORRUPTED_DATA;
             request.recieved = true;
             request.processingRequest = false;
 
@@ -228,7 +230,7 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
         {
             { // mark request as recieved and processed
                 LockGuard<Mutex> guard(requestLocker);
-                request.result = AssetCache::AssetCacheError::NO_ERRORS;
+                request.result = AssetCache::Error::NO_ERRORS;
                 request.recieved = true;
                 request.processingRequest = true;
             }

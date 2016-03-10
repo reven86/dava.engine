@@ -126,7 +126,7 @@ bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inF
             }
         }
 
-    } while (true);
+    } while (!fileWithLinks->IsEof());
 
     return true;
 }
@@ -248,8 +248,8 @@ void SceneExporterTool::ProcessInternal()
 
     if (useAssetCache)
     {
-        AssetCache::AssetCacheError connected = cacheClient.ConnectSynchronously(connectionsParams);
-        if (connected == AssetCache::AssetCacheError::NO_ERRORS)
+        AssetCache::Error connected = cacheClient.ConnectSynchronously(connectionsParams);
+        if (connected == AssetCache::Error::NO_ERRORS)
         {
             String machineName = WStringToString(DeviceInfo::GetName());
             DateTime timeNow = DateTime::Now();

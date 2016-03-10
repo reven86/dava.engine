@@ -58,7 +58,7 @@ bool ClientApplication::ParseCommandLine(int argc, char* argv[])
             }
         }
 
-        if (exitCode != DAVA::AssetCache::AssetCacheError::NO_ERRORS)
+        if (exitCode != DAVA::AssetCache::Error::NO_ERRORS)
         {
             PrintUsage();
             return false;
@@ -68,7 +68,7 @@ bool ClientApplication::ParseCommandLine(int argc, char* argv[])
     else
     {
         PrintUsage();
-        exitCode = DAVA::AssetCache::AssetCacheError::WRONG_COMMAND_LINE;
+        exitCode = DAVA::AssetCache::Error::WRONG_COMMAND_LINE;
     }
     return false;
 }

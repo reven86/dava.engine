@@ -38,7 +38,7 @@ namespace AssetCache
 static const uint32 NET_SERVICE_ID = 0xACCA;
 static const uint16 ASSET_SERVER_PORT = 0xACCA;
 
-static const String LOCALHOST = "127.0.0.1";
+extern const String LOCALHOST;
 
 enum ePacketID : uint8
 {
@@ -52,7 +52,7 @@ enum ePacketID : uint8
     PACKET_COUNT
 };
 
-enum class AssetCacheError: int32
+enum class Error: int32
 {
     NO_ERRORS = 0,
     CODE_NOT_INITIALIZED,
@@ -71,7 +71,7 @@ enum class AssetCacheError: int32
     ERRORS_COUNT,
 };
 
-String ErrorToString(AssetCacheError error);
+String ErrorToString(Error error);
 
 } // end of namespace AssetCache
 } // end of namespace DAVA

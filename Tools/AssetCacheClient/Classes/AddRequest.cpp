@@ -44,7 +44,7 @@ AddRequest::AddRequest()
     options.AddOption("-f", VariantType(String("")), "Files list to send files to server", true);
 }
 
-DAVA::AssetCache::AssetCacheError AddRequest::SendRequest(AssetCacheClient& cacheClient)
+DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
@@ -71,7 +71,7 @@ DAVA::AssetCache::AssetCacheError AddRequest::SendRequest(AssetCacheClient& cach
         else
         {
             Logger::Error("[AddRequest::%s] Cannot read file(%s)", __FUNCTION__, path.GetStringValue().c_str());
-            return AssetCache::AssetCacheError::READ_FILES;
+            return AssetCache::Error::READ_FILES;
         }
     }
 
@@ -87,14 +87,14 @@ DAVA::AssetCache::AssetCacheError AddRequest::SendRequest(AssetCacheClient& cach
     return cacheClient.AddToCacheSynchronously(key, value);
 }
 
-DAVA::AssetCache::AssetCacheError AddRequest::CheckOptionsInternal() const
+DAVA::AssetCache::Error AddRequest::CheckOptionsInternal() const
 {
     const String filepath = options.GetOption("-f").AsString();
     if (filepath.empty())
     {
         Logger::Error("[AddRequest::%s] Empty file list", __FUNCTION__);
-        return AssetCache::AssetCacheError::WRONG_COMMAND_LINE;
+        return AssetCache::Error::WRONG_COMMAND_LINE;
     }
 
-    return AssetCache::AssetCacheError::NO_ERRORS;
+    return AssetCache::Error::NO_ERRORS;
 }

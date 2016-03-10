@@ -266,8 +266,8 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
         params.timeoutms = EditorSettings::Instance()->GetAssetCacheTimeoutSec() * 1000; //in ms
 
         cacheClient.reset(new AssetCacheClient(true));
-        DAVA::AssetCache::AssetCacheError connected = cacheClient->ConnectSynchronously(params);
-        if (connected != AssetCache::AssetCacheError::NO_ERRORS)
+        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
+        if (connected != AssetCache::Error::NO_ERRORS)
         {
             cacheClient.reset();
         }

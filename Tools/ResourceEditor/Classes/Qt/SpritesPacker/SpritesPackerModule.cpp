@@ -145,8 +145,8 @@ void SpritesPackerModule::ConnectCacheClient()
         params.timeoutms = timeoutSec * 1000; //in ms
 
         cacheClient = new DAVA::AssetCacheClient(true);
-        DAVA::AssetCache::AssetCacheError connected = cacheClient->ConnectSynchronously(params);
-        if (connected != DAVA::AssetCache::AssetCacheError::NO_ERRORS)
+        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
+        if (connected != DAVA::AssetCache::Error::NO_ERRORS)
         {
             SafeDelete(cacheClient);
         }

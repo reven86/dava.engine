@@ -59,15 +59,15 @@ CacheRequest::CacheRequest(const String& commandLineOptionName)
     options.AddOption("-t", VariantType(static_cast<uint64>(1)), "Connection timeout seconds.");
 }
 
-AssetCache::AssetCacheError CacheRequest::Process(AssetCacheClient& cacheClient)
+AssetCache::Error CacheRequest::Process(AssetCacheClient& cacheClient)
 {
     if (options.GetOption("-v").AsBool())
     {
         Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
     }
 
-    AssetCache::AssetCacheError exitCode = cacheClient.ConnectSynchronously(CacheRequestInternal::GetConnectionParams(options));
-    if (AssetCache::AssetCacheError::NO_ERRORS == exitCode)
+    AssetCache::Error exitCode = cacheClient.ConnectSynchronously(CacheRequestInternal::GetConnectionParams(options));
+    if (AssetCache::Error::NO_ERRORS == exitCode)
     {
         exitCode = SendRequest(cacheClient);
     }
@@ -76,13 +76,13 @@ AssetCache::AssetCacheError CacheRequest::Process(AssetCacheClient& cacheClient)
     return exitCode;
 }
 
-AssetCache::AssetCacheError CacheRequest::CheckOptions() const
+AssetCache::Error CacheRequest::CheckOptions() const
 {
     const String hash = options.GetOption("-h").AsString();
     if (hash.length() != AssetCache::HASH_SIZE * 2)
     {
         Logger::Error("[CacheRequest::%s] Wrong hash argument (%s)", __FUNCTION__, hash.c_str());
-        return AssetCache::AssetCacheError::WRONG_COMMAND_LINE;
+        return AssetCache::Error::WRONG_COMMAND_LINE;
     }
 
     return CheckOptionsInternal();

@@ -306,8 +306,8 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
     { //request Scene from cache
         SceneExporterCache::CalculateSceneKey(scenePathname, sceneLink, cacheKey, static_cast<uint32>(optimizeOnExport));
 
-        AssetCache::AssetCacheError requested = cacheClient->RequestFromCacheSynchronously(cacheKey, outScenePathname.GetDirectory());
-        if (requested == AssetCache::AssetCacheError::NO_ERRORS)
+        AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(cacheKey, outScenePathname.GetDirectory());
+        if (requested == AssetCache::Error::NO_ERRORS)
         {
             SceneExporterInternal::LoadExportedObjects(linksPathname, externalLinks);
             ExportObjects(externalLinks);
@@ -334,8 +334,8 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         value.UpdateValidationData();
         value.SetDescription(cacheItemDescription);
 
-        AssetCache::AssetCacheError added = cacheClient->AddToCacheSynchronously(cacheKey, value);
-        if (added == AssetCache::AssetCacheError::NO_ERRORS)
+        AssetCache::Error added = cacheClient->AddToCacheSynchronously(cacheKey, value);
+        if (added == AssetCache::Error::NO_ERRORS)
         {
             Logger::Info("%s - added to cache", scenePathname.GetAbsolutePathname().c_str());
         }

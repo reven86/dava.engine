@@ -632,8 +632,8 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         return false;
     }
 
-    AssetCache::AssetCacheError requested = cacheClient->RequestFromCacheSynchronously(key, outputPath);
-    if (requested == AssetCache::AssetCacheError::NO_ERRORS)
+    AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, outputPath);
+    if (requested == AssetCache::Error::NO_ERRORS)
     {
         return true;
     }
@@ -673,8 +673,8 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         value.UpdateValidationData();
         value.SetDescription(cacheItemDescription);
 
-        AssetCache::AssetCacheError added = cacheClient->AddToCacheSynchronously(key, value);
-        if (added == AssetCache::AssetCacheError::NO_ERRORS)
+        AssetCache::Error added = cacheClient->AddToCacheSynchronously(key, value);
+        if (added == AssetCache::Error::NO_ERRORS)
         {
             Logger::Info("%s - added to cache", inputPath.GetAbsolutePathname().c_str());
             return true;

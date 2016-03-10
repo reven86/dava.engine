@@ -42,8 +42,8 @@ public:
     AddRequest();
 
 protected:
-    DAVA::AssetCache::AssetCacheError SendRequest(DAVA::AssetCacheClient& cacheClient) override;
-    DAVA::AssetCache::AssetCacheError CheckOptionsInternal() const override;
+    DAVA::AssetCache::Error SendRequest(DAVA::AssetCacheClient& cacheClient) override;
+    DAVA::AssetCache::Error CheckOptionsInternal() const override;
 };
 
 #endif //__ADD_REQUEST_H__

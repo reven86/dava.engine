@@ -85,8 +85,8 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
         params.port = port;
         params.timeoutms = timeoutSec * 1000; //in ms
 
-        DAVA::AssetCache::AssetCacheError connected = cacheClient.ConnectSynchronously(params);
-        if (connected == DAVA::AssetCache::AssetCacheError::NO_ERRORS)
+        DAVA::AssetCache::Error connected = cacheClient.ConnectSynchronously(params);
+        if (connected == DAVA::AssetCache::Error::NO_ERRORS)
         {
             resourcePacker.SetCacheClient(&cacheClient, "Resource Editor.Repack Sprites");
             shouldDisconnectClient = true;

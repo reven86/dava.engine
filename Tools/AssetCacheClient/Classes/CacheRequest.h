@@ -43,12 +43,12 @@ public:
     CacheRequest(const DAVA::String& commandLineOptionName);
     virtual ~CacheRequest() = default;
 
-    DAVA::AssetCache::AssetCacheError Process(DAVA::AssetCacheClient& cacheClient);
-    DAVA::AssetCache::AssetCacheError CheckOptions() const;
+    DAVA::AssetCache::Error Process(DAVA::AssetCacheClient& cacheClient);
+    DAVA::AssetCache::Error CheckOptions() const;
 
 protected:
-    virtual DAVA::AssetCache::AssetCacheError SendRequest(DAVA::AssetCacheClient& cacheClient) = 0;
-    virtual DAVA::AssetCache::AssetCacheError CheckOptionsInternal() const = 0;
+    virtual DAVA::AssetCache::Error SendRequest(DAVA::AssetCacheClient& cacheClient) = 0;
+    virtual DAVA::AssetCache::Error CheckOptionsInternal() const = 0;
 
 public:
     DAVA::ProgramOptions options;
