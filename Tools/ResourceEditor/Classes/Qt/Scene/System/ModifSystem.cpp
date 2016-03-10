@@ -329,23 +329,33 @@ SelectableObjectGroup EntityModificationSystem::BeginModification(const Selectab
         etm.originalCenter = etm.originalTransform.GetTranslationVector();
         etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
         etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
+        etm.originalParentWorldTransform.Identity();
 
         // inverse parent world transform, and remember it
         auto entity = item.AsEntity();
         if ((entity != nullptr) && (entity->GetParent() != nullptr))
         {
             etm.originalParentWorldTransform = entity->GetParent()->GetWorldTransform();
-            etm.inversedParentWorldTransform = etm.originalParentWorldTransform;
-            etm.inversedParentWorldTransform.SetTranslationVector(DAVA::Vector3(0, 0, 0));
-            if (!etm.inversedParentWorldTransform.Inverse())
+        }
+        else if (item.CanBeCastedTo<DAVA::ParticleEmitterInstance>()) // special case for emitter
+        {
+            auto emitter = item.Cast<DAVA::ParticleEmitterInstance>();
+            auto ownerComponent = emitter->GetOwner();
+            if (ownerComponent != nullptr)
             {
-                etm.inversedParentWorldTransform.Identity();
+                auto ownerEntity = ownerComponent->GetEntity();
+                if (ownerEntity != nullptr)
+                {
+                    etm.originalParentWorldTransform = ownerEntity->GetWorldTransform();
+                }
             }
         }
-        else
+
+        etm.inversedParentWorldTransform = etm.originalParentWorldTransform;
+        etm.inversedParentWorldTransform.SetTranslationVector(DAVA::Vector3(0, 0, 0));
+        if (!etm.inversedParentWorldTransform.Inverse())
         {
             etm.inversedParentWorldTransform.Identity();
-            etm.originalParentWorldTransform.Identity();
         }
 
         modifEntities.push_back(etm);

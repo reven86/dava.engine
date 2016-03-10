@@ -53,9 +53,6 @@ void ParticleEmitterInstance::SetFilePath(const FilePath& _filePath)
 
 void ParticleEmitterInstance::SetSpawnPosition(const Vector3& _position)
 {
-    if (_position.Length() > 0)
-        Logger::Info("!");
-
     spawnPosition = _position;
 }
 
