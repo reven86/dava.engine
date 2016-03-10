@@ -264,6 +264,14 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     nativeMovieView->Width = controlRect.dx;
     nativeMovieView->Height = controlRect.dy;
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
+
+    { //'workaround' for ATI HD ****G adapters
+        const char* gpuDesc = rhi::DeviceCaps().deviceDescription;
+        if (strstr(gpuDesc, "AMD Radeon HD") && gpuDesc[strlen(gpuDesc) - 1] == 'G')
+        {
+            nativeMovieView->Height += 1.0;
+        }
+    }
 }
 
 Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
