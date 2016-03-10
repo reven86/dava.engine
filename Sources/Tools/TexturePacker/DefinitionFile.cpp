@@ -102,8 +102,8 @@ bool DefinitionFile::LoadPNGDef(const FilePath& _filename, const FilePath& pathT
 
 	frameRects = new Rect2i[frameCount];
     frameNames.resize(frameCount);
-	for (int k = 0; k < frameCount; ++k)
-	{
+    for (uint32 k = 0; k < frameCount; ++k)
+    {
 		PngImageExt frameX;
 		frameX.Create(spriteWidth, spriteHeight);
 		frameX.DrawImage(0, 0, &image, Rect2i(k * spriteWidth, 0, spriteWidth, spriteHeight));
@@ -144,9 +144,9 @@ bool DefinitionFile::Load(const FilePath& _filename)
 	fscanf(fp, "%d", &frameCount);
 	
 	frameRects = new Rect2i[frameCount];
-	
-	for (int i = 0; i < frameCount; ++i)
-	{
+
+    for (uint32 i = 0; i < frameCount; ++i)
+    {
         char frameName[128];
 		fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
 		Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
@@ -169,19 +169,17 @@ bool DefinitionFile::Load(const FilePath& _filename)
 	return true;
 }
 
-
-DAVA::Size2i DefinitionFile::GetFrameSize(int frame) const
+DAVA::Size2i DefinitionFile::GetFrameSize(uint32 frame) const
 {
 	return Size2i(frameRects[frame].dx, frameRects[frame].dy);
 }
 
-
-int DefinitionFile::GetFrameWidth(int frame) const
+int DefinitionFile::GetFrameWidth(uint32 frame) const
 {
 	return frameRects[frame].dx;
 }
 
-int DefinitionFile::GetFrameHeight(int frame) const
+int DefinitionFile::GetFrameHeight(uint32 frame) const
 {
 	return frameRects[frame].dy;
 }

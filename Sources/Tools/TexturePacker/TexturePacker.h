@@ -47,9 +47,9 @@ class FilePath;
 
 struct SpriteItem
 {
-    int32 spriteWeight;
-    DefinitionFile* defFile;
-    int32 frameIndex;
+    uint32 spriteWeight = 0;
+    DefinitionFile* defFile = nullptr;
+    uint32 frameIndex = 0;
 };
 
 class TexturePacker 
@@ -117,9 +117,13 @@ private:
 
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
 
-    int32 TryToPack(const std::unique_ptr<SpritesheetLayout>& atlas, Vector<SpriteItem>& tempSortVector, bool fullPackOnly);
+    Vector<SpriteItem> PrepareSpritesVector(const List<DefinitionFile*>& defList);
+    Vector<std::unique_ptr<SpritesheetLayout>> PackSprites(Vector<SpriteItem>& spritesToPack, const ImageExportKeys& imageExportKeys);
+    void SaveResultSheets(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const ImageExportKeys& imageExportKeys);
 
-    bool WriteDefinition(const std::unique_ptr<SpritesheetLayout>& atlas, const FilePath& outputPath, const String& textureName, DefinitionFile* defFile);
+    int32 TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem>& tempSortVector, bool fullPackOnly);
+
+    bool WriteDefinition(const std::unique_ptr<SpritesheetLayout>& sheet, const FilePath& outputPath, const String& textureName, DefinitionFile* defFile);
     bool WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedAtlases, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile);
     void WriteDefinitionString(FILE* fp, const Rect2i& writeRect, const Rect2i& originRect, int textureIndex, const String& frameName);
 

@@ -60,7 +60,7 @@ struct SpritesheetLayout
 {
     virtual ~SpritesheetLayout() = default;
     virtual bool AddSprite(const Size2i& spriteSize, void* searchPtr) = 0;
-    virtual const SpriteBoundsRect* GetSpritePosition(void* searchPtr) const = 0;
+    virtual const SpriteBoundsRect* GetSpriteBoundsRect(void* searchPtr) const = 0;
     virtual const Rect2i& GetRect() const = 0;
     virtual uint32 GetWeight() const = 0;
 
