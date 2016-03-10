@@ -1004,17 +1004,13 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                 }
                 break;
                 case SceneTreeItem::EIT_Emitter:
-                {
-                    auto emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
-                    curScene->particlesSystem->SetEmitterSelected(emitterItem->effect->GetEntity(), emitterItem->emitter);
-                    emitterSelected = true;
-                    break;
-                }
                 case SceneTreeItem::EIT_InnerEmitter:
                 {
-                    auto emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
-                    SceneSignals::Instance()->EmitEmitterSelected(curScene, emitterItem->effect, emitterItem->emitter);
+                    emitterSelected = true;
                     isParticleElements = true;
+                    auto emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
+                    curScene->particlesSystem->SetEmitterSelected(emitterItem->effect->GetEntity(), emitterItem->emitter);
+                    SceneSignals::Instance()->EmitEmitterSelected(curScene, emitterItem->effect, emitterItem->emitter);
                     break;
                 }
                 case SceneTreeItem::EIT_Layer:

@@ -657,28 +657,22 @@ void SceneSelectionSystem::UpdateHoodPos() const
     }
     else
     {
-        // check if we have locked entities in selection group
-        // or untransformable objects
         bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
-        if (modificationEnabled)
+        hoodSystem->LockModif(modificationEnabled == false);
+
+        auto hoodCenter = (curPivotPoint == ST_PIVOT_ENTITY_CENTER) ? currentSelection.GetFirstTranslationVector() : currentSelection.GetCommonTranslationVector();
+        hoodSystem->SetPosition(hoodCenter);
+
+        bool hasNonTransformableObjects = false;
+        for (const auto& item : currentSelection.GetContent())
         {
-            for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
+            if (item.SupportsTransformType(SelectableObject::TransformType::Disabled) == false)
             {
-                if (entity->GetLocked())
-                {
-                    modificationEnabled = false;
-                    break;
-                }
+                hasNonTransformableObjects = true;
+                break;
             }
         }
-
-        auto hoodCenter = (curPivotPoint == ST_PIVOT_ENTITY_CENTER) ?
-        currentSelection.GetFirstTranslationVector() :
-        currentSelection.GetCommonTranslationVector();
-
-        hoodSystem->LockModif(modificationEnabled == false);
-        hoodSystem->SetPosition(hoodCenter);
-        hoodSystem->SetVisible(true);
+        hoodSystem->SetVisible(hasNonTransformableObjects == false);
     }
 
     SceneEditor2* sc = (SceneEditor2*)GetScene();
