@@ -775,16 +775,13 @@ public:
                 {
                     if (isKeyboardOpened)
                     {
-                        if (true) // TODO: dangerous place
+                        // select text field
+                        [window makeFirstResponder:nsTextField];
+                        // remove selection to caret at end
+                        if ([[nsTextField stringValue] length] > 0)
                         {
-                            // select text field
-                            [window makeFirstResponder:nsTextField];
-                            // remove selection to caret at end
-                            if ([[nsTextField stringValue] length] > 0)
-                            {
-                                NSRange range = [[nsTextField currentEditor] selectedRange];
-                                [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
-                            }
+                            NSRange range = [[nsTextField currentEditor] selectedRange];
+                            [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
                         }
                     }
                 }
