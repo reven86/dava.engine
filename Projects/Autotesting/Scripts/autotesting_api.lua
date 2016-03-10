@@ -395,7 +395,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(controlName, background)
     local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
-    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(controlName, background))
+    return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
 end
 
 function IsDisabled(controlName)
@@ -505,6 +505,31 @@ function WaitControl(name, time)
     return result
 end
 
+function WaitControls(controls, waitAll, waitTime)
+    waitTime = waitTime or TIMEOUT
+    if waitAll == nil then
+        waitAll = true
+    end
+    Log((waitAll and 'Wait all controls' or 'Wait one control form list'), "DEBUG")
+    local find_controls_lua = function(controls, waitAll)
+        local loadedControls = 0
+        for _, control in pairs(controls)do
+            if autotestingSystem:FindControl(control) or autotestingSystem:FindControlOnPopUp(control) then
+                if not waitAll then
+                   return true
+                end
+                loadedControls = loadedControls + 1
+            end
+        end
+        return table.getn(controls) == loadedControls
+    end
+    local result = WaitUntil(waitTime, find_controls_lua, controls, waitAll)
+    if not result then
+        Log((waitAll and 'One or more controls not found' or 'Nothing found'), "DEBUG")
+    end
+    return result
+end
+
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
     Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
@@ -553,6 +578,12 @@ function ClearField(field)
     SetText(field, "")
     ClickControl(field)
     KeyPress(2)
+end
+
+function FastSelectControl(control)
+    Log('Scrol to contorol '.. control .. 'through API')
+    autotestingSystem:ScrollToControl(control)
+    return ClickControl(control)
 end
 
 function SelectItemInList(listName, item)

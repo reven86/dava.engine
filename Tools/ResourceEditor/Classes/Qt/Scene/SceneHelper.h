@@ -37,14 +37,29 @@
 
 namespace SceneHelper
 {
-enum class TexturesEnumerateMode : DAVA::uint8
+class TextureCollector
 {
-    EXCLUDE_NULL = 0,
-    INCLUDE_NULL
+public:
+    enum Options
+    {
+        Default = 0,
+        IncludeNullTextures = 0x1,
+        OnlyActiveTextures = 0x2
+    };
+
+    TextureCollector(uint32 options = Default);
+
+    void Apply(DAVA::NMaterial* material);
+    DAVA::TexturesMap& GetTextures();
+
+private:
+    bool includeNullTextures = true;
+    bool onlyActiveTextures = false;
+    DAVA::TexturesMap textureMap;
 };
 
-void EnumerateSceneTextures(DAVA::Scene* forScene, DAVA::TexturesMap& textures, TexturesEnumerateMode mode);
-void EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode);
+void EnumerateSceneTextures(DAVA::Scene* forScene, TextureCollector& collector);
+void EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, TextureCollector& collector);
 
 // enumerates materials from render batches and their parents
 void EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials);
