@@ -13,7 +13,6 @@ g_ios_toolchain = "ios.toolchain.cmake"
 g_android_toolchain = "android.toolchain.cmake"
 
 g_cmake_file_path = ""
-g_add_definitions = ""
 g_generation_dir = ""
 g_supported_platforms = ["macos", "ios", "android", "windows"]
 g_supported_additional_parameters = ["console", "uap", "x64"]
@@ -158,6 +157,7 @@ def main():
     parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
     parser.add_argument('--add_definitions', '-defs', default="", help="add definitions" )
     parser.add_argument('--x64', default=False )
+    parser.add_argument('-D', action='append', default=[], help="add definitions" )
 
     options = parser.parse_args()
 
@@ -190,6 +190,11 @@ def main():
 
     toolchain, project_type = get_toolchain(destination_platform, project_type)
 
+    g_cmake_file_path = os.path.realpath(options.cmake_path)
+
+    g_generation_dir  = options.generation_dir
+    g_add_definitions = options.add_definitions.replace(',',' ')
+
     if len(g_generation_dir) :
         if not os.path.exists(g_generation_dir):
             os.makedirs(g_generation_dir)
@@ -203,17 +208,20 @@ def main():
 
     call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
 
-    if len(g_add_definitions) :
-        call_string +=  g_add_definitions.split(' ') 
+    if len(options.add_definitions):
+        call_string += options.add_definitions.split(',') 
+
+    if len(options.D):
+        call_string += map(lambda val: '=' in val and '-D'+val or '-D'+val+'=true', options.D )
     
     if g_is_unity_build:
         call_string.append("-DUNITY_BUILD=true")
     print call_string
 
     subprocess.check_output(call_string)
-
+    
     if "android" == destination_platform:
-        subprocess.check_output(call_string)
+        subprocess.check_output(call_string)    
 
 if __name__ == '__main__':
     main()

@@ -61,6 +61,25 @@ elseif( ANDROID_DATA )
 
 endif()
 
+if ( STEAM_SDK_FOUND )
+    add_definitions ( -D__DAVAENGINE_STEAM__ )
+    include_directories( ${STEAM_SDK_HEADERS} )
+    list ( APPEND LIBRARIES ${STEAM_SDK_STATIC_LIBRARIES} )
+
+    if ( WIN32 )
+        list ( APPEND ADDITIONAL_DLL_FILES ${STEAM_SDK_DYNAMIC_LIBRARIES} )
+        list ( APPEND DAVA_BINARY_WIN32_DIR ${STEAM_SDK_DYNAMIC_LIBRARIES_PATH} )
+    endif ()
+
+    if ( MACOS )
+       list ( APPEND MACOS_DYLIB  ${STEAM_SDK_DYNAMIC_LIBRARIES} )
+    endif ()
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/SteamAppid.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
+
+endif ()
+
 if( ANDROID )
     if( NOT ANDROID_JAVA_SRC )
         list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )
@@ -331,6 +350,21 @@ else()
 
 endif()
 
+if ( STEAM_SDK_FOUND AND WIN32 )
+    if(DEPLOY)
+        set( STEAM_APPID_DIR ${DEPLOY_DIR} )
+    else()
+        set( STEAM_APPID_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR} )
+    endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy
+       ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt
+       ${STEAM_APPID_DIR}/steam_appid.txt
+    )
+endif ()
+
+
 if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
@@ -476,8 +510,8 @@ elseif ( WIN32 )
 	
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-   	else()
-   	    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
+    else()
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
     endif()
 
     if( DEBUG_INFO )
@@ -589,7 +623,7 @@ if( DEPLOY )
 
         endif()
 
-        foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
+        foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll ${ADDITIONAL_DLL_FILES})
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
