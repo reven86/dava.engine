@@ -125,8 +125,8 @@ void TablePropertyDelegate::editTableClicked()
     if (dialog.exec())
     {
         editor->setText(dialog.GetValues());
-        BasePropertyDelegate::SetValueModified(editor, true);
-        itemDelegate->emitCommitData(editor);
+        BasePropertyDelegate::SetValueModified(rawEditor, true);
+        itemDelegate->emitCommitData(rawEditor);
     }
 }
 

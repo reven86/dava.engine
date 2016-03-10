@@ -24,9 +24,18 @@ UIActionBindingComponent* UIActionBindingComponent::Clone() const
 String UIActionBindingComponent::GetActionsAsString() const
 {
     StringStream stream;
+    bool first = true;
     for (const Action& action : actions)
     {
-        stream << action.action.c_str() << ", " << action.shortcut1.ToString() << ";";
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            stream << ";";
+        }
+        stream << action.action.c_str() << ", " << action.shortcut1.ToString();
     }
     return stream.str();
 }
@@ -40,9 +49,9 @@ void UIActionBindingComponent::SetActionsFromString(const String& value)
     {
         Vector<String> str;
         Split(actionStr, ",", str);
-        if (str.size() > 1)
+        if (str.size() > 1 && !str[0].empty())
         {
-            actions.push_back(Action(FastName(str[0]), KeyboardShortcut(str[1])));
+            actions.push_back(Action(FastName(Trim(str[0])), KeyboardShortcut(Trim(str[1]))));
         }
     }
 }
