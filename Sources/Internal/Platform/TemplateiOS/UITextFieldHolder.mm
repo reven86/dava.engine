@@ -179,8 +179,6 @@
             if (0 < replaceLength)
             {
                 DAVA::int32 replaceLocation = static_cast<DAVA::int32>(range.location);
-
-                range.location = static_cast<NSUInteger>(replaceLocation);
                 range.length = static_cast<NSUInteger>(replaceLength);
 
                 newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string];
