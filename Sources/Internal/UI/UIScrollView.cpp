@@ -30,8 +30,6 @@
 #include "UIScrollView.h"
 #include "UI/UIScrollViewContainer.h"
 #include "UI/ScrollHelper.h"
-
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 
 namespace DAVA
@@ -112,7 +110,7 @@ void UIScrollView::PushContentToBounds(UIControl* parentControl)
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl* childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
         Rect childRect = childControl->GetRect();
@@ -145,7 +143,7 @@ Vector2 UIScrollView::GetControlOffset(UIControl* parentControl, Vector2 current
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl* childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
         Rect childRect = childControl->GetRect();
@@ -168,7 +166,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl* parentControl, Vector2 currentMaxSiz
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl* childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
         const Rect& childRect = childControl->GetRect();
@@ -252,27 +250,8 @@ const Vector2 UIScrollView::GetContentSize() const
     return Vector2(contentRect.dx, contentRect.dy);
 }
 
-void UIScrollView::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    RemoveControl(scrollContainer);
-    SafeRelease(scrollContainer);
-
-    UIControl::LoadFromYamlNode(node, loader);
-}
-
 void UIScrollView::LoadFromYamlNodeCompleted()
 {
-}
-
-YamlNode* UIScrollView::SaveToYamlNode(UIYamlLoader* loader)
-{
-    if (scrollContainer)
-    {
-        scrollContainer->SetName(UISCROLL_VIEW_CONTAINER_NAME);
-    }
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    return node;
 }
 
 void UIScrollView::RecalculateContentSize()

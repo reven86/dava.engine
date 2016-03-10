@@ -27,39 +27,28 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SWITCH_NODE_H__
-#define __DAVAENGINE_SWITCH_NODE_H__
-
-#include "Scene3D/Entity.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
+#ifndef __PRESET_MANAGER_H__
+#define __PRESET_MANAGER_H__
 
 namespace DAVA
 {
-class SwitchNode : public Entity
+class TextureDescriptor;
+class NMaterial;
+class KeyedArchive;
+class FilePath;
+}
+
+namespace Preset
 {
-protected:
-    ~SwitchNode()
-    {
-    }
+bool SaveArchive(const DAVA::KeyedArchive* presetArchive, const DAVA::FilePath& path);
+DAVA::KeyedArchive* LoadArchive(const DAVA::FilePath& path);
 
-public:
-    SwitchNode();
+bool ApplyTexturePreset(DAVA::TextureDescriptor* descriptor, const DAVA::KeyedArchive* preset);
 
-    virtual Entity* Clone(Entity* dstNode = NULL);
-    virtual void Update(float32 timeElapsed);
-    virtual void AddNode(Entity* node);
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+bool DialogSavePresetForTexture(const DAVA::TextureDescriptor* descriptor);
+bool DialogLoadPresetForTexture(DAVA::TextureDescriptor* descriptor);
 
-    void SetSwitchIndex(int32 switchIndex);
-    int32 GetSwitchIndex();
-
-private:
-    int32 oldSwitchIndex;
-    int32 newSwitchIndex;
-
-    void ReapplySwitch();
-};
-};
-
-#endif //__DAVAENGINE_SWITCH_NODE_H__
+bool DialogSavePresetForMaterial(DAVA::NMaterial* material);
+bool DialogLoadPresetForMaterial(DAVA::NMaterial* material);
+}
+#endif // __PRESET_MANAGER_H__

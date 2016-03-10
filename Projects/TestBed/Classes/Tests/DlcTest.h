@@ -68,7 +68,7 @@ protected:
 public:
     void LoadResources() override;
     void UnloadResources() override;
-    void WillAppear() override;
+    void OnActive() override;
 
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;

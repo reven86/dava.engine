@@ -28,7 +28,6 @@
 
 
 #include "UIWebView.h"
-#include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -64,7 +63,7 @@ UIWebView::UIWebView(const Rect& rect)
     webViewControl->Initialize(newRect);
     UpdateControlRect();
 
-    UpdateNativeControlVisible(false); // will be displayed in WillAppear.
+    UpdateNativeControlVisible(false); // will be displayed in OnActive.
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
@@ -131,21 +130,21 @@ void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
     webViewControl->OpenFromBuffer(string, basePath);
 }
 
-void UIWebView::WillBecomeVisible()
+void UIWebView::OnVisible()
 {
-    UIControl::WillBecomeVisible();
+    UIControl::OnVisible();
     UpdateNativeControlVisible(true);
 }
 
-void UIWebView::WillBecomeInvisible()
+void UIWebView::OnInvisible()
 {
-    UIControl::WillBecomeInvisible();
+    UIControl::OnInvisible();
     UpdateNativeControlVisible(false);
 }
 
-void UIWebView::DidAppear()
+void UIWebView::OnActive()
 {
-    UIControl::DidAppear();
+    UIControl::OnActive();
     UpdateControlRect();
 }
 
@@ -231,33 +230,6 @@ void UIWebView::SetDataDetectorTypes(int32 value)
 int32 UIWebView::GetDataDetectorTypes() const
 {
     return dataDetectorTypes;
-}
-
-void UIWebView::LoadFromYamlNode(const DAVA::YamlNode* node, DAVA::UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* dataDetectorTypesNode = node->Get("dataDetectorTypes");
-    if (dataDetectorTypesNode)
-    {
-        eDataDetectorType dataDetectorTypes = static_cast<eDataDetectorType>(
-        dataDetectorTypesNode->AsInt32());
-        SetDataDetectorTypes(dataDetectorTypes);
-    }
-}
-
-YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader* loader)
-{
-    ScopedPtr<UIWebView> baseControl(new UIWebView());
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    // Data Detector Types.
-    if (baseControl->GetDataDetectorTypes() != GetDataDetectorTypes())
-    {
-        node->Set("dataDetectorTypes", GetDataDetectorTypes());
-    }
-
-    return node;
 }
 
 UIWebView* UIWebView::Clone()

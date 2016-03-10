@@ -20,6 +20,13 @@ set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/
 
 include( CMake-common )
 
+# STEAM_SDK_FOUND inits from Sources/CMake/Modules/FindSteam.cmake
+# it inits only if STEAM definition passed as command line parameter
+if ( STEAM_SDK_FOUND )
+    include_directories( ${STEAM_SDK_HEADERS} )
+    add_definitions ( -D__DAVAENGINE_STEAM__ )
+endif ()
+
 set ( FRAMEWORK_DEFINITIONS
 -D_UNICODE
 -DUNICODE

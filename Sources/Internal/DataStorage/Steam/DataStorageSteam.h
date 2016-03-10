@@ -26,63 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef DATA_STORAGE_STEAM_H
+#define DATA_STORAGE_STEAM_H
 
-#ifndef __DAVAENGINE_SCENE_NODE_ANIMATION_LIST_H__
-#define __DAVAENGINE_SCENE_NODE_ANIMATION_LIST_H__
+#if defined(__DAVAENGINE_STEAM__)
 
-#include "Scene3D/Entity.h"
-#include "Scene3D/SceneNodeAnimation.h"
-#include "Base/EventDispatcher.h"
+#include "DataStorage/DataStorage.h"
+
+#include "Utils/Utils.h"
+
+#include "Platform/Steam.h"
 
 namespace DAVA
 {
-class SceneNodeAnimationList : public Entity
+
+#if defined(__DAVAENGINE_STEAM__)
+
+class DynamicMemoryFile;
+class DataStorageSteam : public IDataStorage
 {
-protected:
-    virtual ~SceneNodeAnimationList();
+private:
+    const String storageFileName = "CloudArchive";
 
 public:
-    enum
-    {
-        ANIMATION_ENDED = 1,
-    };
+    DataStorageSteam();
+    String GetStringValue(const String& key) override;
+    int64 GetLongValue(const String& key) override;
+    void SetStringValue(const String& key, const String& value) override;
+    void SetLongValue(const String& key, int64 value) override;
+    void RemoveEntry(const String& key) override;
+    void Clear() override;
+    void Push() override;
 
-    SceneNodeAnimationList();
+private:
+    ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
+    void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
 
-    void AddAnimation(SceneNodeAnimation* node);
-
-    // stop animation at the current moment
-    void StopAnimation();
-
-    // cycle animation
-    void CycleAnimation();
-    void Execute(float32 fadeInTime = 0.0f, float32 fadeOutTime = 0.0f, float32 timeFactor = 1.0f);
-    void BlendTo(SceneNodeAnimationList* next, float32 blendTime, float32 timeFactor = 1.0f);
-
-    SceneNodeAnimation* GetNode(const FastName& name);
-
-    void Update(float32 timeElapsed);
-
-    float32 GetDuration();
-    float32 GetCurrentTime();
-
-    void SetWeight(float32 weight);
-
-    //private:
-    bool isDestination;
-    bool active;
-    bool cycled;
-    float32 fadeInTime;
-    float32 fadeOutTime;
-    float32 timeFactor;
-    float32 currentTime;
-    float32 duration; // in seconds
-    SceneNodeAnimationList* blendTo;
-    float32 blendTime;
-    Vector<SceneNodeAnimation*> animations; // animations for all nodes
-
-    IMPLEMENT_EVENT_DISPATCHER(eventDispatcher);
-};
+    Steam::Storage* remoteStorage = nullptr;
+    ScopedPtr<KeyedArchive> values;
+    bool isValuesChanged = false;
 };
 
-#endif // __DAVAENGINE_SCENE_NODE_ANIMATION_LIST_H__
+#endif //__DAVAENGINE_STEAM__
+}
+
+#endif
+
+#endif

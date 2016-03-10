@@ -27,26 +27,35 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_USERNODE_H__
-#define __DAVAENGINE_USERNODE_H__
+#ifndef __DAVAENGINE_UI_LOADING_SCREEN_H__
+#define __DAVAENGINE_UI_LOADING_SCREEN_H__
 
-#include "Scene3D/Entity.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIScreen.h"
 
 namespace DAVA
 {
-class UserNode : public Entity
+class UILoadingScreen : public UIScreen
 {
-protected:
-    virtual ~UserNode();
-
 public:
-    UserNode();
-    virtual void Draw();
+    UILoadingScreen() = default;
+    ~UILoadingScreen() override;
 
-    AABBox3 drawBox;
+    virtual void SetScreenToLoad(int32 screenId);
 
-    virtual AABBox3 GetWTMaximumBoundingBox();
-    virtual Entity* Clone(Entity* dstNode = NULL);
+    void Update(float32 timeElapsed) override;
+    void OnActive() override;
+    void OnInactive() override;
+
+protected:
+    void ThreadMessage(BaseObject* obj, void* userData, void* callerData);
+    RefPtr<Thread> thread;
+
+private:
+    int32 nextScreenId = -1;
 };
-}
-#endif // __DAVAENGINE_USERNODE_H__
+};
+
+
+
+#endif // __DAVAENGINE_UI_LOADING_SCREEN_H__

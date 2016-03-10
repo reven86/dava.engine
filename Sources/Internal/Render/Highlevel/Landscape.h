@@ -52,7 +52,6 @@ class Scene;
 class Image;
 class Texture;
 class Shader;
-class SceneFileV2;
 class Heightmap;
 class NMaterial;
 
