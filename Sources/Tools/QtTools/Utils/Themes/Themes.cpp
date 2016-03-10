@@ -145,14 +145,18 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::AlternateBase, windowColor);
     darkPalette.setColor(QPalette::ToolTipBase, textColor);
     darkPalette.setColor(QPalette::ToolTipText, textColor);
+
     darkPalette.setColor(QPalette::Text, textColor);
     darkPalette.setColor(QPalette::Disabled, QPalette::Text, disabledTextColor);
+
     darkPalette.setColor(QPalette::Button, windowColor);
     darkPalette.setColor(QPalette::ButtonText, textColor);
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledTextColor);
+
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
-    darkPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(windowColor));
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, windowColor);
+
     darkPalette.setColor(QPalette::Highlight, QColor(0x37, 0x63, 0xAD));
     darkPalette.setColor(QPalette::Inactive, QPalette::Highlight, disabledTextColor);
     darkPalette.setColor(QPalette::Disabled, QPalette::Highlight, disabledTextColor);
