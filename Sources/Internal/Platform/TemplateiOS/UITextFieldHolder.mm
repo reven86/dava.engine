@@ -175,16 +175,15 @@
         // when the last insert was out of bounds, and after it was press revert button on the keyboard
         if (range.length > 0 && range.location + range.length > static_cast<NSUInteger>(maxLength))
         {
-            DAVA::int32 replaceLocation = static_cast<DAVA::int32>(range.location);
             DAVA::int32 replaceLength = maxLength - static_cast<DAVA::int32>(range.location);
-
             if (0 < replaceLength)
             {
-                NSRange replacementRange;
-                replacementRange.location = static_cast<NSUInteger>(replaceLocation);
-                replacementRange.length = static_cast<NSUInteger>(replaceLength);
+                DAVA::int32 replaceLocation = static_cast<DAVA::int32>(range.location);
 
-                newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:replacementRange withString:string];
+                range.location = static_cast<NSUInteger>(replaceLocation);
+                range.length = static_cast<NSUInteger>(replaceLength);
+
+                newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string];
                 [textCtrl setValue:newString forKey:@"text"];
                 DAVA::WideString tmpString;
                 cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, replaceLocation, replaceLength, tmpString);
@@ -203,11 +202,11 @@
             if (range.length == 0)
             {
                 // charactres count independent from encoding and bytes per each charracter
-                NSUInteger curLength = [[textCtrl valueForKey:@"text"] length];
+                DAVA::int32 curLength = static_cast<DAVA::int32>([[textCtrl valueForKey:@"text"] length]);
                 // Inserting without replace.
-                if (maxLength >= (NSInteger)curLength)
+                if (maxLength >= curLength)
                 {
-                    charsToInsert = maxLength - (NSInteger)curLength;
+                    charsToInsert = maxLength - curLength;
                 }
                 else
                 {
@@ -245,13 +244,15 @@
 
     // Length check OK, continue with the delegate.
     DAVA::WideString repString;
-    const char* cstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
-    if (cstr) //cause strlen(nullptr) will crash
+    const char* cutfstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
+    if (nullptr != cutfstr) //cause strlen(nullptr) will crash
     {
-        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), repString);
+        DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
+        const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
+        DAVA::UTF8Utils::EncodeToWideString(str, len, repString);
     }
 
-    BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, (DAVA::int32)range.location, (DAVA::int32)range.length, repString);
+    BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), repString);
     return needIgnoreDelegateResult ? NO : delegateResult;
 }
 
