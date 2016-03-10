@@ -107,7 +107,8 @@ public:
         ERROR_CORRUPTED, // path file is corrupted
         ERROR_EMPTY_PATCH, // no data to apply patch
         ERROR_ORIG_READ, // file on origPath can't be opened for reading
-        ERROR_ORIG_CRC, // file on origPath has wrong crc to apply patch
+        ERROR_ORIG_FILE_CRC, // file on origPath has wrong crc to apply patch
+        ERROR_ORIG_BUFFER_CRC, // file readed from origPath has wrong crc to apply patch
         ERROR_NEW_CREATE, // file on newPath can't be opened for writing
         ERROR_NEW_WRITE, // file on newPath can't be written
         ERROR_NEW_CRC, // file on newPath has wrong crc after applied patch

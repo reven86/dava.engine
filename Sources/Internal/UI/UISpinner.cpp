@@ -266,14 +266,6 @@ void UISpinner::OnScrollAnimationEnd(BaseObject* caller, void* param, void* call
     AddControl(content.Get());
 }
 
-void UISpinner::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    //release default buttons - they have to be loaded from yaml
-    RemoveAllControls();
-    content = nullptr;
-    UIControl::LoadFromYamlNode(node, loader);
-}
-
 void UISpinner::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
@@ -321,16 +313,6 @@ void UISpinner::LoadFromYamlNodeCompleted()
 {
     SetupInternalControls();
     SetAdapter(nullptr);
-}
-
-YamlNode* UISpinner::SaveToYamlNode(UIYamlLoader* loader)
-{
-    buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);
-    buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
-    content->SetName(UISPINNER_CONTENT_NAME);
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    return node;
 }
 
 void UISpinner::SetAdapter(SpinnerAdapter* anAdapter)

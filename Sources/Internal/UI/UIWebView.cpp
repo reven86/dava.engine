@@ -28,7 +28,6 @@
 
 
 #include "UIWebView.h"
-#include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -231,33 +230,6 @@ void UIWebView::SetDataDetectorTypes(int32 value)
 int32 UIWebView::GetDataDetectorTypes() const
 {
     return dataDetectorTypes;
-}
-
-void UIWebView::LoadFromYamlNode(const DAVA::YamlNode* node, DAVA::UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* dataDetectorTypesNode = node->Get("dataDetectorTypes");
-    if (dataDetectorTypesNode)
-    {
-        eDataDetectorType dataDetectorTypes = static_cast<eDataDetectorType>(
-        dataDetectorTypesNode->AsInt32());
-        SetDataDetectorTypes(dataDetectorTypes);
-    }
-}
-
-YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader* loader)
-{
-    ScopedPtr<UIWebView> baseControl(new UIWebView());
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    // Data Detector Types.
-    if (baseControl->GetDataDetectorTypes() != GetDataDetectorTypes())
-    {
-        node->Set("dataDetectorTypes", GetDataDetectorTypes());
-    }
-
-    return node;
 }
 
 UIWebView* UIWebView::Clone()
