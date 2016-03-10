@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Render/RenderBase.h"
+#include "Functional/Function.h"
 
 #include "SpritesPacker/SpritesPackerModule.h"
 
@@ -90,6 +90,56 @@ void SpritesPackerModule::RepackWithDialog()
     ReloadObjects();
 }
 
+void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
+{
+    SetupSpritesPacker(projectPath);
+
+    CreateWaitDialog(projectPath);
+
+    Function<void()> fn = DAVA::Bind(&SpritesPackerModule::ProcessSilentPacking, this, true, false, gpu, DAVA::TextureConverter::ECQ_DEFAULT);
+    JobManager::Instance()->CreateWorkerJob(fn);
+}
+
+void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
+{
+    ConnectCacheClient();
+
+    spritesPacker->ReloadSprites(clearDirs, forceRepack, gpu, quality);
+
+    DisconnectCacheClient();
+
+    ReloadObjects();
+    JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::CloseWaitDialog));
+}
+
+void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
+{
+    DVASSERT(waitDialog == nullptr);
+
+    waitDialog = new QDialog(QtMainWindow::Instance(), Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
+    QLabel *label = new QLabel("Reloading Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()), waitDialog);
+    label->setAlignment(Qt::AlignCenter);
+
+    QVBoxLayout *layout = new QVBoxLayout(waitDialog);
+    layout->addWidget(label);
+    waitDialog->setLayout(layout);
+
+    waitDialog->setFixedSize(300, 80);
+    waitDialog->show();
+    waitDialog->raise();
+    waitDialog->activateWindow();
+}
+
+void SpritesPackerModule::CloseWaitDialog()
+{
+    if (waitDialog != nullptr)
+    {
+        waitDialog->close();
+        delete waitDialog;
+        waitDialog = nullptr;
+    }
+}
+
 void SpritesPackerModule::SetupSpritesPacker(const DAVA::FilePath& projectPath)
 {
     FilePath inputDir = projectPath + "/DataSource/Gfx/Particles";
@@ -105,20 +155,7 @@ void SpritesPackerModule::ShowPackerDialog()
     dialogReloadSprites.exec();
 }
 
-void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
-{
-    SetupSpritesPacker(ProjectManager::Instance()->GetProjectPath());
-    ConnectCacheClient();
 
-    QtMainWindow::Instance()->WaitStart("Reload Particles particles for project", "Reload Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()));
-
-    spritesPacker->ReloadSprites(true, false, gpu, DAVA::TextureConverter::ECQ_DEFAULT);
-
-    QtMainWindow::Instance()->WaitStop();
-
-    DisconnectCacheClient();
-    ReloadObjects();
-}
 
 void SpritesPackerModule::ReloadObjects()
 {
@@ -144,7 +181,7 @@ void SpritesPackerModule::ConnectCacheClient()
         params.port = port;
         params.timeoutms = timeoutSec * 1000; //in ms
 
-        cacheClient = new DAVA::AssetCacheClient(true);
+        cacheClient = new DAVA::AssetCacheClient(false);
         DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
         if (connected != DAVA::AssetCache::Error::NO_ERRORS)
         {
@@ -163,3 +200,4 @@ void SpritesPackerModule::DisconnectCacheClient()
         SafeDelete(cacheClient);
     }
 }
+

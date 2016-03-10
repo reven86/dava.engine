@@ -44,9 +44,15 @@ public slots:
     void Launch()
     {
         DVASSERT(ProjectManager::Instance() != nullptr);
+
+        connect(this, &ResourceEditorLauncher::ProjectOpened, ProjectManager::Instance(), &ProjectManager::ProjectOpened);
+
         ProjectManager::Instance()->OpenLastProject();
-        ProjectManager::Instance()->UpdateParticleSprites();
-        ProjectManager::Instance()->OnSceneViewInitialized();
+    }
+
+    void ProjectOpened(const QString&)
+    {
+        disconnect(this, &ResourceEditorLauncher::ProjectOpened, ProjectManager::Instance(), &ProjectManager::ProjectOpened);
 
         DVASSERT(QtMainWindow::Instance() != nullptr);
         QtMainWindow::Instance()->SetupTitle();

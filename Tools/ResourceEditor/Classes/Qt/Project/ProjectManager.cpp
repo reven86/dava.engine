@@ -122,33 +122,38 @@ void ProjectManager::OpenProject(const FilePath& incomePath)
             DAVA::FileSystem::Instance()->CreateDirectory(workspacePath, true);
 
             SceneValidator::Instance()->SetPathForChecking(projectPath);
-            if (!useDelayInitialization)
-            {
-                UpdateParticleSprites();
-            }
 
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();
 
-            emit ProjectOpened(projectPath.GetAbsolutePathname().c_str());
+            if (spritesPacker != nullptr)
+            {
+                //emit ProjectOpened will be done later
+                spritesPacker->RepackSilently(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));
+            }
+            else
+            {
+                emit ProjectOpened(projectPath.GetAbsolutePathname().c_str());
+            }
         }
     }
 }
 
 void ProjectManager::SetSpritesPacker(SpritesPackerModule* spritesPacker_)
 {
-    spritesPacker = spritesPacker_;
-}
-
-void ProjectManager::UpdateParticleSprites()
-{
-    useDelayInitialization = false;
-    if (!isParticleSpritesUpdated && spritesPacker != nullptr)
+    if (spritesPacker != nullptr)
     {
-        spritesPacker->RepackSilently(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));
-        isParticleSpritesUpdated = true;
+        disconnect(spritesPacker, &SpritesPackerModule::SpritesReloaded, this, &ProjectManager::OnSpritesReloaded);
+    }
+
+    spritesPacker = spritesPacker_;
+
+    if (spritesPacker != nullptr)
+    {
+        connect(spritesPacker, &SpritesPackerModule::SpritesReloaded, this, &ProjectManager::OnSpritesReloaded);
     }
 }
+
 
 void ProjectManager::OpenLastProject()
 {
@@ -163,7 +168,6 @@ void ProjectManager::CloseProject()
 {
     if (!projectPath.IsEmpty())
     {
-        isParticleSpritesUpdated = false;
         DAVA::FilePath::RemoveResourcesFolder(projectPath);
 
         projectPath = "";
@@ -176,9 +180,10 @@ void ProjectManager::CloseProject()
     }
 }
 
-void ProjectManager::OnSceneViewInitialized()
+
+void ProjectManager::OnSpritesReloaded()
 {
-    useDelayInitialization = false;
+    emit ProjectOpened(projectPath.GetAbsolutePathname().c_str());
 }
 
 void ProjectManager::LoadProjectSettings()

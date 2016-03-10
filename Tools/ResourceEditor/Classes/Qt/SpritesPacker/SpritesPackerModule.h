@@ -34,6 +34,8 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 
+#include "TextureCompression/TextureConverter.h"
+
 #include <QObject>
 
 namespace DAVA
@@ -43,6 +45,8 @@ class AssetCacheClient;
 
 class SpritesPacker;
 class QAction;
+class QDialog;
+
 class SpritesPackerModule final : public QObject
 {
     Q_OBJECT
@@ -71,11 +75,18 @@ private:
     void ConnectCacheClient();
     void DisconnectCacheClient();
 
+    void ProcessSilentPacking(bool clearDirs, bool forceRepack, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+
+    void CreateWaitDialog(const DAVA::FilePath& projectPath);
+    void CloseWaitDialog();
+
 private:
     DAVA::AssetCacheClient* cacheClient = nullptr;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;
+
+    QDialog *waitDialog = nullptr;
 };
 
 #endif // __SPRITES_PACKER_MODULE_H__
