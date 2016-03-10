@@ -37,6 +37,11 @@ using namespace DAVA;
 class LandscapeProxy;
 class SceneEditor2;
 
+namespace DAVA
+{
+class Image;
+}
+
 class ModifyTilemaskCommand : public Command2
 {
 public:

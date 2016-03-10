@@ -855,13 +855,9 @@ public:
 
         currentFontSize = virtualFontSize;
 
-        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputX(virtualFontSize);
 
-        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-        NSSize origSz = NSMakeSize(size, 0);
-        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
-
-        [nsTextField setFont:[NSFont systemFontOfSize:convSz.width]];
+        [nsTextField setFont:[NSFont systemFontOfSize:size]];
     }
 
     void SetTextAlign(DAVA::int32 align) override
@@ -1322,13 +1318,21 @@ doCommandBySelector:(SEL)commandSelector
         }
         else
         {
-            text->ctrl->davaText->GetDelegate()->TextFieldShouldReturn(text->ctrl->davaText);
+            DAVA::UITextFieldDelegate* delegate = text->ctrl->davaText->GetDelegate();
+            if (delegate != nullptr)
+            {
+                delegate->TextFieldShouldReturn(text->ctrl->davaText);
+            }
         }
         result = YES;
     }
     else if (commandSelector == @selector(cancelOperation:))
     {
-        text->ctrl->davaText->GetDelegate()->TextFieldShouldCancel(text->ctrl->davaText);
+        DAVA::UITextFieldDelegate* delegate = text->ctrl->davaText->GetDelegate();
+        if (delegate != nullptr)
+        {
+            delegate->TextFieldShouldCancel(text->ctrl->davaText);
+        }
         result = YES;
     }
     else if (commandSelector == @selector(insertTab:))

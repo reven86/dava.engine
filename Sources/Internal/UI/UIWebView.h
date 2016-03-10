@@ -83,9 +83,6 @@ public:
     // Page scale property change
     void SetScalesPageToFit(bool isScalesToFit);
 
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
-
     UIWebView* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
 
@@ -96,9 +93,9 @@ public:
 #endif
 
 protected:
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
-    void DidAppear() override;
+    void OnVisible() override;
+    void OnInvisible() override;
+    void OnActive() override;
 
 public:
     void SetRenderToTexture(bool value);

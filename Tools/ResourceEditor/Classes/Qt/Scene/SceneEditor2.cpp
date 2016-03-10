@@ -156,6 +156,10 @@ SceneEditor2::SceneEditor2()
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
+    selectionSystem->AddSelectionDelegate(modifSystem);
+    selectionSystem->AddSelectionDelegate(hoodSystem);
+    selectionSystem->AddSelectionDelegate(wayEditSystem);
+
     float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
     clearColor[3] = 1.f;
@@ -642,8 +646,11 @@ Entity* SceneEditor2::Clone(Entity* dstNode /*= NULL*/)
 
 SceneEditor2* SceneEditor2::CreateCopyForExport()
 {
+    auto originalPath = curScenePath;
+    auto tempName = Format(".tmp_%llu.sc2", static_cast<uint64>(time(nullptr)) ^ static_cast<uint64>(reinterpret_cast<pointer_size>(this)));
+
     SceneEditor2* ret = nullptr;
-    FilePath tmpScenePath = FilePath::CreateWithNewExtension(curScenePath, ".tmp_exported.sc2");
+    FilePath tmpScenePath = FilePath::CreateWithNewExtension(curScenePath, tempName);
     if (SceneFileV2::ERROR_NO_ERROR == SaveScene(tmpScenePath))
     {
         SceneEditor2* sceneCopy = new SceneEditor2();
@@ -660,11 +667,21 @@ SceneEditor2* SceneEditor2::CreateCopyForExport()
         FileSystem::Instance()->DeleteFile(tmpScenePath);
     }
 
+    curScenePath = originalPath; // because SaveScene overwrites curScenePath
+    SceneSignals::Instance()->EmitUpdated(this);
+
     return ret;
 }
 
 void SceneEditor2::RemoveSystems()
 {
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->RemoveSelectionDelegate(modifSystem);
+        selectionSystem->RemoveSelectionDelegate(hoodSystem);
+        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+    }
+
     if (editorLightSystem)
     {
         editorLightSystem->SetCameraLightEnabled(false);
