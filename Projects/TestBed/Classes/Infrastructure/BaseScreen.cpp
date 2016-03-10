@@ -53,9 +53,9 @@ BaseScreen::BaseScreen()
     GameCore::Instance()->RegisterScreen(this);
 }
 
-void BaseScreen::SystemScreenSizeDidChanged(const Rect& newFullScreenSize)
+void BaseScreen::SystemScreenSizeChanged(const Rect& newFullScreenSize)
 {
-    UIScreen::SystemScreenSizeDidChanged(newFullScreenSize);
+    UIScreen::SystemScreenSizeChanged(newFullScreenSize);
     UnloadResources();
     LoadResources();
 }

@@ -41,7 +41,9 @@ void UIScrollViewTest::LoadResources()
     DVASSERT(font);
     font->SetSize(14);
 
-    UIYamlLoader::Load(this, "~res:/UI/Test/ScrollScreen.yaml");
+    DefaultUIPackageBuilder builder;
+    UIPackageLoader().LoadPackage("~res:/UI/Test/ScrollScreen.yaml", &builder);
+    AddControl(builder.GetPackage()->GetControl("ScreenContent"));
     scrollView = DynamicTypeCheck<UIScrollView*>(FindByName("Scrollview"));
 
     UIControl* innerControl = FindByName("UIControl1");

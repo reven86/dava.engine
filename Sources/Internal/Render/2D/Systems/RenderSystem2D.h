@@ -110,11 +110,13 @@ public:
 
     struct RenderTargetPassDescriptor
     {
-        Texture* target = nullptr;
+        rhi::HTexture colorAttachment, depthAttachment;
+        uint32 width = 0;
+        uint32 height = 0;
         Color clearColor = Color::Clear;
-        int32 priority = PRIORITY_SERVICE_2D;
-        bool shouldTransformVirtualToPhysical = true;
-        bool shouldClear = true;
+        int32 priority = 0; // PRIORITY_SERVICE_2D;
+        bool transformVirtualToPhysical = true;
+        bool clearTarget = true;
     };
 
     enum ColorOperations
@@ -285,8 +287,12 @@ public:
 
     void DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect, const Rect& srcRect);
 
+    const RenderTargetPassDescriptor& GetActiveTargetDescriptor();
+    const RenderTargetPassDescriptor& GetMainTargetDescriptor();
+    void SetMainTargetDescriptor(const RenderTargetPassDescriptor& descriptor);
+
 private:
-    void SetVirtualToPhysicalTransformEnabled(bool);
+    void UpdateVirtualToPhysicalMatrix(bool);
     bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
     void Setup2DMatrices();
 
@@ -362,9 +368,8 @@ private:
     rhi::HRenderPass passTargetHandle;
     rhi::HPacketList currentPacketListHandle;
 
-    int32 renderTargetWidth = 0;
-    int32 renderTargetHeight = 0;
-    bool virtualToPhysicalTransformEnabled = true;
+    RenderTargetPassDescriptor mainTargetDescriptor;
+    RenderTargetPassDescriptor renderPassTargetDescriptor;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)

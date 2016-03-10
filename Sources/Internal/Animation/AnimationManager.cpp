@@ -215,8 +215,14 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     // process all finish callbacks
-    for (Animation* animation : animations)
+    // someone could change animations list on Stop action
+    // it produces crash, so we keep that implementation until
+    // external code produces crashes here.
+    size_t size = animations.size();
+    for (size_t k = 0; k < size; ++k)
     {
+        Animation* animation = animations[k];
+
         if (animation->state & Animation::STATE_FINISHED)
         {
             animation->Stop();

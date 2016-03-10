@@ -393,9 +393,9 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
 
     DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.clearColor = DAVA::Color::Clear;
-    desc.target = fixedFrame;
-    desc.shouldClear = true;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.colorAttachment = fixedFrame->handle;
+    desc.depthAttachment = fixedFrame->handleDepthStencil;
+    desc.transformVirtualToPhysical = false;
     rs2d->BeginRenderTargetPass(desc);
     rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White,
                                            DAVA::Rect(0.0f, 0.0f, width, height), DAVA::Rect(0.0f, 0.0f, 1.0f, 1.0f));

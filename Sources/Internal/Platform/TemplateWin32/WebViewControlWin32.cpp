@@ -32,7 +32,7 @@
 
 #include "Base/Platform.h"
 
-#if defined __DAVAENGINE_WIN32__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#if defined __DAVAENGINE_WIN32__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #pragma warning(push)
 #pragma warning(disable : 4717)
@@ -1270,4 +1270,4 @@ void WebViewControl::CleanData()
 
 } // end namespace DAVA
 
-#endif //__DAVAENGINE_WIN32__ && !__DISABLE_NATIVE_WEBVIEW__
+#endif //__DAVAENGINE_WIN32__ && !DISABLE_NATIVE_WEBVIEW

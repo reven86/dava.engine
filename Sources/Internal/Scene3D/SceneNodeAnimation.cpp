@@ -28,7 +28,6 @@
 
 
 #include "Scene3D/SceneNodeAnimation.h"
-#include "Scene3D/SceneNodeAnimationList.h"
 
 namespace DAVA
 {
@@ -41,7 +40,6 @@ SceneNodeAnimation::SceneNodeAnimation(int32 _keyCount)
     apply = true;
     weight = 0.0f;
     delayTime = 0.0f;
-    parent = 0;
 }
 
 SceneNodeAnimation::~SceneNodeAnimation()
@@ -158,15 +156,5 @@ void SceneNodeAnimation::ShiftStartPosition(const Vector3& shift)
     {
         keys[idx].translation += shift;
     }
-}
-
-void SceneNodeAnimation::SetParent(SceneNodeAnimationList* list)
-{
-    parent = list;
-}
-
-SceneNodeAnimationList* SceneNodeAnimation::GetParent()
-{
-    return parent;
 }
 }

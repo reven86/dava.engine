@@ -44,8 +44,7 @@ public:
 
     void SetFirst(int screenId);
     void SetScreen(int screenId, UIScreenTransition* transition = 0);
-
-    void ScreenSizeChanged();
+    void ResetScreen();
 
     UIScreen* GetScreen(int screenId);
     UIScreen* GetScreen();
