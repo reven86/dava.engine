@@ -597,6 +597,12 @@ QtPropertyData* PropertyEditor::CreateInsp(const DAVA::FastName& name, void* obj
                 {
                     const DAVA::InspMember* member = baseInfo->Member(i);
 
+                    /// In our old style property panel Components vector in Entity processed by external loop
+                    /// When i appended introspected collection into Entity with components, our property panel started containing two subtree with components.
+                    /// This code leave out inner extraction of components vector in Entity.
+                    if (baseInfo->Type() == DAVA::MetaInfo::Instance<DAVA::Entity>() && member->Name() == DAVA::FastName("components"))
+                        continue;
+
                     std::unique_ptr<QtPropertyData> memberData(CreateInspMember(member->Name(), object, member));
                     ret->ChildAdd(std::move(memberData));
                 }
