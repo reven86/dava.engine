@@ -34,30 +34,30 @@
 #include "Render/Cursor.h"
 #include "Core/ApplicationCore.h"
 
-namespace DAVA {
-    
+namespace DAVA
+{
 class GameCore : public DAVA::ApplicationCore
 {
 protected:
     virtual ~GameCore();
-public:    
+
+public:
     GameCore();
-    
-    virtual void OnAppStarted() override;
-    virtual void OnAppFinished() override;
-    
-    virtual void OnSuspend() override;
-    virtual void OnResume() override;
-    virtual void OnBackground();
-    
-    virtual void BeginFrame() override;
-    virtual void Update(DAVA::float32 update) override;
-    virtual void Draw() override;
+
+    void OnAppStarted() override;
+    void OnAppFinished() override;
+
+    void OnSuspend() override;
+    void OnResume() override;
+    void OnBackground() override;
+
+    void BeginFrame() override;
+    void Update(DAVA::float32 update) override;
+    void Draw() override;
 
 protected:
     void UnpackHelp();
 };
-
 }
 
 #endif // __GAMECORE_H__

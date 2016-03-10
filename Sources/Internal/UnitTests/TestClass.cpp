@@ -33,6 +33,27 @@ namespace DAVA
 {
 namespace UnitTests
 {
+void TestClass::SetUp(const String& testName)
+{
+}
+
+void TestClass::TearDown(const String& testName)
+{
+}
+
+void TestClass::Update(float32 timeElapsed, const String& testName)
+{
+}
+
+bool TestClass::TestComplete(const String& testName) const
+{
+    return true;
+}
+
+Vector<String> TestClass::ClassesCoveredByTests() const
+{
+    return Vector<String>();
+}
 
 String TestClass::PrettifyTypeName(const String& name) const
 {
@@ -65,5 +86,5 @@ String TestClass::RemoveTestPostfix(const String& name) const
     return name;
 }
 
-}   // namespace UnitTests
-}   // namespace DAVA
+} // namespace UnitTests
+} // namespace DAVA

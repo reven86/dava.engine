@@ -31,54 +31,53 @@
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
 
-extern void FrameworkMain(int argc, char *argv[]);
+extern void FrameworkMain(int argc, char* argv[]);
 
 @implementation OpenGLView
 @synthesize willQuit;
 
--(id) initWithFrame: (NSRect) frameRect
+- (id)initWithFrame:(NSRect)frameRect
 {
-	NSLog(@"[CoreMacOSPlatform] OpenGLView Init");
+    NSLog(@"[CoreMacOSPlatform] OpenGLView Init");
 	
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-	NSLog(@"Display bpp: %ld", [self displayBitsPerPixel:kCGDirectMainDisplay]);
+    NSLog(@"Display bpp: %ld", [self displayBitsPerPixel:kCGDirectMainDisplay]);
 #else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-	NSLog(@"Display bpp: %d", CGDisplayBitsPerPixel(kCGDirectMainDisplay));
+    NSLog(@"Display bpp: %d", CGDisplayBitsPerPixel(kCGDirectMainDisplay));
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-	
 
     // Pixel Format Attributes for the View-based (non-FullScreen) NSOpenGLContext
-    NSOpenGLPixelFormatAttribute attrs[] = 
-	{
-		
-        // Specifying "NoRecovery" gives us a context that cannot fall back to the software renderer.  This makes the View-based context a compatible with the fullscreen context, enabling us to use the "shareContext" feature to share textures, display lists, and other OpenGL objects between the two.
-        NSOpenGLPFANoRecovery,
-		
-        // Attributes Common to FullScreen and non-FullScreen
+    NSOpenGLPixelFormatAttribute attrs[] =
+    {
+
+      // Specifying "NoRecovery" gives us a context that cannot fall back to the software renderer.  This makes the View-based context a compatible with the fullscreen context, enabling us to use the "shareContext" feature to share textures, display lists, and other OpenGL objects between the two.
+      NSOpenGLPFANoRecovery,
+
+// Attributes Common to FullScreen and non-FullScreen
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]),//24,
+      NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]), //24,
 #else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay),//24,
+      NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay), //24,
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFADepthSize, 16,
-        NSOpenGLPFAStencilSize, 8,
-        NSOpenGLPFADoubleBuffer,
-        NSOpenGLPFAAccelerated,
-        0
+      NSOpenGLPFADepthSize, 16,
+      NSOpenGLPFAStencilSize, 8,
+      NSOpenGLPFADoubleBuffer,
+      NSOpenGLPFAAccelerated,
+      0
     };
     GLint rendererID;
-	
+
     // Create our non-FullScreen pixel format.
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-	
+
     // Just as a diagnostic, report the renderer ID that this pixel format binds to.  CGLRenderers.h contains a list of known renderers and their corresponding RendererID codes.
     [pixelFormat getValues:&rendererID forAttribute:NSOpenGLPFARendererID forVirtualScreen:0];
     NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", (unsigned)rendererID);
-	
+
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-	trackingArea = nil;
-	[self enableTrackingArea];
-	isFirstDraw = true;
+    trackingArea = nil;
+    [self enableTrackingArea];
+    isFirstDraw = true;
     willQuit = false;
 
     // enable retina resolution
@@ -88,19 +87,18 @@ extern void FrameworkMain(int argc, char *argv[]);
 }
 
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-- (size_t) displayBitsPerPixel:(CGDirectDisplayID) displayId 
+- (size_t)displayBitsPerPixel:(CGDirectDisplayID)displayId
 {
-    
-	CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displayId);
-	size_t depth = 0;
-    
-	CFStringRef pixEnc = CGDisplayModeCopyPixelEncoding(mode);
-	if(CFStringCompare(pixEnc, CFSTR(IO32BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
-		depth = 32;
-	else if(CFStringCompare(pixEnc, CFSTR(IO16BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
-		depth = 16;
-	else if(CFStringCompare(pixEnc, CFSTR(IO8BitIndexedPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
-		depth = 8;
+    CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displayId);
+    size_t depth = 0;
+
+    CFStringRef pixEnc = CGDisplayModeCopyPixelEncoding(mode);
+    if (CFStringCompare(pixEnc, CFSTR(IO32BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+        depth = 32;
+    else if (CFStringCompare(pixEnc, CFSTR(IO16BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+        depth = 16;
+    else if (CFStringCompare(pixEnc, CFSTR(IO8BitIndexedPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+        depth = 8;
 
     CGDisplayModeRelease(mode);
     CFRelease(pixEnc);
@@ -109,29 +107,27 @@ extern void FrameworkMain(int argc, char *argv[]);
 }
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
-
-- (void) enableTrackingArea
+- (void)enableTrackingArea
 {
-	[trackingArea release];
-	trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:(NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingActiveInKeyWindow) owner:self userInfo:nil];
-	[self addTrackingArea:trackingArea];
+    [trackingArea release];
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:(NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingActiveInKeyWindow) owner:self userInfo:nil];
+    [self addTrackingArea:trackingArea];
 }
 
-- (void) disableTrackingArea
+- (void)disableTrackingArea
 {
-	if (trackingArea)
-		[self removeTrackingArea: trackingArea];
+    if (trackingArea)
+        [self removeTrackingArea:trackingArea];
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-	
-	[super dealloc];
+    [super dealloc];
 }
 
 - (BOOL)isOpaque
 {
-	return YES;
+    return YES;
 }
 
 - (void)reshape
@@ -154,7 +150,6 @@ extern void FrameworkMain(int argc, char *argv[]);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-        UIScreenManager::Instance()->ScreenSizeChanged();
     }
 
     [super reshape];
@@ -162,7 +157,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 - (void)drawRect:(NSRect)theRect
 {
-    if(willQuit)
+    if (willQuit)
         return;
 
     DAVA::Core::Instance()->SystemProcessFrame();
@@ -170,17 +165,17 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 - (BOOL)acceptsFirstResponder
 {
-	return YES;
+    return YES;
 }
 
 - (BOOL)becomeFirstResponder
 {
-	return YES;
+    return YES;
 }
 
 - (BOOL)resignFirstResponder
-{	
-	return YES;
+{
+    return YES;
 }
 
 static Vector<DAVA::UIEvent> activeTouches;
@@ -205,21 +200,33 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 
     if (DAVA::UIEvent::Phase::WHEEL == phase)
     {
-        event.device = DAVA::UIEvent::Device::MOUSE;
-
         const uint32 rawScrollCoefficient = 10;
-        DAVA::float32 rawScrollDelta([curEvent scrollingDeltaY]);
+        DAVA::float32 rawScrollDeltaX([curEvent scrollingDeltaX]);
+        DAVA::float32 rawScrollDeltaY([curEvent scrollingDeltaY]);
+
+        // detect the wheel event device
+        // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
+        if (NSEventPhaseNone != [curEvent momentumPhase] || NSEventPhaseNone != [curEvent phase])
+        {
+            event.device = DAVA::UIEvent::Device::TOUCH_PAD;
+        }
+        else
+        {
+            event.device = DAVA::UIEvent::Device::MOUSE;
+        }
 
         if (YES == [curEvent hasPreciseScrollingDeltas])
         {
             // touchpad or other precise device
             // sends integer values (-3, -1, 0, 1, 40 etc)
-            event.wheelDelta.y = rawScrollDelta / rawScrollCoefficient;
+            event.wheelDelta.x = rawScrollDeltaX / rawScrollCoefficient;
+            event.wheelDelta.y = rawScrollDeltaY / rawScrollCoefficient;
         }
         else
         {
             // simple mouse - sends float values from 0.1 for one wheel tick
-            event.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
+            event.wheelDelta.x = rawScrollDeltaX * rawScrollCoefficient;
+            event.wheelDelta.y = rawScrollDeltaY * rawScrollCoefficient;
         }
     }
     else
@@ -340,7 +347,6 @@ extern int mouseMoveSkipCounter;
     default:
         break;
     }
-
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
@@ -352,12 +358,12 @@ extern int mouseMoveSkipCounter;
     touches.clear();
 }
 
-- (void)mouseDown:(NSEvent *)theEvent
+- (void)mouseDown:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::BEGAN touch:theEvent];
 }
 
-- (void)scrollWheel:(NSEvent *)theEvent
+- (void)scrollWheel:(NSEvent*)theEvent
 {
     DAVA::UIEvent ev;
 
@@ -411,24 +417,24 @@ extern int mouseMoveSkipCounter;
     UIControlSystem::Instance()->OnInput(&ev);
 }
 
-- (void)mouseMoved:(NSEvent *)theEvent
+- (void)mouseMoved:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::MOVE touch:theEvent];
 }
 
-- (void)mouseUp:(NSEvent *)theEvent
+- (void)mouseUp:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 
-- (void)mouseDragged:(NSEvent *)theEvent
+- (void)mouseDragged:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 
 void OSXShowCursor();
 
-- (void)mouseExited:(NSEvent *)theEvent
+- (void)mouseExited:(NSEvent*)theEvent
 {
     InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
     if (captureMode != InputSystem::eMouseCaptureMode::PINING)
@@ -439,27 +445,27 @@ void OSXShowCursor();
     }
 }
 
-- (void)rightMouseDown:(NSEvent *)theEvent
+- (void)rightMouseDown:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)rightMouseDragged:(NSEvent *)theEvent
+- (void)rightMouseDragged:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)rightMouseUp:(NSEvent *)theEvent
+- (void)rightMouseUp:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)otherMouseDown:(NSEvent *)theEvent
+- (void)otherMouseDown:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)otherMouseDragged:(NSEvent *)theEvent
+- (void)otherMouseDragged:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)otherMouseUp:(NSEvent *)theEvent
+- (void)otherMouseUp:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
@@ -515,7 +521,7 @@ static int32 oldModifersFlags = 0;
     keyboard.OnKeyPressed(davaKey);
 }
 
-- (void) keyUp:(NSEvent *)event
+- (void)keyUp:(NSEvent*)event
 {
     int32 keyCode = [event keyCode];
     InputSystem* input = InputSystem::Instance();
@@ -532,11 +538,11 @@ static int32 oldModifersFlags = 0;
     keyboard.OnKeyUnpressed(ev.key);
 }
 
-- (void) flagsChanged :(NSEvent *)event
+- (void)flagsChanged:(NSEvent*)event
 {
     // TODO add support for simultanious keys presed or released
     int32 newModifers = [event modifierFlags];
-    static int32 masks[] = {NSAlphaShiftKeyMask, NSShiftKeyMask, NSControlKeyMask, NSAlternateKeyMask, NSCommandKeyMask};
+    static int32 masks[] = { NSAlphaShiftKeyMask, NSShiftKeyMask, NSControlKeyMask, NSAlternateKeyMask, NSCommandKeyMask };
     static Key keyCodes[] = { Key::CAPSLOCK, Key::LSHIFT, Key::LCTRL, Key::LALT, Key::LWIN };
 
     InputSystem* input = InputSystem::Instance();
@@ -591,7 +597,7 @@ static int32 oldModifersFlags = 0;
 
                 keyboard.OnKeyPressed(ev.key);
             }
-            else 
+            else
             {
                 ev.phase = UIEvent::Phase::KEY_UP;
 
@@ -601,8 +607,7 @@ static int32 oldModifersFlags = 0;
             }
         }
     }
-    
-    
+
     oldModifersFlags = newModifers;
 }
 

@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 // The purpose of UIMovieView class is to display movies.
 class UIMovieView : public UIControl
 {
@@ -51,13 +50,13 @@ public:
     void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
 
     // Overloaded virtual methods.
-    void SetPosition(const Vector2 &position) override;
-    void SetSize(const Vector2 &newSize) override;
+    void SetPosition(const Vector2& position) override;
+    void SetSize(const Vector2& newSize) override;
 
-    void SystemDraw(const UIGeometricData &geometricData) override;
+    void SystemDraw(const UIGeometricData& geometricData) override;
 
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void OnVisible() override;
+    void OnInvisible() override;
 
     UIMovieView* Clone() override;
 
@@ -81,6 +80,6 @@ public:
                          nullptr);
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_UIMOVIEVIEW__H__
+#endif // __DAVAENGINE_UIMOVIEVIEW__H__

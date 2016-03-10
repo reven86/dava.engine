@@ -33,12 +33,11 @@
 #include <QWidget>
 #include <QPointer>
 
-
 class ColorCell;
 class MouseHelper;
 
 class CustomPalette
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
@@ -49,7 +48,7 @@ signals:
     void selected(const QColor& c);
 
 public:
-    explicit CustomPalette(QWidget *parent = NULL);
+    explicit CustomPalette(QWidget* parent = NULL);
     ~CustomPalette();
 
     void SetColors(const Colors& colors);
@@ -67,7 +66,7 @@ private:
     int nRows;
     int nColumns;
     Colors colors;
-    QList< QPointer<ColorCell> > controls;
+    QList<QPointer<ColorCell>> controls;
     QSize cellSize;
 };
 

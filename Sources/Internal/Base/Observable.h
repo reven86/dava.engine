@@ -34,21 +34,21 @@
 
 namespace DAVA
 {
-
 class Observer;
 class Observable
 {
 public:
-	void AddObserver(Observer * observer);
-	void RemoveObserver(Observer * observer);
-	void NotifyObservers();
+    void AddObserver(Observer* observer);
+    void RemoveObserver(Observer* observer);
+    void NotifyObservers();
 
-	virtual ~Observable() {};
+    virtual ~Observable()
+    {
+    }
 
 private:
-	Set<Observer*> observers;
+    Set<Observer*> observers;
 };
-
 };
 
 #endif //__DAVAENGINE_OBSERVABLE_H__

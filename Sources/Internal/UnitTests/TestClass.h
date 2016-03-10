@@ -35,8 +35,7 @@ namespace DAVA
 {
 namespace UnitTests
 {
-
-template<typename T>
+template <typename T>
 struct TestClassTypeKeeper
 {
     using TestClassType = T;
@@ -49,7 +48,8 @@ class TestClass
         TestInfo(const char* name_, void (*testFunction_)(TestClass*))
             : name(name_)
             , testFunction(testFunction_)
-        {}
+        {
+        }
         String name;
         void (*testFunction)(TestClass*);
     };
@@ -58,12 +58,11 @@ public:
     TestClass() = default;
     virtual ~TestClass() = default;
 
-    virtual void SetUp(const String& testName) {}
-    virtual void TearDown(const String& testName) {}
-    virtual void Update(float32 timeElapsed, const String& testName) {}
-    virtual bool TestComplete(const String& testName) const { return true; }
-
-    virtual Vector<String> ClassesCoveredByTests() const { return Vector<String>(); }
+    virtual void SetUp(const String& testName);
+    virtual void TearDown(const String& testName);
+    virtual void Update(float32 timeElapsed, const String& testName);
+    virtual bool TestComplete(const String& testName) const;
+    virtual Vector<String> ClassesCoveredByTests() const;
 
     const String& TestName(size_t index) const;
     size_t TestCount() const;
@@ -100,7 +99,7 @@ inline void TestClass::RegisterTest(const char* name, void (*testFunc)(TestClass
     tests.emplace_back(name, testFunc);
 }
 
-}   // namespace UnitTests
-}   // namespace DAVA
+} // namespace UnitTests
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TESTCLASS_H__
+#endif // __DAVAENGINE_TESTCLASS_H__

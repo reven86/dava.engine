@@ -31,10 +31,8 @@
 
 namespace DAVA
 {
-
 namespace
 {
-
 class SelectorParser
 {
 public:
@@ -47,10 +45,10 @@ public:
         SELECTOR_STATE_NONE,
     };
 
-    SelectorParser(Vector<UIStyleSheetSelector>& aSelectorChain) :
+    SelectorParser(Vector<UIStyleSheetSelector>& aSelectorChain)
+        :
         selectorChain(aSelectorChain)
     {
-
     }
 
     void Parse(const char* selectorStr)
@@ -95,6 +93,7 @@ public:
         }
         FinishProcessingCurrentSelector();
     }
+
 private:
     String currentToken;
     SelectorParserState state;
@@ -137,12 +136,10 @@ private:
         state = newState;
     }
 };
-
 }
 
 UIStyleSheetSelectorChain::UIStyleSheetSelectorChain()
 {
-
 }
 
 UIStyleSheetSelectorChain::UIStyleSheetSelectorChain(const String& string)
@@ -208,5 +205,4 @@ Vector<UIStyleSheetSelector>::const_reverse_iterator UIStyleSheetSelectorChain::
 {
     return selectors.rend();
 }
-
 }

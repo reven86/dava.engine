@@ -37,19 +37,20 @@ namespace DAVA
 {
 namespace Net
 {
-
-bool operator == (const NetConfig::TransportConfig& left, const NetConfig::TransportConfig& right)
+bool operator==(const NetConfig::TransportConfig& left, const NetConfig::TransportConfig& right)
 {
     return left.type == right.type && left.endpoint == right.endpoint;
 }
 
-NetConfig::NetConfig() : role()
-{}
+NetConfig::NetConfig()
+    : role()
+{
+}
 
-NetConfig::NetConfig(eNetworkRole aRole) : role(aRole)
-{}
-
-NetConfig::~NetConfig() {}
+NetConfig::NetConfig(eNetworkRole aRole)
+    : role(aRole)
+{
+}
 
 bool NetConfig::Validate() const
 {
@@ -62,7 +63,7 @@ NetConfig NetConfig::Mirror(const IPAddress& addr) const
     NetConfig result(SERVER_ROLE == role ? CLIENT_ROLE : SERVER_ROLE);
     result.transports = transports;
     result.services = services;
-    for (Vector<TransportConfig>::iterator i = result.transports.begin(), e = result.transports.end();i != e;++i)
+    for (Vector<TransportConfig>::iterator i = result.transports.begin(), e = result.transports.end(); i != e; ++i)
     {
         uint16 port = (*i).endpoint.Port();
         (*i).endpoint = Endpoint(addr, port);
@@ -99,5 +100,5 @@ bool NetConfig::AddService(uint32 serviceId)
     return false;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

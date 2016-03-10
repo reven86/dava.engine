@@ -39,37 +39,37 @@ class HoodSystem;
 
 using namespace DAVA;
 
-class HeightmapEditorSystem: public LandscapeEditorSystem
+class HeightmapEditorSystem : public LandscapeEditorSystem
 {
 public:
-	enum eHeightmapDrawType
-	{
-		HEIGHTMAP_DRAW_ABSOLUTE = 0,
-		HEIGHTMAP_DRAW_RELATIVE,
-		HEIGHTMAP_DRAW_AVERAGE,
-		HEIGHTMAP_DRAW_ABSOLUTE_DROPPER,
-		HEIGHTMAP_DROPPER,
-		HEIGHTMAP_COPY_PASTE,
-		
-		HEIGHTMAP_DRAW_TYPES_COUNT
-	};
-	
-	HeightmapEditorSystem(Scene* scene);
-	virtual ~HeightmapEditorSystem();
-	
-	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
-	bool DisableLandscapeEdititing();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
-	virtual void Input(DAVA::UIEvent *event);
-	
-	void SetBrushSize(int32 brushSize);
-	int32 GetBrushSize();
-	void SetStrength(float32 strength);
-	float32 GetStrength();
-	void SetAverageStrength(float32 averageStrength);
-	float32 GetAverageStrength();
-	void SetToolImage(const FilePath& toolImagePath, int32 index);
+    enum eHeightmapDrawType
+    {
+        HEIGHTMAP_DRAW_ABSOLUTE = 0,
+        HEIGHTMAP_DRAW_RELATIVE,
+        HEIGHTMAP_DRAW_AVERAGE,
+        HEIGHTMAP_DRAW_ABSOLUTE_DROPPER,
+        HEIGHTMAP_DROPPER,
+        HEIGHTMAP_COPY_PASTE,
+
+        HEIGHTMAP_DRAW_TYPES_COUNT
+    };
+
+    HeightmapEditorSystem(Scene* scene);
+    virtual ~HeightmapEditorSystem();
+
+    LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
+    bool DisableLandscapeEdititing();
+
+    virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent* event);
+
+    void SetBrushSize(int32 brushSize);
+    int32 GetBrushSize();
+    void SetStrength(float32 strength);
+    float32 GetStrength();
+    void SetAverageStrength(float32 averageStrength);
+    float32 GetAverageStrength();
+    void SetToolImage(const FilePath& toolImagePath, int32 index);
     int32 GetToolImageIndex();
     void SetDrawingType(eHeightmapDrawType type);
     eHeightmapDrawType GetDrawingType();
@@ -78,30 +78,29 @@ public:
     float32 GetDropperHeight();
 
 protected:
-    
     Vector2 GetHeightmapPositionFromCursor() const;
-    
+
 protected:
-	Texture* squareTexture;
-	uint32 curToolSize;
-    Image* curToolImage;
+    Texture* squareTexture = nullptr;
+    uint32 curToolSize = 30;
+    Image* curToolImage = nullptr;
 
-    eHeightmapDrawType drawingType;
-    float32 strength;
-    float32 averageStrength;
-    bool inverseDrawingEnabled;
+    eHeightmapDrawType drawingType = HEIGHTMAP_DRAW_ABSOLUTE;
+    float32 strength = 15.f;
+    float32 averageStrength = 0.5f;
+    bool inverseDrawingEnabled = false;
     FilePath toolImagePath;
-    int32 toolImageIndex;
+    int32 toolImageIndex = 0;
 
-    float32 curHeight;
+    float32 curHeight = 0.f;
     Vector2 copyPasteFrom;
-	Vector2 copyPasteTo;
-	
-	Rect heightmapUpdatedRect;
+    Vector2 copyPasteTo;
 
-	bool editingIsEnabled;
-	
-	Heightmap* originalHeightmap;
+    Rect heightmapUpdatedRect;
+
+    bool editingIsEnabled = false;
+
+    Heightmap* originalHeightmap = nullptr;
 
     eHeightmapDrawType activeDrawingType;
 

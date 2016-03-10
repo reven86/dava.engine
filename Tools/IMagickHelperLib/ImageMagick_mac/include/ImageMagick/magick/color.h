@@ -27,80 +27,82 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedCompliance,
-  NoCompliance = 0x0000,
-  SVGCompliance = 0x0001,
-  X11Compliance = 0x0002,
-  XPMCompliance = 0x0004,
-  AllCompliance = 0x7fffffff
+    UndefinedCompliance,
+    NoCompliance = 0x0000,
+    SVGCompliance = 0x0001,
+    X11Compliance = 0x0002,
+    XPMCompliance = 0x0004,
+    AllCompliance = 0x7fffffff
 } ComplianceType;
 
 typedef struct _ColorInfo
 {
-  char
+    char
     *path,
     *name;
 
-  ComplianceType
+    ComplianceType
     compliance;
 
-  MagickPixelPacket
+    MagickPixelPacket
     color;
 
-  MagickBooleanType
+    MagickBooleanType
     exempt,
     stealth;
 
-  struct _ColorInfo
+    struct _ColorInfo
     *previous,
-    *next;  /* deprecated, use GetColorInfoList() */
+    *next; /* deprecated, use GetColorInfoList() */
 
-  size_t
+    size_t
     signature;
 } ColorInfo;
 
 typedef struct _ErrorInfo
 {
-  double
+    double
     mean_error_per_pixel,
     normalized_mean_error,
     normalized_maximum_error;
 } ErrorInfo;
 
 extern MagickExport char
-  **GetColorList(const char *,size_t *,ExceptionInfo *);
+**
+GetColorList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport const ColorInfo
-  *GetColorInfo(const char *,ExceptionInfo *),
-  **GetColorInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetColorInfo(const char *, ExceptionInfo *),
+**GetColorInfoList(const char *, size_t *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  ColorComponentGenesis(void),
-  IsColorSimilar(const Image *,const PixelPacket *,const PixelPacket *),
-  IsGrayImage(const Image *,ExceptionInfo *),
-  IsImageSimilar(const Image *,const Image *,ssize_t *x,ssize_t *y,
-    ExceptionInfo *),
-  IsMagickColorSimilar(const MagickPixelPacket *,const MagickPixelPacket *),
-  IsMonochromeImage(const Image *,ExceptionInfo *),
-  IsOpacitySimilar(const Image *,const PixelPacket *,const PixelPacket *),
-  IsOpaqueImage(const Image *,ExceptionInfo *),
-  ListColorInfo(FILE *,ExceptionInfo *),
-  QueryColorCompliance(const char *,const ComplianceType,PixelPacket *,
-    ExceptionInfo *),
-  QueryColorDatabase(const char *,PixelPacket *,ExceptionInfo *),
-  QueryColorname(const Image *,const PixelPacket *,const ComplianceType,char *,
-    ExceptionInfo *),
-  QueryMagickColorCompliance(const char *,const ComplianceType,
-    MagickPixelPacket *,ExceptionInfo *),
-  QueryMagickColor(const char *,MagickPixelPacket *,ExceptionInfo *),
-  QueryMagickColorname(const Image *,const MagickPixelPacket *,
-    const ComplianceType,char *,ExceptionInfo *);
+ColorComponentGenesis(void),
+IsColorSimilar(const Image *, const PixelPacket *, const PixelPacket *),
+IsGrayImage(const Image *, ExceptionInfo *),
+IsImageSimilar(const Image *, const Image *, ssize_t *x, ssize_t *y,
+               ExceptionInfo *),
+IsMagickColorSimilar(const MagickPixelPacket *, const MagickPixelPacket *),
+IsMonochromeImage(const Image *, ExceptionInfo *),
+IsOpacitySimilar(const Image *, const PixelPacket *, const PixelPacket *),
+IsOpaqueImage(const Image *, ExceptionInfo *),
+ListColorInfo(FILE *, ExceptionInfo *),
+QueryColorCompliance(const char *, const ComplianceType, PixelPacket *,
+                     ExceptionInfo *),
+QueryColorDatabase(const char *, PixelPacket *, ExceptionInfo *),
+QueryColorname(const Image *, const PixelPacket *, const ComplianceType, char *,
+               ExceptionInfo *),
+QueryMagickColorCompliance(const char *, const ComplianceType,
+                           MagickPixelPacket *, ExceptionInfo *),
+QueryMagickColor(const char *, MagickPixelPacket *, ExceptionInfo *),
+QueryMagickColorname(const Image *, const MagickPixelPacket *,
+                     const ComplianceType, char *, ExceptionInfo *);
 
 extern MagickExport void
-  ColorComponentTerminus(void),
-  ConcatenateColorComponent(const MagickPixelPacket *,const ChannelType,
-    const ComplianceType,char *),
-  GetColorTuple(const MagickPixelPacket *,const MagickBooleanType,char *);
+ColorComponentTerminus(void),
+ConcatenateColorComponent(const MagickPixelPacket *, const ChannelType,
+                          const ComplianceType, char *),
+GetColorTuple(const MagickPixelPacket *, const MagickBooleanType, char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -33,43 +33,42 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIScreen.h"
 
-
 namespace DAVA
 {
-class UI3DView;
-class UIScreenshoter;
-
 class UIScreenTransition : public UIScreen
 {
 public:
-	UIScreenTransition();
-	virtual ~UIScreenTransition();
-	
-	static void CreateRenderTargets();
-	static void ReleaseRenderTargets();
-	
-	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
-	virtual void SetDuration(float32 timeInSeconds);
-    virtual bool IsLoadingTransition();
+    UIScreenTransition();
 
 protected:
-    UI3DView* FindFirst3dView(UIControl* control);
+    ~UIScreenTransition() override;
 
-    static Sprite* renderTargetPrevScreen;
-    static Sprite* renderTargetNextScreen;
+public:
+    void Update(float32 timeElapsed) override;
+    void Draw(const UIGeometricData& geometricData) override;
+
+    virtual void SetSourceScreen(UIScreen* prevScreen);
+    virtual void SetDestinationScreen(UIScreen* nextScreen);
+    virtual void StartTransition();
+    virtual void EndTransition();
+
+    virtual void SetDuration(float32 timeInSeconds);
+
+    bool IsComplete() const;
+
+protected:
+    void CreateRenderTargets();
+    void ReleaseRenderTargets();
+    Sprite* renderTargetPrevScreen = nullptr;
+    Sprite* renderTargetNextScreen = nullptr;
 
     Interpolation::Func interpolationFunc;
-    float32 currentTime;
-    float32 duration;
-    float32 normalizedTime;
-
-    UIScreen* prevScreen;
-    UIScreen* nextScreen;
-    UIScreenshoter* shooter;
+    float32 currentTime = 0.0f;
+    float32 duration = 0.7f;
+    float32 normalizedTime = 0.0f;
+    float32 scale = 1.0f;
+    bool complete = false;
 };
-
 };
 
 

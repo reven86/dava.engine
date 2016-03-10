@@ -50,57 +50,57 @@ QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(const DAVA::FastNam
     , lastCommand(NULL)
     , lastAddedType(DAVA::VariantType::TYPE_STRING)
 {
-	if(NULL != archive)
-	{
-		archive->Retain();
-	}
+    if (NULL != archive)
+    {
+        archive->Retain();
+    }
 
-	SetEnabled(false);
+    SetEnabled(false);
 }
 
 QtPropertyDataDavaKeyedArcive::~QtPropertyDataDavaKeyedArcive()
 {
-	if(NULL != archive)
-	{
-		archive->Release();
-	}
+    if (NULL != archive)
+    {
+        archive->Release();
+    }
 
-	if(NULL != lastCommand)
-	{
-		delete lastCommand;
-	}
+    if (NULL != lastCommand)
+    {
+        delete lastCommand;
+    }
 }
 
-const DAVA::MetaInfo * QtPropertyDataDavaKeyedArcive::MetaInfo() const
+const DAVA::MetaInfo* QtPropertyDataDavaKeyedArcive::MetaInfo() const
 {
-	return DAVA::MetaInfo::Instance<DAVA::KeyedArchive *>();
+    return DAVA::MetaInfo::Instance<DAVA::KeyedArchive*>();
 }
 
 QVariant QtPropertyDataDavaKeyedArcive::GetValueInternal() const
 {
-	QVariant v;
+    QVariant v;
 
-	if(NULL != archive)
-	{
-		v = QString("KeyedArchive");
-	}
-	else
-	{
-		v = QString("KeyedArchive [NULL]");
-	}
+    if (NULL != archive)
+    {
+        v = QString("KeyedArchive");
+    }
+    else
+    {
+        v = QString("KeyedArchive [NULL]");
+    }
 
-	return v;
+    return v;
 }
 
 bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 {
-	// update children
-	{
-		QSet<QtPropertyData *> dataToRemove;
+    // update children
+    {
+        QSet<QtPropertyData*> dataToRemove;
 
-		// at first step of sync we mark (placing to vector) items to remove
-		for(int i = 0; i < ChildCount(); ++i)
-		{
+        // at first step of sync we mark (placing to vector) items to remove
+        for (int i = 0; i < ChildCount(); ++i)
+        {
             QtPropertyData* child = ChildGet(i);
             DVASSERT(child != nullptr);
             dataToRemove.insert(child);
@@ -108,8 +108,8 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 
         // as second step we go through keyed archive and add new data items,
         // and remove deleting mark from items that are still in archive
-        if(NULL != archive)
-		{
+        if (NULL != archive)
+        {
             DAVA::KeyedArchive::UnderlyingMap data = archive->GetArchieveData();
             DAVA::KeyedArchive::UnderlyingMap::iterator i = data.begin();
 
@@ -126,21 +126,21 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
                 }
                 // create new child data
                 else
-				{
+                {
                     ChildCreate(fieldName, i->second);
                 }
             }
         }
 
-		// delete all marked items
-		QSetIterator<QtPropertyData *> it(dataToRemove);
-		while(it.hasNext())
-		{
-			ChildRemove(it.next());
-		}
-	}
+        // delete all marked items
+        QSetIterator<QtPropertyData*> it(dataToRemove);
+        while (it.hasNext())
+        {
+            ChildRemove(it.next());
+        }
+    }
 
-	return false;
+    return false;
 }
 
 void QtPropertyDataDavaKeyedArcive::ChildCreate(const DAVA::FastName& name, DAVA::VariantType* value)
@@ -162,7 +162,7 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const DAVA::FastName& name, DAVA
     QToolButton* remButton = childData->AddButton();
     remButton->setIcon(SharedIcon(":/QtIcons/keyminus.png"));
     remButton->setToolTip("Remove keyed archive member");
-	remButton->setIconSize(QSize(12, 12));
+    remButton->setIconSize(QSize(12, 12));
 
     connections.AddConnection(remButton, &QToolButton::clicked, [this, remButton]() {
         RemKeyedArchiveField(remButton);
@@ -194,7 +194,7 @@ void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField(QToolButton* button)
         QPoint wPos = QPoint(bPos.x() - wRect.width() + bRect.width(), bPos.y() + bRect.height());
 
         w->move(wPos);
-	}
+    }
 }
 
 void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton* button)
@@ -203,9 +203,9 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton* button)
     if (archive != nullptr)
     {
         // search for child data with such button
-        for(int i = 0; i < ChildCount(); ++i)
-		{
-			QtPropertyData *childData = ChildGet(i);
+        for (int i = 0; i < ChildCount(); ++i)
+        {
+            QtPropertyData* childData = ChildGet(i);
             DVASSERT(childData != nullptr);
             // search btn thought this child optional widgets
             for (int j = 0; j < childData->GetButtonsCount(); j++)
@@ -247,20 +247,20 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(const DAVA::FastName& k
     }
 }
 
-void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String &key, const DAVA::VariantType &value)
+void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String& key, const DAVA::VariantType& value)
 {
-	DVASSERT(value.type != DAVA::VariantType::TYPE_NONE && value.type < DAVA::VariantType::TYPES_COUNT);
-	if(NULL != archive)
-	{
-		archive->SetVariant(key, value);
-		lastAddedType = value.type;
+    DVASSERT(value.type != DAVA::VariantType::TYPE_NONE && value.type < DAVA::VariantType::TYPES_COUNT);
+    if (NULL != archive)
+    {
+        archive->SetVariant(key, value);
+        lastAddedType = value.type;
 
-		if(NULL != lastCommand)
-		{
-			delete lastCommand;
-		}
+        if (NULL != lastCommand)
+        {
+            delete lastCommand;
+        }
 
-		lastCommand = new KeyedArchiveAddValueCommand(archive, key, value);
+        lastCommand = new KeyedArchiveAddValueCommand(archive, key, value);
         ChildCreate(DAVA::FastName(key.c_str()), archive->GetVariant(key));
         EmitDataChanged(QtPropertyData::VALUE_EDITED);
     }
@@ -268,21 +268,21 @@ void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String
 
 void* QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
 {
-	Command2 *command = NULL;
+    Command2* command = NULL;
 
-	if(NULL != lastCommand)
-	{
-		if(CMDID_KEYEDARCHIVE_REM_KEY == lastCommand->GetId())
-		{
-			command = new KeyeadArchiveRemValueCommand(*((KeyeadArchiveRemValueCommand *) lastCommand));
-		}
-		else if(CMDID_KEYEDARCHIVE_ADD_KEY == lastCommand->GetId())
-		{
-			command = new KeyedArchiveAddValueCommand(*((KeyedArchiveAddValueCommand *) lastCommand));
-		}
-	}
+    if (NULL != lastCommand)
+    {
+        if (CMDID_KEYEDARCHIVE_REM_KEY == lastCommand->GetId())
+        {
+            command = new KeyeadArchiveRemValueCommand(*((KeyeadArchiveRemValueCommand*)lastCommand));
+        }
+        else if (CMDID_KEYEDARCHIVE_ADD_KEY == lastCommand->GetId())
+        {
+            command = new KeyedArchiveAddValueCommand(*((KeyedArchiveAddValueCommand*)lastCommand));
+        }
+    }
 
-	return command;
+    return command;
 }
 
 void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()
@@ -306,175 +306,175 @@ KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive* _arch, int de
     , arch(_arch)
     , presetWidget(NULL)
 {
-	QGridLayout *grLayout = new QGridLayout();
-	int delautTypeIndex = 0;
+    QGridLayout* grLayout = new QGridLayout();
+    int delautTypeIndex = 0;
 
-	if(NULL != arch)
-	{
-		arch->Retain();
-	}
+    if (NULL != arch)
+    {
+        arch->Retain();
+    }
 
-	defaultBtn = new QPushButton("Ok", this);
-	keyWidget = new QLineEdit(this);
-	valueWidget = new QComboBox(this);
+    defaultBtn = new QPushButton("Ok", this);
+    keyWidget = new QLineEdit(this);
+    valueWidget = new QComboBox(this);
 
-	int j = 0;
-	for (int type = (DAVA::VariantType::TYPE_NONE + 1); type < DAVA::VariantType::TYPES_COUNT; type++)
-	{
-		// don't allow byte array
-		if(type != DAVA::VariantType::TYPE_BYTE_ARRAY)
-		{
-			valueWidget->addItem(DAVA::VariantType::variantNamesMap[type].variantName.c_str(), type);
+    int j = 0;
+    for (int type = (DAVA::VariantType::TYPE_NONE + 1); type < DAVA::VariantType::TYPES_COUNT; type++)
+    {
+        // don't allow byte array
+        if (type != DAVA::VariantType::TYPE_BYTE_ARRAY)
+        {
+            valueWidget->addItem(DAVA::VariantType::variantNamesMap[type].variantName.c_str(), type);
 
-			if(type == defaultType)
-			{
-				delautTypeIndex = j;
-			}
+            if (type == defaultType)
+            {
+                delautTypeIndex = j;
+            }
 
-			j++;
-		}
-	}
-	valueWidget->setCurrentIndex(delautTypeIndex);
+            j++;
+        }
+    }
+    valueWidget->setCurrentIndex(delautTypeIndex);
 
-	int row = 0;
-	grLayout->addWidget(new QLabel("Key:", this), row, 0, 1, 1);
-	grLayout->addWidget(keyWidget, row, 1, 1, 2);
-	grLayout->addWidget(new QLabel("Value type:", this), ++row, 0, 1, 1);
-	grLayout->addWidget(valueWidget, row, 1, 1, 2);
+    int row = 0;
+    grLayout->addWidget(new QLabel("Key:", this), row, 0, 1, 1);
+    grLayout->addWidget(keyWidget, row, 1, 1, 2);
+    grLayout->addWidget(new QLabel("Value type:", this), ++row, 0, 1, 1);
+    grLayout->addWidget(valueWidget, row, 1, 1, 2);
 
-	const Vector<String> &presetValues = EditorConfig::Instance()->GetProjectPropertyNames();
-	if(presetValues.size() > 0)
-	{
-		presetWidget = new QComboBox(this);
-		
-		presetWidget->addItem("None", DAVA::VariantType::TYPE_NONE);
-		for(size_t i = 0; i < presetValues.size(); ++i)
-		{
-			presetWidget->addItem(presetValues[i].c_str(), EditorConfig::Instance()->GetPropertyValueType(presetValues[i]));
-		}
+    const Vector<String>& presetValues = EditorConfig::Instance()->GetProjectPropertyNames();
+    if (presetValues.size() > 0)
+    {
+        presetWidget = new QComboBox(this);
 
-		grLayout->addWidget(new QLabel("Preset:", this), ++row, 0, 1, 1);
-		grLayout->addWidget(presetWidget, row, 1, 1, 2);
+        presetWidget->addItem("None", DAVA::VariantType::TYPE_NONE);
+        for (size_t i = 0; i < presetValues.size(); ++i)
+        {
+            presetWidget->addItem(presetValues[i].c_str(), EditorConfig::Instance()->GetPropertyValueType(presetValues[i]));
+        }
 
-		QObject::connect(presetWidget, SIGNAL(activated(int)), this, SLOT(PreSetSelected(int)));
-	}
+        grLayout->addWidget(new QLabel("Preset:", this), ++row, 0, 1, 1);
+        grLayout->addWidget(presetWidget, row, 1, 1, 2);
+
+        QObject::connect(presetWidget, SIGNAL(activated(int)), this, SLOT(PreSetSelected(int)));
+    }
     presetWidget->setMaxVisibleItems(presetWidget->count());
 
-	grLayout->addWidget(defaultBtn, ++row, 2, 1, 1);
+    grLayout->addWidget(defaultBtn, ++row, 2, 1, 1);
 
-	grLayout->setMargin(5);
-	grLayout->setSpacing(3);
-	setLayout(grLayout);
+    grLayout->setMargin(5);
+    grLayout->setSpacing(3);
+    setLayout(grLayout);
 
-	setAttribute(Qt::WA_DeleteOnClose);
-	setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
-	setWindowOpacity(0.95);
+    setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
+    setWindowOpacity(0.95);
 
-	QObject::connect(defaultBtn, SIGNAL(pressed()), this, SLOT(OkKeyPressed()));
+    QObject::connect(defaultBtn, SIGNAL(pressed()), this, SLOT(OkKeyPressed()));
 }
 
 KeyedArchiveItemWidget::~KeyedArchiveItemWidget()
 {
-	if(NULL != arch)
-	{
-		arch->Release();
-	} 
+    if (NULL != arch)
+    {
+        arch->Release();
+    }
 }
 
-void KeyedArchiveItemWidget::showEvent(QShowEvent * event)
+void KeyedArchiveItemWidget::showEvent(QShowEvent* event)
 {
-	QWidget::showEvent(event);
-	keyWidget->setFocus();
+    QWidget::showEvent(event);
+    keyWidget->setFocus();
 }
 
-void KeyedArchiveItemWidget::keyPressEvent(QKeyEvent *e)
+void KeyedArchiveItemWidget::keyPressEvent(QKeyEvent* e)
 {
-	if (!e->modifiers() || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter)) 
-	{
-		switch(e->key())
-		{
-		case Qt::Key_Enter:
-		case Qt::Key_Return:
-			defaultBtn->click();
-			break;
-		case Qt::Key_Escape:
-			this->deleteLater();
-			break;
-		default:
-			e->ignore();
-			return;
-		}
-	} 
-	else 
-	{
-		e->ignore();
-	}
+    if (!e->modifiers() || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter))
+    {
+        switch (e->key())
+        {
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            defaultBtn->click();
+            break;
+        case Qt::Key_Escape:
+            this->deleteLater();
+            break;
+        default:
+            e->ignore();
+            return;
+        }
+    }
+    else
+    {
+        e->ignore();
+    }
 }
 
 void KeyedArchiveItemWidget::OkKeyPressed()
 {
-	if(NULL != arch)
-	{
-		DAVA::String key = keyWidget->text().toStdString();
+    if (NULL != arch)
+    {
+        DAVA::String key = keyWidget->text().toStdString();
 
-		if(key.empty())
-		{
-			// TODO:
-			// other way to report error without losing focus
-			// ...
-			// 
+        if (key.empty())
+        {
+            // TODO:
+            // other way to report error without losing focus
+            // ...
+            //
 
-			QMessageBox::warning(NULL, "Wrong key value", "Key value can't be empty");
-		}
-		else if(arch->IsKeyExists(key))
-		{
-			// TODO:
-			// other way to report error without losing focus
-			// ...
-			// 
+            QMessageBox::warning(NULL, "Wrong key value", "Key value can't be empty");
+        }
+        else if (arch->IsKeyExists(key))
+        {
+            // TODO:
+            // other way to report error without losing focus
+            // ...
+            //
 
-			QMessageBox::warning(NULL, "Wrong key value", "That key already exists");
-		}
-		else
-		{
-			// preset?
-			int presetType = DAVA::VariantType::TYPE_NONE;
-			if(NULL != presetWidget)
-			{
-				presetType = presetWidget->itemData(presetWidget->currentIndex()).toInt();
-			}
-			
-			if(DAVA::VariantType::TYPE_NONE != presetType)
-			{
-				DAVA::VariantType presetValue = *(EditorConfig::Instance()->GetPropertyDefaultValue(key));
-				emit ValueReady(key, presetValue);
-			}
-			else
-			{
-				emit ValueReady(key, DAVA::VariantType::FromType(valueWidget->itemData(valueWidget->currentIndex()).toInt()));
-			}
+            QMessageBox::warning(NULL, "Wrong key value", "That key already exists");
+        }
+        else
+        {
+            // preset?
+            int presetType = DAVA::VariantType::TYPE_NONE;
+            if (NULL != presetWidget)
+            {
+                presetType = presetWidget->itemData(presetWidget->currentIndex()).toInt();
+            }
 
-			this->deleteLater();
-		}
-	}
-	else
-	{
-		this->deleteLater();
-	}
+            if (DAVA::VariantType::TYPE_NONE != presetType)
+            {
+                DAVA::VariantType presetValue = *(EditorConfig::Instance()->GetPropertyDefaultValue(key));
+                emit ValueReady(key, presetValue);
+            }
+            else
+            {
+                emit ValueReady(key, DAVA::VariantType::FromType(valueWidget->itemData(valueWidget->currentIndex()).toInt()));
+            }
+
+            this->deleteLater();
+        }
+    }
+    else
+    {
+        this->deleteLater();
+    }
 }
 
 void KeyedArchiveItemWidget::PreSetSelected(int index)
 {
-	if(presetWidget->itemData(index).toInt() != DAVA::VariantType::TYPE_NONE)
-	{
-		keyWidget->setText(presetWidget->itemText(index));
-		keyWidget->setEnabled(false);
-		valueWidget->setEnabled(false);
-	}
-	else
-	{
-		keyWidget->setText("");
-		keyWidget->setEnabled(true);
-		valueWidget->setEnabled(true);
-	}
+    if (presetWidget->itemData(index).toInt() != DAVA::VariantType::TYPE_NONE)
+    {
+        keyWidget->setText(presetWidget->itemText(index));
+        keyWidget->setEnabled(false);
+        valueWidget->setEnabled(false);
+    }
+    else
+    {
+        keyWidget->setText("");
+        keyWidget->setEnabled(true);
+        valueWidget->setEnabled(true);
+    }
 }

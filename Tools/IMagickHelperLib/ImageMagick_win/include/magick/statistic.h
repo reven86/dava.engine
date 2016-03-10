@@ -24,10 +24,10 @@ extern "C" {
 
 typedef struct _ChannelStatistics
 {
-  size_t
+    size_t
     depth;
 
-  double
+    double
     minima,
     maxima,
     sum,
@@ -43,75 +43,77 @@ typedef struct _ChannelStatistics
 
 typedef enum
 {
-  UndefinedEvaluateOperator,
-  AddEvaluateOperator,
-  AndEvaluateOperator,
-  DivideEvaluateOperator,
-  LeftShiftEvaluateOperator,
-  MaxEvaluateOperator,
-  MinEvaluateOperator,
-  MultiplyEvaluateOperator,
-  OrEvaluateOperator,
-  RightShiftEvaluateOperator,
-  SetEvaluateOperator,
-  SubtractEvaluateOperator,
-  XorEvaluateOperator,
-  PowEvaluateOperator,
-  LogEvaluateOperator,
-  ThresholdEvaluateOperator,
-  ThresholdBlackEvaluateOperator,
-  ThresholdWhiteEvaluateOperator,
-  GaussianNoiseEvaluateOperator,
-  ImpulseNoiseEvaluateOperator,
-  LaplacianNoiseEvaluateOperator,
-  MultiplicativeNoiseEvaluateOperator,
-  PoissonNoiseEvaluateOperator,
-  UniformNoiseEvaluateOperator,
-  CosineEvaluateOperator,
-  SineEvaluateOperator,
-  AddModulusEvaluateOperator,
-  MeanEvaluateOperator,
-  AbsEvaluateOperator,
-  ExponentialEvaluateOperator,
-  MedianEvaluateOperator
+    UndefinedEvaluateOperator,
+    AddEvaluateOperator,
+    AndEvaluateOperator,
+    DivideEvaluateOperator,
+    LeftShiftEvaluateOperator,
+    MaxEvaluateOperator,
+    MinEvaluateOperator,
+    MultiplyEvaluateOperator,
+    OrEvaluateOperator,
+    RightShiftEvaluateOperator,
+    SetEvaluateOperator,
+    SubtractEvaluateOperator,
+    XorEvaluateOperator,
+    PowEvaluateOperator,
+    LogEvaluateOperator,
+    ThresholdEvaluateOperator,
+    ThresholdBlackEvaluateOperator,
+    ThresholdWhiteEvaluateOperator,
+    GaussianNoiseEvaluateOperator,
+    ImpulseNoiseEvaluateOperator,
+    LaplacianNoiseEvaluateOperator,
+    MultiplicativeNoiseEvaluateOperator,
+    PoissonNoiseEvaluateOperator,
+    UniformNoiseEvaluateOperator,
+    CosineEvaluateOperator,
+    SineEvaluateOperator,
+    AddModulusEvaluateOperator,
+    MeanEvaluateOperator,
+    AbsEvaluateOperator,
+    ExponentialEvaluateOperator,
+    MedianEvaluateOperator
 } MagickEvaluateOperator;
 
 typedef enum
 {
-  UndefinedFunction,
-  PolynomialFunction,
-  SinusoidFunction,
-  ArcsinFunction,
-  ArctanFunction
+    UndefinedFunction,
+    PolynomialFunction,
+    SinusoidFunction,
+    ArcsinFunction,
+    ArctanFunction
 } MagickFunction;
 
 extern MagickExport ChannelStatistics
-  *GetImageChannelStatistics(const Image *,ExceptionInfo *);
+*
+GetImageChannelStatistics(const Image*, ExceptionInfo*);
 
 extern MagickExport Image
-  *EvaluateImages(const Image *,const MagickEvaluateOperator,ExceptionInfo *);
+*
+EvaluateImages(const Image*, const MagickEvaluateOperator, ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  EvaluateImage(Image *,const MagickEvaluateOperator,const double,
-    ExceptionInfo *),
-  EvaluateImageChannel(Image *,const ChannelType,const MagickEvaluateOperator,
-    const double,ExceptionInfo *),
-  FunctionImage(Image *,const MagickFunction,const size_t,const double *,
-    ExceptionInfo *),
-  FunctionImageChannel(Image *,const ChannelType,const MagickFunction,
-    const size_t,const double *,ExceptionInfo *),
-  GetImageChannelExtrema(const Image *,const ChannelType,size_t *,size_t *,
-    ExceptionInfo *),
-  GetImageChannelMean(const Image *,const ChannelType,double *,double *,
-    ExceptionInfo *),
-  GetImageChannelKurtosis(const Image *,const ChannelType,double *,double *,
-    ExceptionInfo *),
-  GetImageChannelRange(const Image *,const ChannelType,double *,double *,
-    ExceptionInfo *),
-  GetImageExtrema(const Image *,size_t *,size_t *,ExceptionInfo *),
-  GetImageRange(const Image *,double *,double *,ExceptionInfo *),
-  GetImageMean(const Image *,double *,double *,ExceptionInfo *),
-  GetImageKurtosis(const Image *,double *,double *,ExceptionInfo *);
+EvaluateImage(Image *, const MagickEvaluateOperator, const double,
+              ExceptionInfo *),
+EvaluateImageChannel(Image *, const ChannelType, const MagickEvaluateOperator,
+                     const double, ExceptionInfo *),
+FunctionImage(Image *, const MagickFunction, const size_t, const double *,
+              ExceptionInfo *),
+FunctionImageChannel(Image *, const ChannelType, const MagickFunction,
+                     const size_t, const double *, ExceptionInfo *),
+GetImageChannelExtrema(const Image *, const ChannelType, size_t *, size_t *,
+                       ExceptionInfo *),
+GetImageChannelMean(const Image *, const ChannelType, double *, double *,
+                    ExceptionInfo *),
+GetImageChannelKurtosis(const Image *, const ChannelType, double *, double *,
+                        ExceptionInfo *),
+GetImageChannelRange(const Image *, const ChannelType, double *, double *,
+                     ExceptionInfo *),
+GetImageExtrema(const Image *, size_t *, size_t *, ExceptionInfo *),
+GetImageRange(const Image *, double *, double *, ExceptionInfo *),
+GetImageMean(const Image *, double *, double *, ExceptionInfo *),
+GetImageKurtosis(const Image *, double *, double *, ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

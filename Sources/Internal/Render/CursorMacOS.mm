@@ -137,7 +137,7 @@ static bool systemCursorVisibility = false;
 
 bool Cursor::SetSystemCursorVisibility(bool show)
 {
-    if(show)
+    if (show)
     {
         OSXShowCursor();
     }
@@ -153,7 +153,6 @@ bool Cursor::GetSystemCursorVisibility()
 {
     return systemCursorVisibility;
 }
-	
 };
 
 

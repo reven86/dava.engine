@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 class File;
 
 // ======================================================================================
@@ -59,11 +58,11 @@ struct PatchInfo
 protected:
     void Reset();
     bool Write(File* file);
-    bool Read(File *file);
+    bool Read(File* file);
 
 private:
-    bool ReadString(File* file, String &);
-    bool WriteString(File* file, const String &);
+    bool ReadString(File* file, String&);
+    bool WriteString(File* file, const String&);
 };
 
 // ======================================================================================
@@ -74,20 +73,20 @@ class PatchFileWriter
 public:
     enum WriterMode
     {
-        WRITE,  // Create an empty file for output operations
-        APPEND  // Open file for output at the end of a file. The file will be created if it does not exist.
+        WRITE, // Create an empty file for output operations
+        APPEND // Open file for output at the end of a file. The file will be created if it does not exist.
     };
 
-    PatchFileWriter(const FilePath &path, WriterMode mode, BSType diffType, bool beVerbose = false);
+    PatchFileWriter(const FilePath& path, WriterMode mode, BSType diffType, bool beVerbose = false);
     ~PatchFileWriter();
 
     // TODO:
     // description
-    bool Write(const FilePath &origBase, const FilePath &origPath, const FilePath &newBase, const FilePath &newPath);
+    bool Write(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
 
 protected:
-    bool SingleWrite(const FilePath &origBase, const FilePath &origPath, const FilePath &newBase, const FilePath &newPath);
-    void EnumerateDir(const FilePath &path, const FilePath &base, List<String> &in);
+    bool SingleWrite(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
+    void EnumerateDir(const FilePath& path, const FilePath& base, List<String>& in);
 
     DAVA::FilePath patchPath;
     BSType diffType;
@@ -103,19 +102,20 @@ public:
     enum PatchError
     {
         ERROR_NO = 0,
-        ERROR_MEMORY,       // can't allocate memory
-        ERROR_CANT_READ,    // path file can't be read
-        ERROR_CORRUPTED,    // path file is corrupted
-        ERROR_EMPTY_PATCH,  // no data to apply patch
-        ERROR_ORIG_READ,    // file on origPath can't be opened for reading
-        ERROR_ORIG_CRC,     // file on origPath has wrong crc to apply patch
-        ERROR_NEW_CREATE,   // file on newPath can't be opened for writing
-        ERROR_NEW_WRITE,    // file on newPath can't be written
-        ERROR_NEW_CRC,      // file on newPath has wrong crc after applied patch
+        ERROR_MEMORY, // can't allocate memory
+        ERROR_CANT_READ, // path file can't be read
+        ERROR_CORRUPTED, // path file is corrupted
+        ERROR_EMPTY_PATCH, // no data to apply patch
+        ERROR_ORIG_READ, // file on origPath can't be opened for reading
+        ERROR_ORIG_FILE_CRC, // file on origPath has wrong crc to apply patch
+        ERROR_ORIG_BUFFER_CRC, // file readed from origPath has wrong crc to apply patch
+        ERROR_NEW_CREATE, // file on newPath can't be opened for writing
+        ERROR_NEW_WRITE, // file on newPath can't be written
+        ERROR_NEW_CRC, // file on newPath has wrong crc after applied patch
         ERROR_UNKNOWN
     };
 
-    PatchFileReader(const FilePath &path, bool beVerbose = false);
+    PatchFileReader(const FilePath& path, bool beVerbose = false);
     ~PatchFileReader();
 
     bool ReadFirst();
@@ -124,16 +124,16 @@ public:
     bool ReadPrev();
 
     const PatchInfo* GetCurInfo() const;
-    
+
     PatchError GetLastError() const;
     PatchError GetParseError() const;
     int32 GetErrno() const;
 
     bool Truncate();
-    bool Apply(const FilePath &origBase, const FilePath &origPath, const FilePath &newBase, const FilePath &newPath);
+    bool Apply(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
 
 protected:
-    File *patchFile;
+    File* patchFile;
     PatchInfo curInfo;
     PatchError lastError;
     PatchError parseError;
@@ -147,9 +147,8 @@ protected:
     uint32 curBSDiffPos;
 
     bool DoRead();
-    bool ReadDataBack(void *data, uint32 size);
+    bool ReadDataBack(void* data, uint32 size);
 };
-
 }
 
 #endif // __DAVAENGINE_TOOLS_RESOURCE_PATCHER_H__

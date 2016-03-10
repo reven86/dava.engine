@@ -28,7 +28,7 @@
 
 #include "UI/UITextFieldMacOS.h"
 
-#ifdef __DAVAENGINE_MACOS__
+#if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_TEXTFIELD
 
 #import <AppKit/NSBitmapImageRep.h>
 #import <AppKit/NSTextField.h>
@@ -855,13 +855,9 @@ public:
 
         currentFontSize = virtualFontSize;
 
-        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputX(virtualFontSize);
 
-        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-        NSSize origSz = NSMakeSize(size, 0);
-        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
-
-        [nsTextField setFont:[NSFont systemFontOfSize:convSz.width]];
+        [nsTextField setFont:[NSFont systemFontOfSize:size]];
     }
 
     void SetTextAlign(DAVA::int32 align) override
@@ -1729,4 +1725,4 @@ doCommandBySelector:(SEL)commandSelector
 
 @end
 
-#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_MACOS__ && !DISABLE_NATIVE_TEXTFIELD

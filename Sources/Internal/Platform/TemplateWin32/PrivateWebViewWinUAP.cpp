@@ -42,6 +42,7 @@
 #include "Render/Image/ImageConvert.h"
 
 #include "Utils/UTF8Utils.h"
+#include "Utils/Random.h"
 
 #include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
@@ -124,7 +125,7 @@ IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const 
                             }
                             catch (Platform::COMException^ e)
                             {
-                                Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)",
+                                Logger::Error("[WebView] failed to load file %s: %s (0x%08x)",
                                               RTStringToString(fileName).c_str(),
                                               RTStringToString(e->Message).c_str(),
                                               e->HResult);
@@ -181,7 +182,7 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
-        WebView^ p = nativeWebView;
+        WebView ^ p = nativeWebView;
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
@@ -350,7 +351,7 @@ void PrivateWebViewWinUAP::InstallEventHandlers()
     // clang-format on
 }
 
-void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ args)
+void PrivateWebViewWinUAP::OnNavigationStarting(WebView ^ sender, WebViewNavigationStartingEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -362,12 +363,12 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigati
     bool redirectedByMouse = false; // For now I don't know how to get redirection method
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
     core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]()
-    {
-        if (uiWebView != nullptr && webViewDelegate != nullptr)
-        {
-            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
-        }
-    });
+                                 {
+                                     if (uiWebView != nullptr && webViewDelegate != nullptr)
+                                     {
+                                         whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+                                     }
+                                 });
 
     if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
     {
@@ -376,7 +377,7 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigati
     args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
-void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigationCompletedEventArgs^ args)
+void PrivateWebViewWinUAP::OnNavigationCompleted(WebView ^ sender, WebViewNavigationCompletedEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -398,7 +399,7 @@ void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigat
         RenderToTexture();
     }
 
-    auto self{shared_from_this()};
+    auto self{ shared_from_this() };
     core->RunOnMainThread([this, self]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
@@ -476,8 +477,14 @@ void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
     }
     else if (WebViewProperties::NAVIGATE_OPEN_BUFFER == props.navigateTo)
     {
+        // Generate some unique content identifier for each request
+        // as WebViews' backend can remember content id and reuse UriResolver instance
+        // for another WebView control
+        uint32 generatedContentId = Random::Instance()->Rand();
+        Platform::String^ contentId = ref new Platform::String(StringToWString(Format("%u", generatedContentId)).c_str());
+
         UriResolver^ resolver = ref new UriResolver(props.urlOrHtml, props.basePath);
-        Uri^ uri = nativeWebView->BuildLocalStreamUri("DAVA", "/johny23");
+        Uri^ uri = nativeWebView->BuildLocalStreamUri(contentId, "/johny23");
         nativeWebView->NavigateToLocalStreamUri(uri, resolver);
     }
     // clang-format on
@@ -598,6 +605,6 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int3
     return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
 #endif // defined(__DAVAENGINE_WIN_UAP__)

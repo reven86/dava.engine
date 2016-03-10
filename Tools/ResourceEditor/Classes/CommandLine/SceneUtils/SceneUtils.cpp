@@ -39,78 +39,77 @@ SceneUtils::~SceneUtils()
 {
 }
 
-void SceneUtils::CleanFolder(const FilePath &folderPathname, Set<String> &errorLog)
+void SceneUtils::CleanFolder(const FilePath& folderPathname, Set<String>& errorLog)
 {
     bool ret = FileSystem::Instance()->DeleteDirectory(folderPathname);
-    if(!ret)
+    if (!ret)
     {
         bool folderExists = FileSystem::Instance()->IsDirectory(folderPathname);
-        if(folderExists)
+        if (folderExists)
         {
             errorLog.insert(String(Format("[CleanFolder] ret = %d, folder = %s", ret, folderPathname.GetAbsolutePathname().c_str())));
         }
     }
 }
 
-void SceneUtils::SetInFolder(const FilePath &folderPathname)
+void SceneUtils::SetInFolder(const FilePath& folderPathname)
 {
     DVASSERT(folderPathname.IsDirectoryPathname());
     dataSourceFolder = folderPathname;
 }
 
-void SceneUtils::SetOutFolder(const FilePath &folderPathname)
+void SceneUtils::SetOutFolder(const FilePath& folderPathname)
 {
-	DVASSERT(folderPathname.IsDirectoryPathname());
+    DVASSERT(folderPathname.IsDirectoryPathname());
     dataFolder = folderPathname;
 }
 
-
-bool SceneUtils::CopyFile(const FilePath &filePathname, Set<String> &errorLog)
+bool SceneUtils::CopyFile(const FilePath& filePathname, Set<String>& errorLog)
 {
-	String workingPathname = filePathname.GetRelativePathname(dataSourceFolder);
+    String workingPathname = filePathname.GetRelativePathname(dataSourceFolder);
 
-	PrepareFolderForCopyFile(workingPathname, errorLog);
-    
+    PrepareFolderForCopyFile(workingPathname, errorLog);
+
     bool retCopy = FileSystem::Instance()->CopyFile(dataSourceFolder + workingPathname, dataFolder + workingPathname);
-    if(!retCopy)
+    if (!retCopy)
     {
         errorLog.insert(String(Format("Can't copy %s from %s to %s",
                                       workingPathname.c_str(),
                                       dataSourceFolder.GetAbsolutePathname().c_str(),
                                       dataFolder.GetAbsolutePathname().c_str())));
     }
-    
+
     return retCopy;
 }
 
-void SceneUtils::PrepareFolderForCopyFile(const String &filename, Set<String> &errorLog)
+void SceneUtils::PrepareFolderForCopyFile(const String& filename, Set<String>& errorLog)
 {
     FilePath newFolderPath = (dataFolder + filename).GetDirectory();
-    
-    if(!FileSystem::Instance()->IsDirectory(newFolderPath))
+
+    if (!FileSystem::Instance()->IsDirectory(newFolderPath))
     {
         FileSystem::eCreateDirectoryResult retCreate = FileSystem::Instance()->CreateDirectory(newFolderPath, true);
-        if(FileSystem::DIRECTORY_CANT_CREATE == retCreate)
+        if (FileSystem::DIRECTORY_CANT_CREATE == retCreate)
         {
             errorLog.insert(String(Format("Can't create folder %s", newFolderPath.GetAbsolutePathname().c_str())));
         }
     }
-    
+
     FileSystem::Instance()->DeleteFile(dataFolder + filename);
 }
 
-DAVA::FilePath SceneUtils::GetNewFilePath(const DAVA::FilePath &oldPathname) const
+DAVA::FilePath SceneUtils::GetNewFilePath(const DAVA::FilePath& oldPathname) const
 {
-	String workingPathname = oldPathname.GetRelativePathname(dataSourceFolder);
+    String workingPathname = oldPathname.GetRelativePathname(dataSourceFolder);
     return dataFolder + workingPathname;
 }
 
-void SceneUtils::AddFile(const DAVA::FilePath &sourcePath)
+void SceneUtils::AddFile(const DAVA::FilePath& sourcePath)
 {
     String workingPathname = sourcePath.GetRelativePathname(dataSourceFolder);
     FilePath destinationPath = dataFolder + workingPathname;
 
-    if(sourcePath != destinationPath)
+    if (sourcePath != destinationPath)
     {
         DVASSERT(!sourcePath.IsEmpty());
         DVASSERT(!destinationPath.IsEmpty());
@@ -119,14 +118,14 @@ void SceneUtils::AddFile(const DAVA::FilePath &sourcePath)
     }
 }
 
-void SceneUtils::CopyFiles(Set<String> &errorLog)
+void SceneUtils::CopyFiles(Set<String>& errorLog)
 {
     PrepareDestination(errorLog);
-    
+
     auto endIt = filesForCopy.end();
-    for(auto it = filesForCopy.begin(); it != endIt; ++it)
+    for (auto it = filesForCopy.begin(); it != endIt; ++it)
     {
-		bool retCopy = false;
+        bool retCopy = false;
 
         if (FileSystem::Instance()->Exists(it->first))
         {
@@ -143,23 +142,23 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
     }
 }
 
-void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
+void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String>& errorLog)
 {
     DAVA::Set<DAVA::FilePath> folders;
 
     DAVA::Map<DAVA::FilePath, DAVA::FilePath>::const_iterator endMapIt = filesForCopy.end();
-    for(DAVA::Map<DAVA::FilePath, DAVA::FilePath>::const_iterator it = filesForCopy.begin(); it != endMapIt; ++it)
+    for (DAVA::Map<DAVA::FilePath, DAVA::FilePath>::const_iterator it = filesForCopy.begin(); it != endMapIt; ++it)
     {
         folders.insert(it->second.GetDirectory());
     }
-    
+
     DAVA::Set<DAVA::FilePath>::const_iterator endSetIt = folders.end();
-    for(DAVA::Set<DAVA::FilePath>::const_iterator it = folders.begin(); it != endSetIt; ++it)
+    for (DAVA::Set<DAVA::FilePath>::const_iterator it = folders.begin(); it != endSetIt; ++it)
     {
         if (!FileSystem::Instance()->Exists(*it))
         {
             FileSystem::eCreateDirectoryResult retCreate = FileSystem::Instance()->CreateDirectory((*it), true);
-            if(FileSystem::DIRECTORY_CANT_CREATE == retCreate)
+            if (FileSystem::DIRECTORY_CANT_CREATE == retCreate)
             {
                 errorLog.insert(String(Format("Can't create folder %s", (*it).GetAbsolutePathname().c_str())));
             }
@@ -182,7 +181,7 @@ DAVA_DEPRECATED(void RenderObjectsFlusher::Flush())
     while (!rhi::SyncObjectSignaled(currentFrame))
     {
         Renderer::BeginFrame();
-        RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
+        RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
         Renderer::EndFrame();
     }
 }

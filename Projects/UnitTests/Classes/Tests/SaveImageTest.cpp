@@ -36,7 +36,7 @@ using namespace DAVA;
 const float32 LOSSY_ALLOWED_DIFF = 2.f; //in percents
 const float32 LOSSLESS_ALLOWED_DIFF = 0.f; //in percents
 
-DAVA_TESTCLASS(SaveImageTest)
+DAVA_TESTCLASS (SaveImageTest)
 {
     Image* imageRGBA8888 = nullptr;
     Image* imageRGB888 = nullptr;
@@ -55,28 +55,28 @@ DAVA_TESTCLASS(SaveImageTest)
         SafeRelease(imageA8);
     }
 
-    DAVA_TEST(PngTest)
+    DAVA_TEST (PngTest)
     {
         SaveLoadCheck(imageRGBA8888, "testRGBA8888.png", LOSSLESS_ALLOWED_DIFF);
         //SaveLoadCheck(imageRGB888, "testRGB888.png", LOSSELESS_ALLOWED_DIFF); -- RGB888 is not supported by PNG
         SaveLoadCheck(imageA8, "testA8.png", LOSSLESS_ALLOWED_DIFF);
     }
 
-    DAVA_TEST(JpegTest)
+    DAVA_TEST (JpegTest)
     {
         //SaveLoadCheck(imageRGBA8888, "testRGBA8888.jpg", LOSSY_ALLOWED_DIFF); -- RGBA8888 is not supported for JPEG
         SaveLoadCheck(imageRGB888, "testRGB888.jpg", LOSSY_ALLOWED_DIFF);
         SaveLoadCheck(imageA8, "testA8.jpg", LOSSY_ALLOWED_DIFF);
     }
 
-    DAVA_TEST(TgaTest)
+    DAVA_TEST (TgaTest)
     {
         SaveLoadCheck(imageRGBA8888, "testRGBA8888.tga", LOSSLESS_ALLOWED_DIFF);
         SaveLoadCheck(imageRGB888, "testRGB888.tga", LOSSLESS_ALLOWED_DIFF);
         SaveLoadCheck(imageA8, "testA8.tga", LOSSLESS_ALLOWED_DIFF);
     }
 
-    DAVA_TEST(WebPTest)
+    DAVA_TEST (WebPTest)
     {
         SaveLoadCheck(imageRGB888, "testRGB888.webp", LOSSY_ALLOWED_DIFF);
         SaveLoadCheck(imageRGBA8888, "testRGBA8888.webp", LOSSY_ALLOWED_DIFF);
@@ -113,10 +113,10 @@ DAVA_TESTCLASS(SaveImageTest)
             uint8 blue = 0xFF * i1 / size;
             for (uint32 i2 = 0; i2 < size; ++i2)
             {
-                *_date++ = 0xFF * i2 / size;    // R channel, 0 to FF horizontally
-                *_date++ = 0x00;                // G channel
-                *_date++ = blue;                // B channel, 0 to FF vertically
-                *_date++ = 0xFA;                // A channel
+                *_date++ = 0xFF * i2 / size; // R channel, 0 to FF horizontally
+                *_date++ = 0x00; // G channel
+                *_date++ = blue; // B channel, 0 to FF vertically
+                *_date++ = 0xFA; // A channel
             }
         }
         return img;
@@ -132,9 +132,9 @@ DAVA_TESTCLASS(SaveImageTest)
             uint8 blue = 0xFF * i1 / size;
             for (uint32 i2 = 0; i2 < size; ++i2)
             {
-                *_date++ = 0xFF * i2 / size;    // R channel, 0 to FF horizontally
-                *_date++ = 0x00;                // G channel
-                *_date++ = blue;                // B channel, 0 to FF vertically
+                *_date++ = 0xFF * i2 / size; // R channel, 0 to FF horizontally
+                *_date++ = 0x00; // G channel
+                *_date++ = blue; // B channel, 0 to FF vertically
             }
         }
         return img;

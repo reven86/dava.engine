@@ -32,15 +32,15 @@
 
 #include <QObject>
 
-class DeveloperTools: public QObject
+class DeveloperTools : public QObject
 {
     Q_OBJECT
 
 public:
-	explicit DeveloperTools(QObject *parent = 0);
+    explicit DeveloperTools(QObject* parent = 0);
 
 public slots:
-    
+
     void OnDebugFunctionsGridCopy();
     void OnDebugCreateTestSkinnedObject(); //creates
     void OnSpyWidget();

@@ -30,9 +30,9 @@
 #ifndef __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
 #define __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
 
-#include "Commands2/Command2.h"
-#include "Commands2/CommandAction.h"
 #include "DAVAEngine.h"
+
+#include "Commands2/Command2.h"
 
 using namespace DAVA;
 
@@ -40,50 +40,25 @@ class HeightmapProxy;
 class LandscapeProxy;
 class SceneEditor2;
 
-class ActionEnableHeightmapEditor: public CommandAction
+class ModifyHeightmapCommand : public Command2
 {
 public:
-	ActionEnableHeightmapEditor(SceneEditor2* forSceneEditor);
-	
-protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
-};
+    ModifyHeightmapCommand(HeightmapProxy* heightmapProxy, Heightmap* originalHeightmap, const Rect& updatedRect);
+    ~ModifyHeightmapCommand() override;
 
-class ActionDisableHeightmapEditor: public CommandAction
-{
-public:
-	ActionDisableHeightmapEditor(SceneEditor2* forSceneEditor);
-	
-protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
-};
+private:
+    void Redo() override;
+    void Undo() override;
+    Entity* GetEntity() const override;
 
+    uint16* GetHeightmapRegion(Heightmap* heightmap);
+    void ApplyHeightmapRegion(uint16* region);
 
-class ModifyHeightmapCommand: public Command2
-{
-public:
-	ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
-						   Heightmap* originalHeightmap,
-						   const Rect& updatedRect);
-	virtual ~ModifyHeightmapCommand();
-
-protected:
-	HeightmapProxy* heightmapProxy;
-	uint16* undoRegion;
-	uint16* redoRegion;
-	Rect updatedRect;
-
-	virtual void Redo();
-	virtual void Undo();
-
-	virtual Entity* GetEntity() const;
-
-	uint16* GetHeightmapRegion(Heightmap* heightmap);
-	void ApplyHeightmapRegion(uint16* region);
+private:
+    HeightmapProxy* heightmapProxy = nullptr;
+    uint16* undoRegion = nullptr;
+    uint16* redoRegion = nullptr;
+    Rect updatedRect;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__) */

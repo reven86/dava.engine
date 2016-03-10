@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 **********************************************************************
 ** md5.h -- Header file for implementation of MD5                   **
@@ -74,10 +73,8 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
 
-
 namespace DAVA
 {
-
 /* Data structure for MD5 (Message Digest) computation */
 
 class MD5
@@ -112,21 +109,18 @@ private:
     const MD5Digest& GetDigest()
     {
         return digest;
-    };
+    }
 
     static void RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden);
 
     static uint8 GetNumberFromCharacter(char8 character);
     static char8 GetCharacterFromNumber(uint8 number);
 
-
-	uint32 i[2];                   /* number of _bits_ handled mod 2^64 */
-	uint32 buf[4];                 /* scratch buffer */
-	uint8 in[64];                  /* input buffer */
+    uint32 i[2]; /* number of _bits_ handled mod 2^64 */
+    uint32 buf[4]; /* scratch buffer */
+    uint8 in[64]; /* input buffer */
     MD5Digest digest; /* actual digest after MD5Final call */
 };
-
-
 }
 
-#endif // 
+#endif //

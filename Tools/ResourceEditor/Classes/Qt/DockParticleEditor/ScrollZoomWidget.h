@@ -38,25 +38,25 @@
 #include <QScrollBar.h>
 #include <qslider.h>
 
-#define SCALE_WIDTH				25
+#define SCALE_WIDTH 25
 
-#define GRAPH_HEIGHT			150
-#define GRAPH_OFFSET_STEP		10
+#define GRAPH_HEIGHT 150
+#define GRAPH_OFFSET_STEP 10
 
-#define MINIMUM_DISPLAYED_TIME	0.02f
-#define ZOOM_STEP				0.1f
-#define UI_RECTANGLE_OFFSET		1.5
+#define MINIMUM_DISPLAYED_TIME 0.02f
+#define ZOOM_STEP 0.1f
+#define UI_RECTANGLE_OFFSET 1.5
 
-#define SCROLL_BAR_HEIGHT		12
+#define SCROLL_BAR_HEIGHT 12
 
-#define MIN_ZOOM				1.0f
-#define MAX_ZOOM				10.0f
-#define ZOOM_SLIDER_LENGTH		40
+#define MIN_ZOOM 1.0f
+#define MAX_ZOOM 10.0f
+#define ZOOM_SLIDER_LENGTH 40
 
 #ifdef __DAVAENGINE_WIN32__
-#define SLIDER_HEIGHT_EXPAND    0
+#define SLIDER_HEIGHT_EXPAND 0
 #else
-#define SLIDER_HEIGHT_EXPAND    5
+#define SLIDER_HEIGHT_EXPAND 5
 #endif
 
 using namespace DAVA;
@@ -64,88 +64,88 @@ using namespace DAVA;
 
 class ScrollZoomWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit ScrollZoomWidget(QWidget *parent = 0);
-	~ScrollZoomWidget();
-	
-	virtual void Init(float32 minT, float32 maxT);
-	float32 GetMinBoundary();
-	float32 GetMaxBoundary();
+    explicit ScrollZoomWidget(QWidget* parent = 0);
+    ~ScrollZoomWidget();
+
+    virtual void Init(float32 minT, float32 maxT);
+    float32 GetMinBoundary();
+    float32 GetMaxBoundary();
 
 signals:
-	void ValueChanged();
+    void ValueChanged();
 
 protected:
-	virtual void paintEvent(QPaintEvent *,QPainter& painter );
-	virtual void mouseMoveEvent(QMouseEvent *);
-	virtual void mousePressEvent(QMouseEvent *);
-	virtual void mouseReleaseEvent(QMouseEvent *);
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
 
-	virtual void wheelEvent(QWheelEvent*);
+    void wheelEvent(QWheelEvent*) override;
 
-	virtual void UpdateSizePolicy()			= 0;
-	virtual QRect GetGraphRect() const		= 0;
-	virtual QRect GetIncreaseRect() const	= 0;
-	virtual QRect GetScaleRect() const		= 0;
-	virtual QRect GetDecreaseRect() const	= 0;
-	virtual QRect GetSliderRect() const		= 0;
+    virtual void UpdateSizePolicy() = 0;
+    virtual QRect GetGraphRect() const = 0;
+    virtual QRect GetIncreaseRect() const = 0;
+    virtual QRect GetScaleRect() const = 0;
+    virtual QRect GetDecreaseRect() const = 0;
+    virtual QRect GetSliderRect() const = 0;
 
-	virtual QRect GetScrollBarRect() const;
+    virtual QRect GetScrollBarRect() const;
 
-	void UpdateScrollBarPosition();
-	void UpdateScrollBarSlider();
+    void UpdateScrollBarPosition();
+    void UpdateScrollBarSlider();
 
-	void UpdateSliderPosition();
-	void UpdateZoomSlider();
+    void UpdateSliderPosition();
+    void UpdateZoomSlider();
 
-	QString float2QString(float32 value) const;
-	
-	int32 GetIntValue(float32 value) const;
+    QString float2QString(float32 value) const;
 
-	void PerformZoom(float newScale, bool moveScroll = true);
+    int32 GetIntValue(float32 value) const;
 
-	void PerformOffset(float value, bool moveScroll = true);
+    void PerformZoom(float newScale, bool moveScroll = true);
 
-	enum ePositionRelativelyToDrawRect
-	{
-		POSITION_LEFT,
-		POSITION_RIGHT,
-		POSITION_INSIDE
-	};
-	ePositionRelativelyToDrawRect GetPointPositionFromDrawingRect(QPoint point) const; 
+    void PerformOffset(float value, bool moveScroll = true);
+
+    enum ePositionRelativelyToDrawRect
+    {
+        POSITION_LEFT,
+        POSITION_RIGHT,
+        POSITION_INSIDE
+    };
+    ePositionRelativelyToDrawRect GetPointPositionFromDrawingRect(QPoint point) const;
 
 protected slots:
 
-	void HandleHorizontalScrollChanged(int value);
-	void HandleZoomScrollChanged(int value);
+    void HandleHorizontalScrollChanged(int value);
+    void HandleZoomScrollChanged(int value);
 
 protected:
-	QPoint			mouseStartPos;
+    QPoint mouseStartPos;
 
-	float32			minValue;
-	float32			maxValue;
-	float32			minTime;
-	float32			maxTime;
-	float32			generalMinTime;
-	float32			generalMaxTime;
-	float32			minValueLimit;
-	float32			maxValueLimit;
-	
-	enum eGridStyle
-	{
-		GRID_STYLE_ALL_POSITION,
-		GRID_STYLE_LIMITS
-	};
-	eGridStyle		gridStyle;
-	
-	QBrush			backgroundBrush;
-	float32			scale;
-	float32			initialTimeInterval;
+    float32 minValue;
+    float32 maxValue;
+    float32 minTime;
+    float32 maxTime;
+    float32 generalMinTime;
+    float32 generalMaxTime;
+    float32 minValueLimit;
+    float32 maxValueLimit;
 
-	QScrollBar	*	horizontalScrollBar;
-	QSlider	*		zoomSlider;
+    enum eGridStyle
+    {
+        GRID_STYLE_ALL_POSITION,
+        GRID_STYLE_LIMITS
+    };
+    eGridStyle gridStyle;
+
+    QBrush backgroundBrush;
+    float32 scale;
+    float32 initialTimeInterval;
+
+    QScrollBar* horizontalScrollBar;
+    QSlider* zoomSlider;
 };
 
 

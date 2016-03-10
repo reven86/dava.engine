@@ -53,7 +53,7 @@ public:
     void RemoveEntity(DAVA::Entity* entity) override;
 
     void Recalculate();
-    void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
     void Draw();
 
     void InvalidateMaterials();
@@ -67,6 +67,9 @@ private:
     void BuildPointSetForEntity(EntityMap::value_type& item);
     void BuildIndexSet();
     DAVA::Color GetNormalizedColorForEntity(const EntityMap::value_type& item) const;
+
+    DAVA::Camera* GetRenderCamera() const;
+    DAVA::Camera* GetFinalGatherCamera() const;
 
     void UpdatePointSet();
     void Prerender();

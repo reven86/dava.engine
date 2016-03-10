@@ -34,32 +34,36 @@
 
 using namespace DAVA;
 
-class BaseScreen: public UIScreen
+class BaseScreen : public UIScreen
 {
     static int32 screensCount;
-    
+
 protected:
-    virtual ~BaseScreen(){}
+    virtual ~BaseScreen()
+    {
+    }
+
 public:
-	 BaseScreen();
+    BaseScreen();
 
-	virtual void LoadResources();
-	virtual void UnloadResources();
-    bool SystemInput(UIEvent *currentInput) override;
-    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override;
+    virtual void LoadResources();
+    virtual void UnloadResources();
+    bool SystemInput(UIEvent* currentInput) override;
+    void SystemScreenSizeChanged(const Rect& newFullScreenSize) override;
 
-    int32 GetScreenID() const { return screenID; };
-    
-    
+    int32 GetScreenID() const
+    {
+        return screenID;
+    };
+
 protected:
-    UIButton * CreateButton(const Rect &rect, const WideString & text);
-    
+    UIButton* CreateButton(const Rect& rect, const WideString& text);
+
     void SetPreviousScreen() const;
     void SetNextScreen() const;
-    
 
-    Font *font;
-    
+    Font* font;
+
     int32 screenID;
     bool loaded;
 };

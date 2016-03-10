@@ -35,8 +35,7 @@
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
-#include "Commands2/RulerToolActions.h"
-#include "Commands2/LandscapeEditorDrawSystemActions.h"
+#include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
@@ -56,12 +55,10 @@
 
 #include <QShortcut>
 
-
 namespace
 {
-    const FastName MATERIAL_FOR_REBIND = FastName( "Global" );
+const FastName MATERIAL_FOR_REBIND = FastName("Global");
 }
-
 
 SceneEditor2::SceneEditor2()
     : Scene()
@@ -71,7 +68,7 @@ SceneEditor2::SceneEditor2()
     , isLoaded(false)
     , isHUDVisible(true)
 {
-    EditorCommandNotify *notify = new EditorCommandNotify(this);
+    EditorCommandNotify* notify = new EditorCommandNotify(this);
     commandStack.SetNotify(notify);
     SafeRelease(notify);
 
@@ -159,6 +156,10 @@ SceneEditor2::SceneEditor2()
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
+    selectionSystem->AddSelectionDelegate(modifSystem);
+    selectionSystem->AddSelectionDelegate(hoodSystem);
+    selectionSystem->AddSelectionDelegate(wayEditSystem);
+
     float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
     clearColor[3] = 1.f;
@@ -170,37 +171,36 @@ SceneEditor2::SceneEditor2()
 
 SceneEditor2::~SceneEditor2()
 {
-	RemoveSystems();
+    RemoveSystems();
 
-	SceneSignals::Instance()->EmitClosed(this);
+    SceneSignals::Instance()->EmitClosed(this);
 }
 
-bool SceneEditor2::Load(const DAVA::FilePath &path)
+SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 {
-	bool ret = structureSystem->Init(path);
-    
-    if(ret)
+    SceneFileV2::eError ret = Scene::LoadScene(path);
+    if (ret == SceneFileV2::ERROR_NO_ERROR)
     {
         for (int32 i = 0, e = GetScene()->GetChildrenCount(); i < e; ++i)
         {
             structureSystem->CheckAndMarkSolid(GetScene()->GetChild(i));
         }
         curScenePath = path;
-		isLoaded = true;
-		commandStack.SetClean(true);
+        isLoaded = true;
+        commandStack.SetClean(true);
     }
 
-	SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
+    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
-    
-	SceneSignals::Instance()->EmitLoaded(this);
 
-	return ret;
+    SceneSignals::Instance()->EmitLoaded(this);
+
+    return ret;
 }
 
-SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveForGame /*= false*/)
+SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
-	ExtractEditorEntities();
+    ExtractEditorEntities();
 
     ScopedPtr<Texture> tilemaskTexture(nullptr);
     bool needToRestoreTilemask = false;
@@ -221,7 +221,7 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
         // mark current position in command stack as clean
         wasChanged = false;
         commandStack.SetClean(true);
-	}
+    }
 
     if (needToRestoreTilemask)
     {
@@ -237,53 +237,52 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 
 void SceneEditor2::ExtractEditorEntities()
 {
-	DVASSERT(editorEntities.size() == 0);
+    DVASSERT(editorEntities.size() == 0);
 
-	DAVA::Vector<DAVA::Entity *> allEntities;
-	GetChildNodes(allEntities);
+    DAVA::Vector<DAVA::Entity*> allEntities;
+    GetChildNodes(allEntities);
 
-	DAVA::uint32 count = allEntities.size();
-	for(DAVA::uint32 i = 0; i < count; ++i)
-	{
-		if(allEntities[i]->GetName().find("editor.") != String::npos)
-		{
-			allEntities[i]->Retain();
-			editorEntities.push_back(allEntities[i]);
+    DAVA::uint32 count = allEntities.size();
+    for (DAVA::uint32 i = 0; i < count; ++i)
+    {
+        if (allEntities[i]->GetName().find("editor.") != String::npos)
+        {
+            allEntities[i]->Retain();
+            editorEntities.push_back(allEntities[i]);
 
-			allEntities[i]->GetParent()->RemoveNode(allEntities[i]);
-		}
-	}
+            allEntities[i]->GetParent()->RemoveNode(allEntities[i]);
+        }
+    }
 }
 
 void SceneEditor2::InjectEditorEntities()
 {
-	for(DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
-	{
-		AddEditorEntity(editorEntities[i]);
-		editorEntities[i]->Release();
-	}
+    for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
+    {
+        AddEditorEntity(editorEntities[i]);
+        editorEntities[i]->Release();
+    }
 
-	editorEntities.clear();
+    editorEntities.clear();
 }
 
-
-SceneFileV2::eError SceneEditor2::Save()
+SceneFileV2::eError SceneEditor2::SaveScene()
 {
-	return Save(curScenePath);
+    return SaveScene(curScenePath);
 }
 
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
-	SceneExporter exporter;
+    SceneExporter exporter;
 
     FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
 
     exporter.SetInFolder(projectPath + String("DataSource/3d/"));
     exporter.SetOutFolder(projectPath + String("Data/3d/"));
-	exporter.SetGPUForExporting(newGPU);
+    exporter.SetGPUForExporting(newGPU);
 
-	DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
-	exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
+    DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
+    exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
 
     ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
@@ -300,44 +299,44 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
     return false;
 }
 
-const DAVA::FilePath & SceneEditor2::GetScenePath()
+const DAVA::FilePath& SceneEditor2::GetScenePath()
 {
-	return curScenePath;
+    return curScenePath;
 }
 
-void SceneEditor2::SetScenePath(const DAVA::FilePath &newScenePath)
+void SceneEditor2::SetScenePath(const DAVA::FilePath& newScenePath)
 {
-	curScenePath = newScenePath;
+    curScenePath = newScenePath;
 }
 
 bool SceneEditor2::CanUndo() const
 {
-	return commandStack.CanUndo();
+    return commandStack.CanUndo();
 }
 
 bool SceneEditor2::CanRedo() const
 {
-	return commandStack.CanRedo();
+    return commandStack.CanRedo();
 }
 
 void SceneEditor2::Undo()
 {
-	commandStack.Undo();
+    commandStack.Undo();
 }
 
 void SceneEditor2::Redo()
 {
-	commandStack.Redo();
+    commandStack.Redo();
 }
 
-void SceneEditor2::BeginBatch(const DAVA::String &text)
+void SceneEditor2::BeginBatch(const DAVA::String& text)
 {
-	commandStack.BeginBatch(text);
+    commandStack.BeginBatch(text);
 }
 
 void SceneEditor2::EndBatch()
 {
-	commandStack.EndBatch();
+    commandStack.EndBatch();
 }
 
 bool SceneEditor2::IsBatchStarted() const
@@ -345,14 +344,14 @@ bool SceneEditor2::IsBatchStarted() const
     return commandStack.IsBatchStarted();
 }
 
-void SceneEditor2::Exec(Command2 *command)
+void SceneEditor2::Exec(Command2* command)
 {
-	commandStack.Exec(command);
+    commandStack.Exec(command);
 }
 
 void SceneEditor2::ClearCommands(int commandId)
 {
-	commandStack.Clear(commandId);
+    commandStack.Clear(commandId);
 }
 
 void SceneEditor2::ClearAllCommands()
@@ -362,46 +361,48 @@ void SceneEditor2::ClearAllCommands()
 
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
-	return (&commandStack);
+    return (&commandStack);
 }
 
 bool SceneEditor2::IsLoaded() const
 {
-	return isLoaded;
+    return isLoaded;
 }
 
 void SceneEditor2::SetHUDVisible(bool visible)
 {
-	isHUDVisible = visible;
-	hoodSystem->LockAxis(!visible);
+    isHUDVisible = visible;
+    hoodSystem->LockAxis(!visible);
 }
 
 bool SceneEditor2::IsHUDVisible() const
 {
-	return isHUDVisible;
+    return isHUDVisible;
 }
 
 bool SceneEditor2::IsChanged() const
 {
-	return ((!commandStack.IsClean()) || wasChanged);
+    return ((!commandStack.IsClean()) || wasChanged);
 }
 
 void SceneEditor2::SetChanged(bool changed)
 {
-	commandStack.SetClean(!changed);
+    commandStack.SetClean(!changed);
 }
 
 void SceneEditor2::Update(float timeElapsed)
 {
+    ++framesCount;
+
     renderStats = Renderer::GetRenderStats();
     Renderer::GetRenderStats().Reset();
 
     Scene::Update(timeElapsed);
 }
 
-void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
+void SceneEditor2::SetViewportRect(const DAVA::Rect& newViewportRect)
 {
-	cameraSystem->SetViewportRect(newViewportRect);
+    cameraSystem->SetViewportRect(newViewportRect);
 }
 
 void SceneEditor2::Draw()
@@ -426,10 +427,10 @@ void SceneEditor2::Draw()
     //VI: restore 3d camera state
     Setup3DDrawing();
 
-	if(isHUDVisible)
-	{
-		particlesSystem->Draw();
-		debugDrawSystem->Draw();
+    if (isHUDVisible)
+    {
+        particlesSystem->Draw();
+        debugDrawSystem->Draw();
         wayEditSystem->Draw();
         pathSystem->Draw();
         visibilityCheckSystem->Draw();
@@ -441,69 +442,70 @@ void SceneEditor2::Draw()
     }
 }
 
-void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
+void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
 {
-	gridSystem->ProcessCommand(command, redo);
-	cameraSystem->ProcessCommand(command, redo);
+    gridSystem->ProcessCommand(command, redo);
+    cameraSystem->ProcessCommand(command, redo);
 
-	if(collisionSystem)
-		collisionSystem->ProcessCommand(command, redo);
+    if (collisionSystem)
+        collisionSystem->ProcessCommand(command, redo);
 
-	selectionSystem->ProcessCommand(command, redo);
-	hoodSystem->ProcessCommand(command, redo);
-	modifSystem->ProcessCommand(command, redo);
-	
-	if(structureSystem)
-		structureSystem->ProcessCommand(command, redo);
+    selectionSystem->ProcessCommand(command, redo);
+    hoodSystem->ProcessCommand(command, redo);
+    modifSystem->ProcessCommand(command, redo);
 
-	particlesSystem->ProcessCommand(command, redo);
+    if (structureSystem)
+        structureSystem->ProcessCommand(command, redo);
 
-	if(editorLightSystem)
-		editorLightSystem->ProcessCommand(command, redo);
-	
-	if(ownersSignatureSystem)
-		ownersSignatureSystem->ProcessCommand(command, redo);
+    particlesSystem->ProcessCommand(command, redo);
 
-	materialSystem->ProcessCommand(command, redo);
+    if (editorLightSystem)
+        editorLightSystem->ProcessCommand(command, redo);
+
+    if (ownersSignatureSystem)
+        ownersSignatureSystem->ProcessCommand(command, redo);
+
+    materialSystem->ProcessCommand(command, redo);
 
     if (landscapeEditorDrawSystem)
         landscapeEditorDrawSystem->ProcessCommand(command, redo);
-    
+
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
 }
 
-void SceneEditor2::AddEditorEntity( Entity *editorEntity )
+void SceneEditor2::AddEditorEntity(Entity* editorEntity)
 {
-	if(GetChildrenCount())
-	{
-		InsertBeforeNode(editorEntity, GetChild(0));
-	}
-	else
-	{
-		AddNode(editorEntity);
-	}
+    if (GetChildrenCount())
+    {
+        InsertBeforeNode(editorEntity, GetChild(0));
+    }
+    else
+    {
+        AddNode(editorEntity);
+    }
 }
 
-SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2 *_editor)
-	: editor(_editor)
-{ }
-
-void SceneEditor2::EditorCommandNotify::Notify(const Command2 *command, bool redo)
+SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
+    : editor(_editor)
 {
-	if(NULL != editor)
-	{
-		editor->EditorCommandProcess(command, redo);
-		SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
-	}
+}
+
+void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool redo)
+{
+    if (NULL != editor)
+    {
+        editor->EditorCommandProcess(command, redo);
+        SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
+    }
 }
 
 void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 {
-	if(NULL != editor)
-	{
-		SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
-	}
+    if (NULL != editor)
+    {
+        SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
+    }
 }
 
 const RenderStats& SceneEditor2::GetRenderStats() const
@@ -511,42 +513,70 @@ const RenderStats& SceneEditor2::GetRenderStats() const
     return renderStats;
 }
 
-void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
+void SceneEditor2::EnableToolsInstantly(int32 toolFlags)
 {
-	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR )
-	{
-		Exec(new ActionDisableCustomColors(this, saveChanges));
-	}
+    if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+    {
+        EnableCustomColorsCommand(this, true).Redo();
+    }
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
-        Exec(new ActionDisableHeightmapEditor(this));
+        EnableHeightmapEditorCommand(this).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
-		Exec(new ActionDisableTilemaskEditor(this));
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_RULER)
-	{
-		Exec(new ActionDisableRulerTool(this));
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
-	{
-		Exec(new ActionDisableNotPassable(this));
-	}
+        EnableTilemaskEditorCommand(this).Redo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_RULER)
+    {
+        EnableRulerToolCommand(this).Redo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+    {
+        EnableNotPassableCommand(this).Redo();
+    }
+}
+
+void SceneEditor2::DisableToolsInstantly(int32 toolFlags, bool saveChanges /*= true*/)
+{
+    if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+    {
+        EnableCustomColorsCommand(this, saveChanges).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+    {
+        EnableHeightmapEditorCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+    {
+        EnableTilemaskEditorCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_RULER)
+    {
+        EnableRulerToolCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+    {
+        EnableNotPassableCommand(this).Undo();
+    }
 }
 
 bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 {
-	bool res = false;
+    bool res = false;
 
-	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
-	{
-		res |= customColorsSystem->IsLandscapeEditingEnabled();
-	}
+    if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+    {
+        res |= customColorsSystem->IsLandscapeEditingEnabled();
+    }
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
@@ -555,57 +585,57 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 
     if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
-		res |= tilemaskEditorSystem->IsLandscapeEditingEnabled();
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_RULER)
-	{
-		res |= rulerToolSystem->IsLandscapeEditingEnabled();
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
-	{
-		res |= landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
-	}
+        res |= tilemaskEditorSystem->IsLandscapeEditingEnabled();
+    }
 
-	return res;
+    if (toolFlags & LANDSCAPE_TOOL_RULER)
+    {
+        res |= rulerToolSystem->IsLandscapeEditingEnabled();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+    {
+        res |= landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
+    }
+
+    return res;
 }
 
 int32 SceneEditor2::GetEnabledTools()
 {
-	int32 toolFlags = 0;
-	
-	if (customColorsSystem->IsLandscapeEditingEnabled())
-	{
-		toolFlags |= LANDSCAPE_TOOL_CUSTOM_COLOR;
-	}
-	
-	if (heightmapEditorSystem->IsLandscapeEditingEnabled())
-	{
-		toolFlags |= LANDSCAPE_TOOL_HEIGHTMAP_EDITOR;
-	}
-	
-	if (tilemaskEditorSystem->IsLandscapeEditingEnabled())
-	{
-		toolFlags |= LANDSCAPE_TOOL_TILEMAP_EDITOR;
-	}
-	
-	if (rulerToolSystem->IsLandscapeEditingEnabled())
-	{
-		toolFlags |= LANDSCAPE_TOOL_RULER;
-	}
-	
-	if (landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
-	{
-		toolFlags |= LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN;
-	}
+    int32 toolFlags = 0;
 
-	return toolFlags;
+    if (customColorsSystem->IsLandscapeEditingEnabled())
+    {
+        toolFlags |= LANDSCAPE_TOOL_CUSTOM_COLOR;
+    }
+
+    if (heightmapEditorSystem->IsLandscapeEditingEnabled())
+    {
+        toolFlags |= LANDSCAPE_TOOL_HEIGHTMAP_EDITOR;
+    }
+
+    if (tilemaskEditorSystem->IsLandscapeEditingEnabled())
+    {
+        toolFlags |= LANDSCAPE_TOOL_TILEMAP_EDITOR;
+    }
+
+    if (rulerToolSystem->IsLandscapeEditingEnabled())
+    {
+        toolFlags |= LANDSCAPE_TOOL_RULER;
+    }
+
+    if (landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
+    {
+        toolFlags |= LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN;
+    }
+
+    return toolFlags;
 }
 
-Entity* SceneEditor2::Clone( Entity *dstNode /*= NULL*/ )
+Entity* SceneEditor2::Clone(Entity* dstNode /*= NULL*/)
 {
-    if(!dstNode)
+    if (!dstNode)
     {
         DVASSERT_MSG(IsPointerToExactClass<SceneEditor2>(this), "Can clone only SceneEditor2");
         dstNode = new SceneEditor2();
@@ -614,13 +644,16 @@ Entity* SceneEditor2::Clone( Entity *dstNode /*= NULL*/ )
     return Scene::Clone(dstNode);
 }
 
-SceneEditor2 * SceneEditor2::CreateCopyForExport()
+SceneEditor2* SceneEditor2::CreateCopyForExport()
 {
-    SceneEditor2 *ret = nullptr;
-    FilePath tmpScenePath = FilePath::CreateWithNewExtension(curScenePath, ".tmp_exported.sc2");
+    auto originalPath = curScenePath;
+    auto tempName = Format(".tmp_%llu.sc2", static_cast<uint64>(time(nullptr)) ^ static_cast<uint64>(reinterpret_cast<pointer_size>(this)));
+
+    SceneEditor2* ret = nullptr;
+    FilePath tmpScenePath = FilePath::CreateWithNewExtension(curScenePath, tempName);
     if (SceneFileV2::ERROR_NO_ERROR == SaveScene(tmpScenePath))
     {
-        SceneEditor2 *sceneCopy = new SceneEditor2();
+        SceneEditor2* sceneCopy = new SceneEditor2();
         if (SceneFileV2::ERROR_NO_ERROR == sceneCopy->LoadScene(tmpScenePath))
         {
             sceneCopy->RemoveSystems();
@@ -634,37 +667,47 @@ SceneEditor2 * SceneEditor2::CreateCopyForExport()
         FileSystem::Instance()->DeleteFile(tmpScenePath);
     }
 
+    curScenePath = originalPath; // because SaveScene overwrites curScenePath
+    SceneSignals::Instance()->EmitUpdated(this);
+
     return ret;
 }
 
 void SceneEditor2::RemoveSystems()
 {
-	if(editorLightSystem)
-	{
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->RemoveSelectionDelegate(modifSystem);
+        selectionSystem->RemoveSelectionDelegate(hoodSystem);
+        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+    }
+
+    if (editorLightSystem)
+    {
         editorLightSystem->SetCameraLightEnabled(false);
-		RemoveSystem(editorLightSystem);
-		SafeDelete(editorLightSystem);
-	}
+        RemoveSystem(editorLightSystem);
+        SafeDelete(editorLightSystem);
+    }
 
-	if(structureSystem)
-	{
-		RemoveSystem(structureSystem);
-		SafeDelete(structureSystem);
-	}
+    if (structureSystem)
+    {
+        RemoveSystem(structureSystem);
+        SafeDelete(structureSystem);
+    }
 
-	if(landscapeEditorDrawSystem)
-	{
-		RemoveSystem(landscapeEditorDrawSystem);
-		SafeDelete(landscapeEditorDrawSystem);
-	}
+    if (landscapeEditorDrawSystem)
+    {
+        RemoveSystem(landscapeEditorDrawSystem);
+        SafeDelete(landscapeEditorDrawSystem);
+    }
 
-	if(collisionSystem)
-	{
-		RemoveSystem(collisionSystem);
-		SafeDelete(collisionSystem);
-	}
+    if (collisionSystem)
+    {
+        RemoveSystem(collisionSystem);
+        SafeDelete(collisionSystem);
+    }
 
-    if(materialSystem)
+    if (materialSystem)
     {
         RemoveSystem(materialSystem);
         SafeDelete(materialSystem);
@@ -679,11 +722,11 @@ void SceneEditor2::RemoveSystems()
 
 void SceneEditor2::MarkAsChanged()
 {
-	if(!wasChanged)
-	{
-		wasChanged = true;
-		SceneSignals::Instance()->EmitModifyStatusChanged(this, wasChanged);
-	}
+    if (!wasChanged)
+    {
+        wasChanged = true;
+        SceneSignals::Instance()->EmitModifyStatusChanged(this, wasChanged);
+    }
 }
 
 void SceneEditor2::Setup3DDrawing()
@@ -704,4 +747,14 @@ void SceneEditor2::Deactivate()
 {
     Scene::Deactivate();
     SceneSignals::Instance()->EmitDeactivated(this);
+}
+
+uint32 SceneEditor2::GetFramesCount() const
+{
+    return framesCount;
+}
+
+void SceneEditor2::ResetFramesCount()
+{
+    framesCount = 0;
 }

@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 class DLC
 {
 public:
@@ -45,15 +44,15 @@ public:
     {
         DE_NO_ERROR = 0,
 
-        DE_WAS_CANCELED,        // DLC was canceled
-        DE_INIT_ERROR,          // Some unhanded errors occurred during DLC initialization
-        DE_DOWNLOAD_ERROR,      // Some unhanded errors occurred during DLC download step
-        DE_PATCH_ERROR_LITE,    // Some unhanded errors occurred during applying lite patch (user can still try to force full patch applying)
-        DE_PATCH_ERROR_FULL,    // Some unhanded errors occurred during applying full patch
-        DE_CHECK_ERROR,         // There is no DLC info or DLC patch on remote host
-        DE_READ_ERROR,          // Can't read file
-        DE_WRITE_ERROR,         // Can't write file
-        DE_CONNECT_ERROR        // Can't connect to remote host
+        DE_WAS_CANCELED, // DLC was canceled
+        DE_INIT_ERROR, // Some unhanded errors occurred during DLC initialization
+        DE_DOWNLOAD_ERROR, // Some unhanded errors occurred during DLC download step
+        DE_PATCH_ERROR_LITE, // Some unhanded errors occurred during applying lite patch (user can still try to force full patch applying)
+        DE_PATCH_ERROR_FULL, // Some unhanded errors occurred during applying full patch
+        DE_CHECK_ERROR, // There is no DLC info or DLC patch on remote host
+        DE_READ_ERROR, // Can't read file
+        DE_WRITE_ERROR, // Can't write file
+        DE_CONNECT_ERROR // Can't connect to remote host
     };
 
     enum DLCState
@@ -80,7 +79,7 @@ public:
         \param[in] resVersionPath - path to file, where resources version is stored. This file will be re-wrote after patch finished.
         \param[in] forceFullUpdate - "true" value will force full-patch to be downloaded from the server. "false" leaves patch version to be determined automatically.
     */
-    DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, bool forceFullUpdate = false);
+    DLC(const String& url, const FilePath& sourceDir, const FilePath& destinationDir, const FilePath& workingDir, const String& gameVersion, const FilePath& resVersionPath, bool forceFullUpdate = false);
     ~DLC();
 
     /**
@@ -104,7 +103,7 @@ public:
         \param[out] cur - current progress value
         \param[out] total - expected total progress value
     */
-    void GetProgress(uint64 &cur, uint64 &total) const;
+    void GetProgress(uint64& cur, uint64& total) const;
 
     /**
         \brief Returns current DLC state.
@@ -130,7 +129,13 @@ public:
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
     */
     FilePath GetMetaStorePath() const;
-    
+
+    /**
+        \brief Specifies filename for DLC system logs.
+        \param[in] customLogFileName - output logs file name
+    */
+    void SetLogFileName(const FilePath& customLogFileName);
+
 protected:
     enum DLCEvent
     {
@@ -145,7 +150,7 @@ protected:
         EVENT_PATCH_OK,
         EVENT_CLEAN_OK
     };
-    
+
     struct DLCContext
     {
         String remoteUrl;
@@ -189,6 +194,7 @@ protected:
         uint32 prevState;
     };
 
+    FilePath logsFilePath;
     DLCState dlcState;
     DLCError dlcError;
     DLCContext dlcContext;
@@ -197,7 +203,7 @@ protected:
     bool fsmAutoReady;
 
     // patch thread variables
-    Thread *patchingThread;
+    Thread* patchingThread;
 
     void PostEvent(DLCEvent event);
     void PostError(DLCError error);
@@ -205,19 +211,19 @@ protected:
     void FSM(DLCEvent event);
 
     void StepCheckInfoBegin();
-    void StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status);
+    void StepCheckInfoFinish(const uint32& id, const DownloadStatus& status);
     void StepCheckInfoCancel();
 
     void StepCheckPatchBegin();
-    void StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status);
+    void StepCheckPatchFinish(const uint32& id, const DownloadStatus& status);
     void StepCheckPatchCancel();
 
     void StepCheckMetaBegin();
-    void StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status);
+    void StepCheckMetaFinish(const uint32& id, const DownloadStatus& status);
     void StepCheckMetaCancel();
 
     void StepDownloadPatchBegin();
-    void StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status);
+    void StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status);
     void StepDownloadPatchCancel();
 
     void StepPatchBegin();
@@ -227,15 +233,14 @@ protected:
     void StepClean();
     void StepDone();
 
-    void PatchingThread(BaseObject *caller, void *callerData, void *userData);
+    void PatchingThread(BaseObject* caller, void* callerData, void* userData);
 
     // helper functions
-    bool ReadUint32(const FilePath &path, uint32 &value);
-    bool WriteUint32(const FilePath &path, uint32 value);
+    bool ReadUint32(const FilePath& path, uint32& value);
+    bool WriteUint32(const FilePath& path, uint32 value);
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
 };
-
 }
 
 #endif // __DAVAENGINE_DLC_H__

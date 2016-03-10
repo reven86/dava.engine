@@ -41,7 +41,6 @@
 
 namespace DAVA
 {
-    
 /*
      Scene serialization thoughts: 
      
@@ -100,23 +99,22 @@ class SceneArchive : public BaseObject
 public:
     struct SceneArchiveHierarchyNode : public BaseObject
     {
-        KeyedArchive *archive;
-        Vector<SceneArchiveHierarchyNode *> children;
+        KeyedArchive* archive;
+        Vector<SceneArchiveHierarchyNode*> children;
         SceneArchiveHierarchyNode();
-        void LoadHierarchy(File *file);
+        void LoadHierarchy(File* file);
 
     protected:
         ~SceneArchiveHierarchyNode();
-    };    
+    };
 
-    Vector<SceneArchiveHierarchyNode *> children;
-    Vector<KeyedArchive *> dataNodes;
-
+    Vector<SceneArchiveHierarchyNode*> children;
+    Vector<KeyedArchive*> dataNodes;
 
 protected:
     ~SceneArchive();
 };
-    
+
 class SceneFileV2 : public BaseObject
 {
 private:
@@ -125,18 +123,19 @@ private:
         Header()
             : version(0)
             , nodeCount(0)
-        {};
+              {};
 
-        char    signature[4];
-        int32   version;
-        int32   nodeCount;
+        char signature[4];
+        int32 version;
+        int32 nodeCount;
     };
 
 protected:
     virtual ~SceneFileV2();
 
-public: 
-    enum eError{
+public:
+    enum eError
+    {
         ERROR_NO_ERROR = 0,
         ERROR_VERSION_IS_TOO_OLD,
         ERROR_FAILED_TO_CREATE_FILE,
@@ -144,98 +143,89 @@ public:
         ERROR_VERSION_TAGS_INVALID,
     };
 
-	enum eFileType
-	{
-		SceneFile = 0,
-		ModelFile = 1
-	};
+    enum eFileType
+    {
+        SceneFile = 0,
+        ModelFile = 1
+    };
 
     SceneFileV2();
-    
-    eError SaveScene(const FilePath & filename, Scene * _scene, SceneFileV2::eFileType fileType = SceneFileV2::SceneFile);
-    eError LoadScene(const FilePath & filename, Scene * _scene);
-    static VersionInfo::SceneVersion LoadSceneVersion( const FilePath & filename );
+
+    eError SaveScene(const FilePath& filename, Scene* _scene, SceneFileV2::eFileType fileType = SceneFileV2::SceneFile);
+    eError LoadScene(const FilePath& filename, Scene* _scene);
+    static VersionInfo::SceneVersion LoadSceneVersion(const FilePath& filename);
 
     void EnableDebugLog(bool _isDebugLogEnabled);
     bool DebugLogEnabled();
     void EnableSaveForGame(bool _isSaveForGame);
-    
+
     //Material * GetMaterial(int32 index);
     //StaticMesh * GetStaticMesh(int32 index);
-    
+
     //DataNode * GetNodeByPointer(uint64 pointer);
-    
+
     void SetError(eError error);
     eError GetError();
-    
-    void OptimizeScene(Entity * rootNode);    
-    bool RemoveEmptySceneNodes(Entity * rootNode);
-    bool RemoveEmptyHierarchy(Entity * currentNode);
-	void ConvertShadows(Entity * rootNode);
-    void RebuildTangentSpace(Entity *entity);
-    void ConvertShadowVolumes(Entity * rootNode, NMaterial * shadowMaterialParent);
-    void RemoveDeprecatedMaterialFlags(Entity * rootNode);
-    void ConvertAlphatestValueMaterials(Entity * rootNode);
+
+    void OptimizeScene(Entity* rootNode);
+    bool RemoveEmptySceneNodes(Entity* rootNode);
+    bool RemoveEmptyHierarchy(Entity* currentNode);
+    void RebuildTangentSpace(Entity* entity);
+    void ConvertShadowVolumes(Entity* rootNode, NMaterial* shadowMaterialParent);
+    void RemoveDeprecatedMaterialFlags(Entity* rootNode);
+    void ConvertAlphatestValueMaterials(Entity* rootNode);
     int32 removedNodeCount;
-    	    
-    void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
-    SceneArchive *LoadSceneArchive(const FilePath & filename); //purely load data
-	
+
+    void UpdatePolygonGroupRequestedFormatRecursively(Entity* entity);
+    SceneArchive* LoadSceneArchive(const FilePath& filename); //purely load data
+
 private:
-    static bool ReadHeader(Header& header, File * file);
-    static bool ReadVersionTags(VersionInfo::SceneVersion& version, File * file);
-    void AddToNodeMap(DataNode * node);
+    static bool ReadHeader(Header& header, File* file);
+    static bool ReadVersionTags(VersionInfo::SceneVersion& version, File* file);
+    void AddToNodeMap(DataNode* node);
 
     Header header;
-	
-	struct Descriptor
-	{
-		uint32 size;
-		uint32 fileType; //see enum SceneFileV2::eFileType
-	};
-	Descriptor descriptor;
-	
-   // Vector<StaticMesh*> staticMeshes;
-    
-    bool SaveDataHierarchy(DataNode * node, File * file, int32 level);
-    void LoadDataHierarchy(Scene * scene, DataNode * node, File * file, int32 level);
-    bool SaveDataNode(DataNode * node, File * file);
-    void LoadDataNode(Scene *scene, DataNode * parent, File * file);
-	
-	inline bool IsDataNodeSerializable(DataNode* node)
-	{
-		//VI: runtime nodes (such as ShadowVolume materials are not serializable)
-		return (!node->IsRuntime());
-	}
-	
-    bool SaveHierarchy(Entity * node, File * file, int32 level);
+
+    struct Descriptor
+    {
+        uint32 size;
+        uint32 fileType; //see enum SceneFileV2::eFileType
+    };
+    Descriptor descriptor;
+
+    // Vector<StaticMesh*> staticMeshes;
+
+    bool SaveDataHierarchy(DataNode* node, File* file, int32 level);
+    void LoadDataHierarchy(Scene* scene, DataNode* node, File* file, int32 level);
+    bool SaveDataNode(DataNode* node, File* file);
+    void LoadDataNode(Scene* scene, DataNode* parent, File* file);
+
+    inline bool IsDataNodeSerializable(DataNode* node)
+    {
+        //VI: runtime nodes (such as ShadowVolume materials are not serializable)
+        return (!node->IsRuntime());
+    }
+
+    bool SaveHierarchy(Entity* node, File* file, int32 level);
     void LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
-    Entity * LoadEntity(Scene * scene, KeyedArchive * archive);
-    Entity * LoadLandscape(Scene * scene, KeyedArchive * archive);
-    Entity * LoadCamera(Scene * scene, KeyedArchive * archive);
-    Entity * LoadLight(Scene * scene, KeyedArchive * archive);
+    Entity* LoadEntity(Scene* scene, KeyedArchive* archive);
+    Entity* LoadLandscape(Scene* scene, KeyedArchive* archive);
+    Entity* LoadCamera(Scene* scene, KeyedArchive* archive);
+    Entity* LoadLight(Scene* scene, KeyedArchive* archive);
 
     void ApplyFogQuality();
 
-    bool ReplaceNodeAfterLoad(Entity * node);
+    void WriteDescriptor(File* file, const Descriptor& descriptor) const;
+    void ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
 
-	void ReplaceOldNodes(Entity * currentNode);
-		
-	void WriteDescriptor(File* file, const Descriptor& descriptor) const;
-	void ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
-	
     bool isDebugLogEnabled;
     bool isSaveForGame;
     eError lastError;
-	
-	SerializationContext serializationContext;
+
+    SerializationContext serializationContext;
 };
-  
+
 }; // namespace DAVA
 
 #endif // __DAVAENGINE_SCENEFILEV2_H__
-
-
-
-

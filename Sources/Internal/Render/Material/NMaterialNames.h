@@ -37,18 +37,17 @@ namespace DAVA
 class NMaterialName
 {
 public:
-
-	static const FastName DECAL_ALPHABLEND;
-	static const FastName PIXELLIT_SPECULARMAP_ALPHATEST;
-	static const FastName TEXTURED_ALPHABLEND;
-	static const FastName DECAL_ALPHATEST;
-	static const FastName PIXELLIT_SPECULARMAP_OPAQUE;
+    static const FastName DECAL_ALPHABLEND;
+    static const FastName PIXELLIT_SPECULARMAP_ALPHATEST;
+    static const FastName TEXTURED_ALPHABLEND;
+    static const FastName DECAL_ALPHATEST;
+    static const FastName PIXELLIT_SPECULARMAP_OPAQUE;
     static const FastName TEXTURED_ALPHATEST;
     static const FastName TEXTURED_VERTEXCOLOR_ALPHATEST;
-	static const FastName DECAL_OPAQUE;
+    static const FastName DECAL_OPAQUE;
     static const FastName TEXTURED_OPAQUE;
     static const FastName TEXTURED_VERTEXCOLOR_OPAQUE;
-	static const FastName DETAIL_ALPHABLEND;
+    static const FastName DETAIL_ALPHABLEND;
     static const FastName SHADOWRECT;
     static const FastName TILE_MASK;
     static const FastName DETAIL_ALPHATEST;
@@ -60,9 +59,9 @@ public:
     static const FastName SILHOUETTE;
     static const FastName VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;
     static const FastName SKYOBJECT;
-	static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
-	static const FastName PIXELLIT_ALPHATEST;
-	static const FastName SPEEDTREE_LEAF;
+    static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
+    static const FastName PIXELLIT_ALPHATEST;
+    static const FastName SPEEDTREE_LEAF;
     static const FastName SPEEDTREE_LEAF_ALPHABLEND;
     static const FastName SPHERICLIT_SPEEDTREE_LEAF;
     static const FastName SPHERICLIT_SPEEDTREE_LEAF_ALPHABLEND;
@@ -83,9 +82,9 @@ public:
     static const FastName PIXELLIT_SPECULAR_OPAQUE;
     static const FastName TEXTURE_LIGHTMAP_OPAQUE;
     static const FastName GRASS;
-	
-	static const FastName PARTICLES;
-	static const FastName PARTICLES_FRAMEBLEND;
+
+    static const FastName PARTICLES;
+    static const FastName PARTICLES_FRAMEBLEND;
 
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
@@ -167,6 +166,7 @@ public:
     static const FastName FLAG_WAVE_ANIMATION;
     static const FastName FLAG_FAST_NORMALIZATION;
     static const FastName FLAG_TILED_DECAL_MASK;
+    static const FastName FLAG_TILED_DECAL_ROTATION;
     static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;

@@ -39,11 +39,11 @@
 
 namespace DAVA
 {
-
-class UIStyleSheetPropertyDataBase : 
-    public StaticSingleton<UIStyleSheetPropertyDataBase >
+class UIStyleSheetPropertyDataBase :
+public StaticSingleton<UIStyleSheetPropertyDataBase>
 {
 public:
+    virtual ~UIStyleSheetPropertyDataBase();
     static const int32 STYLE_SHEET_PROPERTY_COUNT = 58;
 
     UIStyleSheetPropertyDataBase();
@@ -72,7 +72,6 @@ private:
 };
 
 typedef Bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;
-
 };
 
 

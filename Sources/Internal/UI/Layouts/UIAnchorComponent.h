@@ -36,17 +36,17 @@ namespace DAVA
 class UIAnchorComponent : public UIComponent
 {
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(ANCHOR_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(ANCHOR_COMPONENT)
 
     UIAnchorComponent();
-    UIAnchorComponent(const UIAnchorComponent &src);
-    
+    UIAnchorComponent(const UIAnchorComponent& src);
+
 protected:
     virtual ~UIAnchorComponent();
-    
+
 private:
-    UIAnchorComponent &operator=(const UIAnchorComponent &) = delete;
-    
+    UIAnchorComponent& operator=(const UIAnchorComponent&) = delete;
+
 public:
     UIAnchorComponent* Clone() const override;
 
@@ -55,40 +55,40 @@ public:
 
     bool IsLeftAnchorEnabled() const;
     void SetLeftAnchorEnabled(bool enabled);
-    
+
     float32 GetLeftAnchor() const;
     void SetLeftAnchor(float32 anchor);
 
     bool IsHCenterAnchorEnabled() const;
     void SetHCenterAnchorEnabled(bool enabled);
-    
+
     float32 GetHCenterAnchor() const;
     void SetHCenterAnchor(float32 anchor);
 
     bool IsRightAnchorEnabled() const;
     void SetRightAnchorEnabled(bool enabled);
-    
+
     float32 GetRightAnchor() const;
     void SetRightAnchor(float32 anchor);
 
     bool IsTopAnchorEnabled() const;
     void SetTopAnchorEnabled(bool enabled);
-    
+
     float32 GetTopAnchor() const;
     void SetTopAnchor(float32 anchor);
 
     bool IsVCenterAnchorEnabled() const;
     void SetVCenterAnchorEnabled(bool enabled);
-    
+
     float32 GetVCenterAnchor() const;
     void SetVCenterAnchor(float32 anchor);
 
     bool IsBottomAnchorEnabled() const;
     void SetBottomAnchorEnabled(bool enabled);
-    
+
     float32 GetBottomAnchor() const;
     void SetBottomAnchor(float32 anchor);
-    
+
     bool IsUseRtl() const;
     void SetUseRtl(bool use);
 
@@ -139,9 +139,8 @@ public:
                          PROPERTY("bottomAnchorEnabled", "Bottom Anchor Enabled", IsBottomAnchorEnabled, SetBottomAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("bottomAnchor", "Bottom Anchor", GetBottomAnchor, SetBottomAnchor, I_SAVE | I_VIEW | I_EDIT)
 
-                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT))
 };
-
 }
 
 

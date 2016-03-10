@@ -22,6 +22,7 @@ using namespace Windows::UI::Core;
 
 static SwapChainPanel ^ m_swapChainPanel = nullptr;
 static ComPtr<ID3D11Device1> m_d3dDevice;
+static ComPtr<IDXGIAdapter> m_dxgiAdapter;
 static ComPtr<ID3D11DeviceContext1> m_d3dContext;
 static ComPtr<ID3D11Debug> m_d3Debug;
 static ComPtr<ID3DUserDefinedAnnotation> m_d3UserAnnotation;
@@ -41,6 +42,8 @@ DirectX::XMFLOAT4X4 m_orientationTransform3D;
 DisplayOrientations m_nativeOrientation;
 DisplayOrientations m_currentOrientation;
 float m_dpi = 1.f;
+
+static bool useSwapchainSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
 
 DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
@@ -305,23 +308,25 @@ void CreateDeviceResources()
     if (device.Get())
     {
         IDXGIDevice* dxgiDevice = NULL;
-        IDXGIAdapter* dxgiAdapter = defAdapter.Get();
+        m_dxgiAdapter = defAdapter.Get();
 
-        if (!dxgiAdapter)
+        if (!m_dxgiAdapter)
         {
             if (SUCCEEDED(device.Get()->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice))))
-                dxgiDevice->GetAdapter(&dxgiAdapter);
+                dxgiDevice->GetAdapter(&m_dxgiAdapter);
         }
 
-        if (dxgiAdapter)
+        if (m_dxgiAdapter)
         {
             DXGI_ADAPTER_DESC desc = { 0 };
 
-            if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
+            if (SUCCEEDED(m_dxgiAdapter->GetDesc(&desc)))
             {
                 char info[128];
 
                 ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
+
+                useSwapchainSizeWorkaround = strstr(info, "AMD Radeon HD") && info[strlen(info) - 1] == 'G';
 
                 DAVA::Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
             }
@@ -365,6 +370,9 @@ void CreateWindowSizeDependentResources()
     m_d3dRenderTargetSize.Width = swapDimensions ? m_backbufferSize.Height : m_backbufferSize.Width;
     m_d3dRenderTargetSize.Height = swapDimensions ? m_backbufferSize.Width : m_backbufferSize.Height;
 
+    uint32 swapchainBufferWidth = lround(m_d3dRenderTargetSize.Width);
+    uint32 swapchainBufferHeight = useSwapchainSizeWorkaround ? lround(m_d3dRenderTargetSize.Height) + 1 : lround(m_d3dRenderTargetSize.Height);
+
     if (m_swapChain != nullptr)
     {
         ID3D11RenderTargetView* view[] = { nullptr };
@@ -381,8 +389,8 @@ void CreateWindowSizeDependentResources()
         // If the swap chain already exists, resize it.
         HRESULT hr = m_swapChain->ResizeBuffers(
         2, // Double-buffered swap chain.
-        lround(m_d3dRenderTargetSize.Width),
-        lround(m_d3dRenderTargetSize.Height),
+        swapchainBufferWidth,
+        swapchainBufferHeight,
         DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
         0);
 
@@ -404,8 +412,8 @@ void CreateWindowSizeDependentResources()
     {
         // Otherwise, create a new one using the same adapter as the existing Direct3D device.
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
-        swapChainDesc.Width = lround(m_d3dRenderTargetSize.Width); // Match the size of the window.
-        swapChainDesc.Height = lround(m_d3dRenderTargetSize.Height);
+        swapChainDesc.Width = swapchainBufferWidth; // Match the size of the window.
+        swapChainDesc.Height = swapchainBufferHeight;
         swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // This is the most common swap chain format.
         swapChainDesc.Stereo = false;
         swapChainDesc.SampleDesc.Count = 1; // Don't use multi-sampling.
@@ -523,8 +531,8 @@ void CreateWindowSizeDependentResources()
     // Create a depth stencil view for use with 3D rendering if needed.
     CD3D11_TEXTURE2D_DESC depthStencilDesc(
     DXGI_FORMAT_D24_UNORM_S8_UINT,
-    lround(m_d3dRenderTargetSize.Width),
-    lround(m_d3dRenderTargetSize.Height),
+    swapchainBufferWidth,
+    swapchainBufferHeight,
     1, // This depth stencil view has only one texture.
     1, // Use a single mipmap level.
     D3D11_BIND_DEPTH_STENCIL);
@@ -741,6 +749,18 @@ void resize_swapchain(int32 width, int32 height)
         _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
         _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
         _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
+    }
+}
+
+void get_device_description(char* dst)
+{
+    if (m_dxgiAdapter)
+    {
+        DXGI_ADAPTER_DESC desc = { 0 };
+        if (SUCCEEDED(m_dxgiAdapter->GetDesc(&desc)))
+        {
+            ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, dst, 128, NULL, NULL);
+        }
     }
 }
 

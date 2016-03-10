@@ -38,22 +38,20 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-
-namespace DAVA 
+namespace DAVA
 {
-
-int Core::Run(int argc, char *argv[], AppHandle handle)
+int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-    DAVA::CoreMacOSPlatformQt * core = new DAVA::CoreMacOSPlatformQt();
+    DAVA::CoreMacOSPlatformQt* core = new DAVA::CoreMacOSPlatformQt();
     core->SetCommandLine(argc, argv);
     core->CreateSingletons();
 
     return 0;
 }
 
-int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
+int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
 {
-    DAVA::CoreMacOSPlatformQt * core = new DAVA::CoreMacOSPlatformQt();
+    DAVA::CoreMacOSPlatformQt* core = new DAVA::CoreMacOSPlatformQt();
     core->SetCommandLine(argc, argv);
     core->EnableConsoleMode();
     core->CreateSingletons();
@@ -82,7 +80,6 @@ void CoreMacOSPlatformQt::Quit()
 {
     QtLayer::Instance()->Quit();
 }
-	
 }
 
 

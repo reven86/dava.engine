@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  *  GameCore.cpp
  *  TemplateProjectMacOS
@@ -38,7 +37,6 @@
 
 #include "GameCore.h"
 
-
 using namespace DAVA;
 
 GameCore::GameCore()
@@ -47,7 +45,6 @@ GameCore::GameCore()
 
 GameCore::~GameCore()
 {
-	
 }
 
 void GameCore::OnAppStarted()
@@ -60,12 +57,11 @@ void GameCore::OnAppFinished()
 
 void GameCore::OnSuspend()
 {
-	//prevent going to suspend
+    //prevent going to suspend
     //ApplicationCore::OnSuspend();
 }
 
 void GameCore::OnBackground()
 {
-	//ApplicationCore::OnBackground();
+    //ApplicationCore::OnBackground();
 }
-

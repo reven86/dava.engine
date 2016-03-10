@@ -41,12 +41,13 @@
 class DistanceSplitterHandle : public QSplitterHandle
 {
 public:
-    DistanceSplitterHandle(Qt::Orientation o, QSplitter *parent) 
+    DistanceSplitterHandle(Qt::Orientation o, QSplitter* parent)
         : QSplitterHandle(o, parent)
-    { }
+    {
+    }
 
 protected:
-    virtual void mouseReleaseEvent(QMouseEvent * e)
+    virtual void mouseReleaseEvent(QMouseEvent* e)
     {
         bool opq = splitter()->opaqueResize();
 
@@ -56,13 +57,13 @@ protected:
     }
 };
 
-
 class DistanceSplitter : public QSplitter
 {
 public:
-    DistanceSplitter(QWidget *parent = 0)
+    DistanceSplitter(QWidget* parent = 0)
         : QSplitter(parent)
-    { }
+    {
+    }
 
 protected:
     virtual QSplitterHandle* createHandle()
@@ -71,12 +72,12 @@ protected:
     }
 };
 
-class DistanceSlider: public QFrame
+class DistanceSlider : public QFrame
 {
     Q_OBJECT
 
 public:
-    DistanceSlider(QWidget *parent = 0);
+    DistanceSlider(QWidget* parent = 0);
     ~DistanceSlider();
 
     void SetLayersCount(int count);
@@ -88,21 +89,21 @@ public:
     void LockDistances(bool lock);
 
 signals:
-    void DistanceChanged(const QVector<int> &changedLayers, bool continious);
-    
+    void DistanceChanged(const QVector<int>& changedLayers, bool continious);
+
 protected slots:
     void SplitterMoved(int pos, int index);
 
 protected:
     int GetScaleSize();
-    
+
 private:
-    QSplitter *splitter;
-    QFrame *frames[DAVA::LodComponent::MAX_LOD_LAYERS];
-    bool locked;
-    
-    int layersCount;
-    
+    QSplitter* splitter;
+    QFrame* frames[DAVA::LodComponent::MAX_LOD_LAYERS];
+    bool locked = false;
+
+    int layersCount = 0;
+
     int stretchSize[DAVA::LodComponent::MAX_LOD_LAYERS];
 };
 

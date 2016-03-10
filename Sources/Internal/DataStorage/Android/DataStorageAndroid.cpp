@@ -35,11 +35,10 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-IDataStorage *DataStorage::Create()
+IDataStorage* DataStorage::Create()
 {
     return new SharedPreferences();
 }
 
 #endif
-
 }

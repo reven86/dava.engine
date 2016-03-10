@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__
-#define	__DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__
+#define __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
@@ -36,7 +36,7 @@
 
 namespace DAVA
 {
-class RenderBatchArray
+class RenderBatchArray : public InspBase
 {
 public:
     enum
@@ -58,13 +58,14 @@ public:
     inline uint32 GetRenderBatchCount() const;
     inline RenderBatch* Get(uint32 index) const;
 
-    void Sort(Camera * camera);
+    void Sort(Camera* camera);
     inline void SetSortingFlags(uint32 flags);
 
 private:
     Vector<RenderBatch*> renderBatchArray;
     uint32 sortFlags;
-    static bool MaterialCompareFunction(const RenderBatch * a, const RenderBatch * b);
+    static bool MaterialCompareFunction(const RenderBatch* a, const RenderBatch* b);
+
 public:
     INTROSPECTION(RenderBatchArray,
                   COLLECTION(renderBatchArray, "Render Batch Array", I_EDIT));
@@ -97,5 +98,4 @@ inline RenderBatch* RenderBatchArray::Get(uint32 index) const
 
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__ */

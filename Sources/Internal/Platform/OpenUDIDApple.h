@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 //
 //  OpenUDID.h
 //  openudid
@@ -88,22 +87,22 @@
 //    NSString* openUDID = [OpenUDID value];
 //
 
-#define kOpenUDIDErrorNone          0
-#define kOpenUDIDErrorOptedOut      1
-#define kOpenUDIDErrorCompromised   2
+#define kOpenUDIDErrorNone 0
+#define kOpenUDIDErrorOptedOut 1
+#define kOpenUDIDErrorCompromised 2
 
-static NSString * const kOpenUDIDDomain = @"org.OpenUDID";
+static NSString* const kOpenUDIDDomain = @"org.OpenUDID";
 
-@interface OpenUDID : NSObject {
+@interface OpenUDID : NSObject
+{
 }
-- (NSString*) value;
-- (NSString*) valueWithError:(NSError**)error;
-- (void) setOptOut:(BOOL)optOutValue;
+- (NSString*)value;
+- (NSString*)valueWithError:(NSError**)error;
+- (void)setOptOut:(BOOL)optOutValue;
 
-- (void) setDict:(id)dict forPasteboard:(id)pboard;
-- (id) getDataForPasteboard:(id)pboard;
-- (id) getPasteboardWithName:(NSString*)name shouldCreate:(BOOL)create setPersistent:(BOOL)persistent ;
-
+- (void)setDict:(id)dict forPasteboard:(id)pboard;
+- (id)getDataForPasteboard:(id)pboard;
+- (id)getPasteboardWithName:(NSString*)name shouldCreate:(BOOL)create setPersistent:(BOOL)persistent;
 
 @end
 

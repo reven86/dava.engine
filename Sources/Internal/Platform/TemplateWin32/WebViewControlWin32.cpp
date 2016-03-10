@@ -26,17 +26,16 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-// WARN first include win32 headers'ATL::CCRTAllocator::free' : 
+// WARN first include win32 headers'ATL::CCRTAllocator::free' :
 // recursive on all control paths, function will cause runtime stack overflow
 // and only then include DAVA includes because of free, malloc redefine error
 
 #include "Base/Platform.h"
 
-#if defined __DAVAENGINE_WIN32__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#if defined __DAVAENGINE_WIN32__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #pragma warning(push)
-#pragma warning(disable: 4717)
+#pragma warning(disable : 4717)
 #include <atlbase.h>
 #pragma warning(pop)
 #include <atlcom.h>
@@ -58,34 +57,54 @@
 using namespace DAVA;
 
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
-_ATL_FUNC_INFO BeforeNavigate2Info = {CC_STDCALL, VT_EMPTY, 7, {VT_DISPATCH,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_BOOL}};
+_ATL_FUNC_INFO BeforeNavigate2Info = { CC_STDCALL, VT_EMPTY, 7, { VT_DISPATCH, VT_BYREF | VT_VARIANT, VT_BYREF | VT_VARIANT, VT_BYREF | VT_VARIANT, VT_BYREF | VT_VARIANT, VT_BYREF | VT_VARIANT, VT_BYREF | VT_BOOL } };
 
 extern _ATL_FUNC_INFO DocumentCompleteInfo;
-_ATL_FUNC_INFO DocumentCompleteInfo =  {CC_STDCALL,VT_EMPTY,2,{VT_DISPATCH,VT_BYREF | VT_VARIANT}};
-namespace DAVA 
+_ATL_FUNC_INFO DocumentCompleteInfo = { CC_STDCALL, VT_EMPTY, 2, { VT_DISPATCH, VT_BYREF | VT_VARIANT } };
+namespace DAVA
 {
-
 template <class T>
-class ScopedComPtr {
+class ScopedComPtr
+{
 protected:
-    T *ptr;
+    T* ptr;
+
 public:
-    ScopedComPtr() : ptr(NULL) { }
-    explicit ScopedComPtr(T *ptr) : ptr(ptr) { }
-    ~ScopedComPtr() {
+    ScopedComPtr()
+        : ptr(NULL)
+    {
+    }
+    explicit ScopedComPtr(T* ptr)
+        : ptr(ptr)
+    {
+    }
+    ~ScopedComPtr()
+    {
         if (ptr)
             ptr->Release();
     }
-    bool Create(const CLSID clsid) {
+    bool Create(const CLSID clsid)
+    {
         CrashIf(ptr);
-        if (ptr) return false;
+        if (ptr)
+            return false;
         HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_ALL, IID_PPV_ARGS(&ptr));
         return SUCCEEDED(hr);
     }
-    operator T*() const { return ptr; }
-    T** operator&() { return &ptr; }
-    T* operator->() const { return ptr; }
-    T* operator=(T* newPtr) {
+    operator T*() const
+    {
+        return ptr;
+    }
+    T** operator&()
+    {
+        return &ptr;
+    }
+    T* operator->() const
+    {
+        return ptr;
+    }
+    T* operator=(T* newPtr)
+    {
         if (ptr)
             ptr->Release();
         return (ptr = newPtr);
@@ -93,15 +112,21 @@ public:
 };
 
 template <class T>
-class ScopedComQIPtr : public ScopedComPtr<T> {
+class ScopedComQIPtr : public ScopedComPtr<T>
+{
 public:
-    ScopedComQIPtr() : ScopedComPtr() { }
-    explicit ScopedComQIPtr(IUnknown *unk) {
+    ScopedComQIPtr()
+        : ScopedComPtr()
+    {
+    }
+    explicit ScopedComQIPtr(IUnknown* unk)
+    {
         HRESULT hr = unk->QueryInterface(&ptr);
         if (FAILED(hr))
             ptr = NULL;
     }
-    T* operator=(IUnknown *newUnk) {
+    T* operator=(IUnknown* newUnk)
+    {
         if (ptr)
             ptr->Release();
         HRESULT hr = newUnk->QueryInterface(&ptr);
@@ -114,11 +139,12 @@ public:
 class HtmlMoniker : public IMoniker
 {
 public:
-    HtmlMoniker() :
-        refCount(1),
+    HtmlMoniker()
+        :
+        refCount(1)
+        ,
         htmlStream(NULL)
     {
-
     }
 
     virtual ~HtmlMoniker()
@@ -141,10 +167,11 @@ public:
         baseUrl = _baseUrl;
         return S_OK;
     }
+
 public:
 #pragma warning(push, 0)
     // IUnknown
-    STDMETHODIMP QueryInterface(REFIID riid, void **ppvObject)
+    STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject)
     {
         static const QITAB qit[] = {
             QITABENT(HtmlMoniker, IMoniker),
@@ -171,14 +198,14 @@ public:
     }
 
     // IMoniker
-    STDMETHODIMP BindToStorage(IBindCtx *pbc, IMoniker *pmkToLeft, REFIID riid, void **ppvObj)
+    STDMETHODIMP BindToStorage(IBindCtx* pbc, IMoniker* pmkToLeft, REFIID riid, void** ppvObj)
     {
-        LARGE_INTEGER seek = {0};
+        LARGE_INTEGER seek = { 0 };
         htmlStream->Seek(seek, STREAM_SEEK_SET, NULL);
         return htmlStream->QueryInterface(riid, ppvObj);
     }
 
-    STDMETHODIMP GetDisplayName(IBindCtx *pbc, IMoniker *pmkToLeft, LPOLESTR *ppszDisplayName)
+    STDMETHODIMP GetDisplayName(IBindCtx* pbc, IMoniker* pmkToLeft, LPOLESTR* ppszDisplayName)
     {
         if (!ppszDisplayName)
             return E_POINTER;
@@ -189,21 +216,58 @@ public:
         return S_OK;
     }
 
-    STDMETHODIMP BindToObject(IBindCtx *pbc, IMoniker *pmkToLeft, REFIID riidResult, void **ppvResult) { return E_NOTIMPL; }
-    STDMETHODIMP Reduce(IBindCtx *pbc, DWORD dwReduceHowFar, IMoniker **ppmkToLeft, IMoniker **ppmkReduced) { return E_NOTIMPL; }
-    STDMETHODIMP ComposeWith(IMoniker *pmkRight, BOOL fOnlyIfNotGeneric, IMoniker **ppmkComposite) { return E_NOTIMPL; }
-    STDMETHODIMP Enum(BOOL fForward, IEnumMoniker **ppenumMoniker) { return E_NOTIMPL; }
-    STDMETHODIMP IsEqual(IMoniker *pmkOtherMoniker) { return E_NOTIMPL; }
-    STDMETHODIMP Hash(DWORD *pdwHash) { return E_NOTIMPL; }
-    STDMETHODIMP IsRunning(IBindCtx *pbc, IMoniker *pmkToLeft, IMoniker *pmkNewlyRunning) { return E_NOTIMPL; }
-    STDMETHODIMP GetTimeOfLastChange(IBindCtx *pbc, IMoniker *pmkToLeft, FILETIME *pFileTime) { return E_NOTIMPL; }
-    STDMETHODIMP Inverse(IMoniker **ppmk) { return E_NOTIMPL; }
-    STDMETHODIMP CommonPrefixWith(IMoniker *pmkOther, IMoniker **ppmkPrefix) { return E_NOTIMPL; }
-    STDMETHODIMP RelativePathTo(IMoniker *pmkOther, IMoniker **ppmkRelPath) { return E_NOTIMPL; }
-    STDMETHODIMP ParseDisplayName(IBindCtx *pbc, IMoniker *pmkToLeft,LPOLESTR pszDisplayName,
-        ULONG *pchEaten, IMoniker **ppmkOut) { return E_NOTIMPL; }
+    STDMETHODIMP BindToObject(IBindCtx* pbc, IMoniker* pmkToLeft, REFIID riidResult, void** ppvResult)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP Reduce(IBindCtx* pbc, DWORD dwReduceHowFar, IMoniker** ppmkToLeft, IMoniker** ppmkReduced)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP ComposeWith(IMoniker* pmkRight, BOOL fOnlyIfNotGeneric, IMoniker** ppmkComposite)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP Enum(BOOL fForward, IEnumMoniker** ppenumMoniker)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP IsEqual(IMoniker* pmkOtherMoniker)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP Hash(DWORD* pdwHash)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP IsRunning(IBindCtx* pbc, IMoniker* pmkToLeft, IMoniker* pmkNewlyRunning)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP GetTimeOfLastChange(IBindCtx* pbc, IMoniker* pmkToLeft, FILETIME* pFileTime)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP Inverse(IMoniker** ppmk)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP CommonPrefixWith(IMoniker* pmkOther, IMoniker** ppmkPrefix)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP RelativePathTo(IMoniker* pmkOther, IMoniker** ppmkRelPath)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP ParseDisplayName(IBindCtx* pbc, IMoniker* pmkToLeft, LPOLESTR pszDisplayName,
+                                  ULONG* pchEaten, IMoniker** ppmkOut)
+    {
+        return E_NOTIMPL;
+    }
 
-    STDMETHODIMP IsSystemMoniker(DWORD *pdwMksys) {
+    STDMETHODIMP IsSystemMoniker(DWORD* pdwMksys)
+    {
         if (!pdwMksys)
             return E_POINTER;
         *pdwMksys = MKSYS_NONE;
@@ -211,16 +275,31 @@ public:
     }
 
     // IPersistStream methods
-    STDMETHODIMP Save(IStream *pStm, BOOL fClearDirty)  { return E_NOTIMPL; }
-    STDMETHODIMP IsDirty() { return E_NOTIMPL; }
-    STDMETHODIMP Load(IStream *pStm) { return E_NOTIMPL; }
-    STDMETHODIMP GetSizeMax(ULARGE_INTEGER *pcbSize) { return E_NOTIMPL; }
+    STDMETHODIMP Save(IStream* pStm, BOOL fClearDirty)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP IsDirty()
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP Load(IStream* pStm)
+    {
+        return E_NOTIMPL;
+    }
+    STDMETHODIMP GetSizeMax(ULARGE_INTEGER* pcbSize)
+    {
+        return E_NOTIMPL;
+    }
 
     // IPersist
-    STDMETHODIMP GetClassID(CLSID *pClassID) { return E_NOTIMPL; }
+    STDMETHODIMP GetClassID(CLSID* pClassID)
+    {
+        return E_NOTIMPL;
+    }
 
 private:
-    LPOLESTR OleStrDup(const WCHAR *s, int len)
+    LPOLESTR OleStrDup(const WCHAR* s, int len)
     {
         size_t cb = sizeof(WCHAR) * (len + 1);
         LPOLESTR ret = (LPOLESTR)CoTaskMemAlloc(cb);
@@ -228,12 +307,12 @@ private:
         return ret;
     }
 
-    IStream *CreateStreamFromData(const void *data, size_t len)
+    IStream* CreateStreamFromData(const void* data, size_t len)
     {
         if (!data)
             return NULL;
 
-        ScopedComPtr< IStream > stream;
+        ScopedComPtr<IStream> stream;
         if (FAILED(CreateStreamOnHGlobal(NULL, TRUE, &stream)))
             return NULL;
 
@@ -249,106 +328,113 @@ private:
         return stream;
     }
 
-    LONG                refCount;
-    String        htmlData;
-    IStream *           htmlStream;
-    WideString    baseUrl;
+    LONG refCount;
+    String htmlData;
+    IStream* htmlStream;
+    WideString baseUrl;
 };
 
 struct EventSink : public IDispEventImpl<1, EventSink, &DIID_DWebBrowserEvents2>
 {
 private:
-	IUIWebViewDelegate* delegate;
-	UIWebView* webView;
+    IUIWebViewDelegate* delegate;
+    UIWebView* webView;
     WebBrowserContainer& container;
+
 public:
-    EventSink(WebBrowserContainer& webContainer) :
-        delegate(nullptr),
-        webView(nullptr),
+    EventSink(WebBrowserContainer& webContainer)
+        :
+        delegate(nullptr)
+        ,
+        webView(nullptr)
+        ,
         container(webContainer)
-	{
-	};
+        {
+        };
     virtual ~EventSink(){};
 
-	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
-	{
-		if (delegate && webView)
-		{
-			this->delegate = delegate;
-			this->webView = webView;
-		}
-	}
+    void SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView)
+    {
+        if (delegate && webView)
+        {
+            this->delegate = delegate;
+            this->webView = webView;
+        }
+    }
     void SetWebView(UIWebView& webView)
     {
         this->webView = &webView;
     }
 
-	void  __stdcall DocumentComplete(IDispatch* pDisp, VARIANT* URL)
-	{
-		if (delegate && webView)
-		{
+    void __stdcall DocumentComplete(IDispatch* pDisp, VARIANT* URL)
+    {
+        if (delegate && webView)
+        {
             if (!container.DoOpenBuffer())
                 delegate->PageLoaded(webView);
-		}
+        }
 
         if (webView && webView->IsRenderToTexture())
         {
             container.RenderToTextureAndSetAsBackgroundSpriteToControl(*webView);
         }
-	}
+    }
 
-	void __stdcall BeforeNavigate2(IDispatch* pDisp, VARIANT* URL, VARIANT* Flags,
-								   VARIANT* TargetFrameName, VARIANT* PostData,
-								   VARIANT* Headers, VARIANT_BOOL* Cancel)
-	{
-		bool process = true;
+    void __stdcall BeforeNavigate2(IDispatch* pDisp, VARIANT* URL, VARIANT* Flags,
+                                   VARIANT* TargetFrameName, VARIANT* PostData,
+                                   VARIANT* Headers, VARIANT_BOOL* Cancel)
+    {
+        bool process = true;
 
-		if (delegate && webView)
-		{
-			BSTR bstr = V_BSTR(URL);
-			int32 len = SysStringLen(bstr) + 1;
-			char* str = new char[len];
-			WideCharToMultiByte(CP_ACP, 0, bstr, -1, str, len, NULL, NULL);
-			String s = str;
-			delete[] str;
-			bool isRedirectedByMouseClick  = Flags->intVal == navHyperlink ;
-			IUIWebViewDelegate::eAction action = delegate->URLChanged(webView, s, isRedirectedByMouseClick);
+        if (delegate && webView)
+        {
+            BSTR bstr = V_BSTR(URL);
+            int32 len = SysStringLen(bstr) + 1;
+            char* str = new char[len];
+            WideCharToMultiByte(CP_ACP, 0, bstr, -1, str, len, NULL, NULL);
+            String s = str;
+            delete[] str;
+            bool isRedirectedByMouseClick = Flags->intVal == navHyperlink;
+            IUIWebViewDelegate::eAction action = delegate->URLChanged(webView, s, isRedirectedByMouseClick);
 
-			switch (action)
-			{
-				case IUIWebViewDelegate::PROCESS_IN_WEBVIEW:
-					Logger::FrameworkDebug("PROCESS_IN_WEBVIEW");
-					break;
+            switch (action)
+            {
+            case IUIWebViewDelegate::PROCESS_IN_WEBVIEW:
+                Logger::FrameworkDebug("PROCESS_IN_WEBVIEW");
+                break;
 
-				case IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
-					Logger::FrameworkDebug("PROCESS_IN_SYSTEM_BROWSER");
-					process = false;
-					ShellExecute(NULL, L"open", bstr, NULL, NULL, SW_SHOWNORMAL);
-					break;
+            case IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
+                Logger::FrameworkDebug("PROCESS_IN_SYSTEM_BROWSER");
+                process = false;
+                ShellExecute(NULL, L"open", bstr, NULL, NULL, SW_SHOWNORMAL);
+                break;
 
-				case IUIWebViewDelegate::NO_PROCESS:
-					Logger::FrameworkDebug("NO_PROCESS");
+            case IUIWebViewDelegate::NO_PROCESS:
+                Logger::FrameworkDebug("NO_PROCESS");
 
-				default:
-					process = false;
-					break;
-			}
-		}
+            default:
+                process = false;
+                break;
+            }
+        }
 
-		*Cancel = process ? VARIANT_FALSE : VARIANT_TRUE;
-	}
+        *Cancel = process ? VARIANT_FALSE : VARIANT_TRUE;
+    }
 
-	BEGIN_SINK_MAP(EventSink)
-		SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2, BeforeNavigate2, &BeforeNavigate2Info)
-		SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, DocumentComplete, &DocumentCompleteInfo)
-	END_SINK_MAP()
+    BEGIN_SINK_MAP(EventSink)
+    SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2, BeforeNavigate2, &BeforeNavigate2Info)
+    SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, DocumentComplete, &DocumentCompleteInfo)
+    END_SINK_MAP()
 };
 
-
-WebBrowserContainer::WebBrowserContainer() :
-	hwnd(0),
-	webBrowser(nullptr),
-    sink(nullptr),
+WebBrowserContainer::WebBrowserContainer()
+    :
+    hwnd(0)
+    ,
+    webBrowser(nullptr)
+    ,
+    sink(nullptr)
+    ,
     openFromBufferQueued(false)
 {
 }
@@ -356,21 +442,21 @@ WebBrowserContainer::WebBrowserContainer() :
 WebBrowserContainer::~WebBrowserContainer()
 {
     DVASSERT(sink);
-	sink->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
-	delete sink;
+    sink->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
+    delete sink;
 
     SafeRelease(webBrowser);
 }
 
-void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, 
-    UIWebView* webView)
+void WebBrowserContainer::SetDelegate(IUIWebViewDelegate* delegate,
+                                      UIWebView* webView)
 {
     DVASSERT(sink);
-	sink->SetDelegate(delegate, webView);
+    sink->SetDelegate(delegate, webView);
 }
 
 void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
-    UIWebView& control)
+UIWebView& control)
 {
     // Update the browser window according to the holder window.
     RECT rect = { 0 };
@@ -397,8 +483,8 @@ void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
     }
 
     CComPtr<IHTMLDocument3> spDocument3;
-    hr = pDispatch->QueryInterface(IID_IHTMLDocument3, 
-        reinterpret_cast<void**>(&spDocument3));
+    hr = pDispatch->QueryInterface(IID_IHTMLDocument3,
+                                   reinterpret_cast<void**>(&spDocument3));
     if (FAILED(hr))
     {
         Logger::Error("failed get ole IHTMLDocument3 interface");
@@ -409,8 +495,8 @@ void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
 
     // This used to get the interface from the m_pWebBrowser but that seems
     // to be an undocumented feature, so we get it from the Document instead.
-    hr = spDocument3->QueryInterface(IID_IViewObject2, 
-        reinterpret_cast<void**>(&spViewObject));
+    hr = spDocument3->QueryInterface(IID_IViewObject2,
+                                     reinterpret_cast<void**>(&spViewObject));
     if (FAILED(hr))
     {
         Logger::Error("failed get ole IViewObject2 interface");
@@ -425,21 +511,21 @@ void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
 
         HDC imgDc = image.GetDC();
         hr = spViewObject->Draw(DVASPECT_CONTENT, -1, nullptr, nullptr, imgDc,
-            imgDc, &rcBounds, nullptr, nullptr, 0);
+                                imgDc, &rcBounds, nullptr, nullptr, 0);
         image.ReleaseDC();
 
         DVASSERT(image.GetPitch() < 0);
         DVASSERT(image.GetPitch() * -1 == imageWidth * 3); // RGB
 
         uint8* rawData = reinterpret_cast<uint8*>(
-            image.GetPixelAddress(0, imageHeight - 1));
+        image.GetPixelAddress(0, imageHeight - 1));
         {
             Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight,
-                FORMAT_BGR888, rawData);
+                                                    FORMAT_BGR888, rawData);
             DVASSERT(imageBGR);
             {
                 Image* imageRGB = Image::Create(imageWidth, imageHeight,
-                    FORMAT_RGB888);
+                                                FORMAT_RGB888);
                 DVASSERT(imageRGB);
 
                 ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
@@ -463,162 +549,161 @@ void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
 
 bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
 {
-	hwnd = parentWindow;
+    hwnd = parentWindow;
 
-	IOleObject* oleObject = NULL;
-	HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject, (void**)&oleObject);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebBrowserContainer::Inititalize(), CoCreateInstance(CLSID_WebBrowser) failed!, error code %i", hRes);
-		return false;
-	}
+    IOleObject* oleObject = NULL;
+    HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject, (void**)&oleObject);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebBrowserContainer::Inititalize(), CoCreateInstance(CLSID_WebBrowser) failed!, error code %i", hRes);
+        return false;
+    }
 
-	hRes = oleObject->SetClientSite(this);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebBrowserContainer::Inititalize(), IOleObject::SetClientSite() failed!, error code %i", hRes);
-		oleObject->Release();
-		return false;
-	}
+    hRes = oleObject->SetClientSite(this);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebBrowserContainer::Inititalize(), IOleObject::SetClientSite() failed!, error code %i", hRes);
+        oleObject->Release();
+        return false;
+    }
 
-	// Activating the container.
-	RECT rect = {0};
-	GetClientRect(hwnd, &rect);
-	hRes = oleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, hwnd, &rect);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebBrowserContainer::InititalizeBrowserContainer(), IOleObject::DoVerb() failed!, error code %i", hRes);
-		oleObject->Release();
-		return false;
-	}
+    // Activating the container.
+    RECT rect = { 0 };
+    GetClientRect(hwnd, &rect);
+    hRes = oleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, hwnd, &rect);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebBrowserContainer::InititalizeBrowserContainer(), IOleObject::DoVerb() failed!, error code %i", hRes);
+        oleObject->Release();
+        return false;
+    }
 
-	// Prepare the browser itself.
-	hRes = oleObject->QueryInterface(IID_IWebBrowser2, (void**)&webBrowser);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebViewControl::InititalizeBrowserContainer(), IOleObject::QueryInterface(IID_IWebBrowser2) failed!, error code %i", hRes);
-		oleObject->Release();
-		return false;
-	}
+    // Prepare the browser itself.
+    hRes = oleObject->QueryInterface(IID_IWebBrowser2, (void**)&webBrowser);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebViewControl::InititalizeBrowserContainer(), IOleObject::QueryInterface(IID_IWebBrowser2) failed!, error code %i", hRes);
+        oleObject->Release();
+        return false;
+    }
 
     DVASSERT(nullptr == sink);
-	sink = new EventSink(*this);
+    sink = new EventSink(*this);
     sink->SetWebView(control);
-	hRes = sink->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebViewControl::InititalizeBrowserContainer(), EventSink::DispEventAdvise(&DIID_DWebBrowserEvents2) failed!, error code %i", hRes);
-		return false;
-	}
+    hRes = sink->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebViewControl::InititalizeBrowserContainer(), EventSink::DispEventAdvise(&DIID_DWebBrowserEvents2) failed!, error code %i", hRes);
+        return false;
+    }
 
-	// Initialization is OK.
-	oleObject->Release();
-	return true;
+    // Initialization is OK.
+    oleObject->Release();
+    return true;
 }
 
 HRESULT __stdcall WebBrowserContainer::QueryInterface(REFIID riid, void** ppvObject)
 {
-	if( !ppvObject )
-	{
-		return E_POINTER;
-	}
+    if (!ppvObject)
+    {
+        return E_POINTER;
+    }
 
-	if( riid==IID_IUnknown || riid==IID_IOleWindow || riid==IID_IOleInPlaceSite )
-	{
-		return *ppvObject = (void*)static_cast<IOleInPlaceSite*>(this), S_OK;
-	}
+    if (riid == IID_IUnknown || riid == IID_IOleWindow || riid == IID_IOleInPlaceSite)
+    {
+        return * ppvObject = (void*)static_cast<IOleInPlaceSite*>(this), S_OK;
+    }
 
-	if( riid==IID_IOleClientSite )
-	{
-		return *ppvObject = (void*)static_cast<IOleClientSite*>(this), S_OK;
-	}
+    if (riid == IID_IOleClientSite)
+    {
+        return * ppvObject = (void*)static_cast<IOleClientSite*>(this), S_OK;
+    }
 
-	*ppvObject = NULL;
-	return E_NOINTERFACE;
+    *ppvObject = NULL;
+    return E_NOINTERFACE;
 }
 
-HRESULT __stdcall WebBrowserContainer::GetWindow(HWND *phwnd)
+HRESULT __stdcall WebBrowserContainer::GetWindow(HWND* phwnd)
 {
-	if (!phwnd)
-	{
-		return E_INVALIDARG;
-	}
+    if (!phwnd)
+    {
+        return E_INVALIDARG;
+    }
 
-	*phwnd = this->hwnd;
-	return S_OK;
+    *phwnd = this->hwnd;
+    return S_OK;
 }
 
-HRESULT __stdcall WebBrowserContainer::GetWindowContext( IOleInPlaceFrame **ppFrame, IOleInPlaceUIWindow **ppDoc,
-		LPRECT lprcPosRect, LPRECT lprcClipRect, LPOLEINPLACEFRAMEINFO lpFrameInfo)
+HRESULT __stdcall WebBrowserContainer::GetWindowContext(IOleInPlaceFrame** ppFrame, IOleInPlaceUIWindow** ppDoc,
+                                                        LPRECT lprcPosRect, LPRECT lprcClipRect, LPOLEINPLACEFRAMEINFO lpFrameInfo)
 {
-	if( !(ppFrame && ppDoc && lprcPosRect && lprcClipRect && lpFrameInfo) )
-	{
-		return E_INVALIDARG;
-	}
+    if (!(ppFrame && ppDoc && lprcPosRect && lprcClipRect && lpFrameInfo))
+    {
+        return E_INVALIDARG;
+    }
 
-	*ppFrame = NULL;
-	*ppDoc = NULL;
+    *ppFrame = NULL;
+    *ppDoc = NULL;
 
-	GetClientRect( this->hwnd, lprcPosRect );
-	GetClientRect( this->hwnd, lprcClipRect );
+    GetClientRect(this->hwnd, lprcPosRect);
+    GetClientRect(this->hwnd, lprcClipRect);
 
-	lpFrameInfo->fMDIApp = false;
-	lpFrameInfo->hwndFrame = this->hwnd;
-	lpFrameInfo->haccel = 0;
-	lpFrameInfo->cAccelEntries = 0;
+    lpFrameInfo->fMDIApp = false;
+    lpFrameInfo->hwndFrame = this->hwnd;
+    lpFrameInfo->haccel = 0;
+    lpFrameInfo->cAccelEntries = 0;
 
-	return S_OK;
+    return S_OK;
 }
 
 bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 {
-	if (!webBrowser)
-	{
-		return false;
-	}
+    if (!webBrowser)
+    {
+        return false;
+    }
 
     openFromBufferQueued = false;
     bufferToOpen = "";
 
-	BSTR url = SysAllocString(urlToOpen);
-	VARIANT empty = {0};
-	VariantInit(&empty);
+    BSTR url = SysAllocString(urlToOpen);
+    VARIANT empty = { 0 };
+    VariantInit(&empty);
 
-	webBrowser->Navigate(url, &empty, &empty, &empty, &empty);
-	SysFreeString(url);
+    webBrowser->Navigate(url, &empty, &empty, &empty, &empty);
+    SysFreeString(url);
 
-	return true;
+    return true;
 }
 
 bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 {
     bool bResult = false;
 
-	if (!webBrowser || !pszHTMLContent)
-	{
-		return false;
-	}
-	// Initialize html document
-	webBrowser->Navigate(L"about:blank", nullptr, nullptr, nullptr, nullptr);
+    if (!webBrowser || !pszHTMLContent)
+    {
+        return false;
+    }
+    // Initialize html document
+    webBrowser->Navigate(L"about:blank", nullptr, nullptr, nullptr, nullptr);
 
     size_t len = ::_tcslen(pszHTMLContent) + 1;
-	// allocate global memory to copy the HTML content to
+    // allocate global memory to copy the HTML content to
     HGLOBAL hHTMLContent = ::GlobalAlloc(GPTR, len * sizeof(TCHAR));
     if (!hHTMLContent)
     {
         return false;
     }
-	::_tcscpy( static_cast<TCHAR *>(hHTMLContent), pszHTMLContent );
+    ::_tcscpy(static_cast<TCHAR*>(hHTMLContent), pszHTMLContent);
 
     CComPtr<IStream> pMemoryStream;
-	// create a stream object based on the HTML content
-    HRESULT hr = ::CreateStreamOnHGlobal(hHTMLContent, 
-        FALSE, // delete global memory on release 
-        &pMemoryStream);
+    // create a stream object based on the HTML content
+    HRESULT hr = ::CreateStreamOnHGlobal(hHTMLContent,
+                                         FALSE, // delete global memory on release
+                                         &pMemoryStream);
 
-	if (SUCCEEDED(hr))
-	{
-
+    if (SUCCEEDED(hr))
+    {
         {
             CComPtr<IDispatch> pWebDocument;
 
@@ -632,7 +717,7 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
             CComPtr<IPersistStreamInit> pDocumentStream;
             // request the IPersistStreamInit interface
             hr = pWebDocument->QueryInterface(IID_IPersistStreamInit,
-                reinterpret_cast<void **>(&pDocumentStream));
+                                              reinterpret_cast<void**>(&pDocumentStream));
 
             if (SUCCEEDED(hr))
             {
@@ -652,230 +737,233 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
             }
         }
         GlobalFree(hHTMLContent);
-	}
+    }
 
-	return bResult;
+    return bResult;
 }
 
 String WebBrowserContainer::GetCookie(const String& targetUrl, const String& name)
 {
-	if (!webBrowser)
-	{
-		return String();
-	}
+    if (!webBrowser)
+    {
+        return String();
+    }
 
-	LPTSTR lpszData = nullptr;   // buffer to hold the cookie data
-	DWORD dwSize = 4096; // Initial size of buffer		
-	String retCookie;
+    LPTSTR lpszData = nullptr; // buffer to hold the cookie data
+    DWORD dwSize = 4096; // Initial size of buffer
+    String retCookie;
 
-	if (GetInternetCookies(targetUrl, name, lpszData, dwSize))
-	{
-		retCookie = WStringToString(lpszData);
+    if (GetInternetCookies(targetUrl, name, lpszData, dwSize))
+    {
+        retCookie = WStringToString(lpszData);
 
-		Vector<String> cookie;
-		Split(retCookie, "=", cookie);
-		// Get only cookie value
-		if (cookie.size() == 2)
-		{
-			retCookie = cookie[1];
-		}
-	}
-	else
-	{
-		delete [] lpszData;
-	}
+        Vector<String> cookie;
+        Split(retCookie, "=", cookie);
+        // Get only cookie value
+        if (cookie.size() == 2)
+        {
+            retCookie = cookie[1];
+        }
+    }
+    else
+    {
+        delete[] lpszData;
+    }
 
-	return retCookie;
+    return retCookie;
 }
 
 Map<String, String> WebBrowserContainer::GetCookies(const String& targetUrl)
 {
-	if (!webBrowser)
-	{
-		return Map<String, String>();
-	}
+    if (!webBrowser)
+    {
+        return Map<String, String>();
+    }
 
-	LPTSTR lpszData = nullptr;   // buffer to hold the cookie data
-	DWORD dwSize = 4096; // Initial size of buffer
-	Map<String, String> cookiesMap;
+    LPTSTR lpszData = nullptr; // buffer to hold the cookie data
+    DWORD dwSize = 4096; // Initial size of buffer
+    Map<String, String> cookiesMap;
 
-	if (GetInternetCookies(targetUrl, "", lpszData, dwSize))
-	{
-		String cookiesString = WStringToString(lpszData);
-		// Split cookies string into vector - each value corresponds to one cookie name-value pair
-		Vector<String> cookiesVector;
-		Split(cookiesString, ";", cookiesVector);
+    if (GetInternetCookies(targetUrl, "", lpszData, dwSize))
+    {
+        String cookiesString = WStringToString(lpszData);
+        // Split cookies string into vector - each value corresponds to one cookie name-value pair
+        Vector<String> cookiesVector;
+        Split(cookiesString, ";", cookiesVector);
 
-		for (uint32 i = 0; i < (int32)cookiesVector.size(); ++i)
-		{
-			Vector<String> cookie;
-			Split(cookiesVector[i], "=", cookie);
-			// Add cookie to resulting map
-			if (cookie.size() == 2)
-			{
-				String cookieName = cookie[0];
-				// Remove all spaces in cookie name
-				cookieName.erase(std::remove(cookieName.begin(), cookieName.end(), ' '), cookieName.end());
-				cookiesMap[cookieName] = cookie[1];
-			}
-		}
-	}
-	else
-	{
-		delete [] lpszData;
-	}
+        for (uint32 i = 0; i < (int32)cookiesVector.size(); ++i)
+        {
+            Vector<String> cookie;
+            Split(cookiesVector[i], "=", cookie);
+            // Add cookie to resulting map
+            if (cookie.size() == 2)
+            {
+                String cookieName = cookie[0];
+                // Remove all spaces in cookie name
+                cookieName.erase(std::remove(cookieName.begin(), cookieName.end(), ' '), cookieName.end());
+                cookiesMap[cookieName] = cookie[1];
+            }
+        }
+    }
+    else
+    {
+        delete[] lpszData;
+    }
 
-	return cookiesMap;
+    return cookiesMap;
 }
 
-bool WebBrowserContainer::GetInternetCookies(const String& targetUrl, const String& name, LPTSTR &lpszData, DWORD &dwSize)
+bool WebBrowserContainer::GetInternetCookies(const String& targetUrl, const String& name, LPTSTR& lpszData, DWORD& dwSize)
 {
-	// Setup initial cache entry size
-	lpszData = new TCHAR[dwSize];
+    // Setup initial cache entry size
+    lpszData = new TCHAR[dwSize];
 
-	BOOL bResult = InternetGetCookieEx(StringToWString(targetUrl).c_str(), 
-											name.empty() ? NULL : StringToWString(name).c_str(),
-											lpszData,
-											&dwSize,
-											INTERNET_COOKIE_HTTPONLY,
-											NULL);
-	// increase buffer if its size is not enough
-	if (!bResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
-	{
-		delete [] lpszData;
-		lpszData = new TCHAR[dwSize];
+    BOOL bResult = InternetGetCookieEx(StringToWString(targetUrl).c_str(),
+                                       name.empty() ? NULL : StringToWString(name).c_str(),
+                                       lpszData,
+                                       &dwSize,
+                                       INTERNET_COOKIE_HTTPONLY,
+                                       NULL);
+    // increase buffer if its size is not enough
+    if (!bResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
+    {
+        delete[] lpszData;
+        lpszData = new TCHAR[dwSize];
 
-		bResult = InternetGetCookieEx(StringToWString(targetUrl).c_str(), 
-											name.empty() ? NULL : StringToWString(name).c_str(),
-											lpszData,
-											&dwSize,
-											INTERNET_COOKIE_HTTPONLY,
-											NULL);
-	}
+        bResult = InternetGetCookieEx(StringToWString(targetUrl).c_str(),
+                                      name.empty() ? NULL : StringToWString(name).c_str(),
+                                      lpszData,
+                                      &dwSize,
+                                      INTERNET_COOKIE_HTTPONLY,
+                                      NULL);
+    }
 
-	return bResult ? true : false;
+    return bResult ? true : false;
 }
 
 bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 {
-	if (!webBrowser)
-	{
-		return false;
-	}
+    if (!webBrowser)
+    {
+        return false;
+    }
 
-	WideString url = StringToWString(targetUrl);
-	LPINTERNET_CACHE_ENTRY_INFO cacheEntry = NULL;  
- 	// Initial buffer size
-    DWORD  entrySize = 4096;     
-	HANDLE cacheEnumHandle = NULL; 
+    WideString url = StringToWString(targetUrl);
+    LPINTERNET_CACHE_ENTRY_INFO cacheEntry = NULL;
+    // Initial buffer size
+    DWORD entrySize = 4096;
+    HANDLE cacheEnumHandle = NULL;
 
-	// Get first entry and enum handle
-	cacheEnumHandle = GetFirstCacheEntry(cacheEntry, entrySize);
-	if (!cacheEnumHandle)
-	{	
-		delete [] cacheEntry; 
-		return false;
-	}
+    // Get first entry and enum handle
+    cacheEnumHandle = GetFirstCacheEntry(cacheEntry, entrySize);
+    if (!cacheEnumHandle)
+    {
+        delete[] cacheEntry;
+        return false;
+    }
 
-	bool bResult = false;
+    bool bResult = false;
     bool bDone = false;
 
-	do
-	{
-		// Delete only cookies for specific site
-		if ((cacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-		{            
-			// If cache entry url do have target URL - do not remove that cookie
-			if (StrStr(cacheEntry->lpszSourceUrlName, url.c_str()))
-			{
-				DeleteUrlCacheEntry(cacheEntry->lpszSourceUrlName);
-			}
-		}
-		// Try to get next cache entry - in case when we can't do it - exit the cycle
-		if (!GetNextCacheEntry(cacheEnumHandle, cacheEntry, entrySize))
-		{
-			// ERROR_NO_MORE_FILES means search is finished successfully.
-			bResult = (GetLastError() == ERROR_NO_MORE_ITEMS);
-			bDone = true;            
-		}
-	} while (!bDone);
+    do
+    {
+        // Delete only cookies for specific site
+        if ((cacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+        {
+            // If cache entry url do have target URL - do not remove that cookie
+            if (StrStr(cacheEntry->lpszSourceUrlName, url.c_str()))
+            {
+                DeleteUrlCacheEntry(cacheEntry->lpszSourceUrlName);
+            }
+        }
+        // Try to get next cache entry - in case when we can't do it - exit the cycle
+        if (!GetNextCacheEntry(cacheEnumHandle, cacheEntry, entrySize))
+        {
+            // ERROR_NO_MORE_FILES means search is finished successfully.
+            bResult = (GetLastError() == ERROR_NO_MORE_ITEMS);
+            bDone = true;
+        }
+    } while (!bDone);
 
-	// clean up		
-	delete [] cacheEntry; 
-	FindCloseUrlCache(cacheEnumHandle);  
-	// Synchronize cookies storage
-	InternetSetOption(0, INTERNET_OPTION_END_BROWSER_SESSION, 0, 0); 
-    
-	return bResult;
+    // clean up
+    delete[] cacheEntry;
+    FindCloseUrlCache(cacheEnumHandle);
+    // Synchronize cookies storage
+    InternetSetOption(0, INTERNET_OPTION_END_BROWSER_SESSION, 0, 0);
+
+    return bResult;
 }
 
-HANDLE WebBrowserContainer::GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size)
+HANDLE WebBrowserContainer::GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO& cacheEntry, DWORD& size)
 {
-	// Setup initial cache entry size
-	cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
+    // Setup initial cache entry size
+    cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
     cacheEntry->dwStructSize = size;
 
-	// Create handle for cache entries with tag "Cookie:"
-	HANDLE cacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", cacheEntry, &size);
-	// If handle was not created with error - ERROR_INSUFFICIENT_BUFFER - enlarge cacheEntry size and try again
-	if ((cacheEnumHandle == NULL) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
-	{
-		delete [] cacheEntry;            
+    // Create handle for cache entries with tag "Cookie:"
+    HANDLE cacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", cacheEntry, &size);
+    // If handle was not created with error - ERROR_INSUFFICIENT_BUFFER - enlarge cacheEntry size and try again
+    if ((cacheEnumHandle == NULL) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
+    {
+        delete[] cacheEntry;
         cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
-		cacheEntry->dwStructSize = size;
+        cacheEntry->dwStructSize = size;
 
-		cacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", cacheEntry, &size);
-	}
+        cacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", cacheEntry, &size);
+    }
 
-	return cacheEnumHandle;
+    return cacheEnumHandle;
 }
 
-bool WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size)
+bool WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO& cacheEntry, DWORD& size)
 {
-	BOOL bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
-	// If buffer size was not enough - give more memory for cacheEntry
-	if ((!bResult) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
-	{
-		delete [] cacheEntry;            
+    BOOL bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
+    // If buffer size was not enough - give more memory for cacheEntry
+    if ((!bResult) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
+    {
+        delete[] cacheEntry;
         cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
-		cacheEntry->dwStructSize = size;
+        cacheEntry->dwStructSize = size;
 
-		bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
-	}
+        bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
+    }
 
-	return bResult ? true : false;
+    return bResult ? true : false;
 }
 
 int32 WebBrowserContainer::ExecuteJScript(const String& targetScript)
 {
-	IDispatch *m_pDisp = NULL; 
+    IDispatch* m_pDisp = NULL;
     webBrowser->get_Document(&m_pDisp);
-	DVASSERT(m_pDisp);
+    DVASSERT(m_pDisp);
 
-	IHTMLDocument2* pHtmDoc2 = NULL;
-	m_pDisp->QueryInterface(IID_IHTMLDocument2, (LPVOID*)&pHtmDoc2);
-	DVASSERT(pHtmDoc2);
+    IHTMLDocument2* pHtmDoc2 = NULL;
+    m_pDisp->QueryInterface(IID_IHTMLDocument2, (LPVOID*)&pHtmDoc2);
+    DVASSERT(pHtmDoc2);
 
-	IHTMLWindow2* pHtmWin2 = NULL;
-	pHtmDoc2->get_parentWindow(&pHtmWin2);
-	DVASSERT(pHtmWin2); 
-	
-	BSTR scriptBody = SysAllocString(StringToWString(targetScript).c_str());
-	WideString JSl = L"JavaScript";
-	BSTR scriptType = SysAllocString(JSl.c_str());
-	VARIANT vResult;
-	HRESULT hr = pHtmWin2->execScript(scriptBody, scriptType, &vResult);
+    IHTMLWindow2* pHtmWin2 = NULL;
+    pHtmDoc2->get_parentWindow(&pHtmWin2);
+    DVASSERT(pHtmWin2);
 
-	::SysFreeString(scriptBody);
-	::SysFreeString(scriptType);
+    BSTR scriptBody = SysAllocString(StringToWString(targetScript).c_str());
+    WideString JSl = L"JavaScript";
+    BSTR scriptType = SysAllocString(JSl.c_str());
+    VARIANT vResult;
+    HRESULT hr = pHtmWin2->execScript(scriptBody, scriptType, &vResult);
 
-	if (m_pDisp) m_pDisp->Release(); 
-	if (pHtmWin2) pHtmWin2->Release();
-	if (pHtmDoc2) pHtmDoc2->Release();
+    ::SysFreeString(scriptBody);
+    ::SysFreeString(scriptType);
 
-	return 0;
+    if (m_pDisp)
+        m_pDisp->Release();
+    if (pHtmWin2)
+        pHtmWin2->Release();
+    if (pHtmDoc2)
+        pHtmDoc2->Release();
+
+    return 0;
 }
-	
+
 bool WebBrowserContainer::DoOpenBuffer()
 {
     if (bufferToOpenPath.IsEmpty() || !openFromBufferQueued)
@@ -925,40 +1013,47 @@ bool WebBrowserContainer::OpenFromBuffer(const String& buffer, const FilePath& b
 
 void WebBrowserContainer::UpdateRect()
 {
-	IOleInPlaceObject* oleInPlaceObject = nullptr;
-	HRESULT hRes = webBrowser->QueryInterface(IID_IOleInPlaceObject, (void**)&oleInPlaceObject);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebBrowserContainer::SetSize(), IOleObject::QueryInterface(IID_IOleInPlaceObject) failed!, error code %i", hRes);
-		return;
-	}
+    IOleInPlaceObject* oleInPlaceObject = nullptr;
+    HRESULT hRes = webBrowser->QueryInterface(IID_IOleInPlaceObject, (void**)&oleInPlaceObject);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebBrowserContainer::SetSize(), IOleObject::QueryInterface(IID_IOleInPlaceObject) failed!, error code %i", hRes);
+        return;
+    }
 
-	// Update the browser window according to the holder window.
-	RECT rect = {0};
-	GetClientRect(this->hwnd, &rect);
+    // Update the browser window according to the holder window.
+    RECT rect = { 0 };
+    GetClientRect(this->hwnd, &rect);
 
-	hRes = oleInPlaceObject->SetObjectRects(&rect, &rect);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebBrowserContainer::SetSize(), IOleObject::SetObjectRects() failed!, error code %i", hRes);
-		return;
-	}
+    hRes = oleInPlaceObject->SetObjectRects(&rect, &rect);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebBrowserContainer::SetSize(), IOleObject::SetObjectRects() failed!, error code %i", hRes);
+        return;
+    }
 
-	oleInPlaceObject->Release();
+    oleInPlaceObject->Release();
 }
 
-WebViewControl::WebViewControl(UIWebView& webView) :
-    browserWindow(0),
-    browserContainer(0),
-    uiWebView(webView),
-    gdiplusToken(0),
-    browserRect(),
-    renderToTexture(false),
+WebViewControl::WebViewControl(UIWebView& webView)
+    :
+    browserWindow(0)
+    ,
+    browserContainer(0)
+    ,
+    uiWebView(webView)
+    ,
+    gdiplusToken(0)
+    ,
+    browserRect()
+    ,
+    renderToTexture(false)
+    ,
     isVisible(false)
 {
     // Initialize GDI+.
-    Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, 
-        &gdiplusStartupInput, nullptr);
+    Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken,
+                                                     &gdiplusStartupInput, nullptr);
 
     if (status != Gdiplus::Ok)
     {
@@ -969,12 +1064,11 @@ WebViewControl::WebViewControl(UIWebView& webView) :
 WebViewControl::~WebViewControl()
 {
     CleanData();
-
 }
 
-void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
+void WebViewControl::SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView)
 {
-	browserContainer->SetDelegate(delegate, webView);
+    browserContainer->SetDelegate(delegate, webView);
 }
 
 void WebViewControl::SetRenderToTexture(bool value)
@@ -985,12 +1079,13 @@ void WebViewControl::SetRenderToTexture(bool value)
         if (browserWindow != 0)
         {
             browserContainer->RenderToTextureAndSetAsBackgroundSpriteToControl(
-                uiWebView);
+            uiWebView);
 
             // hide window but not change visibility state
             ::ShowWindow(browserWindow, SW_HIDE);
         }
-    } else
+    }
+    else
     {
         // restore visibility on native control
         if (isVisible)
@@ -1005,8 +1100,8 @@ void WebViewControl::SetRenderToTexture(bool value)
 
 void WebViewControl::Initialize(const Rect& rect)
 {
-	CoreWin32PlatformBase *core = static_cast<CoreWin32PlatformBase *>(Core::Instance());
-	DVASSERT(core);
+    CoreWin32PlatformBase* core = static_cast<CoreWin32PlatformBase*>(Core::Instance());
+    DVASSERT(core);
 
     int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;
 
@@ -1025,23 +1120,23 @@ void WebViewControl::Initialize(const Rect& rect)
 
 bool WebViewControl::InititalizeBrowserContainer()
 {
-	HRESULT hRes = ::CoInitialize(nullptr);
-	if (FAILED(hRes))
-	{
-		Logger::Error("WebViewControl::InititalizeBrowserContainer(), CoInitialize() failed!");
-		return false;
-	}
+    HRESULT hRes = ::CoInitialize(nullptr);
+    if (FAILED(hRes))
+    {
+        Logger::Error("WebViewControl::InititalizeBrowserContainer(), CoInitialize() failed!");
+        return false;
+    }
 
-	this->browserContainer= new WebBrowserContainer();
-	return browserContainer->Initialize(browserWindow, uiWebView);
+    this->browserContainer = new WebBrowserContainer();
+    return browserContainer->Initialize(browserWindow, uiWebView);
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
 {
-	if (browserContainer)
-	{
-		browserContainer->OpenUrl(StringToWString(urlToOpen.c_str()).c_str());
-	}
+    if (browserContainer)
+    {
+        browserContainer->OpenUrl(StringToWString(urlToOpen.c_str()).c_str());
+    }
 }
 
 void WebViewControl::LoadHtmlString(const WideString& htmlString)
@@ -1059,46 +1154,46 @@ void WebViewControl::LoadHtmlString(const WideString& htmlString)
     Initialize(r);
 
     DVASSERT(browserContainer);
-	browserContainer->LoadHtmlString(htmlString.c_str());
-	
+    browserContainer->LoadHtmlString(htmlString.c_str());
+
     // render new content into texture or show native window
     SetRenderToTexture(IsRenderToTexture());
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
 {
-	if (browserContainer)
-	{
-		browserContainer->DeleteCookies(targetUrl);
-	}
+    if (browserContainer)
+    {
+        browserContainer->DeleteCookies(targetUrl);
+    }
 }
 
 String WebViewControl::GetCookie(const String& targetUrl, const String& name) const
 {
-	if (browserContainer)
-	{
-		return browserContainer->GetCookie(targetUrl, name);
-	}
+    if (browserContainer)
+    {
+        return browserContainer->GetCookie(targetUrl, name);
+    }
 
-	return String();
+    return String();
 }
 
 Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 {
-	if (browserContainer)
-	{
-		return browserContainer->GetCookies(targetUrl);
-	}
+    if (browserContainer)
+    {
+        return browserContainer->GetCookies(targetUrl);
+    }
 
-	return Map<String, String>();
+    return Map<String, String>();
 }
 
 void WebViewControl::ExecuteJScript(const String& targetScript)
 {
-	if (browserContainer)
-	{
-		browserContainer->ExecuteJScript(targetScript);
-	}
+    if (browserContainer)
+    {
+        browserContainer->ExecuteJScript(targetScript);
+    }
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
@@ -1124,13 +1219,13 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 
 void WebViewControl::SetRect(const Rect& rect)
 {
-	if (browserWindow == 0)
-	{
-		return;
-	}
+    if (browserWindow == 0)
+    {
+        return;
+    }
 
-	RECT browserRectTmp = {0};
-	::GetWindowRect(browserWindow, &browserRectTmp);
+    RECT browserRectTmp = { 0 };
+    ::GetWindowRect(browserWindow, &browserRectTmp);
 
     VirtualCoordinatesSystem& coordSys = *VirtualCoordinatesSystem::Instance();
 
@@ -1149,14 +1244,14 @@ void WebViewControl::SetRect(const Rect& rect)
     if (!IsRenderToTexture())
     {
         ::SetWindowPos(browserWindow, nullptr, browserRect.left,
-            browserRect.top, browserRect.right - browserRect.left,
-            browserRect.bottom - browserRect.top, SWP_NOZORDER);
+                       browserRect.top, browserRect.right - browserRect.left,
+                       browserRect.bottom - browserRect.top, SWP_NOZORDER);
     }
 
-	if (browserContainer)
-	{
-		browserContainer->UpdateRect();
-	}
+    if (browserContainer)
+    {
+        browserContainer->UpdateRect();
+    }
 }
 
 void WebViewControl::CleanData()
@@ -1175,4 +1270,4 @@ void WebViewControl::CleanData()
 
 } // end namespace DAVA
 
-#endif //__DAVAENGINE_WIN32__ && !__DISABLE_NATIVE_WEBVIEW__
+#endif //__DAVAENGINE_WIN32__ && !DISABLE_NATIVE_WEBVIEW

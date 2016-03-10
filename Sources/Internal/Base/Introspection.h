@@ -43,210 +43,216 @@
 
 namespace DAVA
 {
-	// Класс интроспекции. 
-	// Добавляет интроспекцию к любому пользовательскому классу. Интроспекция статическая и существует в единичном экземпляре,
-	// не зависимо от количества объектов класса.
-	//
-	// Использование:
-	//
-	// 	class A
-	// 	{
-	// 	public:
-	// 		int		i;
-	// 		String	s;
-	// 		Matrix4	m;
-	//		Vector<int> v;
-	//
-	//		String GetName() { return s; }
-	//      void SetName(const String &_s) { s = _s; }
-	// 
-	// 		INTROSPECTION(A,
-	// 			MEMBER(i, "simple int var", 0)
-	// 			MEMBER(s, "string", 0)
-	//			PROPERTY(s, "property with setter and getter", GetName, SetName, 0)
-	//			COLLECTION(v, "vector collection")
-	// 			);
-	// 	};
-	//
-	//  class B : public A
-	//	{
-	//	public:
-	//		int b;
-	//	
-	//		INTROSPECTION_EXTEND(B, A, 
-	//			MEMBER(b)
-	//			);
-	//	}
-	//
-	class InspInfo
-	{
-	public:
-		InspInfo(const char *_name, const InspMember **_members, const int _members_count)
-			: name(_name)
-			, meta(nullptr)
-			, base_info(nullptr)
-			, members(_members)
-			, members_count(_members_count)
-		{
-			MembersInit();
-		}
+// Класс интроспекции.
+// Добавляет интроспекцию к любому пользовательскому классу. Интроспекция статическая и существует в единичном экземпляре,
+// не зависимо от количества объектов класса.
+//
+// Использование:
+//
+// 	class A
+// 	{
+// 	public:
+// 		int		i;
+// 		String	s;
+// 		Matrix4	m;
+//		Vector<int> v;
+//
+//		String GetName() { return s; }
+//      void SetName(const String &_s) { s = _s; }
+//
+// 		INTROSPECTION(A,
+// 			MEMBER(i, "simple int var", 0)
+// 			MEMBER(s, "string", 0)
+//			PROPERTY(s, "property with setter and getter", GetName, SetName, 0)
+//			COLLECTION(v, "vector collection")
+// 			);
+// 	};
+//
+//  class B : public A
+//	{
+//	public:
+//		int b;
+//
+//		INTROSPECTION_EXTEND(B, A,
+//			MEMBER(b)
+//			);
+//	}
+//
+class InspInfo
+{
+public:
+    InspInfo(const char* _name, const InspMember** _members, const int _members_count)
+        : name(_name)
+        , meta(nullptr)
+        , base_info(nullptr)
+        , members(_members)
+        , members_count(_members_count)
+    {
+        MembersInit();
+    }
 
-		InspInfo(const InspInfo *_base, const char *_name, const InspMember **_members, const int _members_count)
-			: name(_name)
-			, meta(nullptr)
-			, base_info(_base)
-			, members(_members)
-			, members_count(_members_count)
-		{
-			MembersInit();
-		}
+    InspInfo(const InspInfo* _base, const char* _name, const InspMember** _members, const int _members_count)
+        : name(_name)
+        , meta(nullptr)
+        , base_info(_base)
+        , members(_members)
+        , members_count(_members_count)
+    {
+        MembersInit();
+    }
 
-		~InspInfo()
-		{
-			MembersRelease();
-		}
+    ~InspInfo()
+    {
+        MembersRelease();
+    }
 
-		const FastName& Name() const
-		{
-			return name;
-		}
+    InspInfo(const InspInfo&) = delete;
 
-		const MetaInfo* Type() const
-		{
-			return meta;
-		}
+    const FastName& Name() const
+    {
+        return name;
+    }
 
-		int MembersCount() const
-		{
-			return members_count;
-		}
+    const MetaInfo* Type() const
+    {
+        return meta;
+    }
 
-		// Возвращает указатель на член интроспекции по заданному индексу, или nullptr если такой не найден.
-		const InspMember* Member(int index) const
-		{
-			const InspMember *member = nullptr;
+    int MembersCount() const
+    {
+        return members_count;
+    }
 
-			if(index < members_count)
-				if(nullptr != members[index])
-					member = members[index];
+    // Возвращает указатель на член интроспекции по заданному индексу, или nullptr если такой не найден.
+    const InspMember* Member(int index) const
+    {
+        const InspMember* member = nullptr;
 
-			return member;
-		}
+        if (index < members_count)
+            if (nullptr != members[index])
+                member = members[index];
 
-		// Возвращает указатель на член интроспекции по заданному имени, или nullptr если такой не найден.
-		const InspMember* Member(const FastName& name) const
-		{
-			for(int i = 0; i < members_count; ++i)
-			{
-				if(nullptr != members[i])
-				{
-					if(members[i]->name == name)
-					{
-						return members[i];
-					}
-				}
-			}
+        return member;
+    }
 
-			return nullptr;
-		}
-
-		// Возвращает указатель на базовую интроспекцию, или nullptr если такой не существует.
-		const InspInfo* BaseInfo() const
-		{
-			return base_info;
-		}
-        
-		// Единожды установить в текущей интроспекции для типа Т указатель 
-		// на мета-информацию типа T
-        template<typename T>
-        void OneTimeMetaSafeSet()
+    // Возвращает указатель на член интроспекции по заданному имени, или nullptr если такой не найден.
+    const InspMember* Member(const FastName& name) const
+    {
+        for (int i = 0; i < members_count; ++i)
         {
-            if(!metaOneTimeSet)
+            if (nullptr != members[i])
             {
-                metaOneTimeSet = true;
-                meta = MetaInfo::Instance<T>();
+                if (members[i]->name == name)
+                {
+                    return members[i];
+                }
             }
         }
-        
-	protected:
-		FastName name;
-		const MetaInfo* meta;
 
-		const InspInfo *base_info;
-		const InspMember **members;
-		int members_count;
-        
-        bool metaOneTimeSet;
+        return nullptr;
+    }
 
-		// Инициализация членов интроспекции
-		// Все члены интроспекция должны быть валидны(созданы), в противном случае
-		// данная интроспекция будет пустой
-		void MembersInit()
-		{
-			// Проверяем или все члены интроспекции валидны
-			for(int i = 0; i < members_count; ++i)
-			{
-				// Если хоть один не создан, то освобождаем все остальные.
-				if(nullptr == members[i])
-				{
-					MembersRelease();
-					break;
-				}
+    // Возвращает указатель на базовую интроспекцию, или nullptr если такой не существует.
+    const InspInfo* BaseInfo() const
+    {
+        return base_info;
+    }
 
-				// обратная связь члена интроспекции непостредственно к интроспекции
-				members[i]->ApplyParentInsp(this);
-			}
-		}
-
-		// Освобождает члены интроспекции и устанавливает их количество в 0
-		void MembersRelease()
-		{
-			for(int i = 0; i < members_count; ++i)
-			{
-				if(nullptr != members[i])
-				{
-					delete members[i];
-					members[i] = nullptr;
-				}
-			}
-			members_count = 0;
-		}
-	};
-
-	class InspInfoDynamic
-	{
-		friend class InspMemberDynamic;
-
-	public:
-        struct DynamicData
+    // Единожды установить в текущей интроспекции для типа Т указатель
+    // на мета-информацию типа T
+    template <typename T>
+    void OneTimeMetaSafeSet()
+    {
+        if (!metaOneTimeSet)
         {
-            void* object = nullptr;
-            std::shared_ptr<void> data;
-        };
+            metaOneTimeSet = true;
+            meta = MetaInfo::Instance<T>();
+        }
+    }
 
-        InspInfoDynamic()
-            : memberDynamic(NULL){};
-        virtual ~InspInfoDynamic(){};
+protected:
+    FastName name;
+    const MetaInfo* meta;
 
-        virtual DynamicData Prepare(void* object, int filter = 0) const = 0;
-        virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
-        virtual InspDesc MemberDesc(const DynamicData& ddata, const FastName& member) const = 0;
-        virtual int MemberFlags(const DynamicData& ddata, const FastName& member) const = 0;
-        virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName& member) const
+    const InspInfo* base_info;
+    const InspMember** members;
+    int members_count;
+
+    bool metaOneTimeSet;
+
+    // Инициализация членов интроспекции
+    // Все члены интроспекция должны быть валидны(созданы), в противном случае
+    // данная интроспекция будет пустой
+    void MembersInit()
+    {
+        // Проверяем или все члены интроспекции валидны
+        for (int i = 0; i < members_count; ++i)
         {
-            return VariantType();
-        };
-        virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName& member) const = 0;
-        virtual void MemberValueSet(const DynamicData& ddata, const FastName& member, const VariantType& value) = 0;
+            // Если хоть один не создан, то освобождаем все остальные.
+            if (nullptr == members[i])
+            {
+                MembersRelease();
+                break;
+            }
 
-        const InspMemberDynamic* GetMember() const
+            // обратная связь члена интроспекции непостредственно к интроспекции
+            members[i]->ApplyParentInsp(this);
+        }
+    }
+
+    // Освобождает члены интроспекции и устанавливает их количество в 0
+    void MembersRelease()
+    {
+        for (int i = 0; i < members_count; ++i)
         {
-            return memberDynamic;
-        };
+            if (nullptr != members[i])
+            {
+                delete members[i];
+                members[i] = nullptr;
+            }
+        }
+        members_count = 0;
+    }
+};
 
-    protected:
-        const InspMemberDynamic* memberDynamic;
+class InspInfoDynamic
+{
+    friend class InspMemberDynamic;
+
+public:
+    struct DynamicData
+    {
+        void* object = nullptr;
+        std::shared_ptr<void> data;
     };
+
+    InspInfoDynamic()
+        : memberDynamic(NULL)
+    {
+    }
+    virtual ~InspInfoDynamic()
+    {
+    }
+
+    virtual DynamicData Prepare(void* object, int filter = 0) const = 0;
+    virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
+    virtual InspDesc MemberDesc(const DynamicData& ddata, const FastName& member) const = 0;
+    virtual int MemberFlags(const DynamicData& ddata, const FastName& member) const = 0;
+    virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName& member) const
+    {
+        return VariantType();
+    }
+    virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName& member) const = 0;
+    virtual void MemberValueSet(const DynamicData& ddata, const FastName& member, const VariantType& value) = 0;
+
+    const InspMemberDynamic* GetMember() const
+    {
+        return memberDynamic;
+    }
+
+protected:
+    const InspMemberDynamic* memberDynamic;
+};
 };
 
 // Определение интоспекции внутри класса. См. пример в описании класса IntrospectionInfo
@@ -255,33 +261,33 @@ namespace DAVA
 	{ \
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
-		static DAVA::InspInfo info = DAVA::InspInfo(#_type, data, sizeof(data)/sizeof(data[0])); \
+		static DAVA::InspInfo info(#_type, data, sizeof(data) / sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
         return &info; \
 	} \
-	virtual const DAVA::InspInfo* GetTypeInfo() const \
+    const DAVA::InspInfo* GetTypeInfo() const override \
 	{ \
 		return _type::TypeInfo(); \
 	}
 
 // Наследование интоспекции. См. пример в описании класса IntrospectionInfo
-#define  INTROSPECTION_EXTEND(_type, _base_type, _members) \
+#define INTROSPECTION_EXTEND(_type, _base_type, _members) \
 	static const DAVA::InspInfo* TypeInfo() \
 	{ \
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
-		static DAVA::InspInfo info = DAVA::InspInfo(_base_type::TypeInfo(), #_type, data, sizeof(data)/sizeof(data[0])); \
+		static DAVA::InspInfo info(_base_type::TypeInfo(), #_type, data, sizeof(data) / sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
 		return &info; \
 	} \
-	virtual const DAVA::InspInfo* GetTypeInfo() const \
+    const DAVA::InspInfo* GetTypeInfo() const override \
 	{ \
 		return _type::TypeInfo(); \
 	}
 
 // Определение обычного члена интроспекции. Доступ к нему осуществляется непосредственно.
 #define MEMBER(_name, _desc, _flags) \
-	new DAVA::InspMember(#_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	new DAVA::InspMember(#_name, _desc, reinterpret_cast<size_t>(&((static_cast<ObjectT*>(nullptr))->_name)), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции, как свойства. Доступ к нему осуществляется через функци Get/Set. 
 #define PROPERTY(_name, _desc, _getter, _setter, _flags) \
@@ -289,10 +295,10 @@ namespace DAVA
 
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \
-	DAVA::CreateInspColl(&((ObjectT *) 0)->_name, #_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	DAVA::CreateInspColl(&((ObjectT*)0)->_name, #_name, _desc, (ptrdiff_t)((intptr_t) & ((ObjectT*)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции с динамической структурой. Структуру определяет _dynamic, импементирующая интерфейс InspDynamicInfo
 #define DYNAMIC(_name, _desc, _dynamic, _flags) \
-	new DAVA::InspMemberDynamic(#_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
+	new DAVA::InspMemberDynamic(#_name, _desc, reinterpret_cast<size_t>(&((static_cast<ObjectT*>(nullptr))->_name)), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
 
 #endif // __DAVAENGINE_INTROSPECTION_H__

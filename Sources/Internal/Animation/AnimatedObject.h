@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-	
 /**
 	\defgroup animationsystem Animation System
  */
@@ -52,44 +51,47 @@ class Animation;
 class AnimatedObject : public BaseObject
 {
 protected:
-	virtual ~AnimatedObject();
-public:
-	AnimatedObject();
+    virtual ~AnimatedObject();
 
-	/**
+public:
+    AnimatedObject();
+
+    /**
 		\brief stop animations for this given AnimatedObject
 		\param[in] track id of track you want to stop or -1 if you want to stop all tracks
 	 */
-	void	StopAnimations(int32 track = -1);
-	/**
+    void StopAnimations(int32 track = -1);
+    /**
 		\brief check if this animated object is animating right now
 		\param[in] track id of track you want to check or -1 if you want to check if any tracks animating now
 		\returns true if object is animating on the requested tracks
 	 */
-	bool	IsAnimating(int32 track = -1) const;
-	/**
+    bool IsAnimating(int32 track = -1) const;
+    /**
 		\brief Load animated object animations from yaml
 	 */
-	void	LoadFromYaml(YamlNode * node);
-	// TODO: void	Pause(int32 track = -1);
+    void LoadFromYaml(YamlNode* node);
+    // TODO: void	Pause(int32 track = -1);
 
-	/**
+    /**
 		\brief Returns animation with PLAYING state
 		\param[in] track - id of track you want to check, -1 for all tracks. Warning: if track == -1, but multiple animations 
 							are playing on different tracks, the function will return only one.
 		\returns animation, or 0 if no animations are playing
 	 */
-	Animation * FindPlayingAnimation(int32 track = -1);
-	
-	/**
+    Animation* FindPlayingAnimation(int32 track = -1);
+
+    /**
 		\brief Called when all animations for object are finished. Reimplement this function for specific needs
 	*/
-	virtual void OnAllAnimationsFinished() {};
-	
+    virtual void OnAllAnimationsFinished()
+    {
+    }
+
 private:
-	//AnimationsStorage * animationsStorage;
-	
-/*	
+    //AnimationsStorage * animationsStorage;
+
+    /*	
 	\TODO optimization of animation subsystem
 	
 	Animation * activeAnimations; 
@@ -109,11 +111,7 @@ private:
 	void Update(float32 timeElapsed);
 	
 	friend class Animation;*/
-public:
-	INTROSPECTION_EXTEND(AnimatedObject, BaseObject,
-		NULL);
 };
-	
 };
 
 #endif // __DAVAENGINE_INTERPOLATION_H__

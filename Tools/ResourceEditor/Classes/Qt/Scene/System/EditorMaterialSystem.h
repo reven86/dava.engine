@@ -36,22 +36,22 @@
 class Command2;
 class EditorMaterialSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
+    friend class SceneEditor2;
 
 public:
     enum MaterialLightViewMode
     {
-        LIGHTVIEW_NOTHING     = 0x0,
+        LIGHTVIEW_NOTHING = 0x0,
 
-        LIGHTVIEW_ALBEDO      = 0x1,
-        LIGHTVIEW_AMBIENT     = 0x2,
-        LIGHTVIEW_DIFFUSE     = 0x4,
-        LIGHTVIEW_SPECULAR    = 0x8,
+        LIGHTVIEW_ALBEDO = 0x1,
+        LIGHTVIEW_AMBIENT = 0x2,
+        LIGHTVIEW_DIFFUSE = 0x4,
+        LIGHTVIEW_SPECULAR = 0x8,
 
-        LIGHTVIEW_ALL         = (LIGHTVIEW_ALBEDO | LIGHTVIEW_AMBIENT | LIGHTVIEW_DIFFUSE | LIGHTVIEW_SPECULAR)
+        LIGHTVIEW_ALL = (LIGHTVIEW_ALBEDO | LIGHTVIEW_AMBIENT | LIGHTVIEW_DIFFUSE | LIGHTVIEW_SPECULAR)
     };
 
-	EditorMaterialSystem(DAVA::Scene * scene);
+    EditorMaterialSystem(DAVA::Scene* scene);
     ~EditorMaterialSystem();
 
     const DAVA::Set<DAVA::NMaterial*>& GetTopParents() const;
@@ -73,16 +73,19 @@ public:
 private:
     struct MaterialMapping
     {
-        enum class Mode : DAVA::uint32
-        {
-            RetainedRenderBatch,
-            RenderBatchIndexInRenderObject
-        };
+        MaterialMapping() = default;
+        MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_);
+
+        ~MaterialMapping();
+
+        MaterialMapping(const MaterialMapping& other);
+        MaterialMapping(MaterialMapping&& other) = delete;
+
+        MaterialMapping& operator=(const MaterialMapping& other);
+        MaterialMapping& operator=(MaterialMapping&& other) = delete;
 
         DAVA::Entity* entity = nullptr;
         DAVA::RenderBatch* renderBatch = nullptr;
-        DAVA::uint32 renderBatchIndexInRenderObject = static_cast<DAVA::uint32>(-1);
-        Mode mode = Mode::RenderBatchIndexInRenderObject;
     };
     using MaterialToObjectsMap = DAVA::Map<DAVA::NMaterial*, MaterialMapping>;
 
@@ -91,8 +94,7 @@ private:
 
     void ProcessCommand(const Command2* command, bool redo);
 
-    void AddMaterialsFromEntity(DAVA::Entity* entity);
-    void AddMaterialFromRenderBatchWithEntity(DAVA::RenderBatch* renderBatch, DAVA::Entity* entity);
+    void AddMaterials(DAVA::Entity* entity);
     void AddMaterial(DAVA::NMaterial*, const MaterialMapping& mapping);
 
     void RemoveMaterial(DAVA::NMaterial* material);
@@ -100,7 +102,7 @@ private:
     void ApplyViewMode();
     void ApplyViewMode(DAVA::NMaterial* material);
 
-    bool IsEditable(DAVA::NMaterial *material) const;
+    bool IsEditable(DAVA::NMaterial* material) const;
 
 private:
     MaterialToObjectsMap materialToObjectsMap;

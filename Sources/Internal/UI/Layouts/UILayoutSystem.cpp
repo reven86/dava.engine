@@ -141,7 +141,7 @@ void UILayoutSystem::CollectControls(UIControl* control, bool recursive)
 void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive)
 {
     int32 index = static_cast<int32>(layoutData.size());
-    const List<UIControl*> &children = control->GetChildren();
+    const List<UIControl*>& children = control->GetChildren();
 
     layoutData[parentIndex].SetFirstChildIndex(index);
     layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));
@@ -192,7 +192,12 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
             {
                 LinearLayoutAlgorithm alg(layoutData, isRtl);
 
-                alg.SetInverse(isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetOrientation() == UILinearLayoutComponent::HORIZONTAL);
+                bool inverse = linearLayoutComponent->IsInverse();
+                if (isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetAxis() == Vector2::AXIS_X)
+                {
+                    inverse = !inverse;
+                }
+                alg.SetInverse(inverse);
                 alg.SetSkipInvisible(linearLayoutComponent->IsSkipInvisibleControls());
 
                 alg.SetPadding(linearLayoutComponent->GetPadding());

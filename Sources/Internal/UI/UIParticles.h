@@ -32,30 +32,30 @@
 
 #include "UI/UIControl.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class ParticleEffectComponent;
 class ParticleEffectSystem;
 class Camera;
 
-class UIParticles : public UIControl 
+class UIParticles : public UIControl
 {
 protected:
     virtual ~UIParticles();
+
 public:
-    UIParticles(const Rect &rect = Rect());
+    UIParticles(const Rect& rect = Rect());
 
     void Update(float32 timeElapsed) override;
-    void Draw(const UIGeometricData &geometricData) override;
+    void Draw(const UIGeometricData& geometricData) override;
 
-    void WillAppear() override;
+    void OnActive() override;
 
     UIParticles* Clone() override;
-    void CopyDataFrom(UIControl *srcControl) override;
+    void CopyDataFrom(UIControl* srcControl) override;
 
-    void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader * loader) override;
+    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
+    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
 
     /*methods analogical to once in ParticleEffectComponent*/
     void Start();
@@ -105,8 +105,8 @@ private:
     bool isAutostart;
     float32 startDelay;
 
-    ParticleEffectComponent *effect;
-    ParticleEffectSystem *system;
+    ParticleEffectComponent* effect;
+    ParticleEffectSystem* system;
     Matrix4 matrix;
     float32 updateTime;
 
@@ -115,15 +115,15 @@ private:
     bool delayedDeleteAllParticles;
     bool needHandleAutoStart;
 
-    static Camera *defaultCamera;
+    static Camera* defaultCamera;
+
 public:
     INTROSPECTION_EXTEND(UIParticles, UIControl,
-        PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("autoStart", "Auto start", IsAutostart, SetAutostart, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("startDelay", "Start delay", GetStartDelay, SetStartDelay, I_SAVE | I_VIEW | I_EDIT)
-    );
+                         PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("autoStart", "Auto start", IsAutostart, SetAutostart, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("startDelay", "Start delay", GetStartDelay, SetStartDelay, I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
-	
 };
 
 #endif

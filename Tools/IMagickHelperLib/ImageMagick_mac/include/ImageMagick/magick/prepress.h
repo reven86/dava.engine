@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 extern MagickExport double
-  GetImageTotalInkDensity(Image *image);
+GetImageTotalInkDensity(Image* image);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

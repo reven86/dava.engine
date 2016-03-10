@@ -49,7 +49,6 @@
 
 namespace DAVA
 {
-
 class File;
 class Thread;
 class BaseObject;
@@ -79,8 +78,16 @@ public:
     class AllocPoolScope final
     {
     public:
-        explicit AllocPoolScope(int32 aPool) : allocPool(aPool) { MemoryManager::Instance()->EnterAllocScope(allocPool); }
-        ~AllocPoolScope() { MemoryManager::Instance()->LeaveAllocScope(allocPool); }
+        explicit AllocPoolScope(int32 aPool)
+            : allocPool(aPool)
+        {
+            MemoryManager::Instance()->EnterAllocScope(allocPool);
+        }
+        ~AllocPoolScope()
+        {
+            MemoryManager::Instance()->LeaveAllocScope(allocPool);
+        }
+
     private:
         int32 allocPool;
     };
@@ -94,12 +101,13 @@ public:
     void EnableLightWeightMode();
     void SetCallbacks(Function<void()> updateCallback, Function<void(uint32, bool)> tagCallback);
     void Update();
+    void Finish();
 
     DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex);
     DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
     void* Reallocate(void* ptr, size_t newSize);
     void Deallocate(void* ptr);
-    
+
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
 
@@ -128,9 +136,9 @@ private:
     ~MemoryManager() = default;
 
     MemoryManager(const MemoryManager&) = delete;
-    MemoryManager& operator = (const MemoryManager&) = delete;
+    MemoryManager& operator=(const MemoryManager&) = delete;
     MemoryManager(MemoryManager&&) = delete;
-    MemoryManager& operator = (MemoryManager&&) = delete;
+    MemoryManager& operator=(MemoryManager&&) = delete;
 
     // Methods for memory allocating for internal data structures
     void* InternalAllocate(size_t size);
@@ -161,18 +169,18 @@ private:
     void SymbolCollectorThread(BaseObject*, void*, void*);
 
 private:
-    MemoryBlock* head = nullptr;                        // Linked list of tracked memory blocks
+    MemoryBlock* head = nullptr; // Linked list of tracked memory blocks
 
-    GeneralAllocStat statGeneral;                       // General statistics
-    AllocPoolStat statAllocPool[MAX_ALLOC_POOL_COUNT];  // Statistics by allocation pools
-    TagAllocStat statTag[MAX_TAG_COUNT];                // Statistics by tags
+    GeneralAllocStat statGeneral; // General statistics
+    AllocPoolStat statAllocPool[MAX_ALLOC_POOL_COUNT]; // Statistics by allocation pools
+    TagAllocStat statTag[MAX_TAG_COUNT]; // Statistics by tags
 
     using MutexType = Spinlock;
     using LockType = LockGuard<MutexType>;
 
-    mutable MutexType allocMutex;       // Mutex for managing list of allocated memory blocks
-    mutable MutexType statMutex;        // Mutex for updating memory statistics
-    mutable MutexType gpuMutex;         // Mutex for managing GPU allocations
+    mutable MutexType allocMutex; // Mutex for managing list of allocated memory blocks
+    mutable MutexType statMutex; // Mutex for updating memory statistics
+    mutable MutexType gpuMutex; // Mutex for managing GPU allocations
 
     using GpuBlockMap = std::unordered_map<uint64, MemoryBlock, std::hash<uint64>, std::equal_to<uint64>, InternalAllocator<std::pair<const uint64, MemoryBlock>>>;
 
@@ -182,7 +190,7 @@ private:
     using BacktraceMap = std::unordered_map<uint32, Backtrace, std::hash<uint32>, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
     using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
 
-    mutable MutexType bktraceMutex;     // Mutex for working with backtraces
+    mutable MutexType bktraceMutex; // Mutex for working with backtraces
 
     BacktraceMap* bktraceMap = nullptr;
     SymbolMap* symbolMap = nullptr;
@@ -191,18 +199,18 @@ private:
     ConditionVariable symbolCollectorCondVar;
     Mutex symbolCollectorMutex;
     size_t bktraceGrowDelta = 0;
-    bool lightWeightMode = false;       // Flag enabling lightweight mode: no backtrace and symbols, should increase performance
+    bool lightWeightMode = false; // Flag enabling lightweight mode: no backtrace and symbols, should increase performance
 
     Function<void()> updateCallback;
     Function<void(uint32, bool)> tagCallback;
 
 private:
     // Make the following data members static to allow initialization of predefined values not in constructor
-    static uint32 registeredTagCount;                               // Number of registered tags
-    static uint32 registeredAllocPoolCount;                         // Number of registered allocation pools including predefined
+    static uint32 registeredTagCount; // Number of registered tags
+    static uint32 registeredAllocPoolCount; // Number of registered allocation pools including predefined
 
-    static MMItemName tagNames[MAX_TAG_COUNT];                // Names of tags
-    static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];   // Names of allocation pools
+    static MMItemName tagNames[MAX_TAG_COUNT]; // Names of tags
+    static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT]; // Names of allocation pools
 
     ThreadLocalPtr<AllocScopeItem> tlsAllocScopeStack;
 };
@@ -213,8 +221,8 @@ inline uint64 MemoryManager::PackGPUKey(uint32 id, uint32 allocPool) const
     return static_cast<uint64>(id) | (static_cast<uint64>(allocPool) << 32);
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#endif  // __DAVAENGINE_MEMORYMANAGER_H__
+#endif // __DAVAENGINE_MEMORYMANAGER_H__

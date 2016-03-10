@@ -39,51 +39,43 @@
 
 namespace DAVA
 {
-
 /**
     
  */
 class DataNode : public BaseObject
 {
 public:
-    
     static const int32 INVALID_ID = 0;
-    
+
 public:
     DataNode();
 
-    void SetScene(Scene * _scene);
+    void SetScene(Scene* _scene);
     Scene* GetScene() const;
-    
-    DataNode* FindByName(const String & searchName);
+
+    DataNode* FindByName(const String& searchName);
 
     uint64 GetNodeID() const;
     void SetNodeID(uint64 id);
 
     void SetRuntime(bool isRuntime);
     bool IsRuntime() const;
-    
-    virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-    virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-    
+
+    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+
 protected:
     virtual ~DataNode();
 
     uint64 id;
     bool isRuntime;
-    Scene * scene;
+    Scene* scene;
 
 public:
     INTROSPECTION_EXTEND(DataNode, BaseObject,
-        MEMBER(id, "Id", I_SAVE)
-    );
+                         MEMBER(id, "Id", I_SAVE)
+                         )
 };
-
 };
 
 #endif // __DAVAENGINE_DATANODE_H__
-
-
-
-
-

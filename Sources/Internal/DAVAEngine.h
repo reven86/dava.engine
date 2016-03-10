@@ -105,7 +105,6 @@
 #include "FileSystem/Parser.h"
 #include "FileSystem/FilePath.h"
 
-
 // Collisions
 #include "Collision/Collisions.h"
 
@@ -116,7 +115,6 @@
 #include "Animation/AnimationManager.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/BezierSplineAnimation.h"
-
 
 // 2D Graphics
 #include "Render/2D/Sprite.h"
@@ -151,6 +149,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlBackground.h"
 #include "UI/UIScreen.h"
+#include "UI/UILoadingScreen.h"
 #include "UI/UIList.h"
 #include "UI/UIListCell.h"
 #include "UI/UITextField.h"
@@ -198,7 +197,6 @@
 #include "Particles/Particle.h"
 
 // 3D core classes
-#include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
@@ -215,7 +213,6 @@
 // 3D scene management
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/MeshInstanceNode.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/Landscape.h"
@@ -229,17 +226,8 @@
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Scene3D/AnimationData.h"
-#include "Scene3D/ShadowVolumeNode.h"
-#include "Scene3D/LodNode.h"
-#include "Scene3D/ParticleEmitterNode.h"
-#include "Scene3D/ParticleEffectNode.h"
-#include "Scene3D/SwitchNode.h"
-#include "Scene3D/UserNode.h"
 #include "Scene3D/Systems/LodSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/BillboardNode.h"
-#include "Scene3D/BoneNode.h"
-#include "Scene3D/SkeletonNode.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -286,4 +274,3 @@
 #include "Notification/LocalNotificationController.h"
 
 #endif // __DAVAENGINE_H__
-

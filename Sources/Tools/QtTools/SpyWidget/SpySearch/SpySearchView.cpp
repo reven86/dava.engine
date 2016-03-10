@@ -29,8 +29,9 @@
 
 #include "SpySearchView.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QAbstractItemModel>
-
+POP_QT_WARNING_SUPRESSOR
 
 SpySearchView::SpySearchView( QWidget* parent )
     : QWidget( parent )

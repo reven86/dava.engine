@@ -35,7 +35,7 @@
 using namespace DAVA;
 
 DistanceFontValidator::DistanceFontValidator()
-:   notifyMessage("")
+    : notifyMessage("")
 {
 }
 
@@ -90,7 +90,7 @@ void DistanceFontValidator::FixupInternal(QVariant& v) const
     }
 }
 
-void DistanceFontValidator::ErrorNotifyInternal(const QVariant &v) const
+void DistanceFontValidator::ErrorNotifyInternal(const QVariant& v) const
 {
     QMessageBox::warning(NULL, "Broken Distance Field font", notifyMessage, QMessageBox::Ok);
 }

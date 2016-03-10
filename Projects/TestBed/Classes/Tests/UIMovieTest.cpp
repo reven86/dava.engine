@@ -30,7 +30,8 @@
 
 UIMovieTest::UIMovieTest()
     : BaseScreen("UIMovieTest")
-{}
+{
+}
 
 void UIMovieTest::LoadResources()
 {
@@ -40,7 +41,7 @@ void UIMovieTest::LoadResources()
     AddControl(movieView);
 
     // Create the "player" buttons.
-    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(14);
 
@@ -86,7 +87,7 @@ void UIMovieTest::UnloadResources()
     SafeRelease(playerStateText);
 }
 
-void UIMovieTest::DidAppear()
+void UIMovieTest::OnActive()
 {
     movieView->Play();
 }
@@ -116,7 +117,7 @@ UIButton* UIMovieTest::CreateUIButton(Font* font, const Rect& rect, const String
     return button;
 }
 
-void UIMovieTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
+void UIMovieTest::ButtonPressed(BaseObject* obj, void* data, void* callerData)
 {
     if (obj == playButton)
         movieView->Play();
@@ -127,12 +128,12 @@ void UIMovieTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
     else if (obj == resumeButton)
         movieView->Resume();
     else if (obj == hideButton)
-        movieView->SetVisible(false);
+        movieView->SetVisibilityFlag(false);
     else if (obj == showButton)
-        movieView->SetVisible(true);
+        movieView->SetVisibilityFlag(true);
 }
 
-void UIMovieTest::ScaleButtonPressed(BaseObject *obj, void *data, void *callerData)
+void UIMovieTest::ScaleButtonPressed(BaseObject* obj, void* data, void* callerData)
 {
     eMovieScalingMode scaleMode = scalingModeNone;
     if (obj == buttonScale0)

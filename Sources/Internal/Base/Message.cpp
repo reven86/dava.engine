@@ -30,9 +30,11 @@
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
+MessageBase::~MessageBase()
+{
+}
 //void Message::SetSelector(DAVA::BaseObject *_pObj, void (BaseObject::*_pFunc)(BaseObject*, void*, void*), void * _pUserData)
 //{
 //	pObj = _pObj;
@@ -47,7 +49,7 @@ namespace DAVA
 //	else if (pFunc2)
 //		pFunc2(pCaller, pUserData, NULL);
 //}
-//	
+//
 //void Message::Call(BaseObject * pCaller, void * callerData)
 //{
 //	if(pObj && pFunc)
@@ -55,5 +57,4 @@ namespace DAVA
 //	else if (pFunc2)
 //		pFunc2(pCaller, pUserData, callerData);
 //}
-
 };

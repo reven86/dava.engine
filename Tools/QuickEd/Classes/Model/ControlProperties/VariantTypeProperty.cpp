@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-VariantTypeProperty::VariantTypeProperty(const String &name, VariantType &vt)
+VariantTypeProperty::VariantTypeProperty(const String& name, VariantType& vt)
     : ValueProperty(name)
     , value(vt)
 {
@@ -47,7 +47,7 @@ VariantTypeProperty::~VariantTypeProperty()
 {
 }
 
-void VariantTypeProperty::Accept(PropertyVisitor *visitor)
+void VariantTypeProperty::Accept(PropertyVisitor* visitor)
 {
     // do nothing
 }
@@ -67,13 +67,12 @@ VariantType VariantTypeProperty::GetValue() const
     return value;
 }
 
-const EnumMap *VariantTypeProperty::GetEnumMap() const
+const EnumMap* VariantTypeProperty::GetEnumMap() const
 {
     return nullptr;
 }
 
-void VariantTypeProperty::ApplyValue(const DAVA::VariantType &newValue)
+void VariantTypeProperty::ApplyValue(const DAVA::VariantType& newValue)
 {
     value = newValue;
 }
-

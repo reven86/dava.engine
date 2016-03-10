@@ -34,25 +34,24 @@
 
 namespace DAVA
 {
-    class UIPackage;
-    
-    class UIPackagesCache : public BaseObject
-    {
-    public:
-        UIPackagesCache(UIPackagesCache *_parent = nullptr);
+class UIPackage;
 
-    protected:
-        ~UIPackagesCache();
+class UIPackagesCache : public BaseObject
+{
+public:
+    UIPackagesCache(UIPackagesCache* _parent = nullptr);
 
-    public:
-        void PutPackage(const String &name, UIPackage *package);
-        UIPackage *GetPackage(const String &name) const;
-        
-    private:
-        UIPackagesCache *parent;
-        
-        Map<String, UIPackage*> packages;
-    };
-    
+protected:
+    ~UIPackagesCache();
+
+public:
+    void PutPackage(const String& name, UIPackage* package);
+    UIPackage* GetPackage(const String& name) const;
+
+private:
+    UIPackagesCache* parent;
+
+    Map<String, UIPackage*> packages;
+};
 };
 #endif // __DAVAENGINE_UI_PACKAGES_CACHE_H__

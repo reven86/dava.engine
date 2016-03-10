@@ -32,18 +32,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace DAVA;
 
 const WideString htmlContent =
-		L"<html>"
-		L"<head></head>"
-		L"<body text='white'>"
-		L"Some test text"
-		L"</body>"
-		L"</html>";
+L"<html>"
+L"<head></head>"
+L"<body text='white'>"
+L"Some test text"
+L"</body>"
+L"</html>";
 
-WebViewTest::WebViewTest ()
+WebViewTest::WebViewTest()
     : BaseScreen("WebViewTest")
-	, webView(nullptr)
-	, bgStubPanel(nullptr)
-	, updateWait(false)
+    , webView(nullptr)
+    , bgStubPanel(nullptr)
+    , updateWait(false)
 {
 }
 
@@ -61,8 +61,8 @@ void WebViewTest::LoadResources()
     bgStubPanel = new UIControl(Rect(10, 10, 400, 200));
     bgStubPanel->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     bgStubPanel->GetBackground()->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
-    bgStubPanel->GetBackground()->SetColor(Color(1,0,0,1));
-    bgStubPanel->SetVisible(false);
+    bgStubPanel->GetBackground()->SetColor(Color(1, 0, 0, 1));
+    bgStubPanel->SetVisibilityFlag(false);
     AddControl(bgStubPanel);
 
     ScopedPtr<UIButton> visibleBtn(new UIButton(Rect(440, 10, 200, 50)));
@@ -83,20 +83,20 @@ void WebViewTest::UnloadResources()
 
 void WebViewTest::Update(float32 delta)
 {
-	// Simulate time lag between screens or tabs with loading resources
-	if(updateWait)
-	{
-		Thread::Sleep(500);
-		updateWait = false;
-	}
+    // Simulate time lag between screens or tabs with loading resources
+    if (updateWait)
+    {
+        Thread::Sleep(500);
+        updateWait = false;
+    }
 
-	BaseScreen::Update(delta);
+    BaseScreen::Update(delta);
 }
 
 void WebViewTest::OnVisibleClick(BaseObject* sender, void* data, void* callerData)
 {
-	webView->SetVisible(!webView->GetVisible());
-	bgStubPanel->SetVisible(!webView->GetVisible());
+    webView->SetVisibilityFlag(!webView->GetVisibilityFlag());
+    bgStubPanel->SetVisibilityFlag(!webView->GetVisibilityFlag());
 
-	updateWait = true;
+    updateWait = true;
 }

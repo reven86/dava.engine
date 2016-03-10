@@ -1132,7 +1132,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIJoypad.h" />
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIList.h" />
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIListCell.h" />
-    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UILoadingTransition.h" />
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UILoadingScreen.h" />
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIMoveInTransition.h" />
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIMovieView.h" />
     <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIPackage.h" />
@@ -1680,7 +1680,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIJoypad.cpp" />
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIList.cpp" />
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIListCell.cpp" />
-    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UILoadingTransition.cpp" />
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UILoadingScreen.cpp" />
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIMoveInTransition.cpp" />
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIMovieView.cpp" />
     <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIPackage.cpp" />

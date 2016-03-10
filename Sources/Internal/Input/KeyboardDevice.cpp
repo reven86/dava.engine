@@ -29,9 +29,11 @@
 
 #include "KeyboardDevice.h"
 
+#include <algorithm>
+
 namespace DAVA
 {
-static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames =
+static const char* keys[] =
 {
   "UNKNOWN",
   "ESCAPE",
@@ -168,6 +170,8 @@ KeyboardDevice::KeyboardDevice()
     static_assert(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) < MAX_KEYS, "check array size");
     DVASSERT(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) == keyNames.size());
 
+    std::copy(keys, keys + keyNames.size(), keyNames.begin());
+
     ClearAllKeys();
     PrepareKeyTranslator();
 }
@@ -278,14 +282,14 @@ void KeyboardDevice::PrepareKeyTranslator()
         unsigned keyValue = static_cast<unsigned>(Key::F1) + i;
         keyTranslator[VK_F1 + i] = static_cast<Key>(keyValue);
     }
-    
+
     // alpha keys
     for (unsigned i = 0; i < 26; ++i)
     {
         unsigned keyValue = static_cast<unsigned>(Key::KEY_A) + i;
         keyTranslator[0x41 + i] = static_cast<Key>(keyValue);
     }
-    
+
     // numeric keys & keys at num pad
     for (unsigned i = 0; i < 10; ++i)
     {
@@ -425,7 +429,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x04] = Key::BACK;
     keyTranslator[0x52] = Key::MENU;
 #endif
-
 }
 
 void KeyboardDevice::ClearAllKeys()
@@ -433,5 +436,4 @@ void KeyboardDevice::ClearAllKeys()
     currentFrameKeyStatus.reset();
     realKeyStatus.reset();
 }
-
 };

@@ -32,27 +32,25 @@
 
 namespace DAVA
 {
-    
-
 UserComponent::UserComponent()
-{ }
-
-Component * UserComponent::Clone(Entity * toEntity)
 {
-	UserComponent *uc = new UserComponent();
-	uc->SetEntity(toEntity);
-
-	return uc;
 }
 
-void UserComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+Component* UserComponent::Clone(Entity* toEntity)
 {
-	Component::Serialize(archive, serializationContext);
+    UserComponent* uc = new UserComponent();
+    uc->SetEntity(toEntity);
+
+    return uc;
 }
 
-void UserComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void UserComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Deserialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 }
 
+void UserComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+    Component::Deserialize(archive, serializationContext);
+}
 }

@@ -28,148 +28,133 @@
 
 
 #include "Scene3D/SceneNodeAnimation.h"
-#include "Scene3D/SceneNodeAnimationList.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-
 SceneNodeAnimation::SceneNodeAnimation(int32 _keyCount)
 {
-	keyCount = _keyCount;
-	bindNode = 0;
-	startIdx = 0;
-	keys = new SceneNodeAnimationKey[keyCount];
-	apply = true;
-	weight = 0.0f;
-	delayTime = 0.0f;
-	parent = 0;
+    keyCount = _keyCount;
+    bindNode = 0;
+    startIdx = 0;
+    keys = new SceneNodeAnimationKey[keyCount];
+    apply = true;
+    weight = 0.0f;
+    delayTime = 0.0f;
 }
 
 SceneNodeAnimation::~SceneNodeAnimation()
 {
-	SafeDeleteArray(keys);
-}
-	
-void SceneNodeAnimation::SetKey(int32 index, const SceneNodeAnimationKey & key)
-{
-	keys[index] = key;
+    SafeDeleteArray(keys);
 }
 
-SceneNodeAnimationKey & SceneNodeAnimation::Intepolate(float32 t)
+void SceneNodeAnimation::SetKey(int32 index, const SceneNodeAnimationKey& key)
 {
-	if (keyCount == 1)
-	{
-		currentValue = keys[0];
-		return currentValue;
-	}
-	
-	if (t < keys[startIdx].time)
-	{
-		startIdx = 0;
-	}
-	
-	int32 endIdx = 0;
-	for (endIdx = startIdx; endIdx < keyCount; ++endIdx)
-	{
-		if (keys[endIdx].time > t)
-		{
-			break;
-		}
-		startIdx = endIdx;
-	}
-	
-	if (endIdx == keyCount)
-	{
-		currentValue = keys[keyCount - 1];
-		return currentValue;
-	}
-	
-	SceneNodeAnimationKey & key1 = keys[startIdx];
-	SceneNodeAnimationKey & key2 = keys[endIdx];
+    keys[index] = key;
+}
 
-	float32 tInter = (t - key1.time) / (key2.time - key1.time);
+SceneNodeAnimationKey& SceneNodeAnimation::Intepolate(float32 t)
+{
+    if (keyCount == 1)
+    {
+        currentValue = keys[0];
+        return currentValue;
+    }
 
-	currentValue.translation.Lerp(key1.translation, key2.translation, tInter);
-	currentValue.rotation.Slerp(key1.rotation, key2.rotation, tInter);
-	currentValue.scale.Lerp(key1.scale, key2.scale, tInter);
-	//currentValue.matrix = key1.matrix;
-	return currentValue;
+    if (t < keys[startIdx].time)
+    {
+        startIdx = 0;
+    }
+
+    int32 endIdx = 0;
+    for (endIdx = startIdx; endIdx < keyCount; ++endIdx)
+    {
+        if (keys[endIdx].time > t)
+        {
+            break;
+        }
+        startIdx = endIdx;
+    }
+
+    if (endIdx == keyCount)
+    {
+        currentValue = keys[keyCount - 1];
+        return currentValue;
+    }
+
+    SceneNodeAnimationKey& key1 = keys[startIdx];
+    SceneNodeAnimationKey& key2 = keys[endIdx];
+
+    float32 tInter = (t - key1.time) / (key2.time - key1.time);
+
+    currentValue.translation.Lerp(key1.translation, key2.translation, tInter);
+    currentValue.rotation.Slerp(key1.rotation, key2.rotation, tInter);
+    currentValue.scale.Lerp(key1.scale, key2.scale, tInter);
+    //currentValue.matrix = key1.matrix;
+    return currentValue;
 }
 
 void SceneNodeAnimation::SetDuration(float32 _duration)
 {
-	duration = _duration;
+    duration = _duration;
 }
-	
-void SceneNodeAnimation::SetBindNode(Entity * _bindNode)
+
+void SceneNodeAnimation::SetBindNode(Entity* _bindNode)
 {
-	bindNode = _bindNode;
+    bindNode = _bindNode;
 }
-	
-void SceneNodeAnimation::SetBindName(const FastName & _bindName)
+
+void SceneNodeAnimation::SetBindName(const FastName& _bindName)
 {
-	bindName = _bindName;
+    bindName = _bindName;
 }
 
 void SceneNodeAnimation::SetInvPose(const Matrix4& mat)
 {
-	invPose = mat;
+    invPose = mat;
 }
 const Matrix4& SceneNodeAnimation::GetInvPose() const
 {
-	return invPose;
+    return invPose;
 }
-	
+
 void SceneNodeAnimation::Update(float32 timeElapsed)
 {
-	delayTime -= timeElapsed;
-	if (delayTime <= 0.0f)
-	{
-		delayTime = 0.0f;
-		currentTime += timeElapsed + delayTime;
-		if (currentTime > duration)
-		{
-			currentTime = duration;
-			//bindNode->DetachAnimation(this);
-		}
-	}
+    delayTime -= timeElapsed;
+    if (delayTime <= 0.0f)
+    {
+        delayTime = 0.0f;
+        currentTime += timeElapsed + delayTime;
+        if (currentTime > duration)
+        {
+            currentTime = duration;
+            //bindNode->DetachAnimation(this);
+        }
+    }
 }
-	
+
 void SceneNodeAnimation::Execute()
 {
     DVASSERT(0);
-// 	startIdx = 0;
-// 	currentTime = 0;
-// 	bindNode->ExecuteAnimation(this);
-}
-	
-Vector3 SceneNodeAnimation::SetStartPosition(const Vector3 & position)
-{
-	Vector3 sPos = keys[0].translation;
-	for (int idx = 0; idx < keyCount; ++idx)
-	{
-		keys[idx].translation = position + keys[idx].translation - sPos;
-	}
-	return position - sPos;
-}	
-
-void SceneNodeAnimation::ShiftStartPosition(const Vector3 & shift)
-{
-	for (int idx = 0; idx < keyCount; ++idx)
-	{
-		keys[idx].translation += shift;
-	}
-}
-	
-void SceneNodeAnimation::SetParent(SceneNodeAnimationList * list)
-{
-	parent = list;
+    // 	startIdx = 0;
+    // 	currentTime = 0;
+    // 	bindNode->ExecuteAnimation(this);
 }
 
-SceneNodeAnimationList * SceneNodeAnimation::GetParent()
+Vector3 SceneNodeAnimation::SetStartPosition(const Vector3& position)
 {
-	return parent;
+    Vector3 sPos = keys[0].translation;
+    for (int idx = 0; idx < keyCount; ++idx)
+    {
+        keys[idx].translation = position + keys[idx].translation - sPos;
+    }
+    return position - sPos;
 }
 
+void SceneNodeAnimation::ShiftStartPosition(const Vector3& shift)
+{
+    for (int idx = 0; idx < keyCount; ++idx)
+    {
+        keys[idx].translation += shift;
+    }
+}
 }

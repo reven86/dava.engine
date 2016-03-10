@@ -34,18 +34,15 @@
 #include "Base/BaseObject.h"
 #include "FileSystem/File.h"
 
-
-namespace DAVA 
+namespace DAVA
 {
 class DynamicMemoryFile : public File
 {
 protected:
-
     DynamicMemoryFile();
     virtual ~DynamicMemoryFile();
 
 public:
-
     /**
      \brief funciton to create a file instance with give attributes
      \param[in] data pointer to data to create file from
@@ -53,15 +50,14 @@ public:
      \param[in] attributes combinations of eFileAttributes
      \returns file instance
      */
-    static DynamicMemoryFile * Create(const uint8 * data, int32 dataSize, uint32 attributes);
+    static DynamicMemoryFile* Create(const uint8* data, int32 dataSize, uint32 attributes);
 
     /**
      \brief funciton to create a file instance with give attributes
      \param[in] attributes combinations of eFileAttributes
      \returns file instance
      */
-    static DynamicMemoryFile * Create(uint32 attributes);
-
+    static DynamicMemoryFile* Create(uint32 attributes);
 
     /**
      \brief returns pointer to the data contained in the memory file
@@ -77,7 +73,7 @@ public:
      \param[in] dataSize size of data we want to write
      \returns number of bytes actually written
      */
-    uint32 Write(const void * pointerToData, uint32 dataSize) override;
+    uint32 Write(const void* pointerToData, uint32 dataSize) override;
 
     /**
      \brief Read [dataSize] bytes from this file to [pointerToData]
@@ -85,7 +81,7 @@ public:
      \param[in] dataSize size of data we want to read
      \return number of bytes actually read
      */
-    uint32 Read(void * pointerToData, uint32 dataSize) override;
+    uint32 Read(void* pointerToData, uint32 dataSize) override;
 
     /**
      \brief Get current file position
@@ -94,14 +90,14 @@ public:
 
     /**
      \brief Get current file size if writing
-     \brief and get real file size if file for reading
+            and get real file size if file for reading
      */
     uint32 GetSize() const override;
 
     /**
      \brief Set current file position
      \param position position to set
-     \param seekType \ref IO::eFileSeek flag to set type of positioning
+     \param seekType - \ref IO::eFileSeek flag to set type of positioning
      \return true if successful otherwise false.
      */
     bool Seek(int32 position, uint32 seekType) override;

@@ -33,6 +33,7 @@
 #include "Commands2/Command2.h"
 #include "Scene/EntityGroup.h"
 #include "StringConstants.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -44,32 +45,21 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Functional/Function.h"
 
-class StructureSystemDelegate
-{
-public:
-    virtual ~StructureSystemDelegate() = default;
-
-    virtual void WillRemove(DAVA::Entity *removedEntity) = 0;
-    virtual void DidRemoved(DAVA::Entity *removedEntity) = 0;
-};
-
 class StructureSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
+    friend class SceneEditor2;
 
 public:
-	StructureSystem(DAVA::Scene * scene);
-	~StructureSystem();
+    StructureSystem(DAVA::Scene* scene);
+    ~StructureSystem();
 
-	bool Init(const DAVA::FilePath & path);
-
-	void Move(const EntityGroup& entityGroup, DAVA::Entity *newParent, DAVA::Entity *newBefore);
-	void Remove(const EntityGroup& entityGroup);
-    void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter *> &emitters, const DAVA::Vector<DAVA::ParticleEffectComponent *>& oldEffects, DAVA::ParticleEffectComponent *newEffect, int dropAfter);    
-	void MoveLayer(const DAVA::Vector<DAVA::ParticleLayer *> &layers, const DAVA::Vector<DAVA::ParticleEmitter *>& oldEmitters, DAVA::ParticleEmitter *newEmitter, DAVA::ParticleLayer *newBefore);
-	void RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer *> &layers, const DAVA::Vector<DAVA::ParticleEmitter *>& oldEmitters);
-	void MoveForce(const DAVA::Vector<DAVA::ParticleForce *> &forces, const DAVA::Vector<DAVA::ParticleLayer *> &oldLayers, DAVA::ParticleLayer *newLayer);
-	void RemoveForce(const DAVA::Vector<DAVA::ParticleForce *> &forces, const DAVA::Vector<DAVA::ParticleLayer *> &layers);
+    void Move(const EntityGroup& entityGroup, DAVA::Entity* newParent, DAVA::Entity* newBefore);
+    void Remove(const EntityGroup& entityGroup);
+    void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter);
+    void MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore);
+    void RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters);
+    void MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer);
+    void RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& layers);
     EntityGroup ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings = false);
     // Mapping is link between old entity and new entity
     void ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, bool saveLightmapSettings = false);
@@ -80,35 +70,35 @@ public:
 
     DAVA::Entity* Load(const DAVA::FilePath& sc2path);
 
-    void AddDelegate(StructureSystemDelegate *delegate);
-    void RemoveDelegate(StructureSystemDelegate *delegate);
+    void AddDelegate(StructureSystemDelegate* delegate);
+    void RemoveDelegate(StructureSystemDelegate* delegate);
 
 protected:
-	bool structureChanged;
+    bool structureChanged;
 
-	void Process(DAVA::float32 timeElapsed) override;
-	void Draw();
+    void Process(DAVA::float32 timeElapsed) override;
+    void Draw();
 
-	void ProcessCommand(const Command2 *command, bool redo);
+    void ProcessCommand(const Command2* command, bool redo);
 
-	void AddEntity(DAVA::Entity * entity) override;
-	void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     void ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings);
     DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool clearCached);
 
-    bool CopyLightmapSettings(DAVA::Entity *fromState, DAVA::Entity *toState) const;
-	void CopyLightmapSettings(DAVA::NMaterial *fromEntity, DAVA::NMaterial *toEntity) const;
-    void FindMeshesRecursive(DAVA::Entity *entity, DAVA::Vector<DAVA::RenderObject *> & objects) const;
+    bool CopyLightmapSettings(DAVA::Entity* fromState, DAVA::Entity* toState) const;
+    void CopyLightmapSettings(DAVA::NMaterial* fromEntity, DAVA::NMaterial* toEntity) const;
+    void FindMeshesRecursive(DAVA::Entity* entity, DAVA::Vector<DAVA::RenderObject*>& objects) const;
 
-	void CheckAndMarkSolid(DAVA::Entity *entity);
+    void CheckAndMarkSolid(DAVA::Entity* entity);
 
     void SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback);
 
-    void ProcessAutoSelection(const Command2 *command, bool redo) const;
+    void ProcessAutoSelection(const Command2* command, bool redo) const;
 
 private:
-    DAVA::List<StructureSystemDelegate *> delegates;
+    DAVA::List<StructureSystemDelegate*> delegates;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__

@@ -32,85 +32,65 @@
 #include "Platform/SystemTimer.h"
 #include <Render/2D/Systems/RenderSystem2D.h>
 
-namespace DAVA 
+namespace DAVA
 {
-
 List<UIScreen*> UIScreen::appScreens;
-int32			UIScreen::groupIdCounter = -1;
+int32 UIScreen::groupIdCounter = -1;
 
-UIScreen::UIScreen(const Rect &rect)
-	:UIControl(rect)
-,	groupId(groupIdCounter)
+UIScreen::UIScreen(const Rect& rect)
+    : UIControl(rect)
+    , groupId(groupIdCounter)
 {
-	// add screen to list
-	appScreens.push_back(this);
-	groupIdCounter --;
-	isLoaded = false;
-	fillBorderOrder = FILL_BORDER_AFTER_DRAW;
+    // add screen to list
+    appScreens.push_back(this);
+    groupIdCounter--;
+    isLoaded = false;
+    fillBorderOrder = FILL_BORDER_AFTER_DRAW;
 }
-	
+
 UIScreen::~UIScreen()
 {
-	// remove screen from list
-	for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
-	{
-		if (*t == this)
-		{
-			appScreens.erase(t);
-			break;
-		}
-	}
-}
-    
-void UIScreen::SystemWillAppear()
-{
-    bool needNotify = false;
-    const Rect& virtualRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-    if (GetSize() != virtualRect.GetSize())
+    // remove screen from list
+    for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
     {
-        SetSize(virtualRect.GetSize());
-        needNotify = true;
-    }
-
-    UIControl::SystemWillAppear();
-
-    if (needNotify)
-    {
-        SystemScreenSizeDidChanged(virtualRect);
+        if (*t == this)
+        {
+            appScreens.erase(t);
+            break;
+        }
     }
 }
 
-void UIScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenRect)
+void UIScreen::SystemScreenSizeChanged(const Rect& newFullScreenRect)
 {
     SetSize(newFullScreenRect.GetSize());
-    UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
+    UIControl::SystemScreenSizeChanged(newFullScreenRect);
 }
 
 void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
 {
-	fillBorderOrder = fillOrder;
+    fillBorderOrder = fillOrder;
 }
 
-	
-void UIScreen::SystemDraw(const UIGeometricData &geometricData)
+void UIScreen::SystemDraw(const UIGeometricData& geometricData)
 {
-	if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
-	{
-		FillScreenBorders(geometricData);
-		UIControl::SystemDraw(geometricData);
-	}
-	else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
-	{
-		UIControl::SystemDraw(geometricData);
-		FillScreenBorders(geometricData);
-	}
-	else 
-	{
-		UIControl::SystemDraw(geometricData);
-	}
+    if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
+    {
+        FillScreenBorders(geometricData);
+        UIControl::SystemDraw(geometricData);
+    }
+    else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
+    {
+        UIControl::SystemDraw(geometricData);
+        FillScreenBorders(geometricData);
+    }
+    else
+    {
+        UIControl::SystemDraw(geometricData);
+    }
 }
 
-void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
+void UIScreen::FillScreenBorders(const UIGeometricData& geometricData)
 {
     static auto drawColor(Color::Black);
 
@@ -122,12 +102,12 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
     drawData.angle = angle;
     drawData.AddGeometricData(geometricData);
 
-	Rect drawRect = drawData.GetUnrotatedRect();
+    Rect drawRect = drawData.GetUnrotatedRect();
     Rect fullRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
     Vector2 virtualSize = Vector2((float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
                                   (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
-	if (fullRect.x < 0)
-	{
+    if (fullRect.x < 0)
+    {
         auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);
         RenderSystem2D::Instance()->FillRect(rect1, drawColor);
         auto rect2 = Rect(fullRect.dx - fullRect.x, 0, fullRect.x, virtualSize.y);
@@ -142,75 +122,77 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
     }
 }
 
-
 void UIScreen::LoadGroup()
 {
-	//Logger::FrameworkDebug("load group started");
-	//uint64 loadGroupStart = SystemTimer::Instance()->AbsoluteMS();
-	if (groupId < 0)
-	{
-		if (isLoaded)return;
-		
-		LoadResources();
-		isLoaded = true;
-	}else
-	{
-		int32 screenGroupId = groupId;
-		for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
-		{
-			UIScreen * screen = *t;
-			if ((screen->groupId == screenGroupId) && (!screen->isLoaded))
-			{
-				screen->LoadResources();
-				screen->isLoaded = true;
-			}
-		}
-	}
-	//uint64 loadGroupEnd = SystemTimer::Instance()->AbsoluteMS();
-	//Logger::FrameworkDebug("load group finished: %lld", loadGroupEnd - loadGroupStart);
+    //Logger::FrameworkDebug("load group started");
+    //uint64 loadGroupStart = SystemTimer::Instance()->AbsoluteMS();
+    if (groupId < 0)
+    {
+        if (isLoaded)
+            return;
+
+        LoadResources();
+        isLoaded = true;
+    }
+    else
+    {
+        int32 screenGroupId = groupId;
+        for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
+        {
+            UIScreen* screen = *t;
+            if ((screen->groupId == screenGroupId) && (!screen->isLoaded))
+            {
+                screen->LoadResources();
+                screen->isLoaded = true;
+            }
+        }
+    }
+    //uint64 loadGroupEnd = SystemTimer::Instance()->AbsoluteMS();
+    //Logger::FrameworkDebug("load group finished: %lld", loadGroupEnd - loadGroupStart);
 }
 
 void UIScreen::UnloadGroup()
 {
-	if (groupId < 0)
-	{
-		if (!isLoaded)return;
-		
-		UnloadResources();
-		isLoaded = false;
-	}else
-	{
-		int32 screenGroupId = groupId;
-		for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
-		{
-			UIScreen * screen = *t;
-			if ((screen->groupId == screenGroupId) && (screen->isLoaded))
-			{
-				screen->UnloadResources();
-				screen->isLoaded = false;
-			}
-		}
-	}	
+    if (groupId < 0)
+    {
+        if (!isLoaded)
+            return;
+
+        UnloadResources();
+        isLoaded = false;
+    }
+    else
+    {
+        int32 screenGroupId = groupId;
+        for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
+        {
+            UIScreen* screen = *t;
+            if ((screen->groupId == screenGroupId) && (screen->isLoaded))
+            {
+                screen->UnloadResources();
+                screen->isLoaded = false;
+            }
+        }
+    }
 }
 
 bool UIScreen::IsLoaded()
 {
-	return isLoaded;
+    return isLoaded;
 }
-	
+
 void UIScreen::AddToGroup(int32 _groupId)
 {
-	groupId = _groupId;
+    groupId = _groupId;
 }
 
 void UIScreen::RemoveFromGroup()
 {
-	groupId = groupIdCounter--;
+    groupId = groupIdCounter--;
 }
 
 int32 UIScreen::GetGroupId()
 {
-	return groupId;
+    return groupId;
 }
-
 };

@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class MallocHook final
 {
 public:
@@ -46,11 +45,11 @@ public:
     static void* Malloc(size_t size);
     static void* Realloc(void* ptr, size_t newSize);
     static void Free(void* ptr);
-    static size_t MallocSize(void * ptr);
+    static size_t MallocSize(void* ptr);
 
 private:
     static void Install();
-    
+
 private:
     static void* (*RealMalloc)(size_t);
     static void* (*RealRealloc)(void*, size_t);
@@ -60,8 +59,8 @@ private:
 #endif
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#endif  // __DAVAENGINE_MALLOCHOOK_H__
+#endif // __DAVAENGINE_MALLOCHOOK_H__

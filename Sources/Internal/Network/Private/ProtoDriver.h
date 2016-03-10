@@ -31,7 +31,6 @@
 #define __DAVAENGINE_PROTODRIVER_H__
 
 #include <Base/BaseTypes.h>
-#include <Concurrency/Atomic.h>
 #include <Concurrency/Mutex.h>
 #include <Concurrency/Spinlock.h>
 
@@ -46,7 +45,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class IOLoop;
 class ServiceRegistrar;
 
@@ -58,26 +56,27 @@ private:
         uint32 channelId;
         uint32 packetId;
         uint8* data = nullptr; // Data
-        size_t dataLength;      //  and its length
-        size_t sentLength;      // Number of bytes that have been already transfered
-        size_t chunkLength;     // Number of bytes transfered during last operation
+        size_t dataLength; //  and its length
+        size_t sentLength; // Number of bytes that have been already transfered
+        size_t chunkLength; // Number of bytes transfered during last operation
     };
 
     struct Channel : public IChannel
     {
         Channel(uint32 id, ProtoDriver* driver);
+        ~Channel() override;
 
         bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) override;
         const Endpoint& RemoteEndpoint() const override;
 
-        bool confirmed;     // Channel is confirmed by other side
+        bool confirmed; // Channel is confirmed by other side
         uint32 channelId;
         Endpoint remoteEndpoint;
         ProtoDriver* driver = nullptr;
         IChannelListener* service = nullptr;
     };
 
-    friend bool operator == (const Channel& ch, uint32 channelId);
+    friend bool operator==(const Channel& ch, uint32 channelId);
 
     enum eSendingFrameType
     {
@@ -142,8 +141,6 @@ private:
 
     ProtoDecoder proto;
     ProtoHeader header;
-
-    static Atomic<uint32> nextPacketId;     // Global for all instances
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -153,7 +150,6 @@ inline ProtoDriver::Channel::Channel(uint32 id, ProtoDriver* aDriver)
     , driver(aDriver)
     , service(NULL)
 {
-
 }
 
 inline bool ProtoDriver::Channel::Send(const void* data, size_t length, uint32 flags, uint32* outPacketId)
@@ -167,7 +163,7 @@ inline const Endpoint& ProtoDriver::Channel::RemoteEndpoint() const
     return remoteEndpoint;
 }
 
-inline bool operator == (const ProtoDriver::Channel& ch, uint32 channelId)
+inline bool operator==(const ProtoDriver::Channel& ch, uint32 channelId)
 {
     return ch.channelId == channelId;
 }
@@ -176,10 +172,11 @@ inline ProtoDriver::Channel* ProtoDriver::GetChannel(uint32 channelId)
 {
     Vector<Channel>::iterator i = std::find(channels.begin(), channels.end(), channelId);
     return i != channels.end() ? &*i
-                               : NULL;
+                                 :
+                                 NULL;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_PROTODRIVER_H__
+#endif // __DAVAENGINE_PROTODRIVER_H__

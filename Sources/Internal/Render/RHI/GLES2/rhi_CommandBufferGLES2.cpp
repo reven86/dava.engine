@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
  Copyright (c) 2008, binaryzebra
  All rights reserved.
  
@@ -42,6 +42,7 @@ using DAVA::Logger;
     #include "Concurrency/Semaphore.h"
     #include "Concurrency/ConditionVariable.h"
     #include "Concurrency/LockGuard.h"
+    #include "Concurrency/AutoResetEvent.h"
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
@@ -394,6 +395,9 @@ static unsigned _GLES2_FrameNumber = 1;
 static DAVA::Spinlock _GLES2_FrameSync;
 //static DAVA::Mutex              _FrameSync;
 
+static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
+static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
+
 static void _ExecGL(GLCommand* command, uint32 cmdCount);
 
 static Handle
@@ -731,7 +735,7 @@ gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
 static void
 gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    // NOTE: expected to be called BEFORE SetFragmentTexture
+// NOTE: expected to be called BEFORE SetFragmentTexture
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();
@@ -1121,8 +1125,7 @@ void CommandBufferGLES2_t::Execute()
             break;
 #endif
 //++cmd_cnt;
-
-
+        
 #if RHI_GLES2__USE_CMDBUF_PACKING
         switch (cmd->type)
 #else
@@ -1163,36 +1166,36 @@ void CommandBufferGLES2_t::Execute()
                     def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
                     if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
-                        glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
+                        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
                         _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
 
                 if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
                 {
-                    glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]);
+                    GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
                     flags |= GL_COLOR_BUFFER_BIT;
                 }
 
                 if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
                 {
                         #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                    glStencilMask(0xFFFFFFFF);
-                    glClearDepthf(passCfg.depthStencilBuffer.clearDepth);
+                    GL_CALL(glStencilMask(0xFFFFFFFF));
+                    GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
                         #else
-                    glClearDepth(passCfg.depthStencilBuffer.clearDepth);
-                    glStencilMask(0xFFFFFFFF);
-                    glClearStencil(0);
+                    GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
+                    GL_CALL(glStencilMask(0xFFFFFFFF));
+                    GL_CALL(glClearStencil(0));
                         #endif
 
                     flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
 
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
 
                 if (flags)
                 {
-                    glClear(flags);
+                    GL_CALL(glClear(flags));
                 }
             }
         }
@@ -1221,7 +1224,7 @@ void CommandBufferGLES2_t::Execute()
                 }
 
                 if (discardsCount != 0)
-                    glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards);
+                    GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
             }
 
             #endif
@@ -1340,19 +1343,19 @@ void CommandBufferGLES2_t::Execute()
             switch (mode)
             {
             case CULL_NONE:
-                glDisable(GL_CULL_FACE);
+                GL_CALL(glDisable(GL_CULL_FACE));
                 break;
 
             case CULL_CCW:
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CW);
-                glCullFace(GL_BACK);
+                GL_CALL(glEnable(GL_CULL_FACE));
+                GL_CALL(glFrontFace(GL_CW));
+                GL_CALL(glCullFace(GL_BACK));
                 break;
 
             case CULL_CW:
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CW);
-                glCullFace(GL_FRONT);
+                GL_CALL(glEnable(GL_CULL_FACE));
+                GL_CALL(glFrontFace(GL_CW));
+                GL_CALL(glCullFace(GL_FRONT));
                 break;
             }
         }
@@ -1378,12 +1381,12 @@ void CommandBufferGLES2_t::Execute()
                 if (usingDefaultFrameBuffer)
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                glEnable(GL_SCISSOR_TEST);
-                glScissor(x, y, w, h);
+                GL_CALL(glEnable(GL_SCISSOR_TEST));
+                GL_CALL(glScissor(x, y, w, h));
             }
             else
             {
-                glDisable(GL_SCISSOR_TEST);
+                GL_CALL(glDisable(GL_SCISSOR_TEST));
             }
         }
         break;
@@ -1408,11 +1411,11 @@ void CommandBufferGLES2_t::Execute()
                 if (usingDefaultFrameBuffer)
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                glViewport(x, y, w, h);
+                GL_CALL(glViewport(x, y, w, h));
             }
             else
             {
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
             }
         }
         break;
@@ -1427,7 +1430,7 @@ void CommandBufferGLES2_t::Execute()
             #endif
 
                 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-            glPolygonMode(GL_FRONT_AND_BACK, (mode == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL);
+            GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, (mode == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL));
                 #endif
         }
         break;
@@ -1714,9 +1717,9 @@ void CommandBufferGLES2_t::Execute()
             #elif defined(__DAVAENGINE_ANDROID__)
             GL_CALL(glDrawArraysInstanced_EXT(mode, 0, v_cnt, instCount));
             #elif defined(__DAVAENGINE_MACOS__)
-            GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
+        GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
             #else
-            GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+        GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
             #endif
             StatSet::IncStat(stat_DP, 1);
             switch (mode)
@@ -1803,12 +1806,12 @@ void CommandBufferGLES2_t::Execute()
             DVASSERT(baseInst == 0) // it's not supported in GLES
             GL_CALL(glDrawElementsInstanced_EXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_MACOS__)
-            //            DVASSERT(baseInst == 0)
-            //            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
-            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+        //            DVASSERT(baseInst == 0)
+        //            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+        GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
             #else
-            //            if( baseInst )
-            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+        //            if( baseInst )
+        GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
 //            else
 //                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #endif
@@ -2122,8 +2125,12 @@ gles2_Present(Handle sync)
         }
         _GLES2_FrameSync.Unlock();
 
-        unsigned frame_cnt = 0;
+        if (!_GLES2_RenderThreadSuspended.GetRelaxed())
+        {
+            _GLES2_FramePreparedEvent.Signal();
+        }
 
+        unsigned frame_cnt = 0;
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
@@ -2133,11 +2140,11 @@ gles2_Present(Handle sync)
 
             if (frame_cnt >= _GLES2_RenderThreadFrameCount)
             {
-                DAVA::Thread::Yield();
+                _GLES2_FrameDoneEvent.Wait();
             }
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-
-        } while (frame_cnt >= _GLES2_RenderThreadFrameCount);
+        }
+        while (frame_cnt >= _GLES2_RenderThreadFrameCount);
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
     }
@@ -2168,15 +2175,14 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
     Trace("RHI render-thread started\n");
 
     Logger::Info("[RHI] render-thread started");
-    while (true)
+
+    bool do_exit = false;
+    while (!do_exit)
     {
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
         {
             DAVA::LockGuard<DAVA::Mutex> suspendGuard(_GLES2_RenderThreadSuspendSync);
-
-            bool do_wait = true;
-            bool do_exit = false;
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
@@ -2184,9 +2190,11 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
             ios_gl_check_layer();
 #endif
 
-            // CRAP: busy-wait
             TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
-            do
+
+            // CRAP: busy-wait
+            bool do_wait = true;
+            while (do_wait)
             {
                 _GLES2_RenderThreadExitSync.Lock();
                 do_exit = _GLES2_RenderThreadExitPending;
@@ -2214,15 +2222,21 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 do_wait = !(_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute) && !_GLES2_RenderThreadSuspended.Get();
                 _GLES2_FrameSync.Unlock();
 
-            } while (do_wait);
+                if (do_wait)
+                {
+                    _GLES2_FramePreparedEvent.Wait();
+                }
+            }
             TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
 
-            if (do_exit)
-                break;
+            if (!do_exit)
+            {
+                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+                _GLES2_ExecuteQueuedCommands();
+                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+            }
 
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
-            _GLES2_ExecuteQueuedCommands();
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+            _GLES2_FrameDoneEvent.Signal();
         }
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
@@ -2265,6 +2279,8 @@ void UninitializeRenderThreadGLES2()
             ResumeGLES2();
         }
 
+        _GLES2_FramePreparedEvent.Signal();
+
         Logger::Info("UninitializeRenderThreadGLES2 join begin");
         _GLES2_RenderThread->Join();
         Logger::Info("UninitializeRenderThreadGLES2 join end");
@@ -2276,8 +2292,9 @@ void UninitializeRenderThreadGLES2()
 void SuspendGLES2()
 {
     _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_RenderThreadSuspendSync.Lock();
-    glFinish();
+    _GLES2_FramePreparedEvent.Signal();
+    _GLES2_FrameDoneEvent.Wait();
+    GL_CALL(glFinish());
     Logger::Info("Render GLES Suspended");
 }
 
@@ -2285,7 +2302,6 @@ void SuspendGLES2()
 
 void ResumeGLES2()
 {
-    _GLES2_RenderThreadSuspendSync.Unlock();
     _GLES2_RenderThreadSuspended.Set(false);
     Logger::Info("Render GLES Resumed");
 }
@@ -2349,63 +2365,63 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::GEN_BUFFERS:
         {
-            EXEC_GL(glGenBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BIND_BUFFER:
         {
-            EXEC_GL(glBindBuffer((GLenum)(arg[0]), *(GLuint*)(arg[1])));
+            GL_CALL(glBindBuffer((GLenum)(arg[0]), *(GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_VERTEX_BUFFER:
         {
-            EXEC_GL(glBindBuffer(GL_ARRAY_BUFFER, _GLES2_LastSetVB));
+            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, _GLES2_LastSetVB));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_INDEX_BUFFER:
         {
-            EXEC_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB));
+            GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_BUFFERS:
         {
-            EXEC_GL(glDeleteBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glDeleteBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BUFFER_DATA:
         {
-            EXEC_GL(glBufferData((GLenum)(arg[0]), (GLsizei)(arg[1]), (const void*)(arg[2]), (GLenum)(arg[3])));
+            GL_CALL(glBufferData((GLenum)(arg[0]), (GLsizei)(arg[1]), (const void*)(arg[2]), (GLenum)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BUFFER_SUBDATA:
         {
-            EXEC_GL(glBufferSubData((GLenum)(arg[0]), GLintptr(arg[1]), (GLsizei)(arg[2]), (const void*)(arg[3])));
+            GL_CALL(glBufferSubData((GLenum)(arg[0]), GLintptr(arg[1]), (GLsizei)(arg[2]), (const void*)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GEN_TEXTURES:
         {
-            EXEC_GL(glGenTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_TEXTURES:
         {
-            EXEC_GL(glDeleteTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glDeleteTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
@@ -2416,7 +2432,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
             if (t != _GLES2_LastActiveTexture)
             {
-                EXEC_GL(glActiveTexture(GLenum(t)));
+                GL_CALL(glActiveTexture(GLenum(t)));
                 _GLES2_LastActiveTexture = t;
                 cmd->status = err;
             }
@@ -2425,21 +2441,21 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::BIND_TEXTURE:
         {
-            EXEC_GL(glBindTexture((GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1])));
+            GL_CALL(glBindTexture((GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_TEXTURE0:
         {
-            EXEC_GL(glBindTexture(_GLES2_LastSetTex0Target, _GLES2_LastSetTex0));
+            GL_CALL(glBindTexture(_GLES2_LastSetTex0Target, _GLES2_LastSetTex0));
             cmd->status = err;
         }
         break;
 
         case GLCommand::TEX_PARAMETER_I:
         {
-            EXEC_GL(glTexParameteri((GLenum)(arg[0]), (GLenum)(arg[1]), (GLuint)(arg[2])));
+            GL_CALL(glTexParameteri((GLenum)(arg[0]), (GLenum)(arg[1]), (GLuint)(arg[2])));
             cmd->status = err;
         }
         break;
@@ -2448,11 +2464,11 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         {
             if (arg[10])
             {
-                EXEC_GL(glCompressedTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLenum)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLsizei)(arg[8]), (const GLvoid*)(arg[9])));
+                GL_CALL(glCompressedTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLenum)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLsizei)(arg[8]), (const GLvoid*)(arg[9])));
             }
             else
             {
-                EXEC_GL(glTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[9])));
+                GL_CALL(glTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[9])));
             }
             cmd->status = err;
         }
@@ -2460,14 +2476,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::GENERATE_MIPMAP:
         {
-            EXEC_GL(glGenerateMipmap((GLenum)(arg[0])));
+            GL_CALL(glGenerateMipmap((GLenum)(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::PIXEL_STORE_I:
         {
-            EXEC_GL(glPixelStorei((GLenum)(arg[0]), (GLint)(arg[1])));
+            GL_CALL(glPixelStorei((GLenum)(arg[0]), (GLint)(arg[1])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -2475,7 +2491,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::READ_PIXELS:
         {
-            EXEC_GL(glReadPixels(GLint(arg[0]), GLint(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]), GLenum(arg[4]), GLenum(arg[5]), (GLvoid*)(arg[6])));
+            GL_CALL(glReadPixels(GLint(arg[0]), GLint(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]), GLenum(arg[4]), GLenum(arg[5]), (GLvoid*)(arg[6])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -2483,159 +2499,159 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::CREATE_PROGRAM:
         {
-            cmd->retval = glCreateProgram();
+            GL_CALL(cmd->retval = glCreateProgram());
             cmd->status = 0;
         }
         break;
 
         case GLCommand::CREATE_SHADER:
         {
-            cmd->retval = glCreateShader((GLenum)(arg[0]));
+            GL_CALL(cmd->retval = glCreateShader((GLenum)(arg[0])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::ATTACH_SHADER:
         {
-            EXEC_GL(glAttachShader(GLuint(arg[0]), GLuint(arg[1])));
+            GL_CALL(glAttachShader(GLuint(arg[0]), GLuint(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::LINK_PROGRAM:
         {
-            EXEC_GL(glLinkProgram(GLuint(arg[0])));
+            GL_CALL(glLinkProgram(GLuint(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::SHADER_SOURCE:
         {
-            EXEC_GL(glShaderSource((GLuint)(arg[0]), (GLsizei)(arg[1]), (const GLchar**)(arg[2]), (const GLint*)(arg[3])));
+            GL_CALL(glShaderSource((GLuint)(arg[0]), (GLsizei)(arg[1]), (const GLchar**)(arg[2]), (const GLint*)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::COMPILE_SHADER:
         {
-            EXEC_GL(glCompileShader((GLuint)(arg[0])));
+            GL_CALL(glCompileShader((GLuint)(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_SHADER_IV:
         {
-            EXEC_GL(glGetShaderiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
+            GL_CALL(glGetShaderiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_SHADER_INFO_LOG:
         {
-            EXEC_GL(glGetShaderInfoLog((GLuint)(arg[0]), GLsizei(arg[1]), (GLsizei*)(arg[2]), (GLchar*)(arg[3])));
+            GL_CALL(glGetShaderInfoLog((GLuint)(arg[0]), GLsizei(arg[1]), (GLsizei*)(arg[2]), (GLchar*)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_PROGRAM_IV:
         {
-            EXEC_GL(glGetProgramiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
+            GL_CALL(glGetProgramiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_ATTRIB_LOCATION:
         {
-            cmd->retval = glGetAttribLocation(GLuint(arg[0]), (const GLchar*)(arg[1]));
+            GL_CALL(cmd->retval = glGetAttribLocation(GLuint(arg[0]), (const GLchar*)(arg[1])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::GET_ACTIVE_UNIFORM:
         {
-            EXEC_GL(glGetActiveUniform((GLuint)(arg[0]), (GLuint)(arg[1]), (GLsizei)(arg[2]), (GLsizei*)(arg[3]), (GLint*)(arg[4]), (GLenum*)(arg[5]), (GLchar*)(arg[6])));
+            GL_CALL(glGetActiveUniform((GLuint)(arg[0]), (GLuint)(arg[1]), (GLsizei)(arg[2]), (GLsizei*)(arg[3]), (GLint*)(arg[4]), (GLenum*)(arg[5]), (GLchar*)(arg[6])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_UNIFORM_LOCATION:
         {
-            cmd->retval = glGetUniformLocation((GLuint)(arg[0]), (const GLchar*)(arg[1]));
+            GL_CALL(cmd->retval = glGetUniformLocation((GLuint)(arg[0]), (const GLchar*)(arg[1])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::SET_UNIFORM_1I:
         {
-            EXEC_GL(glUniform1i(GLint(arg[0]), GLint(arg[1])));
+            GL_CALL(glUniform1i(GLint(arg[0]), GLint(arg[1])));
         }
         break;
 
         case GLCommand::GEN_FRAMEBUFFERS:
         {
-            EXEC_GL(glGenFramebuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenFramebuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GEN_RENDERBUFFERS:
         {
-            EXEC_GL(glGenRenderbuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenRenderbuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_RENDERBUFFERS:
         {
-            EXEC_GL(glDeleteRenderbuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            GL_CALL(glDeleteRenderbuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
         }
         break;
 
         case GLCommand::BIND_FRAMEBUFFER:
         {
-            EXEC_GL(glBindFramebuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
+            GL_CALL(glBindFramebuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BIND_RENDERBUFFER:
         {
-            EXEC_GL(glBindRenderbuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
+            GL_CALL(glBindRenderbuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_TEXTURE:
         {
-            EXEC_GL(glFramebufferTexture2D(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3]), GLint(arg[4])));
+            GL_CALL(glFramebufferTexture2D(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3]), GLint(arg[4])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RENDERBUFFER_STORAGE:
         {
-            EXEC_GL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
+            GL_CALL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_RENDERBUFFER:
         {
-            EXEC_GL(glFramebufferRenderbuffer(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3])));
+            GL_CALL(glFramebufferRenderbuffer(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_STATUS:
         {
-            cmd->retval = glCheckFramebufferStatus(GLenum(arg[0]));
+            GL_CALL(cmd->retval = glCheckFramebufferStatus(GLenum(arg[0])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::DELETE_FRAMEBUFFERS:
         {
-            EXEC_GL(glDeleteFramebuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            GL_CALL(glDeleteFramebuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -2645,7 +2661,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         {
                 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
                 #else
-            EXEC_GL(glDrawBuffers(GLuint(arg[0]), (GLenum*)(arg[1])));
+            GL_CALL(glDrawBuffers(GLuint(arg[0]), (GLenum*)(arg[1])));
             cmd->status = err;
                 #endif
         }
@@ -2671,7 +2687,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         // CRAP: busy-wait
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
 
-        do
+        while (!scheduled)
         {
             _GLES2_PendingImmediateCmdSync.Lock();
             if (!_GLES2_PendingImmediateCmd)
@@ -2681,10 +2697,10 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 scheduled = true;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-        } while (!scheduled);
+        }
 
         // CRAP: busy-wait
-        do
+        while (!executed)
         {
             _GLES2_PendingImmediateCmdSync.Lock();
             if (!_GLES2_PendingImmediateCmd)
@@ -2692,7 +2708,12 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 executed = true;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-        } while (!executed);
+
+            if (!executed)
+            {
+                _GLES2_FramePreparedEvent.Signal();
+            }
+        }
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }

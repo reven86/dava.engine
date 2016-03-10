@@ -32,15 +32,19 @@
 #include "Concurrency/LockGuard.h"
 
 #ifndef __DAVAENGINE_WINDOWS__
-#   include <time.h>
-#   include <errno.h>
+#include <time.h>
+#include <errno.h>
 #endif
 
 namespace DAVA
 {
-
-ConcurrentObject<Set<Thread *>> Thread::threadList;
 Thread::Id Thread::mainThreadId;
+
+ConcurrentObject<Set<Thread*>>& GetThreadList()
+{
+    static ConcurrentObject<Set<Thread*>> threadList;
+    return threadList;
+}
 
 void Thread::InitMainThread()
 {
@@ -58,12 +62,12 @@ bool Thread::IsMainThread()
     return currentId == mainThreadId;
 }
 
-Thread *Thread::Create(const Message& msg)
+Thread* Thread::Create(const Message& msg)
 {
     return new Thread(msg);
 }
 
-Thread *Thread::Create(const Procedure& proc)
+Thread* Thread::Create(const Procedure& proc)
 {
     return new Thread(proc);
 }
@@ -87,7 +91,7 @@ void Thread::Kill()
 
 void Thread::KillAll()
 {
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     for (auto& x : *threadListAccessor)
     {
         x->Kill();
@@ -96,37 +100,37 @@ void Thread::KillAll()
 
 void Thread::CancelAll()
 {
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     for (auto& x : *threadListAccessor)
     {
         x->Cancel();
     }
-} 
-
+}
 
 Thread::Thread()
     : state(STATE_CREATED)
-    , threadPriority(PRIORITY_NORMAL)
     , isCancelling(false)
     , stackSize(0)
-    , id(Id())
     , handle(Handle())
+    , id(Id())
     , name("DAVA::Thread")
 {
     Init();
 
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     threadListAccessor->insert(this);
 }
 
-Thread::Thread(const Message &msg) : Thread()
+Thread::Thread(const Message& msg)
+    : Thread()
 {
     Message message = msg;
     Thread* caller = this;
     threadFunc = [=] { message(caller); };
 }
 
-Thread::Thread(const Procedure &proc) : Thread()
+Thread::Thread(const Procedure& proc)
+    : Thread()
 {
     threadFunc = proc;
 }
@@ -135,13 +139,13 @@ Thread::~Thread()
 {
     Shutdown();
 
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     threadListAccessor->erase(this);
 }
-    
-void Thread::ThreadFunction(void *param)
+
+void Thread::ThreadFunction(void* param)
 {
-    Thread * t = (Thread *)param;
+    Thread* t = reinterpret_cast<Thread*>(param);
     t->id = GetCurrentId();
 
     t->threadFunc();

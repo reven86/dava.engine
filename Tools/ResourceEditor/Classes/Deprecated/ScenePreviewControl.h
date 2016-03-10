@@ -35,24 +35,23 @@
 
 using namespace DAVA;
 
-class ScenePreviewControl: public UI3DView
+class ScenePreviewControl : public UI3DView
 {
 public:
-    
     enum eError
     {
         ERROR_WRONG_EXTENSION = 100,
         ERROR_CANNOT_OPEN_FILE = 101
     };
-    
+
 public:
-    ScenePreviewControl(const Rect & rect);
+    ScenePreviewControl(const Rect& rect);
     virtual ~ScenePreviewControl();
-    
-    virtual void Input(UIEvent * touch);
+
+    virtual void Input(UIEvent* touch);
     virtual void Update(float32 timeElapsed);
 
-    int32 OpenScene(const FilePath &pathToFile);
+    int32 OpenScene(const FilePath& pathToFile);
     void ReleaseScene();
     void RecreateScene();
 
@@ -64,8 +63,6 @@ private:
     //scene controls
     Scene* editorScene = nullptr;
     RotationControllerSystem* rotationSystem = nullptr;
-    Camera* activeCamera = nullptr;
-    UI3DView* scene3dView = nullptr;
     FilePath currentScenePath;
     bool needSetCamera = false;
 };

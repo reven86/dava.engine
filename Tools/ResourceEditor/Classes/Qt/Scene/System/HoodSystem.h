@@ -36,6 +36,7 @@
 #include "Scene/System/HoodSystem/ScaleHood.h"
 #include "Scene/System/HoodSystem/RotateHood.h"
 #include "Commands2/Command2.h"
+#include "SystemDelegates.h"
 
 // bullet
 #include "bullet/btBulletCollisionCommon.h"
@@ -46,78 +47,73 @@
 
 class SceneCameraSystem;
 
-class HoodSystem : public DAVA::SceneSystem
+class HoodSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
 {
-	friend class SceneEditor2;
+    friend class SceneEditor2;
 
 public:
-	HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys);
-	~HoodSystem();
+    HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys);
+    ~HoodSystem();
 
-	void SetModifMode(ST_ModifMode mode);
-	ST_ModifMode GetModifMode() const;
+    void SetModifMode(ST_ModifMode mode);
+    ST_ModifMode GetModifMode() const;
 
-	DAVA::Vector3 GetPosition() const;
-	void SetPosition(const DAVA::Vector3 &pos);
-	
-	void SetModifOffset(const DAVA::Vector3 &offset);
-	void SetModifRotate(const DAVA::float32 &angle);
-	void SetModifScale(const DAVA::float32 &scale);
+    DAVA::Vector3 GetPosition() const;
+    void SetPosition(const DAVA::Vector3& pos);
 
-	void SetModifAxis(ST_Axis axis);
-	ST_Axis GetModifAxis() const;
-	ST_Axis GetPassingAxis() const;
+    void SetModifOffset(const DAVA::Vector3& offset);
+    void SetModifRotate(const DAVA::float32& angle);
+    void SetModifScale(const DAVA::float32& scale);
 
-	void SetScale(DAVA::float32 scale);
-	DAVA::float32 GetScale() const;
+    void SetModifAxis(ST_Axis axis);
+    ST_Axis GetModifAxis() const;
+    ST_Axis GetPassingAxis() const;
 
-	void LockScale(bool lock);
-	void LockModif(bool lock);
-	void LockAxis(bool lock);
+    void SetScale(DAVA::float32 scale);
+    DAVA::float32 GetScale() const;
 
-	void SetVisible(bool visible);
-	bool IsVisible() const;
+    void LockScale(bool lock);
+    void LockModif(bool lock);
+    void LockAxis(bool lock);
+
+    void SetVisible(bool visible);
+    bool IsVisible() const;
 
     virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
-
-protected:
-	bool lockedScale;
-	bool lockedModif;
-	bool lockedAxis;
-	bool isVisible;
-
-	ST_ModifMode curMode;
-	ST_Axis curAxis;
-	ST_Axis moseOverAxis;
-	DAVA::Vector3 curPos;
-	DAVA::float32 curScale;
-	DAVA::Vector3 modifOffset;
-
-	SceneCameraSystem *cameraSystem;
-
-	void Draw();
-
-	void ProcessCommand(const Command2 *command, bool redo);
-
-	void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
-	void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
-
-	void ResetModifValues();
+    virtual void Input(DAVA::UIEvent* event);
 
 private:
-	btCollisionWorld* collWorld;
-	btAxisSweep3* collBroadphase;
-	btDefaultCollisionConfiguration* collConfiguration;
-	btCollisionDispatcher* collDispatcher;
-	btIDebugDraw* collDebugDraw;
+    void Draw();
+    void ProcessCommand(const Command2* command, bool redo);
+    void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
+    void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
+    void ResetModifValues();
 
-	HoodObject *curHood;
+    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
 
-	NormalHood normalHood;
-	MoveHood moveHood;
-	RotateHood rotateHood;
-	ScaleHood scaleHood;
+private:
+    btCollisionWorld* collWorld = nullptr;
+    btAxisSweep3* collBroadphase = nullptr;
+    btDefaultCollisionConfiguration* collConfiguration = nullptr;
+    btCollisionDispatcher* collDispatcher = nullptr;
+    btIDebugDraw* collDebugDraw = nullptr;
+    HoodObject* curHood = nullptr;
+    SceneCameraSystem* cameraSystem = nullptr;
+    NormalHood normalHood;
+    MoveHood moveHood;
+    RotateHood rotateHood;
+    ScaleHood scaleHood;
+    DAVA::Vector3 curPos;
+    DAVA::float32 curScale = 1.0f;
+    DAVA::Vector3 modifOffset;
+    ST_ModifMode curMode = ST_MODIF_OFF;
+    ST_Axis curAxis = ST_AXIS_NONE;
+    ST_Axis moseOverAxis = ST_AXIS_NONE;
+    bool lockedScale = false;
+    bool lockedModif = false;
+    bool lockedAxis = false;
+    bool isVisible = true;
 };
 
 #endif // __ENTITY_MODIFICATION_SYSTEM_HOOD_H__

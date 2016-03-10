@@ -120,22 +120,22 @@ TilemaskEditorSystem::~TilemaskEditorSystem()
 
 LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditing()
 {
-	if (enabled)
-	{
-		return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType canBeEnabledError = IsCanBeEnabled();
-	if ( canBeEnabledError!= LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		return canBeEnabledError;
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enablingError = drawSystem->EnableTilemaskEditing();
-	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		return enablingError;
-	}
+    if (enabled)
+    {
+        return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    }
+
+    LandscapeEditorDrawSystem::eErrorType canBeEnabledError = IsCanBeEnabled();
+    if (canBeEnabledError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        return canBeEnabledError;
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = drawSystem->EnableTilemaskEditing();
+    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        return enablingError;
+    }
 
     drawSystem->GetLandscapeProxy()->UpdateTileMaskPathname();
 
@@ -170,15 +170,15 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
 
 bool TilemaskEditorSystem::DisableLandscapeEdititing()
 {
-	if (!enabled)
-	{
-		return true;
-	}
+    if (!enabled)
+    {
+        return true;
+    }
 
-	FinishEditing();
+    FinishEditing();
 
-	selectionSystem->SetLocked(false);
-	modifSystem->SetLocked(false);
+    selectionSystem->SetLocked(false);
+    modifSystem->SetLocked(false);
 
     drawSystem->DisableCursor();
     drawSystem->DisableCustomDraw();
@@ -195,24 +195,28 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
 
 void TilemaskEditorSystem::Process(float32 timeElapsed)
 {
-	if (!IsLandscapeEditingEnabled())
-	{
-		return;
-	}
-	
-	if (editingIsEnabled && isIntersectsLandscape)
-	{
-		if (prevCursorPos != cursorPosition)
-		{
-			prevCursorPos = cursorPosition;
+    if (!IsLandscapeEditingEnabled())
+    {
+        return;
+    }
+
+    if (editingIsEnabled && isIntersectsLandscape)
+    {
+        if (prevCursorPos != cursorPosition)
+        {
+            prevCursorPos = cursorPosition;
 
             Vector2 toolSize = Vector2((float32)curToolSize, (float32)curToolSize);
             Vector2 toolPos = cursorPosition * landscapeSize - toolSize / 2.f;
             Rect toolRect(std::floor(toolPos.x), std::floor(toolPos.y), std::ceil(toolSize.x), std::ceil(toolSize.y));
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
-            desc.target = toolTexture;
-            desc.shouldTransformVirtualToPhysical = false;
+            desc.priority = PRIORITY_SERVICE_2D;
+            desc.colorAttachment = toolTexture->handle;
+            desc.depthAttachment = toolTexture->handleDepthStencil;
+            desc.width = toolTexture->GetWidth();
+            desc.height = toolTexture->GetHeight();
+            desc.transformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -231,12 +235,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
 void TilemaskEditorSystem::Input(UIEvent* event)
 {
-	if (!IsLandscapeEditingEnabled())
-	{
-		return;
-	}
-	
-	UpdateCursorPosition();
+    if (!IsLandscapeEditingEnabled())
+    {
+        return;
+    }
+
+    UpdateCursorPosition();
 
     if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
@@ -252,23 +256,23 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                     int32 curKeyModifiers = QApplication::keyboardModifiers();
                     if (curKeyModifiers & Qt::AltModifier)
                     {
-                            copyPasteFrom = cursorPosition;
-                            copyPasteOffset = Vector2();
+                        copyPasteFrom = cursorPosition;
+                        copyPasteOffset = Vector2();
+                        return;
+                    }
+                    else
+                    {
+                        if (copyPasteFrom == Vector2(-1.f, -1.f))
+                        {
                             return;
                         }
-                        else
-                        {
-                            if (copyPasteFrom == Vector2(-1.f, -1.f))
-                            {
-                                return;
-                            }
-                            copyPasteOffset = copyPasteFrom - cursorPosition;
-                        }
+                        copyPasteOffset = copyPasteFrom - cursorPosition;
                     }
+                }
 
-                    ResetAccumulatorRect();
-                    editingIsEnabled = true;
-                    activeDrawingType = drawingType;
+                ResetAccumulatorRect();
+                editingIsEnabled = true;
+                activeDrawingType = drawingType;
             }
             break;
 
@@ -278,18 +282,21 @@ void TilemaskEditorSystem::Input(UIEvent* event)
         case UIEvent::Phase::ENDED:
             FinishEditing();
             break;
+
+        default:
+            break;
         }
     }
 }
 
 void TilemaskEditorSystem::FinishEditing()
 {
-	if (editingIsEnabled)
-	{
-		needCreateUndo = true;
-		editingIsEnabled = false;
-	}
-	prevCursorPos = Vector2(-1.f, -1.f);
+    if (editingIsEnabled)
+    {
+        needCreateUndo = true;
+        editingIsEnabled = false;
+    }
+    prevCursorPos = Vector2(-1.f, -1.f);
 }
 
 void TilemaskEditorSystem::SetBrushSize(int32 brushSize)
@@ -315,19 +322,19 @@ void TilemaskEditorSystem::SetStrength(float32 _strength)
 
 void TilemaskEditorSystem::SetToolImage(const FilePath& toolImagePath, int32 index)
 {
-	this->toolImagePath = toolImagePath;
-	this->toolImageIndex = index;
+    this->toolImagePath = toolImagePath;
+    this->toolImageIndex = index;
     UpdateToolImage();
 }
 
 void TilemaskEditorSystem::SetTileTexture(uint32 tileTexture)
 {
-	if (tileTexture >= GetTileTextureCount())
-	{
-		return;
-	}
-	
-	tileTextureNum = tileTexture;
+    if (tileTexture >= GetTileTextureCount())
+    {
+        return;
+    }
+
+    tileTextureNum = tileTexture;
 
     editorMaterial->SetFlag(TILEMASK_EDITOR_FLAG_DRAW_TYPE, tileTextureNum);
     editorMaterial->PreBuildMaterial(TILEMASK_EDITOR_MATERIAL_PASS);
@@ -392,26 +399,26 @@ void TilemaskEditorSystem::UpdateToolImage()
 
 void TilemaskEditorSystem::AddRectToAccumulator(const Rect& rect)
 {
-	updatedRectAccumulator = updatedRectAccumulator.Combine(rect);
+    updatedRectAccumulator = updatedRectAccumulator.Combine(rect);
 }
 
 void TilemaskEditorSystem::ResetAccumulatorRect()
 {
-	float32 inf = std::numeric_limits<float32>::infinity();
-	updatedRectAccumulator = Rect(inf, inf, -inf, -inf);
+    float32 inf = std::numeric_limits<float32>::infinity();
+    updatedRectAccumulator = Rect(inf, inf, -inf, -inf);
 }
 
 Rect TilemaskEditorSystem::GetUpdatedRect()
 {
-	Rect r = updatedRectAccumulator;
-	drawSystem->ClampToTexture(textureLevel, r);
+    Rect r = updatedRectAccumulator;
+    drawSystem->ClampToTexture(textureLevel, r);
 
-	return r;
+    return r;
 }
 
 uint32 TilemaskEditorSystem::GetTileTextureCount() const
 {
-	return 4;
+    return 4;
 }
 
 Texture* TilemaskEditorSystem::GetTileTexture()
@@ -421,20 +428,20 @@ Texture* TilemaskEditorSystem::GetTileTexture()
 
 Color TilemaskEditorSystem::GetTileColor(int32 index)
 {
-	if (index < 0 || index >= (int32)GetTileTextureCount())
-	{
-		return Color::Black;
-	}
+    if (index < 0 || index >= (int32)GetTileTextureCount())
+    {
+        return Color::Black;
+    }
 
     return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
 }
 
 void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
 {
-	if (index < 0 || index >= (int32)GetTileTextureCount())
-	{
-		return;
-	}
+    if (index < 0 || index >= (int32)GetTileTextureCount())
+    {
+        return;
+    }
 
     Color curColor = drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
 
@@ -454,11 +461,21 @@ void TilemaskEditorSystem::CreateMaskTexture()
     {
         landscapeTilemaskTexture = SafeRetain(tilemask);
 
+        DAVA::Rect destRect(0.0f, 0.0f, landscapeTilemaskTexture->width, landscapeTilemaskTexture->height);
+        DAVA::Rect sourceRect(0.0f, 0.0f, 1.0f, 1.0f);
+
         RenderSystem2D::RenderTargetPassDescriptor desc;
-        desc.target = srcTexture;
-        desc.shouldTransformVirtualToPhysical = false;
+        desc.priority = PRIORITY_SERVICE_2D;
+        desc.colorAttachment = srcTexture->handle;
+        desc.depthAttachment = srcTexture->handleDepthStencil;
+        desc.width = srcTexture->GetWidth();
+        desc.height = srcTexture->GetHeight();
+        desc.transformVirtualToPhysical = false;
+        desc.clearTarget = true;
+
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+        RenderSystem2D::Instance()->DrawTextureWithoutAdjustingRects(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL,
+                                                                     Color::White, destRect, sourceRect);
         RenderSystem2D::Instance()->EndRenderTargetPass();
 
         drawSystem->SetTileMaskTexture(srcTexture);
@@ -468,28 +485,28 @@ void TilemaskEditorSystem::CreateMaskTexture()
 void TilemaskEditorSystem::Draw()
 {
     if (!IsLandscapeEditingEnabled())
-	{
-		return;
-	}
+    {
+        return;
+    }
 
-	if (toolSpriteUpdated)
-	{
-		UpdateBrushTool();
-		toolSpriteUpdated = false;
-	}
+    if (toolSpriteUpdated)
+    {
+        UpdateBrushTool();
+        toolSpriteUpdated = false;
+    }
 
-	if (needCreateUndo)
-	{
-		CreateUndoPoint();
-		needCreateUndo = false;
-	}
+    if (needCreateUndo)
+    {
+        CreateUndoPoint();
+        needCreateUndo = false;
+    }
 }
 
 void TilemaskEditorSystem::CreateUndoPoint()
 {
-	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-	DVASSERT(scene);
-	scene->Exec(new ModifyTilemaskCommand(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
+    SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+    DVASSERT(scene);
+    scene->Exec(new ModifyTilemaskCommand(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
 }
 
 int32 TilemaskEditorSystem::GetBrushSize()
@@ -499,25 +516,25 @@ int32 TilemaskEditorSystem::GetBrushSize()
 
 float32 TilemaskEditorSystem::GetStrength()
 {
-	return strength;
+    return strength;
 }
 
 int32 TilemaskEditorSystem::GetToolImage()
 {
-	return toolImageIndex;
+    return toolImageIndex;
 }
 
 uint32 TilemaskEditorSystem::GetTileTextureIndex()
 {
-	return tileTextureNum;
+    return tileTextureNum;
 }
 
 void TilemaskEditorSystem::InitSprites()
 {
-	float32 texSize = drawSystem->GetTextureSize(textureLevel);
+    float32 texSize = drawSystem->GetTextureSize(textureLevel);
 
-	if (toolTexture == NULL)
-	{
+    if (toolTexture == NULL)
+    {
         toolTexture = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888 /*, Texture::DEPTH_NONE*/);
     }
 
@@ -527,9 +544,9 @@ void TilemaskEditorSystem::InitSprites()
 
 void TilemaskEditorSystem::SetDrawingType(eTilemaskDrawType type)
 {
-	if (type >= TILEMASK_DRAW_NORMAL && type < TILEMASK_DRAW_TYPES_COUNT)
-	{
-		drawingType = type;
+    if (type >= TILEMASK_DRAW_NORMAL && type < TILEMASK_DRAW_TYPES_COUNT)
+    {
+        drawingType = type;
 
         if (type == TILEMASK_DRAW_COPY_PASTE)
         {
@@ -546,5 +563,5 @@ void TilemaskEditorSystem::SetDrawingType(eTilemaskDrawType type)
 
 TilemaskEditorSystem::eTilemaskDrawType TilemaskEditorSystem::GetDrawingType()
 {
-	return drawingType;
+    return drawingType;
 }

@@ -38,13 +38,12 @@ namespace DAVA
 {
 namespace Net
 {
-
 struct IClientTransport;
 struct IServerListener;
 
 struct IServerTransport
 {
-    virtual ~IServerTransport() {}
+    virtual ~IServerTransport();
 
     virtual int32 Start(IServerListener* listener) = 0;
     virtual void Stop() = 0;
@@ -54,6 +53,8 @@ struct IServerTransport
 
 struct IServerListener
 {
+    virtual ~IServerListener();
+
     virtual void OnTransportSpawned(IServerTransport* parent, IClientTransport* child) = 0;
     virtual void OnTransportTerminated(IServerTransport* tr) = 0;
 };
@@ -63,7 +64,7 @@ struct IClientListener;
 
 struct IClientTransport
 {
-    virtual ~IClientTransport() {}
+    virtual ~IClientTransport();
 
     virtual int32 Start(IClientListener* listener) = 0;
     virtual void Stop() = 0;
@@ -73,6 +74,8 @@ struct IClientTransport
 
 struct IClientListener
 {
+    virtual ~IClientListener();
+
     virtual void OnTransportTerminated(IClientTransport* tr) = 0;
     virtual void OnTransportConnected(IClientTransport* tr, const Endpoint& endp) = 0;
     virtual void OnTransportDisconnected(IClientTransport* tr, int32 error) = 0;
@@ -81,7 +84,7 @@ struct IClientListener
     virtual void OnTransportReadTimeout(IClientTransport* tr) = 0;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_ITRANSPORT_H__
+#endif // __DAVAENGINE_ITRANSPORT_H__

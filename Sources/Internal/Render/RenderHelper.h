@@ -85,7 +85,7 @@ public:
     void DrawBSpline(BezierSpline3* bSpline, int segments, float ts, float te, const Color& color, eDrawType drawType);
     void DrawInterpolationFunc(Interpolation::Func func, const Rect& destRect, const Color& color, eDrawType drawType);
 
-    static void CreateClearPass(rhi::HTexture handle, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport);
+    static void CreateClearPass(rhi::HTexture colorBuffer, rhi::HTexture depthBuffer, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport);
 
 private:
     enum eDrawCommandID
@@ -173,4 +173,3 @@ private:
 }
 
 #endif // __DAVAENGINE_OBJC_FRAMEWORK_RENDER_HELPER_H__
-

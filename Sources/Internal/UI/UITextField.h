@@ -50,15 +50,21 @@ public:
         In this function you can check what you want to do with UITextField when return button pressed.
         Works only in single line mode.
      */
-    virtual void TextFieldShouldReturn(UITextField* /*textField*/) {}
+    virtual void TextFieldShouldReturn(UITextField* /*textField*/)
+    {
+    }
 
     /**
         \brief Asks the delegate if the text field should process the pressing of the ESC button.
         In this function you can check what you want to do with UITextField when ESC button pressed.
         Don't work on iOS for now.
      */
-    virtual void TextFieldShouldCancel(UITextField * /*textField*/) {}
-    virtual void TextFieldLostFocus(UITextField* /*textField*/) {}
+    virtual void TextFieldShouldCancel(UITextField* /*textField*/)
+    {
+    }
+    virtual void TextFieldLostFocus(UITextField* /*textField*/)
+    {
+    }
 
     /**
         \brief Asks the delegate if the specified text should be changed.
@@ -68,26 +74,41 @@ public:
         \param[in] replacementString the replacement string.
         \returns true if the specified text range should be replaced; otherwise, false to keep the old text. Default implementation returns true.
      */
-    virtual bool TextFieldKeyPressed(UITextField* /*textField*/, int32 /*replacementLocation*/, int32 /*replacementLength*/, WideString& /*replacementString*/) { return true; }
+    virtual bool TextFieldKeyPressed(UITextField* /*textField*/, int32 /*replacementLocation*/, int32 /*replacementLength*/, WideString& /*replacementString*/)
+    {
+        return true;
+    }
 
-    virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/) {}
-    
-    virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField* /*textField*/) { return false; }
-    virtual bool IsTextFieldCanLostFocus(UITextField* /*textField*/) { return true; }
+    virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+    {
+    }
+
+    virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField* /*textField*/)
+    {
+        return false;
+    }
+    virtual bool IsTextFieldCanLostFocus(UITextField* /*textField*/)
+    {
+        return true;
+    }
 
     /*
         \brief Called when device keyboard is displayed/hidden.
         */
-    virtual void OnKeyboardShown(const Rect& keyboardRect) {}
-    virtual void OnKeyboardHidden() {}
+    virtual void OnKeyboardShown(const Rect& keyboardRect)
+    {
+    }
+    virtual void OnKeyboardHidden()
+    {
+    }
 };
-    
+
 /**
     \brief  A UITextField object is a control that displays editable text and sends an action message to a target object when the user presses the return button. 
             You typically use this class to gather small amounts of text from the user and perform some immediate action, such as a search operation, based on that text.
             A text field object supports the use of a delegate object to handle editing-related notifications. 
  */
-class UITextField : public UIControl 
+class UITextField : public UIControl
 {
 public:
     // Auto-capitalization type.
@@ -98,7 +119,7 @@ public:
         AUTO_CAPITALIZATION_TYPE_SENTENCES,
         AUTO_CAPITALIZATION_TYPE_ALL_CHARS,
     };
-    
+
     // Auto-correction type.
     enum eAutoCorrectionType
     {
@@ -106,7 +127,7 @@ public:
         AUTO_CORRECTION_TYPE_NO,
         AUTO_CORRECTION_TYPE_YES
     };
-    
+
     // Spell checking type.
     enum eSpellCheckingType
     {
@@ -114,7 +135,7 @@ public:
         SPELL_CHECKING_TYPE_NO,
         SPELL_CHECKING_TYPE_YES
     };
-    
+
     // Keyboard appearance.
     enum eKeyboardAppearanceType
     {
@@ -136,7 +157,7 @@ public:
         KEYBOARD_TYPE_DECIMAL_PAD,
         KEYBOARD_TYPE_TWITTER,
     };
-    
+
     // Return key type.
     enum eReturnKeyType
     {
@@ -155,10 +176,9 @@ public:
 
     UITextField(const Rect& rect = Rect());
 
-    void WillAppear() override;
-    void DidAppear() override;
-    void WillDisappear() override;
-    
+    void OnActive() override;
+    void OnInactive() override;
+
     void OnFocused() override;
     void OnFocusLost(UIControl* newFocus) override;
 
@@ -166,22 +186,22 @@ public:
     UITextFieldDelegate* GetDelegate();
 
     void Update(float32 timeElapsed) override;
-    
+
     void OpenKeyboard();
     void CloseKeyboard();
-    
+
     void SetSpriteAlign(int32 align) override;
-    
+
     const WideString& GetText();
     virtual void SetText(const WideString& text);
-    
+
     WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString& replacementString);
 
     void Input(UIEvent* currentInput) override;
 
     void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
-    
+    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
+
     /**
      \brief Sets contol input processing ability.
      */
@@ -190,7 +210,7 @@ public:
      \brief Returns the font of control
      \returns Font font of the control
      */
-    Font *GetFont() const;
+    Font* GetFont() const;
     /**
      \brief Returns the text color of control.
      \returns Color color of control's text
@@ -210,16 +230,16 @@ public:
     int32 GetTextAlign() const;
 
     void SetFocused();
-    
+
     void ReleaseFocus();
-    
-    bool IsLostFocusAllowed(UIControl *newFocus) override;
-    
-      /**
+
+    bool IsLostFocusAllowed(UIControl* newFocus) override;
+
+    /**
      \brief Sets the font of the control text.
      \param[in] font font used for text draw of the states.
-     */  
-    void SetFont(Font * font);
+     */
+    void SetFont(Font* font);
     /**
      \brief Sets the color of the text.
      \param[in] fontColor font used for text draw of the states.
@@ -234,7 +254,7 @@ public:
      \brief Sets shadow offset of text control.
      \param[in] offset offset of text shadow relative to base text.
      */
-    void SetShadowOffset(const DAVA::Vector2 &offset);
+    void SetShadowOffset(const DAVA::Vector2& offset);
     /**
      \brief Sets shadow color of text control.
      \param[in] color color of text shadow.
@@ -243,7 +263,6 @@ public:
 
     void SetTextAlign(int32 align);
 
-    
     /**
      \brief Returns using RTL align flag
      \returns Using RTL align flag
@@ -255,12 +274,12 @@ public:
      \param[in] useRrlAlign flag of support RTL align
      */
     void SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign);
-    
+
     void SetTextUseRtlAlignFromInt(int32 value);
     int32 GetTextUseRtlAlignAsInt() const;
 
-    void SetSize(const DAVA::Vector2 &newSize) override;
-    void SetPosition(const Vector2 &position) override;
+    void SetSize(const DAVA::Vector2& newSize) override;
+    void SetPosition(const Vector2& position) override;
 
     void SetMultiline(bool value);
     bool IsMultiline() const;
@@ -304,7 +323,7 @@ public:
      */
     int32 GetKeyboardType() const;
     void SetKeyboardType(int32 value);
-    
+
     /**
       \brief Return key type.
      */
@@ -317,8 +336,8 @@ public:
     bool IsEnableReturnKeyAutomatically() const;
     void SetEnableReturnKeyAutomatically(bool value);
 
-    UITextField *Clone() override;
-    void CopyDataFrom(UIControl *srcControl) override;
+    UITextField* Clone() override;
+    void CopyDataFrom(UIControl* srcControl) override;
 
     // Cursor control.
     uint32 GetCursorPos();
@@ -333,7 +352,7 @@ public:
 
     String GetFontPresetName() const;
 
-    void SetFontByPresetName(const String &presetName);
+    void SetFontByPresetName(const String& presetName);
 
     void SystemDraw(const UIGeometricData& geometricData) override;
 
@@ -341,11 +360,10 @@ public:
 
 protected:
     ~UITextField() override;
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void OnVisible() override;
+    void OnInvisible() override;
 
 private:
-
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
 
@@ -395,6 +413,6 @@ public:
                          PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT))
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
 #endif // __DAVAENGINE_UI_TEXT_FIELD_H__

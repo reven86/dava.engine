@@ -33,36 +33,35 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class SystemTimer : public Singleton<SystemTimer> 
+class SystemTimer : public Singleton<SystemTimer>
 {
     friend class Core;
     
 #if defined(__DAVAENGINE_WINDOWS__)
-	LARGE_INTEGER	liFrequency;
-	LARGE_INTEGER	tLi;
-	BOOL			bHighTimerSupport;
-	float32			t0;
-#elif defined (__DAVAENGINE_ANDROID__)
-	uint64 t0;
+    LARGE_INTEGER liFrequency;
+    LARGE_INTEGER tLi;
+    BOOL bHighTimerSupport;
+    float32 t0;
+#elif defined(__DAVAENGINE_ANDROID__)
+    uint64 t0;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	uint64_t t0;
+    uint64_t t0;
 #else //PLATFORMS
-	//other platforms
+//other platforms
 #endif //PLATFORMS
 
     static float realFrameDelta;
-    
+
     //frame delta clamped between 0.001f and 0.1f
     static float delta;
     static uint64 stampTime;
 
     float32 ElapsedSec();
     void Start();
+
 public:
-	
     SystemTimer();
     virtual ~SystemTimer();
 
@@ -71,13 +70,13 @@ public:
     uint64 GetAbsoluteUs();
 
     static void SetFrameDelta(float32 _delta); //for replay playback only
-	
+
     //returns frame delta clamped between 0.001f and 0.1f
     static float FrameDelta()
     {
         return delta;
     }
-	
+
     static uint64 FrameStampTimeMS()
     {
         return stampTime;
@@ -98,14 +97,14 @@ public:
     
     
 #if defined(__DAVAENGINE_ANDROID__)
-	uint64 GetTickCount();
+    uint64 GetTickCount();
 #endif //#if defined(__DAVAENGINE_ANDROID__)
-    
+
 private:
     float32 globalTime;
     float32 pauseMultiplier;
 };
-    
+
 // Inline functions
 inline void SystemTimer::ResetGlobalTime()
 {

@@ -33,34 +33,36 @@
 #include "UI/UIControl.h"
 #include "EditorSystemsManager.h"
 
+class VisibleValueProperty;
+
 class ControlContainer : public DAVA::UIControl
 {
 public:
     explicit ControlContainer(const HUDAreaInfo::eArea area);
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
+    void SetSystemVisible(bool visible);
 
 protected:
     ~ControlContainer() = default;
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
+    bool systemVisible = true;
 };
 
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(DAVA::UIControl* container);
+    explicit HUDContainer(ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
-    void SetVisibleInSystems(bool arg);
-    void SetValid(bool arg);
 
 private:
     ~HUDContainer() = default;
+    ControlNode* node = nullptr;
+    VisibleValueProperty* visibleProperty = nullptr;
     DAVA::UIControl* control = nullptr;
     DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
-    bool valid = false;
-    bool visibleInSystems = true;
 };
 
 template <typename T>
@@ -129,13 +131,13 @@ class SelectionRect : public FrameControl
     void Draw(const DAVA::UIGeometricData& geometricData) override;
 };
 
-class MagnetLine : public DAVA::UIControl
+class MagnetLineControl : public DAVA::UIControl
 {
 public:
-    MagnetLine();
+    MagnetLineControl(const DAVA::Rect& rect);
 
 private:
-    ~MagnetLine() = default;
+    ~MagnetLineControl() = default;
 };
 
 template <typename T>

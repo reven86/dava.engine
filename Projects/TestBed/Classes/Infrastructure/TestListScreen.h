@@ -43,7 +43,7 @@ protected:
 public:
     TestListScreen();
 
-    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
+    void SystemScreenSizeChanged(const Rect& newFullScreenSize) override
     {
         UnloadResources();
         LoadResources();
@@ -51,19 +51,19 @@ public:
 
     void LoadResources() override;
     void UnloadResources() override;
-    
-    void AddTestScreen(BaseScreen *screen);
-    
-//UIListDelegate interface
+
+    void AddTestScreen(BaseScreen* screen);
+
+    //UIListDelegate interface
 private:
-    float32 CellHeight(UIList * list, int32 index) override;
-    int32 ElementsCount(UIList * list) override;
-    UIListCell *CellAtIndex(UIList *list, int32 index) override;
-    void OnCellSelected(UIList *forList, UIListCell *selectedCell) override;
+    float32 CellHeight(UIList* list, int32 index) override;
+    int32 ElementsCount(UIList* list) override;
+    UIListCell* CellAtIndex(UIList* list, int32 index) override;
+    void OnCellSelected(UIList* forList, UIListCell* selectedCell) override;
 
 private:
-    Vector<BaseScreen *> testScreens;
-    UIList *testsGrid;
+    Vector<BaseScreen*> testScreens;
+    UIList* testsGrid;
     float32 cellHeight;
 };
 
