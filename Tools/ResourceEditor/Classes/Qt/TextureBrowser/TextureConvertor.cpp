@@ -152,8 +152,9 @@ int TextureConvertor::Reconvert(DAVA::Scene* scene, eTextureConvertMode convertM
     if (NULL != scene)
     {
         // get list of all scenes textures
-        DAVA::TexturesMap allTextures;
-        SceneHelper::EnumerateSceneTextures(scene, allTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+        SceneHelper::TextureCollector collector;
+        SceneHelper::EnumerateSceneTextures(scene, collector);
+        DAVA::TexturesMap& allTextures = collector.GetTextures();
 
         // add jobs to convert every texture
         if (allTextures.size() > 0)

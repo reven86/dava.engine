@@ -115,6 +115,13 @@ private slots:
     void autoExpand();
     void removeInvalidTexture();
 
+    /// Tabbar handlers
+    void onTabNameChanged(int index);
+    void onCreateConfig(int index);
+    void onCurrentConfigChanged(int index);
+    void onTabRemove(int index);
+    void onTabContextMenuRequested(const QPoint& pos);
+
 private:
     enum
     {
@@ -156,6 +163,8 @@ private:
     void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
     bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
 
+    void UpdateTabs();
+
 private:
     Ui::MaterialEditor* ui = nullptr;
 
@@ -175,6 +184,8 @@ private:
     DAVA::uint32 lastCheckState = 0;
 
     LazyUpdater* materialPropertiesUpdater;
+    class ConfigNameValidator;
+    ConfigNameValidator* validator;
 };
 
 #endif
