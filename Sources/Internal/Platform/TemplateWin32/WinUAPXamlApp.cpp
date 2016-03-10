@@ -374,12 +374,14 @@ void WinUAPXamlApp::OnSuspending(::Platform::Object ^ sender, Windows::Applicati
 {
     core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
+        rhi::SuspendRendering();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object ^ sender, ::Platform::Object ^ args)
 {
     core->RunOnMainThreadBlocked([]() {
+        rhi::ResumeRendering();
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }

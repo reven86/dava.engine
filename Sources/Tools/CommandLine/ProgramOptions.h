@@ -42,7 +42,7 @@ public:
     void AddOption(const String& optionName, const VariantType& defaultValue, const String& description = nullptr, bool canBeMultiple = false);
     void AddArgument(const String& argumentName, bool required = true);
 
-    uint32 GetOptionsCount(const String& optionName) const;
+    uint32 GetOptionValuesCount(const String& optionName) const;
     VariantType GetOption(const String& optionName, uint32 pos = 0) const;
 
     String GetArgument(const String& argumentName) const;

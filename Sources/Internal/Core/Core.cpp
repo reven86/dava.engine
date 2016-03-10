@@ -64,6 +64,10 @@
 
 #include "Job/JobManager.h"
 
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
 #pragma STDC FENV_ACCESS on
@@ -292,6 +296,10 @@ void Core::CreateSingletons()
 
     new Net::NetCore();
 
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Init();
+#endif
+
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
@@ -334,6 +342,9 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Deinit();
+#endif
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);

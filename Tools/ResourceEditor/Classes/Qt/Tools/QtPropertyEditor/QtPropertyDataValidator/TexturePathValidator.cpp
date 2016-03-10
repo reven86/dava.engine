@@ -54,36 +54,19 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 {
     if (v.type() == QVariant::String)
     {
-        auto filePath = DAVA::FilePath(v.toString().toStdString());
-        if (DAVA::FileSystem::Instance()->Exists(filePath))
+        FilePath texturePath = DAVA::FilePath(v.toString().toStdString());
+        if (DAVA::FileSystem::Instance()->Exists(texturePath) && TextureDescriptorUtils::CreateOrUpdateDescriptor(texturePath))
         {
-            auto extension = filePath.GetExtension();
-            auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
+            FilePath descriptorPath = TextureDescriptor::GetDescriptorPathname(texturePath);
 
-            if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
+            auto& texturesMap = DAVA::Texture::GetTextureMap();
+            auto found = texturesMap.find(FILEPATH_MAP_KEY(descriptorPath));
+            if (found != texturesMap.end())
             {
-                DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
-                TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
-
-                auto texDescriptor = DAVA::TextureDescriptor::CreateFromFile(texFile);
-                if (texDescriptor)
-                {
-                    texDescriptor->dataSettings.sourceFileFormat = imageFormat;
-                    texDescriptor->dataSettings.sourceFileExtension = extension;
-                    texDescriptor->Save();
-
-                    DAVA::SafeDelete(texDescriptor);
-                }
-
-                auto& texturesMap = DAVA::Texture::GetTextureMap();
-                auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
-                if (found != texturesMap.end())
-                {
-                    found->second->ReloadAs(QtMainWindow::Instance()->GetGPUFormat());
-                }
-
-                v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));
+                found->second->ReloadAs(QtMainWindow::Instance()->GetGPUFormat());
             }
+
+            v = QVariant(QString::fromStdString(descriptorPath.GetAbsolutePathname()));
         }
     }
 }
