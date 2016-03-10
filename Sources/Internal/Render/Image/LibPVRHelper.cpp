@@ -121,15 +121,17 @@ const uint32 PVRTEX3_METADATAIDENT = 0x03525650;
 LibPVRHelper::LibPVRHelper()
     : ImageFormatInterface(
       IMAGE_FORMAT_PVR, // image format type
-      "PVR",            // image format name
-      { ".pvr" },       // image format extension
-      {})               // supported pixel formats
+      "PVR", // image format name
+      { ".pvr" }, // image format extension
+      {}) // supported pixel formats
 {
 }
 
 bool LibPVRHelper::CanProcessFile(const ScopedPtr<File>& file) const
 {
     bool isPvrFile = false;
+
+    DVASSERT(file);
 
     file->Seek(0, File::SEEK_FROM_START);
     PVRFile* pvrFile = ReadFile(file, false, false);
@@ -2571,5 +2573,20 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image* image, uint32 mipMapLevel, con
     }
 
     return true;
+}
+
+bool LibPVRHelper::IsSupportedCompressedFormat(PixelFormat format)
+{
+    return false;
+}
+
+bool LibPVRHelper::DecompressToRGBA(const Image* image, Image* dstImage)
+{
+    return false;
+}
+
+bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
+{
+    return false;
 }
 };

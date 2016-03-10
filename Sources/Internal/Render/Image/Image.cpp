@@ -62,6 +62,8 @@ Image::~Image()
     height = 0;
 }
 
+const uint32 BLOCK_SIZE = 4;
+
 Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -78,10 +80,10 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
         if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
             (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
         {
-            if (width < 4 || height < 4) // size lower than  block's size
+            if (width < BLOCK_SIZE || height < BLOCK_SIZE)
             {
-                uint32 w = Max(width, (uint32)4);
-                uint32 h = Max(height, (uint32)4);
+                uint32 w = Max(width, BLOCK_SIZE);
+                uint32 h = Max(height, BLOCK_SIZE);
                 image->dataSize = w * h * pixelSizeBits / 8;
             }
             else

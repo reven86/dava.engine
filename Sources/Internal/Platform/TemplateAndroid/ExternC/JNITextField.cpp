@@ -31,6 +31,7 @@
 #include "UI/UITextFieldAndroid.h"
 #include "Base/BaseTypes.h"
 #include "Utils/UTF8Utils.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 

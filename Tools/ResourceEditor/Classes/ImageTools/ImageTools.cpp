@@ -280,5 +280,4 @@ QImage ImageTools::FromDavaImage(const Image* image)
         Logger::Error("[%s]: Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
         return QImage();
     }
-
 }

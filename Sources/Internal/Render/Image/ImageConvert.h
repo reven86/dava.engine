@@ -204,7 +204,7 @@ struct ConvertRGB888toBGRA8888
 {
     inline void operator()(const RGB888* input, BGRA8888* output)
     {
-        BGRA8888 tmp {input->b, input->g, input->r, 0xFF};
+        BGRA8888 tmp{ input->b, input->g, input->r, 0xFF };
         *output = tmp;
     }
 };
@@ -414,7 +414,7 @@ struct ConvertRGBA4444toARGB4444
         // src: aaaa bbbb gggg rrrr
         // dst: bbbb gggg rrrr aaaa
         uint16 a = *input >> 12;
-        *output = (*input <<  4) | a;
+        *output = (*input << 4) | a;
     }
 };
 
@@ -781,26 +781,26 @@ class Image;
 
 namespace ImageConvert
 {
-    bool Normalize(PixelFormat format, const void* inData, uint32 width, uint32 height, uint32 pitch, void* outData);
+bool Normalize(PixelFormat format, const void* inData, uint32 width, uint32 height, uint32 pitch, void* outData);
 
-    bool ConvertImage(const Image *srcImage, Image *dstImage);
-    bool ConvertImageDirect(const Image* srcImage, Image* dstImage);
-    bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
-                            const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-                            void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch);
+bool ConvertImage(const Image* srcImage, Image* dstImage);
+bool ConvertImageDirect(const Image* srcImage, Image* dstImage);
+bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
+                        const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
+                        void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch);
 
-    bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat);
-    bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat);
+bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat);
+bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat);
 
-    void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage = nullptr);
-    void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData = nullptr);
+void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage = nullptr);
+void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData = nullptr);
 
-    Image* DownscaleTwiceBillinear(const Image* source);
-    void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
-                                const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-                                void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize);
+Image* DownscaleTwiceBillinear(const Image* source);
+void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
+                             const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
+                             void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize);
 
-    void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* outPixels, uint32 w2, uint32 h2);
+void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* outPixels, uint32 w2, uint32 h2);
 };
 };
 

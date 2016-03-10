@@ -33,13 +33,13 @@
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
-#include "Render/Image/Image.h"
 #include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/CRCAdditionInterface.h"
 
 namespace DAVA
 {
 class File;
+class Image;
 
 class LibDdsHelper : public ImageFormatInterface, public CRCAdditionInterface
 {
@@ -64,7 +64,6 @@ public:
 private:
     eErrorCode WriteFileInternal(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const;
 };
-
 };
 
 #endif // __DAVAENGINE_DXT_HELPER_H__

@@ -28,12 +28,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/LibDdsHelper.h"
+#include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/Image.h"
+#include "Functional/Function.h"
 
-
-namespace DAVA {
-namespace ImageConvert {
-
+namespace DAVA
+{
+namespace ImageConvert
+{
 bool Normalize(PixelFormat format, const void* inData, uint32 width, uint32 height, uint32 pitch, void* outData)
 {
     if (format == FORMAT_RGBA8888)
@@ -48,7 +50,7 @@ bool Normalize(PixelFormat format, const void* inData, uint32 width, uint32 heig
     return false;
 }
 
-bool ConvertImage(const Image *srcImage, Image *dstImage)
+bool ConvertImage(const Image* srcImage, Image* dstImage)
 {
     DVASSERT(srcImage);
     DVASSERT(dstImage);
@@ -59,41 +61,57 @@ bool ConvertImage(const Image *srcImage, Image *dstImage)
     PixelFormat srcFormat = srcImage->format;
     PixelFormat dstFormat = dstImage->format;
 
-    bool srcCompressed = LibDdsHelper::IsSupportedCompressedFormat(srcFormat);
-    bool dstCompressed = LibDdsHelper::IsSupportedCompressedFormat(dstFormat);
+    Function<bool(const Image*, Image*)> decompressFn = nullptr;
+    if (LibDdsHelper::IsSupportedCompressedFormat(srcFormat))
+    {
+        decompressFn = &LibDdsHelper::DecompressToRGBA;
+    }
+    else if (LibPVRHelper::IsSupportedCompressedFormat(srcFormat))
+    {
+        decompressFn = &LibPVRHelper::DecompressToRGBA;
+    }
 
-    if (!srcCompressed && !dstCompressed)
+    Function<bool(const Image*, Image*)> compressFn = nullptr;
+    if (LibDdsHelper::IsSupportedCompressedFormat(dstFormat))
+    {
+        compressFn = &LibDdsHelper::CompressFromRGBA;
+    }
+    else if (LibPVRHelper::IsSupportedCompressedFormat(dstFormat))
+    {
+        compressFn = &LibPVRHelper::CompressFromRGBA;
+    }
+
+    if (decompressFn == nullptr && compressFn == nullptr)
     {
         return ConvertImageDirect(srcImage, dstImage);
     }
-    else if (srcCompressed && dstCompressed)
+    else if (decompressFn != nullptr && compressFn != nullptr)
     {
         ScopedPtr<Image> rgba(Image::Create(srcImage->width, srcImage->height, FORMAT_RGBA8888));
-        return (LibDdsHelper::DecompressToRGBA(srcImage, rgba) && LibDdsHelper::CompressFromRGBA(rgba, dstImage));
+        return (decompressFn(srcImage, rgba) && compressFn(rgba, dstImage));
     }
-    else if (srcCompressed)
+    else if (decompressFn != nullptr)
     {
         if (dstFormat == FORMAT_RGBA8888)
         {
-            return LibDdsHelper::DecompressToRGBA(srcImage, dstImage);
+            return decompressFn(srcImage, dstImage);
         }
         else
         {
             ScopedPtr<Image> rgba(Image::Create(srcImage->width, srcImage->height, FORMAT_RGBA8888));
-            return (LibDdsHelper::DecompressToRGBA(srcImage, rgba) && ConvertImageDirect(rgba, dstImage));
+            return (decompressFn(srcImage, rgba) && ConvertImageDirect(rgba, dstImage));
         }
-
     }
     else
     {
         if (srcFormat == FORMAT_RGBA8888)
         {
-            return LibDdsHelper::CompressFromRGBA(srcImage, dstImage);
+            return compressFn(srcImage, dstImage);
         }
         else
         {
             ScopedPtr<Image> rgba(Image::Create(srcImage->width, srcImage->height, FORMAT_RGBA8888));
-            return (ConvertImageDirect(srcImage, rgba) && LibDdsHelper::CompressFromRGBA(rgba, dstImage));
+            return (ConvertImageDirect(srcImage, rgba) && compressFn(rgba, dstImage));
         }
     }
 }
@@ -101,15 +119,15 @@ bool ConvertImage(const Image *srcImage, Image *dstImage)
 bool ConvertImageDirect(const Image* srcImage, Image* dstImage)
 {
     return ConvertImageDirect(srcImage->format, dstImage->format,
-        srcImage->data, srcImage->width, srcImage->height,
-        srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format),
-        dstImage->data, dstImage->width, dstImage->height,
-        dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+                              srcImage->data, srcImage->width, srcImage->height,
+                              srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format),
+                              dstImage->data, dstImage->width, dstImage->height,
+                              dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
 }
 
 bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
-    const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-    void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+                        const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
+                        void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
 {
     if (inFormat == FORMAT_RGBA5551 && outFormat == FORMAT_RGBA8888)
     {
@@ -197,8 +215,8 @@ bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat)
 
 bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat)
 {
-    bool inCompressed = LibDdsHelper::IsSupportedCompressedFormat(inFormat);
-    bool outCompressed = LibDdsHelper::IsSupportedCompressedFormat(outFormat);
+    bool inCompressed = LibDdsHelper::IsSupportedCompressedFormat(inFormat) || LibPVRHelper::IsSupportedCompressedFormat(inFormat);
+    bool outCompressed = LibDdsHelper::IsSupportedCompressedFormat(outFormat) || LibPVRHelper::IsSupportedCompressedFormat(outFormat);
 
     if (!inCompressed && !outCompressed)
     {
@@ -218,7 +236,7 @@ bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat)
     }
 }
 
-void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage/* = nullptr*/)
+void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage /* = nullptr*/)
 {
     DVASSERT(srcImage);
 
@@ -231,12 +249,12 @@ void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage/* = nullpt
     }
 
     SwapRedBlueChannels(
-        srcImage->format, srcImage->data, srcImage->width, srcImage->height,
-        srcImage->width * srcPixelSize,
-        dstImage ? dstImage->data : nullptr);
+    srcImage->format, srcImage->data, srcImage->width, srcImage->height,
+    srcImage->width * srcPixelSize,
+    dstImage ? dstImage->data : nullptr);
 }
 
-void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData/* = nullptr*/)
+void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData /* = nullptr*/)
 {
     if (!dstData)
         dstData = srcData;
@@ -294,8 +312,8 @@ void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32
 }
 
 void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
-    const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-    void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize)
+                             const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
+                             void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize)
 {
     if ((inFormat == FORMAT_RGBA8888) && (outFormat == FORMAT_RGBA8888))
     {
@@ -360,7 +378,7 @@ Image* DownscaleTwiceBillinear(const Image* source)
         {
             ConvertDownscaleTwiceBillinear<uint32, uint32, UnpackRGBA8888, PackRGBA8888> convertFunc;
             convertFunc(source->GetData(), source->GetWidth(), source->GetHeight(), source->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(source->GetPixelFormat()),
-                destination->GetData(), destination->GetWidth(), destination->GetHeight(), destination->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(destination->GetPixelFormat()));
+                        destination->GetData(), destination->GetWidth(), destination->GetHeight(), destination->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(destination->GetPixelFormat()));
         }
         return destination;
     }
@@ -388,23 +406,23 @@ void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* ou
             c = inPixels[index + w];
             d = inPixels[index + w + 1];
 
-            blue = (a & 0xff) * (1 - x_diff) * (1 - y_diff) + (b & 0xff) * (x_diff)* (1 - y_diff) +
-                (c & 0xff) * (y_diff)* (1 - x_diff) + (d & 0xff) * (x_diff * y_diff);
+            blue = (a & 0xff) * (1 - x_diff) * (1 - y_diff) + (b & 0xff) * (x_diff) * (1 - y_diff) +
+            (c & 0xff) * (y_diff) * (1 - x_diff) + (d & 0xff) * (x_diff * y_diff);
 
-            green = ((a >> 8) & 0xff) * (1 - x_diff) * (1 - y_diff) + ((b >> 8) & 0xff) * (x_diff)* (1 - y_diff) +
-                ((c >> 8) & 0xff) * (y_diff)* (1 - x_diff) + ((d >> 8) & 0xff) * (x_diff * y_diff);
+            green = ((a >> 8) & 0xff) * (1 - x_diff) * (1 - y_diff) + ((b >> 8) & 0xff) * (x_diff) * (1 - y_diff) +
+            ((c >> 8) & 0xff) * (y_diff) * (1 - x_diff) + ((d >> 8) & 0xff) * (x_diff * y_diff);
 
-            red = ((a >> 16) & 0xff) * (1 - x_diff) * (1 - y_diff) + ((b >> 16) & 0xff) * (x_diff)* (1 - y_diff) +
-                ((c >> 16) & 0xff) * (y_diff)* (1 - x_diff) + ((d >> 16) & 0xff) * (x_diff * y_diff);
+            red = ((a >> 16) & 0xff) * (1 - x_diff) * (1 - y_diff) + ((b >> 16) & 0xff) * (x_diff) * (1 - y_diff) +
+            ((c >> 16) & 0xff) * (y_diff) * (1 - x_diff) + ((d >> 16) & 0xff) * (x_diff * y_diff);
 
-            alpha = ((a >> 24) & 0xff) * (1 - x_diff) * (1 - y_diff) + ((b >> 24) & 0xff) * (x_diff)* (1 - y_diff) +
-                ((c >> 24) & 0xff) * (y_diff)* (1 - x_diff) + ((d >> 24) & 0xff) * (x_diff * y_diff);
+            alpha = ((a >> 24) & 0xff) * (1 - x_diff) * (1 - y_diff) + ((b >> 24) & 0xff) * (x_diff) * (1 - y_diff) +
+            ((c >> 24) & 0xff) * (y_diff) * (1 - x_diff) + ((d >> 24) & 0xff) * (x_diff * y_diff);
 
             outPixels[offset++] =
-                ((((uint32)alpha) << 24) & 0xff000000) |
-                ((((uint32)red) << 16) & 0xff0000) |
-                ((((uint32)green) << 8) & 0xff00) |
-                ((uint32)blue);
+            ((((uint32)alpha) << 24) & 0xff000000) |
+            ((((uint32)red) << 16) & 0xff0000) |
+            ((((uint32)green) << 8) & 0xff00) |
+            ((uint32)blue);
         }
     }
 }

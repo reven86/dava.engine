@@ -521,12 +521,12 @@ UIWebView& control)
         uint8* rawData = reinterpret_cast<uint8*>(
         image.GetPixelAddress(0, imageHeight - 1));
         {
-            ScopedPtr<Image> image(Image::CreateFromData(imageWidth, imageHeight, FORMAT_RGB888, rawData));
-            DVASSERT(image);
+            ScopedPtr<Image> rgb888(Image::CreateFromData(imageWidth, imageHeight, FORMAT_RGB888, rawData));
+            DVASSERT(rgb888);
             {
-                ImageConvert::SwapRedBlueChannels(image);
+                ImageConvert::SwapRedBlueChannels(rgb888);
                 {
-                    ScopedPtr<Sprite> spr(Sprite::CreateFromImage(image));
+                    ScopedPtr<Sprite> spr(Sprite::CreateFromImage(rgb888));
                     control.SetSprite(spr, 0);
                 }
                 // CImage in BMP format so we need to flip image

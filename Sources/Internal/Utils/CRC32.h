@@ -42,8 +42,8 @@ public:
     void AddData(const char* data, uint32 size);
     uint32 Done();
 
-	// Calculate the CRC32 for the in-memory buffer.
-	static uint32 ForBuffer(const char* data, uint32 size);
+    // Calculate the CRC32 for the in-memory buffer.
+    static uint32 ForBuffer(const char* data, uint32 size);
 
     // Calculate CRC32 for the whole file.
     static uint32 ForFile(const FilePath& pathName);

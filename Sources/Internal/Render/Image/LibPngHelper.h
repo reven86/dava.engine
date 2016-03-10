@@ -59,7 +59,6 @@ public:
 
     static eErrorCode ReadPngFile(File* infile, Image* image, PixelFormat targetFormat = FORMAT_INVALID);
 };
-
 }
 
 #endif // __PNG_IMAGE_H__

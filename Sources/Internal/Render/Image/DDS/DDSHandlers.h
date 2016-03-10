@@ -32,8 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/BaseTypes.h"
 #include "Render/Image/ImageFormatInterface.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 class Image;
 
 struct DDSReader;

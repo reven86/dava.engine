@@ -114,7 +114,6 @@ private:
         bool isAtEnd;
     };
 };
-
 };
 
 #endif // __DAVAENGINE_TGA_HELPER_H__

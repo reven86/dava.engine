@@ -35,39 +35,55 @@
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
 
-namespace DAVA {
-namespace NvttHelper {
-
-namespace Internal {
-
+namespace DAVA
+{
+namespace NvttHelper
+{
+namespace Internal
+{
 nvtt::Format GetNVTTFormatByPixelFormat(PixelFormat pixelFormat)
 {
     switch (pixelFormat)
     {
-    case  FORMAT_DXT1: return nvtt::Format_DXT1;
-    case  FORMAT_DXT1A: return nvtt::Format_DXT1a;
-    case  FORMAT_DXT3: return nvtt::Format_DXT3;
-    case  FORMAT_DXT5: return nvtt::Format_DXT5;
-    case  FORMAT_DXT5NM: return nvtt::Format_DXT5n;
-    case  FORMAT_ATC_RGB: return nvtt::Format_ATC_RGB;
-    case  FORMAT_ATC_RGBA_EXPLICIT_ALPHA: return nvtt::Format_ATC_RGBA_EXPLICIT_ALPHA;
-    case  FORMAT_ATC_RGBA_INTERPOLATED_ALPHA: return nvtt::Format_ATC_RGBA_INTERPOLATED_ALPHA;
-    case  FORMAT_RGBA8888: return nvtt::Format_RGBA;
-    default: DVASSERT_MSG(false, "Unsupported pixel format"); return nvtt::Format_COUNT;
+    case FORMAT_DXT1:
+        return nvtt::Format_DXT1;
+    case FORMAT_DXT1A:
+        return nvtt::Format_DXT1a;
+    case FORMAT_DXT3:
+        return nvtt::Format_DXT3;
+    case FORMAT_DXT5:
+        return nvtt::Format_DXT5;
+    case FORMAT_DXT5NM:
+        return nvtt::Format_DXT5n;
+    case FORMAT_ATC_RGB:
+        return nvtt::Format_ATC_RGB;
+    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+        return nvtt::Format_ATC_RGBA_EXPLICIT_ALPHA;
+    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+        return nvtt::Format_ATC_RGBA_INTERPOLATED_ALPHA;
+    case FORMAT_RGBA8888:
+        return nvtt::Format_RGBA;
+    default:
+        DVASSERT_MSG(false, "Unsupported pixel format");
+        return nvtt::Format_COUNT;
     }
 }
 
 struct BufferOutputHandler : public nvtt::OutputHandler
 {
-    explicit BufferOutputHandler(Vector<uint8>& buf) : buffer(buf) { buffer.clear(); }
+    explicit BufferOutputHandler(Vector<uint8>& buf)
+        : buffer(buf)
+    {
+        buffer.clear();
+    }
 
-    virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override
+    void beginImage(int size, int width, int height, int depth, int face, int miplevel) override
     {
         Logger::FrameworkDebug("Compressing image: size %d [%dx%d] depth %d, face %d, mip %d", size, width, height, depth, face, miplevel);
         writingImage = true;
     }
 
-    virtual bool writeData(const void* data, int size) override
+    bool writeData(const void* data, int size) override
     {
         if (writingImage)
         {
@@ -84,17 +100,20 @@ struct BufferOutputHandler : public nvtt::OutputHandler
 
 struct ImageOutputHandler : public nvtt::OutputHandler
 {
-    explicit ImageOutputHandler(Image* img) : image(img), ptr(image->data), bytesWritten(0)
+    explicit ImageOutputHandler(Image* img)
+        : image(img)
+        , ptr(image->data)
+        , bytesWritten(0)
     {
     }
 
-    virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override
+    void beginImage(int size, int width, int height, int depth, int face, int miplevel) override
     {
         writingImage = true;
         Logger::FrameworkDebug("Compressing image: size %d [%dx%d] depth %d, face %d, mip %d", size, width, height, depth, face, miplevel);
     }
 
-    virtual bool writeData(const void* data, int size) override
+    bool writeData(const void* data, int size) override
     {
         if (writingImage)
         {
@@ -136,7 +155,7 @@ bool DecompressDxtToRgba(const Image* srcImage, Image* dstImage)
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return false;
+    return false;
 
 #else
     DVASSERT(srcImage);
@@ -174,7 +193,7 @@ bool DecompressDxtToRgba(const Image* srcImage, Image* dstImage)
         Logger::Error("[InitDecompressor] Wrong buffer data");
         return false;
     }
-    
+
     const PixelFormat outFormat = FORMAT_RGBA8888;
     ScopedPtr<Image> newImage(Image::Create(srcImage->width, srcImage->height, outFormat));
     const uint32 mip = 0;
@@ -203,7 +222,7 @@ bool CompressRgbaToDxt(const Image* srcImage, Image* dstImage)
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return false;
+    return false;
 
 #else
     DVASSERT(srcImage);
@@ -251,6 +270,5 @@ bool CompressRgbaToDxt(const Image* srcImage, Image* dstImage)
     }
 #endif
 }
-
 }
 }

@@ -38,10 +38,10 @@ static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
 LibTgaHelper::LibTgaHelper()
     : ImageFormatInterface(
-      IMAGE_FORMAT_TGA,     // image format type
-      "TGA",                // image format name
-      { ".tga", ".tpic" },  // image format extensions
-      { FORMAT_RGBA8888,    // supported pixel formats
+      IMAGE_FORMAT_TGA, // image format type
+      "TGA", // image format name
+      { ".tga", ".tpic" }, // image format extensions
+      { FORMAT_RGBA8888, // supported pixel formats
         FORMAT_RGBA5551,
         FORMAT_RGBA4444,
         FORMAT_RGB888,

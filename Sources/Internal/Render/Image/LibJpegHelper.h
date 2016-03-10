@@ -54,7 +54,6 @@ public:
 
     ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 };
-
 };
 
 #endif // __DAVAENGINE_JPEG_HELPER_H__

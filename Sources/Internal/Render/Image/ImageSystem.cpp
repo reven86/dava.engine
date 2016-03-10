@@ -49,7 +49,6 @@ namespace DAVA
 {
 namespace ImageSystem
 {
-
 static UnorderedMap<ImageFormat, std::shared_ptr<ImageFormatInterface>, std::hash<uint8>> wrappers = {
     { IMAGE_FORMAT_PNG, std::shared_ptr<ImageFormatInterface>(new LibPngHelper) },
     { IMAGE_FORMAT_DDS, std::shared_ptr<ImageFormatInterface>(new LibDdsHelper) },
@@ -57,7 +56,7 @@ static UnorderedMap<ImageFormat, std::shared_ptr<ImageFormatInterface>, std::has
     { IMAGE_FORMAT_JPEG, std::shared_ptr<ImageFormatInterface>(new LibJpegHelper) },
     { IMAGE_FORMAT_TGA, std::shared_ptr<ImageFormatInterface>(new LibTgaHelper) },
     { IMAGE_FORMAT_WEBP, std::shared_ptr<ImageFormatInterface>(new LibWebPHelper) }
-    };
+};
 
 eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseMipmap)
 {

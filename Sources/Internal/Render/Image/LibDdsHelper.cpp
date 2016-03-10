@@ -38,14 +38,14 @@
 
 #include "Utils/CRC32.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 LibDdsHelper::LibDdsHelper()
     : ImageFormatInterface(
-      IMAGE_FORMAT_DDS,     // image format type
-      "DDS",                // image format name
-      { ".dds" },           // image format extension
-      { FORMAT_ATC_RGB,     // supported pixel formats
+      IMAGE_FORMAT_DDS, // image format type
+      "DDS", // image format name
+      { ".dds" }, // image format extension
+      { FORMAT_ATC_RGB, // supported pixel formats
         FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
         FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
         FORMAT_DXT1,
@@ -85,7 +85,7 @@ eErrorCode LibDdsHelper::WriteFileInternal(const FilePath& outFileName, const Ve
 {
     if (!IsFileExtensionSupported(outFileName.GetExtension()))
     {
-        Logger::Error("[LibDdsHelper::WriteFile] Wrong output file name specified: '%s'", outFileName.GetAbsolutePathname().c_str());
+        Logger::Error("[LibDdsHelper::WriteFile] Wrong output file name specified: %s", outFileName.GetStringValue().c_str());
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
@@ -98,11 +98,25 @@ eErrorCode LibDdsHelper::WriteFileInternal(const FilePath& outFileName, const Ve
         ddsWriter.reset();
         file.reset();
 
-        FileSystem::Instance()->DeleteFile(outFileName);
-        if (!FileSystem::Instance()->MoveFile(tmpFileName, outFileName, true))
+        bool err = false;
+        if (!FileSystem::Instance()->DeleteFile(outFileName))
         {
-            Logger::Error("[LibDdsHelper::WriteFile] Temporary dds file renaming failed");
-            FileSystem::Instance()->DeleteFile(tmpFileName);
+            Logger::Error("[LibDdsHelper::WriteFile] Can't delete previous dds file %s", outFileName.GetStringValue().c_str());
+            err = true;
+        }
+
+        if (err = false && !FileSystem::Instance()->MoveFile(tmpFileName, outFileName, true))
+        {
+            Logger::Error("[LibDdsHelper::WriteFile] Temporary dds file %s renaming failed", tmpFileName.GetStringValue().c_str());
+            err = true;
+        }
+
+        if (err == true)
+        {
+            if (!FileSystem::Instance()->DeleteFile(tmpFileName))
+            {
+                Logger::Error("[LibDdsHelper::WriteFile] Can't delete temporary dds file %s", tmpFileName.GetStringValue().c_str());
+            }
             return DAVA::eErrorCode::ERROR_WRITE_FAIL;
         }
 
@@ -123,7 +137,7 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath& outFileName, const V
 {
     if (imageSet.size() != Texture::CUBE_FACE_COUNT)
     {
-        Logger::Error("[LibDdsHelper::WriteFileAsCubeMap] Wrong input image set.");
+        Logger::Error("[LibDdsHelper::WriteFileAsCubeMap] Wrong input image set in attempt to write into %s", outFileName.GetStringValue().c_str());
         return eErrorCode::ERROR_WRITE_FAIL;
     }
 
@@ -162,7 +176,7 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
     if (!ddsFile)
     {
-        Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open file %s", filePathname.GetStringValue().c_str());
+        Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open %s", filePathname.GetStringValue().c_str());
         return false;
     }
 
@@ -182,7 +196,7 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     }
     else
     {
-        Logger::Error("[LibDdsHelper::GetCRCFromFile] is not a DDS file %s", filePathname.GetStringValue().c_str());
+        Logger::Error("[LibDdsHelper::GetCRCFromFile] %s is not a DDS file", filePathname.GetStringValue().c_str());
         return false;
     }
 }

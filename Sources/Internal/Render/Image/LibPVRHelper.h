@@ -159,6 +159,10 @@ public:
 
     static bool WriteFileFromMipMapFiles(const FilePath& outputFile, const Vector<FilePath>& imgPaths);
 
+    static bool IsSupportedCompressedFormat(PixelFormat format);
+    static bool DecompressToRGBA(const Image* image, Image* dstImage);
+    static bool CompressFromRGBA(const Image* image, Image* dstImage);
+
 protected:
     static PVRFile* ReadFile(const FilePath& filePathname, bool readMetaData = false, bool readData = false);
     static PVRFile* ReadFile(File* file, bool readMetaData = false, bool readData = false);
@@ -198,7 +202,6 @@ protected:
     static bool CopyToImage(Image* image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3& header, const uint8* pvrData);
     static bool AllocateImageData(Image* image, uint32 mipMapLevel, const PVRHeaderV3& header);
 };
-
 };
 
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__

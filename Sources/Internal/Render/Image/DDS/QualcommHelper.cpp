@@ -45,19 +45,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <libatc/TextureConverter.h>
 #endif
 
-namespace DAVA {
-namespace QualcommHelper {
-
-namespace Internal {
+namespace DAVA
+{
+namespace QualcommHelper
+{
+namespace Internal
+{
 int32 GetQualcommFromDava(PixelFormat format)
 {
     switch (format)
     {
-    case FORMAT_ATC_RGB: return Q_FORMAT_ATC_RGB;
-    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA: return Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA;
-    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA: return Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
-    case FORMAT_RGBA8888: return Q_FORMAT_RGBA_8UI;
-    default: DVASSERT_MSG(false, "Unsupported pixel format"); return Q_FORMAT_ATC_RGB;
+    case FORMAT_ATC_RGB:
+        return Q_FORMAT_ATC_RGB;
+    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+        return Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA;
+    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+        return Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
+    case FORMAT_RGBA8888:
+        return Q_FORMAT_RGBA_8UI;
+    default:
+        DVASSERT_MSG(false, "Unsupported pixel format");
+        return Q_FORMAT_ATC_RGB;
     }
 }
 } // namespace Internal
@@ -78,7 +86,7 @@ bool DecompressAtcToRgba(const Image* srcImage, Image* dstImage)
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return false;
+    return false;
 
 #else
 #if defined(__DAVAENGINE_MACOS__)
@@ -143,7 +151,7 @@ bool CompressRgbaToAtc(const Image* srcImage, Image* dstImage)
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return false;
+    return false;
 
 #else
     DVASSERT(srcImage);

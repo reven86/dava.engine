@@ -97,6 +97,8 @@ eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>
     };
 #endif
 
+    DVASSERT(infile);
+
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
 
@@ -287,6 +289,8 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
+
+    DVASSERT(infile);
 
     infile->Seek(0, File::SEEK_FROM_START);
     uint32 fileSize = infile->GetSize();

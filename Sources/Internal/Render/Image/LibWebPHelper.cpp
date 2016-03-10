@@ -54,6 +54,8 @@ bool LibWebPHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 
 eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
+    DVASSERT(infile);
+
     WebPDecoderConfig config;
     WebPBitstreamFeatures* bitstream = &config.input;
     auto initCStatus = WebPInitDecoderConfig(&config);
@@ -197,6 +199,8 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(const ScopedPtr<File>& infile) const
     WebPDecoderConfig config;
     WebPInitDecoderConfig(&config);
     WebPBitstreamFeatures* const bitstream = &config.input;
+
+    DVASSERT(infile);
 
     infile->Seek(0, File::SEEK_FROM_START);
     uint32 dataSize = infile->GetSize();

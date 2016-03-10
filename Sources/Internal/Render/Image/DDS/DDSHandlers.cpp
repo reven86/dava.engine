@@ -35,7 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Utils/CRC32.h"
 
-namespace DAVA {
+namespace DAVA
+{
 
 #ifndef MAKEFOURCC
 #define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32)((uint8)(ch0)) | ((uint32)((uint8)(ch1)) << 8) | ((uint32)((uint8)(ch2)) << 16) | ((uint32)((uint8)(ch3)) << 24))
@@ -43,8 +44,8 @@ namespace DAVA {
 
 const uint32 FOURCC_CRC = MAKEFOURCC('C', 'R', 'C', '_');
 
-namespace dds {
-
+namespace dds
+{
 const uint32 FOURCC_DDS = MAKEFOURCC('D', 'D', 'S', ' ');
 
 const uint32 FOURCC_DXT1 = MAKEFOURCC('D', 'X', 'T', '1');
@@ -312,12 +313,12 @@ struct DDS_HEADER_DXT10
 };
 
 const uint32 ddsFaces[] = {
-    dds::DDSCAPS2_CUBEMAP_POSITIVEX,
-    dds::DDSCAPS2_CUBEMAP_NEGATIVEX,
-    dds::DDSCAPS2_CUBEMAP_POSITIVEY,
-    dds::DDSCAPS2_CUBEMAP_NEGATIVEY,
-    dds::DDSCAPS2_CUBEMAP_POSITIVEZ,
-    dds::DDSCAPS2_CUBEMAP_NEGATIVEZ
+    DDSCAPS2_CUBEMAP_POSITIVEX,
+    DDSCAPS2_CUBEMAP_NEGATIVEX,
+    DDSCAPS2_CUBEMAP_POSITIVEY,
+    DDSCAPS2_CUBEMAP_NEGATIVEY,
+    DDSCAPS2_CUBEMAP_POSITIVEZ,
+    DDSCAPS2_CUBEMAP_NEGATIVEZ
 };
 
 #pragma pack(pop)
@@ -326,7 +327,7 @@ const uint32 ddsFaces[] = {
 
 namespace D3DUtils
 {
-uint32 GetFormatSizeInBytes(dds::D3D_FORMAT format)
+uint32 GetFormatSizeInBits(dds::D3D_FORMAT format)
 {
     switch (format)
     {
@@ -335,7 +336,7 @@ uint32 GetFormatSizeInBytes(dds::D3D_FORMAT format)
     case dds::D3DFMT_P8:
     case dds::D3DFMT_L8:
     case dds::D3DFMT_A4L4:
-        return 1;
+        return 8;
 
     case dds::D3DFMT_R5G6B5:
     case dds::D3DFMT_X1R5G5B5:
@@ -347,10 +348,10 @@ uint32 GetFormatSizeInBytes(dds::D3D_FORMAT format)
     case dds::D3DFMT_A8L8:
     case dds::D3DFMT_L16:
     case dds::D3DFMT_R16F:
-        return 2;
+        return 8 * 2;
 
     case dds::D3DFMT_R8G8B8:
-        return 3;
+        return 8 * 3;
 
     case dds::D3DFMT_A8R8G8B8:
     case dds::D3DFMT_A8B8G8R8:
@@ -361,18 +362,18 @@ uint32 GetFormatSizeInBytes(dds::D3D_FORMAT format)
     case dds::D3DFMT_G16R16:
     case dds::D3DFMT_G16R16F:
     case dds::D3DFMT_R32F:
-        return 4;
+        return 8 * 4;
 
     case dds::D3DFMT_A16B16G16R16:
     case dds::D3DFMT_A16B16G16R16F:
     case dds::D3DFMT_G32R32F:
-        return 8;
+        return 8 * 8;
 
     case dds::D3DFMT_A32B32G32R32F:
-        return 16;
+        return 8 * 16;
 
     default:
-        DVASSERT_MSG(false, "undefined format");
+        DVASSERT_MSG(false, Format("undefined format: %d", format).c_str());
         return 0;
     }
 }
@@ -385,7 +386,7 @@ void DirectConvertFromD3D(const uint8* srcData, Image* dstImage, dds::D3D_FORMAT
     const uint32& w = dstImage->width;
     const uint32& h = dstImage->height;
 
-    uint32 srcPitch = w * GetFormatSizeInBytes(srcFormat);
+    uint32 srcPitch = w * GetFormatSizeInBits(srcFormat);
     uint32 dstPitch = w * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstFormat);
 
     switch (srcFormat)
@@ -429,7 +430,7 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
     DVASSERT(dstData);
 
     uint32 srcPitch = w * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcFormat);
-    uint32 dstPitch = w * GetFormatSizeInBytes(dstFormat);
+    uint32 dstPitch = w * GetFormatSizeInBits(dstFormat);
 
     switch (dstFormat)
     {
@@ -462,7 +463,7 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
         return;
     }
     default:
-        DVASSERT(false && "undefined format");
+        DVASSERT_MSG(false, Format("undefined format: %d", dstFormat).c_str());
     }
 }
 } // namespace D3DUtils
@@ -481,7 +482,7 @@ public:
     bool ReadMagicWord();
     bool ReadHeaders();
 
-    bool SetFacesInfo();
+    void SetFacesInfo();
     bool SetFormatInfo();
 
     void FetchFacesInfo();
@@ -491,7 +492,7 @@ public:
 
     ScopedPtr<File> file;
     dds::DDS_HEADER mainHeader;
-    std::unique_ptr<dds::DDS_HEADER_DXT10> extHeader;
+    dds::DDS_HEADER_DXT10 extHeader;
     bool needDirectConvert = false;
     dds::D3D_FORMAT d3dPixelFormat;
     PixelFormat davaPixelFormat = FORMAT_INVALID;
@@ -519,8 +520,6 @@ bool DDSHandler::ReadMagicWord()
 
 bool DDSHandler::ReadHeaders()
 {
-    DVASSERT(!extHeader);
-
     if (sizeof(dds::DDS_HEADER) != file->Read(&mainHeader))
     {
         return false;
@@ -528,8 +527,7 @@ bool DDSHandler::ReadHeaders()
 
     if ((mainHeader.format.flags & dds::DDPF_FOURCC) && (mainHeader.format.fourCC == dds::FOURCC_DX10))
     {
-        extHeader.reset(new dds::DDS_HEADER_DXT10);
-        if (sizeof(dds::DDS_HEADER_DXT10) != file->Read(extHeader.get()))
+        if (sizeof(dds::DDS_HEADER_DXT10) != file->Read(&extHeader))
         {
             return false;
         }
@@ -550,7 +548,7 @@ bool DDSHandler::WriteMainHeader()
 
 bool DDSHandler::WriteExtHeader()
 {
-    return extHeader ? (sizeof(*extHeader) == file->Write(extHeader.get(), sizeof(*extHeader))) : true;
+    return (mainHeader.format.fourCC == dds::FOURCC_DX10) ? (sizeof(extHeader) == file->Write(&extHeader, sizeof(extHeader))) : true;
 }
 
 bool DDSHandler::WriteCRC(uint32 crc)
@@ -579,56 +577,41 @@ bool DDSHandler::IsSupportedFormat() const
     return (davaPixelFormat != FORMAT_INVALID);
 }
 
-bool DDSHandler::SetFacesInfo()
+void DDSHandler::SetFacesInfo()
 {
-    if (faceCount == Texture::CUBE_FACE_COUNT)
-    {
-        mainHeader.caps2 = dds::DDSCAPS2_CUBEMAP_ALL_FACES;
-    }
-    else if (faceCount == 1)
+    DVASSERT(faceCount <= Texture::CUBE_FACE_COUNT);
+
+    if (faceCount == 1)
     {
         mainHeader.caps2 = 0;
     }
-    else if (faceCount > 1 && faceCount < Texture::CUBE_FACE_COUNT)
+    else if (faceCount == Texture::CUBE_FACE_COUNT)
+    {
+        mainHeader.caps2 = dds::DDSCAPS2_CUBEMAP_ALL_FACES;
+    }
+    else
     {
         for (uint32 i = 0; i < faceCount; ++i)
         {
             mainHeader.caps2 |= dds::ddsFaces[i];
         }
     }
-    else
-    {
-        return false;
-    }
-
-    return true;
 }
 
 void DDSHandler::FetchFacesInfo()
 {
-    if ((mainHeader.caps2 & dds::DDSCAPS2_CUBEMAP_ALL_FACES) == dds::DDSCAPS2_CUBEMAP_ALL_FACES)
+    faceCount = 0;
+    for (int face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
     {
-        faceCount = Texture::CUBE_FACE_COUNT;
-        for (uint32 face = 0; face < faceCount; ++face)
+        if (mainHeader.caps2 & dds::ddsFaces[face])
         {
-            faces[face] = static_cast<rhi::TextureFace>(face);
+            faces[faceCount++] = static_cast<rhi::TextureFace>(face);
         }
     }
-    else
-    {
-        faceCount = 0;
-        for (int face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
-        {
-            if (mainHeader.caps2 & dds::ddsFaces[face])
-            {
-                faces[faceCount++] = static_cast<rhi::TextureFace>(face);
-            }
-        }
 
-        if (faceCount == 0)
-        {
-            faceCount = 1;
-        }
+    if (faceCount == 0)
+    {
+        faceCount = 1;
     }
 }
 
@@ -709,44 +692,32 @@ bool DDSHandler::SetFormatInfo()
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::FOURCC_DX10;
-        if (!extHeader)
-        {
-            extHeader.reset(new dds::DDS_HEADER_DXT10);
-            extHeader->dxgiFormat = dds::DXGI_FORMAT_BC1_UNORM;
-        }
+        mainHeader.format.fourCC = dds::FOURCC_DX10;
+        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC1_UNORM;
         break;
     }
     case FORMAT_DXT3:
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::FOURCC_DX10;
-        if (!extHeader)
-        {
-            extHeader.reset(new dds::DDS_HEADER_DXT10);
-            extHeader->dxgiFormat = dds::DXGI_FORMAT_BC2_UNORM;
-        }
+        mainHeader.format.fourCC = dds::FOURCC_DX10;
+        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC2_UNORM;
         break;
     }
     case FORMAT_DXT5:
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::FOURCC_DX10;
-        if (!extHeader)
-        {
-            extHeader.reset(new dds::DDS_HEADER_DXT10);
-            extHeader->dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
-        }
+        mainHeader.format.fourCC = dds::FOURCC_DX10;
+        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
         break;
     }
     case FORMAT_DXT5NM:
     {
         flags = dds::DDPF_FOURCC | dds::DDPF_NORMAL;
         fourcc = dds::FOURCC_DX10;
-        if (!extHeader)
-        {
-            extHeader.reset(new dds::DDS_HEADER_DXT10);
-            extHeader->dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
-        }
+        mainHeader.format.fourCC = dds::FOURCC_DX10;
+        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
         break;
     }
     case FORMAT_ATC_RGB:
@@ -796,8 +767,8 @@ void DDSHandler::FetchPixelFormats()
     const uint32& gMask = mainHeader.format.GBitMask;
     const uint32& bMask = mainHeader.format.BBitMask;
     const uint32& aMask = mainHeader.format.ABitMask;
-    bool flagRGB = (flags & dds::DDPF_RGB && !(flags & dds::DDPF_ALPHAPIXELS));
-    bool flagRGBA = (flags & dds::DDPF_RGB && (flags & dds::DDPF_ALPHAPIXELS));
+    bool flagRGB = ((flags & dds::DDPF_RGB) && !(flags & dds::DDPF_ALPHAPIXELS));
+    bool flagRGBA = ((flags & dds::DDPF_RGB) && (flags & dds::DDPF_ALPHAPIXELS));
     bool flagAlpha = (flags & dds::DDPF_ALPHA) != 0;
     bool flagFourCC = (flags & dds::DDPF_FOURCC) != 0;
 
@@ -848,7 +819,6 @@ void DDSHandler::FetchPixelFormats()
                 davaPixelFormat = FORMAT_RGB888;
             }
         }
-
     }
     else if (flagAlpha && bitCount == 8 && aMask == 0xff)
     {
@@ -858,8 +828,7 @@ void DDSHandler::FetchPixelFormats()
     {
         if (mainHeader.format.fourCC == dds::FOURCC_DX10)
         {
-            DVASSERT(extHeader);
-            switch (extHeader->dxgiFormat)
+            switch (extHeader.dxgiFormat)
             {
             case dds::DXGI_FORMAT_R8G8B8A8_UNORM:
             {
@@ -948,7 +917,10 @@ void DDSHandler::FetchPixelFormats()
 
 struct DDSReaderImpl : public DDSReader, public DDSHandler
 {
-    explicit DDSReaderImpl(const ScopedPtr<File>& file) : DDSHandler(file) {}
+    explicit DDSReaderImpl(const ScopedPtr<File>& file)
+        : DDSHandler(file)
+    {
+    }
 
     // from DDSReader
     ImageInfo GetImageInfo() override;
@@ -963,7 +935,7 @@ std::unique_ptr<DDSReader> DDSReader::CreateReader(const ScopedPtr<File>& file)
 
     DDSReaderImpl* readerImpl = new DDSReaderImpl(file);
     std::unique_ptr<DDSReader> ddsFile(readerImpl);
-    uint32 pos = file->GetPos();
+    DVASSERT_MSG(file->GetPos() == 0, Format("File %s position is not 0 (file had been already read)", file->GetFilename().GetStringValue().c_str()).c_str());
 
     if (readerImpl->ReadMagicWord() && readerImpl->ReadHeaders())
     {
@@ -971,7 +943,7 @@ std::unique_ptr<DDSReader> DDSReader::CreateReader(const ScopedPtr<File>& file)
     }
     else
     {
-        file->Seek(pos, File::SEEK_FROM_START);
+        file->Seek(0, File::SEEK_FROM_START);
         return std::unique_ptr<DDSReader>(nullptr);
     }
 }
@@ -991,13 +963,13 @@ ImageInfo DDSReaderImpl::GetImageInfo()
         info.format = davaPixelFormat;
 
         uint32 headersSize = sizeof(dds::FOURCC_DDS) + sizeof(dds::DDS_HEADER);
-        if (extHeader)
+        if (mainHeader.format.fourCC == dds::FOURCC_DX10)
         {
             headersSize += sizeof(dds::DDS_HEADER_DXT10);
         }
 
         info.dataSize = file->GetSize() - headersSize;
-        info.mipmapsCount = (0 == mainHeader.mipMapCount) ? 1 : mainHeader.mipMapCount;
+        info.mipmapsCount = mainHeader.mipMapCount;
         info.faceCount = faceCount;
     }
 
@@ -1055,24 +1027,39 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, uint32 baseMipMap)
     }
     if (0 == info.width || 0 == info.height || 0 == info.mipmapsCount)
     {
-        Logger::Error("Wrong mipmapsCount/width/height value for DDS file '%s'");
+        Logger::Error("Wrong mipmapsCount/width/height value for DDS file '%s'", file->GetFilename().GetStringValue().c_str());
         return false;
     }
 
     baseMipMap = Min(baseMipMap, (info.mipmapsCount - 1));
 
-    const uint32 bitsPerPixel = needDirectConvert ? D3DUtils::GetFormatSizeInBytes(d3dPixelFormat) * 8 : PixelFormatDescriptor::GetPixelFormatSizeInBits(davaPixelFormat);
+    const uint32 bitsPerPixel = needDirectConvert ? D3DUtils::GetFormatSizeInBits(d3dPixelFormat) * 8 : PixelFormatDescriptor::GetPixelFormatSizeInBits(davaPixelFormat);
 
     const uint32 largestImageSize = info.width * info.height * bitsPerPixel / 8;
     Vector<uint8> dataBuffer(largestImageSize);
 
     for (uint32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
     {
-        uint32 mipWidth = info.width;
-        uint32 mipHeight = info.height;
+        uint32 faceId = (faceCount > 1 ? faces[faceIndex] : Texture::INVALID_CUBEMAP_FACE);
 
-        for (uint32 mip = 0; mip < info.mipmapsCount; ++mip)
+        uint32 bytesToSkip = 0;
+        for (uint32 mip = 0; mip < baseMipMap; ++mip)
         {
+            uint32 mipWidth = info.width >> mip;
+            uint32 mipHeight = info.height >> mip;
+            uint32 bytesInMip = mipWidth * mipHeight * bitsPerPixel / 8;
+            bytesToSkip += bytesInMip;
+        }
+        if (bytesToSkip > 0 && (file->Seek(File::SEEK_FROM_CURRENT, bytesToSkip) == false))
+        {
+            Logger::Error("Can't seek in %s", file->GetFilename().GetStringValue().c_str());
+            return false;
+        }
+
+        for (uint32 mip = baseMipMap; mip < info.mipmapsCount; ++mip)
+        {
+            uint32 mipWidth = info.width >> mip;
+            uint32 mipHeight = info.height >> mip;
             uint32 bytesInMip = mipWidth * mipHeight * bitsPerPixel / 8;
 
             auto readSize = file->Read(dataBuffer.data(), bytesInMip);
@@ -1082,32 +1069,22 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, uint32 baseMipMap)
                 return false;
             }
 
-            if (mip >= baseMipMap)
+            Image* fetchedImage = Image::Create(mipWidth, mipHeight, info.format);
+            DVASSERT(fetchedImage);
+
+            if (needDirectConvert)
             {
-                Image* fetchedImage = Image::Create(mipWidth, mipHeight, info.format);
-                DVASSERT(fetchedImage);
-
-                if (needDirectConvert)
-                {
-                    D3DUtils::DirectConvertFromD3D(dataBuffer.data(), fetchedImage, d3dPixelFormat, davaPixelFormat);
-                }
-                else
-                {
-                    Memcpy(fetchedImage->data, dataBuffer.data(), fetchedImage->dataSize);
-                }
-
-                fetchedImage->mipmapLevel = mip - baseMipMap;
-
-                if (faceCount > 1)
-                {
-                    fetchedImage->cubeFaceID = faces[faceIndex];
-                }
-
-                images.push_back(fetchedImage);
+                D3DUtils::DirectConvertFromD3D(dataBuffer.data(), fetchedImage, d3dPixelFormat, davaPixelFormat);
+            }
+            else
+            {
+                Memcpy(fetchedImage->data, dataBuffer.data(), fetchedImage->dataSize);
             }
 
-            mipWidth = Max(1U, mipWidth / 2);
-            mipHeight = Max(1U, mipHeight / 2);
+            fetchedImage->mipmapLevel = mip - baseMipMap;
+            fetchedImage->cubeFaceID = faceId;
+
+            images.push_back(fetchedImage);
         }
     }
 
@@ -1127,36 +1104,27 @@ struct DDSWriterImpl : public DDSWriter, public DDSHandler
 std::unique_ptr<DDSWriter> DDSWriter::CreateWriter(const ScopedPtr<File>& file)
 {
     DVASSERT(file);
-
-    DDSWriterImpl* writerInstance = new DDSWriterImpl(file);
-    std::unique_ptr<DDSWriter> writerPtr(writerInstance);
-    if (file->GetSize() == 0)
-    {
-        return writerPtr;
-    }
-    else
-    {
-        Logger::Error("File '%s' is not empty", file->GetFilename().GetAbsolutePathname().c_str());
-        return std::unique_ptr<DDSWriter>(nullptr);
-    }
+    DVASSERT_MSG(file->GetSize() == 0, Format("File '%s' is not empty", file->GetFilename().GetAbsolutePathname().c_str()).c_str());
+    std::unique_ptr<DDSWriter> writerPtr(new DDSWriterImpl(file));
+    return writerPtr;
 }
 
-DDSWriterImpl::DDSWriterImpl(const ScopedPtr<File>& file) 
-: DDSHandler(file) 
+DDSWriterImpl::DDSWriterImpl(const ScopedPtr<File>& file)
+    : DDSHandler(file)
 {
     Memset(&mainHeader, 0, sizeof(mainHeader));
 }
 
 bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstFormat)
 {
-    DVASSERT(images.size() != 0);
-    DVASSERT(images[0].size() != 0);
+    DVASSERT(images.empty() == false);
+    DVASSERT(images[0].empty() == false);
     DVASSERT(images[0][0] != nullptr);
 
-    mainHeader.mipMapCount = images[0].size();
+    mainHeader.mipMapCount = static_cast<uint32>(images[0].size());
     mainHeader.width = images[0][0]->width;
     mainHeader.height = images[0][0]->height;
-    
+
     PixelFormat srcFormat = images[0][0]->format;
 
     faceCount = 0;
@@ -1172,11 +1140,7 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
         }
     }
 
-    if (!SetFacesInfo())
-    {
-        Logger::Error("Face count %d is incorrect", images.size());
-        return false;
-    }
+    SetFacesInfo();
 
     mainHeader.reserved.davaPixelFormat = davaPixelFormat = dstFormat;
 
@@ -1212,8 +1176,8 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
                 if (ImageConvert::ConvertImage(srcImage, dstDavaImage) == false)
                 {
                     Logger::Error("Can't convert from %s to %s",
-                        GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
-                        GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
+                                  GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
+                                  GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
                     return false;
                 }
 
@@ -1223,7 +1187,7 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
 
             if (needDirectConvert)
             {
-                uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBytes(d3dPixelFormat);
+                uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBits(d3dPixelFormat);
                 Vector<uint8> d3dData(d3dSize); // todo: use single buffer for all mips
                 D3DUtils::DirectConvertToD3D(dataToCopy, w, h, d3dData.data(), davaPixelFormat, d3dPixelFormat);
                 dataToCopy = d3dData.data();

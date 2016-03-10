@@ -39,28 +39,28 @@ namespace DAVA
 {
 namespace ImageSystem
 {
-    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseMipmap = 0);
-    eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, uint32 baseMipmap = 0);
+eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseMipmap = 0);
+eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, uint32 baseMipmap = 0);
 
-    Image* EnsurePowerOf2Image(Image* image);
-    void EnsurePowerOf2Images(Vector<Image*>& images);
+Image* EnsurePowerOf2Image(Image* image);
+void EnsurePowerOf2Images(Vector<Image*>& images);
 
-    eErrorCode Save(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
-    eErrorCode SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
-    eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
+eErrorCode Save(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
+eErrorCode SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
+eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
 
-    ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat);
-    ImageFormatInterface* GetImageFormatInterface(const FilePath& pathName);
-    ImageFormatInterface* GetImageFormatInterface(const ScopedPtr<File>& file);
+ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat);
+ImageFormatInterface* GetImageFormatInterface(const FilePath& pathName);
+ImageFormatInterface* GetImageFormatInterface(const ScopedPtr<File>& file);
 
-    ImageInfo GetImageInfo(const FilePath& pathName);
+ImageInfo GetImageInfo(const FilePath& pathName);
 
-    const Vector<String>& GetExtensionsFor(ImageFormat format);
+const Vector<String>& GetExtensionsFor(ImageFormat format);
 
-    ImageFormat GetImageFormatForExtension(const String& extension);
-    ImageFormat GetImageFormatForExtension(const FilePath& pathname);
+ImageFormat GetImageFormatForExtension(const String& extension);
+ImageFormat GetImageFormatForExtension(const FilePath& pathname);
 
-    ImageFormat GetImageFormatByName(const String& name);
+ImageFormat GetImageFormatByName(const String& name);
 }
 }
 
