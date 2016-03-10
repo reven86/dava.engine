@@ -23,6 +23,7 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
+        property alias userOptions: textField_userOptions.text
     }
 
     title: qsTr("CMake tool")
@@ -184,6 +185,22 @@ ApplicationWindow {
                     onDataUpdated: updateOutputString()
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+                }
+
+                RowLayout {
+                    Label {
+                        id: label_userOptions
+                        text: qsTr("user options")
+                    }
+                    TextField {
+                        id: textField_userOptions
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("your custom options")
+                        onTextChanged: {
+                            configuration["customOpstions"] = text;
+                            updateOutputString();
+                        }
+                    }
                 }
 
                 ColumnLayoutOutput {

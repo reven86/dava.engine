@@ -8,6 +8,7 @@ import Qt.labs.settings 1.0
 Item {
     id: mutableContentItem;
     property var configuration;
+    onConfigurationChanged: configuration["globalOptions"] = []
     signal dataUpdated();
 
     function processConfiguration(configuration) {
@@ -18,150 +19,215 @@ Item {
                 listModel_platforms.append(arrayPlatforms[i]);
             }
         }
+        var arrayGlobalOptions = configuration["global options"];
+        if(arrayGlobalOptions && Array.isArray(arrayGlobalOptions)) {
+            for(var i = 0, length = arrayGlobalOptions.length; i < length; ++i) {
+                listModel_globalOptions.append(arrayGlobalOptions[i]);
+            }
+        }
+    }
+
+    //private function
+    function processDataChanged(checked, value, key) {
+        var options = configuration[key];
+        if(checked) {
+            options.push(value)
+        } else {
+            for(var i = 0, count = options.length; i < count; i++) {
+                if(options[i].index === value.index) {
+                    options.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        dataUpdated();
     }
    
-    Layout.minimumHeight: label_platforms.height + Math.max(listView_platforms.contentHeight, listView_localOptions.contentHeight) + columnLayout_platforms.spacing
-
-    RowLayout {
-        id: rowLayout
-        anchors.fill: parent
-        ListModel {
-            id: listModel_platforms
-        }
-        ListModel {
-            id: listModel_localOptions
-        }
-
-        ColumnLayout {
-            id: columnLayout_platforms
-            width: rowLayout.width / 2
-            Label {
-                id: label_platforms
-                text: qsTr("Platforms")
+    Layout.minimumHeight: columnLayout.minHeight
+    ColumnLayout {
+        id: columnLayout
+        spacing: 10
+        property int minHeight: rowLayout.minHeight + columnLayout_globalOptions.minHeight + columnLayout.spacing
+        RowLayout {
+            id: rowLayout
+            property int minHeight: Math.max(columnLayout_platforms.minHeight, columnLayout_localOptions.minHeight)
+            anchors.fill: parent
+            Layout.fillHeight: true
+            ListModel {
+                id: listModel_platforms
+            }
+            ListModel {
+                id: listModel_localOptions
             }
 
-            ListView {
-                id: listView_platforms
-                orientation: Qt.Vertical
-                boundsBehavior: Flickable.StopAtBounds
-                model: listModel_platforms
-                Layout.fillHeight: true
-                spacing: 10
-                ExclusiveGroup {
-                    id: exclusiveGroup_platforms
+            ColumnLayout {
+                id: columnLayout_platforms
+                anchors.top: parent.top
+                property int minHeight: label_platforms.height + column_platforms.height + columnLayout_platforms.spacing
+                width: rowLayout.width / 2
+                Label {
+                    id: label_platforms
+                    text: qsTr("Platforms")
                 }
-                delegate: RadioButton {
-                    text: model.name
-                    exclusiveGroup: exclusiveGroup_platforms
-                    onCheckedChanged: {
-                        if(checked && configuration) {
-                            configuration["currentPlatform"] = index;
-                            configuration["currentOptions"] = [];
-                            listModel_localOptions.clear();
-                            var localObject = configuration["platforms"][index];
-                            var options = JSON.parse(JSON.stringify(localObject["options"])); //make a copy
-                            if(options && Array.isArray(options)) {
-                                for(var i = 0, length = options.length; i < length; ++i) {
-                                    options[i]["parentIndex"] = index
-                                    listModel_localOptions.append(options[i]);
+
+                Column {
+                    id: column_platforms
+                    spacing: 10
+                    ExclusiveGroup {
+                        id: exclusiveGroup_platforms
+                    }
+                    Repeater {
+                        model: listModel_platforms
+                        delegate: RadioButton {
+                            text: model.name
+                            exclusiveGroup: exclusiveGroup_platforms
+                            onCheckedChanged: {
+                                if(checked && configuration) {
+                                    configuration["currentPlatform"] = index;
+                                    configuration["currentOptions"] = [];
+                                    listModel_localOptions.clear();
+                                    var localObject = configuration["platforms"][index];
+                                    var options = JSON.parse(JSON.stringify(localObject["options"])); //make a copy
+                                    if(options && Array.isArray(options)) {
+                                        for(var i = 0, length = options.length; i < length; ++i) {
+                                            options[i]["parentIndex"] = index
+                                            listModel_localOptions.append(options[i]);
+                                        }
+                                    }
+                                    dataUpdated();
                                 }
                             }
-                            dataUpdated();
-                        }
-                    }
-                    Component.onCompleted: if(platformSettings.platformIndex === index) {
-                                               checked = true;
-                                           }
-                }
-                Settings {
-                    id: platformSettings
-                    property int platformIndex;
-                }
-                Component.onDestruction: platformSettings.platformIndex = configuration["currentPlatform"];
-            }
-        }
-
-        ColumnLayout {
-            id: columnLayout_localOptions
-            width: rowLayout.width / 2
-            visible: listModel_localOptions.count !== 0
-            Label {
-                id: label_options
-                text: qsTr("Options")
-            }
-
-            ListView {
-                id: listView_localOptions
-                orientation: Qt.Vertical
-                boundsBehavior: Flickable.StopAtBounds
-                Layout.fillHeight: true
-                model: listModel_localOptions
-                delegate: loaderDelegate
-                onContentWidthChanged: console.log(contentWidth)
-                spacing: 10
-                function processDataChanged(checked, value) { //private function
-                    var options = configuration["currentOptions"];
-                    if(checked) {
-                        options.push(value)
-                    } else {
-                        for(var i = 0, count = options.length; i < count; i++) {
-                            if(options[i].index === value.index) {
-                                options.splice(i, 1);
-                                break;
+                            Component.onCompleted: {
+                                if(platformSettings.platformIndex === index) {
+                                    checked = true;
+                                }
                             }
                         }
                     }
-                    dataUpdated();
+                    Settings {
+                        id: platformSettings
+                        property int platformIndex;
+                    }
+                    Component.onDestruction: platformSettings.platformIndex = configuration["currentPlatform"];
                 }
-                Component {
-                    id: loaderDelegate
-                    Loader {
-                        sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
-                        property variant modelData: listModel_localOptions.get(model.index);
-                        property int index : model.index;
-                        Component.onCompleted: {
-                            var options = optionsSettings.checkedObjects;
+            }
 
-                            if(options && Array.isArray(options)) {
-                                for(var i = 0, count = options.length; i < count; i++) {
-                                    var option = options[i];
-                                    if(option.index === modelData["substring number"] - 1 && option.value === modelData.value) {
-                                        item.checked = true
+            ColumnLayout {
+                id: columnLayout_localOptions
+                anchors.top: parent.top
+                property int minHeight: label_options.height + column_localOptions.height + columnLayout_localOptions.spacing
+                width: rowLayout.width / 2
+                visible: listModel_localOptions.count !== 0
+                Label {
+                    id: label_options
+                    text: qsTr("Options")
+                }
+
+                Column {
+                    id: column_localOptions
+                    spacing: 10
+                    Repeater {
+                        model: listModel_localOptions
+                        delegate: loaderDelegate
+                    }
+                    Component {
+                        id: loaderDelegate
+                        Loader {
+                            sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
+                            property variant modelData: listModel_localOptions.get(model.index);
+                            property int index : model.index;
+                            Component.onCompleted: {
+                                var options = optionsSettings.checkedObjects;
+
+                                if(options && Array.isArray(options)) {
+                                    for(var i = 0, count = options.length; i < count; i++) {
+                                        var option = options[i];
+                                        if(option.index === modelData["substring number"] - 1 && option.value === modelData.value) {
+                                            item.checked = true
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                ExclusiveGroup {
-                    id: exclusiveGroup_localOptions
-                }
+                    ExclusiveGroup {
+                        id: exclusiveGroup_localOptions
+                    }
 
-                Component {
-                    id: radioDelegate
-                    RadioButton {
-                        text: modelData ? modelData.name : ""
-                        onCheckedChanged: {
-                            listView_localOptions.processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value});
+                    Component {
+                        id: radioDelegate
+                        RadioButton {
+                            text: modelData ? modelData.name : ""
+                            onCheckedChanged: {
+                                processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
+                            }
+                            exclusiveGroup: exclusiveGroup_localOptions
                         }
-                        exclusiveGroup: exclusiveGroup_localOptions
+                    }
+                    Component {
+                        id: checkboxDelegate
+                        CheckBox {
+                            text: modelData ? modelData.name : ""
+                            onCheckedChanged: {
+                                processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
+                            }
+                        }
+                    }
+                    Settings {
+                        id: optionsSettings
+                        property var checkedObjects;
+                    }
+                    Component.onDestruction: {
+                        optionsSettings.checkedObjects = configuration["currentOptions"];
                     }
                 }
-                Component {
-                    id: checkboxDelegate
+            }
+        }
+        ColumnLayout {
+            id: columnLayout_globalOptions
+            property int minHeight: label_globalOptions.height + flow_globalOptions.height + columnLayout_globalOptions.spacing
+            width: rowLayout.width
+            Label {
+                id: label_globalOptions
+                text: qsTr("Global options")
+            }
+
+            ListModel {
+                id: listModel_globalOptions
+            }
+
+            Flow {
+                id: flow_globalOptions
+                width: parent.width
+                spacing: 10
+                Repeater {
+                    model: listModel_globalOptions
                     CheckBox {
-                        text: modelData ? modelData.name : ""
+                        text: model.name
                         onCheckedChanged: {
-                            listView_localOptions.processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value});
+                            processDataChanged(checked, {"value": model.value}, "globalOptions");
+
                         }
+                        Component.onCompleted: {
+                           var options = globalOptionsSettings.checkedObjects;
+
+                           if(options && Array.isArray(options)) {
+                               for(var i = 0, count = options.length; i < count; i++) {
+                                   var option = options[i];
+                                   if(option.value === model.value) {
+                                       checked = true
+                                   }
+                               }
+                           }
+                       }
                     }
                 }
                 Settings {
-                    id: optionsSettings
-                    property var checkedObjects;
+                    id: globalOptionsSettings
+                    property int checkedObjects;
                 }
                 Component.onDestruction: {
-                    optionsSettings.checkedObjects = configuration["currentOptions"];
+                    globalOptionsSettings.checkedObjects = configuration["globalOptions"];
                 }
             }
         }

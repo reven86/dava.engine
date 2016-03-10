@@ -104,5 +104,11 @@
                 }
             ]
         }
+    ],
+    "global options": [
+        {
+            "name": "deploy",
+            "value": "-DDEPLOY=true"
+        }
     ]
 }

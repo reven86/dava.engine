@@ -186,7 +186,7 @@ bool ProcessWrapper::CleanBuildFolder(const QString& buildFolder) const
         text += tr("folder is not conain file %1, will not clear").arg(keyFile);
         break;
     case FileSystemHelper::CAN_NOT_REMOVE:
-        text += tr("can not remove :(");
+        text += tr("can not remove build dir recursively");
         break;
     case FileSystemHelper::CAN_NOT_CREATE_BUILD_FOLDER:
         text += tr("can not create build folder after recoursive removing");

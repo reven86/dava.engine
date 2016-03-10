@@ -28,8 +28,14 @@ function createOutput(configuration, fileSystemHelper, buildPath, cmakePath, dav
     for(var i = 0, length = substrings.length; i < length; ++i) {
         outputText = outputText.arg(substrings[i])
     }
-
-
+    
+    var globalOptions = configuration.globalOptions;
+    if(globalOptions && Array.isArray(globalOptions)) {
+        for(var i = 0, length = globalOptions.length; i < length; ++i) {
+            outputText += " " + globalOptions[i].value;
+        }
+    }
+    
     if(outputText.indexOf("$CMAKE_PATH") !== -1) {
         if(cmakePath.length === 0 || !fileSystemHelper.IsFileExists(cmakePath)) {
             throw qsTr("cmake path required");
@@ -51,6 +57,11 @@ function createOutput(configuration, fileSystemHelper, buildPath, cmakePath, dav
         } else {
             outputText = outputText.replace("$DAVA_FRAMEWORK_PATH", davaPath)
         }
+    }
+    
+    var userOptions = configuration["customOpstions"];
+    if(typeof userOptions === "string") {
+        outputText += " " + userOptions;
     }
     return outputText;
 }
