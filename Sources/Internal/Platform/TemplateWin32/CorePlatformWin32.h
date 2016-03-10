@@ -65,12 +65,22 @@ private:
     static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
     static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
-    void OnMouseMove(float32 x, float32 y);
-    void OnMouseWheel(float32 wheelDelta, float32 x, float32 y);
-    void OnMouseButtonChange(UIEvent::Phase phase, UIEvent::MouseButton button, float32 x, float32 y);
+    void OnMouseMove(int32 x, int32 y);
+    void OnMouseWheel(int32 wheelDelta, int32 x, int32 y);
+    void OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton button, int32 x, int32 y);
     void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     void OnGetMinMaxInfo(MINMAXINFO* minmaxInfo);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+    bool IsMouseClickEvent(UINT message);
+    bool IsMouseMoveEvent(UINT message);
+    bool IsMouseWheelEvent(UINT message);
+    bool IsMouseInputEvent(UINT message);
+
+    bool ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    bool ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    bool ProcessMouseWheelEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    bool ProcessMouseInputEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
     void LoadWindowMinimumSizeSettings();
