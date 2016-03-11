@@ -54,14 +54,13 @@ public:
 
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
-    inline bool IsAppStarted();
 
 private:
     DisplayMode currentMode;
     DisplayMode fullscreenMode;
     DisplayMode windowedMode;
     bool isFullscreen;
-    WINDOWPLACEMENT windowPositionBeforeFullscreen;
+    RECT windowPositionBeforeFullscreen;
 
     static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
     static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
@@ -77,7 +76,6 @@ private:
     void LoadWindowMinimumSizeSettings();
 
     bool willQuit;
-    bool appStarted = false;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
@@ -85,11 +83,6 @@ private:
     float32 minWindowWidth = 0.0f;
     float32 minWindowHeight = 0.0f;
 };
-
-inline bool CoreWin32Platform::IsAppStarted()
-{
-    return appStarted;
-}
 
 } // end namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)

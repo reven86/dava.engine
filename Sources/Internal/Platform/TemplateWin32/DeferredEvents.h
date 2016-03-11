@@ -110,13 +110,10 @@ inline void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core:
 
 inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^ swapChain, Windows::UI::Xaml::SizeChangedEventArgs^ args)
 {
-    if (0.f == scaleX * scaleY)
-    {
-        Windows::UI::Xaml::Controls::SwapChainPanel^ sw = dynamic_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(swapChain);
-        DVASSERT(sw);
-        scaleX = sw->CompositionScaleX;
-        scaleY = sw->CompositionScaleY;
-    }
+    Windows::UI::Xaml::Controls::SwapChainPanel^ sw = dynamic_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(swapChain);
+    DVASSERT(sw);
+    scaleX = sw->CompositionScaleX;
+    scaleY = sw->CompositionScaleY;
     width = args->NewSize.Width;
     height = args->NewSize.Height;
     timer->Start();
@@ -124,11 +121,8 @@ inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Obje
 
 inline void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChain, Platform::Object^)
 {
-    if (0.f == width * height)
-    {
-        width = static_cast<float32>(swapChain->ActualWidth);
-        height = static_cast<float32>(swapChain->ActualHeight);
-    }
+    width = static_cast<float32>(swapChain->ActualWidth);
+    height = static_cast<float32>(swapChain->ActualHeight);
     scaleX = swapChain->CompositionScaleX;
     scaleY = swapChain->CompositionScaleY;
     timer->Start();
@@ -137,10 +131,13 @@ inline void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Wi
 inline void DeferredScreenMetricEvents::DeferredTick()
 {
     Windows::Foundation::Rect windowRect = Windows::UI::Xaml::Window::Current->CoreWindow->Bounds;
+    float32 windowScale = static_cast<float32>(Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->RawPixelsPerViewPixel);
+    DVASSERT(windowScale);
     float32 w = windowRect.Width;
     float32 h = windowRect.Height;
-    DVASSERT(width * height * scaleX * scaleY);
-    float32 trueMinWidth = minWindowWidth / scaleX, trueMinHeight = minWindowHeight / scaleY;
+    float32 trueMinWidth = minWindowWidth / windowScale;
+    float32 trueMinHeight = minWindowHeight / windowScale;
+    DVASSERT(scaleX * scaleY);
 
     bool trackMinSize = trueMinWidth > 0.0f && trueMinHeight > 0.0f;
     if (!isPhoneApiDetected && trackMinSize && (w < trueMinWidth || h < trueMinHeight))

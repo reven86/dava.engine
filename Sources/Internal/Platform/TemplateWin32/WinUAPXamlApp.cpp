@@ -315,7 +315,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         scaleY = swapChainPanel->CompositionScaleY;
     });
 
-    core->InitializeScreenMetrics(reinterpret_cast<void*>(swapChainPanel), width, height, scaleX, scaleY);
+    core->InitWindowSize(reinterpret_cast<void*>(swapChainPanel), width, height, scaleX, scaleY);
 
     Core::Instance()->SetIsActive(true);
     Core::Instance()->SystemAppStarted();
@@ -448,7 +448,7 @@ void WinUAPXamlApp::ScreenMetricsUpdated(float32 width, float32 height, float32 
 {
     core->RunOnMainThread([this, width, height, scaleX, scaleY]() {
         DeviceInfo::InitializeScreenInfo();
-        Core::Instance()->UpdateScreenMetrics(width, height, scaleX, scaleY);
+        Core::Instance()->WindowSizeChanged(width, height, scaleX, scaleY);
     });
 }
 

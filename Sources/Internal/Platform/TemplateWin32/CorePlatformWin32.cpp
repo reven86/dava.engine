@@ -163,9 +163,6 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
 
     SetMenu(hWindow, NULL);
 
-    ShowWindow(hWindow, SW_SHOW);
-    UpdateWindow(hWindow);
-
     // fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
     MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
@@ -199,7 +196,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Init application with positioned window
     {
         currentMode = windowedMode;
-        Core::Instance()->InitializeScreenMetrics(reinterpret_cast<void*>(hWindow), static_cast<float32>(currentMode.width), static_cast<float32>(currentMode.height), 1.f, 1.f);
+        Core::Instance()->InitWindowSize(reinterpret_cast<void*>(hWindow), static_cast<float32>(currentMode.width), static_cast<float32>(currentMode.height), 1.f, 1.f);
 
         clientSize.top = 0;
         clientSize.left = 0;
@@ -264,7 +261,12 @@ void CoreWin32Platform::LoadWindowMinimumSizeSettings()
 void CoreWin32Platform::Run()
 {
     Instance()->SystemAppStarted();
-    appStarted = true;
+    // after call ShowWindow, the system sends message WM_ACTIVATE.
+    // do it after ApplicationCore->OnAppStarted, because otherwise we call client code before it initialized
+    HWND hWindow = static_cast<HWND>(Instance()->GetNativeView());
+    ShowWindow(hWindow, SW_SHOW);
+    UpdateWindow(hWindow);
+
     MSG msg;
     while (1)
     {
@@ -356,9 +358,14 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         {
             isFullscreen = true;
             currentMode = fullscreenMode;
-            GetWindowPlacement(hWindow, &windowPositionBeforeFullscreen);
+            GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
             SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
-            ShowWindow(hWindow, SW_SHOWMAXIMIZED);
+            MONITORINFO monitor_info;
+            monitor_info.cbSize = sizeof(monitor_info);
+            GetMonitorInfo(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONEAREST), &monitor_info);
+            RECT window_rect(monitor_info.rcMonitor);
+
+            SetWindowPos(hWindow, NULL, window_rect.left, window_rect.top, window_rect.right - window_rect.left, window_rect.bottom - window_rect.top, SWP_NOZORDER);
             break;
         }
         case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
@@ -371,8 +378,8 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
             isFullscreen = false;
             currentMode = windowedMode;
             SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
-            SetWindowPlacement(hWindow, &windowPositionBeforeFullscreen);
-            ShowWindow(hWindow, SW_SHOWDEFAULT);
+            RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
+            SetWindowPos(hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowPositionBeforeFullscreen.right - windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.bottom - windowPositionBeforeFullscreen.top, SWP_NOACTIVATE | SWP_SHOWWINDOW);
             break;
         }
         default:
@@ -606,11 +613,6 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
-    if (!core->IsAppStarted())
-    {
-        PostMessage(hWnd, message, wParam, lParam);
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     const Vector2& minSizes = core->GetWindowMinimumSize();
     const LONG minWidth = static_cast<LONG>(minSizes.x), minHeight = static_cast<LONG>(minSizes.y);
@@ -621,9 +623,10 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     switch (message)
     {
-    case WM_SIZING:
+    case WM_SIZE:
         GetClientRect(hWnd, &rect);
-        core->UpdateScreenMetrics(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
+        core->WindowSizeChanged(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
+        break;
     case WM_ERASEBKGND:
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
     case WM_SYSKEYUP:

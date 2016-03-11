@@ -262,8 +262,8 @@ public:
 
     void EnableConsoleMode();
 
-    void InitializeScreenMetrics(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
-    void UpdateScreenMetrics(float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
 
     rhi::InitParam rendererParams;
 
@@ -275,7 +275,7 @@ protected:
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
-    void ModifyWindowSize();
+    void ApplyWindowSize();
 
     KeyedArchive* options;
 
@@ -296,8 +296,8 @@ private:
         float32 userScale = 0.f;
         float32 scaleX = 0.f;
         float32 scaleY = 0.f;
-        bool modifiedNativeView = false;
-        bool modifiedScreenMetrics = false;
+        bool nativeViewModified = false;
+        bool screenMetricsModified = false;
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;

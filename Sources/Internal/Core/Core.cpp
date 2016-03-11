@@ -678,9 +678,9 @@ void Core::SystemProcessFrame()
 
         //#endif
 
-        if (screenMetrics.initialized && screenMetrics.modifiedScreenMetrics)
+        if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
         {
-            ModifyWindowSize();
+            ApplyWindowSize();
         }
 //TODO: when cross platforms resize done on all platforms, remove this code
 #if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
@@ -858,12 +858,12 @@ void* Core::GetNativeView() const
 
 void Core::SetNativeView(void* newNativeView)
 {
+    DVASSERT(nullptr != newNativeView);
     if (screenMetrics.nativeView != newNativeView)
     {
-        screenMetrics.modifiedNativeView = true;
+        screenMetrics.nativeViewModified = true;
         screenMetrics.nativeView = newNativeView;
     }
-    DVASSERT(nullptr != screenMetrics.nativeView);
 }
 
 void Core::EnableConsoleMode()
@@ -871,16 +871,18 @@ void Core::EnableConsoleMode()
     isConsoleMode = true;
 }
 
-void Core::InitializeScreenMetrics(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY)
+void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
+    DVASSERT(nullptr != nativeView);
+    DVASSERT(scaleX * scaleY);
+    DVASSERT(!screenMetrics.initialized);
     screenMetrics.nativeView = nativeView;
     screenMetrics.width = width;
     screenMetrics.height = height;
     screenMetrics.scaleX = scaleX;
     screenMetrics.scaleY = scaleY;
-    screenMetrics.modifiedNativeView = false;
-    screenMetrics.modifiedScreenMetrics = false;
-    DVASSERT((nullptr != screenMetrics.nativeView) && screenMetrics.width * screenMetrics.height * screenMetrics.scaleX * screenMetrics.scaleY && !screenMetrics.initialized);
+    screenMetrics.nativeViewModified = false;
+    screenMetrics.screenMetricsModified = false;
     screenMetrics.initialized = true;
 
     rendererParams.window = screenMetrics.nativeView;
@@ -893,27 +895,28 @@ void Core::InitializeScreenMetrics(void* nativeView, float32 width, float32 heig
     virtSystem->EnableReloadResourceOnResize(true);
 }
 
-void Core::UpdateScreenMetrics(float32 width, float32 height, float32 scaleX, float32 scaleY)
+void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    bool newMertrics = false;
-    newMertrics |= memcmp(&width, &screenMetrics.width, sizeof(float32)) != 0;
-    newMertrics |= memcmp(&height, &screenMetrics.height, sizeof(float32)) != 0;
-    newMertrics |= memcmp(&scaleX, &screenMetrics.scaleX, sizeof(float32)) != 0;
-    newMertrics |= memcmp(&scaleY, &screenMetrics.scaleY, sizeof(float32)) != 0;
+    DVASSERT(scaleX * scaleY);
+    bool doChange = false;
+    doChange |= FLOAT_EQUAL(width, screenMetrics.width);
+    doChange |= FLOAT_EQUAL(width, screenMetrics.width);
+    doChange |= FLOAT_EQUAL(height, screenMetrics.height);
+    doChange |= FLOAT_EQUAL(scaleX, screenMetrics.scaleX);
+    doChange |= FLOAT_EQUAL(scaleY, screenMetrics.scaleY);
 
-    if (newMertrics)
+    if (doChange)
     {
         screenMetrics.width = width;
         screenMetrics.height = height;
         screenMetrics.scaleX = scaleX;
         screenMetrics.scaleY = scaleY;
         // if changedMetricsScreen == true, then on the next call SystemProcessFrame() update all sizes and systems, after set it false
-        screenMetrics.modifiedScreenMetrics = true;
+        screenMetrics.screenMetricsModified = true;
     }
-    DVASSERT(screenMetrics.width * screenMetrics.height * screenMetrics.scaleX * screenMetrics.scaleY);
 }
 
-void Core::ModifyWindowSize()
+void Core::ApplyWindowSize()
 {
     DVASSERT(Renderer::IsInitialized());
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
@@ -922,10 +925,10 @@ void Core::ModifyWindowSize()
     rhi::ResetParam params;
     params.width = physicalWidth;
     params.height = physicalHeight;
-    screenMetrics.modifiedScreenMetrics = false;
-    if (screenMetrics.modifiedNativeView)
+    screenMetrics.screenMetricsModified = false;
+    if (screenMetrics.nativeViewModified)
     {
-        screenMetrics.modifiedNativeView = false;
+        screenMetrics.nativeViewModified = false;
         params.window = screenMetrics.nativeView;
     }
     Renderer::Reset(params);
@@ -965,7 +968,7 @@ void Core::SetScreenScaleMultiplier(float32 multiplier)
 {
     DVASSERT(multiplier > 0.f);
     screenMetrics.userScale = multiplier;
-    screenMetrics.modifiedScreenMetrics = true;
+    screenMetrics.screenMetricsModified = true;
     options->SetFloat("userScreenScaleFactor", multiplier);
 }
 
