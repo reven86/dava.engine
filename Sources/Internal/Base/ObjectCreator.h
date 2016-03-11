@@ -43,14 +43,17 @@ class ObjectCreator
 {
 public:
     ObjectCreator(const String& _name)
+        : name(_name)
     {
-        name = _name;
     }
+
+    virtual ~ObjectCreator() = default;
 
     virtual BaseObject* New()
     {
-        return 0;
+        return nullptr;
     }
+
     String name;
 };
 
