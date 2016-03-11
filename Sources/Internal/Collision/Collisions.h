@@ -81,7 +81,7 @@ public:
         {
             avC += contactPoints[c];
         }
-        avC /= (float32)count;
+        avC /= count;
         return avC;
     };
 };
