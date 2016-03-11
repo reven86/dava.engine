@@ -75,7 +75,7 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
         handle = VertexBufferMetalPool::Alloc();
         VertexBufferMetal_t* vb = VertexBufferMetalPool::Get(handle);
 
-        vb->data = [uid contents];
+        //-        vb->data = [uid contents];
         vb->size = desc.size;
         vb->uid = uid;
     }
@@ -97,6 +97,7 @@ metal_VertexBuffer_Delete(Handle vb)
     if (self)
     {
         [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+        self->data = nullptr;
         self->uid = nil;
         VertexBufferMetalPool::Free(vb);
     }
@@ -109,6 +110,9 @@ metal_VertexBuffer_Update(Handle vb, const void* data, uint32 offset, uint32 siz
 {
     bool success = false;
     VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
+
+    if (!self->data)
+        self->data = [self->uid contents];
 
     if (offset + size <= self->size)
     {
@@ -126,6 +130,9 @@ metal_VertexBuffer_Map(Handle vb, uint32 offset, uint32 size)
 {
     VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
 
+    if (!self->data)
+        self->data = [self->uid contents];
+
     DVASSERT(self->data);
 
     return (offset + size <= self->size) ? ((uint8*)self->data) + offset : 0;
@@ -136,7 +143,10 @@ metal_VertexBuffer_Map(Handle vb, uint32 offset, uint32 size)
 static void
 metal_VertexBuffer_Unmap(Handle vb)
 {
-    // do nothing
+    VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
+
+    DVASSERT(self->data);
+    self->data = nullptr;
 }
 
 namespace VertexBufferMetal

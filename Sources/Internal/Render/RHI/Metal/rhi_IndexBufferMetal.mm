@@ -75,7 +75,7 @@ metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
         handle = IndexBufferMetalPool::Alloc();
         IndexBufferMetal_t* ib = IndexBufferMetalPool::Get(handle);
 
-        ib->data = [uid contents];
+        //-        ib->data = [uid contents];
         ib->size = desc.size;
         ib->uid = uid;
         ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
@@ -112,6 +112,9 @@ metal_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
     bool success = false;
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
 
+    if (!self->data)
+        self->data = [self->uid contents];
+
     if (offset + size <= self->size)
     {
         memcpy(((uint8*)self->data) + offset, data, size);
@@ -128,6 +131,9 @@ metal_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 {
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
 
+    if (!self->data)
+        self->data = [self->uid contents];
+
     DVASSERT(self->data);
 
     return (offset + size <= self->size) ? ((uint8*)self->data) + offset : 0;
@@ -138,7 +144,10 @@ metal_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 static void
 metal_IndexBuffer_Unmap(Handle ib)
 {
-    // do nothing
+    IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
+
+    DVASSERT(self->data);
+    self->data = nullptr;
 }
 
 //------------------------------------------------------------------------------
