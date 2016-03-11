@@ -560,7 +560,6 @@ void UITextField::Input(UIEvent* currentInput)
             {
                 OpenKeyboard();
             }
-            //delegate->TextFieldShouldReturn(this);
         }
     }
     if (currentInput->phase == UIEvent::Phase::ENDED)
@@ -856,7 +855,7 @@ int32 UITextField::GetMaxLength() const
 
 void UITextField::OnKeyboardShown(const Rect& keyboardRect)
 {
-    if (delegate)
+    if (delegate != nullptr)
     {
         delegate->OnKeyboardShown(keyboardRect);
     }
@@ -864,7 +863,7 @@ void UITextField::OnKeyboardShown(const Rect& keyboardRect)
 
 void UITextField::OnKeyboardHidden()
 {
-    if (delegate)
+    if (delegate != nullptr)
     {
         delegate->OnKeyboardHidden();
     }

@@ -320,7 +320,7 @@ private:
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
     UIFocusSystem* focusSystem = nullptr;
-    UIKeyInputSystem* keyInputSystem;
+    UIKeyInputSystem* keyInputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;

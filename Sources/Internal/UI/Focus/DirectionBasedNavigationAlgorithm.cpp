@@ -51,10 +51,10 @@ DirectionBasedNavigationAlgorithm::~DirectionBasedNavigationAlgorithm()
 
 UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedControl, FocusHelpers::Direction dir)
 {
-    if (focusedControl)
+    if (focusedControl != nullptr)
     {
         UIControl* next = FindNextControl(focusedControl, dir);
-        if (next && next != focusedControl)
+        if (next != nullptr && next != focusedControl)
         {
             return next;
         }
@@ -65,19 +65,19 @@ UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedC
 UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
 {
     UIControl* next = FindNextSpecifiedControl(focusedControl, dir);
-    if (next)
+    if (next != nullptr)
     {
         return next;
     }
 
     UIControl* parent = focusedControl;
-    while (parent && parent != root.Get())
+    while (parent != nullptr && parent != root.Get())
     {
         UIFocusComponent* focus = parent->GetComponent<UIFocusComponent>();
-        if (focus && (focus->GetPolicy() == UIFocusComponent::FOCUSABLE_GROUP))
+        if (focus != nullptr && (focus->GetPolicy() == UIFocusComponent::FOCUSABLE_GROUP))
         {
             UIControl* c = FindNearestControl(focusedControl, parent, dir);
-            if (c)
+            if (c != nullptr)
             {
                 return c;
             }
@@ -99,11 +99,11 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl
     UIFocusComponent* focus = focusedControl->GetComponent<UIFocusComponent>();
     if (focus != nullptr)
     {
-        const String& controlInDirection = focus->GetControlInDirection(dir);
+        const String& controlInDirection = focus->GetNextControlPathInDirection(dir);
         if (!controlInDirection.empty())
         {
             UIControl* next = UIControlHelpers::FindControlByPath(controlInDirection, focusedControl);
-            if (next && FocusHelpers::CanFocusControl(next) && next != focusedControl)
+            if (next != nullptr && FocusHelpers::CanFocusControl(next) && next != focusedControl)
             {
                 return next;
             }
@@ -152,7 +152,7 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
     {
         UIControl* res = FindNearestControl(focusedControl, c, dir);
 
-        if (res)
+        if (res != nullptr)
         {
             Vector2 p = CalcNearestPos(pos, res, dir);
             float32 distSq = (p - pos).SquareLength();

@@ -37,15 +37,15 @@ UIFocusComponent::UIFocusComponent()
 }
 
 UIFocusComponent::UIFocusComponent(const UIFocusComponent& src)
-    : enabled(src.enabled)
-    , requestFocus(src.requestFocus)
+    : tabOrder(src.tabOrder)
     , policy(src.policy)
-    , leftControl(src.leftControl)
-    , rightControl(src.rightControl)
-    , upControl(src.upControl)
-    , downControl(src.downControl)
-    , tabOrder(src.tabOrder)
+    , enabled(src.enabled)
+    , requestFocus(src.requestFocus)
 {
+    for (int i = 0; i < FocusHelpers::DIRECTION_COUNT; i++)
+    {
+        nextFocusPath[i] = src.nextFocusPath[i];
+    }
 }
 
 UIFocusComponent::~UIFocusComponent()
@@ -87,66 +87,50 @@ void UIFocusComponent::SetPolicy(ePolicy policy_)
     policy = policy_;
 }
 
-const String& UIFocusComponent::GetLeft() const
+const String& UIFocusComponent::GetNextFocusLeft() const
 {
-    return leftControl;
+    return nextFocusPath[FocusHelpers::LEFT];
 }
 
-void UIFocusComponent::SetLeft(const String& val)
+void UIFocusComponent::SetNextFocusLeft(const String& val)
 {
-    leftControl = val;
+    nextFocusPath[FocusHelpers::LEFT] = val;
 }
 
-const String& UIFocusComponent::GetRight() const
+const String& UIFocusComponent::GetNextFocusRight() const
 {
-    return rightControl;
+    return nextFocusPath[FocusHelpers::RIGHT];
 }
 
-void UIFocusComponent::SetRight(const String& val)
+void UIFocusComponent::SetNextFocusRight(const String& val)
 {
-    rightControl = val;
+    nextFocusPath[FocusHelpers::RIGHT] = val;
 }
 
-const String& UIFocusComponent::GetUp() const
+const String& UIFocusComponent::GetNextFocusUp() const
 {
-    return upControl;
+    return nextFocusPath[FocusHelpers::UP];
 }
 
-void UIFocusComponent::SetUp(const String& val)
+void UIFocusComponent::SetNextFocusUp(const String& val)
 {
-    upControl = val;
+    nextFocusPath[FocusHelpers::UP] = val;
 }
 
-const String& UIFocusComponent::GetDown() const
+const String& UIFocusComponent::GetNextFocusDown() const
 {
-    return downControl;
+    return nextFocusPath[FocusHelpers::DOWN];
 }
 
-void UIFocusComponent::SetDown(const String& val)
+void UIFocusComponent::SetNextFocusDown(const String& val)
 {
-    downControl = val;
+    nextFocusPath[FocusHelpers::DOWN] = val;
 }
 
-const String& UIFocusComponent::GetControlInDirection(FocusHelpers::Direction dir)
+const String& UIFocusComponent::GetNextControlPathInDirection(FocusHelpers::Direction dir)
 {
-    switch (dir)
-    {
-    case FocusHelpers::LEFT:
-        return leftControl;
-
-    case FocusHelpers::RIGHT:
-        return rightControl;
-
-    case FocusHelpers::UP:
-        return upControl;
-
-    case FocusHelpers::DOWN:
-        return downControl;
-
-    default:
-        DVASSERT(false);
-        return leftControl;
-    }
+    DVASSERT(0 <= dir && dir < FocusHelpers::DIRECTION_COUNT);
+    return nextFocusPath[dir];
 }
 
 int32 UIFocusComponent::GetTabOrder() const
