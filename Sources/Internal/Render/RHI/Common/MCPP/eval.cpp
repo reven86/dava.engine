@@ -35,6 +35,9 @@
  * Some routines are used also to evaluate the value of numerical tokens.
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+
 #include "_mcpp.h"
 
 #if PREPROCESSED
@@ -1863,3 +1866,5 @@ const VAL_SIGN* valp /* -> value vector              */
         mcpp_fputc('\n', MCPP_DBG);
     }
 }
+
+#pragma clang diagnostic pop
