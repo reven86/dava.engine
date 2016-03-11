@@ -3,6 +3,8 @@ project(icucommon)
 
 option(BUILD_STUBDATA "Build stundata library" ON)
 
+#TODO: Commented sources fails under UWP
+
 set(ICU_COMMON_SRC
   source/common/bmpset.cpp
   source/common/brkeng.cpp
@@ -19,7 +21,7 @@ set(ICU_COMMON_SRC
   source/common/errorcode.cpp
   source/common/filterednormalizer2.cpp
   source/common/icudataver.c
-  source/common/icuplug.c
+#  source/common/icuplug.c
   source/common/locavailable.cpp
   source/common/locbased.cpp
   source/common/locdispnames.cpp
@@ -36,7 +38,7 @@ set(ICU_COMMON_SRC
   source/common/propname.cpp
   source/common/propsvec.c
   source/common/punycode.c
-  source/common/putil.c
+#  source/common/putil.c
   source/common/rbbi.cpp
   source/common/rbbidata.cpp
   source/common/rbbinode.cpp
@@ -107,7 +109,7 @@ set(ICU_COMMON_SRC
   source/common/ulist.c
   source/common/uloc.c
   source/common/uloc_tag.c
-  source/common/umapfile.c
+#  source/common/umapfile.c
   source/common/umath.c
   source/common/umutex.c
   source/common/unames.c
@@ -156,7 +158,7 @@ set(ICU_COMMON_SRC
   source/common/uvector.cpp
   source/common/uvectr32.cpp
   source/common/uvectr64.cpp
-  #source/common/wintz.c
+#  source/common/wintz.c
 )
 
 
