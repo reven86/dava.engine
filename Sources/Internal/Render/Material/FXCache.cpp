@@ -292,7 +292,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                                 const YamlNode* stencilRefNode = stencilNode->Get("ref");
                                 if (stencilRefNode)
                                 {
-                                    uint8 refValue = (uint8)stencilRefNode->AsInt32();
+                                    uint8 refValue = static_cast<uint8>(stencilRefNode->AsInt32());
                                     passDescriptor.depthStateDescriptor.stencilBack.refValue = refValue;
                                     passDescriptor.depthStateDescriptor.stencilFront.refValue = refValue;
                                 }
@@ -300,7 +300,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                                 const YamlNode* stencilMaskNode = stencilNode->Get("mask");
                                 if (stencilMaskNode)
                                 {
-                                    uint8 maskValue = (uint8)stencilMaskNode->AsInt32();
+                                    uint8 maskValue = static_cast<uint8>(stencilMaskNode->AsInt32());
                                     passDescriptor.depthStateDescriptor.stencilBack.readMask = maskValue;
                                     passDescriptor.depthStateDescriptor.stencilBack.writeMask = maskValue;
                                     passDescriptor.depthStateDescriptor.stencilFront.readMask = maskValue;
