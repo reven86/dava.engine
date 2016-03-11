@@ -445,7 +445,7 @@ void VariantType::SetVariant(const VariantType& var)
     break;
     case TYPE_BYTE_ARRAY:
     {
-        Vector<uint8>* ar = (Vector<uint8>*)var.pointerValue;
+        const Vector<uint8>* ar = static_cast<const Vector<uint8>*>(var.pointerValue);
         SetByteArray(ar->data(), static_cast<int32>(ar->size()));
     }
     break;
@@ -581,7 +581,7 @@ int32 VariantType::AsByteArraySize() const
 KeyedArchive* VariantType::AsKeyedArchive() const
 {
     DVASSERT(type == TYPE_KEYED_ARCHIVE);
-    return (KeyedArchive*)pointerValue;
+    return static_cast<KeyedArchive*>(pointerValue);
 }
 
 int64 VariantType::AsInt64() const
@@ -720,7 +720,7 @@ bool VariantType::Write(File* fp) const
     break;
     case TYPE_STRING:
     {
-        int32 len = (int32)stringValue->length();
+        uint32 len = static_cast<uint32>(stringValue->length());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -736,7 +736,7 @@ bool VariantType::Write(File* fp) const
     break;
     case TYPE_WIDE_STRING:
     {
-        int32 len = (int32)wideStringValue->length();
+        uint32 len = static_cast<uint32>(wideStringValue->length());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -744,7 +744,7 @@ bool VariantType::Write(File* fp) const
         }
 
         written = fp->Write(wideStringValue->c_str(), len * sizeof(wchar_t));
-        if (written != len * (int)sizeof(wchar_t))
+        if (written != len * static_cast<uint32>(sizeof(wchar_t)))
         {
             return false;
         }
@@ -752,7 +752,8 @@ bool VariantType::Write(File* fp) const
     break;
     case TYPE_BYTE_ARRAY:
     {
-        int32 len = (int32)((Vector<uint8>*)pointerValue)->size();
+        const Vector<uint8>* container = static_cast<const Vector<uint8>*>(pointerValue);
+        uint32 len = static_cast<uint32>(container->size());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -760,7 +761,8 @@ bool VariantType::Write(File* fp) const
         }
         if (0 != len)
         {
-            written = fp->Write(&((Vector<uint8>*)pointerValue)->front(), len);
+            const Vector<uint8>* container = static_cast<const Vector<uint8>*>(pointerValue);
+            written = fp->Write(&(container->front()), len);
             if (written != len)
             {
                 return false;
@@ -771,8 +773,8 @@ bool VariantType::Write(File* fp) const
     case TYPE_KEYED_ARCHIVE:
     {
         DynamicMemoryFile* pF = DynamicMemoryFile::Create(File::WRITE | File::APPEND);
-        ((KeyedArchive*)pointerValue)->Save(pF);
-        int32 len = pF->GetSize();
+        (static_cast<const KeyedArchive*>(pointerValue))->Save(pF);
+        uint32 len = pF->GetSize();
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -897,7 +899,7 @@ bool VariantType::Write(File* fp) const
     case TYPE_FILEPATH:
     {
         String str = filepathValue->GetAbsolutePathname();
-        int32 len = (int32)str.length();
+        uint32 len = static_cast<uint32>(str.length());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -1026,7 +1028,8 @@ bool VariantType::Read(File* fp)
         pointerValue = static_cast<void*>(new Vector<uint8>(len));
         if (0 != len)
         {
-            read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
+            Vector<uint8>* container = static_cast<Vector<uint8>*>(pointerValue);
+            read = fp->Read(&container->front(), len);
             if (read != len)
             {
                 return false;
@@ -1051,7 +1054,7 @@ bool VariantType::Read(File* fp)
         }
         DynamicMemoryFile* pF = DynamicMemoryFile::Create(pData, len, File::READ);
         pointerValue = new KeyedArchive();
-        ((KeyedArchive*)pointerValue)->Load(pF);
+        static_cast<KeyedArchive*>(pointerValue)->Load(pF);
         SafeRelease(pF);
         SafeDeleteArray(pData);
     }
@@ -1212,12 +1215,12 @@ void VariantType::ReleasePointer()
         {
         case TYPE_BYTE_ARRAY:
         {
-            delete (Vector<uint8>*)pointerValue;
+            delete static_cast<const Vector<uint8>*>(pointerValue);
         }
         break;
         case TYPE_KEYED_ARCHIVE:
         {
-            ((KeyedArchive*)pointerValue)->Release();
+            static_cast<KeyedArchive*>(pointerValue)->Release();
         }
         break;
         case TYPE_VECTOR2:
@@ -1459,7 +1462,7 @@ const MetaInfo* VariantType::Meta()
 
 void* VariantType::MetaObject()
 {
-    const void* ret = nullptr;
+    void* ret = nullptr;
 
     switch (type)
     {
@@ -1512,7 +1515,7 @@ void* VariantType::MetaObject()
     }
     }
 
-    return const_cast<void*>(ret);
+    return ret;
 }
 
 VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
