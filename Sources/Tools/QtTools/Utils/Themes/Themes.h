@@ -27,25 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__COMMANDACTION__
-#define __RESOURCEEDITORQT__COMMANDACTION__
+#ifndef __QT_TOOLS_THEMES_H__
+#define __QT_TOOLS_THEMES_H__
+    
+#include <QString>
+#include <QStringList>
+#include <QPalette>
 
-#include "Command2.h"
-
-class CommandAction : public Command2
+namespace Themes
 {
-public:
-    CommandAction(int _id, const DAVA::String& _text = "");
-    virtual ~CommandAction();
-
-    bool CanUndo() const override;
-    void Undo() override;
-    DAVA::Entity* GetEntity() const override;
+enum eTheme : int
+{
+    Classic,
+    Dark
+};
+void InitFromQApplication();
+QStringList ThemesNames();
+void SetCurrentTheme(const QString& theme);
+void SetCurrentTheme(eTheme theme);
+const QString& GetCurrentThemeStr();
+eTheme GetCurrentTheme();
+QColor GetViewLineAlternateColor();
+QColor GetChangedPropertyColor();
+QColor GetPrototypeColor();
+QColor GetStyleSheetNodeColor();
+QColor GetRulerWidgetBackgroungColor();
 };
 
-inline bool CommandAction::CanUndo() const
-{
-    return false;
-}
-
-#endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
+#endif // __QT_TOOLS_THEMES_H__

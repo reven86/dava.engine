@@ -322,6 +322,17 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene, Set<String>& errorsLo
     auto endItMaterials = materials.end();
     for (auto it = materials.begin(); it != endItMaterials; ++it)
     {
+        /// pre load all textures from all configs
+        DAVA::NMaterial* material = *it;
+        uint32 currentConfig = material->GetCurrentConfigIndex();
+        for (uint32 i = 0; i < material->GetConfigCount(); ++i)
+        {
+            material->SetCurrentConfigIndex(i);
+            material->PreBuildMaterial(PASS_FORWARD);
+        }
+
+        material->SetCurrentConfigIndex(currentConfig);
+
         for (const FastName& textureName : textureNames)
         {
             if ((*it)->HasLocalTexture(textureName))

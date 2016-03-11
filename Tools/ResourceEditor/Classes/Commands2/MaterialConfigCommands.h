@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,26 +26,76 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __RESOURCEEDITORQT__COMMANDACTION__
-#define __RESOURCEEDITORQT__COMMANDACTION__
+#ifndef __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
+#define __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
 
 #include "Command2.h"
 
-class CommandAction : public Command2
+#include "Render/Material/NMaterial.h"
+
+class MaterialConfigModify : public Command2
 {
 public:
-    CommandAction(int _id, const DAVA::String& _text = "");
-    virtual ~CommandAction();
+    MaterialConfigModify(DAVA::NMaterial* material, int id, const DAVA::String& text = DAVA::String());
+    ~MaterialConfigModify();
 
-    bool CanUndo() const override;
-    void Undo() override;
+    DAVA::NMaterial* GetMaterial() const;
     DAVA::Entity* GetEntity() const override;
+
+protected:
+    DAVA::NMaterial* material;
 };
 
-inline bool CommandAction::CanUndo() const
+class MaterialChangeCurrentConfig : public MaterialConfigModify
 {
-    return false;
+public:
+    MaterialChangeCurrentConfig(DAVA::NMaterial* material, DAVA::uint32 newCurrentConfigIndex);
+
+    void Undo() override;
+    void Redo() override;
+
+private:
+    DAVA::uint32 newCurrentConfig = static_cast<DAVA::uint32>(-1);
+    DAVA::uint32 oldCurrentConfig = static_cast<DAVA::uint32>(-1);
+};
+
+class MaterialRemoveConfig : public MaterialConfigModify
+{
+public:
+    MaterialRemoveConfig(DAVA::NMaterial* material, DAVA::uint32 configIndex);
+
+    void Undo() override;
+    void Redo() override;
+
+private:
+    DAVA::MaterialConfig config;
+    DAVA::uint32 configIndex;
+    std::unique_ptr<MaterialChangeCurrentConfig> changeCurrentConfigCommand;
+};
+
+class MaterialCreateConfig : public MaterialConfigModify
+{
+public:
+    MaterialCreateConfig(DAVA::NMaterial* material, const DAVA::MaterialConfig& config);
+
+    void Undo() override;
+    void Redo() override;
+
+private:
+    DAVA::MaterialConfig config;
+    DAVA::uint32 configIndex = static_cast<DAVA::uint32>(-1);
+    std::unique_ptr<MaterialChangeCurrentConfig> changeCurrentConfigCommand;
+};
+
+inline DAVA::NMaterial* MaterialConfigModify::GetMaterial() const
+{
+    return material;
 }
 
-#endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
+inline DAVA::Entity* MaterialConfigModify::GetEntity() const
+{
+    return nullptr;
+}
+
+
+#endif // __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__

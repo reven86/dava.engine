@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,26 +26,38 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAFRAMEWORK_SETCOLLECTIONITEMVALUECOMMAND_H__
+#define __DAVAFRAMEWORK_SETCOLLECTIONITEMVALUECOMMAND_H__
 
-#ifndef __RESOURCEEDITORQT__COMMANDACTION__
-#define __RESOURCEEDITORQT__COMMANDACTION__
+#include "ICommand.h"
+#include "ObjectHandle.h"
 
-#include "Command2.h"
+#include "FileSystem/VariantType.h"
 
-class CommandAction : public Command2
+namespace DAVA
+{
+class InspColl;
+class SetCollectionItemValueCommand : public ICommand
 {
 public:
-    CommandAction(int _id, const DAVA::String& _text = "");
-    virtual ~CommandAction();
+    SetCollectionItemValueCommand(const ObjectHandle& object, const InspColl* collection,
+                                  const VariantType& key, const VariantType& newValue);
 
-    bool CanUndo() const override;
+    void Execute() override;
+    void Redo() override;
     void Undo() override;
-    DAVA::Entity* GetEntity() const override;
-};
 
-inline bool CommandAction::CanUndo() const
-{
-    return false;
+private:
+    class CollectionIteratorHelper;
+    void SetValue(const CollectionIteratorHelper& iterHelper, VariantType value);
+
+private:
+    ObjectHandle object;
+    const InspColl* collection;
+    VariantType key;
+    VariantType oldValue;
+    VariantType newValue;
+};
 }
 
-#endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
+#endif // __DAVAFRAMEWORK_SETCOLLECTIONITEMVALUECOMMAND_H__

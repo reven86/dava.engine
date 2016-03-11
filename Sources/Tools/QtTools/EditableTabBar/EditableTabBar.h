@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,26 +26,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __QTTOOLS_EDITABLETABBAR_H__
+#define __QTTOOLS_EDITABLETABBAR_H__
 
-#ifndef __RESOURCEEDITORQT__COMMANDACTION__
-#define __RESOURCEEDITORQT__COMMANDACTION__
+#include <QTabBar>
 
-#include "Command2.h"
-
-class CommandAction : public Command2
+class QLineEdit;
+class QValidator;
+class EditableTabBar : public QTabBar
 {
+    Q_OBJECT
 public:
-    CommandAction(int _id, const DAVA::String& _text = "");
-    virtual ~CommandAction();
+    EditableTabBar(QWidget* parent = nullptr);
 
-    bool CanUndo() const override;
-    void Undo() override;
-    DAVA::Entity* GetEntity() const override;
+    void setNameValidator(const QValidator* v);
+
+    bool isEditable() const;
+    void setEditable(bool isEditable);
+
+    Q_SIGNAL void tabNameChanged(int index);
+
+protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
+    void tabInserted(int index) override;
+
+private:
+    Q_SLOT void onNameEditingFinished();
+    Q_SLOT void onTabDoubleClicked(int index);
+
+    void startEdit(int tabIndex);
+    void finishEdit(bool commitChanges);
+
+private:
+    QLineEdit* nameEditor = nullptr;
+    bool isTabsEditable = true;
 };
 
-inline bool CommandAction::CanUndo() const
-{
-    return false;
-}
-
-#endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
+#endif // __QTTOOLS_EDITABLETABBAR_H__

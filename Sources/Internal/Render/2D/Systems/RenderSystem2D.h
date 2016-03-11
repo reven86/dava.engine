@@ -47,13 +47,17 @@ class UIGeometricData;
 
 struct TiledDrawData
 {
-    Vector<Vector2> vertices;
-    Vector<Vector2> texCoords;
-    Vector<uint16> indeces;
+    struct Unit
+    {
+        Vector<Vector2> vertices;
+        Vector<Vector2> texCoords;
+        Vector<Vector2> transformedVertices;
+        Vector<uint16> indeces;
+    };
+    Vector<Unit> units;
+
     void GenerateTileData();
     void GenerateAxisData(float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector<Vector3>& axisData);
-
-    Vector<Vector2> transformedVertices;
     void GenerateTransformData();
 
     Sprite* sprite;

@@ -49,7 +49,6 @@
 #include <QFrame>
 #include <QPushButton>
 
-#include "QtTools/LazyUpdater/LazyUpdater.h"
 using namespace DAVA;
 
 namespace LODEditorInternal

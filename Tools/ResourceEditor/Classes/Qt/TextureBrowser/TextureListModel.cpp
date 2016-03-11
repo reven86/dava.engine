@@ -160,8 +160,9 @@ void TextureListModel::setScene(DAVA::Scene* scene)
 
     activeScene = scene;
 
-    DAVA::TexturesMap texturesInNode;
-    SceneHelper::EnumerateSceneTextures(scene, texturesInNode, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+    SceneHelper::TextureCollector collector;
+    SceneHelper::EnumerateSceneTextures(scene, collector);
+    DAVA::TexturesMap& texturesInNode = collector.GetTextures();
 
     for (DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
     {
@@ -186,12 +187,12 @@ void TextureListModel::setHighlight(const SelectableObjectGroup* nodes)
 
     if (nullptr != nodes)
     {
-        DAVA::TexturesMap nodeTextures;
-
+        SceneHelper::TextureCollector collector;
         for (auto entity : nodes->ObjectsOfType<DAVA::Entity>())
         {
-            SceneHelper::EnumerateEntityTextures(activeScene, entity, nodeTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+            SceneHelper::EnumerateEntityTextures(activeScene, entity, collector);
         }
+        DAVA::TexturesMap& nodeTextures = collector.GetTextures();
 
         const DAVA::uint32 descriptorsCount = static_cast<const DAVA::uint32>(textureDescriptorsAll.size());
         for (const auto& nTex : nodeTextures)
