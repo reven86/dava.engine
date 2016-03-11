@@ -120,12 +120,12 @@ void RadixSortImpl(intptr_t* array, int offset, int end, int shift)
             temp = x > 0 ? pointer[x] - pointer[x - 1] : pointer[0] - offset;
             if (temp > 64)
             {
-                RadixSortImpl(array, pointer[x] - temp, pointer[x], shift);
+                RadixSortImpl(array, static_cast<int32>(pointer[x] - temp), static_cast<int32>(pointer[x]), shift);
             }
             else if (temp > 1)
             {
                 // std::sort(array + (pointer[x] - temp), array + pointer[x]);
-                insertion_sort(array, pointer[x] - temp, pointer[x]);
+                insertion_sort(array, static_cast<int32>(pointer[x] - temp), static_cast<int32>(pointer[x]));
             }
         }
     }

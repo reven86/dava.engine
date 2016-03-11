@@ -69,8 +69,11 @@
  *              Wrap library functions to support alternate output to memory
  *              buffer.
  */
+
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
 #include "_mcpp.h"
 #include <atomic>
@@ -3280,4 +3283,6 @@ char*(xrealloc)(void* ptr, size_t size)
     return newData;
 }
 
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif

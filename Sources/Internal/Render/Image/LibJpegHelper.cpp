@@ -127,12 +127,16 @@ eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
     jpeg_create_decompress(&cinfo);
     
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header(&cinfo, TRUE);
@@ -251,12 +255,16 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath& fileName, const Vector<Image
         return eErrorCode::ERROR_WRITE_FAIL;
     }
     
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
     jpeg_create_compress(&cinfo);
     
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 
     jpeg_stdio_dest(&cinfo, outfile);
 
@@ -315,12 +323,16 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File* infile) const
         return ImageInfo();
     }
     
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
     jpeg_create_decompress(&cinfo);
-    
+
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header(&cinfo, TRUE);
