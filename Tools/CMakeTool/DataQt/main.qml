@@ -197,7 +197,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         placeholderText: qsTr("your custom options")
                         onTextChanged: {
-                            configuration["customOpstions"] = text;
+                            configuration["customOptions"] = text;
                             updateOutputString();
                         }
                     }

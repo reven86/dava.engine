@@ -59,7 +59,7 @@ function createOutput(configuration, fileSystemHelper, buildPath, cmakePath, dav
         }
     }
     
-    var customOptions = configuration["customOpstions"];
+    var customOptions = configuration["customOptions"];
     if(typeof customOptions === "string") {
         outputText += " " + customOptions;
     }
