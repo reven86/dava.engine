@@ -11,7 +11,9 @@ RowLayout {
     property bool selectFolders: false;
     property alias inputComponent: loader.sourceComponent
     property string path: loader.item.text
-    Binding {target: rowLayout; property: "path"; value: loader.item.text}
+    property alias item: loader.item
+    Binding { target: rowLayout; property: "path"; value: loader.item.text}
+    Binding { target: loader.item; property: "text"; value: path }
     onPathChanged: loader.item.text = path
     Layout.minimumWidth: label.width + button.width + image.width + spacing * 3 + 50
     Layout.minimumHeight: Math.max(label.height, button.height, image.height, loader.item.height)

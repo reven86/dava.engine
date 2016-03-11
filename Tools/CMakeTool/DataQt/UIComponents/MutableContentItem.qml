@@ -2,8 +2,6 @@ import QtQuick 2.2
 import QtQuick.Controls 1.3
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
-import Cpp.Utils 1.0
-import Qt.labs.settings 1.0
 
 Item {
     id: mutableContentItem;
@@ -26,15 +24,31 @@ Item {
             }
         }
     }
+    function loadState(state) {
+        configuration["currentPlatform"] = state.platform;
+        configuration["currentOptions"] = state.currentOptions;
+        configuration["globalOptions"] = state.globalOptions;
+        impl.configUpdated();
+    }
+
+    function saveState() {
+        var state = {};
+        state.platform = configuration["currentPlatform"];
+        state.currentOptions = configuration["currentOptions"];
+        state.globalOptions = configuration["globalOptions"];
+        return state;
+    }
+
     Item {
         id: impl //item to incapsulate private functions
+        signal configUpdated();
         function processDataChanged(checked, value, key) {
             var options = configuration[key];
             if(checked) {
                 options.push(value)
             } else {
                 for(var i = 0, count = options.length; i < count; i++) {
-                    if(options[i].index === value.index) {
+                    if(JSON.stringify(options[i]) === JSON.stringify(value)) {
                         options.splice(i, 1);
                         break;
                     }
@@ -42,6 +56,7 @@ Item {
             }
             dataUpdated();
         }
+
     }
 
    
@@ -83,6 +98,16 @@ Item {
                         delegate: RadioButton {
                             text: model.name
                             exclusiveGroup: exclusiveGroup_platforms
+                            checked: model.checked
+                            Connections {
+                                target: impl
+                                onConfigUpdated:  {
+                                    if(index === configuration["currentPlatform"]) {
+                                         checked = true;
+                                     }
+                                }
+                            }
+
                             onCheckedChanged: {
                                 if(checked && configuration) {
                                     configuration["currentPlatform"] = index;
@@ -99,18 +124,8 @@ Item {
                                     dataUpdated();
                                 }
                             }
-                            Component.onCompleted: {
-                                if(platformSettings.platformIndex === index) {
-                                    checked = true;
-                                }
-                            }
                         }
                     }
-                    Settings {
-                        id: platformSettings
-                        property int platformIndex;
-                    }
-                    Component.onDestruction: platformSettings.platformIndex = configuration["currentPlatform"];
                 }
             }
 
@@ -130,24 +145,30 @@ Item {
                     spacing: 10
                     Repeater {
                         model: listModel_localOptions
-                        delegate: loaderDelegate
+                        delegate: loaderComponent
                     }
                     Component {
-                        id: loaderDelegate
+                        id: loaderComponent
                         Loader {
+                            id: loaderDelegate
                             sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
                             property variant modelData: listModel_localOptions.get(model.index);
                             property int index : model.index;
-                            Component.onCompleted: {
-                                var options = optionsSettings.localOptions;
-
-                                if(options && Array.isArray(options)) {
-                                    for(var i = 0, count = options.length; i < count; i++) {
-                                        var option = options[i];
-                                        if(option.index === modelData["substring number"] - 1 && option.value === modelData.value) {
-                                            item.checked = true
+                            function createObj() {
+                                return {"index": modelData["substring number"] - 1, "value": modelData.value};
+                            }
+                            Connections {
+                                target: impl
+                                onConfigUpdated:  {
+                                    var obj = configuration["currentOptions"];
+                                    var currentObj = loaderDelegate.createObj();
+                                    var found = false;
+                                    for(var i = 0, length = obj.length; i < length && !found; ++i) {
+                                        if(JSON.stringify(obj[i]) === JSON.stringify(currentObj)) {
+                                            found = true;
                                         }
                                     }
+                                    item.checked = found;
                                 }
                             }
                         }
@@ -161,9 +182,10 @@ Item {
                         RadioButton {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                impl.processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
+                                impl.processDataChanged(checked, loaderDelegate.createObj(), "currentOptions");
                             }
                             exclusiveGroup: exclusiveGroup_localOptions
+
                         }
                     }
                     Component {
@@ -171,16 +193,9 @@ Item {
                         CheckBox {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                impl.processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
+                                impl.processDataChanged(checked, loaderDelegate.createObj(), "currentOptions");
                             }
                         }
-                    }
-                    Settings {
-                        id: optionsSettings
-                        property var localOptions;
-                    }
-                    Component.onDestruction: {
-                        optionsSettings.localOptions = configuration["currentOptions"];
                     }
                 }
             }
@@ -210,26 +225,21 @@ Item {
                             impl.processDataChanged(checked, {"value": model.value}, "globalOptions");
 
                         }
-                        Component.onCompleted: {
-                           var options = globalOptionsSettings.globalOptions;
-
-                           if(options && Array.isArray(options)) {
-                               for(var i = 0, count = options.length; i < count; i++) {
-                                   var option = options[i];
-                                   if(option.value === model.value) {
-                                       checked = true
-                                   }
-                               }
-                           }
-                       }
+                        Connections {
+                            target: impl
+                            onConfigUpdated:  {
+                                var obj = configuration["globalOptions"];
+                                var currentObj = {"value": model.value};
+                                var found = false;
+                                for(var i = 0, length = obj.length; i < length && !found; ++i) {
+                                    if(JSON.stringify(obj[i]) === JSON.stringify(currentObj)) {
+                                        found = true;
+                                    }
+                                }
+                                checked = found;
+                            }
+                        }
                     }
-                }
-                Settings {
-                    id: globalOptionsSettings
-                    property var globalOptions;
-                }
-                Component.onDestruction: {
-                    globalOptionsSettings.globalOptions = configuration["globalOptions"];
                 }
             }
         }

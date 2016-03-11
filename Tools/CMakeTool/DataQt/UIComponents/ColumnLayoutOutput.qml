@@ -2,17 +2,18 @@ import QtQuick 2.2
 import QtQuick.Controls 1.3
 import QtQuick.Layouts 1.0
 import Cpp.Utils 1.0
-import Qt.labs.settings 1.0
 
 Item {
     id: wrapper
     property alias outputText: textField_output.text
     Layout.minimumHeight: label.height +  textField_output.height + rowLayout.height + rowLayout_output.spacing * 2
     property var outputComplete;
+    signal cmakeLaunched();
+    property alias needClean: checkBox_clean.checked
+
     ColumnLayout {
         id: rowLayout_output
         anchors.fill: parent
-
         Label {
             id: label
             text: qsTr("Output:")
@@ -24,10 +25,6 @@ Item {
             Layout.fillWidth: true
         }
 
-        Settings {
-            property alias mustClean: checkBox_clean.checked
-        }
-
         RowLayout {
             id: rowLayout
             Button {
@@ -37,6 +34,7 @@ Item {
                 enabled: textField_output.text.length !== 0 && outputComplete
                 onClicked: {
                     processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))
+                    cmakeLaunched();
                 }
             }
             CheckBox {

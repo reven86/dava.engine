@@ -24,6 +24,67 @@ ApplicationWindow {
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
         property alias customOptions: textField_customOptions.text
+        property string historyStr;
+        Component.onDestruction: historyStr = JSON.stringify(history)
+    }
+    property var history;
+    function applyBuildSettings(buildSettings) {
+        columnLayoutOutput.needClean = buildSettings.needClean;
+        rowLayout_cmakeFolder.path = buildSettings.cmakePath;
+        rowLayout_davaFolder.path = buildSettings.davaPath;
+        textField_customOptions.text = buildSettings.customOptions
+        mutableContent.loadState(buildSettings.state);
+    }
+
+    function loadHistory() {
+        try {
+            history = JSON.parse(settings.historyStr);
+        } catch(e) {
+            history = [];
+        }
+
+        if(history && Array.isArray(history) && history.length > 0) {
+            for(var i = 0, length = history.length; i < length; ++i) {
+                rowLayout_buildFolder.item.addString(history[i].build)
+            }
+            applyBuildSettings(history[0])
+        }
+    }
+
+    function onCurrentBuildChaged(index) {
+        if(history && Array.isArray(history) && history.length > index) {
+            applyBuildSettings(history[index])
+        }
+    }
+    property int maxHistoryLength: 10;
+    function addBuildToHistory() {
+        var found = false;
+        var build = rowLayout_buildFolder.path;
+        var i = 0;
+        for(var length = history.length; i < length && !found; ++i) {
+            if(history[i].build === build) {
+                found = true;
+            }
+        }
+
+        if(!found) {
+            rowLayout_buildFolder.item.addString(build)
+        }
+
+        var newItem = {};
+        newItem.build = build
+        newItem.needClean = columnLayoutOutput.needClean
+        newItem.cmakePath = rowLayout_cmakeFolder.path
+        newItem.davaPath = rowLayout_davaFolder.path
+        newItem.customOptions = textField_customOptions.text
+        newItem.state = mutableContent.saveState();
+        history.unshift(newItem);
+        if(found) {
+            history.splice(i, 1);
+        }
+        if(history.length > maxHistoryLength) {
+            history = history.slice(0, maxHistoryLength);
+        }
     }
 
     title: qsTr("CMake tool")
@@ -74,6 +135,7 @@ ApplicationWindow {
         try {
             configuration = JSON.parse(configStorage.GetJSONTextFromConfigFile());
             mutableContent.processConfiguration(configuration);
+            loadHistory();
         }
         catch(error) {
             errorDialog.informativeText = error.message;
@@ -117,9 +179,11 @@ ApplicationWindow {
                     dialogTitle: qsTr("select DAVA folder");
                     selectFolders: true;
                     inputComponent: ComboBoxBuilds {
+                        id: comboBoxBuilds
                         onTextChanged: {
                             updateOutputString()
                         }
+                        onCurrentIndexChanged: onCurrentBuildChaged(currentIndex);
                     }
                 }
 
@@ -131,7 +195,6 @@ ApplicationWindow {
                     inputComponent: TextField {
                         id: textField_davaFolder
                         placeholderText: qsTr("path to dava folder")
-                        Settings {property alias davaPath: textField_davaFolder.text }
                         onTextChanged: {
                             updateOutputString();
                         }
@@ -156,7 +219,6 @@ ApplicationWindow {
                     selectFolders: false;
                     inputComponent: TextField {
                         id: textField_cmakeFolder
-                        Settings {property alias cmakePath: textField_cmakeFolder.text }
                         placeholderText: qsTr("path to CMake folder")
                         onTextChanged: {
                             var suffix = ".app";
@@ -206,6 +268,7 @@ ApplicationWindow {
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
+                    onCmakeLaunched: addBuildToHistory();
                 }
 
             }
