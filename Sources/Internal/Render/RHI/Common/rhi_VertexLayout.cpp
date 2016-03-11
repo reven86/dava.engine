@@ -136,7 +136,7 @@ VertexDataFrequency
 VertexLayout::StreamFrequency(unsigned stream_i) const
 {
     DVASSERT(stream_i < _stream_count);
-    return (VertexDataFrequency)(_stream[stream_i].freq);
+    return static_cast<VertexDataFrequency>(_stream[stream_i].freq);
 }
 
 //------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ VertexLayout::ElementStreamIndex(unsigned elem_i) const
 VertexSemantics
 VertexLayout::ElementSemantics(unsigned elem_i) const
 {
-    return (VertexSemantics)(_elem[elem_i].usage);
+    return static_cast<VertexSemantics>(_elem[elem_i].usage);
 }
 
 //------------------------------------------------------------------------------
@@ -176,7 +176,7 @@ VertexLayout::ElementSemantics(unsigned elem_i) const
 unsigned
 VertexLayout::ElementSemanticsIndex(unsigned elem_i) const
 {
-    return (VertexSemantics)(_elem[elem_i].usage_index);
+    return static_cast<VertexSemantics>(_elem[elem_i].usage_index);
 }
 
 //------------------------------------------------------------------------------
@@ -184,7 +184,7 @@ VertexLayout::ElementSemanticsIndex(unsigned elem_i) const
 VertexDataType
 VertexLayout::ElementDataType(unsigned elem_i) const
 {
-    return (VertexDataType)(_elem[elem_i].data_type);
+    return static_cast<VertexDataType>(_elem[elem_i].data_type);
 }
 
 //------------------------------------------------------------------------------
