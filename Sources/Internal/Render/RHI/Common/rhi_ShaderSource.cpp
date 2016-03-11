@@ -121,7 +121,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     // parse properties/samplers
 
-    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create((const uint8*)src.c_str(), (uint32)(src.length() + 1), DAVA::File::READ));
+    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(src.c_str()), uint32(src.length() + 1), DAVA::File::READ));
 
     if (in)
     {
@@ -498,7 +498,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
+                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
                 DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
                 if (sn > static_cast<size_t>(sl))
@@ -528,7 +528,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
+                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
                 DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
                 if (sn > static_cast<size_t>(sl))
@@ -593,7 +593,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
+                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
                 DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
                 if (sn > static_cast<size_t>(sl))
@@ -1273,16 +1273,16 @@ void ShaderSource::_AppendLine(const char* line, size_t lineLen)
     code.push_back('\n');
     return;
 
-    char text[4 * 1024];
-    int len = Snprintf(text, sizeof(text) - 1, "/*%04u*/ ", codeLineCount + 1);
-
-    strncpy(text + len, line, lineLen);
-    text[len + lineLen] = '\0';
-
-    code.append(text, strlen(text));
-    code.push_back('\n');
-
-    ++codeLineCount;
+    //    char text[4 * 1024];
+    //    int len = Snprintf(text, sizeof(text) - 1, "/*%04u*/ ", codeLineCount + 1);
+    //
+    //    strncpy(text + len, line, lineLen);
+    //    text[len + lineLen] = '\0';
+    //
+    //    code.append(text, strlen(text));
+    //    code.push_back('\n');
+    //
+    //    ++codeLineCount;
 }
 
 //------------------------------------------------------------------------------
