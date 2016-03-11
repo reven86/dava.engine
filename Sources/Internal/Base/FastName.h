@@ -50,10 +50,9 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
         const size_t count = namesTable.size();
         for (size_t i = 0; i < count; ++i)
         {
-            if (NULL != namesTable[i])
+            if (nullptr != namesTable[i])
             {
-                void* p = const_cast<char*>(namesTable[i]);
-                SafeDelete(p);
+                delete namesTable[i];
                 namesTable[i] = nullptr;
             }
         }
@@ -188,7 +187,7 @@ const char* FastName::c_str() const
         return FastNameDB::Instance()->namesTable[index];
     }
 
-    return NULL;
+    return nullptr;
 }
 };
 

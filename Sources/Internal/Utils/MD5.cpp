@@ -244,36 +244,36 @@ static unsigned char PADDING[64] = {
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4 */
 /* Rotation is separate from addition to prevent recomputation */
 #define FF(a, b, c, d, x, s, ac) \
-  {(a) += F((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += F((b), (c), (d)) + (x) + (ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define GG(a, b, c, d, x, s, ac) \
-  {(a) += G((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += G((b), (c), (d)) + (x) + (ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define HH(a, b, c, d, x, s, ac) \
-  {(a) += H((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += H((b), (c), (d)) + (x) + (ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define II(a, b, c, d, x, s, ac) \
-  {(a) += I((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += I((b), (c), (d)) + (x) + (ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 
 void MD5::Init()
 {
-    this->i[0] = this->i[1] = (uint32)0;
+    this->i[0] = this->i[1] = 0;
 
     /* Load magic initialization constants.
    */
-    this->buf[0] = (uint32)0x67452301;
-    this->buf[1] = (uint32)0xefcdab89;
-    this->buf[2] = (uint32)0x98badcfe;
-    this->buf[3] = (uint32)0x10325476;
+    this->buf[0] = 0x67452301;
+    this->buf[1] = 0xefcdab89;
+    this->buf[2] = 0x98badcfe;
+    this->buf[3] = 0x10325476;
 }
 
 void MD5::Update(const uint8* inBuf, uint32 inLen)
@@ -283,13 +283,13 @@ void MD5::Update(const uint8* inBuf, uint32 inLen)
     unsigned int i, ii;
 
     /* compute number of bytes mod 64 */
-    mdi = (int)((this->i[0] >> 3) & 0x3F);
+    mdi = static_cast<int>((this->i[0] >> 3) & 0x3F);
 
     /* update number of bits */
-    if ((this->i[0] + ((uint32)inLen << 3)) < this->i[0])
+    if ((this->i[0] + (static_cast<uint32>(inLen << 3))) < this->i[0])
         this->i[1]++;
-    this->i[0] += ((uint32)inLen << 3);
-    this->i[1] += ((uint32)inLen >> 29);
+    this->i[0] += (static_cast<uint32>(inLen << 3));
+    this->i[1] += (static_cast<uint32>(inLen >> 29));
 
     while (inLen--)
     {
@@ -300,10 +300,10 @@ void MD5::Update(const uint8* inBuf, uint32 inLen)
         if (mdi == 0x40)
         {
             for (i = 0, ii = 0; i < 16; i++, ii += 4)
-                in[i] = (((uint32) this->in[ii + 3]) << 24) |
-                (((uint32) this->in[ii + 2]) << 16) |
-                (((uint32) this->in[ii + 1]) << 8) |
-                ((uint32) this->in[ii]);
+                in[i] = ((this->in[ii + 3]) << 24) |
+                ((this->in[ii + 2]) << 16) |
+                ((this->in[ii + 1]) << 8) |
+                (this->in[ii]);
             Transform(this->buf, in);
             mdi = 0;
         }
@@ -322,7 +322,7 @@ void MD5::Final()
     in[15] = this->i[1];
 
     /* compute number of bytes mod 64 */
-    mdi = (int)((this->i[0] >> 3) & 0x3F);
+    mdi = ((this->i[0] >> 3) & 0x3F);
 
     /* pad out to 56 mod 64 */
     padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
@@ -330,22 +330,22 @@ void MD5::Final()
 
     /* append length in bits and transform */
     for (i = 0, ii = 0; i < 14; i++, ii += 4)
-        in[i] = (((uint32) this->in[ii + 3]) << 24) |
-        (((uint32) this->in[ii + 2]) << 16) |
-        (((uint32) this->in[ii + 1]) << 8) |
-        ((uint32) this->in[ii]);
+        in[i] = ((this->in[ii + 3]) << 24) |
+        ((this->in[ii + 2]) << 16) |
+        ((this->in[ii + 1]) << 8) |
+        (this->in[ii]);
     Transform(this->buf, in);
 
     /* store buffer in digest */
     for (i = 0, ii = 0; i < 4; i++, ii += 4)
     {
-        this->digest.digest[ii] = (unsigned char)(this->buf[i] & 0xFF);
+        this->digest.digest[ii] = (this->buf[i] & 0xFF);
         this->digest.digest[ii + 1] =
-        (unsigned char)((this->buf[i] >> 8) & 0xFF);
+        ((this->buf[i] >> 8) & 0xFF);
         this->digest.digest[ii + 2] =
-        (unsigned char)((this->buf[i] >> 16) & 0xFF);
+        ((this->buf[i] >> 16) & 0xFF);
         this->digest.digest[ii + 3] =
-        (unsigned char)((this->buf[i] >> 24) & 0xFF);
+        ((this->buf[i] >> 24) & 0xFF);
     }
 }
 
