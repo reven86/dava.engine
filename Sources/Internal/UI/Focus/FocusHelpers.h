@@ -42,15 +42,17 @@ class FocusHelpers
 public:
     enum Direction
     {
-        LEFT,
+        LEFT = 0,
         RIGHT,
         UP,
-        DOWN
+        DOWN,
+
+        DIRECTION_COUNT
     };
 
     enum TabDirection
     {
-        FORWARD,
+        FORWARD = 0,
         BACKWARD,
     };
 

@@ -57,14 +57,14 @@ UIControl* UIFocusSystem::GetRoot() const
     return root.Get();
 }
 
-void UIFocusSystem::SetRoot(UIControl* control)
+void UIFocusSystem::SetRoot(UIControl* newRoot)
 {
-    root = control;
+    root = newRoot;
 
     if (root)
     {
-        UIControl* focusedControl = FindFirstControl(control);
-        ClearFocusState(root.Get());
+        UIControl* focusedControl = FindFirstControl(newRoot);
+        ClearFocusState(newRoot);
 
         SetFocusedControl(focusedControl);
     }
@@ -145,7 +145,7 @@ bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
     {
         DirectionBasedNavigationAlgorithm alg(root.Get());
         UIControl* next = alg.GetNextControl(focusedControl.Get(), dir);
-        if (next && next != focusedControl)
+        if (next != nullptr && next != focusedControl)
         {
             SetFocusedControl(next);
             return true;
@@ -160,7 +160,7 @@ bool UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
     {
         TabTraversalAlgorithm alg(root.Get());
         UIControl* next = alg.GetNextControl(focusedControl.Get(), dir);
-        if (next && next != focusedControl)
+        if (next != nullptr && next != focusedControl)
         {
             SetFocusedControl(next);
             return true;

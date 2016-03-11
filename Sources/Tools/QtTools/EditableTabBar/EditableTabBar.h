@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,58 +26,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __QTTOOLS_EDITABLETABBAR_H__
+#define __QTTOOLS_EDITABLETABBAR_H__
 
-#include <QApplication>
-#include "UI/mainwindow.h"
+#include <QTabBar>
 
-#include "EditorCore.h"
-
-#include "Platform/Qt5/QtLayer.h"
-#include "TextureCompression/PVRConverter.h"
-#include "QtTools/Utils/Themes/Themes.h"
-#include "QtTools/Utils/MessageHandler.h"
-#include <QtGlobal>
-
-void InitPVRTexTool()
+class QLineEdit;
+class QValidator;
+class EditableTabBar : public QTabBar
 {
-#if defined(__DAVAENGINE_MACOS__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined(__DAVAENGINE_WIN32__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
-#endif
-    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
-}
+    Q_OBJECT
+public:
+    EditableTabBar(QWidget* parent = nullptr);
 
-int main(int argc, char* argv[])
-{
-    qInstallMessageHandler(DAVAMessageHandler);
+    void setNameValidator(const QValidator* v);
 
-    QApplication a(argc, argv);
-    a.setOrganizationName("DAVA");
-    a.setApplicationName("QuickEd");
+    bool isEditable() const;
+    void setEditable(bool isEditable);
 
-    Themes::InitFromQApplication();
-    Q_INIT_RESOURCE(QtToolsResources);
+    Q_SIGNAL void tabNameChanged(int index);
 
-    QApplication::setQuitOnLastWindowClosed(false);
+protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
+    void tabInserted(int index) override;
 
-    DAVA::Core::Run(argc, argv);
-    auto qtLayer = new DAVA::QtLayer(); //will be deleted with DavaRenderer. Sorry about that.
-    QObject::connect(&a, &QApplication::applicationStateChanged, [qtLayer](Qt::ApplicationState state) {
-        state == Qt::ApplicationActive ? qtLayer->OnResume() : qtLayer->OnSuspend();
-    });
-    InitPVRTexTool();
-    DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
+private:
+    Q_SLOT void onNameEditingFinished();
+    Q_SLOT void onTabDoubleClicked(int index);
 
-    // Editor Settings might be used by any singleton below during initialization, so
-    // initialize it before any other one.
-    new EditorSettings();
+    void startEdit(int tabIndex);
+    void finishEdit(bool commitChanges);
 
-    DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
+private:
+    QLineEdit* nameEditor = nullptr;
+    bool isTabsEditable = true;
+};
 
-    auto* editorCore = new EditorCore();
-
-    editorCore->Start();
-
-    return QApplication::exec();
-}
+#endif // __QTTOOLS_EDITABLETABBAR_H__

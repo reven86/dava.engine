@@ -44,11 +44,11 @@ TabTraversalAlgorithm::~TabTraversalAlgorithm()
 
 UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, FocusHelpers::TabDirection dir)
 {
-    if (focusedControl && root != focusedControl)
+    if (focusedControl != nullptr && root != focusedControl)
     {
         UIControl* parent = focusedControl->GetParent();
 
-        if (parent)
+        if (parent != nullptr)
         {
             Vector<UIControl*> children;
             PrepareChildren(parent, children);
@@ -63,7 +63,7 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, Focu
                 res = FindNextControl(focusedControl, children.rbegin(), children.rend(), dir);
             }
 
-            if (res)
+            if (res != nullptr)
             {
                 return res;
             }
@@ -95,7 +95,7 @@ UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It 
     for (; it != end; ++it)
     {
         UIControl* res = FindFirstControl(*it, dir);
-        if (res)
+        if (res != nullptr)
         {
             return res;
         }
@@ -140,7 +140,8 @@ UIControl* TabTraversalAlgorithm::FindFirstControlRecursive(It begin, It end, Fo
 
 void TabTraversalAlgorithm::PrepareChildren(UIControl* control, Vector<UIControl*>& children)
 {
-    children.clear();
+    DVASSERT(children.empty());
+
     children.reserve(control->GetChildren().size());
     children.insert(children.end(), control->GetChildren().begin(), control->GetChildren().end());
 
