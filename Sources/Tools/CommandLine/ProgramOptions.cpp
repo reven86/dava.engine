@@ -148,7 +148,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
 
                     if (opt.multipleValuesSuported)
                     {
-                        Split(valueStr, ",", tokens, true, false);
+                        Split(valueStr, ",", tokens, false, false);
                     }
                     else
                     {
@@ -284,7 +284,7 @@ void ProgramOptions::PrintUsage() const
     }
 }
 
-uint32 ProgramOptions::GetOptionsCount(const String& optionName) const
+uint32 ProgramOptions::GetOptionValuesCount(const String& optionName) const
 {
     for (auto& opt : options)
     {

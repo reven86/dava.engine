@@ -77,7 +77,6 @@ VPROG_OUT_END
 
 
 property float4x4 worldViewProjMatrix : dynamic,instance : ui_hidden=yes ;
-property float globalTime : dynamic,instance : ;
 
 #if SHADING == SHADING_PERPIXEL
 property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
@@ -85,6 +84,12 @@ property float4x4 worldViewMatrix : dynamic,instance : ;
     #if REAL_REFLECTION && SPECULAR
         property float4 lightPosition0 : dynamic,instance : ;        
     #endif
+#endif
+
+property float globalTime : dynamic,instance : ;
+
+#if REAL_REFLECTION
+property float projectionFlip : dynamic,instance : ;
 #endif
 
 #if SHADING == SHADING_PERVERTEX 
@@ -128,7 +133,7 @@ VPROG_BEGIN
                 VP_OUT(uv1) = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
             #endif
         #else
-            VP_OUT(uv1) = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
+            VP_OUT(uv1) = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.y-inTexCoord0.x) * normal1Scale + normal1ShiftPerSecond * globalTime;
         #endif
         
         #if (SHADING == SHADING_PERVERTEX)
@@ -165,6 +170,7 @@ VPROG_BEGIN
         #if REAL_REFLECTION
             VP_OUT(eyeDist) = eyeCoordsPosition;
             VP_OUT(normalizedFragPos) = resPosition;                
+			VP_OUT(normalizedFragPos).y *= projectionFlip; 
             #if SPECULAR
                 float3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
                 v.x = dot (toLightDir, t);

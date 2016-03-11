@@ -32,7 +32,6 @@
 #include <QPoint>
 #include <QColor>
 #include <QFont>
-#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
 #include "Document.h"
@@ -52,6 +51,7 @@
 #include "UI/UIControl.h"
 
 #include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include <chrono>
 
@@ -191,7 +191,11 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
     break;
 
     case Qt::BackgroundRole:
-        return property->GetType() == AbstractProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
+        if (property->GetType() == AbstractProperty::TYPE_HEADER)
+        {
+            return Themes::GetViewLineAlternateColor();
+        }
+        break;
 
     case Qt::FontRole:
     {
@@ -207,6 +211,10 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
 
     case Qt::TextColorRole:
     {
+        if (property->IsOverriddenLocally() || property->IsReadOnly())
+        {
+            return Themes::GetChangedPropertyColor();
+        }
         if (controlNode)
         {
             int32 propertyIndex = property->GetStylePropertyIndex();
@@ -214,10 +222,15 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
             {
                 bool setByStyle = controlNode->GetControl()->GetStyledPropertySet().test(propertyIndex);
                 if (setByStyle)
-                    return QColor(Qt::darkGreen);
+                {
+                    return Themes::GetStyleSheetNodeColor();
+                }
             }
         }
-        return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+        if (flags & AbstractProperty::EF_INHERITED)
+        {
+            return Themes::GetPrototypeColor();
+        }
     }
     }
 
@@ -309,8 +322,8 @@ void PropertiesModel::UpdateAllChangedProperties()
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    QPersistentModelIndex nameIndex = indexByProperty(property, 0);
+    QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
     lazyUpdater->Update();
 }
