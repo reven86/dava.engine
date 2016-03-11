@@ -40,6 +40,7 @@
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Updaters/ContinuousUpdater.h"
 
 #include "Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -74,6 +75,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
+
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
@@ -123,6 +126,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
 PreviewWidget::~PreviewWidget()
 {
+    continuousUpdater->Stop();
 }
 
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
@@ -225,6 +229,7 @@ void PreviewWidget::CreateActions()
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
     DVASSERT(nullptr != systemsManager);
+    continuousUpdater->Stop();
     SaveContext();
     document = arg;
     if (document.isNull())
@@ -250,6 +255,7 @@ void PreviewWidget::SaveSystemsContextAndClear()
         DVASSERT(!document.isNull());
         SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
         systemsManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+        continuousUpdater->Stop();
         DVASSERT(selectionContainer.selectedNodes.empty());
     }
 }
@@ -542,10 +548,11 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
     return iter != percentages.end() ? *iter : percentages.last();
 }
 
-void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected_, const SelectedNodes& deselected_)
 {
-    selectionContainer.MergeSelection(selected, deselected);
-    emit SelectionChanged(selected, deselected);
+    selected.insert(selected_.begin(), selected_.end());
+    deselected.insert(deselected_.begin(), deselected_.end());
+    continuousUpdater->Update();
 }
 
 void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
@@ -553,6 +560,14 @@ void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>
     DVASSERT(!document.isNull());
     auto commandExecutor = document->GetCommandExecutor();
     commandExecutor->ChangeProperty(propertyActions, hash);
+}
+
+void PreviewWidget::NotifySelectionChanged()
+{
+    selectionContainer.MergeSelection(selected, deselected);
+    emit SelectionChanged(selected, deselected);
+    selected.clear();
+    deselected.clear();
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const

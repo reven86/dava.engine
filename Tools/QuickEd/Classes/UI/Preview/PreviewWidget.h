@@ -52,6 +52,7 @@ class RulerController;
 class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
+class ContinuousUpdater;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -113,6 +114,7 @@ private:
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
+    void NotifySelectionChanged();
 
     QPoint lastMousePos;
     QPointer<Document> document;
@@ -130,6 +132,8 @@ private:
     QAction* focusPreviousChildAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
+    ContinuousUpdater* continuousUpdater = nullptr;
+    SelectedNodes selected, deselected;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget()

@@ -45,6 +45,7 @@ public:
     ContinuousUpdater(Updater updater, QObject* parent = nullptr, int updateInterval = 0);
 
     void Update();
+    void Stop(); //sync method to stop timer and call Update if it's needed
 
 private slots:
     void OnTimer();

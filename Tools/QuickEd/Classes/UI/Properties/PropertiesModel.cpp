@@ -67,10 +67,12 @@ PropertiesModel::PropertiesModel(QObject* parent)
 PropertiesModel::~PropertiesModel()
 {
     CleanUp();
+    continuousUpdater->Stop();
 }
 
 void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
+    continuousUpdater->Stop();
     beginResetModel();
     CleanUp();
     commandExecutor = commandExecutor_;

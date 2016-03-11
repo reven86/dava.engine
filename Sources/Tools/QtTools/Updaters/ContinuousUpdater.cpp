@@ -51,6 +51,16 @@ void ContinuousUpdater::Update()
     }
 }
 
+void ContinuousUpdater::Stop()
+{
+    timer->stop();
+    if (needUpdate)
+    {
+        updater();
+        needUpdate = false;
+    }
+}
+
 void ContinuousUpdater::OnTimer()
 {
     if (needUpdate)
