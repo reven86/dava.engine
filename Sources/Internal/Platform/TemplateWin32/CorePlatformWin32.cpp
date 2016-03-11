@@ -598,7 +598,7 @@ bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
         GetClientRect(hWnd, &clientRect);
 
         bool isInside = xPos > clientRect.left && xPos < clientRect.right &&
-            yPos > clientRect.top && yPos < clientRect.bottom;
+        yPos > clientRect.top && yPos < clientRect.bottom;
 
         return isInside;
     }
@@ -751,7 +751,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     {
         bool eventProcessed = core->ProcessMouseInputEvent(hWnd, message, wParam, lParam);
         if (eventProcessed)
-        { 
+        {
             return TRUE;
         }
     }
