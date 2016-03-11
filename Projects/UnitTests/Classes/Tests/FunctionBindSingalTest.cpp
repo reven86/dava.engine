@@ -376,7 +376,7 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
         TEST_VERIFY(cla0(&b, a_pt) == b.exClassFn(a_pt));
         TEST_VERIFY(cla1(&b, a_pt) == b.exClassFn1(a_pt));
         TEST_VERIFY(cla2(&b, &a_pt) == b.exClassFn2(&a_pt));
-        TEST_VERIFY(cla3(&b, (const A**)&a_pt) == b.exClassFn3((const A**)&a_pt));
+        TEST_VERIFY(cla3(&b, const_cast<const A**>(&a_pt)) == b.exClassFn3(const_cast<const A**>(&a_pt)));
     }
 
     class TestObjA : public TrackedObject
