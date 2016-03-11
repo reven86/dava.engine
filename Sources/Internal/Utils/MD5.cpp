@@ -244,22 +244,22 @@ static unsigned char PADDING[64] = {
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4 */
 /* Rotation is separate from addition to prevent recomputation */
 #define FF(a, b, c, d, x, s, ac) \
-  {(a) += F((b), (c), (d)) + (x) + (ac); \
+  {(a) += F((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define GG(a, b, c, d, x, s, ac) \
-  {(a) += G((b), (c), (d)) + (x) + (ac); \
+  {(a) += G((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define HH(a, b, c, d, x, s, ac) \
-  {(a) += H((b), (c), (d)) + (x) + (ac); \
+  {(a) += H((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define II(a, b, c, d, x, s, ac) \
-  {(a) += I((b), (c), (d)) + (x) + (ac); \
+  {(a) += I((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
@@ -286,10 +286,10 @@ void MD5::Update(const uint8* inBuf, uint32 inLen)
     mdi = static_cast<int>((this->i[0] >> 3) & 0x3F);
 
     /* update number of bits */
-    if ((this->i[0] + (static_cast<uint32>(inLen << 3))) < this->i[0])
+    if ((this->i[0] + (inLen << 3)) < this->i[0])
         this->i[1]++;
-    this->i[0] += (static_cast<uint32>(inLen << 3));
-    this->i[1] += (static_cast<uint32>(inLen >> 29));
+    this->i[0] += (inLen << 3);
+    this->i[1] += (inLen >> 29);
 
     while (inLen--)
     {
@@ -300,10 +300,10 @@ void MD5::Update(const uint8* inBuf, uint32 inLen)
         if (mdi == 0x40)
         {
             for (i = 0, ii = 0; i < 16; i++, ii += 4)
-                in[i] = ((this->in[ii + 3]) << 24) |
-                ((this->in[ii + 2]) << 16) |
-                ((this->in[ii + 1]) << 8) |
-                (this->in[ii]);
+                in[i] = ((static_cast<uint32>(this->in[ii + 3])) << 24) |
+                ((static_cast<uint32>(this->in[ii + 2])) << 16) |
+                ((static_cast<uint32>(this->in[ii + 1])) << 8) |
+                (static_cast<uint32>(this->in[ii]));
             Transform(this->buf, in);
             mdi = 0;
         }
@@ -322,7 +322,7 @@ void MD5::Final()
     in[15] = this->i[1];
 
     /* compute number of bytes mod 64 */
-    mdi = ((this->i[0] >> 3) & 0x3F);
+    mdi = static_cast<int>((this->i[0] >> 3) & 0x3F);
 
     /* pad out to 56 mod 64 */
     padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
@@ -330,22 +330,22 @@ void MD5::Final()
 
     /* append length in bits and transform */
     for (i = 0, ii = 0; i < 14; i++, ii += 4)
-        in[i] = ((this->in[ii + 3]) << 24) |
-        ((this->in[ii + 2]) << 16) |
-        ((this->in[ii + 1]) << 8) |
-        (this->in[ii]);
+        in[i] = ((static_cast<uint32>(this->in[ii + 3])) << 24) |
+        ((static_cast<uint32>(this->in[ii + 2]) << 16)) |
+        ((static_cast<uint32>(this->in[ii + 1]) << 8)) |
+        (static_cast<uint32>(this->in[ii]));
     Transform(this->buf, in);
 
     /* store buffer in digest */
     for (i = 0, ii = 0; i < 4; i++, ii += 4)
     {
-        this->digest.digest[ii] = (this->buf[i] & 0xFF);
+        this->digest.digest[ii] = static_cast<unsigned char>(this->buf[i] & 0xFF);
         this->digest.digest[ii + 1] =
-        ((this->buf[i] >> 8) & 0xFF);
+        static_cast<unsigned char>((this->buf[i] >> 8) & 0xFF);
         this->digest.digest[ii + 2] =
-        ((this->buf[i] >> 16) & 0xFF);
+        static_cast<unsigned char>((this->buf[i] >> 16) & 0xFF);
         this->digest.digest[ii + 3] =
-        ((this->buf[i] >> 24) & 0xFF);
+        static_cast<unsigned char>((this->buf[i] >> 24) & 0xFF);
     }
 }
 
