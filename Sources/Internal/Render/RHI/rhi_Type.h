@@ -241,8 +241,8 @@ public:
     static bool IsCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout);
     static bool MakeCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout);
 
-    void Save(DAVA::File* out) const;
-    void Load(DAVA::File* in);
+    bool Save(DAVA::File* out) const;
+    bool Load(DAVA::File* in);
 
     void Dump() const;
 
