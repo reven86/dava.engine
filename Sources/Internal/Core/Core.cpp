@@ -656,11 +656,6 @@ void Core::SystemProcessFrame()
         return;
     }
 
-    if (screenMetrics.initialized && screenMetrics.modifiedScreenMetrics)
-    {
-        SetUpScreenMetrics();
-    }
-
     SystemTimer::Instance()->Start();
 
     /**
@@ -683,12 +678,19 @@ void Core::SystemProcessFrame()
 
         //#endif
 
+        if (screenMetrics.initialized && screenMetrics.modifiedScreenMetrics)
+        {
+            ModifyWindowSize();
+        }
+//TODO: when cross platforms resize done on all platforms, remove this code
+#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
         // recalc frame inside begin / end frame
         VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
         if (vsc->WasScreenSizeChanged())
         {
             vsc->ScreenSizeChanged();
         }
+#endif
 
         float32 frameDelta = SystemTimer::Instance()->FrameDelta();
         SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
@@ -893,13 +895,13 @@ void Core::InitializeScreenMetrics(void* nativeView, float32 width, float32 heig
 
 void Core::UpdateScreenMetrics(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    bool needChanged = false;
-    needChanged |= memcmp(&width, &screenMetrics.width, sizeof(float32)) != 0;
-    needChanged |= memcmp(&height, &screenMetrics.height, sizeof(float32)) != 0;
-    needChanged |= memcmp(&scaleX, &screenMetrics.scaleX, sizeof(float32)) != 0;
-    needChanged |= memcmp(&scaleY, &screenMetrics.scaleY, sizeof(float32)) != 0;
+    bool newMertrics = false;
+    newMertrics |= memcmp(&width, &screenMetrics.width, sizeof(float32)) != 0;
+    newMertrics |= memcmp(&height, &screenMetrics.height, sizeof(float32)) != 0;
+    newMertrics |= memcmp(&scaleX, &screenMetrics.scaleX, sizeof(float32)) != 0;
+    newMertrics |= memcmp(&scaleY, &screenMetrics.scaleY, sizeof(float32)) != 0;
 
-    if (needChanged)
+    if (newMertrics)
     {
         screenMetrics.width = width;
         screenMetrics.height = height;
@@ -911,7 +913,7 @@ void Core::UpdateScreenMetrics(float32 width, float32 height, float32 scaleX, fl
     DVASSERT(screenMetrics.width * screenMetrics.height * screenMetrics.scaleX * screenMetrics.scaleY);
 }
 
-void Core::SetUpScreenMetrics()
+void Core::ModifyWindowSize()
 {
     DVASSERT(Renderer::IsInitialized());
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
@@ -961,10 +963,10 @@ float32 Core::GetScreenScaleMultiplier() const
 
 void Core::SetScreenScaleMultiplier(float32 multiplier)
 {
+    DVASSERT(multiplier > 0.f);
     screenMetrics.userScale = multiplier;
     screenMetrics.modifiedScreenMetrics = true;
     options->SetFloat("userScreenScaleFactor", multiplier);
-    DVASSERT(screenMetrics.userScale > 0.f);
 }
 
 float32 Core::GetScreenScaleFactor() const

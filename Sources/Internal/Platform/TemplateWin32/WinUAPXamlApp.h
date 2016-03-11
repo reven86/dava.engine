@@ -116,7 +116,7 @@ private:
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
 
     // Swap chain panel state change handlers
-    void MetricsScreenUpdated(float32 widht, float32 height, float32 scaleX, float32 scaleY);
+    void ScreenMetricsUpdated(float32 widht, float32 height, float32 scaleX, float32 scaleY);
 
     // Mouse and touch handlers
     void OnSwapChainPanelPointerPressed(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);

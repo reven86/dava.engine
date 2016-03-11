@@ -86,7 +86,7 @@ private:
     float32 minWindowHeight = 0.0f;
 };
 
-bool CoreWin32Platform::IsAppStarted()
+inline bool CoreWin32Platform::IsAppStarted()
 {
     return appStarted;
 }

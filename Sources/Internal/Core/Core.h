@@ -275,7 +275,7 @@ protected:
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
-    void SetUpScreenMetrics();
+    void ModifyWindowSize();
 
     KeyedArchive* options;
 

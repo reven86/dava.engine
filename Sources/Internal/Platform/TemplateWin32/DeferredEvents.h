@@ -61,8 +61,6 @@ private:
     Windows::UI::Xaml::DispatcherTimer^ timer = nullptr;
     bool isPhoneApiDetected = false;
 
-    bool isSizeUpdate = false;
-    bool isScaleUpdate = false;
     float32 width = 0.0f;
     float32 height = 0.0f;
     float32 scaleX = 0.0f;
@@ -112,7 +110,6 @@ inline void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core:
 
 inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^ swapChain, Windows::UI::Xaml::SizeChangedEventArgs^ args)
 {
-    isSizeUpdate = true;
     if (0.f == scaleX * scaleY)
     {
         Windows::UI::Xaml::Controls::SwapChainPanel^ sw = dynamic_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(swapChain);
@@ -127,7 +124,6 @@ inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Obje
 
 inline void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChain, Platform::Object^)
 {
-    isScaleUpdate = true;
     if (0.f == width * height)
     {
         width = static_cast<float32>(swapChain->ActualWidth);
@@ -174,8 +170,6 @@ inline void DeferredScreenMetricEvents::DeferredTick()
     {
         timer->Stop();
         updateCallback(width, height, scaleX, scaleY);
-        isSizeUpdate = false;
-        isScaleUpdate = false;
     }
 }
 

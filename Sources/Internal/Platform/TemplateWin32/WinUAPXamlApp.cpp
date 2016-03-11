@@ -96,7 +96,7 @@ WinUAPXamlApp::WinUAPXamlApp()
     , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {
     deferredSizeScaleEvents.reset(new DeferredScreenMetricEvents(isPhoneApiDetected, [this](float32 widht, float32 height, float32 scaleX, float32 scaleY) {
-        MetricsScreenUpdated(widht, height, scaleX, scaleY);
+        ScreenMetricsUpdated(widht, height, scaleX, scaleY);
     }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
@@ -315,7 +315,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         scaleY = swapChainPanel->CompositionScaleY;
     });
 
-    Core::Instance()->InitializeScreenMetrics(reinterpret_cast<void*>(swapChainPanel), width, height, scaleX, scaleY);
+    core->InitializeScreenMetrics(reinterpret_cast<void*>(swapChainPanel), width, height, scaleX, scaleY);
 
     Core::Instance()->SetIsActive(true);
     Core::Instance()->SystemAppStarted();
@@ -444,7 +444,7 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
     });
 }
 
-void WinUAPXamlApp::MetricsScreenUpdated(float32 width, float32 height, float32 scaleX, float32 scaleY)
+void WinUAPXamlApp::ScreenMetricsUpdated(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
     core->RunOnMainThread([this, width, height, scaleX, scaleY]() {
         DeviceInfo::InitializeScreenInfo();
