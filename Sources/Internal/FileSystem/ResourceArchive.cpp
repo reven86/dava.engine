@@ -266,7 +266,7 @@ public:
     {
         if (!IsFileExist(file_name, &output.size))
         {
-            Logger::Error("can't load file: %s couse: not found\n",
+            Logger::Error("can't load file: %s course: not found\n",
                           file_name.c_str());
             return false;
         }
@@ -275,7 +275,7 @@ public:
 
         if (!file)
         {
-            Logger::Error("can't load file: %s couse: no opened packfile\n",
+            Logger::Error("can't load file: %s course: no opened packfile\n",
                           file_name.c_str());
             return false;
         }
@@ -284,9 +284,9 @@ public:
         if (!isOk)
         {
             Logger::Error(
-                "can't load file: %s couse: can't find start file "
-                "position in pack file\n",
-                file_name.c_str());
+            "can't load file: %s course: can't find start file "
+            "position in pack file\n",
+            file_name.c_str());
             return false;
         }
 
@@ -300,9 +300,9 @@ public:
                 if (readOk != fileEntry.compressed)
                 {
                     Logger::Error(
-                        "can't load file: %s couse: can't read "
-                        "uncompressed content\n",
-                        file_name.c_str());
+                    "can't load file: %s course: can't read "
+                    "uncompressed content\n",
+                    file_name.c_str());
                     return false;
                 }
             }
@@ -318,9 +318,9 @@ public:
                 if (readOk != fileEntry.compressed)
                 {
                     Logger::Error(
-                        "can't load file: %s couse: can't read "
-                        "compressed content\n",
-                        file_name.c_str());
+                    "can't load file: %s course: can't read "
+                    "compressed content\n",
+                    file_name.c_str());
                     return false;
                 }
 
@@ -331,9 +331,9 @@ public:
                 if (decompressResult < 0)
                 {
                     Logger::Error(
-                        "can't load file: %s  couse: decompress "
-                        "error\n",
-                        file_name.c_str());
+                    "can't load file: %s  course: decompress "
+                    "error\n",
+                    file_name.c_str());
                     return false;
                 }
             }
@@ -395,8 +395,20 @@ static bool Packing(const String& fileName,
 
     uint32_t packedSize = static_cast<uint32>(packResult);
 
-    uint32 writeOk = output->Write(&packingBuf[0], packedSize);
-    if (writeOk <= 0)
+    // if packed size worse then raw leave raw bytes
+    uint32 writeOk = 0;
+    if (packedSize >= origSize)
+    {
+        packedSize = origSize;
+        packingType = PackingType::None;
+        writeOk = output->Write(&inBuffer[0], origSize);
+    }
+    else
+    {
+        writeOk = output->Write(&packingBuf[0], packedSize);
+    }
+
+    if (writeOk == 0)
     {
         Logger::Error("can't write into tmp archive file");
         return false;
@@ -670,10 +682,10 @@ bool ResourceArchive::CreatePack(const String& pacName,
     std::for_each(std::begin(sortedFileNames), std::end(sortedFileNames),
                   [&](const String& fileName)
                   {
-                      bool result = CompressFileAndWriteToOutput(
-                          fileName, compressionRules, fileTable, fileBuffer,
-                          compressedFileBuffer, outTmpFile.get());
-                      if (!result)
+                      bool is_ok = CompressFileAndWriteToOutput(
+                      fileName, compressionRules, fileTable, fileBuffer,
+                      compressedFileBuffer, outTmpFile.get());
+                      if (!is_ok)
                       {
                           Logger::Info("can't pack file: %s, skip it\n",
                                        fileName.c_str());

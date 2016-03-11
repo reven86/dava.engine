@@ -31,12 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __DAVAENGINE_FILE_PATH_H__
 
 #include "Base/BaseTypes.h"
-//#include "Base/Introspection.h"
 
 namespace DAVA
 {
-static const char* localResourcesPath = "/mnt/sdcard/DavaProject/";
-
 /**
     \ingroup filesystem
     \brief class to work with file pathname

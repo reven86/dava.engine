@@ -67,6 +67,10 @@ void CollectAllFilesInDirectory(const String& pathDirName,
         else
         {
             String filename = fileList->GetFilename(file);
+            if (filename.at(0) == '.' && !includeHidden)
+            {
+                continue;
+            }
             String pathname =
                 (pathDirName == "." ? filename : pathDirName + filename);
             output.push_back(pathname);
@@ -96,7 +100,7 @@ ResourceArchive::CompressionType ToPackType(
 
 String ToString(ResourceArchive::CompressionType packType)
 {
-    Vector<const char*> packTypes = {"none", "lz4", "lz4hc"};
+    static const Vector<const char*> packTypes = { "none", "lz4", "lz4hc" };
 
     size_t index = static_cast<size_t>(packType);
 
@@ -111,10 +115,10 @@ void OnOneFilePacked(const ResourceArchive::FileInfo& info)
               << " packingType: " << ToString(info.compressionType) << '\n';
 }
 
-int PackDirectoryIntoPakfile(const String& dir,
-                             const String& pakfileName,
-                             const ResourceArchive::Rules& compressionRules,
-                             bool includeHidden)
+int PackDirectory(const String& dir,
+                  const String& pakfileName,
+                  const ResourceArchive::Rules& compressionRules,
+                  bool includeHidden)
 {
     std::cout << "===================================================\n"
               << "=== Packer started\n"
@@ -157,7 +161,7 @@ int PackDirectoryIntoPakfile(const String& dir,
 
     std::stable_sort(begin(files), end(files));
 
-    std::cout << "start paking...\n";
+    std::cout << "start packing...\n";
     if (ResourceArchive::CreatePack(absPathPack.GetAbsolutePathname(), files,
                                     compressionRules, OnOneFilePacked))
     {
@@ -175,7 +179,7 @@ bool ParsePackRules(const ProgramOptions& packOptions,
                     const ResourceArchive::CompressionType defaultPackTypa,
                     ResourceArchive::Rules& outputRules)
 {
-    for (uint32 i = 0; i < packOptions.GetOptionsCount("--rule"); ++i)
+    for (uint32 i = 0; i < packOptions.GetOptionValuesCount("--rule"); ++i)
     {
         VariantType option = packOptions.GetOption("--rule", i);
         String str = option.AsString();
@@ -229,7 +233,7 @@ bool UnpackFile(const ResourceArchive& ra,
     return true;
 }
 
-int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
+int UnpackToDirectory(const String& pak, const String& dir)
 {
     RefPtr<FileSystem> fs(new FileSystem());
     if (!fs)
@@ -263,7 +267,7 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
 
     for (auto& fileInfo : ra->GetFilesInfo())
     {
-        std::cout << "start unpaking: " << fileInfo.name
+        std::cout << "start unpacking: " << fileInfo.name
                   << " compressed: " << fileInfo.compressedSize
                   << " original: " << fileInfo.originalSize
                   << " packingType: " << ToString(fileInfo.compressionType)
@@ -277,7 +281,7 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
     return EXIT_SUCCESS;
 }
 
-int ListPackFileContent(const String& pakfile)
+int ListContent(const String& pakfile)
 {
     RefPtr<FileSystem> fs(new FileSystem());
     if (!fs)
@@ -306,11 +310,11 @@ int main(int argc, char* argv[])
     packOptions.AddOption("--compression", VariantType(String("lz4hc")),
                           "default compression method, lz4hc - default");
     packOptions.AddOption("--add_hidden", VariantType(String("false")),
-                          "add hidden files to packlist (false or true)");
-    // dafault rule pack all files into lz4hc
+                          "add hidden files to pack list (false or true)");
+    // default rule pack all files into lz4hc
     packOptions.AddOption("--rule", VariantType(String(".lz4hc")),
                           "rule to select compression type like: --rule "
-                          "xml.lz4 suported lz4, lz4hc, none",
+                          "xml.lz4 supported lz4, lz4hc, none",
                           true);
     packOptions.AddArgument("directory");
     packOptions.AddArgument("pakfile");
@@ -332,7 +336,7 @@ int main(int argc, char* argv[])
 
         if (!ParsePackRules(packOptions, defaultPackTypa, compressionRules))
         {
-            std::cerr << "can't parse paking rules\n";
+            std::cerr << "can't parse packing rules\n";
             return EXIT_FAILURE;
         }
 
@@ -340,8 +344,8 @@ int main(int argc, char* argv[])
         auto pakFile = packOptions.GetArgument("pakfile");
         auto addHidden = packOptions.GetOption("--add_hidden").AsString();
 
-        return PackDirectoryIntoPakfile(dirName, pakFile, compressionRules,
-                                        addHidden == "true");
+        return PackDirectory(dirName, pakFile, compressionRules,
+                             addHidden == "true");
     }
 
     if (unpackOptions.Parse(argc, argv))
@@ -349,13 +353,13 @@ int main(int argc, char* argv[])
         auto pakFile = unpackOptions.GetArgument("pakfile");
         auto dirName = unpackOptions.GetArgument("directory");
 
-        return UnpackPackfileIntoDirectory(pakFile, dirName);
+        return UnpackToDirectory(pakFile, dirName);
     }
 
     if (listOptions.Parse(argc, argv))
     {
         auto pakFile = listOptions.GetArgument("pakfile");
-        return ListPackFileContent(pakFile);
+        return ListContent(pakFile);
     }
     
     

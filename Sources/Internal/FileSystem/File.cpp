@@ -66,45 +66,23 @@ File* File::Create(const FilePath& filePath, uint32 attributes)
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
-    for (List<FileSystem::ResourceArchiveItem>::iterator ai = fileSystem->resourceArchiveList.begin();
-         ai != fileSystem->resourceArchiveList.end(); ++ai)
+
+    String relative = filename.GetAbsolutePathname();
+
+    if (relative[0] == '~')
     {
-        FileSystem::ResourceArchiveItem& item = *ai;
+        relative = relative.substr(6); // skip "~res:/"
+    }
 
-        String filenamecpp = filename.GetAbsolutePathname();
+    for (auto& ai : fileSystem->resourceArchiveList)
+    {
+        FileSystem::ResourceArchiveItem& item = ai;
 
-        String::size_type pos = filenamecpp.find(item.attachPath);
-        if (pos == 0)
+        ResourceArchive::ContentAndSize contentAndSize;
+        if (item.archive->LoadFile(relative, contentAndSize))
         {
-            String relfilename = filenamecpp.substr(item.attachPath.length());
-            ResourceArchive::ContentAndSize contentAndSize;
-            ;
-            if (!item.archive->LoadFile(relfilename, contentAndSize))
-            {
-                return nullptr;
-            }
-		    auto * file =  ReadOnlyArchiveFile::Create(contentAndSize, filename);
-			return file;
-		}
-		pos = filenamecpp.find(localResourcesPath);
-		if (pos == 0)
-		{
-		    String relfilename = filenamecpp.substr(strlen(localResourcesPath));
-            ResourceArchive::ContentAndSize contentAndSize;
-			bool isLoaded = item.archive->LoadFile(relfilename, contentAndSize);
-			if (!isLoaded)
-			{
-				return 0;
-			}
-		    auto * file =  ReadOnlyArchiveFile::Create(contentAndSize, filename);
-			return file;
-		}
-	}
-    
-    bool isDirectory = FileSystem::Instance()->IsDirectory(filename);
-    if (isDirectory)
-    {
-        return nullptr;
+            return ReadOnlyArchiveFile::Create(contentAndSize, filename);
+        }
     }
 
     return PureCreate(filename, attributes);

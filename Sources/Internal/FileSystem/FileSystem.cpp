@@ -443,14 +443,8 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         if (start == 0)
         {
             relative = str.substr(6);
-        } else
-        {
-            start = str.find(localResourcesPath);
-            if (start == 0)
-            {
-                relative = str.substr(strlen(localResourcesPath));
-            }
         }
+
         if (!relative.empty())
         {
             for (auto& archive : resourceArchiveList)
@@ -791,12 +785,14 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
 
 void FileSystem::AttachArchive(const String& archiveName, const String& attachPath)
 {
+    DVASSERT(!attachPath.empty());
+
     ResourceArchive* resourceArchive = new ResourceArchive();
 
     if (!resourceArchive->Open(archiveName))
     {
         SafeRelease(resourceArchive);
-        resourceArchive = NULL;
+        resourceArchive = nullptr;
         return;
     }
     ResourceArchiveItem item;
