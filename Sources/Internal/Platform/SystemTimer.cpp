@@ -179,7 +179,7 @@ float32 SystemTimer::ElapsedSec()
         {
             highestBitSet = k;
         }
-    uint32_t elapsed32 = (uint32_t)(elapsed >> (highestBitSet - 31));
+    uint32_t elapsed32 = static_cast<uint32_t>(elapsed >> (highestBitSet - 31));
 
     float mult = 1.0f;
     for (int c = 0; c < highestBitSet - 31; ++c)
@@ -187,7 +187,7 @@ float32 SystemTimer::ElapsedSec()
         mult *= 2.0f;
     }
 
-    float t2 = (float)elapsed32 * mult / 1000000000.0f;
+    float t2 = static_cast<float>(elapsed32) * mult / 1000000000.0f;
     //float t = ((float)(mach_absolute_time() - t0)) * ((float)timebase.numer) / ((float)timebase.denom) / 1000000000.0f;
     return t2;
 #else //PLATFORMS
