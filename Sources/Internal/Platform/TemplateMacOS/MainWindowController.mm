@@ -168,7 +168,14 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
 
     [[DavaApp sharedApplication] setDelegate:static_cast<id<NSApplicationDelegate>>(appDelegate)];
 
-    int retVal = NSApplicationMain(argc, const_cast<const char**>(static_cast<char**>(argv)));
+    // NSApplicationMain expects const char*[]
+    const char* argvForNSApplicationMain[argc];
+    for (int i = 0; i < argc; ++i)
+    {
+        argvForNSApplicationMain[i] = argv[i];
+    }
+    int retVal = NSApplicationMain(argc, argvForNSApplicationMain);
+
     // This method never returns, so release code transfered to termination message
     // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
     // core->ReleaseSingletons() is called from there
