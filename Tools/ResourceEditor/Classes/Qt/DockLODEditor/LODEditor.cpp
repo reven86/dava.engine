@@ -262,6 +262,7 @@ void LODEditor::CreateForceLayerValues(uint32 layersCount)
 //DISTANCES
 void LODEditor::SetupDistancesUI()
 {
+    ui->distanceSlider->SetFramesCount(DAVA::LodComponent::MAX_LOD_LAYERS);
     connect(ui->distanceSlider, &DistanceSlider::DistanceChanged, this, &LODEditor::LODDistanceChangedBySlider);
 
     InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, 0);
@@ -297,13 +298,8 @@ void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA:
     }
 }
 
-void LODEditor::LODDistanceChangedBySlider(const QVector<int>& changedLayers, bool continious)
+void LODEditor::LODDistanceChangedBySlider(bool continious)
 {
-    if (changedLayers.empty())
-    {
-        return;
-    }
-
     Array<float32, LodComponent::MAX_LOD_LAYERS> distances;
     distances.fill(0.0f);
     for (int32 i = 0; i < static_cast<int32>(distances.size()); ++i)

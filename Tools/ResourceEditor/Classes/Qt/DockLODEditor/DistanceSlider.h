@@ -30,86 +30,67 @@
 #ifndef __DISTANCE_SLIDER_H__
 #define __DISTANCE_SLIDER_H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
 
-#include <QFrame>
-#include <QSplitter>
-#include <QSplitterHandle>
-#include <QFrame>
-#include <QSet>
+#include <QWidget>
 
-class DistanceSplitterHandle : public QSplitterHandle
-{
-public:
-    DistanceSplitterHandle(Qt::Orientation o, QSplitter* parent)
-        : QSplitterHandle(o, parent)
-    {
-    }
+class QSplitter;
+class QFrame;
 
-protected:
-    virtual void mouseReleaseEvent(QMouseEvent* e)
-    {
-        bool opq = splitter()->opaqueResize();
+class LazyUpdater;
 
-        splitter()->setOpaqueResize(false);
-        QSplitterHandle::mouseReleaseEvent(e);
-        splitter()->setOpaqueResize(opq);
-    }
-};
-
-class DistanceSplitter : public QSplitter
-{
-public:
-    DistanceSplitter(QWidget* parent = 0)
-        : QSplitter(parent)
-    {
-    }
-
-protected:
-    virtual QSplitterHandle* createHandle()
-    {
-        return new DistanceSplitterHandle(orientation(), this);
-    }
-};
-
-class DistanceSlider : public QFrame
+class DistanceSlider : public QWidget
 {
     Q_OBJECT
 
 public:
     DistanceSlider(QWidget* parent = 0);
-    ~DistanceSlider();
 
-    void SetLayersCount(int count);
-    inline int GetLayersCount() const;
+    void SetFramesCount(DAVA::uint32 count);
+    DAVA::uint32 GetFramesCount() const;
 
-    void SetDistance(int layer, double value);
-    double GetDistance(int layer) const;
+    void SetLayersCount(DAVA::uint32 count);
+    DAVA::uint32 GetLayersCount() const;
 
-    void LockDistances(bool lock);
+    void SetDistance(DAVA::uint32 layer, DAVA::float32 value);
+    DAVA::float32 GetDistance(DAVA::uint32 layer) const;
 
 signals:
-    void DistanceChanged(const QVector<int>& changedLayers, bool continious);
+    void DistanceChanged(bool continious);
 
 protected slots:
     void SplitterMoved(int pos, int index);
 
 protected:
-    int GetScaleSize();
+    bool event(QEvent* e) override;
 
 private:
-    QSplitter* splitter;
-    QFrame* frames[DAVA::LodComponent::MAX_LOD_LAYERS];
-    bool locked = false;
+    DAVA::float32 GetScaleSize() const;
 
-    int layersCount = 0;
+    void DispatchSignalByMouseState();
 
-    int stretchSize[DAVA::LodComponent::MAX_LOD_LAYERS];
+private:
+    QSplitter* splitter = nullptr;
+
+    DAVA::Vector<QFrame*> frames;
+    DAVA::Vector<DAVA::float32> distances;
+
+    DAVA::uint32 layersCount = 0;
+    DAVA::uint32 framesCount = 0;
+
+    LazyUpdater* signalsDispatcher = nullptr;
 };
 
-inline int DistanceSlider::GetLayersCount() const
+inline DAVA::uint32 DistanceSlider::GetLayersCount() const
 {
     return layersCount;
 }
+
+inline DAVA::uint32 DistanceSlider::GetFramesCount() const
+{
+    return framesCount;
+}
+
+
 
 #endif // __DISTANCE_SLIDER_H__

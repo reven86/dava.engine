@@ -81,7 +81,7 @@ private slots:
 
     //distance signals
     void LODDistanceChangedBySpinbox(double value);
-    void LODDistanceChangedBySlider(const QVector<int>& changedLayers, bool continious);
+    void LODDistanceChangedBySlider(bool continious);
 
     //mode signal
     void SceneOrSelectionModeSelected(bool allSceneModeActivated);

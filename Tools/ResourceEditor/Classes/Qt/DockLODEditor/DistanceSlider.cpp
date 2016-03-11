@@ -27,14 +27,19 @@
 =====================================================================================*/
 
 
-#include "DistanceSlider.h"
+#include "DockLODEditor/DistanceSlider.h"
 
-#include "DAVAEngine.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 
-#include <QHBoxLayout>
 #include <QApplication>
+#include <QFrame>
+#include <QHBoxLayout>
+#include <QSignalBlocker>
+#include <QSplitter>
 
-static const QColor backgroundColors[DAVA::LodComponent::MAX_LOD_LAYERS] =
+namespace DistanceSliderDetails
+{
+const DAVA::Vector<QColor> backgroundColors =
 {
   Qt::green,
   Qt::red,
@@ -42,141 +47,162 @@ static const QColor backgroundColors[DAVA::LodComponent::MAX_LOD_LAYERS] =
   Qt::blue
 };
 
-static const int MIN_WIDGET_WIDTH = 1;
+const int MIN_WIDGET_WIDTH = 1;
+}
 
 DistanceSlider::DistanceSlider(QWidget* parent /*= 0*/)
-    : QFrame(parent)
+    : QWidget(parent)
 {
+    Function<void()> fnDispactchSignals(this, &DistanceSlider::DispatchSignalByMouseState);
+    signalsDispatcher = new LazyUpdater(fnDispactchSignals, this);
+
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setObjectName(QString::fromUtf8("layout"));
 
-    splitter = new DistanceSplitter(this);
+    splitter = new QSplitter(this);
     splitter->setObjectName(QString::fromUtf8("splitter"));
     splitter->setGeometry(geometry());
     splitter->setOrientation(Qt::Horizontal);
+    splitter->setOpaqueResize(true);
     splitter->setMinimumHeight(20);
     splitter->setChildrenCollapsible(false);
-    //    splitter->setOpaqueResize(false); need uncomment if moving will be slow
 
     layout->addWidget(splitter);
     layout->setSpacing(0);
     layout->setMargin(0);
-
-    for (int i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
-    {
-        frames[i] = new QFrame(splitter);
-
-        frames[i]->setObjectName(QString::fromUtf8(DAVA::Format("frame_%d", i).c_str()));
-        frames[i]->setFrameShape(QFrame::StyledPanel);
-        frames[i]->setFrameShadow(QFrame::Raised);
-
-        QPalette pallete;
-        pallete.setColor(QPalette::Background, backgroundColors[i]);
-
-        frames[i]->setPalette(pallete);
-        frames[i]->setAutoFillBackground(true);
-
-        frames[i]->setMinimumWidth(MIN_WIDGET_WIDTH);
-
-        splitter->addWidget(frames[i]);
-
-        stretchSize[i] = 0;
-    }
-
     setLayout(layout);
 
     connect(splitter, SIGNAL(splitterMoved(int, int)), SLOT(SplitterMoved(int, int)));
 }
 
-DistanceSlider::~DistanceSlider()
+void DistanceSlider::SetFramesCount(DAVA::uint32 count)
 {
+    DVASSERT(framesCount == 0);
+    DVASSERT(count <= DistanceSliderDetails::backgroundColors.size());
+
+    framesCount = count;
+
+    frames.reserve(framesCount);
+    distances.resize(framesCount, 0.f);
+
+    for (DAVA::uint32 i = 0; i < framesCount; ++i)
+    {
+        QFrame* frame = new QFrame(splitter);
+
+        frame->setObjectName(QString::fromUtf8(DAVA::Format("frame_%d", i).c_str()));
+        frame->setFrameShape(QFrame::StyledPanel);
+        frame->setFrameShadow(QFrame::Raised);
+
+        QPalette pallete;
+        pallete.setColor(QPalette::Background, DistanceSliderDetails::backgroundColors[i]);
+
+        frame->setPalette(pallete);
+        frame->setAutoFillBackground(true);
+
+        frame->setMinimumWidth(DistanceSliderDetails::MIN_WIDGET_WIDTH);
+
+        splitter->addWidget(frame);
+
+        frames.push_back(frame);
+    }
 }
 
-void DistanceSlider::LockDistances(bool lock)
-{
-    locked = lock;
-}
-
-void DistanceSlider::SetLayersCount(int count)
+void DistanceSlider::SetLayersCount(DAVA::uint32 count)
 {
     layersCount = count;
-    for (int i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
+    for (DAVA::uint32 i = 0; i < framesCount; ++i)
     {
         frames[i]->setVisible(i < layersCount);
         splitter->setStretchFactor(i, 0);
     }
 }
 
-void DistanceSlider::SetDistance(int layer, double value)
+DAVA::float32 DistanceSlider::GetDistance(DAVA::uint32 layer) const
 {
-    if (!locked)
-    {
-        DVASSERT(0 <= layer && layer < DAVA::LodComponent::MAX_LOD_LAYERS);
-        stretchSize[layer] = value;
-
-        int scaleSize = GetScaleSize();
-
-        QList<int> sizes;
-        for (int i = 1; i < layersCount; ++i)
-        {
-            sizes.push_back((stretchSize[i] - stretchSize[i - 1]) * splitter->geometry().width() / scaleSize);
-        }
-
-        if (layersCount)
-            sizes.push_back((scaleSize - stretchSize[layer]) * splitter->geometry().width() / scaleSize);
-
-        bool wasBlocked = splitter->blockSignals(true);
-        splitter->setSizes(sizes);
-        splitter->blockSignals(wasBlocked);
-    }
+    DVASSERT(layer < framesCount);
+    return distances[layer];
 }
 
-double DistanceSlider::GetDistance(int layer) const
+void DistanceSlider::SetDistance(DAVA::uint32 layer, DAVA::float32 value)
 {
-    DVASSERT(0 <= layer && layer < DAVA::LodComponent::MAX_LOD_LAYERS);
+    DVASSERT(layer < framesCount);
+    DVASSERT(layersCount > 0);
 
-    return stretchSize[layer];
+    distances[layer] = value;
+
+    const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (layersCount - 1);
+    const DAVA::float32 scaleSize = GetScaleSize();
+    const DAVA::float32 widthCoef = splitterWidth / scaleSize;
+
+    QList<int> sizes;
+    for (DAVA::uint32 i = 1; i < layersCount; ++i)
+    {
+        sizes.push_back((distances[i] - distances[i - 1]) * widthCoef);
+    }
+
+    int lastZoneSize = splitterWidth;
+    for (DAVA::int32 i = 0; i < sizes.size(); ++i)
+    {
+        lastZoneSize -= sizes.at(i);
+    }
+    sizes.push_back(lastZoneSize);
+
+    QSignalBlocker guard(splitter);
+    splitter->setSizes(sizes);
 }
 
 void DistanceSlider::SplitterMoved(int pos, int index)
 {
-    if (layersCount > 0)
+    DVASSERT(layersCount > 0)
+
+    QList<int> sizes = splitter->sizes();
+
+    const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (layersCount - 1);
+    const DAVA::float32 scaleSize = GetScaleSize();
+    const DAVA::float32 widthCoef = scaleSize / splitterWidth;
+
+    DAVA::float32 prevSize = 0;
+    for (int32 i = 0; (i < sizes.size()) && (i + 1 < layersCount); ++i)
     {
-        QList<int> sizes = splitter->sizes();
+        int sz = sizes.at(i);
 
-        double scaleSize = GetScaleSize();
+        distances[i + 1] = prevSize + sz * widthCoef;
 
-        QVector<int> changedLayers;
+        prevSize += distances[i + 1];
+    }
 
-        int fullSize = 0;
-        int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (layersCount - 1);
+    emit DistanceChanged(true);
+    signalsDispatcher->Update();
+}
 
-        for (int i = 0; i < layersCount; ++i)
-        {
-            int sz = sizes.at(i);
-            double value = fullSize * scaleSize / splitterWidth;
-
-            if (stretchSize[i] != value)
-            {
-                stretchSize[i] = value;
-                changedLayers.push_front(i);
-            }
-
-            fullSize += sz;
-        }
-
-        if (changedLayers.size() > 0)
-        {
-            emit DistanceChanged(changedLayers, QApplication::mouseButtons() & Qt::LeftButton);
-        }
+void DistanceSlider::DispatchSignalByMouseState()
+{
+    if ((QApplication::mouseButtons() & Qt::LeftButton) == 0)
+    {
+        emit DistanceChanged(false);
     }
 }
 
-int DistanceSlider::GetScaleSize()
+bool DistanceSlider::event(QEvent* e)
 {
-    if (layersCount == DAVA::LodComponent::MAX_LOD_LAYERS)
+    switch (e->type())
     {
-        return DAVA::LodComponent::MAX_LOD_DISTANCE + 100;
+    case QEvent::MouseButtonPress:
+        break;
+    case QEvent::MouseButtonRelease:
+        break;
+    default:
+        break;
+    }
+
+    return QWidget::event(e);
+}
+
+DAVA::float32 DistanceSlider::GetScaleSize() const
+{
+    if (layersCount == framesCount)
+    {
+        return DAVA::LodComponent::MAX_LOD_DISTANCE + 100.f;
     }
 
     return DAVA::LodComponent::MAX_LOD_DISTANCE;
