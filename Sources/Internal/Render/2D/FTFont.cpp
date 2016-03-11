@@ -44,8 +44,11 @@
 #define generic GenericFromFreeTypeLibrary
 #endif
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
+#pragma clang diagnostic pop
 #include FT_FREETYPE_H
 
 #ifdef __DAVAENGINE_WIN_UAP__
