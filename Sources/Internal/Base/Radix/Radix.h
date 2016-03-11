@@ -62,21 +62,12 @@ permitted provided that the following conditions are met:
 
 namespace DAVA
 {
-//    struct SortItem
-//    {
-//        uint32 item;
-//
-//    };
-
-void RadixSort(int32* array, int offset, int end, int shift);
-void RadixSort(int64* array, int offset, int end, int shift);
 
 inline void RadixSort(void* array, int offset, int end, int shift)
 {
-    if (sizeof(void*) == 4)
-        RadixSort((int32*)array, offset, end, shift);
-    else
-        RadixSort((int64*)array, offset, end, shift);
+    void RadixSortImpl(intptr_t * array, int offset, int end, int shift);
+
+    RadixSortImpl(static_cast<intptr_t*>(array), offset, end, shift);
 }
 };
 

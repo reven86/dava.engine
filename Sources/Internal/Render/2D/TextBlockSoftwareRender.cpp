@@ -41,7 +41,7 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
 {
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
     buf = NULL;
-    ftFont = (FTFont*)textBlock->font;
+    ftFont = static_cast<FTFont*>(textBlock->font);
 #if defined(LOCALIZATION_DEBUG)
     textOffsetTL.x = std::numeric_limits<float32>::max();
     textOffsetTL.y = std::numeric_limits<float32>::max();
@@ -90,7 +90,7 @@ void TextBlockSoftwareRender::Prepare()
         }
     }
 
-    Texture* tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());
+    Texture* tex = Texture::CreateTextFromData(FORMAT_A8, reinterpret_cast<uint8*>(buf), width, height, false, addInfo.c_str());
     sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
     SafeRelease(tex);
 
@@ -115,7 +115,7 @@ void TextBlockSoftwareRender::Restore()
 
     DrawText();
 
-    tex->ReloadFromData(FORMAT_A8, (uint8*)buf, width, height);
+    tex->ReloadFromData(FORMAT_A8, reinterpret_cast<uint8*>(buf), width, height);
 
     SafeDeleteArray(buf);
 }
@@ -141,18 +141,18 @@ Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawTe
     if (textBlock->cacheUseJustify)
     {
         metrics = ftFont->DrawStringToBuffer(buf, x, y,
-                                             -textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
-                                             -textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
-                                             (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)),
-                                             (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)lineSize)),
+                                             -textBlock->cacheOx + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(xOffset))),
+                                             -textBlock->cacheOy + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(yOffset))),
+                                             int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(w)))),
+                                             int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(lineSize)))),
                                              drawText,
                                              true);
     }
     else
     {
         metrics = ftFont->DrawStringToBuffer(buf, x, y,
-                                             -textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
-                                             -textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
+                                             -textBlock->cacheOx + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(xOffset))),
+                                             -textBlock->cacheOy + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(yOffset))),
                                              0,
                                              0,
                                              drawText,

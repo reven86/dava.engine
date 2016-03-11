@@ -65,9 +65,9 @@ void RenderUpdateSystem::ImmediateEvent(Component* component, uint32 event)
     {
         Entity* entity = component->GetEntity();
         // Update new transform pointer, and mark that transform is changed
-        Matrix4* worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-        RenderObject* object = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
-        if (NULL != object)
+        Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
+        RenderObject* object = (static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT)))->GetRenderObject();
+        if (nullptr != object)
         {
             object->SetWorldTransformPtr(worldTransformPointer);
             entity->GetScene()->renderSystem->MarkForUpdate(object);
@@ -83,10 +83,10 @@ void RenderUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 
 void RenderUpdateSystem::AddEntity(Entity* entity)
 {
-    RenderObject* renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
+    RenderObject* renderObject = (static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT)))->GetRenderObject();
     if (!renderObject)
         return;
-    Matrix4* worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+    Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
     renderObject->SetWorldTransformPtr(worldTransformPointer);
     UpdateActiveIndexes(entity, renderObject);
     entityObjectMap.insert(entity, renderObject);
@@ -123,10 +123,10 @@ void RenderUpdateSystem::UpdateActiveIndexes(Entity* entity, RenderObject* objec
 
     // search effective lod index
     parent = entity;
-    while (NULL != parent)
+    while (nullptr != parent)
     {
         LodComponent* lc = GetLodComponent(parent);
-        if (NULL != lc)
+        if (nullptr != lc)
         {
             object->SetLodIndex(lc->currentLod);
             break;
@@ -137,10 +137,10 @@ void RenderUpdateSystem::UpdateActiveIndexes(Entity* entity, RenderObject* objec
 
     // search effective switch index
     parent = entity;
-    while (NULL != parent)
+    while (nullptr != parent)
     {
         SwitchComponent* sc = GetSwitchComponent(parent);
-        if (NULL != sc)
+        if (nullptr != sc)
         {
             object->SetSwitchIndex(sc->GetSwitchIndex());
             break;
