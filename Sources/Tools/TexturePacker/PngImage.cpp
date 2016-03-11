@@ -112,7 +112,7 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
     uint32* srcData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(image->GetData()));
 
     int32 rx, ry;
-	ry = sy;
+    ry = sy;
 	for (int32 y = srcRect.y; y < srcRect.y + srcRect.dy; ++y)
 	{
 		rx = sx;
@@ -331,7 +331,7 @@ void PngImageExt::DrawRect(const Rect2i &rect, uint32 color)
     uint32* destData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(GetData()));
 
     for (int32 i = 0; i < rect.dx; ++i)
-	{
+    {
 		destData32[rect.y * GetWidth() + rect.x + i] = color;
 		destData32[(rect.y + rect.dy - 1) * GetWidth() + rect.x + i] = color;
 	}
