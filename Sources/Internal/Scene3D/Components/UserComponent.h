@@ -47,9 +47,10 @@ public:
     IMPLEMENT_COMPONENT_TYPE(USER_COMPONENT);
 
     UserComponent();
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* sceneFile);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* sceneFile);
+
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
 public:
     /*

@@ -60,7 +60,7 @@ void Thread::Shutdown()
     if (handle)
     {
         CloseHandle(handle);
-        handle = NULL;
+        handle = nullptr;
     }
 }
 

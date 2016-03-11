@@ -46,9 +46,9 @@ class LodSystem : public SceneSystem
 public:
     LodSystem(Scene* scene);
 
-    virtual void Process(float32 timeElapsed);
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void Process(float32 timeElapsed) override;
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
     virtual void SetCamera(Camera* camera);
     inline Camera* GetCamera() const;

@@ -71,11 +71,11 @@ protected:
 inline Semaphore::Semaphore(uint32 count)
 {
 #ifdef __DAVAENGINE_WIN32__
-    semaphore = CreateSemaphore(NULL, count, 0x0FFFFFFF, NULL);
+    semaphore = CreateSemaphore(nullptr, count, 0x0FFFFFFF, nullptr);
 #else
-    semaphore = CreateSemaphoreEx(NULL, count, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
+    semaphore = CreateSemaphoreEx(nullptr, count, 0x0FFFFFFF, nullptr, 0, SEMAPHORE_ALL_ACCESS);
 #endif
-    DVASSERT(NULL != semaphore);
+    DVASSERT(nullptr != semaphore);
 }
 
 inline Semaphore::~Semaphore()
@@ -86,7 +86,7 @@ inline Semaphore::~Semaphore()
 inline void Semaphore::Post(uint32 count)
 {
     DVASSERT(count > 0);
-    ReleaseSemaphore(semaphore, count, NULL);
+    ReleaseSemaphore(semaphore, count, nullptr);
 }
 
 inline void Semaphore::Wait()
