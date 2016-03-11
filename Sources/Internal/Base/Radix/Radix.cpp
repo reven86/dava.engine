@@ -130,5 +130,4 @@ void RadixSortImpl(intptr_t* array, int offset, int end, int shift)
         }
     }
 }
-
 }

@@ -62,7 +62,6 @@ permitted provided that the following conditions are met:
 
 namespace DAVA
 {
-
 inline void RadixSort(void* array, int offset, int end, int shift)
 {
     void RadixSortImpl(intptr_t * array, int offset, int end, int shift);
