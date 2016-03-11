@@ -48,9 +48,9 @@ public:
 
     IMPLEMENT_COMPONENT_TYPE(SPEEDTREE_COMPONENT);
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     inline float32 GetTrunkOscillationAmplitude() const;
     inline float32 GetTrunkOscillationSpring() const;
