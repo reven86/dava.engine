@@ -56,23 +56,6 @@ WideString WcharToWString(const wchar_t* s)
     return temp;
 }
 
-bool IsEqual(const WideString& s1, const WideString& s2)
-{
-    char16* p1 = (char16*)s1.c_str();
-    char16* p2 = (char16*)s2.c_str();
-
-    while (*p1 && *p2)
-    {
-        if (*p1 != *p2)
-            return false;
-
-        ++p1;
-        ++p2;
-    }
-
-    return (*p1 == *p2);
-}
-
 void Split(const String& inputString, const String& delims, Vector<String>& tokens, bool skipDuplicated /* = false*/, bool addEmptyTokens /* = false*/)
 {
     std::string::size_type pos, lastPos = 0;
@@ -133,8 +116,8 @@ void Merge(const Vector<String>& tokens, const char delim, String& outString)
 /* Set a generic reader. */
 int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length)
 {
-    YamlParser::YamlDataHolder* holder = (YamlParser::YamlDataHolder*)ext;
-    int32 sizeToWrite = Min((uint32)size, holder->fileSize - holder->dataOffset);
+    YamlParser::YamlDataHolder* holder = static_cast<YamlParser::YamlDataHolder*>(ext);
+    int32 sizeToWrite = Min(static_cast<uint32>(size), holder->fileSize - holder->dataOffset);
 
     memcpy(buffer, holder->data + holder->dataOffset, sizeToWrite);
 

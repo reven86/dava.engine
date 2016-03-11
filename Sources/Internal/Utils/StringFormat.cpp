@@ -120,8 +120,11 @@ private:
 
 int32 DoDiv(int64& n, int32 base)
 {
-    int32 result = (static_cast<unsigned long long>(n)) % static_cast<unsigned>(base);
-    n = (static_cast<unsigned long long>(n)) / static_cast<unsigned>(base);
+    unsigned long long unsN = static_cast<unsigned long long>(n);
+    unsigned unsBase = static_cast<unsigned>(base);
+
+    int32 result = unsN % unsBase;
+    n = unsN / unsBase;
     return result;
 }
 

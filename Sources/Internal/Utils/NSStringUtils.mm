@@ -45,7 +45,9 @@ NSString* NSStringFromString(const DAVA::String& str)
 NSString* NSStringFromWideString(const DAVA::WideString& str)
 {
     NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
-    NSString* nsstring = [[[NSString alloc] initWithBytes:str.c_str()
+    const char* string = reinterpret_cast<const char*>(str.c_str());
+
+    NSString* nsstring = [[[NSString alloc] initWithBytes:string
                                                    length:str.length() * sizeof(wchar_t)
                                                  encoding:encoding] autorelease];
     return nsstring;
@@ -69,7 +71,9 @@ WideString WideStringFromNSString(NSString* string)
     {
         NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
         NSData* data = [string dataUsingEncoding:encoding];
-        return WideString(static_cast<const wchar_t*>(data.bytes), data.length / sizeof(wchar_t));
+
+        const wchar_t* stringData = reinterpret_cast<const wchar_t*>(data.bytes);
+        return WideString(stringData, data.length / sizeof(wchar_t));
     }
     else
     {
