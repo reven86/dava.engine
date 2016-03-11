@@ -40,12 +40,9 @@ class KeyboardShortcut
 public:
     enum Modifier
     {
-        LSHIFT = 0x01,
-        RSHIFT = 0x02,
-        LCTRL = 0x04,
-        RCTRL = 0x08,
-        LALT = 0x10,
-        RALT = 0x20,
+        MODIFIER_SHIFT = 0x01,
+        MODIFIER_CTRL = 0x02,
+        MODIFIER_ALT = 0x04,
     };
 
     KeyboardShortcut();
@@ -63,6 +60,8 @@ public:
     int32 GetModifiers() const;
 
     String ToString() const;
+
+    static int32 ConvertKeyToModifier(Key key);
 
 private:
     Key key = Key::UNKNOWN;

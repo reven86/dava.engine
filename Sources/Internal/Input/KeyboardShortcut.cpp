@@ -62,4 +62,25 @@ String KeyboardShortcut::ToString() const
 {
     return InputSystem::Instance()->GetKeyboard().GetKeyName(key);
 }
+
+int32 KeyboardShortcut::ConvertKeyToModifier(Key key)
+{
+    switch (key)
+    {
+    case Key::LSHIFT:
+    case Key::RSHIFT:
+        return MODIFIER_SHIFT;
+
+    case Key::RALT:
+    case Key::LALT:
+        return MODIFIER_ALT;
+
+    case Key::RCTRL:
+    case Key::LCTRL:
+        return MODIFIER_CTRL;
+
+    default:
+        return 0;
+    }
+}
 }

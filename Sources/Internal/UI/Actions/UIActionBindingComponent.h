@@ -56,6 +56,13 @@ private:
 public:
     UIActionBindingComponent* Clone() const override;
 
+    const UIActionMap& GetActionMap() const;
+    UIActionMap& GetActionMap();
+    const UIInputMap& GetInputMap() const;
+
+    bool IsBlockOtherKeyboardShortcuts() const;
+    void SetBlockOtherKeyboardShortcuts(bool block);
+
 private:
     String GetActionsAsString() const;
     void SetActionsFromString(const String& value);
@@ -75,10 +82,13 @@ private:
     Vector<Action> actions;
 
     UIActionMap actionMap;
+    UIInputMap inputMap;
+    bool blockOtherKeyboardShortcuts = true;
 
 public:
     INTROSPECTION_EXTEND(UIActionBindingComponent, UIComponent,
-                         PROPERTY("actions", "Actions", GetActionsAsString, SetActionsFromString, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("actions", "Actions", GetActionsAsString, SetActionsFromString, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("blockOtherShortcuts", "Block Other Keyboard Shortcuts", IsBlockOtherKeyboardShortcuts, SetBlockOtherKeyboardShortcuts, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

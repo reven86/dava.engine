@@ -33,6 +33,8 @@
 #include "UI/Focus/FocusHelpers.h"
 #include "UI/Focus/DirectionBasedNavigationAlgorithm.h"
 #include "UI/Focus/TabTraversalAlgorithm.h"
+#include "UI/Actions/UIActionBindingComponent.h"
+#include "UI/Actions/UIActionComponent.h"
 
 #include "UI/UIControl.h"
 #include "UI/UIList.h"
@@ -109,34 +111,34 @@ void UIFocusSystem::ControlBecomInvisible(UIControl* control)
     }
 }
 
-bool UIFocusSystem::MoveFocusLeft()
+void UIFocusSystem::MoveFocusLeft()
 {
-    return MoveFocus(FocusHelpers::Direction::LEFT);
+    MoveFocus(FocusHelpers::Direction::LEFT);
 }
 
-bool UIFocusSystem::MoveFocusRight()
+void UIFocusSystem::MoveFocusRight()
 {
-    return MoveFocus(FocusHelpers::Direction::RIGHT);
+    MoveFocus(FocusHelpers::Direction::RIGHT);
 }
 
-bool UIFocusSystem::MoveFocusUp()
+void UIFocusSystem::MoveFocusUp()
 {
-    return MoveFocus(FocusHelpers::Direction::UP);
+    MoveFocus(FocusHelpers::Direction::UP);
 }
 
-bool UIFocusSystem::MoveFocusDown()
+void UIFocusSystem::MoveFocusDown()
 {
-    return MoveFocus(FocusHelpers::Direction::DOWN);
+    MoveFocus(FocusHelpers::Direction::DOWN);
 }
 
-bool UIFocusSystem::MoveFocusForward()
+void UIFocusSystem::MoveFocusForward()
 {
-    return MoveFocus(FocusHelpers::TabDirection::FORWARD);
+    MoveFocus(FocusHelpers::TabDirection::FORWARD);
 }
 
-bool UIFocusSystem::MoveFocusBackward()
+void UIFocusSystem::MoveFocusBackward()
 {
-    return MoveFocus(FocusHelpers::TabDirection::BACKWARD);
+    MoveFocus(FocusHelpers::TabDirection::BACKWARD);
 }
 
 bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
@@ -167,6 +169,29 @@ bool UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
         }
     }
     return false;
+}
+
+void UIFocusSystem::PerformAction()
+{
+    if (focusedControl != nullptr)
+    {
+        UIActionComponent* actionComponent = focusedControl->GetComponent<UIActionComponent>();
+        if (actionComponent != nullptr && actionComponent->GetAction().IsValid())
+        {
+            UIControl* c = focusedControl.Get();
+            bool processed = false;
+            while (!processed && c != nullptr)
+            {
+                UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
+                if (actionBindingComponent)
+                {
+                    processed = actionBindingComponent->GetActionMap().Perform(actionComponent->GetAction());
+                }
+
+                c = (c == root.Get()) ? nullptr : c->GetParent();
+            }
+        }
+    }
 }
 
 void UIFocusSystem::ClearFocusState(UIControl* control)

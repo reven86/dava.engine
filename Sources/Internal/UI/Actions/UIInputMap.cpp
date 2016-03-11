@@ -2,8 +2,6 @@
 
 namespace DAVA
 {
-const FastName UIInputMap::INVALID_ACTION = FastName();
-
 UIInputMap::UIInputMap()
 {
 }
@@ -17,7 +15,7 @@ void UIInputMap::BindAction(const KeyboardShortcut& shortcut, const FastName& ac
     inputMap[shortcut] = action;
 }
 
-const FastName& UIInputMap::FindAction(const KeyboardShortcut& shortcut) const
+FastName UIInputMap::FindAction(const KeyboardShortcut& shortcut) const
 {
     auto it = inputMap.find(shortcut);
     if (it != inputMap.end())
@@ -25,7 +23,7 @@ const FastName& UIInputMap::FindAction(const KeyboardShortcut& shortcut) const
         return it->second;
     }
 
-    return INVALID_ACTION;
+    return FastName();
 }
 
 void UIInputMap::RemoveShortcut(const KeyboardShortcut& shortcut)

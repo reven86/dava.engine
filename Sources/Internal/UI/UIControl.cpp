@@ -31,6 +31,7 @@
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Focus/FocusHelpers.h"
+#include "UI/Focus/UIFocusSystem.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -1405,6 +1406,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         if (IsPointInside(currentInput->point, true))
                         {
                             PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
+                            UIControlSystem::Instance()->GetFocusSystem()->PerformAction();
                         }
                         else
                         {

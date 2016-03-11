@@ -54,18 +54,20 @@ public:
 
     void ControlBecomInvisible(UIControl* control);
 
-    bool MoveFocusLeft();
-    bool MoveFocusRight();
-    bool MoveFocusUp();
-    bool MoveFocusDown();
+    void MoveFocusLeft();
+    void MoveFocusRight();
+    void MoveFocusUp();
+    void MoveFocusDown();
 
-    bool MoveFocusForward();
-    bool MoveFocusBackward();
+    void MoveFocusForward();
+    void MoveFocusBackward();
 
-private:
     bool MoveFocus(FocusHelpers::Direction dir);
     bool MoveFocus(FocusHelpers::TabDirection dir);
 
+    void PerformAction();
+
+private:
     void ClearFocusState(UIControl* control);
     UIControl* FindFirstControl(UIControl* control) const;
     UIControl* FindFirstControlImpl(UIControl* control, UIControl* candidate) const;

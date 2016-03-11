@@ -41,7 +41,7 @@ public:
     ~UIInputMap();
 
     void BindAction(const KeyboardShortcut& shortcut, const FastName& action);
-    const FastName& FindAction(const KeyboardShortcut& shortcut) const;
+    FastName FindAction(const KeyboardShortcut& shortcut) const;
 
     void RemoveShortcut(const KeyboardShortcut& shortcut);
     void RemoveAction(const FastName& action);
@@ -49,8 +49,6 @@ public:
 
 private:
     UnorderedMap<KeyboardShortcut, FastName> inputMap;
-
-    static const FastName INVALID_ACTION;
 };
 }
 

@@ -33,14 +33,46 @@
 #include "UI/UIEvent.h"
 
 #include "UI/Focus/UIFocusSystem.h"
+#include "UI/Actions/UIActionBindingComponent.h"
 
 #include "Input/InputSystem.h"
 
 namespace DAVA
 {
+const FastName UIKeyInputSystem::ACTION_FOCUS_LEFT("FocusLeft");
+const FastName UIKeyInputSystem::ACTION_FOCUS_RIGHT("FocusRight");
+const FastName UIKeyInputSystem::ACTION_FOCUS_UP("FocusUp");
+const FastName UIKeyInputSystem::ACTION_FOCUS_DOWN("FocusDown");
+
+const FastName UIKeyInputSystem::ACTION_FOCUS_NEXT("FocusNext");
+const FastName UIKeyInputSystem::ACTION_FOCUS_PREV("FocusPrev");
+
+const FastName UIKeyInputSystem::ACTION_PERFORM("PerformAction");
+const FastName UIKeyInputSystem::ACTION_ESCAPE("Escape");
+
 UIKeyInputSystem::UIKeyInputSystem(UIFocusSystem* focusSystem_)
     : focusSystem(focusSystem_)
 {
+    BindGlobalShortcut(KeyboardShortcut(Key::LEFT), ACTION_FOCUS_LEFT);
+    BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), ACTION_FOCUS_RIGHT);
+    BindGlobalShortcut(KeyboardShortcut(Key::UP), ACTION_FOCUS_UP);
+    BindGlobalShortcut(KeyboardShortcut(Key::DOWN), ACTION_FOCUS_DOWN);
+
+    BindGlobalShortcut(KeyboardShortcut(Key::TAB), ACTION_FOCUS_NEXT);
+    BindGlobalShortcut(KeyboardShortcut(Key::TAB, KeyboardShortcut::MODIFIER_SHIFT), ACTION_FOCUS_PREV);
+
+    BindGlobalShortcut(KeyboardShortcut(Key::ENTER), ACTION_PERFORM);
+    BindGlobalShortcut(KeyboardShortcut(Key::ESCAPE), ACTION_ESCAPE);
+
+    BindGlobalAction(ACTION_FOCUS_LEFT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusLeft));
+    BindGlobalAction(ACTION_FOCUS_RIGHT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusRight));
+    BindGlobalAction(ACTION_FOCUS_UP, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusUp));
+    BindGlobalAction(ACTION_FOCUS_DOWN, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusDown));
+
+    BindGlobalAction(ACTION_FOCUS_NEXT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusForward));
+    BindGlobalAction(ACTION_FOCUS_PREV, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusBackward));
+
+    BindGlobalAction(ACTION_PERFORM, MakeFunction(focusSystem, &UIFocusSystem::PerformAction));
 }
 
 UIKeyInputSystem::~UIKeyInputSystem()
@@ -55,60 +87,75 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
     UIEvent::Phase phase = event->phase;
     DVASSERT(phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT);
 
+    if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT)
+    {
+        modifiers |= KeyboardShortcut::ConvertKeyToModifier(event->key);
+    }
+    else if (phase == UIEvent::Phase::KEY_UP)
+    {
+        modifiers &= ~KeyboardShortcut::ConvertKeyToModifier(event->key);
+    }
+
     UIControl* focusedControl = focusSystem->GetFocusedControl();
     UIControl* rootControl = focusSystem->GetRoot();
 
-    if (!processed && focusedControl)
+    if (focusedControl == nullptr && rootControl == nullptr)
     {
-        UIControl* c = focusedControl;
-        while (c != nullptr && c != rootControl && !processed)
+        return;
+    }
+
+    if (!processed && phase == UIEvent::Phase::KEY_DOWN) // try to process shortcuts
+    {
+        UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
+        KeyboardShortcut shortcut(event->key);
+        while (!processed && c != nullptr)
         {
-            processed = c->SystemProcessInput(event);
-            c = c->GetParent();
+            UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
+            if (actionBindingComponent)
+            {
+                FastName action = actionBindingComponent->GetInputMap().FindAction(shortcut);
+                if (action.IsValid())
+                {
+                    processed = actionBindingComponent->GetActionMap().Perform(action);
+                }
+            }
+
+            c = (c == rootControl) ? nullptr : c->GetParent();
         }
     }
 
-    if (!processed && rootControl)
+    if (!processed) // try to handle key events directly by control
     {
-        processed = rootControl->SystemProcessInput(event);
+        UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
+        while (!processed && c != nullptr)
+        {
+            processed = c->SystemProcessInput(event);
+            c = (c == rootControl) ? nullptr : c->GetParent();
+        }
     }
 
     if (!processed && (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT))
     {
-        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-        switch (event->key)
+        KeyboardShortcut shortcut(event->key);
+        FastName action = globalInputMap.FindAction(shortcut);
+        if (action.IsValid())
         {
-        case Key::LEFT:
-            focusSystem->MoveFocusLeft();
-            break;
-
-        case Key::RIGHT:
-            focusSystem->MoveFocusRight();
-            break;
-
-        case Key::UP:
-            focusSystem->MoveFocusUp();
-            break;
-
-        case Key::DOWN:
-            focusSystem->MoveFocusDown();
-            break;
-
-        case Key::TAB:
-            if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
-            {
-                focusSystem->MoveFocusBackward();
-            }
-            else
-            {
-                focusSystem->MoveFocusForward();
-            }
-            break;
-
-        default:
-            // do nothing
-            break;
+            globalActions.Perform(action);
         }
     }
+}
+
+void UIKeyInputSystem::BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName)
+{
+    globalInputMap.BindAction(shortcut, actionName);
+}
+
+void UIKeyInputSystem::BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action)
+{
+    globalActions.Put(actionName, action);
+}
+
+void UIKeyInputSystem::PerformFocusedControlAction()
+{
 }
 }

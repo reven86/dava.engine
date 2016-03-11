@@ -32,6 +32,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Math/Vector.h"
+#include "UI/Actions/UIActionMap.h"
+#include "UI/Actions/UIInputMap.h"
 
 namespace DAVA
 {
@@ -47,9 +49,26 @@ public:
     ~UIKeyInputSystem();
 
     void HandleKeyEvent(UIEvent* event);
+    void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
+    void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
+
+public:
+    static const FastName ACTION_FOCUS_LEFT;
+    static const FastName ACTION_FOCUS_RIGHT;
+    static const FastName ACTION_FOCUS_UP;
+    static const FastName ACTION_FOCUS_DOWN;
+
+    static const FastName ACTION_FOCUS_NEXT;
+    static const FastName ACTION_FOCUS_PREV;
+
+    static const FastName ACTION_PERFORM;
+    static const FastName ACTION_ESCAPE;
 
 private:
     UIFocusSystem* focusSystem = nullptr;
+    UIActionMap globalActions;
+    UIInputMap globalInputMap;
+    int32 modifiers = 0;
 };
 }
 
