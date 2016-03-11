@@ -72,34 +72,7 @@ QVariant MaterialModel::data(const QModelIndex& index, int role) const
 
     if (index.column() == 0)
     {
-        MaterialItem* item = itemFromIndex(index);
-        DVASSERT(item);
-
-        switch (role)
-        {
-        case Qt::BackgroundRole:
-        {
-            if (item->GetFlag(MaterialItem::IS_MARK_FOR_DELETE))
-            {
-                ret = QBrush(QColor(255, 0, 0, 20));
-            }
-        }
-        break;
-        case Qt::FontRole:
-        {
-            ret = QStandardItemModel::data(index, role);
-            if (item->GetFlag(MaterialItem::IS_PART_OF_SELECTION))
-            {
-                QFont font = ret.value<QFont>();
-                font.setBold(true);
-                ret = font;
-            }
-        }
-        break;
-        default:
-            ret = QStandardItemModel::data(index, role);
-            break;
-        }
+        ret = QStandardItemModel::data(index, role);
     }
     // LOD
     else if (index.isValid() && index.column() < columnCount())
