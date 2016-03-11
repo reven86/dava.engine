@@ -248,7 +248,6 @@ public:
 
     virtual void GoBackground(bool isLock);
     virtual void GoForeground();
-    inline bool IsFocused();
     virtual void FocusLost();
     virtual void FocusReceived();
 
@@ -276,7 +275,6 @@ private:
     KeyedArchive* options;
 
     bool isActive;
-    bool isFocused;
 
     uint32 globalFrameIndex;
 
@@ -292,10 +290,6 @@ inline bool Core::IsActive()
     return isActive;
 }
 
-inline bool Core::IsFocused()
-{
-    return isFocused;
-}
 };
 
 #endif // __DAVAENGINE_CORE_H__
