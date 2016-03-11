@@ -40,7 +40,7 @@ class RotationControllerComponent : public Component
 public:
     IMPLEMENT_COMPONENT_TYPE(ROTATION_CONTROLLER_COMPONENT);
 
-    virtual Component* Clone(Entity* toEntity);
+    Component* Clone(Entity* toEntity) override;
 
 public:
     INTROSPECTION_EXTEND(RotationControllerComponent, Component,
