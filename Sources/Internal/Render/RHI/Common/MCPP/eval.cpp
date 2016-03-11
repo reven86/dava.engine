@@ -35,8 +35,10 @@
  * Some routines are used also to evaluate the value of numerical tokens.
  */
 
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
 #include "_mcpp.h"
 
@@ -1865,4 +1867,6 @@ const VAL_SIGN* valp /* -> value vector              */
     }
 }
 
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif

@@ -2370,8 +2370,10 @@ const PixelFormat LibPVRHelper::GetCompressedFormat(const uint64 pixelFormat)
     return FORMAT_INVALID;
 }
     
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
 const PixelFormat LibPVRHelper::GetFloatTypeFormat(const uint64 pixelFormat)
 {
@@ -2528,8 +2530,10 @@ PVRHeaderV3 LibPVRHelper::CreateDecompressedHeader(const PVRHeaderV3& compressed
 
     return decompressedHeader;
 }
-    
+   
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 
 bool LibPVRHelper::CopyToImage(Image* image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3& header, const uint8* pvrData)
 {

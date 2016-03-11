@@ -162,7 +162,7 @@ DAVA::int32 CommandLineParser::GetCommandPosition(const DAVA::String& command)
     {
         if (command == commandLine[i])
         {
-            position = i;
+            position = static_cast<int32>(i);
             break;
         }
     }

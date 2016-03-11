@@ -35,8 +35,10 @@
  * are placed here.
  */
 
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
 #include "_mcpp.h"
 
@@ -1902,4 +1904,6 @@ void clear_symtable(void)
 }
 #endif
 
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
