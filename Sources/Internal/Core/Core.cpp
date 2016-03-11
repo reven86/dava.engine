@@ -676,7 +676,7 @@ void Core::SystemProcessFrame()
         core->BeginFrame();
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
 
-        //#endif
+//#endif
 
 //TODO: when cross platforms resize done on all platforms, remove this code
 #if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
