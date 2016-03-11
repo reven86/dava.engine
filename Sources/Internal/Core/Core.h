@@ -289,7 +289,6 @@ inline bool Core::IsActive()
 {
     return isActive;
 }
-
 };
 
 #endif // __DAVAENGINE_CORE_H__
