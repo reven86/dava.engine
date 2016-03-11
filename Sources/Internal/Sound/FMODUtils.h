@@ -32,8 +32,11 @@
 #ifndef __DAVAENGINE_FMODUTILS_H__
 #define __DAVAENGINE_FMODUTILS_H__
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
 #include "fmod_event.hpp"
 #include "fmod_errors.h"
+#pragma clang diagnostic pop
 
 namespace DAVA
 {
