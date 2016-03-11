@@ -38,6 +38,7 @@
 
 class SceneEditor2;
 class EntityGroup;
+class Command2;
 
 class SceneInfo : public QtPropertyEditor
 {
