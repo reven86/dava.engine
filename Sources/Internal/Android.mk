@@ -75,8 +75,8 @@ LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libzip_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := fribidi_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfribidi_android.a
+LOCAL_MODULE := icucommon_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libicucommon_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -243,7 +243,7 @@ DV_LOCAL_STATIC_LIBRARIES += curl_android
 DV_LOCAL_STATIC_LIBRARIES += ssl_android
 DV_LOCAL_STATIC_LIBRARIES += crypto_android
 DV_LOCAL_STATIC_LIBRARIES += zip_android
-DV_LOCAL_STATIC_LIBRARIES += fribidi_android
+DV_LOCAL_STATIC_LIBRARIES += icucommon_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
 DV_LOCAL_STATIC_LIBRARIES += webp_android
