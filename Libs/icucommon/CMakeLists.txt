@@ -1,16 +1,9 @@
-
 cmake_minimum_required(VERSION 2.8)
 project(icucommon)
 
-add_library(icudata STATIC
-  source/stubdata/stubdata.c
-)
-target_include_directories(icudata 
-  PUBLIC
-    source/common
-)
+option(BUILD_STUBDATA "Build stundata library" ON)
 
-add_library(icucommon STATIC 
+set(ICU_COMMON_SRC
   source/common/bmpset.cpp
   source/common/brkeng.cpp
   source/common/brkiter.cpp
@@ -79,6 +72,7 @@ add_library(icucommon STATIC
   source/common/ucln_cmn.c
   source/common/ucmndata.c
   source/common/ucnv.c
+  source/common/ucnv2022.c
   source/common/ucnv_bld.c
   source/common/ucnv_cb.c
   source/common/ucnv_cnv.c
@@ -87,11 +81,10 @@ add_library(icucommon STATIC
   source/common/ucnv_io.c
   source/common/ucnv_lmb.c
   source/common/ucnv_set.c
-  source/common/ucnv_u7.c
-  source/common/ucnv_u8.c
   source/common/ucnv_u16.c
   source/common/ucnv_u32.c
-  source/common/ucnv2022.c
+  source/common/ucnv_u7.c
+  source/common/ucnv_u8.c
   source/common/ucnvbocu.c
   source/common/ucnvdisp.c
   source/common/ucnvhz.c
@@ -163,20 +156,28 @@ add_library(icucommon STATIC
   source/common/uvector.cpp
   source/common/uvectr32.cpp
   source/common/uvectr64.cpp
-  source/common/wintz.c
+  #source/common/wintz.c
 )
 
-target_include_directories(icucommon 
-  PUBLIC
+
+if(BUILD_STUBDATA)
+  set(ICU_COMMON_SRC ${ICU_COMMON_SRC}
+    source/stubdata/stubdata.c
+  )
+endif()
+
+add_library(icucommon STATIC ${ICU_COMMON_SRC})
+target_include_directories(icucommon PUBLIC
     source/common
-  PRIVATE
     source/i18n
 )
-target_compile_definitions(icucommon 
-  PUBLIC 
+target_compile_options(icucommon PUBLIC
+  #-Wno-depricate
+  #-wd4996
+)
+target_compile_definitions(icucommon PUBLIC 
     U_COMMON_IMPLEMENTATION
-    U_USING_ICU_NAMESPACE=0
     U_STATIC_IMPLEMENTATION
     _CRT_SECURE_NO_WARNINGS
+    _CRT_NONSTDC_NO_WARNINGS
 )
-target_link_libraries(icucommon icudata)

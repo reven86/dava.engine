@@ -40,6 +40,8 @@
 #include "fribidi/fribidi-bidi-types.h"
 #include "fribidi/fribidi-unicode.h"
 #elif DAVA_ICU
+#define U_COMMON_IMPLEMENTATION
+#define U_STATIC_IMPLEMENTATION
 #include <unicode/ubidi.h>
 #include <unicode/ushape.h>
 #endif

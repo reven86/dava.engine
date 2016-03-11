@@ -94,7 +94,7 @@ BreakIterator::buildInstance(const Locale& loc, const char *type, int32_t kind, 
         // Use the string if we found it
         if (U_SUCCESS(status) && brkfname) {
             uprv_strncpy(actualLocale,
-                ures_getLocale(brkName, &status),
+                ures_getLocaleByType(brkName, ULOC_ACTUAL_LOCALE, &status),
                 sizeof(actualLocale)/sizeof(actualLocale[0]));
 
             UChar* extStart=u_strchr(brkfname, 0x002e);
