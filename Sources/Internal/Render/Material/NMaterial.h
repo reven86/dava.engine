@@ -70,6 +70,22 @@ struct MaterialTextureInfo
     FilePath path;
 };
 
+struct MaterialConfig
+{
+    MaterialConfig();
+    ~MaterialConfig();
+    MaterialConfig& operator=(const MaterialConfig& config);
+    MaterialConfig(const MaterialConfig& config);
+
+    void Clear();
+
+    FastName name;
+    FastName fxName;
+    HashMap<FastName, NMaterialProperty*> localProperties;
+    HashMap<FastName, MaterialTextureInfo*> localTextures;
+    HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
+};
+
 class RenderVariantInstance
 {
     friend class NMaterial;
@@ -146,7 +162,9 @@ public:
     bool HasLocalTexture(const FastName& slotName);
     Texture* GetLocalTexture(const FastName& slotName);
     Texture* GetEffectiveTexture(const FastName& slotName);
+
     void CollectLocalTextures(Set<MaterialTextureInfo*>& collection) const;
+    void CollectActiveLocalTextures(Set<MaterialTextureInfo*>& collection) const;
     bool ContainsTexture(Texture* texture) const;
     const HashMap<FastName, MaterialTextureInfo*>& GetLocalTextures() const;
 
@@ -167,6 +185,23 @@ public:
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
 
+    //Configs managment
+    uint32 GetConfigCount() const;
+    const MaterialConfig& GetConfig(uint32 index) const;
+    void InsertConfig(uint32 index, const MaterialConfig& config);
+    void RemoveConfig(uint32 index);
+
+    uint32 GetCurrentConfigIndex() const;
+    void SetCurrentConfigIndex(uint32 index);
+
+    const FastName& GetConfigName(uint32 index) const;
+    void SetConfigName(uint32 index, const FastName& name);
+    uint32 FindConfigByName(const FastName& name) const; //return size if config not found!
+    const DAVA::FastName& GetCurrentConfigName() const;
+    void SetCurrentConfigName(const DAVA::FastName& newName);
+
+    void ReleaseConfigTextures(uint32 index);
+
     void BindParams(rhi::Packet& target);
 
     // returns true if has variant for this pass, false otherwise
@@ -182,6 +217,8 @@ public:
 
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);
+    void SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext, bool forceNameSaving);
+    void LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext);
 
     void RebuildBindings();
     void RebuildTextureBindings();
@@ -195,28 +232,29 @@ private:
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
     NMaterialProperty* GetMaterialProperty(const FastName& propName);
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
+    void CollectConfigTextures(const MaterialConfig& config, Set<MaterialTextureInfo*>& collection) const;
 
     void AddChildMaterial(NMaterial* material);
     void RemoveChildMaterial(NMaterial* material);
 
+    const MaterialConfig& GetCurrentConfig() const;
+    MaterialConfig& GetMutableCurrentConfig();
+    MaterialConfig& GetMutableConfig(uint32 index);
+
 private:
     // config time
     FastName materialName;
-    FastName fxName;
     FastName qualityGroup;
-    FastName activeVariantName;
 
-    HashMap<FastName, NMaterialProperty*> localProperties;
-    HashMap<FastName, MaterialTextureInfo*> localTextures;
-
-    // integer flags are just more generic than boolean (eg. #if SHADING == HIGH),
-    // it has nothing in common with eFlagValue bullshit from old NMaterial
-    HashMap<FastName, int32> localFlags;
+    Vector<MaterialConfig> materialConfigs;
 
     // runtime
     NMaterial* parent = nullptr;
     Vector<NMaterial*> children;
 
+    uint32 currentConfig = 0;
+
+    FastName activeVariantName;
     RenderVariantInstance* activeVariantInstance = nullptr;
 
     HashMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
@@ -232,6 +270,8 @@ private:
 public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,
                          PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
+                         PROPERTY("configName", "Config name", GetCurrentConfigName, SetCurrentConfigName, I_VIEW | I_EDIT)
+                         PROPERTY("configId", "Current config", GetCurrentConfigIndex, SetCurrentConfigIndex, I_VIEW | I_EDIT)
                          PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
                          PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
                          DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
@@ -264,6 +304,33 @@ uint32 NMaterial::GetRenderLayerID() const
 uint32 NMaterial::GetSortingKey() const
 {
     return sortingKey;
+}
+
+inline uint32 NMaterial::GetCurrentConfigIndex() const
+{
+    return currentConfig;
+}
+
+inline const MaterialConfig& NMaterial::GetCurrentConfig() const
+{
+    return GetConfig(GetCurrentConfigIndex());
+}
+
+inline MaterialConfig& NMaterial::GetMutableCurrentConfig()
+{
+    return GetMutableConfig(GetCurrentConfigIndex());
+}
+
+inline const MaterialConfig& NMaterial::GetConfig(uint32 index) const
+{
+    DVASSERT(index < materialConfigs.size());
+    return materialConfigs[index];
+}
+
+inline MaterialConfig& NMaterial::GetMutableConfig(uint32 index)
+{
+    DVASSERT(index < materialConfigs.size());
+    return materialConfigs[index];
 }
 };
 
