@@ -215,7 +215,7 @@ void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchi
 {
     if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        FMODFileSoundEvent* sound = (FMODFileSoundEvent*)sEvent;
+        const FMODFileSoundEvent* sound = dynamic_cast<const FMODFileSoundEvent*>(sEvent);
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTFILE);
 
         toArchive->SetUInt32("flags", sound->flags);
@@ -224,7 +224,7 @@ void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchi
     }
     else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        FMODSoundEvent* sound = (FMODSoundEvent*)sEvent;
+        const FMODSoundEvent* sound = dynamic_cast<const FMODSoundEvent*>(sEvent);
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTSYSTEM);
 
         toArchive->SetFastName("eventName", sound->eventName);
@@ -281,12 +281,12 @@ SoundEvent* SoundSystem::CloneEvent(const SoundEvent* sEvent)
     SoundEvent* clonedSound = 0;
     if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        FMODFileSoundEvent* sound = (FMODFileSoundEvent*)sEvent;
+        const FMODFileSoundEvent* sound = dynamic_cast<const FMODFileSoundEvent*>(sEvent);
         clonedSound = CreateSoundEventFromFile(sound->fileName, FindGroupByEvent(sound), sound->flags, sound->priority);
     }
     else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        FMODSoundEvent* sound = (FMODSoundEvent*)sEvent;
+        const FMODSoundEvent* sound = dynamic_cast<const FMODSoundEvent*>(sEvent);
         clonedSound = CreateSoundEventByID(sound->eventName, FindGroupByEvent(sound));
     }
 #ifdef __DAVAENGINE_IPHONE__
@@ -514,7 +514,7 @@ void SoundSystem::SetListenerPosition(const Vector3& position)
 {
     if (fmodEventSystem)
     {
-        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, (FMOD_VECTOR*)(&position), 0, 0, 0));
+        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, reinterpret_cast<const FMOD_VECTOR*>(&position), 0, 0, 0));
     }
 }
 
@@ -531,7 +531,7 @@ void SoundSystem::SetListenerOrientation(const Vector3& forward, const Vector3& 
         DVASSERT(upNorm.SquareLength() > EPSILON);
         DVASSERT(left.SquareLength() > EPSILON);
 
-        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
+        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, reinterpret_cast<FMOD_VECTOR*>(&forwardNorm), reinterpret_cast<FMOD_VECTOR*>(&upNorm)));
     }
 }
 
@@ -701,11 +701,10 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent* event)
 {
     soundGroupsMutex.Lock();
 
-    for (uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
+    for (size_t i = 0; i < soundGroups.size();)
     {
         Vector<SoundEvent*>& events = soundGroups[i].events;
-        uint32 eventsCount = static_cast<uint32>(events.size());
-        for (uint32 k = 0; k < eventsCount; k++)
+        for (size_t k = 0; k < events.size(); k++)
         {
             if (events[k] == event)
             {
@@ -714,10 +713,13 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent* event)
             }
         }
 
-        if (!events.size())
+        if (events.empty())
         {
             RemoveExchangingWithLast(soundGroups, i);
-            --i;
+        }
+        else
+        {
+            ++i;
         }
     }
 
@@ -753,7 +755,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char* name, int unicode
 
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void* handle, void* buffer, unsigned int sizebytes, unsigned int* bytesread, void* userdata)
 {
-    File* file = (File*)handle;
+    File* file = static_cast<File*>(handle);
     (*bytesread) = file->Read(buffer, sizebytes);
 
     return FMOD_OK;
@@ -761,7 +763,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void* handle, void* buffer, u
 
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void* handle, unsigned int pos, void* userdata)
 {
-    File* file = (File*)handle;
+    File* file = static_cast<File*>(handle);
     file->Seek(pos, File::SEEK_FROM_START);
 
     return FMOD_OK;
@@ -769,7 +771,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void* handle, unsigned int po
 
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void* handle, void* userdata)
 {
-    File* file = (File*)handle;
+    File* file = static_cast<File*>(handle);
     SafeRelease(file);
 
     return FMOD_OK;
