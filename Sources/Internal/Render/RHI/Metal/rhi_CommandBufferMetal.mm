@@ -828,7 +828,16 @@ metal_Present(Handle syncObject)
         RenderPassMetal_t* pass = *p;
 
         for (unsigned b = 0; b != pass->cmdBuf.size(); ++b)
-            CommandBufferPool::Free( pass->cmdBuf[b] );
+        {
+            Handle cbh = pass->cmdBuf[b];
+            CommandBufferMetal_t* cb = CommandBufferPool::Get(cbh);
+
+            cb->buf = nil;
+            cb->encoder = nil;
+            cb->rt = nil;
+
+            CommandBufferPool::Free(cbh);
+        }
 
         [pass->buf commit];
     }

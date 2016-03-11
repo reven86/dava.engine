@@ -165,6 +165,17 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
 static void
 metal_SamplerState_Delete(Handle state)
 {
+    SamplerStateMetal_t* self = SamplerStateMetalPool::Get(state);
+
+    if (self)
+    {
+        for (unsigned s = 0; s != self->fp_count; ++s)
+            self->fp_uid[s] = nil;
+
+        for (unsigned s = 0; s != self->vp_count; ++s)
+            self->vp_uid[s] = nil;
+    }
+
     SamplerStateMetalPool::Free(state);
 }
 

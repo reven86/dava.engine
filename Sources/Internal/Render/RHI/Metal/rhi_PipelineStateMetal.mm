@@ -441,6 +441,8 @@ PipelineStateMetal_t::VertexProg::InstanceConstBuffer(unsigned bufIndex)
 
 bool PipelineStateMetal_t::ConstBuf::Construct(PipelineStateMetal_t::ConstBuf::ProgType ptype, unsigned buf_i, unsigned cnt)
 {
+    Destroy();
+
     type = ptype;
     index = buf_i;
     count = cnt;
@@ -463,7 +465,7 @@ void PipelineStateMetal_t::ConstBuf::Destroy()
 
     index = DAVA::InvalidIndex;
     count = 0;
-    inst = 0;
+    inst = nullptr;
     inst_offset = 0;
 }
 
@@ -550,9 +552,9 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
-    Logger::Info("metal_PipelineState_Create");
-    Logger::Info("  vprogUid= %s", desc.vprogUid.c_str());
-    Logger::Info("  fprogUid= %s", desc.fprogUid.c_str());
+    //    Logger::Info("metal_PipelineState_Create");
+    //    Logger::Info("  vprogUid= %s", desc.vprogUid.c_str());
+    //    Logger::Info("  fprogUid= %s", desc.fprogUid.c_str());
 
     // compile vprog
 

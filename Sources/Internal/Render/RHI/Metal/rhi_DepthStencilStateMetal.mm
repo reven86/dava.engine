@@ -173,6 +173,11 @@ metal_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
 static void
 metal_DepthStencilState_Delete(Handle state)
 {
+    DepthStencilStateMetal_t* self = DepthStencilStateMetalPool::Get(state);
+
+    if (self)
+        self->uid = nil;
+
     DepthStencilStateMetalPool::Free(state);
 }
 
