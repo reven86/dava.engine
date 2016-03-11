@@ -66,6 +66,7 @@ signals:
 private slots:
 
     void RepackWithDialog();
+    void DialogClosed();
 
 private:
     void SetupSpritesPacker(const DAVA::FilePath& projectPath);
@@ -76,6 +77,8 @@ private:
     void DisconnectCacheClient();
 
     void ProcessSilentPacking(bool clearDirs, bool forceRepack, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+
+    void DisconnectAndReload();
 
     void CreateWaitDialog(const DAVA::FilePath& projectPath);
     void CloseWaitDialog();

@@ -26,19 +26,16 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "SpritesPacker/SpritesPackerModule.h"
 
 #include "Functional/Function.h"
 
-#include "SpritesPacker/SpritesPackerModule.h"
-
-#include "Project/ProjectManager.h"
-
 #include "AssetCache/AssetCacheClient.h"
-
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 
 #include "Main/mainwindow.h"
+#include "Project/ProjectManager.h"
 
 #include <QAction>
 #include <QDir>
@@ -82,35 +79,61 @@ void SpritesPackerModule::SetAction(QAction* reloadSpritesAction_)
 void SpritesPackerModule::RepackWithDialog()
 {
     SetupSpritesPacker(ProjectManager::Instance()->GetProjectPath());
-    ConnectCacheClient();
+
+    JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &SpritesPackerModule::ConnectCacheClient));
 
     ShowPackerDialog();
-
-    DisconnectCacheClient();
-    ReloadObjects();
 }
 
 void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
 {
     SetupSpritesPacker(projectPath);
 
-    CreateWaitDialog(projectPath);
-
     Function<void()> fn = DAVA::Bind(&SpritesPackerModule::ProcessSilentPacking, this, true, false, gpu, DAVA::TextureConverter::ECQ_DEFAULT);
     JobManager::Instance()->CreateWorkerJob(fn);
+
+    CreateWaitDialog(projectPath);
+}
+
+void SpritesPackerModule::SetupSpritesPacker(const DAVA::FilePath& projectPath)
+{
+    FilePath inputDir = projectPath + "/DataSource/Gfx/Particles";
+    FilePath outputDir = projectPath + "/Data/Gfx/Particles";
+
+    spritesPacker->ClearTasks();
+    spritesPacker->AddTask(QString::fromStdString(inputDir.GetAbsolutePathname()), QString::fromStdString(outputDir.GetAbsolutePathname()));
 }
 
 void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     ConnectCacheClient();
-
     spritesPacker->ReloadSprites(clearDirs, forceRepack, gpu, quality);
 
-    DisconnectCacheClient();
+    DisconnectAndReload();
 
-    ReloadObjects();
     JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::CloseWaitDialog));
 }
+
+
+void SpritesPackerModule::ShowPackerDialog()
+{
+    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), QtMainWindow::Instance());
+    dialogReloadSprites.exec();
+
+    connect(&dialogReloadSprites, &DialogReloadSprites::finished, this, &SpritesPackerModule::DialogClosed);
+}
+
+void SpritesPackerModule::DialogClosed()
+{
+    JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &SpritesPackerModule::DisconnectAndReload));
+}
+
+void SpritesPackerModule::DisconnectAndReload()
+{
+    DisconnectCacheClient();
+    ReloadObjects();
+}
+
 
 void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
 {
@@ -139,22 +162,6 @@ void SpritesPackerModule::CloseWaitDialog()
         waitDialog = nullptr;
     }
 }
-
-void SpritesPackerModule::SetupSpritesPacker(const DAVA::FilePath& projectPath)
-{
-    FilePath inputDir = projectPath + "/DataSource/Gfx/Particles";
-    FilePath outputDir = projectPath + "/Data/Gfx/Particles";
-
-    spritesPacker->ClearTasks();
-    spritesPacker->AddTask(QString::fromStdString(inputDir.GetAbsolutePathname()), QString::fromStdString(outputDir.GetAbsolutePathname()));
-}
-
-void SpritesPackerModule::ShowPackerDialog()
-{
-    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), QtMainWindow::Instance());
-    dialogReloadSprites.exec();
-}
-
 
 
 void SpritesPackerModule::ReloadObjects()

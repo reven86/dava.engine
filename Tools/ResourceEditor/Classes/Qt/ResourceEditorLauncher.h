@@ -45,14 +45,14 @@ public slots:
     {
         DVASSERT(ProjectManager::Instance() != nullptr);
 
-        connect(this, &ResourceEditorLauncher::ProjectOpened, ProjectManager::Instance(), &ProjectManager::ProjectOpened);
-
+        connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &ResourceEditorLauncher::OnProjectOpened);
         ProjectManager::Instance()->OpenLastProject();
     }
 
-    void ProjectOpened(const QString&)
+    void OnProjectOpened(const QString&)
     {
-        disconnect(this, &ResourceEditorLauncher::ProjectOpened, ProjectManager::Instance(), &ProjectManager::ProjectOpened);
+        DVASSERT(ProjectManager::Instance() != nullptr);
+        disconnect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &ResourceEditorLauncher::OnProjectOpened);
 
         DVASSERT(QtMainWindow::Instance() != nullptr);
         QtMainWindow::Instance()->SetupTitle();
