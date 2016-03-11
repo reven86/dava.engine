@@ -32,6 +32,11 @@
 #include <limits.h>
 #include <string.h>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 static void split(int64_t* I, int64_t* V, int64_t start, int64_t len, int64_t h)
@@ -211,7 +216,7 @@ static int64_t search(const int64_t* I, const uint8_t* olddata, int64_t oldsize,
     };
 
     x = st + (en - st) / 2;
-    if (memcmp(olddata + I[x], newdata, static_cast<size_t>(MIN(oldsize - I[x], newsize))) < 0)
+    if (memcmp(olddata + I[x], newdata, (size_t)MIN(oldsize - I[x], newsize)) < 0)
     {
         return search(I, olddata, oldsize, newdata, newsize, x, en, pos);
     }
@@ -227,7 +232,7 @@ static int64_t writedata(struct bsdiff_stream* stream, const void* buffer, int64
 
     while (length > 0)
     {
-        const int smallsize = static_cast<size_t>(MIN(length, INT_MAX));
+        const int smallsize = (size_t)MIN(length, INT_MAX);
         const int writeresult = stream->write(stream, buffer, smallsize);
         if (writeresult == -1)
         {
@@ -236,7 +241,7 @@ static int64_t writedata(struct bsdiff_stream* stream, const void* buffer, int64
 
         result += writeresult;
         length -= smallsize;
-        buffer = static_cast<const uint8_t*>(buffer) + smallsize;
+        buffer = (uint8_t*)buffer + smallsize;
     }
 
     return result;
@@ -265,7 +270,7 @@ static int bsdiff_internal(const struct bsdiff_request req)
     uint8_t* buffer;
     uint8_t buf[8 * 3];
 
-    V = static_cast<int64_t*>(req.stream->malloc((req.oldsize + 1) * sizeof(int64_t)));
+    V = (int64_t*)req.stream->malloc((req.oldsize + 1) * sizeof(int64_t));
 
     if (V == NULL)
         return -1;
@@ -436,12 +441,12 @@ int bsdiff(const uint8_t* olddata, int64_t oldsize, const uint8_t* newdata, int6
     int result;
     struct bsdiff_request req;
 
-    req.I = static_cast<int64_t*>(stream->malloc((oldsize + 1) * sizeof(int64_t)));
+    req.I = (int64_t*)stream->malloc((oldsize + 1) * sizeof(int64_t));
 
     if (req.I == NULL)
         return -1;
 
-    req.buffer = static_cast<uint8_t*>(stream->malloc(newsize + 1));
+    req.buffer = (uint8_t*)stream->malloc(newsize + 1);
 
     if (req.buffer == NULL)
     {
@@ -560,3 +565,8 @@ int main(int argc, char* argv[])
 #endif
 
 #endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
