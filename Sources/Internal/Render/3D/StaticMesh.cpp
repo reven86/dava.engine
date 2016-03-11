@@ -85,7 +85,7 @@ void StaticMesh::AddNode(DataNode* node)
 
 uint32 StaticMesh::GetPolygonGroupCount()
 {
-    return (uint32)children.size();
+    return uint32(children.size());
 }
 
 PolygonGroup* StaticMesh::GetPolygonGroup(uint32 index)

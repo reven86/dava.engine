@@ -233,7 +233,7 @@ void UIParticles::Draw(const UIGeometricData& geometricData)
     system->Process(updateTime);
     updateTime = 0.0f;
 
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, (pointer_size)&Vector3::Zero);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, reinterpret_cast<pointer_size>(&Vector3::Zero));
     effect->effectRenderObject->PrepareToRender(defaultCamera);
     effect->effectRenderObject->BindDynamicParameters(defaultCamera);
 
@@ -272,7 +272,7 @@ void UIParticles::LoadEffect(const FilePath& path)
 
     ScopedPtr<SceneArchive> archive(sceneFile->LoadSceneArchive(path));
     ParticleEffectComponent* newEffect = nullptr;
-    if ((SceneArchive*)archive != nullptr && !archive->children.empty())
+    if (static_cast<SceneArchive*>(archive) != nullptr && !archive->children.empty())
     {
         ScopedPtr<Entity> entity(new Entity());
         SerializationContext serializationContext;
@@ -285,7 +285,7 @@ void UIParticles::LoadEffect(const FilePath& path)
         ParticleEffectComponent* effSrc = GetEffectComponent(entity);
         if (effSrc)
         {
-            newEffect = (ParticleEffectComponent*)effSrc->Clone(NULL);
+            newEffect = static_cast<ParticleEffectComponent*>(effSrc->Clone(nullptr));
         }
     }
 
@@ -357,7 +357,7 @@ UIParticles* UIParticles::Clone()
 void UIParticles::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIParticles* src = (UIParticles*)srcControl;
+    UIParticles* src = static_cast<UIParticles*>(srcControl);
 
     SetEffectPath(src->GetEffectPath());
     SetStartDelay(src->GetStartDelay());
