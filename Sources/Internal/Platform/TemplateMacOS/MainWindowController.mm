@@ -166,9 +166,9 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
     // window controller used from app delegate
     [appDelegate setWindowController:mainWindowController];
 
-    [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+    [[DavaApp sharedApplication] setDelegate:static_cast<id<NSApplicationDelegate>>(appDelegate)];
 
-    int retVal = NSApplicationMain(argc, (const char**)argv);
+    int retVal = NSApplicationMain(argc, const_cast<const char**>(static_cast<char**>(argv)));
     // This method never returns, so release code transfered to termination message
     // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
     // core->ReleaseSingletons() is called from there
@@ -440,12 +440,12 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
 {
-    [self keyUp:(NSEvent*)[notification object]];
+    [self keyUp:static_cast<NSEvent*>([notification object])];
 }
 
 - (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification
 {
-    NSEvent* theEvent = (NSEvent*)[notification object];
+    NSEvent* theEvent = static_cast<NSEvent*>([notification object]);
 
     if (theEvent.type == NSKeyDown)
     {
