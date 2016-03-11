@@ -48,12 +48,12 @@ class FoliageSystem : public SceneSystem
 {
 public:
     FoliageSystem(Scene* scene);
-    virtual ~FoliageSystem();
+    ~FoliageSystem() override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
     void SyncFoliageWithLandscape();
 
