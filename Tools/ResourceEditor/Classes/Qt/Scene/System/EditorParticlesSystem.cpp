@@ -59,13 +59,11 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
     DVASSERT(effectEntity != nullptr)
 
-    DAVA::float32 debugObjectScale = SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
-
     SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
     DAVA::AABBox3 worldBox;
     DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
     collBox.GetTransformedBox(effectEntity->GetWorldTransform(), worldBox);
-    DAVA::float32 radius = debugObjectScale * (collBox.max - collBox.min).Length() / 3;
+    DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(worldBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
@@ -82,9 +80,8 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
     TransformPerserveLength(center, DAVA::Matrix3(owner->GetWorldTransform()));
     center += owner->GetWorldTransform().GetTranslationVector();
 
-    DAVA::float32 debugObjectScale = SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
     DAVA::AABBox3 boundingBox = collisionSystem->GetBoundingBox(owner);
-    DAVA::float32 radius = debugObjectScale * (boundingBox.max - boundingBox.min).Length() / 3;
+    DAVA::float32 radius = (boundingBox.max - boundingBox.min).Length() / 3;
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, radius, DAVA::Color(1.0f, 1.0f, 1.0f, 0.5f), RenderHelper::DRAW_SOLID_DEPTH);
 
     DrawVectorArrow(emitter, center);

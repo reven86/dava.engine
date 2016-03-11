@@ -384,6 +384,7 @@ void SceneSelectionSystem::Draw()
         {
             if (item.SupportsTransformType(SelectableObject::TransformType::Disabled))
             {
+                auto bbox = collisionSystem->GetBoundingBox(item.GetContainedObject());
                 DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
             }
         }

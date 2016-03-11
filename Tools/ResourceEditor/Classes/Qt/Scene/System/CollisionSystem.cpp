@@ -265,6 +265,8 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::BaseObject* object)
         CollisionBaseObject* collObj = objectToCollision[object];
         if (collObj != nullptr)
         {
+            aabox = collObj->object.GetBoundingBox();
+
             SelectableObject wrapper(object);
             if (wrapper.CanBeCastedTo<DAVA::Entity>())
             {
@@ -273,10 +275,6 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::BaseObject* object)
                 {
                     aabox.AddAABBox(GetBoundingBox(entity->GetChild(i)));
                 }
-            }
-            else
-            {
-                aabox = collObj->object.GetBoundingBox();
             }
         }
     }
@@ -505,7 +503,9 @@ void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
 CollisionBaseObject* SceneCollisionSystem::BuildFromObject(const SelectableObject& object)
 {
     DAVA::float32 debugBoxScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxScale).AsFloat();
-    return new CollisionBox(object.GetContainedObject(), objectsCollWorld, object.GetWorldTransform().GetTranslationVector(), debugBoxScale);
+    DAVA::float32 debugBoxParticleScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
+    DAVA::float32 scale = object.CanBeCastedTo<DAVA::ParticleEmitterInstance>() ? debugBoxParticleScale : debugBoxScale;
+    return new CollisionBox(object.GetContainedObject(), objectsCollWorld, object.GetWorldTransform().GetTranslationVector(), scale);
 }
 
 CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
