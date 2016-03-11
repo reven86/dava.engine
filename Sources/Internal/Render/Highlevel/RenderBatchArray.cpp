@@ -55,14 +55,12 @@ void RenderBatchArray::Sort(Camera* camera)
 
     if ((sortFlags & SORT_THIS_FRAME) == SORT_THIS_FRAME)
     {
-        uint32 renderBatchCount = (uint32)renderBatchArray.size();
         if (sortFlags & SORT_BY_MATERIAL)
         {
             //Vector3 cameraPosition = camera->GetPosition();
 
-            for (uint32 k = 0; k < renderBatchCount; ++k)
+            for (RenderBatch* batch : renderBatchArray)
             {
-                RenderBatch* batch = renderBatchArray[k];
                 //pointer_size renderObjectId = (pointer_size)batch->GetRenderObject();
                 //RenderObject * renderObject = batch->GetRenderObject();
                 //Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
@@ -71,7 +69,7 @@ void RenderBatchArray::Sort(Camera* camera)
                 uint32 materialIndex = batch->GetMaterial()->GetSortingKey();
                 //VI: sorting key has the following layout: (m:8)(s:4)(d:20)
                 //batch->layerSortingKey = (pointer_size)((materialIndex << 20) | (batch->GetSortingKey() << 28) | (distanceBits));
-                batch->layerSortingKey = (pointer_size)((materialIndex & 0x0FFFFFFF) | (batch->GetSortingKey() << 28));
+                batch->layerSortingKey = static_cast<pointer_size>((materialIndex & 0x0FFFFFFF) | (batch->GetSortingKey() << 28));
                 //batch->layerSortingKey = (pointer_size)((batch->GetMaterial()->GetSortingKey() << 20) | (batch->GetSortingKey() << 28) | (renderObjectId & 0x000FFFFF));
             }
 
@@ -84,11 +82,10 @@ void RenderBatchArray::Sort(Camera* camera)
             Vector3 cameraPosition = camera->GetPosition();
             Vector3 cameraDirection = camera->GetDirection();
 
-            for (uint32 k = 0; k < renderBatchCount; ++k)
+            for (RenderBatch* batch : renderBatchArray)
             {
-                RenderBatch* batch = renderBatchArray[k];
                 Vector3 delta = batch->GetRenderObject()->GetWorldTransformPtr()->GetTranslationVector() - cameraPosition;
-                uint32 distance = delta.DotProduct(cameraDirection) < 0 ? 0 : ((uint32)(delta.Length() * 1000.0f)); //x1000.0f is to prevent resorting of nearby objects (still 26 km range)
+                uint32 distance = delta.DotProduct(cameraDirection) < 0 ? 0 : (static_cast<uint32>(delta.Length() * 1000.0f)); //x1000.0f is to prevent resorting of nearby objects (still 26 km range)
                 distance = distance + 31 - batch->GetSortingOffset();
                 batch->layerSortingKey = (distance & 0x0fffffff) | (batch->GetSortingKey() << 28);
             }
@@ -101,12 +98,11 @@ void RenderBatchArray::Sort(Camera* camera)
         {
             Vector3 cameraPosition = camera->GetPosition();
 
-            for (uint32 k = 0; k < renderBatchCount; ++k)
+            for (RenderBatch* batch : renderBatchArray)
             {
-                RenderBatch* batch = renderBatchArray[k];
                 RenderObject* renderObject = batch->GetRenderObject();
                 Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-                uint32 distance = ((uint32)((position - cameraPosition).Length() * 100.0f)) + 31 - batch->GetSortingOffset();
+                uint32 distance = static_cast<uint32>((position - cameraPosition).Length() * 100.0f) + 31 - batch->GetSortingOffset();
                 uint32 distanceBits = 0x0fffffff - distance & 0x0fffffff;
 
                 batch->layerSortingKey = distanceBits | (batch->GetSortingKey() << 28);
