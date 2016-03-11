@@ -236,6 +236,10 @@
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\TemplateHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Command\ICommand.h" />
+    <ClInclude Include="..\..\Sources\Internal\Command\ObjectHandle.h" />
+    <ClInclude Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.h" />
+    <ClInclude Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicGNU.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicWindows.h" />
@@ -723,6 +727,9 @@
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Command\ObjectHandle.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\PosixThreads.cpp" />
