@@ -359,9 +359,10 @@ void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily 
 {
     auto entity = lodComponent->GetEntity();
 
-    DAVA::TexturesMap textures;
-    SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, textures,
-                                         SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+    SceneHelper::TextureCollector collector;
+    SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, collector);
+    DAVA::TexturesMap& textures = collector.GetTextures();
+
     for (auto& tex : textures)
     {
         tex.second->ReloadAs(targetGPU);

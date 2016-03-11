@@ -54,9 +54,6 @@ LineEditEx::LineEditEx(QWidget* parent)
     l->setSpacing(1);
     l->addStretch();
     setLayout(l);
-
-    LineEditStyle *proxyStyle = new LineEditStyle( style() );
-    setStyle(proxyStyle);
 }
 
 LineEditEx::~LineEditEx()

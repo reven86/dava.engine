@@ -97,6 +97,9 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="EditableTabBar" name="tabbar" native="true"/>
+       </item>
+       <item>
         <widget class="QFrame" name="frame_3">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -299,6 +302,11 @@
    <class>MaterialTree</class>
    <extends>QTreeView</extends>
    <header>MaterialEditor/MaterialTree.h</header>
+  </customwidget>
+  <customwidget>
+   <class>EditableTabBar</class>
+   <extends>QTabBar</extends>
+   <header>QtTools/EditableTabBar/EditableTabBar.h</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -34,6 +34,7 @@
 
 #include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
+#include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
 #include <QtGlobal>
 
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
         a.setOrganizationName("DAVA");
         a.setApplicationName("QuickEd");
 
+        Themes::InitFromQApplication();
         Q_INIT_RESOURCE(QtToolsResources);
 
         QObject::connect(&a, &QApplication::applicationStateChanged, [&qtLayer](Qt::ApplicationState state) {
