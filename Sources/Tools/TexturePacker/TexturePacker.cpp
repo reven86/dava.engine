@@ -89,9 +89,9 @@ TexturePacker::TexturePacker()
 		int32 q = atoi(qualityName.c_str());
 		if((q >= TextureConverter::ECQ_FASTEST) && (q <= TextureConverter::ECQ_VERY_HIGH))
 		{
-            quality = static_cast<TextureConverter::eConvertQuality>(q);
-        }
-    }
+			quality = static_cast<TextureConverter::eConvertQuality>(q);
+		}
+	}
     
 	maxTextureSize = DEFAULT_TEXTURE_SIZE;
 	onlySquareTextures = false;
@@ -105,9 +105,9 @@ TextureAtlasPtr TexturePacker::TryToPack(const Rect2i& textureRect)
     TextureAtlasPtr atlas(new TextureAtlas(textureRect, useTwoSideMargin, texturesMargin));
 
     // Packing of sorted by size images
-    for (int i = 0; i < static_cast<int>(sortVector.size()); ++i)
-    {
-        DefinitionFile * defFile = sortVector[i].defFile;
+    for (size_t i = 0; i < sortVector.size(); ++i)
+	{
+		DefinitionFile * defFile = sortVector[i].defFile;
 		int frame = sortVector[i].frameIndex;
 
         if (!atlas->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
@@ -127,9 +127,9 @@ float TexturePacker::TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas,
 	float weight = 0.0f;
 	
 	// Packing of sorted by size images
-    for (int i = 0; i < static_cast<int>(tempSortVector.size()); ++i)
-    {
-        DefinitionFile * defFile = tempSortVector[i].defFile;
+	for (size_t i = 0; i < tempSortVector.size(); ++i)
+	{
+		DefinitionFile * defFile = tempSortVector[i].defFile;
 		int frame = tempSortVector[i].frameIndex;
         if (atlas->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
         {
@@ -509,10 +509,10 @@ bool TexturePacker::WriteDefinition(const TextureAtlasPtr& atlas, const FilePath
 			}
 		}
 	}
-
-    for (int pathInfoLine = 0; pathInfoLine < static_cast<int>(defFile->pathsInfo.size()); ++pathInfoLine)
-    {
-        String & line = defFile->pathsInfo[pathInfoLine];
+	
+	for (size_t pathInfoLine = 0; pathInfoLine < defFile->pathsInfo.size(); ++pathInfoLine)
+	{
+		String & line = defFile->pathsInfo[pathInfoLine];
 		fprintf(fp, "%s", line.c_str());
 	}
 	
@@ -554,7 +554,7 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedA
     }
 
     // write real used packers count
-    fprintf(fp, "%d\n", static_cast<int>(atlasIndexToFileIndex.size()));
+    fprintf(fp, "%u\n", static_cast<uint32>(atlasIndexToFileIndex.size()));
 
     int realIndex = 0;
     // write user texture indexes
@@ -603,10 +603,10 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedA
 			return false;
 		}
 	}
-
-    for (int pathInfoLine = 0; pathInfoLine < static_cast<int>(defFile->pathsInfo.size()); ++pathInfoLine)
-    {
-        String & line = defFile->pathsInfo[pathInfoLine];
+	
+	for (size_t pathInfoLine = 0; pathInfoLine < defFile->pathsInfo.size(); ++pathInfoLine)
+	{
+		String & line = defFile->pathsInfo[pathInfoLine];
 		fprintf(fp, "%s", line.c_str());
 	}
 	

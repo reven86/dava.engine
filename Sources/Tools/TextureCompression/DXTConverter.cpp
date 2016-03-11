@@ -118,6 +118,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
         }
     }
 
+        
     eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, static_cast<PixelFormat>(compression->format));
     for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
     for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);

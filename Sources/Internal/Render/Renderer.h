@@ -86,6 +86,8 @@ RenderStats& GetRenderStats();
 class Image;
 struct ScreenShotCallbackDelegate
 {
+    virtual ~ScreenShotCallbackDelegate() = default;
+    
     void operator()(Image* image)
     {
         return OnScreenShot(image);
