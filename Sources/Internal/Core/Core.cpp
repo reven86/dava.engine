@@ -308,7 +308,7 @@ void Core::CreateSingletons()
 void Core::CreateRenderer()
 {
     DVASSERT(options->IsKeyExists("renderer"));
-    rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
+    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
 
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
@@ -397,7 +397,7 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
     screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view
-    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT));
 #endif
 }
 
@@ -408,7 +408,7 @@ KeyedArchive* Core::GetOptions()
 
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
-    return (Core::eScreenOrientation)screenOrientation;
+    return screenOrientation;
 }
 
 Core::eScreenMode Core::GetScreenMode()
@@ -453,7 +453,7 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
     {
         int32 minDiffWidth = 0;
         int32 minDiffHeight = 0;
-        float32 requestedAspect = (requestedMode.height > 0 ? (float32)requestedMode.width / (float32)requestedMode.height : 1.0f);
+        float32 requestedAspect = (requestedMode.height > 0 ? float32(requestedMode.width) / float32(requestedMode.height) : 1.0f);
         float32 minDiffAspect = 0;
 
         for (List<DisplayMode>::iterator it = availableDisplayModes.begin(); it != availableDisplayModes.end(); ++it)
@@ -463,7 +463,7 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
             int32 diffWidth = abs(availableMode.width - requestedMode.width);
             int32 diffHeight = abs(availableMode.height - requestedMode.height);
 
-            float32 availableAspect = (availableMode.height > 0 ? (float32)availableMode.width / (float32)availableMode.height : 1.0f);
+            float32 availableAspect = (availableMode.height > 0 ? float32(availableMode.width) / float32(availableMode.height) : 1.0f);
             float32 diffAspect = fabsf(availableAspect - requestedAspect);
 
             //          if (diffWidth >= 0 && diffHeight >= 0)
@@ -532,8 +532,8 @@ DisplayMode Core::GetCurrentDisplayMode()
 
 void Core::Quit()
 {
+    Logger::FrameworkDebug("[Core::Quit] is not supported by platform implementation of core");
     exit(0);
-    Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
 }
 
 void Core::SetApplicationCore(ApplicationCore* _core)
