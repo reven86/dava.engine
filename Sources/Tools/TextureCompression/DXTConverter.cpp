@@ -119,7 +119,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
     }
 
         
-    eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, (PixelFormat) compression->format);
+    eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, static_cast<PixelFormat>(compression->format));
     for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
     for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
     if(eErrorCode::SUCCESS == retCode)
@@ -252,7 +252,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
             }
         }
 
-        auto saveResult = ImageSystem::Instance()->SaveAsCubeMap(outputName, imageSets, (PixelFormat)compression->format);
+        auto saveResult = ImageSystem::Instance()->SaveAsCubeMap(outputName, imageSets, static_cast<PixelFormat>(compression->format));
         if (saveResult == eErrorCode::SUCCESS)
         {
             LibDdsHelper helper;
