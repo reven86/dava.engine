@@ -1968,16 +1968,14 @@ Animation* UIControl::DisabledAnimation(bool disabled, bool hierarhic /* = true*
 
 void UIControl::VisibleAnimationCallback(BaseObject* caller, void* param, void* callerData)
 {
-    bool visible = (param != nullptr);
+    bool visible = (pointer_size(param) > 0);
     SetVisibilityFlag(visible);
 }
 
 Animation* UIControl::VisibleAnimation(bool visible, int32 track /* = 0*/)
 {
     Animation* animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-    pointer_size pSize = visible;
-    animation->AddEvent(Animation::EVENT_ANIMATION_START,
-                        Message(this, &UIControl::VisibleAnimationCallback, reinterpret_cast<void*>(pSize)));
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::VisibleAnimationCallback, reinterpret_cast<void*>(static_cast<pointer_size>(visible))));
     animation->Start(track);
     return animation;
 }

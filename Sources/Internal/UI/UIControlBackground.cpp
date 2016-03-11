@@ -133,7 +133,7 @@ int32 UIControlBackground::GetModification() const
 
 UIControlBackground::eColorInheritType UIControlBackground::GetColorInheritType() const
 {
-    return static_cast<eColorInheritType>(colorInheritType);
+    return (eColorInheritType)colorInheritType;
 }
 
 UIControlBackground::eDrawType UIControlBackground::GetDrawType() const
@@ -452,7 +452,7 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
         }
         else
         {
-            drawState.position.x = drawRect.x + static_cast<int32>((drawRect.dx - w) * 0.5);
+            drawState.position.x = drawRect.x + static_cast<int32>((drawRect.dx - w) * 0.5f);
         }
         if (align & ALIGN_TOP)
         {
@@ -464,7 +464,7 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
         }
         else
         {
-            drawState.position.y = (drawRect.y) + static_cast<int32>((drawRect.dy - h + ph) * 0.5);
+            drawState.position.y = (drawRect.y) + static_cast<int32>((drawRect.dy - h + ph) * 0.5f);
         }
         drawState.scale.x = w / spr->GetWidth();
         drawState.scale.y = h / spr->GetHeight();

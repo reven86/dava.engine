@@ -131,8 +131,8 @@ const Vector2& UIJoypad::GetDigitalPosition()
     float32 xSign = v.x >= 0.0f ? digitalSense : -digitalSense;
     float32 ySign = v.y >= 0.0f ? digitalSense : -digitalSense;
 
-    digitalVector.x = 0.0f + (int32)(v.x + xSign);
-    digitalVector.y = 0.0f + (int32)(v.y + ySign);
+    digitalVector.x = 0.0f + static_cast<int32>(v.x + xSign);
+    digitalVector.y = 0.0f + static_cast<int32>(v.y + ySign);
 
     //Logger::Info("Digital joy pos x = %f, y = %f", digitalVector.x, digitalVector.y);
 
