@@ -108,7 +108,7 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
         }
         else
         {
-            GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, (uint64)(&b) } };
+            GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, reinterpret_cast<uint64>(&b) } };
 
             ExecGL(&cmd1, 1, force_immediate);
 
@@ -117,7 +117,7 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
                 GLCommand cmd2[] =
                 {
                   { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&b) } },
-                  { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), usage } },
+                  { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, reinterpret_cast<uint64>(desc.initialData), usage } },
                   { GLCommand::RESTORE_INDEX_BUFFER, {} }
                 };
 
@@ -156,7 +156,7 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
 {
     if (uid)
     {
-        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
+        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
         ExecGL(&cmd, 1, force_immediate);
 
         uid = 0;
@@ -222,7 +222,7 @@ gles2_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
         if (self->isUPBuffer)
         {
             DVASSERT(self->mappedData);
-            memcpy((uint8*)self->mappedData + offset, (uint8*)data + offset, size);
+            memcpy(static_cast<uint8*>(self->mappedData) + offset, static_cast<const uint8*>(data) + offset, size);
 
             success = true;
         }
@@ -231,7 +231,7 @@ gles2_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
             GLCommand cmd[] =
             {
               { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
-              { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(data), self->usage } },
+              { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, reinterpret_cast<uint64>(data), self->usage } },
               { GLCommand::RESTORE_INDEX_BUFFER, {} }
             };
 
@@ -261,7 +261,7 @@ gles2_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
             self->mappedData = ::malloc(self->size);
 
         self->isMapped = true;
-        data = ((uint8*)self->mappedData) + offset;
+        data = static_cast<uint8*>(self->mappedData) + offset;
     }
 
     return data;
@@ -292,7 +292,7 @@ gles2_IndexBuffer_Unmap(Handle ib)
         GLCommand cmd[] =
         {
           { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
-          { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->mappedData), self->usage } },
+          { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, reinterpret_cast<uint64>(self->mappedData), self->usage } },
           { GLCommand::RESTORE_INDEX_BUFFER, {} }
         };
 
