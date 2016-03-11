@@ -61,7 +61,7 @@ public:
     - Mesh(Skinned)
  
  */
-const static uint16 INVALID_STATIC_OCCLUSION_INDEX = (uint16)(-1);
+const static uint16 INVALID_STATIC_OCCLUSION_INDEX = uint16(-1);
 
 class RenderBatch;
 class RenderObject : public AnimatedObject
