@@ -105,7 +105,7 @@ void EntityCache::Preload(const FilePath& path)
             Entity* child = srcRootEntity->GetChild(0);
             if (1 == child->GetComponentCount())
             {
-                TransformComponent* tr = reinterpret_cast<TransformComponent*>(srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT));
+                TransformComponent* tr = static_cast<TransformComponent*>(srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT));
                 if (nullptr != tr && tr->GetLocalTransform() == Matrix4::IDENTITY)
                 {
                     srcRootEntity = child;
@@ -400,8 +400,8 @@ Scene::~Scene()
     waveSystem = 0;
     animationSystem = 0;
 
-    uint32 size = (uint32)systems.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = systems.size();
+    for (size_t k = 0; k < size; ++k)
         SafeDelete(systems[k]);
     systems.clear();
 
@@ -660,8 +660,8 @@ void Scene::Update(float timeElapsed)
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    uint32 size = (uint32)systemsToProcess.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = systemsToProcess.size();
+    for (size_t k = 0; k < size; ++k)
     {
         SceneSystem* system = systemsToProcess[k];
         if ((systemsMask & SCENE_SYSTEM_UPDATEBLE_FLAG) && system == transformSystem)
@@ -698,12 +698,14 @@ void Scene::Draw()
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
     {
         const float32* propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)propDataPtr);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR,
+                                                       propDataPtr, reinterpret_cast<pointer_size>(propDataPtr));
     }
     else
     {
         static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, defShadowColor.color, (pointer_size) this);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR,
+                                                       defShadowColor.color, reinterpret_cast<pointer_size>(this));
     }
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
@@ -994,8 +996,8 @@ void Scene::OnSceneReady(Entity* rootNode)
 
 void Scene::Input(DAVA::UIEvent* event)
 {
-    uint32 size = (uint32)systemsToInput.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = systemsToInput.size();
+    for (size_t k = 0; k < size; ++k)
     {
         SceneSystem* system = systemsToInput[k];
         system->Input(event);
