@@ -233,11 +233,11 @@ void CollectHeightmapPathname(Scene* scene, const FilePath& dataSourceFolder, Sc
 
 void CollectTextureDescriptors(Scene* scene, const FilePath& dataSourceFolder, SceneExporter::ExportedObjectCollection& exportedObjects)
 {
-    TexturesMap sceneTextures;
-    SceneHelper::EnumerateSceneTextures(scene, sceneTextures, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
+    SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
+    SceneHelper::EnumerateSceneTextures(scene, collector);
 
-    exportedObjects.reserve(exportedObjects.size() + sceneTextures.size());
-    for (const auto& scTex : sceneTextures)
+    exportedObjects.reserve(exportedObjects.size() + collector.GetTextures().size());
+    for (const auto& scTex : collector.GetTextures())
     {
         const FilePath& path = scTex.first;
         if (path.GetType() == FilePath::PATH_IN_MEMORY)

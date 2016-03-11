@@ -414,15 +414,16 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
         DAVA::Texture::SetDefaultGPU(gpu);
 
-        DAVA::TexturesMap allScenesTextures;
+        SceneHelper::TextureCollector collector;
         DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
             SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
-            SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+            SceneHelper::EnumerateSceneTextures(scene, collector);
             SceneHelper::EnumerateMaterials(scene, allSceneMaterials);
         }
 
+        DAVA::TexturesMap& allScenesTextures = collector.GetTextures();
         if (!allScenesTextures.empty())
         {
             int progress = 0;

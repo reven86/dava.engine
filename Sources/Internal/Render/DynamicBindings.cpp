@@ -86,7 +86,7 @@ void DynamicBindings::SetDynamicParam(DynamicBindings::eUniformSemantic shaderSe
             dynamicParameters[shaderSemantic].updateSemantic = _updateSemantic;
 
         dynamicParameters[shaderSemantic].value = value;
-        dynamicParamersRequireUpdate &= ~(1 << shaderSemantic);
+        dynamicParamersRequireUpdate &= ~(1ull << shaderSemantic);
 
         switch (shaderSemantic)
         {
