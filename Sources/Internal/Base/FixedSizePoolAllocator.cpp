@@ -70,12 +70,12 @@ void FixedSizePoolAllocator::CreateNewDataBlock()
 
 void FixedSizePoolAllocator::InsertBlockToFreeNodes(void* block)
 {
-    void** blockItem = OffsetPointer<void*>(block, sizeof(uint8*) + blockSize * (blockArraySize - 1));
+    uint8* blockItem = OffsetPointer<uint8>(block, sizeof(uint8*) + blockSize * (blockArraySize - 1));
     for (uint32 k = 0; k < blockArraySize; ++k)
     {
         //Logger::FrameworkDebug("Free block added: %p", blockItem);
 
-        *blockItem = nextFreeBlock;
+        *reinterpret_cast<uint8**>(blockItem) = static_cast<uint8*>(nextFreeBlock);
         nextFreeBlock = blockItem;
         blockItem -= blockSize;
     }
