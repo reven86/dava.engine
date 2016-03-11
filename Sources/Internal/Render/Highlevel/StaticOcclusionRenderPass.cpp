@@ -163,7 +163,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     std::unordered_set<uint32> invisibleObjects;
     Vector3 cameraPosition = occlusionCamera->GetPosition();
 
-    for (RenderLayer* layer: renderLayers)
+    for (RenderLayer* layer : renderLayers)
     {
         const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
 
