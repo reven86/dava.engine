@@ -140,7 +140,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity* entity)
             LodComponent* lc = GetLodComponent(sourceEntity);
             if ((nullptr != lc) && (nullptr == GetLodComponent(entity)))
             {
-                LodComponent* newLod = (LodComponent*)lc->Clone(entity);
+                LodComponent* newLod = static_cast<LodComponent*>(lc->Clone(entity));
                 entity->AddComponent(newLod);
             }
 
