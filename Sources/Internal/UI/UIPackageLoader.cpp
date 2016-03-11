@@ -245,7 +245,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
                                     {
                                         int32 transitionFunctionType = Interpolation::LINEAR;
                                         GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionFunction->AsString().c_str(), transitionFunctionType);
-                                        property.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                                        property.transitionFunction = static_cast<Interpolation::FuncType>(transitionFunctionType);
                                     }
                                 }
                             }
