@@ -120,7 +120,7 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 fileSize = fp->GetSize();
         sourceCode.vertexProgText = new char8[fileSize + 1];
         sourceCode.vertexProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read((uint8*)sourceCode.vertexProgText, fileSize);
+        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
         if (dataRead != fileSize)
         {
             Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
@@ -139,7 +139,7 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 fileSize = fp->GetSize();
         sourceCode.fragmentProgText = new char8[fileSize + 1];
         sourceCode.fragmentProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read((uint8*)sourceCode.fragmentProgText, fileSize);
+        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);
         if (dataRead != fileSize)
         {
             Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
