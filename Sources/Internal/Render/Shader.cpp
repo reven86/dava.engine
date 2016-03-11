@@ -116,7 +116,7 @@ void ShaderDescriptor::UpdateDynamicParams()
     {
         if (dynamicBinding.buffer == rhi::InvalidHandle) //buffer is cut by compiler/linker!
             continue;
-        float32* data = (float32*)(Renderer::GetDynamicBindings().GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
+        const float32* data = static_cast<const float32*>(Renderer::GetDynamicBindings().GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
         pointer_size updateSemantic = Renderer::GetDynamicBindings().GetDynamicParamUpdateSemantic(dynamicBinding.dynamicPropertySemantic);
         if (dynamicBinding.updateSemantic != updateSemantic)
         {
