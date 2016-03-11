@@ -47,9 +47,10 @@ public:
     LightComponent(Light* _light = 0);
 
     IMPLEMENT_COMPONENT_TYPE(LIGHT_COMPONENT);
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     void SetLightObject(Light* _light);
     Light* GetLightObject() const;
