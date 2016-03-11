@@ -229,8 +229,8 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 
     String format = pixelFormatToPVRFormat[static_cast<PixelFormat>(compression->format)];
     FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
-		
-	// input file
+
+    // input file
 	args.push_back("-i");
 	String inputName = GenerateInputName(descriptor, fileToConvert);
 #if defined (__DAVAENGINE_MACOS__)

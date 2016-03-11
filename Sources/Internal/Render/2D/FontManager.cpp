@@ -36,9 +36,8 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #include <ft2build.h>
-#pragma clang diagnostic pop
-
 #include FT_FREETYPE_H
+#pragma clang diagnostic pop
 
 #ifdef __DAVAENGINE_WIN_UAP__
 #undef generic

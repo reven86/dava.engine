@@ -79,7 +79,7 @@ bool IsFormatSupported(PixelFormat format)
 
 bool AreImagesSquare(const Vector<DAVA::Image*>& imageSet)
 {
-    for (Image *image : imageSet)
+    for (Image* image : imageSet)
     {
         if (!IsPowerOf2(image->GetWidth()) || !IsPowerOf2(image->GetHeight()))
         {

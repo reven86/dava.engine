@@ -37,6 +37,9 @@
  *      2. append the system-dependent routines in this file.
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+
 #include "_mcpp.h"
 
 #if PREPROCESSED
@@ -5406,3 +5409,4 @@ void clear_filelist(void)
         xfree((void*)once_list);
 }
 #endif
+#pragma clang diagnostic pop

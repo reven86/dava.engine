@@ -34,6 +34,9 @@
  * The macro expansion routines are placed here.
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+
 #include "_mcpp.h"
 
 
@@ -3222,3 +3225,5 @@ const char** arglist)
         dump_string(NULL, arglist[i]);
     }
 }
+
+#pragma clang diagnostic pop
