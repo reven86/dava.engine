@@ -678,10 +678,6 @@ void Core::SystemProcessFrame()
 
         //#endif
 
-        if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
-        {
-            ApplyWindowSize();
-        }
 //TODO: when cross platforms resize done on all platforms, remove this code
 #if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
         // recalc frame inside begin / end frame
@@ -690,7 +686,12 @@ void Core::SystemProcessFrame()
         {
             vsc->ScreenSizeChanged();
         }
-#endif
+#else
+        if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
+        {
+            ApplyWindowSize();
+        }
+#endif // !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
 
         float32 frameDelta = SystemTimer::Instance()->FrameDelta();
         SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
