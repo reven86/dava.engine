@@ -133,7 +133,7 @@ int32 UIControlBackground::GetModification() const
 
 UIControlBackground::eColorInheritType UIControlBackground::GetColorInheritType() const
 {
-    return (eColorInheritType)colorInheritType;
+    return static_cast<eColorInheritType>(colorInheritType);
 }
 
 UIControlBackground::eDrawType UIControlBackground::GetDrawType() const
