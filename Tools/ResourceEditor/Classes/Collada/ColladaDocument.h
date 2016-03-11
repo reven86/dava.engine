@@ -54,25 +54,7 @@ public:
     bool IsEmptyNode(ColladaSceneNode* node);
 
     eColladaErrorCodes SaveSC2(const FilePath& scenePath) const;
-    void SaveScene(const FilePath& scenePath, const String& sceneName);
     String GetTextureName(const FilePath& scenePath, ColladaTexture* texture);
-
-    void WriteTexture(SceneFile::TextureDef* texture);
-    void WriteMaterial(SceneFile::MaterialDef* material);
-    void WriteLight(SceneFile::LightDef* light);
-
-    //StaticMesh * ConvertMesh(ColladaMesh * mesh);
-    void WriteStaticMesh(ColladaMesh* mesh, int32 meshIndex);
-    void WriteAnimatedMesh(ColladaAnimatedMesh* mesh, int32 animatedMeshIndex);
-
-    void WriteSceneNode(ColladaSceneNode* node, int32& nodeId, int32 parentId, int32 level);
-    void WriteMeshNode(ColladaMeshInstance* node, int32& nodeId, int32 parentId, int32 level, int32 instanceIdx);
-    void WriteCameraNode(ColladaCamera* node, int32& globalNodeId, int32 parentId, int32 level);
-
-    void WriteCamera(ColladaCamera* cam, int32 i);
-    void WriteLight(ColladaLight* light, int32 i);
-
-    void WriteNodeAnimationList(ColladaAnimation* animation);
 
     void GetAnimationTimeInfo(FCDocument* document, float32& timeStart, float32& timeEnd);
 
@@ -81,7 +63,6 @@ public:
 
 private:
     FCDocument* document;
-    SceneFile::Header header;
 };
 };
 

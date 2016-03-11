@@ -219,4 +219,9 @@ const DAVA::String NMaterialSerializationKey::ParentMaterialKey = "parentMateria
 const DAVA::String NMaterialSerializationKey::FXName = "fxName";
 const DAVA::String NMaterialSerializationKey::QualityGroup = "qualityGroup";
 const DAVA::String NMaterialSerializationKey::MaterialName = "materialName";
+
+const DAVA::String NMaterialSerializationKey::ConfigName = "configName";
+const DAVA::String NMaterialSerializationKey::ConfigCount = "configCount";
+const DAVA::String NMaterialSerializationKey::ConfigArchive = "configArchive_%d";
+const FastName NMaterialSerializationKey::DefaultConfigName = FastName("Default");
 };

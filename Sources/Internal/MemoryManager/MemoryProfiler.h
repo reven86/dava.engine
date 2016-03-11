@@ -38,6 +38,7 @@
 
 #define DAVA_MEMORY_PROFILER_ENABLE_LIGHTWEIGHT() DAVA::MemoryManager::Instance()->EnableLightWeightMode()
 #define DAVA_MEMORY_PROFILER_UPDATE() DAVA::MemoryManager::Instance()->Update()
+#define DAVA_MEMORY_PROFILER_FINISH() DAVA::MemoryManager::Instance()->Finish()
 
 #define DAVA_MEMORY_PROFILER_REGISTER_TAG(index, name) DAVA::MemoryManager::RegisterTagName(index, name)
 #define DAVA_MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name) DAVA::MemoryManager::RegisterAllocPoolName(index, name)
@@ -64,6 +65,7 @@ public:                                                                         
 
 #define DAVA_MEMORY_PROFILER_ENABLE_LIGHTWEIGHT()
 #define DAVA_MEMORY_PROFILER_UPDATE()
+#define DAVA_MEMORY_PROFILER_FINISH()
 
 #define DAVA_MEMORY_PROFILER_REGISTER_TAG(index, name)
 #define DAVA_MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)

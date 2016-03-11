@@ -72,11 +72,6 @@ void UIScreenManager::ActivateGLController()
 {
 }
 
-void UIScreenManager::ScreenSizeChanged()
-{
-    GetScreen()->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
-}
-
 void UIScreenManager::SetFirst(int screenId)
 {
     Screen& screen = screens[screenId];
@@ -118,8 +113,7 @@ void UIScreenManager::SetScreen(int screenId, UIScreenTransition* transition)
             [[ScreenManagerImpl instance] setViewController:controller];
         }
         activeControllerId = screenId;
-        UIControlSystem::Instance()->SetScreen(0, 0);
-        UIControlSystem::Instance()->ProcessScreenLogic();
+        UIControlSystem::Instance()->SetScreen(nullptr);
 
         activeScreenId = -1;
     }
@@ -140,6 +134,12 @@ void UIScreenManager::SetScreen(int screenId, UIScreenTransition* transition)
 
         UIControlSystem::Instance()->SetScreen((UIScreen*)screen.value, transition);
     }
+}
+
+void UIScreenManager::ResetScreen()
+{
+    activeScreenId = -1;
+    UIControlSystem::Instance()->Reset();
 }
 
 void UIScreenManager::RegisterController(int controllerId, void* controller)

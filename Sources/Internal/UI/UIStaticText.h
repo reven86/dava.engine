@@ -169,10 +169,6 @@ protected:
 #endif
 
 public:
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
-
-public:
     String GetFontPresetName() const;
     void SetFontByPresetName(const String& presetName);
 

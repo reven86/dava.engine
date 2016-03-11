@@ -496,6 +496,9 @@ public:
 
 private:
     UnderlyingMap objectMap;
+
+public:
+    INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL)
 };
 
 // Implementation

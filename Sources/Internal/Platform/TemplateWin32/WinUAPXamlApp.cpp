@@ -373,12 +373,14 @@ void WinUAPXamlApp::OnSuspending(::Platform::Object ^ sender, Windows::Applicati
 {
     core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
+        rhi::SuspendRendering();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object ^ sender, ::Platform::Object ^ args)
 {
     core->RunOnMainThreadBlocked([]() {
+        rhi::ResumeRendering();
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
@@ -464,8 +466,6 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
         DeviceInfo::InitializeScreenInfo();
         ResetRender();
         ReInitCoordinatesSystem();
-        UIScreenManager::Instance()->ScreenSizeChanged();
-        UIControlSystem::Instance()->ScreenSizeChanged();
     });
 }
 
@@ -1012,7 +1012,6 @@ void WinUAPXamlApp::ResetScreen()
 
     ResetRender();
     ReInitCoordinatesSystem();
-    UIScreenManager::Instance()->ScreenSizeChanged();
 }
 
 void WinUAPXamlApp::ResetRender()

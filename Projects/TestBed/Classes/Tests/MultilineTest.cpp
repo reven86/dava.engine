@@ -192,7 +192,7 @@ void MultilineTest::OnShowHideClick(BaseObject* sender, void* data, void* caller
     if (nullptr != topLayerControl)
     {
         static bool isVisible = true;
-        topLayerControl->SetVisible(isVisible);
+        topLayerControl->SetVisibilityFlag(isVisible);
         isVisible = !isVisible;
     }
 }
