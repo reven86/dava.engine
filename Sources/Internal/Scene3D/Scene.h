@@ -286,7 +286,7 @@ protected:
 
 int32 Scene::GetCameraCount()
 {
-    return (int32)cameras.size();
+    return static_cast<int32>(cameras.size());
 }
 };
 
