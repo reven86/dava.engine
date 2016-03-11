@@ -53,7 +53,7 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
             if (NULL != namesTable[i])
             {
                 void* p = const_cast<char*>(namesTable[i]);
-                free(p);
+                SafeDelete(p);
                 namesTable[i] = nullptr;
             }
         }
@@ -109,8 +109,8 @@ private:
     const char* debug_str_ptr;
 #endif
 
-    void AddRef(int i) const;
-    void RemRef(int i) const;
+    void AddRef(int32 i) const;
+    void RemRef(int32 i) const;
 };
 
 FastName& FastName::operator=(const FastName& _name)
