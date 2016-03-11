@@ -116,32 +116,32 @@ void TextBlockGraphicRender::Draw(const Color& textColor, const Vector2* offset)
 
     if (offset)
     {
-        xOffset += (int32)offset->x;
-        yOffset += (int32)offset->y;
+        xOffset += int32(offset->x);
+        yOffset += int32(offset->y);
     }
 
     int32 align = textBlock->GetVisualAlign();
     if (align & ALIGN_RIGHT)
     {
-        xOffset += (int32)(textBlock->rectSize.dx - renderRect.dx);
+        xOffset += int32(textBlock->rectSize.dx - renderRect.dx);
     }
     else if ((align & ALIGN_HCENTER) || (align & ALIGN_HJUSTIFY))
     {
-        xOffset += (int32)((textBlock->rectSize.dx - renderRect.dx) * 0.5f);
+        xOffset += int32((textBlock->rectSize.dx - renderRect.dx) * 0.5f);
     }
 
     if (align & ALIGN_BOTTOM)
     {
-        yOffset += (int32)(textBlock->rectSize.dy - renderRect.dy);
+        yOffset += int32(textBlock->rectSize.dy - renderRect.dy);
     }
     else if ((align & ALIGN_VCENTER) || (align & ALIGN_HJUSTIFY))
     {
-        yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
+        yOffset += int32((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
     }
 
     //NOTE: correct affine transformations
     Matrix4 offsetMatrix;
-    offsetMatrix.glTranslate((float32)xOffset - textBlock->pivot.x, (float32)yOffset - textBlock->pivot.y, 0.f);
+    offsetMatrix.glTranslate(float32(xOffset) - textBlock->pivot.x, float32(yOffset) - textBlock->pivot.y, 0.f);
 
     Matrix4 rotateMatrix;
     rotateMatrix.glRotate(RadToDeg(textBlock->angle), 0.f, 0.f, 1.f);
@@ -192,7 +192,7 @@ Font::StringMetrics TextBlockGraphicRender::DrawTextML(const WideString& drawTex
                                                        int32 xOffset, uint32 yOffset,
                                                        int32 lineSize)
 {
-    return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)), lineSize);
+    return InternalDrawText(drawText, xOffset, yOffset, int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(w)))), lineSize);
 }
 
 Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
@@ -206,7 +206,7 @@ Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& d
     if (metrics.drawRect.dx <= 0 && metrics.drawRect.dy <= 0)
         return metrics;
 
-    renderRect = renderRect.Combine(Rect((float32)metrics.drawRect.x, (float)metrics.drawRect.y, (float32)metrics.drawRect.dx, (float32)metrics.drawRect.dy));
+    renderRect = renderRect.Combine(Rect(float32(metrics.drawRect.x), float32(metrics.drawRect.y), float32(metrics.drawRect.dx), float32(metrics.drawRect.dy)));
     this->charDrawed += lastDrawed;
     return metrics;
 }

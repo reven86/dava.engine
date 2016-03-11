@@ -70,8 +70,8 @@ public:
 template <class Type>
 void RemovePointerFromVector(DAVA::Vector<Type*>& elements, const Type* element)
 {
-    DAVA::uint32 size = (DAVA::uint32)elements.size();
-    for (DAVA::uint32 index = 0; index < size; ++index)
+    auto size = elements.size();
+    for (auto index = 0U; index < size; ++index)
     {
         if (element == elements[index])
         {
@@ -134,12 +134,12 @@ void SingleComponentSystem::RemoveComponent(Entity* entity, Component* component
 
 uint32 SingleComponentSystem::GetEnititesCount() const
 {
-    return (uint32)entities.size();
+    return static_cast<uint32>(entities.size());
 }
 
 uint32 SingleComponentSystem::GetComponentsCount() const
 {
-    return (uint32)components.size();
+    return static_cast<uint32>(components.size());
 }
 
 //=============================================
@@ -195,7 +195,7 @@ void MultiComponentSystem::RemoveComponent(Entity* entity, Component* component)
 
 uint32 MultiComponentSystem::GetEnititesCount() const
 {
-    return (uint32)entities.size();
+    return static_cast<uint32>(entities.size());
 }
 
 uint32 MultiComponentSystem::GetComponentsCount(uint32 componentType) const
@@ -203,7 +203,7 @@ uint32 MultiComponentSystem::GetComponentsCount(uint32 componentType) const
     auto found = components.find(componentType);
     if (found != components.end())
     {
-        return (uint32)found->second.size();
+        return static_cast<uint32>(found->second.size());
     }
 
     return 0;

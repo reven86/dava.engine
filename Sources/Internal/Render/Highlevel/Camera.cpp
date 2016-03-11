@@ -513,7 +513,7 @@ BaseObject* Camera::Clone(BaseObject* dstNode)
         dstNode = new Camera();
     }
     // SceneNode::Clone(dstNode);
-    Camera* cnd = (Camera*)dstNode;
+    Camera* cnd = static_cast<Camera*>(dstNode);
     cnd->znear = znear;
     cnd->zfar = zfar;
     cnd->aspect = aspect;
