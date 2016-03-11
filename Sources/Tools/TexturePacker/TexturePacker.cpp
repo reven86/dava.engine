@@ -91,7 +91,7 @@ TexturePacker::TexturePacker()
 		{
             quality = static_cast<TextureConverter::eConvertQuality>(q);
         }
-	}
+    }
     
 	maxTextureSize = DEFAULT_TEXTURE_SIZE;
 	onlySquareTextures = false;
@@ -107,7 +107,7 @@ TextureAtlasPtr TexturePacker::TryToPack(const Rect2i& textureRect)
     // Packing of sorted by size images
     for (int i = 0; i < static_cast<int>(sortVector.size()); ++i)
     {
-		DefinitionFile * defFile = sortVector[i].defFile;
+        DefinitionFile * defFile = sortVector[i].defFile;
 		int frame = sortVector[i].frameIndex;
 
         if (!atlas->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
@@ -129,7 +129,7 @@ float TexturePacker::TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas,
 	// Packing of sorted by size images
     for (int i = 0; i < static_cast<int>(tempSortVector.size()); ++i)
     {
-		DefinitionFile * defFile = tempSortVector[i].defFile;
+        DefinitionFile * defFile = tempSortVector[i].defFile;
 		int frame = tempSortVector[i].frameIndex;
         if (atlas->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
         {
@@ -512,7 +512,7 @@ bool TexturePacker::WriteDefinition(const TextureAtlasPtr& atlas, const FilePath
 
     for (int pathInfoLine = 0; pathInfoLine < static_cast<int>(defFile->pathsInfo.size()); ++pathInfoLine)
     {
-		String & line = defFile->pathsInfo[pathInfoLine];
+        String & line = defFile->pathsInfo[pathInfoLine];
 		fprintf(fp, "%s", line.c_str());
 	}
 	
@@ -606,7 +606,7 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedA
 
     for (int pathInfoLine = 0; pathInfoLine < static_cast<int>(defFile->pathsInfo.size()); ++pathInfoLine)
     {
-		String & line = defFile->pathsInfo[pathInfoLine];
+        String & line = defFile->pathsInfo[pathInfoLine];
 		fprintf(fp, "%s", line.c_str());
 	}
 	
