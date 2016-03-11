@@ -94,7 +94,7 @@ DAVA_TESTCLASS (SaveImageTest)
         TEST_VERIFY(imgSet[0]->dataSize == inImage->dataSize);
 
         const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(inImage, imgSet[0], inImage->format);
-        float32 differencePersentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
+        float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
         TEST_VERIFY(differencePersentage <= diffThreshold);
 
         for (auto img : imgSet)

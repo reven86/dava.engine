@@ -41,7 +41,7 @@ FastName::FastName()
     FastNameDB::Instance();
 
 #ifdef __DAVAENGINE_DEBUG__
-    debug_str_ptr = NULL;
+    debug_str_ptr = nullptr;
 #endif
 }
 
@@ -159,8 +159,7 @@ void FastName::RemRef(int32 i) const
             db->namesHash.erase(db->namesTable[i]);
 
             // delete allocated memory for this string
-            void* ptr = const_cast<char*>(db->namesTable[i]);
-            SafeDelete(ptr);
+            delete db->namesTable[i];
 
             // remove name from names table
             db->namesTable[i] = nullptr;

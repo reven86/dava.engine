@@ -41,11 +41,11 @@ class BaseProcessSystem : public SceneSystem
 public:
     BaseProcessSystem(uint32 componentId, Scene* scene);
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
-    virtual void AddComponent(Entity* entity, Component* component);
-    virtual void RemoveComponent(Entity* entity, Component* component);
+    void AddComponent(Entity* entity, Component* component) override;
+    void RemoveComponent(Entity* entity, Component* component) override;
 
 protected:
     Vector<Component*> components;
