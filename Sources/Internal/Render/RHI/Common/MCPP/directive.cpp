@@ -35,6 +35,9 @@
  * are placed here.
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+
 #include "_mcpp.h"
 
 #if PREPROCESSED
@@ -1898,3 +1901,5 @@ void clear_symtable(void)
     }
 }
 #endif
+
+#pragma clang diagnostic pop
