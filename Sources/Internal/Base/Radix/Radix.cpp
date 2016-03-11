@@ -190,12 +190,12 @@ void RadixSort(int64* array, int offset, int end, int shift)
             temp = x > 0 ? pointer[x] - pointer[x - 1] : pointer[0] - offset;
             if (temp > 64)
             {
-                RadixSort(array, (int)(pointer[x] - temp), (int)pointer[x], shift);
+                RadixSort(array, static_cast<int>(pointer[x] - temp), static_cast<int>(pointer[x]), shift);
             }
             else if (temp > 1)
             {
                 // std::sort(array + (pointer[x] - temp), array + pointer[x]);
-                insertion_sort_64(array, (int)(pointer[x] - temp), (int)pointer[x]);
+                insertion_sort_64(array, static_cast<int>(pointer[x] - temp), static_cast<int>(pointer[x]));
             }
         }
     }
@@ -203,7 +203,8 @@ void RadixSort(int64* array, int offset, int end, int shift)
 
 int intcmp(const void* aa, const void* bb)
 {
-    const int *a = (int *)aa, *b = (int *)bb;
+    const int *a = reinterpret_cast<const int*>(aa);
+    const int *b = reinterpret_cast<const int*>(bb);
     return (*a < *b) ? -1 : (*a > *b);
 }
 };

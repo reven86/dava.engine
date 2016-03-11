@@ -74,9 +74,9 @@ void RadixSort(int64* array, int offset, int end, int shift);
 inline void RadixSort(void* array, int offset, int end, int shift)
 {
     if (sizeof(void*) == 4)
-        RadixSort((int32*)array, offset, end, shift);
+        RadixSort(reinterpret_cast<int32*>(array), offset, end, shift);
     else
-        RadixSort((int64*)array, offset, end, shift);
+        RadixSort(reinterpret_cast<int64*>(array), offset, end, shift);
 }
 };
 

@@ -54,8 +54,7 @@ public:
     ITEM* Alloc()
     {
         void* p = ::malloc(sizeof(ITEM));
-        //ITEM * item = new (p) ITEM;
-        return (ITEM*)p;
+        return reinterpret_cast<ITEM*>(p);
     }
 
     void Dealloc(ITEM* node)
