@@ -80,6 +80,7 @@ private slots:
     void OnApplicationStateChanged(Qt::ApplicationState state);
     void OnFileChanged(const QString& path);
     bool CloseProject();
+    void OnExit();
 
 private:
     void ApplyFileChanges();
