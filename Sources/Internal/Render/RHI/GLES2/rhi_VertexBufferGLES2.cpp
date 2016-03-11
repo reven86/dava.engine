@@ -80,7 +80,7 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
     if (desc.size)
     {
         GLuint b = 0;
-        GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, (uint64)(&b) } };
+        GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, reinterpret_cast<uint64>(&b) } };
 
         ExecGL(&cmd1, 1, force_immediate);
         if (cmd1.status == GL_NO_ERROR)
@@ -100,8 +100,8 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
 
             GLCommand cmd2[] =
             {
-              { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&b) } },
-              { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), usage } },
+              { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, reinterpret_cast<uint64>(&b) } },
+              { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, desc.size, reinterpret_cast<uint64>(desc.initialData), usage } },
               { GLCommand::RESTORE_VERTEX_BUFFER, {} }
             };
 
@@ -133,7 +133,7 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
 
 void VertexBufferGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
+    GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
     ExecGL(&cmd, 1, force_immediate);
 
     if (mappedData)
@@ -194,7 +194,7 @@ bool gles2_VertexBuffer_Update(Handle vb, const void* data, uint32 offset, uint3
         GLCommand cmd[] =
         {
           { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&(self->uid)) } },
-          { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(data), self->usage } },
+          { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, reinterpret_cast<uint64>(data), self->usage } },
           { GLCommand::RESTORE_VERTEX_BUFFER, {} }
         };
 
@@ -222,7 +222,7 @@ void* gles2_VertexBuffer_Map(Handle vb, uint32 offset, uint32 size)
             self->mappedData = ::malloc(self->size);
 
         self->isMapped = true;
-        data = ((uint8*)self->mappedData) + offset;
+        data = (reinterpret_cast<uint8*>(self->mappedData)) + offset;
     }
 
     return data;
@@ -247,7 +247,7 @@ void gles2_VertexBuffer_Unmap(Handle vb)
         GLCommand cmd[] =
         {
           { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&(self->uid)) } },
-          { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->mappedData), self->usage } },
+          { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, reinterpret_cast<uint64>(self->mappedData), self->usage } },
           { GLCommand::RESTORE_VERTEX_BUFFER, {} }
         };
 

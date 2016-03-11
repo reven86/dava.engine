@@ -509,8 +509,6 @@ expr_t eval_if(void)
                 break; /* Read another op.     */
         } /* Stack unwind loop    */
     }
-
-    return 0L; /* Never reach here     */
 }
 
 static int eval_lex(void)

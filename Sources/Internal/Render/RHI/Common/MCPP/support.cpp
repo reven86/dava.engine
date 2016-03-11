@@ -2180,8 +2180,6 @@ size_t* sizp /* Size of the comment  */
 
         c = *sp++;
     } /* End comment loop     */
-
-    return sp; /* Never reach here     */
 }
 
 static char* mcpp_fgets(
