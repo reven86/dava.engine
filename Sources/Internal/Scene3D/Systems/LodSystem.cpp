@@ -208,7 +208,7 @@ void LodSystem::UpdatePartialUpdateIndices()
 {
     currentPartialUpdateIndex = 0;
 
-    int32 size = (int32)entities.size();
+    int32 size = static_cast<int32>(entities.size());
     int32 partSize = size / UPDATE_PART_PER_FRAME;
 
     partialUpdateIndices.clear();
