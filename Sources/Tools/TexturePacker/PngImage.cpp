@@ -108,11 +108,11 @@ bool PngImageExt::ConvertToFormat(PixelFormat newFormat)
 
 void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2i & srcRect)
 {
-    uint32 * destData32 = (uint32*)GetData();
-	uint32 * srcData32 = (uint32*)image->GetData();
+    uint32* destData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(GetData()));
+    uint32* srcData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(image->GetData()));
 
-	int32 rx, ry;
-	ry = sy;
+    int32 rx, ry;
+    ry = sy;
 	for (int32 y = srcRect.y; y < srcRect.y + srcRect.dy; ++y)
 	{
 		rx = sx;
@@ -139,8 +139,8 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
 
 void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffsetRect, PngImageExt* image)
 {
-    uint32* destData32 = (uint32*)GetData();
-    uint32* srcData32 = (uint32*)image->GetData();
+    uint32* destData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(GetData()));
+    uint32* srcData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(image->GetData()));
     const Rect2i& img = packedCell.imageRect;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
@@ -328,10 +328,10 @@ void PngImageExt::FindNonOpaqueRect(Rect2i &rect)
 
 void PngImageExt::DrawRect(const Rect2i &rect, uint32 color)
 {
-    uint32 *destData32 = (uint32*)GetData();
+    uint32* destData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(GetData()));
 
-	for (int32 i = 0; i < rect.dx; ++i)
-	{
+    for (int32 i = 0; i < rect.dx; ++i)
+    {
 		destData32[rect.y * GetWidth() + rect.x + i] = color;
 		destData32[(rect.y + rect.dy - 1) * GetWidth() + rect.x + i] = color;
 	}
@@ -365,9 +365,9 @@ void PngImageExt::DitherAlpha()
                 {
                     Color color = GetDitheredColorForPoint(x, y);
 
-                    ditheredPtr[0] = (uint8)color.r;
-                    ditheredPtr[1] = (uint8)color.g;
-                    ditheredPtr[2] = (uint8)color.b;
+                    ditheredPtr[0] = static_cast<uint8>(color.r);
+                    ditheredPtr[1] = static_cast<uint8>(color.g);
+                    ditheredPtr[2] = static_cast<uint8>(color.b);
                     ditheredPtr[3] = 0;
                 }
 
@@ -398,16 +398,16 @@ Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
             if (GetData()[offset + 3])
             {
                 ++count;
-                newColor.r += (float32)(GetData()[offset]);
-                newColor.g += (float32)(GetData()[offset + 1]);
-                newColor.b += (float32)(GetData()[offset + 2]);
+                newColor.r += static_cast<float32>((GetData()[offset]));
+                newColor.g += static_cast<float32>((GetData()[offset + 1]));
+                newColor.b += static_cast<float32>((GetData()[offset + 2]));
             }
         }
     }
 
     if (count)
     {
-        newColor /= (float32)count;
+        newColor /= static_cast<float32>(count);
     }
 
     return newColor;
