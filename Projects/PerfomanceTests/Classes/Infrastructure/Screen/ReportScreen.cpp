@@ -42,13 +42,11 @@ void ReportScreen::LoadResources()
 
 void ReportScreen::CreateReportScreen()
 {
-    ScopedPtr<UIControl> reportItem(new UIControl());
-
     UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
 
     DefaultUIPackageBuilder builder;
     UIPackageLoader().LoadPackage(ControlHelpers::GetPathToUIYaml("ReportItem.yaml"), &builder);
-    reportItem = builder.GetPackage()->GetControl("ReportItem");
+    DAVA::UIControl* reportItem = builder.GetPackage()->GetControl("ReportItem");
     
     uint32 offsetY = 150;
     uint32 testNumber = 0;
