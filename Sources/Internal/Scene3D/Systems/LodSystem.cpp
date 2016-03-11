@@ -362,7 +362,7 @@ LodSystem::LodMerger::LodMerger(Entity* _toEntity)
 
 void LodSystem::LodMerger::MergeChildLods()
 {
-    LodComponent* toLod = (LodComponent*)toEntity->GetOrCreateComponent(Component::LOD_COMPONENT);
+    LodComponent* toLod = static_cast<LodComponent*>(toEntity->GetOrCreateComponent(Component::LOD_COMPONENT));
     toLod->EnableRecursiveUpdate();
 
     Vector<Entity*> allLods;
