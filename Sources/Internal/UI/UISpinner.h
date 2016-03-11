@@ -187,7 +187,7 @@ protected:
     void OnPreviousPressed(BaseObject* caller, void* param, void* callerData);
     void OnScrollAnimationEnd(BaseObject* caller, void* param, void* callerData);
 
-    virtual void OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, bool isSelectedChanged);
+    void OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, bool isSelectedChanged) override;
 
     void OnSelectWithSlide(bool isPrevious);
     void SetupInternalControls();
