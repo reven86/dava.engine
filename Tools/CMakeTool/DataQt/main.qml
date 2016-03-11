@@ -23,7 +23,7 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
-        property alias userOptions: textField_userOptions.text
+        property alias customOptions: textField_customOptions.text
     }
 
     title: qsTr("CMake tool")
@@ -131,7 +131,7 @@ ApplicationWindow {
                     inputComponent: TextField {
                         id: textField_davaFolder
                         placeholderText: qsTr("path to dava folder")
-                        Settings {property alias text: textField_davaFolder.text }
+                        Settings {property alias davaPath: textField_davaFolder.text }
                         onTextChanged: {
                             updateOutputString();
                         }
@@ -143,7 +143,7 @@ ApplicationWindow {
                             var index = path.indexOf(davaFolderName);
                             if(index !== -1) {
                                 path = path.substring(0, index + davaFolderName.length);
-                                rowLayout_davaFolder.path = path.substring(0, index + davaFolderName.length);
+                                rowLayout_davaFolder.path = path;
                             }
                         }
                     }
@@ -156,8 +156,8 @@ ApplicationWindow {
                     selectFolders: false;
                     inputComponent: TextField {
                         id: textField_cmakeFolder
+                        Settings {property alias cmakePath: textField_cmakeFolder.text }
                         placeholderText: qsTr("path to CMake folder")
-                        Settings {property alias text: textField_cmakeFolder.text }
                         onTextChanged: {
                             var suffix = ".app";
                             if(text.indexOf(suffix, text.length - suffix.length) !== -1) {
@@ -189,11 +189,11 @@ ApplicationWindow {
 
                 RowLayout {
                     Label {
-                        id: label_userOptions
+                        id: label_customOptions
                         text: qsTr("user options")
                     }
                     TextField {
-                        id: textField_userOptions
+                        id: textField_customOptions
                         Layout.fillWidth: true
                         placeholderText: qsTr("your custom options")
                         onTextChanged: {

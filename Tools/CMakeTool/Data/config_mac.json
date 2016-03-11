@@ -56,8 +56,10 @@
             ]
         }
     ],
-    "global options" : {
-        "name": "deploy",
-        "value": "-DDEPLOY=true"
-    }
+    "global options" : [
+        {
+            "name": "deploy",
+            "value": "-DDEPLOY=true"
+        }
+    ]
 }

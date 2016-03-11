@@ -49,7 +49,7 @@ ProcessWrapper::~ProcessWrapper()
 
 void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const QString& buildFolder)
 {
-    taskQueue.enqueue(Task(command, needClean, buildFolder));
+    taskQueue.enqueue({ command, needClean, buildFolder });
     if (process.state() == QProcess::NotRunning)
     {
         StartNextCommand();

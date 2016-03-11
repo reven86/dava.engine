@@ -26,22 +26,24 @@ Item {
             }
         }
     }
-
-    //private function
-    function processDataChanged(checked, value, key) {
-        var options = configuration[key];
-        if(checked) {
-            options.push(value)
-        } else {
-            for(var i = 0, count = options.length; i < count; i++) {
-                if(options[i].index === value.index) {
-                    options.splice(i, 1);
-                    break;
+    Item {
+        id: impl //item to incapsulate private functions
+        function processDataChanged(checked, value, key) {
+            var options = configuration[key];
+            if(checked) {
+                options.push(value)
+            } else {
+                for(var i = 0, count = options.length; i < count; i++) {
+                    if(options[i].index === value.index) {
+                        options.splice(i, 1);
+                        break;
+                    }
                 }
             }
+            dataUpdated();
         }
-        dataUpdated();
     }
+
    
     Layout.minimumHeight: columnLayout.minHeight
     ColumnLayout {
@@ -137,7 +139,7 @@ Item {
                             property variant modelData: listModel_localOptions.get(model.index);
                             property int index : model.index;
                             Component.onCompleted: {
-                                var options = optionsSettings.checkedObjects;
+                                var options = optionsSettings.localOptions;
 
                                 if(options && Array.isArray(options)) {
                                     for(var i = 0, count = options.length; i < count; i++) {
@@ -159,7 +161,7 @@ Item {
                         RadioButton {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
+                                impl.processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
                             }
                             exclusiveGroup: exclusiveGroup_localOptions
                         }
@@ -169,16 +171,16 @@ Item {
                         CheckBox {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
+                                impl.processDataChanged(checked, {"index": modelData["substring number"] - 1, "value": modelData.value}, "currentOptions");
                             }
                         }
                     }
                     Settings {
                         id: optionsSettings
-                        property var checkedObjects;
+                        property var localOptions;
                     }
                     Component.onDestruction: {
-                        optionsSettings.checkedObjects = configuration["currentOptions"];
+                        optionsSettings.localOptions = configuration["currentOptions"];
                     }
                 }
             }
@@ -205,11 +207,11 @@ Item {
                     CheckBox {
                         text: model.name
                         onCheckedChanged: {
-                            processDataChanged(checked, {"value": model.value}, "globalOptions");
+                            impl.processDataChanged(checked, {"value": model.value}, "globalOptions");
 
                         }
                         Component.onCompleted: {
-                           var options = globalOptionsSettings.checkedObjects;
+                           var options = globalOptionsSettings.globalOptions;
 
                            if(options && Array.isArray(options)) {
                                for(var i = 0, count = options.length; i < count; i++) {
@@ -224,10 +226,10 @@ Item {
                 }
                 Settings {
                     id: globalOptionsSettings
-                    property int checkedObjects;
+                    property var globalOptions;
                 }
                 Component.onDestruction: {
-                    globalOptionsSettings.checkedObjects = configuration["globalOptions"];
+                    globalOptionsSettings.globalOptions = configuration["globalOptions"];
                 }
             }
         }

@@ -19,35 +19,49 @@ ComboBox {
     Settings {
         id: settings
         property var modelArray;
-        Component.onCompleted: {
-            if(modelArray && Array.isArray(modelArray)) {
-                for(var i = 0, count = modelArray.length; i < count; i++) {
-                    var obj = {"text" : modelArray[i]};
-                    listModel.append(obj);
-                }
-            }
-        }
-        Component.onDestruction: {
-            modelArray = [];
-            for(var i = 0, count = listModel.count; i < count; i++) {
-                modelArray.push(listModel.get(i).text);
-            }
-        }
     }
+
+    Component.onCompleted: {
+        blockRebuild = true;
+        if(settings.modelArray && Array.isArray(settings.modelArray)) {
+            for(var i = 0, count = settings.modelArray.length; i < count; i++) {
+                var obj = {"text" : settings.modelArray[i]};
+                listModel.append(obj);
+            }
+        }
+        blockRebuild = false;
+    }
+    property bool blockRebuild: false
     onEditTextChanged: {
         if(fileSystemHelper.IsDirExists(editText)) {
+            if(blockRebuild) {
+                return;
+            }
+
             var newItem = editText;
+            var newObj = {"text": editText};
+
+            var array = settings.modelArray;
             for(var i = model.count - 1; i >= 0; --i) {
                 var item = model.get(i).text;
                 item = fileSystemHelper.NormalizePath(item);
                 var normalizedNewItem = fileSystemHelper.NormalizePath(newItem);
                 if(item === normalizedNewItem) {
                     currentIndex = i;
+                    array.unshift(item);
+                    array.splice(i + 1, 1);
+                    settings.modelArray = array;
                     return;
                 }
             }
-            model.insert(0, {"text": editText});
+            array.unshift(editText);
+            var length = array.length;
+            if(length > maxBuildCount) {
+                array.splice(maxBuildCount, length - maxBuildCount);
+            }
+            settings.modelArray = array;
 
+            model.insert(0, newObj);
             if(model.count > maxBuildCount) {
                 model.remove(maxBuildCount, model.count - maxBuildCount);
             }

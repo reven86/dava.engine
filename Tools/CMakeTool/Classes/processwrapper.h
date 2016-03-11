@@ -71,9 +71,9 @@ private:
             , buildFolder(buildFolder_)
         {
         }
-        const QString command;
-        const bool needClean;
-        const QString buildFolder;
+        QString command;
+        bool needClean;
+        QString buildFolder;
     };
     QQueue<Task> taskQueue;
 };
