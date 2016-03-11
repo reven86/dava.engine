@@ -72,6 +72,7 @@ public:
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+
     inline uint32 GetEventsCount() const;
     inline SoundEvent* GetSoundEvent(uint32 index) const;
 
