@@ -42,8 +42,8 @@ FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockA
 
     blockSize = _blockSize;
     blockArraySize = _blockArraySize;
-    allocatedBlockArrays = 0;
-    nextFreeBlock = 0;
+    allocatedBlockArrays = nullptr;
+    nextFreeBlock = nullptr;
 #ifdef __DAVAENGINE_DEBUG__
     totalBlockCount = 0;
     freeItemCount = 0;
@@ -55,10 +55,10 @@ FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockA
 void FixedSizePoolAllocator::CreateNewDataBlock()
 {
     DVASSERT(blockSize >= sizeof(uint8*));
-    void* block = ::malloc(blockArraySize * blockSize + sizeof(uint8*));
+    void** block = static_cast<void**>(::malloc(blockArraySize * blockSize + sizeof(uint8*)));
     //Logger::FrameworkDebug("Allocated new data block: %p pointer size: %d", block, sizeof(uint8*));
     // insert to list
-    *(uint8**)block = (uint8*)allocatedBlockArrays;
+    *block = allocatedBlockArrays;
     allocatedBlockArrays = block;
 #ifdef __DAVAENGINE_DEBUG__
     totalBlockCount++;
@@ -70,12 +70,12 @@ void FixedSizePoolAllocator::CreateNewDataBlock()
 
 void FixedSizePoolAllocator::InsertBlockToFreeNodes(void* block)
 {
-    uint8* blockItem = (uint8*)block + sizeof(uint8*) + blockSize * (blockArraySize - 1);
+    void** blockItem = OffsetPointer<void*>(block, sizeof(uint8*) + blockSize * (blockArraySize - 1));
     for (uint32 k = 0; k < blockArraySize; ++k)
     {
         //Logger::FrameworkDebug("Free block added: %p", blockItem);
 
-        *(uint8**)blockItem = (uint8*)nextFreeBlock;
+        *blockItem = nextFreeBlock;
         nextFreeBlock = blockItem;
         blockItem -= blockSize;
     }
@@ -87,7 +87,7 @@ void FixedSizePoolAllocator::Reset()
     void* currentBlock = allocatedBlockArrays;
     while (currentBlock)
     {
-        uint8* next = *(uint8**)currentBlock;
+        void* next = *static_cast<void**>(currentBlock);
         InsertBlockToFreeNodes(currentBlock);
         currentBlock = next;
     }
@@ -101,7 +101,7 @@ void FixedSizePoolAllocator::DeallocateMemory()
 
     while (allocatedBlockArrays)
     {
-        uint8* next = *(uint8**)allocatedBlockArrays;
+        uint8* next = *static_cast<uint8**>(allocatedBlockArrays);
         ::free(allocatedBlockArrays);
 #ifdef __DAVAENGINE_DEBUG__
         totalBlockCount--;
@@ -124,7 +124,7 @@ FixedSizePoolAllocator::~FixedSizePoolAllocator()
 void* FixedSizePoolAllocator::New()
 {
     void* object = 0;
-    if (nextFreeBlock == 0)
+    if (nextFreeBlock == nullptr)
     {
         CreateNewDataBlock();
     }
@@ -134,13 +134,13 @@ void* FixedSizePoolAllocator::New()
     maxItemCount = Max(maxItemCount, (blockArraySize * blockSize) - freeItemCount);
 #endif
     object = nextFreeBlock;
-    nextFreeBlock = *(uint8**)nextFreeBlock;
+    nextFreeBlock = *static_cast<void**>(nextFreeBlock);
     return object;
 }
 
 void FixedSizePoolAllocator::Delete(void* block)
 {
-    *(uint8**)block = (uint8*)nextFreeBlock;
+    *static_cast<void**>(block) = nextFreeBlock;
     nextFreeBlock = block;
 
 #ifdef __DAVAENGINE_DEBUG__
@@ -150,16 +150,17 @@ void FixedSizePoolAllocator::Delete(void* block)
 
 bool FixedSizePoolAllocator::CheckIsPointerValid(void* blockvoid)
 {
-    uint8* block = (uint8*)blockvoid;
-    uint8* currentAllocatedBlockArray = (uint8*)allocatedBlockArrays;
+    uint8* block = static_cast<uint8*>(blockvoid);
+    uint8* currentAllocatedBlockArray = static_cast<uint8*>(allocatedBlockArrays);
     while (currentAllocatedBlockArray)
     {
-        uint8* next = *(uint8**)currentAllocatedBlockArray;
+        //uint8* next = *(uint8**)currentAllocatedBlockArray;
+        uint8* next = *reinterpret_cast<uint8**>(currentAllocatedBlockArray);
 
-        if ((block >= (uint8*)currentAllocatedBlockArray + sizeof(uint8*)) && (block < (uint8*)currentAllocatedBlockArray + sizeof(uint8*) + blockSize * blockArraySize))
+        if ((block >= currentAllocatedBlockArray + sizeof(uint8*)) && (block < currentAllocatedBlockArray + sizeof(uint8*) + blockSize * blockArraySize))
         {
             // we are inside check is block correct.
-            uint32 shift = static_cast<uint32>(block - ((uint8*)currentAllocatedBlockArray + sizeof(uint8*)));
+            uint32 shift = static_cast<uint32>(block - (currentAllocatedBlockArray + sizeof(uint8*)));
             uint32 mod = shift % blockSize;
             if (mod == 0)
             {
