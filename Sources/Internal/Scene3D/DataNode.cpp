@@ -78,7 +78,7 @@ void DataNode::SetRuntime(bool _isRuntime)
 void DataNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     BaseObject::LoadObject(archive);
-    id = archive->GetByteArrayAsType("#id", (uint64)0);
+    id = archive->GetByteArrayAsType("#id", 0);
 }
 
 void DataNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)

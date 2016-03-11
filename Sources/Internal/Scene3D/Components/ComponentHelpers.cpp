@@ -206,7 +206,7 @@ SwitchComponent* GetSwitchComponent(const Entity* fromEntity)
 {
     if (fromEntity)
     {
-        return (SwitchComponent*)fromEntity->GetComponent(Component::SWITCH_COMPONENT);
+        return reinterpret_cast<SwitchComponent*>(fromEntity->GetComponent(Component::SWITCH_COMPONENT));
     }
 
     return nullptr;
@@ -256,7 +256,7 @@ uint32 GetLodLayersCount(LodComponent* fromComponent)
 
 void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Entity*, void*))
 {
-    RenderComponent* comp = (RenderComponent*)curr->GetComponent(Component::RENDER_COMPONENT);
+    RenderComponent* comp = reinterpret_cast<RenderComponent*>(curr->GetComponent(Component::RENDER_COMPONENT));
     if (comp)
     {
         RenderObject* renderObject = comp->GetRenderObject();
@@ -274,7 +274,7 @@ void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Enti
 
 void RecursiveProcessLodNode(Entity* curr, int32 lod, void* userData, void (*process)(Entity*, void*))
 {
-    LodComponent* lodComp = (LodComponent*)curr->GetComponent(Component::LOD_COMPONENT);
+    LodComponent* lodComp = reinterpret_cast<LodComponent*>(curr->GetComponent(Component::LOD_COMPONENT));
     if (lodComp)
     {
         Vector<LodComponent::LodData*> retLodLayers;
@@ -426,7 +426,7 @@ PathComponent* GetPathComponent(const Entity* fromEntity)
 {
     if (fromEntity)
     {
-        return (PathComponent*)fromEntity->GetComponent(Component::PATH_COMPONENT);
+        return reinterpret_cast<PathComponent*>(fromEntity->GetComponent(Component::PATH_COMPONENT));
     }
 
     return nullptr;
@@ -436,7 +436,7 @@ WaypointComponent* GetWaypointComponent(const Entity* fromEntity)
 {
     if (fromEntity)
     {
-        return (WaypointComponent*)fromEntity->GetComponent(Component::WAYPOINT_COMPONENT);
+        return reinterpret_cast<WaypointComponent*>(fromEntity->GetComponent(Component::WAYPOINT_COMPONENT));
     }
 
     return NULL;

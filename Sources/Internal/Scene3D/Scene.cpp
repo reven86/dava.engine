@@ -105,7 +105,7 @@ void EntityCache::Preload(const FilePath& path)
             Entity* child = srcRootEntity->GetChild(0);
             if (1 == child->GetComponentCount())
             {
-                TransformComponent* tr = (TransformComponent*)srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT);
+                TransformComponent* tr = reinterpret_cast<TransformComponent*>(srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT));
                 if (nullptr != tr && tr->GetLocalTransform() == Matrix4::IDENTITY)
                 {
                     srcRootEntity = child;
@@ -595,7 +595,7 @@ bool Scene::RemoveCamera(Camera* c)
 
 Camera* Scene::GetCamera(int32 n)
 {
-    if (n >= 0 && n < (int32)cameras.size())
+    if (n >= 0 && n < static_cast<int32>(cameras.size()))
         return cameras[n];
 
     return nullptr;
