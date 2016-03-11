@@ -187,8 +187,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
 
     Vector<FilePath> convertedPVRs;
 
-    int32 imgCount = static_cast<int32>(images.size());
-    for(int32 i = 0; i < imgCount; ++i)
+    for (size_t i = 0, e = images.size(); i < e; ++i)
     {
         ImageFormat targetFormat = IMAGE_FORMAT_PNG;
         
@@ -231,7 +230,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
     FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
 
     // input file
-	args.push_back("-i");
+    args.push_back("-i");
 	String inputName = GenerateInputName(descriptor, fileToConvert);
 #if defined (__DAVAENGINE_MACOS__)
 	args.push_back(inputName);

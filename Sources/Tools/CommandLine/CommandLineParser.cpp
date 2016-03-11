@@ -158,7 +158,7 @@ DAVA::int32 CommandLineParser::GetCommandPosition(const DAVA::String& command)
     int32 position = INVALID_POSITION;
 
     const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
-    for (int32 i = 0; i < static_cast<int32>(commandLine.size()); ++i)
+    for (size_t i = 0; i < commandLine.size(); ++i)
     {
         if (command == commandLine[i])
         {

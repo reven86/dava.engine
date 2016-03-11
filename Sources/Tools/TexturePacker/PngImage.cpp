@@ -108,12 +108,12 @@ bool PngImageExt::ConvertToFormat(PixelFormat newFormat)
 
 void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2i & srcRect)
 {
-    uint32* destData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(GetData()));
-    uint32* srcData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(image->GetData()));
+    uint32* destData32 = reinterpret_cast<uint32*>(GetData());
+    uint32* srcData32 = reinterpret_cast<uint32*>(image->GetData());
 
     int32 rx, ry;
     ry = sy;
-	for (int32 y = srcRect.y; y < srcRect.y + srcRect.dy; ++y)
+    for (int32 y = srcRect.y; y < srcRect.y + srcRect.dy; ++y)
 	{
 		rx = sx;
 		for (int32 x = srcRect.x; x < srcRect.x + srcRect.dx; ++x)
@@ -139,8 +139,8 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
 
 void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffsetRect, PngImageExt* image)
 {
-    uint32* destData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(GetData()));
-    uint32* srcData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(image->GetData()));
+    uint32* destData32 = reinterpret_cast<uint32*>(GetData());
+    uint32* srcData32 = reinterpret_cast<uint32*>(image->GetData());
     const Rect2i& img = packedCell.imageRect;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
@@ -328,11 +328,11 @@ void PngImageExt::FindNonOpaqueRect(Rect2i &rect)
 
 void PngImageExt::DrawRect(const Rect2i &rect, uint32 color)
 {
-    uint32* destData32 = reinterpret_cast<uint32*>(const_cast<uint8*>(GetData()));
+    uint32* destData32 = reinterpret_cast<uint32*>(GetData());
 
     for (int32 i = 0; i < rect.dx; ++i)
     {
-		destData32[rect.y * GetWidth() + rect.x + i] = color;
+        destData32[rect.y * GetWidth() + rect.x + i] = color;
 		destData32[(rect.y + rect.dy - 1) * GetWidth() + rect.x + i] = color;
 	}
 	for (int32 i = 0; i < rect.dy; ++i)
@@ -383,7 +383,7 @@ void PngImageExt::DitherAlpha()
 Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
 {
     int32 count = 0;
-    Color newColor(0, 0, 0, 0);
+    Color newColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     int32 startY = Max(y - 1, 0);
     int32 endY = Min(y + 1, static_cast<int32>(GetHeight()));
@@ -398,14 +398,14 @@ Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
             if (GetData()[offset + 3])
             {
                 ++count;
-                newColor.r += static_cast<float32>((GetData()[offset]));
-                newColor.g += static_cast<float32>((GetData()[offset + 1]));
-                newColor.b += static_cast<float32>((GetData()[offset + 2]));
+                newColor.r += static_cast<float32>(GetData()[offset]);
+                newColor.g += static_cast<float32>(GetData()[offset + 1]);
+                newColor.b += static_cast<float32>(GetData()[offset + 2]);
             }
         }
     }
 
-    if (count)
+    if (count > 0)
     {
         newColor /= static_cast<float32>(count);
     }

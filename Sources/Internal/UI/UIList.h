@@ -62,6 +62,10 @@ class UIList;
  */
 class UIListDelegate
 {
+public:
+    virtual ~UIListDelegate() = default;
+
+private:
     friend class UIList;
 
     /**
