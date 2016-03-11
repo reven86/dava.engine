@@ -70,7 +70,7 @@ void Thread::Init()
     sigemptyset(&cancelThreadAction.sa_mask);
     cancelThreadAction.sa_flags = 0;
     cancelThreadAction.sa_handler = thread_exit_handler;
-    sigaction(SIGRTMIN, &cancelThreadAction, NULL);
+    sigaction(SIGRTMIN, &cancelThreadAction, nullptr);
 #endif
 }
 

@@ -95,8 +95,8 @@ using namespace DAVA;
     self = [super init];
     if (self)
     {
-        delegate = NULL;
-        webView = NULL;
+        delegate = nullptr;
+        webView = nullptr;
     }
     return self;
 }
