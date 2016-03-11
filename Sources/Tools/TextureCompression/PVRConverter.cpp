@@ -187,7 +187,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
 
     Vector<FilePath> convertedPVRs;
 
-    int32 imgCount = (int32)images.size();
+    int32 imgCount = static_cast<int32>(images.size());
     for(int32 i = 0; i < imgCount; ++i)
     {
         ImageFormat targetFormat = IMAGE_FORMAT_PNG;
@@ -227,8 +227,8 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	DVASSERT(descriptor.compression);
 	const TextureDescriptor::Compression *compression = &descriptor.compression[gpuFamily];
 
-	String format = pixelFormatToPVRFormat[(PixelFormat) compression->format];
-	FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
+    String format = pixelFormatToPVRFormat[static_cast<PixelFormat>(compression->format)];
+    FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
 		
 	// input file
 	args.push_back("-i");

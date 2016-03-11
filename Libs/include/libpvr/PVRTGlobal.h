@@ -291,7 +291,7 @@ inline bool PVRTIsLittleEndian()
 	if(!bIsInit)
 	{
 		short int word = 0x0001;
-		char *byte = (char*) &word;
+		char* byte = reinterpret_cast<char*>(&word);
 		bLittleEndian = byte[0] ? true : false;
 		bIsInit = true;
 	}
