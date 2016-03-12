@@ -50,7 +50,7 @@ void InitPVRTexTool()
 
 int main(int argc, char* argv[])
 {
-    QtLayer qtLayer;
+    DAVA::QtLayer qtLayer;
     DAVA::Core::Run(argc, argv);
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
