@@ -723,7 +723,9 @@ void PackageWidget::OnCurrentIndexChanged(const QModelIndex& index, const QModel
 void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
+    DVASSERT(srcIndex.isValid());
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+    DVASSERT(dstIndex.isValid());
     treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
     DVASSERT(!currentIndexes.empty());
     currentIndexes.pop();
@@ -745,7 +747,9 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
 void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
+    DVASSERT(srcIndex.isValid());
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+    DVASSERT(dstIndex.isValid());
     auto selectionModel = treeView->selectionModel();
     selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
     currentIndexes.push(dstIndex);
