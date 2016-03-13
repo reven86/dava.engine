@@ -220,6 +220,12 @@ void PreviewWidget::CreateActions()
     focusPreviousChildAction->setShortcut(Qt::ShiftModifier + Qt::Key_Tab);
     focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
     davaGLWidget->addAction(focusPreviousChildAction);
+
+    closeTabAction = new QAction(tr("Close current tab"), this);
+    closeTabAction->setShortcut(QKeySequence::Close);
+    closeTabAction->setShortcutContext(Qt::WindowShortcut);
+    connect(closeTabAction, &QAction::triggered, this, &PreviewWidget::CloseTabRequested);
+    davaGLWidget->addAction(closeTabAction);
 }
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
