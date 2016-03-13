@@ -431,8 +431,6 @@ void PackageWidget::OnSelectionChangedFromView(const QItemSelection& proxySelect
     {
         deselected.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
     }
-    auto in = currentIndexes.front();
-    in = filteredPackageModel->mapToSource(in);
 
     selectionContainer.MergeSelection(selected, deselected);
 
