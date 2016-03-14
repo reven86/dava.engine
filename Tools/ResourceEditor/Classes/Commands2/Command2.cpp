@@ -72,3 +72,8 @@ void Command2::RedoInternalCommand(Command2* command)
         EmitNotify(command, true);
     }
 }
+
+void Command2::Execute()
+{
+    Redo();
+}
