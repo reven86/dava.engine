@@ -232,7 +232,7 @@ static int64_t writedata(struct bsdiff_stream* stream, const void* buffer, int64
 
     while (length > 0)
     {
-        const int smallsize = (size_t)MIN(length, INT_MAX);
+        const int smallsize = (size_t)MIN(length, (size_t)INT_MAX);
         const int writeresult = stream->write(stream, buffer, smallsize);
         if (writeresult == -1)
         {
