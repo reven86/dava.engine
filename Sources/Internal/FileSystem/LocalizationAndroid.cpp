@@ -31,7 +31,6 @@
 
 #if defined(__DAVAENGINE_ANDROID__) 
 
-#include "FileSystem/LocalizationAndroid.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
