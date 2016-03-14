@@ -2293,9 +2293,9 @@ void UninitializeRenderThreadGLES2()
 void SuspendGLES2()
 {
     _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync form ExecGL
+    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from ExecGL
     _GLES2_FrameDoneEvent.Wait();
-    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync form Present
+    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from Present
     _GLES2_FrameDoneEvent.Wait();
     _GLES2_RenderThreadSuspendSync.Reset();
     _GLES2_FramePreparedEvent.Signal(); //avoid stall
