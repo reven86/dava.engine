@@ -95,8 +95,12 @@ void QtLayer::OnResume()
 
 void QtLayer::ProcessFrame()
 {
-    rhi::InvalidateCache(); //as QT itself can break gl states
-    Core::Instance()->SystemProcessFrame();
+    if (Core::Instance()->IsConsoleMode() == false)
+    {   // avoid calling of system process frame for console mode. Right not it is called from DAVA GL Widget. Will be refactored in future
+
+        rhi::InvalidateCache(); //as QT itself can break gl states
+        Core::Instance()->SystemProcessFrame();
+    }
 }
 
 void QtLayer::Resize(int32 width, int32 height, float64 dpr)
