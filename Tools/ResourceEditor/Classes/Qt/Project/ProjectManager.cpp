@@ -129,7 +129,7 @@ void ProjectManager::OpenProject(const FilePath& incomePath)
             if (spritesPacker != nullptr)
             {
                 //emit ProjectOpened will be done later
-                spritesPacker->RepackSilently(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));
+                spritesPacker->RepackImmediately(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));
             }
             else
             {

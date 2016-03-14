@@ -58,7 +58,7 @@ public:
     QAction* GetReloadAction() const;
     void SetAction(QAction* reloadSpritesAction);
 
-    void RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
+    void RepackImmediately(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
 
 signals:
     void SpritesReloaded();

@@ -41,7 +41,6 @@ namespace DAVA {
     class ResourcePacker2D;
     class AssetCacheClient;
 }
-//class QDir;
 
 class SpritesPacker : public QObject
 {

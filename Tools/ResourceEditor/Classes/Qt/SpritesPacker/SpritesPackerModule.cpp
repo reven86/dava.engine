@@ -85,7 +85,7 @@ void SpritesPackerModule::RepackWithDialog()
     ShowPackerDialog();
 }
 
-void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
+void SpritesPackerModule::RepackImmediately(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
 {
     SetupSpritesPacker(projectPath);
 

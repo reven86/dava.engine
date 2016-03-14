@@ -100,7 +100,7 @@ AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::Ca
 {
     {
         LockGuard<Mutex> guard(requestLocker);
-        request = Request(key, "", AssetCache::PACKET_ADD_REQUEST);
+        request = Request(key, FilePath(), AssetCache::PACKET_ADD_REQUEST);
     }
 
     AssetCache::Error resultCode = AssetCache::Error::CANNOT_SEND_REQUEST_ADD;
