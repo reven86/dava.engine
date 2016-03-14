@@ -131,7 +131,7 @@ public:
         }
     }
 
-    void ItemValueSet(Iterator i, void* itemSrc)
+    void ItemValueSet(Iterator i, void* itemSrc) const
     {
         CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)
@@ -289,7 +289,7 @@ public:
         }
     }
 
-    void ItemValueSet(Iterator i, void* itemSrc)
+    void ItemValueSet(Iterator i, void* itemSrc) const
     {
         CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)

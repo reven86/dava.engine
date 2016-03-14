@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -195,6 +195,8 @@
     </Filter>
     <Filter Include="Internal\UI\Focus">
       <UniqueIdentifier>{a57eef44-c7c5-4047-bdad-016274548eff}</UniqueIdentifier>
+    <Filter Include="Internal\Command">
+      <UniqueIdentifier>{ca088d15-197c-4f02-b9aa-2d32ba8fb3af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1689,6 +1691,17 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.h">
       <Filter>Internal\UI\Focus</Filter>
+    <ClInclude Include="..\..\Sources\Internal\Command\ICommand.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\ObjectHandle.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.h">
+      <Filter>Internal\Command</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3012,6 +3025,14 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.cpp">
       <Filter>Internal\UI\Focus</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Command\ObjectHandle.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp">
+      <Filter>Internal\Command</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
