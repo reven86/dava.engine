@@ -30,7 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-ReadOnlyArchiveFile::ReadOnlyArchiveFile():pos_(0)
+ReadOnlyArchiveFile::ReadOnlyArchiveFile()
+    : pos_(0)
 {
 }
 
@@ -39,7 +40,7 @@ ReadOnlyArchiveFile::~ReadOnlyArchiveFile()
 }
 
 ReadOnlyArchiveFile* ReadOnlyArchiveFile::Create(
-    ResourceArchive::ContentAndSize& data, const FilePath& filePath)
+ResourceArchive::ContentAndSize& data, const FilePath& filePath)
 {
     auto file = new ReadOnlyArchiveFile();
     file->data_.content.swap(data.content);
@@ -86,35 +87,35 @@ bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
 {
     switch (seekType)
     {
-        case SEEK_FROM_START:
+    case SEEK_FROM_START:
+    {
+        if (static_cast<uint32>(position) > data_.size)
         {
-            if (static_cast<uint32>(position) > data_.size)
-            {
-                return false;
-            }
-            pos_ = static_cast<uint32>(position);
-            return true;
+            return false;
         }
-        case SEEK_FROM_END:
+        pos_ = static_cast<uint32>(position);
+        return true;
+    }
+    case SEEK_FROM_END:
+    {
+        int32 newPos = static_cast<int32>(data_.size) + position;
+        if (static_cast<uint32>(newPos) > data_.size)
         {
-            int32 newPos = static_cast<int32>(data_.size) + position;
-            if (static_cast<uint32>(newPos) > data_.size)
-            {
-                return false;
-            }
-            pos_ = static_cast<uint32>(newPos);
-            return true;
+            return false;
         }
-        case SEEK_FROM_CURRENT:
+        pos_ = static_cast<uint32>(newPos);
+        return true;
+    }
+    case SEEK_FROM_CURRENT:
+    {
+        uint32 newPos = pos_ + static_cast<uint32>(position);
+        if (newPos > data_.size)
         {
-            uint32 newPos = pos_ + static_cast<uint32>(position);
-            if (newPos > data_.size)
-            {
-                return false;
-            }
-            pos_ = newPos;
-            return true;
+            return false;
         }
+        pos_ = newPos;
+        return true;
+    }
     }
     return false;
 }

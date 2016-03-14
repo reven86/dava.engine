@@ -465,14 +465,15 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     }
 #endif
 
-	struct stat s;
+    struct stat s;
 
     const String& cs = pathToCheck.GetAbsolutePathname();
     int result = stat(cs.c_str(), &s);
-    if(result == 0)
-	{
-		return (0 != (s.st_mode & S_IFREG));
-	} else
+    if (result == 0)
+    {
+        return (0 != (s.st_mode & S_IFREG));
+    }
+    else
     {
         switch (errno)
         {
@@ -739,25 +740,25 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 String FileSystem::ReadFileContents(const FilePath& pathname)
 {
     String fileContents;
-    File * fp = File::Create(pathname, File::OPEN|File::READ);
-	if (!fp)
-	{
-		Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
-	}
-	uint32 fileSize = fp->GetSize();
+    File* fp = File::Create(pathname, File::OPEN | File::READ);
+    if (!fp)
+    {
+        Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+        return 0;
+    }
+    uint32 fileSize = fp->GetSize();
 
-	fileContents.reserve(fileSize);
+    fileContents.reserve(fileSize);
 
     uint32 dataRead = fp->ReadString(fileContents);
-    
-	if (dataRead != fileSize)
-	{
-		Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
-	}
-    
-	SafeRelease(fp);
+
+    if (dataRead != fileSize)
+    {
+        Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+        return 0;
+    }
+
+    SafeRelease(fp);
     return fileContents;
 }
 
@@ -855,7 +856,7 @@ bool FileSystem::IsAPKPath(const String& path) const
 void FileSystem::Init()
 {
 #ifdef USE_LOCAL_RESOURCES
-	YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
+    YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #else
     YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #endif

@@ -29,10 +29,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileSystem2Test.h"
 #include "FileSystem/FileSystem2.h"
 
-FileSystem2Test::FileSystem2Test():
+FileSystem2Test::FileSystem2Test()
+    :
     BaseScreen("FileSystem2Test")
 {
-
 }
 
 void FileSystem2Test::StartTest(BaseObject*, void*, void*)
@@ -90,10 +90,12 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     if (fs.IsFile(path))
     {
         Logger::Info("path:%s is file", path.ToStringUtf8().c_str());
-    } else if (fs.IsDirectory(path))
+    }
+    else if (fs.IsDirectory(path))
     {
         Logger::Info("path:%s is directory", path.ToStringUtf8().c_str());
-    } else
+    }
+    else
     {
         Logger::Error("can't find path to resources: %", path.ToStringUtf8().c_str());
     }
@@ -117,7 +119,8 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     if (fileSize == file->GetSize())
     {
         Logger::Info("file size match!");
-    } else
+    }
+    else
     {
         Logger::Error("file size not match!");
     }

@@ -93,4 +93,4 @@ private:
 };
 };
 
-#endif  // __DAVAENGINE_RESOURCE_ARCHIVE_H__
+#endif // __DAVAENGINE_RESOURCE_ARCHIVE_H__

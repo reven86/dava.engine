@@ -59,8 +59,10 @@ void CollectAllFilesInDirectory(const String& pathDirName,
             if ((directoryName != "..") && (directoryName != "."))
             {
                 String subDir = pathDirName == "."
-                                    ? directoryName + '/'
-                                    : pathDirName + directoryName + '/';
+                ?
+                directoryName + '/'
+                :
+                pathDirName + directoryName + '/';
                 CollectAllFilesInDirectory(subDir, includeHidden, output);
             }
         }
@@ -72,20 +74,20 @@ void CollectAllFilesInDirectory(const String& pathDirName,
                 continue;
             }
             String pathname =
-                (pathDirName == "." ? filename : pathDirName + filename);
+            (pathDirName == "." ? filename : pathDirName + filename);
             output.push_back(pathname);
         }
     }
 }
 
 ResourceArchive::CompressionType ToPackType(
-    const String& value,
-    ResourceArchive::CompressionType defaultVal)
+const String& value,
+ResourceArchive::CompressionType defaultVal)
 {
     const Vector<std::pair<String, ResourceArchive::CompressionType>>
-        packTypes = {{"lz4", ResourceArchive::CompressionType::Lz4},
-                     {"lz4hc", ResourceArchive::CompressionType::Lz4HC},
-                     {"none", ResourceArchive::CompressionType::None}};
+    packTypes = { { "lz4", ResourceArchive::CompressionType::Lz4 },
+                  { "lz4hc", ResourceArchive::CompressionType::Lz4HC },
+                  { "none", ResourceArchive::CompressionType::None } };
     for (auto& pair : packTypes)
     {
         if (pair.first == value)
@@ -131,7 +133,7 @@ int PackDirectory(const String& dir,
     RefPtr<FileSystem> fileSystem(new FileSystem());
 
     FilePath absPathPack =
-        fileSystem->GetCurrentWorkingDirectory() + pakfileName;
+    fileSystem->GetCurrentWorkingDirectory() + pakfileName;
 
     if (!fileSystem->SetCurrentWorkingDirectory(dirWithSlash))
     {
@@ -192,8 +194,8 @@ bool ParsePackRules(const ProgramOptions& packOptions,
         String ext = str.substr(0, dotPos);
         String compressionType = str.substr(dotPos + 1);
         ResourceArchive::CompressionType packType =
-            ToPackType(compressionType, defaultPackTypa);
-        outputRules.push_back({ext, packType});
+        ToPackType(compressionType, defaultPackTypa);
+        outputRules.push_back({ ext, packType });
     }
     return true;
 }
@@ -211,7 +213,7 @@ bool UnpackFile(const ResourceArchive& ra,
     FilePath fullPath = filePath;
     FilePath dirPath = fullPath.GetDirectory();
     FileSystem::eCreateDirectoryResult result =
-        FileSystem::Instance()->CreateDirectory(dirPath, true);
+    FileSystem::Instance()->CreateDirectory(dirPath, true);
     if (FileSystem::DIRECTORY_CANT_CREATE == result)
     {
         std::cerr << "can't create unpack path dir: "
@@ -330,7 +332,7 @@ int main(int argc, char* argv[])
     {
         String compression = packOptions.GetOption("--compression").AsString();
         ResourceArchive::CompressionType defaultPackTypa =
-            ToPackType(compression, ResourceArchive::CompressionType::Lz4HC);
+        ToPackType(compression, ResourceArchive::CompressionType::Lz4HC);
 
         ResourceArchive::Rules compressionRules;
 
@@ -361,8 +363,7 @@ int main(int argc, char* argv[])
         auto pakFile = listOptions.GetArgument("pakfile");
         return ListContent(pakFile);
     }
-    
-    
+
     {
         packOptions.PrintUsage();
         unpackOptions.PrintUsage();

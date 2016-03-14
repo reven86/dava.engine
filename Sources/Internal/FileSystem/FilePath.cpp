@@ -759,13 +759,13 @@ String FilePath::NormalizePathname(const String& pathname)
         if (k + 1 != (int32)tokens.size())
             result += String("/");
     }
-    
-	//process last /
+
+    //process last /
     if (('/' == path.back()) && (!result.empty()))
     {
         result += String("/");
     }
-    
+
     return result;
 }
 

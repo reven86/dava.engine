@@ -37,6 +37,7 @@ class FileSystem2Test : public BaseScreen
 public:
     FileSystem2Test();
     void StartTest(BaseObject*, void*, void*);
+
 protected:
     void LoadResources() override;
     void UnloadResources() override;

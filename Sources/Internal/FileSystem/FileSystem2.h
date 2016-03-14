@@ -30,213 +30,218 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-    /// Path class for manipulation file name
-    /// 1. all path in unicode
-    /// 2. no changes for file system, only Path object
-    /// examples:
-    ///     ~res:/folder1/file1.txt
-    ///     ~doc:/folder2/file2.txt
-    ///     c:/mingw32/bin/gcc.exe
-    ///     /Users/l_chayka/job/dava.framework
-    ///     Data/files/config.yaml
-    /// Grammar for portable generic path strings (from BOOST docs with modifications)
-    /// The grammar is specified in extended BNF, with terminal symbols in quotes:
-    ///     path ::= {[virt] | [root]} [relative-path]  // an empty path is valid
-    ///     virt  ::= ~res:/ | ~doc:/
-    ///     root ::= [root-name] [root-directory]
-    ///     root-directory ::= separator
-    ///     relative-path ::= path-element { separator path-element } [separator]
-    ///    path-element ::= name | parent-directory | directory-placeholder
-    ///     name ::= char { char }
-    ///     directory-placeholder ::= "."
-    ///     parent-directory ::= ".."
-    ///     separator ::= "/"  // an implementation may define additional separators
-    class Path final
+/// Path class for manipulation file name
+/// 1. all path in unicode
+/// 2. no changes for file system, only Path object
+/// examples:
+///     ~res:/folder1/file1.txt
+///     ~doc:/folder2/file2.txt
+///     c:/mingw32/bin/gcc.exe
+///     /Users/l_chayka/job/dava.framework
+///     Data/files/config.yaml
+/// Grammar for portable generic path strings (from BOOST docs with modifications)
+/// The grammar is specified in extended BNF, with terminal symbols in quotes:
+///     path ::= {[virt] | [root]} [relative-path]  // an empty path is valid
+///     virt  ::= ~res:/ | ~doc:/
+///     root ::= [root-name] [root-directory]
+///     root-directory ::= separator
+///     relative-path ::= path-element { separator path-element } [separator]
+///    path-element ::= name | parent-directory | directory-placeholder
+///     name ::= char { char }
+///     directory-placeholder ::= "."
+///     parent-directory ::= ".."
+///     separator ::= "/"  // an implementation may define additional separators
+class Path final
+{
+public:
+    Path();
+    Path(const Path& path);
+    Path(Path&& path);
+    Path(const String& sourcePathUtf8);
+    Path(const WideString& src);
+    Path(const char* sourcePathUtf8);
+    Path(const wchar_t* sourcePath);
+    ~Path();
+
+    Path& operator=(const Path&);
+    Path& operator=(Path&&);
+    Path& operator+=(const Path&);
+    Path operator+(const Path&) const;
+
+    bool operator==(const Path& path) const;
+    bool operator!=(const Path& path) const;
+    bool operator<(const Path& path) const;
+
+    bool IsEmpty() const;
+    bool IsVirtual() const;
+    bool IsAbsolute() const;
+    bool IsRelative() const;
+
+    bool HasRootDirectory() const;
+    bool HasParentPath() const;
+    bool HasFilename() const;
+    bool HasStem() const;
+    bool HasExtension() const;
+
+    Path GetRootDirectory() const; // C:/ or ~res:/ or / (Unix)
+    Path GetParentPath() const;
+    Path GetFilename() const;
+    Path GetStem() const;
+    Path GetExtension() const;
+
+    void Clear();
+    Path RemoveFilename() const;
+    Path RemoveVirtualRoot() const;
+    Path ReplaceExtension(const Path& newExtension = Path()) const;
+
+    const String& ToStringUtf8() const;
+    const WideString& ToWideString() const;
+    size_t Hash() const;
+
+private:
+    String pathname;
+    mutable WideString copyPathname;
+};
+
+// exceptions in case of error
+class InputStream
+{
+public:
+    virtual ~InputStream();
+    virtual void Read(void* data, uint64 size) = 0;
+    virtual void Seek(uint64 position) = 0;
+    virtual uint64 Tell() = 0;
+    virtual uint64 GetSize() = 0;
+};
+
+class OutputStream
+{
+public:
+    virtual ~OutputStream();
+    virtual void Write(const void* data, uint64 size) = 0;
+    virtual void Seek(uint64 position) = 0;
+    virtual uint64 Tell() = 0;
+    virtual uint64 GetSize() = 0;
+};
+
+class FileDevice
+{
+public:
+    enum class State
     {
-    public:
-        Path();
-        Path(const Path& path);
-        Path(Path&& path);
-        Path(const String& sourcePathUtf8);
-        Path(const WideString& src);
-        Path(const char* sourcePathUtf8);
-        Path(const wchar_t* sourcePath);
-        ~Path();
-
-        Path& operator=(const Path&);
-        Path& operator=(Path&&);
-        Path& operator+=(const Path&);
-        Path operator+(const Path&) const;
-
-        bool operator==(const Path& path) const;
-        bool operator!=(const Path& path) const;
-        bool operator<(const Path& path) const;
-
-        bool IsEmpty() const;
-        bool IsVirtual() const;
-        bool IsAbsolute() const;
-        bool IsRelative() const;
-
-        bool HasRootDirectory() const;
-        bool HasParentPath() const;
-        bool HasFilename() const;
-        bool HasStem() const;
-        bool HasExtension() const;
-
-        Path GetRootDirectory() const; // C:/ or ~res:/ or / (Unix)
-        Path GetParentPath() const;
-        Path GetFilename() const;
-        Path GetStem() const;
-        Path GetExtension() const;
-
-        void Clear();
-        Path RemoveFilename() const;
-        Path RemoveVirtualRoot() const;
-        Path ReplaceExtension(const Path& newExtension = Path()) const;
-
-        const String& ToStringUtf8() const;
-        const WideString& ToWideString() const;
-        size_t Hash() const;
-    private:
-        String pathname;
-        mutable WideString copyPathname;
+        UNAVAILABLE,
+        READ_ONLY,
+        WRITE_ONLY,
+        READ_WRITE
     };
+    virtual ~FileDevice();
+    virtual int32 GetPriority() = 0;
+    virtual State GetState() = 0;
+    virtual bool Exist(const Path&, uint64* fileSize = nullptr) = 0;
+    virtual bool IsFile(const Path&) = 0;
+    virtual bool IsDirectory(const Path&) = 0;
+    virtual Vector<Path> EnumerateFiles(const Path& base = Path()) = 0;
+    virtual std::unique_ptr<InputStream> Open(const Path&) = 0;
+    virtual std::unique_ptr<OutputStream> Create(const Path&, bool recreate) = 0;
+    virtual void RemoveFile(const Path&) = 0;
+    virtual void MakeDirectory(const Path&, bool errorIfExist = false) = 0;
+    virtual void DeleteDirectory(const Path&, bool withContent = false) = 0;
+};
 
-    // exceptions in case of error
-    class InputStream
-    {
-    public:
-        virtual ~InputStream();
-        virtual void Read(void* data, uint64 size) = 0;
-        virtual void Seek(uint64 position) = 0;
-        virtual uint64 Tell() = 0;
-        virtual uint64 GetSize() = 0;
-    };
+// general OS implementation
+class OSFileDevice : public FileDevice
+{
+public:
+    explicit OSFileDevice(const Path& base = Path(), int32 priority = 0);
 
-    class OutputStream
-    {
-    public:
-        virtual ~OutputStream();
-        virtual void Write(const void* data, uint64 size) = 0;
-        virtual void Seek(uint64 position) = 0;
-        virtual uint64 Tell() = 0;
-        virtual uint64 GetSize() = 0;
-    };
+    int32 GetPriority() override;
+    State GetState() override;
+    bool Exist(const Path&, uint64* fileSize = nullptr) override;
+    bool IsFile(const Path&) override;
+    bool IsDirectory(const Path&) override;
+    Vector<Path> EnumerateFiles(const Path& base = Path()) override;
+    std::unique_ptr<InputStream> Open(const Path&) override;
+    std::unique_ptr<OutputStream> Create(const Path&, bool recreate) override;
+    void RemoveFile(const Path&) override;
+    void MakeDirectory(const Path&, bool errorIfExist = false) override;
+    void DeleteDirectory(const Path&, bool withContent = false) override;
 
-    class FileDevice
-    {
-    public:
-        enum class State
-        {
-            UNAVAILABLE,
-            READ_ONLY,
-            WRITE_ONLY,
-            READ_WRITE
-        };
-        virtual ~FileDevice();
-        virtual int32 GetPriority() = 0;
-        virtual State GetState() = 0;
-        virtual bool Exist(const Path&, uint64* fileSize = nullptr) = 0;
-        virtual bool IsFile(const Path&) = 0;
-        virtual bool IsDirectory(const Path&) = 0;
-        virtual Vector<Path> EnumerateFiles(const Path& base = Path()) = 0;
-        virtual std::unique_ptr<InputStream> Open(const Path&) = 0;
-        virtual std::unique_ptr<OutputStream> Create(const Path&, bool recreate) = 0;
-        virtual void RemoveFile(const Path&) = 0;
-        virtual void MakeDirectory(const Path&, bool errorIfExist = false) = 0;
-        virtual void DeleteDirectory(const Path&, bool withContent = false) = 0;
-    };
+private:
+    Path base;
+    int32 priority = 0;
+};
 
-    // general OS implementation
-    class OSFileDevice : public FileDevice
-    {
-    public:
-        explicit OSFileDevice(const Path& base = Path(), int32 priority = 0);
+// use exception to give client code ability to understand why something not working
+class FileSystem2Impl;
 
-        int32 GetPriority() override;
-        State GetState() override;
-        bool Exist(const Path&, uint64* fileSize = nullptr) override;
-        bool IsFile(const Path&) override;
-        bool IsDirectory(const Path&) override;
-        Vector<Path> EnumerateFiles(const Path& base = Path()) override;
-        std::unique_ptr<InputStream> Open(const Path&) override;
-        std::unique_ptr<OutputStream> Create(const Path&, bool recreate) override;
-        void RemoveFile(const Path&) override;
-        void MakeDirectory(const Path&, bool errorIfExist = false) override;
-        void DeleteDirectory(const Path&, bool withContent = false) override;
-    private:
-        Path base;
-        int32 priority = 0;
-    };
+class FileSystem2
+{
+public:
+    FileSystem2();
+    FileSystem2(const FileSystem2&) = delete;
+    FileSystem2& operator=(const FileSystem2&) = delete;
+    ~FileSystem2();
 
-    // use exception to give client code ability to understand why something not working
-    class FileSystem2Impl;
+    String ReadFileContentAsString(const Path& pathname) const;
+    // open or create stream from mounted pakfile or OS file system
+    // or wrapper around std::fstream or android stream or pakfile stream
+    std::unique_ptr<InputStream> Open(const Path&) const;
+    std::unique_ptr<OutputStream> Create(const Path&, bool recreate) const;
+    // works on OS file system
+    void RemoveFile(const Path&) const;
+    // works on OS file system
+    void DeleteDirectory(const Path& path, bool withContent = false) const;
+    // works on OS file system
+    void MakeDirectory(const Path& path, bool errorIfExist = false) const;
+    // works on OS file system
+    static Path GetCurrentWorkingDirectory();
 
-    class FileSystem2
-    {
-    public:
-        FileSystem2();
-        FileSystem2(const FileSystem2&) = delete;
-        FileSystem2& operator=(const FileSystem2&) = delete;
-        ~FileSystem2();
+    // write path for save, logs ets. "~doc:/logs/today.txt" -> ~doc: == GetPrefPath() == "C:/Users/l_chayka/Documents"
+    static Path GetPrefPath();
+    // works only for OS file system and using current working directory
+    static Path GetAbsolutePath(const Path& p);
+    // works only for OS file system and using current working directory
+    static Path GetRelativePath(const Path& p);
+    static Path GetRelativePath(const Path& file, const Path& relativeDirectory);
+    // works only for OS file system
+    static void SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
 
-        String ReadFileContentAsString(const Path& pathname) const;
-        // open or create stream from mounted pakfile or OS file system
-        // or wrapper around std::fstream or android stream or pakfile stream
-        std::unique_ptr<InputStream> Open(const Path&) const;
-        std::unique_ptr<OutputStream> Create(const Path&, bool recreate) const;
-        // works on OS file system
-        void RemoveFile(const Path&) const;
-        // works on OS file system
-        void DeleteDirectory(const Path& path, bool withContent = false) const;
-        // works on OS file system
-        void MakeDirectory(const Path& path, bool errorIfExist = false) const;
-        // works on OS file system
-        static Path GetCurrentWorkingDirectory();
+    // test file path if file on FileDevice or OS file system
+    bool IsFile(const Path& pathToCheck) const;
+    // test if path is directory
+    bool IsDirectory(const Path& pathToCheck) const;
+    // find path in FileDevice or OS file system
+    bool Exist(const Path& Path) const;
+    // copy from OS to OS
+    void Copy(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
+    // move file from OS to OS
+    void RenameFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
+    // copy directory from OS to OS
+    void CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting) const;
+    // virtualName = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
+    void Mount(const String& virtualName, std::shared_ptr<FileDevice>);
+    const Vector<std::shared_ptr<FileDevice>>& GetMountedDevices() const;
+    // works on FileDevice or OS
+    uint64 GetFileSize(const Path& path) const;
 
-        // write path for save, logs ets. "~doc:/logs/today.txt" -> ~doc: == GetPrefPath() == "C:/Users/l_chayka/Documents"
-        static Path GetPrefPath();
-        // works only for OS file system and using current working directory
-        static Path GetAbsolutePath(const Path& p);
-        // works only for OS file system and using current working directory
-        static Path GetRelativePath(const Path& p);
-        static Path GetRelativePath(const Path& file, const Path& relativeDirectory);
-        // works only for OS file system
-        static void SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
+    // can be empty, or >1 (if two sdcard present)
+    Vector<Path> AndroidGetExternalStoragePath() const;
+    Path AndroidGetInternalStoragePath() const;
+    FileDevice::State AndroidGetExternalStorageState() const;
 
-        // test file path if file on FileDevice or OS file system
-        bool IsFile(const Path& pathToCheck) const;
-        // test if path is directory 
-        bool IsDirectory(const Path& pathToCheck) const;
-        // find path in FileDevice or OS file system
-        bool Exist(const Path& Path) const;
-        // copy from OS to OS
-        void Copy(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
-        // move file from OS to OS
-        void RenameFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
-        // copy directory from OS to OS
-        void CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting) const;
-        // virtualName = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
-        void Mount(const String& virtualName, std::shared_ptr<FileDevice>);
-        const Vector<std::shared_ptr<FileDevice>>& GetMountedDevices() const;
-        // works on FileDevice or OS
-        uint64 GetFileSize(const Path& path) const;
-
-        // can be empty, or >1 (if two sdcard present)
-        Vector<Path> AndroidGetExternalStoragePath() const;
-        Path AndroidGetInternalStoragePath() const;
-        FileDevice::State AndroidGetExternalStorageState() const;
-    private:
-        std::unique_ptr<FileSystem2Impl> impl;
-    };
+private:
+    std::unique_ptr<FileSystem2Impl> impl;
+};
 } // end namespace DAVA
 
-namespace std {
-    template <> struct hash<DAVA::Path>
+namespace std
+{
+template <>
+struct hash<DAVA::Path>
+{
+    size_t operator()(const DAVA::Path& p) const
     {
-        size_t operator()(const DAVA::Path& p) const
-        {
-            return p.Hash();
-        }
-    };
+        return p.Hash();
+    }
+};
 }
