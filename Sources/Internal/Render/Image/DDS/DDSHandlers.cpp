@@ -386,8 +386,8 @@ void DirectConvertFromD3D(const uint8* srcData, Image* dstImage, dds::D3D_FORMAT
     const uint32& w = dstImage->width;
     const uint32& h = dstImage->height;
 
-    uint32 srcPitch = w * GetFormatSizeInBits(srcFormat);
-    uint32 dstPitch = w * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstFormat);
+    uint32 srcPitch = w * GetFormatSizeInBits(srcFormat) / 8;
+    uint32 dstPitch = w * PixelFormatDescriptor::GetPixelFormatSizeInBits(dstFormat) / 8;
 
     switch (srcFormat)
     {
@@ -429,8 +429,8 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
     DVASSERT(srcData);
     DVASSERT(dstData);
 
-    uint32 srcPitch = w * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcFormat);
-    uint32 dstPitch = w * GetFormatSizeInBits(dstFormat);
+    uint32 srcPitch = w * PixelFormatDescriptor::GetPixelFormatSizeInBits(srcFormat) / 8;
+    uint32 dstPitch = w * GetFormatSizeInBits(dstFormat) / 8;
 
     switch (dstFormat)
     {
@@ -692,7 +692,6 @@ bool DDSHandler::SetFormatInfo()
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::FOURCC_DX10;
-        mainHeader.format.fourCC = dds::FOURCC_DX10;
         extHeader.dxgiFormat = dds::DXGI_FORMAT_BC1_UNORM;
         break;
     }
@@ -700,7 +699,6 @@ bool DDSHandler::SetFormatInfo()
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::FOURCC_DX10;
-        mainHeader.format.fourCC = dds::FOURCC_DX10;
         extHeader.dxgiFormat = dds::DXGI_FORMAT_BC2_UNORM;
         break;
     }
@@ -708,7 +706,6 @@ bool DDSHandler::SetFormatInfo()
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::FOURCC_DX10;
-        mainHeader.format.fourCC = dds::FOURCC_DX10;
         extHeader.dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
         break;
     }
@@ -716,7 +713,6 @@ bool DDSHandler::SetFormatInfo()
     {
         flags = dds::DDPF_FOURCC | dds::DDPF_NORMAL;
         fourcc = dds::FOURCC_DX10;
-        mainHeader.format.fourCC = dds::FOURCC_DX10;
         extHeader.dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
         break;
     }
@@ -1033,7 +1029,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, uint32 baseMipMap)
 
     baseMipMap = Min(baseMipMap, (info.mipmapsCount - 1));
 
-    const uint32 bitsPerPixel = needDirectConvert ? D3DUtils::GetFormatSizeInBits(d3dPixelFormat) * 8 : PixelFormatDescriptor::GetPixelFormatSizeInBits(davaPixelFormat);
+    const uint32 bitsPerPixel = needDirectConvert ? D3DUtils::GetFormatSizeInBits(d3dPixelFormat) : PixelFormatDescriptor::GetPixelFormatSizeInBits(davaPixelFormat);
 
     const uint32 largestImageSize = info.width * info.height * bitsPerPixel / 8;
     Vector<uint8> dataBuffer(largestImageSize);
@@ -1187,7 +1183,7 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
 
             if (needDirectConvert)
             {
-                uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBits(d3dPixelFormat);
+                uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBits(d3dPixelFormat) / 8;
                 Vector<uint8> d3dData(d3dSize); // todo: use single buffer for all mips
                 D3DUtils::DirectConvertToD3D(dataToCopy, w, h, d3dData.data(), davaPixelFormat, d3dPixelFormat);
                 dataToCopy = d3dData.data();

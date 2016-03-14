@@ -2577,16 +2577,19 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image* image, uint32 mipMapLevel, con
 
 bool LibPVRHelper::IsSupportedCompressedFormat(PixelFormat format)
 {
+    // todo: implement direct compress/decompress for pvr formats
     return false;
 }
 
 bool LibPVRHelper::DecompressToRGBA(const Image* image, Image* dstImage)
 {
+    // todo: implement direct compress/decompress for pvr formats
     return false;
 }
 
 bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
 {
+    // todo: implement direct compress/decompress for pvr formats
     return false;
 }
 };

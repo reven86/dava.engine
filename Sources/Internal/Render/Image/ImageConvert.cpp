@@ -248,10 +248,9 @@ void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage /* = nullp
         DVASSERT(srcImage->height == dstImage->height);
     }
 
-    SwapRedBlueChannels(
-    srcImage->format, srcImage->data, srcImage->width, srcImage->height,
-    srcImage->width * srcPixelSize,
-    dstImage ? dstImage->data : nullptr);
+    SwapRedBlueChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height,
+                        srcImage->width * srcPixelSize,
+                        dstImage ? dstImage->data : nullptr);
 }
 
 void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData /* = nullptr*/)

@@ -88,7 +88,7 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
             }
             else
             {
-                int32 pix = (pixelSizeBits < 8) ? 4 : pixelSizeBits;
+                int32 pix = (pixelSizeBits < 8) ? BLOCK_SIZE : pixelSizeBits;
                 image->dataSize = width * height * pix / 8;
             }
         }
