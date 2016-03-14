@@ -50,9 +50,9 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
     bool pathApplied = (FileSystem::Instance()->Exists(texturePath) && TextureDescriptorUtils::CreateOrUpdateDescriptor(texturePath));
 
     if (!pathApplied)
-        {
+    {
         texturePathName.clear();
-        }
+    }
 }
 
 ColladaTexture::~ColladaTexture()
