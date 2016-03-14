@@ -96,7 +96,7 @@ void QtLayer::OnResume()
 void QtLayer::ProcessFrame()
 {
     if (Core::Instance()->IsConsoleMode() == false)
-    {   // avoid calling of system process frame for console mode. Right not it is called from DAVA GL Widget. Will be refactored in future
+    { // avoid calling of system process frame for console mode. Right not it is called from DAVA GL Widget. Will be refactored in future
 
         rhi::InvalidateCache(); //as QT itself can break gl states
         Core::Instance()->SystemProcessFrame();

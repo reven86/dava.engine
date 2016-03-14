@@ -114,7 +114,6 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
     JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::CloseWaitDialog));
 }
 
-
 void SpritesPackerModule::ShowPackerDialog()
 {
     DialogReloadSprites dialogReloadSprites(spritesPacker.get(), QtMainWindow::Instance());
@@ -134,17 +133,16 @@ void SpritesPackerModule::DisconnectAndReload()
     ReloadObjects();
 }
 
-
 void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
 {
     DVASSERT(waitDialog == nullptr);
 
     waitDialog = new QDialog(QtMainWindow::Instance(), Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
-    QLabel *label = new QLabel("Reloading Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()), waitDialog);
+    QLabel* label = new QLabel("Reloading Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()), waitDialog);
     label->setAlignment(Qt::AlignCenter);
     label->setWordWrap(true);
 
-    QVBoxLayout *layout = new QVBoxLayout(waitDialog);
+    QVBoxLayout* layout = new QVBoxLayout(waitDialog);
     layout->addWidget(label);
     waitDialog->setLayout(layout);
 
@@ -163,7 +161,6 @@ void SpritesPackerModule::CloseWaitDialog()
         waitDialog = nullptr;
     }
 }
-
 
 void SpritesPackerModule::ReloadObjects()
 {
@@ -208,4 +205,3 @@ void SpritesPackerModule::DisconnectCacheClient()
         SafeDelete(cacheClient);
     }
 }
-
