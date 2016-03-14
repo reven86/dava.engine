@@ -35,19 +35,20 @@
 
 using namespace DAVA;
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties_, size_t hash_, QUndoCommand* parent /*= nullptr*/)
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, const Vector<ChangePropertyAction>& propertyActions_, size_t hash_, QUndoCommand* parent /*= nullptr*/)
     : QUndoCommand(parent)
     , root(SafeRetain(root_))
     , hash(hash_)
 {
-    for (auto property : properties_)
+    for (const auto& action : propertyActions_)
     {
-        AbstractProperty* prop = std::get<PROPERTY>(property);
+        AbstractProperty* prop = action.property;
         changedProperties.emplace_back(
-        std::get<NODE>(property),
+        action.node,
         prop,
-        std::get<NEW_VALUE>(property),
-        GetValueFromProperty(prop));
+        GetValueFromProperty(prop),
+        action.value
+        );
     }
     Init();
 }
@@ -57,8 +58,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , root(SafeRetain(root_))
     , hash(hash_)
 {
-    changedProperties.emplace_back(
-    node, prop, newVal, GetValueFromProperty(prop));
+    changedProperties.emplace_back(node, prop, GetValueFromProperty(prop), newVal);
     Init();
 }
 
@@ -66,8 +66,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     : QUndoCommand(parent)
     , root(SafeRetain(root_))
 {
-    changedProperties.emplace_back(
-    node, prop, VariantType(), GetValueFromProperty(prop));
+    changedProperties.emplace_back(node, prop, GetValueFromProperty(prop), VariantType());
     Init();
 }
 
@@ -75,9 +74,9 @@ void ChangePropertyValueCommand::Init()
 {
     QString text = "changed:";
     std::hash<void*> ptrHash;
-    for (const auto& propertyValue : changedProperties)
+    for (const auto& action : changedProperties)
     {
-        AbstractProperty* prop = std::get<PROPERTY>(propertyValue);
+        AbstractProperty* prop = action.property;
         hash = ptrHash(prop) ^ (hash << 1);
         text += QString(" %1").arg(prop->GetName().c_str());
     }
@@ -91,11 +90,11 @@ ChangePropertyValueCommand::~ChangePropertyValueCommand()
 
 void ChangePropertyValueCommand::redo()
 {
-    for (const auto& propertyValue : changedProperties)
+    for (const auto& action : changedProperties)
     {
-        ControlNode* node = std::get<NODE>(propertyValue);
-        const VariantType& newValue = std::get<NEW_VALUE>(propertyValue);
-        AbstractProperty* property = std::get<PROPERTY>(propertyValue);
+        ControlNode* node = action.node;
+        const VariantType& newValue = action.newValue;
+        AbstractProperty* property = action.property;
 
         if (newValue.GetType() == VariantType::TYPE_NONE)
         {
@@ -110,11 +109,11 @@ void ChangePropertyValueCommand::redo()
 
 void ChangePropertyValueCommand::undo()
 {
-    for (const auto& propertyValue : changedProperties)
+    for (const auto& action : changedProperties)
     {
-        ControlNode* node = std::get<NODE>(propertyValue);
-        const VariantType& oldValue = std::get<OLD_VALUE>(propertyValue);
-        AbstractProperty* property = std::get<PROPERTY>(propertyValue);
+        ControlNode* node = action.node;
+        const VariantType& oldValue = action.oldValue;
+        AbstractProperty* property = action.property;
 
         if (oldValue.GetType() == VariantType::TYPE_NONE)
         {
@@ -139,7 +138,7 @@ bool ChangePropertyValueCommand::mergeWith(const QUndoCommand* other)
     const ChangePropertyValueCommand* otherCommand = static_cast<const ChangePropertyValueCommand*>(other);
     for (int i = 0, k = changedProperties.size(); i < k; ++i)
     {
-        std::get<NEW_VALUE>(changedProperties.at(i)) = std::get<NEW_VALUE>(otherCommand->changedProperties.at(i));
+        changedProperties.at(i).newValue = otherCommand->changedProperties.at(i).newValue;
     }
     return true;
 }

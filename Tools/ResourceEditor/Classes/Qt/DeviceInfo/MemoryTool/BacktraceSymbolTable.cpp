@@ -4,7 +4,7 @@
 
 using namespace DAVA;
 
-const uint64 INVALID_ADDRESS = 0xFFFF;
+const uint64 INVALID_ADDRESS = 0x1000;
 
 const DAVA::String* BacktraceSymbolTable::AddSymbol(uint64 stackAddr, const String& name)
 {

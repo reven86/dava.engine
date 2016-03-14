@@ -168,32 +168,6 @@ void EditorHeightmap::HeghtWasChanged(const DAVA::Rect& changedRect)
     //    }
 }
 
-bool EditorHeightmap::Load(const DAVA::String& filePathname)
-{
-    bool loaded = savedHeightmap->Load(filePathname);
-    DownscaleOrClone();
-
-    InitializeTableOfChanges();
-
-    return loaded;
-}
-
-void EditorHeightmap::Save(const DAVA::String& filePathname)
-{
-    if (savedHeightmap->Size() == size)
-    {
-        Memcpy(savedHeightmap->Data(), Data(), size * size * sizeof(uint16));
-    }
-    else
-    {
-        Upscale();
-    }
-
-    Memset(tableOfChanges, VALUE_NOT_CHANGED, size * size * sizeof(uint8));
-
-    savedHeightmap->Save(filePathname);
-}
-
 void EditorHeightmap::Upscale()
 {
     int32 savedHeightmapSize = savedHeightmap->Size() - 1;

@@ -52,6 +52,8 @@
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Commands2/MaterialGlobalCommand.h"
+#include "Commands2/MaterialRemoveTexture.h"
+#include "Commands2/MaterialConfigCommands.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
@@ -61,8 +63,10 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "Base/Introspection.h"
 
 namespace UIName
 {
@@ -85,17 +89,90 @@ const DAVA::FastName LocalProperties("localProperties");
 const DAVA::FastName LocalTextures("localTextures");
 }
 
+namespace MaterialEditorLocal
+{
+const char* CURRENT_TAB_CHANGED_UPDATE = "CurrentTabChangedUpdate";
+class PropertyLock
+{
+public:
+    PropertyLock(QObject* propertyHolder_, const char* propertyName_)
+        : propertyHolder(propertyHolder_)
+        , propertyName(propertyName_)
+    {
+        if (!propertyHolder->property(propertyName).toBool())
+        {
+            locked = true;
+            propertyHolder->setProperty(propertyName, true);
+        }
+    }
+
+    ~PropertyLock()
+    {
+        if (locked)
+        {
+            propertyHolder->setProperty(propertyName, false);
+        }
+    }
+
+    bool IsLocked() const
+    {
+        return locked;
+    }
+
+private:
+    QObject* propertyHolder = nullptr;
+    const char* propertyName = nullptr;
+    bool locked = false;
+};
+}
+
+class MaterialEditor::ConfigNameValidator : public QValidator
+{
+public:
+    ConfigNameValidator(QObject* parent)
+        : QValidator(parent)
+    {
+    }
+
+    State validate(QString& input, int& pos) const override
+    {
+        DVASSERT(material != nullptr);
+        if (input.isEmpty())
+            return Intermediate;
+
+        uint32 index = material->FindConfigByName(DAVA::FastName(input.toStdString()));
+        return (index < material->GetConfigCount()) ? Intermediate : Acceptable;
+    }
+
+    void SetCurrentMaterial(DAVA::NMaterial* material_)
+    {
+        material = material_;
+    }
+
+private:
+    DAVA::NMaterial* material = nullptr;
+};
+
 MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     : QDialog(parent)
     , ui(new Ui::MaterialEditor)
     , templatesFilterModel(nullptr)
     , lastCheckState(CHECKED_ALL)
+    , validator(new ConfigNameValidator(this))
 {
     Function<void()> fn(this, &MaterialEditor::RefreshMaterialProperties);
     materialPropertiesUpdater = new LazyUpdater(fn, this);
 
     ui->setupUi(this);
     setWindowFlags(WINDOWFLAG_ON_TOP_OF_APPLICATION);
+
+    ui->tabbar->setNameValidator(validator);
+    ui->tabbar->setUsesScrollButtons(true);
+    ui->tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(ui->tabbar, &EditableTabBar::tabNameChanged, this, &MaterialEditor::onTabNameChanged);
+    QObject::connect(ui->tabbar, &EditableTabBar::currentChanged, this, &MaterialEditor::onCurrentConfigChanged);
+    QObject::connect(ui->tabbar, &EditableTabBar::tabCloseRequested, this, &MaterialEditor::onTabRemove);
+    QObject::connect(ui->tabbar, &EditableTabBar::customContextMenuRequested, this, &MaterialEditor::onTabContextMenuRequested);
 
     ui->materialTree->setDragEnabled(true);
     ui->materialTree->setAcceptDrops(true);
@@ -271,12 +348,14 @@ void MaterialEditor::SetCurMaterial(const QList<DAVA::NMaterial*>& materials)
 
     curMaterials = materials;
     treeStateHelper->SaveTreeViewState(false);
+    UpdateTabs();
 
     FillBase();
     FillDynamic(flagsRoot, NMaterialSectionName::LocalFlags);
     FillIllumination();
     FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
     FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
+    FillInvalidTextures();
     FillTemplates(materials);
     FinishCreation();
 
@@ -352,6 +431,11 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
 
         switch (cmdId)
         {
+        case CMDID_MATERIAL_REMOVE_TEXTURE:
+        {
+            materialPropertiesUpdater->Update();
+        }
+        break;
         case CMDID_INSP_MEMBER_MODIFY:
         {
             InspMemberModifyCommand* inspCommand = (InspMemberModifyCommand*)command;
@@ -363,6 +447,11 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
                 {
                     m->InvalidateRenderVariants();
                 }
+                materialPropertiesUpdater->Update();
+            }
+
+            if (memberName == "configName")
+            {
                 materialPropertiesUpdater->Update();
             }
         }
@@ -400,6 +489,11 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
             materialPropertiesUpdater->Update();
         }
         break;
+        case CMDID_MATERIAL_CHANGE_CURRENT_CONFIG:
+        case CMDID_MATERIAL_CREATE_CONFIG:
+        case CMDID_MATERIAL_REMOVE_CONFIG:
+            RefreshMaterialProperties();
+            break;
         default:
             break;
         }
@@ -538,6 +632,76 @@ void MaterialEditor::FillDynamic(QtPropertyData* root, const FastName& dynamicNa
         {
             DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
             FillDynamicMembers(root, dynamicInfo, material, material == globalMaterial);
+        }
+    }
+}
+
+namespace MELocal
+{
+struct InvalidTexturesCollector
+{
+    DAVA::Set<DAVA::FastName> validTextures;
+    DAVA::Map<DAVA::FastName, DAVA::Vector<DAVA::FilePath>> invalidTextures;
+
+    void CollectValidTextures(QtPropertyData* data)
+    {
+        DVASSERT(data != nullptr);
+        validTextures.insert(data->GetName());
+        for (int i = 0; i < data->ChildCount(); ++i)
+        {
+            CollectValidTextures(data->ChildGet(i));
+        }
+    }
+
+    void CollectInvalidTextures(DAVA::NMaterial* material)
+    {
+        while (material != nullptr)
+        {
+            using TTexturesMap = HashMap<FastName, MaterialTextureInfo*>;
+            using TTextureItem = TTexturesMap::HashMapItem;
+
+            const TTexturesMap& localTextures = material->GetLocalTextures();
+            for (const TTextureItem& lc : localTextures)
+            {
+                if (validTextures.count(lc.first) == 0)
+                {
+                    invalidTextures[lc.first].push_back(lc.second->path);
+                }
+            }
+
+            material = material->GetParent();
+        }
+    }
+};
+}
+
+void MaterialEditor::FillInvalidTextures()
+{
+    MELocal::InvalidTexturesCollector collector;
+    collector.CollectValidTextures(texturesRoot);
+    for (int i = 0; i < curMaterials.size(); ++i)
+    {
+        collector.CollectInvalidTextures(curMaterials[i]);
+    }
+
+    for (const auto& t : collector.invalidTextures)
+    {
+        DVASSERT(!t.second.empty());
+        for (size_t i = 0; i < t.second.size(); ++i)
+        {
+            QVariant qValue(QString::fromStdString(t.second[i].GetAbsolutePathname()));
+            std::unique_ptr<QtPropertyData> textureSlot(new QtPropertyData(t.first, qValue));
+
+            QtPropertyToolButton* addRemoveButton = textureSlot->AddButton();
+            addRemoveButton->setObjectName("dynamicAddRemoveButton");
+            addRemoveButton->setIconSize(QSize(14, 14));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
+            addRemoveButton->setToolTip("Remove property");
+            QObject::connect(addRemoveButton, SIGNAL(clicked()), this, SLOT(removeInvalidTexture()));
+
+            textureSlot->SetEnabled(false);
+            textureSlot->SetBackground(QBrush(QColor(255, 0, 0, 25)));
+            texturesRoot->MergeChild(std::move(textureSlot));
         }
     }
 }
@@ -1388,4 +1552,159 @@ void MaterialEditor::FinishCreation()
     illuminationRoot->FinishTreeCreation();
     propertiesRoot->FinishTreeCreation();
     texturesRoot->FinishTreeCreation();
+}
+
+void MaterialEditor::removeInvalidTexture()
+{
+    QtPropertyToolButton* button = dynamic_cast<QtPropertyToolButton*>(sender());
+    QtPropertyData* data = button->GetPropertyData();
+    DAVA::FastName textureSlot = data->GetName();
+
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(curScene != nullptr);
+
+    curScene->BeginBatch("Remove invalid texture from material");
+    for (int i = 0; i < curMaterials.size(); ++i)
+    {
+        DAVA::NMaterial* material = curMaterials[i];
+        while (material != nullptr)
+        {
+            if (material->HasLocalTexture(textureSlot))
+            {
+                curScene->Exec(new MaterialRemoveTexture(textureSlot, material));
+                break;
+            }
+
+            material = material->GetParent();
+        }
+    }
+    curScene->EndBatch();
+}
+
+void MaterialEditor::UpdateTabs()
+{
+    MaterialEditorLocal::PropertyLock propertyLock(ui->tabbar, MaterialEditorLocal::CURRENT_TAB_CHANGED_UPDATE);
+    if (!propertyLock.IsLocked())
+    {
+        return;
+    }
+
+    while (ui->tabbar->count() > 0)
+    {
+        ui->tabbar->removeTab(0);
+    }
+
+    if (curMaterials.size() == 1)
+    {
+        DAVA::NMaterial* material = curMaterials.front();
+        validator->SetCurrentMaterial(material);
+        for (DAVA::uint32 i = 0; i < material->GetConfigCount(); ++i)
+        {
+            ui->tabbar->addTab(QString(material->GetConfigName(i).c_str()));
+        }
+
+        ui->tabbar->setCurrentIndex(material->GetCurrentConfigIndex());
+        ui->tabbar->setTabsClosable(material->GetConfigCount() > 1);
+    }
+    else
+    {
+        validator->SetCurrentMaterial(nullptr);
+    }
+
+    ui->tabbar->setVisible(curMaterials.size() == 1);
+}
+
+void MaterialEditor::onTabNameChanged(int index)
+{
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+
+    DVASSERT(scene != nullptr);
+    DVASSERT(curMaterials.size() == 1);
+
+    DAVA::NMaterial* material = curMaterials.front();
+    const DAVA::InspMember* configNameProperty = material->GetTypeInfo()->Member(DAVA::FastName("configName"));
+    DVASSERT(configNameProperty != nullptr);
+    DAVA::VariantType newValue(DAVA::FastName(ui->tabbar->tabText(index).toStdString()));
+    scene->Exec(new InspMemberModifyCommand(configNameProperty, material, newValue));
+}
+
+void MaterialEditor::onCreateConfig(int index)
+{
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(scene != nullptr);
+    DVASSERT(curMaterials.size() == 1);
+    DAVA::NMaterial* material = curMaterials.front();
+    MaterialConfig newConfig;
+    if (index >= 0)
+    {
+        newConfig = material->GetConfig(static_cast<DAVA::uint32>(index));
+        DAVA::String newConfigName = DAVA::String("_copy");
+        if (newConfig.name.IsValid())
+        {
+            newConfigName = DAVA::String(newConfig.name.c_str()) + newConfigName;
+        }
+
+        newConfig.name = DAVA::FastName(newConfigName);
+    }
+    else
+    {
+        newConfig.name = DAVA::FastName("Empty");
+        newConfig.fxName = material->GetEffectiveFXName();
+    }
+
+    DAVA::uint32 counter = 2;
+    while (material->FindConfigByName(newConfig.name) < material->GetConfigCount())
+    {
+        newConfig.name = DAVA::FastName(DAVA::String(newConfig.name.c_str()) + std::to_string(counter));
+    }
+    scene->Exec(new MaterialCreateConfig(material, newConfig));
+}
+
+void MaterialEditor::onCurrentConfigChanged(int index)
+{
+    if (index < 0)
+        return;
+
+    MaterialEditorLocal::PropertyLock propertyLock(ui->tabbar, MaterialEditorLocal::CURRENT_TAB_CHANGED_UPDATE);
+    if (!propertyLock.IsLocked())
+    {
+        return;
+    }
+
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(curScene);
+    DVASSERT(curMaterials.size() == 1);
+    DAVA::NMaterial* material = curMaterials.front();
+    DVASSERT(static_cast<DAVA::uint32>(index) < material->GetConfigCount());
+    curScene->Exec(new MaterialChangeCurrentConfig(material, static_cast<DAVA::uint32>(index)));
+}
+
+void MaterialEditor::onTabRemove(int index)
+{
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(curScene);
+    DVASSERT(curMaterials.size() == 1);
+    DAVA::NMaterial* material = curMaterials.front();
+
+    curScene->Exec(new MaterialRemoveConfig(material, static_cast<DAVA::uint32>(index)));
+}
+
+void MaterialEditor::onTabContextMenuRequested(const QPoint& pos)
+{
+    int tabIndex = ui->tabbar->tabAt(pos);
+
+    std::unique_ptr<QMenu> contextMenu(new QMenu());
+
+    if (tabIndex != -1)
+    {
+        QString actionText = QString("Create copy from %1").arg(ui->tabbar->tabText(tabIndex));
+        QAction* createCopy = new QAction(actionText, contextMenu.get());
+        QObject::connect(createCopy, &QAction::triggered, [this, tabIndex]() { onCreateConfig(tabIndex); });
+        contextMenu->addAction(createCopy);
+    }
+
+    QAction* createEmpty = new QAction("Create empty config", contextMenu.get());
+    QObject::connect(createEmpty, &QAction::triggered, [this]() { onCreateConfig(-1); });
+    contextMenu->addAction(createEmpty);
+    contextMenu->exec(ui->tabbar->mapToGlobal(pos));
 }

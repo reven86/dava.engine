@@ -54,7 +54,7 @@ public:
     virtual void InputCancelled(UIEvent* currentInput);
     virtual bool SystemInput(UIEvent* currentInput);
     virtual void SetSize(const Vector2& size);
-    virtual void WillDisappear();
+    void OnInactive() override;
 
     // Set container relative position and enable*Scroll properties based on self and parent size
     void ApplySizeChanges();
@@ -83,8 +83,8 @@ protected:
     Vector2 oldPos;
     Vector2 newPos;
 
-    float32 oldScroll = 0.f;
-    float32 newScroll = 0.f;
+    Vector2 oldScroll;
+    Vector2 newScroll;
 
     ScrollHelper* currentScroll;
 

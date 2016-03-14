@@ -117,7 +117,7 @@ public:
 private:
     void UpdateGamepadElement(String name, bool isVisible)
     {
-        gamepadButtons[name]->SetVisible(isVisible);
+        gamepadButtons[name]->SetVisibilityFlag(isVisible);
     }
     void UpdateGamepadStickX(String name, float axisValue)
     {
@@ -236,6 +236,8 @@ private:
 
     bool OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         if (currentInput->device == UIEvent::Device::KEYBOARD)
         {
             ++numKeyboardEvents;
@@ -357,15 +359,15 @@ private:
             break;
         case UIEvent::Phase::KEY_DOWN:
             ++numKeyDown;
-            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
+            lastKey = UTF8Utils::EncodeToWideString(keyboard.GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_DOWN_REPEAT:
             ++numKeyDownRepeat;
-            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
+            lastKey = UTF8Utils::EncodeToWideString(keyboard.GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_UP:
             ++numKeyUp;
-            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
+            lastKey = UTF8Utils::EncodeToWideString(keyboard.GetKeyName(currentInput->key));
             break;
         default:
             break;
@@ -507,7 +509,7 @@ void KeyboardTest::LoadResources()
         img->SetSprite(path, 0);
         gamepadButtons[buttonOrAxisName] = img;
         AddControl(img);
-        img->SetVisible(false);
+        img->SetVisibilityFlag(false);
     }
 }
 

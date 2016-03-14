@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.0) 
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
@@ -9,7 +9,7 @@ set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
-add_definitions       ( -D__DISABLE_NATIVE_WEBVIEW__ )
+add_definitions       ( -DDISABLE_NATIVE_WEBVIEW -DDISABLE_NATIVE_TEXTFIELD)
 
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
@@ -30,7 +30,6 @@ add_definitions       (
 -DQT_HAVE_SSE
 -DQT_HAVE_MMXEXT
 -DQT_HAVE_SSE2
--DQT_LARGEFILE_SUPPORT
 -DQT_THREAD_SUPPORT
 )
 
@@ -56,12 +55,3 @@ set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()
-
-if( WIN32 AND NOT DAVA_MEGASOLUTION )
-    set( OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/$(Configuration)" )
-    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
-    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-
-endif()

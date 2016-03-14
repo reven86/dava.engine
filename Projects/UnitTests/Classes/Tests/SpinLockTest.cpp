@@ -51,30 +51,30 @@ void ThreadFunc(DAVA::BaseObject* obj, void*, void*)
 }
 }
 
-DAVA_TESTCLASS(SpinLockTest)
+DAVA_TESTCLASS (SpinLockTest)
 {
-  DAVA_TEST(TestFunc)
-  {
-  static_assert(result % numThreads == 0, "numThreads equal for each thread?");
+    DAVA_TEST (TestFunc)
+    {
+        static_assert(result % numThreads == 0, "numThreads equal for each thread?");
 
-List<Thread*> threads;
-for (int i = 0; i < numThreads; ++i)
-{
-    threads.push_back(Thread::Create(Message(ThreadFunc)));
-}
+        List<Thread*> threads;
+        for (int i = 0; i < numThreads; ++i)
+        {
+            threads.push_back(Thread::Create(Message(ThreadFunc)));
+        }
 
-for (auto thread : threads)
-{
-    thread->Start();
-}
+        for (auto thread : threads)
+        {
+            thread->Start();
+        }
 
-for (auto thread : threads)
-{
-    thread->Join();
-    SafeRelease(thread);
-}
+        for (auto thread : threads)
+        {
+            thread->Join();
+            SafeRelease(thread);
+        }
 
-TEST_VERIFY(result == sharedCounter);
-}
+        TEST_VERIFY(result == sharedCounter);
+    }
 }
 ;

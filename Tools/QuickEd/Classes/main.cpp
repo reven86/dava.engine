@@ -34,6 +34,9 @@
 
 #include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
+#include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/Utils/MessageHandler.h"
+#include <QtGlobal>
 
 void InitPVRTexTool()
 {
@@ -47,10 +50,13 @@ void InitPVRTexTool()
 
 int main(int argc, char* argv[])
 {
+    qInstallMessageHandler(DAVAMessageHandler);
+
     QApplication a(argc, argv);
     a.setOrganizationName("DAVA");
     a.setApplicationName("QuickEd");
 
+    Themes::InitFromQApplication();
     Q_INIT_RESOURCE(QtToolsResources);
 
     QApplication::setQuitOnLastWindowClosed(false);

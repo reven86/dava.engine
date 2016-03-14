@@ -84,13 +84,7 @@ void LandscapeEditorControlsPlaceholder::ConnectToSignals()
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(SceneActivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(SceneDeactivated(SceneEditor2*)));
 
-    connect(SceneSignals::Instance(), SIGNAL(CustomColorsToggled(SceneEditor2*)),
-            this, SLOT(EditorToggled(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(HeightmapEditorToggled(SceneEditor2*)),
-            this, SLOT(EditorToggled(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(TilemaskEditorToggled(SceneEditor2*)),
-            this, SLOT(EditorToggled(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(RulerToolToggled(SceneEditor2*)),
+    connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
 }
 

@@ -29,10 +29,8 @@
 
 #include "UI/UITextField.h"
 #include "Input/KeyboardDevice.h"
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
-#include "FileSystem/YamlNode.h"
 
 // Use NO_REQUIRED_SIZE to notify textFieldImpl->SetText that we don't want
 // to enable of any kind of static text fitting
@@ -51,7 +49,7 @@ extern void CloseKeyboard();
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "UI/UITextFieldWinUAP.h"
-#elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldMacOS.h"
 #else
 #include "UI/UIStaticText.h"
@@ -193,7 +191,7 @@ public:
     }
     void SetVisible(bool v)
     {
-        staticText_->SetVisible(v);
+        staticText_->SetVisibilityFlag(v);
     }
     void SetFont(Font* f)
     {
@@ -332,23 +330,20 @@ void UITextField::Update(float32 timeElapsed)
     textFieldImpl->UpdateRect(GetGeometricData().GetUnrotatedRect());
 }
 
-void UITextField::WillAppear()
+void UITextField::OnActive()
 {
     if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
     {
         UIControlSystem::Instance()->SetFocusedControl(this, false);
     }
-}
 
-void UITextField::DidAppear()
-{
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->ShowField();
-    textFieldImpl->SetVisible(IsOnScreen());
+    textFieldImpl->SetVisible(IsVisible());
 #endif
 }
 
-void UITextField::WillDisappear()
+void UITextField::OnInactive()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->HideField();
@@ -629,6 +624,14 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
         if (replacementLocation <= static_cast<int32>(txt.length()))
         {
             txt.replace(replacementLocation, replacementLength, replacementString);
+            if (GetMaxLength() > 0)
+            {
+                int32 outOfBounds = static_cast<int32>(txt.size()) - GetMaxLength();
+                if (outOfBounds > 0)
+                {
+                    txt.erase(GetMaxLength(), outOfBounds);
+                }
+            }
         }
         else
         {
@@ -637,218 +640,6 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
     }
 
     return txt;
-}
-
-void UITextField::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* textNode = node->Get("text");
-    if (textNode)
-    {
-        SetText(textNode->AsWString());
-    }
-
-    const YamlNode* fontNode = node->Get("font");
-    if (fontNode)
-    {
-        Font* font = loader->GetFontByName(fontNode->AsString());
-        if (font)
-        {
-            SetFont(font);
-            SetFontSize((float32)font->GetFontHeight());
-        }
-    }
-
-    const YamlNode* passwordNode = node->Get("isPassword");
-    if (passwordNode)
-    {
-        SetIsPassword(passwordNode->AsBool());
-    }
-
-    // Keyboard customization params.
-    const YamlNode* autoCapitalizationTypeNode = node->Get("autoCapitalizationType");
-    if (autoCapitalizationTypeNode)
-    {
-        SetAutoCapitalizationType((eAutoCapitalizationType)autoCapitalizationTypeNode->AsInt32());
-    }
-
-    const YamlNode* autoCorrectionTypeNode = node->Get("autoCorrectionType");
-    if (autoCorrectionTypeNode)
-    {
-        SetAutoCorrectionType((eAutoCorrectionType)autoCorrectionTypeNode->AsInt32());
-    }
-
-    const YamlNode* spellCheckingTypeNode = node->Get("spellCheckingType");
-    if (spellCheckingTypeNode)
-    {
-        SetSpellCheckingType((eSpellCheckingType)spellCheckingTypeNode->AsInt32());
-    }
-
-    const YamlNode* keyboardAppearanceTypeNode = node->Get("keyboardAppearanceType");
-    if (keyboardAppearanceTypeNode)
-    {
-        SetKeyboardAppearanceType((eKeyboardAppearanceType)keyboardAppearanceTypeNode->AsInt32());
-    }
-
-    const YamlNode* keyboardTypeNode = node->Get("keyboardType");
-    if (keyboardTypeNode)
-    {
-        SetKeyboardType((eKeyboardType)keyboardTypeNode->AsInt32());
-    }
-
-    const YamlNode* returnKeyTypeNode = node->Get("returnKeyType");
-    if (returnKeyTypeNode)
-    {
-        SetReturnKeyType((eReturnKeyType)returnKeyTypeNode->AsInt32());
-    }
-
-    const YamlNode* enableReturnKeyAutomaticallyNode = node->Get("enableReturnKeyAutomatically");
-    if (enableReturnKeyAutomaticallyNode)
-    {
-        SetEnableReturnKeyAutomatically(enableReturnKeyAutomaticallyNode->AsBool());
-    }
-
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    textFieldImpl->SetRect(Rect(0, 0, GetRect().dx, GetRect().dy));
-
-    const YamlNode* shadowColorNode = node->Get("shadowcolor");
-    const YamlNode* shadowOffsetNode = node->Get("shadowoffset");
-    if (shadowColorNode)
-    {
-        SetShadowColor(shadowColorNode->AsColor());
-    }
-    if (shadowOffsetNode)
-    {
-        SetShadowOffset(shadowOffsetNode->AsVector2());
-    }
-#endif
-
-    const YamlNode* textColorNode = node->Get("textcolor");
-    const YamlNode* textAlignNode = node->Get("textalign");
-
-    if (textColorNode)
-    {
-        SetTextColor(textColorNode->AsColor());
-    }
-
-    if (textAlignNode)
-    {
-        SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
-    }
-
-    const YamlNode* textUseRtlAlign = node->Get("textUseRtlAlign");
-    if (textUseRtlAlign)
-    {
-        SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(textUseRtlAlign->AsInt32()));
-    }
-
-    const YamlNode* maxLengthNode = node->Get("maxLength");
-    if (maxLengthNode)
-    {
-        SetMaxLength(maxLengthNode->AsInt32());
-    }
-}
-
-YamlNode* UITextField::SaveToYamlNode(UIYamlLoader* loader)
-{
-    ScopedPtr<UITextField> baseTextField(new UITextField());
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    //Text
-    if (baseTextField->GetText() != this->GetText())
-    {
-        node->Set("text", GetText());
-    }
-
-    //Font
-    //Get font name and put it here
-    node->Set("font", FontManager::Instance()->GetFontName(this->GetFont()));
-
-    //TextColor
-    const Color& textColor = GetTextColor();
-    if (baseTextField->GetTextColor() != textColor)
-    {
-        node->Set("textcolor", VariantType(textColor));
-    }
-
-    // ShadowColor
-    const Color& shadowColor = GetShadowColor();
-    if (baseTextField->GetShadowColor() != GetShadowColor())
-    {
-        node->Set("shadowcolor", VariantType(shadowColor));
-    }
-
-    // ShadowOffset
-    if (baseTextField->GetShadowOffset() != GetShadowOffset())
-    {
-        node->Set("shadowoffset", GetShadowOffset());
-    }
-
-    // Text align
-    if (baseTextField->GetTextAlign() != GetTextAlign())
-    {
-        node->SetNodeToMap("textalign", loader->GetAlignNodeValue(GetTextAlign()));
-    }
-
-    // Text use rtl align
-    if (baseTextField->GetTextUseRtlAlign() != GetTextUseRtlAlign())
-    {
-        node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
-    }
-
-    // Draw Type must be overwritten fot UITextField.
-    UIControlBackground::eDrawType drawType = GetBackground()->GetDrawType();
-
-    if (baseTextField->GetBackground()->GetDrawType() != drawType)
-    {
-        node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
-    }
-
-    // Is password
-    if (baseTextField->IsPassword() != IsPassword())
-    {
-        node->Set("isPassword", IsPassword());
-    }
-
-    // Keyboard customization params.
-    if (baseTextField->GetAutoCapitalizationType() != GetAutoCapitalizationType())
-    {
-        node->Set("autoCapitalizationType", GetAutoCapitalizationType());
-    }
-    if (baseTextField->GetAutoCorrectionType() != GetAutoCorrectionType())
-    {
-        node->Set("autoCorrectionType", GetAutoCorrectionType());
-    }
-    if (baseTextField->GetSpellCheckingType() != GetSpellCheckingType())
-    {
-        node->Set("spellCheckingType", GetSpellCheckingType());
-    }
-    if (baseTextField->GetKeyboardAppearanceType() != GetKeyboardAppearanceType())
-    {
-        node->Set("keyboardAppearanceType", GetKeyboardAppearanceType());
-    }
-    if (baseTextField->GetKeyboardType() != GetKeyboardType())
-    {
-        node->Set("keyboardType", GetKeyboardType());
-    }
-    if (baseTextField->GetReturnKeyType() != GetReturnKeyType())
-    {
-        node->Set("returnKeyType", GetReturnKeyType());
-    }
-    if (baseTextField->IsEnableReturnKeyAutomatically() != IsEnableReturnKeyAutomatically())
-    {
-        node->Set("enableReturnKeyAutomatically", IsEnableReturnKeyAutomatically());
-    }
-
-    // Max length.
-    if (baseTextField->GetMaxLength() != GetMaxLength())
-    {
-        node->Set("maxLength", GetMaxLength());
-    }
-
-    return node;
 }
 
 UITextField* UITextField::Clone()
@@ -1025,15 +816,15 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
-void UITextField::WillBecomeVisible()
+void UITextField::OnVisible()
 {
-    UIControl::WillBecomeVisible();
+    UIControl::OnVisible();
     textFieldImpl->SetVisible(visible);
 }
 
-void UITextField::WillBecomeInvisible()
+void UITextField::OnInvisible()
 {
-    UIControl::WillBecomeInvisible();
+    UIControl::OnInvisible();
     textFieldImpl->SetVisible(false);
 }
 

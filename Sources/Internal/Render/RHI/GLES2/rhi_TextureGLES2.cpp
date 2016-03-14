@@ -856,7 +856,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
 
     if (!fb)
     {
-        glGenFramebuffers(1, &fb);
+        GL_CALL(glGenFramebuffers(1, &fb));
 
         if (fb)
         {
@@ -888,26 +888,27 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
                 }
             }
 
-            glBindFramebuffer(GL_FRAMEBUFFER, fb);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, self->uid, level);
+            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+            GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, self->uid, level));
             if (ds)
             {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
+                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid));
                 if (ds->uid2)
-                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2);
+                    GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2));
 #else
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
+                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid));
 #endif
             }
 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
 #else
             GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
 
-            glDrawBuffers(1, b);
+            GL_CALL(glDrawBuffers(1, b));
 #endif
 
-            int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            int status;
+            GL_CALL(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
             //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             if (status == GL_FRAMEBUFFER_COMPLETE)
@@ -929,7 +930,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
         }
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
     _GLES2_Binded_FrameBuffer = fb;
 }
 

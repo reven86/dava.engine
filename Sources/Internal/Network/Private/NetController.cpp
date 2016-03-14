@@ -47,6 +47,13 @@ namespace DAVA
 {
 namespace Net
 {
+// Move dtor to source file to prevent clang warning: 'class' has no out-of-line virtual method definitions
+IController::~IController() = default;
+IServerTransport::~IServerTransport() = default;
+IClientTransport::~IClientTransport() = default;
+IServerListener::~IServerListener() = default;
+IClientListener::~IClientListener() = default;
+
 NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext, uint32 readTimeout_)
     : loop(aLoop)
     , role(SERVER_ROLE)

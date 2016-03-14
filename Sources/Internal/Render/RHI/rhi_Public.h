@@ -111,9 +111,9 @@ ResetParam
     ResetParam()
         : width(0)
         , height(0)
+        , window(nullptr)
         , fullScreen(false)
         , vsyncEnabled(true)
-        , window(nullptr)
     {
     }
 };
@@ -130,6 +130,8 @@ RenderDeviceCaps
     bool isCenterPixelMapping = false;
 
     bool isInstancingSupported = false;
+
+    char deviceDescription[128];
 };
 
 void Initialize(Api api, const InitParam& param);
@@ -173,11 +175,6 @@ public:
     operator Handle() const
     {
         return handle;
-    }
-    ResourceHandle<T>& operator=(const ResourceHandle<T>& src)
-    {
-        handle = src.handle;
-        return *this;
     }
 
 private:

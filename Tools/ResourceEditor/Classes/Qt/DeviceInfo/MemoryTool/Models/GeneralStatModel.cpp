@@ -87,7 +87,6 @@ QVariant GeneralStatModel::data(const QModelIndex& index, int role) const
     if (index.isValid() && profileSession != nullptr)
     {
         int row = index.row();
-        int clm = index.column();
         if (Qt::DisplayRole == role)
         {
             switch (row)

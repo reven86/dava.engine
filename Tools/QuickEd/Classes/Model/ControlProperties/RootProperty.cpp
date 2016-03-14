@@ -44,8 +44,9 @@
 #include "PrototypeNameProperty.h"
 #include "ClassProperty.h"
 #include "CustomClassProperty.h"
+#include "VisibleValueProperty.h"
 
-#include "../PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"
 
 using namespace DAVA;
@@ -72,18 +73,20 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
             AddComponentPropertiesSection(newSection);
         }
     }
+    visibleProperty = DynamicTypeCheck<VisibleValueProperty*>(FindPropertyByName("Visible"));
 }
 
 RootProperty::~RootProperty()
 {
     node = nullptr; // don't release, just weak ptr
-
     SafeRelease(classProperty);
     SafeRelease(customClassProperty);
     SafeRelease(prototypeProperty);
     SafeRelease(nameProperty);
     DVASSERT(baseProperties.size() == 4);
     baseProperties.clear();
+
+    visibleProperty = nullptr;
 
     for (ControlPropertiesSection* section : controlProperties)
     {
@@ -123,6 +126,7 @@ uint32 RootProperty::GetCount() const
 
 AbstractProperty* RootProperty::GetProperty(int index) const
 {
+    DVASSERT(index >= 0);
     if (index < (int)baseProperties.size())
         return baseProperties[index];
     index -= baseProperties.size();
@@ -138,7 +142,7 @@ AbstractProperty* RootProperty::GetProperty(int index) const
     if (index < (int)backgroundProperties.size())
         return backgroundProperties[index];
     index -= backgroundProperties.size();
-
+    DVASSERT(index < internalControlProperties.size());
     return internalControlProperties[index];
 }
 

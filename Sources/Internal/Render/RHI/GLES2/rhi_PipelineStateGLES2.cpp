@@ -291,13 +291,13 @@ VertexDeclGLES2
                 if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
-                    glVertexAttribDivisorEXT(idx, elem[i].attrDivisor);
+                    GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));
                     #elif defined(__DAVAENGINE_ANDROID__)
-                    glVertexAttribDivisor_EXT(idx, elem[i].attrDivisor);
+                    GL_CALL(glVertexAttribDivisor_EXT(idx, elem[i].attrDivisor));
                     #elif defined(__DAVAENGINE_MACOS__)
-                    glVertexAttribDivisorARB(idx, elem[i].attrDivisor);
+                    GL_CALL(glVertexAttribDivisorARB(idx, elem[i].attrDivisor));
                     #else
-                    glVertexAttribDivisor(idx, elem[i].attrDivisor);
+                    GL_CALL(glVertexAttribDivisor(idx, elem[i].attrDivisor));
                     #endif
                     vattr[idx].divisor = elem[i].attrDivisor;
                 }
@@ -579,7 +579,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
             {
                 char info[1024];
 
-                glGetProgramInfoLog(gl_prog, countof(info), 0, info);
+                GL_CALL(glGetProgramInfoLog(gl_prog, countof(info), 0, info));
                 Trace("prog-link failed:\n");
                 Trace(info);
             }
@@ -770,7 +770,7 @@ void SetToRHI(Handle ps)
 
     if (ps2->maskR != mask[0] || ps2->maskG != mask[1] || ps2->maskB != mask[2] || ps2->maskA != mask[3])
     {
-        glColorMask(ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA);
+        GL_CALL(glColorMask(ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA));
         mask[0] = ps2->maskR;
         mask[1] = ps2->maskG;
         mask[2] = ps2->maskB;

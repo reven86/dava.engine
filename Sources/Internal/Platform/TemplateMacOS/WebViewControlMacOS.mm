@@ -29,7 +29,7 @@
 
 
 #include "Base/Platform.h"
-#if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
 #include "Platform/TemplateMacOS/MainWindowController.h"
@@ -226,6 +226,8 @@ WebViewControl::WebViewControl(UIWebView& ptr)
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
 
+    SetBackgroundTransparency(true);
+
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 }
@@ -305,8 +307,15 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
-    NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
-    [[(WebView*)webViewPtr mainFrame] loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
+
+    // First escape base path to allow spaces and other similar symbols
+    NSString* basePathAsUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
+    NSString* escapedBasePath = [basePathAsUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+    NSURL* baseUrl = [NSURL URLWithString:escapedBasePath];
+
+    WebView* nativeWebView = static_cast<WebView*>(webViewPtr);
+    [[nativeWebView mainFrame] loadHTMLString:dataToOpen baseURL:baseUrl];
 }
 
 void WebViewControl::SetRect(const Rect& srcRect)
@@ -364,8 +373,7 @@ void WebViewControl::SetRenderToTexture(bool value)
     }
 }
 
-void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-UIWebView& uiWebViewControl)
+void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& uiWebViewControl)
 {
     bool recreateImageRep = true;
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
@@ -501,4 +509,4 @@ void WebViewControl::OnAppMinimizedRestored(bool minimized)
     }
 }
 
-#endif //defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#endif //defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW

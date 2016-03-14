@@ -90,14 +90,14 @@ public:
 
     /**
      \brief Get current file size if writing
-     \brief and get real file size if file for reading
+            and get real file size if file for reading
      */
     uint32 GetSize() const override;
 
     /**
      \brief Set current file position
      \param position position to set
-     \param seekType \ref IO::eFileSeek flag to set type of positioning
+     \param seekType - \ref IO::eFileSeek flag to set type of positioning
      \return true if successful otherwise false.
      */
     bool Seek(int32 position, uint32 seekType) override;

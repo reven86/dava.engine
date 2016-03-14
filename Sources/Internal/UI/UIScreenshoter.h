@@ -110,8 +110,6 @@ private:
     };
 
     void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha);
-    void FindAll3dViews(UIControl* control, List<UIScreenshoter::Control3dInfo>& foundViews);
-    void RenderToTexture(const ScreenshotWaiter& waiter);
 
     List<ScreenshotWaiter> waiters;
 };

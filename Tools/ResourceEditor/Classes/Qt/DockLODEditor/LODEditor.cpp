@@ -38,7 +38,7 @@
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
@@ -339,12 +339,10 @@ void LODEditor::UpdateSpinboxesBorders()
     DAVA::uint32 count = ui->distanceSlider->GetLayersCount();
     for (DAVA::uint32 i = 1; i < count; ++i) //we don't work with zero level and zero spinbox
     {
-        int val = ui->distanceSlider->GetDistance(i - 1);
         distanceWidgets[i].distance->setMinimum(ui->distanceSlider->GetDistance(i - 1));
 
         if (i < count - 1)
         {
-            int val = ui->distanceSlider->GetDistance(i + 1);
             distanceWidgets[i].distance->setMaximum(ui->distanceSlider->GetDistance(i + 1));
         }
         SetSpinboxValue(distanceWidgets[i].distance, ui->distanceSlider->GetDistance(i));

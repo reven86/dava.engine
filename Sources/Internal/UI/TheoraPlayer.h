@@ -49,8 +49,6 @@ public:
 	 */
     TheoraPlayer(const FilePath& filePath = FilePath());
 
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-
     /**
 	 \brief Calls on every frame to draw control.
      Can be overriden to implement custom draw functionality.
