@@ -173,10 +173,12 @@ target_include_directories(icucommon PUBLIC
     source/common
     source/i18n
 )
-target_compile_options(icucommon PUBLIC
-  #-Wno-depricate
-  #-wd4996
-)
+
+if(WIN32)
+  set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd" ) 
+  set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT" ) 
+endif()
+
 target_compile_definitions(icucommon PUBLIC 
     U_COMMON_IMPLEMENTATION
     U_STATIC_IMPLEMENTATION

@@ -527,7 +527,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                     {
                         for (int32 w = 0; w < realW; w++)
                         {
-                            *writeBuf++ += *readBuf++;
+                            *writeBuf++ |= *readBuf++;
                         }
                         writeBuf += bufWidth - realW;
                         // DF-1827 - Increment read buffer with proper value
