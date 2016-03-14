@@ -139,7 +139,7 @@ public:
         String& fileNames = packFile.namesBlock.sortedNames;
         fileNames.resize(header_block.namesBlockSize, '\0');
 
-        isOk = file->Read(&fileNames[0], fileNames.size());
+        isOk = file->Read(&fileNames[0], static_cast<uint32>(fileNames.size()));
         if (isOk <= 0)
         {
             Logger::Error("can't read file names from packfile");
@@ -233,7 +233,7 @@ public:
     }
 
     bool IsFileExist(const String& file_name,
-                     std::size_t* uncompressed_size) const
+                     uint32* uncompressed_size) const
     {
         auto iterator = mapFileData.find(file_name);
         bool found = iterator != mapFileData.end();
@@ -597,10 +597,10 @@ static bool CopyTmpfileToPackfile(RefPtr<File> packFileOutput,
                                   RefPtr<File> packedFile)
 {
     std::array<char, 4096> copyBuf;
-    uint32 lastRead = packedFile->Read(&copyBuf[0], copyBuf.size());
+    uint32 lastRead = packedFile->Read(&copyBuf[0], static_cast<uint32>(copyBuf.size()));
     while (lastRead == copyBuf.size())
     {
-        uint32 lastWrite = packFileOutput->Write(&copyBuf[0], copyBuf.size());
+        uint32 lastWrite = packFileOutput->Write(&copyBuf[0], static_cast<uint32>(copyBuf.size()));
         if (lastWrite != copyBuf.size())
         {
             Logger::Error(
@@ -608,7 +608,7 @@ static bool CopyTmpfileToPackfile(RefPtr<File> packFileOutput,
             "packfile\n");
             return false;
         }
-        lastRead = packedFile->Read(&copyBuf[0], copyBuf.size());
+        lastRead = packedFile->Read(&copyBuf[0], static_cast<uint32>(copyBuf.size()));
     }
     if (lastRead > 0)
     {
@@ -710,7 +710,7 @@ bool ResourceArchive::CreatePack(const String& pacName,
     PackFile::HeaderBlock& headerBlock = pack.headerBlock;
     headerBlock.resPackMarker = PackFileMarker;
     headerBlock.magic = PackFileMagic;
-    headerBlock.numFiles = sortedFileNames.size() - skippedFiles.size();
+    headerBlock.numFiles = static_cast<uint32>(sortedFileNames.size() - skippedFiles.size());
 
     StringStream ss;
     std::for_each(sortedFileNames.begin(), sortedFileNames.end(),
@@ -725,15 +725,15 @@ bool ResourceArchive::CreatePack(const String& pacName,
     PackFile::NamesBlock& stringsFileNamesBlock = pack.namesBlock;
     stringsFileNamesBlock.sortedNames = std::move(ss.str());
 
-    headerBlock.namesBlockSize = stringsFileNamesBlock.sortedNames.size();
+    headerBlock.namesBlockSize = static_cast<uint32>(stringsFileNamesBlock.sortedNames.size());
 
     headerBlock.startFileNames = sizeof(PackFile::HeaderBlock);
 
     headerBlock.startFilesTable =
-    headerBlock.startFileNames + stringsFileNamesBlock.sortedNames.size();
+    headerBlock.startFileNames + static_cast<uint32>(stringsFileNamesBlock.sortedNames.size());
 
-    uint32 sizeOfFilesTable = pack.filesDataBlock.fileTable.size() *
-    sizeof(pack.filesDataBlock.fileTable[0]);
+    uint32 sizeOfFilesTable = static_cast<uint32>(pack.filesDataBlock.fileTable.size() *
+                                                  sizeof(pack.filesDataBlock.fileTable[0]));
 
     headerBlock.filesTableBlockSize = sizeOfFilesTable;
     headerBlock.startPackedFiles =
@@ -757,7 +757,7 @@ bool ResourceArchive::CreatePack(const String& pacName,
 
     const String& sortedNames = pack.namesBlock.sortedNames;
 
-    writeOk = packFileOutput->Write(&sortedNames[0], sortedNames.size());
+    writeOk = packFileOutput->Write(&sortedNames[0], static_cast<uint32>(sortedNames.size()));
     if (writeOk <= 0)
     {
         Logger::Error("can't write filenames block to archive");

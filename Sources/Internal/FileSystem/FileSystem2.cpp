@@ -32,7 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cctype>
 #include <fstream>
 
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
+#include <Shlobj.h>
 #include <Shlwapi.h>
 #include <shellapi.h>
 #endif
@@ -521,9 +522,11 @@ bool OSFileDevice::Exist(const Path& p, uint64* fileSize /*= nullptr*/)
         absolute = base + FileSystem2::GetRelativePath(p);
     }
 
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     BOOL result = ::PathFileExistsW(absolute.ToWideString().c_str());
     return result == TRUE;
+#else
+    throw std::runtime_error("not implemented");
 #endif
 }
 
@@ -535,13 +538,15 @@ bool OSFileDevice::IsFile(const Path& p)
     {
         absolute = base + p.RemoveVirtualRoot();
     }
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     DWORD fileAttibures = ::GetFileAttributesW(absolute.ToWideString().c_str());
     if (fileAttibures != INVALID_FILE_ATTRIBUTES)
     {
         return (fileAttibures & FILE_ATTRIBUTE_DIRECTORY) == 0;
     }
     return false;
+#else
+    throw std::runtime_error("not implemented");
 #endif
 }
 
@@ -553,13 +558,15 @@ bool OSFileDevice::IsDirectory(const Path& p)
     {
         absolute = base + p.RemoveVirtualRoot();
     }
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     DWORD fileAttibures = ::GetFileAttributesW(absolute.ToWideString().c_str());
     if (fileAttibures != INVALID_FILE_ATTRIBUTES)
     {
         return (fileAttibures & FILE_ATTRIBUTE_DIRECTORY) != 0;
     }
     return false;
+#else
+    throw std::runtime_error("not implemented");
 #endif
 }
 
@@ -567,7 +574,7 @@ Vector<Path> OSFileDevice::EnumerateFiles(const Path& basePath /*= Path()*/)
 {
     Path absolute = basePath.IsAbsolute() ? basePath : base + basePath;
 
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     Vector<Path> outVec;
     WIN32_FIND_DATAW findData;
     HANDLE findHandle = ::FindFirstFileW(absolute.ToWideString().c_str(), &findData);
@@ -582,6 +589,8 @@ Vector<Path> OSFileDevice::EnumerateFiles(const Path& basePath /*= Path()*/)
         } while (FindNextFile(findHandle, &findData) != 0);
     }
     return outVec;
+#else
+    throw std::runtime_error("not implemented");
 #endif
 }
 
@@ -630,7 +639,7 @@ void OSFileDevice::RemoveFile(const Path& p)
 
 void OSFileDevice::MakeDirectory(const Path& p, bool errorIfExist)
 {
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     Path absolute = p.IsAbsolute() ? p : base + p;
 
     if (absolute.IsVirtual())
@@ -673,7 +682,7 @@ void OSFileDevice::MakeDirectory(const Path& p, bool errorIfExist)
         throw std::runtime_error(msg);
     }
 #else
-#error "implement it"
+    throw std::runtime_error("not implemented " __FILE__);
 #endif
 }
 
@@ -686,7 +695,7 @@ void OSFileDevice::DeleteDirectory(const Path& p, bool withContent)
         absolute = base + absolute.RemoveVirtualRoot();
     }
 
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     if (withContent)
     {
         // https://msdn.microsoft.com/en-us/library/bb759795%28v=vs.85%29.aspx
@@ -724,6 +733,8 @@ void OSFileDevice::DeleteDirectory(const Path& p, bool withContent)
             throw std::runtime_error(msg);
         }
     }
+#else
+    throw std::runtime_error("not implemented");
 #endif
 }
 
@@ -897,7 +908,7 @@ void FileSystem2::MakeDirectory(const Path& p, bool errorIfExist /*= false*/) co
 
 Path FileSystem2::GetCurrentWorkingDirectory()
 {
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     WideString result;
     DWORD sz;
     if ((sz = ::GetCurrentDirectoryW(0, nullptr)) == 0)
@@ -912,7 +923,7 @@ Path FileSystem2::GetCurrentWorkingDirectory()
     }
     return result.c_str(); // 
 #else
-#error "implement it"
+    throw std::runtime_error("not implemented GetCurrentWorkingDirectory" __FILE__);
 #endif
 }
 
@@ -933,7 +944,7 @@ Path FileSystem2::GetPrefPath()
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
 #else
-#error "implement it"
+    throw std::runtime_error("not implemented")
 #endif
 }
 
@@ -1011,7 +1022,7 @@ void FileSystem2::SetCurrentWorkingDirectory(const Path& newWorkingDirectory)
 {
     Path absolute = newWorkingDirectory.IsAbsolute() ? newWorkingDirectory : GetAbsolutePath(newWorkingDirectory);
 
-#ifdef __DAVAENGINE_WINDOWS__
+#ifdef __DAVAENGINE_WIN32__
     BOOL result = SetCurrentDirectoryW(absolute.ToWideString().c_str());
     if (result != 0)
     {
@@ -1023,7 +1034,7 @@ void FileSystem2::SetCurrentWorkingDirectory(const Path& newWorkingDirectory)
         throw std::runtime_error(msg);
     }
 #else
-#error "implement it"
+    throw std::runtime_error("not implemented")
 #endif
 }
 
