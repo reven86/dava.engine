@@ -212,7 +212,6 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     ControlsFactory::ReleaseFonts();
 }
 
-
 void UnpackHelpDoc()
 {
     DAVA::String editorVer = SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
