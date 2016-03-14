@@ -42,7 +42,7 @@ protected:
 
 public:
     ExtendedDialog();
-
+    virtual void Show();
     virtual void Close();
 
     virtual void OnActive();
@@ -54,6 +54,7 @@ protected:
 
     virtual const Rect GetDialogRect() const;
     DraggableDialog* draggableDialog;
+    bool isShown = false;
 };
 
 #endif //__EXTENDED_DIALOG_H__

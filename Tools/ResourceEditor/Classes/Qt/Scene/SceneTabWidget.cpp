@@ -50,11 +50,6 @@
 
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
-    , davaUIScreenID(0)
-    , dava3DViewMargin(3)
-    , previewDialog(NULL)
-    , newSceneCounter(0)
-    , curScene(NULL)
 {
     this->setMouseTracking(true);
 
@@ -129,6 +124,11 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
 SceneTabWidget::~SceneTabWidget()
 {
+    if (nullptr != previewDialog)
+    {
+        UIScreen* screen = UIScreenManager::Instance()->GetScreen();
+        screen->RemoveControl(previewDialog);
+    }
     SafeRelease(previewDialog);
 
     ReleaseDAVAUI();

@@ -45,6 +45,11 @@ ExtendedDialog::~ExtendedDialog()
     SafeRelease(draggableDialog);
 }
 
+void ExtendedDialog::Show()
+{
+    isShown = true;
+}
+
 const Rect ExtendedDialog::GetScreenRect() const
 {
     UIScreen* activeScreen = UIScreenManager::Instance()->GetScreen();
@@ -65,6 +70,7 @@ const Rect ExtendedDialog::GetDialogRect() const
 
 void ExtendedDialog::Close()
 {
+    isShown = false;
     if (GetParent())
     {
         GetParent()->RemoveControl(this);
