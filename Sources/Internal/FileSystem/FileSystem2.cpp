@@ -402,7 +402,7 @@ OSInputStream::OSInputStream(const Path& p)
     f.open(p.ToStringUtf8(), std::ifstream::binary | std::ifstream::in);
     if (!f)
     {
-        const char* err = std::strerror(errno);
+        const char* err = ::strerror(errno); // on android only global C name
         std::string errMsg("can't open: ");
         errMsg += p.ToStringUtf8();
         errMsg += " course: ";
@@ -450,7 +450,7 @@ OSOutputStream::OSOutputStream(const Path& p, bool recreate)
     f.open(p.ToStringUtf8(), mode);
     if (!f)
     {
-        const char* err = std::strerror(errno);
+        const char* err = ::strerror(errno); // on android only global C name
         std::string errMsg("can't open: ");
         errMsg += p.ToStringUtf8();
         errMsg += " course: ";
@@ -938,11 +938,11 @@ Path FileSystem2::GetPrefPath()
     }
     return result.c_str(); // skip null chars
 #elif defined(__DAVAENGINE_WIN_UAP__)
-
     //take local folder as user documents folder
     using namespace Windows::Storage;
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
-    return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
+    Path p(roamingFolder);
+    return p;
 #else
     throw std::runtime_error("not implemented");
 #endif
@@ -1076,10 +1076,10 @@ void FileSystem2::Copy(const Path& existingFile, const Path& newFile, bool overw
     {
         throw std::runtime_error("can't copy file: error while open source: " + existingFile.ToStringUtf8());
     }
-    std::ios::open_mode mode = std::ios::binary;
+    std::ios_base::openmode mode = std::ios_base::binary;
     if (overwriteExisting)
     {
-        mode = mode | std::ios::trunc;
+        mode = mode | std::ios_base::trunc;
     }
     else
     {
@@ -1088,7 +1088,7 @@ void FileSystem2::Copy(const Path& existingFile, const Path& newFile, bool overw
             throw std::runtime_error("can't copy file: destination already exist: " + newFile.ToStringUtf8());
         }
     }
-    std::ofstream dst(newFile.ToStringUtf8(), mode);
+    std::ofstream dst(newFile.ToStringUtf8().c_str(), mode);
     if (!dst)
     {
         throw std::runtime_error("can't copy file: error while open destination: " + newFile.ToStringUtf8());

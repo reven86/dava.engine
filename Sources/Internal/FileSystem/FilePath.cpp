@@ -136,12 +136,6 @@ void FilePath::InitializeBundleName()
         AddResourcesFolder(dataDirPath);
     }
 
-    FilePath androidSdcardPath("/mnt/sdcard/DavaProject/");
-    if (FileSystem::Instance()->Exists(androidSdcardPath))
-    {
-        AddResourcesFolder(androidSdcardPath);
-    }
-
     FilePath dataPackfile(workingDirectory + "data.pak");
     if (FileSystem::Instance()->Exists(dataPackfile))
     {
@@ -189,12 +183,13 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(localResourcesPath));
+    SetBundleName(FilePath("/mnt/sdcard/DavaProject/Data/"));
+
     FilePath zipDataPath;
     zipDataPath.pathType = PATH_IN_RESOURCES;
     resourceFolders.push_back(zipDataPath);
 #else
-    SetBundleName(FilePath());
+    SetBundleName(FilePath("Data/"));
 #endif
 }
 

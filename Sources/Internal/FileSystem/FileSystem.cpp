@@ -404,7 +404,8 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #if defined(__DAVAENGINE_WINDOWS__)
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
-    currentExecuteDirectory = FilePath::FromNativeString(tempDir.data()).GetDirectory();
+    FilePath path = FilePath::FromNativeString(tempDir.data());
+    currentExecuteDirectory = path.GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     Array<char, PATH_MAX> tempDir;
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
