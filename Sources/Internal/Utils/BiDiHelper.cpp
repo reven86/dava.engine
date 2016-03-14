@@ -120,7 +120,7 @@ bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr,
 
     logicalBuffer.assign(logicalStr.begin(), logicalStr.end());
 
-    uint32 logicalLength = logicalBuffer.size();
+    uint32 logicalLength = static_cast<uint32>(logicalBuffer.size());
     uint32 shapedLength = logicalLength * 2; // Make shaped length bigger than logical
 
     visualBuffer.resize(shapedLength);
@@ -207,7 +207,7 @@ bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedSt
 
     logicalBuffer.assign(preparedStr.begin(), preparedStr.end());
 
-    uint32 logicalLength = logicalBuffer.size();
+    uint32 logicalLength = static_cast<uint32>(logicalBuffer.size());
     uint32 visualLength = logicalLength * 2; // Make shaped length bigger than logical
 
     visualBuffer.resize(visualLength);
