@@ -116,7 +116,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DA
 message( "============================Convert resources ============================"  )
 
 execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
-execute_process( COMMAND python ${CMAKE_CURRENT_LIST_DIR}/DataSource/create_file_structure.py )
+execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
 
 
 setup_main_executable()
