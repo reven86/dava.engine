@@ -99,15 +99,6 @@ Landscape::Landscape()
 
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
-    landscapeMaterial = new NMaterial();
-    landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
-    landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
-
-    for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
-    {
-        AllocateRenderBatch();
-    }
-
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
 }
 
@@ -247,6 +238,15 @@ bool Landscape::BuildHeightmap()
     return retValue;
 }
 
+void Landscape::AllocateGeometryData()
+{
+    if (!landscapeMaterial)
+    {
+        landscapeMaterial = new NMaterial();
+        landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
+        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
+    }
+
     if (!heightmap->Size())
     {
         subdivLevelCount = 0;
@@ -257,7 +257,7 @@ bool Landscape::BuildHeightmap()
     uint32 maxLevels = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
     subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
     minSubdivLevelSize = useInstancing ? 0 : heightmapSize / RENDER_PARCEL_SIZE_QUADS;
-    heightmapSizePow2 = HighestBitIndex(heightmapSize);
+    heightmapSizePow2 = uint32(HighestBitIndex(heightmapSize));
 
     subdivPatchCount = 0;
     uint32 size = 1;
@@ -298,6 +298,7 @@ void Landscape::RebuildLandscape()
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     ReleaseGeometryData();
+    AllocateGeometryData();
 
     UpdatePatchInfo(0, 0, 0);
 }
