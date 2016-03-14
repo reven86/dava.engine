@@ -345,6 +345,7 @@ private:
 
     uint32 resizePerFrame = 0; //used for logging some strange crahses on android
     int32 doubleClickRadiusSquared = 0;
+    float32 doubleClickTime = 0.f;
     const float32 defaultDoubleClickTime = 0.5f; // seconds
     int32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
     struct LastClickData
