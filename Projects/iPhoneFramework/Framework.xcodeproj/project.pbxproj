@@ -4730,6 +4730,8 @@
 				321CCA691C6E1D020048FAC9 /* UIKeyInputSystem.h */,
 			);
 			path = Focus;
+			sourceTree = "<group>";
+		};
 		1C04D26F1C91C883006F012F /* Command */ = {
 			isa = PBXGroup;
 			children = (
