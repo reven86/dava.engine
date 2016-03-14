@@ -118,9 +118,11 @@ if( WARNING_DISABLE)
 
 elseif( WARNINGS_AS_ERRORS )
 
+if ( MACOS )
+        set(LOCAL_DISABLED_WARNINGS "-Werror")
+endif ()
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
--Werror \
 -Wno-c++98-compat-pedantic \
 -Wno-newline-eof \
 -Wno-gnu-anonymous-struct \
