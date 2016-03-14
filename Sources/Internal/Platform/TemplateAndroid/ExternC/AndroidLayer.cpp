@@ -363,7 +363,8 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
                                                            gInputEventXField);
     event.point.y = event.physPoint.y = env->GetFloatField(input,
                                                            gInputEventYField);
-    event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
+    // timestamp in seconds, JNIEnv retern in milliseconds
+    event.timestamp = env->GetDoubleField(input, gInputEventTimeField) / 1000.0;
     event.phase = GetPhase(action, source);
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)

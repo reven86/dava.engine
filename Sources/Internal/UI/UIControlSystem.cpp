@@ -70,7 +70,7 @@ UIControlSystem::UIControlSystem()
     // calculate default radius
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 2;
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI();
     }
     else
     {
