@@ -623,7 +623,7 @@ if( DEPLOY )
 
         endif()
 
-        foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
+		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} ${ADDITIONAL_DLL_FILES} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
