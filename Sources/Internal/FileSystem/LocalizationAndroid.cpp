@@ -27,6 +27,10 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_ANDROID__) 
+
 #include "FileSystem/LocalizationAndroid.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
@@ -34,12 +38,7 @@
 
 namespace DAVA
 {
-void LocalizationAndroid::SelectPreferedLocalization()
-{
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
-
-String LocalizationAndroid::GetDeviceLang(void)
+String LocalizationSystem::GetDeviceLocale(void) const
 {
     JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
     Function<jstring()> getLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
@@ -47,3 +46,5 @@ String LocalizationAndroid::GetDeviceLang(void)
     return JNI::ToString(getLocale());
 }
 };
+
+#endif
