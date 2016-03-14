@@ -83,9 +83,19 @@ public:
     }
     void OpenKeyboard()
     {
+        if (!isKeyboardOpened)
+        {
+            isKeyboardOpened = true;
+            control_->OnKeyboardShown(Rect());
+        }
     }
     void CloseKeyboard()
     {
+        if (isKeyboardOpened)
+        {
+            isKeyboardOpened = false;
+            control_->OnKeyboardHidden();
+        }
     }
     void SetRenderToTexture(bool)
     {
@@ -112,7 +122,7 @@ public:
     {
         // see comment for TextFieldPlatformImpl class above
 
-        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl() && isKeyboardOpened)
         {
             float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
             cursorTime += timeElapsed;
@@ -265,6 +275,7 @@ private:
     float32 cursorTime = 0.0f;
     bool needRedraw = true;
     bool showCursor = true;
+    bool isKeyboardOpened = false;
 };
 } // end namespace DAVA
 #endif
@@ -594,6 +605,10 @@ void UITextField::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::ENTER)
         {
+            if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_ACTIVATED)
+            {
+                OpenKeyboard();
+            }
             delegate->TextFieldShouldReturn(this);
         }
         else if (currentInput->key == Key::ESCAPE)
@@ -625,6 +640,13 @@ void UITextField::Input(UIEvent* currentInput)
             {
                 SetText(GetAppliedChanges(length, 0, str));
             }
+        }
+    }
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_ACTIVATED)
+        {
+            OpenKeyboard();
         }
     }
 
