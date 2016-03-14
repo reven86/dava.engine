@@ -944,7 +944,7 @@ Path FileSystem2::GetPrefPath()
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
 #else
-    throw std::runtime_error("not implemented")
+    throw std::runtime_error("not implemented");
 #endif
 }
 
@@ -1034,7 +1034,7 @@ void FileSystem2::SetCurrentWorkingDirectory(const Path& newWorkingDirectory)
         throw std::runtime_error(msg);
     }
 #else
-    throw std::runtime_error("not implemented")
+    throw std::runtime_error("not implemented");
 #endif
 }
 
