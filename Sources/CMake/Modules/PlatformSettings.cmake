@@ -120,6 +120,7 @@ elseif( WARNINGS_AS_ERRORS )
 
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
+-Werror \
 -Wno-c++98-compat-pedantic \
 -Wno-newline-eof \
 -Wno-gnu-anonymous-struct \

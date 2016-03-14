@@ -394,7 +394,7 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
     options = SafeRetain(archiveOfOptions);
     
 #if defined(__DAVAENGINE_WIN_UAP__)
-    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT));
