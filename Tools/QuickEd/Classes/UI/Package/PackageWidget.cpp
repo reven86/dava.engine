@@ -767,9 +767,8 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
 void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
-    currentIndexes.emplace_back(srcIndex);
-
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+    currentIndexes.emplace_back(dstIndex);
     auto selectionModel = treeView->selectionModel();
     selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
     selectionModel->select(dstIndex, QItemSelectionModel::Select);
