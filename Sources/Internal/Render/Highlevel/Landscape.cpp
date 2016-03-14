@@ -92,6 +92,9 @@ Landscape::Landscape()
     zoomFov = 6.5f;
     normalFov = 70.0f;
 
+    maxHeightError = 0.02f;
+    maxPatchRadiusError = .65f;
+
     useInstancing = rhi::DeviceCaps().isInstancingSupported;
     useLodMorphing = useInstancing;
 
@@ -545,7 +548,7 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
     UpdatePatchInfo(level + 1, x2 + 1, y2 + 1);
 }
 
-void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags)
+void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 hError0, float32 rError0)
 {
     if (level == subdivLevelCount)
     {
@@ -582,17 +585,9 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 distance = Distance(origin, cameraPos);
     float32 radius = Distance(origin, max);
     float32 solidAngle = atanf(radius / distance);
-
-    float32 supDistance = Max(Abs(cameraPos.x - origin.x), Abs(cameraPos.y - origin.y));
-    float32 patchSize = Abs(max.x - min.x);
-
-    float32 morphAmount = Clamp(1.0f - (supDistance - patchSize) / (.5f * patchSize), 0.f, 1.f);
     */
 
     ////////////////////////////////////////////////////////////////////////////////////
-
-    const float32 maxHeightError = 0.02f;
-    const float32 maxPatchRadiusError = .5f;
 
     float32 distance = Distance(cameraPos, patch->positionOfMaxError);
     float32 hError = patch->maxError / (distance * tanFovY);
@@ -601,62 +596,37 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 patchDistance = Distance(cameraPos, patchOrigin);
     float32 rError = patch->radius / (patchDistance * tanFovY);
 
-    ////////////////////////////////////////////////////////////////////////////////////
-    float32 morphAmount = 1.f;
-    if (useLodMorphing && level)
-    {
-        uint32 level0 = level - 1;
-        uint32 x0 = x >> 1;
-        uint32 y0 = y >> 1;
-
-        SubdivisionLevelInfo& levelInfo0 = subdivLevelInfoArray[level0];
-        uint32 offset0 = levelInfo0.offset + (y0 << level0) + x0;
-        PatchQuadInfo* patch0 = &patchQuadArray[offset0];
-        SubdivisionPatchInfo* subdivPatchInfo0 = &subdivPatchArray[offset0];
-
-        Vector3 patch0Origin = patch0->bbox.GetCenter();
-        float32 rDistance0 = patch0->radius / (maxPatchRadiusError * tanFovY);
-        Vector3 rE0 = cameraPos - patch0Origin;
-        Vector3 rCam0 = patch0Origin + rDistance0 * rE0 / rE0.Length();
-        float32 r0 = patch->radius / (Distance(rCam0, patchOrigin) * tanFovY);
-        float32 rMorphAmount = (rError - r0) / (maxPatchRadiusError - r0);
-
-        float32 hDistance0 = patch0->maxError / (maxHeightError * tanFovY);
-        Vector3 hE0 = cameraPos - patch0->positionOfMaxError;
-        Vector3 hCam0 = patch0->positionOfMaxError + hDistance0 * hE0 / hE0.Length();
-        float32 h0 = patch->maxError / (Distance(hCam0, patch->positionOfMaxError) * tanFovY);
-        float32 hMorphAmount = (hError - h0) / (maxHeightError - h0);
-
-        morphAmount = Min(Max(rMorphAmount, hMorphAmount), 1.f);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////
-
-    if (level == subdivLevelCount - 1)
-    {
-        TerminateSubdivision(level, x, y, level, morphAmount);
-        subdivPatchesDrawCount++;
-        return;
-    }
-
     //if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
     //if ((minSubdivLevelSize > levelInfo.size) || (supDistance < patchSize))
-    if ((minSubdivLevelSize > levelInfo.size) || (maxHeightError < hError) || (maxPatchRadiusError < rError))
+    if ((level < subdivLevelCount - 1) && ((minSubdivLevelSize > levelInfo.size) || (maxHeightError <= hError) || (maxPatchRadiusError <= rError)))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdivLevel = level;
-        subdivPatchInfo->lastSubdivMorph = morphAmount;
 
         uint32 x2 = x << 1;
         uint32 y2 = y << 1;
 
-        SubdividePatch(level + 1, x2 + 0, y2 + 0, clippingFlags);
-        SubdividePatch(level + 1, x2 + 1, y2 + 0, clippingFlags);
-        SubdividePatch(level + 1, x2 + 0, y2 + 1, clippingFlags);
-        SubdividePatch(level + 1, x2 + 1, y2 + 1, clippingFlags);
+        SubdividePatch(level + 1, x2 + 0, y2 + 0, clippingFlags, hError, rError);
+        SubdividePatch(level + 1, x2 + 1, y2 + 0, clippingFlags, hError, rError);
+        SubdividePatch(level + 1, x2 + 0, y2 + 1, clippingFlags, hError, rError);
+        SubdividePatch(level + 1, x2 + 1, y2 + 1, clippingFlags, hError, rError);
     }
     else
     {
+        float32 morphAmount = 1.f;
+        if (useLodMorphing)
+        {
+            float32 rError0Rel = rError0 / maxPatchRadiusError;
+            float32 rErrorRel = Min(rError, maxPatchRadiusError) / maxPatchRadiusError;
+
+            float32 hError0Rel = hError0 / maxHeightError;
+            float32 hErrorRel = Min(hError, maxHeightError) / maxHeightError;
+
+            float32 error0Delta = Max(rError0Rel, hError0Rel) - 1.f;
+            float32 errorDelta = 1.f - Max(rErrorRel, hErrorRel);
+            morphAmount = 1.f - errorDelta / (error0Delta + errorDelta);
+        }
+
         TerminateSubdivision(level, x, y, level, morphAmount);
         subdivPatchesDrawCount++;
     }
@@ -672,7 +642,7 @@ void Landscape::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 la
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + (y << level) + x];
 
-    subdivPatchInfo->lastSubdivMorph = morph;
+    subdivPatchInfo->subdivMorph = morph;
     subdivPatchInfo->lastSubdivLevel = lastSubdivLevel;
     subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
 
@@ -724,7 +694,7 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
             if (useLodMorphing)
             {
-                float32 morph = subdivPatchInfo->lastSubdivMorph;
+                float32 morph = subdivPatchInfo->subdivMorph;
                 Vector4 nearMorph(morph, morph, morph, morph);
 
                 for (int32 i = 0; i < 4; ++i)
@@ -734,11 +704,11 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
                     {
                         if (patch->lastSubdivLevel < level)
                         {
-                            nearMorph.data[i] = patch->lastSubdivMorph;
+                            nearMorph.data[i] = patch->subdivMorph;
                         }
                         else if (patch->lastSubdivLevel == level && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
                         {
-                            nearMorph.data[i] = Max(patch->lastSubdivMorph, morph);
+                            nearMorph.data[i] = Max(patch->subdivMorph, morph);
                         }
 
                         nearLevel.data[i] = float32(patch->lastSubdivLevel);
@@ -1322,15 +1292,17 @@ void Landscape::PrepareToRender(Camera* camera)
         frustum = camera->GetFrustum();
         cameraPos = camera->GetPosition();
 
+        /*
         float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) / (normalFov - zoomFov), 0.0f, 1.0f);
         fovSolidAngleError = zoomSolidAngleError + (solidAngleError - zoomSolidAngleError) * fovLerp;
         fovGeometryAngleError = zoomGeometryAngleError + (geometryAngleError - zoomGeometryAngleError) * fovLerp;
         fovAbsHeightError = zoomAbsHeightError + (absHeightError - zoomAbsHeightError) * fovLerp;
+        */
 
         tanFovY = tanf(camera->GetFOV() * PI / 360.f) * camera->GetAspect();
 
         subdivPatchesDrawCount = 0;
-        SubdividePatch(0, 0, 0, 0x3f);
+        SubdividePatch(0, 0, 0, 0x3f, maxHeightError, maxPatchRadiusError);
     }
 
     if (useInstancing)

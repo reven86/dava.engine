@@ -222,7 +222,7 @@ protected:
         };
 
         uint32 lastSubdivLevel = 0;
-        float32 lastSubdivMorph = 0.f;
+        float32 subdivMorph = 0.f;
         uint8 subdivisionState = CLIPPED;
         uint8 startClipPlane = 0;
     };
@@ -235,7 +235,7 @@ protected:
 
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
-    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
+    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 hError0, float32 rError0);
     void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 lastSubdivMorph);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
@@ -269,6 +269,8 @@ protected:
     float32 zoomFov;
     float32 normalFov;
 
+    float32 maxHeightError;
+    float32 maxPatchRadiusError;
     float32 tanFovY;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
