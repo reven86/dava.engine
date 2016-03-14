@@ -89,7 +89,7 @@ private:
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;
 
-    QDialog *waitDialog = nullptr;
+    QDialog* waitDialog = nullptr;
 };
 
 #endif // __SPRITES_PACKER_MODULE_H__

@@ -35,7 +35,7 @@
 #include "DAVAEngine.h"
 
 class SpritesPackerModule;
-class ProjectManager: public QObject, public DAVA::Singleton<ProjectManager>
+class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
 {
     Q_OBJECT
 
@@ -87,7 +87,6 @@ public slots:
     void OnSpritesReloaded();
 
 private:
-
     void LoadProjectSettings();
     void LoadMaterialsSettings();
 

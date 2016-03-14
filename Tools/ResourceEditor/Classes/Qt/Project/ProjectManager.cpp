@@ -154,7 +154,6 @@ void ProjectManager::SetSpritesPacker(SpritesPackerModule* spritesPacker_)
     }
 }
 
-
 void ProjectManager::OpenLastProject()
 {
     DAVA::FilePath path = SettingsManager::GetValue(Settings::Internal_LastProjectPath).AsFilePath();
@@ -179,7 +178,6 @@ void ProjectManager::CloseProject()
         emit ProjectClosed();
     }
 }
-
 
 void ProjectManager::OnSpritesReloaded()
 {
