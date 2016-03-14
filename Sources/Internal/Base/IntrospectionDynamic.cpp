@@ -32,8 +32,8 @@
 
 namespace DAVA
 {
-InspMemberDynamic::InspMemberDynamic(const char* _name, const InspDesc& _desc, const long int _offset, const MetaInfo* _type, int _flags, InspInfoDynamic* _dynamicInfo)
-    : InspMember(_name, _desc, _offset, _type, _flags)
+InspMemberDynamic::InspMemberDynamic(const char* _name, const InspDesc& _desc, const MetaInfo* _type, int _flags, InspInfoDynamic* _dynamicInfo)
+    : InspMember(_name, _desc, 0, _type, _flags)
     , dynamicInfo(_dynamicInfo)
 {
     if (NULL != dynamicInfo)
