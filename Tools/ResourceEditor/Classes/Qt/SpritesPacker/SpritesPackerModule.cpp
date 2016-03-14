@@ -142,12 +142,13 @@ void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
     waitDialog = new QDialog(QtMainWindow::Instance(), Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
     QLabel *label = new QLabel("Reloading Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()), waitDialog);
     label->setAlignment(Qt::AlignCenter);
+    label->setWordWrap(true);
 
     QVBoxLayout *layout = new QVBoxLayout(waitDialog);
     layout->addWidget(label);
     waitDialog->setLayout(layout);
 
-    waitDialog->setFixedSize(300, 80);
+    waitDialog->setFixedSize(300, 100);
     waitDialog->show();
     waitDialog->raise();
     waitDialog->activateWindow();
