@@ -38,15 +38,6 @@
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
 #include "Platform/DeviceInfo.h"
-#if defined(__DAVAENGINE_APPLE__)
-#include "FileSystem/LocalizationApple.h"
-#elif defined(__DAVAENGINE_ANDROID__)
-#include "FileSystem/LocalizationAndroid.h"
-#elif defined(__DAVAENGINE_WIN_UAP__)
-#include "FileSystem/LocalizationWinUAP.h"
-#else
-#include "Core/Core.h"
-#endif
 
 namespace DAVA
 {

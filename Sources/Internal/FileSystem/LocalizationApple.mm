@@ -36,13 +36,12 @@
 
 namespace DAVA
 {
-
 String LocalizationSystem::GetDeviceLocale(void) const
 {
     NSArray* ar = [NSLocale preferredLanguages];
 
-    NSString ret = [[ar objectAtIndex:0] UTF8String];
-    return NSStringToString(ret);
+    String ret([[ar objectAtIndex:0] UTF8String]);
+    return ret;
 }
 }
 #endif
