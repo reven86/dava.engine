@@ -614,10 +614,9 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 {
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    const Vector2& minSizes = core->GetWindowMinimumSize();
-    const LONG minWidth = static_cast<LONG>(minSizes.x), minHeight = static_cast<LONG>(minSizes.y);
     //TODO: Add system scale
-    float32 scaleX = 1.f, scaleY = 1.f;
+    float32 scaleX = 1.f;
+    float32 scaleY = 1.f;
     scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
     RECT rect;
 
