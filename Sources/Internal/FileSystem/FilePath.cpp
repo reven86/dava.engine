@@ -369,7 +369,8 @@ FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
 
 FilePath FilePath::FromNativeString(const NativeStringType& path)
 {
-    return FilePath(UTF8Utils::EncodeToUTF8(path));
+    String name = UTF8Utils::EncodeToUTF8(path);
+    return FilePath(name);
 }
 
 #else

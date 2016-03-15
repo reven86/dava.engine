@@ -404,7 +404,8 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #if defined(__DAVAENGINE_WINDOWS__)
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
-    FilePath path = FilePath::FromNativeString(tempDir.data());
+    const wchar_t* data = tempDir.data();
+    FilePath path = FilePath::FromNativeString(data);
     currentExecuteDirectory = path.GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     Array<char, PATH_MAX> tempDir;
@@ -749,9 +750,9 @@ String FileSystem::ReadFileContents(const FilePath& pathname)
     }
     uint32 fileSize = fp->GetSize();
 
-    fileContents.reserve(fileSize);
+    fileContents.resize(fileSize);
 
-    uint32 dataRead = fp->ReadString(fileContents);
+    uint32 dataRead = fp->Read(&fileContents[0], fileSize);
 
     if (dataRead != fileSize)
     {
