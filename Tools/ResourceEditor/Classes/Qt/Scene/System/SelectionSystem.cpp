@@ -587,25 +587,6 @@ DAVA::Entity* SceneSelectionSystem::GetFirstSelectionEntity() const
     return IsLocked() == false ? currentSelection.GetFirstEntity() : nullptr;
 }
 
-bool SceneSelectionSystem::IsEntitySelected(Entity* entity)
-{
-    return IsLocked() == false ? currentSelection.ContainsEntity(entity) : false;
-}
-
-bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity* entity)
-{
-    if (IsLocked())
-        return false;
-
-    while (entity)
-    {
-        if (currentSelection.ContainsEntity(entity))
-            return true;
-
-        entity = entity->GetParent();
-    }
-    return false;
-}
 
 void SceneSelectionSystem::CancelSelection()
 {

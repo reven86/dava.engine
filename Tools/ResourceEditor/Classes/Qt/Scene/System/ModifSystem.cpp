@@ -1132,7 +1132,7 @@ void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& 
 
         DAVA::Matrix4 newMatrix = origMatrix;
         newMatrix.SetTranslationVector(newPos);
-        sceneEditor->Exec(new TransformCommand(item.first, origMatrix, newMatrix));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(item.first, origMatrix, newMatrix)));
     }
     sceneEditor->EndBatch();
 }
@@ -1184,7 +1184,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * rotationMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(new TransformCommand(entity, origMatrix, newMatrix));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
         }
     }
 
@@ -1239,7 +1239,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup&
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * scaleMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(new TransformCommand(entity, origMatrix, newMatrix));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
         }
     }
 

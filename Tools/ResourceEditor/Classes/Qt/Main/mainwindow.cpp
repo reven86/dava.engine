@@ -2361,7 +2361,7 @@ void QtMainWindow::OnCustomColorsEditor()
         }
     }
 
-    sceneEditor->Exec(new DisableCustomColorsCommand(sceneEditor, true));
+    sceneEditor->Exec(std::unique_ptr<Command2>(new DisableCustomColorsCommand(sceneEditor, true)));
     ui->actionCustomColorsEditor->setChecked(false);
 }
 

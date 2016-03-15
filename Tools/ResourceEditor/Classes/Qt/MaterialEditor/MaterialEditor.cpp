@@ -1616,7 +1616,7 @@ void MaterialEditor::onTabNameChanged(int index)
     const DAVA::InspMember* configNameProperty = material->GetTypeInfo()->Member(DAVA::FastName("configName"));
     DVASSERT(configNameProperty != nullptr);
     DAVA::VariantType newValue(DAVA::FastName(ui->tabbar->tabText(index).toStdString()));
-    scene->Exec(new InspMemberModifyCommand(configNameProperty, material, newValue));
+    scene->Exec(std::unique_ptr<Command2>(new InspMemberModifyCommand(configNameProperty, material, newValue)));
 }
 
 void MaterialEditor::onCreateConfig(int index)
@@ -1648,7 +1648,7 @@ void MaterialEditor::onCreateConfig(int index)
     {
         newConfig.name = DAVA::FastName(DAVA::String(newConfig.name.c_str()) + std::to_string(counter));
     }
-    scene->Exec(new MaterialCreateConfig(material, newConfig));
+    scene->Exec(std::unique_ptr<Command2>(new MaterialCreateConfig(material, newConfig)));
 }
 
 void MaterialEditor::onCurrentConfigChanged(int index)
@@ -1667,7 +1667,7 @@ void MaterialEditor::onCurrentConfigChanged(int index)
     DVASSERT(curMaterials.size() == 1);
     DAVA::NMaterial* material = curMaterials.front();
     DVASSERT(static_cast<DAVA::uint32>(index) < material->GetConfigCount());
-    curScene->Exec(new MaterialChangeCurrentConfig(material, static_cast<DAVA::uint32>(index)));
+    curScene->Exec(std::unique_ptr<Command2>(new MaterialChangeCurrentConfig(material, static_cast<DAVA::uint32>(index))));
 }
 
 void MaterialEditor::onTabRemove(int index)
@@ -1677,7 +1677,7 @@ void MaterialEditor::onTabRemove(int index)
     DVASSERT(curMaterials.size() == 1);
     DAVA::NMaterial* material = curMaterials.front();
 
-    curScene->Exec(new MaterialRemoveConfig(material, static_cast<DAVA::uint32>(index)));
+    curScene->Exec(std::unique_ptr<Command2>(new MaterialRemoveConfig(material, static_cast<DAVA::uint32>(index))));
 }
 
 void MaterialEditor::onTabContextMenuRequested(const QPoint& pos)
