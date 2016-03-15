@@ -1614,8 +1614,6 @@ void UIControl::SystemInvisible()
         return;
     }
 
-    UIControlSystem::Instance()->ControlBecomeInvisible(this);
-
     auto it = children.rbegin();
     isIteratorCorrupted = false;
     while (it != children.rend())
@@ -1637,6 +1635,8 @@ void UIControl::SystemInvisible()
     }
 
     ChangeViewState(eViewState::ACTIVE);
+
+    UIControlSystem::Instance()->ControlBecomeInvisible(this);
 
     OnInvisible();
 }

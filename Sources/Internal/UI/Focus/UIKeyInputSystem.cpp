@@ -63,11 +63,14 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
         UIControl* c = focusedControl;
         while (c != nullptr && c != rootControl && !processed)
         {
+            UIControl* tmp = SafeRetain(c);
             processed = c->SystemProcessInput(event);
             c = c->GetParent();
+            SafeRelease(tmp);
         }
     }
 
+    rootControl = focusSystem->GetRoot();
     if (!processed && rootControl)
     {
         processed = rootControl->SystemProcessInput(event);
