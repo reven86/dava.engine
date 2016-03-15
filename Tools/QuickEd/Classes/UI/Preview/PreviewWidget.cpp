@@ -406,16 +406,16 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
             break;
         case QEvent::DragEnter:
-            return true;
+            break;
         case QEvent::DragMove:
             OnDragMoveEvent(DynamicTypeCheck<QDragMoveEvent*>(event));
-            return true;
+            break;
         case QEvent::DragLeave:
             OnDragLeaveEvent(DynamicTypeCheck<QDragLeaveEvent*>(event));
-            return true;
+            break;
         case QEvent::Drop:
             OnDropEvent(DynamicTypeCheck<QDropEvent*>(event));
-            return true;
+            break;
         default:
             break;
         }

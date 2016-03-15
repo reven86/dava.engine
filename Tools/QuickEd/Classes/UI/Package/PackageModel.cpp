@@ -58,6 +58,23 @@
 
 using namespace DAVA;
 
+namespace PackageModel_local
+{
+void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const DAVA::Vector2& pos)
+{
+    DVASSERT(nullptr != node);
+    DVASSERT(nullptr != node->GetControl());
+    auto control = node->GetControl();
+    control->SetAbsolutePosition(pos);
+    auto relativePos = control->GetPosition();
+    relativePos -= control->GetSize() / 2;
+
+    auto rootProperty = node->GetRootProperty();
+    auto positionProperty = rootProperty->FindPropertyByName("Position");
+    package->SetControlProperty(node, positionProperty, VariantType(relativePos));
+}
+} //PackageModel_local
+
 PackageModel::PackageModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
@@ -432,23 +449,30 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
 
         const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
         DVASSERT(!srcControls.empty());
-
+        Vector<ControlNode*> nodes;
+        emit BeforeProcessNodes(SelectedNodes(srcControls.begin(), srcControls.end()));
         switch (action)
         {
         case Qt::CopyAction:
-            commandExecutor->CopyControls(srcControls, destControlContainer, destIndex, pos);
+            nodes = commandExecutor->CopyControls(srcControls, destControlContainer, destIndex);
             break;
         case Qt::MoveAction:
-            emit BeforeNodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
-            commandExecutor->MoveControls(srcControls, destControlContainer, destIndex, pos);
-            emit NodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
+            nodes = commandExecutor->MoveControls(srcControls, destControlContainer, destIndex);
             break;
         case Qt::LinkAction:
-            commandExecutor->InsertInstances(srcControls, destControlContainer, destIndex, pos);
+            nodes = commandExecutor->InsertInstances(srcControls, destControlContainer, destIndex);
             break;
         default:
             DVASSERT(false && "unrecognised action!");
         }
+        if (pos != nullptr)
+        {
+            for (const auto& node : nodes)
+            {
+                PackageModel_local::SetAbsoulutePosToControlNode(package, node, *pos);
+            }
+        }
+        emit AfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
@@ -464,9 +488,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
             commandExecutor->CopyStyles(srcStyles, destStylesContainer, destIndex);
             break;
         case Qt::MoveAction:
-            emit BeforeNodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
             commandExecutor->MoveStyles(srcStyles, destStylesContainer, destIndex);
-            emit NodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
             break;
         default:
             DVASSERT(false && "unrecognised action!");
@@ -492,7 +514,19 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
     else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        commandExecutor->Paste(package, destNode, destIndex, string, pos);
+        auto nodes = commandExecutor->Paste(package, destNode, destIndex, string);
+        if (pos != nullptr)
+        {
+            for (const auto& node : nodes)
+            {
+                auto control = dynamic_cast<ControlNode*>(node);
+                if (control != nullptr)
+                {
+                    PackageModel_local::SetAbsoulutePosToControlNode(package, control, *pos);
+                }
+            }
+        }
+        emit AfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
 }
 

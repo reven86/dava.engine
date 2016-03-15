@@ -88,20 +88,6 @@ String FormatNodeNames(const DAVA::Vector<T*>& nodes)
 
     return list;
 }
-
-void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const DAVA::Vector2& pos)
-{
-    DVASSERT(nullptr != node);
-    DVASSERT(nullptr != node->GetControl());
-    auto control = node->GetControl();
-    control->SetAbsolutePosition(pos);
-    auto relativePos = control->GetPosition();
-    relativePos -= control->GetSize() / 2;
-
-    auto rootProperty = node->GetRootProperty();
-    auto positionProperty = rootProperty->FindPropertyByName("Position");
-    package->SetControlProperty(node, positionProperty, VariantType(relativePos));
-}
 }
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document* _document)
@@ -304,15 +290,17 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode* control, Co
     return resultList;
 }
 
-void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*>& controls, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2* pos)
+Vector<ControlNode*> QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*>& controls, ControlsContainerNode* dest, DAVA::int32 destIndex)
 {
     Vector<ControlNode*> nodesToInsert;
+    nodesToInsert.reserve(controls.size());
     for (ControlNode* node : controls)
     {
         if (node->CanCopy() && dest->CanInsertControl(node, destIndex))
             nodesToInsert.push_back(node);
     }
-
+    Vector<ControlNode*> insertedNodes;
+    insertedNodes.reserve(nodesToInsert.size());
     if (!nodesToInsert.empty())
     {
         BeginMacro(Format("Instance Controls %s", FormatNodeNames(nodesToInsert).c_str()).c_str());
@@ -321,28 +309,28 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
         for (ControlNode* node : nodesToInsert)
         {
             ControlNode* copy = ControlNode::CreateFromPrototype(node);
+            insertedNodes.push_back(copy);
             InsertControlImpl(copy, dest, index);
-            if (pos != nullptr)
-            {
-                SetAbsoulutePosToControlNode(packageNode, copy, *pos);
-            }
             SafeRelease(copy);
             index++;
         }
 
         EndMacro();
     }
+    return insertedNodes;
 }
 
-void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2* pos)
+Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex)
 {
     Vector<ControlNode*> nodesToCopy;
+    nodesToCopy.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
         if (node->CanCopy() && dest->CanInsertControl(node, destIndex))
             nodesToCopy.push_back(node);
     }
-
+    Vector<ControlNode*> copiedNodes;
+    copiedNodes.reserve(nodesToCopy.size());
     if (!nodesToCopy.empty())
     {
         BeginMacro(Format("Copy Controls %s", FormatNodeNames(nodes).c_str()).c_str());
@@ -351,28 +339,28 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
         for (ControlNode* node : nodesToCopy)
         {
             ControlNode* copy = node->Clone();
+            copiedNodes.push_back(copy);
             InsertControlImpl(copy, dest, index);
-            if (pos != nullptr)
-            {
-                SetAbsoulutePosToControlNode(packageNode, copy, *pos);
-            }
             SafeRelease(copy);
             index++;
         }
 
         EndMacro();
     }
+    return copiedNodes;
 }
 
-void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2* pos)
+Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex)
 {
     Vector<ControlNode*> nodesToMove;
+    nodesToMove.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
         if (node->CanRemove() && dest->CanInsertControl(node, destIndex))
             nodesToMove.push_back(node);
     }
-
+    Vector<ControlNode*> movedNodes;
+    movedNodes.reserve(nodesToMove.size());
     if (!nodesToMove.empty())
     {
         BeginMacro(Format("Move Controls %s", FormatNodeNames(nodes).c_str()).c_str());
@@ -392,10 +380,7 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
                 if (IsNodeInHierarchy(dest))
                 {
                     InsertControlImpl(node, dest, index);
-                    if (pos != nullptr)
-                    {
-                        SetAbsoulutePosToControlNode(packageNode, node, *pos);
-                    }
+                    movedNodes.push_back(node);
                 }
                 node->Release();
 
@@ -409,6 +394,7 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
 
         EndMacro();
     }
+    return movedNodes;
 }
 
 ResultList QtModelPackageCommandExecutor::InsertStyle(StyleSheetNode* styleSheetNode, StyleSheetsNode* dest, DAVA::int32 destIndex)
@@ -543,111 +529,110 @@ void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*>& controls,
     }
 }
 
-bool QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, int32 destIndex, const DAVA::String& data, const DAVA::Vector2* pos)
+Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, int32 destIndex, const DAVA::String& data)
 {
+    Vector<PackageBaseNode*> createdNodes;
     if (dest->IsReadOnly())
-        return false;
+        return createdNodes;
 
     ControlsContainerNode* controlsDest = dynamic_cast<ControlsContainerNode*>(dest);
     StyleSheetsNode* stylesDest = dynamic_cast<StyleSheetsNode*>(dest);
 
     if (controlsDest == nullptr && stylesDest == nullptr)
-        return false;
+        return createdNodes;
 
     RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(data));
-    if (parser.Valid() && parser->GetRootNode())
+    if (!parser.Valid() || !parser->GetRootNode())
     {
-        EditorUIPackageBuilder builder;
+        return createdNodes;
+    }
 
-        builder.AddImportedPackage(root);
-        for (int32 i = 0; i < root->GetImportedPackagesNode()->GetCount(); i++)
+    EditorUIPackageBuilder builder;
+
+    builder.AddImportedPackage(root);
+    for (int32 i = 0; i < root->GetImportedPackagesNode()->GetCount(); i++)
+    {
+        builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
+    }
+
+    if (UIPackageLoader().LoadPackage(parser->GetRootNode(), "", &builder))
+    {
+        const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
+        const Vector<ControlNode*>& controls = builder.GetRootControls();
+        const Vector<StyleSheetNode*>& styles = builder.GetStyles();
+
+        if (controlsDest != nullptr)
         {
-            builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
-        }
+            Vector<ControlNode*> acceptedControls;
+            Vector<PackageNode*> acceptedPackages;
+            Vector<PackageNode*> declinedPackages;
 
-        if (UIPackageLoader().LoadPackage(parser->GetRootNode(), "", &builder))
-        {
-            const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
-            const Vector<ControlNode*>& controls = builder.GetRootControls();
-            const Vector<StyleSheetNode*>& styles = builder.GetStyles();
-
-            if (controlsDest != nullptr)
+            for (PackageNode* importedPackage : importedPackages)
             {
-                Vector<ControlNode*> acceptedControls;
-                Vector<PackageNode*> acceptedPackages;
-                Vector<PackageNode*> declinedPackages;
-
-                for (PackageNode* importedPackage : importedPackages)
+                if (importedPackage != root && importedPackage->GetParent() != root->GetImportedPackagesNode())
                 {
-                    if (importedPackage != root && importedPackage->GetParent() != root->GetImportedPackagesNode())
-                    {
-                        if (root->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
-                            acceptedPackages.push_back(importedPackage);
-                        else
-                            declinedPackages.push_back(importedPackage);
-                    }
-                }
-
-                for (ControlNode* control : controls)
-                {
-                    if (dest->CanInsertControl(control, destIndex))
-                    {
-                        bool canInsert = true;
-                        for (PackageNode* declinedPackage : declinedPackages)
-                        {
-                            if (control->IsDependsOnPackage(declinedPackage))
-                            {
-                                canInsert = false;
-                                break;
-                            }
-                        }
-
-                        if (canInsert)
-                        {
-                            acceptedControls.push_back(control);
-                        }
-                    }
-                }
-
-                if (!acceptedControls.empty())
-                {
-                    BeginMacro("Paste");
-                    for (PackageNode* importedPackage : acceptedPackages)
-                    {
-                        AddImportedPackageIntoPackageImpl(importedPackage, root);
-                    }
-
-                    int32 index = destIndex;
-                    for (ControlNode* control : acceptedControls)
-                    {
-                        InsertControl(control, controlsDest, index);
-                        if (pos != nullptr)
-                        {
-                            SetAbsoulutePosToControlNode(packageNode, control, *pos);
-                        }
-                        index++;
-                    }
-
-                    EndMacro();
-                    return true;
+                    if (root->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
+                        acceptedPackages.push_back(importedPackage);
+                    else
+                        declinedPackages.push_back(importedPackage);
                 }
             }
-            else if (stylesDest != nullptr && !styles.empty())
+
+            for (ControlNode* control : controls)
+            {
+                if (dest->CanInsertControl(control, destIndex))
+                {
+                    bool canInsert = true;
+                    for (PackageNode* declinedPackage : declinedPackages)
+                    {
+                        if (control->IsDependsOnPackage(declinedPackage))
+                        {
+                            canInsert = false;
+                            break;
+                        }
+                    }
+
+                    if (canInsert)
+                    {
+                        acceptedControls.push_back(control);
+                    }
+                }
+            }
+
+            if (!acceptedControls.empty())
             {
                 BeginMacro("Paste");
-                int32 index = destIndex;
-                for (StyleSheetNode* style : styles)
+                for (PackageNode* importedPackage : acceptedPackages)
                 {
-                    PushCommand(new InsertRemoveStyleCommand(packageNode, style, stylesDest, index, true));
+                    AddImportedPackageIntoPackageImpl(importedPackage, root);
+                }
+
+                int32 index = destIndex;
+                for (ControlNode* control : acceptedControls)
+                {
+                    createdNodes.push_back(control);
+                    InsertControl(control, controlsDest, index);
                     index++;
                 }
 
                 EndMacro();
-                return true;
             }
         }
+        else if (stylesDest != nullptr && !styles.empty())
+        {
+            BeginMacro("Paste");
+            int32 index = destIndex;
+            for (StyleSheetNode* style : styles)
+            {
+                createdNodes.push_back(style);
+                PushCommand(new InsertRemoveStyleCommand(packageNode, style, stylesDest, index, true));
+                index++;
+            }
+
+            EndMacro();
+        }
     }
-    return false;
+    return createdNodes;
 }
 
 void QtModelPackageCommandExecutor::AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, PackageNode* package)

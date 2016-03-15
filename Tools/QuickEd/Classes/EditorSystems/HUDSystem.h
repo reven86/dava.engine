@@ -68,6 +68,7 @@ private:
     DAVA::RefPtr<DAVA::UIControl> hudControl;
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
+    DAVA::Vector2 hoveredPoint;
     bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;

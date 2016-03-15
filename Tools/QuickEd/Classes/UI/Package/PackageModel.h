@@ -70,8 +70,8 @@ public:
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
 signals:
-    void BeforeNodesMoved(const SelectedNodes& nodes);
-    void NodesMoved(const SelectedNodes& nodes);
+    void BeforeProcessNodes(const SelectedNodes& nodes);
+    void AfterProcessNodes(const SelectedNodes& nodes);
 
 public slots:
     void OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, int destIndex, const DAVA::Vector2* pos);

@@ -42,6 +42,7 @@
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
+
 #include "Model/YamlPackageSerializer.h"
 #include "EditorCore.h"
 #include "Document.h"
@@ -175,8 +176,8 @@ PackageWidget::PackageWidget(QWidget* parent)
     treeView->setModel(filteredPackageModel);
     treeView->header()->setSectionResizeMode /*setResizeMode*/ (QHeaderView::ResizeToContents);
 
-    connect(packageModel, &PackageModel::BeforeNodesMoved, this, &PackageWidget::OnBeforeNodesMoved);
-    connect(packageModel, &PackageModel::NodesMoved, this, &PackageWidget::OnNodesMoved);
+    connect(packageModel, &PackageModel::BeforeProcessNodes, this, &PackageWidget::OnBeforeProcessNodes);
+    connect(packageModel, &PackageModel::AfterProcessNodes, this, &PackageWidget::OnAfterProcessNodes);
     connect(treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, &PackageWidget::OnCurrentIndexChanged);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
 
@@ -618,17 +619,17 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
     {
         DAVA::Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };
         ControlsContainerNode* nextControlNode = dynamic_cast<ControlsContainerNode*>(dest);
-        OnBeforeNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
+        OnBeforeProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
         commandExecutor->MoveControls(nodes, nextControlNode, destIndex);
-        OnNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
+        OnAfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else if (dynamic_cast<StyleSheetNode*>(node) != nullptr)
     {
         DAVA::Vector<StyleSheetNode*> nodes = { static_cast<StyleSheetNode*>(node) };
         StyleSheetsNode* nextStyleSheetNode = dynamic_cast<StyleSheetsNode*>(dest);
-        OnBeforeNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
+        OnBeforeProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
         commandExecutor->MoveStyles(nodes, nextStyleSheetNode, destIndex);
-        OnNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
+        OnAfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else
     {
@@ -691,7 +692,7 @@ PackageWidget::ExpandedIndexes PackageWidget::GetExpandedIndexes() const
     return retval;
 }
 
-void PackageWidget::OnBeforeNodesMoved(const SelectedNodes& nodes)
+void PackageWidget::OnBeforeProcessNodes(const SelectedNodes& nodes)
 {
     for (const auto& node : nodes)
     {
@@ -699,10 +700,9 @@ void PackageWidget::OnBeforeNodesMoved(const SelectedNodes& nodes)
     }
 }
 
-void PackageWidget::OnNodesMoved(const SelectedNodes& nodes)
+void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
 {
-    treeView->selectionModel()->clear();
-    SetSelectedNodes(nodes, SelectedNodes());
+    SetSelectedNodes(nodes, selectionContainer.selectedNodes);
 
     for (const auto& node : expandedNodes)
     {

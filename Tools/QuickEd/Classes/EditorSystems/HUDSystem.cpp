@@ -178,30 +178,30 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     }
 
     UpdateAreasVisibility();
-
-    ProcessCursor(pressedPoint, SEARCH_BACKWARD);
+    ProcessCursor(hoveredPoint, SEARCH_BACKWARD);
 }
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
     bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    hoveredPoint = currentInput->point;
     switch (currentInput->phase)
     {
     case UIEvent::Phase::MOVE:
-        ProcessCursor(currentInput->point, searchOrder);
+        ProcessCursor(hoveredPoint, searchOrder);
         return false;
     case UIEvent::Phase::BEGAN:
     {
-        ProcessCursor(currentInput->point, searchOrder);
-        pressedPoint = currentInput->point;
+        ProcessCursor(hoveredPoint, searchOrder);
+        pressedPoint = hoveredPoint;
         if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)
         {
             return true;
         }
         //check that we can draw rect
         Vector<ControlNode*> nodesUnderPoint;
-        Vector2 point = currentInput->point;
+        Vector2 point = hoveredPoint;
         auto predicate = [point](const ControlNode* node) -> bool {
             const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
             DVASSERT(node->GetControl() != nullptr);
@@ -219,7 +219,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         if (canDrawRect)
         {
             Vector2 point(pressedPoint);
-            Vector2 size(currentInput->point - pressedPoint);
+            Vector2 size(hoveredPoint - pressedPoint);
             if (size.x < 0.0f)
             {
                 point.x += size.x;
@@ -236,10 +236,10 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return true;
     case UIEvent::Phase::ENDED:
     {
-        ProcessCursor(currentInput->point, searchOrder);
+        ProcessCursor(hoveredPoint, searchOrder);
         SetCanDrawRect(false);
         dragRequested = false;
-        bool retVal = (pressedPoint - currentInput->point).Length() > 0;
+        bool retVal = (pressedPoint - hoveredPoint).Length() > 0;
         InvalidatePressedPoint();
         return retVal;
     }
