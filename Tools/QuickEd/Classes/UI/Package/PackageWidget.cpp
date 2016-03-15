@@ -702,6 +702,10 @@ void PackageWidget::OnBeforeProcessNodes(const SelectedNodes& nodes)
 
 void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
 {
+    if (nodes.empty())
+    {
+        return;
+    }
     SetSelectedNodes(nodes, selectionContainer.selectedNodes);
 
     for (const auto& node : expandedNodes)

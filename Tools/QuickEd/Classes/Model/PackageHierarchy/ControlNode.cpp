@@ -273,13 +273,31 @@ bool ControlNode::IsInsertingControlsSupported() const
 
 bool ControlNode::CanInsertControl(ControlNode* node, DAVA::int32 pos) const
 {
+    if (node == nullptr)
+    {
+        return false;
+    }
+    PackageBaseNode* parent = const_cast<ControlNode*>(this); //i will not change this pointer. I promise!
+    while (parent != nullptr)
+    {
+        const ControlNode* parentNode = dynamic_cast<ControlNode*>(parent);
+        if (parentNode == nullptr)
+        {
+            break;
+        }
+        if (parentNode == node || parentNode->IsInstancedFrom(node))
+        {
+            return false;
+        }
+        parent = parent->GetParent();
+    }
     if (!IsInsertingControlsSupported())
         return false;
 
     if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
         return false;
 
-    if (node && node->IsInstancedFrom(this))
+    if (node->IsInstancedFrom(this))
         return false;
 
     return true;
