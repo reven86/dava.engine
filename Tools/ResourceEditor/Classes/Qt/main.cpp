@@ -156,7 +156,6 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     a.setApplicationName("Resource Editor");
     //scope with editor variables
     {
-
         const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
         const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
         RunGuard runGuard(appUidPath);
