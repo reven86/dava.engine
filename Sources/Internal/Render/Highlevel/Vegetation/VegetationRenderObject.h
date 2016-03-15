@@ -321,7 +321,7 @@ inline uint32 VegetationRenderObject::MapToResolution(float32 squareDistance)
         if (squareDistance > resolutionRanges[i].x &&
             squareDistance <= resolutionRanges[i].y)
         {
-            resolutionId = i;
+            resolutionId = static_cast<uint32>(i);
             break;
         }
     }
