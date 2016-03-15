@@ -187,7 +187,7 @@ float32 SystemTimer::ElapsedSec()
         mult *= 2.0f;
     }
 
-    float t2 = static_cast<float32>(elapsed32) * mult / 1000000000.0f;
+    float32 t2 = static_cast<float32>(elapsed32) * mult / 1000000000.0f;
     return t2;
 #else //PLATFORMS
     //other platforms
