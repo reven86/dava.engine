@@ -73,11 +73,12 @@ void BaseTest::UnloadResources()
 
 void BaseTest::CreateUI()
 {
-    ScopedPtr<DAVA::UIControl> reportItem(new DAVA::UIControl());
-
     UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
-    UIYamlLoader::Load(reportItem, ControlHelpers::GetPathToUIYaml("ReportItem.yaml"));
-
+    
+    DefaultUIPackageBuilder builder;
+    UIPackageLoader().LoadPackage(ControlHelpers::GetPathToUIYaml("ReportItem.yaml"), &builder);
+    DAVA::UIControl* reportItem = builder.GetPackage()->GetControl("ReportItem");
+    
     uiRoot->SetPosition(Vector2(0.0f, 0.0f));
     reportItem->SetPosition(Vector2(0.0f, 0.0f));
 
