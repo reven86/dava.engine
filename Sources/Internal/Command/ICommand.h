@@ -38,13 +38,7 @@ public:
     virtual void Execute() = 0;
     virtual void Redo() = 0;
     virtual void Undo() = 0;
-    virtual bool IsModifying() const;
 };
-
-inline bool ICommand::IsModifying() const
-{
-    return true;
-}
 }
 
 #endif // __DAVAFRAMEWORK_ICOMMAND_H__
