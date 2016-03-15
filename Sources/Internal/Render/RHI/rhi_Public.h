@@ -131,8 +131,6 @@ RenderDeviceCaps
 
     bool instancingSupported = false;
 
-    bool isSeamlessCubmapSupported = false;
-
     char deviceDescription[128];
 };
 
