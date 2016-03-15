@@ -26,72 +26,29 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "CommandLineParser.h"
+#ifndef __QTTOOLS_NGTCMDLINEPARSER_H__
+#define __QTTOOLS_NGTCMDLINEPARSER_H__
 
-#include <locale>
-#include <codecvt>
+#include "core_generic_plugin/interfaces/i_command_line_parser.hpp"
+#include "core_dependency_system/i_interface.hpp"
 
-CommandLineParser::CommandLineParser(int argc_, char** argv_)
-    : m_argc(argc_)
-    , m_argv(argv_)
+class NGTCmdLineParser
+: public Implements<ICommandLineParser>
 {
-}
+public:
+    NGTCmdLineParser(int argc_, char** argv_);
 
-int CommandLineParser::argc() const
-{
-    return m_argc;
-}
+    int argc() const override;
+    char** argv() const override;
 
-char** CommandLineParser::argv() const
-{
-    return m_argv;
-}
+    bool getFlag(const char* arg) const override;
+    const char* getParam(const char* arg) const override;
+    std::string getParamStr(const char* arg) const override;
+    std::wstring getParamStrW(const char* arg) const override;
 
-bool CommandLineParser::getFlag(const char* arg) const
-{
-    size_t argLen = ::strlen(arg);
-    for (int i = 0; i < m_argc; ++i)
-    {
-        if (::strlen(m_argv[i]) == argLen &&
-            ::strncmp(m_argv[i], arg, argLen) == 0)
-        {
-            return true;
-        }
-    }
-    return false;
-}
+private:
+    int m_argc;
+    char** m_argv;
+};
 
-const char* CommandLineParser::getParam(const char* arg) const
-{
-    size_t argLen = ::strlen(arg);
-    for (int i = 0; i < m_argc - 1; ++i)
-    {
-        if (::strlen(m_argv[i]) == argLen &&
-            ::strncmp(m_argv[i], arg, argLen) == 0)
-        {
-            return m_argv[i + 1];
-        }
-    }
-    return nullptr;
-}
-
-std::string CommandLineParser::getParamStr(const char* arg) const
-{
-    auto param = getParam(arg);
-    if (param != nullptr)
-    {
-        return param;
-    }
-    return "";
-}
-
-std::wstring CommandLineParser::getParamStrW(const char* arg) const
-{
-    auto param = getParam(arg);
-    if (param != nullptr)
-    {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-        return conv.from_bytes(param);
-    }
-    return L"";
-}
+#endif // __QTTOOLS_NGTCMDLINEPARSER_H__

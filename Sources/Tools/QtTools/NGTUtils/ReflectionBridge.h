@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAPLUGINTEMPLATE_REFLECTIONBRIDGE_H
-#define DAVAPLUGINTEMPLATE_REFLECTIONBRIDGE_H
+#ifndef __QTTOOLS_REFLECTIONBRIDGE_H__
+#define __QTTOOLS_REFLECTIONBRIDGE_H__
 
 #include "core_reflection/interfaces/i_class_definition.hpp"
 #include "core_reflection/reflected_object.hpp"
@@ -48,7 +48,7 @@ namespace DAVA
 class NGTMemberProperty : public BaseProperty
 {
 public:
-    NGTMemberProperty(const InspMember* member, const MetaInfo* objectType_);
+    NGTMemberProperty(const InspMember* member, const MetaInfo* objectType);
 
     bool readOnly() const override;
     bool isValue() const override;
@@ -95,4 +95,4 @@ void RegisterType(IDefinitionManager& mng, const InspInfo* inspInfo);
 ObjectHandle CreateObjectHandle(IDefinitionManager& defMng, const InspInfo* fieldInsp, void* field);
 }
 
-#endif // DAVAPLUGINTEMPLATE_REFLECTIONBRIDGE_H
+#endif // __QTTOOLS_REFLECTIONBRIDGE_H__

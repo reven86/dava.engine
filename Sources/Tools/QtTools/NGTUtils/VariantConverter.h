@@ -38,25 +38,11 @@
 
 namespace DAVA
 {
-class VariantConverter : public StaticSingleton<VariantConverter>
+namespace VariantConverter
 {
-public:
-    VariantConverter();
-
-    VariantType Convert(Variant const& v, MetaInfo const* info) const;
-    Variant Convert(VariantType const& value) const;
-
-private:
-    using TVtoDV = Function<VariantType(Variant const&)>;
-    using TDVtoV = Function<Variant(VariantType const&)>;
-    struct ConvertNode
-    {
-        TVtoDV vToDvFn;
-        TDVtoV dvToVFn;
-    };
-
-    Array<ConvertNode, VariantType::TYPES_COUNT> convertFunctions;
-};
+VariantType Convert(Variant const& v, MetaInfo const* info);
+Variant Convert(VariantType const& value);
+}
 }
 
 #endif // __QTTOOLS_VARIANTCONVERTER_H__

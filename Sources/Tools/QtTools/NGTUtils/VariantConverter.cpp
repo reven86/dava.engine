@@ -49,7 +49,6 @@ namespace DAVA
 namespace VCLocal
 {
 static const uint8 maxChannelValue = 255;
-}
 
 template <typename T>
 VariantType VtoDV(Variant const& v)
@@ -115,14 +114,6 @@ VariantType VtoDV<FilePath>(Variant const& v)
     return VariantType(FilePath(filePath));
 }
 
-template <>
-VariantType VtoDV<float64>(Variant const& v)
-{
-    float64 value;
-    DVVERIFY(v.tryCast(value));
-    return VariantType(value);
-}
-
 Variant DVtoV_void(VariantType const& v)
 {
     return Variant();
@@ -180,7 +171,7 @@ Variant DVtoV_matrix2(VariantType const& v)
     StringStream ss;
     ss.precision(7);
     ss << "[ " << m._00 << "; " << m._01 << " ]\n[ "
-               << m._10 << "; " << m._11 << " ]";
+       << m._10 << "; " << m._11 << " ]";
     return Variant(ss.str());
 }
 Variant DVtoV_matrix3(VariantType const& v)
@@ -220,7 +211,7 @@ Variant DVtoV_aabbox3(VariantType const& v)
     StringStream ss;
     ss.precision(7);
     ss << "[ " << m.min.x << "; " << m.min.y << "; " << m.min.z << " ]\n[ "
-               << m.max.x << "; " << m.max.y << "; " << m.max.z << " ]";
+       << m.max.x << "; " << m.max.y << "; " << m.max.z << " ]";
     return Variant(ss.str());
 }
 
@@ -234,51 +225,71 @@ Variant DVtoV_float64(VariantType const& v)
     return Variant(v.AsFloat64());
 }
 
-VariantConverter::VariantConverter()
+using TVtoDV = Function<VariantType(Variant const&)>;
+using TDVtoV = Function<Variant(VariantType const&)>;
+struct ConvertNode
 {
-    using namespace DAVA;
-    using namespace std;
-    using namespace std::placeholders;
+    TVtoDV vToDvFn;
+    TDVtoV dvToVFn;
+};
 
-    convertFunctions[VariantType::TYPE_NONE] = { bind(&VtoDV<void>, _1), bind(&DVtoV_void, _1) };
-    convertFunctions[VariantType::TYPE_BOOLEAN] = { bind(&VtoDV<bool>, _1), bind(&DVtoV_bool, _1) };
-    convertFunctions[VariantType::TYPE_INT32] = { bind(&VtoDV<int32>, _1), bind(&DVtoV_int32, _1) };
-    convertFunctions[VariantType::TYPE_FLOAT] = { bind(&VtoDV<float32>, _1), bind(&DVtoV_float, _1) };
-    convertFunctions[VariantType::TYPE_STRING] = { bind(&VtoDV<String>, _1), bind(&DVtoV_string, _1) };
-    convertFunctions[VariantType::TYPE_WIDE_STRING] = { bind(&VtoDV<WideString>, _1), bind(&DVtoV_wideString, _1) };
-    convertFunctions[VariantType::TYPE_UINT32] = { bind(&VtoDV<uint32>, _1), bind(&DVtoV_uint32, _1) };
-    convertFunctions[VariantType::TYPE_INT64] = { bind(&VtoDV<int64>, _1), bind(&DVtoV_int64, _1) };
-    convertFunctions[VariantType::TYPE_UINT64] = { bind(&VtoDV<uint64>, _1), bind(&DVtoV_uint64, _1) };
-    convertFunctions[VariantType::TYPE_VECTOR2] = { bind(&VtoDV<Vector2>, _1), bind(&DVtoV_vector2, _1) };
-    convertFunctions[VariantType::TYPE_VECTOR3] = { bind(&VtoDV<Vector3>, _1), bind(&DVtoV_vector3, _1) };
-    convertFunctions[VariantType::TYPE_VECTOR4] = { bind(&VtoDV<Vector4>, _1), bind(&DVtoV_vector4, _1) };
-    convertFunctions[VariantType::TYPE_MATRIX2] = { bind(&VtoDV<Matrix2>, _1), bind(&DVtoV_matrix2, _1) };
-    convertFunctions[VariantType::TYPE_MATRIX3] = { bind(&VtoDV<Matrix3>, _1), bind(&DVtoV_matrix3, _1) };
-    convertFunctions[VariantType::TYPE_MATRIX4] = { bind(&VtoDV<Matrix4>, _1), bind(&DVtoV_matrix4, _1) };
-    convertFunctions[VariantType::TYPE_COLOR] = { bind(&VtoDV<Color>, _1), bind(&DVtoV_color, _1) };
-    convertFunctions[VariantType::TYPE_FASTNAME] = { bind(&VtoDV<FastName>, _1), bind(&DVtoV_fastName, _1) };
-    convertFunctions[VariantType::TYPE_AABBOX3] = { bind(&VtoDV<AABBox3>, _1), bind(&DVtoV_aabbox3, _1) };
-    convertFunctions[VariantType::TYPE_FILEPATH] = { bind(&VtoDV<FilePath>, _1), bind(&DVtoV_filePath, _1) };
-    convertFunctions[VariantType::TYPE_FLOAT64] = { bind(&VtoDV<float64>, _1), bind(&DVtoV_float64, _1) };
+Array<ConvertNode, VariantType::TYPES_COUNT> convertFunctions;
+} // namespace VCLocal
+
+class ConvertionInitializer
+{
+public:
+    ConvertionInitializer()
+    {
+        using namespace DAVA;
+        using namespace VCLocal;
+        using namespace std;
+        using namespace std::placeholders;
+
+        convertFunctions[VariantType::TYPE_NONE] = { bind(&VtoDV<void>, _1), bind(&DVtoV_void, _1) };
+        convertFunctions[VariantType::TYPE_BOOLEAN] = { bind(&VtoDV<bool>, _1), bind(&DVtoV_bool, _1) };
+        convertFunctions[VariantType::TYPE_INT32] = { bind(&VtoDV<int32>, _1), bind(&DVtoV_int32, _1) };
+        convertFunctions[VariantType::TYPE_FLOAT] = { bind(&VtoDV<float32>, _1), bind(&DVtoV_float, _1) };
+        convertFunctions[VariantType::TYPE_STRING] = { bind(&VtoDV<String>, _1), bind(&DVtoV_string, _1) };
+        convertFunctions[VariantType::TYPE_WIDE_STRING] = { bind(&VtoDV<WideString>, _1), bind(&DVtoV_wideString, _1) };
+        convertFunctions[VariantType::TYPE_UINT32] = { bind(&VtoDV<uint32>, _1), bind(&DVtoV_uint32, _1) };
+        convertFunctions[VariantType::TYPE_INT64] = { bind(&VtoDV<int64>, _1), bind(&DVtoV_int64, _1) };
+        convertFunctions[VariantType::TYPE_UINT64] = { bind(&VtoDV<uint64>, _1), bind(&DVtoV_uint64, _1) };
+        convertFunctions[VariantType::TYPE_VECTOR2] = { bind(&VtoDV<Vector2>, _1), bind(&DVtoV_vector2, _1) };
+        convertFunctions[VariantType::TYPE_VECTOR3] = { bind(&VtoDV<Vector3>, _1), bind(&DVtoV_vector3, _1) };
+        convertFunctions[VariantType::TYPE_VECTOR4] = { bind(&VtoDV<Vector4>, _1), bind(&DVtoV_vector4, _1) };
+        convertFunctions[VariantType::TYPE_MATRIX2] = { bind(&VtoDV<Matrix2>, _1), bind(&DVtoV_matrix2, _1) };
+        convertFunctions[VariantType::TYPE_MATRIX3] = { bind(&VtoDV<Matrix3>, _1), bind(&DVtoV_matrix3, _1) };
+        convertFunctions[VariantType::TYPE_MATRIX4] = { bind(&VtoDV<Matrix4>, _1), bind(&DVtoV_matrix4, _1) };
+        convertFunctions[VariantType::TYPE_COLOR] = { bind(&VtoDV<Color>, _1), bind(&DVtoV_color, _1) };
+        convertFunctions[VariantType::TYPE_FASTNAME] = { bind(&VtoDV<FastName>, _1), bind(&DVtoV_fastName, _1) };
+        convertFunctions[VariantType::TYPE_AABBOX3] = { bind(&VtoDV<AABBox3>, _1), bind(&DVtoV_aabbox3, _1) };
+        convertFunctions[VariantType::TYPE_FILEPATH] = { bind(&VtoDV<FilePath>, _1), bind(&DVtoV_filePath, _1) };
+        convertFunctions[VariantType::TYPE_FLOAT64] = { bind(&VtoDV<float64>, _1), bind(&DVtoV_float64, _1) };
 
 #ifdef __DAVAENGINE_DEBUG__
-    for (int i = 0; i < VariantType::TYPES_COUNT; ++i)
-    {
-        VariantType::eVariantType type = static_cast <VariantType::eVariantType>(i);
-        if (type == VariantType::TYPE_BYTE_ARRAY || type == VariantType::TYPE_KEYED_ARCHIVE)
+        for (int i = 0; i < VariantType::TYPES_COUNT; ++i)
         {
-            continue;
+            VariantType::eVariantType type = static_cast<VariantType::eVariantType>(i);
+            if (type == VariantType::TYPE_BYTE_ARRAY || type == VariantType::TYPE_KEYED_ARCHIVE)
+            {
+                continue;
+            }
+
+            ConvertNode const& node = convertFunctions[i];
+            DVASSERT(node.dvToVFn);
+            DVASSERT(node.vToDvFn);
         }
-
-        ConvertNode const & node = convertFunctions[i];
-        DVASSERT(node.dvToVFn);
-        DVASSERT(node.vToDvFn);
-    }
 #endif
-}
+    }
+} initializer;
 
-VariantType VariantConverter::Convert(Variant const& v, MetaInfo const* info) const
+namespace VariantConverter
 {
+VariantType Convert(Variant const& v, MetaInfo const* info)
+{
+    using namespace VCLocal;
+
     VariantType::eVariantType davaType = VariantType::TYPE_NONE;
     for (VariantType::PairTypeName const& type : VariantType::variantNamesMap)
     {
@@ -294,11 +305,14 @@ VariantType VariantConverter::Convert(Variant const& v, MetaInfo const* info) co
     return convertFunctions[davaType].vToDvFn(v);
 }
 
-Variant VariantConverter::Convert(const VariantType& value) const
+Variant Convert(const VariantType& value)
 {
+    using namespace VCLocal;
+
     VariantType::eVariantType davaType = value.GetType();
     DVASSERT(davaType != VariantType::TYPE_BYTE_ARRAY &&
              davaType != VariantType::TYPE_KEYED_ARCHIVE);
     return convertFunctions[davaType].dvToVFn(value);
 }
-}
+} // namespace VariantConverter
+} // namespace DAVA

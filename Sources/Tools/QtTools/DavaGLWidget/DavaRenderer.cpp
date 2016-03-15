@@ -68,10 +68,6 @@ public:
     {
     }
 
-    ~OGLContextBinder()
-    {
-    }
-
     void AcquireContex()
     {
         prevContext = QOpenGLContext::currentContext();
@@ -89,6 +85,9 @@ public:
 
         if (prevContext != nullptr && prevSurface != nullptr)
             prevContext->makeCurrent(prevSurface);
+
+        prevContext = nullptr;
+        prevSurface = nullptr;
     }
 
 private:
@@ -125,7 +124,9 @@ DavaRenderer::DavaRenderer(QSurface * surface, QOpenGLContext * context)
 
 DavaRenderer::~DavaRenderer()
 {
-    DAVA::QtLayer::Instance()->Release();}
+    DAVA::QtLayer::Instance()->Release();
+    OGLContextBinder::Instance()->Release();
+}
 
 void DavaRenderer::paint()
 {
