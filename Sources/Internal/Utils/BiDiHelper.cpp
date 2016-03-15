@@ -42,8 +42,15 @@
 #elif DAVA_ICU
 #define U_COMMON_IMPLEMENTATION
 #define U_STATIC_IMPLEMENTATION
+#if __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wheader-hygiene"
+#endif
 #include <unicode/ubidi.h>
 #include <unicode/ushape.h>
+#if __clang__
+    #pragma clang diagnostic pop
+#endif
 #endif
 
 namespace DAVA
