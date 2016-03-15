@@ -2998,5 +2998,8 @@
     <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp">
       <Filter>Internal\Command</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp">
+      <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
