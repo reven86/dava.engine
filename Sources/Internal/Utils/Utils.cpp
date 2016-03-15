@@ -123,7 +123,7 @@ int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length)
 
     *length = sizeToWrite;
 
-    holder->dataOffset += sizeToWrite;
+    holder->dataOffset += static_cast<uint32>(sizeToWrite);
 
     return 1;
 }
