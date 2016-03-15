@@ -10,14 +10,14 @@ Rectangle {
 
   Label {
     id: searchBoxLabel
-    x: reflectedTreeView.leftMargin
-    y: 4
+    anchors.left: reflectedTreeView.left
+    anchors.verticalCenter: searchBox.verticalCenter
     text: "Search:"
   }
 
   WGTextBox {
     id: searchBox
-    y: 2
+    anchors.top : parent.top
     anchors.left: searchBoxLabel.right
     anchors.right: parent.right
   }

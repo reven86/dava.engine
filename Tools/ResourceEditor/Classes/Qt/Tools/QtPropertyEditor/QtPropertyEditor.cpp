@@ -239,11 +239,10 @@ void QtPropertyEditor::ApplyStyle(QtPropertyData* data, int style)
 
         case HEADER_STYLE:
         {
-            static QBrush headerBrush = palette().alternateBase();
             QFont boldFont = data->GetFont();
             boldFont.setBold(true);
             data->SetFont(boldFont);
-            data->SetBackground(headerBrush);
+            data->SetBackground(palette().alternateBase());
             data->SetEditable(false);
         }
         break;

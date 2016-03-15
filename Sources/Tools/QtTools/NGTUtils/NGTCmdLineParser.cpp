@@ -26,29 +26,72 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_COMMANDLINEPARSER_H__
-#define __QTTOOLS_COMMANDLINEPARSER_H__
+#include "NGTCmdLineParser.h"
 
-#include "core_generic_plugin/interfaces/i_command_line_parser.hpp"
-#include "core_dependency_system/i_interface.hpp"
+#include <locale>
+#include <codecvt>
 
-class CommandLineParser
-: public Implements<ICommandLineParser>
+NGTCmdLineParser::NGTCmdLineParser(int argc_, char** argv_)
+    : m_argc(argc_)
+    , m_argv(argv_)
 {
-public:
-    CommandLineParser(int argc_, char** argv_);
+}
 
-    int argc() const override;
-    char** argv() const override;
+int NGTCmdLineParser::argc() const
+{
+    return m_argc;
+}
 
-    bool getFlag(const char* arg) const override;
-    const char* getParam(const char* arg) const override;
-    std::string getParamStr(const char* arg) const override;
-    std::wstring getParamStrW(const char* arg) const override;
+char** NGTCmdLineParser::argv() const
+{
+    return m_argv;
+}
 
-private:
-    int m_argc;
-    char** m_argv;
-};
+bool NGTCmdLineParser::getFlag(const char* arg) const
+{
+    size_t argLen = ::strlen(arg);
+    for (int i = 0; i < m_argc; ++i)
+    {
+        if (::strlen(m_argv[i]) == argLen &&
+            ::strncmp(m_argv[i], arg, argLen) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
-#endif // __QTTOOLS_COMMANDLINEPARSER_H__
+const char* NGTCmdLineParser::getParam(const char* arg) const
+{
+    size_t argLen = ::strlen(arg);
+    for (int i = 0; i < m_argc - 1; ++i)
+    {
+        if (::strlen(m_argv[i]) == argLen &&
+            ::strncmp(m_argv[i], arg, argLen) == 0)
+        {
+            return m_argv[i + 1];
+        }
+    }
+    return nullptr;
+}
+
+std::string NGTCmdLineParser::getParamStr(const char* arg) const
+{
+    auto param = getParam(arg);
+    if (param != nullptr)
+    {
+        return param;
+    }
+    return "";
+}
+
+std::wstring NGTCmdLineParser::getParamStrW(const char* arg) const
+{
+    auto param = getParam(arg);
+    if (param != nullptr)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+        return conv.from_bytes(param);
+    }
+    return L"";
+}

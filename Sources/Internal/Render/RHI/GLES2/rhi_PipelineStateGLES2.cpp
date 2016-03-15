@@ -60,12 +60,12 @@ VertexDeclGLES2
     struct
     vattr_t
     {
-        bool enabled;
+        const GLvoid* pointer;
         GLint size;
         GLenum type;
-        GLboolean normalized;
         int divisor;
-        const GLvoid* pointer;
+        GLboolean normalized;
+        bool enabled;
     };
 
     static vattr_t vattr[VATTR_COUNT];

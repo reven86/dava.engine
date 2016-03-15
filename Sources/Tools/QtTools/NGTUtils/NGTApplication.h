@@ -29,7 +29,7 @@
 #ifndef __QTTOOLS_NGTAPPLICATION_H__
 #define __QTTOOLS_NGTAPPLICATION_H__
 
-#include "CommandLineParser.h"
+#include "NGTCmdLineParser.h"
 
 #include "Base/BaseTypes.h"
 
@@ -56,7 +56,7 @@ private:
 
 private:
     GenericPluginManager pluginManager;
-    CommandLineParser commandLineParser;
+    NGTCmdLineParser commandLineParser;
 };
 
 #endif // __QTTOOLS_NGTAPPLICATION_H__

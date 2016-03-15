@@ -44,7 +44,7 @@ class NGTCollection : public CollectionImplBase
     class Iterator;
 
 public:
-    NGTCollection(void* object_, const InspColl* collectionImpl_);
+    NGTCollection(void* object, const InspColl* collectionImpl);
 
     bool empty() const override;
     size_t size() const override;

@@ -124,7 +124,6 @@ NGTTypeDefinition::NGTTypeDefinition(const InspInfo* info_)
         if ((memberFlags & I_VIEW) == 0)
             continue;
 
-        const InspMemberDynamic* dynamicMember = member->Dynamic();
         properties.addProperty(IBasePropertyPtr(new NGTMemberProperty(member, objectType)));
     }
 }
@@ -256,7 +255,7 @@ Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManag
             return Variant();
         }
 
-        return VariantConverter::Instance()->Convert(memberInsp->Value(object));
+        return VariantConverter::Convert(memberInsp->Value(object));
     }
 
     return Variant();
@@ -272,7 +271,7 @@ bool NGTMemberProperty::set(const ObjectHandle& pBase, const Variant& v, const I
     if (type->IsPointer() || ((memberInsp->Flags() & I_EDIT) == 0))
         return false;
 
-    VariantType value = VariantConverter::Instance()->Convert(v, type);
+    VariantType value = VariantConverter::Convert(v, type);
     memberInsp->SetValue(object, value);
     return true;
 }
@@ -305,12 +304,11 @@ void RegisterType(IDefinitionManager& mng, const InspInfo* inspInfo)
     if (inspInfo == nullptr)
         return;
 
-    using TDefinitionMap = std::unordered_map<const MetaInfo*, NGTTypeDefinition*>;
-    static TDefinitionMap definitionMap;
+    static DAVA::UnorderedMap<const MetaInfo*, NGTTypeDefinition*> definitionMap;
 
     const MetaInfo* type = inspInfo->Type();
 
-    TDefinitionMap::iterator definitionIter = definitionMap.find(type);
+    DAVA::UnorderedMap<const MetaInfo*, NGTTypeDefinition*>::iterator definitionIter = definitionMap.find(type);
     if (definitionIter == definitionMap.end())
     {
         definitionIter = definitionMap.emplace(type, new NGTTypeDefinition(inspInfo)).first;

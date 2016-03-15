@@ -96,7 +96,7 @@ public:
         }
 
         DVASSERT(collection->ItemKeyType() != nullptr);
-        return VariantConverter::Instance()->Convert(VariantType::LoadData(key, collection->ItemKeyType()));
+        return VariantConverter::Convert(VariantType::LoadData(key, collection->ItemKeyType()));
     }
 
     Variant value() const override
@@ -119,7 +119,7 @@ public:
         void* valuePointer = collection->ItemPointer(iterator);
         DVASSERT(valuePointer != nullptr);
 
-        return VariantConverter::Instance()->Convert(VariantType::LoadData(valuePointer, valueTypeInfo));
+        return VariantConverter::Convert(VariantType::LoadData(valuePointer, valueTypeInfo));
     }
 
     bool setValue(const Variant& v) const override
@@ -129,7 +129,7 @@ public:
         DVASSERT(collection->ItemType() != nullptr);
 
         DVASSERT((collection->Flags() & I_EDIT) != 0)
-        VariantType value = VariantConverter::Instance()->Convert(v, collection->ItemType());
+        VariantType value = VariantConverter::Convert(v, collection->ItemType());
 
         if (value.GetType() == VariantType::TYPE_NONE)
             return false;
@@ -280,7 +280,7 @@ const TypeId& NGTCollection::containerType() const
 
 void* NGTCollection::containerData() const
 {
-    return (void*)(this);
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -330,14 +330,14 @@ public:
             DVASSERT(defMng != nullptr);
             return CreateObjectHandle(*defMng, DAVA::GetIntrospection<DAVA::KeyedArchive>(), value->AsKeyedArchive());
         }
-        return VariantConverter::Instance()->Convert(*archive->GetVariant(itemKey));
+        return VariantConverter::Convert(*archive->GetVariant(itemKey));
     }
 
     bool setValue(const Variant& v) const override
     {
         DVASSERT(itemKey != END_KEY_VALUE);
         VariantType * oldValue = archive->GetVariant(itemKey);
-        archive->SetVariant(itemKey, VariantConverter::Instance()->Convert(v, oldValue->Meta()));
+        archive->SetVariant(itemKey, VariantConverter::Convert(v, oldValue->Meta()));
         return true;
     }
 
