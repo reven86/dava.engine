@@ -72,6 +72,7 @@ public:
 
     static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
 
+    const static FastName PARAM_HEIGHTMAP_HALF_TEXEL_SIZE;
     const static FastName PARAM_TEXTURE_TILING;
     const static FastName PARAM_TILE_COLOR0;
     const static FastName PARAM_TILE_COLOR1;
@@ -308,7 +309,7 @@ protected:
 
     uint32 vLayoutUIDNoInstancing = rhi::VertexLayout::InvalidUID;
 
-    int32 queueIndexCount = 0;
+    uint32 queueIndexCount = 0;
     int16 queuedQuadBuffer = 0;
     int32 flushQueueCounter = 0;
 

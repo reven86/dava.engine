@@ -54,6 +54,7 @@
 
 namespace DAVA
 {
+const FastName Landscape::PARAM_HEIGHTMAP_HALF_TEXEL_SIZE("heightmapHalfTexelSize");
 const FastName Landscape::PARAM_TEXTURE_TILING("textureTiling");
 const FastName Landscape::PARAM_TILE_COLOR0("tileColor0");
 const FastName Landscape::PARAM_TILE_COLOR1("tileColor1");
@@ -288,6 +289,12 @@ void Landscape::AllocateGeometryData()
         landscapeMaterial->SetFlag(FLAG_LOD_MORPHING, useLodMorphing ? 1 : 0);
     else
         landscapeMaterial->AddFlag(FLAG_LOD_MORPHING, useLodMorphing ? 1 : 0);
+
+    float32 heightmapHalfTexel = 0.5f / float32(heightmapSize);
+    if (landscapeMaterial->HasLocalProperty(PARAM_HEIGHTMAP_HALF_TEXEL_SIZE))
+        landscapeMaterial->SetPropertyValue(PARAM_HEIGHTMAP_HALF_TEXEL_SIZE, &heightmapHalfTexel);
+    else
+        landscapeMaterial->AddProperty(PARAM_HEIGHTMAP_HALF_TEXEL_SIZE, &heightmapHalfTexel, rhi::ShaderProp::TYPE_FLOAT1);
 
     if (useInstancing)
     {
@@ -777,7 +784,7 @@ void Landscape::AllocateGeometryDataNoInstancing()
     }
     vLayoutUIDNoInstancing = rhi::VertexLayout::UniqueId(vLayout);
 
-    for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
+    for (uint32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
     {
         AllocateRenderBatch();
     }
@@ -927,7 +934,7 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
 
     int32 dividerPow2 = level - quadsInWidthPow2;
     DVASSERT(dividerPow2 >= 0);
-    uint32 quadBuffer = ((yy >> dividerPow2) << quadsInWidthPow2) + (xx >> dividerPow2);
+    uint16 quadBuffer = ((yy >> dividerPow2) << quadsInWidthPow2) + (xx >> dividerPow2);
 
     if ((quadBuffer != queuedQuadBuffer) && (queuedQuadBuffer != -1))
     {
