@@ -477,7 +477,11 @@ static const char* _ShaderHeader_GLES2 =
 //"vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
 "#define mul( v, m ) ((m)*(v))\n"
 
+#if defined(__DAVAENGINE_MACOS__)
+"#define lerp(a,b,t) ( ( (b) - (a) ) * (t) + (a) )\n"
+#else
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
+#endif
 
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"

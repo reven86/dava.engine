@@ -95,7 +95,7 @@ public:
     virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
     virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
 
-    const bool IsDynamic();
+    bool IsDynamic();
     void SetDynamic(const bool& isDynamic);
     void AddFlag(uint32 flag);
     void RemoveFlag(uint32 flag);
@@ -129,7 +129,7 @@ public:
                          MEMBER(diffuseColor, "Color", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(intensity, "Intensity", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
-                         );
+                         )
 };
 };
 

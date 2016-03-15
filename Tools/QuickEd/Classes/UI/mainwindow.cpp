@@ -41,6 +41,7 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "DebugTools/DebugTools.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 namespace MainWindow_namespace
 {
@@ -115,7 +116,6 @@ MainWindow::MainWindow(QWidget* parent)
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
 
-    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
     OnDocumentChanged(nullptr);
 }
 
@@ -132,11 +132,6 @@ void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
 
     mainToolbar->addAction(undoAction);
     mainToolbar->addAction(redoAction);
-}
-
-void MainWindow::OnProjectIsOpenChanged(bool arg)
-{
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 }
 
 void MainWindow::OnCountChanged(int count)
@@ -245,11 +240,6 @@ bool MainWindow::IsInEmulationMode() const
     return emulationBox->isChecked();
 }
 
-bool MainWindow::isPixelized() const
-{
-    return actionPixelized->isChecked();
-}
-
 void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
 {
     DVASSERT(nullptr != packer);
@@ -294,33 +284,17 @@ void MainWindow::FillComboboxLanguages(const Project* project)
 
 void MainWindow::InitRtlBox()
 {
-    QCheckBox* rtlBox = new QCheckBox();
-    rtlBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("Right-to-left"));
-    label->setBuddy(rtlBox);
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(rtlBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
+    rtlBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(rtlBox);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
 }
 
 void MainWindow::InitBiDiSupportBox()
 {
-    QCheckBox* bidiSupportBox = new QCheckBox();
-    bidiSupportBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("BiDi Support"));
-    label->setBuddy(bidiSupportBox);
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(bidiSupportBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
+    bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(bidiSupportBox);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
 }
 
@@ -342,17 +316,10 @@ void MainWindow::InitGlobalClasses()
 
 void MainWindow::InitEmulationMode()
 {
-    emulationBox = new QCheckBox();
-    emulationBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("Emulation"));
-    label->setBuddy(emulationBox);
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(emulationBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    emulationBox = new QCheckBox("Emulation", this);
+    emulationBox->setLayoutDirection(Qt::RightToLeft);
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
+    toolBarPlugins->addWidget(emulationBox);
 }
 
 void MainWindow::InitMenu()
@@ -379,8 +346,8 @@ void MainWindow::InitMenu()
     connect(actionHelp, &QAction::triggered, this, &MainWindow::OnShowHelp);
 
     // Pixelization.
-    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
+    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     DisableActions();
 }
 
@@ -403,6 +370,26 @@ void MainWindow::SetupViewMenu()
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
 
+    QMenu* appStyleMenu = new QMenu(tr("Application style"), menuView);
+    menuView->addMenu(appStyleMenu);
+    QActionGroup* actionGroup = new QActionGroup(this);
+    for (const QString& theme : Themes::ThemesNames())
+    {
+        QAction* action = new QAction(theme, menuView);
+        actionGroup->addAction(action);
+        action->setCheckable(true);
+        if (theme == Themes::GetCurrentThemeStr())
+        {
+            action->setChecked(true);
+        }
+        appStyleMenu->addAction(action);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [](QAction* action) {
+        if (action->isChecked())
+        {
+            Themes::SetCurrentTheme(action->text());
+        }
+    });
     SetupBackgroundMenu();
     // Another actions below the Set Background Color.
     menuView->addSeparator();
@@ -412,6 +399,7 @@ void MainWindow::SetupViewMenu()
 
 void MainWindow::SetupBackgroundMenu()
 {
+    menuView->addSeparator();
     // Setup the Background Color menu.
     QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
     menuView->addSeparator();
@@ -575,6 +563,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
         FillComboboxLanguages(project);
+        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -584,6 +573,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
             errors << QString::fromStdString(result.message);
         }
         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
+        this->setWindowTitle("QuickEd");
     }
 }
 
@@ -618,12 +608,11 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
 
-void MainWindow::OnPixelizationStateChanged()
+void MainWindow::OnPixelizationStateChanged(bool isPixelized)
 {
-    bool isPixelized = actionPixelized->isChecked();
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
-    emit PixelizationChanged(isPixelized);
+    Texture::SetPixelization(isPixelized);
 }
 
 void MainWindow::OnRtlChanged(int arg)

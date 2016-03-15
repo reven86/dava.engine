@@ -30,35 +30,43 @@
 #ifndef __RESOURCEEDITORQT__LANDSCAPESETTEXTURESCOMMANDS2__
 #define __RESOURCEEDITORQT__LANDSCAPESETTEXTURESCOMMANDS2__
 
-#include "Commands2/Base/Command2.h"
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
-using namespace DAVA;
+#include "Commands2/Base/Command2.h"
+
+namespace DAVA
+{
+class Entity;
+class Landscape;
+}
 
 class LandscapeProxy;
 
 class LandscapeSetHeightMapCommand : public Command2
 {
 public:
-    LandscapeSetHeightMapCommand(Entity* landscapeEntity,
-                                 const FilePath& texturePath,
-                                 const AABBox3& newLandscapeBox);
+    LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity,
+        const DAVA::FilePath& texturePath,
+        const DAVA::AABBox3& newLandscapeBox);
+
     ~LandscapeSetHeightMapCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    DAVA::Entity* GetEntity() const
+    void Undo() override;
+    void Redo() override;
+
+    DAVA::Entity* GetEntity() const override
     {
         return landscapeEntity;
     }
 
 protected:
-    FilePath originalHeightMapPath;
-    FilePath newHeightMapPath;
-    Entity* landscapeEntity;
-    Landscape* landscape;
-    AABBox3 originalLandscapeBox;
-    AABBox3 newLandscapeBox;
+    DAVA::FilePath originalHeightMapPath;
+    DAVA::FilePath newHeightMapPath;
+    DAVA::Entity* landscapeEntity;
+    DAVA::Landscape* landscape;
+    DAVA::AABBox3 originalLandscapeBox;
+    DAVA::AABBox3 newLandscapeBox;
 };
 
 

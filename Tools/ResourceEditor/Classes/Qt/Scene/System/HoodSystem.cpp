@@ -38,16 +38,7 @@
 
 HoodSystem::HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys)
     : DAVA::SceneSystem(scene)
-    , lockedScale(false)
-    , lockedModif(false)
-    , lockedAxis(false)
-    , isVisible(true)
-    , curMode(ST_MODIF_OFF)
-    , moseOverAxis(ST_AXIS_NONE)
-    , curScale(1.0f)
     , cameraSystem(camSys)
-    , curHood(NULL)
-    , moveHood()
 {
     btVector3 worldMin(-1000, -1000, -1000);
     btVector3 worldMax(1000, 1000, 1000);
@@ -405,4 +396,14 @@ void HoodSystem::LockModif(bool lock)
 void HoodSystem::LockAxis(bool lock)
 {
     lockedAxis = lock;
+}
+
+bool HoodSystem::AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection)
+{
+    return !IsVisible() || (ST_MODIF_OFF == GetModifMode()) || (ST_AXIS_NONE == GetPassingAxis());
+}
+
+bool HoodSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection)
+{
+    return true;
 }

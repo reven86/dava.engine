@@ -46,7 +46,7 @@ ImmediateTimeMeasure::ImmediateTimeMeasure(const FastName& _name)
 ImmediateTimeMeasure::~ImmediateTimeMeasure()
 {
     time = SystemTimer::Instance()->GetAbsoluteNano() - time;
-    Logger::Info("%s %0.9llf seconds", name.c_str(), (double)time / 1e+9);
+    Logger::Info("%s %0.9f seconds", name.c_str(), double(time / 1e+9));
 }
 
 // TimeMeasure class

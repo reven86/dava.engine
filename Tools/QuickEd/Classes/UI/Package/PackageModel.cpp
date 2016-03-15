@@ -53,46 +53,58 @@
 #include "Model/ControlProperties/PrototypeNameProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 #include "Model/YamlPackageSerializer.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include "PackageMimeData.h"
 
 using namespace DAVA;
 
-PackageModel::PackageModel(PackageNode* _root, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
+PackageModel::PackageModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , root(SafeRetain(_root))
-    , commandExecutor(SafeRetain(_commandExecutor))
 {
-    root->AddListener(this);
 }
 
-PackageModel::~PackageModel()
+void PackageModel::Reset(PackageNode* package_, QtModelPackageCommandExecutor* executor_)
 {
-    root->RemoveListener(this);
-    SafeRelease(root);
-    SafeRelease(commandExecutor);
+    beginResetModel();
+    if (nullptr != package)
+    {
+        package->RemoveListener(this);
+    }
+    package = package_;
+    commandExecutor = executor_;
+    if (nullptr != package)
+    {
+        package->AddListener(this);
+    }
+    endResetModel();
 }
 
 QModelIndex PackageModel::indexByNode(PackageBaseNode* node) const
 {
     PackageBaseNode* parent = node->GetParent();
     if (parent == nullptr)
+    {
         return QModelIndex();
-
-    if (parent)
-        return createIndex(parent->GetIndex(node), 0, node);
-    else
-        return createIndex(0, 0, parent);
+    }
+    return createIndex(parent->GetIndex(node), 0, node);
 }
 
 QModelIndex PackageModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent))
+    {
         return QModelIndex();
-
+    }
     if (!parent.isValid())
-        return createIndex(row, column, root->Get(row));
-
+    {
+        DVASSERT(nullptr != package);
+        if (nullptr != package)
+        {
+            return createIndex(row, column, package->Get(row));
+        }
+        return QModelIndex();
+    }
     PackageBaseNode* node = static_cast<PackageBaseNode*>(parent.internalPointer());
     return createIndex(row, column, node->Get(row));
 }
@@ -100,23 +112,37 @@ QModelIndex PackageModel::index(int row, int column, const QModelIndex& parent) 
 QModelIndex PackageModel::parent(const QModelIndex& child) const
 {
     if (!child.isValid())
+    {
+        DVASSERT(false && "invalid child passed to parent function");
         return QModelIndex();
+    }
 
     PackageBaseNode* node = static_cast<PackageBaseNode*>(child.internalPointer());
     PackageBaseNode* parent = node->GetParent();
-    if (nullptr == parent || parent == root)
-        return QModelIndex();
-
-    if (parent->GetParent())
+    DVASSERT(package != nullptr);
+    if (package != nullptr)
+    {
+        DVASSERT(nullptr != parent);
+        if (nullptr == parent || parent == package)
+        {
+            return QModelIndex();
+        }
+        DVASSERT(nullptr != parent->GetParent());
         return createIndex(parent->GetParent()->GetIndex(parent), 0, parent);
-    else
-        return createIndex(0, 0, parent);
+    }
+    return QModelIndex();
 }
 
 int PackageModel::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid())
-        return root ? root->GetCount() : 0;
+    {
+        if (package != nullptr)
+        {
+            return package->GetCount();
+        }
+        return 0;
+    }
 
     return static_cast<PackageBaseNode*>(parent.internalPointer())->GetCount();
 }
@@ -129,8 +155,10 @@ int PackageModel::columnCount(const QModelIndex& /*parent*/) const
 QVariant PackageModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
+    {
+        DVASSERT(false && "invalid index passed to data function");
         return QVariant();
-
+    }
     PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
     ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
 
@@ -178,10 +206,10 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
         }
 
         case Qt::TextColorRole:
-            return controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
-
-        case Qt::BackgroundRole:
-            return QColor(Qt::white);
+            if (controlNode->GetPrototype() != nullptr)
+            {
+                return Themes::GetPrototypeColor();
+            }
 
         case Qt::FontRole:
         {
@@ -207,10 +235,9 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
                 return StringToQString(node->GetName());
 
             case Qt::TextColorRole:
-                return QColor(Qt::darkGreen);
-
-            case Qt::BackgroundRole:
-                return QColor(Qt::white);
+            {
+                return Themes::GetStyleSheetNodeColor();
+            }
 
             case Qt::FontRole:
             {
@@ -229,11 +256,8 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
             case Qt::DisplayRole:
                 return StringToQString(node->GetName());
 
-            case Qt::TextColorRole:
-                return QColor(Qt::black);
-
             case Qt::BackgroundRole:
-                return QColor(Qt::lightGray);
+                return Themes::GetViewLineAlternateColor();
 
             case Qt::FontRole:
             {
@@ -255,8 +279,10 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
 bool PackageModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!index.isValid())
+    {
+        DVASSERT(false && "invalid index passed to setData");
         return false;
-
+    }
     PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
     auto control = node->GetControl();
     if (nullptr == control)
@@ -274,12 +300,18 @@ bool PackageModel::setData(const QModelIndex& index, const QVariant& value, int 
     }
     if (role == Qt::EditRole)
     {
-        auto prop = controlNode->GetRootProperty()->GetNameProperty();
-        const auto& newName = value.toString().toStdString();
-        if (newName != node->GetName())
+        DVASSERT(nullptr != commandExecutor);
+        if (nullptr != commandExecutor)
         {
-            commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
-            return true;
+            ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+            DVASSERT(controlNode);
+            auto prop = controlNode->GetRootProperty()->GetNameProperty();
+            const auto& newName = value.toString().toStdString();
+            if (newName != node->GetName())
+            {
+                commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
+                return true;
+            }
         }
     }
     return false;
@@ -288,8 +320,9 @@ bool PackageModel::setData(const QModelIndex& index, const QVariant& value, int 
 Qt::ItemFlags PackageModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
+    {
         return Qt::NoItemFlags;
-
+    }
     Qt::ItemFlags flags = QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
 
     const PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
@@ -325,6 +358,12 @@ QStringList PackageModel::mimeTypes() const
 
 QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
 {
+    DVASSERT(nullptr != package);
+    if (nullptr == package)
+    {
+        return nullptr;
+    }
+
     PackageMimeData* mimeData = new PackageMimeData();
 
     for (const QModelIndex& index : indices)
@@ -335,22 +374,24 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
             if (node->CanCopy())
             {
                 ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-                if (controlNode)
+                if (nullptr != controlNode)
                 {
                     mimeData->AddControl(controlNode);
                 }
                 else
                 {
                     StyleSheetNode* style = dynamic_cast<StyleSheetNode*>(node);
-                    if (style)
+                    if (nullptr != style)
+                    {
                         mimeData->AddStyle(style);
+                    }
                 }
             }
         }
     }
 
     YamlPackageSerializer serializer;
-    serializer.SerializePackageNodes(root, mimeData->GetControls(), mimeData->GetStyles());
+    serializer.SerializePackageNodes(package, mimeData->GetControls(), mimeData->GetStyles());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -366,8 +407,14 @@ int PackageModel::GetRowIndex(int row, const QModelIndex& parent) const
     return rowCount(parent);
 }
 
-bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int /*column*/, const QModelIndex& parent)
 {
+    DVASSERT(nullptr != commandExecutor && nullptr != package);
+    if (nullptr == commandExecutor || nullptr == package)
+    {
+        return false;
+    }
+
     if (action == Qt::IgnoreAction)
     {
         return true;
@@ -383,7 +430,7 @@ bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, in
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData* controlMimeData = dynamic_cast<const PackageMimeData*>(data);
-        if (!controlMimeData)
+        if (nullptr == controlMimeData)
         {
             return false;
         }
@@ -416,7 +463,7 @@ bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, in
     else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData* mimeData = dynamic_cast<const PackageMimeData*>(data);
-        if (!mimeData)
+        if (nullptr == mimeData)
         {
             return false;
         }
@@ -455,13 +502,13 @@ bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, in
         }
         if (!packages.empty())
         {
-            commandExecutor->AddImportedPackagesIntoPackage(packages, root);
+            commandExecutor->AddImportedPackagesIntoPackage(packages, package);
         }
     }
     else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        commandExecutor->Paste(root, destNode, rowIndex, string);
+        commandExecutor->Paste(package, destNode, rowIndex, string);
         return true;
     }
 
@@ -485,17 +532,20 @@ void PackageModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
 
 void PackageModel::StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)
 {
-    QModelIndex index = indexByNode(node);
-    emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
+    if (property->GetName() == "Name")
+    {
+        QModelIndex index = indexByNode(node);
+        emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
+    }
 }
 
-void PackageModel::ControlWillBeAdded(ControlNode* node, ControlsContainerNode* destination, int row)
+void PackageModel::ControlWillBeAdded(ControlNode* /*node*/, ControlsContainerNode* destination, int row)
 {
     QModelIndex destIndex = indexByNode(destination);
     beginInsertRows(destIndex, row, row);
 }
 
-void PackageModel::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row)
+void PackageModel::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* /*destination*/, int /*row*/)
 {
     endInsertRows();
 }
@@ -507,18 +557,18 @@ void PackageModel::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void PackageModel::ControlWasRemoved(ControlNode* /*node*/, ControlsContainerNode* /*from*/)
 {
     endRemoveRows();
 }
 
-void PackageModel::StyleWillBeAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index)
+void PackageModel::StyleWillBeAdded(StyleSheetNode* /*node*/, StyleSheetsNode* destination, int index)
 {
     QModelIndex destIndex = indexByNode(destination);
     beginInsertRows(destIndex, index, index);
 }
 
-void PackageModel::StyleWasAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index)
+void PackageModel::StyleWasAdded(StyleSheetNode* /*node*/, StyleSheetsNode* /*destination*/, int /*index*/)
 {
     endInsertRows();
 }
@@ -530,18 +580,18 @@ void PackageModel::StyleWillBeRemoved(StyleSheetNode* node, StyleSheetsNode* fro
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::StyleWasRemoved(StyleSheetNode* node, StyleSheetsNode* from)
+void PackageModel::StyleWasRemoved(StyleSheetNode* /*node*/, StyleSheetsNode* /*from*/)
 {
     endRemoveRows();
 }
 
-void PackageModel::ImportedPackageWillBeAdded(PackageNode* node, ImportedPackagesNode* to, int index)
+void PackageModel::ImportedPackageWillBeAdded(PackageNode* /*node*/, ImportedPackagesNode* to, int index)
 {
     QModelIndex destIndex = indexByNode(to);
     beginInsertRows(destIndex, index, index);
 }
 
-void PackageModel::ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index)
+void PackageModel::ImportedPackageWasAdded(PackageNode* /*node*/, ImportedPackagesNode* /*to*/, int /*index*/)
 {
     endInsertRows();
 }
@@ -553,7 +603,7 @@ void PackageModel::ImportedPackageWillBeRemoved(PackageNode* node, ImportedPacka
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::ImportedPackageWasRemoved(PackageNode* node, ImportedPackagesNode* from)
+void PackageModel::ImportedPackageWasRemoved(PackageNode* /*node*/, ImportedPackagesNode* /*from*/)
 {
     endRemoveRows();
 }

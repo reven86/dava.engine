@@ -60,8 +60,8 @@ protected:
 
     QtConnections connections;
 
-    virtual QVariant GetValueInternal() const;
-    virtual bool UpdateValueInternal();
+    QVariant GetValueInternal() const override;
+    bool UpdateValueInternal() override;
 
 private:
     void ChildCreate(const DAVA::FastName& key, DAVA::VariantType* value);

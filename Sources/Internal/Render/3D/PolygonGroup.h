@@ -177,7 +177,7 @@ public:
     void BuildBuffers();
     void RestoreBuffers();
 
-    void Save(KeyedArchive* keyedArchive, SerializationContext* serializationContext);
+    void Save(KeyedArchive* keyedArchive, SerializationContext* serializationContext) override;
     void LoadPolygonData(KeyedArchive* keyedArchive, SerializationContext* serializationContext, int32 requiredFlags, bool cutUnusedStreams);
 
     rhi::HVertexBuffer vertexBuffer;
@@ -202,7 +202,7 @@ public:
 
                          //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
                          //        MEMBER(indices, "Indices", INTROSPECTION_SERIALIZABLE)
-                         );
+                         )
 };
 
 // Static Mesh Implementation

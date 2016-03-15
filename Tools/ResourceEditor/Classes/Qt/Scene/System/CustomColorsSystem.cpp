@@ -190,6 +190,9 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
         case UIEvent::Phase::ENDED:
             FinishEditing();
             break;
+
+        default:
+            break;
         }
     }
 }
@@ -235,9 +238,13 @@ void CustomColorsSystem::UpdateBrushTool()
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = colorTexture;
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.priority = PRIORITY_SERVICE_2D;
+    desc.colorAttachment = colorTexture->handle;
+    desc.depthAttachment = colorTexture->handleDepthStencil;
+    desc.width = colorTexture->GetWidth();
+    desc.height = colorTexture->GetHeight();
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -359,9 +366,13 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
 
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::RenderTargetPassDescriptor desc;
-            desc.target = target;
-            desc.shouldClear = false;
-            desc.shouldTransformVirtualToPhysical = false;
+            desc.priority = PRIORITY_SERVICE_2D;
+            desc.colorAttachment = target->handle;
+            desc.depthAttachment = target->handleDepthStencil;
+            desc.width = target->GetWidth();
+            desc.height = target->GetHeight();
+            desc.clearTarget = false;
+            desc.transformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();

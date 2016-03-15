@@ -33,23 +33,27 @@
 #include "Base/BaseTypes.h"
 #include "Scene3D/Entity.h"
 
+#include "Command/ICommand.h"
+
 #include "Commands2/CommandID.h"
 #include "Commands2/Base/CommandNotify.h"
 
-class Command2 : public CommandNotifyProvider
+class Command2 : public CommandNotifyProvider, public DAVA::ICommand
 {
 public:
+
     Command2(DAVA::int32 id, const DAVA::String& text = "");
     ~Command2() override;
 
     DAVA::int32 GetId() const;
     const DAVA::String& GetText() const;
-    //    void SetText(const DAVA::String& text);
 
-    virtual void Undo() = 0;
-    virtual void Redo() = 0;
 
     DAVA_DEPRECATED(virtual DAVA::Entity* GetEntity() const = 0);
+
+    void Execute() override;
+
+    virtual bool CanUndo() const;
 
     virtual bool MatchCommandID(DAVA::int32 commandID) const;
     virtual bool MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const;
@@ -72,5 +76,10 @@ inline const DAVA::String& Command2::GetText() const
     return text;
 }
 
+
+inline bool Command2::CanUndo() const
+{
+    return true;
+}
 
 #endif // __COMMAND2_H__

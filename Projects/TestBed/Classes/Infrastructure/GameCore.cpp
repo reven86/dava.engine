@@ -198,9 +198,9 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
         return false;
     }
 
-    const String& name = screen.GetName();
+    const FastName& name = screen.GetName();
 
-    return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
+    return 0 != CompareCaseInsensitive(runOnlyThisTest, name.c_str());
 }
 
 void GameCore::InitNetwork()

@@ -74,7 +74,7 @@ class VisibilityCheckSystem;
 class SceneEditor2 : public DAVA::Scene
 {
 public:
-    enum LandscapeTools
+    enum LandscapeTools : DAVA::uint32
     {
         LANDSCAPE_TOOL_CUSTOM_COLOR = 1 << 0,
         LANDSCAPE_TOOL_HEIGHTMAP_EDITOR = 1 << 1,
@@ -82,7 +82,9 @@ public:
         LANDSCAPE_TOOL_RULER = 1 << 3,
         LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN = 1 << 4,
 
-        LANDSCAPE_TOOLS_ALL = 0x7FFFFFFF
+        LANDSCAPE_TOOLS_ALL = LANDSCAPE_TOOL_CUSTOM_COLOR | LANDSCAPE_TOOL_HEIGHTMAP_EDITOR | LANDSCAPE_TOOL_TILEMAP_EDITOR |
+        LANDSCAPE_TOOL_RULER |
+        LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN
     };
 
     SceneEditor2();
@@ -165,7 +167,8 @@ public:
 
     const RenderStats& GetRenderStats() const;
 
-    void DisableTools(int32 toolFlags, bool saveChanges = true);
+    void EnableToolsInstantly(int32 toolFlags);
+    void DisableToolsInstantly(int32 toolFlags, bool saveChanges = true);
     bool IsToolsEnabled(int32 toolFlags);
     int32 GetEnabledTools();
 
@@ -201,6 +204,7 @@ protected:
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
     void EditorCommandProcess(const Command2* command, bool redo);
+
     void Draw() override;
 
     void ExtractEditorEntities();

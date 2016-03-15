@@ -208,6 +208,7 @@ property float3 boundingBoxSize : dynamic,a : ;
 #endif
 
 #if TILED_DECAL_MASK
+property float2 decalTileCoordOffset : static,a : def_value=0.0,0.0 ;
 property float2 decalTileCoordScale : static,a : ;
 #endif
 
@@ -657,7 +658,11 @@ VPROG_BEGIN
 #endif
 
 #if TILED_DECAL_MASK
-    VP_OUT(varDecalTileTexCoord) = VP_OUT(varTexCoord0) * decalTileCoordScale;
+	float2 resDecalTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale + decalTileCoordOffset;    
+	#if TILE_DECAL_ROTATION
+		resDecalTexCoord = float2(resDecalTexCoord.x+resDecalTexCoord.y, resDecalTexCoord.y-resDecalTexCoord.x);
+	#endif
+	VP_OUT(varDecalTileTexCoord) = resDecalTexCoord;
 #endif
     
 #if MATERIAL_DETAIL

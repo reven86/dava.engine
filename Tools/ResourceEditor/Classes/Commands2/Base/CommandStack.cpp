@@ -134,15 +134,9 @@ void CommandStack::Exec(std::unique_ptr<Command2>&& command)
 {
     DVASSERT(command);
 
-    CommandAction* action = dynamic_cast<CommandAction*>(command.get());
-    if (action != nullptr)
+    if (command->CanUndo())
     {
-        action->Redo();
-        EmitNotify(command.get(), true);
-    }
-    else
-    { //command
-        if (curBatchCommand)
+        if (curBatchCommand != nullptr)
         {
             curBatchCommand->AddAndExec(std::move(command));
         }
@@ -150,6 +144,11 @@ void CommandStack::Exec(std::unique_ptr<Command2>&& command)
         {
             ExecInternal(std::move(command), true);
         }
+    }
+    else
+    {
+        command->Redo();
+        EmitNotify(command.get(), true);
     }
 }
 

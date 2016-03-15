@@ -32,7 +32,9 @@
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
+
 #include "Commands2/Base/Command2.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -66,8 +68,6 @@ public:
     SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys);
     ~SceneSelectionSystem();
 
-    void SetSelection(const EntityGroup& newSelection);
-
     void AddEntityToSelection(DAVA::Entity* entity);
     void AddSelection(const EntityGroup& entities);
 
@@ -78,6 +78,10 @@ public:
 
     bool IsEntitySelectable(DAVA::Entity* entity) const;
 
+    /*
+	 * SetSelection could remove not selectable items from provided EntityGroup
+	 */
+    void SetSelection(EntityGroup& newSelection);
     const EntityGroup& GetSelection() const;
 
     size_t GetSelectionCount() const;
@@ -118,11 +122,11 @@ public:
     void Draw();
     void CancelSelection();
 
+    void AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+    void RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
-
-    bool IsEntitySelected(DAVA::Entity* entity);
-    bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
 
     DAVA::AABBox3 GetTransformedBoundingBox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
 
@@ -155,14 +159,15 @@ private:
 private:
     SceneCollisionSystem* collisionSystem = nullptr;
     HoodSystem* hoodSystem = nullptr;
-    EntityGroup curSelections;
-    EntityGroup curDeselections;
+    EntityGroup currentSelection;
+    EntityGroup recentlySelectedEntities;
     EntityGroup lastGroupSelection;
     EntityGroup objectsToSelect;
     DAVA::List<DAVA::Entity*> entitiesForSelection;
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
+    DAVA::Vector<SceneSelectionSystemDelegate*> selectionDelegates;
     ST_PivotPoint curPivotPoint = ST_PIVOT_COMMON_CENTER;
     GroupSelectionMode groupSelectionMode = GroupSelectionMode::Replace;
     bool selectionAllowed = true;

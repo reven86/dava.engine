@@ -55,7 +55,7 @@ using namespace DAVA;
 #define MATRIX4MAPID "mapNameMatrix4"
 #define KEYEDARCHMAPID "mapNameKArch"
 
-DAVA_TESTCLASS(KeyedArchiveYamlTest)
+DAVA_TESTCLASS (KeyedArchiveYamlTest)
 {
     RefPtr<KeyedArchive> loadedArchive;
 
@@ -64,7 +64,7 @@ DAVA_TESTCLASS(KeyedArchiveYamlTest)
     {
     }
 
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         bool loaded = false;
 

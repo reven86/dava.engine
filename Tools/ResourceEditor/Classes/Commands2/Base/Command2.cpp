@@ -70,3 +70,8 @@ bool Command2::MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector)
 
     return false;
 }
+
+void Command2::Execute()
+{
+    Redo();
+}

@@ -33,9 +33,9 @@
 
 QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(const DAVA::FastName& name_, DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata)
     : QtPropertyDataDavaVariant(name_, DAVA::VariantType())
+    , name(name_)
     , dynamicInfo(_dynamicInfo)
     , ddata(_ddata)
-    , name(name_)
     , inspFlags(0)
     , lastCommand(NULL)
 {

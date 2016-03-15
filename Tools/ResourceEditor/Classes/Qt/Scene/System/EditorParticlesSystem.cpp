@@ -168,7 +168,6 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::Partic
     // Default value of emitter size
     DAVA::Vector3 emitterSize;
 
-    DAVA::Vector3 p[8];
     float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
 
     if (emitter->size)

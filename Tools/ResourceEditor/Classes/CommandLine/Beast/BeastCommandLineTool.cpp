@@ -74,7 +74,7 @@ bool BeastCommandLineTool::InitializeInternal()
 void BeastCommandLineTool::ProcessInternal()
 {
     ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-    if (scene->LoadScene(scenePathname))
+    if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
     {
         scene->Update(0.1f);
         scene->Exec(std::unique_ptr<Command2>(new BeastAction(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr)));

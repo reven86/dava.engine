@@ -972,9 +972,13 @@ void EmitterLayerWidget::UpdateLayerSprite()
     if (layer->sprite)
     {
         RenderSystem2D::RenderTargetPassDescriptor desc;
-        desc.target = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-        desc.shouldClear = true;
-        desc.shouldTransformVirtualToPhysical = false;
+        Texture* dstTex = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        desc.colorAttachment = dstTex->handle;
+        desc.depthAttachment = dstTex->handleDepthStencil;
+        desc.width = dstTex->GetWidth();
+        desc.height = dstTex->GetHeight();
+        desc.clearTarget = true;
+        desc.transformVirtualToPhysical = false;
         desc.clearColor = Color::Clear;
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         {
@@ -983,7 +987,7 @@ void EmitterLayerWidget::UpdateLayerSprite()
             RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
         }
         RenderSystem2D::Instance()->EndRenderTargetPass();
-        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), desc.target });
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), dstTex });
         spriteUpdateTimer->start(0);
         spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
     }

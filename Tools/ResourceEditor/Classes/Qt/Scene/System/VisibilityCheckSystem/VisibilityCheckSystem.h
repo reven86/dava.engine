@@ -53,7 +53,7 @@ public:
     void RemoveEntity(DAVA::Entity* entity) override;
 
     void Recalculate();
-    void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
     void Draw();
 
     void InvalidateMaterials();

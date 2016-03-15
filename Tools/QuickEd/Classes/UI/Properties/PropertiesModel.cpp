@@ -32,7 +32,6 @@
 #include <QPoint>
 #include <QColor>
 #include <QFont>
-#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
 #include "Document.h"
@@ -51,51 +50,44 @@
 
 #include "UI/UIControl.h"
 
+#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Utils/Themes/Themes.h"
+
 #include <chrono>
 
 using namespace std::chrono;
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode* _controlNode, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
+PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , commandExecutor(SafeRetain(_commandExecutor))
+    , lazyUpdater(new LazyUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties)))
 {
-    controlNode = SafeRetain(_controlNode);
-    controlNode->GetRootProperty()->AddListener(this);
-    rootProperty = SafeRetain(controlNode->GetRootProperty());
-    Init();
-}
-
-PropertiesModel::PropertiesModel(StyleSheetNode* aStyleSheet, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
-    : QAbstractItemModel(parent)
-    , commandExecutor(SafeRetain(_commandExecutor))
-{
-    styleSheet = SafeRetain(aStyleSheet);
-    styleSheet->GetRootProperty()->AddListener(this);
-    rootProperty = SafeRetain(styleSheet->GetRootProperty());
-    Init();
 }
 
 PropertiesModel::~PropertiesModel()
 {
-    if (controlNode)
-        controlNode->GetRootProperty()->RemoveListener(this);
-
-    if (styleSheet)
-        styleSheet->GetRootProperty()->RemoveListener(this);
-
-    SafeRelease(commandExecutor);
-    SafeRelease(controlNode);
-    SafeRelease(rootProperty);
-    SafeRelease(styleSheet);
+    CleanUp();
 }
 
-void PropertiesModel::Init()
+void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
-    updatePropertyTimer = new QTimer(this);
-    updatePropertyTimer->setSingleShot(true);
-    updatePropertyTimer->setInterval(30);
-    connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties, Qt::QueuedConnection);
+    beginResetModel();
+    CleanUp();
+    commandExecutor = commandExecutor_;
+    controlNode = dynamic_cast<ControlNode*>(node_);
+    if (nullptr != controlNode)
+    {
+        controlNode->GetRootProperty()->AddListener(this);
+        rootProperty = controlNode->GetRootProperty();
+    }
+
+    styleSheet = dynamic_cast<StyleSheetNode*>(node_);
+    if (nullptr != styleSheet)
+    {
+        styleSheet->GetRootProperty()->AddListener(this);
+        rootProperty = styleSheet->GetRootProperty();
+    }
+    endResetModel();
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex& parent) const
@@ -138,7 +130,7 @@ int PropertiesModel::rowCount(const QModelIndex& parent) const
     return static_cast<AbstractProperty*>(parent.internalPointer())->GetCount();
 }
 
-int PropertiesModel::columnCount(const QModelIndex& parent) const
+int PropertiesModel::columnCount(const QModelIndex&) const
 {
     return 2;
 }
@@ -199,7 +191,11 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
     break;
 
     case Qt::BackgroundRole:
-        return property->GetType() == AbstractProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
+        if (property->GetType() == AbstractProperty::TYPE_HEADER)
+        {
+            return Themes::GetViewLineAlternateColor();
+        }
+        break;
 
     case Qt::FontRole:
     {
@@ -215,6 +211,10 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
 
     case Qt::TextColorRole:
     {
+        if (property->IsOverriddenLocally() || property->IsReadOnly())
+        {
+            return Themes::GetChangedPropertyColor();
+        }
         if (controlNode)
         {
             int32 propertyIndex = property->GetStylePropertyIndex();
@@ -222,10 +222,15 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
             {
                 bool setByStyle = controlNode->GetControl()->GetStyledPropertySet().test(propertyIndex);
                 if (setByStyle)
-                    return QColor(Qt::darkGreen);
+                {
+                    return Themes::GetStyleSheetNodeColor();
+                }
             }
         }
-        return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+        if (flags & AbstractProperty::EF_INHERITED)
+        {
+            return Themes::GetPrototypeColor();
+        }
     }
     }
 
@@ -272,7 +277,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     }
     break;
 
-    case DAVA::ResetRole:
+    case ResetRole:
     {
         ResetProperty(property);
         return true;
@@ -312,14 +317,15 @@ void PropertiesModel::UpdateAllChangedProperties()
     {
         emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
     }
+    changedIndexes.clear();
 }
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    QPersistentModelIndex nameIndex = indexByProperty(property, 0);
+    QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    updatePropertyTimer->start();
+    lazyUpdater->Update();
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index)
@@ -390,31 +396,39 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* sectio
 
 void PropertiesModel::ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value)
 {
-    if (controlNode)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
-        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-        size_t usCount = static_cast<size_t>(us.count());
-        commandExecutor->ChangeProperty(controlNode, property, value, usCount);
-    }
-    else if (styleSheet)
-    {
-        commandExecutor->ChangeProperty(styleSheet, property, value);
-    }
-    else
-    {
-        DVASSERT(false);
+        if (nullptr != controlNode)
+        {
+            microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+            size_t usCount = static_cast<size_t>(us.count());
+            commandExecutor->ChangeProperty(controlNode, property, value, usCount);
+        }
+        else if (styleSheet)
+        {
+            commandExecutor->ChangeProperty(styleSheet, property, value);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 
 void PropertiesModel::ResetProperty(AbstractProperty* property)
 {
-    if (controlNode)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
-        commandExecutor->ResetProperty(controlNode, property);
-    }
-    else
-    {
-        DVASSERT(false);
+        if (nullptr != controlNode)
+        {
+            commandExecutor->ResetProperty(controlNode, property);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 
@@ -583,4 +597,19 @@ void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& va
         DVASSERT(false);
         break;
     }
+}
+
+void PropertiesModel::CleanUp()
+{
+    if (nullptr != controlNode)
+    {
+        controlNode->GetRootProperty()->RemoveListener(this);
+    }
+    if (nullptr != styleSheet)
+    {
+        styleSheet->GetRootProperty()->RemoveListener(this);
+    }
+    controlNode = nullptr;
+    styleSheet = nullptr;
+    rootProperty = nullptr;
 }

@@ -70,8 +70,8 @@ QtPropertyData::QtPropertyData(const DAVA::FastName& name_)
 }
 
 QtPropertyData::QtPropertyData(const DAVA::FastName& name_, const QVariant& value)
-    : name(name_)
-    , curValue(value)
+    : curValue(value)
+    , name(name_)
 {
     childrenData.reserve(16);
     mergedData.reserve(128);
@@ -701,7 +701,21 @@ int QtPropertyData::ChildIndex(const QtPropertyData* data) const
 {
     TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data));
     if (iter != keyToDataMap.end())
-        return iter->second;
+    {
+        if (iter->first.child == data)
+        {
+            return iter->second;
+        }
+
+        auto iter = std::find_if(childrenData.begin(), childrenData.end(), [data](const std::unique_ptr<QtPropertyData>& child)
+                                 {
+                                     return data == child.get();
+                                 });
+        if (iter != childrenData.end())
+        {
+            return std::distance(childrenData.begin(), iter);
+        }
+    }
 
     return -1;
 }
