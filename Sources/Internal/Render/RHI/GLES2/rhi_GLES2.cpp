@@ -230,6 +230,8 @@ gles_check_GL_extensions()
 #endif
 
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
+
+        _GLES2_DeviceCaps.isSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
     }
 
     _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
@@ -257,6 +259,12 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
+
+            if (majorVersion >= 3)
+            {
+                _GLES2_DeviceCaps.isSeamlessCubmapSupported = true;
+            }
+
 
 #if defined(GL_R16F) && defined(GL_RG16F)
             RG16F_Supported = majorVersion >= 3;
@@ -585,8 +593,8 @@ void gles2_Initialize(const InitParam& param)
         glDebugMessageCallback(&_OGLErrorCallback, 0);
 
 #endif
-
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        if (_GLES2_DeviceCaps.isSeamlessCubmapSupported)
+            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -696,7 +704,8 @@ void gles2_Initialize(const InitParam& param)
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
 
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    if (_GLES2_DeviceCaps.isSeamlessCubmapSupported)
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
