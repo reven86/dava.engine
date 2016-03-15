@@ -41,13 +41,11 @@
 class Command2 : public CommandNotifyProvider, public DAVA::ICommand
 {
 public:
-
     Command2(DAVA::int32 id, const DAVA::String& text = "");
     ~Command2() override;
 
     DAVA::int32 GetId() const;
     const DAVA::String& GetText() const;
-
 
     DAVA_DEPRECATED(virtual DAVA::Entity* GetEntity() const = 0);
 
@@ -75,7 +73,6 @@ inline const DAVA::String& Command2::GetText() const
 {
     return text;
 }
-
 
 inline bool Command2::CanUndo() const
 {

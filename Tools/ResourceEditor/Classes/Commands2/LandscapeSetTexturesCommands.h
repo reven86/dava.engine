@@ -47,8 +47,8 @@ class LandscapeSetHeightMapCommand : public Command2
 {
 public:
     LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity,
-        const DAVA::FilePath& texturePath,
-        const DAVA::AABBox3& newLandscapeBox);
+                                 const DAVA::FilePath& texturePath,
+                                 const DAVA::AABBox3& newLandscapeBox);
 
     ~LandscapeSetHeightMapCommand();
 

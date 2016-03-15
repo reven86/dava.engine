@@ -233,7 +233,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
             treeModel->invalidate();
         }
         else if (command->MatchCommandIDs({ CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_MATERIAL_SWITCH_PARENT,
-            CMDID_MATERIAL_REMOVE_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD }))
+                                            CMDID_MATERIAL_REMOVE_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD }))
         {
             Update();
         }
@@ -249,14 +249,13 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
                 }
             };
 
-
             if (command->GetId() == CMDID_BATCH)
             {
                 const CommandBatch* batch = static_cast<const CommandBatch*>(command);
                 const uint32 count = batch->Size();
                 for (uint32 i = 0; i < count; ++i)
                 {
-                    const Command2 *cmd = batch->GetCommand(i);
+                    const Command2* cmd = batch->GetCommand(i);
                     if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
                     {
                         ProcessRemoveCommand(cmd, redo);

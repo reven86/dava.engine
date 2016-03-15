@@ -452,7 +452,7 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
 
     if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        auto ProcessSingleCommand = [this](const Command2* command, bool redo) 
+        auto ProcessSingleCommand = [this](const Command2* command, bool redo)
         {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {

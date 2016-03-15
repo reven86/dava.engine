@@ -1363,7 +1363,7 @@ void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
     WaitStart("Export", "Please wait...");
 
     eGPUFamily gpuFamily = (eGPUFamily)exportAsAction->data().toInt();
-    scene->Export(gpuFamily);   // errors will be displayed by logger output
+    scene->Export(gpuFamily); // errors will be displayed by logger output
 
     WaitStop();
 

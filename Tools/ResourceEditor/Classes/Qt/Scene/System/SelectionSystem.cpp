@@ -102,22 +102,22 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
 
 namespace SceneSelectionSystem_Details
 {
-    bool FindIfParentWasAdded(DAVA::Entity *entity, const DAVA::List<DAVA::Entity*> &container, Scene *scene)
+bool FindIfParentWasAdded(DAVA::Entity* entity, const DAVA::List<DAVA::Entity*>& container, Scene* scene)
+{
+    DAVA::Entity* parent = entity->GetParent();
+    if (parent == scene || parent == nullptr)
     {
-        DAVA::Entity *parent = entity->GetParent();
-        if (parent == scene || parent == nullptr)
-        {
-            return false;
-        }
-
-        auto found = std::find(container.begin(), container.end(), parent);
-        if (found != container.end())
-        {
-            return true;
-        }
-
-        return FindIfParentWasAdded(parent, container, scene);
+        return false;
     }
+
+    auto found = std::find(container.begin(), container.end(), parent);
+    if (found != container.end())
+    {
+        return true;
+    }
+
+    return FindIfParentWasAdded(parent, container, scene);
+}
 }
 
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
@@ -310,7 +310,7 @@ void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
         auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
         if (autoSelectionEnabled && !IsLocked())
         {
-            DAVA::Entity *parent = entity->GetParent();
+            DAVA::Entity* parent = entity->GetParent();
             auto found = std::find(entitiesForSelection.begin(), entitiesForSelection.end(), parent);
             if (found == entitiesForSelection.end())
             {
@@ -612,7 +612,6 @@ DAVA::Entity* SceneSelectionSystem::GetFirstSelectionEntity() const
 {
     return IsLocked() == false ? currentSelection.GetFirstEntity() : nullptr;
 }
-
 
 void SceneSelectionSystem::CancelSelection()
 {
