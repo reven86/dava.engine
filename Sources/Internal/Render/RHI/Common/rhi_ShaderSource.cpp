@@ -1272,17 +1272,6 @@ void ShaderSource::_AppendLine(const char* line, size_t lineLen)
     code.append(line, lineLen);
     code.push_back('\n');
     return;
-
-    //    char text[4 * 1024];
-    //    int len = Snprintf(text, sizeof(text) - 1, "/*%04u*/ ", codeLineCount + 1);
-    //
-    //    strncpy(text + len, line, lineLen);
-    //    text[len + lineLen] = '\0';
-    //
-    //    code.append(text, strlen(text));
-    //    code.push_back('\n');
-    //
-    //    ++codeLineCount;
 }
 
 //------------------------------------------------------------------------------

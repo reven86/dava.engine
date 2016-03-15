@@ -111,7 +111,7 @@ public:
 	*/
     virtual StringMetrics DrawStringToBuffer(void* buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded = false);
 
-    virtual bool IsTextSupportsSoftwareRendering() const override
+    bool IsTextSupportsSoftwareRendering() const override
     {
         return true;
     };
@@ -119,7 +119,7 @@ public:
     //We need to return font path
     const FilePath& GetFontPath() const;
     // Put font properties into YamlNode
-    virtual YamlNode* SaveToYamlNode() const override;
+    YamlNode* SaveToYamlNode() const override;
 
     void SetAscendScale(float32 ascend) override;
     float32 GetAscendScale() const override;
@@ -128,7 +128,7 @@ public:
 
 protected:
     // Get the raw hash string (identical for identical fonts).
-    virtual String GetRawHashString() override;
+    String GetRawHashString() override;
 
 private:
     FTFont(FTInternalFont* internalFont);

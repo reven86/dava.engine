@@ -159,7 +159,7 @@ void FastName::RemRef(int32 i) const
             db->namesHash.erase(db->namesTable[i]);
 
             // delete allocated memory for this string
-            delete db->namesTable[i];
+            delete[] db->namesTable[i];
 
             // remove name from names table
             db->namesTable[i] = nullptr;

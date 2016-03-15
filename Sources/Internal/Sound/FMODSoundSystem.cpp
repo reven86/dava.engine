@@ -215,7 +215,7 @@ void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchi
 {
     if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        const FMODFileSoundEvent* sound = dynamic_cast<const FMODFileSoundEvent*>(sEvent);
+        const FMODFileSoundEvent* sound = static_cast<const FMODFileSoundEvent*>(sEvent);
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTFILE);
 
         toArchive->SetUInt32("flags", sound->flags);
@@ -224,7 +224,7 @@ void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchi
     }
     else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        const FMODSoundEvent* sound = dynamic_cast<const FMODSoundEvent*>(sEvent);
+        const FMODSoundEvent* sound = static_cast<const FMODSoundEvent*>(sEvent);
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTSYSTEM);
 
         toArchive->SetFastName("eventName", sound->eventName);
@@ -281,12 +281,12 @@ SoundEvent* SoundSystem::CloneEvent(const SoundEvent* sEvent)
     SoundEvent* clonedSound = 0;
     if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        const FMODFileSoundEvent* sound = dynamic_cast<const FMODFileSoundEvent*>(sEvent);
+        const FMODFileSoundEvent* sound = static_cast<const FMODFileSoundEvent*>(sEvent);
         clonedSound = CreateSoundEventFromFile(sound->fileName, FindGroupByEvent(sound), sound->flags, sound->priority);
     }
     else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        const FMODSoundEvent* sound = dynamic_cast<const FMODSoundEvent*>(sEvent);
+        const FMODSoundEvent* sound = static_cast<const FMODSoundEvent*>(sEvent);
         clonedSound = CreateSoundEventByID(sound->eventName, FindGroupByEvent(sound));
     }
 #ifdef __DAVAENGINE_IPHONE__
@@ -704,7 +704,7 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent* event)
     for (size_t i = 0; i < soundGroups.size();)
     {
         Vector<SoundEvent*>& events = soundGroups[i].events;
-        for (size_t k = 0; k < events.size(); k++)
+        for (size_t k = 0, eventsSize = events.size(); k < eventsSize; k++)
         {
             if (events[k] == event)
             {

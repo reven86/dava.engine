@@ -668,7 +668,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         if (exitCode == AssetClientCode::OK)
         {
             Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(),
-                         static_cast<float64>(getTime) / 1000.0f);
+                         static_cast<float64>(getTime) / 1000.0);
             return true;
         }
         else
@@ -778,7 +778,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
 
             if (exitCode == AssetClientCode::OK)
             {
-                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0f);
+                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0);
                 return true;
             }
             else

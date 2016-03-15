@@ -187,7 +187,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
 
     Vector<FilePath> convertedPVRs;
 
-    for (size_t i = 0, e = images.size(); i < e; ++i)
+    for (int32 i = 0, e = static_cast<int32>(images.size()); i < e; ++i)
     {
         ImageFormat targetFormat = IMAGE_FORMAT_PNG;
         
@@ -196,7 +196,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
         desc.SetGenerateMipmaps(false);
         desc.dataSettings.sourceFileFormat = targetFormat;
         desc.dataSettings.sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(targetFormat)[0];
-        desc.pathname = dirPath + Format("mip%d%s", i,  desc.dataSettings.sourceFileExtension.c_str());;
+        desc.pathname = dirPath + Format("mip%d%s", i, desc.dataSettings.sourceFileExtension.c_str());
 
         ImageSystem::Instance()->Save(desc.pathname, images[i]);
         FilePath convertedImgPath = ConvertToPvr(desc, gpuFamily, quality, false);

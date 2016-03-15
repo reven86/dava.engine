@@ -84,24 +84,11 @@ void RenderSystem::RenderPermanent(RenderObject* renderObject)
     renderObject->SetRemoveIndex(static_cast<uint32>(renderObjectArray.size() - 1));
 
     AddRenderObject(renderObject);
-    //    uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-    //    for (uint32 k = 0; k < renderBatchCount; ++k)
-    //    {
-    //        RenderBatch * batch = renderObject->GetRenderBatch(k);
-    //        AddRenderBatch(batch);
-    //    }
 }
 
 void RenderSystem::RemoveFromRender(RenderObject* renderObject)
 {
     DVASSERT(renderObject->GetRemoveIndex() != static_cast<uint32>(-1));
-
-    //	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-    //	for (uint32 k = 0; k < renderBatchCount; ++k)
-    //	{
-    //		RenderBatch * batch = renderObject->GetRenderBatch(k);
-    //		RemoveRenderBatch(batch);
-    //	}
 
     FindAndRemoveExchangingWithLast(markedObjects, renderObject);
     renderObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);

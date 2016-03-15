@@ -117,7 +117,7 @@ void Merge(const Vector<String>& tokens, const char delim, String& outString)
 int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length)
 {
     YamlParser::YamlDataHolder* holder = static_cast<YamlParser::YamlDataHolder*>(ext);
-    int32 sizeToWrite = Min(static_cast<uint32>(size), holder->fileSize - holder->dataOffset);
+    size_t sizeToWrite = Min(size, static_cast<size_t>(holder->fileSize - holder->dataOffset));
 
     memcpy(buffer, holder->data + holder->dataOffset, sizeToWrite);
 

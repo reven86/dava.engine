@@ -50,11 +50,7 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
         const size_t count = namesTable.size();
         for (size_t i = 0; i < count; ++i)
         {
-            if (nullptr != namesTable[i])
-            {
-                delete namesTable[i];
-                namesTable[i] = nullptr;
-            }
+            SafeDelete(namesTable[i]);
         }
     }
 

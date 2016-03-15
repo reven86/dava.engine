@@ -70,8 +70,8 @@ public:
 template <class Type>
 void RemovePointerFromVector(DAVA::Vector<Type*>& elements, const Type* element)
 {
-    auto size = elements.size();
-    for (auto index = 0U; index < size; ++index)
+    size_t size = elements.size();
+    for (size_t index = 0; index < size; ++index)
     {
         if (element == elements[index])
         {

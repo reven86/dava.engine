@@ -1545,7 +1545,7 @@ VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
         v.SetInt32(*(static_cast<const int32*>(src)));
         break;
     case TYPE_FLOAT:
-        v.SetFloat(*(static_cast<const float*>(src)));
+        v.SetFloat(*(static_cast<const float32*>(src)));
         break;
     case TYPE_FLOAT64:
         v.SetFloat64(*(static_cast<const float64*>(src)));
@@ -1668,7 +1668,7 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
             *(static_cast<int32*>(dst)) = val.AsInt32();
             break;
         case TYPE_FLOAT:
-            *(static_cast<float*>(dst)) = val.AsFloat();
+            *(static_cast<float32*>(dst)) = val.AsFloat();
             break;
         case TYPE_FLOAT64:
             *(static_cast<float64*>(dst)) = val.AsFloat64();

@@ -262,8 +262,8 @@ static int const kOpenUDIDRedundancySlots = 100;
     if (appUID == nil)
     {
         // generate a new uuid and store it in user defaults
-        CFUUIDRef uuid = CFUUIDCreate(nullptr);
-        appUID = static_cast<NSString*>(CFUUIDCreateString(nullptr, uuid));
+        CFUUIDRef uuid = CFUUIDCreate(NULL);
+        appUID = static_cast<NSString*>(CFUUIDCreateString(NULL, uuid));
         CFRelease(uuid);
         [appUID autorelease];
     }

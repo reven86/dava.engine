@@ -73,12 +73,6 @@ void RenderUpdateSystem::ImmediateEvent(Component* component, uint32 event)
             entity->GetScene()->renderSystem->MarkForUpdate(object);
         }
     }
-
-    //if (event == EventSystem::ACTIVE_CAMERA_CHANGED)
-    {
-        // entity->GetCameraComponent();
-        // RenderSystem::
-    }
 }
 
 void RenderUpdateSystem::AddEntity(Entity* entity)
