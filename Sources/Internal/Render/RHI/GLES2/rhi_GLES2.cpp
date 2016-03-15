@@ -264,7 +264,7 @@ gles_check_GL_extensions()
 
             if (majorVersion >= 3)
             {
-                if ((majorVersion > 3) || (minorVersion > 2))
+                if ((majorVersion > 3) || (minorVersion >= 2))
                     _GLES2_IsSeamlessCubmapSupported = true;
             }
 
