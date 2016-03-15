@@ -549,7 +549,7 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
     }
 }
 
-bool CoreWin32Platform::IsMouseClickEvent(UINT message)
+bool IsMouseClickEvent(UINT message)
 {
     switch (message)
     {
@@ -571,19 +571,19 @@ bool CoreWin32Platform::IsMouseClickEvent(UINT message)
     }
 }
 
-bool CoreWin32Platform::IsMouseMoveEvent(UINT message)
+bool IsMouseMoveEvent(UINT message)
 {
     return message == WM_MOUSEMOVE;
 }
 
-bool CoreWin32Platform::IsMouseWheelEvent(UINT message)
+bool IsMouseWheelEvent(UINT message)
 {
     return message == WM_MOUSEWHEEL;
 }
 
-bool CoreWin32Platform::IsMouseInputEvent(UINT message)
+bool IsMouseInputEvent(UINT message)
 {
-    return IsMouseClickEvent(message) || IsMouseMoveEvent(message) || IsMouseWheelEvent(message);
+    return WM_MOUSEFIRST <= message && message <= WM_MOUSELAST;
 }
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
@@ -747,12 +747,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
 
-    if (core->IsMouseInputEvent(message))
+    if (IsMouseInputEvent(message))
     {
         bool eventProcessed = core->ProcessMouseInputEvent(hWnd, message, wParam, lParam);
         if (eventProcessed)
         {
-            return TRUE;
+            return 0;
         }
     }
 

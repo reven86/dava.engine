@@ -444,8 +444,6 @@ WebBrowserContainer::~WebBrowserContainer()
     DVASSERT(sink);
     sink->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
     delete sink;
-
-    SafeRelease(webBrowser);
 }
 
 void WebBrowserContainer::SetDelegate(IUIWebViewDelegate* delegate,
@@ -551,8 +549,9 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
 {
     hwnd = parentWindow;
 
-    IOleObject* oleObject = NULL;
-    HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject, (void**)&oleObject);
+    CComPtr<IOleObject> oleObject;
+    HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject, 
+                                    reinterpret_cast<void**>(&oleObject));
     if (FAILED(hRes))
     {
         Logger::Error("WebBrowserContainer::Inititalize(), CoCreateInstance(CLSID_WebBrowser) failed!, error code %i", hRes);
@@ -563,7 +562,6 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
     if (FAILED(hRes))
     {
         Logger::Error("WebBrowserContainer::Inititalize(), IOleObject::SetClientSite() failed!, error code %i", hRes);
-        oleObject->Release();
         return false;
     }
 
@@ -574,16 +572,14 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
     if (FAILED(hRes))
     {
         Logger::Error("WebBrowserContainer::InititalizeBrowserContainer(), IOleObject::DoVerb() failed!, error code %i", hRes);
-        oleObject->Release();
         return false;
     }
 
     // Prepare the browser itself.
-    hRes = oleObject->QueryInterface(IID_IWebBrowser2, (void**)&webBrowser);
+    hRes = oleObject->QueryInterface(IID_IWebBrowser2, reinterpret_cast<void**>(&webBrowser));
     if (FAILED(hRes))
     {
         Logger::Error("WebViewControl::InititalizeBrowserContainer(), IOleObject::QueryInterface(IID_IWebBrowser2) failed!, error code %i", hRes);
-        oleObject->Release();
         return false;
     }
 
@@ -605,7 +601,6 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
     }
 
     // Initialization is OK.
-    oleObject->Release();
     return true;
 }
 
@@ -940,15 +935,15 @@ bool WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_C
 
 int32 WebBrowserContainer::ExecuteJScript(const String& targetScript)
 {
-    IDispatch* m_pDisp = NULL;
+    CComPtr<IDispatch> m_pDisp;
     webBrowser->get_Document(&m_pDisp);
     DVASSERT(m_pDisp);
 
-    IHTMLDocument2* pHtmDoc2 = NULL;
-    m_pDisp->QueryInterface(IID_IHTMLDocument2, (LPVOID*)&pHtmDoc2);
+    CComPtr<IHTMLDocument2> pHtmDoc2;
+    m_pDisp->QueryInterface(IID_IHTMLDocument2, reinterpret_cast<void**>(&pHtmDoc2));
     DVASSERT(pHtmDoc2);
 
-    IHTMLWindow2* pHtmWin2 = NULL;
+    CComPtr<IHTMLWindow2> pHtmWin2;
     pHtmDoc2->get_parentWindow(&pHtmWin2);
     DVASSERT(pHtmWin2);
 
@@ -960,13 +955,6 @@ int32 WebBrowserContainer::ExecuteJScript(const String& targetScript)
 
     ::SysFreeString(scriptBody);
     ::SysFreeString(scriptType);
-
-    if (m_pDisp)
-        m_pDisp->Release();
-    if (pHtmWin2)
-        pHtmWin2->Release();
-    if (pHtmDoc2)
-        pHtmDoc2->Release();
 
     return 0;
 }
@@ -1020,8 +1008,8 @@ bool WebBrowserContainer::OpenFromBuffer(const String& buffer, const FilePath& b
 
 void WebBrowserContainer::UpdateRect()
 {
-    IOleInPlaceObject* oleInPlaceObject = nullptr;
-    HRESULT hRes = webBrowser->QueryInterface(IID_IOleInPlaceObject, (void**)&oleInPlaceObject);
+    CComPtr<IOleInPlaceObject> oleInPlaceObject;
+    HRESULT hRes = webBrowser->QueryInterface(IID_IOleInPlaceObject, reinterpret_cast<void**>(&oleInPlaceObject));
     if (FAILED(hRes))
     {
         Logger::Error("WebBrowserContainer::SetSize(), IOleObject::QueryInterface(IID_IOleInPlaceObject) failed!, error code %i", hRes);
@@ -1038,8 +1026,6 @@ void WebBrowserContainer::UpdateRect()
         Logger::Error("WebBrowserContainer::SetSize(), IOleObject::SetObjectRects() failed!, error code %i", hRes);
         return;
     }
-
-    oleInPlaceObject->Release();
 }
 
 WebViewControl::WebViewControl(UIWebView& webView)

@@ -72,11 +72,6 @@ private:
     void OnGetMinMaxInfo(MINMAXINFO* minmaxInfo);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-    bool IsMouseClickEvent(UINT message);
-    bool IsMouseMoveEvent(UINT message);
-    bool IsMouseWheelEvent(UINT message);
-    bool IsMouseInputEvent(UINT message);
-
     bool ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     bool ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     bool ProcessMouseWheelEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
