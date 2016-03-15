@@ -250,6 +250,13 @@ protected:
 
     //////Metrics
     Vector3 cameraPos;
+    float32 tanFovY;
+
+    float32 maxHeightError;
+    float32 maxPatchRadiusError;
+    float32 maxAbsoluteHeightError;
+
+    /*
     float32 fovCorrection;
 
     float32 defaultFov;
@@ -268,10 +275,7 @@ protected:
 
     float32 zoomFov;
     float32 normalFov;
-
-    float32 maxHeightError;
-    float32 maxPatchRadiusError;
-    float32 tanFovY;
+    */
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Non-instancing render
@@ -372,13 +376,19 @@ public:
                          PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
                          PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
                          PROPERTY("isDebugDraw", "isDebugDraw", IsDebugDraw, SetDebugDraw, I_VIEW | I_EDIT)
+                         MEMBER(maxHeightError, "maxHeightError", I_VIEW | I_EDIT)
+                         MEMBER(maxPatchRadiusError, "maxPatchRadiusError", I_VIEW | I_EDIT)
+                         MEMBER(maxAbsoluteHeightError, "maxAbsoluteHeightError", I_VIEW | I_EDIT)
+                         /*  
                          MEMBER(solidAngleError, "solidAngleError", I_VIEW | I_EDIT)
                          MEMBER(geometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
                          MEMBER(absHeightError, "absHeightError", I_VIEW | I_EDIT)
 
                          MEMBER(zoomSolidAngleError, "solidAngleError", I_VIEW | I_EDIT)
                          MEMBER(zoomGeometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
-                         MEMBER(zoomAbsHeightError, "absHeightError", I_VIEW | I_EDIT));
+                         MEMBER(zoomAbsHeightError, "absHeightError", I_VIEW | I_EDIT) 
+                         */
+                         );
 };
 
 // Inline functions

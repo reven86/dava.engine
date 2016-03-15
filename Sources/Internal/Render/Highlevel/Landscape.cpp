@@ -81,6 +81,7 @@ Landscape::Landscape()
 
     heightmap = new Heightmap();
 
+    /*
     solidAngleError = (26.5f * PI / 180.0f);
     geometryAngleError = (1.0f * PI / 180.0f);
     absHeightError = 3.0f;
@@ -91,9 +92,11 @@ Landscape::Landscape()
 
     zoomFov = 6.5f;
     normalFov = 70.0f;
+    */
 
-    maxHeightError = 0.02f;
-    maxPatchRadiusError = .65f;
+    maxHeightError = 0.03f;
+    maxPatchRadiusError = 0.7f;
+    maxAbsoluteHeightError = 3.f;
 
     useInstancing = rhi::DeviceCaps().isInstancingSupported;
     useLodMorphing = useInstancing;
@@ -598,7 +601,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
 
     //if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
     //if ((minSubdivLevelSize > levelInfo.size) || (supDistance < patchSize))
-    if ((level < subdivLevelCount - 1) && ((minSubdivLevelSize > levelInfo.size) || (maxHeightError <= hError) || (maxPatchRadiusError <= rError)))
+    if ((level < subdivLevelCount - 1) && ((minSubdivLevelSize > levelInfo.size) || (maxHeightError <= hError) || (maxPatchRadiusError <= rError) || (maxAbsoluteHeightError < patch->maxError)))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdivLevel = level;
@@ -616,10 +619,10 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
         float32 morphAmount = 1.f;
         if (useLodMorphing)
         {
-            float32 rError0Rel = rError0 / maxPatchRadiusError;
+            float32 rError0Rel = Max(rError0, maxPatchRadiusError) / maxPatchRadiusError;
             float32 rErrorRel = Min(rError, maxPatchRadiusError) / maxPatchRadiusError;
 
-            float32 hError0Rel = hError0 / maxHeightError;
+            float32 hError0Rel = Max(hError0, maxHeightError) / maxHeightError;
             float32 hErrorRel = Min(hError, maxHeightError) / maxHeightError;
 
             float32 error0Delta = Max(rError0Rel, hError0Rel) - 1.f;
