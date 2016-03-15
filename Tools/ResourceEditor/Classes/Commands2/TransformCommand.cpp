@@ -31,11 +31,11 @@
 
 #include "Scene3D/Entity.h"
 
-TransformCommand::TransformCommand(SelectableObject _object, const DAVA::Matrix4& _origTransform, const DAVA::Matrix4& _newTransform)
+TransformCommand::TransformCommand(SelectableObject object_, const DAVA::Matrix4& origTransform_, const DAVA::Matrix4& newTransform_)
     : Command2(CMDID_TRANSFORM, "Transform")
-    , object(_object)
-    , undoTransform(_origTransform)
-    , redoTransform(_newTransform)
+    , object(object_)
+    , undoTransform(origTransform_)
+    , redoTransform(newTransform_)
 {
 }
 

@@ -99,7 +99,7 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
     }
 
     // if boxes are invalid we should request them from collision system
-    // and store them in selectionobjects
+    // and store them in the currentSelection objects
     if (invalidSelectionBoxes)
     {
         for (auto& item : currentSelection.GetMutableContent())
@@ -644,8 +644,7 @@ void SceneSelectionSystem::SetLocked(bool lock)
             deselected = &emptyGroup;
         }
 
-        // TODO
-        // SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), selected, deselected);
+        SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), selected, deselected);
     }
 }
 

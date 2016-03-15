@@ -55,15 +55,6 @@ void PushLogMessage(DAVA::Set<DAVA::String>& messages, DAVA::Entity* object, con
     messages.insert(infoText);
 }
 
-SceneValidator::SceneValidator()
-{
-    pathForChecking = String("");
-}
-
-SceneValidator::~SceneValidator()
-{
-}
-
 bool SceneValidator::ValidateSceneAndShowErrors(Scene* scene, const DAVA::FilePath& scenePath)
 {
     errorMessages.clear();
@@ -261,22 +252,21 @@ void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity* ownerNode, Se
     }
 }
 
-void SceneValidator::ValidateParticleEmitter(ParticleEmitterInstance* emitter, Set<String>& errorsLog, DAVA::Entity* owner) const
+void SceneValidator::ValidateParticleEmitter(ParticleEmitterInstance* instance, Set<String>& errorsLog, DAVA::Entity* owner) const
 {
-    DVASSERT(emitter);
+    DVASSERT(instance);
 
-    if (nullptr == emitter)
-    {
+    if (nullptr == instance)
         return;
-    }
 
-    if (emitter->GetEmitter()->configPath.IsEmpty())
+    auto emitter = instance->GetEmitter();
+
+    if (emitter->configPath.IsEmpty())
     {
-        PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s",
-                       emitter->GetEmitter()->name.c_str(), sceneName.c_str());
+        PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s", emitter->name.c_str(), sceneName.c_str());
     }
 
-    for (auto layer : emitter->GetEmitter()->layers)
+    for (auto layer : emitter->layers)
     {
         if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {

@@ -51,15 +51,12 @@ EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene* scene)
 {
 }
 
-EditorParticlesSystem::~EditorParticlesSystem()
-{
-}
-
 void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
     DVASSERT(effectEntity != nullptr)
 
-    SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
+    SceneCollisionSystem* collisionSystem = static_cast<SceneEditor2*>(GetScene())->collisionSystem;
+
     DAVA::AABBox3 worldBox;
     DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
     collBox.GetTransformedBox(effectEntity->GetWorldTransform(), worldBox);

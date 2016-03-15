@@ -95,12 +95,7 @@ void SelectableObjectGroup::Add(DAVA::BaseObject* object, const DAVA::AABBox3& b
 
 void SelectableObjectGroup::Remove(DAVA::BaseObject* object)
 {
-    DVASSERT(!IsLocked());
-    objects.erase(std::remove_if(objects.begin(), objects.end(), [object](const SelectableObject& obj)
-                                 {
-                                     return obj.GetContainedObject() == object;
-                                 }),
-                  objects.end());
+    RemoveIf([object](const SelectableObject& obj) { return obj.GetContainedObject() == object; });
 }
 
 void SelectableObjectGroup::RebuildIntegralBoundingBox()
@@ -135,8 +130,8 @@ void SelectableObjectGroup::Join(const SelectableObjectGroup& other)
 
 const SelectableObject& SelectableObjectGroup::GetFirst() const
 {
-    static const SelectableObject empty;
-    return objects.empty() ? empty : objects.front();
+    DVASSERT(!objects.empty());
+    return objects.front();
 }
 
 bool SelectableObjectGroup::SupportsTransformType(SelectableObject::TransformType transformType) const

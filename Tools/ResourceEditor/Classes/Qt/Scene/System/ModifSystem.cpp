@@ -435,20 +435,7 @@ void EntityModificationSystem::EndModification()
 
 bool EntityModificationSystem::ModifCanStart(const SelectableObjectGroup& objects) const
 {
-    if (objects.IsEmpty() || !objects.SupportsTransformType(transformType))
-        return false;
-
-    // check if we have some locked items in selection
-    bool hasLocked = false;
-    for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
-    {
-        if (entity->GetLocked())
-        {
-            hasLocked = true;
-            break;
-        }
-    }
-    return !hasLocked;
+    return !objects.IsEmpty() && objects.SupportsTransformType(transformType);
 }
 
 bool EntityModificationSystem::ModifCanStartByMouse(const SelectableObjectGroup& objects) const

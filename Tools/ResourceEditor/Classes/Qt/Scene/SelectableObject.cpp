@@ -42,9 +42,8 @@ SelectableObject::SelectableObject(const SelectableObject& other)
 
 SelectableObject::SelectableObject(SelectableObject&& other)
 {
-    object = other.object;
+    std::swap(object, other.object);
     boundingBox = other.boundingBox;
-    other.object = nullptr;
 }
 
 SelectableObject::~SelectableObject()
@@ -54,16 +53,23 @@ SelectableObject::~SelectableObject()
 
 SelectableObject& SelectableObject::operator=(const SelectableObject& other)
 {
-    object = DAVA::SafeRetain(other.object);
-    boundingBox = other.boundingBox;
+    if (this != &other)
+    {
+        SafeRelease(object);
+        object = DAVA::SafeRetain(other.object);
+        boundingBox = other.boundingBox;
+    }
     return *this;
 }
 
 SelectableObject& SelectableObject::operator=(SelectableObject&& other)
 {
-    object = other.object;
-    boundingBox = other.boundingBox;
-    other.object = nullptr;
+    if (this != &other)
+    {
+        SafeRelease(object);
+        std::swap(object, other.object);
+        boundingBox = other.boundingBox;
+    }
     return *this;
 }
 

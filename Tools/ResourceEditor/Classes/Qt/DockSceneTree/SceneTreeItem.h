@@ -47,8 +47,7 @@ Q_DECLARE_METATYPE(DAVA::ParticleEmitterInstance*);
 class SceneTreeModel;
 class SceneTreeFilteringModel;
 
-class SceneTreeItem
-: public QStandardItem
+class SceneTreeItem : public QStandardItem
 {
 public:
     enum eItemType

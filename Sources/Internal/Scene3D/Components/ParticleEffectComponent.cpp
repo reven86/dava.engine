@@ -42,33 +42,18 @@ namespace DAVA
 {
 ParticleEffectComponent::ParticleEffectComponent()
 {
-    repeatsCount = -1;
-    currRepeatsCont = 0;
-    stopWhenEmpty = false;
-    clearOnRestart = true;
-    effectDuration = 100.0f;
-    playbackSpeed = 1.0f;
-    isPaused = false;
-    state = STATE_STOPPED;
-    time = 0.0f;
-
     effectData.infoSources.resize(1);
     effectData.infoSources[0].size = Vector2(1, 1);
 
-    effectRenderObject = new ParticleRenderObject(&effectData);
     // world transform doesn't effect particle render object drawing
     // instead particles are generated in corresponding world position
+    effectRenderObject = new ParticleRenderObject(&effectData);
     effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY);
 
     if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS))
     {
         desiredLodLevel = 0;
         activeLodLevel = 0;
-    }
-    else
-    {
-        desiredLodLevel = 1;
-        activeLodLevel = 1;
     }
 }
 
@@ -98,7 +83,7 @@ Component* ParticleEffectComponent::Clone(Entity* toEntity)
     newComponent->clearOnRestart = clearOnRestart;
     for (const auto& instance : emitterInstances)
     {
-        newComponent->AddEmitterInstance(instance->Clone());
+        newComponent->AddEmitterInstance(ScopedPtr<ParticleEmitterInstance>(instance->Clone()));
     }
     newComponent->RebuildEffectModifiables();
     newComponent->effectRenderObject->SetFlags(effectRenderObject->GetFlags());
@@ -443,25 +428,25 @@ uint32 ParticleEffectComponent::GetEmittersCount() const
 
 Vector3 ParticleEffectComponent::GetSpawnPosition(int32 id) const
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterInstances.size())));
     return emitterInstances[id]->GetSpawnPosition();
 }
 
 void ParticleEffectComponent::SetSpawnPosition(int32 id, const Vector3& position)
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterInstances.size())));
     emitterInstances[id]->SetSpawnPosition(position);
 }
 
 DAVA::FilePath ParticleEffectComponent::GetOriginalConfigPath(int32 id) const
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterInstances.size())));
     return emitterInstances[id]->GetFilePath();
 }
 
 void ParticleEffectComponent::SetOriginalConfigPath(int32 id, const FilePath& filepath)
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterInstances.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterInstances.size())));
     emitterInstances[id]->SetFilePath(filepath);
 }
 
@@ -481,7 +466,7 @@ void ParticleEffectComponent::AddEmitterInstance(ParticleEmitterInstance* emitte
     emitterInstances.emplace_back(emitter);
 }
 
-int32 ParticleEffectComponent::GetEmitterInstanceId(ParticleEmitterInstance* emitter) const
+int32 ParticleEffectComponent::GetEmitterInstanceIndex(ParticleEmitterInstance* emitter) const
 {
     for (int32 i = 0, sz = static_cast<int32>(emitterInstances.size()); i < sz; ++i)
     {

@@ -457,7 +457,7 @@ void SceneTreeItemParticleEmitter::DoSync(QStandardItem* rootItem, DAVA::Particl
     if ((nullptr == rootItem) || (nullptr == emitter))
         return;
 
-    SceneTreeItemParticleEmitter* rootEmitterItem = (SceneTreeItemParticleEmitter*)rootItem;
+    SceneTreeItemParticleEmitter* rootEmitterItem = static_cast<SceneTreeItemParticleEmitter*>(rootItem);
 
     for (int i = 0; i < rootItem->rowCount();)
     {
@@ -635,9 +635,10 @@ const QIcon& SceneTreeItemParticleForce::ItemIcon() const
     return SharedIcon(":/QtIcons/force.png");
 }
 
-SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* _effect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleLayer* _parentLayer)
-    : SceneTreeItemParticleEmitter(_effect, new DAVA::ParticleEmitterInstance(_effect, DAVA::SafeRetain(_emitter), true))
-    , parent(_parentLayer)
+SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* effect_, DAVA::ParticleEmitter* emitter_,
+                                                                     DAVA::ParticleLayer* parentLayer_)
+    : SceneTreeItemParticleEmitter(effect_, new DAVA::ParticleEmitterInstance(effect_, DAVA::SafeRetain(emitter_), true))
+    , parent(parentLayer_)
     , localInstance(emitter)
 {
     type = SceneTreeItem::EIT_InnerEmitter;

@@ -978,7 +978,7 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
         if (scene->cameraSystem)
             ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
 
-        SceneSelectionChanged(scene, nullptr, nullptr);
+        SceneSelectionChanged(scene, &scene->selectionSystem->GetSelection(), nullptr);
     }
 }
 

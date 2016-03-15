@@ -136,21 +136,23 @@ ParticleTimeLineWidget::~ParticleTimeLineWidget()
     infoColumns.clear();
 }
 
-void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter, ParticleLayer* layer)
+void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEffectComponent* effect, ParticleEmitterInstance* instance, ParticleLayer* layer)
 {
-    if (!emitter)
+    if (instance == nullptr)
     {
         CleanupTimelines();
         emit ChangeVisible(false);
         return;
     }
 
-    selectedEmitter = emitter;
+    selectedEmitter = instance;
     selectedLayer = layer;
     selectedEffect = effect;
 
+    auto emitter = instance->GetEmitter();
+
     float32 minTime = 0;
-    float32 maxTime = emitter->GetEmitter()->lifeTime;
+    float32 maxTime = emitter->lifeTime;
 
     Init(minTime, maxTime);
     QColor colors[3] = { Qt::blue, Qt::darkGreen, Qt::red };
@@ -158,18 +160,18 @@ void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEffectComponent* effe
 
     if (!layer)
     {
-        for (uint32 i = 0; i < emitter->GetEmitter()->layers.size(); ++i)
+        for (uint32 i = 0; i < emitter->layers.size(); ++i)
         {
-            AddLayerLine(i, minTime, maxTime, colors[i % colorsCount], emitter->GetEmitter()->layers[i]);
+            AddLayerLine(i, minTime, maxTime, colors[i % colorsCount], emitter->layers[i]);
         }
     }
     else
     {
         // Add the particular layer only.
         int layerIndex = 0;
-        for (uint32 i = 0; i < emitter->GetEmitter()->layers.size(); i++)
+        for (uint32 i = 0; i < emitter->layers.size(); i++)
         {
-            if (emitter->GetEmitter()->layers[i] == layer)
+            if (emitter->layers[i] == layer)
             {
                 layerIndex = i;
                 break;
@@ -896,15 +898,13 @@ void ParticleTimeLineWidget::OnForceSelectedFromSceneTree(SceneEditor2* scene, D
 
 void ParticleTimeLineWidget::OnParticleEmitterValueChanged(SceneEditor2* /*scene*/, DAVA::ParticleEmitterInstance* emitter)
 {
-    if (!emitter)
-    {
+    if (emitter == nullptr)
         return;
-    }
 
     // Update the timeline parameters which are related to the whole emitter.
-    if (this->maxTime != emitter->GetEmitter()->lifeTime)
+    if (maxTime != emitter->GetEmitter()->lifeTime)
     {
-        this->maxTime = emitter->GetEmitter()->lifeTime;
+        maxTime = emitter->GetEmitter()->lifeTime;
         repaint();
     }
 }

@@ -37,7 +37,7 @@
 namespace DAVA
 {
 bool ParticleEmitter::FORCE_DEEP_CLONE = false;
-const float ParticleEmitter::PARTICLE_EMITTER_DEFAULT_LIFE_TIME = 100.0f;
+const float32 ParticleEmitter::PARTICLE_EMITTER_DEFAULT_LIFE_TIME = 100.0f;
 
 PartilceEmitterLoadProxy::PartilceEmitterLoadProxy()
 {
@@ -153,10 +153,8 @@ ParticleEmitter* ParticleEmitter::Clone()
 
 void ParticleEmitter::AddLayer(ParticleLayer* layer)
 {
-    if (!layer)
-    {
+    if (layer == nullptr)
         return;
-    }
 
     // Don't allow the same layer to be added twice.
     Vector<ParticleLayer*>::iterator layerIter = std::find(layers.begin(), layers.end(), layer);
@@ -166,8 +164,7 @@ void ParticleEmitter::AddLayer(ParticleLayer* layer)
         return;
     }
 
-    layer->Retain();
-    layers.push_back(layer);
+    layers.push_back(SafeRetain(layer));
 }
 
 ParticleLayer* ParticleEmitter::GetNextLayer(ParticleLayer* layer)

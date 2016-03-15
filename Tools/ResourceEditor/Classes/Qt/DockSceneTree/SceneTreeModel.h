@@ -120,12 +120,6 @@ private:
     DAVA::Map<DAVA::BaseObject*, QModelIndex> indexesCache;
     QString filterText;
     bool dropAccepted = false;
-    /*
-    QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
-    QMap<DAVA::ParticleEmitter*, QModelIndex> indexesCacheEmitters;
-    QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
-    QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
-	*/
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel

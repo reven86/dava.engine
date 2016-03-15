@@ -184,7 +184,7 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     if (sceneEditor == nullptr)
         return;
 
-    sceneEditor->BeginBatch("Move particle layers");
+    sceneEditor->BeginBatch("Move particle force");
     for (size_t i = 0; i < forces.size(); ++i)
     {
         sceneEditor->Exec(new ParticleForceMoveCommand(forces[i], oldLayers[i], newLayer));

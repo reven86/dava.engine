@@ -455,14 +455,15 @@ void EmitterLayerWidget::InitWidget(QWidget* widget)
             SLOT(OnValueChanged()));
 }
 
-void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* _effect, ParticleEmitterInstance* _emitter, DAVA::ParticleLayer* _layer, bool updateMinimized)
+void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effect_, ParticleEmitterInstance* emitter_,
+                              DAVA::ParticleLayer* layer_, bool updateMinimized)
 {
-    if ((_emitter == nullptr) || (_layer == nullptr))
+    if ((emitter_ == nullptr) || (layer_ == nullptr))
         return;
 
-    emitter = _emitter;
-    layer = _layer;
-    effect = _effect;
+    instance = emitter_;
+    layer = layer_;
+    effect = effect_;
 
     SetActiveScene(scene);
     Update(updateMinimized);
@@ -670,7 +671,7 @@ void EmitterLayerWidget::OnValueChanged()
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
+    CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(instance, layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,

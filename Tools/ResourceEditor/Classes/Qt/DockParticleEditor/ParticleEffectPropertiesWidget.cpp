@@ -424,9 +424,9 @@ void ParticleEffectPropertiesWidget::OnStepForward()
 
 void ParticleEffectPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect)
 {
-    DVASSERT(effect != 0);
-    this->particleEffect = effect;
-    this->emitter = NULL;
+    DVASSERT(effect != nullptr);
+    particleEffect = effect;
+    instance = nullptr;
     SetActiveScene(scene);
 
     blockSignals = true;

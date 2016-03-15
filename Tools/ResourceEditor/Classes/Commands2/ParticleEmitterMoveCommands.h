@@ -38,7 +38,6 @@ class ParticleEmitterMoveCommand : public Command2
 {
 public:
     ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleEffectComponent* newEffect, int newIndex);
-    ~ParticleEmitterMoveCommand();
 
     void Undo() override;
     void Redo() override;

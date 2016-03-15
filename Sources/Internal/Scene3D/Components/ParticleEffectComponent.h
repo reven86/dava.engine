@@ -125,18 +125,18 @@ private:
     ParticleEffectData effectData;
     ParticleRenderObject* effectRenderObject;
 
-    eState state;
-    float32 effectDuration;
-    float32 time;
-    float32 playbackSpeed;
-    uint32 currRepeatsCont;
-    uint32 repeatsCount; // note that now it's really count - not depending if effect is stop when empty or by duration - it would be restarted if currRepeatsCount<repetsCount
-    int32 desiredLodLevel;
-    int32 activeLodLevel;
+    eState state = STATE_STOPPED;
+    float32 effectDuration = 100.0f;
+    float32 time = 0.0f;
+    float32 playbackSpeed = 1.0f;
+    uint32 currRepeatsCont = 0;
+    uint32 repeatsCount = -1; // note that now it's really count - not depending if effect is stop when empty or by duration - it would be restarted if currRepeatsCount<repetsCount
+    int32 desiredLodLevel = 1;
+    int32 activeLodLevel = 1;
 
-    bool stopWhenEmpty; //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
-    bool clearOnRestart; // when effect is restarted repeatsCount
-    bool isPaused;
+    bool stopWhenEmpty = false; //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
+    bool clearOnRestart = true; // when effect is restarted repeatsCount
+    bool isPaused = false;
 
 public: //mostly editor commands
     uint32 GetEmittersCount() const;
@@ -147,7 +147,7 @@ public: //mostly editor commands
     FilePath GetOriginalConfigPath(int32 id) const;
     void SetOriginalConfigPath(int32 id, const FilePath& filepath);
 
-    int32 GetEmitterInstanceId(ParticleEmitterInstance* emitter) const;
+    int32 GetEmitterInstanceIndex(ParticleEmitterInstance* emitter) const;
     ParticleEmitterInstance* GetEmitterInstance(uint32 id) const;
 
     void AddEmitterInstance(ParticleEmitter* emitter);

@@ -413,10 +413,9 @@ void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder, Set<String>& e
         }
         else if (pathname.IsEqualToExtension(".yaml"))
         {
-            ParticleEmitter* emitter = new ParticleEmitter();
+            ScopedPtr<ParticleEmitter> emitter(new ParticleEmitter());
             emitter->LoadFromYaml(pathname);
             emitter->SaveToYaml(pathname);
-            SafeRelease(emitter);
         }
     }
 }

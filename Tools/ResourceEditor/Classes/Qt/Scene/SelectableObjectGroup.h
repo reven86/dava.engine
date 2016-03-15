@@ -38,9 +38,6 @@ public:
     using CollectionType = DAVA::Vector<SelectableObject>;
 
 public:
-    SelectableObjectGroup() = default;
-    ~SelectableObjectGroup() = default;
-
     bool operator==(const SelectableObjectGroup& other) const;
     bool operator!=(const SelectableObjectGroup& other) const;
 

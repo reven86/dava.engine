@@ -28,8 +28,8 @@
 
 #include "Scene/System/CollisionSystem/CollisionBox.h"
 
-CollisionBox::CollisionBox(DAVA::BaseObject* _object, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize)
-    : CollisionBaseObject(_object, word)
+CollisionBox::CollisionBox(DAVA::BaseObject* object_, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize)
+    : CollisionBaseObject(object_, word)
 {
     if (word != nullptr)
     {

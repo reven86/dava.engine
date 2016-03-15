@@ -238,13 +238,14 @@ void SceneDumper::DumpEffect(ParticleEffectComponent* effect, SceneLinks& links)
     }
 }
 
-void SceneDumper::DumpEmitter(DAVA::ParticleEmitterInstance* emitter, SceneLinks& links, SceneLinks& gfxFolders) const
+void SceneDumper::DumpEmitter(DAVA::ParticleEmitterInstance* instance, SceneLinks& links, SceneLinks& gfxFolders) const
 {
-    DVASSERT(nullptr != emitter);
+    DVASSERT(nullptr != instance);
 
-    links.insert(emitter->GetEmitter()->configPath);
+    auto emitter = instance->GetEmitter();
 
-    for (auto layer : emitter->GetEmitter()->layers)
+    links.insert(emitter->configPath);
+    for (auto layer : emitter->layers)
     {
         DVASSERT(nullptr != layer);
 

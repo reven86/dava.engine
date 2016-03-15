@@ -92,5 +92,20 @@ inline bool ParticleEmitterInstance::IsInnerEmitter() const
 {
     return isInnerEmitter;
 }
+
+inline void ParticleEmitterInstance::SetEmitter(ParticleEmitter* _emitter)
+{
+    emitter.Set(_emitter);
+}
+
+inline void ParticleEmitterInstance::SetFilePath(const FilePath& _filePath)
+{
+    filePath = _filePath;
+}
+
+inline void ParticleEmitterInstance::SetSpawnPosition(const Vector3& _position)
+{
+    spawnPosition = _position;
+}
 }
 #endif // __DAVAENGINE_PARTICLE_EMITTER_INSTANCE_H__

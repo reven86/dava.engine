@@ -40,29 +40,16 @@ using namespace DAVA;
 class BaseParticleEditorContentWidget
 {
 public:
-    BaseParticleEditorContentWidget();
+    virtual ~BaseParticleEditorContentWidget() = default;
 
     virtual void StoreVisualState(KeyedArchive* visualStateProps) = 0;
     virtual void RestoreVisualState(KeyedArchive* visualStateProps) = 0;
 
-    ParticleEmitterInstance* GetEmitterInstance() const
-    {
-        return emitter;
-    };
-    ParticleEffectComponent* GetEffect() const
-    {
-        return effect;
-    };
+    ParticleEmitterInstance* GetEmitterInstance() const;
+    ParticleEffectComponent* GetEffect() const;
 
-    // Get/set the active scene.
-    void SetActiveScene(SceneEditor2* scene)
-    {
-        activeScene = scene;
-    };
-    SceneEditor2* GetActiveScene() const
-    {
-        return activeScene;
-    };
+    void SetActiveScene(SceneEditor2* scene);
+    SceneEditor2* GetActiveScene() const;
 
 protected:
     // "Degree mark" character needed for some widgets.
@@ -72,9 +59,31 @@ protected:
     int ConvertFromPlaybackSpeedToSliderValue(float32 playbackSpeed);
     float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
-    ParticleEmitterInstance* emitter = nullptr;
+protected:
+    ParticleEmitterInstance* instance = nullptr;
     ParticleEffectComponent* effect = nullptr;
     SceneEditor2* activeScene = nullptr;
+};
+
+inline ParticleEmitterInstance* BaseParticleEditorContentWidget::GetEmitterInstance() const
+{
+    return instance;
+};
+
+inline ParticleEffectComponent* BaseParticleEditorContentWidget::GetEffect() const
+{
+    return effect;
+};
+
+// Get/set the active scene.
+inline void BaseParticleEditorContentWidget::SetActiveScene(SceneEditor2* scene)
+{
+    activeScene = scene;
+};
+
+inline SceneEditor2* BaseParticleEditorContentWidget::GetActiveScene() const
+{
+    return activeScene;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__BASEPARTICLEEDITORCONTENTWIDGET__) */

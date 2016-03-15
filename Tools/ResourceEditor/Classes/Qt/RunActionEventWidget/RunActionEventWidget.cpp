@@ -147,18 +147,18 @@ void RunActionEventWidget::sceneActivated(SceneEditor2* _scene)
     sceneSelectionChanged(scene, NULL, NULL);
 }
 
-void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
 
-    if (scene == NULL)
+    if (scene == nullptr)
     {
         autocompleteModel->setStringList(QStringList());
         return;
     }
 
-    if (scene != _scene)
+    if (scene != scene_)
     {
         return;
     }

@@ -56,15 +56,13 @@ public:
     };
 
 public:
-    CollisionBaseObject(DAVA::BaseObject* _object, btCollisionWorld* word)
-        : object(_object)
+    CollisionBaseObject(DAVA::BaseObject* object_, btCollisionWorld* word)
+        : object(object_)
         , btWord(word)
     {
     }
 
-    virtual ~CollisionBaseObject()
-    {
-    }
+    virtual ~CollisionBaseObject() = default;
 
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
     virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;

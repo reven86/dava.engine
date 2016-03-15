@@ -82,10 +82,10 @@ private:
     Map<DataNode*, uint64> dataNodeIDs;
 };
 
-SaveEntityAsAction::SaveEntityAsAction(const SelectableObjectGroup* _entities, const FilePath& _path)
+SaveEntityAsAction::SaveEntityAsAction(const SelectableObjectGroup* entities_, const FilePath& path_)
     : CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
-    , entities(_entities)
-    , sc2Path(_path)
+    , entities(entities_)
+    , sc2Path(path_)
 {
 }
 
@@ -126,7 +126,7 @@ void SaveEntityAsAction::Redo()
             const Vector3 oldZero = entities->GetCommonTranslationVector();
             for (auto entity : entities->ObjectsOfType<DAVA::Entity>())
             {
-                ScopedPtr<Entity> clone(entity);
+                ScopedPtr<Entity> clone(entity->Clone());
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();

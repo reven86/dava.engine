@@ -37,9 +37,6 @@ using namespace DAVA;
 class SceneValidator : public Singleton<SceneValidator>
 {
 public:
-    SceneValidator();
-    virtual ~SceneValidator();
-
     /*
      \brief Function to validate Scene errors and Displays errors log at Errors Dialog
      \param[in] scene scene for validation

@@ -41,9 +41,6 @@
 
 using namespace DAVA;
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Yuri Coder, 03/12/2012. New commands for Particle Editor QT.
-
 CommandUpdateEffect::CommandUpdateEffect(ParticleEffectComponent* effect)
     : CommandAction(CMDID_PARTICLE_EFFECT_UPDATE)
     , particleEffect(effect)
@@ -61,9 +58,9 @@ void CommandUpdateEffect::Redo()
     particleEffect->SetPlaybackSpeed(playbackSpeed);
 }
 
-CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitterInstance* _emitter)
+CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitterInstance* emitter_)
     : CommandAction(CMDID_PARTICLE_EMITTER_UPDATE)
-    , instance(_emitter)
+    , instance(emitter_)
 {
 }
 
@@ -108,10 +105,10 @@ void CommandUpdateEmitter::Redo()
     emitter->shortEffect = isShortEffect;
 }
 
-CommandUpdateEmitterPosition::CommandUpdateEmitterPosition(ParticleEffectComponent* _effect, ParticleEmitterInstance* _emitter)
+CommandUpdateEmitterPosition::CommandUpdateEmitterPosition(ParticleEffectComponent* effect_, ParticleEmitterInstance* emitter_)
     : CommandAction(CMDID_PARTICLE_EMITTER_POSITION_UPDATE)
-    , emitter(_emitter)
-    , effect(_effect)
+    , emitter(emitter_)
+    , effect(effect_)
 {
 }
 
@@ -122,7 +119,7 @@ void CommandUpdateEmitterPosition::Init(const Vector3& position)
 
 void CommandUpdateEmitterPosition::Redo()
 {
-    int32 id = effect->GetEmitterInstanceId(emitter);
+    int32 id = effect->GetEmitterInstanceIndex(emitter);
     if (id >= 0)
         effect->SetSpawnPosition(id, position);
 }
@@ -367,9 +364,6 @@ void CommandUpdateParticleForce::Redo()
     layer->forces[forceId]->forceOverLife = forcesOverLife;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Yuri Coder, 03/12/2012. New commands for Particle Editor QT.
-
 CommandAddParticleEmitter::CommandAddParticleEmitter(DAVA::Entity* effect)
     : CommandAction(CMDID_PARTICLE_EMITTER_ADD)
     , effectEntity(effect)
@@ -447,6 +441,11 @@ CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(ParticleEmitterIn
 {
 }
 
+CommandAddParticleEmitterLayer::~CommandAddParticleEmitterLayer()
+{
+    SafeRelease(createdLayer);
+}
+
 void CommandAddParticleEmitterLayer::Redo()
 {
     if (instance == nullptr)
@@ -506,7 +505,7 @@ void CommandCloneParticleEmitterLayer::Redo()
     if ((selectedLayer == nullptr) || (instance == nullptr))
         return;
 
-    ParticleLayer* clonedLayer = selectedLayer->Clone();
+    ScopedPtr<ParticleLayer> clonedLayer(selectedLayer->Clone());
     clonedLayer->layerName = selectedLayer->layerName + " Clone";
     instance->GetEmitter()->AddLayer(clonedLayer);
 }
@@ -556,7 +555,7 @@ void CommandLoadParticleEmitterFromYaml::Redo()
     if ((instance == nullptr) || (selectedEffect == nullptr))
         return;
 
-    auto emitterIndex = selectedEffect->GetEmitterInstanceId(instance.Get());
+    auto emitterIndex = selectedEffect->GetEmitterInstanceIndex(instance.Get());
     if (emitterIndex == -1)
         return;
 
@@ -584,7 +583,7 @@ void CommandSaveParticleEmitterToYaml::Redo()
     if ((instance == nullptr) || (selectedEffect == nullptr))
         return;
 
-    if (selectedEffect->GetEmitterInstanceId(instance.Get()) != -1)
+    if (selectedEffect->GetEmitterInstanceIndex(instance.Get()) != -1)
     {
         instance->GetEmitter()->SaveToYaml(filePath);
     }

@@ -70,6 +70,9 @@ public:
 
     bool operator==(const SelectableObject& other) const;
     bool operator!=(const SelectableObject& other) const;
+
+    // comparing only pointers here, and not using bounding box
+    // added for compatibility with sorted containers
     bool operator<(const SelectableObject& other) const;
 
     template <typename T>

@@ -30,39 +30,26 @@
 
 namespace DAVA
 {
-ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner, bool isInner)
-    : owner(_owner)
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, bool isInner)
+    : owner(owner_)
     , isInnerEmitter(isInner)
 {
 }
 
-ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* _owner, ParticleEmitter* _emitter, bool isInner)
-    : owner(_owner)
-    , emitter(_emitter)
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, ParticleEmitter* emitter_, bool isInner)
+    : owner(owner_)
+    , emitter(emitter_)
     , isInnerEmitter(isInner)
 {
-}
-
-void ParticleEmitterInstance::SetEmitter(ParticleEmitter* _emitter)
-{
-    emitter.Set(_emitter);
-}
-
-void ParticleEmitterInstance::SetFilePath(const FilePath& _filePath)
-{
-    filePath = _filePath;
-}
-
-void ParticleEmitterInstance::SetSpawnPosition(const Vector3& _position)
-{
-    spawnPosition = _position;
 }
 
 ParticleEmitterInstance* ParticleEmitterInstance::Clone() const
 {
-    ParticleEmitterInstance* result = new ParticleEmitterInstance(owner, emitter->Clone());
+    ScopedPtr<ParticleEmitter> clonedEmitter(emitter->Clone());
+    ParticleEmitterInstance* result = new ParticleEmitterInstance(owner, clonedEmitter.get());
     result->SetFilePath(GetFilePath());
     result->SetSpawnPosition(GetSpawnPosition());
+    result->isInnerEmitter = isInnerEmitter;
     return result;
 }
 }

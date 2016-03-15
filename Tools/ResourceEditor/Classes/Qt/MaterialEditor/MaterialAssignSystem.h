@@ -34,7 +34,6 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/Highlevel/RenderBatch.h"
 
-class SelectableObjectGroup;
 class SceneEditor2;
 class MaterialAssignSystem
 {

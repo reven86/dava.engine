@@ -35,12 +35,11 @@
 class TransformCommand : public Command2
 {
 public:
-    TransformCommand(SelectableObject _object, const DAVA::Matrix4& _origTransform, const DAVA::Matrix4& _newTransform);
-    ~TransformCommand() = default;
+    TransformCommand(SelectableObject object, const DAVA::Matrix4& origTransform, const DAVA::Matrix4& newTransform);
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const override;
 
 protected:
     SelectableObject object;

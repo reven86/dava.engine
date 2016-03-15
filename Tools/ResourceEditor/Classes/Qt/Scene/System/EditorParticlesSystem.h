@@ -41,7 +41,6 @@ class EditorParticlesSystem : public DAVA::SceneSystem
 
 public:
     EditorParticlesSystem(DAVA::Scene* scene);
-    ~EditorParticlesSystem();
 
     void SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
     void RestartParticleEffects();

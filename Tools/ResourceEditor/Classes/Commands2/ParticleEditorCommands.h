@@ -66,7 +66,6 @@ public:
 protected:
     DAVA::Entity* effectEntity;
     bool isStart = false;
-    ;
 };
 
 class CommandRestartParticleEffect : public CommandAction
@@ -86,6 +85,7 @@ class CommandAddParticleEmitterLayer : public CommandAction
 {
 public:
     CommandAddParticleEmitterLayer(ParticleEmitterInstance* emitter);
+    ~CommandAddParticleEmitterLayer();
     void Redo() override;
 
     ParticleLayer* GetCreatedLayer() const

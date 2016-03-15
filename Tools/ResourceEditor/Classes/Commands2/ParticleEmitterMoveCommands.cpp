@@ -29,28 +29,25 @@
 
 #include "Commands2/ParticleEmitterMoveCommands.h"
 
-ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* _oldEffect, DAVA::ParticleEmitterInstance* _emitter, DAVA::ParticleEffectComponent* _newEffect, int _newIndex)
+ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect_, DAVA::ParticleEmitterInstance* emitter_,
+                                                       DAVA::ParticleEffectComponent* newEffect_, int newIndex_)
     : Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
-    , oldEffect(_oldEffect)
-    , newEffect(_newEffect)
+    , oldEffect(oldEffect_)
+    , newEffect(newEffect_)
     , oldIndex(-1)
-    , newIndex(_newIndex)
+    , newIndex(newIndex_)
 {
-    if (nullptr != _emitter && nullptr != oldEffect)
+    if (nullptr != emitter_ && nullptr != oldEffect)
     {
-        oldIndex = oldEffect->GetEmitterInstanceId(_emitter);
+        oldIndex = oldEffect->GetEmitterInstanceIndex(emitter_);
         instance = oldEffect->GetEmitterInstance(oldIndex);
-        DVASSERT(instance->GetEmitter() == _emitter->GetEmitter());
+        DVASSERT(instance->GetEmitter() == emitter_->GetEmitter());
     }
-}
-
-ParticleEmitterMoveCommand::~ParticleEmitterMoveCommand()
-{
 }
 
 void ParticleEmitterMoveCommand::Undo()
 {
-    if (instance->GetEmitter() == nullptr)
+    if ((instance == nullptr) || (instance->GetEmitter() == nullptr))
         return;
 
     if (nullptr != newEffect)
@@ -73,7 +70,7 @@ void ParticleEmitterMoveCommand::Undo()
 
 void ParticleEmitterMoveCommand::Redo()
 {
-    if ((instance->GetEmitter() == nullptr) || (newEffect == nullptr))
+    if ((instance == nullptr) || (instance->GetEmitter() == nullptr) || (newEffect == nullptr))
         return;
 
     if (nullptr != oldEffect)
