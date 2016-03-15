@@ -734,10 +734,34 @@ bool DDSHandler::SetFormatInfo()
         fourcc = dds::FOURCC_ATC_RGBA_INTERPOLATED_ALPHA;
         break;
     }
+    case FORMAT_R16F:
+    {
+        flags = dds::DDPF_FOURCC;
+        fourcc = dds::D3DFMT_R16F;
+        break;
+    }
+    case FORMAT_RG16F:
+    {
+        flags = dds::DDPF_FOURCC;
+        fourcc = dds::D3DFMT_G16R16F;
+        break;
+    }
     case FORMAT_RGBA16F:
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::D3DFMT_A16B16G16R16F;
+        break;
+    }
+    case FORMAT_R32F:
+    {
+        flags = dds::DDPF_FOURCC;
+        fourcc = dds::D3DFMT_R32F;
+        break;
+    }
+    case FORMAT_RG32F:
+    {
+        flags = dds::DDPF_FOURCC;
+        fourcc = dds::D3DFMT_G32R32F;
         break;
     }
     case FORMAT_RGBA32F:
@@ -897,9 +921,25 @@ void DDSHandler::FetchPixelFormats()
             {
                 davaPixelFormat = FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
             }
+            else if (fourcc == dds::D3DFMT_R16F)
+            {
+                davaPixelFormat = FORMAT_R16F;
+            }
+            else if (fourcc == dds::D3DFMT_G16R16F)
+            {
+                davaPixelFormat = FORMAT_RG16F;
+            }
             else if (fourcc == dds::D3DFMT_A16B16G16R16F)
             {
                 davaPixelFormat = FORMAT_RGBA16F;
+            }
+            else if (fourcc == dds::D3DFMT_R32F)
+            {
+                davaPixelFormat = FORMAT_R32F;
+            }
+            else if (fourcc == dds::D3DFMT_G32R32F)
+            {
+                davaPixelFormat = FORMAT_RG32F;
             }
             else if (fourcc == dds::D3DFMT_A32B32G32R32F)
             {

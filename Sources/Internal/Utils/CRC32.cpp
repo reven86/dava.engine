@@ -110,6 +110,20 @@ CRC32::CRC32()
     crc32 = 0xffffffff;
 }
 
+void CRC32::AddData(const char* data, uint32 size)
+{
+    for (uint32 i = 0; i < size; i++)
+    {
+        crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ data[i]) & 0xff];
+    }
+}
+
+uint32 CRC32::Done()
+{
+    crc32 ^= 0xffffffff;
+    return crc32;
+}
+
 uint32 CRC32::ForFile(const FilePath& pathName)
 {
     ScopedPtr<File> f(File::Create(pathName, File::OPEN | File::READ));
@@ -138,17 +152,4 @@ uint32 CRC32::ForBuffer(const char* data, uint32 size)
     return crc.Done();
 }
 
-void CRC32::AddData(const char* data, uint32 size)
-{
-    for (uint32 i = 0; i < size; i++)
-    {
-        crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ data[i]) & 0xff];
-    }
-}
-
-uint32 CRC32::Done()
-{
-    crc32 ^= 0xffffffff;
-    return crc32;
-}
 };

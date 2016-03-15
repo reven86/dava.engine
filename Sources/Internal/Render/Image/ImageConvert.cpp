@@ -62,21 +62,21 @@ bool ConvertImage(const Image* srcImage, Image* dstImage)
     PixelFormat dstFormat = dstImage->format;
 
     Function<bool(const Image*, Image*)> decompressFn = nullptr;
-    if (LibDdsHelper::IsSupportedCompressedFormat(srcFormat))
+    if (LibDdsHelper::CanCompressAndDecomress(srcFormat))
     {
         decompressFn = &LibDdsHelper::DecompressToRGBA;
     }
-    else if (LibPVRHelper::IsSupportedCompressedFormat(srcFormat))
+    else if (LibPVRHelper::CanCompressAndDecomress(srcFormat))
     {
         decompressFn = &LibPVRHelper::DecompressToRGBA;
     }
 
     Function<bool(const Image*, Image*)> compressFn = nullptr;
-    if (LibDdsHelper::IsSupportedCompressedFormat(dstFormat))
+    if (LibDdsHelper::CanCompressAndDecomress(dstFormat))
     {
         compressFn = &LibDdsHelper::CompressFromRGBA;
     }
-    else if (LibPVRHelper::IsSupportedCompressedFormat(dstFormat))
+    else if (LibPVRHelper::CanCompressAndDecomress(dstFormat))
     {
         compressFn = &LibPVRHelper::CompressFromRGBA;
     }
@@ -215,8 +215,8 @@ bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat)
 
 bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat)
 {
-    bool inCompressed = LibDdsHelper::IsSupportedCompressedFormat(inFormat) || LibPVRHelper::IsSupportedCompressedFormat(inFormat);
-    bool outCompressed = LibDdsHelper::IsSupportedCompressedFormat(outFormat) || LibPVRHelper::IsSupportedCompressedFormat(outFormat);
+    bool inCompressed = LibDdsHelper::CanCompressAndDecomress(inFormat) || LibPVRHelper::CanCompressAndDecomress(inFormat);
+    bool outCompressed = LibDdsHelper::CanCompressAndDecomress(outFormat) || LibPVRHelper::CanCompressAndDecomress(outFormat);
 
     if (!inCompressed && !outCompressed)
     {

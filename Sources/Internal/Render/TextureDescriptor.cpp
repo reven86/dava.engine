@@ -821,7 +821,7 @@ bool TextureDescriptor::IsSupportedSourceFormat(ImageFormat imageFormat)
     return (found != sourceTextureTypes.end());
 }
 
-bool TextureDescriptor::IsSupportedCompressedFormat(ImageFormat imageFormat)
+bool TextureDescriptor::CanCompressAndDecomress(ImageFormat imageFormat)
 {
     auto found = std::find(compressedTextureTypes.begin(), compressedTextureTypes.end(), imageFormat);
     return (found != compressedTextureTypes.end());
@@ -949,7 +949,7 @@ FilePath TextureDescriptor::CreatePathnameForGPU(const eGPUFamily gpuFamily) con
 {
     ImageFormat imageFormat = GetImageFormatForGPU(gpuFamily);
 
-    if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
+    if (TextureDescriptor::CanCompressAndDecomress(imageFormat))
     {
         return CreateCompressedTexturePathname(gpuFamily, imageFormat);
     }

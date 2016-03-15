@@ -159,7 +159,7 @@ public:
 
     static bool WriteFileFromMipMapFiles(const FilePath& outputFile, const Vector<FilePath>& imgPaths);
 
-    static bool IsSupportedCompressedFormat(PixelFormat format);
+    static bool CanCompressAndDecomress(PixelFormat format);
     static bool DecompressToRGBA(const Image* image, Image* dstImage);
     static bool CompressFromRGBA(const Image* image, Image* dstImage);
 

@@ -48,7 +48,22 @@ void Channels::ReleaseImages()
     DAVA::SafeRelease(alpha);
 }
 
-uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
+namespace ImageTools
+{
+namespace Internal
+{
+void SaveImage(Image* image, const FilePath& pathname)
+{
+    ImageSystem::Save(pathname, image, image->format);
+}
+
+Image* LoadImage(const FilePath& pathname)
+{
+    return CreateTopLevelImage(pathname);
+}
+} // namespace Internal
+
+uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
 {
     uint32 size = 0;
 
@@ -91,14 +106,14 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, c
         }
         else
         {
-            Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
+            Logger::Error("ImageTools::[GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
         }
     }
 
     return size;
 }
 
-void ImageTools::ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality)
+void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality)
 {
     if (!descriptor || descriptor->compression[forGPU].format == FORMAT_INVALID)
     {
@@ -108,7 +123,7 @@ void ImageTools::ConvertImage(const DAVA::TextureDescriptor* descriptor, const D
     TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
-bool ImageTools::SplitImage(const FilePath& pathname, Set<String>& errorLog)
+bool SplitImage(const FilePath& pathname, Set<String>& errorLog)
 {
     Image* loadedImage = CreateTopLevelImage(pathname);
     if (!loadedImage)
@@ -127,21 +142,21 @@ bool ImageTools::SplitImage(const FilePath& pathname, Set<String>& errorLog)
 
     FilePath folder(pathname.GetDirectory());
 
-    SaveImage(channels.red, folder + "r.png");
-    SaveImage(channels.green, folder + "g.png");
-    SaveImage(channels.blue, folder + "b.png");
-    SaveImage(channels.alpha, folder + "a.png");
+    Internal::SaveImage(channels.red, folder + "r.png");
+    Internal::SaveImage(channels.green, folder + "g.png");
+    Internal::SaveImage(channels.blue, folder + "b.png");
+    Internal::SaveImage(channels.alpha, folder + "a.png");
 
     channels.ReleaseImages();
     SafeRelease(loadedImage);
     return true;
 }
 
-bool ImageTools::MergeImages(const FilePath& folder, Set<String>& errorLog)
+bool MergeImages(const FilePath& folder, Set<String>& errorLog)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
-    Channels channels(LoadImage(folder + "r.png"), LoadImage(folder + "g.png"), LoadImage(folder + "b.png"), LoadImage(folder + "a.png"));
+    Channels channels(Internal::LoadImage(folder + "r.png"), Internal::LoadImage(folder + "g.png"), Internal::LoadImage(folder + "b.png"), Internal::LoadImage(folder + "a.png"));
 
     if (channels.IsEmpty())
     {
@@ -172,17 +187,7 @@ bool ImageTools::MergeImages(const FilePath& folder, Set<String>& errorLog)
     return true;
 }
 
-void ImageTools::SaveImage(Image* image, const FilePath& pathname)
-{
-    ImageSystem::Save(pathname, image, image->format);
-}
-
-Image* ImageTools::LoadImage(const FilePath& pathname)
-{
-    return CreateTopLevelImage(pathname);
-}
-
-Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
+Channels CreateSplittedImages(DAVA::Image* originalImage)
 {
     DAVA::Image* r = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
     DAVA::Image* g = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
@@ -202,7 +207,7 @@ Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
     return Channels(r, g, b, a);
 }
 
-DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
+DAVA::Image* CreateMergedImage(const Channels& channels)
 {
     if (!channels.ChannelesResolutionEqual() || !channels.HasFormat(FORMAT_A8))
     {
@@ -222,7 +227,7 @@ DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
     return mergedImage;
 }
 
-void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
+void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
 {
     if (image->format != FORMAT_RGBA8888)
     {
@@ -237,9 +242,9 @@ void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::u
     }
 }
 
-QImage ImageTools::FromDavaImage(const DAVA::FilePath& pathname)
+QImage FromDavaImage(const DAVA::FilePath& pathname)
 {
-    auto image = LoadImage(pathname);
+    auto image = Internal::LoadImage(pathname);
     if (image)
     {
         QImage img = FromDavaImage(image);
@@ -251,7 +256,7 @@ QImage ImageTools::FromDavaImage(const DAVA::FilePath& pathname)
     return QImage();
 }
 
-QImage ImageTools::FromDavaImage(const Image* image)
+QImage FromDavaImage(const Image* image)
 {
     DVASSERT(image != nullptr);
 
@@ -281,3 +286,5 @@ QImage ImageTools::FromDavaImage(const Image* image)
         return QImage();
     }
 }
+
+} // namespace ImageTools

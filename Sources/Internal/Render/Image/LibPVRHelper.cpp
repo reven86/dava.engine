@@ -2575,7 +2575,7 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image* image, uint32 mipMapLevel, con
     return true;
 }
 
-bool LibPVRHelper::IsSupportedCompressedFormat(PixelFormat format)
+bool LibPVRHelper::CanCompressAndDecomress(PixelFormat format)
 {
     // todo: implement direct compress/decompress for pvr formats
     return false;
@@ -2583,13 +2583,13 @@ bool LibPVRHelper::IsSupportedCompressedFormat(PixelFormat format)
 
 bool LibPVRHelper::DecompressToRGBA(const Image* image, Image* dstImage)
 {
-    // todo: implement direct compress/decompress for pvr formats
+    DVASSERT_MSG(false, "Decompressing from PVR is not implemented yet");
     return false;
 }
 
 bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
 {
-    // todo: implement direct compress/decompress for pvr formats
+    DVASSERT_MSG(false, "Compressing to PVR is not implemented yet");
     return false;
 }
 };

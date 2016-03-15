@@ -35,83 +35,19 @@ namespace DAVA
 {
 #pragma pack(push, 1)
 
-struct RGB888
-{
-    uint8 r;
-    uint8 g;
-    uint8 b;
-};
+#define RGB_PIXEL(TYPE, C1, C2, C3) struct { TYPE C1, C2, C3; };
+#define RGBA_PIXEL(TYPE, C1, C2, C3, C4) struct { TYPE C1, C2, C3, C4; };
 
-struct BGR888
-{
-    uint8 b;
-    uint8 g;
-    uint8 r;
-};
-
-struct BGRA8888
-{
-    uint8 b;
-    uint8 g;
-    uint8 r;
-    uint8 a;
-};
-
-struct RGBA8888
-{
-    uint8 r;
-    uint8 g;
-    uint8 b;
-    uint8 a;
-};
-
-struct ARGB8888
-{
-    uint8 a;
-    uint8 r;
-    uint8 g;
-    uint8 b;
-};
-
-struct ABGR8888
-{
-    uint8 a;
-    uint8 b;
-    uint8 g;
-    uint8 r;
-};
-
-struct RGBA16161616
-{
-    uint16 r;
-    uint16 g;
-    uint16 b;
-    uint16 a;
-};
-
-struct RGBA32323232
-{
-    uint32 r;
-    uint32 g;
-    uint32 b;
-    uint32 a;
-};
-
-struct ABGR16161616
-{
-    uint16 a;
-    uint16 b;
-    uint16 g;
-    uint16 r;
-};
-
-struct ABGR32323232
-{
-    uint32 a;
-    uint32 b;
-    uint32 g;
-    uint32 r;
-};
+using RGB888 = RGB_PIXEL(uint8, r, g, b);
+using BGR888 = RGB_PIXEL(uint8, b, g, r);
+using BGRA8888 = RGBA_PIXEL(uint8, b, g, r, a);
+using RGBA8888 = RGBA_PIXEL(uint8, r, g, b, a);
+using ARGB8888 = RGBA_PIXEL(uint8, a, r, g, b);
+using ABGR8888 = RGBA_PIXEL(uint8, a, b, g, r);
+using RGBA16161616 = RGBA_PIXEL(uint16, r, g, b, a);
+using ABGR16161616 = RGBA_PIXEL(uint16, a, b, g, r);
+using RGBA32323232 = RGBA_PIXEL(uint32, r, g, b, a);
+using ABGR32323232 = RGBA_PIXEL(uint32, a, b, g, r);
 
 #pragma pack(pop)
 

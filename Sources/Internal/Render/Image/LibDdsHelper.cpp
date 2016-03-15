@@ -201,7 +201,7 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     }
 }
 
-bool LibDdsHelper::IsSupportedCompressedFormat(PixelFormat format)
+bool LibDdsHelper::CanCompressAndDecomress(PixelFormat format)
 {
     return (NvttHelper::IsDxtFormat(format) || QualcommHelper::IsAtcFormat(format));
 }

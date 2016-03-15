@@ -34,6 +34,7 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/File.h"
 #include "ImageFormatInterface.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
