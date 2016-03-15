@@ -50,6 +50,11 @@ void ExtendedDialog::Show()
     isShown = true;
 }
 
+bool ExtendedDialog::IsShown() const
+{
+    return isShown;
+}
+
 const Rect ExtendedDialog::GetScreenRect() const
 {
     UIScreen* activeScreen = UIScreenManager::Instance()->GetScreen();

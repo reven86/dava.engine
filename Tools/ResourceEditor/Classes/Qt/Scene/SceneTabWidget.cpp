@@ -124,10 +124,9 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
 SceneTabWidget::~SceneTabWidget()
 {
-    if (nullptr != previewDialog)
+    if (previewDialog != nullptr)
     {
-        UIScreen* screen = UIScreenManager::Instance()->GetScreen();
-        screen->RemoveControl(previewDialog);
+        previewDialog->RemoveFromParent();
     }
     SafeRelease(previewDialog);
 

@@ -63,7 +63,7 @@ ScenePreviewDialog::ScenePreviewDialog()
 
 ScenePreviewDialog::~ScenePreviewDialog()
 {
-    if (isShown)
+    if (IsShown())
     {
         Close();
     }

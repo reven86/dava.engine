@@ -88,14 +88,22 @@ int main(int argc, char* argv[])
     ParticleEmitter::FORCE_DEEP_CLONE = true;
     QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
-    CommandLineManager cmdLine(argc, argv);
-    if (cmdLine.IsEnabled())
     {
-        RunConsole(argc, argv, cmdLine);
-    }
-    else
-    {
-        RunGui(argc, argv, cmdLine);
+        EditorConfig config;
+        SettingsManager settingsManager;
+        SettingsManager::UpdateGPUSettings();
+        SceneValidator sceneValidator;
+
+        CommandLineManager cmdLine(argc, argv);
+
+        if (cmdLine.IsEnabled())
+        {
+            RunConsole(argc, argv, cmdLine);
+        }
+        else
+        {
+            RunGui(argc, argv, cmdLine);
+        }
     }
 
     return 0;
@@ -114,13 +122,6 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
 
     QApplication a(argc, argv);
-
-    SettingsManager settingsManager;
-    SettingsManager::UpdateGPUSettings();
-
-    EditorConfig config;
-
-    SceneValidator sceneValidator;
 
     DavaGLWidget glWidget;
     glWidget.MakeInvisible();
@@ -155,10 +156,6 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     a.setApplicationName("Resource Editor");
     //scope with editor variables
     {
-        SettingsManager settingsManager;
-        SettingsManager::UpdateGPUSettings();
-
-        EditorConfig config;
 
         const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
         const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
@@ -171,7 +168,6 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 
         Q_INIT_RESOURCE(QtToolsResources);
 
-        SceneValidator sceneValidator;
         TextureCache textureCache;
 
         LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");

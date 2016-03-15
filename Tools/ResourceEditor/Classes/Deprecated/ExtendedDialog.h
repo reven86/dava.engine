@@ -48,12 +48,15 @@ public:
     virtual void OnActive();
 
 protected:
+    bool IsShown() const;
     const Rect GetScreenRect() const;
 
     virtual void UpdateSize();
 
     virtual const Rect GetDialogRect() const;
     DraggableDialog* draggableDialog;
+
+private:
     bool isShown = false;
 };
 
