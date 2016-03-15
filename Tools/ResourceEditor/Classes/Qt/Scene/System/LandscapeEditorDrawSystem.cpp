@@ -249,12 +249,10 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 
 void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 {
-    Heightmap* h = new Heightmap();
+    ScopedPtr<Heightmap> h(new Heightmap());
     heightmapProxy->Clone(h);
 
     baseLandscape->SetHeightmap(h);
-
-    SafeRelease(h);
 
     GetScene()->foliageSystem->SyncFoliageWithLandscape();
 }
@@ -451,6 +449,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(E
 
     UpdateTilemaskPathname();
 
+    DVASSERT(landscapeProxy == nullptr);
     landscapeProxy = new LandscapeProxy(baseLandscape, landscapeNode);
 
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -671,7 +670,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
                     if ((heightmap != nullptr) && (heightmap->Size() > 0))
                     {
                         ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
-                        DVASSERT(heightmapProxy == nullptr);
+                        SafeRelease(heightmapProxy);
                         heightmapProxy = new HeightmapProxy(clonedHeightmap);
 
                         float32 size = static_cast<float32>(heightmapProxy->Size());

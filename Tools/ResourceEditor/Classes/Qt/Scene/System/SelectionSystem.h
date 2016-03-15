@@ -117,7 +117,8 @@ public:
     void Activate() override;
     void Deactivate() override;
 
-    void EnableSystem();
+    void EnableSystem(bool enabled);
+    bool IsSystemEnabled() const;
 
     void Draw();
     void CancelSelection();

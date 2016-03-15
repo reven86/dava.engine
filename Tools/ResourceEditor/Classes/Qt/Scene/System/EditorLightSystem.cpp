@@ -117,7 +117,7 @@ void EditorLightSystem::RemoveCameraLightFromScene()
 
 void EditorLightSystem::SceneDidLoaded()
 {
-    if (isEnabled)
+    if (isEnabled && lightEntities == 0)
     {
         AddCameraLightOnScene();
     }

@@ -100,6 +100,26 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
     }
 }
 
+namespace SceneSelectionSystem_Details
+{
+    bool FindIfParentWasAdded(DAVA::Entity *entity, const DAVA::List<DAVA::Entity*> &container, Scene *scene)
+    {
+        DAVA::Entity *parent = entity->GetParent();
+        if (parent == scene || parent == nullptr)
+        {
+            return false;
+        }
+
+        auto found = std::find(container.begin(), container.end(), parent);
+        if (found != container.end())
+        {
+            return true;
+        }
+
+        return FindIfParentWasAdded(parent, container, scene);
+    }
+}
+
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
     ForceEmitSignals();
@@ -113,7 +133,10 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
         Clear();
         for (auto& entity : entitiesForSelection)
         {
-            AddEntityToSelection(entity);
+            if (false == SceneSelectionSystem_Details::FindIfParentWasAdded(entity, entitiesForSelection, GetScene()))
+            {
+                AddEntityToSelection(entity);
+            }
         }
         entitiesForSelection.clear();
     }
@@ -287,15 +310,18 @@ void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
         auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
         if (autoSelectionEnabled && !IsLocked())
         {
-            //check the situation with change parent: may be we will reset selection
-            entitiesForSelection.push_back(entity);
+            DAVA::Entity *parent = entity->GetParent();
+            auto found = std::find(entitiesForSelection.begin(), entitiesForSelection.end(), parent);
+            if (found == entitiesForSelection.end())
+            {
+                entitiesForSelection.push_back(entity); // need add only parent entities to select one
+            }
         }
     }
 }
 
 void SceneSelectionSystem::RemoveEntity(Entity* entity)
 {
-    //check the situation with change parent: may be we will reset selection
     if (!entitiesForSelection.empty())
     {
         entitiesForSelection.remove(entity);
@@ -773,9 +799,14 @@ void SceneSelectionSystem::Deactivate()
     SetLocked(true);
 }
 
-void SceneSelectionSystem::EnableSystem()
+void SceneSelectionSystem::EnableSystem(bool enabled)
 {
-    systemIsEnabled = true;
+    systemIsEnabled = enabled;
+}
+
+bool SceneSelectionSystem::IsSystemEnabled() const
+{
+    return systemIsEnabled;
 }
 
 void SceneSelectionSystem::UpdateSelectionGroup(const EntityGroup& newSelection)

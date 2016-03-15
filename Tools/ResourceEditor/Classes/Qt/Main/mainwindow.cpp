@@ -1355,10 +1355,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
 void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
 {
     SceneEditor2* scene = GetCurrentScene();
-    if (!scene)
-        return;
-
-    if (!SaveTilemask(false))
+    if (scene != nullptr || !SaveTilemask(false))
     {
         return;
     }
@@ -1366,12 +1363,11 @@ void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
     WaitStart("Export", "Please wait...");
 
     eGPUFamily gpuFamily = (eGPUFamily)exportAsAction->data().toInt();
-    if (!scene->Export(gpuFamily))
-    {
-        QMessageBox::warning(this, "Export error", "An error occurred while exporting the scene. See log for more info.", QMessageBox::Ok);
-    }
+    scene->Export(gpuFamily);   // errors will be displayed by logger output
 
     WaitStop();
+
+    OnReloadTextures(); // need reload textures because they may be re-compressed
 }
 
 void QtMainWindow::OnImportSpeedTreeXML()

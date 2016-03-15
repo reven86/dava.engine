@@ -255,6 +255,9 @@ void SceneEditor2::ExtractEditorEntities()
 
 void SceneEditor2::InjectEditorEntities()
 {
+    bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
+    selectionSystem->EnableSystem(false);
+
     for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
     {
         AddEditorEntity(editorEntities[i]);
@@ -262,6 +265,7 @@ void SceneEditor2::InjectEditorEntities()
     }
 
     editorEntities.clear();
+    selectionSystem->EnableSystem(isSelectionEnabled);
 }
 
 SceneFileV2::eError SceneEditor2::SaveScene()
@@ -339,7 +343,10 @@ void SceneEditor2::EndBatch()
 
 void SceneEditor2::Exec(std::unique_ptr<Command2>&& command)
 {
-    commandStack->Exec(std::move(command));
+    if (command)
+    {
+        commandStack->Exec(std::move(command));
+    }
 }
 
 void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
@@ -738,7 +745,7 @@ void SceneEditor2::EnableEditorSystems()
     cameraSystem->EnableSystem();
 
     // must be last to enable selection after all systems add their entities
-    selectionSystem->EnableSystem();
+    selectionSystem->EnableSystem(true);
 }
 
 uint32 SceneEditor2::GetFramesCount() const

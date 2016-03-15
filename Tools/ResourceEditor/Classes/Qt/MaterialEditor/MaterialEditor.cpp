@@ -426,7 +426,6 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
 {
     if (scene != QtMainWindow::Instance()->GetCurrentScene())
     {
-        DVASSERT(false); //may be this check is unnecessary
         return;
     }
 
