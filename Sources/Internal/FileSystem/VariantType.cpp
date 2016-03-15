@@ -1447,7 +1447,7 @@ VariantType& VariantType::operator=(const VariantType& other)
     return *this;
 }
 
-const MetaInfo* VariantType::Meta()
+const MetaInfo* VariantType::Meta() const
 {
     if (type >= 0 && type < TYPES_COUNT)
     {
@@ -1923,5 +1923,18 @@ VariantType VariantType::Convert(const VariantType& val, int type)
     }
 
     return ret;
+}
+
+DAVA::VariantType VariantType::Convert(const VariantType& val, const MetaInfo* metaType)
+{
+    for (const PairTypeName& typeName : VariantType::variantNamesMap)
+    {
+        if (typeName.variantMeta == metaType)
+        {
+            return VariantType::Convert(val, typeName.variantType);
+        }
+    }
+
+    return VariantType();
 }
 };
