@@ -57,7 +57,7 @@ public:
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
-    static bool CanCompressAndDecomress(PixelFormat format);
+    static bool CanCompressAndDecompress(PixelFormat format);
     static bool DecompressToRGBA(const Image* image, Image* dstImage);
     static bool CompressFromRGBA(const Image* image, Image* dstImage);
 

@@ -151,5 +151,4 @@ uint32 CRC32::ForBuffer(const char* data, uint32 size)
     crc.AddData(data, size);
     return crc.Done();
 }
-
 };

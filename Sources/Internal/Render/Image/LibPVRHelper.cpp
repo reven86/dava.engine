@@ -2575,7 +2575,7 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image* image, uint32 mipMapLevel, con
     return true;
 }
 
-bool LibPVRHelper::CanCompressAndDecomress(PixelFormat format)
+bool LibPVRHelper::CanCompressAndDecompress(PixelFormat format)
 {
     // todo: implement direct compress/decompress for pvr formats
     return false;

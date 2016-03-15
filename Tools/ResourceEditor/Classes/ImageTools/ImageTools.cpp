@@ -50,8 +50,6 @@ void Channels::ReleaseImages()
 
 namespace ImageTools
 {
-namespace Internal
-{
 void SaveImage(Image* image, const FilePath& pathname)
 {
     ImageSystem::Save(pathname, image, image->format);
@@ -61,7 +59,6 @@ Image* LoadImage(const FilePath& pathname)
 {
     return CreateTopLevelImage(pathname);
 }
-} // namespace Internal
 
 uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
 {
@@ -142,10 +139,10 @@ bool SplitImage(const FilePath& pathname, Set<String>& errorLog)
 
     FilePath folder(pathname.GetDirectory());
 
-    Internal::SaveImage(channels.red, folder + "r.png");
-    Internal::SaveImage(channels.green, folder + "g.png");
-    Internal::SaveImage(channels.blue, folder + "b.png");
-    Internal::SaveImage(channels.alpha, folder + "a.png");
+    SaveImage(channels.red, folder + "r.png");
+    SaveImage(channels.green, folder + "g.png");
+    SaveImage(channels.blue, folder + "b.png");
+    SaveImage(channels.alpha, folder + "a.png");
 
     channels.ReleaseImages();
     SafeRelease(loadedImage);
@@ -156,7 +153,7 @@ bool MergeImages(const FilePath& folder, Set<String>& errorLog)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
-    Channels channels(Internal::LoadImage(folder + "r.png"), Internal::LoadImage(folder + "g.png"), Internal::LoadImage(folder + "b.png"), Internal::LoadImage(folder + "a.png"));
+    Channels channels(LoadImage(folder + "r.png"), LoadImage(folder + "g.png"), LoadImage(folder + "b.png"), LoadImage(folder + "a.png"));
 
     if (channels.IsEmpty())
     {
@@ -244,7 +241,7 @@ void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
 
 QImage FromDavaImage(const DAVA::FilePath& pathname)
 {
-    auto image = Internal::LoadImage(pathname);
+    auto image = LoadImage(pathname);
     if (image)
     {
         QImage img = FromDavaImage(image);

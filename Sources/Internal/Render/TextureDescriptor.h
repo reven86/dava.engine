@@ -202,7 +202,7 @@ public:
     static bool IsDescriptorExtension(const String& extension);
 
     static bool IsSupportedSourceFormat(ImageFormat imageFormat);
-    static bool CanCompressAndDecomress(ImageFormat imageFormat);
+    static bool IsSupportedCompressedFormat(ImageFormat imageFormat);
 
     const String& GetSourceTextureExtension() const;
     const String& GetFaceExtension(uint32 face) const;
