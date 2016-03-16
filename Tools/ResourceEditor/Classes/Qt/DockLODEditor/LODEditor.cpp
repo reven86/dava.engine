@@ -58,6 +58,7 @@ using namespace DAVA;
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LODEditor)
+    , distanceWidgets(LodComponent::MAX_LOD_LAYERS)
 {
     ui->setupUi(this);
 
@@ -285,8 +286,9 @@ void LODEditor::InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int i
     distanceWidgets[index].SetVisible(false);
 }
 
-void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS>& distances, int32 count)
+void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, int32 count)
 {
+    DVASSERT(distances.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
     for (int32 i = 0; i < count; ++i)
     {
         const QSignalBlocker guardWidget(distanceWidgets[i].distance);
@@ -302,8 +304,7 @@ void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA:
 void LODEditor::LODDistanceIsChangingBySlider()
 {
     //update only UI
-    Array<float32, LodComponent::MAX_LOD_LAYERS> distances;
-    distances.fill(0.0f);
+    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
     for (int32 i = 0; i < static_cast<int32>(distances.size()); ++i)
     {
         distances[i] = ui->distanceSlider->GetDistance(i);
@@ -316,8 +317,7 @@ void LODEditor::LODDistanceIsChangingBySlider()
 
 void LODEditor::LODDistanceChangedBySlider()
 {
-    Array<float32, LodComponent::MAX_LOD_LAYERS> distances;
-    distances.fill(0.0f);
+    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
     for (int32 i = 0; i < static_cast<int32>(distances.size()); ++i)
     {
         distances[i] = ui->distanceSlider->GetDistance(i);
@@ -329,8 +329,7 @@ void LODEditor::LODDistanceChangedBySlider()
 
 void LODEditor::LODDistanceChangedBySpinbox(double value)
 {
-    Array<float32, LodComponent::MAX_LOD_LAYERS> distances;
-    distances.fill(0.0f);
+    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
     for (uint32 i = 0; i < distances.size(); ++i)
     {
         distances[i] = distanceWidgets[i].distance->value();
@@ -447,9 +446,11 @@ void LODEditor::UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& for
 
     ui->forceSlider->setValue(forceValues.distance);
 
+    static const DAVA::uint32 ADDITIONAL_ROWS_COUNT = 2;    // auto + last lod
+
     const LODComponentHolder* lodData = forSystem->GetActiveLODData();
     const uint32 layerItemsCount = lodData->GetLODLayersCount();
-    if (ui->forceLayer->count() != layerItemsCount + 2)
+    if (ui->forceLayer->count() != layerItemsCount + ADDITIONAL_ROWS_COUNT)
     {
         CreateForceLayerValues(layerItemsCount);
     }
@@ -475,16 +476,15 @@ void LODEditor::UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentH
     int32 count = static_cast<int32>(lodData->GetLODLayersCount());
     ui->distanceSlider->SetLayersCount(count);
 
-    Array<float32, LodComponent::MAX_LOD_LAYERS> distances;
-    distances.fill(0.0f);
-
+    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
     for (int32 i = 0; i < count; ++i)
     {
         distances[i] = lc.GetLodLayerDistance(i);
-        ui->distanceSlider->SetDistance(i, distances[i]);
 
         distanceWidgets[i].SetVisible(true);
     }
+
+    ui->distanceSlider->SetDistances(distances);
 
     UpdateDistanceSpinboxesUI(distances, count);
     UpdateTrianglesUI(GetCurrentEditorStatisticsSystem());

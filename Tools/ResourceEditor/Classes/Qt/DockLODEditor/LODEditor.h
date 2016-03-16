@@ -107,7 +107,7 @@ private:
 
     void SetupDistancesUI();
     void InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index);
-    void UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS>& distances, DAVA::int32 count);
+    void UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, DAVA::int32 count);
 
     void SetupActionsUI();
 
@@ -138,7 +138,7 @@ private:
         void SetVisible(bool visible);
     };
 
-    DAVA::Array<DistanceWidget, DAVA::LodComponent::MAX_LOD_LAYERS> distanceWidgets;
+    DAVA::Vector<DistanceWidget> distanceWidgets;
 
     LazyUpdater* panelsUpdater = nullptr;
 };

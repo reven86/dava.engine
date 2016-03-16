@@ -147,7 +147,7 @@ public:
 
     const LODComponentHolder* GetActiveLODData() const;
 
-    void SetLODDistances(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS>& distances);
+    void SetLODDistances(const DAVA::Vector<DAVA::float32>& distances);
 
     //scene signals
     void SolidChanged(const DAVA::Entity* entity, bool value);

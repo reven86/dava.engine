@@ -432,13 +432,15 @@ const LODComponentHolder* EditorLODSystem::GetActiveLODData() const
     return activeLodData;
 }
 
-void EditorLODSystem::SetLODDistances(const Array<float32, LodComponent::MAX_LOD_LAYERS>& distances)
+void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
 {
     DVASSERT(activeLodData != nullptr);
+    DVASSERT(distances.size() == LodComponent::MAX_LOD_LAYERS);
 
-    for (int32 i = 0; i < static_cast<int32>(distances.size()); ++i)
+    int32 layer = 0;
+    for (auto &dist : distances)
     {
-        activeLodData->mergedComponent.SetLodLayerDistance(i, distances[i]);
+        activeLodData->mergedComponent.SetLodLayerDistance(layer++, dist);
     }
 
     Guard::ScopedBoolGuard guard(generateCommands, true);

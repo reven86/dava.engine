@@ -32,7 +32,6 @@
 #include "FileSystem/Logger.h"
 #include "Functional/Function.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/Components/LodComponent.h"
 #include "Utils/StringFormat.h"
 
 #include <QApplication>
@@ -52,6 +51,12 @@ const DAVA::Vector<QColor> backgroundColors =
 };
 
 const int MIN_WIDGET_WIDTH = 1;
+
+DAVA::int32 RoundFloat32(DAVA::float32 value)
+{
+    return static_cast<DAVA::int32> (value + 0.5f);
+}
+
 }
 
 DistanceSlider::DistanceSlider(QWidget* parent /*= 0*/)
@@ -64,7 +69,6 @@ DistanceSlider::DistanceSlider(QWidget* parent /*= 0*/)
     splitter->setObjectName(QString::fromUtf8("splitter"));
     splitter->setGeometry(geometry());
     splitter->setOrientation(Qt::Horizontal);
-//    splitter->setOpaqueResize(true);
     splitter->setMinimumHeight(20);
     splitter->setChildrenCollapsible(false);
 
@@ -84,7 +88,7 @@ void DistanceSlider::SetFramesCount(DAVA::uint32 count)
     framesCount = count;
 
     frames.reserve(framesCount);
-    distances.resize(framesCount, 0.f);
+    distancesAsIntegers.resize(framesCount, 0);
 
     for (DAVA::uint32 i = 0; i < framesCount; ++i)
     {
@@ -132,76 +136,52 @@ void DistanceSlider::SetLayersCount(DAVA::uint32 count)
 DAVA::float32 DistanceSlider::GetDistance(DAVA::uint32 layer) const
 {
     DVASSERT(layer < framesCount);
-    return distances[layer];
+    return static_cast<DAVA::float32>(distancesAsIntegers[layer]);
 }
 
-void Dump(const DAVA::String& message, const QList<int>& sizes, const DAVA::Vector<DAVA::float32>& distances)
+void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_)
 {
-    DAVA::Logger::Info("=======DUMP=======");
-    DAVA::Logger::Info("%s | %d | %d", message.c_str(), sizes.size(), distances.size());
-    DAVA::Logger::Info("sizes:");
-    for (int i = 0; i < sizes.size(); ++i)
+    DVASSERT(distances_.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
+    for (DAVA::uint32 layer = 0; layer < layersCount && layer < DAVA::LodComponent::MAX_LOD_LAYERS; ++layer)
     {
-        DAVA::Logger::Info("%d", sizes.at(i));
+        distancesAsIntegers[layer] = DistanceSliderDetails::RoundFloat32(distances_[layer]);
     }
-    DAVA::Logger::Info("distances:");
-    for (auto & dist : distances)
-    {
-        DAVA::Logger::Info("%f", dist);
-    }
-
-    DAVA::Logger::Info("==================");
-}
-
-void DistanceSlider::SetDistance(DAVA::uint32 layer, DAVA::float32 value)
-{
-    DVASSERT(layer < framesCount);
-    DVASSERT(layersCount > 0);
-
-    distances[layer] = value;
 
     const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (splitterHandles.size() - 1);
     const DAVA::float32 scaleSize = GetScaleSize();
     const DAVA::float32 widthCoef = splitterWidth / scaleSize;
 
     QList<int> sizes;
+    DAVA::int32 lastLayerSize = 0;
     for (DAVA::uint32 i = 1; i < layersCount; ++i)
     {
-        sizes.push_back((distances[i] - distances[i - 1]) * widthCoef);
+        DAVA::int32 prevSize = DistanceSliderDetails::RoundFloat32(distancesAsIntegers[i - 1] * widthCoef);
+        lastLayerSize = DistanceSliderDetails::RoundFloat32(distancesAsIntegers[i] * widthCoef);
+        sizes.push_back(lastLayerSize - prevSize);
     }
-
-    int lastZoneSize = splitterWidth;
-    for (DAVA::int32 i = 0; i < sizes.size(); ++i)
-    {
-        lastZoneSize -= sizes.at(i);
-    }
-    sizes.push_back(lastZoneSize);
+    sizes.push_back(splitterWidth - lastLayerSize);
 
     QSignalBlocker guard(splitter);
     splitter->setSizes(sizes);
 }
 
+
 void DistanceSlider::SplitterMoved(int pos, int index)
 {
     DVASSERT(layersCount > 0)
 
-    QList<int> sizes = splitter->sizes();
-
     const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (splitterHandles.size() - 1);
+
     const DAVA::float32 scaleSize = GetScaleSize();
     const DAVA::float32 widthCoef = scaleSize / splitterWidth;
 
-    DAVA::float32 prevSize = 0;
+    QList<int> sizes = splitter->sizes();
+    int sz = 0;
     for (int i = 0; (i < int(sizes.size())) && (i + 1 < int(layersCount)); ++i)
     {
-        int sz = sizes.at(i);
-
-        distances[i + 1] = prevSize + sz * widthCoef;
-
-        prevSize += distances[i + 1];
+        sz += sizes.at(i);
+        distancesAsIntegers[i + 1] = DistanceSliderDetails::RoundFloat32(sz * widthCoef);
     }
-
-    Dump("SetDistance", sizes, distances);
 
     emit DistanceHandleMoved();
 }
@@ -210,7 +190,6 @@ DAVA::float32 DistanceSlider::GetScaleSize() const
 {
     return DAVA::LodComponent::MAX_LOD_DISTANCE;
 }
-
 
 bool DistanceSlider::eventFilter(QObject* obj, QEvent* e)
 {
@@ -225,4 +204,3 @@ bool DistanceSlider::eventFilter(QObject* obj, QEvent* e)
 
     return retValue;
 }
-

@@ -31,6 +31,7 @@
 #define __DISTANCE_SLIDER_H__
 
 #include "Base/BaseTypes.h"
+#include "Scene3D/Components/LodComponent.h"
 
 #include <QWidget>
 
@@ -52,7 +53,7 @@ public:
     void SetLayersCount(DAVA::uint32 count);
     DAVA::uint32 GetLayersCount() const;
 
-    void SetDistance(DAVA::uint32 layer, DAVA::float32 value);
+    void SetDistances(const DAVA::Vector<DAVA::float32>& distances);
     DAVA::float32 GetDistance(DAVA::uint32 layer) const;
 
 signals:
@@ -74,7 +75,7 @@ private:
     DAVA::Vector<QObject *> splitterHandles;
 
     DAVA::Vector<QFrame*> frames;
-    DAVA::Vector<DAVA::float32> distances;
+    DAVA::Vector<DAVA::int32> distancesAsIntegers; //because qt works with int and I have errors with int-float conversion
 
     DAVA::uint32 layersCount = 0;
     DAVA::uint32 framesCount = 0;
@@ -89,7 +90,5 @@ inline DAVA::uint32 DistanceSlider::GetFramesCount() const
 {
     return framesCount;
 }
-
-
 
 #endif // __DISTANCE_SLIDER_H__
