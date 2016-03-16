@@ -968,9 +968,12 @@ float32 Core::GetScreenScaleMultiplier() const
 void Core::SetScreenScaleMultiplier(float32 multiplier)
 {
     DVASSERT(multiplier > 0.f);
-    screenMetrics.userScale = multiplier;
-    screenMetrics.screenMetricsModified = true;
-    options->SetFloat("userScreenScaleFactor", multiplier);
+    if (!FLOAT_EQUAL(screenMetrics.userScale, multiplier))
+    {
+        screenMetrics.userScale = multiplier;
+        screenMetrics.screenMetricsModified = true;
+        options->SetFloat("userScreenScaleFactor", multiplier);
+    }
 }
 
 float32 Core::GetScreenScaleFactor() const
