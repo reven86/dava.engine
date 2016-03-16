@@ -38,7 +38,7 @@ ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_
 
 ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, ParticleEmitter* emitter_, bool isInner)
     : owner(owner_)
-    , emitter(emitter_)
+    , emitter(SafeRetain(emitter_))
     , isInnerEmitter(isInner)
 {
 }

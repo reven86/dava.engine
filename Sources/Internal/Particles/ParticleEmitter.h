@@ -141,8 +141,7 @@ private:
 public:
     INTROSPECTION_EXTEND(ParticleEmitter, BaseObject,
                          MEMBER(name, "Name", I_VIEW | I_EDIT | I_SAVE)
-                         MEMBER(lifeTime, "Life Time", I_VIEW | I_EDIT | I_SAVE)
-                         COLLECTION(layers, "Layers", I_VIEW | I_EDIT | I_SAVE)
+                         COLLECTION(layers, "Layers", I_VIEW)
                          )
 };
 }

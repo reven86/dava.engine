@@ -375,31 +375,38 @@ void SceneTree::ShowContextMenu(const QPoint& pos)
     QModelIndex index = filteringProxyModel->mapToSource(indexAt(pos));
     SceneTreeItem* item = treeModel->GetItem(index);
 
-    if (NULL != item)
+    if (item != nullptr)
     {
         switch (item->ItemType())
         {
         case SceneTreeItem::EIT_Entity:
+        {
             ShowContextMenuEntity(SceneTreeItemEntity::GetEntity(item), treeModel->GetCustomFlags(index), mapToGlobal(pos));
             break;
-
+        }
         case SceneTreeItem::EIT_Emitter:
-            ShowContextMenuEmitter(((SceneTreeItemParticleEmitter*)item)->effect, ((SceneTreeItemParticleEmitter*)item)->emitter, mapToGlobal(pos));
+        {
+            auto castedItem = static_cast<SceneTreeItemParticleEmitter*>(item);
+            ShowContextMenuEmitter(castedItem->effect, castedItem->emitterInstance, mapToGlobal(pos));
             break;
-
-        case SceneTreeItem::EIT_Layer:
-            ShowContextMenuLayer(((SceneTreeItemParticleLayer*)item)->emitter, SceneTreeItemParticleLayer::GetLayer(item), mapToGlobal(pos));
-            break;
-
+        }
         case SceneTreeItem::EIT_InnerEmitter:
-            ShowContextMenuInnerEmitter(((SceneTreeItemParticleEmitter*)item)->effect, ((SceneTreeItemParticleInnerEmitter*)item)->emitter, ((SceneTreeItemParticleInnerEmitter*)item)->parent, mapToGlobal(pos));
+        {
+            auto castedItem = static_cast<SceneTreeItemParticleInnerEmitter*>(item);
+            ShowContextMenuInnerEmitter(castedItem->effect, castedItem->emitterInstance, castedItem->parent, mapToGlobal(pos));
             break;
-
+        }
+        case SceneTreeItem::EIT_Layer:
+        {
+            auto castedItem = static_cast<SceneTreeItemParticleLayer*>(item);
+            ShowContextMenuLayer(castedItem->emitterInstance, SceneTreeItemParticleLayer::GetLayer(item), mapToGlobal(pos));
+            break;
+        }
         case SceneTreeItem::EIT_Force:
         {
             // We have to know both Layer and Force.
             QStandardItem* parentItem = item->parent();
-            if (!parentItem)
+            if (parentItem == nullptr)
             {
                 DVASSERT(false);
                 return;
@@ -1002,16 +1009,16 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                     emitterSelected = true;
                     isParticleElements = true;
                     auto emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
-                    curScene->particlesSystem->SetEmitterSelected(emitterItem->effect->GetEntity(), emitterItem->emitter);
-                    SceneSignals::Instance()->EmitEmitterSelected(curScene, emitterItem->effect, emitterItem->emitter);
+                    curScene->particlesSystem->SetEmitterSelected(emitterItem->effect->GetEntity(), emitterItem->emitterInstance);
+                    SceneSignals::Instance()->EmitEmitterSelected(curScene, emitterItem->effect, emitterItem->emitterInstance);
                     break;
                 }
                 case SceneTreeItem::EIT_Layer:
                 {
                     SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)item;
-                    if (NULL != itemLayer->emitter && NULL != itemLayer->layer)
+                    if (NULL != itemLayer->emitterInstance && NULL != itemLayer->layer)
                     {
-                        SceneSignals::Instance()->EmitLayerSelected(curScene, itemLayer->effect, itemLayer->emitter, itemLayer->layer, false);
+                        SceneSignals::Instance()->EmitLayerSelected(curScene, itemLayer->effect, itemLayer->emitterInstance, itemLayer->layer, false);
                         isParticleElements = true;
                     }
                     break;
@@ -1105,7 +1112,7 @@ void SceneTree::AddLayer()
     SceneTreeItem* curItem = treeModel->GetItem(filteringProxyModel->mapToSource(currentIndex()));
     if ((curItem->ItemType() == SceneTreeItem::EIT_Emitter) || (curItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
     {
-        auto emitter = ((SceneTreeItemParticleEmitter*)curItem)->emitter;
+        auto emitter = static_cast<SceneTreeItemParticleEmitter*>(curItem)->emitterInstance;
         ExecuteModifyingCommand(new CommandAddParticleEmitterLayer(emitter));
     }
 }

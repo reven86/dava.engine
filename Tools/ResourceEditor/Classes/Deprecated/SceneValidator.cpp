@@ -270,7 +270,7 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitterInstance* instance, 
     {
         if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            ScopedPtr<ParticleEmitterInstance> instance(new ParticleEmitterInstance(nullptr, DAVA::SafeRetain(layer->innerEmitter), true));
+            ScopedPtr<ParticleEmitterInstance> instance(new ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
             ValidateParticleEmitter(instance, errorsLog, owner);
         }
     }

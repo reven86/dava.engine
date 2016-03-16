@@ -105,7 +105,7 @@ public:
 class SceneTreeItemParticleEmitter : public SceneTreeItem
 {
 public:
-    SceneTreeItemParticleEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
+    SceneTreeItemParticleEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* instance);
 
     static DAVA::ParticleEmitterInstance* GetEmitter(SceneTreeItem* item);
     static DAVA::ParticleEmitterInstance* GetEmitterStrict(SceneTreeItem* item);
@@ -116,13 +116,13 @@ public:
     const QIcon& ItemIcon() const override;
 
     DAVA::ParticleEffectComponent* effect = nullptr;
-    DAVA::ParticleEmitterInstance* emitter = nullptr;
+    DAVA::ParticleEmitterInstance* emitterInstance = nullptr;
 };
 
 class SceneTreeItemParticleLayer : public SceneTreeItem
 {
 public:
-    SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer);
+    SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* instance, DAVA::ParticleLayer* layer);
 
     static DAVA::ParticleLayer* GetLayer(SceneTreeItem* item);
     static void DoSync(QStandardItem* rootItem, DAVA::ParticleLayer* layer);
@@ -132,7 +132,7 @@ public:
     const QIcon& ItemIcon() const override;
 
     DAVA::ParticleEffectComponent* effect = nullptr;
-    DAVA::ParticleEmitterInstance* emitter = nullptr;
+    DAVA::ParticleEmitterInstance* emitterInstance = nullptr;
     DAVA::ParticleLayer* layer = nullptr;
     bool hasInnerEmmiter = false;
 };
@@ -160,6 +160,8 @@ public:
     QString ItemName() const override;
 
     DAVA::ParticleLayer* parent = nullptr;
+
+private:
     DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> localInstance;
 };
 

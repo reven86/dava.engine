@@ -251,7 +251,7 @@ void SceneDumper::DumpEmitter(DAVA::ParticleEmitterInstance* instance, SceneLink
 
         if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            ScopedPtr<ParticleEmitterInstance> instance(new ParticleEmitterInstance(nullptr, DAVA::SafeRetain(layer->innerEmitter), true));
+            ScopedPtr<ParticleEmitterInstance> instance(new ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
             DumpEmitter(instance, links, gfxFolders);
         }
         else

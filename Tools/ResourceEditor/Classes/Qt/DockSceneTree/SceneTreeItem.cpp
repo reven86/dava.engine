@@ -242,7 +242,7 @@ void SceneTreeItemEntity::DoSync(QStandardItem* rootItem, DAVA::Entity* entity)
             else if (childItem->ItemType() == SceneTreeItem::EIT_Emitter)
             {
                 SceneTreeItemParticleEmitter* emitterItem = (SceneTreeItemParticleEmitter*)childItem;
-                if (emitterSet.contains(emitterItem->emitter))
+                if (emitterSet.contains(emitterItem->emitterInstance))
                 {
                     doRemove = false;
                 }
@@ -423,9 +423,9 @@ void SceneTreeItemEntity::DoSync(QStandardItem* rootItem, DAVA::Entity* entity)
 SceneTreeItemParticleEmitter::SceneTreeItemParticleEmitter(DAVA::ParticleEffectComponent* _effect, DAVA::ParticleEmitterInstance* _emitter)
     : SceneTreeItem(SceneTreeItem::EIT_Emitter)
     , effect(_effect)
-    , emitter(_emitter)
+    , emitterInstance(_emitter)
 {
-    DoSync(this, emitter);
+    DoSync(this, emitterInstance);
 }
 
 DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitter(SceneTreeItem* item)
@@ -435,7 +435,7 @@ DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitter(SceneTre
     if (nullptr != item && ((item->ItemType() == SceneTreeItem::EIT_Emitter) || (item->ItemType() == SceneTreeItem::EIT_InnerEmitter)))
     {
         SceneTreeItemParticleEmitter* itemEmitter = (SceneTreeItemParticleEmitter*)item;
-        ret = itemEmitter->emitter;
+        ret = itemEmitter->emitterInstance;
     }
     return ret;
 }
@@ -447,7 +447,7 @@ DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitterStrict(Sc
     if (nullptr != item && (item->ItemType() == SceneTreeItem::EIT_Emitter))
     {
         SceneTreeItemParticleEmitter* itemEmitter = (SceneTreeItemParticleEmitter*)item;
-        ret = itemEmitter->emitter;
+        ret = itemEmitter->emitterInstance;
     }
 
     return ret;
@@ -472,12 +472,12 @@ void SceneTreeItemParticleEmitter::DoSync(QStandardItem* rootItem, DAVA::Particl
 
 QString SceneTreeItemParticleEmitter::ItemName() const
 {
-    return QString(emitter->GetEmitter()->name.c_str());
+    return QString(emitterInstance->GetEmitter()->name.c_str());
 }
 
 QVariant SceneTreeItemParticleEmitter::ItemData() const
 {
-    return qVariantFromValue(emitter);
+    return qVariantFromValue(emitterInstance);
 }
 
 const QIcon& SceneTreeItemParticleEmitter::ItemIcon() const
@@ -489,11 +489,12 @@ const QIcon& SceneTreeItemParticleEmitter::ItemIcon() const
 // SceneTreeItemParticleLayer
 // =========================================================================================
 
-SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent* _effect, DAVA::ParticleEmitterInstance* _emitter, DAVA::ParticleLayer* _layer)
+SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent* effect_,
+                                                       DAVA::ParticleEmitterInstance* instance_, DAVA::ParticleLayer* layer_)
     : SceneTreeItem(SceneTreeItem::EIT_Layer)
-    , effect(_effect)
-    , emitter(_emitter)
-    , layer(_layer)
+    , effect(effect_)
+    , emitterInstance(instance_)
+    , layer(layer_)
     , hasInnerEmmiter(false)
 {
     if (nullptr != layer)
@@ -637,11 +638,13 @@ const QIcon& SceneTreeItemParticleForce::ItemIcon() const
 
 SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* effect_, DAVA::ParticleEmitter* emitter_,
                                                                      DAVA::ParticleLayer* parentLayer_)
-    : SceneTreeItemParticleEmitter(effect_, new DAVA::ParticleEmitterInstance(effect_, DAVA::SafeRetain(emitter_), true))
+    : SceneTreeItemParticleEmitter(effect_, nullptr) // local instance will be initialized after
     , parent(parentLayer_)
-    , localInstance(emitter)
+    , localInstance(new DAVA::ParticleEmitterInstance(effect_, emitter_, true))
 {
     type = SceneTreeItem::EIT_InnerEmitter;
+    SceneTreeItemParticleEmitter::emitterInstance = localInstance;
+    DoSync(this, localInstance);
 }
 
 QString SceneTreeItemParticleInnerEmitter::ItemName() const

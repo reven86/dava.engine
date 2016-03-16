@@ -380,7 +380,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
         if ((parentItem->ItemType() == SceneTreeItem::EIT_Emitter) || (parentItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
         {
-            emitter = ((SceneTreeItemParticleEmitter*)parentItem)->emitter;
+            emitter = static_cast<SceneTreeItemParticleEmitter*>(parentItem)->emitterInstance;
         }
 
         QVector<DAVA::ParticleLayer*> layersV = MimeDataHelper2<DAVA::ParticleLayer>::DecodeMimeData(data);
