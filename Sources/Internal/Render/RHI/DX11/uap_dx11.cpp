@@ -4,6 +4,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#define _DEBUG
+
 #include "Concurrency/Thread.h"
 
 #include "uap_dx11.h"
@@ -13,6 +15,8 @@
 #include <DirectXMath.h>
 #include <dxgi1_3.h>
 #include <D3D11SDKLayers.h>
+
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 using namespace rhi;
 using namespace Microsoft::WRL;
@@ -92,6 +96,8 @@ inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))
     {
+        m_d3Debug.Get()->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
+
         // Set a breakpoint on this line to catch Win32 API errors.
         throw Platform::Exception::CreateException(hr);
     }
@@ -498,6 +504,8 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
+    //     m_logicalSize.Width = static_cast<float32>(DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
+    //     m_logicalSize.Height = static_cast<float32>(DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
     Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
                                                                                             m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
                                                                                         }));

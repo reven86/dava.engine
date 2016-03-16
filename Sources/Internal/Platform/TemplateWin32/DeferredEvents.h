@@ -166,6 +166,10 @@ inline void DeferredScreenMetricEvents::DeferredTick()
     if (!lockUpdate)
     {
         timer->Stop();
+        if (0.f == width * height * scaleX * scaleY)
+        {
+            return;
+        }
         updateCallback(width, height, scaleX, scaleY);
     }
 }
