@@ -28,7 +28,7 @@
 
 #include "SetPropertyValueCommand.h"
 
-#include "BAse/Introspection.h"
+#include "Base/Introspection.h"
 
 namespace DAVA
 {
