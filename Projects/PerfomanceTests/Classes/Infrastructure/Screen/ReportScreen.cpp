@@ -47,7 +47,7 @@ void ReportScreen::CreateReportScreen()
     DefaultUIPackageBuilder builder;
     UIPackageLoader().LoadPackage(ControlHelpers::GetPathToUIYaml("ReportItem.yaml"), &builder);
     DAVA::UIControl* reportItem = builder.GetPackage()->GetControl("ReportItem");
-    
+
     uint32 offsetY = 150;
     uint32 testNumber = 0;
 
