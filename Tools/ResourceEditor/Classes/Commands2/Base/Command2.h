@@ -60,8 +60,8 @@ protected:
     void UndoInternalCommand(Command2* command);
     void RedoInternalCommand(Command2* command);
 
-    DAVA::String text;
-    DAVA::int32 id;
+    const DAVA::String text;
+    const DAVA::int32 id;
 };
 
 inline DAVA::int32 Command2::GetId() const

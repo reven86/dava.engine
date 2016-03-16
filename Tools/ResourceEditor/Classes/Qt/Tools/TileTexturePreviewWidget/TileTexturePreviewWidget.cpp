@@ -68,9 +68,9 @@ void TileTexturePreviewWidget::Clear()
 {
     clear();
 
-    for (int32 i = 0; i < (int32)images.size(); ++i)
+    for (auto& image : images)
     {
-        SafeRelease(images[i]);
+        SafeRelease(image);
     }
 
     colors.clear();
@@ -170,7 +170,7 @@ uint32 TileTexturePreviewWidget::GetSelectedTexture()
 
 void TileTexturePreviewWidget::SetSelectedTexture(uint32 number)
 {
-    if (number < (uint32)images.size())
+    if (number < static_cast<uint32>(images.size()))
     {
         selectedTexture = number;
         UpdateSelection();
@@ -181,7 +181,7 @@ void TileTexturePreviewWidget::SetSelectedTexture(uint32 number)
 
 void TileTexturePreviewWidget::UpdateImage(uint32 number)
 {
-    DVASSERT(number < (uint32)images.size());
+    DVASSERT(number < static_cast<uint32>(images.size()));
 
     QTreeWidgetItem* item = topLevelItem(number);
 
@@ -210,7 +210,7 @@ void TileTexturePreviewWidget::UpdateImage(uint32 number)
 
 void TileTexturePreviewWidget::UpdateColor(uint32 number)
 {
-    DVASSERT(number < (uint32)images.size());
+    DVASSERT(number < static_cast<uint32>(images.size()));
 
     bool blocked = blockSignals(true);
 
@@ -233,7 +233,7 @@ void TileTexturePreviewWidget::UpdateColor(uint32 number)
 
 void TileTexturePreviewWidget::UpdateSelection()
 {
-    for (int32 i = 0; i < (int32)images.size(); ++i)
+    for (int32 i = 0; i < static_cast<int32>(images.size()); ++i)
     {
         QTreeWidgetItem* item = topLevelItem(i);
         item->setCheckState(0, (i == selectedTexture ? Qt::Checked : Qt::Unchecked));
@@ -291,7 +291,7 @@ void TileTexturePreviewWidget::OnItemChanged(QTreeWidgetItem* item, int column)
 
 bool TileTexturePreviewWidget::eventFilter(QObject* obj, QEvent* ev)
 {
-    for (int32 i = 0; i < (int32)labels.size(); ++i)
+    for (int32 i = 0; i < static_cast<int32>(labels.size()); ++i)
     {
         if (obj == labels[i])
         {
@@ -376,7 +376,7 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image* image, cons
 
 void TileTexturePreviewWidget::UpdateColor(uint32 index, const Color& color)
 {
-    if (index < (uint32)colors.size())
+    if (index < static_cast<uint32>(colors.size()))
     {
         if (colors[index] != color)
         {
