@@ -38,6 +38,7 @@ namespace DAVA
 
 #include <windows.h>
 #include <process.h>
+
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push, 8)
@@ -57,10 +58,11 @@ void Thread::Init()
 void Thread::Shutdown()
 {
     DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
-    if (handle)
+    if (handle != nullptr)
     {
+        Join();
         CloseHandle(handle);
-        handle = NULL;
+        handle = nullptr;
     }
 }
 
@@ -69,21 +71,27 @@ void Thread::Start()
     Retain();
     DVASSERT(STATE_CREATED == state);
 
-    auto hdl = _beginthreadex
-    (
-    0, // Security attributes
-    static_cast<DWORD>(stackSize),
-    ThreadFunc,
-    this,
-    0,
-    0);
+    uintptr_t x = _beginthreadex(nullptr,
+                                 static_cast<DWORD>(stackSize),
+                                 &ThreadFunc,
+                                 this,
+                                 0,
+                                 nullptr);
 
-    handle = reinterpret_cast<HANDLE>(hdl);
-    state = STATE_RUNNING;
+    if (x != 0)
+    {
+        handle = reinterpret_cast<HANDLE>(x);
+        state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    }
+    else
+    {
+        Release();
+        Logger::Error("Thread::Start failed to create thread: errno=%d", errno);
+    }
 }
 
 unsigned __stdcall ThreadFunc(void* param)
-{	
+{
 #if defined(__DAVAENGINE_DEBUG__)
     /*
      inside that ifdef we set thread name through raising speciefic exception.
@@ -115,7 +123,7 @@ void Thread::Join()
 {
     if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
     {
-        DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObjectEx");
+        DAVA::Logger::Error("Thread::Join failed in WaitForSingleObjectEx: error=%u", GetLastError());
     }
 }
 
@@ -124,8 +132,11 @@ void Thread::KillNative()
 #if defined(__DAVAENGINE_WIN_UAP__)
     DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
 #else
-    TerminateThread(handle, 0);
-    handle = nullptr;
+    if (TerminateThread(handle, 0))
+    {
+        CloseHandle(handle);
+        handle = nullptr;
+    }
 #endif
 }
 
