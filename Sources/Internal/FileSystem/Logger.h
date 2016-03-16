@@ -77,12 +77,12 @@ public:
     virtual ~Logger();
 
     //! Enables/disables logging to file. Disabled by default.
-    //! \param[in] filename: name of log file. Empty string disables logging to file,
+    //! \param[in] filename - name of log file. Empty string disables logging to file,
     //! non-empty creates log file in working directory.
     virtual void SetLogFilename(const String& filename);
 
     //! Enables/disables logging to file. Disabled by default.
-    //! \param[in] filepath: path to log file. Empty string disables logging to file,
+    //! \param[in] filepath - path to log file. Empty string disables logging to file,
     //! non-empty creates log file described by filepath.
     virtual void SetLogPathname(const FilePath& filepath);
 
@@ -95,24 +95,34 @@ public:
     //! errors are printed out. Setting it to ELL_INFORMATION, which is
     //! the default setting, warnings,
     //! errors and informational texts are printed out.
-    //! \param ll: new log level filter value.
+    //! \param ll - new log level filter value.
     virtual void SetLogLevel(eLogLevel ll);
 
     //! Prints out a text into the log
-    //! \param text: Text to print out.
-    //! \param ll: Log level of the text. If the text is an error, set
+    //! \param text - Text to print out.
+    //! \param ll - Log level of the text. If the text is an error, set
     //! it to ELL_ERROR, if it is warning set it to ELL_WARNING, and if it
     //! is just an informational text, set it to ELL_INFORMATION. Texts are
     //! filtered with these levels. If you want to be a text displayed,
     //! independent on what level filter is set, use ELL_NONE.
     virtual void Log(eLogLevel ll, const char8* text, ...) const;
     virtual void Logv(eLogLevel ll, const char8* text, va_list li) const;
+    virtual void Logv(const FilePath& customLogFilename, eLogLevel ll, const char8* text, va_list li) const;
 
+    // logs which could be written into one log file.
+    // call SetLogFileName to specify destination file.
     static void FrameworkDebug(const char8* text, ...);
     static void Debug(const char8* text, ...);
     static void Warning(const char8* text, ...);
     static void Info(const char8* text, ...);
     static void Error(const char8* text, ...);
+
+    // logs which writes to the given file
+    static void FrameworkDebugToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void DebugToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void WarningToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void InfoToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void ErrorToFile(const FilePath& customLogFileName, const char8* text, ...);
 
     static void AddCustomOutput(DAVA::LoggerOutput* lo);
     static void RemoveCustomOutput(DAVA::LoggerOutput* lo);
@@ -121,6 +131,8 @@ public:
     static void SetTag(const char8* logTag);
 #endif
 
+    static FilePath GetLogPathForFilename(const String& filename);
+    void SetMaxFileSize(uint32 size);
     void EnableConsoleMode();
 
     const char8* GetLogLevelString(eLogLevel ll) const;
@@ -128,16 +140,20 @@ public:
     eLogLevel GetLogLevelFromString(const char8* ll) const;
 
 private:
+    bool CutOldLogFileIfExist(const FilePath& logFile) const;
+
     void PlatformLog(eLogLevel ll, const char8* text) const;
-    void FileLog(eLogLevel ll, const char8* text) const;
+    void FileLog(const FilePath& filepath, eLogLevel ll, const char8* text) const;
     void CustomLog(eLogLevel ll, const char8* text) const;
     void ConsoleLog(eLogLevel ll, const char8* text) const;
     void Output(eLogLevel ll, const char8* formatedMsg) const;
+    void Output(const FilePath& customLogFilename, eLogLevel ll, const char8* formatedMsg) const;
 
     eLogLevel logLevel;
     FilePath logFilename;
     Vector<LoggerOutput*> customOutputs;
     bool consoleModeEnabled;
+    uint32 cutLogSize = 512 * 1024; //0.5 MB;
 };
 
 class LoggerOutput

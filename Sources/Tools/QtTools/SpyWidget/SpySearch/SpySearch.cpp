@@ -29,10 +29,12 @@
 
 #include "SpySearch.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QMetaObject>
 #include <QDebug>
 #include <QMetaEnum>
 #include <QEvent>
+POP_QT_WARNING_SUPRESSOR
 
 #include "SpySearchView.h"
 

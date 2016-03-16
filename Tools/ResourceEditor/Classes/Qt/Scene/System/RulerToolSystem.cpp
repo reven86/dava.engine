@@ -276,8 +276,11 @@ void RulerToolSystem::DrawPoints()
     Texture* targetTexture = drawSystem->GetRulerToolProxy()->GetTexture();
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = targetTexture;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.colorAttachment = targetTexture->handle;
+    desc.depthAttachment = targetTexture->handleDepthStencil;
+    desc.width = targetTexture->GetWidth();
+    desc.height = targetTexture->GetHeight();
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
 
     Vector<Vector2> points;

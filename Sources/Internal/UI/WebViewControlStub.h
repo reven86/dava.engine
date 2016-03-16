@@ -30,7 +30,7 @@
 #ifndef __WEBVIEW_CONTROL_STUB_H__
 #define __WEBVIEW_CONTROL_STUB_H__
 
-#if defined __DISABLE_NATIVE_WEBVIEW__
+#if defined DISABLE_NATIVE_WEBVIEW
 
 #include "UI/IWebViewControl.h"
 
@@ -70,6 +70,6 @@ public:
 };
 };
 
-#endif //__DISABLE_NATIVE_WEBVIEW__
+#endif //DISABLE_NATIVE_WEBVIEW
 
 #endif //__WEBVIEW_CONTROL_STUB_H__

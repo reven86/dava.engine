@@ -34,82 +34,6 @@
 
 #include "../Qt/Main/QtUtils.h"
 
-ActionEnableTilemaskEditor::ActionEnableTilemaskEditor(SceneEditor2* forSceneEditor)
-    : CommandAction(CMDID_TILEMASK_EDITOR_ENABLE)
-    , sceneEditor(forSceneEditor)
-{
-}
-
-void ActionEnableTilemaskEditor::Redo()
-{
-    if (sceneEditor == NULL)
-    {
-        return;
-    }
-
-    bool enabled = sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
-    if (enabled)
-    {
-        return;
-    }
-
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    if (!success)
-    {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-    }
-
-    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->tilemaskEditorSystem->EnableLandscapeEditing();
-    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-    {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-    }
-
-    if (success &&
-        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
-    }
-
-    SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
-}
-
-ActionDisableTilemaskEditor::ActionDisableTilemaskEditor(SceneEditor2* forSceneEditor)
-    : CommandAction(CMDID_TILEMASK_EDITOR_DISABLE)
-    , sceneEditor(forSceneEditor)
-{
-}
-
-void ActionDisableTilemaskEditor::Redo()
-{
-    if (sceneEditor == NULL)
-    {
-        return;
-    }
-
-    bool disabled = !sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
-    if (disabled)
-    {
-        return;
-    }
-
-    disabled = sceneEditor->tilemaskEditorSystem->DisableLandscapeEdititing();
-    if (!disabled)
-    {
-        ShowErrorDialog(ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR);
-    }
-
-    if (disabled)
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(true);
-    }
-
-    SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
-}
-
 ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy_, const Rect& updatedRect_)
     : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
     , landscapeProxy(SafeRetain(landscapeProxy_))
@@ -165,9 +89,12 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex)
     auto material = RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = dstTex;
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.colorAttachment = dstTex->handle;
+    desc.depthAttachment = dstTex->handleDepthStencil;
+    desc.width = dstTex->GetWidth();
+    desc.height = dstTex->GetHeight();
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(fboTexture, material, Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -177,7 +104,7 @@ SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy_, const 
     : Command2(CMDID_SET_TILE_COLOR, "Set tile color")
     , level(level_)
     , redoColor(color_)
-    , landscapeProxy(SafeRetain(landscapeProxy))
+    , landscapeProxy(SafeRetain(landscapeProxy_))
 {
     undoColor = landscapeProxy->GetLandscapeTileColor(level);
 }

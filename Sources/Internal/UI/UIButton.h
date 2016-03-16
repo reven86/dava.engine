@@ -294,9 +294,6 @@ public:
     virtual UIButton* Clone();
     virtual void CopyDataFrom(UIControl* srcControl);
 
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
-
     /**
      \brief Creates the background for the UIButton for particular state and caches it.
      Will create the background once only and then cache it.
@@ -389,7 +386,7 @@ public:
 
     INTROSPECTION_EXTEND(UIButton, UIControl,
                          nullptr
-                         );
+                         )
 };
 };
 

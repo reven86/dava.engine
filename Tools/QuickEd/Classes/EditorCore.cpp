@@ -69,8 +69,8 @@ EditorCore::EditorCore(QObject* parent)
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setDisabled);
     connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
-    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::Exit);
-    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::Exit);
+    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
+    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
     connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
     connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
@@ -189,14 +189,6 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
     }
 }
 
-void EditorCore::Exit()
-{
-    if (CloseProject())
-    {
-        QCoreApplication::exit();
-    }
-}
-
 void EditorCore::RecentMenu(QAction* recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
@@ -303,6 +295,14 @@ bool EditorCore::CloseProject()
     for (auto& document : documentGroup->GetDocuments())
     {
         if (!documentGroup->RemoveDocument(document))
+}
+
+void EditorCore::OnExit()
+{
+    if (CloseProject())
+    {
+        qApp->quit();
+    }
         {
             DVASSERT(false && "can not close saved documents");
             return false;

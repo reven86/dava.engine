@@ -59,7 +59,6 @@ private slots:
     void OnProjectPathChanged(const QString& path);
     void OnGLWidgedInitialized();
 
-    void Exit();
     void RecentMenu(QAction*);
 
     void UpdateLanguage();
@@ -68,11 +67,13 @@ private slots:
     void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString& classesStr);
 
+    bool CloseProject();
+    void OnExit();
 private:
     void ApplyFileChanges();
     Document* GetDocument(const QString& path) const;
     void OpenProject(const QString& path);
-    bool CloseProject();
+
     int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
 
     std::unique_ptr<SpritesPacker> spritesPacker;

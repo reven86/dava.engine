@@ -166,6 +166,7 @@ public:
     static const FastName FLAG_WAVE_ANIMATION;
     static const FastName FLAG_FAST_NORMALIZATION;
     static const FastName FLAG_TILED_DECAL_MASK;
+    static const FastName FLAG_TILED_DECAL_ROTATION;
     static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
@@ -211,6 +212,10 @@ public:
     static const DAVA::String FXName;
     static const DAVA::String QualityGroup;
     static const DAVA::String MaterialName;
+    static const DAVA::String ConfigName;
+    static const DAVA::String ConfigArchive;
+    static const DAVA::String ConfigCount;
+    static const FastName DefaultConfigName;
 };
 
 class NMaterialQualityName

@@ -98,6 +98,7 @@ public slots:
     // scene signals
     void MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup* entities);
     void SceneSaved(SceneEditor2* scene);
+    void SceneUpdated(SceneEditor2* scene);
     void SceneModifyStatusChanged(SceneEditor2* scene, bool modified);
 
 protected:
@@ -108,8 +109,8 @@ protected:
     DavaGLWidget* davaWidget;
     DAVA::UIScreen* davaUIScreen;
     DAVA::UI3DView* dava3DView;
-    const int davaUIScreenID;
-    const int dava3DViewMargin;
+    const int davaUIScreenID = 0;
+    const int dava3DViewMargin = 3;
 
     void InitDAVAUI();
     void ReleaseDAVAUI();
@@ -121,7 +122,7 @@ protected:
     void dropEvent(QDropEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
 
-    ScenePreviewDialog* previewDialog;
+    ScenePreviewDialog* previewDialog = nullptr;
 
     int FindTab(const DAVA::FilePath& scenePath);
 
@@ -129,8 +130,8 @@ private:
     bool TestSceneCompatibility(const DAVA::FilePath& scenePath);
     void updateTabBarVisibility();
 
-    int newSceneCounter;
-    SceneEditor2* curScene;
+    int newSceneCounter = 0;
+    SceneEditor2* curScene = nullptr;
 };
 
 // tabBar widged to handle drop actions and emit signal about it

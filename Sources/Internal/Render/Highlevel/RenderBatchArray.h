@@ -36,7 +36,7 @@
 
 namespace DAVA
 {
-class RenderBatchArray
+class RenderBatchArray : public InspBase
 {
 public:
     enum

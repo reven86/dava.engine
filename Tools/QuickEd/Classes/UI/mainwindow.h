@@ -73,7 +73,7 @@ signals:
     void RecentMenuTriggered(QAction*);
     void ActionOpenProjectTriggered(QString projectPath);
     void OpenPackageFile(QString path);
-    void CloseRequested();
+    bool CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);

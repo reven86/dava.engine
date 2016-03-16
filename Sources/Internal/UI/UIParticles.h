@@ -49,13 +49,10 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
-    void WillAppear() override;
+    void OnActive() override;
 
     UIParticles* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
-
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
 
     /*methods analogical to once in ParticleEffectComponent*/
     void Start();

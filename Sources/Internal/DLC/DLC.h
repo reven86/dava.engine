@@ -130,6 +130,12 @@ public:
     */
     FilePath GetMetaStorePath() const;
 
+    /**
+        \brief Specifies filename for DLC system logs.
+        \param[in] customLogFileName - output logs file name
+    */
+    void SetLogFileName(const FilePath& customLogFileName);
+
 protected:
     enum DLCEvent
     {
@@ -188,6 +194,7 @@ protected:
         uint32 prevState;
     };
 
+    FilePath logsFilePath;
     DLCState dlcState;
     DLCError dlcError;
     DLCContext dlcContext;

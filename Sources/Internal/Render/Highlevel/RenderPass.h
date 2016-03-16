@@ -38,7 +38,7 @@
 namespace DAVA
 {
 class Camera;
-class RenderPass
+class RenderPass : public InspBase
 {
 public:
     RenderPass(const FastName& name);
