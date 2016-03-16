@@ -42,6 +42,10 @@ extern id<MTLTexture> _Metal_DefStencilBuf;
 extern id<MTLDepthStencilState> _Metal_DefDepthState;
 extern CAMetalLayer* _Metal_Layer;
 
+extern rhi::ScreenShotCallback _Metal_PendingScreenshotCallback;
+extern void* _Metal_ScreenshotData;
+extern DAVA::Mutex _Metal_ScreenshotCallbackSync;
+
 #endif
 
 #endif // __METAL_H__

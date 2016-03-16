@@ -50,6 +50,8 @@ RenderPassMetal_t
     MTLRenderPassDescriptor* desc;
     id<MTLCommandBuffer> buf;
     id<MTLParallelRenderCommandEncoder> encoder;
+    id<MTLCommandBuffer> blit_buf;
+    id<MTLBlitCommandEncoder> blit_encoder;
     std::vector<Handle> cmdBuf;
     int priority;
     uint32 do_present:1;
@@ -98,6 +100,7 @@ RHI_IMPL_POOL(SyncObjectMetal_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, f
 
 static id<CAMetalDrawable> _CurDrawable = nil;
 static std::vector<Handle> _CmdQueue;
+static id<MTLTexture> _ScreenshotTexture = nil;
 
 static Handle
 metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
@@ -211,6 +214,9 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
             cmdBuf[i] = cb_h;
         }
     }
+
+    pass->blit_buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
+    pass->blit_encoder = [pass->blit_buf blitCommandEncoder];
 
     return pass_h;
 }
@@ -799,17 +805,6 @@ metal_Present(Handle syncObject)
             pass.push_back(rp);
     }
 
-    if (syncObject != InvalidHandle && pass.size() && pass.back()->cmdBuf.size())
-    {
-        Handle last_cb_h = pass.back()->cmdBuf.back();
-        CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
-
-        [last_cb->buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb) {
-          SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
-
-          sync->is_signaled = true;
-        }];
-    }
 
     id<MTLCommandBuffer> pbuf;
 
@@ -822,7 +817,86 @@ metal_Present(Handle syncObject)
     }    
 
     [pbuf presentDrawable:_CurDrawable];
-    
+
+    if (pass.size() && pass.back()->cmdBuf.size())
+    {
+        Handle last_cb_h = pass.back()->cmdBuf.back();
+        CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
+        id<MTLTexture> back_buf = _CurDrawable.texture;
+
+        if (_Metal_PendingScreenshotCallback)
+        {
+            if (!_ScreenshotTexture)
+            {
+                MTLPixelFormat pf = MTLPixelFormatBGRA8Unorm;
+                MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:_CurDrawable.texture.width height:_CurDrawable.texture.height mipmapped:NO];
+
+                desc.textureType = MTLTextureType2D;
+                desc.mipmapLevelCount = 1;
+                desc.sampleCount = 1;
+
+                _ScreenshotTexture = [_Metal_Device newTextureWithDescriptor:desc];
+            }
+        }
+
+        _Metal_ScreenshotCallbackSync.Lock();
+        if (_Metal_PendingScreenshotCallback && !_Metal_ScreenshotData)
+        {
+            MTLOrigin org;
+            MTLSize sz;
+            org.x = 0;
+            org.y = 0;
+            org.z = 0;
+            sz.width = _CurDrawable.texture.width;
+            sz.height = _CurDrawable.texture.height;
+            sz.depth = 1;
+            [pass.back()->blit_encoder copyFromTexture:back_buf sourceSlice:0 sourceLevel:0 sourceOrigin:org sourceSize:sz toTexture:_ScreenshotTexture destinationSlice:0 destinationLevel:0 destinationOrigin:org];
+        }
+        _Metal_ScreenshotCallbackSync.Unlock();
+
+        [pass.back()->blit_encoder endEncoding];
+        [pass.back()->blit_buf commit];
+
+        [last_cb->buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb)
+                                          {
+                                            if (syncObject != InvalidHandle)
+                                            {
+                                                SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+
+                                                sync->is_signaled = true;
+                                            }
+
+                                            // take screenshot, if needed
+
+                                            _Metal_ScreenshotCallbackSync.Lock();
+                                            if (_Metal_PendingScreenshotCallback && !_Metal_ScreenshotData)
+                                            {
+                                                uint32 stride = _Metal_DefFrameBuf.width * sizeof(uint32);
+                                                uint32 sz = stride * _Metal_DefFrameBuf.height;
+                                                _Metal_ScreenshotData = ::malloc(sz);
+                                                MTLRegion rgn;
+
+                                                rgn.origin.x = 0;
+                                                rgn.origin.y = 0;
+                                                rgn.origin.z = 0;
+                                                rgn.size.width = _Metal_DefFrameBuf.width;
+                                                rgn.size.height = _Metal_DefFrameBuf.height;
+                                                rgn.size.depth = 1;
+
+                                                [_ScreenshotTexture getBytes:_Metal_ScreenshotData bytesPerRow:stride bytesPerImage:sz fromRegion:rgn mipmapLevel:0 slice:0];
+                                                for (uint8 *p = (uint8 *)_Metal_ScreenshotData, *p_end = (uint8 *)_Metal_ScreenshotData + _Metal_DefFrameBuf.width * _Metal_DefFrameBuf.height * 4; p != p_end; p += 4)
+                                                {
+                                                    uint8 tmp = p[0];
+                                                    p[0] = p[2];
+                                                    p[2] = tmp;
+                                                    p[3] = 0xFF;
+                                                }
+                                            }
+                                            _Metal_ScreenshotCallbackSync.Unlock();
+
+                                          }];
+    }
+
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassMetal_t* pass = *p;
@@ -850,6 +924,18 @@ metal_Present(Handle syncObject)
     _CurDrawable = nil;
 
     ConstBufferMetal::InvalidateAllInstances();
+
+    _Metal_ScreenshotCallbackSync.Lock();
+    if (_Metal_PendingScreenshotCallback && _Metal_ScreenshotData)
+    {
+        (*_Metal_PendingScreenshotCallback)(_Metal_DefFrameBuf.width, _Metal_DefFrameBuf.height, _Metal_ScreenshotData);
+        ::free(_Metal_ScreenshotData);
+        _Metal_PendingScreenshotCallback = nullptr;
+        _Metal_ScreenshotData = nullptr;
+        [_ScreenshotTexture setPurgeableState:MTLPurgeableStateEmpty];
+        _ScreenshotTexture = nil;
+    }
+    _Metal_ScreenshotCallbackSync.Unlock();
 }
 
 namespace CommandBufferMetal

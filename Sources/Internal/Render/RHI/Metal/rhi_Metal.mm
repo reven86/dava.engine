@@ -44,6 +44,9 @@ id<MTLTexture> _Metal_DefDepthBuf = nil;
 id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
+rhi::ScreenShotCallback _Metal_PendingScreenshotCallback = nullptr;
+void* _Metal_ScreenshotData = nullptr;
+DAVA::Mutex _Metal_ScreenshotCallbackSync;
 
 namespace rhi
 {
@@ -129,14 +132,29 @@ metal_NeedRestoreResources()
     return false;
 }
 
+//------------------------------------------------------------------------------
+
 static void
 metal_Suspend()
 {
 }
 
+//------------------------------------------------------------------------------
+
 static void
 metal_Resume()
 {
+}
+
+//------------------------------------------------------------------------------
+
+static void
+metal_TakeScreenshot(ScreenShotCallback callback)
+{
+    _Metal_ScreenshotCallbackSync.Lock();
+    DVASSERT(!_Metal_PendingScreenshotCallback);
+    _Metal_PendingScreenshotCallback = callback;
+    _Metal_ScreenshotCallbackSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -147,7 +165,7 @@ void metal_Initialize(const InitParam& param)
 
     _Metal_Layer.device = MTLCreateSystemDefaultDevice();
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
-    _Metal_Layer.framebufferOnly = YES;
+    _Metal_Layer.framebufferOnly = NO;
     _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
 
     _Metal_Device = _Metal_Layer.device;
@@ -229,6 +247,7 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_ResumeRendering = &metal_Resume;
     DispatchMetal.impl_SuspendRendering = &metal_Suspend;
+    DispatchMetal.impl_TakeScreenshot = &metal_TakeScreenshot;
 
     SetDispatchTable(DispatchMetal);
 
