@@ -25,16 +25,19 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#include "Render/RenderBase.h"
 
 #include "DavaRenderer.h"
+#include "Render/RenderBase.h"
 
-#include "Base/BaseTypes.h"
 #include "Core/Core.h"
 #include "Platform/Qt5/QtLayer.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
+#include "Base/BaseTypes.h"
+#include "Base/Singleton.h"
+
+#include <QOpenGLContext>
 #include <QApplication>
 
 namespace DAVA
@@ -52,10 +55,6 @@ public:
 };
 } // end namespace DAVA
 
-#include "Base/Singleton.h"
-
-#include <QOpenGLContext>
-
 namespace
 {
 
@@ -68,7 +67,7 @@ public:
     {
     }
 
-    void AcquireContex()
+    void AcquireContext()
     {
         prevContext = QOpenGLContext::currentContext();
         if (prevContext != nullptr)
@@ -100,7 +99,7 @@ private:
 
 void AcqureContext()
 {
-    OGLContextBinder::Instance()->AcquireContex();
+    OGLContextBinder::Instance()->AcquireContext();
 }
 
 void ReleaseContext()
