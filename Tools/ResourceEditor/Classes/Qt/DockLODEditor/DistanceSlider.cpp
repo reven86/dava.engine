@@ -123,6 +123,24 @@ DAVA::float32 DistanceSlider::GetDistance(DAVA::uint32 layer) const
     return distances[layer];
 }
 
+void Dump(const DAVA::String& message, const QList<int>& sizes, const DAVA::Vector<DAVA::float32>& distances)
+{
+    DAVA::Logger::Info("=======DUMP=======");
+    DAVA::Logger::Info("%s | %d | %d", message.c_str(), sizes.size(), distances.size());
+    DAVA::Logger::Info("sizes:");
+    for (int i = 0; i < sizes.size(); ++i)
+    {
+        DAVA::Logger::Info("%d", sizes.at(i));
+    }
+    DAVA::Logger::Info("distances:");
+    for (int i = 0; i < distances.size(); ++i)
+    {
+        DAVA::Logger::Info("%f", distances[i]);
+    }
+
+    DAVA::Logger::Info("==================");
+}
+
 void DistanceSlider::SetDistance(DAVA::uint32 layer, DAVA::float32 value)
 {
     DVASSERT(layer < framesCount);
@@ -147,6 +165,8 @@ void DistanceSlider::SetDistance(DAVA::uint32 layer, DAVA::float32 value)
     }
     sizes.push_back(lastZoneSize);
 
+    Dump("SetDistance", sizes, distances);
+
     QSignalBlocker guard(splitter);
     splitter->setSizes(sizes);
 }
@@ -170,6 +190,8 @@ void DistanceSlider::SplitterMoved(int pos, int index)
 
         prevSize += distances[i + 1];
     }
+
+    Dump("SetDistance", sizes, distances);
 
     emit DistanceChanged(true);
     signalsDispatcher->Update();
