@@ -56,7 +56,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-
+    ~MainWindow() override;
     void AttachDocumentGroup(DocumentGroup* documentGroup);
 
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);

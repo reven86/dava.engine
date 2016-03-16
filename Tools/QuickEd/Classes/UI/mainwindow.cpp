@@ -104,6 +104,11 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 }
 
+MainWindow::~MainWindow()
+{
+    SaveMainWindowState();
+}
+
 void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 {
     Q_ASSERT(documentGroup != nullptr);
@@ -461,10 +466,11 @@ void MainWindow::closeEvent(QCloseEvent* ev)
     if (!CloseRequested()) //we cannot access to EditorCore directly by parent
     {
         ev->ignore();
-        return;
     }
-    SaveMainWindowState();
-    ev->accept();
+    else
+    {
+        ev->accept();
+    }
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
