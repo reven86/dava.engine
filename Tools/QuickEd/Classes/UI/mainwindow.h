@@ -79,7 +79,7 @@ signals:
     void SaveAllDocuments();
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
-    void CloseRequested();
+    bool CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);

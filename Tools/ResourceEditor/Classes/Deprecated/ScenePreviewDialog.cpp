@@ -47,7 +47,6 @@ ScenePreviewDialog::ScenePreviewDialog()
     clickableBackgound->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
 
     preview.reset(new ScenePreviewControl(Rect(0, 0, ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::PREVIEW_PANEL_HEIGHT)));
-    preview->SetDebugDraw(true);
 
     errorMessage.reset(new UIStaticText(preview->GetRect()));
     errorMessage->SetMultiline(true);
@@ -64,6 +63,10 @@ ScenePreviewDialog::ScenePreviewDialog()
 
 ScenePreviewDialog::~ScenePreviewDialog()
 {
+    if (IsShown())
+    {
+        Close();
+    }
 }
 
 void ScenePreviewDialog::Show(const FilePath& scenePathname)
@@ -138,6 +141,7 @@ void ScenePreviewDialog::Show(const FilePath& scenePathname)
 
         draggableDialog->AddControl(errorMessage);
     }
+    ExtendedDialog::Show();
 }
 
 void ScenePreviewDialog::OnClose(BaseObject*, void*, void*)
@@ -155,7 +159,7 @@ void ScenePreviewDialog::Close()
 
     preview->ReleaseScene();
     preview->RecreateScene();
-
+    draggableDialog->RemoveControl(preview);
     ExtendedDialog::Close();
 }
 
