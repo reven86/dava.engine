@@ -60,7 +60,7 @@ DAVA::Entity* CommandBatch::GetEntity() const
     return nullptr;
 }
 
-void CommandBatch::AddAndExec(std::unique_ptr<Command2>&& command)
+void CommandBatch::AddAndExec(Command2::Pointer && command)
 {
     DVASSERT(command);
 
@@ -83,7 +83,7 @@ Command2* CommandBatch::GetCommand(DAVA::uint32 index) const
 
 void CommandBatch::RemoveCommands(DAVA::int32 commandId)
 {
-    auto it = std::remove_if(commandList.begin(), commandList.end(), [commandId](const std::unique_ptr<Command2>& cmd) {
+    auto it = std::remove_if(commandList.begin(), commandList.end(), [commandId](const Command2::Pointer& cmd) {
         return cmd->GetId() == commandId;
     });
 

@@ -1746,7 +1746,7 @@ void QtMainWindow::OnAddLandscape()
         bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize / 2.f, defaultLandscapeSize / 2.f, defaultLandscapeHeight));
         newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
 
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(entityToProcess, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(entityToProcess, sceneEditor));
     }
 }
 
@@ -1764,7 +1764,7 @@ void QtMainWindow::OnAddVegetation()
         vegetationNode->SetName(ResourceEditor::VEGETATION_NODE_NAME);
         vegetationNode->SetLocked(true);
 
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(vegetationNode, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(vegetationNode, sceneEditor));
     }
 }
 
@@ -1776,7 +1776,7 @@ void QtMainWindow::OnLightDialog()
         ScopedPtr<Entity> sceneNode(new Entity());
         sceneNode->AddComponent(new LightComponent(ScopedPtr<Light>(new Light)));
         sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
 }
 
@@ -1801,7 +1801,7 @@ void QtMainWindow::OnCameraDialog()
 
         sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
 
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
 }
 
@@ -1813,7 +1813,7 @@ void QtMainWindow::OnUserNodeDialog()
         ScopedPtr<Entity> sceneNode(new Entity());
         sceneNode->AddComponent(new UserComponent());
         sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
 }
 
@@ -1826,7 +1826,7 @@ void QtMainWindow::OnParticleEffectDialog()
         sceneNode->AddComponent(new ParticleEffectComponent());
         sceneNode->AddComponent(new LodComponent());
         sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
 }
 
@@ -1850,7 +1850,7 @@ void QtMainWindow::On2DCameraDialog()
 
         sceneNode->AddComponent(new CameraComponent(camera));
         sceneNode->SetName("Camera 2D");
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
 }
 
@@ -1880,7 +1880,7 @@ void QtMainWindow::On2DSpriteDialog()
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
     SafeRelease(sceneNode);
     SafeRelease(spriteObject);
@@ -2249,7 +2249,7 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
         return;
 
     const DAVA::FilePath path = outputPath.toStdString();
-    scene->Exec(std::unique_ptr<Command2>(new BeastAction(scene, path, mode, beastWaitDialog)));
+    scene->Exec(Command2::Create<BeastAction>(scene, path, mode, beastWaitDialog));
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {
@@ -2337,7 +2337,7 @@ void QtMainWindow::OnCustomColorsEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(std::unique_ptr<Command2>(new EnableCustomColorsCommand(sceneEditor, true)));
+            sceneEditor->Exec(Command2::Create<EnableCustomColorsCommand>(sceneEditor, true));
         }
         else
         {
@@ -2357,7 +2357,7 @@ void QtMainWindow::OnCustomColorsEditor()
         }
     }
 
-    sceneEditor->Exec(std::unique_ptr<Command2>(new DisableCustomColorsCommand(sceneEditor, true)));
+    sceneEditor->Exec(Command2::Create<DisableCustomColorsCommand>(sceneEditor, true));
     ui->actionCustomColorsEditor->setChecked(false);
 }
 
@@ -2403,7 +2403,7 @@ void QtMainWindow::OnHeightmapEditor()
 
     if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(std::unique_ptr<Command2>(new DisableHeightmapEditorCommand(sceneEditor)));
+        sceneEditor->Exec(Command2::Create<DisableHeightmapEditorCommand>(sceneEditor));
     }
     else
     {
@@ -2416,7 +2416,7 @@ void QtMainWindow::OnHeightmapEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(std::unique_ptr<Command2>(new EnableHeightmapEditorCommand(sceneEditor)));
+            sceneEditor->Exec(Command2::Create<EnableHeightmapEditorCommand>(sceneEditor));
         }
         else
         {
@@ -2435,7 +2435,7 @@ void QtMainWindow::OnRulerTool()
 
     if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(std::unique_ptr<Command2>(new DisableRulerToolCommand(sceneEditor)));
+        sceneEditor->Exec(Command2::Create<DisableRulerToolCommand>(sceneEditor));
     }
     else
     {
@@ -2448,7 +2448,7 @@ void QtMainWindow::OnRulerTool()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(std::unique_ptr<Command2>(new EnableRulerToolCommand(sceneEditor)));
+            sceneEditor->Exec(Command2::Create<EnableRulerToolCommand>(sceneEditor));
         }
         else
         {
@@ -2467,7 +2467,7 @@ void QtMainWindow::OnTilemaskEditor()
 
     if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(std::unique_ptr<Command2>(new DisableTilemaskEditorCommand(sceneEditor)));
+        sceneEditor->Exec(Command2::Create<DisableTilemaskEditorCommand>(sceneEditor));
     }
     else
     {
@@ -2480,7 +2480,7 @@ void QtMainWindow::OnTilemaskEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(std::unique_ptr<Command2>(new EnableTilemaskEditorCommand(sceneEditor)));
+            sceneEditor->Exec(Command2::Create<EnableTilemaskEditorCommand>(sceneEditor));
         }
         else
         {
@@ -2519,7 +2519,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
     if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
     {
-        sceneEditor->Exec(std::unique_ptr<Command2>(new DisableNotPassableCommand(sceneEditor)));
+        sceneEditor->Exec(Command2::Create<DisableNotPassableCommand>(sceneEditor));
     }
     else
     {
@@ -2532,7 +2532,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(std::unique_ptr<Command2>(new EnableNotPassableCommand(sceneEditor)));
+            sceneEditor->Exec(Command2::Create<EnableNotPassableCommand>(sceneEditor));
         }
         else
         {
@@ -2843,7 +2843,7 @@ void QtMainWindow::OnEmptyEntity()
     ScopedPtr<Entity> newEntity(new Entity());
     newEntity->SetName(ResourceEditor::ENTITY_NAME);
 
-    scene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(newEntity, scene)));
+    scene->Exec(Command2::Create<EntityAddCommand>(newEntity, scene));
 }
 
 void QtMainWindow::OnAddWindEntity()
@@ -2860,7 +2860,7 @@ void QtMainWindow::OnAddWindEntity()
 
     windEntity->AddComponent(new WindComponent());
 
-    scene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(windEntity, scene)));
+    scene->Exec(Command2::Create<EntityAddCommand>(windEntity, scene));
 }
 
 void QtMainWindow::OnAddPathEntity()
@@ -2874,7 +2874,7 @@ void QtMainWindow::OnAddPathEntity()
     DAVA::PathComponent* pc = scene->pathSystem->CreatePathComponent();
 
     pathEntity->AddComponent(pc);
-    scene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(pathEntity, scene)));
+    scene->Exec(Command2::Create<EntityAddCommand>(pathEntity, scene));
 }
 
 bool QtMainWindow::LoadAppropriateTextureFormat()

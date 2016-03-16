@@ -37,6 +37,8 @@
 #include "Functional/Signal.h"
 #include "Functional/Function.h"
 
+#include "Commands2/Base/Command2.h"
+
 #include <QToolButton>
 #include <QVariant>
 
@@ -192,7 +194,7 @@ public:
     void EmitDataChanged(ValueChangeReason reason);
 
     // edit command
-    virtual std::unique_ptr<Command2> CreateLastCommand() const;
+    virtual Command2::Pointer CreateLastCommand() const;
 
     // Merging
     bool IsMergedDataEqual() const;

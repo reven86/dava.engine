@@ -140,7 +140,7 @@ public:
     void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
 
-    void Exec(std::unique_ptr<Command2>&& command);
+    void Exec(Command2::Pointer&& command);
     void RemoveCommands(DAVA::int32 commandId);
 
     void ClearAllCommands();

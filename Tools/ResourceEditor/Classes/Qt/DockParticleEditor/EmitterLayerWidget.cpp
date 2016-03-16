@@ -738,7 +738,7 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     const FilePath spritePath(spritePathLabel->text().toStdString());
 
     DVASSERT(activeScene);
-    activeScene->Exec(std::unique_ptr<Command2>(new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked())));
+    activeScene->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
 
     UpdateLayerSprite();
 
@@ -756,7 +756,7 @@ void EmitterLayerWidget::OnLodsChanged()
         lods[i] = layerLodsCheckBox[i]->isChecked();
     }
 
-    activeScene->Exec(std::unique_ptr<Command2>(new CommandUpdateParticleLayerLods(layer, lods)));
+    activeScene->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
     activeScene->MarkAsChanged();
     emit ValueChanged();
 }

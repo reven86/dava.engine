@@ -92,12 +92,12 @@ bool QtPropertyDataMetaObject::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-std::unique_ptr<Command2> QtPropertyDataMetaObject::CreateLastCommand() const
+Command2::Pointer QtPropertyDataMetaObject::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
-        return std::unique_ptr<Command2>(new MetaObjModifyCommand(*lastCommand));
+        return Command2::Create<MetaObjModifyCommand>(*lastCommand);
     }
 
-    return std::unique_ptr<Command2>();
+    return Command2::CreateEmptyCommand();
 }

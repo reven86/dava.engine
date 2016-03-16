@@ -130,7 +130,7 @@ void CommandStack::Redo()
     CleanCheck();
 }
 
-void CommandStack::Exec(std::unique_ptr<Command2>&& command)
+void CommandStack::Exec(Command2::Pointer&& command)
 {
     DVASSERT(command);
 
@@ -257,7 +257,7 @@ Command2* CommandStack::GetCommandInternal(DAVA::int32 index) const
     return nullptr;
 }
 
-void CommandStack::ExecInternal(std::unique_ptr<Command2>&& command, bool runCommand)
+void CommandStack::ExecInternal(Command2::Pointer&& command, bool runCommand)
 {
     ClearRedoCommands();
 

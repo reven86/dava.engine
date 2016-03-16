@@ -594,12 +594,12 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
             snapComponent = static_cast<SnapToLandscapeControllerComponent*>(Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
             snapComponent->SetHeightOnLandscape(height);
 
-            scene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(entity, snapComponent)));
+            scene->Exec(Command2::Create<AddComponentCommand>(entity, snapComponent));
         }
     }
     else if (snapComponent)
     {
-        scene->Exec(std::unique_ptr<Command2>(new RemoveComponentCommand(entity, snapComponent)));
+        scene->Exec(Command2::Create<RemoveComponentCommand>(entity, snapComponent));
     }
 
     return true;

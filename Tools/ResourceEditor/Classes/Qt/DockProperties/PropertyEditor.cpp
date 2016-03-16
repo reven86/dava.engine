@@ -948,13 +948,13 @@ void PropertyEditor::ConvertToShadow()
             curScene->BeginBatch("ConvertToShadow batch", count);
 
             DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
-            curScene->Exec(std::unique_ptr<Command2>(new ConvertToShadowCommand(findEntityFn(batch), batch)));
+            curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
             data->ForeachMergedItem([&curScene, &findEntityFn](QtPropertyData* item) {
                 QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
                 if (dynamicData != nullptr)
                 {
                     DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
-                    curScene->Exec(std::unique_ptr<Command2>(new ConvertToShadowCommand(findEntityFn(batch), batch)));
+                    curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
                 }
                 return true;
             });
@@ -974,7 +974,7 @@ void PropertyEditor::RebuildTangentSpace()
         if (nullptr != data && nullptr != curScene)
         {
             RenderBatch* batch = (RenderBatch*)data->object;
-            curScene->Exec(std::unique_ptr<Command2>(new RebuildTangentSpaceCommand(batch, true)));
+            curScene->Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
         }
     }
 }
@@ -1005,7 +1005,7 @@ void PropertyEditor::DeleteRenderBatch()
                     DAVA::RenderBatch* b = ro->GetRenderBatch(i);
                     if (b == batch)
                     {
-                        curScene->Exec(std::unique_ptr<Command2>(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i)));
+                        curScene->Exec(Command2::Create<DeleteRenderBatchCommand>(node, batch->GetRenderObject(), i));
                         break;
                     }
                 }
@@ -1345,7 +1345,7 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
             SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
             if (curScene && renderObject)
             {
-                curScene->Exec(std::unique_ptr<Command2>(new CloneLastBatchCommand(renderObject)));
+                curScene->Exec(Command2::Create<CloneLastBatchCommand>(renderObject));
             }
         }
     }
@@ -1361,7 +1361,7 @@ void PropertyEditor::OnAddComponent(Component::eType type)
         for (int32 i = 0; i < size; ++i)
         {
             Component* c = Component::CreateByType(type);
-            curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(curNodes.at(i), c)));
+            curScene->Exec(Command2::Create<AddComponentCommand>(curNodes.at(i), c));
         }
         curScene->EndBatch();
     }
@@ -1385,7 +1385,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component* component)
             if (node->GetComponentCount(component->GetType()) == 0)
             {
                 Component* c = component->Clone(node);
-                curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(curNodes.at(i), c)));
+                curScene->Exec(Command2::Create<AddComponentCommand>(curNodes.at(i), c));
             }
         }
         curScene->EndBatch();
@@ -1436,7 +1436,7 @@ void PropertyEditor::OnAddPathComponent()
                 && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
             {
                 PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
-                curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(node, pathComponent)));
+                curScene->Exec(Command2::Create<AddComponentCommand>(node, pathComponent));
             }
         }
 
@@ -1485,7 +1485,7 @@ void PropertyEditor::OnRemoveComponent()
 
             Component* component = (Component*)data->object;
             PropEditorUserData* userData = GetUserData(data);
-            curScene->Exec(std::unique_ptr<Command2>(new RemoveComponentCommand(userData->entity, component)));
+            curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
 
             data->ForeachMergedItem([&curScene, this](QtPropertyData* item) {
                 QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
@@ -1493,7 +1493,7 @@ void PropertyEditor::OnRemoveComponent()
                 {
                     Component* component = (Component*)dynamicData->object;
                     PropEditorUserData* userData = GetUserData(dynamicData);
-                    curScene->Exec(std::unique_ptr<Command2>(new RemoveComponentCommand(userData->entity, component)));
+                    curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
                 }
 
                 return true;

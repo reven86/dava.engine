@@ -45,7 +45,7 @@ public:
 
     DAVA_DEPRECATED(DAVA::Entity* GetEntity() const override);
 
-    void AddAndExec(std::unique_ptr<Command2>&& command);
+    void AddAndExec(Command2::Pointer&& command);
     void RemoveCommands(DAVA::int32 commandId);
 
     bool Empty() const;
@@ -59,7 +59,7 @@ public:
     bool IsMultiCommandBatch() const;
 
 protected:
-    using CommandsContainer = DAVA::Vector<std::unique_ptr<Command2>>;
+    using CommandsContainer = DAVA::Vector<Command2::Pointer>;
     CommandsContainer commandList;
 
     DAVA::UnorderedSet<DAVA::int32> commandIDs;

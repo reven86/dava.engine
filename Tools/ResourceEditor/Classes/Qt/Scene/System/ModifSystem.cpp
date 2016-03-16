@@ -127,7 +127,7 @@ void EntityModificationSystem::ResetTransform(const EntityGroup& entities)
         {
             if (item.first != nullptr)
             {
-                sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(item.first, item.first->GetLocalTransform(), zeroTransform)));
+                sceneEditor->Exec(Command2::Create<TransformCommand>(item.first, item.first->GetLocalTransform(), zeroTransform));
             }
         }
         sceneEditor->EndBatch();
@@ -520,7 +520,7 @@ void EntityModificationSystem::ApplyModification()
             sceneEditor->BeginBatch("Multiple transform", count);
             for (size_t i = 0; i < count; ++i)
             {
-                sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(modifEntities[i].entity, modifEntities[i].originalTransform, modifEntities[i].entity->GetLocalTransform())));
+                sceneEditor->Exec(Command2::Create<TransformCommand>(modifEntities[i].entity, modifEntities[i].originalTransform, modifEntities[i].entity->GetLocalTransform()));
             }
             sceneEditor->EndBatch();
         }
@@ -871,7 +871,7 @@ void EntityModificationSystem::CloneEnd()
                 cloneParent->RemoveNode(clonedEntities[i]);
 
                 // and add it once again with command
-                sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(clonedEntities[i], cloneParent)));
+                sceneEditor->Exec(Command2::Create<EntityAddCommand>(clonedEntities[i], cloneParent));
             }
 
             // make cloned entity selected
@@ -923,7 +923,7 @@ void EntityModificationSystem::LockTransform(const EntityGroup& entities, bool l
     sceneEditor->BeginBatch("Lock entities", count);
     for (const auto& item : entities.GetContent())
     {
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityLockCommand(item.first, lock)));
+        sceneEditor->Exec(Command2::Create<EntityLockCommand>(item.first, lock));
     }
     sceneEditor->EndBatch();
 }
@@ -972,7 +972,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
                 sceneEditor->BeginBatch(commandMessage);
 
                 // bake render object
-                sceneEditor->Exec(std::unique_ptr<Command2>(new BakeGeometryCommand(ro, bakeTransform)));
+                sceneEditor->Exec(Command2::Create<BakeGeometryCommand>(ro, bakeTransform));
 
                 // inverse bake to be able to move object on same place
                 // after it geometry was baked
@@ -987,7 +987,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
                     DAVA::Entity* en = *it;
                     DAVA::Matrix4 origTransform = en->GetLocalTransform();
                     DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
-                    sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(en, origTransform, newTransform)));
+                    sceneEditor->Exec(Command2::Create<TransformCommand>(en, origTransform, newTransform));
 
                     // also modify childs transform to make them be at
                     // right position after parent entity changed
@@ -998,7 +998,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
                         DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
                         DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
 
-                        sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(childEntity, childOrigTransform, childNewTransform)));
+                        sceneEditor->Exec(Command2::Create<TransformCommand>(childEntity, childOrigTransform, childNewTransform));
                     }
                 }
 
@@ -1029,14 +1029,14 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
 
                 // transform parent entity
                 transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
-                sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, entity->GetLocalTransform(), entity->GetLocalTransform() * transform)));
+                sceneEditor->Exec(Command2::Create<TransformCommand>(entity, entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
 
                 // transform child entities with inversed parent transformation
                 transform.Inverse();
                 for (uint32 i = 0; i < count; ++i)
                 {
                     DAVA::Entity* childEntity = entity->GetChild(i);
-                    sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform)));
+                    sceneEditor->Exec(Command2::Create<TransformCommand>(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
                 }
 
                 sceneEditor->EndBatch();
@@ -1132,7 +1132,7 @@ void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& 
 
         DAVA::Matrix4 newMatrix = origMatrix;
         newMatrix.SetTranslationVector(newPos);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(item.first, origMatrix, newMatrix)));
+        sceneEditor->Exec(Command2::Create<TransformCommand>(item.first, origMatrix, newMatrix));
     }
     sceneEditor->EndBatch();
 }
@@ -1184,7 +1184,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * rotationMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
+            sceneEditor->Exec(Command2::Create<TransformCommand>(entity, origMatrix, newMatrix));
         }
     }
 
@@ -1239,7 +1239,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup&
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * scaleMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
+            sceneEditor->Exec(Command2::Create<TransformCommand>(entity, origMatrix, newMatrix));
         }
     }
 

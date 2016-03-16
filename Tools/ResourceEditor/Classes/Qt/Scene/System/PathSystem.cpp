@@ -90,7 +90,7 @@ PathSystem::~PathSystem()
 void PathSystem::AddPath(DAVA::Entity* entity)
 {
     sceneEditor->BeginBatch("Add path at scene");
-    sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(entity, sceneEditor)));
+    sceneEditor->Exec(Command2::Create<EntityAddCommand>(entity, sceneEditor));
 
     if (isEditingEnabled)
         ExpandPathEntity(entity);
@@ -388,7 +388,7 @@ void PathSystem::EnablePathEdit(bool enable)
     if (enable)
     {
         sceneEditor->BeginBatch("Enable waypoints edit", pathes.size() + 1);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new EnableWayEditCommand));
+        sceneEditor->Exec(Command2::Create<EnableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -400,7 +400,7 @@ void PathSystem::EnablePathEdit(bool enable)
     else
     {
         sceneEditor->BeginBatch("Disable waypoints edit", pathes.size() + 1);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new DisableWayEditCommand));
+        sceneEditor->Exec(Command2::Create<DisableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -420,7 +420,7 @@ void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new ExpandPathCommand(pathComponent)));
+        sceneEditor->Exec(Command2::Create<ExpandPathCommand>(pathComponent));
     }
 
     sceneEditor->EndBatch();
@@ -434,7 +434,7 @@ void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(std::unique_ptr<Command2>(new CollapsePathCommand(pathComponent)));
+        sceneEditor->Exec(Command2::Create<CollapsePathCommand>(pathComponent));
     }
 
     sceneEditor->EndBatch();

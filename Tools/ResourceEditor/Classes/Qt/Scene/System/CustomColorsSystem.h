@@ -34,7 +34,7 @@
 #include "LandscapeEditorDrawSystem.h"
 #include "Main/Request.h"
 
-class Command2;
+#include "Commands2/Base/Command2.h"
 
 class CustomColorsSystem : public LandscapeEditorSystem
 {
@@ -97,7 +97,7 @@ protected:
 
     void FinishEditing();
 
-    std::unique_ptr<Command2> CreateSaveFileNameCommand(const String& filePath);
+    Command2::Pointer CreateSaveFileNameCommand(const String& filePath);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */

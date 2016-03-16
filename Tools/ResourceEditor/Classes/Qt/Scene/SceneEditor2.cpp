@@ -341,7 +341,7 @@ void SceneEditor2::EndBatch()
     commandStack->EndBatch();
 }
 
-void SceneEditor2::Exec(std::unique_ptr<Command2>&& command)
+void SceneEditor2::Exec(Command2::Pointer&& command)
 {
     if (command)
     {

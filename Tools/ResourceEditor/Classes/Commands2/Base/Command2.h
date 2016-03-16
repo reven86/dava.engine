@@ -41,8 +41,24 @@
 class Command2 : public CommandNotifyProvider, public DAVA::ICommand
 {
 public:
+    using Pointer = std::unique_ptr<Command2>;
+
+protected:
     Command2(DAVA::int32 id, const DAVA::String& text = "");
+
+public:
     ~Command2() override;
+
+    template <typename CMD, typename ... Arg>
+    static Pointer Create(Arg&&... arg)
+    {
+        return Pointer(new CMD(std::forward<Arg>(arg)...));
+    }
+
+    static Pointer CreateEmptyCommand()
+    {
+        return Pointer();
+    }
 
     DAVA::int32 GetId() const;
     const DAVA::String& GetText() const;

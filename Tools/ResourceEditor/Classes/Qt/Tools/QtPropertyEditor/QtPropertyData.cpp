@@ -831,10 +831,10 @@ void QtPropertyData::SetOWViewport(QWidget* viewport)
     }
 }
 
-std::unique_ptr<Command2> QtPropertyData::CreateLastCommand() const
+Command2::Pointer QtPropertyData::CreateLastCommand() const
 {
     // can be re-implemented by sub-class
-    return std::unique_ptr<Command2>();
+    return Command2::CreateEmptyCommand();
 }
 
 QVariant QtPropertyData::GetValueInternal() const
