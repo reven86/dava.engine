@@ -41,7 +41,7 @@ class DavaRenderer : public QObject
     POP_QT_WARNING_SUPRESSOR
 public:
     DavaRenderer();
-    ~DavaRenderer() override;
+
 public slots:
     void paint();
 };

@@ -119,6 +119,11 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 }
 
+MainWindow::~MainWindow()
+{
+    SaveMainWindowState();
+}
+
 void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
 {
     Q_ASSERT(undoGroup);
@@ -546,9 +551,14 @@ int MainWindow::AddTab(Document* document, int index)
 
 void MainWindow::closeEvent(QCloseEvent* ev)
 {
-    SaveMainWindowState();
-    emit CloseRequested();
-    ev->ignore();
+    if (!CloseRequested()) //we cannot access to EditorCore directly by parent
+    {
+        ev->ignore();
+    }
+    else
+    {
+        ev->accept();
+    }
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)

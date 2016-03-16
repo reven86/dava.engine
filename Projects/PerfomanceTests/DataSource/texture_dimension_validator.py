@@ -179,17 +179,9 @@ def verify(mode, dRootPath, dsRootPath):
                 g_logger.error("Failed.")
                 errNumber = errNumber + 1
             else:
-                needAnswer = True
-                while needAnswer: 
-                    needAnswer = False
-                    userAnswer = raw_input("Do you want to change? y/n ").lower()
-                    if userAnswer == "y":
-                        g_logger.warning("Rewrite texture file info: " + dsPathTxt)
-                        write_info(info, dsPathTxt)
-                    elif userAnswer == "n":
-                        g_logger.warning("File info not changed: " + dsPathTxt)
-                    else:
-                        needAnswer = True
+                g_logger.warning("Rewrite texture file info: " + dsPathTxt)
+                write_info(info, dsPathTxt)
+
     return errNumber
 
 # {validate : '', data : '', dataSource : '', path : []}
