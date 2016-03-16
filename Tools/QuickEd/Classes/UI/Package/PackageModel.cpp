@@ -68,7 +68,7 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const
     auto control = node->GetControl();
     control->SetAbsolutePosition(pos);
     auto relativePos = control->GetPosition();
-    relativePos -= control->GetSize() / 2;
+    relativePos -= control->GetSize() / 2.0f;
 
     auto rootProperty = node->GetRootProperty();
     auto positionProperty = rootProperty->FindPropertyByName("Position");
