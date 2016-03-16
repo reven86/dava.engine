@@ -41,27 +41,26 @@ const QString themeSettingsGroup = "QtTools/Themes";
 const QString themeSettingsKey = "ThemeName";
 }
 
-
 namespace Themes
 {
 QPalette defaultPalette;
 QString defaultStyleSheet;
 eTheme currentTheme;
 bool themesInitialized = false;
-QStringList themesNames = {"classic", "dark"};
+QStringList themesNames = { "classic", "dark" };
 QColor textColor(192, 192, 192);
 QColor disabledTextColor(100, 100, 100);
 QColor windowColor(53, 53, 53);
 
 void SetupClassicTheme();
 void SetupDarkTheme();
-    
+
 void InitFromQApplication()
 {
     themesInitialized = true;
     defaultStyleSheet = qApp->styleSheet();
     defaultPalette = QGuiApplication::palette();
-    qAddPostRoutine([](){
+    qAddPostRoutine([]() {
         QSettings settings(QApplication::organizationName(), QApplication::applicationName());
         settings.beginGroup(Themes_namespace::themeSettingsGroup);
         settings.setValue(Themes_namespace::themeSettingsKey, static_cast<int>(currentTheme));
@@ -72,7 +71,7 @@ void InitFromQApplication()
     settings.beginGroup(Themes_namespace::themeSettingsGroup);
     auto value = settings.value(Themes_namespace::themeSettingsKey);
     settings.endGroup();
-    if(value.canConvert<int>())
+    if (value.canConvert<int>())
     {
         currentTheme = static_cast<eTheme>(value.value<int>());
     }
@@ -87,10 +86,10 @@ QStringList ThemesNames()
 {
     return themesNames;
 }
-    
+
 void SetCurrentTheme(const QString& theme)
 {
-    if(!themesNames.contains(theme))
+    if (!themesNames.contains(theme))
     {
         qWarning("Invalid theme passed to SetTheme");
         return;
@@ -109,18 +108,18 @@ void SetCurrentTheme(eTheme theme)
     currentTheme = theme;
     switch (theme)
     {
-        case Classic:
-            SetupClassicTheme();
-            break;
-        case Dark:
-            SetupDarkTheme();
-            break;
-        default:
-            DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
-            break;
+    case Classic:
+        SetupClassicTheme();
+        break;
+    case Dark:
+        SetupDarkTheme();
+        break;
+    default:
+        DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
+        break;
     }
 }
-    
+
 void SetupClassicTheme()
 {
 #ifdef Q_OS_MAC
@@ -132,11 +131,11 @@ void SetupClassicTheme()
     qApp->setPalette(defaultPalette);
     qApp->setStyleSheet(defaultStyleSheet);
 }
-    
+
 void SetupDarkTheme()
 {
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    
+
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, windowColor);
     darkPalette.setColor(QPalette::WindowText, textColor);
@@ -163,23 +162,22 @@ void SetupDarkTheme()
 
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xc0, 0xc0, 0xc0));
-    
+
     qApp->setPalette(darkPalette);
 
     qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }");
 }
 
-
 const QString& GetCurrentThemeStr()
 {
     return themesNames.at(currentTheme);
 }
-    
+
 eTheme GetCurrentTheme()
 {
     return currentTheme;
 }
-    
+
 QColor GetViewLineAlternateColor()
 {
     return currentTheme == Themes::Classic ? QColor(Qt::lightGray) : QColor(0x3f, 0x3f, 0x46);
