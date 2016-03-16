@@ -49,7 +49,11 @@ TextureMetal_t
 public:
     TextureMetal_t()
         : mappedData(nullptr)
+        , width(0)
+        , height(0)
+        , mappedDataSize(0)
         , uid(nil)
+        , uid2(nil)
         , is_mapped(false)
         , is_renderable(false)
         , is_cubemap(false)
@@ -204,8 +208,14 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 
     Handle handle = InvalidHandle;
     MTLPixelFormat pf = (texDesc.isRenderTarget) ? /*MetalRenderableTextureFormat(texDesc.format)*/MTLPixelFormatBGRA8Unorm : MetalTextureFormat(texDesc.format);
+    Logger::Info("try create-desc for tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
     MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
 
+    if (!desc)
+    {
+        Logger::Info("failed to create desc for tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
+        return InvalidHandle;
+    }
     desc.textureType = (texDesc.type == TEXTURE_TYPE_CUBE) ? MTLTextureTypeCube : MTLTextureType2D;
     desc.mipmapLevelCount = texDesc.levelCount;
     desc.sampleCount = 1;
@@ -217,6 +227,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
     {
         handle = TextureMetalPool::Alloc();
         tex = TextureMetalPool::Get(handle);
+        Logger::Info("{%u} create-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(handle)), (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height);
 
         tex->format = texDesc.format;
         tex->width = texDesc.width;
@@ -303,6 +314,7 @@ metal_Texture_Delete(Handle tex)
 
     if (self)
     {
+        Logger::Info("{%u} del-tex%s", unsigned(RHI_HANDLE_INDEX(tex)), (self->is_renderable) ? "-rt" : "");
         if (self->mappedData)
         {
             ::free(self->mappedData);
@@ -322,6 +334,10 @@ metal_Texture_Delete(Handle tex)
 
         TextureMetalPool::Free(tex);
     }
+    else
+    {
+        DVASSERT("kaboom!!!");
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -329,6 +345,7 @@ metal_Texture_Delete(Handle tex)
 static void*
 metal_Texture_Map(Handle tex, unsigned level, TextureFace face)
 {
+    Logger::Info("{%u} map-tex", unsigned(RHI_HANDLE_INDEX(tex)));
     TextureMetal_t* self = TextureMetalPool::Get(tex);
     MTLRegion rgn;
     uint32 stride = TextureStride(self->format, Size2i([self->uid width], [self->uid height]), level);
@@ -402,6 +419,7 @@ metal_Texture_Map(Handle tex, unsigned level, TextureFace face)
 static void
 metal_Texture_Unmap(Handle tex)
 {
+    Logger::Info("{%u} unmap-tex", unsigned(RHI_HANDLE_INDEX(tex)));
     TextureMetal_t* self = TextureMetalPool::Get(tex);
     MTLRegion rgn;
     uint32 stride = TextureStride(self->format, Size2i([self->uid width], [self->uid height]), self->mappedLevel);
@@ -444,6 +462,7 @@ metal_Texture_Unmap(Handle tex)
 
 void metal_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace face)
 {
+    Logger::Info("{%u} upd-tex", unsigned(RHI_HANDLE_INDEX(tex)));
     TextureMetal_t* self = TextureMetalPool::Get(tex);
     Size2i ext = TextureExtents(Size2i(self->width, self->height), level);
     uint32 sz = TextureSize(self->format, self->width, self->height, level);
