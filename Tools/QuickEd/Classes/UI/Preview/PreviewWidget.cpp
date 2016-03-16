@@ -397,8 +397,13 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             break;
         case QEvent::MouseMove:
             OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
+            break;
         case QEvent::MouseButtonPress:
-            lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
+            OnPressEvent(DynamicTypeCheck<QMouseEvent*>(event));
+            break;
+        case QEvent::MouseButtonRelease:
+            davaGLWidget->GetGLView()->unsetCursor();
+            break;
         default:
             break;
         }
@@ -493,6 +498,23 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
         break;
     default:
         break;
+    }
+}
+
+void PreviewWidget::OnPressEvent(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::MiddleButton)
+    {
+        davaGLWidget->GetGLView()->setCursor(Qt::ClosedHandCursor);
+        lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
+    }
+}
+
+void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::MiddleButton)
+    {
+        davaGLWidget->GetGLView()->unsetCursor();
     }
 }
 

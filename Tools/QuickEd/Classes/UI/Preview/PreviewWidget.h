@@ -107,6 +107,8 @@ private:
     void ApplyPosChanges();
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
+    void OnPressEvent(QMouseEvent *event);
+    void OnReleaseEvent(QMouseEvent *event);
     void OnMoveEvent(QMouseEvent* event);
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
