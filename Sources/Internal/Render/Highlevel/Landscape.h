@@ -93,13 +93,8 @@ public:
         Vector2 texCoord;
     };
 
-    /**
-    \brief Get landscape mesh geometry.
-    Unoptimized lod0 mesh is returned.
-    \param[out] vertices landscape vertices
-    \param[out] indices landscape indices
-    */
-    bool GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const;
+    //TODO: move to Beast
+    DAVA_DEPRECATED(bool GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const);
 
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
@@ -255,27 +250,6 @@ protected:
     float32 maxPatchRadiusError;
     float32 maxAbsoluteHeightError;
 
-    /*
-    float32 fovCorrection;
-
-    float32 defaultFov;
-
-    float32 solidAngleError;
-    float32 geometryAngleError;
-    float32 absHeightError;
-
-    float32 zoomSolidAngleError;
-    float32 zoomGeometryAngleError;
-    float32 zoomAbsHeightError;
-
-    float32 fovSolidAngleError;
-    float32 fovGeometryAngleError;
-    float32 fovAbsHeightError;
-
-    float32 zoomFov;
-    float32 normalFov;
-    */
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Non-instancing render
 
@@ -378,15 +352,6 @@ public:
                          MEMBER(maxHeightError, "maxHeightError", I_VIEW | I_EDIT)
                          MEMBER(maxPatchRadiusError, "maxPatchRadiusError", I_VIEW | I_EDIT)
                          MEMBER(maxAbsoluteHeightError, "maxAbsoluteHeightError", I_VIEW | I_EDIT)
-                         /*  
-                         MEMBER(solidAngleError, "solidAngleError", I_VIEW | I_EDIT)
-                         MEMBER(geometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
-                         MEMBER(absHeightError, "absHeightError", I_VIEW | I_EDIT)
-
-                         MEMBER(zoomSolidAngleError, "solidAngleError", I_VIEW | I_EDIT)
-                         MEMBER(zoomGeometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
-                         MEMBER(zoomAbsHeightError, "absHeightError", I_VIEW | I_EDIT) 
-                         */
                          );
 };
 

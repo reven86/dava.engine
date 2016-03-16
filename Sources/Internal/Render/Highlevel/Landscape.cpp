@@ -78,19 +78,6 @@ Landscape::Landscape()
 
     heightmap = new Heightmap();
 
-    /*
-    solidAngleError = (26.5f * PI / 180.0f);
-    geometryAngleError = (1.0f * PI / 180.0f);
-    absHeightError = 3.0f;
-
-    zoomSolidAngleError = solidAngleError;
-    zoomGeometryAngleError = (0.1f * PI / 180.0f);
-    zoomAbsHeightError = 0.5f;
-
-    zoomFov = 6.5f;
-    normalFov = 70.0f;
-    */
-
     maxHeightError = 0.03f;
     maxPatchRadiusError = 0.7f;
     maxAbsoluteHeightError = 3.f;
@@ -378,9 +365,9 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
 {
     Vector3 res;
-    res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size()) * (bbox.max.x - bbox.min.x));
-    res.y = (bbox.min.y + (float32)y / (float32)(heightmap->Size()) * (bbox.max.y - bbox.min.y));
-    res.z = (bbox.min.z + ((float32)height / (float32)Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
+    res.x = (bbox.min.x + x / heightmapSizef * (bbox.max.x - bbox.min.x));
+    res.y = (bbox.min.y + y / heightmapSizef * (bbox.max.y - bbox.min.y));
+    res.z = (bbox.min.z + height / float32(Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
     return res;
 }
 
@@ -398,7 +385,6 @@ bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
         return false;
     }
 
-    //HEIGHTMAP_COMPLETE
     auto hmSize = heightmap->Size();
     float32 fx = static_cast<float>(hmSize) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
     float32 fy = static_cast<float>(hmSize) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
@@ -566,20 +552,6 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
         return;
     }
 
-    /*
-    float32 geometryRadius = Abs(patch->maxError);
-    float32 geometryDistance = Distance(cameraPos, patch->positionOfMaxError);
-    float32 geometryError = atanf(geometryRadius / geometryDistance);
-
-    Vector3 max = patch->bbox.max;
-    Vector3 min = patch->bbox.min;
-    Vector3 origin = patch->bbox.GetCenter();
-
-    float32 distance = Distance(origin, cameraPos);
-    float32 radius = Distance(origin, max);
-    float32 solidAngle = atanf(radius / distance);
-    */
-
     ////////////////////////////////////////////////////////////////////////////////////
 
     float32 distance = Distance(cameraPos, patch->positionOfMaxError);
@@ -589,8 +561,6 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 patchDistance = Distance(cameraPos, patchOrigin);
     float32 rError = patch->radius / (patchDistance * tanFovY);
 
-    //if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
-    //if ((minSubdivLevelSize > levelInfo.size) || (supDistance < patchSize))
     if ((level < subdivLevelCount - 1) && ((minSubdivLevelSize > levelInfo.size) || (maxHeightError <= hError) || (maxPatchRadiusError <= rError) || (maxAbsoluteHeightError < patch->maxError)))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
@@ -1287,13 +1257,6 @@ void Landscape::PrepareToRender(Camera* camera)
         camera = GetRenderSystem()->GetMainCamera();
         frustum = camera->GetFrustum();
         cameraPos = camera->GetPosition();
-
-        /*
-        float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) / (normalFov - zoomFov), 0.0f, 1.0f);
-        fovSolidAngleError = zoomSolidAngleError + (solidAngleError - zoomSolidAngleError) * fovLerp;
-        fovGeometryAngleError = zoomGeometryAngleError + (geometryAngleError - zoomGeometryAngleError) * fovLerp;
-        fovAbsHeightError = zoomAbsHeightError + (absHeightError - zoomAbsHeightError) * fovLerp;
-        */
 
         tanFovY = tanf(camera->GetFOV() * PI / 360.f) * camera->GetAspect();
 
