@@ -9,14 +9,13 @@
 #include "Concurrency/Thread.h"
 
 #include "uap_dx11.h"
+#include "Core/Core.h"
 
 #include <agile.h>
 #include <Windows.ui.xaml.media.dxinterop.h>
 #include <DirectXMath.h>
 #include <dxgi1_3.h>
 #include <D3D11SDKLayers.h>
-
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 using namespace rhi;
 using namespace Microsoft::WRL;
@@ -504,16 +503,9 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-    //     m_logicalSize.Width = static_cast<float32>(DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
-    //     m_logicalSize.Height = static_cast<float32>(DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
-    Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
-                                                                                            m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
-                                                                                        }));
-
-    while (action->Status == Windows::Foundation::AsyncStatus::Started)
-    {
-        DAVA::Thread::Sleep(1);
-    }
+    DAVA::DisplayMode curMode = DAVA::Core::Instance()->GetCurrentDisplayMode();
+    m_logicalSize.Width = curMode.width;
+    m_logicalSize.Height = curMode.height;
 
     // Setup inverse scale on the swap chain
     DXGI_MATRIX_3X2_F inverseScale = { 0 };

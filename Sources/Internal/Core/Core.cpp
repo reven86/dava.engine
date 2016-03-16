@@ -656,6 +656,15 @@ void Core::SystemProcessFrame()
         return;
     }
 
+#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
+    // recalc frame inside begin / end frame
+    VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+    if (vsc->WasScreenSizeChanged())
+    {
+        vsc->ScreenSizeChanged();
+    }
+#endif
+
     SystemTimer::Instance()->Start();
 
     /**
@@ -725,19 +734,6 @@ void Core::SystemProcessFrame()
         core->EndFrame();
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
 
-#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
-        // recalc frame inside begin / end frame
-        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
-        if (vsc->WasScreenSizeChanged())
-        {
-            vsc->ScreenSizeChanged();
-        }
-#else
-        if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
-        {
-            ApplyWindowSize();
-        }
-#endif // !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
 
         STOP_TIMING(PROF__FRAME_ENDFRAME);
     }
@@ -755,6 +751,13 @@ void Core::SystemProcessFrame()
     //profiler::Dump();
     profiler::DumpAverage();
     #endif
+
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
+    if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
+    {
+        ApplyWindowSize();
+    }
+#endif // defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 void Core::GoBackground(bool isLock)
@@ -929,8 +932,6 @@ void Core::ApplyWindowSize()
     int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
 
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
-    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
 
     // render reset
     rhi::ResetParam params;
@@ -944,6 +945,8 @@ void Core::ApplyWindowSize()
     }
     Renderer::Reset(params);
 
+    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
     virtSystem->ScreenSizeChanged();
 }
 
