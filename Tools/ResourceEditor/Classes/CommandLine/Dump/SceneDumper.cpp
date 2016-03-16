@@ -187,7 +187,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
             }
             else
             {
-                bool isCompressedSource = TextureDescriptor::CanCompressAndDecompress(descriptor->dataSettings.sourceFileFormat);
+                bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
                 if (descriptor->IsCubeMap() && !isCompressedSource)
                 {
                     Vector<FilePath> faceNames;
