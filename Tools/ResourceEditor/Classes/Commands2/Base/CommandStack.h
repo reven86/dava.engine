@@ -81,6 +81,8 @@ private:
     void CommandExecuted(const Command2* command, bool redo);
 
 private:
+    const DAVA::int32 INVALID_CLEAN_INDEX = static_cast<DAVA::int32>(-1);
+
     CommandsContainer commandList;
     std::unique_ptr<CommandBatch> curBatchCommand;
 

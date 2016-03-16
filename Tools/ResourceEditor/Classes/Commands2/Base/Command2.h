@@ -67,6 +67,7 @@ public:
 
     void Execute() override;
 
+    virtual bool IsModifying() const;
     virtual bool CanUndo() const;
 
     virtual bool MatchCommandID(DAVA::int32 commandID) const;
@@ -91,6 +92,11 @@ inline const DAVA::String& Command2::GetText() const
 }
 
 inline bool Command2::CanUndo() const
+{
+    return true;
+}
+
+inline bool Command2::IsModifying() const
 {
     return true;
 }

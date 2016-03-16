@@ -45,6 +45,7 @@ public:
 
     void Redo() override;
     void Undo() override;
+    bool IsModifying() const override;
 
     void SaveEnabledToolsState();
     void ApplySavedState();
@@ -66,6 +67,11 @@ protected:
     EnableFunction enableFunction;
     DisableFunction disableFunction;
 };
+
+inline bool LandscapeToolsToggleCommand::IsModifying() const
+{
+    return false;
+}
 
 template <typename ForwardCommand>
 class LandscapeToolsReverseCommand : public ForwardCommand
