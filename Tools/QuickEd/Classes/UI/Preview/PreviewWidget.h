@@ -81,6 +81,7 @@ public slots:
     void OnRootControlPositionChanged(const DAVA::Vector2& pos);
     void OnNestedControlPositionChanged(const QPoint& pos);
     void OnEmulationModeChanged(bool emulationMode);
+    void OnEditingRootControlsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
 
 private slots:
     void OnScaleChanged(qreal scale);

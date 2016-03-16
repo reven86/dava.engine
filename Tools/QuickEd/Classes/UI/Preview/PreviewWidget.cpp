@@ -36,6 +36,7 @@
 #include <QMenu>
 #include <QShortCut>
 #include "UI/UIControl.h"
+#include "UI/Focus/UIFocusSystem.h"
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
@@ -298,6 +299,20 @@ void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
     systemsManager->SetEmulationMode(emulationMode);
 }
 
+void PreviewWidget::OnEditingRootControlsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
+{
+    if (rootControls.size() == 1)
+    {
+        auto it = rootControls.begin();
+        PackageBaseNode* first = *it;
+        UIControlSystem::Instance()->GetFocusSystem()->SetRoot(first->GetControl());
+    }
+    else
+    {
+        UIControlSystem::Instance()->GetFocusSystem()->SetRoot(nullptr);
+    }
+}
+
 void PreviewWidget::ApplyPosChanges()
 {
     QPoint viewPos = canvasPos + rootControlPos;
@@ -334,6 +349,7 @@ void PreviewWidget::OnGLInitialized()
     systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    systemsManager->EditingRootControlsChanged.Connect(this, &PreviewWidget::OnEditingRootControlsChanged);
     connect(focusNextChildAction, &QAction::triggered, [this]() { systemsManager->FocusNextChild.Emit(); });
     connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemsManager->FocusPreviousChild.Emit(); });
     connect(selectAllAction, &QAction::triggered, [this]() { systemsManager->SelectAllControls.Emit(); });
