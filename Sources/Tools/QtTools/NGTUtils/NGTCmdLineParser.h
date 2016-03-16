@@ -32,6 +32,8 @@
 #include "core_generic_plugin/interfaces/i_command_line_parser.hpp"
 #include "core_dependency_system/i_interface.hpp"
 
+namespace NGTLayer
+{
 class NGTCmdLineParser
 : public Implements<ICommandLineParser>
 {
@@ -50,5 +52,6 @@ private:
     int m_argc;
     char** m_argv;
 };
+} // namespace NGTLayer
 
 #endif // __QTTOOLS_NGTCMDLINEPARSER_H__

@@ -51,44 +51,47 @@ PluginMain* createPlugin(IComponentContext& contextManager)
     return nullptr;
 }
 
-NGTBaseApplication::NGTBaseApplication(int argc, char** argv)
+namespace NGTLayer
+{
+BaseApplication::BaseApplication(int argc, char** argv)
     : pluginManager(false)
     , commandLineParser(argc, argv)
 {
 }
 
-NGTBaseApplication::~NGTBaseApplication()
+BaseApplication::~BaseApplication()
 {
-    DAVA::SetGlobalContext(nullptr);
+    NGTLayer::SetGlobalContext(nullptr);
 }
 
-void NGTBaseApplication::LoadPlugins()
+void BaseApplication::LoadPlugins()
 {
     DAVA::Vector<DAVA::WideString> pluginList;
     GetPluginsForLoad(pluginList);
 
     DAVA::WideString plugindFolder = GetPluginsFolder();
 
-    std::transform(pluginList.begin(), pluginList.end(), pluginList.begin(), [&plugindFolder](std::wstring const& pluginPath) {
-        return plugindFolder + pluginPath;
-    });
+    std::transform(pluginList.begin(), pluginList.end(), pluginList.begin(), [&plugindFolder](std::wstring const& pluginPath)
+                   {
+                       return plugindFolder + pluginPath;
+                   });
 
     pluginManager.getContextManager().getGlobalContext()->registerInterface<ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
     pluginManager.loadPlugins(pluginList);
-    DAVA::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
-    Variant::setMetaTypeManager(DAVA::queryInterface<IMetaTypeManager>());
+    NGTLayer::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
+    Variant::setMetaTypeManager(NGTLayer::queryInterface<IMetaTypeManager>());
 
     OnPostLoadPugins();
 }
 
-IComponentContext& NGTBaseApplication::GetComponentContext()
+IComponentContext& BaseApplication::GetComponentContext()
 {
     IComponentContext* context = pluginManager.getContextManager().getGlobalContext();
     DVASSERT(context != nullptr);
     return *context;
 }
 
-int NGTBaseApplication::StartApplication(QMainWindow* appMainWindow)
+int BaseApplication::StartApplication(QMainWindow* appMainWindow)
 {
     IQtFramework* framework = pluginManager.queryInterface<IQtFramework>();
     DVASSERT(framework != nullptr);
@@ -105,7 +108,7 @@ int NGTBaseApplication::StartApplication(QMainWindow* appMainWindow)
     return result;
 }
 
-DAVA::WideString NGTBaseApplication::GetPluginsFolder() const
+DAVA::WideString BaseApplication::GetPluginsFolder() const
 {
     QFileInfo appFileInfo(commandLineParser.argv()[0]);
 
@@ -117,3 +120,4 @@ DAVA::WideString NGTBaseApplication::GetPluginsFolder() const
 
     return pluginsBasePath_.toStdWString();
 }
+} // namespace NGTLayer

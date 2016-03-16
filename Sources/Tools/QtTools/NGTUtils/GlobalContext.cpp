@@ -30,7 +30,7 @@
 
 #include "core_common/platform_env.hpp"
 
-namespace DAVA
+namespace NGTLayer
 {
 static IComponentContext* s_context = nullptr;
 void SetGlobalContext(IComponentContext* context)
@@ -81,4 +81,4 @@ IComponentContext* GetGlobalContext()
 {
     return s_context;
 }
-}
+} // namespace NGTLayer

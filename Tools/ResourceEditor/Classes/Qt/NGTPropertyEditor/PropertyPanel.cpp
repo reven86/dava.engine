@@ -53,7 +53,7 @@ PropertyPanel::~PropertyPanel()
 
 void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
 {
-    IDefinitionManager* defMng = DAVA::queryInterface<IDefinitionManager>();
+    IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
     DVASSERT(defMng != nullptr);
     defMng->registerDefinition(new TypeClassDefinition<PropertyPanel>());
 
@@ -102,17 +102,17 @@ void PropertyPanel::SetObject(DAVA::InspBase* object)
 {
     std::shared_ptr<ITreeModel> tempTreeModel(model);
 
-    IDefinitionManager* defMng = DAVA::queryInterface<IDefinitionManager>();
+    IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
     DVASSERT(defMng != nullptr);
-    IReflectionController* controller = DAVA::queryInterface<IReflectionController>();
+    IReflectionController* controller = NGTLayer::queryInterface<IReflectionController>();
     ITreeModel* newModel = nullptr;
     if (object != nullptr)
     {
         const DAVA::InspInfo* info = object->GetTypeInfo();
-        DAVA::RegisterType(*defMng, info);
+        NGTLayer::RegisterType(*defMng, info);
 
         IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
-        newModel = new ReflectedTreeModel(DAVA::CreateObjectHandle(*defMng, info, object), *defMng, controller);
+        newModel = new ReflectedTreeModel(NGTLayer::CreateObjectHandle(*defMng, info, object), *defMng, controller);
     }
 
     model.reset(newModel);

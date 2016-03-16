@@ -36,12 +36,12 @@
 
 #include "core_variant/variant.hpp"
 
-namespace DAVA
+namespace NGTLayer
 {
 namespace VariantConverter
 {
-VariantType Convert(Variant const& v, MetaInfo const* info);
-Variant Convert(VariantType const& value);
+DAVA::VariantType Convert(Variant const& v, DAVA::MetaInfo const* info);
+Variant Convert(DAVA::VariantType const& value);
 }
 }
 

@@ -66,11 +66,11 @@ void FixOSXFonts();
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLine);
 void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
 
-class REApplication : public NGTBaseApplication
+class REApplication : public NGTLayer::BaseApplication
 {
 public:
     REApplication(int argc, char** argv)
-        : NGTBaseApplication(argc, argv)
+        : BaseApplication(argc, argv)
     {
     }
 

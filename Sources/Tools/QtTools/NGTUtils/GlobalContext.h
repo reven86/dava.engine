@@ -32,7 +32,7 @@
 #include "Debug/DVAssert.h"
 #include "core_generic_plugin/interfaces/i_component_context.hpp"
 
-namespace DAVA
+namespace NGTLayer
 {
 void SetGlobalContext(IComponentContext* context);
 IComponentContext* GetGlobalContext();
@@ -44,6 +44,6 @@ T* queryInterface()
     DVASSERT(context != nullptr);
     return context->queryInterface<T>();
 }
-}
+} // namespace NGTLayer
 
 #endif // __QTTOOLS_GLOBALCONTEXT_H__

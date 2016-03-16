@@ -38,13 +38,16 @@ namespace DAVA
 class InspColl;
 class KeyedArchive;
 struct MetaInfo;
+}
 
+namespace NGTLayer
+{
 class NGTCollection : public CollectionImplBase
 {
     class Iterator;
 
 public:
-    NGTCollection(void* object, const InspColl* collectionImpl);
+    NGTCollection(void* object, const DAVA::InspColl* collectionImpl);
 
     bool empty() const override;
     size_t size() const override;
@@ -75,7 +78,7 @@ public:
 
 private:
     void* object;
-    const InspColl* collectionImpl;
+    const DAVA::InspColl* collectionImpl;
     TypeId keyId;
     TypeId valueId;
     TypeId containerId;
@@ -105,12 +108,12 @@ public:
     bool canResize() const override;
 
 private:
-    KeyedArchive * archive;
+    DAVA::KeyedArchive* archive;
     TypeId keyTypeId;
     TypeId valueTypeId;
     TypeId containerTypeId;
 };
 
-} // DAVA
+} // namespace NGTLayer
 
 #endif // __QTTOOLS_NGTCOLLECTIONSIMPL_H__

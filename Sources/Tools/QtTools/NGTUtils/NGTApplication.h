@@ -37,11 +37,13 @@
 #include "core_generic_plugin/interfaces/i_component_context.hpp"
 
 class QMainWindow;
-class NGTBaseApplication
+namespace NGTLayer
+{
+class BaseApplication
 {
 public:
-    NGTBaseApplication(int argc, char** argv);
-    virtual ~NGTBaseApplication();
+    BaseApplication(int argc, char** argv);
+    virtual ~BaseApplication();
 
     void LoadPlugins();
     IComponentContext& GetComponentContext();
@@ -58,5 +60,6 @@ private:
     GenericPluginManager pluginManager;
     NGTCmdLineParser commandLineParser;
 };
+} // namespace NGTLayer
 
 #endif // __QTTOOLS_NGTAPPLICATION_H__

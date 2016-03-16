@@ -42,11 +42,11 @@
 
 #include "core_reflection/i_definition_manager.hpp"
 
-namespace DAVA
+namespace NGTLayer
 {
-TypeId GetItemKeyTypeId(const InspColl * collection)
+TypeId GetItemKeyTypeId(const DAVA::InspColl* collection)
 {
-    const MetaInfo* itemType = collection->ItemKeyType();
+    const DAVA::MetaInfo* itemType = collection->ItemKeyType();
     if (itemType == nullptr)
         return getClassIdentifier<int>();
     else
@@ -56,9 +56,9 @@ TypeId GetItemKeyTypeId(const InspColl * collection)
 class NGTCollection::Iterator : public CollectionIteratorImplBase
 {
 public:
-    static const uint32 END_ITERATOR_POSITION = static_cast<uint32>(-1);
+    static const DAVA::uint32 END_ITERATOR_POSITION = static_cast<DAVA::uint32>(-1);
 
-    Iterator(void * object_, const InspColl * collection_, uint32 linearKey_)
+    Iterator(void* object_, const DAVA::InspColl* collection_, DAVA::uint32 linearKey_)
         : object(object_)
         , collection(collection_)
         , linearKey(linearKey_)
@@ -69,7 +69,7 @@ public:
         if (linearKey != END_ITERATOR_POSITION)
         {
             iterator = collection->Begin(object);
-            uint32 counter = linearKey;
+            DAVA::uint32 counter = linearKey;
             while (counter > 0 && iterator != nullptr)
             {
                 iterator = collection->Next(iterator);
@@ -96,17 +96,17 @@ public:
         }
 
         DVASSERT(collection->ItemKeyType() != nullptr);
-        return VariantConverter::Convert(VariantType::LoadData(key, collection->ItemKeyType()));
+        return VariantConverter::Convert(DAVA::VariantType::LoadData(key, collection->ItemKeyType()));
     }
 
     Variant value() const override
     {
-        const MetaInfo* valueTypeInfo = collection->ItemType();
+        const DAVA::MetaInfo* valueTypeInfo = collection->ItemType();
         DVASSERT(valueTypeInfo != nullptr);
         if (collection->ItemType()->GetIntrospection() != nullptr)
         {
             void* itemData = collection->ItemData(iterator);
-            const InspInfo* itemInsp = valueTypeInfo->GetIntrospection(itemData);
+            const DAVA::InspInfo* itemInsp = valueTypeInfo->GetIntrospection(itemData);
 
             if (itemData != nullptr && itemInsp != nullptr)
             {
@@ -119,7 +119,7 @@ public:
         void* valuePointer = collection->ItemPointer(iterator);
         DVASSERT(valuePointer != nullptr);
 
-        return VariantConverter::Convert(VariantType::LoadData(valuePointer, valueTypeInfo));
+        return VariantConverter::Convert(DAVA::VariantType::LoadData(valuePointer, valueTypeInfo));
     }
 
     bool setValue(const Variant& v) const override
@@ -128,13 +128,13 @@ public:
         DVASSERT(valuePointer != nullptr);
         DVASSERT(collection->ItemType() != nullptr);
 
-        DVASSERT((collection->Flags() & I_EDIT) != 0)
-        VariantType value = VariantConverter::Convert(v, collection->ItemType());
+        DVASSERT((collection->Flags() & DAVA::I_EDIT) != 0)
+        DAVA::VariantType value = VariantConverter::Convert(v, collection->ItemType());
 
-        if (value.GetType() == VariantType::TYPE_NONE)
+        if (value.GetType() == DAVA::VariantType::TYPE_NONE)
             return false;
 
-        VariantType::SaveData(valuePointer, collection->ItemType(), value);
+        DAVA::VariantType::SaveData(valuePointer, collection->ItemType(), value);
 
         return true;
     }
@@ -178,8 +178,8 @@ public:
 private:
     void * object;
     const DAVA::InspColl * collection;
-    InspColl::Iterator iterator = nullptr;
-    uint32 linearKey = 0;
+    DAVA::InspColl::Iterator iterator = nullptr;
+    DAVA::uint32 linearKey = 0;
 #ifdef __DAVAENGINE_DEBUG__
     DAVA::String dbg_name;
 #endif
@@ -188,14 +188,14 @@ private:
     TypeId valueTypeId;
 };
 
-NGTCollection::NGTCollection(void* object_, const InspColl* collectionImpl_)
+NGTCollection::NGTCollection(void* object_, const DAVA::InspColl* collectionImpl_)
     : object(object_)
     , collectionImpl(collectionImpl_)
     , keyId("", 0)
     , valueId(collectionImpl->ItemType()->GetTypeName())
     , containerId(collectionImpl->Type()->GetTypeName())
 {
-    const MetaInfo* itemType = collectionImpl->ItemKeyType();
+    const DAVA::MetaInfo* itemType = collectionImpl->ItemKeyType();
     if (itemType == nullptr)
         keyId = getClassIdentifier<int>();
     else
@@ -323,8 +323,8 @@ public:
     {
         DVASSERT(itemKey != END_KEY_VALUE);
         DVASSERT(archive->IsKeyExists(itemKey));
-        VariantType * value = archive->GetVariant(itemKey);
-        if (value->GetType() == VariantType::TYPE_KEYED_ARCHIVE)
+        DAVA::VariantType* value = archive->GetVariant(itemKey);
+        if (value->GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
         {
             IDefinitionManager* defMng = queryInterface<IDefinitionManager>();
             DVASSERT(defMng != nullptr);
@@ -336,7 +336,7 @@ public:
     bool setValue(const Variant& v) const override
     {
         DVASSERT(itemKey != END_KEY_VALUE);
-        VariantType * oldValue = archive->GetVariant(itemKey);
+        DAVA::VariantType* oldValue = archive->GetVariant(itemKey);
         archive->SetVariant(itemKey, VariantConverter::Convert(v, oldValue->Meta()));
         return true;
     }
@@ -391,8 +391,8 @@ NGTKeyedArchiveImpl::NGTKeyedArchiveImpl(DAVA::KeyedArchive * keyedArchive)
 {
     DVASSERT(archive != nullptr);
     containerTypeId = TypeId(DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()->GetTypeName());
-    keyTypeId = TypeId(DAVA::MetaInfo::Instance<typename KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
-    valueTypeId = getClassIdentifier<VariantType>();
+    keyTypeId = TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
+    valueTypeId = getClassIdentifier<DAVA::VariantType>();
 }
 
 bool NGTKeyedArchiveImpl::empty() const
@@ -423,7 +423,7 @@ std::pair<CollectionIteratorImplPtr, bool> NGTKeyedArchiveImpl::get(const Varian
     CollectionIteratorImplPtr resultIter;
     bool isSuccess = false;
 
-    String itemKey;
+    DAVA::String itemKey;
     if (key.tryCast(itemKey))
     {
         switch (policy)
@@ -461,7 +461,7 @@ CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImp
 
 size_t NGTKeyedArchiveImpl::erase(const Variant& key)
 {
-    String keyValue;
+    DAVA::String keyValue;
     DVVERIFY(key.tryCast(keyValue));
 
     if (!archive->IsKeyExists(keyValue))
@@ -487,7 +487,7 @@ CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImp
 
     while (!eraseIter.equals(*last))
     {
-        String itemKey = eraseIter.itemKey;
+        DAVA::String itemKey = eraseIter.itemKey;
         eraseIter.inc();
         archive->DeleteKey(itemKey);
     }
@@ -525,4 +525,4 @@ bool NGTKeyedArchiveImpl::canResize() const
     return false;
 }
 
-}
+} // namesapce NGTLayer

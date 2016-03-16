@@ -43,12 +43,12 @@
 
 #include <functional>
 
-namespace DAVA
+namespace NGTLayer
 {
 class NGTMemberProperty : public BaseProperty
 {
 public:
-    NGTMemberProperty(const InspMember* member, const MetaInfo* objectType);
+    NGTMemberProperty(const DAVA::InspMember* member, const DAVA::MetaInfo* objectType);
 
     bool readOnly() const override;
     bool isValue() const override;
@@ -60,16 +60,16 @@ private:
     void* UpCast(ObjectHandle const& pBase, const IDefinitionManager& definitionManager) const;
 
 private:
-    const MetaInfo* objectType;
-    const InspMember* memberInsp;
+    const DAVA::MetaInfo* objectType;
+    const DAVA::InspMember* memberInsp;
     MetaHandle metaBase;
-    WideString dysplayName;
+    DAVA::WideString dysplayName;
 };
 
 class NGTTypeDefinition : public IClassDefinitionDetails
 {
 public:
-    NGTTypeDefinition(const InspInfo* info);
+    NGTTypeDefinition(const DAVA::InspInfo* info);
 
     bool isAbstract() const override;
     bool isGeneric() const override;
@@ -84,15 +84,15 @@ public:
     MetaHandle getMetaData() const override;
 
 private:
-    const InspInfo* info;
+    const DAVA::InspInfo* info;
     PropertyStorage properties;
     MetaHandle metaHandle;
-    WideString displayName;
+    DAVA::WideString displayName;
 };
 
 /// Use it only for registration in IDefinitionManager
-void RegisterType(IDefinitionManager& mng, const InspInfo* inspInfo);
-ObjectHandle CreateObjectHandle(IDefinitionManager& defMng, const InspInfo* fieldInsp, void* field);
-}
+void RegisterType(IDefinitionManager& mng, const DAVA::InspInfo* inspInfo);
+ObjectHandle CreateObjectHandle(IDefinitionManager& defMng, const DAVA::InspInfo* fieldInsp, void* field);
+} // namespace NGTLayer
 
 #endif // __QTTOOLS_REFLECTIONBRIDGE_H__

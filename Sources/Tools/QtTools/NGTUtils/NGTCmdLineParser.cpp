@@ -31,6 +31,8 @@
 #include <locale>
 #include <codecvt>
 
+namespace NGTLayer
+{
 NGTCmdLineParser::NGTCmdLineParser(int argc_, char** argv_)
     : m_argc(argc_)
     , m_argv(argv_)
@@ -95,3 +97,4 @@ std::wstring NGTCmdLineParser::getParamStrW(const char* arg) const
     }
     return L"";
 }
+} // namespace NGTLayer

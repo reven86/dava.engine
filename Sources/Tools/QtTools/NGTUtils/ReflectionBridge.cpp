@@ -37,28 +37,25 @@
 #include "VariantConverter.h"
 #include "NGTCollectionsImpl.h"
 
-namespace DAVA
-{
-namespace
+namespace NGTLayer
 {
 class EnumGenerator : public IEnumGenerator
 {
 public:
-    EnumGenerator(const InspMember* insp)
+    EnumGenerator(const DAVA::InspMember* insp)
         : memberInsp(insp)
     {
     }
 
     Collection getCollection(const ObjectHandle& provider, const IDefinitionManager& definitionManager) override
     {
-        InspDesc const& desc = memberInsp->Desc();
+        DAVA::InspDesc const& desc = memberInsp->Desc();
 
         DVASSERT(desc.enumMap != nullptr);
 
         using TCollection = std::map<int, char const*>;
         TCollection* enumMap = new TCollection;
 
-        Collection result;
         for (size_t i = 0; i < desc.enumMap->GetCount(); ++i)
         {
             int value = 0;
@@ -70,7 +67,7 @@ public:
     }
 
 private:
-    const InspMember* memberInsp;
+    const DAVA::InspMember* memberInsp;
 };
 
 class DavaObjectStorage : public IObjectHandleStorage
@@ -103,25 +100,23 @@ private:
     TypeId typeId;
 };
 
-} // namespace
-
-NGTTypeDefinition::NGTTypeDefinition(const InspInfo* info_)
+NGTTypeDefinition::NGTTypeDefinition(const DAVA::InspInfo* info_)
     : info(info_)
 {
     DVASSERT(info != nullptr);
-    
-    displayName = StringToWString(info->Name().c_str());
+
+    displayName = DAVA::StringToWString(info->Name().c_str());
     metaHandle = MetaDisplayName(displayName.c_str());
 
-    const MetaInfo* objectType = info->Type();
+    const DAVA::MetaInfo* objectType = info->Type();
 
     for (int i = 0; i < info->MembersCount(); ++i)
     {
-        const InspMember* member = info->Member(i);
-        const MetaInfo* metaInfo = member->Type();
+        const DAVA::InspMember* member = info->Member(i);
+        const DAVA::MetaInfo* metaInfo = member->Type();
 
         int memberFlags = member->Flags();
-        if ((memberFlags & I_VIEW) == 0)
+        if ((memberFlags & DAVA::I_VIEW) == 0)
             continue;
 
         properties.addProperty(IBasePropertyPtr(new NGTMemberProperty(member, objectType)));
@@ -150,7 +145,7 @@ const char* NGTTypeDefinition::getName() const
 
 const char* NGTTypeDefinition::getParentName() const
 {
-    const InspInfo* parentInfo = info->BaseInfo();
+    const DAVA::InspInfo* parentInfo = info->BaseInfo();
     if (parentInfo != nullptr)
         parentInfo->Type()->GetTypeName();
 
@@ -181,7 +176,7 @@ IClassDefinitionModifier* NGTTypeDefinition::getDefinitionModifier() const
     return nullptr;
 }
 
-NGTMemberProperty::NGTMemberProperty(const InspMember* member, const MetaInfo* objectType_)
+NGTMemberProperty::NGTMemberProperty(const DAVA::InspMember* member, const DAVA::MetaInfo* objectType_)
     : BaseProperty(member->Name().c_str(), member->Type()->GetTypeName())
     , objectType(objectType_)
     , memberInsp(member)
@@ -190,30 +185,30 @@ NGTMemberProperty::NGTMemberProperty(const InspMember* member, const MetaInfo* o
     DVASSERT(objectType != nullptr);
     DVASSERT(memberInsp != nullptr);
 
-    if ((memberInsp->Flags() & I_EDIT) == 0)
+    if ((memberInsp->Flags() & DAVA::I_EDIT) == 0)
         metaBase = metaBase + MetaReadOnly();
 
-    const InspDesc& desc = memberInsp->Desc();
+    const DAVA::InspDesc& desc = memberInsp->Desc();
     if (desc.enumMap != nullptr)
         metaBase = metaBase + MetaEnum(new EnumGenerator(memberInsp));
 
-    const MetaInfo* metaType = member->Type();
+    const DAVA::MetaInfo* metaType = member->Type();
 
     if ((metaType->IsPointer() && metaType->GetIntrospection() == nullptr) ||
-        metaType == MetaInfo::Instance<FastName>() ||
-        metaType == MetaInfo::Instance<FilePath>() ||
-        metaType == MetaInfo::Instance<Matrix2>() ||
-        metaType == MetaInfo::Instance<Matrix3>() || 
-        metaType == MetaInfo::Instance<Matrix4>() ||
-        metaType == MetaInfo::Instance<AABBox3>())
+        metaType == DAVA::MetaInfo::Instance<DAVA::FastName>() ||
+        metaType == DAVA::MetaInfo::Instance<DAVA::FilePath>() ||
+        metaType == DAVA::MetaInfo::Instance<DAVA::Matrix2>() ||
+        metaType == DAVA::MetaInfo::Instance<DAVA::Matrix3>() ||
+        metaType == DAVA::MetaInfo::Instance<DAVA::Matrix4>() ||
+        metaType == DAVA::MetaInfo::Instance<DAVA::AABBox3>())
     {
-        setType(TypeId(MetaInfo::Instance<String>()->GetTypeName()));
+        setType(TypeId(DAVA::MetaInfo::Instance<DAVA::String>()->GetTypeName()));
     }
-    else if (metaType == MetaInfo::Instance<Vector2>())
+    else if (metaType == DAVA::MetaInfo::Instance<DAVA::Vector2>())
         setType(TypeId(getClassIdentifier<::Vector2>()));
-    else if (metaType == MetaInfo::Instance<Vector3>())
+    else if (metaType == DAVA::MetaInfo::Instance<DAVA::Vector3>())
         setType(TypeId(getClassIdentifier<::Vector3>()));
-    else if (metaType == MetaInfo::Instance<Color>())
+    else if (metaType == DAVA::MetaInfo::Instance<DAVA::Color>())
     {
         setType(TypeId(getClassIdentifier<::Vector4>()));
         metaBase = metaBase + MetaColor();
@@ -226,12 +221,12 @@ Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManag
     if (object != nullptr)
     {
         void* field = memberInsp->Data(object);
-        const MetaInfo* memberMetaInfo = memberInsp->Type();
-        const InspInfo* fieldIntrospection = memberMetaInfo->GetIntrospection(field);
+        const DAVA::MetaInfo* memberMetaInfo = memberInsp->Type();
+        const DAVA::InspInfo* fieldIntrospection = memberMetaInfo->GetIntrospection(field);
 
-        if (nullptr != fieldIntrospection && (fieldIntrospection->Type() == MetaInfo::Instance<KeyedArchive>()))
+        if (nullptr != fieldIntrospection && (fieldIntrospection->Type() == DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()))
         {
-            return Collection(std::make_shared<NGTKeyedArchiveImpl>(reinterpret_cast<KeyedArchive *>(field)));
+            return Collection(std::make_shared<NGTKeyedArchiveImpl>(reinterpret_cast<DAVA::KeyedArchive*>(field)));
         }
         // introspection
         else if (nullptr != field && nullptr != fieldIntrospection)
@@ -240,14 +235,14 @@ Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManag
         }
         else if (memberMetaInfo->IsPointer())
         {
-            String pointerValue(64, 0);
+            DAVA::String pointerValue(64, 0);
             sprintf(&pointerValue[0], "[0x%p] Pointer", field);
             return pointerValue;
         }
         else if (memberInsp->Collection())
         {
             DVASSERT(field != nullptr);
-            const InspColl* collection = memberInsp->Collection();
+            const DAVA::InspColl* collection = memberInsp->Collection();
             return Collection(std::make_shared<NGTCollection>(field, collection));
         }
         else if (memberInsp->Dynamic())
@@ -267,11 +262,11 @@ bool NGTMemberProperty::set(const ObjectHandle& pBase, const Variant& v, const I
     if (object == nullptr)
         return false;
 
-    const MetaInfo* type = memberInsp->Type();
-    if (type->IsPointer() || ((memberInsp->Flags() & I_EDIT) == 0))
+    const DAVA::MetaInfo* type = memberInsp->Type();
+    if (type->IsPointer() || ((memberInsp->Flags() & DAVA::I_EDIT) == 0))
         return false;
 
-    VariantType value = VariantConverter::Convert(v, type);
+    DAVA::VariantType value = VariantConverter::Convert(v, type);
     memberInsp->SetValue(object, value);
     return true;
 }
@@ -291,7 +286,7 @@ void* NGTMemberProperty::UpCast(ObjectHandle const& pBase, const IDefinitionMana
 bool NGTMemberProperty::readOnly() const
 {
     DVASSERT(memberInsp != nullptr);
-    return (memberInsp->Flags() & I_EDIT) == 0;
+    return (memberInsp->Flags() & DAVA::I_EDIT) == 0;
 }
 
 bool NGTMemberProperty::isValue() const
@@ -299,16 +294,16 @@ bool NGTMemberProperty::isValue() const
     return true;
 }
 
-void RegisterType(IDefinitionManager& mng, const InspInfo* inspInfo)
+void RegisterType(IDefinitionManager& mng, const DAVA::InspInfo* inspInfo)
 {
     if (inspInfo == nullptr)
         return;
 
-    static DAVA::UnorderedMap<const MetaInfo*, NGTTypeDefinition*> definitionMap;
+    static DAVA::UnorderedMap<const DAVA::MetaInfo*, NGTTypeDefinition*> definitionMap;
 
-    const MetaInfo* type = inspInfo->Type();
+    const DAVA::MetaInfo* type = inspInfo->Type();
 
-    DAVA::UnorderedMap<const MetaInfo*, NGTTypeDefinition*>::iterator definitionIter = definitionMap.find(type);
+    DAVA::UnorderedMap<const DAVA::MetaInfo*, NGTTypeDefinition*>::iterator definitionIter = definitionMap.find(type);
     if (definitionIter == definitionMap.end())
     {
         definitionIter = definitionMap.emplace(type, new NGTTypeDefinition(inspInfo)).first;
@@ -317,7 +312,7 @@ void RegisterType(IDefinitionManager& mng, const InspInfo* inspInfo)
     }
 }
 
-ObjectHandle CreateObjectHandle(IDefinitionManager& defMng, const InspInfo* fieldInsp, void* field)
+ObjectHandle CreateObjectHandle(IDefinitionManager& defMng, const DAVA::InspInfo* fieldInsp, void* field)
 {
     const char* typeName = fieldInsp->Type()->GetTypeName();
     IClassDefinition* def = defMng.getDefinition(typeName);
@@ -329,4 +324,4 @@ ObjectHandle CreateObjectHandle(IDefinitionManager& defMng, const InspInfo* fiel
     std::shared_ptr<IObjectHandleStorage> storage(new DavaObjectStorage(field, typeName));
     return ObjectHandle(storage);
 }
-}
+} // namespace NGTLayer
