@@ -56,29 +56,28 @@ public:
     DAVA::float32 GetDistance(DAVA::uint32 layer) const;
 
 signals:
-    void DistanceChanged(bool continious);
+    void DistanceHandleMoved();
+    void DistanceHandleReleased();
 
 protected slots:
     void SplitterMoved(int pos, int index);
 
 protected:
-    bool event(QEvent* e) override;
+    bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
     DAVA::float32 GetScaleSize() const;
 
-    void DispatchSignalByMouseState();
-
 private:
+
     QSplitter* splitter = nullptr;
+    DAVA::Vector<QObject *> splitterHandles;
 
     DAVA::Vector<QFrame*> frames;
     DAVA::Vector<DAVA::float32> distances;
 
     DAVA::uint32 layersCount = 0;
     DAVA::uint32 framesCount = 0;
-
-    LazyUpdater* signalsDispatcher = nullptr;
 };
 
 inline DAVA::uint32 DistanceSlider::GetLayersCount() const

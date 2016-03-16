@@ -81,7 +81,8 @@ private slots:
 
     //distance signals
     void LODDistanceChangedBySpinbox(double value);
-    void LODDistanceChangedBySlider(bool continious);
+    void LODDistanceIsChangingBySlider();
+    void LODDistanceChangedBySlider();
 
     //mode signal
     void SceneOrSelectionModeSelected(bool allSceneModeActivated);
