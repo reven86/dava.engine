@@ -53,6 +53,7 @@
 #include "Model/ControlProperties/PrototypeNameProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 #include "Model/YamlPackageSerializer.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include "PackageMimeData.h"
 
@@ -205,10 +206,10 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
         }
 
         case Qt::TextColorRole:
-            return controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
-
-        case Qt::BackgroundRole:
-            return QColor(Qt::white);
+            if (controlNode->GetPrototype() != nullptr)
+            {
+                return Themes::GetPrototypeColor();
+            }
 
         case Qt::FontRole:
         {
@@ -234,10 +235,9 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
                 return StringToQString(node->GetName());
 
             case Qt::TextColorRole:
-                return QColor(Qt::darkGreen);
-
-            case Qt::BackgroundRole:
-                return QColor(Qt::white);
+            {
+                return Themes::GetStyleSheetNodeColor();
+            }
 
             case Qt::FontRole:
             {
@@ -256,11 +256,8 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
             case Qt::DisplayRole:
                 return StringToQString(node->GetName());
 
-            case Qt::TextColorRole:
-                return QColor(Qt::black);
-
             case Qt::BackgroundRole:
-                return QColor(Qt::lightGray);
+                return Themes::GetViewLineAlternateColor();
 
             case Qt::FontRole:
             {

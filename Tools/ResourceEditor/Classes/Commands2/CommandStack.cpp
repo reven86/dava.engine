@@ -155,8 +155,7 @@ void CommandStack::Exec(Command2* command)
 {
     if (NULL != command)
     {
-        CommandAction* action = dynamic_cast<CommandAction*>(command);
-        if (!action)
+        if (command->CanUndo())
         {
             if (NULL != curBatchCommand)
             {
@@ -169,9 +168,9 @@ void CommandStack::Exec(Command2* command)
         }
         else
         {
-            action->Redo();
+            command->Redo();
             EmitNotify(command, true);
-            delete action;
+            delete command;
         }
     }
 }

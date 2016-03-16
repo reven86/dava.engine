@@ -277,5 +277,5 @@ void DavaGLWidget::resizeEvent(QResizeEvent*)
 
 void DavaGLWidget::OnCleanup()
 {
-    DAVA::SafeDelete(renderer);
+    delete renderer;
 }

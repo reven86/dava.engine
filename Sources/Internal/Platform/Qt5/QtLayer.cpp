@@ -79,6 +79,7 @@ void QtLayer::AppFinished()
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
+    Core::Instance()->Release();
 }
 
 void QtLayer::OnSuspend()

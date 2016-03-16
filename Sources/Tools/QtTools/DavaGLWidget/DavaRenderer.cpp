@@ -124,7 +124,6 @@ DavaRenderer::DavaRenderer(QSurface * surface, QOpenGLContext * context)
 
 DavaRenderer::~DavaRenderer()
 {
-    DAVA::QtLayer::Instance()->Release();
     OGLContextBinder::Instance()->Release();
 }
 
