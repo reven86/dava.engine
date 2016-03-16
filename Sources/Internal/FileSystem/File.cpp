@@ -67,21 +67,20 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
 
-    String relative = filename.GetAbsolutePathname();
-
-    if (relative[0] == '~')
+    if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
     {
+        String relative = filename.GetAbsolutePathname();
         relative = relative.substr(6); // skip "~res:/"
-    }
 
-    for (auto& ai : fileSystem->resourceArchiveList)
-    {
-        FileSystem::ResourceArchiveItem& item = ai;
-
-        ResourceArchive::ContentAndSize contentAndSize;
-        if (item.archive->LoadFile(relative, contentAndSize))
+        for (auto& ai : fileSystem->resourceArchiveList)
         {
-            return ReadOnlyArchiveFile::Create(contentAndSize, filename);
+            FileSystem::ResourceArchiveItem& item = ai;
+
+            ResourceArchive::ContentAndSize contentAndSize;
+            if (item.archive->LoadFile(relative, contentAndSize))
+            {
+                return ReadOnlyArchiveFile::Create(filename, std::move(contentAndSize));
+            }
         }
     }
 

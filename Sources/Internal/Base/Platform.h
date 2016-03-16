@@ -143,11 +143,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef Yield
 #undef ERROR
 #undef DELETE
-//#undef CopyFile
-//#undef MoveFile
-//#undef DeleteFile
-//#undef CreateFile
-//#undef CreateDirectory
 
 //Detection of windows platform type
 #if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)

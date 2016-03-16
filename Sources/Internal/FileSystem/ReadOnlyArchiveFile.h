@@ -39,11 +39,10 @@ class ReadOnlyArchiveFile : public File
 {
 protected:
     ReadOnlyArchiveFile();
-    virtual ~ReadOnlyArchiveFile();
+    ~ReadOnlyArchiveFile() override;
 
 public:
-    static ReadOnlyArchiveFile* Create(ResourceArchive::ContentAndSize& data,
-                                       const FilePath& filePath);
+    static ReadOnlyArchiveFile* Create(const FilePath& filePath, ResourceArchive::ContentAndSize&& data);
 
     const FilePath& GetFilename() override;
 

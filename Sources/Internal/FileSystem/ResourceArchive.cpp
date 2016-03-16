@@ -38,43 +38,43 @@ THIS
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 
-namespace
+namespace DAVA
 {
-const std::array<char, 4> PackFileMarker = { 'P', 'A', 'C', 'K' };
+const std::array<char8, 4> PackFileMarker = { 'P', 'A', 'C', 'K' };
 const DAVA::uint32 PackFileMagic = 20150817;
 
-using PackingType = ::DAVA::ResourceArchive::CompressionType;
+using PackingType = ResourceArchive::CompressionType;
 
 struct PackFile
 {
     struct HeaderBlock
     {
         std::array<char, 4> resPackMarker;
-        DAVA::uint32 magic;
-        DAVA::uint32 namesBlockSize;
-        DAVA::uint32 filesTableBlockSize;
-        DAVA::uint32 startFileNames;
-        DAVA::uint32 startFilesTable;
-        DAVA::uint32 startPackedFiles;
-        DAVA::uint32 numFiles;
+        uint32 magic;
+        uint32 namesBlockSize;
+        uint32 filesTableBlockSize;
+        uint32 startFileNames;
+        uint32 startFilesTable;
+        uint32 startPackedFiles;
+        uint32 numFiles;
     } headerBlock;
 
     struct NamesBlock
     {
-        DAVA::String sortedNames;
+        String sortedNames;
     } namesBlock;
 
     struct FilesDataBlock
     {
         struct Data
         {
-            DAVA::uint32 start;
-            DAVA::uint32 compressed;
-            DAVA::uint32 original;
+            uint32 start;
+            uint32 compressed;
+            uint32 original;
             PackingType packType;
             std::array<char, 16> reserved;
         };
-        DAVA::Vector<Data> fileTable;
+        Vector<Data> fileTable;
     } filesDataBlock;
 
     struct PackedFilesBlock

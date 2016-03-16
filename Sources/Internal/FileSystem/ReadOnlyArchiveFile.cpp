@@ -39,25 +39,26 @@ ReadOnlyArchiveFile::~ReadOnlyArchiveFile()
 {
 }
 
-ReadOnlyArchiveFile* ReadOnlyArchiveFile::Create(
-ResourceArchive::ContentAndSize& data, const FilePath& filePath)
+ReadOnlyArchiveFile* ReadOnlyArchiveFile::Create(const FilePath& filePath, ResourceArchive::ContentAndSize&& data)
 {
     auto file = new ReadOnlyArchiveFile();
-    file->data_.content.swap(data.content);
-    file->data_.size = data.size;
-    data.size = 0;
     file->filePath_ = filePath;
+    file->data_.content = std::move(data.content);
+    file->data_.size = data.size;
     return file;
 }
+
 const FilePath& ReadOnlyArchiveFile::GetFilename()
 {
     return filePath_;
 }
+
 uint32 ReadOnlyArchiveFile::Write(const void* pointerToData, uint32 dataSize)
 {
     DVASSERT(false && "not supported");
     return 0;
 }
+
 uint32 ReadOnlyArchiveFile::Read(void* pointerToData, uint32 dataSize)
 {
     if (pos_ + dataSize <= data_.size)
@@ -66,7 +67,7 @@ uint32 ReadOnlyArchiveFile::Read(void* pointerToData, uint32 dataSize)
         pos_ += dataSize;
         return dataSize;
     }
-    else if (!IsEof())
+    if (!IsEof())
     {
         uint32 last = data_.size - pos_;
         Memcpy(pointerToData, data_.content.get() + pos_, last);
@@ -75,14 +76,17 @@ uint32 ReadOnlyArchiveFile::Read(void* pointerToData, uint32 dataSize)
     }
     return 0;
 }
+
 uint32 ReadOnlyArchiveFile::GetPos() const
 {
     return pos_;
 }
+
 uint32 ReadOnlyArchiveFile::GetSize() const
 {
     return data_.size;
 }
+
 bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
 {
     switch (seekType)
@@ -119,6 +123,7 @@ bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
     }
     return false;
 }
+
 bool ReadOnlyArchiveFile::IsEof() const
 {
     return pos_ == data_.size;
