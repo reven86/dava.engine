@@ -426,13 +426,19 @@ public:
 
     void UpdateRect(const Rect& rectSrc) override
     {
-        if (currentRect != rectSrc)
-        {
-            currentRect = rectSrc;
-            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
+        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText);
+        NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
 
+        if (!isFocused)
+        {
+            controlRect.origin.x -= 10000;
+        }
+
+        if (!NSEqualRects(nativeControlRect, controlRect))
+        {
             [nsScrollView setFrame:controlRect];
             [nsTextView setFrame:controlRect];
+            nativeControlRect = controlRect;
         }
     }
 
