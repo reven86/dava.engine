@@ -409,12 +409,13 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             break;
         case QEvent::DragMove:
             OnDragMoveEvent(DynamicTypeCheck<QDragMoveEvent*>(event));
-            break;
+            return true;
         case QEvent::DragLeave:
             OnDragLeaveEvent(DynamicTypeCheck<QDragLeaveEvent*>(event));
-            break;
+            return true;
         case QEvent::Drop:
             OnDropEvent(DynamicTypeCheck<QDropEvent*>(event));
+            davaGLWidget->GetGLView()->requestActivate();
             break;
         default:
             break;
