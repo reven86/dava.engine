@@ -192,7 +192,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     {
         ProcessCursor(currentInput->point, searchOrder);
         pressedPoint = currentInput->point;
-        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)
+        if( currentInput->mouseButton != UIEvent::MouseButton::LEFT)
         {
             return true;
         }
@@ -207,7 +207,8 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
-        SetCanDrawRect(hotKeyDetected || noHudableControls);
+
+        SetCanDrawRect(isPlacedOnScreen && (hotKeyDetected || noHudableControls));
         return canDrawRect;
     }
     case UIEvent::Phase::DRAG:
