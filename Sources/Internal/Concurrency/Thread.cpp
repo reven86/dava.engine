@@ -137,6 +137,7 @@ Thread::Thread(const Procedure& proc)
 
 Thread::~Thread()
 {
+    Cancel();
     Shutdown();
 
     auto threadListAccessor = GetThreadList().GetAccessor();
