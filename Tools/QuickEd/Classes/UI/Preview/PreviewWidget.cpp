@@ -402,7 +402,7 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             OnPressEvent(DynamicTypeCheck<QMouseEvent*>(event));
             break;
         case QEvent::MouseButtonRelease:
-            davaGLWidget->GetGLView()->unsetCursor();
+            OnReleaseEvent(DynamicTypeCheck<QMouseEvent*>(event));
             break;
         default:
             break;
