@@ -27,10 +27,7 @@
 =====================================================================================*/
 
 
-#include "Platform/Qt5/QtLayer.h"
 #include "UI/mainwindow.h"
-#include "UI/Preview/ScrollAreaController.h"
-#include "UI/Preview/Ruler/RulerController.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -40,12 +37,6 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "EditorSettings.h"
 
-#include <QSettings>
-#include <QVariant>
-#include <QByteArray>
-#include <QFileSystemWatcher>
-
-#include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
@@ -514,6 +505,20 @@ void EditorCore::OnExit()
     if (CloseProject())
     {
         qApp->quit();
+    }
+}
+
+void EditorCore::OnCreateProject()
+{
+    QString projectFilePath = QFileDialog::getSaveFileName(qApp->activeWindow(), tr("new project file name"), "", ".uieditor");
+    if (projectFilePath.isEmpty())
+    {
+        return;
+    }
+    QFile projectFile(projectFilePath);
+    if (projectFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        
     }
 }
 
