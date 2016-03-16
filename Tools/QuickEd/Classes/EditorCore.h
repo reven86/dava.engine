@@ -69,6 +69,7 @@ private slots:
 
     bool CloseProject();
     void OnExit();
+
 private:
     void ApplyFileChanges();
     Document* GetDocument(const QString& path) const;
