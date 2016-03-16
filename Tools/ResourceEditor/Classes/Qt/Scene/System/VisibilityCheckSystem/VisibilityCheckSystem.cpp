@@ -293,11 +293,13 @@ void VisibilityCheckSystem::UpdatePointSet()
             for (const auto& pt : mapItem.second)
             {
                 DAVA::Vector3 placedPoint;
+                DAVA::Vector3 placedNormal;
                 DAVA::Vector3 transformedPoint = position + MultiplyVectorMat3x3(pt, worldTransform);
-                if ((landscape != nullptr) && landscape->PlacePoint(transformedPoint, placedPoint, &normal))
+                if ((landscape != nullptr) && landscape->PlacePoint(transformedPoint, placedPoint, &placedNormal))
                 {
                     if (visibilityComponent->ShouldPlaceOnLandscape())
                     {
+                        normal = placedNormal;
                         transformedPoint.z = placedPoint.z + snapHeight;
                     }
                     transformedPoint.z = DAVA::Max(transformedPoint.z, placedPoint.z + 2.0f * VisibilityCheckRenderer::cameraNearClipPlane);
