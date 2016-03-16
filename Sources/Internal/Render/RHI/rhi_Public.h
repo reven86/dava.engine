@@ -130,6 +130,8 @@ RenderDeviceCaps
     bool isCenterPixelMapping = false;
 
     bool instancingSupported = false;
+
+    char deviceDescription[128];
 };
 
 void Initialize(Api api, const InitParam& param);

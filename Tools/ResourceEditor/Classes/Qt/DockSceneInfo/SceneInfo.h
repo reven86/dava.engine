@@ -39,6 +39,8 @@
 class SceneEditor2;
 class EntityGroup;
 class EditorStatisticsSystem;
+class Command2;
+
 class SceneInfo : public QtPropertyEditor
 {
     Q_OBJECT
@@ -76,6 +78,7 @@ protected slots:
     void SceneDeactivated(SceneEditor2* scene);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool isRedo);
 
 private:
     void showEvent(QShowEvent* event) override;
@@ -143,7 +146,6 @@ protected:
     DAVA::Vector<DAVA::Entity*> nodesAtScene;
     DAVA::Landscape* landscape = nullptr;
 
-    DAVA::TexturesMap sceneTextures;
     DAVA::TexturesMap particleTextures;
 
     DAVA::Vector<DAVA::DataNode*> dataNodesAtScene;

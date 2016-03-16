@@ -28,7 +28,6 @@
 
 
 #include "UI/TheoraPlayer.h"
-#include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
@@ -373,28 +372,6 @@ void TheoraPlayer::Update(float32 timeElapsed)
     {
         ReleaseData();
         OpenFile(filePath);
-    }
-}
-
-void TheoraPlayer::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-    const YamlNode* fileNode = node->Get("file");
-
-    if (fileNode)
-        OpenFile(fileNode->AsString());
-
-    const YamlNode* rectNode = node->Get("rect");
-
-    if (rectNode)
-    {
-        Rect rect = rectNode->AsRect();
-        if (static_cast<int>(rect.dx) == -1)
-            rect.dx = static_cast<float32>(theoraData->thInfo.pic_width);
-        if (static_cast<int>(rect.dy) == -1)
-            rect.dy = static_cast<float32>(theoraData->thInfo.pic_height);
-
-        SetRect(rect);
     }
 }
 

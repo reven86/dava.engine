@@ -53,7 +53,6 @@
 #include <QPushButton>
 #include <QSignalBlocker>
 
-#include "QtTools/LazyUpdater/LazyUpdater.h"
 using namespace DAVA;
 
 LODEditor::LODEditor(QWidget* parent)

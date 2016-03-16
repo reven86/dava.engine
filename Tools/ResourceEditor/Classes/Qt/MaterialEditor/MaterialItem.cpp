@@ -77,6 +77,29 @@ QVariant MaterialItem::data(int role) const
         const_cast<MaterialItem*>(this)->requestPreview();
         ret = QStandardItem::data(role);
         break;
+    case Qt::BackgroundRole:
+    {
+        if (GetFlag(MaterialItem::IS_MARK_FOR_DELETE))
+        {
+            ret = QBrush(QColor(255, 0, 0, 20));
+        }
+        else if (GetMaterial()->GetConfigCount() > 1)
+        {
+            ret = QBrush(QColor(0, 0, 255, 40));
+        }
+    }
+    break;
+    case Qt::FontRole:
+    {
+        ret = QStandardItem::data(role);
+        if (GetFlag(MaterialItem::IS_PART_OF_SELECTION))
+        {
+            QFont font = ret.value<QFont>();
+            font.setBold(true);
+            ret = font;
+        }
+    }
+    break;
     default:
         ret = QStandardItem::data(role);
         break;

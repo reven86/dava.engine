@@ -653,9 +653,6 @@
 		028C101E1BD66A6000B2266F /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09281BD66A5E00B2266F /* XMLParser.h */; };
 		028C101F1BD66A6000B2266F /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09281BD66A5E00B2266F /* XMLParser.h */; };
 		028C10201BD66A6000B2266F /* XMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09281BD66A5E00B2266F /* XMLParser.h */; };
-		028C10211BD66A6000B2266F /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09291BD66A5E00B2266F /* XMLParser.mm */; };
-		028C10221BD66A6000B2266F /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09291BD66A5E00B2266F /* XMLParser.mm */; };
-		028C10231BD66A6000B2266F /* XMLParser.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09291BD66A5E00B2266F /* XMLParser.mm */; };
 		028C10241BD66A6000B2266F /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C092A1BD66A5E00B2266F /* YamlArchive.cpp */; };
 		028C10251BD66A6000B2266F /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C092A1BD66A5E00B2266F /* YamlArchive.cpp */; };
 		028C10261BD66A6000B2266F /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C092A1BD66A5E00B2266F /* YamlArchive.cpp */; };
@@ -2534,12 +2531,6 @@
 		028C1A111BD66A6000B2266F /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CB91BD66A5F00B2266F /* UI3DView.h */; };
 		028C1A121BD66A6000B2266F /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CB91BD66A5F00B2266F /* UI3DView.h */; };
 		028C1A131BD66A6000B2266F /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CB91BD66A5F00B2266F /* UI3DView.h */; };
-		028C1A141BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */; };
-		028C1A151BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */; };
-		028C1A161BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */; };
-		028C1A171BD66A6000B2266F /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */; };
-		028C1A181BD66A6000B2266F /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */; };
-		028C1A191BD66A6000B2266F /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */; };
 		028C1A1A1BD66A6000B2266F /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBC1BD66A5F00B2266F /* UIButton.cpp */; };
 		028C1A1B1BD66A6000B2266F /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBC1BD66A5F00B2266F /* UIButton.cpp */; };
 		028C1A1C1BD66A6000B2266F /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CBC1BD66A5F00B2266F /* UIButton.cpp */; };
@@ -2867,6 +2858,13 @@
 		176DEB6E174B5561007A983B /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		176DEB6F174B5561007A983B /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
 		176DEB70174B5561007A983B /* libfreetype_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA29C33F1446EF270049FD7A /* libfreetype_macos.a */; };
+		1CE8234F1C91C93B00D4087C /* ICommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE823481C91C93B00D4087C /* ICommand.h */; };
+		1CE823501C91C93B00D4087C /* ObjectHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE823491C91C93B00D4087C /* ObjectHandle.cpp */; };
+		1CE823511C91C93B00D4087C /* ObjectHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234A1C91C93B00D4087C /* ObjectHandle.h */; };
+		1CE823521C91C93B00D4087C /* SetCollectionItemValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */; };
+		1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */; };
+		1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */; };
+		1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED4A19A23C3300D3869D /* libcurl_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E89CE91116C549D2006BEFF4 /* libcurl_macos.a */; };
 		50C16DDE1A52D8C4003C307A /* libuv_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C16DDD1A52D8C4003C307A /* libuv_macos.a */; };
@@ -3172,7 +3170,6 @@
 		028C09261BD66A5E00B2266F /* VariantType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VariantType.h; sourceTree = "<group>"; };
 		028C09271BD66A5E00B2266F /* XMLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XMLParser.cpp; sourceTree = "<group>"; };
 		028C09281BD66A5E00B2266F /* XMLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLParser.h; sourceTree = "<group>"; };
-		028C09291BD66A5E00B2266F /* XMLParser.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = XMLParser.mm; sourceTree = "<group>"; };
 		028C092A1BD66A5E00B2266F /* YamlArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlArchive.cpp; sourceTree = "<group>"; };
 		028C092B1BD66A5E00B2266F /* YamlArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlArchive.h; sourceTree = "<group>"; };
 		028C092C1BD66A5E00B2266F /* YamlEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlEmitter.cpp; sourceTree = "<group>"; };
@@ -3801,8 +3798,6 @@
 		028C0CB71BD66A5F00B2266F /* TheoraPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraPlayer.h; sourceTree = "<group>"; };
 		028C0CB81BD66A5F00B2266F /* UI3DView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UI3DView.cpp; sourceTree = "<group>"; };
 		028C0CB91BD66A5F00B2266F /* UI3DView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UI3DView.h; sourceTree = "<group>"; };
-		028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
-		028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAggregatorControl.h; sourceTree = "<group>"; };
 		028C0CBC1BD66A5F00B2266F /* UIButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIButton.cpp; sourceTree = "<group>"; };
 		028C0CBD1BD66A5F00B2266F /* UIButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIButton.h; sourceTree = "<group>"; };
 		028C0CBE1BD66A5F00B2266F /* UIControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControl.cpp; sourceTree = "<group>"; };
@@ -3910,6 +3905,13 @@
 		15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
 		15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		176DEB77174B5561007A983B /* libFrameworkNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CE823481C91C93B00D4087C /* ICommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICommand.h; path = Command/ICommand.h; sourceTree = "<group>"; };
+		1CE823491C91C93B00D4087C /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ObjectHandle.cpp; path = Command/ObjectHandle.cpp; sourceTree = "<group>"; };
+		1CE8234A1C91C93B00D4087C /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ObjectHandle.h; path = Command/ObjectHandle.h; sourceTree = "<group>"; };
+		1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetCollectionItemValueCommand.cpp; path = Command/SetCollectionItemValueCommand.cpp; sourceTree = "<group>"; };
+		1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
+		1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
+		1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		50C16DDD1A52D8C4003C307A /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_macos.a; path = ../../Libs/libs/libuv_macos.a; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
@@ -4365,7 +4367,6 @@
 				028C09261BD66A5E00B2266F /* VariantType.h */,
 				028C09271BD66A5E00B2266F /* XMLParser.cpp */,
 				028C09281BD66A5E00B2266F /* XMLParser.h */,
-				028C09291BD66A5E00B2266F /* XMLParser.mm */,
 				028C092A1BD66A5E00B2266F /* YamlArchive.cpp */,
 				028C092B1BD66A5E00B2266F /* YamlArchive.h */,
 				028C092C1BD66A5E00B2266F /* YamlEmitter.cpp */,
@@ -5261,8 +5262,6 @@
 				028C0CB71BD66A5F00B2266F /* TheoraPlayer.h */,
 				028C0CB81BD66A5F00B2266F /* UI3DView.cpp */,
 				028C0CB91BD66A5F00B2266F /* UI3DView.h */,
-				028C0CBA1BD66A5F00B2266F /* UIAggregatorControl.cpp */,
-				028C0CBB1BD66A5F00B2266F /* UIAggregatorControl.h */,
 				028C0CBC1BD66A5F00B2266F /* UIButton.cpp */,
 				028C0CBD1BD66A5F00B2266F /* UIButton.h */,
 				028C0CBE1BD66A5F00B2266F /* UIControl.cpp */,
@@ -5457,6 +5456,7 @@
 		0867D691FE84028FC02AAC07 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				FECFC0A512E87E3000C71562 /* Internal */,
 				03C12A9A1C4FD8D3002D4636 /* SystemConfiguration.framework */,
 				72C84EB21B29C220003A52E0 /* libwebp_macos.a */,
 				50C16DDD1A52D8C4003C307A /* libuv_macos.a */,
@@ -5475,7 +5475,6 @@
 				5C42C98314E3AFA400EB3F53 /* libxml_macos.a */,
 				5C6BF78214C85A2A009297F7 /* libz.dylib */,
 				5C77AB7C14C7509D00E92D28 /* libpng_macos.a */,
-				FECFC0A512E87E3000C71562 /* Internal */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
@@ -5508,6 +5507,20 @@
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
 		};
+		1CE823471C91C93000D4087C /* Command */ = {
+			isa = PBXGroup;
+			children = (
+				1CE823481C91C93B00D4087C /* ICommand.h */,
+				1CE823491C91C93B00D4087C /* ObjectHandle.cpp */,
+				1CE8234A1C91C93B00D4087C /* ObjectHandle.h */,
+				1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */,
+				1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */,
+				1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */,
+				1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */,
+			);
+			name = Command;
+			sourceTree = "<group>";
+		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -5528,6 +5541,7 @@
 		FECFC0A512E87E3000C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				1CE823471C91C93000D4087C /* Command */,
 				028C08181BD66A5D00B2266F /* Animation */,
 				028C082A1BD66A5D00B2266F /* Autotesting */,
 				028C084A1BD66A5D00B2266F /* Base */,
@@ -5685,7 +5699,6 @@
 				028C1B271BD66A6100B2266F /* VectorSpinnerAdapter.h in Headers */,
 				028C10201BD66A6000B2266F /* XMLParser.h in Headers */,
 				028C0E671BD66A6000B2266F /* Result.h in Headers */,
-				028C1A191BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C19651BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0FF61BD66A6000B2266F /* LocalizationSystem.h in Headers */,
 				028C0FBA1BD66A6000B2266F /* File.h in Headers */,
@@ -6134,7 +6147,6 @@
 				028C195A1BD66A6000B2266F /* SoundSystem.h in Headers */,
 				028C11BF1BD66A6000B2266F /* LogConsumer.h in Headers */,
 				028C181F1BD66A6000B2266F /* SwitchToRenerObjectConverter.h in Headers */,
-				028C1A171BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C0D871BD66A6000B2266F /* dlmalloc.h in Headers */,
 				028C0DEA1BD66A6000B2266F /* DynamicObjectCache.h in Headers */,
 				028C0FCD1BD66A6000B2266F /* FileSystem.h in Headers */,
@@ -6274,6 +6286,7 @@
 				028C155E1BD66A6000B2266F /* VegetationRenderData.h in Headers */,
 				028C102D1BD66A6000B2266F /* YamlEmitter.h in Headers */,
 				028C16301BD66A6000B2266F /* noconfig.h in Headers */,
+				1CE8234F1C91C93B00D4087C /* ICommand.h in Headers */,
 				028C14F51BD66A6000B2266F /* RenderBatchArray.h in Headers */,
 				028C0E6E1BD66A6000B2266F /* Singleton.h in Headers */,
 				028C19E71BD66A6000B2266F /* UIStyleSheetPropertyDataBase.h in Headers */,
@@ -6312,6 +6325,7 @@
 				028C11651BD66A6000B2266F /* IController.h in Headers */,
 				028C0EF21BD66A6000B2266F /* MongodbClient.h in Headers */,
 				028C0F941BD66A6000B2266F /* ZLibStream.h in Headers */,
+				1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */,
 				028C17321BD66A6000B2266F /* ShaderCache.h in Headers */,
 				028C182E1BD66A6000B2266F /* Drawable.h in Headers */,
 				028C15161BD66A6000B2266F /* RenderSystem.h in Headers */,
@@ -6495,7 +6509,9 @@
 				028C152E1BD66A6000B2266F /* SpatialTree.h in Headers */,
 				028C1A351BD66A6100B2266F /* UIControlPackageContext.h in Headers */,
 				028C18B81BD66A6000B2266F /* RotationControllerSystem.h in Headers */,
+				1CE823511C91C93B00D4087C /* ObjectHandle.h in Headers */,
 				028C18191BD66A6000B2266F /* LodToLod2Converter.h in Headers */,
+				1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */,
 				028C10811BD66A6000B2266F /* JobThread.h in Headers */,
 				028C16C91BD66A6000B2266F /* macos_gl.h in Headers */,
 				028C0E6B1BD66A6000B2266F /* Serializable.h in Headers */,
@@ -6727,7 +6743,6 @@
 				028C1B261BD66A6100B2266F /* VectorSpinnerAdapter.h in Headers */,
 				028C101F1BD66A6000B2266F /* XMLParser.h in Headers */,
 				028C0E661BD66A6000B2266F /* Result.h in Headers */,
-				028C1A181BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C19641BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0FF51BD66A6000B2266F /* LocalizationSystem.h in Headers */,
 				028C0FB91BD66A6000B2266F /* File.h in Headers */,
@@ -7261,7 +7276,6 @@
 				028C15061BD66A6000B2266F /* RenderObject.cpp in Sources */,
 				028C0F991BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F631BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
-				028C10231BD66A6000B2266F /* XMLParser.mm in Sources */,
 				028C15E71BD66A6000B2266F /* RenderCallbacks.cpp in Sources */,
 				028C18ED1BD66A6000B2266F /* ParticleEffectSystem.cpp in Sources */,
 				028C14C11BD66A6000B2266F /* Camera.cpp in Sources */,
@@ -7470,7 +7484,6 @@
 				028C18BD1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF31BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11131BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
-				028C1A161BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13AA1BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				028C14CD1BD66A6000B2266F /* Frustum.cpp in Sources */,
 				028C0F331BD66A6000B2266F /* DVAssertMessageApple.mm in Sources */,
@@ -7709,7 +7722,6 @@
 				028C15041BD66A6000B2266F /* RenderObject.cpp in Sources */,
 				028C0F971BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F611BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
-				028C10211BD66A6000B2266F /* XMLParser.mm in Sources */,
 				028C15E51BD66A6000B2266F /* RenderCallbacks.cpp in Sources */,
 				028C18EB1BD66A6000B2266F /* ParticleEffectSystem.cpp in Sources */,
 				028C14BF1BD66A6000B2266F /* Camera.cpp in Sources */,
@@ -7769,6 +7781,7 @@
 				028C16D51BD66A6000B2266F /* rhi_GLES2.cpp in Sources */,
 				028C143E1BD66A6000B2266F /* FontManager.cpp in Sources */,
 				028C191B1BD66A6000B2266F /* SwitchSystem.cpp in Sources */,
+				1CE823501C91C93B00D4087C /* ObjectHandle.cpp in Sources */,
 				028C0E201BD66A6000B2266F /* IntrospectionBase.cpp in Sources */,
 				028C15F71BD66A6000B2266F /* RenderOptions.cpp in Sources */,
 				028C100F1BD66A6000B2266F /* StaticMemoryFile.cpp in Sources */,
@@ -7920,7 +7933,6 @@
 				028C18BB1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF11BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11111BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
-				028C1A141BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13A81BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				15373F221C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C14CB1BD66A6000B2266F /* Frustum.cpp in Sources */,
@@ -7940,6 +7952,7 @@
 				028C18AF1BD66A6000B2266F /* BaseProcessSystem.cpp in Sources */,
 				028C0DAB1BD66A6000B2266F /* Rect_wrap.cxx in Sources */,
 				028C1A381BD66A6100B2266F /* UIControlSystem.cpp in Sources */,
+				1CE823521C91C93B00D4087C /* SetCollectionItemValueCommand.cpp in Sources */,
 				028C17D41BD66A6000B2266F /* SpeedTreeComponent.cpp in Sources */,
 				028C1A081BD66A6000B2266F /* TheoraPlayer.cpp in Sources */,
 				028C0EE91BD66A6000B2266F /* PerformanceSettings.cpp in Sources */,
@@ -8112,6 +8125,7 @@
 				028C15431BD66A6000B2266F /* StaticOcclusionRenderPass.cpp in Sources */,
 				028C14591BD66A6000B2266F /* RenderSystem2D.cpp in Sources */,
 				028C1A621BD66A6100B2266F /* UIHoleTransition.cpp in Sources */,
+				1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */,
 				028C17231BD66A6000B2266F /* RuntimeTextures.cpp in Sources */,
 				028C16121BD66A6000B2266F /* _mcpp.cpp in Sources */,
 				028C161B1BD66A6000B2266F /* eval.cpp in Sources */,
@@ -8163,7 +8177,6 @@
 				028C15051BD66A6000B2266F /* RenderObject.cpp in Sources */,
 				028C0F981BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F621BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
-				028C10221BD66A6000B2266F /* XMLParser.mm in Sources */,
 				028C15E61BD66A6000B2266F /* RenderCallbacks.cpp in Sources */,
 				028C18EC1BD66A6000B2266F /* ParticleEffectSystem.cpp in Sources */,
 				028C14C01BD66A6000B2266F /* Camera.cpp in Sources */,
@@ -8371,7 +8384,6 @@
 				028C18BC1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF21BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11121BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
-				028C1A151BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13A91BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				15373F231C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C14CC1BD66A6000B2266F /* Frustum.cpp in Sources */,
