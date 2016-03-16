@@ -35,7 +35,6 @@
 #include "version.h"
 #include "Main/mainwindow.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "TeamcityOutput/TeamcityOutput.h"
 #include "Project/ProjectManager.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
