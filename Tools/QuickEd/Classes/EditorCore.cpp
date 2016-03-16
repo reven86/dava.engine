@@ -295,14 +295,6 @@ bool EditorCore::CloseProject()
     for (auto& document : documentGroup->GetDocuments())
     {
         if (!documentGroup->RemoveDocument(document))
-    }
-
-    void EditorCore::OnExit()
-    {
-        if (CloseProject())
-        {
-            qApp->quit();
-        }
         {
             DVASSERT(false && "can not close saved documents");
             return false;
@@ -310,4 +302,12 @@ bool EditorCore::CloseProject()
     }
     project->Close();
     return true;
+}
+
+void EditorCore::OnExit()
+{
+    if (CloseProject())
+    {
+        qApp->quit();
+    }
 }
