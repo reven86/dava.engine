@@ -669,9 +669,9 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
                         {
                             nearMorph.data[i] = patch->subdivMorph;
                         }
-                        else if (patch->lastSubdivLevel == level && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
+                        else if (patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
                         {
-                            nearMorph.data[i] = Max(patch->subdivMorph, morph);
+                            nearMorph.data[i] = Min(patch->subdivMorph, morph);
                         }
 
                         nearLevel.data[i] = float32(patch->lastSubdivLevel);
