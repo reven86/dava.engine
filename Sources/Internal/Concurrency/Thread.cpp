@@ -151,8 +151,6 @@ void Thread::ThreadFunction(void* param)
 
     t->threadFunc();
     t->state = STATE_ENDED;
-
-    t->Release();
 }
 
 void Thread::Yield()

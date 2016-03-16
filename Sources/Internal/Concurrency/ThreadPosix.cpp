@@ -76,7 +76,6 @@ void Thread::Init()
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     Join();
 }
 
@@ -128,7 +127,6 @@ void* PthreadMain(void* param)
 void Thread::Start()
 {
     DVASSERT(STATE_CREATED == state);
-    Retain();
 
     pthread_attr_t attr{};
     pthread_attr_init(&attr);
@@ -143,7 +141,7 @@ void Thread::Start()
 
 void Thread::Join()
 {
-    if (state != STATE_ENDED && state != STATE_KILLED)
+    if (state == STATE_RUNNING)
     {
         pthread_join(handle, nullptr);
     }

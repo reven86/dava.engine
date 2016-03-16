@@ -57,7 +57,6 @@ void Thread::Init()
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     if (handle != nullptr)
     {
         Join();
@@ -68,7 +67,6 @@ void Thread::Shutdown()
 
 void Thread::Start()
 {
-    Retain();
     DVASSERT(STATE_CREATED == state);
 
     uintptr_t x = _beginthreadex(nullptr,
@@ -85,7 +83,6 @@ void Thread::Start()
     }
     else
     {
-        Release();
         Logger::Error("Thread::Start failed to create thread: errno=%d", errno);
     }
 }
