@@ -49,7 +49,7 @@ protected:
 public:
     ~Command2() override;
 
-    template <typename CMD, typename ... Arg>
+    template <typename CMD, typename... Arg>
     static Pointer Create(Arg&&... arg)
     {
         return Pointer(new CMD(std::forward<Arg>(arg)...));

@@ -60,7 +60,7 @@ DAVA::Entity* CommandBatch::GetEntity() const
     return nullptr;
 }
 
-void CommandBatch::AddAndExec(Command2::Pointer && command)
+void CommandBatch::AddAndExec(Command2::Pointer&& command)
 {
     DVASSERT(command);
 

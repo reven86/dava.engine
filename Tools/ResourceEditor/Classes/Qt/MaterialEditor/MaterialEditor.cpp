@@ -1013,8 +1013,8 @@ void MaterialEditor::OnTemplateChanged(int index)
 
             if (nullptr != templateMember)
             {
-                QtMainWindow::Instance()->GetCurrentScene()->Exec(Command2::Create<InspMemberModifyCommand>(templateMember, material, 
-                    DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str()))));
+                QtMainWindow::Instance()->GetCurrentScene()->Exec(Command2::Create<InspMemberModifyCommand>(templateMember, material,
+                                                                                                            DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str()))));
             }
         }
     }
