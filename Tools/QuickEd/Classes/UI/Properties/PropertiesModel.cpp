@@ -60,7 +60,12 @@ using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 300))
+#ifdef __DAVAENGINE_DEBUG__
+    , updateInterval(1000)
+#else
+    , updateInterval(300)
+#endif //__DAVAENGINE_DEBUG__
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, updateInterval))
 {
 }
 

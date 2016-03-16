@@ -111,6 +111,7 @@ private:
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
     QSet<QPair<QPersistentModelIndex, QPersistentModelIndex>> changedIndexes;
+    const int updateInterval;
     ContinuousUpdater* continuousUpdater = nullptr;
 };
 
