@@ -222,7 +222,7 @@ void PreviewWidget::CreateActions()
     davaGLWidget->addAction(focusPreviousChildAction);
 
     closeTabAction = new QAction(tr("Close current tab"), this);
-    closeTabAction->setShortcut(QKeySequence::Close);
+    closeTabAction->setShortcut(Qt::ControlModifier + Qt::Key_W);
     closeTabAction->setShortcutContext(Qt::WindowShortcut);
     connect(closeTabAction, &QAction::triggered, this, &PreviewWidget::CloseTabRequested);
     davaGLWidget->addAction(closeTabAction);
