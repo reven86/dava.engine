@@ -60,6 +60,8 @@ const FastName DYNAMIC_PARAM_NAMES[DynamicBindings::DYNAMIC_PARAMETERS_COUNT] =
   FastName("rcpViewportSize"),
   FastName("viewportOffset"),
 
+  FastName("textureSize"),
+
   FastName("shadowColor"),
 
   FastName("projectionFlip")

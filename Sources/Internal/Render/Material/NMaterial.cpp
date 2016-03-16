@@ -1070,7 +1070,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
     for (auto it = config.localTextures.begin(), itEnd = config.localTextures.end(); it != itEnd; ++it)
     {
-        if (!it->second->path.IsEmpty())
+        if (!NMaterialTextureName::IsRuntimeTexture(it->first) && !it->second->path.IsEmpty())
         {
             String textureRelativePath = it->second->path.GetRelativePathname(serializationContext->GetScenePath());
             if (textureRelativePath.size() > 0)

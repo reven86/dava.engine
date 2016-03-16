@@ -182,6 +182,9 @@ const FastName NMaterialFlagName::FLAG_FORCE_2D_MODE = FastName("FORCE_2D_MODE")
 
 const FastName NMaterialFlagName::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
 
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING("LANDSCAPE_USE_INSTANCING");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING("LANDSCAPE_LOD_MORPHING");
+
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_USED = FastName("ILLUMINATION_USED");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("ILLUMINATION_SHADOW_CASTER");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("ILLUMINATION_SHADOW_RECEIVER");
@@ -204,7 +207,10 @@ Vector<FastName> RUNTIME_ONLY_FLAGS =
   NMaterialFlagName::FLAG_VIEWALBEDO,
   NMaterialFlagName::FLAG_VIEWAMBIENT,
   NMaterialFlagName::FLAG_VIEWDIFFUSE,
-  NMaterialFlagName::FLAG_VIEWSPECULAR
+  NMaterialFlagName::FLAG_VIEWSPECULAR,
+
+  NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING,
+  NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING,
 };
 
 bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
@@ -213,6 +219,19 @@ bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
         return flag == toFind;
     });
     return it != RUNTIME_ONLY_FLAGS.end();
+}
+
+Vector<FastName> RUNTIME_ONLY_TEXTURES =
+{
+  NMaterialTextureName::TEXTURE_HEIGHTMAP,
+};
+
+bool NMaterialTextureName::IsRuntimeTexture(const FastName& texture)
+{
+    auto it = std::find_if(RUNTIME_ONLY_TEXTURES.begin(), RUNTIME_ONLY_TEXTURES.end(), [&texture](const FastName& toFind) {
+        return texture == toFind;
+    });
+    return it != RUNTIME_ONLY_TEXTURES.end();
 }
 
 const DAVA::String NMaterialSerializationKey::MaterialKey = "materialKey";

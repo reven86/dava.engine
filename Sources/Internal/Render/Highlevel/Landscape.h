@@ -72,7 +72,6 @@ public:
 
     static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
 
-    const static FastName PARAM_HEIGHTMAP_HALF_TEXEL_SIZE;
     const static FastName PARAM_TEXTURE_TILING;
     const static FastName PARAM_TILE_COLOR0;
     const static FastName PARAM_TILE_COLOR1;
@@ -83,9 +82,6 @@ public:
     const static FastName TEXTURE_TILE;
     const static FastName TEXTURE_TILEMASK;
     const static FastName TEXTURE_SPECULAR;
-
-    const static FastName FLAG_USE_INSTANCING;
-    const static FastName FLAG_LOD_MORPHING;
 
     const static FastName LANDSCAPE_QUALITY_NAME;
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
@@ -165,9 +161,10 @@ protected:
     void RestoreGeometry();
 
     void SetLandscapeSize(const Vector3& newSize);
-
     bool BuildHeightmap();
     void RebuildLandscape();
+
+    void PrepareMaterial(NMaterial* material);
 
     struct RestoreBufferData
     {
@@ -193,6 +190,7 @@ protected:
     FoliageSystem* foliageSystem = nullptr;
 
     uint32 heightmapSizePow2 = 0;
+    float32 heightmapSizef = 0.f;
 
     uint32 drawIndices = 0;
 

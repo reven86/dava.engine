@@ -54,7 +54,6 @@
 
 namespace DAVA
 {
-const FastName Landscape::PARAM_HEIGHTMAP_HALF_TEXEL_SIZE("heightmapHalfTexelSize");
 const FastName Landscape::PARAM_TEXTURE_TILING("textureTiling");
 const FastName Landscape::PARAM_TILE_COLOR0("tileColor0");
 const FastName Landscape::PARAM_TILE_COLOR1("tileColor1");
@@ -65,9 +64,6 @@ const FastName Landscape::TEXTURE_COLOR("colorTexture");
 const FastName Landscape::TEXTURE_TILE("tileTexture0");
 const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
-
-const FastName Landscape::FLAG_USE_INSTANCING("USE_INSTANCING");
-const FastName Landscape::FLAG_LOD_MORPHING("LOD_MORPHING");
 
 const FastName Landscape::LANDSCAPE_QUALITY_NAME("Landscape");
 const FastName Landscape::LANDSCAPE_QUALITY_VALUE_HIGH("HIGH");
@@ -247,13 +243,6 @@ bool Landscape::BuildHeightmap()
 
 void Landscape::AllocateGeometryData()
 {
-    if (!landscapeMaterial)
-    {
-        landscapeMaterial = new NMaterial();
-        landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
-        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
-    }
-
     if (!heightmap->Size())
     {
         subdivLevelCount = 0;
@@ -265,6 +254,7 @@ void Landscape::AllocateGeometryData()
     subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
     minSubdivLevelSize = useInstancing ? 0 : heightmapSize / RENDER_PARCEL_SIZE_QUADS;
     heightmapSizePow2 = uint32(HighestBitIndex(heightmapSize));
+    heightmapSizef = float32(heightmapSize);
 
     subdivPatchCount = 0;
     uint32 size = 1;
@@ -280,40 +270,33 @@ void Landscape::AllocateGeometryData()
     subdivPatchArray.resize(subdivPatchCount);
     patchQuadArray.resize(subdivPatchCount);
 
-    if (landscapeMaterial->HasLocalFlag(FLAG_USE_INSTANCING))
-        landscapeMaterial->SetFlag(FLAG_USE_INSTANCING, useInstancing ? 1 : 0);
-    else
-        landscapeMaterial->AddFlag(FLAG_USE_INSTANCING, useInstancing ? 1 : 0);
-
-    if (landscapeMaterial->HasLocalFlag(FLAG_LOD_MORPHING))
-        landscapeMaterial->SetFlag(FLAG_LOD_MORPHING, useLodMorphing ? 1 : 0);
-    else
-        landscapeMaterial->AddFlag(FLAG_LOD_MORPHING, useLodMorphing ? 1 : 0);
-
-    float32 heightmapHalfTexel = 0.5f / float32(heightmapSize);
-    if (landscapeMaterial->HasLocalProperty(PARAM_HEIGHTMAP_HALF_TEXEL_SIZE))
-        landscapeMaterial->SetPropertyValue(PARAM_HEIGHTMAP_HALF_TEXEL_SIZE, &heightmapHalfTexel);
-    else
-        landscapeMaterial->AddProperty(PARAM_HEIGHTMAP_HALF_TEXEL_SIZE, &heightmapHalfTexel, rhi::ShaderProp::TYPE_FLOAT1);
-
-    if (useInstancing)
-    {
-        AllocateGeometryDataInstancing();
-    }
-    else
-    {
-        AllocateGeometryDataNoInstancing();
-    }
+    useInstancing ? AllocateGeometryDataInstancing() : AllocateGeometryDataNoInstancing();
 }
 
 void Landscape::RebuildLandscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    if (!landscapeMaterial)
+    {
+        landscapeMaterial = new NMaterial();
+        landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
+        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
+
+        PrepareMaterial(landscapeMaterial);
+        landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
+    }
+
     ReleaseGeometryData();
     AllocateGeometryData();
 
     UpdatePatchInfo(0, 0, 0);
+}
+
+void Landscape::PrepareMaterial(NMaterial* material)
+{
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, useInstancing ? 1 : 0);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, useLodMorphing ? 1 : 0);
 }
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
@@ -1281,6 +1264,9 @@ void Landscape::BindDynamicParameters(Camera* camera)
 {
     RenderObject::BindDynamicParameters(camera);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+
+    if (heightmap)
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_TEXTURE_SIZE, &heightmapSizef, (pointer_size)heightmap->Size());
 }
 
 void Landscape::PrepareToRender(Camera* camera)
@@ -1512,6 +1498,7 @@ void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationC
             }
         }
 
+        PrepareMaterial(material);
         material->PreBuildMaterial(PASS_FORWARD);
 
         SetMaterial(material);
