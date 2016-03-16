@@ -56,7 +56,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 public:
     struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
-
+    ~MainWindow() override;
     void CreateUndoRedoActions(const QUndoGroup* undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
@@ -79,7 +79,7 @@ signals:
     void SaveAllDocuments();
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
-    void CloseRequested();
+    bool CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);

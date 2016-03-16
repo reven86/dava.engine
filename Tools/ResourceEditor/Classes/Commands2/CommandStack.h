@@ -34,12 +34,10 @@
 #include "Commands2/Command2.h"
 #include "Commands2/CommandBatch.h"
 
-struct CommandStackNotify;
+class CommandStackNotify;
 
 class CommandStack : public CommandNotifyProvider
 {
-    friend struct CommandStackNotify;
-
 public:
     CommandStack();
     ~CommandStack();
@@ -70,16 +68,8 @@ public:
     size_t GetCount() const;
     const Command2* GetCommand(size_t index) const;
 
-protected:
-    DAVA::List<Command2*> commandList;
-    size_t commandListLimit;
-    size_t nextCommandIndex;
-    size_t cleanCommandIndex;
-    bool lastCheckCleanState;
-
-    DAVA::uint32 nestedBatchesCounter;
-    CommandBatch* curBatchCommand;
-    CommandStackNotify* stackCommandsNotify;
+private:
+    friend class CommandStackNotify;
 
     void ExecInternal(Command2* command, bool runCommand);
     Command2* GetCommandInternal(size_t index) const;
@@ -90,14 +80,28 @@ protected:
 
     void CleanCheck();
     void CommandExecuted(const Command2* command, bool redo);
+
+private:
+    const size_t INVALID_CLEAN_INDEX = static_cast<size_t>(-1);
+
+    DAVA::List<Command2*> commandList;
+    DAVA::ScopedPtr<CommandStackNotify> stackCommandsNotify;
+    CommandBatch* curBatchCommand = nullptr;
+    size_t commandListLimit = 0;
+    size_t nextCommandIndex = 0;
+    size_t cleanCommandIndex = 0;
+    DAVA::uint32 nestedBatchesCounter = 0;
+    bool lastCheckCleanState = true;
 };
 
-struct CommandStackNotify : public CommandNotify
+class CommandStackNotify : public CommandNotify
 {
-    CommandStack* stack;
-
+public:
     CommandStackNotify(CommandStack* _stack);
-    virtual void Notify(const Command2* command, bool redo);
+    void Notify(const Command2* command, bool redo) override;
+
+private:
+    CommandStack* stack = nullptr;
 };
 
 #endif // __COMMAND_STACK_H__

@@ -532,7 +532,8 @@ void PackageModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
 
 void PackageModel::StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)
 {
-    if (property->GetName() == "Name")
+    const auto& name = property->GetName();
+    if (name == "Name" || name == "Selector")
     {
         QModelIndex index = indexByNode(node);
         emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
