@@ -56,7 +56,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 public:
     struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
-
+    ~MainWindow() override;
     void CreateUndoRedoActions(const QUndoGroup* undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
@@ -107,6 +107,7 @@ private slots:
     void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
+    void OnCloseCurrentTab();
 
 private:
     void InitLanguageBox();
