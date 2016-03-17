@@ -14,7 +14,7 @@ add_definitions       (
 -D_LIB
 )
 
-include ( PlatformSettings )
+include ( CMake-common )
 
 include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 

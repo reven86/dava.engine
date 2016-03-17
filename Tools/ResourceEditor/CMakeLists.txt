@@ -113,7 +113,7 @@ set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 if ( WIN32 AND X64_MODE )
 	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
 else ()
-set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 endif ()
 
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
