@@ -4,8 +4,6 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#define _DEBUG
-
 #include "Concurrency/Thread.h"
 
 #include "uap_dx11.h"

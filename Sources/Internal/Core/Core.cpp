@@ -656,15 +656,6 @@ void Core::SystemProcessFrame()
         return;
     }
 
-#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
-    // recalc frame inside begin / end frame
-    VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
-    if (vsc->WasScreenSizeChanged())
-    {
-        vsc->ScreenSizeChanged();
-    }
-#endif
-
     SystemTimer::Instance()->Start();
 
     /**
@@ -687,7 +678,14 @@ void Core::SystemProcessFrame()
 
 //#endif
 
-//TODO: when cross platforms resize done on all platforms, remove this code
+#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
+        // recalc frame inside begin / end frame
+        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+        if (vsc->WasScreenSizeChanged())
+        {
+            vsc->ScreenSizeChanged();
+        }
+#endif
 
         float32 frameDelta = SystemTimer::Instance()->FrameDelta();
         SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
@@ -912,13 +910,10 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
     if (doChange)
     {
-        Logger::Info("!!!! WindowSizeChanged %f", (SystemTimer::FrameStampTimeMS() / 1000.0));
-        Logger::Info("!!!! last  %f %f %f %f time %f", screenMetrics.width, screenMetrics.height, screenMetrics.scaleX, screenMetrics.scaleY, (SystemTimer::FrameStampTimeMS() / 1000.0));
         screenMetrics.width = width;
         screenMetrics.height = height;
         screenMetrics.scaleX = scaleX;
         screenMetrics.scaleY = scaleY;
-        Logger::Info("!!!! new %f %f %f %f time %f", screenMetrics.width, screenMetrics.height, screenMetrics.scaleX, screenMetrics.scaleY, (SystemTimer::FrameStampTimeMS() / 1000.0));
         // if changedMetricsScreen == true, then on the next call SystemProcessFrame() update all sizes and systems, after set it false
         screenMetrics.screenMetricsModified = true;
     }
@@ -926,12 +921,9 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
 void Core::ApplyWindowSize()
 {
-    Logger::Info("!!!! ApplyWindowSize %f", (SystemTimer::FrameStampTimeMS() / 1000.0));
     DVASSERT(Renderer::IsInitialized());
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
     int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
-
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
 
     // render reset
     rhi::ResetParam params;
@@ -945,6 +937,7 @@ void Core::ApplyWindowSize()
     }
     Renderer::Reset(params);
 
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
     virtSystem->ScreenSizeChanged();
