@@ -452,71 +452,80 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (y << level) + x];
 
-    // Calculate patch bounding box
+    patch->maxError = 0.f;
+    patch->positionOfMaxError = Vector3();
+    patch->bbox = AABBox3();
+
     int32 hmSize = heightmap->Size();
-    uint32 realQuadCountInPatch = hmSize >> level;
-    uint32 heightMapStartX = x * realQuadCountInPatch;
-    uint32 heightMapStartY = y * realQuadCountInPatch;
+    uint32 patchSize = hmSize >> level;
+    uint32 step = patchSize / PATCH_SIZE_QUADS;
+    DVASSERT(step);
 
+    uint32 xx = x * patchSize;
+    uint32 yy = y * patchSize;
+
+    for (uint32 y0 = yy; y0 < yy + patchSize; y0 += step)
     {
-        patch->bbox = AABBox3();
-        // Brute force / Think about recursive approach
-
-        patch->maxError = 0.0f;
-
-        uint16 patchMod = realQuadCountInPatch / PATCH_SIZE_QUADS;
-
-        for (uint16 xx = heightMapStartX; xx <= heightMapStartX + realQuadCountInPatch; ++xx)
+        for (uint32 x0 = xx; x0 < xx + patchSize; x0 += step)
         {
-            for (uint16 yy = heightMapStartY; yy <= heightMapStartY + realQuadCountInPatch; ++yy)
+            uint32 x_ = x0 + (step >> 1);
+            uint32 y_ = y0 + (step >> 1);
+            uint32 x1 = x0 + step;
+            uint32 y1 = y0 + step;
+
+            //Calculating max absolute height error between near lods.
+            //Choosing from five averaged heights per quad: four on middle of edges and one on diagonal
+            // +---*---+
+            // | \     |
+            // |  \    |
+            // *   *   *
+            // |    \  |
+            // |     \ |
+            // +---*---+
+
+            //Patch corners points
+            Vector3 p00 = GetPoint(x0, y0, heightmap->GetHeight(x0, y0));
+            Vector3 p01 = GetPoint(x0, y1, heightmap->GetHeightClamp(x0, y1));
+            Vector3 p10 = GetPoint(x1, y0, heightmap->GetHeightClamp(x1, y0));
+            Vector3 p11 = GetPoint(x1, y1, heightmap->GetHeightClamp(x1, y1));
+
+            //Accurate height values from next subdivide level (more detailed LOD)
+            Vector3 p0[5] = {
+                GetPoint(x_, y0, heightmap->GetHeight(x_, y0)),
+                GetPoint(x0, y_, heightmap->GetHeight(x0, y_)),
+                GetPoint(x_, y_, heightmap->GetHeight(x_, y_)),
+                GetPoint(x1, y_, heightmap->GetHeightClamp(x1, y_)),
+                GetPoint(x_, y1, heightmap->GetHeightClamp(x_, y1)),
+            };
+            //Averaged height values from current level (less detailed LOD)
+            float32 h1[5] = {
+                (p00.z + p10.z) / 2.f,
+                (p00.z + p01.z) / 2.f,
+                (p00.z + p11.z) / 2.f,
+                (p10.z + p11.z) / 2.f,
+                (p01.z + p11.z) / 2.f,
+            };
+
+            //Calculate max error for quad
+            for (int32 i = 0; i < 5; ++i)
             {
-                uint16 hmValue = heightmap->GetHeightClamp(xx, yy);
-
-                Vector3 pos = GetPoint(xx, yy, hmValue);
-                patch->bbox.AddPoint(pos);
-
-                if (patchMod == 1)
-                    continue;
-                if ((xx % patchMod) == 0)
-                    continue;
-                if ((yy % patchMod) == 0)
-                    continue;
-
+                float32 error = Abs(p0[i].z - h1[i]);
+                if (patch->maxError < error)
                 {
-                    uint16 x0 = (xx / (patchMod)) * patchMod;
-                    uint16 y0 = (yy / (patchMod)) * patchMod;
-
-                    uint16 x1 = x0 + (realQuadCountInPatch / PATCH_SIZE_QUADS);
-                    uint16 y1 = y0 + (realQuadCountInPatch / PATCH_SIZE_QUADS);
-
-                    DVASSERT(x0 >= heightMapStartX && x0 <= heightMapStartX + realQuadCountInPatch);
-                    DVASSERT(x1 >= heightMapStartX && x1 <= heightMapStartX + realQuadCountInPatch);
-                    DVASSERT(y0 >= heightMapStartY && y0 <= heightMapStartY + realQuadCountInPatch);
-                    DVASSERT(y1 >= heightMapStartY && y1 <= heightMapStartY + realQuadCountInPatch);
-
-                    float xin = (float32)(xx - x0) / (float32)(x1 - x0);
-                    float yin = (float32)(yy - y0) / (float32)(y1 - y0);
-
-                    Vector3 p00 = GetPoint(x0, y0, heightmap->GetHeightClamp(x0, y0));
-                    Vector3 p01 = GetPoint(x0, y1, heightmap->GetHeightClamp(x0, y1));
-                    Vector3 p10 = GetPoint(x1, y0, heightmap->GetHeightClamp(x1, y0));
-                    Vector3 p11 = GetPoint(x1, y1, heightmap->GetHeightClamp(x1, y1));
-
-                    Vector3 lodPos = p00 * (1.0f - xin) * (1.0f - yin) + p01 * (1.0f - xin) * yin + p10 * xin * (1.0f - yin) + p11 * xin * yin;
-
-                    DVASSERT(FLOAT_EQUAL(lodPos.x, pos.x) && FLOAT_EQUAL(lodPos.y, pos.y));
-
-                    if (Abs(lodPos.z - pos.z) > Abs(patch->maxError))
-                    {
-                        patch->maxError = Abs(pos.z - lodPos.z);
-                        patch->positionOfMaxError = pos;
-                    }
+                    patch->maxError = error;
+                    patch->positionOfMaxError = p0[i];
                 }
             }
-        }
 
-        patch->radius = Distance(patch->bbox.GetCenter(), patch->bbox.max);
+            //Add to bbox only corners points
+            patch->bbox.AddPoint(p00);
+            patch->bbox.AddPoint(p01);
+            patch->bbox.AddPoint(p10);
+            patch->bbox.AddPoint(p11);
+        }
     }
+
+    patch->radius = Distance(patch->bbox.GetCenter(), patch->bbox.max);
 
     uint32 x2 = x * 2;
     uint32 y2 = y * 2;
