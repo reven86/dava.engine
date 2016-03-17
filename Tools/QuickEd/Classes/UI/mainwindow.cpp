@@ -108,6 +108,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
 
+    connect(previewWidget, &PreviewWidget::CloseTabRequested, this, &MainWindow::OnCloseCurrentTab);
+
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
     RestoreMainWindowState();
@@ -117,6 +119,11 @@ MainWindow::MainWindow(QWidget* parent)
     toolBarPlugins->setEnabled(false);
 
     OnDocumentChanged(nullptr);
+}
+
+MainWindow::~MainWindow()
+{
+    SaveMainWindowState();
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
@@ -549,10 +556,11 @@ void MainWindow::closeEvent(QCloseEvent* ev)
     if (!CloseRequested()) //we cannot access to EditorCore directly by parent
     {
         ev->ignore();
-        return;
     }
-    SaveMainWindowState();
-    ev->accept();
+    else
+    {
+        ev->accept();
+    }
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
@@ -639,5 +647,14 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
         logWidget->AddMessage(logLevel, output);
+    }
+}
+
+void MainWindow::OnCloseCurrentTab()
+{
+    int currentIndex = tabBar->currentIndex();
+    if (currentIndex != -1)
+    {
+        TabClosed(currentIndex);
     }
 }
