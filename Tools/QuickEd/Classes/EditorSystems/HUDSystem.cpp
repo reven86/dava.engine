@@ -315,11 +315,13 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
         UIControl* lineControl = magnetControls.at(i).Get();
-        lineControl->SetRect(Rect(Vector2(linePos + gdPos), lineSize));
+        float32 angle = line.gd->angle;
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
-        lineControl->SetSize(lineControl->GetSize() + extraSize);
-        lineControl->SetPivotPoint(extraSize / 2.0f);
-        lineControl->SetAngle(line.gd->angle);
+        Vector2 extraPos = ::Rotate(extraSize, angle) / 2.0f;
+        Rect lineRect(Vector2(linePos + gdPos) - extraPos, lineSize + extraSize);
+
+        lineControl->SetRect(lineRect);
+        lineControl->SetAngle(angle);
 
         linePos = line.targetRect.GetPosition();
         lineSize = line.targetRect.GetSize();
