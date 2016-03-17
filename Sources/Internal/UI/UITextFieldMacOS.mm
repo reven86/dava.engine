@@ -426,19 +426,13 @@ public:
 
     void UpdateRect(const Rect& rectSrc) override
     {
-        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText);
-        NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
-
-        if (!isFocused)
+        if (currentRect != rectSrc)
         {
-            controlRect.origin.x -= 10000;
-        }
+            currentRect = rectSrc;
+            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
 
-        if (!NSEqualRects(nativeControlRect, controlRect))
-        {
             [nsScrollView setFrame:controlRect];
             [nsTextView setFrame:controlRect];
-            nativeControlRect = controlRect;
         }
     }
 
@@ -753,7 +747,7 @@ public:
             !insideTextShouldReturn &&
             davaText == UIControlSystem::Instance()->GetFocusedControl())
         {
-            UIControlSystem::Instance()->SetFocusedControl(nullptr);
+            davaText->ReleaseFocus();
         }
     }
 
@@ -781,13 +775,16 @@ public:
                 {
                     if (isKeyboardOpened)
                     {
-                        // select text field
-                        [window makeFirstResponder:nsTextField];
-                        // remove selection to caret at end
-                        if ([[nsTextField stringValue] length] > 0)
+                        //                        // select text field
+                        if (davaText->GetCloseKeyboardPolicy() == UITextField::CLOSE_KEYBOARD_WHEN_FOCUS_LOST)
                         {
-                            NSRange range = [[nsTextField currentEditor] selectedRange];
-                            [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+                            [window makeFirstResponder:nsTextField];
+                            // remove selection to caret at end
+                            if ([[nsTextField stringValue] length] > 0)
+                            {
+                                NSRange range = [[nsTextField currentEditor] selectedRange];
+                                [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+                            }
                         }
                     }
                 }
@@ -1524,6 +1521,12 @@ doCommandBySelector:(SEL)commandSelector
     if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
     {
         DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
+        {
+            textField->OnKeyboardShown(DAVA::Rect());
+        }
+        else
+            return NO;
     }
     return YES;
 }
