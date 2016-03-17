@@ -339,5 +339,4 @@ const String& ProgramOptions::GetCommand() const
     return commandName;
 }
 
-
 } //END of DAVA
