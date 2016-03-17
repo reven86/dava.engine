@@ -26,30 +26,29 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TeamcityOutput.h"
+#include "Logger/TeamcityOutput.h"
 #include "Utils/Utils.h"
 
 #include <iostream>
 
 #if defined(__DAVAENGINE_ANDROID__)
-#   include <android/log.h>
-#   define LOG_TAG      "TeamcityOutput"
+#include <android/log.h>
+#define LOG_TAG "TeamcityOutput"
 #elif defined(__DAVAENGINE_IPHONE__)
-#   import "UIKit/UIKit.h"
+#import "UIKit/UIKit.h"
 #endif
 
 namespace DAVA
 {
-    
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
+void TeamcityOutput::Output(Logger::eLogLevel ll, const char8* text)
 {
-    if(ll < Logger::Instance()->GetLogLevel())
+    if (ll < Logger::Instance()->GetLogLevel())
         return;
-    
+
     String outStr = NormalizeString(text);
     String output;
     String status;
-    
+
     switch (ll)
     {
     case Logger::LEVEL_ERROR:
@@ -67,10 +66,10 @@ void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
     PlatformOutput(output);
 }
 
-String TeamcityOutput::NormalizeString(const char8 *text) const
+String TeamcityOutput::NormalizeString(const char8* text) const
 {
     String str = text;
-    
+
     StringReplace(str, "|", "||");
 
     StringReplace(str, "'", "|'");
@@ -79,20 +78,20 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
 
     StringReplace(str, "[", "|[");
     StringReplace(str, "]", "|]");
-    
+
     return str;
 }
 
-void TeamcityOutput::PlatformOutput(const String &text) const
+void TeamcityOutput::PlatformOutput(const String& text) const
 {
 #ifdef __DAVAENGINE_IPHONE__
     NSLog(@"%s", text.c_str());
-#elif  defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
 #else
-    std::cout << text << std::endl << std::flush;
+    std::cout << text << std::endl
+              << std::flush;
 #endif
 }
-    
-}; // end of namespace DAVA
 
+}; // end of namespace DAVA
