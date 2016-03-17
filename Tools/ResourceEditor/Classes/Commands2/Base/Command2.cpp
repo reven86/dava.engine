@@ -39,16 +39,12 @@ Command2::~Command2() = default;
 
 void Command2::UndoInternalCommand(Command2* command)
 {
-    DVASSERT(command != nullptr);
-
     command->Undo();
     EmitNotify(command, false);
 }
 
 void Command2::RedoInternalCommand(Command2* command)
 {
-    DVASSERT(command != nullptr);
-
     command->Redo();
     EmitNotify(command, true);
 }

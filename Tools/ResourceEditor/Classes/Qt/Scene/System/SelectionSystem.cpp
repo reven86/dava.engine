@@ -48,7 +48,6 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSys
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::ANIMATION_TRANSFORM_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -66,7 +65,6 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
     case EventSystem::SWITCH_CHANGED:
     case EventSystem::LOCAL_TRANSFORM_CHANGED:
     case EventSystem::TRANSFORM_PARENT_CHANGED:
-    case EventSystem::ANIMATION_TRANSFORM_CHANGED:
     {
         if (currentSelection.ContainsEntity(component->GetEntity()))
         {
