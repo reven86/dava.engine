@@ -79,7 +79,7 @@ void LODComponentHolder::SummarizeValues()
         {
             uint32 layersCount = GetLodLayersCount(lc);
 
-            maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(layersCount)-1);
+            maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(layersCount) - 1);
 
             for (uint32 i = 0; i < layersCount; ++i)
             {
@@ -89,7 +89,7 @@ void LODComponentHolder::SummarizeValues()
         }
 
         for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
-        { 
+        {
             if (lodCounts[i] != 0)
             {
                 lodDistances[i] /= lodCounts[i];
@@ -438,7 +438,7 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
     DVASSERT(distances.size() == LodComponent::MAX_LOD_LAYERS);
 
     int32 layer = 0;
-    for (auto &dist : distances)
+    for (auto& dist : distances)
     {
         activeLodData->mergedComponent.SetLodLayerDistance(layer++, dist);
     }

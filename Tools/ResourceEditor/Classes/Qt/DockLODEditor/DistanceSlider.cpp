@@ -54,9 +54,8 @@ const int MIN_WIDGET_WIDTH = 1;
 
 DAVA::int32 RoundFloat32(DAVA::float32 value)
 {
-    return static_cast<DAVA::int32> (value + 0.5f);
+    return static_cast<DAVA::int32>(value + 0.5f);
 }
-
 }
 
 DistanceSlider::DistanceSlider(QWidget* parent /*= 0*/)
@@ -118,7 +117,7 @@ void DistanceSlider::SetFramesCount(DAVA::uint32 count)
         DAVA::uint32 handlesCount = static_cast<DAVA::uint32>(splitterHandles.size());
         for (DAVA::uint32 i = handlesCount; i < framesCount; i++)
         {
-            QObject *obj = splitter->handle(static_cast<int>(i));
+            QObject* obj = splitter->handle(static_cast<int>(i));
             obj->installEventFilter(this);
             splitterHandles.push_back(obj);
         }
@@ -174,7 +173,6 @@ void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_)
     splitter->setSizes(sizes);
 }
 
-
 void DistanceSlider::SplitterMoved(int pos, int index)
 {
     DVASSERT(layersCount > 0)
@@ -190,7 +188,7 @@ void DistanceSlider::SplitterMoved(int pos, int index)
     {
         sz += sizes.at(i);
         distancesAsIntegers[i + 1] = DistanceSliderDetails::RoundFloat32(sz * widthCoef);
-        realDistances[i + 1] = static_cast<DAVA::int32> (distancesAsIntegers[i + 1]);
+        realDistances[i + 1] = static_cast<DAVA::int32>(distancesAsIntegers[i + 1]);
     }
 
     emit DistanceHandleMoved();

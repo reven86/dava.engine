@@ -259,7 +259,6 @@ void LODEditor::CreateForceLayerValues(uint32 layersCount)
 
 //ENDOF FORCE
 
-
 //DISTANCES
 void LODEditor::SetupDistancesUI()
 {
@@ -439,7 +438,7 @@ void LODEditor::UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& for
 
     ui->forceSlider->setValue(forceValues.distance);
 
-    static const DAVA::uint32 ADDITIONAL_ROWS_COUNT = 2;    // auto + last lod
+    static const DAVA::uint32 ADDITIONAL_ROWS_COUNT = 2; // auto + last lod
 
     const LODComponentHolder* lodData = forSystem->GetActiveLODData();
     const uint32 layerItemsCount = lodData->GetLODLayersCount();

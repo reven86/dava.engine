@@ -70,9 +70,8 @@ private:
     DAVA::float32 GetScaleSize() const;
 
 private:
-
     QSplitter* splitter = nullptr;
-    DAVA::Vector<QObject *> splitterHandles;
+    DAVA::Vector<QObject*> splitterHandles;
 
     DAVA::Vector<QFrame*> frames;
     DAVA::Vector<DAVA::float32> realDistances;
