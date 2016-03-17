@@ -31,7 +31,7 @@
 #define MAINWINDOW_H
 
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
