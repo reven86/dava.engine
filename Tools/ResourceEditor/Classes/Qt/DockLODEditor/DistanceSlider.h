@@ -54,7 +54,7 @@ public:
     DAVA::uint32 GetLayersCount() const;
 
     void SetDistances(const DAVA::Vector<DAVA::float32>& distances);
-    DAVA::float32 GetDistance(DAVA::uint32 layer) const;
+    const DAVA::Vector<DAVA::float32>& GetDistances() const;
 
 signals:
     void DistanceHandleMoved();
@@ -75,6 +75,7 @@ private:
     DAVA::Vector<QObject *> splitterHandles;
 
     DAVA::Vector<QFrame*> frames;
+    DAVA::Vector<DAVA::float32> realDistances;
     DAVA::Vector<DAVA::int32> distancesAsIntegers; //because qt works with int and I have errors with int-float conversion
 
     DAVA::uint32 layersCount = 0;

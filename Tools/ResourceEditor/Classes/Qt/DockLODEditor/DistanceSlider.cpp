@@ -88,6 +88,7 @@ void DistanceSlider::SetFramesCount(DAVA::uint32 count)
     framesCount = count;
 
     frames.reserve(framesCount);
+    realDistances.resize(framesCount, 0.0f);
     distancesAsIntegers.resize(framesCount, 0);
 
     for (DAVA::uint32 i = 0; i < framesCount; ++i)
@@ -133,18 +134,26 @@ void DistanceSlider::SetLayersCount(DAVA::uint32 count)
     }
 }
 
-DAVA::float32 DistanceSlider::GetDistance(DAVA::uint32 layer) const
+const DAVA::Vector<DAVA::float32>& DistanceSlider::GetDistances() const
 {
-    DVASSERT(layer < framesCount);
-    return static_cast<DAVA::float32>(distancesAsIntegers[layer]);
+    return realDistances;
 }
 
 void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_)
 {
     DVASSERT(distances_.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
-    for (DAVA::uint32 layer = 0; layer < layersCount && layer < DAVA::LodComponent::MAX_LOD_LAYERS; ++layer)
+    DVASSERT(distancesAsIntegers.size() == realDistances.size());
+
+    if (distances_ == realDistances)
     {
-        distancesAsIntegers[layer] = DistanceSliderDetails::RoundFloat32(distances_[layer]);
+        return;
+    }
+
+    DAVA::uint32 distancesCount = static_cast<DAVA::uint32>(DAVA::Min(realDistances.size(), distances_.size()));
+    for (DAVA::uint32 layer = 0; layer < distancesCount; ++layer)
+    {
+        realDistances[layer] = distances_[layer];
+        distancesAsIntegers[layer] = DistanceSliderDetails::RoundFloat32(realDistances[layer]);
     }
 
     const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (splitterHandles.size() - 1);
@@ -181,6 +190,7 @@ void DistanceSlider::SplitterMoved(int pos, int index)
     {
         sz += sizes.at(i);
         distancesAsIntegers[i + 1] = DistanceSliderDetails::RoundFloat32(sz * widthCoef);
+        realDistances[i + 1] = static_cast<DAVA::int32> (distancesAsIntegers[i + 1]);
     }
 
     emit DistanceHandleMoved();

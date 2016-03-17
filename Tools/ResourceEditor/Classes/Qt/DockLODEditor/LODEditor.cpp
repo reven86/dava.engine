@@ -104,7 +104,7 @@ void LODEditor::SceneOrSelectionModeSelected(bool allSceneModeActivated)
     system->SetMode(allSceneModeActivated ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION);
 }
 
-//MODE
+//ENDOF MODE
 
 //PANELS
 void LODEditor::SetupPanelsButtonUI()
@@ -257,7 +257,8 @@ void LODEditor::CreateForceLayerValues(uint32 layersCount)
     ui->forceLayer->setCurrentIndex(0);
 }
 
-//FORCE
+//ENDOF FORCE
+
 
 //DISTANCES
 void LODEditor::SetupDistancesUI()
@@ -300,15 +301,10 @@ void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& dis
     }
 }
 
-
 void LODEditor::LODDistanceIsChangingBySlider()
 {
     //update only UI
-    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
-    for (int32 i = 0; i < static_cast<int32>(distances.size()); ++i)
-    {
-        distances[i] = ui->distanceSlider->GetDistance(i);
-    }
+    const Vector<float32>& distances = ui->distanceSlider->GetDistances();
 
     EditorLODSystem* system = GetCurrentEditorLODSystem();
     const LODComponentHolder* lodData = system->GetActiveLODData();
@@ -317,11 +313,8 @@ void LODEditor::LODDistanceIsChangingBySlider()
 
 void LODEditor::LODDistanceChangedBySlider()
 {
-    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
-    for (int32 i = 0; i < static_cast<int32>(distances.size()); ++i)
-    {
-        distances[i] = ui->distanceSlider->GetDistance(i);
-    }
+    //apply changes to LOD objects
+    const Vector<float32>& distances = ui->distanceSlider->GetDistances();
 
     EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->SetLODDistances(distances);
@@ -339,7 +332,7 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
     system->SetLODDistances(distances);
 }
 
-//DISTANCES
+//ENDOF DISTANCES
 
 //SCENE SIGNALS
 
@@ -378,7 +371,7 @@ void LODEditor::SolidChanged(SceneEditor2* scene, const Entity* entity, bool val
     system->SolidChanged(entity, value);
 }
 
-//SCENE SIGNALS
+//ENDOF SCENE SIGNALS
 
 //ACTIONS
 
@@ -423,7 +416,7 @@ void LODEditor::DeleteLastLOD()
     system->DeleteLastLOD();
 }
 
-//ACTIONS
+//ENDOF ACTIONS
 
 //DELEGATE
 void LODEditor::UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode)
@@ -519,7 +512,7 @@ void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
     }
 }
 
-//DELEGATE
+//ENDOF DELEGATE
 
 void LODEditor::DistanceWidget::SetVisible(bool visible)
 {
