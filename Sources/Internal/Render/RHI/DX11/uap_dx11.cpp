@@ -93,8 +93,6 @@ inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))
     {
-        m_d3Debug.Get()->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
-
         // Set a breakpoint on this line to catch Win32 API errors.
         throw Platform::Exception::CreateException(hr);
     }
