@@ -49,8 +49,8 @@ public:
 
 inline void ResourceEditorLauncher::Launch()
 {
-    SelectableObject::AddTransformProxyForClass<DAVA::Entity, EntityTransformProxy>();
-    SelectableObject::AddTransformProxyForClass<DAVA::ParticleEmitterInstance, EmitterTransformProxy>();
+    Selectable::AddTransformProxyForClass<DAVA::Entity, EntityTransformProxy>();
+    Selectable::AddTransformProxyForClass<DAVA::ParticleEmitterInstance, EmitterTransformProxy>();
 
     DVASSERT(ProjectManager::Instance() != nullptr);
     ProjectManager::Instance()->OpenLastProject();
@@ -64,7 +64,7 @@ inline void ResourceEditorLauncher::Launch()
 
 inline ResourceEditorLauncher::~ResourceEditorLauncher()
 {
-    SelectableObject::RemoveAllTransformProxies();
+    Selectable::RemoveAllTransformProxies();
 }
 
 #endif // __RESOURCEEDITOR_LAUNCHER_H__

@@ -421,16 +421,16 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Select
     {
         switch (scene->modifSystem->GetTransformType())
         {
-        case SelectableObject::TransformType::Translation:
+        case Selectable::TransformType::Translation:
             view->setCursor(cursorMove);
             break;
-        case SelectableObject::TransformType::Rotation:
+        case Selectable::TransformType::Rotation:
             view->setCursor(cursorRotate);
             break;
-        case SelectableObject::TransformType::Scale:
+        case Selectable::TransformType::Scale:
             view->setCursor(cursorScale);
             break;
-        case SelectableObject::TransformType::Disabled:
+        case Selectable::TransformType::Disabled:
         default:
             view->unsetCursor();
             break;

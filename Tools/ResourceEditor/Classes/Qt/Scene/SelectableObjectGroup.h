@@ -35,13 +35,13 @@
 class SelectableObjectGroup
 {
 public:
-    using CollectionType = DAVA::Vector<SelectableObject>;
+    using CollectionType = DAVA::Vector<Selectable>;
 
 public:
     bool operator==(const SelectableObjectGroup& other) const;
     bool operator!=(const SelectableObjectGroup& other) const;
 
-    bool ContainsObject(const DAVA::BaseObject* object) const;
+    bool ContainsObject(const Selectable::Object* object) const;
 
     const CollectionType& GetContent() const;
     CollectionType& GetMutableContent();
@@ -50,9 +50,9 @@ public:
     CollectionType::size_type GetSize() const;
     void Clear();
 
-    void Add(DAVA::BaseObject* object);
-    void Add(DAVA::BaseObject* object, const DAVA::AABBox3& box);
-    void Remove(DAVA::BaseObject* object);
+    void Add(Selectable::Object* object);
+    void Add(Selectable::Object* object, const DAVA::AABBox3& box);
+    void Remove(Selectable::Object* object);
     void Exclude(const SelectableObjectGroup&);
     void Join(const SelectableObjectGroup&);
 
@@ -68,11 +68,11 @@ public:
     void RebuildIntegralBoundingBox();
     const DAVA::AABBox3& GetIntegralBoundingBox() const;
 
-    bool SupportsTransformType(SelectableObject::TransformType transformType) const;
+    bool SupportsTransformType(Selectable::TransformType transformType) const;
     DAVA::Vector3 GetFirstTranslationVector() const;
     DAVA::Vector3 GetCommonTranslationVector() const;
 
-    const SelectableObject& GetFirst() const;
+    const Selectable& GetFirst() const;
 
     void Lock();
     void Unlock();

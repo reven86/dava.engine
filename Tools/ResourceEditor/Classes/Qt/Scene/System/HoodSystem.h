@@ -56,8 +56,8 @@ public:
     HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys);
     ~HoodSystem();
 
-    void SetTransformType(SelectableObject::TransformType mode);
-    SelectableObject::TransformType GetTransformType() const;
+    void SetTransformType(Selectable::TransformType mode);
+    Selectable::TransformType GetTransformType() const;
 
     DAVA::Vector3 GetPosition() const;
     void SetPosition(const DAVA::Vector3& pos);
@@ -108,7 +108,7 @@ private:
     DAVA::Vector3 curPos;
     DAVA::float32 curScale = 1.0f;
     DAVA::Vector3 modifOffset;
-    SelectableObject::TransformType curMode = SelectableObject::TransformType::Disabled;
+    Selectable::TransformType curMode = Selectable::TransformType::Disabled;
     ST_Axis curAxis = ST_AXIS_NONE;
     ST_Axis moseOverAxis = ST_AXIS_NONE;
     bool lockedScale = false;

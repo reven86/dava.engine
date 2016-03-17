@@ -207,7 +207,6 @@ void EditorParticlesSystem::DrawVectorArrow(DAVA::ParticleEmitterInstance* emitt
     DAVA::float32 arrowBaseSize = 5.0f;
     emitterVector = (emitterVector * arrowBaseSize * scale);
 
-    // SelectableObject wrapper(emitter);
     DAVA::Matrix4 wMat = effect->GetEntity()->GetWorldTransform();
     wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
     TransformPerserveLength(emitterVector, wMat);

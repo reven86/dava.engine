@@ -35,7 +35,7 @@
 class CollisionBox : public CollisionBaseObject
 {
 public:
-    CollisionBox(DAVA::BaseObject* object, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize);
+    CollisionBox(Selectable::Object* object, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize);
     ~CollisionBox();
 
     CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;

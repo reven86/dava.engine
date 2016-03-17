@@ -57,8 +57,8 @@ public:
     ST_Axis GetModifAxis() const;
     void SetModifAxis(ST_Axis axis);
 
-    SelectableObject::TransformType GetTransformType() const;
-    void SetTransformType(SelectableObject::TransformType mode);
+    Selectable::TransformType GetTransformType() const;
+    void SetTransformType(Selectable::TransformType mode);
 
     bool GetLandscapeSnap() const;
     void SetLandscapeSnap(bool snap);
@@ -96,7 +96,7 @@ public:
 protected:
     struct EntityToModify
     {
-        SelectableObject object;
+        Selectable object;
         DAVA::Matrix4 inversedParentWorldTransform;
         DAVA::Matrix4 originalParentWorldTransform;
         DAVA::Matrix4 originalTransform;
@@ -165,7 +165,7 @@ private:
     DAVA::float32 crossYZ = 0.0f;
 
     CloneState cloneState = CloneState::CLONE_DONT;
-    SelectableObject::TransformType transformType = SelectableObject::TransformType::Disabled;
+    Selectable::TransformType transformType = Selectable::TransformType::Disabled;
     ST_Axis curAxis = ST_Axis::ST_AXIS_NONE;
 
     bool inModifState = false;

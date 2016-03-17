@@ -69,10 +69,10 @@ public:
     SceneSelectionSystem(SceneEditor2* editor);
     ~SceneSelectionSystem();
 
-    void AddObjectToSelection(DAVA::BaseObject* entity);
+    void AddObjectToSelection(Selectable::Object* entity);
     void AddGroupToSelection(const SelectableObjectGroup& entities);
 
-    void ExcludeEntityFromSelection(DAVA::BaseObject* entity);
+    void ExcludeEntityFromSelection(Selectable::Object* entity);
     void ExcludeSelection(const SelectableObjectGroup& entities);
 
     void Clear();
@@ -100,7 +100,7 @@ public:
 
     void SetLocked(bool lock) override;
 
-    DAVA::AABBox3 GetUntransformedBoundingBox(DAVA::BaseObject* entity) const;
+    DAVA::AABBox3 GetUntransformedBoundingBox(Selectable::Object* entity) const;
     DAVA::AABBox3 GetTransformedBoundingBox(const SelectableObjectGroup& group) const;
 
     void ForceEmitSignals();
@@ -126,7 +126,7 @@ public:
 
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
-    DAVA::AABBox3 GetTransformedBoundingBox(const SelectableObject& object, const DAVA::Matrix4& transform) const;
+    DAVA::AABBox3 GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const;
 
     void UpdateHoodPos() const;
 
@@ -141,7 +141,7 @@ private:
     void UpdateSelectionGroup(const SelectableObjectGroup& newSelection);
     void FinishSelection();
 
-    void ExcludeSingleItem(DAVA::BaseObject* object);
+    void ExcludeSingleItem(Selectable::Object* object);
 
     void DrawItem(const DAVA::AABBox3& bbox, const DAVA::Matrix4& transform, DAVA::int32 drawMode,
                   DAVA::RenderHelper::eDrawType wireDrawType, DAVA::RenderHelper::eDrawType solidDrawType,

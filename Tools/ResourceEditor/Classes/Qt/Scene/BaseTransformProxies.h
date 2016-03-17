@@ -32,22 +32,22 @@
 
 #include "SelectableObject.h"
 
-class EntityTransformProxy : public SelectableObject::TransformProxy
+class EntityTransformProxy : public Selectable::TransformProxy
 {
 public:
-    const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject* object) override;
-    const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject* object) override;
-    void SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix) override;
-    bool SupportsTransformType(DAVA::BaseObject* object, SelectableObject::TransformType) const override;
+    const DAVA::Matrix4& GetWorldTransform(Selectable::Object* object) override;
+    const DAVA::Matrix4& GetLocalTransform(Selectable::Object* object) override;
+    void SetLocalTransform(Selectable::Object* object, const DAVA::Matrix4& matrix) override;
+    bool SupportsTransformType(Selectable::Object* object, Selectable::TransformType) const override;
 };
 
-class EmitterTransformProxy : public SelectableObject::TransformProxy
+class EmitterTransformProxy : public Selectable::TransformProxy
 {
 public:
-    const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject* object) override;
-    const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject* object) override;
-    void SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix) override;
-    bool SupportsTransformType(DAVA::BaseObject* object, SelectableObject::TransformType) const override;
+    const DAVA::Matrix4& GetWorldTransform(Selectable::Object* object) override;
+    const DAVA::Matrix4& GetLocalTransform(Selectable::Object* object) override;
+    void SetLocalTransform(Selectable::Object* object, const DAVA::Matrix4& matrix) override;
+    bool SupportsTransformType(Selectable::Object* object, Selectable::TransformType) const override;
 };
 
 #endif // __BASE_TRANSFORM_PROXIES_H

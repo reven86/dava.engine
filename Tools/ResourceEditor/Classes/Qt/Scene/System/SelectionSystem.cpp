@@ -151,8 +151,8 @@ void SceneSelectionSystem::ProcessSelectedGroup(const SelectableObjectGroup::Col
         }
     }
 
-    DAVA::BaseObject* firstEntity = collisionObjects.empty() ? nullptr : collisionObjects.front().GetContainedObject();
-    DAVA::BaseObject* nextEntity = firstEntity;
+    Selectable::Object* firstEntity = collisionObjects.empty() ? nullptr : collisionObjects.front().GetContainedObject();
+    Selectable::Object* nextEntity = firstEntity;
 
     // sequent selection?
     if (SettingsManager::GetValue(Settings::Scene_SelectionSequent).AsBool() && (currentSelection.GetSize() <= 1))
@@ -382,7 +382,7 @@ void SceneSelectionSystem::Draw()
     {
         for (const auto& item : currentSelection.GetContent())
         {
-            if (item.SupportsTransformType(SelectableObject::TransformType::Disabled))
+            if (item.SupportsTransformType(Selectable::TransformType::Disabled))
             {
                 auto bbox = collisionSystem->GetBoundingBox(item.GetContainedObject());
                 DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
@@ -429,7 +429,7 @@ void SceneSelectionSystem::SetSelection(SelectableObjectGroup& newSelection)
     if (IsLocked())
         return;
 
-    newSelection.RemoveIf([this](const SelectableObject& obj) {
+    newSelection.RemoveIf([this](const Selectable& obj) {
         return (obj.CanBeCastedTo<DAVA::Entity>() && !IsEntitySelectable(obj.AsEntity()));
     });
 
@@ -463,12 +463,12 @@ void SceneSelectionSystem::SetSelection(SelectableObjectGroup& newSelection)
     }
 }
 
-void SceneSelectionSystem::AddObjectToSelection(DAVA::BaseObject* object)
+void SceneSelectionSystem::AddObjectToSelection(Selectable::Object* object)
 {
     if (IsLocked() || currentSelection.ContainsObject(object))
         return;
 
-    SelectableObject wrapper(object);
+    Selectable wrapper(object);
     if (!wrapper.CanBeCastedTo<DAVA::Entity>() || IsEntitySelectable(wrapper.AsEntity()))
     {
         auto newSelection = currentSelection;
@@ -507,7 +507,7 @@ bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity* entity) const
     return false;
 }
 
-void SceneSelectionSystem::ExcludeSingleItem(DAVA::BaseObject* entity)
+void SceneSelectionSystem::ExcludeSingleItem(Selectable::Object* entity)
 {
     auto newSelection = currentSelection;
     if (newSelection.ContainsObject(entity))
@@ -522,7 +522,7 @@ void SceneSelectionSystem::ExcludeSingleItem(DAVA::BaseObject* entity)
     SetSelection(newSelection);
 }
 
-void SceneSelectionSystem::ExcludeEntityFromSelection(DAVA::BaseObject* entity)
+void SceneSelectionSystem::ExcludeEntityFromSelection(Selectable::Object* entity)
 {
     if (!IsLocked())
     {
@@ -666,7 +666,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
         bool hasNonTransformableObjects = false;
         for (const auto& item : currentSelection.GetContent())
         {
-            if (item.SupportsTransformType(SelectableObject::TransformType::Disabled) == false)
+            if (item.SupportsTransformType(Selectable::TransformType::Disabled) == false)
             {
                 hasNonTransformableObjects = true;
                 break;
@@ -693,12 +693,12 @@ DAVA::Entity* SceneSelectionSystem::GetSelectableEntity(DAVA::Entity* entity)
     return entity;
 }
 
-DAVA::AABBox3 SceneSelectionSystem::GetUntransformedBoundingBox(DAVA::BaseObject* entity) const
+DAVA::AABBox3 SceneSelectionSystem::GetUntransformedBoundingBox(Selectable::Object* entity) const
 {
-    return GetTransformedBoundingBox(SelectableObject(entity), DAVA::Matrix4::IDENTITY);
+    return GetTransformedBoundingBox(Selectable(entity), DAVA::Matrix4::IDENTITY);
 }
 
-DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableObject& object, const DAVA::Matrix4& transform) const
+DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const
 {
     DAVA::AABBox3 entityBox = collisionSystem->GetBoundingBox(object.GetContainedObject());
 
@@ -708,7 +708,7 @@ DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableOb
         auto entity = object.AsEntity();
         for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); i++)
         {
-            SelectableObject childEntity(entity->GetChild(i));
+            Selectable childEntity(entity->GetChild(i));
             DAVA::AABBox3 childBox = GetTransformedBoundingBox(childEntity, childEntity.GetLocalTransform());
             if (childBox.IsEmpty() == false)
             {

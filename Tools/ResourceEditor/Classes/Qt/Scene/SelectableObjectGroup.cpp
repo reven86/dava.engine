@@ -63,7 +63,7 @@ bool SelectableObjectGroup::operator!=(const SelectableObjectGroup& other) const
     return false;
 }
 
-bool SelectableObjectGroup::ContainsObject(const DAVA::BaseObject* object) const
+bool SelectableObjectGroup::ContainsObject(const Selectable::Object* object) const
 {
     for (const auto& obj : objects)
     {
@@ -80,22 +80,22 @@ void SelectableObjectGroup::Clear()
     objects.clear();
 }
 
-void SelectableObjectGroup::Add(DAVA::BaseObject* object)
+void SelectableObjectGroup::Add(Selectable::Object* object)
 {
     DVASSERT(!IsLocked());
     objects.emplace_back(object);
 }
 
-void SelectableObjectGroup::Add(DAVA::BaseObject* object, const DAVA::AABBox3& box)
+void SelectableObjectGroup::Add(Selectable::Object* object, const DAVA::AABBox3& box)
 {
     DVASSERT(!IsLocked());
     objects.emplace_back(object);
     objects.back().SetBoundingBox(box);
 }
 
-void SelectableObjectGroup::Remove(DAVA::BaseObject* object)
+void SelectableObjectGroup::Remove(Selectable::Object* object)
 {
-    RemoveIf([object](const SelectableObject& obj) { return obj.GetContainedObject() == object; });
+    RemoveIf([object](const Selectable& obj) { return obj.GetContainedObject() == object; });
 }
 
 void SelectableObjectGroup::RebuildIntegralBoundingBox()
@@ -110,7 +110,7 @@ void SelectableObjectGroup::RebuildIntegralBoundingBox()
 void SelectableObjectGroup::Exclude(const SelectableObjectGroup& other)
 {
     DVASSERT(!IsLocked());
-    RemoveIf([&other](const SelectableObject& object)
+    RemoveIf([&other](const Selectable& object)
              {
                  return other.ContainsObject(object.GetContainedObject());
              });
@@ -128,13 +128,13 @@ void SelectableObjectGroup::Join(const SelectableObjectGroup& other)
     }
 }
 
-const SelectableObject& SelectableObjectGroup::GetFirst() const
+const Selectable& SelectableObjectGroup::GetFirst() const
 {
     DVASSERT(!objects.empty());
     return objects.front();
 }
 
-bool SelectableObjectGroup::SupportsTransformType(SelectableObject::TransformType transformType) const
+bool SelectableObjectGroup::SupportsTransformType(Selectable::TransformType transformType) const
 {
     for (const auto& obj : objects)
     {

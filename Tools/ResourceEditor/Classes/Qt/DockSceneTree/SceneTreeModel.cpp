@@ -203,7 +203,7 @@ int SceneTreeModel::GetCustomFlags(const QModelIndex& index) const
     return ret;
 }
 
-QModelIndex SceneTreeModel::GetIndex(DAVA::BaseObject* object) const
+QModelIndex SceneTreeModel::GetIndex(Selectable::Object* object) const
 {
     auto i = indexesCache.find(object);
     return (i == indexesCache.end()) ? QModelIndex() : i->second;

@@ -1481,7 +1481,7 @@ void QtMainWindow::OnSelectMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetTransformType(SelectableObject::TransformType::Disabled);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Disabled);
         LoadModificationState(scene);
     }
 }
@@ -1491,7 +1491,7 @@ void QtMainWindow::OnMoveMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetTransformType(SelectableObject::TransformType::Translation);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Translation);
         LoadModificationState(scene);
     }
 }
@@ -1501,7 +1501,7 @@ void QtMainWindow::OnRotateMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetTransformType(SelectableObject::TransformType::Rotation);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Rotation);
         LoadModificationState(scene);
     }
 }
@@ -1511,7 +1511,7 @@ void QtMainWindow::OnScaleMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetTransformType(SelectableObject::TransformType::Scale);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Scale);
         LoadModificationState(scene);
     }
 }
@@ -1929,16 +1929,16 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
 
         switch (modifMode)
         {
-        case SelectableObject::TransformType::Disabled:
+        case Selectable::TransformType::Disabled:
             ui->actionModifySelect->setChecked(true);
             break;
-        case SelectableObject::TransformType::Translation:
+        case Selectable::TransformType::Translation:
             ui->actionModifyMove->setChecked(true);
             break;
-        case SelectableObject::TransformType::Rotation:
+        case Selectable::TransformType::Rotation:
             ui->actionModifyRotate->setChecked(true);
             break;
-        case SelectableObject::TransformType::Scale:
+        case Selectable::TransformType::Scale:
             ui->actionModifyScale->setChecked(true);
             break;
         default:

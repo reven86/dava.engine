@@ -33,9 +33,11 @@
 #include "Scene3D/Entity.h"
 #include <type_traits>
 
-class SelectableObject
+class Selectable
 {
 public:
+    using Object = DAVA::InspBase;
+
     enum class TransformType : DAVA::uint32
     {
         Disabled,
@@ -48,10 +50,10 @@ public:
     {
     public:
         virtual ~TransformProxy() = default;
-        virtual const DAVA::Matrix4& GetWorldTransform(DAVA::BaseObject* object) = 0;
-        virtual const DAVA::Matrix4& GetLocalTransform(DAVA::BaseObject* object) = 0;
-        virtual void SetLocalTransform(DAVA::BaseObject* object, const DAVA::Matrix4& matrix) = 0;
-        virtual bool SupportsTransformType(DAVA::BaseObject* object, TransformType transformType) const = 0;
+        virtual const DAVA::Matrix4& GetWorldTransform(Object* object) = 0;
+        virtual const DAVA::Matrix4& GetLocalTransform(Object* object) = 0;
+        virtual void SetLocalTransform(Object* object, const DAVA::Matrix4& matrix) = 0;
+        virtual bool SupportsTransformType(Object* object, TransformType transformType) const = 0;
     };
 
     template <typename CLASS, typename PROXY>
@@ -59,21 +61,20 @@ public:
     static void RemoveAllTransformProxies();
 
 public:
-    SelectableObject() = default;
-    explicit SelectableObject(DAVA::BaseObject* baseObject);
-    SelectableObject(const SelectableObject& other);
-    SelectableObject(SelectableObject&& other);
-    ~SelectableObject();
+    Selectable() = default;
+    explicit Selectable(Object* baseObject);
+    Selectable(const Selectable& other);
+    Selectable(Selectable&& other);
 
-    SelectableObject& operator=(const SelectableObject& other);
-    SelectableObject& operator=(SelectableObject&& other);
+    Selectable& operator=(const Selectable& other);
+    Selectable& operator=(Selectable&& other);
 
-    bool operator==(const SelectableObject& other) const;
-    bool operator!=(const SelectableObject& other) const;
+    bool operator==(const Selectable& other) const;
+    bool operator!=(const Selectable& other) const;
 
     // comparing only pointers here, and not using bounding box
     // added for compatibility with sorted containers
-    bool operator<(const SelectableObject& other) const;
+    bool operator<(const Selectable& other) const;
 
     template <typename T>
     bool CanBeCastedTo() const;
@@ -81,7 +82,7 @@ public:
     template <typename T>
     T* Cast() const;
 
-    DAVA::BaseObject* GetContainedObject() const;
+    Object* GetContainedObject() const;
     DAVA::Entity* AsEntity() const;
 
     const DAVA::AABBox3& GetBoundingBox() const;
@@ -97,19 +98,19 @@ private:
     static TransformProxy* GetTransformProxyForClass(const DAVA::MetaInfo* classInfo);
 
 private:
-    DAVA::BaseObject* object = nullptr;
+    Object* object = nullptr;
     DAVA::AABBox3 boundingBox;
 };
 
 template <typename T>
-bool SelectableObject::CanBeCastedTo() const
+bool Selectable::CanBeCastedTo() const
 {
     DVASSERT(object != nullptr);
     return object->GetTypeInfo()->Type() == DAVA::MetaInfo::Instance<T>();
 }
 
 template <typename T>
-inline T* SelectableObject::Cast() const
+inline T* Selectable::Cast() const
 {
     DVASSERT(object != nullptr);
     if (CanBeCastedTo<T>())
@@ -119,26 +120,26 @@ inline T* SelectableObject::Cast() const
     return nullptr;
 }
 
-inline DAVA::BaseObject* SelectableObject::GetContainedObject() const
+inline Selectable::Object* Selectable::GetContainedObject() const
 {
     return object;
 }
 
-inline const DAVA::AABBox3& SelectableObject::GetBoundingBox() const
+inline const DAVA::AABBox3& Selectable::GetBoundingBox() const
 {
     return boundingBox;
 }
 
-inline DAVA::Entity* SelectableObject::AsEntity() const
+inline DAVA::Entity* Selectable::AsEntity() const
 {
     return Cast<DAVA::Entity>();
 }
 
 template <typename CLASS, typename PROXY>
-inline void SelectableObject::AddTransformProxyForClass()
+inline void Selectable::AddTransformProxyForClass()
 {
-    static_assert(std::is_base_of<SelectableObject::TransformProxy, PROXY>::value,
-                  "Transform proxy should be derived from SelectableObject::TransformProxy");
+    static_assert(std::is_base_of<Selectable::TransformProxy, PROXY>::value,
+                  "Transform proxy should be derived from Selectable::TransformProxy");
     AddConcreteProxy(DAVA::MetaInfo::Instance<CLASS>(), new PROXY());
 }
 

@@ -51,7 +51,7 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene* scene, SceneColl
     , cameraSystem(camSys)
     , hoodSystem(hoodSys)
 {
-    SetTransformType(SelectableObject::TransformType::Disabled);
+    SetTransformType(Selectable::TransformType::Disabled);
     SetModifAxis(ST_AXIS_Z);
 }
 
@@ -71,13 +71,13 @@ ST_Axis EntityModificationSystem::GetModifAxis() const
     return curAxis;
 }
 
-void EntityModificationSystem::SetTransformType(SelectableObject::TransformType mode)
+void EntityModificationSystem::SetTransformType(Selectable::TransformType mode)
 {
     transformType = mode;
     hoodSystem->SetTransformType(mode);
 }
 
-SelectableObject::TransformType EntityModificationSystem::GetTransformType() const
+Selectable::TransformType EntityModificationSystem::GetTransformType() const
 {
     return transformType;
 }
@@ -179,7 +179,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
                     inModifState = true;
 
                     // select current hood axis as active
-                    if ((transformType == SelectableObject::TransformType::Translation) || (transformType == SelectableObject::TransformType::Rotation))
+                    if ((transformType == Selectable::TransformType::Translation) || (transformType == Selectable::TransformType::Rotation))
                     {
                         SetModifAxis(hoodSystem->GetPassingAxis());
                     }
@@ -193,7 +193,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
 
                     // check if this is move with copy action
                     int curKeyModifiers = QApplication::keyboardModifiers();
-                    if (curKeyModifiers & Qt::ShiftModifier && (transformType == SelectableObject::TransformType::Translation))
+                    if (curKeyModifiers & Qt::ShiftModifier && (transformType == Selectable::TransformType::Translation))
                     {
                         cloneState = CLONE_NEED;
                     }
@@ -217,20 +217,20 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
 
             switch (transformType)
             {
-            case SelectableObject::TransformType::Translation:
+            case Selectable::TransformType::Translation:
             {
                 DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
                 moveOffset = Move(newPos3d);
                 modified = true;
             }
             break;
-            case SelectableObject::TransformType::Rotation:
+            case Selectable::TransformType::Rotation:
             {
                 rotateAngle = Rotate(event->point);
                 modified = true;
             }
             break;
-            case SelectableObject::TransformType::Scale:
+            case Selectable::TransformType::Scale:
             {
                 scaleForce = Scale(event->point);
                 modified = true;
@@ -315,7 +315,7 @@ SelectableObjectGroup EntityModificationSystem::BeginModification(const Selectab
 
     SelectableObjectGroup result = inputEntities;
     // remove children to prevent double transformation
-    result.RemoveIf([&result](const SelectableObject& obj) {
+    result.RemoveIf([&result](const Selectable& obj) {
         auto entity = obj.AsEntity();
         return (entity == nullptr) ? false : result.ContainsObject(entity->GetParent());
     });
@@ -966,7 +966,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableObjectGroup& entitie
                 DAVA::Matrix4 origTransform = en->GetLocalTransform();
                 DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
 
-                sceneEditor->Exec(new TransformCommand(SelectableObject(en), origTransform, newTransform));
+                sceneEditor->Exec(new TransformCommand(Selectable(en), origTransform, newTransform));
 
                 // also modify childs transform to make them be at
                 // right position after parent entity changed
@@ -977,7 +977,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableObjectGroup& entitie
                     DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
                     DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
 
-                    sceneEditor->Exec(new TransformCommand(SelectableObject(childEntity), childOrigTransform, childNewTransform));
+                    sceneEditor->Exec(new TransformCommand(Selectable(childEntity), childOrigTransform, childNewTransform));
                 }
             }
 
@@ -999,14 +999,14 @@ void EntityModificationSystem::BakeGeometry(const SelectableObjectGroup& entitie
         // transform parent entity
         DAVA::Matrix4 transform;
         transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
-        sceneEditor->Exec(new TransformCommand(SelectableObject(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
+        sceneEditor->Exec(new TransformCommand(Selectable(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
 
         // transform child entities with inversed parent transformation
         transform.Inverse();
         for (size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
         {
             DAVA::Entity* childEntity = entity->GetChild(i);
-            sceneEditor->Exec(new TransformCommand(SelectableObject(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
+            sceneEditor->Exec(new TransformCommand(Selectable(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
         }
 
         sceneEditor->EndBatch();
@@ -1065,7 +1065,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
 
 bool EntityModificationSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
 {
-    return (transformType == SelectableObject::TransformType::Disabled) || !ModifCanStartByMouse(currentSelection);
+    return (transformType == Selectable::TransformType::Disabled) || !ModifCanStartByMouse(currentSelection);
 }
 
 bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)

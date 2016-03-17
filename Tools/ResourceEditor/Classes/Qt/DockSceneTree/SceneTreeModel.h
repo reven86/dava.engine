@@ -72,7 +72,7 @@ public:
     void SetScene(SceneEditor2* scene);
     SceneEditor2* GetScene() const;
 
-    QModelIndex GetIndex(DAVA::BaseObject* object) const;
+    QModelIndex GetIndex(Selectable::Object* object) const;
 
     SceneTreeItem* GetItem(const QModelIndex& index) const;
 
@@ -117,7 +117,7 @@ private:
 
 private:
     SceneEditor2* curScene = nullptr;
-    DAVA::Map<DAVA::BaseObject*, QModelIndex> indexesCache;
+    DAVA::Map<Selectable::Object*, QModelIndex> indexesCache;
     QString filterText;
     bool dropAccepted = false;
 };

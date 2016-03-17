@@ -38,19 +38,19 @@ namespace DAVA
 class Entity;
 }
 
+class SelectableObjectGroup;
 class SaveEntityAsAction : public CommandAction
 {
 public:
-    SaveEntityAsAction(const SelectableObjectGroup* objects, const DAVA::FilePath& path);
-    ~SaveEntityAsAction();
+    SaveEntityAsAction(const SelectableObjectGroup* entities, const DAVA::FilePath& path);
 
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     void RemoveLightmapsRecursive(DAVA::Entity* entity) const;
 
 protected:
-    const SelectableObjectGroup* objects;
+    const SelectableObjectGroup* entities;
     DAVA::FilePath sc2Path;
 };
 

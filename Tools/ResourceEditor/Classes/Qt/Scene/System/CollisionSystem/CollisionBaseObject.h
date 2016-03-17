@@ -56,7 +56,7 @@ public:
     };
 
 public:
-    CollisionBaseObject(DAVA::BaseObject* object_, btCollisionWorld* word)
+    CollisionBaseObject(Selectable::Object* object_, btCollisionWorld* word)
         : object(object_)
         , btWord(word)
     {
@@ -72,7 +72,7 @@ public:
 
     btCollisionObject* btObject = nullptr;
     btCollisionWorld* btWord = nullptr;
-    SelectableObject object;
+    Selectable object;
 };
 
 inline CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const

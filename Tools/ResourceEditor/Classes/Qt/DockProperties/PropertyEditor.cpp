@@ -277,7 +277,7 @@ void PropertyEditor::ResetProperties()
         bool isFirstItem = true;
         for (const auto& item : curNodes.GetContent())
         {
-            DAVA::BaseObject* node = item.GetContainedObject();
+            auto node = item.GetContainedObject();
 
             const DAVA::InspInfo* inspInfo = node->GetTypeInfo();
             std::unique_ptr<QtPropertyData> curEntityData(CreateInsp(inspInfo->Name(), node, inspInfo));
