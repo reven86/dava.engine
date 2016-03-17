@@ -75,7 +75,7 @@ struct PackFile
 {
     struct HeaderBlock
     {
-        Array<char, 4> resPackMarker;
+        Array<char8, 4> resPackMarker;
         uint32 magic;
         uint32 namesBlockSize;
         uint32 filesTableBlockSize;
@@ -98,7 +98,7 @@ struct PackFile
             uint32 compressed;
             uint32 original;
             PackingType packType;
-            Array<char, 16> reserved;
+            Array<char8, 16> reserved;
         };
         Vector<Data> fileTable;
     } filesDataBlock;
@@ -142,7 +142,7 @@ public:
     bool HasFile(const String& fileName) const override;
     bool LoadFile(const String& fileName, ResourceArchive::ContentAndSize& output) const override;
 private:
-    mz_zip_archive zip_archive;
+    mz_zip_archive zipArchive;
     ResourceArchive::FileInfos fileInfos;
     Vector<String> fileNames;
 };
@@ -231,7 +231,7 @@ static bool Packing(const String& fileName,
     return true;
 }
 
-static int Deflate_compress(const char* source, char* dest, int inputSize)
+static int Deflate—ompress(const char* source, char* dest, int inputSize)
 {
     uLong destLen = inputSize;
     int result = compress(reinterpret_cast<uint8*>(dest), &destLen, reinterpret_cast<const uint8*>(source), inputSize);
@@ -325,7 +325,7 @@ static bool CompressFileAndWriteToOutput(const String& fileName, const Vector<Re
     }
     break;
     case PackingType::RFC1951:
-        if (!Packing(fileName, fileTable, inBuffer, packingBuf, output, origSize, startPos, Deflate_compress, PackingType::RFC1951))
+        if (!Packing(fileName, fileTable, inBuffer, packingBuf, output, origSize, startPos, Deflate—ompress, PackingType::RFC1951))
         {
             return false;
         }
@@ -400,10 +400,10 @@ const ResourceArchive::FileInfos& ResourceArchive::GetFilesInfo() const
     return impl->GetFilesInfo();
 }
 
-bool ResourceArchive::HasFile(const String& file_name) const
+bool ResourceArchive::HasFile(const String& fileName) const
 {
     DVASSERT(impl != nullptr);
-    return impl->HasFile(file_name);
+    return impl->HasFile(fileName);
 }
 
 const ResourceArchive::FileInfo* ResourceArchive::GetFileInfo(const String& fileName) const
@@ -613,51 +613,51 @@ namespace resource_archive_details
 {
 ZipArchive::ZipArchive()
 {
-    std::memset(&zip_archive, 0, sizeof(zip_archive));
+    std::memset(&zipArchive, 0, sizeof(zipArchive));
 }
 
 ZipArchive::~ZipArchive()
 {
-    mz_zip_reader_end(&zip_archive);
+    mz_zip_reader_end(&zipArchive);
 }
 
 bool ZipArchive::Open(const FilePath& archiveName)
 {
-    String file_name = archiveName.GetAbsolutePathname();
+    String fileName = archiveName.GetAbsolutePathname();
     // in case we already open one archive
-    mz_zip_reader_end(&zip_archive);
+    mz_zip_reader_end(&zipArchive);
 
-    std::memset(&zip_archive, 0, sizeof(zip_archive));
-    mz_bool status = mz_zip_reader_init_file(&zip_archive, file_name.c_str(), 0);
+    std::memset(&zipArchive, 0, sizeof(zipArchive));
+    mz_bool status = mz_zip_reader_init_file(&zipArchive, fileName.c_str(), 0);
     if (!status)
     {
         Logger::Error("mz_zip_reader_init_file() failed!\n");
         return false;
     }
     // Get and print information about each file in the archive.
-    unsigned count = mz_zip_reader_get_num_files(&zip_archive);
+    unsigned count = mz_zip_reader_get_num_files(&zipArchive);
     fileNames.clear();
     fileInfos.clear();
     fileNames.reserve(count);
     fileInfos.reserve(count);
     for (unsigned i = 0u; i < count; i++)
     {
-        mz_zip_archive_file_stat file_stat;
-        if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat))
+        mz_zip_archive_file_stat fileStat;
+        if (!mz_zip_reader_file_stat(&zipArchive, i, &fileStat))
         {
             Logger::Error("mz_zip_reader_file_stat() failed!\n");
-            mz_zip_reader_end(&zip_archive);
+            mz_zip_reader_end(&zipArchive);
             return false;
         }
 
-        if (mz_zip_reader_is_file_a_directory(&zip_archive, i) == 0)
+        if (mz_zip_reader_is_file_a_directory(&zipArchive, i) == 0)
         {
-            fileNames.push_back(file_stat.m_filename);
+            fileNames.push_back(fileStat.m_filename);
             ResourceArchive::FileInfo info;
             info.name = fileNames.back().c_str();
             info.compressionType = ResourceArchive::CompressionType::RFC1951;
-            info.compressedSize = static_cast<uint32>(file_stat.m_comp_size);
-            info.originalSize = static_cast<uint32>(file_stat.m_uncomp_size);
+            info.compressedSize = static_cast<uint32>(fileStat.m_comp_size);
+            info.originalSize = static_cast<uint32>(fileStat.m_uncomp_size);
             fileInfos.push_back(info);
         }
     }
@@ -702,7 +702,7 @@ bool ZipArchive::LoadFile(const String& fileName, ResourceArchive::ContentAndSiz
         output.content.reset(buf);
         output.size = info->originalSize;
 
-        mz_zip_archive* p_zip = const_cast<mz_zip_archive*>(&zip_archive);
+        mz_zip_archive* p_zip = const_cast<mz_zip_archive*>(&zipArchive);
 
         mz_bool result = mz_zip_reader_extract_file_to_mem(p_zip, fileName.c_str(), buf, info->originalSize, 0);
         if (result == 0)
@@ -719,12 +719,12 @@ bool DavaArchive::Open(const FilePath& archiveName)
 {
     using namespace resource_archive_details;
 
-    String file_name = archiveName.GetAbsolutePathname();
+    String fileName = archiveName.GetAbsolutePathname();
 
-    file.Set(File::Create(file_name, File::OPEN | File::READ));
+    file.Set(File::Create(fileName, File::OPEN | File::READ));
     if (!file)
     {
-        Logger::Error("can't Open file: %s\n", file_name.c_str());
+        Logger::Error("can't Open file: %s\n", fileName.c_str());
         return false;
     }
     auto& header_block = packFile.headerBlock;
@@ -732,13 +732,13 @@ bool DavaArchive::Open(const FilePath& archiveName)
     if (isOk <= 0)
     {
         Logger::Error("can't read header from packfile: %s\n",
-                      file_name.c_str());
+                      fileName.c_str());
         return false;
     }
     if (header_block.resPackMarker != PackFileMarker)
     {
         Logger::Error("incorrect marker in pack file: %s\n",
-                      file_name.c_str());
+                      fileName.c_str());
         return false;
     }
     if (PackFileMagic != header_block.magic)
@@ -818,11 +818,11 @@ bool DavaArchive::Open(const FilePath& archiveName)
 
     std::for_each(begin(fileTable), end(fileTable), [&](FileTableEntry& fileEntry)
                   {
-                      const char* fileName = &fileNames[fileNameIndex];
+                      const char* fileNameLoc = &fileNames[fileNameIndex];
                       mapFileData.emplace(fileName, &fileEntry);
 
                       filesInfoSortedByName.push_back(
-                      ResourceArchive::FileInfo{ fileName,
+                      ResourceArchive::FileInfo{ fileNameLoc,
                                                  fileEntry.original,
                                                  fileEntry.compressed,
                                                  fileEntry.packType });
