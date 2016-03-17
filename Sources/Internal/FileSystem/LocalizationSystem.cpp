@@ -29,7 +29,7 @@
 
 #include "FileSystem/LocalizationSystem.h"
 #include "Utils/Utils.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "yaml/yaml.h"
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"

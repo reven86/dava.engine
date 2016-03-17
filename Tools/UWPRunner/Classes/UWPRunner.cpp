@@ -36,8 +36,7 @@
 #include "Network/NetConfig.h"
 #include "Network/Services/LogConsumer.h"
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
-#include "TeamcityOutput/TeamCityTestsOutput.h"
-#include "Utils/Utils.h"
+#include "Logger/TeamCityTestsOutput.h"
 
 #include "AppxBundleHelper.h"
 #include "ArchiveExtraction.h"
@@ -300,44 +299,44 @@ void UWPRunner::UnInitializeNetwork()
 
 bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
 {
-    const WideString desiredAddr = StringToWString(UAPNetworkHelper::UAP_IP_ADDRESS);
+    const String desiredAddr = UAPNetworkHelper::UAP_IP_ADDRESS;
     const DWORD desiredPort = UAPNetworkHelper::UAP_MOBILE_TCP_PORT;
     bool changed = false;
 
-    WideString address = key.QueryString(L"DestinationAddress");
+    String address = key.QueryString("DestinationAddress");
     if (address != desiredAddr)
     {
-        if (!key.SetValue(L"DestinationAddress", desiredAddr))
+        if (!key.SetValue("DestinationAddress", desiredAddr))
         {
             RUNNER_EXCEPTION("Unable to set DestinationAddress");
         }
         changed = true;
     }
 
-    DWORD port = key.QueryDWORD(L"DestinationPort");
+    DWORD port = key.QueryDWORD("DestinationPort");
     if (port != desiredPort)
     {
-        if (!key.SetValue(L"DestinationPort", desiredPort))
+        if (!key.SetValue("DestinationPort", desiredPort))
         {
             RUNNER_EXCEPTION("Unable to set DestinationPort");
         }
         changed = true;
     }
 
-    address = key.QueryString(L"LocalAddress");
+    address = key.QueryString("LocalAddress");
     if (address != desiredAddr)
     {
-        if (!key.SetValue(L"LocalAddress", desiredAddr))
+        if (!key.SetValue("LocalAddress", desiredAddr))
         {
             RUNNER_EXCEPTION("Unable to set LocalAddress");
         }
         changed = true;
     }
 
-    port = key.QueryDWORD(L"LocalPort");
+    port = key.QueryDWORD("LocalPort");
     if (port != desiredPort)
     {
-        if (!key.SetValue(L"LocalPort", desiredPort))
+        if (!key.SetValue("LocalPort", desiredPort))
         {
             RUNNER_EXCEPTION("Unable to set LocalPort");
         }
@@ -350,7 +349,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
 bool UWPRunner::RestartIpOverUsb()
 {
     //open service
-    SvcHelper service(L"IpOverUsbSvc");
+    SvcHelper service("IpOverUsbSvc");
     if (!service.IsInstalled())
     {
         RUNNER_EXCEPTION("Can't open IpOverUsb service");
@@ -376,7 +375,7 @@ bool UWPRunner::ConfigureIpOverUsb()
     bool needRestart = false;
 
     //open or create key
-    RegKey key(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
+    RegKey key(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
     if (!key.IsExist())
     {
         RUNNER_EXCEPTION("Can't open or create key");
