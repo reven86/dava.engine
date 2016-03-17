@@ -57,7 +57,7 @@ DAVA_TESTCLASS (DeviceInfoTest)
         TEST_VERIFY("" != region && "Not yet implemented" != region);
 
         String timeZone = DeviceInfo::GetTimeZone();
-        TEST_VERIFY("" != timeZone && "Not yet implemented" != timeZone);
+        TEST_VERIFY("" != timeZone); // not implemented for win32.
 
         String manufacturer = DeviceInfo::GetManufacturer();
         TEST_VERIFY("Not yet implemented" != manufacturer);

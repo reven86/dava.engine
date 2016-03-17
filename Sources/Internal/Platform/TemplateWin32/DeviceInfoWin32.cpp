@@ -133,18 +133,28 @@ String DeviceInfoPrivate::GetLocale()
 
 String DeviceInfoPrivate::GetRegion()
 {
-    WCHAR countryBuffer[LOCALE_NAME_MAX_LENGTH];
-    int size = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SLOCALIZEDCOUNTRYNAME, countryBuffer, LOCALE_NAME_MAX_LENGTH);
-    String country;
-    if (0 != size)
+
+    GEOID myGEO = GetUserGeoID(GEOCLASS_NATION);
+    int sizeOfBuffer = GetGeoInfo(myGEO, GEO_ISO2, NULL, 0, 0);
+    if (0 == sizeOfBuffer)
     {
-        country = WStringToString(countryBuffer);
+        return "";
     }
+
+    WCHAR *buffer = new WCHAR[sizeOfBuffer];
+    int result = GetGeoInfo(myGEO, GEO_ISO2, buffer, sizeOfBuffer, 0);   
+    DVASSERT(0 != result);
+    String country = WStringToString(buffer);
+    delete[] buffer;
+
     return country;
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
+    return "Not yet implemented";
+
+    /*don't remove that code please. it is needed for the nex task*/
     TIME_ZONE_INFORMATION timeZoneInformation;
     DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
 
