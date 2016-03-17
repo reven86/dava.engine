@@ -236,6 +236,8 @@
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\TemplateHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\CommandLineParser.h" />
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\ProgramOptions.h" />
     <ClInclude Include="..\..\Sources\Internal\Command\ICommand.h" />
     <ClInclude Include="..\..\Sources\Internal\Command\ObjectHandle.h" />
     <ClInclude Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.h" />
@@ -262,7 +264,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAClassRegistrator.h" />
@@ -324,7 +325,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
@@ -341,6 +341,9 @@
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h" />
+    <ClInclude Include="..\..\Sources\Internal\Logger\Logger.h" />
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamcityOutput.h" />
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox3.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\BezierSpline.h" />
@@ -727,6 +730,8 @@
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\CommandLineParser.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\ProgramOptions.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Command\ObjectHandle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp" />
@@ -739,7 +744,6 @@
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAClassRegistrator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp" />
@@ -793,8 +797,6 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\Logger.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\LoggerWin.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />
@@ -810,6 +812,10 @@
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Logger\Logger.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Logger\LoggerWin.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamcityOutput.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox3.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\BezierSpline.cpp" />

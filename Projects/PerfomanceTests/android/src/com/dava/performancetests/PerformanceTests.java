@@ -20,12 +20,17 @@ public class PerformanceTests extends JNIActivity {
 		return true;
 	}
 
-    
-    @Override
-	public JNISurfaceView FindSurfaceView() {	
+	@Override
+	public JNISurfaceView FindSurfaceView() {
 		setContentView(R.layout.activity_main);
 		JNISurfaceView view = (JNISurfaceView) findViewById(R.id.view1);
 		return view;
 	}
 
+	private native void nativeCall(int countC, boolean releaseRef);
+	public void TestCallToNativeInitiatedByJava(int countJava, int countC, boolean releaseRef) {
+		for (int i = 0; i < countJava; ++i) {
+			nativeCall(countC, releaseRef);
+		}
+	}
 }

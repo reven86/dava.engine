@@ -30,7 +30,7 @@
 #include "Base/Platform.h"
 
 #include "Render/Texture.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"

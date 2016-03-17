@@ -27,20 +27,31 @@
 =====================================================================================*/
 
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_MACOS__)
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <windowsx.h>
-
+#include <cstdio>
 namespace DAVA
 {
 void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-    OutputDebugStringA(text);
+    // Use printf instead of std::cout as std::cout can produce mess when
+    // logging from several threads
+    std::printf("[%s] %s", GetLogLevelString(ll), text);
 }
+} // namespace DAVA
+
+#elif defined(__DAVAENGINE_IPHONE__)
+
+#import <Foundation/Foundation.h>
+namespace DAVA
+{
+void Logger::PlatformLog(eLogLevel ll, const char8* text) const
+{
+    NSLog(@"[%s] %s", GetLogLevelString(ll), text);
 }
+
+} // namespace DAVA
 
 #endif

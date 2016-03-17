@@ -33,7 +33,7 @@
 #include "AndroidLayer.h"
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "Input/AccelerometerAndroid.h"
 #include "AndroidDelegate.h"
