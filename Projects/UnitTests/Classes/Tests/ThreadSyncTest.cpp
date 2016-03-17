@@ -53,6 +53,19 @@ DAVA_TESTCLASS (ThreadSyncTest)
     AutoResetEvent are;
     ManualResetEvent mre;
 
+    DAVA_TEST (ThreadJoinableTest)
+    {
+        RefPtr<Thread> p(Thread::Create([]() {
+            Thread::Sleep(2000);
+        }));
+
+        TEST_VERIFY(p->IsJoinable() == false);
+        p->Start();
+        TEST_VERIFY(p->IsJoinable() == true);
+        p->Join();
+        TEST_VERIFY(p->IsJoinable() == false);
+    }
+
     DAVA_TEST (ThreadSyncTestFunction)
     {
         cvMutex.Lock();
