@@ -68,6 +68,15 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const
     auto control = node->GetControl();
     control->SetAbsolutePosition(pos - (control->GetSize() / 2.0f));
     auto relativePos = control->GetPosition();
+    auto scale = control->GetGeometricData().scale;
+    if (scale.x == 0.0f || scale.y == 0.0f)
+    {
+        relativePos.SetZero();
+    }
+    else
+    {
+        relativePos /= scale;
+    }
 
     auto rootProperty = node->GetRootProperty();
     auto positionProperty = rootProperty->FindPropertyByName("Position");
@@ -319,8 +328,6 @@ bool PackageModel::setData(const QModelIndex& index, const QVariant& value, int 
         DVASSERT(nullptr != commandExecutor);
         if (nullptr != commandExecutor)
         {
-            ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-            DVASSERT(controlNode);
             auto prop = controlNode->GetRootProperty()->GetNameProperty();
             const auto& newName = value.toString().toStdString();
             if (newName != node->GetName())
@@ -440,8 +447,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
 
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
-        const PackageMimeData* controlMimeData = dynamic_cast<const PackageMimeData*>(data);
-        DVASSERT(nullptr != controlMimeData);
+        const PackageMimeData* controlMimeData = DynamicTypeCheck<const PackageMimeData*>(data);
 
         const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
         DVASSERT(!srcControls.empty());
@@ -472,8 +478,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
     }
     else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
-        const PackageMimeData* mimeData = dynamic_cast<const PackageMimeData*>(data);
-        DVASSERT(nullptr != mimeData)
+        const PackageMimeData* mimeData = DynamicTypeCheck<const PackageMimeData*>(data);
 
         const Vector<StyleSheetNode*>& srcStyles = mimeData->GetStyles();
         DVASSERT(!srcStyles.empty());

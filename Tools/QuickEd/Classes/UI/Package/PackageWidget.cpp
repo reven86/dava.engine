@@ -722,7 +722,7 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
     {
         return;
     }
-    SetSelectedNodes(nodes, selectionContainer.selectedNodes);
+    emit SelectedNodesChanged(nodes, selectionContainer.selectedNodes);
 
     for (const auto& node : expandedNodes)
     {

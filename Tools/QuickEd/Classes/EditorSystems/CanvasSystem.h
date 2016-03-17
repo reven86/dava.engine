@@ -54,6 +54,7 @@ private:
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
     BackgroundController* CreateControlBackground(PackageBaseNode* node);
     void AddBackgroundControllerToCanvas(BackgroundController* backgroundController, size_t pos);
+    void OnGetIndexByPos(const DAVA::Vector2 &pos, int &index);
 
     DAVA::RefPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
     DAVA::List<std::unique_ptr<BackgroundController>> gridControls;

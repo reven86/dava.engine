@@ -412,7 +412,7 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
             break;
         case QEvent::DragEnter:
-            break;
+            return true;
         case QEvent::DragMove:
             OnDragMoveEvent(DynamicTypeCheck<QDragMoveEvent*>(event));
             return true;
@@ -569,7 +569,30 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
         systemsManager->NodesHovered.Emit({ node });
         if (nullptr != node)
         {
-            return !node->IsReadOnly(); //canPaste must be here
+            if (node->IsReadOnly())
+            {
+                return false;
+            }
+            else
+            {
+                if (mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+                {
+                    const PackageMimeData* controlMimeData = DynamicTypeCheck<const PackageMimeData*>(mimeData);
+                    const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
+                    for (const auto &srcNode : srcControls)
+                    {
+                        if (srcNode == node)
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                else
+                {
+                    return true;
+                }
+            }
         }
         else
         {
@@ -595,11 +618,17 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
         PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
+        int index = 0;
         if (node == nullptr)
         {
             node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
+            index = systemsManager->GetIndexOfNearestControl(pos - systemsManager->GetScalableControl()->GetPosition());
         }
-        emit DropRequested(mimeData, action, node, node->GetCount(), &pos);
+        else
+        {
+            index = node->GetCount();
+        }
+        emit DropRequested(mimeData, action, node, index, &pos);
     }
     else if (mimeData->hasFormat("text/uri-list"))
     {

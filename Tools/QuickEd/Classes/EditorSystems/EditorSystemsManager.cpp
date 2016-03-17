@@ -140,6 +140,29 @@ ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& po
     return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
 }
 
+int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point)
+{
+    int index = 0;
+    GetIndexByPos.Emit(point, index);
+
+    bool insertToEnd = (index == editingRootControls.size());
+
+    auto iter = editingRootControls.begin();
+    std::advance(iter, insertToEnd ? index - 1 : index);
+    PackageBaseNode *target = *iter;
+    PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+    for (int i = 0; i < controlsNode->GetCount(); ++i)
+    {
+        if (controlsNode->Get(i) == target) 
+        {
+            return insertToEnd ? i + 1 : i; 
+        }
+    }
+    DVASSERT(false && "editingRootControls contains nodes not from GetPackageControlsNode");
+
+    return 0;
+}
+
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
