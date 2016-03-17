@@ -500,8 +500,8 @@ void CreateWindowSizeDependentResources()
 #endif
 
     DAVA::DisplayMode curMode = DAVA::Core::Instance()->GetCurrentDisplayMode();
-    m_logicalSize.Width = curMode.width;
-    m_logicalSize.Height = curMode.height;
+    m_logicalSize.Width = static_cast<float32>(curMode.width);
+    m_logicalSize.Height = static_cast<float32>(curMode.height);
 
     // Setup inverse scale on the swap chain
     DXGI_MATRIX_3X2_F inverseScale = { 0 };
