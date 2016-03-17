@@ -51,6 +51,10 @@ QString FileSystemHelper::ResolveUrl(const QString& url) const
 
 QString FileSystemHelper::NormalizePath(const QString& path) const
 {
+    if (path.isEmpty())
+    {
+        return path;
+    }
     QDir dir(path);
     if (dir.exists())
     {
