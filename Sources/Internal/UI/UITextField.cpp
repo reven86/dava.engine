@@ -326,6 +326,11 @@ UITextField::~UITextField()
     UIControl::RemoveAllControls();
 }
 
+bool UITextField::IsKeyboardOpened() const
+{
+    return isKeyboardOpened;
+}
+
 void UITextField::OpenKeyboard()
 {
     textFieldImpl->OpenKeyboard();
@@ -390,9 +395,13 @@ void UITextField::OnTouchOutsideFocus()
     }
 }
 
-void UITextField::ReleaseFocus()
+void UITextField::ReleaseFocus() // TODO: rename method
 {
-    // TODO: remove method
+    if (isKeyboardOpened)
+    {
+        isKeyboardOpened = false;
+        CloseKeyboard();
+    }
 }
 
 void UITextField::SetFont(Font* font)
@@ -877,6 +886,7 @@ int32 UITextField::GetMaxLength() const
 
 void UITextField::OnKeyboardShown(const Rect& keyboardRect)
 {
+    isKeyboardOpened = true;
     if (delegate != nullptr)
     {
         delegate->OnKeyboardShown(keyboardRect);
@@ -885,6 +895,7 @@ void UITextField::OnKeyboardShown(const Rect& keyboardRect)
 
 void UITextField::OnKeyboardHidden()
 {
+    isKeyboardOpened = false;
     if (delegate != nullptr)
     {
         delegate->OnKeyboardHidden();

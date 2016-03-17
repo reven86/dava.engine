@@ -192,6 +192,7 @@ public:
 
     void Update(float32 timeElapsed) override;
 
+    bool IsKeyboardOpened() const;
     void OpenKeyboard();
     void CloseKeyboard();
 
@@ -405,6 +406,7 @@ private:
     bool isPassword;
     bool enableReturnKeyAutomatically;
     bool isMultiline_ = false;
+    bool isKeyboardOpened = false;
 
     TextFieldPlatformImpl* textFieldImpl = nullptr;
     int32 maxLength = -1;

@@ -81,10 +81,17 @@ UIControl* UIFocusSystem::GetFocusedControl() const
 
 void UIFocusSystem::SetFocusedControl(UIControl* control)
 {
+    bool keyboardWasOpened = false;
     if (control != focusedControl.Get())
     {
-        if (focusedControl)
+        if (focusedControl.Valid())
         {
+            UITextField* textField = dynamic_cast<UITextField*>(focusedControl.Get());
+            if (textField)
+            {
+                keyboardWasOpened = textField->IsKeyboardOpened();
+            }
+
             focusedControl->SystemOnFocusLost();
             focusedControl = nullptr;
         }
@@ -96,6 +103,15 @@ void UIFocusSystem::SetFocusedControl(UIControl* control)
                 focusedControl = control;
                 focusedControl->SystemOnFocused();
                 UIControlHelpers::ScrollToControl(focusedControl.Get());
+
+                if (keyboardWasOpened)
+                {
+                    UITextField* textField = dynamic_cast<UITextField*>(focusedControl.Get());
+                    if (textField)
+                    {
+                        textField->OpenKeyboard();
+                    }
+                }
             }
             else
             {
