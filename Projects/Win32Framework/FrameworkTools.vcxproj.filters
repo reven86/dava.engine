@@ -25,14 +25,8 @@
     <Filter Include="Source Files\TexturePacker">
       <UniqueIdentifier>{a1b73597-21b3-4e9c-a209-4279a8968e88}</UniqueIdentifier>
     </Filter>
-    <Filter Include="TeamcityOutput">
-      <UniqueIdentifier>{ad6c97e8-fa9d-4027-9216-7b3a96be2c3e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\AssetCache">
       <UniqueIdentifier>{c54f3a9f-7306-45a5-9e4d-1bfa06cac95c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\CommandLine">
-      <UniqueIdentifier>{49506135-645d-4426-ae04-2379e6001a9b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -66,23 +60,11 @@
     <ClInclude Include="..\..\Sources\Tools\TextureCompression\TextureConverter.h">
       <Filter>Header Files\TextureCompression</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h">
-      <Filter>TeamcityOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.h">
-      <Filter>TeamcityOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\CommandLine\ProgramOptions.h">
-      <Filter>Source Files\CommandLine</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Tools\AssetCache\CacheItemKey.h">
       <Filter>Source Files\AssetCache</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.h">
       <Filter>Source Files\AssetCache</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\CommandLine\CommandLineParser.h">
-      <Filter>Source Files\CommandLine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -110,23 +92,11 @@
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\TextureConverter.cpp">
       <Filter>Source Files\TextureCompression</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp">
-      <Filter>TeamcityOutput</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp">
-      <Filter>TeamcityOutput</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp">
       <Filter>Source Files\AssetCache</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\TextureAtlas.cpp">
       <Filter>Source Files\TexturePacker</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\CommandLine\CommandLineParser.cpp">
-      <Filter>Source Files\CommandLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\CommandLine\ProgramOptions.cpp">
-      <Filter>Source Files\CommandLine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
