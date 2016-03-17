@@ -48,7 +48,9 @@ public:
 
     void Execute() override;
 
+    virtual bool IsModifying() const;
     virtual bool CanUndo() const;
+
     virtual DAVA::Entity* GetEntity() const = 0;
     virtual bool MergeWith(const Command2* command);
 
@@ -64,6 +66,11 @@ protected:
 };
 
 inline bool Command2::CanUndo() const
+{
+    return true;
+}
+
+inline bool Command2::IsModifying() const
 {
     return true;
 }

@@ -33,7 +33,7 @@
 
     #include "Debug/DVAssert.h"
     #include "Debug/Profiler.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"

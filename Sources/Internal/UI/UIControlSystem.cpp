@@ -29,7 +29,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
