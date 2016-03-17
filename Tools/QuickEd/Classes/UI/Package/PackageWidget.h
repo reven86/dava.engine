@@ -127,7 +127,7 @@ private:
 
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
-    QStack<QPersistentModelIndex> currentIndexes;
+    std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
 };
 

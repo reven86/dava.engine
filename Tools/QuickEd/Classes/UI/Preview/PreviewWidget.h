@@ -62,7 +62,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget();
-    DavaGLWidget* GetGLWidget();
+    DavaGLWidget* GetGLWidget() const;
     ScrollAreaController* GetScrollAreaController();
     float GetScale() const;
     RulerController* GetRulerController();
@@ -74,6 +74,7 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
+    void CloseTabRequested();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OpenPackageFile(QString path);
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, int destIndex, const DAVA::Vector2* pos);
@@ -139,11 +140,12 @@ private:
     QAction* selectAllAction = nullptr;
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
+    QAction* closeTabAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
 };
 
-inline DavaGLWidget* PreviewWidget::GetGLWidget()
+inline DavaGLWidget* PreviewWidget::GetGLWidget() const
 {
     return davaGLWidget;
 }

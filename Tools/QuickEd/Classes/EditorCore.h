@@ -68,7 +68,6 @@ private slots:
     void SaveDocument(int index);
     void SaveAllDocuments();
 
-    void Exit();
     void RecentMenu(QAction*);
     void OnCurrentTabChanged(int index);
 
@@ -80,12 +79,14 @@ private slots:
 
     void OnApplicationStateChanged(Qt::ApplicationState state);
     void OnFileChanged(const QString& path);
+    bool CloseProject();
+    void OnExit();
 
 private:
     void ApplyFileChanges();
     Document* GetDocument(const QString& path) const;
     void OpenProject(const QString& path);
-    bool CloseProject();
+
     int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
     void SaveDocument(Document* document);
 
