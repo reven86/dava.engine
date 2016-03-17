@@ -49,12 +49,13 @@ public:
     {
         None,
         Lz4,
-        Lz4HC
+        Lz4HC,
+        RFC1951, // deflate
     };
 
     struct FileInfo
     {
-        const char* name;
+        const char8* name;
         uint32 originalSize;
         uint32 compressedSize;
         CompressionType compressionType;
@@ -62,7 +63,7 @@ public:
 
     struct ContentAndSize
     {
-        std::unique_ptr<char[]> content;
+        std::unique_ptr<char8[]> content;
         uint32 size;
     };
 
@@ -74,12 +75,12 @@ public:
 
     using FileInfos = Vector<FileInfo>;
 
+    // prepare all internal data
     bool Open(const FilePath& archiveName);
     const FileInfos& GetFilesInfo() const;
     const FileInfo* GetFileInfo(const String& fileName) const;
     bool HasFile(const String& fileName) const;
     bool LoadFile(const String& fileName, ContentAndSize& output) const;
-    void Close();
 
     using Rules = Vector<Rule>;
 

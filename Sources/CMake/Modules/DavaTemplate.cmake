@@ -228,6 +228,9 @@ endif()
 ###
 
 if( DAVA_FOUND )
+
+    list( APPEND UNIFIED_IGNORE_LIST ${DAVA_PLATFORM_SRC}/FileSystem/ResourceArchive.h )
+
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )

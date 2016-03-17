@@ -102,7 +102,7 @@ ResourceArchive::CompressionType defaultVal)
 
 String ToString(ResourceArchive::CompressionType packType)
 {
-    static const Vector<const char*> packTypes = { "none", "lz4", "lz4hc" };
+    static const Vector<const char*> packTypes = { "none", "lz4", "lz4hc", "rfc1951" };
 
     size_t index = static_cast<size_t>(packType);
 
