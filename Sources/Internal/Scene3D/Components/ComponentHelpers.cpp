@@ -413,9 +413,6 @@ CustomPropertiesComponent* GetOrCreateCustomProperties(Entity* fromEntity)
 
 KeyedArchive* GetCustomPropertiesArchieve(const Entity* fromEntity)
 {
-    if (fromEntity == nullptr)
-        return nullptr;
-
     CustomPropertiesComponent* comp = GetCustomProperties(fromEntity);
     return (comp != nullptr) ? comp->GetArchive() : nullptr;
 }

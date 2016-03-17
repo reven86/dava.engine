@@ -63,8 +63,8 @@ signals:
 
     void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
     // mouse
-    void MouseOver(SceneEditor2* scene, const SelectableObjectGroup* entities);
-    void MouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* entities);
+    void MouseOver(SceneEditor2* scene, const SelectableObjectGroup* objects);
+    void MouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* objects);
 
     // particles - selection
     void EffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
@@ -172,13 +172,13 @@ public:
         emit RulerToolLengthChanged(scene, length, previewLength);
     }
 
-    void EmitMouseOver(SceneEditor2* scene, const SelectableObjectGroup* entities)
+    void EmitMouseOver(SceneEditor2* scene, const SelectableObjectGroup* objects)
     {
-        emit MouseOver(scene, entities);
+        emit MouseOver(scene, objects);
     }
-    void EmitMouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* entities)
+    void EmitMouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* objects)
     {
-        emit MouseOverSelection(scene, entities);
+        emit MouseOverSelection(scene, objects);
     }
 
     // Particle Editor Selection signals.

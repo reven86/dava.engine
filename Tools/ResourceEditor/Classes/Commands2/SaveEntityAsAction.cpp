@@ -82,9 +82,9 @@ private:
     Map<DataNode*, uint64> dataNodeIDs;
 };
 
-SaveEntityAsAction::SaveEntityAsAction(const SelectableObjectGroup* entities_, const FilePath& path_)
+SaveEntityAsAction::SaveEntityAsAction(const SelectableObjectGroup* objects_, const FilePath& path_)
     : CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
-    , entities(entities_)
+    , objects(objects_)
     , sc2Path(path_)
 {
 }
@@ -95,8 +95,8 @@ SaveEntityAsAction::~SaveEntityAsAction()
 
 void SaveEntityAsAction::Redo()
 {
-    uint32 count = static_cast<uint32>(entities->GetSize());
-    if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
+    uint32 count = static_cast<uint32>(objects->GetSize());
+    if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != objects) && (count > 0))
     {
         const auto RemoveReferenceToOwner = [](Entity* entity) {
             KeyedArchive* props = GetCustomPropertiesArchieve(entity);
@@ -106,7 +106,7 @@ void SaveEntityAsAction::Redo()
             }
         };
 
-        auto firstEntity = entities->GetFirst().AsEntity();
+        auto firstEntity = objects->GetFirst().AsEntity();
         DVASSERT(firstEntity != nullptr);
         ElegantSceneGuard guard(firstEntity->GetScene());
 
@@ -123,8 +123,8 @@ void SaveEntityAsAction::Redo()
         {
             container.reset(new Entity());
 
-            const Vector3 oldZero = entities->GetCommonTranslationVector();
-            for (auto entity : entities->ObjectsOfType<DAVA::Entity>())
+            const Vector3 oldZero = objects->GetCommonTranslationVector();
+            for (auto entity : objects->ObjectsOfType<DAVA::Entity>())
             {
                 ScopedPtr<Entity> clone(entity->Clone());
 

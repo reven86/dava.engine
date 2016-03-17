@@ -29,21 +29,21 @@
 #include "Scene/SelectableObject.h"
 
 SelectableObject::SelectableObject(DAVA::BaseObject* baseObject)
+    : object(DAVA::SafeRetain(baseObject))
 {
-    DVASSERT(baseObject != nullptr);
-    object = DAVA::SafeRetain(baseObject);
+    DVASSERT(object != nullptr);
 }
 
 SelectableObject::SelectableObject(const SelectableObject& other)
+    : object(DAVA::SafeRetain(other.object))
+    , boundingBox(other.boundingBox)
 {
-    object = DAVA::SafeRetain(other.object);
-    boundingBox = other.boundingBox;
 }
 
 SelectableObject::SelectableObject(SelectableObject&& other)
+    : boundingBox(other.boundingBox)
 {
     std::swap(object, other.object);
-    boundingBox = other.boundingBox;
 }
 
 SelectableObject::~SelectableObject()

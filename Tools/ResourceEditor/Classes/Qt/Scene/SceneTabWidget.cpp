@@ -409,7 +409,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData* data)
     }
 }
 
-void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const SelectableObjectGroup* entities)
+void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const SelectableObjectGroup* objects)
 {
     static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
     static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
@@ -417,7 +417,7 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Select
 
     auto view = davaWidget->GetGLView();
 
-    if (GetCurrentScene() == scene && nullptr != entities)
+    if ((GetCurrentScene() == scene) && (objects != nullptr))
     {
         switch (scene->modifSystem->GetTransformType())
         {
