@@ -41,6 +41,7 @@ namespace DAVA
 class CoreWin32Platform : public CoreWin32PlatformBase
 {
 public:
+    CoreWin32Platform();
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
     void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;

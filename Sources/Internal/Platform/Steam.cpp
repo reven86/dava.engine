@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__DAVAENGINE_STEAM__)
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 using namespace STEAM_SDK;
 

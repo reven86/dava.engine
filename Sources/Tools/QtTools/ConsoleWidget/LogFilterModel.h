@@ -1,7 +1,7 @@
 #ifndef __LOGFILTERMODEL_H__
 #define __LOGFILTERMODEL_H__
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
