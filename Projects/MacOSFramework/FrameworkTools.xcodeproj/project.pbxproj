@@ -7,12 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7696281E196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */; };
-		7696281F196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */; };
-		76962820196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */; };
-		76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7696281D196BF80D0064C3A0 /* TeamcityOutput.h */; };
-		76962822196BF80D0064C3A0 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7696281D196BF80D0064C3A0 /* TeamcityOutput.h */; };
-		76962823196BF80D0064C3A0 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7696281D196BF80D0064C3A0 /* TeamcityOutput.h */; };
 		A69854BC17CE41EC001E9FDE /* DXTConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854A917CE41EC001E9FDE /* DXTConverter.cpp */; };
 		A69854BD17CE41EC001E9FDE /* DXTConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854A917CE41EC001E9FDE /* DXTConverter.cpp */; };
 		A69854BE17CE41EC001E9FDE /* DXTConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854A917CE41EC001E9FDE /* DXTConverter.cpp */; };
@@ -64,18 +58,6 @@
 		E834DEA51B171F8200E4B2DB /* CacheItemKey.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE721B171F8200E4B2DB /* CacheItemKey.h */; };
 		E834DEA61B171F8200E4B2DB /* CacheItemKey.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE721B171F8200E4B2DB /* CacheItemKey.h */; };
 		E834DEA71B171F8200E4B2DB /* CacheItemKey.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE721B171F8200E4B2DB /* CacheItemKey.h */; };
-		E86559D11BE2596200A41354 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E86559CD1BE2596200A41354 /* CommandLineParser.cpp */; };
-		E86559D21BE2596200A41354 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E86559CD1BE2596200A41354 /* CommandLineParser.cpp */; };
-		E86559D31BE2596200A41354 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E86559CD1BE2596200A41354 /* CommandLineParser.cpp */; };
-		E86559D41BE2596200A41354 /* CommandLineParser.h in Headers */ = {isa = PBXBuildFile; fileRef = E86559CE1BE2596200A41354 /* CommandLineParser.h */; };
-		E86559D51BE2596200A41354 /* CommandLineParser.h in Headers */ = {isa = PBXBuildFile; fileRef = E86559CE1BE2596200A41354 /* CommandLineParser.h */; };
-		E86559D61BE2596200A41354 /* CommandLineParser.h in Headers */ = {isa = PBXBuildFile; fileRef = E86559CE1BE2596200A41354 /* CommandLineParser.h */; };
-		E86559D71BE2596200A41354 /* ProgramOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E86559CF1BE2596200A41354 /* ProgramOptions.cpp */; };
-		E86559D81BE2596200A41354 /* ProgramOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E86559CF1BE2596200A41354 /* ProgramOptions.cpp */; };
-		E86559D91BE2596200A41354 /* ProgramOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E86559CF1BE2596200A41354 /* ProgramOptions.cpp */; };
-		E86559DA1BE2596200A41354 /* ProgramOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E86559D01BE2596200A41354 /* ProgramOptions.h */; };
-		E86559DB1BE2596200A41354 /* ProgramOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E86559D01BE2596200A41354 /* ProgramOptions.h */; };
-		E86559DC1BE2596200A41354 /* ProgramOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E86559D01BE2596200A41354 /* ProgramOptions.h */; };
 		E8BB52271B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
 		E8BB52281B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
 		E8BB52291B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
@@ -87,8 +69,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TeamcityOutput.cpp; path = TeamcityOutput/TeamcityOutput.cpp; sourceTree = "<group>"; };
-		7696281D196BF80D0064C3A0 /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TeamcityOutput.h; path = TeamcityOutput/TeamcityOutput.h; sourceTree = "<group>"; };
 		A698542917CE38C0001E9FDE /* libFrameworkTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A698543717CE38D8001E9FDE /* libFrameworkToolsQt.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkToolsQt.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A698543F17CE38E5001E9FDE /* libFrameworkToolsNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkToolsNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -109,10 +89,6 @@
 		A6A617DE17CF502C00375E11 /* TextureConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureConverter.cpp; sourceTree = "<group>"; };
 		A6A617DF17CF502C00375E11 /* TextureConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureConverter.h; sourceTree = "<group>"; };
 		E834DE721B171F8200E4B2DB /* CacheItemKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CacheItemKey.h; sourceTree = "<group>"; };
-		E86559CD1BE2596200A41354 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandLineParser.cpp; sourceTree = "<group>"; };
-		E86559CE1BE2596200A41354 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandLineParser.h; sourceTree = "<group>"; };
-		E86559CF1BE2596200A41354 /* ProgramOptions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProgramOptions.cpp; sourceTree = "<group>"; };
-		E86559D01BE2596200A41354 /* ProgramOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgramOptions.h; sourceTree = "<group>"; };
 		E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DoubleMD5Key.cpp; sourceTree = "<group>"; };
 		E8BB52241B74979300D3866C /* DoubleMD5Key.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoubleMD5Key.h; sourceTree = "<group>"; };
 		E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
@@ -146,15 +122,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		76962824196BF8130064C3A0 /* TeamcitOutput */ = {
-			isa = PBXGroup;
-			children = (
-				7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */,
-				7696281D196BF80D0064C3A0 /* TeamcityOutput.h */,
-			);
-			name = TeamcitOutput;
-			sourceTree = "<group>";
-		};
 		A698542017CE38BF001E9FDE = {
 			isa = PBXGroup;
 			children = (
@@ -179,8 +146,6 @@
 			isa = PBXGroup;
 			children = (
 				E834DE661B171F8200E4B2DB /* AssetCache */,
-				E86559CC1BE2596200A41354 /* CommandLine */,
-				76962824196BF8130064C3A0 /* TeamcitOutput */,
 				A69854A817CE41EC001E9FDE /* TextureCompression */,
 				A69854AD17CE41EC001E9FDE /* TexturePacker */,
 			);
@@ -230,17 +195,6 @@
 			path = AssetCache;
 			sourceTree = "<group>";
 		};
-		E86559CC1BE2596200A41354 /* CommandLine */ = {
-			isa = PBXGroup;
-			children = (
-				E86559CD1BE2596200A41354 /* CommandLineParser.cpp */,
-				E86559CE1BE2596200A41354 /* CommandLineParser.h */,
-				E86559CF1BE2596200A41354 /* ProgramOptions.cpp */,
-				E86559D01BE2596200A41354 /* ProgramOptions.h */,
-			);
-			path = CommandLine;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -252,12 +206,9 @@
 				A69854C517CE41EC001E9FDE /* PVRConverter.h in Headers */,
 				A69854D117CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */,
-				76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
 				A69854E317CE41EC001E9FDE /* PngImage.h in Headers */,
-				E86559DA1BE2596200A41354 /* ProgramOptions.h in Headers */,
 				A69854E917CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
 				A69854EF17CE41EC001E9FDE /* TexturePacker.h in Headers */,
-				E86559D41BE2596200A41354 /* CommandLineParser.h in Headers */,
 				A6A617E317CF502C00375E11 /* TextureConverter.h in Headers */,
 				E834DEA51B171F8200E4B2DB /* CacheItemKey.h in Headers */,
 				FE66A5171BB44941002D7272 /* TextureAtlas.h in Headers */,
@@ -274,11 +225,8 @@
 				A69854D217CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				E8BB522B1B74979300D3866C /* DoubleMD5Key.h in Headers */,
 				A69854D817CE41EC001E9FDE /* FramePathHelper.h in Headers */,
-				E86559D51BE2596200A41354 /* CommandLineParser.h in Headers */,
-				76962822196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
 				A69854E417CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854EA17CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
-				E86559DB1BE2596200A41354 /* ProgramOptions.h in Headers */,
 				A69854F017CE41EC001E9FDE /* TexturePacker.h in Headers */,
 				A6A617E417CF502C00375E11 /* TextureConverter.h in Headers */,
 				E834DEA61B171F8200E4B2DB /* CacheItemKey.h in Headers */,
@@ -294,11 +242,8 @@
 				A69854D317CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				E8BB522C1B74979300D3866C /* DoubleMD5Key.h in Headers */,
 				A69854D917CE41EC001E9FDE /* FramePathHelper.h in Headers */,
-				E86559D61BE2596200A41354 /* CommandLineParser.h in Headers */,
-				76962823196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
 				A69854E517CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854EB17CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
-				E86559DC1BE2596200A41354 /* ProgramOptions.h in Headers */,
 				A69854F117CE41EC001E9FDE /* TexturePacker.h in Headers */,
 				A6A617E517CF502C00375E11 /* TextureConverter.h in Headers */,
 				E834DEA71B171F8200E4B2DB /* CacheItemKey.h in Headers */,
@@ -391,15 +336,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E86559D71BE2596200A41354 /* ProgramOptions.cpp in Sources */,
 				A69854BC17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52271B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C217CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
 				A69854CE17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D417CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
 				FE66A5161BB44941002D7272 /* TextureAtlas.cpp in Sources */,
-				E86559D11BE2596200A41354 /* CommandLineParser.cpp in Sources */,
-				7696281E196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E017CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E617CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854EC17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
@@ -414,11 +356,8 @@
 				A69854BD17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52281B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C317CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
-				E86559D81BE2596200A41354 /* ProgramOptions.cpp in Sources */,
 				A69854CF17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D517CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
-				E86559D21BE2596200A41354 /* CommandLineParser.cpp in Sources */,
-				7696281F196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E117CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E717CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854ED17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
@@ -433,11 +372,8 @@
 				A69854BE17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52291B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C417CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
-				E86559D91BE2596200A41354 /* ProgramOptions.cpp in Sources */,
 				A69854D017CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D617CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
-				E86559D31BE2596200A41354 /* CommandLineParser.cpp in Sources */,
-				76962820196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E217CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E817CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854EE17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
