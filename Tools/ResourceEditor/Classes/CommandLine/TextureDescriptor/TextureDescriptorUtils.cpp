@@ -248,4 +248,38 @@ void SetPreset(const FilePath& descriptorPath, const FilePath& presetPath, bool 
     }
 }
 
+void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vector<DAVA::FilePath>& presets)
+{
+    if (descriptors.size() != presets.size())
+    {
+        Logger::Error("Descriptors size differs from presets size");
+        return;
+    }
+
+    uint32 count = static_cast<uint32>(descriptors.size());
+    for (uint32 i = 0; i < count; ++i)
+    {
+        std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptors[i]));
+        if (!descriptor)
+        {
+            Logger::Error("Cannot create descriptor from file %s", descriptors[i].GetStringValue().c_str());
+            return;
+        }
+
+        ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive());
+        if (descriptor->SerializeToPreset(presetArchive) == false)
+        {
+            Logger::Error("Can't create preset. Check that all GPU convert parameters are valid");
+            return;
+        }
+
+        FileSystem::Instance()->CreateDirectory(presets[i].GetDirectory(), true);
+        if (presetArchive->SaveToYamlFile(presets[i]) == false)
+        {
+            Logger::Error("Can't create preset. Check that all GPU convert parameters are valid");
+            return;
+        }
+    }
+}
+
 } // namespace TextureDescriptorUtils

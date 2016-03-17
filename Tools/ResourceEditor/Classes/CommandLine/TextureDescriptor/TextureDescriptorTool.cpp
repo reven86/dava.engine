@@ -34,6 +34,33 @@
 
 using namespace DAVA;
 
+namespace TextureDescriptorToolLocal
+{
+Vector<FilePath> LoadPathesFromFile(const FilePath& filePath)
+{
+    ScopedPtr<File> fileWithPathes(File::Create(filePath, File::OPEN | File::READ));
+    if (!fileWithPathes)
+    {
+        Logger::Error("Can't open file %s", filePath.GetStringValue().c_str());
+        return Vector<FilePath>();
+    }
+
+    Vector<FilePath> pathes;
+    do
+    {
+        String path = fileWithPathes->ReadLine();
+        if (path.empty())
+        {
+            Logger::Warning("Found empty string in file %s", filePath.GetStringValue().c_str());
+            break;
+        }
+        pathes.emplace_back(path);
+    } while (!fileWithPathes->IsEof());
+
+    return pathes;
+}
+}
+
 TextureDescriptorTool::TextureDescriptorTool()
     : CommandLineTool("-texdescriptor")
 {
@@ -44,6 +71,8 @@ TextureDescriptorTool::TextureDescriptorTool()
     options.AddOption(OptionName::Create, VariantType(false), "Create descriptors for image files");
     options.AddOption(OptionName::SetCompression, VariantType(false), "Set compression parameters for descriptor or for all descriptors in folder");
     options.AddOption(OptionName::SetPreset, VariantType(false), "Update descriptor(s) with given preset data");
+    options.AddOption(OptionName::SavePreset, VariantType(false), "Save preset of descriptor(s)");
+    options.AddOption(OptionName::BatchingEnabled, VariantType(false), "Activate work with multiple objects");
 
     options.AddOption(OptionName::Force, VariantType(false), "Enables force running of selected operation");
     options.AddOption(OptionName::Mipmaps, VariantType(false), "Enables generation of mipmaps");
@@ -84,10 +113,17 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
     {
         commandAction = ACTION_SET_PRESET;
     }
+    else if (options.GetOption(OptionName::SavePreset).AsBool())
+    {
+        commandAction = ACTION_SAVE_PRESET;
+    }
+
+    batchingEnabled = options.GetOption(OptionName::BatchingEnabled).AsBool();
 
     forceModeEnabled = options.GetOption(OptionName::Force).AsBool();
     convertEnabled = options.GetOption(OptionName::Convert).AsBool();
     generateMipMaps = options.GetOption(OptionName::Mipmaps).AsBool();
+
     for (uint8 gpu = GPU_POWERVR_IOS; gpu < GPU_DEVICE_COUNT; ++gpu)
     {
         const eGPUFamily gpuFamily = static_cast<eGPUFamily>(gpu);
@@ -164,6 +200,15 @@ bool TextureDescriptorTool::InitializeInternal()
         }
         break;
     }
+    case TextureDescriptorTool::ACTION_SAVE_PRESET:
+    {
+        if (presetPath.IsEmpty())
+        {
+            AddError("Preset was not specified");
+            return false;
+        }
+        break;
+    }
     }
 
     return true;
@@ -219,6 +264,18 @@ void TextureDescriptorTool::ProcessInternal()
         else
         {
             TextureDescriptorUtils::SetPresetForFolder(folderPathname, presetPath, convertEnabled, quality);
+        }
+        break;
+    }
+    case ACTION_SAVE_PRESET:
+    {
+        if (batchingEnabled)
+        {
+            TextureDescriptorUtils::SavePreset(TextureDescriptorToolLocal::LoadPathesFromFile(filePathname), TextureDescriptorToolLocal::LoadPathesFromFile(presetPath));
+        }
+        else
+        {
+            TextureDescriptorUtils::SavePreset({ filePathname }, { presetPath });
         }
         break;
     }
