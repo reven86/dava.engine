@@ -256,8 +256,8 @@ void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vec
         return;
     }
 
-    uint32 count = static_cast<uint32>(descriptors.size());
-    for (uint32 i = 0; i < count; ++i)
+    size_t count = descriptors.size();
+    for (size_t i = 0; i < count; ++i)
     {
         std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptors[i]));
         if (!descriptor)
@@ -274,7 +274,7 @@ void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vec
         }
 
         FileSystem::Instance()->CreateDirectory(presets[i].GetDirectory(), true);
-        if (presetArchive->SaveToYamlFile(presets[i]) == false)
+        if (Preset::SaveArchive(presetArchive, presets[i]))
         {
             Logger::Error("Can't create preset. Check that all GPU convert parameters are valid");
             return;

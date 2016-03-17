@@ -192,14 +192,6 @@ bool TextureDescriptorTool::InitializeInternal()
         break;
     }
     case TextureDescriptorTool::ACTION_SET_PRESET:
-    {
-        if (presetPath.IsEmpty())
-        {
-            AddError("Preset was not specified");
-            return false;
-        }
-        break;
-    }
     case TextureDescriptorTool::ACTION_SAVE_PRESET:
     {
         if (presetPath.IsEmpty())
