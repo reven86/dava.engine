@@ -72,7 +72,7 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
 
     connect(ui->eventType, SIGNAL(currentIndexChanged(int)), SLOT(OnTypeChanged()));
     connect(ui->run, SIGNAL(clicked()), SLOT(OnInvoke()));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
 
     const ActionComponent::Action::eEvent eventType = static_cast<ActionComponent::Action::eEvent>(SettingsManager::Instance()->GetValue(settingsType).AsUInt32());
@@ -103,7 +103,7 @@ void RunActionEventWidget::OnInvoke()
     const uint32 switchIndex = ui->switchIndex->value();
     const FastName name(ui->name->currentText().toStdString().c_str());
 
-    const SelectableObjectGroup& selection = editor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = editor->selectionSystem->GetSelection();
     for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
         ActionComponent* component = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
@@ -147,7 +147,7 @@ void RunActionEventWidget::sceneActivated(SceneEditor2* _scene)
     sceneSelectionChanged(scene, NULL, NULL);
 }
 
-void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
@@ -165,7 +165,7 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const Sel
 
     QSet<QString> nameSet;
 
-    const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = scene->selectionSystem->GetSelection();
     for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
         ActionComponent* component = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));

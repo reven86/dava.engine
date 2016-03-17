@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Scene/SelectableObject.h"
+#include "Scene/Selectable.h"
 
 Selectable::Selectable(Object* baseObject)
     : object(baseObject)

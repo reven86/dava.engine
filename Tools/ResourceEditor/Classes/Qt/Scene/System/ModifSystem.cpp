@@ -92,7 +92,7 @@ void EntityModificationSystem::SetLandscapeSnap(bool snap)
     snapToLandscape = snap;
 }
 
-void EntityModificationSystem::PlaceOnLandscape(const SelectableObjectGroup& entities)
+void EntityModificationSystem::PlaceOnLandscape(const SelectableGroup& entities)
 {
     if (ModifCanStart(entities))
     {
@@ -113,7 +113,7 @@ void EntityModificationSystem::PlaceOnLandscape(const SelectableObjectGroup& ent
     }
 }
 
-void EntityModificationSystem::ResetTransform(const SelectableObjectGroup& entities)
+void EntityModificationSystem::ResetTransform(const SelectableGroup& entities)
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
 
@@ -158,7 +158,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
 
     // current selected entities
     SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
-    const SelectableObjectGroup& selectedEntities = selectionSystem->GetSelection();
+    const SelectableGroup& selectedEntities = selectionSystem->GetSelection();
 
     DAVA::Camera* camera = cameraSystem->GetCurCamera();
 
@@ -307,13 +307,13 @@ void EntityModificationSystem::ProcessCommand(const Command2* command, bool redo
 {
 }
 
-SelectableObjectGroup EntityModificationSystem::BeginModification(const SelectableObjectGroup& inputEntities)
+SelectableGroup EntityModificationSystem::BeginModification(const SelectableGroup& inputEntities)
 {
     EndModification();
     if (inputEntities.IsEmpty())
         return inputEntities;
 
-    SelectableObjectGroup result = inputEntities;
+    SelectableGroup result = inputEntities;
     // remove children to prevent double transformation
     result.RemoveIf([&result](const Selectable& obj) {
         auto entity = obj.AsEntity();
@@ -433,12 +433,12 @@ void EntityModificationSystem::EndModification()
     isOrthoModif = false;
 }
 
-bool EntityModificationSystem::ModifCanStart(const SelectableObjectGroup& objects) const
+bool EntityModificationSystem::ModifCanStart(const SelectableGroup& objects) const
 {
     return !objects.IsEmpty() && objects.SupportsTransformType(transformType);
 }
 
-bool EntityModificationSystem::ModifCanStartByMouse(const SelectableObjectGroup& objects) const
+bool EntityModificationSystem::ModifCanStartByMouse(const SelectableGroup& objects) const
 {
     if (ModifCanStart(objects) == false)
         return false;
@@ -454,7 +454,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const SelectableObjectGroup&
     // send this ray to collision system and get collision objects
     // check if one of got collision objects is intersected with selected items
     // if so - we can start modification
-    const SelectableObjectGroup::CollectionType& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
+    const SelectableGroup::CollectionType& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
     if (collisionEntities.empty())
         return false;
 
@@ -871,7 +871,7 @@ void EntityModificationSystem::RemoveEntity(DAVA::Entity* entity)
     }
 }
 
-void EntityModificationSystem::MovePivotZero(const SelectableObjectGroup& entities)
+void EntityModificationSystem::MovePivotZero(const SelectableGroup& entities)
 {
     if (ModifCanStart(entities))
     {
@@ -879,7 +879,7 @@ void EntityModificationSystem::MovePivotZero(const SelectableObjectGroup& entiti
     }
 }
 
-void EntityModificationSystem::MovePivotCenter(const SelectableObjectGroup& entities)
+void EntityModificationSystem::MovePivotCenter(const SelectableGroup& entities)
 {
     if (ModifCanStart(entities))
     {
@@ -887,7 +887,7 @@ void EntityModificationSystem::MovePivotCenter(const SelectableObjectGroup& enti
     }
 }
 
-void EntityModificationSystem::LockTransform(const SelectableObjectGroup& entities, bool lock)
+void EntityModificationSystem::LockTransform(const SelectableGroup& entities, bool lock)
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
     if (sceneEditor == nullptr)
@@ -903,7 +903,7 @@ void EntityModificationSystem::LockTransform(const SelectableObjectGroup& entiti
     sceneEditor->EndBatch();
 }
 
-void EntityModificationSystem::BakeGeometry(const SelectableObjectGroup& entities, BakeMode mode)
+void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, BakeMode mode)
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
     if ((sceneEditor == nullptr) && (entities.GetSize() != 1))
@@ -1063,17 +1063,17 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
     }
 }
 
-bool EntityModificationSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
+bool EntityModificationSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
 {
     return (transformType == Selectable::TransformType::Disabled) || !ModifCanStartByMouse(currentSelection);
 }
 
-bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)
+bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
     return true;
 }
 
-void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const SelectableObjectGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const SelectableGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
     sceneEditor->BeginBatch("Multiple move");
@@ -1105,7 +1105,7 @@ void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const SelectableObj
     sceneEditor->EndBatch();
 }
 
-void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableObjectGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     DAVA::float32 x = DAVA::DegToRad(values.x);
     DAVA::float32 y = DAVA::DegToRad(values.y);
@@ -1158,7 +1158,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableO
     sceneEditor->EndBatch();
 }
 
-void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableObjectGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     DAVA::float32 scaleValue = 1.0f;
 

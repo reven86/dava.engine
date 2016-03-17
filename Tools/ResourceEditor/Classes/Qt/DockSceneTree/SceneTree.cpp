@@ -250,7 +250,7 @@ void SceneTree::SceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void SceneTree::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void SceneTree::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (scene == treeModel->GetScene())
     {
@@ -602,9 +602,9 @@ void SceneTree::RemoveSelection()
     SceneEditor2* sceneEditor = treeModel->GetScene();
     if (NULL != sceneEditor)
     {
-        const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+        const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
-        SelectableObjectGroup objectToRemove;
+        SelectableGroup objectToRemove;
         for (const auto& item : selection.GetContent())
         {
             auto entity = item.AsEntity();
@@ -699,7 +699,7 @@ void SceneTree::ReloadModel()
 
     if (QDialog::Accepted == dlg.exec())
     {
-        const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+        const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
         String wrongPathes;
         for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
         {
@@ -718,7 +718,7 @@ void SceneTree::ReloadModel()
         {
             ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
         }
-        SelectableObjectGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
+        SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
         sceneEditor->selectionSystem->SetSelection(newSelection);
     }
 }
@@ -749,7 +749,7 @@ void SceneTree::ReloadModelAs()
             QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                SelectableObjectGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
                 sceneEditor->selectionSystem->SetSelection(newSelection);
             }
         }
@@ -762,7 +762,7 @@ void SceneTree::SaveEntityAs()
     if (sceneEditor == nullptr)
         return;
 
-    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (selection.ContainsObjectsOfType<DAVA::Entity>())
     {
         DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
@@ -925,7 +925,7 @@ void SceneTree::SyncSelectionFromTree()
         if (NULL != curScene)
         {
             // select items in scene
-            SelectableObjectGroup group;
+            SelectableGroup group;
 
             QModelIndexList indexList = selectionModel()->selection().indexes();
             for (int i = 0; i < indexList.size(); ++i)
@@ -1330,7 +1330,7 @@ void SceneTree::SetEntityNameAsFilter()
     if (scene == nullptr)
         return;
 
-    const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = scene->selectionSystem->GetSelection();
     if (selection.GetSize() == 1)
     {
         Entity* entity = selection.GetFirst().AsEntity();

@@ -222,7 +222,7 @@ void WayEditSystem::ResetSelection()
     underCursorPathEntity = NULL;
 }
 
-void WayEditSystem::ProcessSelection(const SelectableObjectGroup& selection)
+void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
 {
     prevSelectedWaypoints = selectedWaypoints;
     selectedWaypoints.Clear();
@@ -248,7 +248,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
         if (DAVA::UIEvent::Phase::MOVE == event->phase)
         {
             underCursorPathEntity = nullptr;
-            const SelectableObjectGroup::CollectionType& collObjects = collisionSystem->ObjectsRayTestFromCamera();
+            const SelectableGroup::CollectionType& collObjects = collisionSystem->ObjectsRayTestFromCamera();
             if (collObjects.size() == 1)
             {
                 DAVA::Entity* firstEntity = collObjects.front().AsEntity();
@@ -297,7 +297,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                 // add new waypoint on the landscape
                 if (lanscapeIntersected)
                 {
-                    SelectableObjectGroup validPrevPoints;
+                    SelectableGroup validPrevPoints;
                     FilterPrevSelection(currentWayParent, validPrevPoints);
                     if (validPrevPoints.IsEmpty())
                     {
@@ -328,8 +328,8 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
             else if ((selectedWaypoints.GetSize() == 1) && (cloneJustDone == false))
             {
                 Entity* nextWaypoint = selectedWaypoints.GetFirst().AsEntity();
-                SelectableObjectGroup entitiesToAddEdge;
-                SelectableObjectGroup entitiesToRemoveEdge;
+                SelectableGroup entitiesToAddEdge;
+                SelectableGroup entitiesToRemoveEdge;
                 DefineAddOrRemoveEdges(prevSelectedWaypoints, nextWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
                 size_t countToAdd = entitiesToAddEdge.GetSize();
                 size_t countToRemove = entitiesToRemoveEdge.GetSize();
@@ -345,7 +345,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
     }
 }
 
-void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableObjectGroup& ret)
+void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableGroup& ret)
 {
     for (auto entity : prevSelectedWaypoints.ObjectsOfType<DAVA::Entity>())
     {
@@ -356,7 +356,7 @@ void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableOb
     }
 }
 
-void WayEditSystem::DefineAddOrRemoveEdges(const SelectableObjectGroup& srcPoints, DAVA::Entity* dstPoint, SelectableObjectGroup& toAddEdge, SelectableObjectGroup& toRemoveEdge)
+void WayEditSystem::DefineAddOrRemoveEdges(const SelectableGroup& srcPoints, DAVA::Entity* dstPoint, SelectableGroup& toAddEdge, SelectableGroup& toRemoveEdge)
 {
     for (auto srcPoint : prevSelectedWaypoints.ObjectsOfType<DAVA::Entity>())
     {
@@ -377,7 +377,7 @@ void WayEditSystem::DefineAddOrRemoveEdges(const SelectableObjectGroup& srcPoint
     }
 }
 
-void WayEditSystem::AddEdges(const SelectableObjectGroup& group, DAVA::Entity* nextEntity)
+void WayEditSystem::AddEdges(const SelectableGroup& group, DAVA::Entity* nextEntity)
 {
     DVASSERT(nextEntity);
 
@@ -389,7 +389,7 @@ void WayEditSystem::AddEdges(const SelectableObjectGroup& group, DAVA::Entity* n
     }
 }
 
-void WayEditSystem::RemoveEdges(const SelectableObjectGroup& group, DAVA::Entity* nextEntity)
+void WayEditSystem::RemoveEdges(const SelectableGroup& group, DAVA::Entity* nextEntity)
 {
     for (auto entity : group.ObjectsOfType<DAVA::Entity>())
     {
@@ -443,7 +443,7 @@ void WayEditSystem::ProcessCommand(const Command2* command, bool redo)
 
 void WayEditSystem::Draw()
 {
-    const SelectableObjectGroup& selectionGroup = (currentSelection.IsEmpty()) ? selectedWaypoints : currentSelection;
+    const SelectableGroup& selectionGroup = (currentSelection.IsEmpty()) ? selectedWaypoints : currentSelection;
 
     const uint32 count = waypointEntities.size();
     for (uint32 i = 0; i < count; ++i)
@@ -524,7 +524,7 @@ void WayEditSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEnt
     }
 }
 
-bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
+bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
@@ -536,7 +536,7 @@ bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGro
     return true;
 }
 
-bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)
+bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);

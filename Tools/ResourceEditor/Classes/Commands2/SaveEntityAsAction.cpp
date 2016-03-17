@@ -28,7 +28,7 @@
 
 
 #include "SaveEntityAsAction.h"
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Material/NMaterial.h"
@@ -83,7 +83,7 @@ private:
     Map<DataNode*, uint64> dataNodeIDs;
 };
 
-SaveEntityAsAction::SaveEntityAsAction(const SelectableObjectGroup* entities_, const FilePath& path_)
+SaveEntityAsAction::SaveEntityAsAction(const SelectableGroup* entities_, const FilePath& path_)
     : CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
     , entities(entities_)
     , sc2Path(path_)

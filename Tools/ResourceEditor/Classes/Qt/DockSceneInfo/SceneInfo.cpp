@@ -659,7 +659,7 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     ClearSelectionData();
 
@@ -688,7 +688,7 @@ void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command,
     }
 }
 
-void SceneInfo::CollectSelectedRenderObjects(const SelectableObjectGroup* selected)
+void SceneInfo::CollectSelectedRenderObjects(const SelectableGroup* selected)
 {
     for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
     {
@@ -712,7 +712,7 @@ void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity* entity)
     }
 }
 
-void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableObjectGroup* forGroup)
+void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup)
 {
     speedTreeLeafInfo.clear();
 

@@ -113,7 +113,7 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
         QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
-        QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
+        QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     }
     posSaver.Attach(this, "DocPropetyEditor");
 
@@ -151,7 +151,7 @@ PropertyEditor::~PropertyEditor()
     ClearCurrentNodes();
 }
 
-void PropertyEditor::SetEntities(const SelectableObjectGroup* selected)
+void PropertyEditor::SetEntities(const SelectableGroup* selected)
 {
     ClearCurrentNodes();
     SCOPE_EXIT
@@ -762,7 +762,7 @@ void PropertyEditor::sceneDeactivated(SceneEditor2* scene)
     SetEntities(NULL);
 }
 
-void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     SetEntities(selected);
 }
@@ -926,7 +926,7 @@ void PropertyEditor::ActionEditComponent()
         editor.exec();
 
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-        SelectableObjectGroup newSelection;
+        SelectableGroup newSelection;
         newSelection.Add(node, curScene->selectionSystem->GetUntransformedBoundingBox(node));
         curScene->selectionSystem->SetSelection(newSelection);
 

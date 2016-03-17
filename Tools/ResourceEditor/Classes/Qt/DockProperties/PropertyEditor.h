@@ -74,7 +74,7 @@ public:
     PropertyEditor(QWidget* parent = 0, bool connectToSceneSignals = true);
     ~PropertyEditor();
 
-    virtual void SetEntities(const SelectableObjectGroup* selected);
+    virtual void SetEntities(const SelectableGroup* selected);
 
     void SetViewMode(eViewMode mode);
     eViewMode GetViewMode() const;
@@ -91,7 +91,7 @@ public:
 public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
-    void sceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
+    void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
 
     void ActionEditComponent();
@@ -159,7 +159,7 @@ private:
     QtPosSaver posSaver;
     QSet<QString> scheme;
     QtPropertyData* favoriteGroup;
-    SelectableObjectGroup curNodes;
+    SelectableGroup curNodes;
     PropertyEditorStateHelper treeStateHelper;
     DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
     eViewMode viewMode;

@@ -31,7 +31,7 @@
 #define __SCENE_COLLISION_BASE_OBJECT_H__
 
 #include "bullet/btBulletCollisionCommon.h"
-#include "Scene/SelectableObject.h"
+#include "Scene/Selectable.h"
 
 class CollisionBaseObject
 {

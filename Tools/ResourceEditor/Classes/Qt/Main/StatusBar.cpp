@@ -110,7 +110,7 @@ void StatusBar::SceneActivated(SceneEditor2* scene)
     UpdateSelectionBoxSize(scene);
 }
 
-void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     UpdateDistanceToCamera();
     UpdateSelectionBoxSize(scene);
@@ -157,7 +157,7 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
         return;
     }
 
-    const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = scene->selectionSystem->GetSelection();
     if (selection.IsEmpty())
     {
         selectionBoxSize->setText(QString());

@@ -30,7 +30,7 @@
 #ifndef __SCENE_WAYEDIT_SYSTEM_H__
 #define __SCENE_WAYEDIT_SYSTEM_H__
 
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
 #include "Commands2/Command2.h"
 #include "SystemDelegates.h"
@@ -86,23 +86,23 @@ protected:
 
     void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent* edgeComponent);
 
-    void DefineAddOrRemoveEdges(const SelectableObjectGroup& srcPoints, DAVA::Entity* dstPoint, SelectableObjectGroup& toAddEdge, SelectableObjectGroup& toRemoveEdge);
-    void AddEdges(const SelectableObjectGroup& group, DAVA::Entity* nextEntity);
-    void RemoveEdges(const SelectableObjectGroup& group, DAVA::Entity* nextEntity);
+    void DefineAddOrRemoveEdges(const SelectableGroup& srcPoints, DAVA::Entity* dstPoint, SelectableGroup& toAddEdge, SelectableGroup& toRemoveEdge);
+    void AddEdges(const SelectableGroup& group, DAVA::Entity* nextEntity);
+    void RemoveEdges(const SelectableGroup& group, DAVA::Entity* nextEntity);
     bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints) const;
 
     void ResetSelection();
-    void ProcessSelection(const SelectableObjectGroup& selection);
+    void ProcessSelection(const SelectableGroup& selection);
     void UpdateSelectionMask();
-    void FilterPrevSelection(DAVA::Entity* parentEntity, SelectableObjectGroup& selection);
+    void FilterPrevSelection(DAVA::Entity* parentEntity, SelectableGroup& selection);
 
-    bool AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection) override;
-    bool AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
 protected:
-    SelectableObjectGroup currentSelection;
-    SelectableObjectGroup selectedWaypoints;
-    SelectableObjectGroup prevSelectedWaypoints;
+    SelectableGroup currentSelection;
+    SelectableGroup selectedWaypoints;
+    SelectableGroup prevSelectedWaypoints;
     SceneEditor2* sceneEditor = nullptr;
     SceneSelectionSystem* selectionSystem = nullptr;
     SceneCollisionSystem* collisionSystem = nullptr;

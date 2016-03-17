@@ -30,7 +30,7 @@
 #ifndef __SCENE_COLLISION_SYSTEM_H__
 #define __SCENE_COLLISION_SYSTEM_H__
 
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
 #include "Commands2/Command2.h"
 
@@ -76,8 +76,8 @@ public:
 
     DAVA::AABBox3 GetBoundingBox(Selectable::Object* object);
 
-    const SelectableObjectGroup::CollectionType& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
-    const SelectableObjectGroup::CollectionType& ObjectsRayTestFromCamera();
+    const SelectableGroup::CollectionType& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
+    const SelectableGroup::CollectionType& ObjectsRayTestFromCamera();
 
     bool LandRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to, DAVA::Vector3& intersectionPoint);
     bool LandRayTestFromCamera(DAVA::Vector3& intersectionPoint);
@@ -90,7 +90,7 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
 
-    const SelectableObjectGroup& ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes);
+    const SelectableGroup& ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes);
 
 private:
     void Draw();
@@ -119,8 +119,8 @@ private:
     DAVA::Map<Selectable::Object*, CollisionBaseObject*> objectToCollision;
     DAVA::Map<btCollisionObject*, Selectable::Object*> collisionToObject;
     DAVA::Entity* curLandscapeEntity = nullptr;
-    SelectableObjectGroup::CollectionType rayIntersectedEntities;
-    SelectableObjectGroup planeClippedObjects;
+    SelectableGroup::CollectionType rayIntersectedEntities;
+    SelectableGroup planeClippedObjects;
     btDefaultCollisionConfiguration* objectsCollConf = nullptr;
     btCollisionDispatcher* objectsCollDisp = nullptr;
     btAxisSweep3* objectsBroadphase = nullptr;

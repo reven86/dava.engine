@@ -32,7 +32,7 @@
 
 #include <QObject>
 
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
@@ -59,12 +59,12 @@ signals:
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
     // entities
-    void SelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
+    void SelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
     // mouse
-    void MouseOver(SceneEditor2* scene, const SelectableObjectGroup* objects);
-    void MouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* objects);
+    void MouseOver(SceneEditor2* scene, const SelectableGroup* objects);
+    void MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
 
     // particles - selection
     void EffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
@@ -139,7 +139,7 @@ public:
         emit StructureChanged(scene, parent);
     }
 
-    void EmitSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+    void EmitSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
     {
         emit SelectionChanged(scene, selected, deselected);
     }
@@ -172,11 +172,11 @@ public:
         emit RulerToolLengthChanged(scene, length, previewLength);
     }
 
-    void EmitMouseOver(SceneEditor2* scene, const SelectableObjectGroup* objects)
+    void EmitMouseOver(SceneEditor2* scene, const SelectableGroup* objects)
     {
         emit MouseOver(scene, objects);
     }
-    void EmitMouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* objects)
+    void EmitMouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects)
     {
         emit MouseOverSelection(scene, objects);
     }

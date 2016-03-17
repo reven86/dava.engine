@@ -217,7 +217,7 @@ void PathSystem::DrawInViewOnlyMode()
 {
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
-    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
     for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
@@ -260,7 +260,7 @@ void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& fini
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
-    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (currentSelection != selection)
     {
         currentSelection.Clear();

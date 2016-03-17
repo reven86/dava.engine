@@ -30,16 +30,16 @@
 #ifndef __SELECTABLE_OBJECT_GROUP_H__
 #define __SELECTABLE_OBJECT_GROUP_H__
 
-#include "Scene/SelectableObject.h"
+#include "Scene/Selectable.h"
 
-class SelectableObjectGroup
+class SelectableGroup
 {
 public:
     using CollectionType = DAVA::Vector<Selectable>;
 
 public:
-    bool operator==(const SelectableObjectGroup& other) const;
-    bool operator!=(const SelectableObjectGroup& other) const;
+    bool operator==(const SelectableGroup& other) const;
+    bool operator!=(const SelectableGroup& other) const;
 
     bool ContainsObject(const Selectable::Object* object) const;
 
@@ -53,8 +53,8 @@ public:
     void Add(Selectable::Object* object);
     void Add(Selectable::Object* object, const DAVA::AABBox3& box);
     void Remove(Selectable::Object* object);
-    void Exclude(const SelectableObjectGroup&);
-    void Join(const SelectableObjectGroup&);
+    void Exclude(const SelectableGroup&);
+    void Join(const SelectableGroup&);
 
     template <typename F>
     void RemoveIf(F func);
@@ -86,8 +86,8 @@ public:
         class Iterator
         {
         public:
-            Iterator(SelectableObjectGroup::CollectionType&);
-            Iterator(SelectableObjectGroup::CollectionType&, DAVA::uint32);
+            Iterator(SelectableGroup::CollectionType&);
+            Iterator(SelectableGroup::CollectionType&, DAVA::uint32);
             void SetIndex(DAVA::uint32);
 
             Iterator& operator++();
@@ -98,18 +98,18 @@ public:
         private:
             DAVA::uint32 index = 0;
             DAVA::uint32 endIndex = 0;
-            SelectableObjectGroup::CollectionType& collection;
+            SelectableGroup::CollectionType& collection;
         };
 
     public:
-        Enumerator(SelectableObjectGroup* group, SelectableObjectGroup::CollectionType& collection);
+        Enumerator(SelectableGroup* group, SelectableGroup::CollectionType& collection);
         ~Enumerator();
 
         Iterator& begin();
         Iterator& end();
 
     private:
-        SelectableObjectGroup* group = nullptr;
+        SelectableGroup* group = nullptr;
         Iterator iBegin;
         Iterator iEnd;
     };
@@ -121,8 +121,8 @@ public:
         class Iterator
         {
         public:
-            Iterator(const SelectableObjectGroup::CollectionType&);
-            Iterator(const SelectableObjectGroup::CollectionType&, DAVA::uint32);
+            Iterator(const SelectableGroup::CollectionType&);
+            Iterator(const SelectableGroup::CollectionType&, DAVA::uint32);
             void SetIndex(DAVA::uint32);
 
             Iterator& operator++();
@@ -132,18 +132,18 @@ public:
         private:
             DAVA::uint32 index = 0;
             DAVA::uint32 endIndex = 0;
-            const SelectableObjectGroup::CollectionType& collection;
+            const SelectableGroup::CollectionType& collection;
         };
 
     public:
-        ConstEnumerator(const SelectableObjectGroup* group, const SelectableObjectGroup::CollectionType& collection);
+        ConstEnumerator(const SelectableGroup* group, const SelectableGroup::CollectionType& collection);
         ~ConstEnumerator();
 
         const Iterator& begin() const;
         const Iterator& end() const;
 
     private:
-        const SelectableObjectGroup* group = nullptr;
+        const SelectableGroup* group = nullptr;
         Iterator iBegin;
         Iterator iEnd;
     };
@@ -161,51 +161,51 @@ private:
 };
 
 template <typename F>
-inline void SelectableObjectGroup::RemoveIf(F func)
+inline void SelectableGroup::RemoveIf(F func)
 {
     DVASSERT(!IsLocked());
     objects.erase(std::remove_if(objects.begin(), objects.end(), func), objects.end());
 }
 
-inline const SelectableObjectGroup::CollectionType& SelectableObjectGroup::GetContent() const
+inline const SelectableGroup::CollectionType& SelectableGroup::GetContent() const
 {
     return objects;
 }
 
-inline SelectableObjectGroup::CollectionType& SelectableObjectGroup::GetMutableContent()
+inline SelectableGroup::CollectionType& SelectableGroup::GetMutableContent()
 {
     return objects;
 }
 
-inline bool SelectableObjectGroup::IsEmpty() const
+inline bool SelectableGroup::IsEmpty() const
 {
     return objects.empty();
 }
 
-inline SelectableObjectGroup::CollectionType::size_type SelectableObjectGroup::GetSize() const
+inline SelectableGroup::CollectionType::size_type SelectableGroup::GetSize() const
 {
     return objects.size();
 }
 
-inline const DAVA::AABBox3& SelectableObjectGroup::GetIntegralBoundingBox() const
+inline const DAVA::AABBox3& SelectableGroup::GetIntegralBoundingBox() const
 {
     return integralBoundingBox;
 }
 
 template <typename T>
-inline SelectableObjectGroup::Enumerator<T> SelectableObjectGroup::ObjectsOfType()
+inline SelectableGroup::Enumerator<T> SelectableGroup::ObjectsOfType()
 {
-    return SelectableObjectGroup::Enumerator<T>(this, objects);
+    return SelectableGroup::Enumerator<T>(this, objects);
 }
 
 template <typename T>
-inline SelectableObjectGroup::ConstEnumerator<T> SelectableObjectGroup::ObjectsOfType() const
+inline SelectableGroup::ConstEnumerator<T> SelectableGroup::ObjectsOfType() const
 {
-    return SelectableObjectGroup::ConstEnumerator<T>(this, objects);
+    return SelectableGroup::ConstEnumerator<T>(this, objects);
 }
 
 template <typename T>
-bool SelectableObjectGroup::ContainsObjectsOfType() const
+bool SelectableGroup::ContainsObjectsOfType() const
 {
     for (const auto& obj : objects)
     {
@@ -220,7 +220,7 @@ bool SelectableObjectGroup::ContainsObjectsOfType() const
  * Enumerator
  */
 template <typename T>
-inline SelectableObjectGroup::Enumerator<T>::Enumerator(SelectableObjectGroup* g, SelectableObjectGroup::CollectionType& c)
+inline SelectableGroup::Enumerator<T>::Enumerator(SelectableGroup* g, SelectableGroup::CollectionType& c)
     : group(g)
     , iBegin(c)
     , iEnd(c, c.size())
@@ -229,19 +229,19 @@ inline SelectableObjectGroup::Enumerator<T>::Enumerator(SelectableObjectGroup* g
 }
 
 template <typename T>
-inline SelectableObjectGroup::Enumerator<T>::~Enumerator()
+inline SelectableGroup::Enumerator<T>::~Enumerator()
 {
     group->Unlock();
 }
 
 template <typename T>
-inline typename SelectableObjectGroup::Enumerator<T>::Iterator& SelectableObjectGroup::Enumerator<T>::begin()
+inline typename SelectableGroup::Enumerator<T>::Iterator& SelectableGroup::Enumerator<T>::begin()
 {
     return iBegin;
 }
 
 template <typename T>
-inline typename SelectableObjectGroup::Enumerator<T>::Iterator& SelectableObjectGroup::Enumerator<T>::end()
+inline typename SelectableGroup::Enumerator<T>::Iterator& SelectableGroup::Enumerator<T>::end()
 {
     return iEnd;
 }
@@ -250,7 +250,7 @@ inline typename SelectableObjectGroup::Enumerator<T>::Iterator& SelectableObject
  * Iterator
  */
 template <typename T>
-inline SelectableObjectGroup::Enumerator<T>::Iterator::Iterator(SelectableObjectGroup::CollectionType& c)
+inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::CollectionType& c)
     : collection(c)
     , endIndex(static_cast<DAVA::uint32>(c.size()))
 {
@@ -261,7 +261,7 @@ inline SelectableObjectGroup::Enumerator<T>::Iterator::Iterator(SelectableObject
 }
 
 template <typename T>
-inline SelectableObjectGroup::Enumerator<T>::Iterator::Iterator(SelectableObjectGroup::CollectionType& c, DAVA::uint32 end)
+inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::CollectionType& c, DAVA::uint32 end)
     : collection(c)
     , index(end)
     , endIndex(static_cast<DAVA::uint32>(c.size()))
@@ -269,7 +269,7 @@ inline SelectableObjectGroup::Enumerator<T>::Iterator::Iterator(SelectableObject
 }
 
 template <typename T>
-inline typename SelectableObjectGroup::Enumerator<T>::Iterator& SelectableObjectGroup::Enumerator<T>::Iterator::operator++()
+inline typename SelectableGroup::Enumerator<T>::Iterator& SelectableGroup::Enumerator<T>::Iterator::operator++()
 {
     for (++index; index < endIndex; ++index)
     {
@@ -280,13 +280,13 @@ inline typename SelectableObjectGroup::Enumerator<T>::Iterator& SelectableObject
 }
 
 template <typename T>
-inline bool SelectableObjectGroup::Enumerator<T>::Iterator::operator!=(typename const SelectableObjectGroup::Enumerator<T>::Iterator& other) const
+inline bool SelectableGroup::Enumerator<T>::Iterator::operator!=(typename const SelectableGroup::Enumerator<T>::Iterator& other) const
 {
     return index != other.index;
 }
 
 template <typename T>
-inline T* SelectableObjectGroup::Enumerator<T>::Iterator::operator*()
+inline T* SelectableGroup::Enumerator<T>::Iterator::operator*()
 {
     DVASSERT(collection[index].CanBeCastedTo<T>());
     return collection[index].Cast<T>();
@@ -296,7 +296,7 @@ inline T* SelectableObjectGroup::Enumerator<T>::Iterator::operator*()
  * Const Enumerator
  */
 template <typename T>
-inline SelectableObjectGroup::ConstEnumerator<T>::ConstEnumerator(const SelectableObjectGroup* g, const SelectableObjectGroup::CollectionType& c)
+inline SelectableGroup::ConstEnumerator<T>::ConstEnumerator(const SelectableGroup* g, const SelectableGroup::CollectionType& c)
     : group(g)
     , iBegin(c)
     , iEnd(c, c.size())
@@ -304,18 +304,18 @@ inline SelectableObjectGroup::ConstEnumerator<T>::ConstEnumerator(const Selectab
 }
 
 template <typename T>
-inline SelectableObjectGroup::ConstEnumerator<T>::~ConstEnumerator()
+inline SelectableGroup::ConstEnumerator<T>::~ConstEnumerator()
 {
 }
 
 template <typename T>
-inline typename const SelectableObjectGroup::ConstEnumerator<T>::Iterator& SelectableObjectGroup::ConstEnumerator<T>::begin() const
+inline typename const SelectableGroup::ConstEnumerator<T>::Iterator& SelectableGroup::ConstEnumerator<T>::begin() const
 {
     return iBegin;
 }
 
 template <typename T>
-inline typename const SelectableObjectGroup::ConstEnumerator<T>::Iterator& SelectableObjectGroup::ConstEnumerator<T>::end() const
+inline typename const SelectableGroup::ConstEnumerator<T>::Iterator& SelectableGroup::ConstEnumerator<T>::end() const
 {
     return iEnd;
 }
@@ -324,7 +324,7 @@ inline typename const SelectableObjectGroup::ConstEnumerator<T>::Iterator& Selec
  * Const Iterator
  */
 template <typename T>
-inline SelectableObjectGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableObjectGroup::CollectionType& c)
+inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableGroup::CollectionType& c)
     : collection(c)
     , endIndex(static_cast<DAVA::uint32>(c.size()))
 {
@@ -335,7 +335,7 @@ inline SelectableObjectGroup::ConstEnumerator<T>::Iterator::Iterator(const Selec
 }
 
 template <typename T>
-inline SelectableObjectGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableObjectGroup::CollectionType& c, DAVA::uint32 end)
+inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableGroup::CollectionType& c, DAVA::uint32 end)
     : collection(c)
     , index(end)
     , endIndex(static_cast<DAVA::uint32>(c.size()))
@@ -343,7 +343,7 @@ inline SelectableObjectGroup::ConstEnumerator<T>::Iterator::Iterator(const Selec
 }
 
 template <typename T>
-inline typename SelectableObjectGroup::ConstEnumerator<T>::Iterator& SelectableObjectGroup::ConstEnumerator<T>::Iterator::operator++()
+inline typename SelectableGroup::ConstEnumerator<T>::Iterator& SelectableGroup::ConstEnumerator<T>::Iterator::operator++()
 {
     for (++index; index < endIndex; ++index)
     {
@@ -354,13 +354,13 @@ inline typename SelectableObjectGroup::ConstEnumerator<T>::Iterator& SelectableO
 }
 
 template <typename T>
-inline bool SelectableObjectGroup::ConstEnumerator<T>::Iterator::operator!=(typename const SelectableObjectGroup::ConstEnumerator<T>::Iterator& other) const
+inline bool SelectableGroup::ConstEnumerator<T>::Iterator::operator!=(typename const SelectableGroup::ConstEnumerator<T>::Iterator& other) const
 {
     return index != other.index;
 }
 
 template <typename T>
-inline T* SelectableObjectGroup::ConstEnumerator<T>::Iterator::operator*() const
+inline T* SelectableGroup::ConstEnumerator<T>::Iterator::operator*() const
 {
     DVASSERT(collection[index].CanBeCastedTo<T>());
     return collection[index].Cast<T>();

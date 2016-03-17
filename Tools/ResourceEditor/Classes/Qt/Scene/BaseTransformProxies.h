@@ -30,7 +30,7 @@
 #ifndef __BASE_TRANSFORM_PROXIES_H
 #define __BASE_TRANSFORM_PROXIES_H
 
-#include "SelectableObject.h"
+#include "Selectable.h"
 
 class EntityTransformProxy : public Selectable::TransformProxy
 {

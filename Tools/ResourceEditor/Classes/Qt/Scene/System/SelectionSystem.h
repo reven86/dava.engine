@@ -31,7 +31,7 @@
 #define __SCENE_SELECTION_SYSTEM_H__
 
 #include "Scene/SceneTypes.h"
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "SystemDelegates.h"
 
 // framework
@@ -70,10 +70,10 @@ public:
     ~SceneSelectionSystem();
 
     void AddObjectToSelection(Selectable::Object* entity);
-    void AddGroupToSelection(const SelectableObjectGroup& entities);
+    void AddGroupToSelection(const SelectableGroup& entities);
 
     void ExcludeEntityFromSelection(Selectable::Object* entity);
-    void ExcludeSelection(const SelectableObjectGroup& entities);
+    void ExcludeSelection(const SelectableGroup& entities);
 
     void Clear();
 
@@ -82,8 +82,8 @@ public:
     /*
 	 * SetSelection could remove not selectable items from provided group
 	 */
-    void SetSelection(SelectableObjectGroup& newSelection);
-    const SelectableObjectGroup& GetSelection() const;
+    void SetSelection(SelectableGroup& newSelection);
+    const SelectableGroup& GetSelection() const;
 
     size_t GetSelectionCount() const;
     DAVA::Entity* GetFirstSelectionEntity() const;
@@ -101,7 +101,7 @@ public:
     void SetLocked(bool lock) override;
 
     DAVA::AABBox3 GetUntransformedBoundingBox(Selectable::Object* entity) const;
-    DAVA::AABBox3 GetTransformedBoundingBox(const SelectableObjectGroup& group) const;
+    DAVA::AABBox3 GetTransformedBoundingBox(const SelectableGroup& group) const;
 
     void ForceEmitSignals();
 
@@ -134,11 +134,11 @@ private:
 
     void PerformSelectionInCurrentBox();
 
-    void ProcessSelectedGroup(const SelectableObjectGroup::CollectionType&);
+    void ProcessSelectedGroup(const SelectableGroup::CollectionType&);
 
     void UpdateGroupSelectionMode();
 
-    void UpdateSelectionGroup(const SelectableObjectGroup& newSelection);
+    void UpdateSelectionGroup(const SelectableGroup& newSelection);
     void FinishSelection();
 
     void ExcludeSingleItem(Selectable::Object* object);
@@ -158,10 +158,10 @@ private:
     SceneCollisionSystem* collisionSystem = nullptr;
     HoodSystem* hoodSystem = nullptr;
     EntityModificationSystem* modificationSystem = nullptr;
-    SelectableObjectGroup currentSelection;
-    SelectableObjectGroup recentlySelectedEntities;
-    SelectableObjectGroup lastGroupSelection;
-    SelectableObjectGroup objectsToSelect;
+    SelectableGroup currentSelection;
+    SelectableGroup recentlySelectedEntities;
+    SelectableGroup lastGroupSelection;
+    SelectableGroup objectsToSelect;
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;

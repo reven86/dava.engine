@@ -53,7 +53,7 @@ class MainTabBar;
 class DavaGLWidget;
 class ScenePreviewDialog;
 class Request;
-class SelectableObjectGroup;
+class SelectableGroup;
 
 class SceneTabWidget
 : public QWidget
@@ -96,7 +96,7 @@ public slots:
     void OnDavaGLWidgetResized(int width, int height);
 
     // scene signals
-    void MouseOverSelectedEntities(SceneEditor2* scene, const SelectableObjectGroup* objects);
+    void MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects);
     void SceneSaved(SceneEditor2* scene);
     void SceneUpdated(SceneEditor2* scene);
     void SceneModifyStatusChanged(SceneEditor2* scene, bool modified);

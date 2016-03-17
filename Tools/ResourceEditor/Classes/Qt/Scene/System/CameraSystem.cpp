@@ -648,7 +648,7 @@ void SceneCameraSystem::MoveToSelection()
     if (sceneEditor == nullptr)
         return;
 
-    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
         LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));

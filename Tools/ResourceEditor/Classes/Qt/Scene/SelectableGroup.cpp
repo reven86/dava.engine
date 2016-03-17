@@ -27,9 +27,9 @@
 =====================================================================================*/
 
 
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 
-bool SelectableObjectGroup::operator==(const SelectableObjectGroup& other) const
+bool SelectableGroup::operator==(const SelectableGroup& other) const
 {
     if (GetSize() != other.GetSize())
         return false;
@@ -46,7 +46,7 @@ bool SelectableObjectGroup::operator==(const SelectableObjectGroup& other) const
     return true;
 }
 
-bool SelectableObjectGroup::operator!=(const SelectableObjectGroup& other) const
+bool SelectableGroup::operator!=(const SelectableGroup& other) const
 {
     if (GetSize() != other.GetSize())
         return true;
@@ -63,7 +63,7 @@ bool SelectableObjectGroup::operator!=(const SelectableObjectGroup& other) const
     return false;
 }
 
-bool SelectableObjectGroup::ContainsObject(const Selectable::Object* object) const
+bool SelectableGroup::ContainsObject(const Selectable::Object* object) const
 {
     for (const auto& obj : objects)
     {
@@ -74,31 +74,31 @@ bool SelectableObjectGroup::ContainsObject(const Selectable::Object* object) con
     return false;
 }
 
-void SelectableObjectGroup::Clear()
+void SelectableGroup::Clear()
 {
     DVASSERT(!IsLocked());
     objects.clear();
 }
 
-void SelectableObjectGroup::Add(Selectable::Object* object)
+void SelectableGroup::Add(Selectable::Object* object)
 {
     DVASSERT(!IsLocked());
     objects.emplace_back(object);
 }
 
-void SelectableObjectGroup::Add(Selectable::Object* object, const DAVA::AABBox3& box)
+void SelectableGroup::Add(Selectable::Object* object, const DAVA::AABBox3& box)
 {
     DVASSERT(!IsLocked());
     objects.emplace_back(object);
     objects.back().SetBoundingBox(box);
 }
 
-void SelectableObjectGroup::Remove(Selectable::Object* object)
+void SelectableGroup::Remove(Selectable::Object* object)
 {
     RemoveIf([object](const Selectable& obj) { return obj.GetContainedObject() == object; });
 }
 
-void SelectableObjectGroup::RebuildIntegralBoundingBox()
+void SelectableGroup::RebuildIntegralBoundingBox()
 {
     integralBoundingBox.Empty();
     for (const auto& item : objects)
@@ -107,7 +107,7 @@ void SelectableObjectGroup::RebuildIntegralBoundingBox()
     }
 }
 
-void SelectableObjectGroup::Exclude(const SelectableObjectGroup& other)
+void SelectableGroup::Exclude(const SelectableGroup& other)
 {
     DVASSERT(!IsLocked());
     RemoveIf([&other](const Selectable& object)
@@ -116,7 +116,7 @@ void SelectableObjectGroup::Exclude(const SelectableObjectGroup& other)
              });
 }
 
-void SelectableObjectGroup::Join(const SelectableObjectGroup& other)
+void SelectableGroup::Join(const SelectableGroup& other)
 {
     DVASSERT(!IsLocked());
     for (auto& obj : other.GetContent())
@@ -128,13 +128,13 @@ void SelectableObjectGroup::Join(const SelectableObjectGroup& other)
     }
 }
 
-const Selectable& SelectableObjectGroup::GetFirst() const
+const Selectable& SelectableGroup::GetFirst() const
 {
     DVASSERT(!objects.empty());
     return objects.front();
 }
 
-bool SelectableObjectGroup::SupportsTransformType(Selectable::TransformType transformType) const
+bool SelectableGroup::SupportsTransformType(Selectable::TransformType transformType) const
 {
     for (const auto& obj : objects)
     {
@@ -145,7 +145,7 @@ bool SelectableObjectGroup::SupportsTransformType(Selectable::TransformType tran
     return true;
 }
 
-DAVA::Vector3 SelectableObjectGroup::GetFirstTranslationVector() const
+DAVA::Vector3 SelectableGroup::GetFirstTranslationVector() const
 {
     if (objects.empty())
         return DAVA::Vector3(0.0f, 0.0f, 0.0f);
@@ -153,7 +153,7 @@ DAVA::Vector3 SelectableObjectGroup::GetFirstTranslationVector() const
     return objects.front().GetWorldTransform().GetTranslationVector();
 }
 
-DAVA::Vector3 SelectableObjectGroup::GetCommonTranslationVector() const
+DAVA::Vector3 SelectableGroup::GetCommonTranslationVector() const
 {
     DAVA::AABBox3 tmp;
     for (const auto& item : objects)
@@ -163,17 +163,17 @@ DAVA::Vector3 SelectableObjectGroup::GetCommonTranslationVector() const
     return tmp.GetCenter();
 }
 
-void SelectableObjectGroup::Lock()
+void SelectableGroup::Lock()
 {
     ++lockCounter;
 }
 
-void SelectableObjectGroup::Unlock()
+void SelectableGroup::Unlock()
 {
     --lockCounter;
 }
 
-bool SelectableObjectGroup::IsLocked() const
+bool SelectableGroup::IsLocked() const
 {
     return lockCounter > 0;
 }

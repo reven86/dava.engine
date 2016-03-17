@@ -31,7 +31,7 @@
 #define __ENTITY_MODIFICATION_SYSTEM_HOOD_H__
 
 #include "Scene/SceneTypes.h"
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Scene/System/HoodSystem/NormalHood.h"
 #include "Scene/System/HoodSystem/MoveHood.h"
 #include "Scene/System/HoodSystem/ScaleHood.h"
@@ -90,8 +90,8 @@ private:
     void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
     void ResetModifValues();
 
-    bool AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection) override;
-    bool AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
 private:
     btCollisionWorld* collWorld = nullptr;

@@ -31,7 +31,7 @@
 #include <QPainter>
 #include <QFileInfo>
 
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Render/PixelFormatDescriptor.h"
 
 TextureListModel::TextureListModel(QObject* parent /* = 0 */)
@@ -179,7 +179,7 @@ void TextureListModel::setScene(DAVA::Scene* scene)
     endResetModel();
 }
 
-void TextureListModel::setHighlight(const SelectableObjectGroup* nodes)
+void TextureListModel::setHighlight(const SelectableGroup* nodes)
 {
     beginResetModel();
 

@@ -34,7 +34,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Base/FastName.h"
 
-class SelectableObjectGroup;
+class SelectableGroup;
 class MaterialSwitchParentCommand : public Command2
 {
 public:

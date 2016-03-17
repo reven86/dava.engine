@@ -31,7 +31,7 @@
 #include "MaterialItem.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 
 #include "Main/QtUtils.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -186,7 +186,7 @@ DAVA::NMaterial* MaterialModel::GetGlobalMaterial() const
     return ret;
 }
 
-void MaterialModel::SetSelection(const SelectableObjectGroup* group)
+void MaterialModel::SetSelection(const SelectableGroup* group)
 {
     QStandardItem* root = invisibleRootItem();
     for (int i = 0; i < root->rowCount(); ++i)
@@ -213,7 +213,7 @@ void MaterialModel::SetSelection(const SelectableObjectGroup* group)
     }
 }
 
-bool MaterialModel::SetItemSelection(MaterialItem* item, const SelectableObjectGroup* group)
+bool MaterialModel::SetItemSelection(MaterialItem* item, const SelectableGroup* group)
 {
     if (group == nullptr)
     {
@@ -295,7 +295,7 @@ void MaterialModel::Sync()
             }
         }
 
-        const SelectableObjectGroup& selection = curScene->selectionSystem->GetSelection();
+        const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
         SetSelection(&selection);
     }
 }

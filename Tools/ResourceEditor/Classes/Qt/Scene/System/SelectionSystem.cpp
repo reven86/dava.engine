@@ -123,9 +123,9 @@ void SceneSelectionSystem::ForceEmitSignals()
     }
 }
 
-void SceneSelectionSystem::ProcessSelectedGroup(const SelectableObjectGroup::CollectionType& allObjects)
+void SceneSelectionSystem::ProcessSelectedGroup(const SelectableGroup::CollectionType& allObjects)
 {
-    SelectableObjectGroup::CollectionType collisionObjects;
+    SelectableGroup::CollectionType collisionObjects;
     collisionObjects.reserve(allObjects.size());
 
     auto i = allObjects.begin();
@@ -211,7 +211,7 @@ void SceneSelectionSystem::ProcessSelectedGroup(const SelectableObjectGroup::Col
         }
         else
         {
-            SelectableObjectGroup newSelection;
+            SelectableGroup newSelection;
             newSelection.Add(nextEntity, GetUntransformedBoundingBox(nextEntity));
             SetSelection(newSelection);
         }
@@ -264,9 +264,9 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
     planes[2] = Plane(p4, p3, p0);
     planes[3] = Plane(p1, p4, p0);
 
-    const SelectableObjectGroup& allSelectedObjects = collisionSystem->ClipObjectsToPlanes(planes, 4);
+    const SelectableGroup& allSelectedObjects = collisionSystem->ClipObjectsToPlanes(planes, 4);
 
-    SelectableObjectGroup selectedObjects;
+    SelectableGroup selectedObjects;
     for (const auto& item : allSelectedObjects.GetContent())
     {
         auto entity = item.AsEntity();
@@ -424,7 +424,7 @@ void SceneSelectionSystem::ProcessCommand(const Command2* command, bool redo)
     }
 }
 
-void SceneSelectionSystem::SetSelection(SelectableObjectGroup& newSelection)
+void SceneSelectionSystem::SetSelection(SelectableGroup& newSelection)
 {
     if (IsLocked())
         return;
@@ -477,12 +477,12 @@ void SceneSelectionSystem::AddObjectToSelection(Selectable::Object* object)
     }
 }
 
-void SceneSelectionSystem::AddGroupToSelection(const SelectableObjectGroup& entities)
+void SceneSelectionSystem::AddGroupToSelection(const SelectableGroup& entities)
 {
     if (IsLocked())
         return;
 
-    SelectableObjectGroup newSelection = currentSelection;
+    SelectableGroup newSelection = currentSelection;
     for (const auto& item : entities.GetContent())
     {
         if (currentSelection.ContainsObject(item.GetContainedObject()))
@@ -532,7 +532,7 @@ void SceneSelectionSystem::ExcludeEntityFromSelection(Selectable::Object* entity
     }
 }
 
-void SceneSelectionSystem::ExcludeSelection(const SelectableObjectGroup& entities)
+void SceneSelectionSystem::ExcludeSelection(const SelectableGroup& entities)
 {
     if (!IsLocked())
     {
@@ -559,9 +559,9 @@ void SceneSelectionSystem::Clear()
     }
 }
 
-const SelectableObjectGroup& SceneSelectionSystem::GetSelection() const
+const SelectableGroup& SceneSelectionSystem::GetSelection() const
 {
-    static const SelectableObjectGroup emptyGroup;
+    static const SelectableGroup emptyGroup;
     return IsLocked() ? emptyGroup : currentSelection;
 }
 
@@ -630,9 +630,9 @@ void SceneSelectionSystem::SetLocked(bool lock)
 
     if (lockChanged)
     {
-        SelectableObjectGroup emptyGroup;
-        SelectableObjectGroup* selected = nullptr;
-        SelectableObjectGroup* deselected = nullptr;
+        SelectableGroup emptyGroup;
+        SelectableGroup* selected = nullptr;
+        SelectableGroup* deselected = nullptr;
         if (lock == true)
         {
             selected = &emptyGroup;
@@ -732,7 +732,7 @@ DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const Selectable& 
     return ret;
 }
 
-DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableObjectGroup& group) const
+DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableGroup& group) const
 {
     DAVA::AABBox3 result;
     for (const auto& object : group.GetContent())
@@ -768,7 +768,7 @@ void SceneSelectionSystem::Deactivate()
     SetLocked(true);
 }
 
-void SceneSelectionSystem::UpdateSelectionGroup(const SelectableObjectGroup& newSelection)
+void SceneSelectionSystem::UpdateSelectionGroup(const SelectableGroup& newSelection)
 {
     objectsToSelect.Exclude(lastGroupSelection);
 
@@ -803,7 +803,7 @@ void SceneSelectionSystem::UpdateSelectionGroup(const SelectableObjectGroup& new
 
 void SceneSelectionSystem::FinishSelection()
 {
-    SelectableObjectGroup newSelection;
+    SelectableGroup newSelection;
 
     if (groupSelectionMode == GroupSelectionMode::Replace)
     {

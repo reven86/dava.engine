@@ -119,7 +119,7 @@ int SceneCollisionSystem::GetDrawMode() const
     return drawMode;
 }
 
-const SelectableObjectGroup::CollectionType& SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to)
+const SelectableGroup::CollectionType& SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to)
 {
     // check if cache is available
     if (rayIntersectCached && (lastRayFrom == from) && (lastRayTo == to))
@@ -166,7 +166,7 @@ const SelectableObjectGroup::CollectionType& SceneCollisionSystem::ObjectsRayTes
     return rayIntersectedEntities;
 }
 
-const SelectableObjectGroup::CollectionType& SceneCollisionSystem::ObjectsRayTestFromCamera()
+const SelectableGroup::CollectionType& SceneCollisionSystem::ObjectsRayTestFromCamera()
 {
     DAVA::Vector3 traceFrom;
     DAVA::Vector3 traceTo;
@@ -592,7 +592,7 @@ void SceneCollisionSystem::DestroyFromObject(Selectable::Object* entity)
     }
 }
 
-const SelectableObjectGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
+const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
 {
     planeClippedObjects.Clear();
     for (const auto& object : objectToCollision)

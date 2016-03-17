@@ -45,7 +45,7 @@
 
 namespace StructSystemDetails
 {
-void MapEntityGroup(const SelectableObjectGroup& srcGroup, SelectableObjectGroup& dstGroup,
+void MapEntityGroup(const SelectableGroup& srcGroup, SelectableGroup& dstGroup,
                     const StructureSystem::InternalMapping& mapping, SceneCollisionSystem* collisionSystem)
 {
     DVASSERT(collisionSystem != nullptr);
@@ -70,7 +70,7 @@ StructureSystem::~StructureSystem()
 {
 }
 
-void StructureSystem::Move(const SelectableObjectGroup& objects, DAVA::Entity* newParent, DAVA::Entity* newBefore)
+void StructureSystem::Move(const SelectableGroup& objects, DAVA::Entity* newParent, DAVA::Entity* newBefore)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     const auto& objectsContent = objects.GetContent();
@@ -132,7 +132,7 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
     sceneEditor->EndBatch();
 }
 
-void StructureSystem::Remove(const SelectableObjectGroup& objects)
+void StructureSystem::Remove(const SelectableGroup& objects)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     if ((nullptr == sceneEditor) || objects.IsEmpty())
@@ -193,10 +193,10 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     EmitChanged();
 }
 
-SelectableObjectGroup StructureSystem::ReloadEntities(const SelectableObjectGroup& objects, bool saveLightmapSettings)
+SelectableGroup StructureSystem::ReloadEntities(const SelectableGroup& objects, bool saveLightmapSettings)
 {
     if (objects.IsEmpty())
-        return SelectableObjectGroup();
+        return SelectableGroup();
 
     DAVA::Set<DAVA::FilePath> refsToReload;
 
@@ -225,7 +225,7 @@ SelectableObjectGroup StructureSystem::ReloadEntities(const SelectableObjectGrou
     DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
     SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
-    SelectableObjectGroup result;
+    SelectableGroup result;
     StructSystemDetails::MapEntityGroup(objects, result, groupMapping, scene->collisionSystem);
     return result;
 }
@@ -238,10 +238,10 @@ void StructureSystem::ReloadRefs(const DAVA::FilePath& modelPath, InternalMappin
     }
 }
 
-SelectableObjectGroup StructureSystem::ReloadEntitiesAs(const SelectableObjectGroup& objects, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
+SelectableGroup StructureSystem::ReloadEntitiesAs(const SelectableGroup& objects, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
 {
     if (objects.IsEmpty())
-        return SelectableObjectGroup();
+        return SelectableGroup();
 
     InternalMapping entitiesToReload;
 
@@ -255,7 +255,7 @@ SelectableObjectGroup StructureSystem::ReloadEntitiesAs(const SelectableObjectGr
     DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
     SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
-    SelectableObjectGroup result;
+    SelectableGroup result;
     StructSystemDetails::MapEntityGroup(objects, result, entitiesToReload, scene->collisionSystem);
     return result;
 }

@@ -401,12 +401,12 @@ void HoodSystem::LockAxis(bool lock)
     lockedAxis = lock;
 }
 
-bool HoodSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
+bool HoodSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
 {
     return !IsVisible() || (GetTransformType() == Selectable::TransformType::Disabled) || (ST_AXIS_NONE == GetPassingAxis());
 }
 
-bool HoodSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)
+bool HoodSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
     return true;
 }

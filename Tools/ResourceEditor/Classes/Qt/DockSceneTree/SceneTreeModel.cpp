@@ -326,7 +326,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
         QVector<DAVA::Entity*> entitiesV = MimeDataHelper2<DAVA::Entity>::DecodeMimeData(data);
         if (entitiesV.size() > 0)
         {
-            SelectableObjectGroup objects;
+            SelectableGroup objects;
             for (int i = 0; i < entitiesV.size(); ++i)
             {
                 objects.Add(entitiesV[i], DAVA::AABBox3());

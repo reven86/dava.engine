@@ -63,7 +63,7 @@ public slots:
 private slots:
     void OnSceneActivated(SceneEditor2* scene);
     void OnSceneDeactivated(SceneEditor2* scene);
-    void OnSceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
+    void OnSceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnSceneCommand(SceneEditor2* scene, const Command2* command, bool redo);
 
     void OnXChanged();

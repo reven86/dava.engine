@@ -117,7 +117,7 @@ void EditorLODSystem::UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float3
     }
 }
 
-void EditorLODSystem::SceneSelectionChanged(const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void EditorLODSystem::SceneSelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (!allSceneModeEnabled)
     {
@@ -273,7 +273,7 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
 bool EditorLODSystem::CheckSelectedContainsEntity(const DAVA::Entity* arg) const
 {
     DVASSERT(arg);
-    const SelectableObjectGroup& selection = static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection();
+    const SelectableGroup& selection = static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection();
     return selection.ContainsObject(arg);
 }
 

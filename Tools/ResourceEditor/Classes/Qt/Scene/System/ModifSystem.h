@@ -39,7 +39,7 @@
 #include "UI/UIEvent.h"
 
 #include "Scene/SceneTypes.h"
-#include "Scene/SelectableObjectGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Render/Highlevel/RenderObject.h"
 
 class SceneCollisionSystem;
@@ -63,20 +63,20 @@ public:
     bool GetLandscapeSnap() const;
     void SetLandscapeSnap(bool snap);
 
-    void PlaceOnLandscape(const SelectableObjectGroup& entities);
-    void ResetTransform(const SelectableObjectGroup& entities);
+    void PlaceOnLandscape(const SelectableGroup& entities);
+    void ResetTransform(const SelectableGroup& entities);
 
-    void MovePivotZero(const SelectableObjectGroup& entities);
-    void MovePivotCenter(const SelectableObjectGroup& entities);
+    void MovePivotZero(const SelectableGroup& entities);
+    void MovePivotCenter(const SelectableGroup& entities);
 
-    void LockTransform(const SelectableObjectGroup& entities, bool lock);
+    void LockTransform(const SelectableGroup& entities, bool lock);
 
     bool InModifState() const;
     bool InCloneState() const;
     bool InCloneDoneState() const;
 
-    bool ModifCanStart(const SelectableObjectGroup& objects) const;
-    bool ModifCanStartByMouse(const SelectableObjectGroup& objects) const;
+    bool ModifCanStart(const SelectableGroup& objects) const;
+    bool ModifCanStartByMouse(const SelectableGroup& objects) const;
 
     void RemoveEntity(DAVA::Entity* entity) override;
     void Process(DAVA::float32 timeElapsed) override;
@@ -85,9 +85,9 @@ public:
     void AddDelegate(EntityModificationSystemDelegate* delegate);
     void RemoveDelegate(EntityModificationSystemDelegate* delegate);
 
-    void ApplyMoveValues(ST_Axis axis, const SelectableObjectGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
-    void ApplyRotateValues(ST_Axis axis, const SelectableObjectGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
-    void ApplyScaleValues(ST_Axis axis, const SelectableObjectGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyMoveValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyRotateValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyScaleValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
 
     void Draw();
 
@@ -118,7 +118,7 @@ protected:
         BAKE_CENTER_PIVOT
     };
 
-    SelectableObjectGroup BeginModification(const SelectableObjectGroup& entities);
+    SelectableGroup BeginModification(const SelectableGroup& entities);
     void EndModification();
 
     void CloneBegin();
@@ -132,14 +132,14 @@ protected:
     DAVA::Vector3 Move(const DAVA::Vector3& newPos3d);
     DAVA::float32 Rotate(const DAVA::Vector2& newPos2d);
     DAVA::float32 Scale(const DAVA::Vector2& newPos2d);
-    void BakeGeometry(const SelectableObjectGroup& entities, BakeMode mode);
+    void BakeGeometry(const SelectableGroup& entities, BakeMode mode);
     void SearchEntitiesWithRenderObject(DAVA::RenderObject* ro, DAVA::Entity* root, DAVA::Set<DAVA::Entity*>& result);
 
     DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
     bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
 
-    bool AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection) override;
-    bool AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
 private:
     SceneCollisionSystem* collisionSystem = nullptr;

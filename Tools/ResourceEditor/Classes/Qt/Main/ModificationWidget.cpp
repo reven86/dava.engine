@@ -121,7 +121,7 @@ void ModificationWidget::ReloadValues()
 
     if (nullptr != curScene)
     {
-        const SelectableObjectGroup& selection = curScene->selectionSystem->GetSelection();
+        const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
         if (!selection.IsEmpty() && selection.SupportsTransformType(modifMode))
         {
             xAxisModify->setEnabled(true);
@@ -234,7 +234,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
         return;
 
     DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
-    SelectableObjectGroup selection = curScene->selectionSystem->GetSelection();
+    SelectableGroup selection = curScene->selectionSystem->GetSelection();
 
     // remove child objects, to avoid double transformation
     selection.RemoveIf([&selection](const Selectable& obj) {
@@ -296,7 +296,7 @@ void ModificationWidget::OnSnapToLandscapeChanged()
     if (curScene == nullptr)
         return;
 
-    const SelectableObjectGroup& selection = curScene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
     if (selection.IsEmpty())
         return;
 
@@ -317,7 +317,7 @@ void ModificationWidget::OnSceneDeactivated(SceneEditor2* scene)
     ReloadValues();
 }
 
-void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
+void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (curScene == scene)
     {

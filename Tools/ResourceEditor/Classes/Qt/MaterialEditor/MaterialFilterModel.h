@@ -41,7 +41,7 @@ class QStandardItem;
 class SceneEditor2;
 class MaterialItem;
 class Command2;
-class SelectableObjectGroup;
+class SelectableGroup;
 class MaterialModel;
 
 class MaterialFilteringModel : public QSortFilterProxyModel
@@ -64,7 +64,7 @@ public:
 
     void SetScene(SceneEditor2* scene);
     SceneEditor2* GetScene();
-    void SetSelection(const SelectableObjectGroup* group);
+    void SetSelection(const SelectableGroup* group);
     DAVA::NMaterial* GetMaterial(const QModelIndex& index) const;
     QModelIndex GetIndex(DAVA::NMaterial* material, const QModelIndex& parent = QModelIndex()) const;
 
