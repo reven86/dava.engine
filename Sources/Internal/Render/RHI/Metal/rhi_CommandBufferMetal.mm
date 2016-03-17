@@ -854,9 +854,6 @@ metal_Present(Handle syncObject)
         }
         _Metal_ScreenshotCallbackSync.Unlock();
 
-        [pass.back()->blit_encoder endEncoding];
-        [pass.back()->blit_buf commit];
-
         [last_cb->buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb)
                                           {
                                             if (syncObject != InvalidHandle)
@@ -912,8 +909,13 @@ metal_Present(Handle syncObject)
 
             CommandBufferPool::Free(cbh);
         }
-
         [pass->buf commit];
+
+        [pass->blit_encoder endEncoding];
+        [pass->blit_buf commit];
+
+        pass->blit_encoder = nil;
+        pass->blit_buf = nil;
     }
 
 
