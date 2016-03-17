@@ -29,7 +29,7 @@
 
 #include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>

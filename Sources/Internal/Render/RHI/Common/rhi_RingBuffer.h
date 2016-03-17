@@ -31,7 +31,7 @@
 #define __RHI_RINGBUFFER_H__
 
     #include "../rhi_Type.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
     #include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi

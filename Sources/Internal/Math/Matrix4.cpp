@@ -31,7 +31,7 @@
 #include "Base/BaseMath.h"
 #include "Math/Matrix4.h"
 #include "Math/Quaternion.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
