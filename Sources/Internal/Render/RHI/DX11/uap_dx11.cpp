@@ -7,7 +7,6 @@
 #include "Concurrency/Thread.h"
 
 #include "uap_dx11.h"
-#include "Core/Core.h"
 
 #include <agile.h>
 #include <Windows.ui.xaml.media.dxinterop.h>
@@ -499,20 +498,18 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-    DAVA::DisplayMode curMode = DAVA::Core::Instance()->GetCurrentDisplayMode();
-    m_logicalSize.Width = static_cast<float32>(curMode.width);
-    m_logicalSize.Height = static_cast<float32>(curMode.height);
-
-    // Setup inverse scale on the swap chain
-    DXGI_MATRIX_3X2_F inverseScale = { 0 };
-    inverseScale._11 = m_logicalSize.Width / m_backbufferSize.Width;
-    inverseScale._22 = m_logicalSize.Height / m_backbufferSize.Height;
     ComPtr<IDXGISwapChain2> spSwapChain2;
-    ThrowIfFailed(
-    m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
+    ThrowIfFailed(m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
 
-    ThrowIfFailed(
-    spSwapChain2->SetMatrixTransform(&inverseScale));
+    Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([spSwapChain2]() {
+                                                                                            m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
+                                                                                            DXGI_MATRIX_3X2_F inverseScale = { 0 };
+                                                                                            inverseScale._11 = m_logicalSize.Width / m_backbufferSize.Width;
+                                                                                            inverseScale._22 = m_logicalSize.Height / m_backbufferSize.Height;
+
+                                                                                            ThrowIfFailed(
+                                                                                            spSwapChain2->SetMatrixTransform(&inverseScale));
+                                                                                        }));
 
     // Create a render target view of the swap chain back buffer.
     ThrowIfFailed(
