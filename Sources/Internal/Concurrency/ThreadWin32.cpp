@@ -79,6 +79,7 @@ void Thread::Start()
     if (x != 0)
     {
         handle = reinterpret_cast<HANDLE>(x);
+        isJoinable.Set(true);
         state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
     }
     else
@@ -118,9 +119,12 @@ unsigned __stdcall ThreadFunc(void* param)
 
 void Thread::Join()
 {
-    if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
+    if (isJoinable.CompareAndSwap(true, false))
     {
-        DAVA::Logger::Error("Thread::Join failed in WaitForSingleObjectEx: error=%u", GetLastError());
+        if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
+        {
+            DAVA::Logger::Error("Thread::Join failed in WaitForSingleObjectEx: error=%u", GetLastError());
+        }
     }
 }
 

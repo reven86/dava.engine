@@ -133,15 +133,24 @@ void Thread::Start()
     if (stackSize != 0)
         pthread_attr_setstacksize(&attr, stackSize);
 
-    pthread_create(&handle, &attr, PthreadMain, this);
-    state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    int err = pthread_create(&handle, &attr, PthreadMain, this);
+    if (0 == err)
+    {
+        isJoinable.Set(true);
+        state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    }
+    else
+    {
+        Memset(&handle, 0, sizeof(handle));
+        Logger::Error("Thread::Start failed to create thread: error=%d", err);
+    }
 
     pthread_attr_destroy(&attr);
 }
 
 void Thread::Join()
 {
-    if (state == STATE_RUNNING)
+    if (isJoinable.CompareAndSwap(true, false))
     {
         pthread_join(handle, nullptr);
     }
