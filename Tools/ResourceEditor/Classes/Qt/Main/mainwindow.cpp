@@ -1355,7 +1355,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
 void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
 {
     SceneEditor2* scene = GetCurrentScene();
-    if (scene != nullptr || !SaveTilemask(false))
+    if (scene == nullptr || !SaveTilemask(false))
     {
         return;
     }
