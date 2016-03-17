@@ -223,7 +223,7 @@ private:
     Procedure threadFunc;
     Atomic<eThreadState> state;
     Atomic<bool> isCancelling;
-    Atomic<bool> isJoinable = false;
+    Atomic<bool> isJoinable{ false };
     size_t stackSize;
     eThreadPriority threadPriority;
 
