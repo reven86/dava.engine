@@ -732,7 +732,6 @@ void Core::SystemProcessFrame()
         core->EndFrame();
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
 
-
         STOP_TIMING(PROF__FRAME_ENDFRAME);
     }
     Stats::Instance()->EndFrame();
