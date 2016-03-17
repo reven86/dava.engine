@@ -47,6 +47,7 @@ namespace DAVA
     Keep in mind that landscape orientation cannot be changed using localTransform and worldTransform matrices. 
  */
 
+class LandscapeSystem;
 class FoliageSystem;
 class NMaterial;
 class SerializationContext;
@@ -140,8 +141,11 @@ public:
     void BindDynamicParameters(Camera* camera) override;
     void PrepareToRender(Camera* camera) override;
 
-    void SetDebugDraw(bool isDebug);
-    bool IsDebugDraw() const;
+    void SetDrawWired(bool isWire);
+    bool IsDrawWired() const;
+
+    void SetUseMorphing(bool useMorph);
+    bool IsUseMorphing() const;
 
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
     void SetUpdatable(bool isUpdatable);
@@ -191,6 +195,9 @@ protected:
 
     bool forceFirstLod = false;
     bool updatable = false;
+
+    bool debugDrawMetrics = false;
+    bool debugDrawMorphing = false;
 
     bool useInstancing = false;
     bool useLodMorphing = false;
@@ -343,12 +350,17 @@ protected:
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    friend class LandscapeSystem;
+
 public:
     INTROSPECTION_EXTEND(Landscape, RenderObject,
                          PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
                          PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
-                         PROPERTY("isDebugDraw", "isDebugDraw", IsDebugDraw, SetDebugDraw, I_VIEW | I_EDIT)
+                         PROPERTY("useMorphing", "useMorphing", IsUseMorphing, SetUseMorphing, I_VIEW | I_EDIT)
+                         PROPERTY("isDrawWired", "isDrawWired", IsDrawWired, SetDrawWired, I_VIEW | I_EDIT)
+                         MEMBER(debugDrawMetrics, "debugDrawMetrics", I_VIEW | I_EDIT)
+                         MEMBER(debugDrawMorphing, "debugDrawMorphing", I_VIEW | I_EDIT)
                          MEMBER(maxHeightError, "maxHeightError", I_VIEW | I_EDIT)
                          MEMBER(maxPatchRadiusError, "maxPatchRadiusError", I_VIEW | I_EDIT)
                          MEMBER(maxAbsoluteHeightError, "maxAbsoluteHeightError", I_VIEW | I_EDIT)

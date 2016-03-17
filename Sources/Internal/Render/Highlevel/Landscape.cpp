@@ -85,8 +85,6 @@ Landscape::Landscape()
     useInstancing = rhi::DeviceCaps().isInstancingSupported;
     useLodMorphing = useInstancing;
 
-    instanceDataSize = useLodMorphing ? INSTANCE_DATA_SIZE_MORPHING : INSTANCE_DATA_SIZE;
-
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
@@ -1100,6 +1098,8 @@ void Landscape::AllocateGeometryDataInstancing()
 
     /////////////////////////////////////////////////////////////////
 
+    instanceDataSize = useLodMorphing ? INSTANCE_DATA_SIZE_MORPHING : INSTANCE_DATA_SIZE;
+
     rhi::VertexBuffer::Descriptor vdesc;
     vdesc.size = VERTICES_COUNT * sizeof(VertexInstancing);
     vdesc.initialData = patchVertices;
@@ -1267,7 +1267,7 @@ void Landscape::PrepareToRender(Camera* camera)
         frustum = camera->GetFrustum();
         cameraPos = camera->GetPosition();
 
-        tanFovY = tanf(camera->GetFOV() * PI / 360.f) * camera->GetAspect();
+        tanFovY = tanf(camera->GetFOV() * PI / 360.f) / camera->GetAspect();
 
         subdivPatchesDrawCount = 0;
         SubdividePatch(0, 0, 0, 0x3f, maxHeightError, maxPatchRadiusError);
@@ -1570,14 +1570,29 @@ bool Landscape::IsUpdatable() const
     return updatable;
 }
 
-void Landscape::SetDebugDraw(bool isDebug)
+void Landscape::SetDrawWired(bool isWired)
 {
-    landscapeMaterial->SetFXName(isDebug ? NMaterialName::TILE_MASK_DEBUG : NMaterialName::TILE_MASK);
+    landscapeMaterial->SetFXName(isWired ? NMaterialName::TILE_MASK_DEBUG : NMaterialName::TILE_MASK);
 }
 
-bool Landscape::IsDebugDraw() const
+bool Landscape::IsDrawWired() const
 {
     return landscapeMaterial->GetEffectiveFXName() == NMaterialName::TILE_MASK_DEBUG;
+}
+
+void Landscape::SetUseMorphing(bool useMorph)
+{
+    if (useLodMorphing != useMorph)
+    {
+        useLodMorphing = useMorph;
+        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, useLodMorphing ? 1 : 0);
+        RebuildLandscape();
+    }
+}
+
+bool Landscape::IsUseMorphing() const
+{
+    return useLodMorphing;
 }
 
 /*
