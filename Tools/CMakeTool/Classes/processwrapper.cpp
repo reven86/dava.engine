@@ -162,11 +162,13 @@ void ProcessWrapper::StartNextCommand()
     {
         if (FileSystemHelper::MkPath(buildFolder))
         {
-            emit processStandardOutput(tr("created buld folder %1").arg(buildFolder));
+            emit processStandardOutput(tr("created build folder %1").arg(buildFolder));
         }
         else
         {
             emit processStandardError(tr("can not create build folder %1").arg(buildFolder));
+            QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
+            return;
         }
     }
     if (task.needClean)
