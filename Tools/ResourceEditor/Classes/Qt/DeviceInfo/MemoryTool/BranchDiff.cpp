@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
 #include "Qt/DeviceInfo/MemoryTool/Branch.h"

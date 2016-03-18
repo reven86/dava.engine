@@ -29,7 +29,7 @@
 #include "Render/Renderer.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/File.h"
