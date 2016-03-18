@@ -586,16 +586,13 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
                             return false;
                         }
                     }
-                    return true;
                 }
-                else
-                {
-                    return true;
-                }
+                return true;
             }
         }
         else
         {
+            //root node will be added
             return true;
         }
     }
