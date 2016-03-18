@@ -829,7 +829,7 @@ void ParticleTimeLineWidget::OnValueChanged(int lineId)
 
     if (activeScene)
     {
-        Command2::Pointer cmd = Command2::Create<CommandUpdateParticleLayerTime>(iter->second.layer));
+        std::unique_ptr<CommandUpdateParticleLayerTime> cmd = Command2::Create<CommandUpdateParticleLayerTime>(iter->second.layer);
         cmd->Init(iter->second.startTime, iter->second.endTime);
         activeScene->Exec(std::move(cmd));
         activeScene->MarkAsChanged();

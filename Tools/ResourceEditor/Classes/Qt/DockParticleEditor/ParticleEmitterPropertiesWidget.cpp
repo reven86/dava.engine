@@ -215,7 +215,7 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     position.y = positionYSpinBox->value();
     position.z = positionZSpinBox->value();
 
-    Command2::Pointer commandUpdateEmitter = Command2::Create<CommandUpdateEmitterPosition>(effect, emitter));
+    std::unique_ptr<CommandUpdateEmitterPosition> commandUpdateEmitter = Command2::Create<CommandUpdateEmitterPosition>(effect, emitter);
     commandUpdateEmitter->Init(position);
 
     DVASSERT(activeScene != 0);
@@ -267,7 +267,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     emitterAngle->GetValue(0, propAngle.GetPropsPtr());
     emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 
-    Command2::Pointer commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(emitter));
+    std::unique_ptr<CommandUpdateEmitter> commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(emitter);
     commandUpdateEmitter->Init(FastName(emitterNameLineEdit->text().toStdString().c_str()),
                                type,
                                emissionRange.GetPropLine(),

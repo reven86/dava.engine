@@ -50,9 +50,9 @@ public:
     ~Command2() override;
 
     template <typename CMD, typename... Arg>
-    static Pointer Create(Arg&&... arg)
+    static std::unique_ptr<CMD> Create(Arg&&... arg)
     {
-        return Pointer(new CMD(std::forward<Arg>(arg)...));
+        return std::unique_ptr<CMD>(new CMD(std::forward<Arg>(arg)...));
     }
 
     static Pointer CreateEmptyCommand()
