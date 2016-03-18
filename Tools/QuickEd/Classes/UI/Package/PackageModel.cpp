@@ -63,7 +63,7 @@ namespace PackageModel_local
 {
 void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const DAVA::Vector2& pos)
 {
-    DVASSERT(nullptr != node); 
+    DVASSERT(nullptr != node);
     DVASSERT(nullptr != node->GetControl());
     auto control = node->GetControl();
     control->SetAbsolutePosition(pos - (control->GetSize() / 2.0f));

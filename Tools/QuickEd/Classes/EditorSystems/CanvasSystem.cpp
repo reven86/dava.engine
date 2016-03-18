@@ -391,7 +391,7 @@ uint32 CanvasSystem::GetIndexByPos(const DAVA::Vector2& pos)
     for (auto& iter : gridControls)
     {
         auto grid = iter->GetGridControl();
-        
+
         if (pos.y < (grid->GetPosition().y + grid->GetSize().y / 2.0f))
         {
             return index;

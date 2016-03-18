@@ -579,7 +579,7 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
                 {
                     const PackageMimeData* controlMimeData = DynamicTypeCheck<const PackageMimeData*>(mimeData);
                     const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
-                    for (const auto &srcNode : srcControls)
+                    for (const auto& srcNode : srcControls)
                     {
                         if (srcNode == node)
                         {

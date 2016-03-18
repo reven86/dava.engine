@@ -153,13 +153,13 @@ int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point)
 
     auto iter = editingRootControls.begin();
     std::advance(iter, insertToEnd ? index - 1 : index);
-    PackageBaseNode *target = *iter;
+    PackageBaseNode* target = *iter;
     PackageControlsNode* controlsNode = package->GetPackageControlsNode();
     for (int i = 0; i < controlsNode->GetCount(); ++i)
     {
-        if (controlsNode->Get(i) == target) 
+        if (controlsNode->Get(i) == target)
         {
-            return insertToEnd ? i + 1 : i; 
+            return insertToEnd ? i + 1 : i;
         }
     }
     DVASSERT(false && "editingRootControls contains nodes not from GetPackageControlsNode");
