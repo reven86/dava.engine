@@ -670,7 +670,7 @@ void EmitterLayerWidget::OnValueChanged()
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    std::unique_ptr<CommandUpdateParticleLayer> updateLayerCmd(new CommandUpdateParticleLayer(emitter, layer));
+    Command2::Pointer updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(emitter, layer));
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,

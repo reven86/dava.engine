@@ -140,7 +140,7 @@ void LayerForceWidget::OnValueChanged()
     PropLineWrapper<float32> propForceOverLife;
     forceOverLifeTimeLine->GetValue(0, propForceOverLife.GetPropsPtr());
 
-    std::unique_ptr<CommandUpdateParticleForce> updateForceCmd(new CommandUpdateParticleForce(layer, forceIndex));
+    Command2::Pointer updateForceCmd = Command2::Create<CommandUpdateParticleForce>(layer, forceIndex));
     updateForceCmd->Init(propForce.GetPropLine(),
                          propForceOverLife.GetPropLine());
 

@@ -380,7 +380,7 @@ void ParticleEffectPropertiesWidget::OnValueChanged()
     DVASSERT(particleEffect != 0);
     float32 playbackSpeed = ConvertFromSliderValueToPlaybackSpeed(effectPlaybackSpeed->value());
 
-    std::unique_ptr<CommandUpdateEffect> commandUpdateEffect(new CommandUpdateEffect(particleEffect));
+    Command2::Pointer commandUpdateEffect = Command2::Create<CommandUpdateEffect>(particleEffect));
     commandUpdateEffect->Init(playbackSpeed);
 
     DVASSERT(activeScene != 0);
