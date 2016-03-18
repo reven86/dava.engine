@@ -274,7 +274,7 @@ void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vec
         }
 
         FileSystem::Instance()->CreateDirectory(presets[i].GetDirectory(), true);
-        if (Preset::SaveArchive(presetArchive, presets[i]))
+        if (Preset::SaveArchive(presetArchive, presets[i]) == false)
         {
             Logger::Error("Can't create preset. Check that all GPU convert parameters are valid");
             return;
