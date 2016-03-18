@@ -69,10 +69,10 @@ bool EventDispatcher::RemoveEvent(int32 eventType, const Message& msg)
 
 bool EventDispatcher::RemoveAllEvents()
 {
-    int32 removedEventsCount = 0;
+    size_t removedEventsCount = 0;
     if (!eraseLocked)
     {
-        removedEventsCount = (int32)events.size();
+        removedEventsCount = events.size();
         events.clear();
         eventsCount = 0;
     }

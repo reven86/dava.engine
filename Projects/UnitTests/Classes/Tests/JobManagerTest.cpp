@@ -117,7 +117,7 @@ DAVA_TESTCLASS (JobManagerTest)
 
     void ThreadFunc(BaseObject * bo, void* userParam, void* callerParam)
     {
-        JobManagerTestData* data = (JobManagerTestData*)userParam;
+        JobManagerTestData* data = static_cast<JobManagerTestData*>(userParam);
 
         for (uint32 i = 0; i < JOBS_COUNT; i++)
         {

@@ -44,16 +44,16 @@ class SpeedTreeUpdateSystem : public SceneSystem, public Observer
 {
 public:
     SpeedTreeUpdateSystem(Scene* scene);
-    virtual ~SpeedTreeUpdateSystem();
+    ~SpeedTreeUpdateSystem() override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
     void ImmediateEvent(Component* component, uint32 event) override;
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
-    virtual void HandleEvent(Observable* observable);
+    void HandleEvent(Observable* observable) override;
 
-    virtual void SceneDidLoaded() override;
+    void SceneDidLoaded() override;
 
 protected:
     void UpdateAnimationFlag(Entity* entity);

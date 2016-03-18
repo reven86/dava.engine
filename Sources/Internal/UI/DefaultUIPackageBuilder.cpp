@@ -382,7 +382,7 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember* member, const Va
 
 void DefaultUIPackageBuilder::PutImportredPackage(const FilePath& path, UIPackage* package)
 {
-    int32 index = (int32)importedPackages.size();
+    int32 index = static_cast<int32>(importedPackages.size());
     importedPackages.push_back(SafeRetain(package));
     packsByPaths[path] = index;
     packsByNames[path.GetBasename()] = index;

@@ -29,7 +29,7 @@
 #ifndef __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 #define __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class MaterialRemoveTexture : public Command2
 {
