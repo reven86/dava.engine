@@ -94,8 +94,8 @@ YamlNode::~YamlNode()
     break;
     case TYPE_ARRAY:
     {
-        int32 size = (int32)objectArray->array.size();
-        for (int32 k = 0; k < size; ++k)
+        size_t size = objectArray->array.size();
+        for (size_t k = 0; k < size; ++k)
         {
             SafeRelease(objectArray->array[k]);
         }

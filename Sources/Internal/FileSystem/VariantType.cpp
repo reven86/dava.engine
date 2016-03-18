@@ -445,7 +445,7 @@ void VariantType::SetVariant(const VariantType& var)
     break;
     case TYPE_BYTE_ARRAY:
     {
-        Vector<uint8>* ar = (Vector<uint8>*)var.pointerValue;
+        const Vector<uint8>* ar = static_cast<const Vector<uint8>*>(var.pointerValue);
         SetByteArray(ar->data(), static_cast<int32>(ar->size()));
     }
     break;
@@ -581,7 +581,7 @@ int32 VariantType::AsByteArraySize() const
 KeyedArchive* VariantType::AsKeyedArchive() const
 {
     DVASSERT(type == TYPE_KEYED_ARCHIVE);
-    return (KeyedArchive*)pointerValue;
+    return static_cast<KeyedArchive*>(pointerValue);
 }
 
 int64 VariantType::AsInt64() const
@@ -720,7 +720,7 @@ bool VariantType::Write(File* fp) const
     break;
     case TYPE_STRING:
     {
-        int32 len = (int32)stringValue->length();
+        uint32 len = static_cast<uint32>(stringValue->length());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -736,7 +736,7 @@ bool VariantType::Write(File* fp) const
     break;
     case TYPE_WIDE_STRING:
     {
-        int32 len = (int32)wideStringValue->length();
+        uint32 len = static_cast<uint32>(wideStringValue->length());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -744,7 +744,7 @@ bool VariantType::Write(File* fp) const
         }
 
         written = fp->Write(wideStringValue->c_str(), len * sizeof(wchar_t));
-        if (written != len * (int)sizeof(wchar_t))
+        if (written != len * static_cast<uint32>(sizeof(wchar_t)))
         {
             return false;
         }
@@ -752,7 +752,8 @@ bool VariantType::Write(File* fp) const
     break;
     case TYPE_BYTE_ARRAY:
     {
-        int32 len = (int32)((Vector<uint8>*)pointerValue)->size();
+        const Vector<uint8>* container = static_cast<const Vector<uint8>*>(pointerValue);
+        uint32 len = static_cast<uint32>(container->size());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -760,7 +761,8 @@ bool VariantType::Write(File* fp) const
         }
         if (0 != len)
         {
-            written = fp->Write(&((Vector<uint8>*)pointerValue)->front(), len);
+            const Vector<uint8>* container = static_cast<const Vector<uint8>*>(pointerValue);
+            written = fp->Write(&(container->front()), len);
             if (written != len)
             {
                 return false;
@@ -771,8 +773,8 @@ bool VariantType::Write(File* fp) const
     case TYPE_KEYED_ARCHIVE:
     {
         DynamicMemoryFile* pF = DynamicMemoryFile::Create(File::WRITE | File::APPEND);
-        ((KeyedArchive*)pointerValue)->Save(pF);
-        int32 len = pF->GetSize();
+        (static_cast<const KeyedArchive*>(pointerValue))->Save(pF);
+        uint32 len = pF->GetSize();
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -897,7 +899,7 @@ bool VariantType::Write(File* fp) const
     case TYPE_FILEPATH:
     {
         String str = filepathValue->GetAbsolutePathname();
-        int32 len = (int32)str.length();
+        uint32 len = static_cast<uint32>(str.length());
         written = fp->Write(&len, 4);
         if (written != 4)
         {
@@ -1026,7 +1028,8 @@ bool VariantType::Read(File* fp)
         pointerValue = static_cast<void*>(new Vector<uint8>(len));
         if (0 != len)
         {
-            read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
+            Vector<uint8>* container = static_cast<Vector<uint8>*>(pointerValue);
+            read = fp->Read(&container->front(), len);
             if (read != len)
             {
                 return false;
@@ -1051,7 +1054,7 @@ bool VariantType::Read(File* fp)
         }
         DynamicMemoryFile* pF = DynamicMemoryFile::Create(pData, len, File::READ);
         pointerValue = new KeyedArchive();
-        ((KeyedArchive*)pointerValue)->Load(pF);
+        static_cast<KeyedArchive*>(pointerValue)->Load(pF);
         SafeRelease(pF);
         SafeDeleteArray(pData);
     }
@@ -1212,12 +1215,12 @@ void VariantType::ReleasePointer()
         {
         case TYPE_BYTE_ARRAY:
         {
-            delete (Vector<uint8>*)pointerValue;
+            delete static_cast<const Vector<uint8>*>(pointerValue);
         }
         break;
         case TYPE_KEYED_ARCHIVE:
         {
-            ((KeyedArchive*)pointerValue)->Release();
+            static_cast<KeyedArchive*>(pointerValue)->Release();
         }
         break;
         case TYPE_VECTOR2:
@@ -1459,7 +1462,7 @@ const MetaInfo* VariantType::Meta() const
 
 void* VariantType::MetaObject()
 {
-    const void* ret = nullptr;
+    void* ret = nullptr;
 
     switch (type)
     {
@@ -1512,7 +1515,7 @@ void* VariantType::MetaObject()
     }
     }
 
-    return (void*)ret;
+    return ret;
 }
 
 VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
@@ -1536,75 +1539,75 @@ VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
     switch (type)
     {
     case TYPE_BOOLEAN:
-        v.SetBool(*((bool*)src));
+        v.SetBool(*(static_cast<const bool*>(src)));
         break;
     case TYPE_INT32:
-        v.SetInt32(*((int32*)src));
+        v.SetInt32(*(static_cast<const int32*>(src)));
         break;
     case TYPE_FLOAT:
-        v.SetFloat(*((float*)src));
+        v.SetFloat(*(static_cast<const float32*>(src)));
         break;
     case TYPE_FLOAT64:
-        v.SetFloat64(*((float64*)src));
+        v.SetFloat64(*(static_cast<const float64*>(src)));
         break;
     case TYPE_STRING:
-        v.SetString(*((DAVA::String*)src));
+        v.SetString(*(static_cast<const String*>(src)));
         break;
     case TYPE_WIDE_STRING:
-        v.SetWideString(*((DAVA::WideString*)src));
+        v.SetWideString(*(static_cast<const WideString*>(src)));
         break;
     case TYPE_UINT32:
-        v.SetUInt32(*((uint32*)src));
+        v.SetUInt32(*(static_cast<const uint32*>(src)));
         break;
     //case TYPE_BYTE_ARRAY:
     //	break;
     case TYPE_KEYED_ARCHIVE:
-        v.SetKeyedArchive(*((DAVA::KeyedArchive**)src));
+        v.SetKeyedArchive(const_cast<KeyedArchive*>(static_cast<const KeyedArchive*>(src)));
         break;
     case TYPE_INT64:
-        v.SetInt64(*((DAVA::int64*)src));
+        v.SetInt64(*(static_cast<const int64*>(src)));
         break;
     case TYPE_UINT64:
-        v.SetUInt64(*((DAVA::uint64*)src));
+        v.SetUInt64(*(static_cast<const uint64*>(src)));
         break;
     case TYPE_VECTOR2:
-        v.SetVector2(*((DAVA::Vector2*)src));
+        v.SetVector2(*(static_cast<const Vector2*>(src)));
         break;
     case TYPE_VECTOR3:
-        v.SetVector3(*((DAVA::Vector3*)src));
+        v.SetVector3(*(static_cast<const Vector3*>(src)));
         break;
     case TYPE_VECTOR4:
-        v.SetVector4(*((DAVA::Vector4*)src));
+        v.SetVector4(*(static_cast<const Vector4*>(src)));
         break;
     case TYPE_MATRIX2:
-        v.SetMatrix2(*((DAVA::Matrix2*)src));
+        v.SetMatrix2(*(static_cast<const Matrix2*>(src)));
         break;
     case TYPE_MATRIX3:
-        v.SetMatrix3(*((DAVA::Matrix3*)src));
+        v.SetMatrix3(*(static_cast<const Matrix3*>(src)));
         break;
     case TYPE_MATRIX4:
-        v.SetMatrix4(*((DAVA::Matrix4*)src));
+        v.SetMatrix4(*(static_cast<const Matrix4*>(src)));
         break;
     case TYPE_COLOR:
-        v.SetColor(*((DAVA::Color*)src));
+        v.SetColor(*(static_cast<const Color*>(src)));
         break;
     case TYPE_FASTNAME:
-        v.SetFastName(*((DAVA::FastName*)src));
+        v.SetFastName(*(static_cast<const FastName*>(src)));
         break;
     case TYPE_AABBOX3:
-        v.SetAABBox3(*((DAVA::AABBox3*)src));
+        v.SetAABBox3(*(static_cast<const AABBox3*>(src)));
         break;
     case TYPE_FILEPATH:
-        v.SetFilePath(*((DAVA::FilePath*)src));
+        v.SetFilePath(*(static_cast<const FilePath*>(src)));
         break;
     default:
         if (meta == MetaInfo::Instance<int8>())
         {
-            v.SetInt32(*((DAVA::int8*)src));
+            v.SetInt32(*(static_cast<const int8*>(src)));
         }
         else if (meta == MetaInfo::Instance<uint8>())
         {
-            v.SetUInt32(*((DAVA::uint8*)src));
+            v.SetUInt32(*(static_cast<const uint8*>(src)));
         }
         else
         {
@@ -1643,11 +1646,11 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
     {
         if (meta == MetaInfo::Instance<int8>() && valMeta == MetaInfo::Instance<int32>())
         {
-            *((DAVA::int8*)dst) = (int8)val.AsInt32();
+            *(static_cast<int8*>(dst)) = static_cast<int8>(val.AsInt32());
         }
         else if (meta == MetaInfo::Instance<uint8>() && valMeta == MetaInfo::Instance<int32>())
         {
-            *((DAVA::uint8*)dst) = (uint8)val.AsUInt32();
+            *(static_cast<uint8*>(dst)) = static_cast<uint8>(val.AsUInt32());
         }
         else
         {
@@ -1659,31 +1662,31 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
         switch (val.type)
         {
         case TYPE_BOOLEAN:
-            *((bool*)dst) = val.AsBool();
+            *(static_cast<bool*>(dst)) = val.AsBool();
             break;
         case TYPE_INT32:
-            *((int32*)dst) = val.AsInt32();
+            *(static_cast<int32*>(dst)) = val.AsInt32();
             break;
         case TYPE_FLOAT:
-            *((float*)dst) = val.AsFloat();
+            *(static_cast<float32*>(dst)) = val.AsFloat();
             break;
         case TYPE_FLOAT64:
-            *((float64*)dst) = val.AsFloat64();
+            *(static_cast<float64*>(dst)) = val.AsFloat64();
             break;
         case TYPE_STRING:
-            *((DAVA::String*)dst) = val.AsString();
+            *(static_cast<String*>(dst)) = val.AsString();
             break;
         case TYPE_WIDE_STRING:
-            *((DAVA::WideString*)dst) = val.AsWideString();
+            *(static_cast<WideString*>(dst)) = val.AsWideString();
             break;
         case TYPE_UINT32:
-            *((uint32*)dst) = val.AsUInt32();
+            *(static_cast<uint32*>(dst)) = val.AsUInt32();
             break;
         //case TYPE_BYTE_ARRAY:
         //	break;
         case TYPE_KEYED_ARCHIVE:
         {
-            DAVA::KeyedArchive* dstArchive = *((DAVA::KeyedArchive**)dst);
+            KeyedArchive* dstArchive = static_cast<KeyedArchive*>(dst);
             if (nullptr != dstArchive)
             {
                 dstArchive->DeleteAllKeys();
@@ -1695,40 +1698,40 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
             break;
         }
         case TYPE_INT64:
-            *((DAVA::int64*)dst) = val.AsInt64();
+            *(static_cast<int64*>(dst)) = val.AsInt64();
             break;
         case TYPE_UINT64:
-            *((DAVA::uint64*)dst) = val.AsUInt64();
+            *(static_cast<uint64*>(dst)) = val.AsUInt64();
             break;
         case TYPE_VECTOR2:
-            *((DAVA::Vector2*)dst) = val.AsVector2();
+            *(static_cast<Vector2*>(dst)) = val.AsVector2();
             break;
         case TYPE_VECTOR3:
-            *((DAVA::Vector3*)dst) = val.AsVector3();
+            *(static_cast<Vector3*>(dst)) = val.AsVector3();
             break;
         case TYPE_VECTOR4:
-            *((DAVA::Vector4*)dst) = val.AsVector4();
+            *(static_cast<Vector4*>(dst)) = val.AsVector4();
             break;
         case TYPE_MATRIX2:
-            *((DAVA::Matrix2*)dst) = val.AsMatrix2();
+            *(static_cast<Matrix2*>(dst)) = val.AsMatrix2();
             break;
         case TYPE_MATRIX3:
-            *((DAVA::Matrix3*)dst) = val.AsMatrix3();
+            *(static_cast<Matrix3*>(dst)) = val.AsMatrix3();
             break;
         case TYPE_MATRIX4:
-            *((DAVA::Matrix4*)dst) = val.AsMatrix4();
+            *(static_cast<Matrix4*>(dst)) = val.AsMatrix4();
             break;
         case TYPE_COLOR:
-            *((DAVA::Color*)dst) = val.AsColor();
+            *(static_cast<Color*>(dst)) = val.AsColor();
             break;
         case TYPE_FASTNAME:
-            *((DAVA::FastName*)dst) = val.AsFastName();
+            *(static_cast<FastName*>(dst)) = val.AsFastName();
             break;
         case TYPE_AABBOX3:
-            *((DAVA::AABBox3*)dst) = val.AsAABBox3();
+            *(static_cast<AABBox3*>(dst)) = val.AsAABBox3();
             break;
         case TYPE_FILEPATH:
-            *((DAVA::FilePath*)dst) = val.AsFilePath();
+            *(static_cast<FilePath*>(dst)) = val.AsFilePath();
             break;
         default:
             DVASSERT(0 && "Don't know how to save data from such VariantType");
@@ -1846,13 +1849,13 @@ VariantType VariantType::Convert(const VariantType& val, int type)
             switch (val.type)
             {
             case TYPE_UINT32:
-                ret.SetInt32((DAVA::int32)val.AsUInt32());
+                ret.SetInt32(static_cast<int32>(val.AsUInt32()));
                 break;
             case TYPE_UINT64:
-                ret.SetInt32((DAVA::int32)val.AsUInt64());
+                ret.SetInt32(static_cast<int32>(val.AsUInt64()));
                 break;
             case TYPE_INT64:
-                ret.SetInt32((DAVA::int32)val.AsUInt64());
+                ret.SetInt32(static_cast<int32>(val.AsUInt64()));
                 break;
             default:
                 break;
@@ -1865,13 +1868,13 @@ VariantType VariantType::Convert(const VariantType& val, int type)
             switch (val.type)
             {
             case TYPE_INT32:
-                ret.SetUInt32((DAVA::uint32)val.AsInt32());
+                ret.SetUInt32(static_cast<uint32>(val.AsInt32()));
                 break;
             case TYPE_UINT64:
-                ret.SetUInt32((DAVA::uint32)val.AsUInt64());
+                ret.SetUInt32(static_cast<uint32>(val.AsUInt64()));
                 break;
             case TYPE_INT64:
-                ret.SetUInt32((DAVA::uint32)val.AsUInt64());
+                ret.SetUInt32(static_cast<uint32>(val.AsUInt64()));
                 break;
             default:
                 break;
@@ -1884,13 +1887,13 @@ VariantType VariantType::Convert(const VariantType& val, int type)
             switch (val.type)
             {
             case TYPE_UINT32:
-                ret.SetInt64((DAVA::int64)val.AsUInt32());
+                ret.SetInt64(static_cast<int64>(val.AsUInt32()));
                 break;
             case TYPE_UINT64:
-                ret.SetInt64((DAVA::int64)val.AsUInt64());
+                ret.SetInt64(static_cast<int64>(val.AsUInt64()));
                 break;
             case TYPE_INT32:
-                ret.SetInt64((DAVA::int64)val.AsInt32());
+                ret.SetInt64(static_cast<int64>(val.AsInt32()));
                 break;
             default:
                 break;
@@ -1903,13 +1906,13 @@ VariantType VariantType::Convert(const VariantType& val, int type)
             switch (val.type)
             {
             case TYPE_UINT32:
-                ret.SetInt64((DAVA::uint64)val.AsUInt32());
+                ret.SetInt64(static_cast<uint64>(val.AsUInt32()));
                 break;
             case TYPE_INT64:
-                ret.SetInt64((DAVA::uint64)val.AsInt64());
+                ret.SetInt64(static_cast<uint64>(val.AsInt64()));
                 break;
             case TYPE_INT32:
-                ret.SetInt64((DAVA::uint64)val.AsInt32());
+                ret.SetInt64(static_cast<uint64>(val.AsInt32()));
                 break;
             default:
                 break;

@@ -27,103 +27,83 @@
 =====================================================================================*/
 
 
-#include "Commands2/CommandBatch.h"
+#include "Commands2/Base/CommandBatch.h"
 
-CommandBatch::CommandBatch()
-    : Command2(CMDID_BATCH)
+#include "Debug/DVAssert.h"
+#include "Utils/StringFormat.h"
+
+CommandBatch::CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
+    : Command2(CMDID_BATCH, text)
 {
-}
-
-CommandBatch::~CommandBatch()
-{
-    std::vector<Command2*>::iterator i = commandList.begin();
-    std::vector<Command2*>::iterator end = commandList.end();
-
-    for (; i != end; i++)
-    {
-        if (NULL != *i)
-        {
-            delete *i;
-        }
-    }
-
-    commandList.clear();
-}
-
-void CommandBatch::Undo()
-{
-    std::vector<Command2*>::reverse_iterator i = commandList.rbegin();
-    std::vector<Command2*>::reverse_iterator end = commandList.rend();
-
-    for (; i != end; i++)
-    {
-        UndoInternalCommand(*i);
-    }
+    DVASSERT(commandsCount > 0);
+    commandList.reserve(commandsCount);
 }
 
 void CommandBatch::Redo()
 {
-    std::vector<Command2*>::iterator i = commandList.begin();
-    std::vector<Command2*>::iterator end = commandList.end();
-
-    for (; i != end; i++)
+    for (CommandsContainer::iterator i = commandList.begin(), end = commandList.end(); i != end; i++)
     {
-        RedoInternalCommand(*i);
+        (*i)->Redo();
+    }
+}
+
+void CommandBatch::Undo()
+{
+    for (CommandsContainer::reverse_iterator i = commandList.rbegin(), end = commandList.rend(); i != end; i++)
+    {
+        (*i)->Undo();
     }
 }
 
 DAVA::Entity* CommandBatch::GetEntity() const
 {
-    return NULL;
+    return nullptr;
 }
 
-void CommandBatch::AddAndExec(Command2* command)
+void CommandBatch::AddAndExec(Command2::Pointer&& command)
 {
-    if (NULL != command)
+    DVASSERT(command);
+
+    Command2* actualCommand = command.get();
+    commandList.emplace_back(std::move(command));
+    commandIDs.insert(actualCommand->GetId());
+    actualCommand->Redo();
+}
+
+Command2* CommandBatch::GetCommand(DAVA::uint32 index) const
+{
+    if (index < static_cast<DAVA::uint32>(commandList.size()))
     {
-        commandList.push_back(command);
-        RedoInternalCommand(command);
+        return commandList[index].get();
     }
+
+    DVASSERT_MSG(false, DAVA::Format("index %u, size %u", index, static_cast<DAVA::uint32>(commandList.size())).c_str());
+    return nullptr;
 }
 
-int CommandBatch::Size() const
+void CommandBatch::RemoveCommands(DAVA::int32 commandId)
 {
-    return commandList.size();
+    auto it = std::remove_if(commandList.begin(), commandList.end(), [commandId](const Command2::Pointer& cmd) {
+        return cmd->GetId() == commandId;
+    });
+
+    commandList.erase(it, commandList.end());
+    commandIDs.erase(commandId);
 }
 
-Command2* CommandBatch::GetCommand(int index) const
+bool CommandBatch::MatchCommandID(DAVA::int32 commandId) const
 {
-    if (index >= 0 && index < (int)commandList.size())
-        return commandList[index];
-
-    return NULL;
+    return commandIDs.count(commandId) > 0;
 }
 
-void CommandBatch::Clear(int commandId)
+bool CommandBatch::MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIdVector) const
 {
-    std::vector<Command2*>::iterator i = commandList.begin();
-
-    while (i != commandList.end())
+    for (auto id : commandIdVector)
     {
-        Command2* command = *i;
-        if (NULL != command && command->GetId() == commandId)
+        if (MatchCommandID(id))
         {
-            delete command;
-            i = commandList.erase(i);
-        }
-        else
-        {
-            i++;
-        }
-    }
-}
-
-bool CommandBatch::ContainsCommand(int commandId) const
-{
-    for (auto command : commandList)
-    {
-        if (command->GetId() == commandId)
             return true;
+        }
     }
 
     return false;
