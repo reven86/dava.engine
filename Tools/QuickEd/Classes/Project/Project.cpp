@@ -29,10 +29,6 @@
 
 #include "DAVAEngine.h"
 
-#include <QDir>
-#include <QApplication>
-#include <QMessageBox>
-
 #include "Project.h"
 #include "EditorFontSystem.h"
 #include "UI/UIPackageLoader.h"
@@ -40,6 +36,11 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Helpers/ResourcesManageHelper.h"
+
+#include <QDir>
+#include <QApplication>
+#include <QMessageBox>
+#include <QFileDialog>
 
 using namespace DAVA;
 
@@ -65,22 +66,18 @@ bool Project::Open(const QString& path)
 bool Project::OpenInternal(const QString& path)
 {
     // Attempt to create a project
-    YamlParser* parser = YamlParser::Create(path.toStdString());
-    if (nullptr == parser)
+    ScopedPtr<YamlParser> parser(YamlParser::Create(path.toStdString()));
+    if (!parser)
+    {
         return false;
+    }
+
     QFileInfo fileInfo(path);
     if (!fileInfo.exists())
     {
         return false;
     }
     SetProjectName(fileInfo.fileName());
-
-    YamlNode* projectRoot = parser->GetRootNode();
-    if (nullptr == projectRoot)
-    {
-        SafeRelease(parser);
-        return false;
-    }
 
     FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
@@ -96,44 +93,46 @@ bool Project::OpenInternal(const QString& path)
         FilePath::AddResourcesFolder(projectPath);
     }
 
-    const YamlNode* fontNode = projectRoot->Get("font");
-
-    // Get font node
-    if (nullptr != fontNode)
+    YamlNode* projectRoot = parser->GetRootNode();
+    if (nullptr != projectRoot)
     {
-        // Get default font node
-        const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-        if (nullptr != defaultFontPath)
+        const YamlNode* fontNode = projectRoot->Get("font");
+
+        // Get font node
+        if (nullptr != fontNode)
         {
-            FilePath localizationFontsPath(defaultFontPath->AsString());
-            if (FileSystem::Instance()->Exists(localizationFontsPath))
+            // Get default font node
+            const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
+            if (nullptr != defaultFontPath)
             {
-                editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
+                FilePath localizationFontsPath(defaultFontPath->AsString());
+                if (FileSystem::Instance()->Exists(localizationFontsPath))
+                {
+                    editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
+                }
             }
         }
+
+        if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
+        {
+            editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
+        }
+
+        editorFontSystem->LoadLocalizedFonts();
+
+        const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
+        const YamlNode* localeNode = projectRoot->Get("Locale");
+        if (localizationPathNode != nullptr && localeNode != nullptr)
+        {
+            FilePath localePath = localizationPathNode->AsString();
+            QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
+            QDir localePathDir(absPath);
+            editorLocalizationSystem->SetDirectory(localePathDir);
+
+            QString currentLocale = QString::fromStdString(localeNode->AsString());
+            editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
+        }
     }
-
-    if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
-    {
-        editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
-    }
-
-    editorFontSystem->LoadLocalizedFonts();
-
-    const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
-    const YamlNode* localeNode = projectRoot->Get("Locale");
-    if (localizationPathNode != nullptr && localeNode != nullptr)
-    {
-        FilePath localePath = localizationPathNode->AsString();
-        QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
-        QDir localePathDir(absPath);
-        editorLocalizationSystem->SetDirectory(localePathDir);
-
-        QString currentLocale = QString::fromStdString(localeNode->AsString());
-        editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
-    }
-
-    SafeRelease(parser);
 
     return true;
 }
@@ -178,8 +177,23 @@ bool Project::SavePackage(PackageNode* package)
 {
     YamlPackageSerializer serializer;
     serializer.SerializePackage(package);
-    serializer.WriteToFile(package->GetPath());
-    return true;
+    return serializer.WriteToFile(package->GetPath());
+}
+
+Result Project::CreateNewProject(const QString& path)
+{
+    QFile projectFile(path);
+    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        return Result(Result::RESULT_ERROR, String("Can not open project file ") + path.toUtf8().data());
+    }
+    QFileInfo fileInfo(path);
+    QDir projectDir(fileInfo.absoluteDir());
+    if (!projectDir.mkpath(projectDir.canonicalPath() + "/Data/UI"))
+    {
+        return Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
+    }
+    return Result();
 }
 
 bool Project::IsOpen() const

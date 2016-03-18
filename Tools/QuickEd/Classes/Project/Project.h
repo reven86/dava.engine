@@ -33,8 +33,10 @@
 #include <QObject>
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
+#include "Base/Result.h"
 
 class PackageNode;
+class QFileInfo;
 
 class Project : public QObject
 {
@@ -53,6 +55,10 @@ public:
     bool SavePackage(PackageNode* package);
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
+
+public slots:
+    DAVA::Result CreateNewProject(const QString& path);
+
 signals:
     void ProjectOpened();
 

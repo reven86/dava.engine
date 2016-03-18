@@ -60,6 +60,7 @@ EditorCore::EditorCore(QObject* parent)
 
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
+    connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
     connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
@@ -165,7 +166,8 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
                     qApp->activeWindow(), tr("File %1 changed").arg(fileInfo.fileName()), tr("%1\n\nThis file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath()), changedCount > 1 ?
                     QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll :
                     QMessageBox::Yes | QMessageBox::No,
-                    QMessageBox::Yes);
+                    QMessageBox::Yes
+                    );
                     yesToAll = button == QMessageBox::YesToAll;
                     noToAll = button == QMessageBox::NoToAll;
                 }
@@ -508,17 +510,21 @@ void EditorCore::OnExit()
     }
 }
 
-void EditorCore::OnCreateProject()
+void EditorCore::OnNewProject()
 {
-    QString projectFilePath = QFileDialog::getSaveFileName(qApp->activeWindow(), tr("new project file name"), "", ".uieditor");
+    QString projectFilePath = QFileDialog::getSaveFileName(qApp->activeWindow(), tr("new project file name"), "", "*.uieditor");
     if (projectFilePath.isEmpty())
     {
         return;
     }
-    QFile projectFile(projectFilePath);
-    if (projectFile.open(QFile::WriteOnly | QFile::Truncate))
+    Result result = project->CreateNewProject(projectFilePath);
+    if (result)
     {
-        
+        OpenProject(projectFilePath);
+    }
+    else
+    {
+        QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
     }
 }
 

@@ -81,7 +81,7 @@ private slots:
     void OnFileChanged(const QString& path);
     bool CloseProject();
     void OnExit();
-    void OnCreateProject();
+    void OnNewProject();
 
 private:
     void ApplyFileChanges();

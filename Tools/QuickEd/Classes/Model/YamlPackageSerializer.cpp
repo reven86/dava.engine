@@ -123,9 +123,9 @@ YamlNode* YamlPackageSerializer::GetYamlNode() const
     return nodesStack.back();
 }
 
-void YamlPackageSerializer::WriteToFile(const FilePath& path)
+bool YamlPackageSerializer::WriteToFile(const FilePath& path)
 {
-    YamlEmitter::SaveToYamlFile(path, GetYamlNode());
+    return YamlEmitter::SaveToYamlFile(path, GetYamlNode());
 }
 
 String YamlPackageSerializer::WriteToString() const
