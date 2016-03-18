@@ -31,22 +31,16 @@
 
 #include <QApplication>
 #include <QCryptographicHash>
-#include <QFont>
-#include <QSysInfo>
 
 #include "version.h"
 #include "Main/mainwindow.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
-#include "TeamcityOutput/TeamcityOutput.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
 #include "CommandLine/CommandLineManager.h"
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "CommandLine/WinConsoleIOLocker.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
-#include "LicenceDialog/LicenceDialog.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
@@ -65,8 +59,6 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
-#include <QDebug>
-
 void UnpackHelpDoc();
 void FixOSXFonts();
 
@@ -82,37 +74,40 @@ int main(int argc, char* argv[])
 #endif
 
     DAVA::Core::Run(argc, argv);
-    new DAVA::QtLayer();
+    QtLayer qtLayer;
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 
     DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
 
 #ifdef __DAVAENGINE_BEAST__
-    new BeastProxyImpl();
+    BeastProxyImpl beastProxyImpl;
 #else
-    new BeastProxy();
+    BeastProxy beastProxy;
 #endif //__DAVAENGINE_BEAST__
 
-    new SettingsManager();
-    SettingsManager::UpdateGPUSettings();
-
-    new EditorConfig();
     ParticleEmitter::FORCE_DEEP_CLONE = true;
     QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
     int exitCode = 0;
-    CommandLineManager cmdLine(argc, argv);
-    if (cmdLine.IsEnabled())
     {
-        RunConsole(argc, argv, cmdLine);
-    }
-    else if (argc == 1)
-    {
-        RunGui(argc, argv, cmdLine);
-    }
-    else
-    {
-        exitCode = 1; //wrong commandLine
+        EditorConfig config;
+        SettingsManager settingsManager;
+        SettingsManager::UpdateGPUSettings();
+        SceneValidator sceneValidator;
+
+        CommandLineManager cmdLine(argc, argv);
+        if (cmdLine.IsEnabled())
+        {
+            RunConsole(argc, argv, cmdLine);
+        }
+        else if (argc == 1)
+        {
+            RunGui(argc, argv, cmdLine);
+        }
+        else
+        {
+            exitCode = 1; //wrong commandLine
+        }
     }
 
     return exitCode;
@@ -132,34 +127,24 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 
     QApplication a(argc, argv);
 
-    new SceneValidator();
-
-    auto glWidget = new DavaGLWidget();
-    glWidget->MakeInvisible();
+    DavaGLWidget glWidget;
+    glWidget.MakeInvisible();
 
     DAVA::Logger::Info(QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     // Delayed initialization throught event loop
-    glWidget->show();
+    glWidget.show();
 #ifdef Q_OS_WIN
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit);
+    QObject::connect(&glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit);
     a.exec();
 #endif
-    glWidget->hide();
+    glWidget.hide();
 
     //Trick for correct loading of sprites.
     VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
     VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
     cmdLineManager.Process();
-
-    SceneValidator::Instance()->Release();
-    EditorConfig::Instance()->Release();
-    SettingsManager::Instance()->Release();
-    BeastProxy::Instance()->Release();
-    Core::Instance()->Release();
-
-    delete glWidget;
 }
 
 void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
@@ -173,72 +158,57 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     QApplication a(argc, argv);
     a.setOrganizationName("DAVA");
     a.setApplicationName("Resource Editor");
+    //scope with editor variables
+    {
+        const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
+        const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
+        RunGuard runGuard(appUidPath);
+        if (!runGuard.tryToRun())
+            return;
 
-    const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
-    const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
-    RunGuard runGuard(appUidPath);
-    if (!runGuard.tryToRun())
-        return;
+        a.setAttribute(Qt::AA_UseHighDpiPixmaps);
+        a.setAttribute(Qt::AA_ShareOpenGLContexts);
 
-    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
-    a.setAttribute(Qt::AA_ShareOpenGLContexts);
+        Q_INIT_RESOURCE(QtToolsResources);
 
-    Q_INIT_RESOURCE(QtToolsResources);
+        TextureCache textureCache;
 
-    new SceneValidator();
-    new TextureCache();
+        LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
+        LocalizationSystem::Instance()->SetCurrentLocale("en");
 
-    LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
-    LocalizationSystem::Instance()->SetCurrentLocale("en");
+        int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
+        eGPUFamily family = static_cast<eGPUFamily>(val);
+        DAVA::Texture::SetDefaultGPU(family);
 
-    int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-    eGPUFamily family = static_cast<eGPUFamily>(val);
-    DAVA::Texture::SetDefaultGPU(family);
+        // check and unpack help documents
+        UnpackHelpDoc();
 
-    // check and unpack help documents
-    UnpackHelpDoc();
+    #ifdef Q_OS_MAC
+        QTimer::singleShot(0, [] { DAVA::QtLayer::MakeAppForeground(); });
+        QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
+    #endif
 
-#ifdef Q_OS_MAC
-    QTimer::singleShot(0, [] { DAVA::QtLayer::MakeAppForeground(); });
-    QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
-#endif
+        ResourceEditorLauncher launcher;
+        {
+            QtMainWindow mainWindow;
 
-    ResourceEditorLauncher launcher;
+            QTimer::singleShot(0, [&]
+                               {
+                                   // create and init UI
+                                   mainWindow.EnableGlobalTimeout(true);
+                                   auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
 
-    DavaGLWidget* glWidget = nullptr;
-    QtMainWindow* mainWindow = nullptr;
+                                   QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
 
-    QTimer::singleShot(0, [&]
-                       {
-                           // create and init UI
-                           mainWindow = new QtMainWindow();
+                                   mainWindow.show();
 
-                           mainWindow->EnableGlobalTimeout(true);
-                           glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
-
-                           QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
-
-                           mainWindow->show();
-
-                           DAVA::Logger::Info(QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-                       });
-
-    // start app
-    QApplication::exec();
-
-    glWidget->setParent(nullptr);
-    mainWindow->Release();
-
-    TextureCache::Instance()->Release();
-    SceneValidator::Instance()->Release();
-    EditorConfig::Instance()->Release();
-    SettingsManager::Instance()->Release();
-    BeastProxy::Instance()->Release();
-    Core::Instance()->Release();
-
+                                   DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
+                               });
+            // start app
+            a.exec();
+        }
+    }
     ControlsFactory::ReleaseFonts();
-
-    delete glWidget;
 }
 
 void UnpackHelpDoc()

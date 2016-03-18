@@ -77,8 +77,8 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
-    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::Exit);
-    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::Exit);
+    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
+    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
     connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
     connect(mainWindow.get(), &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
@@ -355,14 +355,6 @@ void EditorCore::SaveAllDocuments()
     }
 }
 
-void EditorCore::Exit()
-{
-    if (CloseProject())
-    {
-        QCoreApplication::exit();
-    }
-}
-
 void EditorCore::RecentMenu(QAction* recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
@@ -537,6 +529,14 @@ bool EditorCore::CloseProject()
         CloseDocument(0);
     }
     return true;
+}
+
+void EditorCore::OnExit()
+{
+    if (CloseProject())
+    {
+        qApp->quit();
+    }
 }
 
 void EditorCore::CloseDocument(int index)

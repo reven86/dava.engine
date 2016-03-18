@@ -30,7 +30,7 @@
 #define __LOGGER_ERROR_HANDLER_H__
 
 #include "Base/BaseTypes.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 class LoggerErrorHandler : public DAVA::LoggerOutput
 {

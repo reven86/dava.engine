@@ -30,8 +30,8 @@
 #include "Concurrency/Thread.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "FileSystem/Logger.h"
 #include "Job/JobManager.h"
+#include "Logger/Logger.h"
 #include "Network/NetCore.h"
 #include "Platform/SystemTimer.h"
 #if defined(__DAVAENGINE_MACOS__)

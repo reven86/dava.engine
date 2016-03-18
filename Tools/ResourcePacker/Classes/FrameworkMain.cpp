@@ -36,7 +36,7 @@
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
-#include "TeamcityOutput/TeamcityOutput.h"
+#include "Logger/TeamcityOutput.h"
 
 #include "AssetCache/AssetCacheClient.h"
 

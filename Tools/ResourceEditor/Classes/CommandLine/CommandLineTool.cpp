@@ -31,7 +31,7 @@
 #include "CommandLine/OptionName.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "TeamcityOutput/TeamcityOutput.h"
+#include "Logger/TeamcityOutput.h"
 
 #include "Project/ProjectManager.h"
 
