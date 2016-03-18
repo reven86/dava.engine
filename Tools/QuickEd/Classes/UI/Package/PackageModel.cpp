@@ -61,14 +61,22 @@ using namespace DAVA;
 
 namespace PackageModel_local
 {
-void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const DAVA::Vector2& pos)
+void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, ControlNode* dstNode, const DAVA::Vector2& pos)
 {
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != node->GetControl());
-    auto control = node->GetControl();
-    control->SetAbsolutePosition(pos - (control->GetSize() / 2.0f));
-    auto relativePos = control->GetPosition();
-    auto scale = control->GetGeometricData().scale;
+    DVASSERT(nullptr != dstNode);
+    DVASSERT(nullptr != dstNode->GetControl());
+    auto parent = dstNode->GetControl();
+    auto sizeOffset = parent->GetSize() * parent->GetPivot();
+    auto angle = parent->GetAngle();
+    auto gd = parent->GetGeometricData();
+    sizeOffset *= gd.scale;
+    auto controlPos = gd.position - ::Rotate(sizeOffset, angle); //top left corner of dest control
+    auto relativePos = pos - controlPos; //new abs pos
+    //now calculate new relative pos
+
+    auto scale = gd.scale;
     if (scale.x == 0.0f || scale.y == 0.0f)
     {
         relativePos.SetZero();
@@ -77,9 +85,10 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const
     {
         relativePos /= scale;
     }
-
+    relativePos = ::Rotate(relativePos, -angle);
     auto rootProperty = node->GetRootProperty();
     auto positionProperty = rootProperty->FindPropertyByName("Position");
+    DVASSERT(nullptr != positionProperty);
     package->SetControlProperty(node, positionProperty, VariantType(relativePos));
 }
 } //PackageModel_local
@@ -469,9 +478,13 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         }
         if (pos != nullptr && destNode != package->GetPackageControlsNode())
         {
-            for (const auto& node : nodes)
+            auto destControl = dynamic_cast<ControlNode*>(destNode);
+            if (destControl != nullptr)
             {
-                PackageModel_local::SetAbsoulutePosToControlNode(package, node, *pos);
+                for (const auto& node : nodes)
+                {
+                    PackageModel_local::SetAbsoulutePosToControlNode(package, node, destControl, *pos);
+                }
             }
         }
         emit AfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
@@ -518,12 +531,16 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         auto nodes = commandExecutor->Paste(package, destNode, destIndex, string);
         if (pos != nullptr && destNode != package->GetPackageControlsNode())
         {
-            for (const auto& node : nodes)
+            auto destControl = dynamic_cast<ControlNode*>(destNode);
+            if (destControl != nullptr)
             {
-                auto control = dynamic_cast<ControlNode*>(node);
-                if (control != nullptr)
+                for (const auto& node : nodes)
                 {
-                    PackageModel_local::SetAbsoulutePosToControlNode(package, control, *pos);
+                    auto control = dynamic_cast<ControlNode*>(node);
+                    if (control != nullptr)
+                    {
+                        PackageModel_local::SetAbsoulutePosToControlNode(package, control, destControl, *pos);
+                    }
                 }
             }
         }

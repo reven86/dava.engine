@@ -269,10 +269,9 @@ void HUDSystem::OnNodesHovered(const Vector<ControlNode*>& nodes)
         {
             UIControl* targetControl = node->GetControl();
             auto gd = targetControl->GetGeometricData();
-            const Rect& ur = gd.GetUnrotatedRect();
+            Rect ur(gd.position, gd.size * gd.scale);
 
             RefPtr<UIControl> control(new HUDMagnetRect(ur));
-
             control->SetPivot(targetControl->GetPivot());
             control->SetAngle(gd.angle);
             hudControl->AddControl(control.Get());
