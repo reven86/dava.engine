@@ -167,7 +167,7 @@ bool TextureDescriptorTool::InitializeInternal()
 {
     if (commandAction == TextureDescriptorTool::ACTION_NONE)
     {
-        AddError("Action was specified");
+        AddError("Action was not specified");
         return false;
     }
 
