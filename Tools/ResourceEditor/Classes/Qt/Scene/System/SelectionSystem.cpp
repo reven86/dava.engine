@@ -746,6 +746,7 @@ void SceneSelectionSystem::Deactivate()
 void SceneSelectionSystem::UpdateSelectionGroup(const EntityGroup& newSelection)
 {
     objectsToSelect.Exclude(lastGroupSelection);
+    objectsToSelect.RemoveIf([](DAVA::Entity* e) { return e->GetLocked(); });
 
     if (groupSelectionMode == GroupSelectionMode::Replace)
     {
