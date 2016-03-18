@@ -143,8 +143,11 @@ ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& po
 int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point)
 {
     int index = 0;
+    if (editingRootControls.empty())
+    {
+        return 0;
+    }
     GetIndexByPos.Emit(point, index);
-
     bool insertToEnd = (index == editingRootControls.size());
 
     auto iter = editingRootControls.begin();
