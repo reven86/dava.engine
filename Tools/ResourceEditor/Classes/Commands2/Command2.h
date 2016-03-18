@@ -33,20 +33,25 @@
 #include "Base/BaseTypes.h"
 #include "Scene3D/Scene.h"
 
+#include "Command/ICommand.h"
+
 #include "Commands2/CommandID.h"
 #include "Commands2/CommandNotify.h"
 
-class Command2 : public CommandNotifyProvider
+class Command2 : public CommandNotifyProvider, public DAVA::ICommand
 {
 public:
     Command2(int _id, const DAVA::String& _text = "");
+    ~Command2() override = default;
 
     int GetId() const;
 
-    virtual void Undo() = 0;
-    virtual void Redo() = 0;
-    virtual DAVA::Entity* GetEntity() const = 0;
+    void Execute() override;
 
+    virtual bool IsModifying() const;
+    virtual bool CanUndo() const;
+
+    virtual DAVA::Entity* GetEntity() const = 0;
     virtual bool MergeWith(const Command2* command);
 
     DAVA::String GetText() const;
@@ -59,5 +64,15 @@ protected:
     void UndoInternalCommand(Command2* command);
     void RedoInternalCommand(Command2* command);
 };
+
+inline bool Command2::CanUndo() const
+{
+    return true;
+}
+
+inline bool Command2::IsModifying() const
+{
+    return true;
+}
 
 #endif // __COMMAND2_H__

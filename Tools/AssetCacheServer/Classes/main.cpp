@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "Core/Core.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "QtTools/RunGuard/RunGuard.h"
 
 #include "ServerCore.h"

@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,73 +26,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TeamcityOutput.h"
-#include "Utils/Utils.h"
-
-#include <iostream>
-
-#if defined(__DAVAENGINE_ANDROID__)
-#   include <android/log.h>
-#   define LOG_TAG      "TeamcityOutput"
-#elif defined(__DAVAENGINE_IPHONE__)
-#   import "UIKit/UIKit.h"
-#endif
+#ifndef __DAVAFRAMEWORK_OBJECTHANDLE_H__
+#define __DAVAFRAMEWORK_OBJECTHANDLE_H__
 
 namespace DAVA
 {
-    
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
+struct MetaInfo;
+class InspBase;
+class InspInfo;
+class ObjectHandle final
 {
-    if(ll < Logger::Instance()->GetLogLevel())
-        return;
-    
-    String outStr = NormalizeString(text);
-    String output;
-    String status;
-    
-    switch (ll)
-    {
-    case Logger::LEVEL_ERROR:
-        status = "ERROR";
-        break;
-    case Logger::LEVEL_WARNING:
-        status = "WARNING";
-        break;
-    default:
-        status = "NORMAL";
-        break;
-    }
+public:
+    ObjectHandle() = default;
+    ObjectHandle(void* object, const DAVA::MetaInfo* objectType);
+    ObjectHandle(DAVA::InspBase* object);
 
-    output = "##teamcity[message text=\'" + outStr + "\' errorDetails=\'\' status=\'" + status + "\']\n";
-    PlatformOutput(output);
+    bool IsValid() const;
+    void* GetObjectPointer() const;
+    const MetaInfo* GetObjectType() const;
+    const InspInfo* GetIntrospection() const;
+
+private:
+    void* object = nullptr;
+    const DAVA::MetaInfo* objectType = nullptr;
+};
+
+inline void* ObjectHandle::GetObjectPointer() const
+{
+    return object;
 }
 
-String TeamcityOutput::NormalizeString(const char8 *text) const
+inline const DAVA::MetaInfo* ObjectHandle::GetObjectType() const
 {
-    String str = text;
-    
-    StringReplace(str, "|", "||");
-
-    StringReplace(str, "'", "|'");
-    StringReplace(str, "\n", "|n");
-    StringReplace(str, "\r", "|r");
-
-    StringReplace(str, "[", "|[");
-    StringReplace(str, "]", "|]");
-    
-    return str;
+    return objectType;
+}
 }
 
-void TeamcityOutput::PlatformOutput(const String &text) const
-{
-#ifdef __DAVAENGINE_IPHONE__
-    NSLog(@"%s", text.c_str());
-#elif  defined(__DAVAENGINE_ANDROID__)
-    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
-#else
-    std::cout << text << std::endl << std::flush;
-#endif
-}
-    
-}; // end of namespace DAVA
-
+#endif // __DAVAFRAMEWORK_OBJECTHANDLE_H__

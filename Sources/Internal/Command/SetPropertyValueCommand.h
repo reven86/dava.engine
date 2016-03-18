@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,48 +26,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
-#define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+#ifndef __DAVAFRAMEWORK_SETPROPERTYVALUECOMMAND_H__
+#define __DAVAFRAMEWORK_SETPROPERTYVALUECOMMAND_H__
 
-#include "TeamcityOutput/TeamcityOutput.h"
+#include "ICommand.h"
+#include "ObjectHandle.h"
+#include "FileSystem/VariantType.h"
 
 namespace DAVA
 {
+class InspMember;
 
-class TeamcityTestsOutput : public TeamcityOutput
+class SetPropertyValueCommand : public ICommand
 {
 public:
-    virtual void Output(Logger::eLogLevel ll, const char8* text);
+    SetPropertyValueCommand(const ObjectHandle& object, const InspMember* property, VariantType newValue);
 
-    bool CaptureStdoutFlag() const;
-    void SetCaptureStdoutFlag(bool value);
-
-    static String FormatTestStarted(const String& testClassName, const String& testName);
-    static String FormatTestFinished(const String& testClassName, const String& testName);
-    static String FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg);
-
-    static String FormatTestClassStarted(const String& testClassName);
-    static String FormatTestClassFinished(const String& testClassName);
-    static String FormatTestClassDisabled(const String& testClassName);
+    void Execute() override;
+    void Redo() override;
+    void Undo() override;
 
 private:
-    void TestOutput(const String& data);
-
-private:
-    bool captureStdoutFlag = false;     // Flag controls whether TeamCity attribute 'captureStandardOutput=true' is set on test start
+    ObjectHandle object;
+    const InspMember* property;
+    VariantType newValue;
+    VariantType oldValue;
 };
-
-//////////////////////////////////////////////////////////////////////////
-inline bool TeamcityTestsOutput::CaptureStdoutFlag() const
-{
-    return captureStdoutFlag;
 }
 
-inline void TeamcityTestsOutput::SetCaptureStdoutFlag(bool value)
-{
-    captureStdoutFlag = value;
-}
-
-}   // namespace DAVA
-
-#endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+#endif // __DAVAFRAMEWORK_SETPROPERTYVALUECOMMAND_H__

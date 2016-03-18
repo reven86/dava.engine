@@ -31,20 +31,13 @@
 #include "Commands2/CommandAction.h"
 
 CommandStack::CommandStack()
-    : commandListLimit(0)
-    , nextCommandIndex(0)
-    , cleanCommandIndex(0)
-    , lastCheckCleanState(true)
-    , nestedBatchesCounter(0)
-    , curBatchCommand(NULL)
+    : stackCommandsNotify(new CommandStackNotify(this))
 {
-    stackCommandsNotify = new CommandStackNotify(this);
 }
 
 CommandStack::~CommandStack()
 {
     Clear();
-    SafeRelease(stackCommandsNotify);
 }
 
 bool CommandStack::CanUndo() const
@@ -155,8 +148,7 @@ void CommandStack::Exec(Command2* command)
 {
     if (NULL != command)
     {
-        CommandAction* action = dynamic_cast<CommandAction*>(command);
-        if (!action)
+        if (command->CanUndo())
         {
             if (NULL != curBatchCommand)
             {
@@ -169,9 +161,9 @@ void CommandStack::Exec(Command2* command)
         }
         else
         {
-            action->Redo();
+            command->Redo();
             EmitNotify(command, true);
-            delete action;
+            delete command;
         }
     }
 }
@@ -218,7 +210,26 @@ bool CommandStack::IsBatchStarted() const
 
 bool CommandStack::IsClean() const
 {
-    return (cleanCommandIndex == nextCommandIndex);
+    if (cleanCommandIndex == nextCommandIndex)
+        return true;
+
+    if (cleanCommandIndex < commandList.size())
+    {
+        auto i = commandList.begin();
+        std::advance(i, cleanCommandIndex + 1);
+
+        auto e = commandList.begin();
+        std::advance(e, nextCommandIndex);
+
+        while (i != e)
+        {
+            if ((*i)->IsModifying())
+                return false;
+            ++i;
+        }
+    }
+
+    return true;
 }
 
 void CommandStack::SetClean(bool clean)
@@ -229,7 +240,7 @@ void CommandStack::SetClean(bool clean)
     }
     else
     {
-        cleanCommandIndex = -1;
+        cleanCommandIndex = INVALID_CLEAN_INDEX;
     }
 
     CleanCheck();
