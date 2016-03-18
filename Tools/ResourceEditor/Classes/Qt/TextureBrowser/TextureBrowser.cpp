@@ -1076,7 +1076,9 @@ void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const Command2* comm
     switch (commandId)
     {
     case CMDID_ENTITY_ADD:
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case CMDID_ENTITY_REMOVE:
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case CMDID_INSP_DYNAMIC_MODIFY:
         Update();
         break;
