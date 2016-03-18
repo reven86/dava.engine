@@ -578,7 +578,6 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
         EmitInvalidateUI(FLAG_DISTANCE);
     }
 
-
     auto InvalidateAllData = [this]()
     {
         RecalculateData();
@@ -612,7 +611,7 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
             for (uint32 i = 0; i < count; ++i)
             {
                 const Command2* cmd = batch->GetCommand(i);
-                if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand *>(cmd)))
+                if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(cmd)))
                 {
                     break;
                 }
@@ -620,7 +619,7 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
         }
         else
         {
-            ProcessRemoveCommand(static_cast<const RemoveComponentCommand *>(command));
+            ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(command));
         }
     }
 }
