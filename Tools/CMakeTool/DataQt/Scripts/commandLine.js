@@ -8,7 +8,7 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
     var platformObject = configuration["platforms"][index];
     outputText += platformObject.value;
     if(fileSystemHelper.IsDirExists(buildPath)) {
-    outputText += " -B" + buildPath;
+        outputText += " -B" + buildPath;
     } else {
         throw qsTr("build path required");
     }
