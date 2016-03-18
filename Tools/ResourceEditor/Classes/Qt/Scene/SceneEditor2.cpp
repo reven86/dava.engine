@@ -63,14 +63,10 @@ const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
     : Scene()
-    , wasdSystem(nullptr)
-    , rotationSystem(nullptr)
-    , snapToLandscapeSystem(nullptr)
-    , isLoaded(false)
-    , isHUDVisible(true)
+    , commandStack(new CommandStack())
 {
     EditorCommandNotify* notify = new EditorCommandNotify(this);
-    commandStack.SetNotify(notify);
+    commandStack->SetNotify(notify);
     SafeRelease(notify);
 
     gridSystem = new SceneGridSystem(this);
@@ -175,6 +171,8 @@ SceneEditor2::~SceneEditor2()
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
+
+    SafeRelease(commandStack);
 }
 
 SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
@@ -188,7 +186,7 @@ SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         }
         curScenePath = path;
         isLoaded = true;
-        commandStack.SetClean(true);
+        commandStack->SetClean(true);
     }
 
     SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
@@ -206,7 +204,7 @@ SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool sav
     ScopedPtr<Texture> tilemaskTexture(nullptr);
     bool needToRestoreTilemask = false;
     if (landscapeEditorDrawSystem)
-    { //dirty magic to work with new saving of materials and FBO landsacpe texture
+    { //dirty magic to work with new saving of materials and FBO landscape texture
         tilemaskTexture = SafeRetain(landscapeEditorDrawSystem->GetTileMaskTexture());
 
         needToRestoreTilemask = landscapeEditorDrawSystem->SaveTileMaskTexture();
@@ -221,7 +219,7 @@ SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool sav
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack.SetClean(true);
+        commandStack->SetClean(true);
     }
 
     if (needToRestoreTilemask)
@@ -258,6 +256,9 @@ void SceneEditor2::ExtractEditorEntities()
 
 void SceneEditor2::InjectEditorEntities()
 {
+    bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
+    selectionSystem->EnableSystem(false);
+
     for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
     {
         AddEditorEntity(editorEntities[i]);
@@ -265,6 +266,7 @@ void SceneEditor2::InjectEditorEntities()
     }
 
     editorEntities.clear();
+    selectionSystem->EnableSystem(isSelectionEnabled);
 }
 
 SceneFileV2::eError SceneEditor2::SaveScene()
@@ -328,57 +330,55 @@ void SceneEditor2::SetScenePath(const DAVA::FilePath& newScenePath)
 
 bool SceneEditor2::CanUndo() const
 {
-    return commandStack.CanUndo();
+    return commandStack->CanUndo();
 }
 
 bool SceneEditor2::CanRedo() const
 {
-    return commandStack.CanRedo();
+    return commandStack->CanRedo();
 }
 
 void SceneEditor2::Undo()
 {
-    commandStack.Undo();
+    commandStack->Undo();
 }
 
 void SceneEditor2::Redo()
 {
-    commandStack.Redo();
+    commandStack->Redo();
 }
 
-void SceneEditor2::BeginBatch(const DAVA::String& text)
+void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)
 {
-    commandStack.BeginBatch(text);
+    commandStack->BeginBatch(text, commandsCount);
 }
 
 void SceneEditor2::EndBatch()
 {
-    commandStack.EndBatch();
+    commandStack->EndBatch();
 }
 
-bool SceneEditor2::IsBatchStarted() const
+void SceneEditor2::Exec(Command2::Pointer&& command)
 {
-    return commandStack.IsBatchStarted();
+    if (command)
+    {
+        commandStack->Exec(std::move(command));
+    }
 }
 
-void SceneEditor2::Exec(Command2* command)
+void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
 {
-    commandStack.Exec(command);
-}
-
-void SceneEditor2::ClearCommands(int commandId)
-{
-    commandStack.Clear(commandId);
+    commandStack->RemoveCommands(commandId);
 }
 
 void SceneEditor2::ClearAllCommands()
 {
-    commandStack.Clear();
+    commandStack->Clear();
 }
 
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
-    return (&commandStack);
+    return commandStack;
 }
 
 bool SceneEditor2::IsLoaded() const
@@ -399,12 +399,12 @@ bool SceneEditor2::IsHUDVisible() const
 
 bool SceneEditor2::IsChanged() const
 {
-    return ((!commandStack.IsClean()) || wasChanged);
+    return ((!commandStack->IsClean()) || wasChanged);
 }
 
 void SceneEditor2::SetChanged(bool changed)
 {
-    commandStack.SetClean(!changed);
+    commandStack->SetClean(!changed);
 }
 
 void SceneEditor2::Update(float timeElapsed)
@@ -433,14 +433,10 @@ void SceneEditor2::Draw()
 
         if (collisionSystem)
             collisionSystem->Draw();
-
-        modifSystem->Draw();
-
-        if (structureSystem)
-            structureSystem->Draw();
     }
 
     tilemaskEditorSystem->Draw();
+
     //VI: restore 3d camera state
     Setup3DDrawing();
 
@@ -461,31 +457,26 @@ void SceneEditor2::Draw()
 
 void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
 {
-    gridSystem->ProcessCommand(command, redo);
-    cameraSystem->ProcessCommand(command, redo);
+    DVASSERT(command != nullptr);
 
     if (collisionSystem)
+    {
         collisionSystem->ProcessCommand(command, redo);
-
-    selectionSystem->ProcessCommand(command, redo);
-    hoodSystem->ProcessCommand(command, redo);
-    modifSystem->ProcessCommand(command, redo);
+    }
 
     if (structureSystem)
+    {
         structureSystem->ProcessCommand(command, redo);
+    }
 
     particlesSystem->ProcessCommand(command, redo);
-
-    if (editorLightSystem)
-        editorLightSystem->ProcessCommand(command, redo);
-
-    if (ownersSignatureSystem)
-        ownersSignatureSystem->ProcessCommand(command, redo);
 
     materialSystem->ProcessCommand(command, redo);
 
     if (landscapeEditorDrawSystem)
+    {
         landscapeEditorDrawSystem->ProcessCommand(command, redo);
+    }
 
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
@@ -510,7 +501,7 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 
 void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool redo)
 {
-    if (NULL != editor)
+    if (nullptr != editor)
     {
         editor->EditorCommandProcess(command, redo);
         SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
@@ -519,7 +510,7 @@ void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool red
 
 void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 {
-    if (NULL != editor)
+    if (nullptr != editor)
     {
         SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
     }
@@ -764,6 +755,14 @@ void SceneEditor2::Deactivate()
 {
     Scene::Deactivate();
     SceneSignals::Instance()->EmitDeactivated(this);
+}
+
+void SceneEditor2::EnableEditorSystems()
+{
+    cameraSystem->EnableSystem();
+
+    // must be last to enable selection after all systems add their entities
+    selectionSystem->EnableSystem(true);
 }
 
 uint32 SceneEditor2::GetFramesCount() const

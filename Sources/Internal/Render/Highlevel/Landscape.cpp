@@ -128,7 +128,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
         for (int32 x = quad->x; x < quad->x + quad->size + 1; ++x)
         {
             landscapeVertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(heightmap->Size() - 1));
+            Vector2 texCoord = Vector2(float32(x) / float32(heightmap->Size() - 1), 1.0f - float32(y) / float32(heightmap->Size() - 1));
 
             landscapeVertices[index].texCoord = texCoord;
 
@@ -203,7 +203,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
     bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize });
 #endif
 
-    return (int16)(vertexBuffers.size() - 1);
+    return int16(vertexBuffers.size() - 1);
 }
 
 void Landscape::RestoreGeometry()
@@ -335,9 +335,9 @@ void Landscape::BuildLandscape()
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
 {
     Vector3 res;
-    res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
-    res.y = (bbox.min.y + (float32)y / (float32)(heightmap->Size() - 1) * (bbox.max.y - bbox.min.y));
-    res.z = (bbox.min.z + ((float32)height / (float32)Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
+    res.x = (bbox.min.x + float32(x) / float32(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
+    res.y = (bbox.min.y + float32(y) / float32(heightmap->Size() - 1) * (bbox.max.y - bbox.min.y));
+    res.z = (bbox.min.z + (float32(height) / float32(Heightmap::MAX_VALUE)) * (bbox.max.z - bbox.min.z));
     return res;
 };
 
@@ -632,7 +632,7 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad>* currentNode, int8 lod)
         MarkFrames(currentNode, newdepth2);
     }
 
-    int32 step = Min((int16)(1 << lod), currentNode->data.size);
+    int32 step = Min(int16(1u << lod), currentNode->data.size);
 
     if ((currentNode->data.rdoQuad != queueRdoQuad) && (queueRdoQuad != -1))
     {
@@ -855,8 +855,7 @@ void Landscape::PrepareToRender(Camera* camera)
 
     flushQueueCounter = 0;
 
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY,
-                                                   (pointer_size)&Matrix4::IDENTITY);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
     {
@@ -1028,7 +1027,7 @@ void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationC
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     debugFlags = archive->GetUInt32("ro.debugflags", 0);
-    staticOcclusionIndex = (uint16)archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX);
+    staticOcclusionIndex = uint16(archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX));
 
     //VI: load only VISIBLE flag for now. May be extended in the future.
     uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::SERIALIZATION_CRITERIA);
@@ -1209,11 +1208,11 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
             for (int32 y = node->data.y; y < node->data.y + node->data.size + 1; ++y)
             {
                 auto row = y * heightmapSize;
-                auto texCoordV = 1.0f - (float32)(y) / (float32)(heightmapSize - 1);
+                auto texCoordV = 1.0f - float32(y) / float32(heightmapSize - 1);
 
                 for (int32 x = node->data.x; x < node->data.x + node->data.size + 1; ++x)
                 {
-                    auto texCoordU = (float32)(x) / (float32)(heightmapSize - 1);
+                    auto texCoordU = float32(x) / float32(heightmapSize - 1);
 
                     quadVertices[index].position = GetPoint(x, y, fromHeightmap->Data()[x + row]);
                     quadVertices[index].texCoord = Vector2(texCoordU, texCoordV);

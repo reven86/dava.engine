@@ -36,7 +36,8 @@ using namespace DAVA;
 
 int32 GetCpuCount()
 {
-    return (int32)[[NSProcessInfo processInfo] processorCount];
+    NSUInteger processorCount = [[NSProcessInfo processInfo] processorCount];
+    return static_cast<int32>(processorCount);
 }
 
 #endif // __DAVAENGINE_APPLE__

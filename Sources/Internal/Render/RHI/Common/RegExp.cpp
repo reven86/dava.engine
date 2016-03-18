@@ -39,7 +39,6 @@
     #include <malloc.h>
     #endif
 
-
 #define _REGEX_STRING(x) x
 inline const char* _regex_tcsinc(const char* cur)
 {
@@ -84,6 +83,9 @@ inline char _regex_tcsnextc(const char* str)
 #pragma warning(push, 3)
 #pragma warning(disable : 174)
 #pragma warning(disable : 193)
+#else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
 
 // Disable debugging printf's
@@ -2328,6 +2330,7 @@ bool RegExp::get_pattern(unsigned n, std::string* str) const
 #pragma warning(default : 174)
 #pragma warning(default : 193)
 #pragma warning(default : 810) // conversion from "unsigned int" to "char={char}" may lose significant bits
-
 #pragma warning(pop)
+#else
+#pragma clang diagnostic pop
 #endif

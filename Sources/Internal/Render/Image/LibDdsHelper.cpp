@@ -358,7 +358,7 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, 
         return false;
     }
 
-    baseMipMap = Min(baseMipMap, (int32)(info.mipmapsCount - 1));
+    baseMipMap = Min(baseMipMap, int32(info.mipmapsCount - 1));
 
     nvtt::Format format;
     if (!dec.getCompressionFormat(format))
@@ -410,7 +410,7 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, 
                     break;
                 }
 
-                if ((int32)i >= baseMipMap)
+                if (int32(i) >= baseMipMap)
                 { // load only actual image data
                     Image* innerImage = Image::Create(faceWidth, faceHeight, pixFormat);
                     innerImage->mipmapLevel = i - baseMipMap;
@@ -425,8 +425,8 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, 
                 }
 
                 offset += mipSize;
-                faceWidth = Max((uint32)1, faceWidth / 2);
-                faceHeight = Max((uint32)1, faceHeight / 2);
+                faceWidth = Max(1u, faceWidth / 2);
+                faceHeight = Max(1u, faceHeight / 2);
             }
         }
 
@@ -451,8 +451,6 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, 
         
 #endif //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
     }
-
-    return false;
 }
 
 PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor& dec)
@@ -586,8 +584,8 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vect
 
         for (int32 i = 0; i < baseMipMap; ++i)
         {
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
+            faceWidth = Max(1u, faceWidth / 2);
+            faceHeight = Max(1u, faceHeight / 2);
         }
 
         for (uint32 i = baseMipMap; i < info.mipmapsCount; ++i)
@@ -614,8 +612,8 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vect
                 return false;
             }
 
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
+            faceWidth = Max(1u, faceWidth / 2);
+            faceHeight = Max(1u, faceHeight / 2);
         }
     }
     return true;
@@ -660,8 +658,8 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, Pixe
             dec.getMipmapSize(i, mipMapSize);
             buffer += mipMapSize;
 
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
+            faceWidth = Max(1u, faceWidth / 2);
+            faceHeight = Max(1u, faceHeight / 2);
         }
 
         for (uint32 i = baseMipMap; i < info.mipmapsCount; ++i)
@@ -711,8 +709,8 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, Pixe
             //SwapBRChannels(innerImage->data, innerImage->dataSize);
             imageSet.push_back(innerImage);
 
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
+            faceWidth = Max(1u, faceWidth / 2);
+            faceHeight = Max(1u, faceHeight / 2);
 
             SafeDeleteArray(dstImg.pData);
         }

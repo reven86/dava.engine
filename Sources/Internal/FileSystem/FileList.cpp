@@ -183,7 +183,7 @@ FileList::~FileList()
 
 int32 FileList::GetCount() const
 {
-    return (int32)fileList.size();
+    return static_cast<int32>(fileList.size());
 }
 
 int32 FileList::GetFileCount() const
@@ -198,25 +198,25 @@ int32 FileList::GetDirectoryCount() const
 
 const FilePath& FileList::GetPathname(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].path;
 }
 
 const String& FileList::GetFilename(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].name;
 }
 
 bool FileList::IsDirectory(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].isDirectory;
 }
 
 bool FileList::IsNavigationDirectory(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     //bool isDir = fileList[index].isDirectory;
     //if (isDir)
     //{
@@ -230,7 +230,7 @@ bool FileList::IsNavigationDirectory(int32 index) const
 
 bool FileList::IsHidden(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].isHidden;
 }
 

@@ -33,11 +33,11 @@ namespace DAVA
 PerformanceSettings::PerformanceSettings()
 {
     //init with some default values
-    psPerformanceMinFPS = 35;
-    psPerformanceMaxFPS = 50;
+    psPerformanceMinFPS = 35.f;
+    psPerformanceMaxFPS = 50.f;
     psPerformanceLodOffset = 11.7f;
     psPerformanceLodMult = 3.9f;
-    psPerformanceSpeedMult = 2;
+    psPerformanceSpeedMult = 2.f;
 }
 float32 PerformanceSettings::GetPsPerformanceMinFPS()
 {

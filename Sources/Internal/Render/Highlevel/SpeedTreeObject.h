@@ -43,14 +43,14 @@ public:
     SpeedTreeObject();
     virtual ~SpeedTreeObject();
 
-    virtual void RecalcBoundingBox();
-    virtual RenderObject* Clone(RenderObject* newObject);
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+    void RecalcBoundingBox() override;
+    RenderObject* Clone(RenderObject* newObject) override;
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     static bool IsTreeLeafBatch(RenderBatch* batch);
 
-    virtual void BindDynamicParameters(Camera* camera);
+    void BindDynamicParameters(Camera* camera) override;
 
     void SetSphericalHarmonics(const Vector<Vector3>& coeffs);
     const Vector<Vector3>& GetSphericalHarmonics() const;

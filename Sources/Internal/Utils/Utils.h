@@ -48,7 +48,6 @@ namespace DAVA
 int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length);
 
 WideString WcharToWString(const wchar_t* s);
-bool IsEqual(const WideString& s1, const WideString& s2);
 
 bool IsDrawThread();
 

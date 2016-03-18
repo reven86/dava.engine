@@ -243,7 +243,7 @@ void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
             {
                 for (uint32 stepY = 0; stepY <= stepCount; ++stepY)
                 {
-                    Vector3 renderPosition = startPosition + directionX * (float32)stepX * stepSize + directionY * (float32)stepY * stepSize;
+                    Vector3 renderPosition = startPosition + directionX * float32(stepX) * stepSize + directionY * float32(stepY) * stepSize;
 
                     if (landscape)
                     {

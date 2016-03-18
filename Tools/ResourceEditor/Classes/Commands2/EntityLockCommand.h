@@ -30,7 +30,7 @@
 #ifndef __ENTITY_LOCK_COMMAND_H__
 #define __ENTITY_LOCK_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class EntityLockCommand : public Command2
 {
