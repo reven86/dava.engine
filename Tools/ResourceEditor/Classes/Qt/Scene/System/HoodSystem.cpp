@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Scene3D/Scene.h"
 
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
@@ -362,10 +363,6 @@ void HoodSystem::Draw()
             normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
         }
     }
-}
-
-void HoodSystem::ProcessCommand(const Command2* command, bool redo)
-{
 }
 
 void HoodSystem::SetModifAxis(ST_Axis axis)
