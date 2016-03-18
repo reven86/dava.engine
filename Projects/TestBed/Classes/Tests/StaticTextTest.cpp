@@ -33,7 +33,7 @@ using namespace DAVA;
 
 namespace
 {
-class InputDelegate : public UITextFieldDelegate
+class InputDelegate : public UITextField2Delegate
 {
 public:
     InputDelegate(StaticTextTest* _test)
@@ -41,7 +41,7 @@ public:
     {
     }
 
-    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override
+    void OnTextChanged(UITextField2* textField, const WideString& newText, const WideString& oldText) override
     {
         test->SetPreviewText(newText);
     }
@@ -122,7 +122,7 @@ void StaticTextTest::LoadResources()
     label->SetTextAlign(ALIGN_LEFT);
     AddControl(label);
 
-    inputText = new UITextField(Rect(20, 260, 400, 200));
+    inputText = new UITextField2(Rect(20, 260, 400, 200));
     inputText->SetFont(bigFont);
     inputText->SetTextColor(Color::White);
     inputText->SetText(L"");

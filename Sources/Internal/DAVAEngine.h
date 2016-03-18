@@ -153,6 +153,7 @@
 #include "UI/UIList.h"
 #include "UI/UIListCell.h"
 #include "UI/UITextField.h"
+#include "UI/UITextField2.h"
 #include "UI/UISlider.h"
 #include "UI/UIScrollBar.h"
 #include "UI/UIJoypad.h"

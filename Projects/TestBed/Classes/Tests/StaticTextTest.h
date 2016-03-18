@@ -55,8 +55,8 @@ private:
     void OnMultilineButtonClick(BaseObject* sender, void* data, void* callerData);
 
     DAVA::UIStaticText* previewText = nullptr;
-    DAVA::UITextField* inputText = nullptr;
-    DAVA::UITextFieldDelegate* inputDelegate = nullptr;
+    DAVA::UITextField2* inputText = nullptr;
+    DAVA::UITextField2Delegate* inputDelegate = nullptr;
     DAVA::UIButton* requireTextSizeButton = nullptr;
     DAVA::List<DAVA::UIButton*> alignButtons;
     DAVA::List<DAVA::UIButton*> fittingButtons;
