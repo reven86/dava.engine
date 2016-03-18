@@ -59,7 +59,7 @@ public:
     virtual const ResourceArchive::FileInfos& GetFilesInfo() const = 0;
     virtual const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const = 0;
     virtual bool HasFile(const String& fileName) const = 0;
-    virtual bool LoadFile(const String& fileName, ResourceArchive::ContentAndSize& output) const = 0;
+    virtual bool LoadFile(const String& fileName, Vector<char8>& output) const = 0;
 };
 } // end namespace DAVA
 
@@ -68,8 +68,6 @@ namespace resource_archive_details
 using namespace DAVA;
 const Array<char8, 4> PackFileMarker = { 'P', 'A', 'C', 'K' };
 const uint32 PackFileMagic = 20150817;
-
-using PackingType = ResourceArchive::CompressionType;
 
 struct PackFile
 {
@@ -97,7 +95,7 @@ struct PackFile
             uint32 start;
             uint32 compressed;
             uint32 original;
-            PackingType packType;
+            Compressor::Type packType;
             Array<char8, 16> reserved;
         };
         Vector<Data> fileTable;
@@ -153,9 +151,9 @@ namespace DAVA
 {
 using namespace resource_archive_details;
 
-static ResourceArchive::CompressionType GetPackingBestType(const String& fileName, const Vector<ResourceArchive::Rule>& rules)
+static ResourceArchive::Type GetPackingBestType(const String& fileName, const Vector<ResourceArchive::Rule>& rules)
 {
-    ResourceArchive::CompressionType result = ResourceArchive::CompressionType::Lz4HC;
+    ResourceArchive::Type result = ResourceArchive::Type::Lz4HC;
 
     for (const auto& rule : rules)
     {
@@ -169,7 +167,7 @@ static ResourceArchive::CompressionType GetPackingBestType(const String& fileNam
     std::ifstream in(fileName, std::ios::ate | std::ios::binary);
     if (in.tellg() <= 128) // TODO make it better in rule
     {
-        result = ResourceArchive::CompressionType::None;
+        result = ResourceArchive::Type::None;
     }
 
     return result;
@@ -296,7 +294,7 @@ static bool CompressFileAndWriteToOutput(const String& fileName, const Vector<Re
             startPos,
             origSize,
             origSize,
-            ResourceArchive::CompressionType::None
+            ResourceArchive::Type::None
         };
 
         fileTable.push_back(fileData);
@@ -336,7 +334,7 @@ static bool CompressFileAndWriteToOutput(const String& fileName, const Vector<Re
             startPos,
             origSize,
             origSize,
-            ResourceArchive::CompressionType::None
+            ResourceArchive::Type::None
         };
 
         fileTable.push_back(fileData);
@@ -352,35 +350,25 @@ static bool CompressFileAndWriteToOutput(const String& fileName, const Vector<Re
     return true;
 }
 
-ResourceArchive::ResourceArchive()
-    : impl(nullptr)
-{
-}
-
-ResourceArchive::~ResourceArchive()
-{
-    impl.reset();
-}
-
-bool ResourceArchive::Open(const FilePath& archiveName)
+ResourceArchive::ResourceArchive(const FilePath& archiveName)
 {
     using namespace resource_archive_details;
 
     const String& fileName = archiveName.GetAbsolutePathname();
 
-    File* f = File::Create(fileName, File::OPEN | File::READ);
+    ScopedPtr<File> f(File::Create(fileName, File::OPEN | File::READ));
     if (!f)
     {
-        return false;
+        throw std::runtime_error("can't open resource archive: " + fileName);
     }
     Array<char8, 4> firstBytes;
     unsigned count = f->Read(firstBytes.data(), firstBytes.size());
     if (count != firstBytes.size())
     {
-        return false;
+        throw std::runtime_error("can't read from resource archive: " + fileName);
     }
 
-    SafeRelease(f);
+    f.reset();
 
     if (PackFileMarker == firstBytes)
     {
@@ -394,7 +382,14 @@ bool ResourceArchive::Open(const FilePath& archiveName)
     return impl->Open(fileName);
 }
 
-const ResourceArchive::FileInfos& ResourceArchive::GetFilesInfo() const
+ResourceArchive::~ResourceArchive()
+{
+    impl.reset();
+}
+
+bool ResourceArchive::Open(
+
+const Vector<ResourceArchive::FileInfo>& ResourceArchive::GetFilesInfo() const
 {
     DVASSERT(impl != nullptr);
     return impl->GetFilesInfo();
@@ -413,7 +408,7 @@ const ResourceArchive::FileInfo* ResourceArchive::GetFileInfo(const String& file
 }
 
 bool ResourceArchive::LoadFile(const String& fileName,
-                               ContentAndSize& output) const
+                               Vector<char8>& output) const
 {
     DVASSERT(impl != nullptr);
     return impl->LoadFile(fileName, output);
@@ -624,8 +619,6 @@ ZipArchive::~ZipArchive()
 bool ZipArchive::Open(const FilePath& archiveName)
 {
     String fileName = archiveName.GetAbsolutePathname();
-    // in case we already open one archive
-    mz_zip_reader_end(&zipArchive);
 
     std::memset(&zipArchive, 0, sizeof(zipArchive));
     mz_bool status = mz_zip_reader_init_file(&zipArchive, fileName.c_str(), 0);
@@ -654,8 +647,8 @@ bool ZipArchive::Open(const FilePath& archiveName)
         {
             fileNames.push_back(fileStat.m_filename);
             ResourceArchive::FileInfo info;
-            info.name = fileNames.back().c_str();
-            info.compressionType = ResourceArchive::CompressionType::RFC1951;
+            info.fileName = fileNames.back().c_str();
+            info.compressionType = ResourceArchive::Type::RFC1951;
             info.compressedSize = static_cast<uint32>(fileStat.m_comp_size);
             info.originalSize = static_cast<uint32>(fileStat.m_uncomp_size);
             fileInfos.push_back(info);
@@ -663,7 +656,7 @@ bool ZipArchive::Open(const FilePath& archiveName)
     }
     std::stable_sort(begin(fileInfos), end(fileInfos), [](const ResourceArchive::FileInfo& left, const ResourceArchive::FileInfo& right)
                      {
-                         return std::strcmp(left.name, right.name) < 0;
+                         return std::strcmp(left.fileName, right.fileName) < 0;
                      });
     return true;
 }
@@ -677,7 +670,7 @@ const ResourceArchive::FileInfo* ZipArchive::GetFileInfo(const String& fileName)
 {
     auto it = std::lower_bound(begin(fileInfos), end(fileInfos), fileName, [](const ResourceArchive::FileInfo& left, const String& fileNameParam)
                                {
-                                   return left.name < fileNameParam;
+                                   return left.fileName < fileNameParam;
                                });
 
     if (it != end(fileInfos))
@@ -715,7 +708,7 @@ bool ZipArchive::LoadFile(const String& fileName, ResourceArchive::ContentAndSiz
     return false;
 }
 
-bool DavaArchive::Open(const FilePath& archiveName)
+DavaArchive::DavaArchive(const FilePath& archiveName)
 {
     using namespace resource_archive_details;
 
@@ -724,26 +717,26 @@ bool DavaArchive::Open(const FilePath& archiveName)
     file.Set(File::Create(fileName, File::OPEN | File::READ));
     if (!file)
     {
-        Logger::Error("can't Open file: %s\n", fileName.c_str());
+        Logger::Error("can't Open file: %s", fileName.c_str());
         return false;
     }
     auto& header_block = packFile.headerBlock;
     uint32 isOk = file->Read(&header_block, sizeof(header_block));
     if (isOk <= 0)
     {
-        Logger::Error("can't read header from packfile: %s\n",
+        Logger::Error("can't read header from packfile: %s",
                       fileName.c_str());
         return false;
     }
     if (header_block.resPackMarker != PackFileMarker)
     {
-        Logger::Error("incorrect marker in pack file: %s\n",
+        Logger::Error("incorrect marker in pack file: %s",
                       fileName.c_str());
         return false;
     }
     if (PackFileMagic != header_block.magic)
     {
-        Logger::Error("can't read packfile incorrect magic: 0x%X\n",
+        Logger::Error("can't read packfile incorrect magic: 0x%X",
                       header_block.magic);
         return false;
     }
@@ -754,9 +747,7 @@ bool DavaArchive::Open(const FilePath& archiveName)
     }
     if (header_block.startFileNames != file->GetPos())
     {
-        Logger::Error(
-        "error in header of packfile start position for file names "
-        "incorrect");
+        Logger::Error("error in header of packfile start position for file names incorrect");
         return false;
     }
     String& fileNames = packFile.namesBlock.sortedNames;
@@ -836,7 +827,7 @@ bool DavaArchive::Open(const FilePath& archiveName)
                                  [](const ResourceArchive::FileInfo& first,
                                     const ResourceArchive::FileInfo& second)
                                  {
-                                     return first.name < second.name;
+                                     return first.fileName < second.fileName;
                                  });
     if (!result)
     {
@@ -859,7 +850,7 @@ const ResourceArchive::FileInfo* DavaArchive::GetFileInfo(const String& fileName
     fileName, [fileName](const ResourceArchive::FileInfo& info,
                          const String& name)
     {
-        return info.name < name;
+        return info.fileName < name;
     });
     if (it != filesInfoSortedByName.end())
     {
@@ -906,7 +897,7 @@ bool DavaArchive::LoadFile(const String& fileName, ResourceArchive::ContentAndSi
 
     switch (fileEntry.packType)
     {
-    case ResourceArchive::CompressionType::None:
+    case ResourceArchive::Type::None:
     {
         output.content.reset(new char[fileEntry.compressed]);
         uint32 readOk =
@@ -918,8 +909,8 @@ bool DavaArchive::LoadFile(const String& fileName, ResourceArchive::ContentAndSi
         }
     }
     break;
-    case ResourceArchive::CompressionType::Lz4:
-    case ResourceArchive::CompressionType::Lz4HC:
+    case ResourceArchive::Type::Lz4:
+    case ResourceArchive::Type::Lz4HC:
     {
         std::unique_ptr<char8[]> packedBuf(new char8[fileEntry.compressed]);
 
@@ -941,7 +932,7 @@ bool DavaArchive::LoadFile(const String& fileName, ResourceArchive::ContentAndSi
         }
     }
     break;
-    case ResourceArchive::CompressionType::RFC1951:
+    case ResourceArchive::Type::RFC1951:
         std::unique_ptr<uint8[]> packedBuf(new uint8[fileEntry.compressed]);
 
         uint32 readOk =

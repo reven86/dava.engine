@@ -15,16 +15,14 @@
     derived from this software without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-THIS
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
@@ -32,66 +30,37 @@ THIS
 #define __DAVAENGINE_RESOURCE_ARCHIVE_H__
 
 #include "Base/BaseObject.h"
+#include "Compression/Compressor.h"
 
 namespace DAVA
 {
 class ResourceArchiveImpl;
 
-class ResourceArchive : public BaseObject
+class ResourceArchive final
 {
-protected:
-    virtual ~ResourceArchive();
-
 public:
-    ResourceArchive();
-
-    enum class CompressionType : uint32
-    {
-        None,
-        Lz4,
-        Lz4HC,
-        RFC1951, // deflate
-    };
+    explicit ResourceArchive(const FilePath& archiveName);
 
     struct FileInfo
     {
-        const char8* name;
+        const char8* fileName;
         uint32 originalSize;
         uint32 compressedSize;
-        CompressionType compressionType;
+        Compressor::Type compressionType;
     };
 
-    struct ContentAndSize
-    {
-        std::unique_ptr<char8[]> content;
-        uint32 size;
-    };
-
-    struct Rule
-    {
-        String fileExt;
-        CompressionType compressionType;
-    };
-
-    using FileInfos = Vector<FileInfo>;
-
-    // prepare all internal data
-    bool Open(const FilePath& archiveName);
-    const FileInfos& GetFilesInfo() const;
+    const Vector<FileInfo>& GetFilesInfo() const;
     const FileInfo* GetFileInfo(const String& fileName) const;
     bool HasFile(const String& fileName) const;
-    bool LoadFile(const String& fileName, ContentAndSize& output) const;
+    bool LoadFile(const String& fileName, Vector<char8>& outputFileContent) const;
 
-    using Rules = Vector<Rule>;
-
-    static bool CreatePack(const String& pacName,
-                           const Vector<String>& sortedFileNames,
-                           const Rules& compressionRules,
+    static bool CreatePack(const FilePath& pacName,
+                           const Vector<FilePath>& fileNames,
                            void (*onPackOneFile)(const FileInfo&));
 
 private:
     std::unique_ptr<ResourceArchiveImpl> impl;
 };
-};
+} // end namespace DAVA
 
 #endif // __DAVAENGINE_RESOURCE_ARCHIVE_H__
