@@ -133,7 +133,6 @@ String DeviceInfoPrivate::GetLocale()
 
 String DeviceInfoPrivate::GetRegion()
 {
-
     GEOID myGEO = GetUserGeoID(GEOCLASS_NATION);
     int sizeOfBuffer = GetGeoInfo(myGEO, GEO_ISO2, NULL, 0, 0);
     if (0 == sizeOfBuffer)
@@ -141,8 +140,8 @@ String DeviceInfoPrivate::GetRegion()
         return "";
     }
 
-    WCHAR *buffer = new WCHAR[sizeOfBuffer];
-    int result = GetGeoInfo(myGEO, GEO_ISO2, buffer, sizeOfBuffer, 0);   
+    WCHAR* buffer = new WCHAR[sizeOfBuffer];
+    int result = GetGeoInfo(myGEO, GEO_ISO2, buffer, sizeOfBuffer, 0);
     DVASSERT(0 != result);
     String country = WStringToString(buffer);
     delete[] buffer;
