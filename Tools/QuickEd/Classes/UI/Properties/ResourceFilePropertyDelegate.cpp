@@ -169,7 +169,9 @@ void ResourceFilePropertyDelegate::OnTextChanged(const QString& text)
     QPalette palette(lineEdit->palette());
     QString textCopy(text);
 
-    palette.setColor(QPalette::Text, IsPathValid(text) ? Qt::black : Qt::red);
+    QColor globalTextColor = qApp->palette().color(QPalette::Text);
+    QColor nextColor = IsPathValid(text) ? globalTextColor : Qt::red;
+    palette.setColor(QPalette::Text, nextColor);
     lineEdit->setPalette(palette);
 }
 
