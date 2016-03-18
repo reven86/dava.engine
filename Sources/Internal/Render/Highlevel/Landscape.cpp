@@ -535,8 +535,8 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
 
     patch->radius = Distance(patch->bbox.GetCenter(), patch->bbox.max);
 
-    uint32 x2 = x * 2;
-    uint32 y2 = y * 2;
+    uint32 x2 = x << 1;
+    uint32 y2 = y << 1;
 
     UpdatePatchInfo(level + 1, x2 + 0, y2 + 0);
     UpdatePatchInfo(level + 1, x2 + 1, y2 + 0);
@@ -626,8 +626,8 @@ void Landscape::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 la
     subdivPatchInfo->lastSubdivLevel = lastSubdivLevel;
     subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
 
-    uint32 x2 = x * 2;
-    uint32 y2 = y * 2;
+    uint32 x2 = x << 1;
+    uint32 y2 = y << 1;
 
     TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdivLevel, morph);
     TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdivLevel, morph);
@@ -650,8 +650,8 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
     if (state == SubdivisionPatchInfo::SUBDIVIDED)
     {
-        uint32 x2 = x * 2;
-        uint32 y2 = y * 2;
+        uint32 x2 = x << 1;
+        uint32 y2 = y << 1;
 
         AddPatchToRender(level + 1, x2 + 0, y2 + 0);
         AddPatchToRender(level + 1, x2 + 1, y2 + 0);
@@ -660,10 +660,11 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
     }
     else
     {
-        if (useInstancing)
+        if (useInstancing && useLodMorphing)
         {
-            float32 levelf = float32(level);
-            Vector4 nearLevel(levelf, levelf, levelf, levelf);
+            const float32 levelf = float32(level);
+            const float32 morph = subdivPatchInfo->subdivMorph;
+            Vector4 nearLevel, nearMorph;
 
             SubdivisionPatchInfo* nearPatch[4] = {
                 GetSubdivPatch(level, x - 1, y),
@@ -672,44 +673,39 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
                 GetSubdivPatch(level, x, y + 1)
             };
 
-            if (useLodMorphing)
+            for (int32 i = 0; i < 4; ++i)
             {
-                float32 morph = subdivPatchInfo->subdivMorph;
-                Vector4 nearMorph(morph, morph, morph, morph);
-
-                for (int32 i = 0; i < 4; ++i)
+                SubdivisionPatchInfo* patch = nearPatch[i];
+                if (patch && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
                 {
-                    SubdivisionPatchInfo* patch = nearPatch[i];
-                    if (patch && patch->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-                    {
-                        if (patch->lastSubdivLevel < level)
-                        {
-                            nearMorph.data[i] = patch->subdivMorph;
-                        }
-                        else if (patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
-                        {
-                            nearMorph.data[i] = Min(patch->subdivMorph, morph);
-                        }
-
-                        nearLevel.data[i] = float32(patch->lastSubdivLevel);
-                    }
+                    nearMorph.data[i] = (patch->lastSubdivLevel < level) ? patch->subdivMorph : Min(patch->subdivMorph, morph);
+                    nearLevel.data[i] = float32(patch->lastSubdivLevel);
                 }
-
-                DrawPatchInstancing(level, x, y, nearLevel, morph, nearMorph);
-            }
-            else
-            {
-                for (int32 i = 0; i < 4; ++i)
+                else
                 {
-                    SubdivisionPatchInfo* patch = nearPatch[i];
-                    if (patch && patch->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-                    {
-                        nearLevel.data[i] = float32(patch->lastSubdivLevel);
-                    }
+                    nearMorph.data[i] = morph;
+                    nearLevel.data[i] = levelf;
                 }
-
-                DrawPatchInstancing(level, x, y, nearLevel);
             }
+
+            DrawPatchInstancing(level, x, y, nearLevel, morph, nearMorph);
+        }
+        else if (useInstancing)
+        {
+            const float32 levelf = float32(level);
+            Vector4 nearLevel;
+
+            SubdivisionPatchInfo* xNeg = GetSubdivPatch(level, x - 1, y);
+            SubdivisionPatchInfo* yNeg = GetSubdivPatch(level, x, y - 1);
+            SubdivisionPatchInfo* xPos = GetSubdivPatch(level, x + 1, y);
+            SubdivisionPatchInfo* yPos = GetSubdivPatch(level, x, y + 1);
+
+            nearLevel.x = (xNeg && xNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(xNeg->lastSubdivLevel) : levelf;
+            nearLevel.y = (yNeg && yNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(yNeg->lastSubdivLevel) : levelf;
+            nearLevel.z = (xPos && xPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(xPos->lastSubdivLevel) : levelf;
+            nearLevel.w = (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(yPos->lastSubdivLevel) : levelf;
+
+            DrawPatchInstancing(level, x, y, nearLevel);
         }
         else
         {
@@ -718,19 +714,10 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
             SubdivisionPatchInfo* yNeg = GetSubdivPatch(level, x, y - 1);
             SubdivisionPatchInfo* yPos = GetSubdivPatch(level, x, y + 1);
 
-            uint32 xNegSizePow2 = level;
-            uint32 xPosSizePow2 = level;
-            uint32 yNegSizePow2 = level;
-            uint32 yPosSizePow2 = level;
-
-            if (xNeg && xNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-                xNegSizePow2 = xNeg->lastSubdivLevel;
-            if (xPos && xPos->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-                xPosSizePow2 = xPos->lastSubdivLevel;
-            if (yNeg && yNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-                yNegSizePow2 = yNeg->lastSubdivLevel;
-            if (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-                yPosSizePow2 = yPos->lastSubdivLevel;
+            uint32 xNegSizePow2 = (xNeg && xNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? xNeg->lastSubdivLevel : level;
+            uint32 xPosSizePow2 = (xPos && xPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? xPos->lastSubdivLevel : level;
+            uint32 yNegSizePow2 = (yNeg && yNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? yNeg->lastSubdivLevel : level;
+            uint32 yPosSizePow2 = (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? yPos->lastSubdivLevel : level;
 
             DrawPatchNoInstancing(level, x, y, xNegSizePow2, xPosSizePow2, yNegSizePow2, yPosSizePow2);
         }
