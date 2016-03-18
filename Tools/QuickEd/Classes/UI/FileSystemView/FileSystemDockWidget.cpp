@@ -46,6 +46,7 @@
 #include <QDirIterator>
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "Project/Project.h"
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
@@ -118,7 +119,7 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
 {
     QDir dir(path);
     dir.cdUp();
-    auto index = model->setRootPath(dir.path() + "/Data/UI");
+    auto index = model->setRootPath(dir.path() + Project::GetScreenRelativePath());
     ui->treeView->setRootIndex(index);
     ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
     ui->treeView->showColumn(0);

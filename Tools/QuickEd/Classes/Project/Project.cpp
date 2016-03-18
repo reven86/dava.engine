@@ -82,6 +82,12 @@ bool Project::OpenInternal(const QString& path)
     FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
+    QDir projectDir = fileInfo.absoluteDir();
+    if (!projectDir.mkpath("." + GetScreenRelativePath()))
+    {
+        return false;
+    }
+
     SetProjectPath(fileInfo.absolutePath());
     projectPath.MakeDirectoryPathname();
 
@@ -180,6 +186,21 @@ bool Project::SavePackage(PackageNode* package)
     return serializer.WriteToFile(package->GetPath());
 }
 
+EditorFontSystem* Project::GetEditorFontSystem() const
+{
+    return editorFontSystem;
+}
+
+EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
+{
+    return editorLocalizationSystem;
+}
+
+QString Project::GetScreenRelativePath()
+{
+    return "/Data/UI";
+}
+
 Result Project::CreateNewProject(const QString& path)
 {
     QFile projectFile(path);
@@ -189,7 +210,7 @@ Result Project::CreateNewProject(const QString& path)
     }
     QFileInfo fileInfo(path);
     QDir projectDir(fileInfo.absoluteDir());
-    if (!projectDir.mkpath(projectDir.canonicalPath() + "/Data/UI"))
+    if (!projectDir.mkpath(projectDir.canonicalPath() + GetScreenRelativePath()))
     {
         return Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
     }

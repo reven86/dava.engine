@@ -55,6 +55,7 @@ public:
     bool SavePackage(PackageNode* package);
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
+    static QString GetScreenRelativePath();
 
 public slots:
     DAVA::Result CreateNewProject(const QString& path);
@@ -88,15 +89,5 @@ private:
     DAVA::FilePath projectPath;
     QString projectName;
 };
-
-inline EditorFontSystem* Project::GetEditorFontSystem() const
-{
-    return editorFontSystem;
-}
-
-inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
-{
-    return editorLocalizationSystem;
-}
 
 #endif // QUICKED__PROJECT_H__
