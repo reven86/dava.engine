@@ -88,7 +88,7 @@ void UIButton::CopyDataFrom(UIControl* srcControl)
     UIButton* srcButton = static_cast<UIButton*>(srcControl);
     for (int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {
-        eButtonDrawState drawState = (eButtonDrawState)i;
+        eButtonDrawState drawState = static_cast<eButtonDrawState>(i);
         if (srcButton->GetBackground(drawState))
         {
             SetBackground(drawState, ScopedPtr<UIControlBackground>(srcButton->GetBackground(drawState)->Clone()));
@@ -120,7 +120,7 @@ void UIButton::SetStateSprite(int32 state, const FilePath& spriteName, int32 spr
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetSprite(spriteName, spriteFrame);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetSprite(spriteName, spriteFrame);
         }
         state >>= 1;
     }
@@ -132,7 +132,7 @@ void UIButton::SetStateSprite(int32 state, Sprite* newSprite, int32 spriteFrame 
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetSprite(newSprite, spriteFrame);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetSprite(newSprite, spriteFrame);
         }
         state >>= 1;
     }
@@ -144,7 +144,7 @@ void UIButton::SetStateFrame(int32 state, int32 spriteFrame)
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetFrame(spriteFrame);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetFrame(spriteFrame);
         }
         state >>= 1;
     }
@@ -156,7 +156,7 @@ void UIButton::SetStateDrawType(int32 state, UIControlBackground::eDrawType draw
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetDrawType(drawType);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetDrawType(drawType);
         }
         state >>= 1;
     }
@@ -168,7 +168,7 @@ void UIButton::SetStateAlign(int32 state, int32 align)
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetAlign(align);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetAlign(align);
         }
         state >>= 1;
     }
@@ -180,7 +180,7 @@ void UIButton::SetStateModification(int32 state, int32 modification)
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetModification(modification);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetModification(modification);
         }
         state >>= 1;
     }
@@ -263,7 +263,7 @@ void UIButton::SetStateBackground(int32 state, UIControlBackground* newBackgroun
     {
         if (state & 0x01)
         {
-            SetBackground((eButtonDrawState)i, ScopedPtr<UIControlBackground>(newBackground->Clone()));
+            SetBackground(static_cast<eButtonDrawState>(i), ScopedPtr<UIControlBackground>(newBackground->Clone()));
         }
         state >>= 1;
     }
@@ -275,7 +275,7 @@ void UIButton::SetStateFont(int32 state, Font* font)
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetFont(font);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetFont(font);
         }
         state >>= 1;
     }
@@ -287,7 +287,7 @@ void UIButton::SetStateFontColor(int32 state, const Color& fontColor)
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetTextColor(fontColor);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetTextColor(fontColor);
         }
         state >>= 1;
     }
@@ -299,7 +299,7 @@ void UIButton::SetStateTextColorInheritType(int32 state, UIControlBackground::eC
     {
         if (state & 0x01)
         {
-            UIStaticText* staticText = GetOrCreateTextBlock((eButtonDrawState)i);
+            UIStaticText* staticText = GetOrCreateTextBlock(static_cast<eButtonDrawState>(i));
             staticText->GetTextBackground()->SetColorInheritType(colorInheritType);
             staticText->GetShadowBackground()->SetColorInheritType(colorInheritType);
         }
@@ -314,7 +314,7 @@ void UIButton::SetStateTextPerPixelAccuracyType(int32 state, UIControlBackground
     {
         if (state & 0x01)
         {
-            UIStaticText* staticText = GetOrCreateTextBlock((eButtonDrawState)i);
+            UIStaticText* staticText = GetOrCreateTextBlock(static_cast<eButtonDrawState>(i));
             staticText->GetTextBackground()->SetPerPixelAccuracyType(pixelAccuracyType);
             staticText->GetShadowBackground()->SetPerPixelAccuracyType(pixelAccuracyType);
         }
@@ -329,7 +329,7 @@ void UIButton::SetStateShadowColor(int32 state, const Color& shadowColor)
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetShadowColor(shadowColor);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetShadowColor(shadowColor);
         }
         state >>= 1;
     }
@@ -341,7 +341,7 @@ void UIButton::SetStateShadowOffset(int32 state, const Vector2& offset)
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetShadowOffset(offset);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetShadowOffset(offset);
         }
         state >>= 1;
     }
@@ -353,7 +353,7 @@ void UIButton::SetStateFittingOption(int32 state, int32 fittingOption)
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetFittingOption(fittingOption);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetFittingOption(fittingOption);
         }
         state >>= 1;
     }
@@ -365,7 +365,7 @@ void UIButton::SetStateText(int32 state, const WideString& text, const Vector2& 
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetText(text, requestedTextRectSize);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetText(text, requestedTextRectSize);
         }
         state >>= 1;
     }
@@ -377,7 +377,7 @@ void UIButton::SetStateTextAlign(int32 state, int32 align)
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetTextAlign(align);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetTextAlign(align);
         }
         state >>= 1;
     }
@@ -389,7 +389,7 @@ void UIButton::SetStateTextUseRtlAlign(int32 state, TextBlock::eUseRtlAlign valu
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetTextUseRtlAlign(value);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetTextUseRtlAlign(value);
         }
         state >>= 1;
     }
@@ -401,7 +401,7 @@ void UIButton::SetStateTextMultiline(int32 state, bool value)
     {
         if (state & 0x01)
         {
-            UIStaticText* text = GetOrCreateTextBlock((eButtonDrawState)i);
+            UIStaticText* text = GetOrCreateTextBlock(static_cast<eButtonDrawState>(i));
             text->SetMultiline(value, text->GetMultilineBySymbol());
         }
         state >>= 1;
@@ -414,7 +414,7 @@ void UIButton::SetStateTextMultilineBySymbol(int32 state, bool value)
     {
         if (state & 0x01)
         {
-            UIStaticText* text = GetOrCreateTextBlock((eButtonDrawState)i);
+            UIStaticText* text = GetOrCreateTextBlock(static_cast<eButtonDrawState>(i));
             text->SetMultiline(text->GetMultiline(), value);
         }
         state >>= 1;
@@ -427,7 +427,7 @@ void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetMargins(margins);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetMargins(margins);
         }
         state >>= 1;
     }
@@ -439,7 +439,7 @@ void UIButton::SetStateTextMargins(int32 state, const UIControlBackground::UIMar
     {
         if (state & 0x01)
         {
-            GetOrCreateTextBlock((eButtonDrawState)i)->SetMargins(margins);
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetMargins(margins);
         }
         state >>= 1;
     }
@@ -451,7 +451,7 @@ void UIButton::SetStateTextControl(int32 state, UIStaticText* textControl)
     {
         if (state & 0x01)
         {
-            SetTextBlock((eButtonDrawState)i, ScopedPtr<UIStaticText>(textControl->Clone()));
+            SetTextBlock(static_cast<eButtonDrawState>(i), ScopedPtr<UIStaticText>(textControl->Clone()));
         }
         state >>= 1;
     }
@@ -674,14 +674,14 @@ UIControlBackground* UIButton::GetBackgroundComponent(int32 index) const
 UIControlBackground* UIButton::CreateBackgroundComponent(int32 index) const
 {
     DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
-    UIControlBackground* bg = GetActualBackground((eButtonDrawState)index);
+    UIControlBackground* bg = GetActualBackground(static_cast<eButtonDrawState>(index));
     return bg ? bg->Clone() : CreateDefaultBackground();
 }
 
 void UIButton::SetBackgroundComponent(int32 drawState, UIControlBackground* newBackground)
 {
     DVASSERT(0 <= drawState && drawState < DRAW_STATE_COUNT);
-    SetBackground((eButtonDrawState)drawState, newBackground);
+    SetBackground(static_cast<eButtonDrawState>(drawState), newBackground);
 }
 
 String UIButton::GetBackgroundComponentName(int32 index) const
@@ -703,14 +703,14 @@ UIControl* UIButton::GetInternalControl(int32 index) const
 UIControl* UIButton::CreateInternalControl(int32 index) const
 {
     DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
-    UIStaticText* targetTextBlock = GetActualTextBlock((eButtonDrawState)index);
+    UIStaticText* targetTextBlock = GetActualTextBlock(static_cast<eButtonDrawState>(index));
     return targetTextBlock ? targetTextBlock->Clone() : CreateDefaultTextBlock();
 }
 
 void UIButton::SetInternalControl(int32 index, UIControl* control)
 {
     DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
-    SetTextBlock((eButtonDrawState)index, DynamicTypeCheck<UIStaticText*>(control));
+    SetTextBlock(static_cast<eButtonDrawState>(index), DynamicTypeCheck<UIStaticText*>(control));
 }
 
 String UIButton::GetInternalControlName(int32 index) const

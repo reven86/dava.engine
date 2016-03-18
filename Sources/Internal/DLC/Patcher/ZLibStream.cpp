@@ -56,14 +56,14 @@ ZLibIStream::~ZLibIStream()
 uint32 ZLibIStream::Read(char8* data, uint32 size)
 {
     zstream.avail_out = size;
-    zstream.next_out = (unsigned char*)data;
+    zstream.next_out = reinterpret_cast<unsigned char*>(data);
 
     while (zstream.avail_out > 0)
     {
         if (0 == zstream.avail_in)
         {
             zstream.avail_in = file->Read(readBuffer, ZLIB_CHUNK_SIZE);
-            zstream.next_in = (unsigned char*)readBuffer;
+            zstream.next_in = reinterpret_cast<unsigned char*>(readBuffer);
         }
 
         if (0 != zstream.avail_in)
@@ -102,7 +102,7 @@ ZLibOStream::~ZLibOStream()
     while (Z_OK == ret)
     {
         zstream.avail_out = ZLIB_CHUNK_SIZE;
-        zstream.next_out = (unsigned char*)writeBuffer;
+        zstream.next_out = reinterpret_cast<unsigned char*>(writeBuffer);
 
         ret = deflate(&zstream, Z_FINISH);
 
@@ -117,12 +117,12 @@ ZLibOStream::~ZLibOStream()
 uint32 ZLibOStream::Write(char8* data, uint32 size)
 {
     zstream.avail_in = size;
-    zstream.next_in = (unsigned char*)data;
+    zstream.next_in = reinterpret_cast<unsigned char*>(data);
 
     while (zstream.avail_in > 0)
     {
         zstream.avail_out = ZLIB_CHUNK_SIZE;
-        zstream.next_out = (unsigned char*)writeBuffer;
+        zstream.next_out = reinterpret_cast<unsigned char*>(writeBuffer);
 
         if (Z_OK == deflate(&zstream, Z_NO_FLUSH))
         {

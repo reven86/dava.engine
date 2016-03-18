@@ -58,8 +58,8 @@ protected:
 public:
     UIScreen(const Rect& rect = Rect(0.0f,
                                      0.0f,
-                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy
+                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx),
+                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy)
                                      ));
 
     /**

@@ -73,7 +73,8 @@ protected:
 
 public:
     UpdatableComponent();
-    virtual Component* Clone(Entity* toEntity);
+
+    Component* Clone(Entity* toEntity) override;
 
     void SetUpdatableObject(IUpdatable* updatableObject);
     IUpdatable* GetUpdatableObject();

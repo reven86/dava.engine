@@ -177,7 +177,7 @@ void MongodbClient::DropDatabase()
 
 void MongodbClient::DropCollection()
 {
-    int32 status = mongo_cmd_drop_collection(clientData->connection, database.c_str(), collection.c_str(), NULL);
+    int32 status = mongo_cmd_drop_collection(clientData->connection, database.c_str(), collection.c_str(), nullptr);
     if (MONGO_OK != status)
     {
         LogError(String("DropCollection"), clientData->connection->err);
@@ -203,7 +203,7 @@ bool MongodbClient::SaveBufferToGridFS(const String& name, char* buffer, uint32 
     gridfs gfs[1];
     gridfs_init(clientData->connection, database.c_str(), "fs", gfs);
     bool isOk = false;
-    isOk = (MONGO_OK == gridfs_store_buffer(gfs, buffer, length, name.c_str(), NULL));
+    isOk = (MONGO_OK == gridfs_store_buffer(gfs, buffer, length, name.c_str(), nullptr));
     if (!isOk)
     {
         Logger::Error("MongodbClient::SaveBufferToGridFS failed to save %s to gridfs", name.c_str());
@@ -217,7 +217,7 @@ bool MongodbClient::SaveFileToGridFS(const String& name, const String& pathToFil
     gridfs gfs[1];
     gridfs_init(clientData->connection, database.c_str(), "fs", gfs);
     bool isOk = false;
-    isOk = (MONGO_OK == gridfs_store_file(gfs, pathToFile.c_str(), name.c_str(), NULL));
+    isOk = (MONGO_OK == gridfs_store_file(gfs, pathToFile.c_str(), name.c_str(), nullptr));
     if (!isOk)
     {
         Logger::Error("MongodbClient::SaveFileToGridFS failed to save %s to gridfs", name.c_str());
@@ -242,7 +242,7 @@ bool MongodbClient::SaveBinary(const String& key, uint8* data, int32 dataSize)
         MongodbObject* foundObject = FindObjectByKey(key);
         if (foundObject)
         {
-            status = mongo_update(clientData->connection, namespaceName.c_str(), (bson*)foundObject->InternalObject(), (bson*)binary->InternalObject(), 0, NULL);
+            status = mongo_update(clientData->connection, namespaceName.c_str(), static_cast<bson*>(foundObject->InternalObject()), static_cast<bson*>(binary->InternalObject()), 0, nullptr);
             if (MONGO_OK != status)
             {
                 LogError(String("SaveBinary, update"), clientData->connection->err);
@@ -252,7 +252,7 @@ bool MongodbClient::SaveBinary(const String& key, uint8* data, int32 dataSize)
         }
         else
         {
-            status = mongo_insert(clientData->connection, namespaceName.c_str(), (bson*)binary->InternalObject(), NULL);
+            status = mongo_insert(clientData->connection, namespaceName.c_str(), static_cast<bson*>(binary->InternalObject()), nullptr);
             if (MONGO_OK != status)
             {
                 LogError(String("SaveBinary, insert"), clientData->connection->err);
@@ -312,11 +312,11 @@ MongodbObject* MongodbClient::FindObjectByKey(const String& key)
     MongodbObject* foundObject = new MongodbObject();
     DVASSERT(foundObject);
 
-    int32 status = mongo_find_one(clientData->connection, namespaceName.c_str(), (bson*)query->InternalObject(), 0, (bson*)foundObject->InternalObject());
+    int32 status = mongo_find_one(clientData->connection, namespaceName.c_str(), static_cast<bson*>(query->InternalObject()), 0, static_cast<bson*>(foundObject->InternalObject()));
     if (MONGO_OK != status)
     {
         SafeRelease(foundObject);
-        foundObject = NULL;
+        foundObject = nullptr;
     }
 
     SafeRelease(query);
@@ -333,7 +333,7 @@ bool MongodbClient::FindObjectByKey(const String& key, MongodbObject* foundObjec
     query->SetObjectName(key);
     query->Finish();
 
-    int32 status = mongo_find_one(clientData->connection, namespaceName.c_str(), (bson*)query->InternalObject(), 0, (bson*)foundObject->InternalObject());
+    int32 status = mongo_find_one(clientData->connection, namespaceName.c_str(), static_cast<bson*>(query->InternalObject()), 0, static_cast<bson*>(foundObject->InternalObject()));
     if (MONGO_OK != status)
     {
         return false;
@@ -351,7 +351,7 @@ bool MongodbClient::SaveDBObject(MongodbObject* object)
         MongodbObject* foundObject = FindObjectByKey(object->GetObjectName());
         if (foundObject)
         {
-            status = mongo_update(clientData->connection, namespaceName.c_str(), (bson*)foundObject->InternalObject(), (bson*)object->InternalObject(), 0, NULL);
+            status = mongo_update(clientData->connection, namespaceName.c_str(), static_cast<bson*>(foundObject->InternalObject()), static_cast<bson*>(object->InternalObject()), 0, nullptr);
             if (MONGO_OK != status)
             {
                 LogError(String("SaveObject, update"), clientData->connection->err);
@@ -361,7 +361,7 @@ bool MongodbClient::SaveDBObject(MongodbObject* object)
         }
         else
         {
-            status = mongo_insert(clientData->connection, namespaceName.c_str(), (bson*)object->InternalObject(), NULL);
+            status = mongo_insert(clientData->connection, namespaceName.c_str(), static_cast<bson*>(object->InternalObject()), nullptr);
             if (MONGO_OK != status)
             {
                 LogError(String("SaveObject, insert"), clientData->connection->err);
@@ -380,7 +380,7 @@ bool MongodbClient::SaveDBObject(MongodbObject* newObject, MongodbObject* oldObj
     {
         if (oldObject)
         {
-            status = mongo_update(clientData->connection, namespaceName.c_str(), (bson*)oldObject->InternalObject(), (bson*)newObject->InternalObject(), 0, NULL);
+            status = mongo_update(clientData->connection, namespaceName.c_str(), static_cast<bson*>(oldObject->InternalObject()), static_cast<bson*>(newObject->InternalObject()), 0, nullptr);
             if (MONGO_OK != status)
             {
                 LogError(String("SaveObject, update"), clientData->connection->err);
@@ -388,7 +388,7 @@ bool MongodbClient::SaveDBObject(MongodbObject* newObject, MongodbObject* oldObj
         }
         else
         {
-            status = mongo_insert(clientData->connection, namespaceName.c_str(), (bson*)newObject->InternalObject(), NULL);
+            status = mongo_insert(clientData->connection, namespaceName.c_str(), static_cast<bson*>(newObject->InternalObject()), nullptr);
             if (MONGO_OK != status)
             {
                 LogError(String("SaveObject, insert"), clientData->connection->err);
@@ -406,7 +406,7 @@ void MongodbClient::DumpDB()
     bson query;
     bson_empty(&query);
 
-    mongo_cursor* cursor = mongo_find(clientData->connection, namespaceName.c_str(), &query, NULL, 0, 0, 0);
+    mongo_cursor* cursor = mongo_find(clientData->connection, namespaceName.c_str(), &query, nullptr, 0, 0, 0);
     int32 count = 0;
     while (mongo_cursor_next(cursor) == MONGO_OK)
     {
@@ -448,7 +448,7 @@ bool MongodbClient::DBObjectToKeyedArchive(MongodbObject* dbObject, KeyedArchive
     if (dbObject->IsFinished())
     {
         //copy data from db object into archive
-        ReadData(outArchive, (bson*)dbObject->InternalObject());
+        ReadData(outArchive, static_cast<bson*>(dbObject->InternalObject()));
 
         return true;
     }
@@ -464,7 +464,7 @@ void MongodbClient::ReadData(KeyedArchive* archive, void* bsonObj)
         return;
 
     bson_iterator it;
-    bson_iterator_init(&it, (bson*)bsonObj);
+    bson_iterator_init(&it, static_cast<bson*>(bsonObj));
 
     while (bson_iterator_next(&it))
     {
@@ -485,11 +485,11 @@ void MongodbClient::ReadData(KeyedArchive* archive, void* bsonObj)
             break;
 
         case BSON_LONG:
-            archive->SetInt32(key, (int32)bson_iterator_long(&it));
+            archive->SetInt32(key, static_cast<int32>(bson_iterator_long(&it)));
             break;
 
         case BSON_DOUBLE:
-            archive->SetFloat(key, (float32)bson_iterator_double(&it));
+            archive->SetFloat(key, static_cast<float32>(bson_iterator_double(&it)));
             break;
 
         case BSON_OBJECT:

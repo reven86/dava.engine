@@ -73,15 +73,15 @@ void LightUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 void LightUpdateSystem::RecalcLight(Entity* entity)
 {
     // Update new transform pointer, and mark that transform is changed
-    Matrix4* worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-    Light* light = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
+    Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
+    Light* light = (static_cast<LightComponent*>(entity->GetComponent(Component::LIGHT_COMPONENT)))->GetLightObject();
     light->SetPositionDirectionFromMatrix(*worldTransformPointer);
     entity->GetScene()->renderSystem->MarkForUpdate(light);
 }
 
 void LightUpdateSystem::AddEntity(Entity* entity)
 {
-    Light* lightObject = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
+    Light* lightObject = (static_cast<LightComponent*>(entity->GetComponent(Component::LIGHT_COMPONENT)))->GetLightObject();
     if (!lightObject)
         return;
 
