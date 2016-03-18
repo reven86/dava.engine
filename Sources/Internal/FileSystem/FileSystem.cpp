@@ -428,8 +428,10 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
     return (chdir(newWorkingDirectory.GetAbsolutePathname().c_str()) == 0);
-#endif //PLATFORMS
+#elif //PLATFORMS
+
     return false;
+#endif
 }
 
 bool FileSystem::IsFile(const FilePath& pathToCheck) const

@@ -36,7 +36,7 @@
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
-#include "Commands2/CommandStack.h"
+#include "Commands2/Base/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
 //TODO: move all includes to .cpp file
@@ -89,7 +89,7 @@ public:
     };
 
     SceneEditor2();
-    ~SceneEditor2();
+    ~SceneEditor2() override;
 
     // editor systems
     SceneCameraSystem* cameraSystem;
@@ -116,9 +116,9 @@ public:
     EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
-    DAVA::WASDControllerSystem* wasdSystem;
-    DAVA::RotationControllerSystem* rotationSystem;
-    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem;
+    DAVA::WASDControllerSystem* wasdSystem = nullptr;
+    DAVA::RotationControllerSystem* rotationSystem = nullptr;
+    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem = nullptr;
 
     WayEditSystem* wayEditSystem;
     PathSystem* pathSystem;
@@ -139,12 +139,12 @@ public:
     void Undo();
     void Redo();
 
-    void BeginBatch(const DAVA::String& text);
+    void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
-    bool IsBatchStarted() const;
 
-    void Exec(Command2* command);
-    void ClearCommands(int commandId);
+    void Exec(Command2::Pointer&& command);
+    void RemoveCommands(DAVA::int32 commandId);
+
     void ClearAllCommands();
     const CommandStack* GetCommandStack() const;
 
@@ -180,6 +180,8 @@ public:
     void Activate() override;
     void Deactivate() override;
 
+    void EnableEditorSystems();
+
     uint32 GetFramesCount() const;
     void ResetFramesCount();
 
@@ -194,16 +196,17 @@ public:
                   )
 
 protected:
-    bool isLoaded;
-    bool isHUDVisible;
+    bool isLoaded = false;
+    bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack commandStack;
+    CommandStack* commandStack = nullptr;
     RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    virtual void EditorCommandProcess(const Command2* command, bool redo);
+    void EditorCommandProcess(const Command2* command, bool redo);
+
     void Draw() override;
 
     void ExtractEditorEntities();
@@ -220,13 +223,15 @@ protected:
 private:
     friend struct EditorCommandNotify;
 
-    struct EditorCommandNotify : public CommandNotify
+    class EditorCommandNotify : public CommandNotify
     {
-        SceneEditor2* editor;
-
+    public:
         EditorCommandNotify(SceneEditor2* _editor);
-        virtual void Notify(const Command2* command, bool redo);
-        virtual void CleanChanged(bool clean);
+        void Notify(const Command2* command, bool redo) override;
+        void CleanChanged(bool clean) override;
+
+    private:
+        SceneEditor2* editor = nullptr;
     };
 };
 

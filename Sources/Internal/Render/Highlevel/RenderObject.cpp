@@ -96,7 +96,7 @@ void RenderObject::RemoveRenderBatch(RenderBatch* batch)
 {
     batch->SetRenderObject(0);
 
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     for (uint32 k = 0; k < size; ++k)
     {
         if (renderBatchArray[k].renderBatch == batch)
@@ -119,7 +119,7 @@ void RenderObject::RemoveRenderBatch(RenderBatch* batch)
 
 void RenderObject::RemoveRenderBatch(uint32 batchIndex)
 {
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     DVASSERT(batchIndex < size);
 
     RenderBatch* batch = renderBatchArray[batchIndex].renderBatch;
@@ -138,7 +138,7 @@ void RenderObject::RemoveRenderBatch(uint32 batchIndex)
 
 void RenderObject::ReplaceRenderBatch(RenderBatch* oldBatch, RenderBatch* newBatch)
 {
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     for (uint32 k = 0; k < size; ++k)
     {
         if (renderBatchArray[k].renderBatch == oldBatch)
@@ -151,7 +151,7 @@ void RenderObject::ReplaceRenderBatch(RenderBatch* oldBatch, RenderBatch* newBat
 
 void RenderObject::ReplaceRenderBatch(uint32 batchIndex, RenderBatch* newBatch)
 {
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     DVASSERT(batchIndex < size);
 
     RenderBatch* batch = renderBatchArray[batchIndex].renderBatch;
@@ -175,7 +175,7 @@ void RenderObject::ReplaceRenderBatch(uint32 batchIndex, RenderBatch* newBatch)
 
 void RenderObject::SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex)
 {
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     DVASSERT(batchIndex < size);
 
     IndexedRenderBatch& iBatch = renderBatchArray[batchIndex];
@@ -186,7 +186,7 @@ void RenderObject::SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex)
 
 void RenderObject::SetRenderBatchSwitchIndex(uint32 batchIndex, int32 newSwitchIndex)
 {
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     DVASSERT(batchIndex < size);
 
     IndexedRenderBatch& iBatch = renderBatchArray[batchIndex];
@@ -199,7 +199,7 @@ void RenderObject::RecalcBoundingBox()
 {
     bbox = AABBox3();
 
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     for (uint32 k = 0; k < size; ++k)
     {
         bbox.AddAABBox(renderBatchArray[k].renderBatch->GetBoundingBox());
@@ -294,7 +294,7 @@ void RenderObject::Load(KeyedArchive* archive, SerializationContext* serializati
     if (NULL != archive)
     {
         debugFlags = archive->GetUInt32("ro.debugflags", 0);
-        staticOcclusionIndex = (uint16)archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX);
+        staticOcclusionIndex = static_cast<uint16>(archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX));
 
         //VI: load only VISIBLE flag for now. May be extended in the future.
         uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::SERIALIZATION_CRITERIA);
@@ -329,24 +329,24 @@ void RenderObject::Load(KeyedArchive* archive, SerializationContext* serializati
 void RenderObject::BindDynamicParameters(Camera* camera)
 {
     DVASSERT(worldTransform != 0);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, worldTransform, (pointer_size)worldTransform);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, worldTransform, reinterpret_cast<pointer_size>(worldTransform));
 
     if (camera && lights[0])
     {
         const Vector4& lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, reinterpret_cast<pointer_size>(&lightPositionDirection0InCameraSpace));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), reinterpret_cast<pointer_size>(lights[0]));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), reinterpret_cast<pointer_size>(lights[0]));
     }
     else
     {
         //in case we don't have light we are to bind some default values to prevent fall or using previously bound light producing strange artifacts
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &Vector4::Zero, (pointer_size)&Vector4::Zero);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_COLOR, &Color::Black, (pointer_size)&Color::Black);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_AMBIENT_COLOR, &Color::Black, (pointer_size)&Color::Black);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &Vector4::Zero, reinterpret_cast<pointer_size>(&Vector4::Zero));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_COLOR, &Color::Black, reinterpret_cast<pointer_size>(&Color::Black));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_AMBIENT_COLOR, &Color::Black, reinterpret_cast<pointer_size>(&Color::Black));
     }
 
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LOCAL_BOUNDING_BOX, &bbox, (pointer_size)&bbox);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LOCAL_BOUNDING_BOX, &bbox, reinterpret_cast<pointer_size>(&bbox));
 }
 
 void RenderObject::SetRenderSystem(RenderSystem* _renderSystem)

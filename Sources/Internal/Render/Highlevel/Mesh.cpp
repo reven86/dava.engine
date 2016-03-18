@@ -59,7 +59,7 @@ void Mesh::AddPolygonGroup(PolygonGroup* polygonGroup, NMaterial* material)
 
 uint32 Mesh::GetPolygonGroupCount()
 {
-    return (uint32)renderBatchArray.size();
+    return uint32(renderBatchArray.size());
 }
 
 PolygonGroup* Mesh::GetPolygonGroup(uint32 index)

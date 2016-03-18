@@ -99,11 +99,10 @@ public:
 
 public:
     LodComponent();
-    ~LodComponent() override = default;
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     static float32 GetDefaultDistance(int32 layer);
 
@@ -160,7 +159,7 @@ public:
 
 int32 LodComponent::GetLodLayersCount() const
 {
-    return (int32)lodLayers.size();
+    return static_cast<int32>(lodLayers.size());
 }
 
 float32 LodComponent::GetLodLayerDistance(int32 layerNum) const

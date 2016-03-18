@@ -37,7 +37,7 @@
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
@@ -109,13 +109,13 @@ void LODComponentHolder::SummarizeValues()
 
 void LODComponentHolder::PropagateValues()
 {
-    scene->BeginBatch("LOD Distance Changed");
+    scene->BeginBatch("LOD Distance Changed", static_cast<uint32>(lodComponents.size()) * LodComponent::MAX_LOD_LAYERS);
     for (auto& lc : lodComponents)
     {
         const int32 layersCount = static_cast<int32>(GetLodLayersCount(lc));
         for (int32 i = 0; i < layersCount; ++i)
         {
-            scene->Exec(new ChangeLODDistanceCommand(lc, i, mergedComponent.GetLodLayerDistance(i)));
+            scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, mergedComponent.GetLodLayerDistance(i)));
         }
     }
     scene->EndBatch();
@@ -125,12 +125,12 @@ bool LODComponentHolder::DeleteLOD(int32 layer)
 {
     bool wasLayerRemoved = false;
 
-    scene->BeginBatch(Format("Delete lod layer %", layer));
+    scene->BeginBatch(Format("Delete lod layer %", layer), static_cast<uint32>(lodComponents.size()));
     for (auto& lc : lodComponents)
     {
         if ((GetLodLayersCount(lc) > 0) && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
         {
-            scene->Exec(new DeleteLODCommand(lc, layer, -1));
+            scene->Exec(Command2::Create<DeleteLODCommand>(lc, layer, -1));
             wasLayerRemoved = true;
         }
     }
@@ -143,7 +143,7 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
 {
     bool wasCopiedRemoved = false;
 
-    scene->BeginBatch(Format("Copy lod layer %d to %d", from, to));
+    scene->BeginBatch(Format("Copy lod layer %d to %d", from, to), static_cast<uint32>(lodComponents.size()));
     for (auto& lc : lodComponents)
     {
         Entity* entity = lc->GetEntity();
@@ -154,7 +154,7 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
 
         if (GetLodLayersCount(entity) < LodComponent::MAX_LOD_LAYERS)
         {
-            scene->Exec(new CopyLastLODToLod0Command(lc));
+            scene->Exec(Command2::Create<CopyLastLODToLod0Command>(lc));
             wasCopiedRemoved = true;
         }
     }
@@ -400,7 +400,7 @@ void EditorLODSystem::DeleteLastLOD()
     DeleteLOD(activeLodData->GetMaxLODLayer());
 }
 
-void EditorLODSystem::DeleteLOD(DAVA::int32 layer)
+void EditorLODSystem::DeleteLOD(int32 layer)
 {
     if (activeLodData->GetLODLayersCount() > 0)
     {
@@ -572,47 +572,56 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
         return;
     }
 
-    //this code need to be refactored after commads-notofications-refactoring will be merged
-
-    int32 commandID = command->GetId();
-    switch (commandID)
-    {
-    case CMDID_LOD_DISTANCE_CHANGE:
+    if (command->MatchCommandID(CMDID_LOD_DISTANCE_CHANGE))
     {
         RecalculateData();
         EmitInvalidateUI(FLAG_DISTANCE);
-        break;
     }
 
-    case CMDID_COMPONENT_REMOVE:
-    {
-        const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
-        if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
-        {
-            RecalculateData();
-            activeLodData->ApplyForce(forceValues);
 
-            EmitInvalidateUI(FLAG_ALL);
-        }
-
-        break;
-    }
-
-    case CMDID_DELETE_RENDER_BATCH: //could changed count of lods
-    case CMDID_CLONE_LAST_BATCH: //could changed count of lods
-    case CMDID_LOD_CREATE_PLANE:
-    case CMDID_LOD_COPY_LAST_LOD:
-    case CMDID_LOD_DELETE:
+    auto InvalidateAllData = [this]()
     {
         RecalculateData();
         activeLodData->ApplyForce(forceValues);
 
         EmitInvalidateUI(FLAG_ALL);
-        break;
+    };
+
+    static const Vector<int32> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
+    if (command->MatchCommandIDs(commands))
+    {
+        InvalidateAllData();
     }
 
-    default:
-        break;
+    if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
+    {
+        auto ProcessRemoveCommand = [this, InvalidateAllData](const RemoveComponentCommand* removeCommand)
+        {
+            if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
+            {
+                InvalidateAllData();
+                return true;
+            }
+            return false;
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2* cmd = batch->GetCommand(i);
+                if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand *>(cmd)))
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            ProcessRemoveCommand(static_cast<const RemoveComponentCommand *>(command));
+        }
     }
 }
 
@@ -663,10 +672,10 @@ void EditorLODSystem::ProcessPlaneLODs()
         Guard::ScopedBoolGuard guard(generateCommands, true);
 
         SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
-        sceneEditor2->BeginBatch("Create plane lods");
+        sceneEditor2->BeginBatch("Create plane lods", static_cast<DAVA::uint32>(planeLODRequests.size()));
         for (const auto& req : planeLODRequests)
         {
-            sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+            sceneEditor2->Exec(Command2::Create<CreatePlaneLODCommand>(req));
         }
         sceneEditor2->EndBatch();
         planeLODRequests.clear();

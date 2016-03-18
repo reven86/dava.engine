@@ -27,38 +27,20 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND_NOTIFY_H__
-#define __COMMAND_NOTIFY_H__
+#include "Logger/Logger.h"
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
+#if defined(__DAVAENGINE_WINDOWS__)
 
-class Command2;
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <windowsx.h>
 
-class CommandNotify : public DAVA::BaseObject
+namespace DAVA
 {
-public:
-    CommandNotify();
-    ~CommandNotify();
-
-    virtual void Notify(const Command2* command, bool redo) = 0;
-    virtual void CleanChanged(bool clean){};
-};
-
-class CommandNotifyProvider
+void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-public:
-    CommandNotifyProvider();
-    virtual ~CommandNotifyProvider();
+    OutputDebugStringA(text);
+}
+}
 
-    void SetNotify(CommandNotify* notify);
-    CommandNotify* GetNotify() const;
-
-    void EmitNotify(const Command2* command, bool redo);
-    void EmitCleanChanged(bool clean);
-
-protected:
-    CommandNotify* curNotify;
-};
-
-#endif // __COMMAND_NOTIFY_H__
+#endif

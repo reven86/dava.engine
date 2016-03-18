@@ -27,72 +27,34 @@
 =====================================================================================*/
 
 
-#include "FileSystem/Logger.h"
+#include "Commands2/Base/CommandNotify.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include <stdarg.h>
-#include <android/log.h>
-#include "Utils/StringFormat.h"
-
-namespace DAVA
+CommandNotifyProvider::~CommandNotifyProvider()
 {
-static DAVA::String androidLogTag = "";
+    SafeRelease(curNotify);
+}
 
-int32 LogLevelToAndtoid(Logger::eLogLevel ll)
+void CommandNotifyProvider::SetNotify(CommandNotify* notify)
 {
-    int32 androidLL = ANDROID_LOG_DEFAULT;
-    switch (ll)
+    if (curNotify != notify)
     {
-    case Logger::LEVEL_FRAMEWORK:
-    case Logger::LEVEL_DEBUG:
-        androidLL = ANDROID_LOG_DEBUG;
-        break;
-
-    case Logger::LEVEL_INFO:
-        androidLL = ANDROID_LOG_INFO;
-        break;
-
-    case Logger::LEVEL_WARNING:
-        androidLL = ANDROID_LOG_WARN;
-        break;
-
-    case Logger::LEVEL_ERROR:
-        androidLL = ANDROID_LOG_ERROR;
-        break;
-    default:
-        break;
+        SafeRelease(curNotify);
+        curNotify = SafeRetain(notify);
     }
-
-    return androidLL;
 }
 
-void Logger::PlatformLog(eLogLevel ll, const char8* text) const
+void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
 {
-    size_t len = strlen(text);
-    // about limit on android: http://stackoverflow.com/questions/8888654/android-set-max-length-of-logcat-messages
-    const size_t limit{ 4000 };
-
-    char8* str = const_cast<char*>(text);
-
-    while (len > limit)
+    if (nullptr != curNotify)
     {
-        char8 lastChar = str[limit];
-        str[limit] = '\0';
-        __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
-        str[limit] = lastChar;
-        str += limit;
-        len -= limit;
+        curNotify->Notify(command, redo);
     }
-
-    __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
 }
 
-void Logger::SetTag(const char8* logTag)
+void CommandNotifyProvider::EmitCleanChanged(bool clean)
 {
-    androidLogTag = Format("%s", logTag);
+    if (nullptr != curNotify)
+    {
+        curNotify->CleanChanged(clean);
+    }
 }
-
-} // end namespace DAVA
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)

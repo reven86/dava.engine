@@ -21,15 +21,8 @@ include_directories   ( ${DAVA_INCLUDE_DIR} )
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 
-if( IOS OR ANDROID )
-    set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  CommandLine/CommandLineParser.cpp )
-    set( ADDED_H_PATTERNS   TeamcityOutput/*.h   CommandLine/CommandLineParser.h    )
-
-else()
-    set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp CommandLine/*.cpp TeamcityOutput/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
-    set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   CommandLine/*.h   TeamcityOutput/*.h   TextureCompression/*.h   TexturePacker/*.h   )
-
-endif()
+set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
+set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   TextureCompression/*.h   TexturePacker/*.h   )
 
 if( DAVA_USE_QT_WIDGETS )
     add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/QtTools" ${CMAKE_CURRENT_BINARY_DIR}/QtTools )
@@ -42,9 +35,7 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 )  
 
 set_project_files_properties( "${CPP_FILES}" )
-
-generate_source_groups_project ( )
-generated_unity_sources     ( CPP_FILES IGNORE_LIST_APPLE "TeamcityOutput/TeamcityOutput.cpp" )
+generate_source_groups_project ()
 
 add_library                 ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 

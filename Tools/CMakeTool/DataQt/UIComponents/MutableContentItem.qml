@@ -182,7 +182,7 @@ Item {
                         RadioButton {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                impl.processDataChanged(checked, loaderDelegate.createObj(), "currentOptions");
+                                impl.processDataChanged(checked, createObj(), "currentOptions");
                             }
                             exclusiveGroup: exclusiveGroup_localOptions
 
@@ -193,7 +193,7 @@ Item {
                         CheckBox {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                impl.processDataChanged(checked, loaderDelegate.createObj(), "currentOptions");
+                                impl.processDataChanged(checked, createObj(), "currentOptions");
                             }
                         }
                     }

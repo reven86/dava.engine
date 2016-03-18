@@ -44,20 +44,20 @@ class RotationControllerSystem : public SceneSystem
 
 public:
     RotationControllerSystem(Scene* scene);
-    virtual ~RotationControllerSystem();
+    ~RotationControllerSystem() override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
-    virtual void Input(UIEvent* event);
+    void Input(UIEvent* event) override;
 
-    inline float32 GetRotationSpeeed() const;
-    inline void SetRotationSpeeed(float32 rotateSpeed);
+    float32 GetRotationSpeeed() const;
+    void SetRotationSpeeed(float32 rotateSpeed);
 
-    inline const Vector3& GetRotationPoint() const;
-    inline void SetRotationPoint(const Vector3& point);
+    const Vector3& GetRotationPoint() const;
+    void SetRotationPoint(const Vector3& point);
 
     void RecalcCameraViewAngles(Camera* camera);
 
