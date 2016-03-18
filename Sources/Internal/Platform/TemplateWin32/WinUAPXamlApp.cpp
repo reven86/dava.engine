@@ -122,7 +122,10 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 {
     // Note: must run on UI thread
     bool fullscreen = ApplicationViewWindowingMode::FullScreen == screenMode;
-    SetFullScreen(fullscreen);
+    if (!isPhoneApiDetected)
+    {
+        SetFullScreen(fullscreen);
+    }
 }
 
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
