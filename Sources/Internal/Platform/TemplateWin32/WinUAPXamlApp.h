@@ -48,6 +48,7 @@
 namespace DAVA
 {
 
+class Thread;
 class CorePlatformWinUAP;
 class DispatcherWinUAP;
 class DeferredScreenMetricEvents;
@@ -175,7 +176,7 @@ private:
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
-    bool mainLoopThreadStarted = false;
+    Thread* mainLoopThread = nullptr;
 
     volatile bool quitFlag = false;
 
