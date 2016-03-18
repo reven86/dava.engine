@@ -708,11 +708,11 @@ String FilePath::NormalizePathname(const String& pathname)
     Split(path, "/", tokens);
 
     //TODO: correctly process situation ../../folders/filename
-    for (int32 i = 0; i < (int32)tokens.size(); ++i)
+    for (size_t i = 0; i < tokens.size(); ++i)
     {
         if (String(".") == tokens[i])
         {
-            for (int32 k = i + 1; k < (int32)tokens.size(); ++k)
+            for (size_t k = i + 1; k < tokens.size(); ++k)
             {
                 tokens[k - 1] = tokens[k];
             }
@@ -721,7 +721,7 @@ String FilePath::NormalizePathname(const String& pathname)
         }
         else if ((1 <= i) && (String("..") == tokens[i] && String("..") != tokens[i - 1]))
         {
-            for (int32 k = i + 1; k < (int32)tokens.size(); ++k)
+            for (size_t k = i + 1; k < tokens.size(); ++k)
             {
                 tokens[k - 2] = tokens[k];
             }
@@ -735,10 +735,10 @@ String FilePath::NormalizePathname(const String& pathname)
     if ('/' == path[0])
         result = "/";
 
-    for (int32 k = 0; k < (int32)tokens.size(); ++k)
+    for (size_t k = 0; k < tokens.size(); ++k)
     {
         result += tokens[k];
-        if (k + 1 != (int32)tokens.size())
+        if (k + 1 != tokens.size())
             result += String("/");
     }
 

@@ -172,7 +172,7 @@ void Entity::SetScene(Scene* _scene)
 void Entity::SetParent(Entity* _parent)
 {
     parent = _parent;
-    ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetParent(parent);
+    static_cast<TransformComponent*>(GetComponent(Component::TRANSFORM_COMPONENT))->SetParent(parent);
 }
 
 void Entity::AddNode(Entity* node)
@@ -184,7 +184,7 @@ void Entity::AddNode(Entity* node)
         {
             node->parent->RemoveNode(node);
         }
-        uint32 insertPosition = (uint32)children.size();
+        uint32 insertPosition = static_cast<uint32>(children.size());
         children.push_back(node);
         node->SetIndexInParent(insertPosition);
         node->SetParent(this);
@@ -281,7 +281,7 @@ Entity* Entity::GetNextChild(Entity* child)
 int32 Entity::GetChildrenCountRecursive() const
 {
     int32 result = 0;
-    result += (int32)children.size();
+    result += static_cast<int32>(children.size());
     for (Vector<Entity*>::const_iterator t = children.begin(); t != children.end(); ++t)
     {
         Entity* node = *t;
@@ -319,10 +319,9 @@ Entity* Entity::FindByName(const FastName& searchName)
     if (name == searchName)
         return this;
 
-    uint32 size = (uint32)children.size();
-    for (uint32 c = 0; c < size; ++c)
+    for (auto child : children)
     {
-        Entity* res = children[c]->FindByName(searchName);
+        Entity* res = child->FindByName(searchName);
         if (res != 0)
         {
             return res;
@@ -338,7 +337,7 @@ Entity* Entity::FindByName(const char* searchName)
 
 void Entity::BakeTransforms()
 {
-    uint32 size = (uint32)children.size();
+    size_t size = children.size();
     if (size == 1 && (0 == GetComponent(Component::RENDER_COMPONENT) && 0 == GetComponent(Component::PARTICLE_EFFECT_COMPONENT) && 0 == GetComponent(Component::ANIMATION_COMPONENT))) // propagate matrices
     {
         children[0]->SetLocalTransform(children[0]->GetLocalTransform() * GetLocalTransform());
@@ -346,9 +345,9 @@ void Entity::BakeTransforms()
         AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
     }
 
-    for (uint32 c = 0; c < size; ++c)
+    for (auto child : children)
     {
-        children[c]->BakeTransforms();
+        child->BakeTransforms();
     }
 }
 
@@ -357,13 +356,9 @@ void Entity::PropagateBoolProperty(String name, bool value)
     KeyedArchive* currentProperties = GetOrCreateCustomProperties(this)->GetArchive();
     currentProperties->SetBool(name, value);
 
-    uint32 size = (uint32)children.size();
-    if (size > 0) // propagate value to children
+    for (auto child : children)
     {
-        for (uint32 c = 0; c < size; ++c)
-        {
-            children[c]->PropagateBoolProperty(name, value);
-        }
+        child->PropagateBoolProperty(name, value);
     }
 }
 
@@ -385,10 +380,9 @@ void Entity::Draw()
     if (!(flags & NODE_VISIBLE) || !(flags & NODE_UPDATABLE) || (flags & NODE_INVALID))
         return;
 
-    //uint32 size = (uint32)children.size();
-    const Vector<Entity*>::iterator& itEnd = children.end();
-    for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
-        (*it)->Draw();
+    for (auto child : children)
+        child->Draw();
+
     if (scene)
         scene->nodeCounter++;
 		
@@ -432,9 +426,8 @@ void Entity::Draw()
 
 void Entity::SceneDidLoaded()
 {
-    const Vector<Entity*>::const_iterator& itEnd = children.end();
-    for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
-        (*it)->SceneDidLoaded();
+    for (auto child : children)
+        child->SceneDidLoaded();
 }
 
 Entity* Entity::Clone(Entity* dstNode)
@@ -446,10 +439,9 @@ Entity* Entity::Clone(Entity* dstNode)
     }
 
     dstNode->RemoveAllComponents();
-    size_t size = components.size();
-    for (size_t k = 0; k < size; ++k)
+    for (auto component : components)
     {
-        dstNode->AddComponent(components[k]->Clone(dstNode));
+        dstNode->AddComponent(component->Clone(dstNode));
     }
 
     dstNode->name = name;
@@ -462,11 +454,10 @@ Entity* Entity::Clone(Entity* dstNode)
 
     dstNode->RemoveAllChildren();
     dstNode->children.reserve(children.size());
-    Vector<Entity*>::iterator it = children.begin();
-    const Vector<Entity*>::iterator& childsEnd = children.end();
-    for (; it != childsEnd; it++)
+
+    for (auto child : children)
     {
-        Entity* n = (*it)->Clone();
+        Entity* n = child->Clone();
         dstNode->AddNode(n);
         n->Release();
     }
@@ -496,12 +487,9 @@ void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 
     if (isRecursive)
     {
-        Vector<Entity*>::iterator it = children.begin();
-        const Vector<Entity*>::iterator& childrenEnd = children.end();
-        for (; it != childrenEnd; it++)
+        for (auto child : children)
         {
-            Entity* n = (*it);
-            n->SetDebugFlags(debugFlags, isRecursive);
+            child->SetDebugFlags(debugFlags, isRecursive);
         }
     }
 }
@@ -557,10 +545,9 @@ bool Entity::FindNodesByNamePart(const String& namePart, List<Entity*>& outNodeL
         isFind = true;
     }
 
-    int32 sz = (int32)children.size();
-    for (int32 i = 0; i < sz; i++)
+    for (auto child : children)
     {
-        if (children[i]->FindNodesByNamePart(namePart, outNodeList))
+        if (child->FindNodesByNamePart(namePart, outNodeList))
         {
             isFind = true;
         }
@@ -582,10 +569,9 @@ AABBox3 Entity::GetWTMaximumBoundingBoxSlow()
         retBBox.AddAABBox(wtBox);
     }
 
-    const Vector<Entity*>::iterator& itEnd = children.end();
-    for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
+    for (auto child : children)
     {
-        AABBox3 box = (*it)->GetWTMaximumBoundingBoxSlow();
+        AABBox3 box = child->GetWTMaximumBoundingBoxSlow();
         if ((AABBOX_INFINITY != box.min.x && AABBOX_INFINITY != box.min.y && AABBOX_INFINITY != box.min.z)
             && (-AABBOX_INFINITY != box.max.x && -AABBOX_INFINITY != box.max.y && -AABBOX_INFINITY != box.max.z))
         {
@@ -680,7 +666,7 @@ void Entity::Load(KeyedArchive* archive, SerializationContext* serializationCont
     if (serializationContext->GetVersion() < CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION)
     {
         KeyedArchive* customProps = archive->GetArchiveFromByteArray("customprops");
-        if (customProps != NULL)
+        if (customProps != nullptr)
         {
             CustomPropertiesComponent* customPropsComponent = GetOrCreateCustomProperties(this);
             customPropsComponent->LoadFromArchive(*customProps, serializationContext);
@@ -833,8 +819,8 @@ void Entity::OptimizeBeforeExport()
         }
     }
 
-    uint32 size = (uint32)children.size();
-    for (uint32 c = 0; c < size; ++c)
+    size_t size = children.size();
+    for (size_t c = 0; c < size; ++c)
     {
         children[c]->OptimizeBeforeExport();
     }
@@ -921,28 +907,28 @@ Entity* Entity::GetNodeByPathID(Entity* root, String pathID)
 
 Matrix4& Entity::ModifyLocalTransform()
 {
-    return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->ModifyLocalTransform();
+    return (static_cast<TransformComponent*>(GetComponent(Component::TRANSFORM_COMPONENT)))->ModifyLocalTransform();
 }
 
 void Entity::SetLocalTransform(const Matrix4& newMatrix)
 {
     //	TIME_PROFILE("Entity::SetLocalTransform");
-    ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetLocalTransform(&newMatrix);
+    (static_cast<TransformComponent*>(GetComponent(Component::TRANSFORM_COMPONENT)))->SetLocalTransform(&newMatrix);
 }
 
 const Matrix4& Entity::GetLocalTransform()
 {
-    return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->GetLocalTransform();
+    return (static_cast<TransformComponent*>(GetComponent(Component::TRANSFORM_COMPONENT)))->GetLocalTransform();
 }
 
 const Matrix4& Entity::GetWorldTransform() const
 {
-    return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransform();
+    return (static_cast<TransformComponent*>(GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransform();
 }
 
 void Entity::SetVisible(const bool& isVisible)
 {
-    RenderComponent* renderComponent = (RenderComponent*)GetComponent(Component::RENDER_COMPONENT);
+    RenderComponent* renderComponent = static_cast<RenderComponent*>(GetComponent(Component::RENDER_COMPONENT));
     if (isVisible)
     {
         AddFlag(NODE_VISIBLE);
@@ -981,7 +967,7 @@ void Entity::SetVisible(const bool& isVisible)
 
 void Entity::SetUpdatable(bool isUpdatable)
 {
-    RenderComponent* renderComponent = (RenderComponent*)GetComponent(Component::RENDER_COMPONENT);
+    RenderComponent* renderComponent = static_cast<RenderComponent*>(GetComponent(Component::RENDER_COMPONENT));
     if (isUpdatable)
     {
         AddFlag(NODE_UPDATABLE);

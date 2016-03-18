@@ -51,9 +51,9 @@ public:
 
     IMPLEMENT_COMPONENT_TYPE(QUALITY_SETTINGS_COMPONENT);
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     void SetFilterByType(bool filter);
     bool GetFilterByType() const;
