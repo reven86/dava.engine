@@ -42,7 +42,7 @@ class SceneNodeAnimationList;
 class SceneNodeAnimation : public BaseObject
 {
 protected:
-    virtual ~SceneNodeAnimation();
+    ~SceneNodeAnimation() override;
 
 public:
     SceneNodeAnimation(uint32 keyCount);

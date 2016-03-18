@@ -55,8 +55,8 @@ public:
 
     virtual void Process(float32 timeElapsed);
 
-    inline float32 GetMoveSpeeed() const;
-    inline void SetMoveSpeed(float32 moveSpeed);
+    float32 GetMoveSpeeed() const;
+    void SetMoveSpeed(float32 moveSpeed);
 
 private:
     void MoveForward(Camera* camera, float32 speed, eDirection direction);

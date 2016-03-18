@@ -39,29 +39,20 @@
 namespace DAVA
 {
 WaveComponent::WaveComponent()
-    :
-    amplitude(10.f)
-    ,
-    lenght(5.f)
-    ,
-    speed(5.f)
-    ,
-    infRadius(25.f)
+    : amplitude(10.f)
+    , lenght(5.f)
+    , speed(5.f)
+    , infRadius(25.f)
 {
     damping = 1.f / infRadius;
 }
 
 WaveComponent::WaveComponent(float32 _amlitude, float32 _lenght, float32 _speed, float32 _damping, float32 _infDistance)
-    :
-    amplitude(_amlitude)
-    ,
-    lenght(_lenght)
-    ,
-    speed(_speed)
-    ,
-    damping(_damping)
-    ,
-    infRadius(_infDistance)
+    : amplitude(_amlitude)
+    , lenght(_lenght)
+    , speed(_speed)
+    , damping(_damping)
+    , infRadius(_infDistance)
 {
 }
 

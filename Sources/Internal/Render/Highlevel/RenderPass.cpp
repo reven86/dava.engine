@@ -182,9 +182,9 @@ void RenderPass::DrawLayers(Camera* camera)
     viewportSize = Vector2(viewport.dx, viewport.dy);
     rcpViewportSize = Vector2(1.0f / viewport.dx, 1.0f / viewport.dy);
     viewportOffset = Vector2(viewport.x, viewport.y);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_SIZE, &viewportSize, (pointer_size)&viewportSize);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_SIZE, &viewportSize, reinterpret_cast<pointer_size>(&viewportSize));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, reinterpret_cast<pointer_size>(&rcpViewportSize));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, reinterpret_cast<pointer_size>(&viewportOffset));
 
     size_t size = renderLayers.size();
     for (size_t k = 0; k < size; ++k)
@@ -220,7 +220,7 @@ void RenderPass::EndRenderPass()
 
 void RenderPass::ClearLayersArrays()
 {
-    for (uint32 id = 0; id < (uint32)RenderLayer::RENDER_LAYER_ID_COUNT; ++id)
+    for (uint32 id = 0; id < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++id)
     {
         layersBatchArrays[id].Clear();
     }
@@ -255,7 +255,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     reflectionPass->GetPassConfig().depthStencilBuffer.texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    reflectionPass->SetViewport(Rect(0, 0, (float32)RuntimeTextures::REFLECTION_TEX_SIZE, (float32)RuntimeTextures::REFLECTION_TEX_SIZE));
+    reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
 
     refractionPass = new WaterRefractionRenderPass(PASS_FORWARD);
     refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
@@ -264,7 +264,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     refractionPass->GetPassConfig().depthStencilBuffer.texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    refractionPass->SetViewport(Rect(0, 0, (float32)RuntimeTextures::REFRACTION_TEX_SIZE, (float32)RuntimeTextures::REFRACTION_TEX_SIZE));
+    refractionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE)));
 }
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* renderSystem)

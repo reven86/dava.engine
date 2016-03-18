@@ -39,7 +39,9 @@ Sprite* TextureUtils::CreateSpriteFromTexture(const String& texturePathname)
     Texture* texture = Texture::CreateFromFile(texturePathname);
     if (texture)
     {
-        createdSprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)texture->GetWidth(), (float32)texture->GetHeight());
+        createdSprite = Sprite::CreateFromTexture(texture, 0, 0,
+                                                  static_cast<float32>(texture->GetWidth()),
+                                                  static_cast<float32>(texture->GetHeight()));
         texture->Release();
     }
 
@@ -59,14 +61,14 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image* first, cons
         return compareResult;
     }
 
-    int32 imageSizeInBytes = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(first->format));
+    int32 imageSizeInBytes = static_cast<int32>(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(first->format));
 
     int32 step = 1;
     int32 startIndex = 0;
 
     if (FORMAT_A8 == format)
     {
-        compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
+        compareResult.bytesCount = static_cast<int32>(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
         step = 4;
         startIndex = 3;
     }

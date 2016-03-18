@@ -297,7 +297,6 @@ private:
 
     // Landscape editor specific
     // TODO: remove later -->
-    bool IsTilemaskModificationCommand(const Command2* cmd);
     bool LoadAppropriateTextureFormat();
     bool IsSavingAllowed();
     // <--

@@ -76,7 +76,7 @@ Entity* ParticleEmitterNode::Clone(Entity* dstNode /*= NULL*/)
     }
 
     Entity::Clone(dstNode);
-    ParticleEmitterNode* nd = (ParticleEmitterNode*)dstNode;
+    ParticleEmitterNode* nd = static_cast<ParticleEmitterNode*>(dstNode);
 
     nd->yamlPath = yamlPath;
     nd->LoadFromYaml(yamlPath);

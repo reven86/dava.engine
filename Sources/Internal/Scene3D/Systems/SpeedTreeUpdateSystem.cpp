@@ -89,7 +89,7 @@ void SpeedTreeUpdateSystem::AddEntity(Entity* entity)
 {
     SpeedTreeComponent* component = GetSpeedTreeComponent(entity);
     DVASSERT(component);
-    component->leafTime = (float32)Random::Instance()->RandFloat(1000.f);
+    component->leafTime = static_cast<float32>(Random::Instance()->RandFloat(1000.f));
     allTrees.push_back(component);
 }
 

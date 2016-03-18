@@ -80,20 +80,14 @@ void StructureSystem::Move(const EntityGroup& entityGroup, DAVA::Entity* newPare
     {
         return;
     }
-    if (entityGroup.Size() > 1)
-    {
-        sceneEditor->BeginBatch("Move entities");
-    }
 
+    sceneEditor->BeginBatch("Move entities", entityGroupContent.size());
     for (const auto& item : entityGroupContent)
     {
-        sceneEditor->Exec(new EntityParentChangeCommand(item.first, newParent, newBefore));
+        sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(item.first, newParent, newBefore));
     }
 
-    if (entityGroup.Size() > 1)
-    {
-        sceneEditor->EndBatch();
-    }
+    sceneEditor->EndBatch();
 
     EmitChanged();
 }
@@ -129,8 +123,7 @@ void StructureSystem::Remove(const EntityGroup& entityGroup)
         }
     });
 
-    sceneEditor->BeginBatch("Remove entities");
-
+    sceneEditor->BeginBatch("Remove entities", entitiesToRemove.size());
     for (auto entity : entitiesToRemove)
     {
         if (entity->GetNotRemovable() == false)
@@ -140,7 +133,7 @@ void StructureSystem::Remove(const EntityGroup& entityGroup)
                 delegate->WillRemove(entity);
             }
 
-            sceneEditor->Exec(new EntityRemoveCommand(entity));
+            sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(entity));
 
             for (auto delegate : delegates)
             {
@@ -157,22 +150,15 @@ void StructureSystem::Remove(const EntityGroup& entityGroup)
 void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (nullptr != sceneEditor)
     {
-        if (emitters.size() > 1)
+        uint32 count = static_cast<uint32>(emitters.size());
+        sceneEditor->BeginBatch("Move particle emitter", count);
+        for (uint32 i = 0; i < count; ++i)
         {
-            sceneEditor->BeginBatch("Move particle emitter");
+            sceneEditor->Exec(Command2::Create<ParticleEmitterMoveCommand>(oldEffects[i], emitters[i], newEffect, dropAfter++));
         }
-
-        for (size_t i = 0; i < emitters.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleEmitterMoveCommand(oldEffects[i], emitters[i], newEffect, dropAfter++));
-        }
-
-        if (emitters.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
+        sceneEditor->EndBatch();
 
         EmitChanged();
     }
@@ -181,22 +167,15 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& em
 void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (nullptr != sceneEditor)
     {
-        if (layers.size() > 1)
+        uint32 count = static_cast<uint32>(layers.size());
+        sceneEditor->BeginBatch("Move particle layers", count);
+        for (uint32 i = 0; i < count; ++i)
         {
-            sceneEditor->BeginBatch("Move particle layers");
+            sceneEditor->Exec(Command2::Create<ParticleLayerMoveCommand>(oldEmitters[i], layers[i], newEmitter, newBefore));
         }
-
-        for (size_t i = 0; i < layers.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleLayerMoveCommand(oldEmitters[i], layers[i], newEmitter, newBefore));
-        }
-
-        if (layers.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
+        sceneEditor->EndBatch();
 
         EmitChanged();
     }
@@ -205,22 +184,15 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers
 void StructureSystem::RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (nullptr != sceneEditor)
     {
-        if (layers.size() > 1)
+        uint32 count = static_cast<uint32>(layers.size());
+        sceneEditor->BeginBatch("Remove particle layers", count);
+        for (uint32 i = 0; i < count; ++i)
         {
-            sceneEditor->BeginBatch("Remove particle layers");
+            sceneEditor->Exec(Command2::Create<ParticleLayerRemoveCommand>(oldEmitters[i], layers[i]));
         }
-
-        for (size_t i = 0; i < layers.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleLayerRemoveCommand(oldEmitters[i], layers[i]));
-        }
-
-        if (layers.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
+        sceneEditor->EndBatch();
 
         EmitChanged();
     }
@@ -229,22 +201,15 @@ void StructureSystem::RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& laye
 void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (nullptr != sceneEditor)
     {
-        if (forces.size() > 1)
+        uint32 count = static_cast<uint32>(forces.size());
+        sceneEditor->BeginBatch("Move particle layers", count);
+        for (uint32 i = 0; i < count; ++i)
         {
-            sceneEditor->BeginBatch("Move particle layers");
+            sceneEditor->Exec(Command2::Create<ParticleForceMoveCommand>(forces[i], oldLayers[i], newLayer));
         }
-
-        for (size_t i = 0; i < forces.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleForceMoveCommand(forces[i], oldLayers[i], newLayer));
-        }
-
-        if (forces.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
+        sceneEditor->EndBatch();
 
         EmitChanged();
     }
@@ -253,22 +218,15 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
 void StructureSystem::RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& layers)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (nullptr != sceneEditor)
     {
-        if (forces.size() > 1)
+        uint32 count = static_cast<uint32>(forces.size());
+        sceneEditor->BeginBatch("Remove particle layers", count);
+        for (uint32 i = 0; i < count; ++i)
         {
-            sceneEditor->BeginBatch("Remove particle layers");
+            sceneEditor->Exec(Command2::Create<ParticleForceRemoveCommand>(forces[i], layers[i]));
         }
-
-        for (size_t i = 0; i < forces.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleForceRemoveCommand(forces[i], layers[i]));
-        }
-
-        if (forces.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
+        sceneEditor->EndBatch();
 
         EmitChanged();
     }
@@ -361,14 +319,13 @@ void StructureSystem::ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& ma
                 DAVA::Map<DAVA::Entity*, DAVA::Entity*>::iterator it = mapping.begin();
                 DAVA::Map<DAVA::Entity*, DAVA::Entity*>::iterator end = mapping.end();
 
-                sceneEditor->BeginBatch("Reload model");
-
+                sceneEditor->BeginBatch("Reload model", mapping.size() * 2);
                 for (; it != end; ++it)
                 {
-                    DAVA::Entity* newEntityInstance = loadedEntity->Clone();
+                    ScopedPtr<DAVA::Entity> newEntityInstance(loadedEntity->Clone());
                     DAVA::Entity* origEntity = it->first;
 
-                    if (NULL != origEntity && NULL != newEntityInstance && NULL != origEntity->GetParent())
+                    if (NULL != origEntity && newEntityInstance && NULL != origEntity->GetParent())
                     {
                         DAVA::Entity* before = origEntity->GetParent()->GetNextChild(origEntity);
 
@@ -382,10 +339,8 @@ void StructureSystem::ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& ma
                             CopyLightmapSettings(origEntity, newEntityInstance);
                         }
 
-                        sceneEditor->Exec(new EntityParentChangeCommand(newEntityInstance, origEntity->GetParent(), before));
-                        sceneEditor->Exec(new EntityRemoveCommand(origEntity));
-
-                        newEntityInstance->Release();
+                        sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(newEntityInstance, origEntity->GetParent(), before));
+                        sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(origEntity));
                     }
                 }
 
@@ -439,7 +394,7 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
             }
             else
             {
-                sceneEditor->Exec(new EntityAddCommand(loadedEntity, sceneEditor));
+                sceneEditor->Exec(Command2::Create<EntityAddCommand>(loadedEntity, sceneEditor));
             }
 
             // TODO: move this code to some another place (into command itself or into ProcessCommand function)
@@ -471,6 +426,16 @@ void StructureSystem::RemoveDelegate(StructureSystemDelegate* delegate)
     delegates.remove(delegate);
 }
 
+void StructureSystem::AddEntity(DAVA::Entity* entity)
+{
+    EmitChanged();
+}
+
+void StructureSystem::RemoveEntity(DAVA::Entity* entity)
+{
+    EmitChanged();
+}
+
 void StructureSystem::Process(DAVA::float32 timeElapsed)
 {
     if (structureChanged)
@@ -480,85 +445,12 @@ void StructureSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void StructureSystem::Draw()
-{
-}
-
 void StructureSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    if (NULL != command)
+    if (command->MatchCommandIDs({ CMDID_PARTICLE_LAYER_REMOVE, CMDID_PARTICLE_LAYER_MOVE, CMDID_PARTICLE_FORCE_REMOVE, CMDID_PARTICLE_FORCE_MOVE }))
     {
-        switch (command->GetId())
-        {
-        case CMDID_PARTICLE_LAYER_REMOVE:
-        case CMDID_PARTICLE_LAYER_MOVE:
-        case CMDID_PARTICLE_FORCE_REMOVE:
-        case CMDID_PARTICLE_FORCE_MOVE:
-            EmitChanged();
-            break;
-
-        default:
-            break;
-        }
-
-        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
-        if (autoSelectionEnabled)
-        {
-            ProcessAutoSelection(command, redo);
-        }
+        EmitChanged();
     }
-}
-
-void StructureSystem::ProcessAutoSelection(const Command2* command, bool redo) const
-{
-    auto commandId = command->GetId();
-
-    auto sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    auto selectionSystem = sceneEditor->selectionSystem;
-
-    if (CMDID_BATCH == commandId)
-    {
-        auto batch = static_cast<const CommandBatch*>(command);
-
-        auto contain = batch->ContainsCommand(CMDID_ENTITY_ADD) || batch->ContainsCommand(CMDID_ENTITY_REMOVE);
-        if (contain)
-        {
-            selectionSystem->Clear();
-
-            auto count = batch->Size();
-            for (auto i = 0; i < count; ++i)
-            {
-                auto cmd = batch->GetCommand(i);
-                auto cmdID = cmd->GetId();
-
-                auto needAddEntity = ((CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo));
-                if (needAddEntity)
-                {
-                    selectionSystem->AddEntityToSelection(cmd->GetEntity());
-                }
-            }
-        }
-    }
-    else if (CMDID_ENTITY_ADD == commandId || CMDID_ENTITY_REMOVE == commandId)
-    {
-        selectionSystem->Clear();
-
-        auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
-        if (needAddEntity)
-        {
-            selectionSystem->AddEntityToSelection(command->GetEntity());
-        }
-    }
-}
-
-void StructureSystem::AddEntity(DAVA::Entity* entity)
-{
-    EmitChanged();
-}
-
-void StructureSystem::RemoveEntity(DAVA::Entity* entity)
-{
-    EmitChanged();
 }
 
 void StructureSystem::CheckAndMarkSolid(DAVA::Entity* entity)
@@ -600,8 +492,8 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             // sceneFileV2 will remove empty nodes only
             // if there is parent for such nodes.
             {
-                SceneFileV2* tmpSceneFile = new SceneFileV2();
-                Entity* tmpParent = new Entity();
+                ScopedPtr<SceneFileV2> tmpSceneFile(new SceneFileV2());
+                ScopedPtr<Entity> tmpParent(new Entity());
                 Entity* tmpEntity = loadedEntity;
 
                 tmpParent->AddNode(tmpEntity);
@@ -610,8 +502,6 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
                 loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
                 SafeRelease(tmpEntity);
-                SafeRelease(tmpParent);
-                SafeRelease(tmpSceneFile);
             }
 
             KeyedArchive* props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();

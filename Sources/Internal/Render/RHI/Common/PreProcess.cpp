@@ -47,7 +47,7 @@ _mcpp__fputc(int ch, OUTDEST dst)
     case MCPP_OUT:
     {
         if (_PreprocessedText)
-            _PreprocessedText->push_back((char)ch);
+            _PreprocessedText->push_back(static_cast<char>(ch));
     }
     break;
 
@@ -159,7 +159,7 @@ void PreProcessText(const char* text, std::string* result)
         mcpp__startup();
         mcpp__set_input(text, static_cast<unsigned>(strlen(text)));
         mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
-        mcpp_lib_main(countof(argv), (char**)argv);
+        mcpp_lib_main(countof(argv), const_cast<char**>(argv));
         mcpp__cleanup();
         mcpp__shutdown();
     }
@@ -189,7 +189,7 @@ void PreProcessText(const char* text, const char** arg, unsigned argCount, std::
             mcpp__startup();
             mcpp__set_input(text, static_cast<unsigned>(strlen(text)));
             mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
-            mcpp_lib_main(argc, (char**)argv);
+            mcpp_lib_main(argc, const_cast<char**>(argv));
             mcpp__cleanup();
             mcpp__shutdown();
         }

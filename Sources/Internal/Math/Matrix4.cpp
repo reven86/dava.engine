@@ -113,14 +113,12 @@ void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, f
 void Matrix4::glRotate(float32 angle, float32 x, float32 y, float32 z)
 {
     float32 xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c;
-    //float32 m[16];
-    bool optimized;
+    bool optimized = false;
 
-    s = (float32)sinf(DegToRad(angle));
-    c = (float32)cosf(DegToRad(angle));
+    s = std::sin(DegToRad(angle));
+    c = std::cos(DegToRad(angle));
 
     memcpy(this->data, IDENTITY.data, sizeof(float32) * 16);
-    optimized = false;
     
 #define M(row, col) this->data[col * 4 + row]
 

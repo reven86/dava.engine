@@ -159,7 +159,7 @@ public:
         Matrix3* matrix3Value;
         Matrix4* matrix4Value;
 
-        const void* pointerValue;
+        void* pointerValue;
 
         String* stringValue;
         WideString* wideStringValue;
