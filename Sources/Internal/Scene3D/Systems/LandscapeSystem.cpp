@@ -105,7 +105,7 @@ void LandscapeSystem::DrawPatchMetrics(Landscape* landscape, uint32 level, uint3
         float32 tanFovY = tanf(camera->GetFOV() * PI / 360.f) / camera->GetAspect();
 
         float32 distance = Distance(camera->GetPosition(), patch->positionOfMaxError);
-        float32 hError = patch->maxError / (distance * tanFovY);
+        float32 hError = Abs(patch->maxError) / (distance * tanFovY);
 
         Vector3 patchOrigin = patch->bbox.GetCenter();
         float32 patchDistance = Distance(camera->GetPosition(), patchOrigin);

@@ -478,55 +478,58 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
             uint32 x1 = x0 + step;
             uint32 y1 = y0 + step;
 
-            //Calculating max absolute height error between near lods.
-            //Choosing from five averaged heights per quad: four on middle of edges and one on diagonal
-            // +---*---+
-            // | \     |
-            // |  \    |
-            // *   *   *
-            // |    \  |
-            // |     \ |
-            // +---*---+
-
             //Patch corners points
             Vector3 p00 = GetPoint(x0, y0, heightmap->GetHeight(x0, y0));
             Vector3 p01 = GetPoint(x0, y1, heightmap->GetHeightClamp(x0, y1));
             Vector3 p10 = GetPoint(x1, y0, heightmap->GetHeightClamp(x1, y0));
             Vector3 p11 = GetPoint(x1, y1, heightmap->GetHeightClamp(x1, y1));
 
-            //Accurate height values from next subdivide level (more detailed LOD)
-            Vector3 p0[5] = {
-                GetPoint(x_, y0, heightmap->GetHeight(x_, y0)),
-                GetPoint(x0, y_, heightmap->GetHeight(x0, y_)),
-                GetPoint(x_, y_, heightmap->GetHeight(x_, y_)),
-                GetPoint(x1, y_, heightmap->GetHeightClamp(x1, y_)),
-                GetPoint(x_, y1, heightmap->GetHeightClamp(x_, y1)),
-            };
-            //Averaged height values from current level (less detailed LOD)
-            float32 h1[5] = {
-                (p00.z + p10.z) / 2.f,
-                (p00.z + p01.z) / 2.f,
-                (p00.z + p11.z) / 2.f,
-                (p10.z + p11.z) / 2.f,
-                (p01.z + p11.z) / 2.f,
-            };
-
-            //Calculate max error for quad
-            for (int32 i = 0; i < 5; ++i)
-            {
-                float32 error = p0[i].z - h1[i];
-                if (patch->maxError < Abs(error))
-                {
-                    patch->maxError = error;
-                    patch->positionOfMaxError = p0[i];
-                }
-            }
-
             //Add to bbox only corners points
             patch->bbox.AddPoint(p00);
             patch->bbox.AddPoint(p01);
             patch->bbox.AddPoint(p10);
             patch->bbox.AddPoint(p11);
+
+            if (level < (subdivLevelCount - 1))
+            {
+                //Calculating max absolute height error between near lods.
+                //Choosing from five averaged heights per quad: four on middle of edges and one on diagonal
+                // +---*---+
+                // | \     |
+                // |  \    |
+                // *   *   *
+                // |    \  |
+                // |     \ |
+                // +---*---+
+
+                //Accurate height values from next subdivide level (more detailed LOD)
+                Vector3 p0[5] = {
+                    GetPoint(x_, y0, heightmap->GetHeight(x_, y0)),
+                    GetPoint(x0, y_, heightmap->GetHeight(x0, y_)),
+                    GetPoint(x_, y_, heightmap->GetHeight(x_, y_)),
+                    GetPoint(x1, y_, heightmap->GetHeightClamp(x1, y_)),
+                    GetPoint(x_, y1, heightmap->GetHeightClamp(x_, y1)),
+                };
+                //Averaged height values from current level (less detailed LOD)
+                float32 h1[5] = {
+                    (p00.z + p10.z) / 2.f,
+                    (p00.z + p01.z) / 2.f,
+                    (p00.z + p11.z) / 2.f,
+                    (p10.z + p11.z) / 2.f,
+                    (p01.z + p11.z) / 2.f,
+                };
+
+                //Calculate max error for quad
+                for (int32 i = 0; i < 5; ++i)
+                {
+                    float32 error = p0[i].z - h1[i];
+                    if (Abs(patch->maxError) < Abs(error))
+                    {
+                        patch->maxError = error;
+                        patch->positionOfMaxError = p0[i];
+                    }
+                }
+            }
         }
     }
 
