@@ -206,9 +206,23 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 {
     DVASSERT(texDesc.levelCount);
 
+    if (
+    (texDesc.format == TEXTURE_FORMAT_PVRTC_4BPP_RGBA ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC_2BPP_RGBA ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_4BPP_RGB ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_4BPP_RGBA ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_2BPP_RGB ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_2BPP_RGBA)
+    && (texDesc.width != texDesc.height)
+    )
+    {
+        Logger::Error("can't create non-square PVRTC-tex %ux%u fmt=%i", texDesc.width, texDesc.height, int(texDesc.format));
+        return InvalidHandle;
+    }
     Handle handle = InvalidHandle;
     MTLPixelFormat pf = (texDesc.isRenderTarget) ? /*MetalRenderableTextureFormat(texDesc.format)*/MTLPixelFormatBGRA8Unorm : MetalTextureFormat(texDesc.format);
     Logger::Info("try create-desc for tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
+
     MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
 
     if (!desc)
