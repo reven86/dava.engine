@@ -91,7 +91,9 @@ EditorSystemsManager::EditorSystemsManager()
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
-    systems.emplace_back(new CanvasSystem(this));
+    canvasSystemPtr = new CanvasSystem(this);
+    systems.emplace_back(canvasSystemPtr);
+
     systems.emplace_back(new SelectionSystem(this));
     systems.emplace_back(new HUDSystem(this));
     systems.emplace_back(new CursorSystem(this));
@@ -142,12 +144,11 @@ ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& po
 
 int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point)
 {
-    int index = 0;
     if (editingRootControls.empty())
     {
         return 0;
     }
-    GetIndexByPos.Emit(point, index);
+    uint32 index = canvasSystemPtr->GetIndexByPos(point);
     bool insertToEnd = (index == editingRootControls.size());
 
     auto iter = editingRootControls.begin();

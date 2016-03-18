@@ -107,6 +107,7 @@ struct ChangePropertyAction
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
+class CanvasSystem;
 
 class EditorSystemsManager : PackageListener
 {
@@ -146,7 +147,6 @@ public:
     DAVA::Signal<> FocusPreviousChild;
     DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>&> NodesHovered;
-    DAVA::Signal < const DAVA::Vector2 &/*pos*/, int &/*index*/> GetIndexByPos;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
@@ -173,6 +173,7 @@ private:
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
     SelectionContainer selectionContainer;
+    CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
 };
 
 template <class OutIt, class Predicate>

@@ -303,7 +303,6 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
     systemManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
-    systemManager->GetIndexByPos.Connect(this, &CanvasSystem::OnGetIndexByPos);
 }
 
 CanvasSystem::~CanvasSystem()
@@ -386,19 +385,20 @@ void CanvasSystem::AddBackgroundControllerToCanvas(BackgroundController* backgro
     backgroundController->AdjustToNestedControl();
 }
 
-void CanvasSystem::OnGetIndexByPos(const DAVA::Vector2& pos, int& index)
+uint32 CanvasSystem::GetIndexByPos(const DAVA::Vector2& pos)
 {
-    index = 0;
+    uint32 index = 0;
     for (auto& iter : gridControls)
     {
         auto grid = iter->GetGridControl();
         
         if (pos.y < (grid->GetPosition().y + grid->GetSize().y / 2.0f))
         {
-            return;
+            return index;
         }
         index++;
     }
+    return index;
 }
 
 void CanvasSystem::LayoutCanvas()
