@@ -1116,10 +1116,9 @@ void CommandBufferGLES2_t::Execute()
 #else
     for (std::vector<uint64>::const_iterator c = _cmd.begin(), c_end = _cmd.end(); c != c_end; ++c)
 #endif
-//++cmd_cnt;
-{
+    {
 #if RHI_GLES2__USE_CMDBUF_PACKING
-    const CommandGLES2* cmd = reinterpret_cast<const CommandGLES2*>(c);
+        const CommandGLES2* cmd = reinterpret_cast<const CommandGLES2*>(c);
         switch (cmd->type)
 #else
         const uint64 cmd = *c;
