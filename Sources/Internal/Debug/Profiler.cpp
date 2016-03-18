@@ -29,7 +29,7 @@
 
     #include "Profiler.h"
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
     #include "Concurrency/Spinlock.h"
     #include "Concurrency/Mutex.h"
     #include "Base/BaseTypes.h"

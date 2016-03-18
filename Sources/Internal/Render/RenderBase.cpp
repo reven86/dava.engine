@@ -68,18 +68,18 @@ rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr)
 {
     for (uint32 i = 0; i < CMP_TEST_MODE_COUNT; i++)
         if (cmpFuncStr == CMP_FUNC_NAMES[i])
-            return (rhi::CmpFunc)i;
+            return static_cast<rhi::CmpFunc>(i);
 
-    return (rhi::CmpFunc)CMP_TEST_MODE_COUNT;
+    return static_cast<rhi::CmpFunc>(CMP_TEST_MODE_COUNT);
 }
 
 rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr)
 {
     for (uint32 i = 0; i < STENCILOP_COUNT; i++)
         if (stencilOpStr == STENCIL_OP_NAMES[i])
-            return (rhi::StencilOperation)i;
+            return static_cast<rhi::StencilOperation>(i);
 
-    return (rhi::StencilOperation)STENCILOP_COUNT;
+    return static_cast<rhi::StencilOperation>(STENCILOP_COUNT);
 }
 
 /*RHI_COMPLETE - make this stuff correspond with PolygonGroup::UpdateDataPointersAndStreams*/

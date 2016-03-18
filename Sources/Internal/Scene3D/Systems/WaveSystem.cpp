@@ -43,10 +43,8 @@
 namespace DAVA
 {
 WaveSystem::WaveInfo::WaveInfo(WaveComponent* _component)
-    :
-    component(_component)
-    ,
-    currentWaveRadius(0.f)
+    : component(_component)
+    , currentWaveRadius(0.f)
 {
     if (component->GetDampingRatio() < EPSILON)
         maxRadius = component->GetInfluenceRadius();

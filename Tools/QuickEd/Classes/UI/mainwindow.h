@@ -31,7 +31,7 @@
 #define MAINWINDOW_H
 
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -56,7 +56,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 public:
     struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
-
+    ~MainWindow() override;
     void CreateUndoRedoActions(const QUndoGroup* undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
@@ -79,7 +79,7 @@ signals:
     void SaveAllDocuments();
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
-    void CloseRequested();
+    bool CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);
@@ -107,6 +107,7 @@ private slots:
     void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
+    void OnCloseCurrentTab();
 
 private:
     void InitLanguageBox();

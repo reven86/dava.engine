@@ -181,7 +181,7 @@ void MongodbObject::AddInt64(const String& fieldname, int64 value)
 
 void MongodbObject::AddData(const String& fieldname, uint8* data, int32 dataSize)
 {
-    BSON_VERIFY(bson_append_binary(objectData->object, fieldname.c_str(), BSON_BIN_BINARY, (const char*)data, dataSize));
+    BSON_VERIFY(bson_append_binary(objectData->object, fieldname.c_str(), BSON_BIN_BINARY, reinterpret_cast<const char*>(data), dataSize));
 }
 
 void MongodbObject::AddString(const String& fieldname, const String& value)
@@ -257,7 +257,7 @@ bool MongodbObject::GetData(const String& fieldname, uint8* outData, int32 dataS
     bool found = objectData->FindField(&it, &foundIt, fieldname, true);
     if (found)
     {
-        uint8* binaryData = (uint8*)bson_iterator_bin_data(&foundIt);
+        const uint8* binaryData = reinterpret_cast<const uint8*>(bson_iterator_bin_data(&foundIt));
         Memcpy(outData, binaryData, dataSize);
         found = true;
     }
