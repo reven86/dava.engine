@@ -62,7 +62,6 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
     }
 
-
     bool connectCalled = client.Connect(connectionParams.ip, connectionParams.port);
     if (!connectCalled)
     {
@@ -189,7 +188,7 @@ void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool 
     }
     else
     {
-        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, request.requestID);
+        //skip this request, because it was canceled by timeout
     }
 }
 

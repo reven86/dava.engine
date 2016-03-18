@@ -83,6 +83,10 @@ void SpritesPackerModule::RepackWithDialog()
     JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &SpritesPackerModule::ConnectCacheClient));
 
     ShowPackerDialog();
+
+    JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &SpritesPackerModule::DisconnectCacheClient));
+
+    ReloadObjects();
 }
 
 void SpritesPackerModule::RepackImmediately(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
@@ -109,28 +113,16 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
     ConnectCacheClient();
     spritesPacker->ReloadSprites(clearDirs, forceRepack, gpu, quality);
 
-    DisconnectAndReload();
+    DisconnectCacheClient();
 
     JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::CloseWaitDialog));
+    JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::ReloadObjects));
 }
 
 void SpritesPackerModule::ShowPackerDialog()
 {
     DialogReloadSprites dialogReloadSprites(spritesPacker.get(), QtMainWindow::Instance());
     dialogReloadSprites.exec();
-
-    connect(&dialogReloadSprites, &DialogReloadSprites::finished, this, &SpritesPackerModule::DialogClosed);
-}
-
-void SpritesPackerModule::DialogClosed()
-{
-    JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &SpritesPackerModule::DisconnectAndReload));
-}
-
-void SpritesPackerModule::DisconnectAndReload()
-{
-    DisconnectCacheClient();
-    ReloadObjects();
 }
 
 void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
