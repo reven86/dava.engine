@@ -708,8 +708,8 @@ void CreateMagnetLinesForPivot(Vector<MagnetLineInfo>& magnetLines, Vector2 targ
 
     Vector2 verticalLinePos(offset.x, 0.0f);
 
-    Rect horizontalRect(horizontalLinePos, Vector2(targetSize.x, 0.0f));
-    Rect verticalRect(verticalLinePos, Vector2(0.0f, targetSize.y));
+    Rect horizontalRect(horizontalLinePos, Vector2(targetSize.x, 1.0f));
+    Rect verticalRect(verticalLinePos, Vector2(1.0f, targetSize.y));
     Rect targetBox(Vector2(0.0f, 0.0f), targetSize);
     magnetLines.emplace_back(targetBox, horizontalRect, &controlGeometricData, Vector2::AXIS_X);
     magnetLines.emplace_back(targetBox, verticalRect, &controlGeometricData, Vector2::AXIS_Y);

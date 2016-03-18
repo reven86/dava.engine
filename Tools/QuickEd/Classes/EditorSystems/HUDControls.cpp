@@ -289,6 +289,7 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
 HUDMagnetLineControl::HUDMagnetLineControl(const Rect& rect)
     : UIControl(rect)
 {
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
     background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
     background->SetDrawType(UIControlBackground::DRAW_TILED);
 }

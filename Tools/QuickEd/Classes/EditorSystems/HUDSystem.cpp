@@ -321,7 +321,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
         linePos = DAVA::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
-        lineSize *= gd->scale;
+        lineSize[line.axis] *= gd->scale[line.axis];
         Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
         RefPtr<UIControl> lineControl(new HUDMagnetLineControl(Rect(linePos + gdPos, lineSize)));
