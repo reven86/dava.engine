@@ -102,12 +102,12 @@ EditorSystemsManager::EditorSystemsManager()
 
 EditorSystemsManager::~EditorSystemsManager() = default;
 
-UIControl* EditorSystemsManager::GetRootControl()
+UIControl* EditorSystemsManager::GetRootControl() const
 {
     return rootControl.Get();
 }
 
-UIControl* EditorSystemsManager::GetScalableControl()
+UIControl* EditorSystemsManager::GetScalableControl() const
 {
     return scalableControl.Get();
 }
@@ -130,7 +130,7 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
-ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point)
+ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point) const
 {
     Vector<ControlNode*> nodesUnderPoint;
     auto predicate = [point](const ControlNode* node) -> bool {
@@ -142,7 +142,7 @@ ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& po
     return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
 }
 
-int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point)
+int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
 {
     if (editingRootControls.empty())
     {

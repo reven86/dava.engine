@@ -120,8 +120,8 @@ public:
     explicit EditorSystemsManager();
     ~EditorSystemsManager();
 
-    DAVA::UIControl* GetRootControl();
-    DAVA::UIControl* GetScalableControl();
+    DAVA::UIControl* GetRootControl() const;
+    DAVA::UIControl* GetScalableControl() const;
 
     bool OnInput(DAVA::UIEvent* currentInput);
 
@@ -130,8 +130,8 @@ public:
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
-    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point);
-    int GetIndexOfNearestControl(const DAVA::Vector2& point);
+    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point) const;
+    int GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
