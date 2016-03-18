@@ -79,7 +79,7 @@ public:
     static const DAVA::String SetPreset;
     static const DAVA::String SavePreset;
     static const DAVA::String PresetOpt;
-    static const DAVA::String BatchingEnabled;
+    static const DAVA::String PresetsList;
 
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };

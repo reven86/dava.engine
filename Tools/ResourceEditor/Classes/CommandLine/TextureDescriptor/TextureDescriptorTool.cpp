@@ -67,12 +67,14 @@ TextureDescriptorTool::TextureDescriptorTool()
     options.AddOption(OptionName::Folder, VariantType(String("")), "Path to folder for operation on descriptors");
     options.AddOption(OptionName::File, VariantType(String("")), "Pathname of descriptor");
 
+    options.AddOption(OptionName::ProcessFileList, VariantType(String("")), "Pathname to file with descriptor pathes");
+    options.AddOption(OptionName::PresetsList, VariantType(String("")), "Pathname to file with yaml pathes");
+
     options.AddOption(OptionName::Resave, VariantType(false), "Resave descriptor files in target folder");
     options.AddOption(OptionName::Create, VariantType(false), "Create descriptors for image files");
     options.AddOption(OptionName::SetCompression, VariantType(false), "Set compression parameters for descriptor or for all descriptors in folder");
     options.AddOption(OptionName::SetPreset, VariantType(false), "Update descriptor(s) with given preset data");
     options.AddOption(OptionName::SavePreset, VariantType(false), "Save preset of descriptor(s)");
-    options.AddOption(OptionName::BatchingEnabled, VariantType(false), "Activate work with multiple objects");
 
     options.AddOption(OptionName::Force, VariantType(false), "Enables force running of selected operation");
     options.AddOption(OptionName::Mipmaps, VariantType(false), "Enables generation of mipmaps");
@@ -92,7 +94,9 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
 {
     folderPathname = options.GetOption(OptionName::Folder).AsString();
     filePathname = options.GetOption(OptionName::File).AsString();
+    filesList = options.GetOption(OptionName::ProcessFileList).AsString();
     presetPath = options.GetOption(OptionName::PresetOpt).AsString();
+    presetsList = options.GetOption(OptionName::PresetsList).AsString();
 
     const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
     quality = Clamp(static_cast<TextureConverter::eConvertQuality>(qualityValue), TextureConverter::ECQ_FASTEST, TextureConverter::ECQ_VERY_HIGH);
@@ -117,8 +121,6 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
     {
         commandAction = ACTION_SAVE_PRESET;
     }
-
-    batchingEnabled = options.GetOption(OptionName::BatchingEnabled).AsBool();
 
     forceModeEnabled = options.GetOption(OptionName::Force).AsBool();
     convertEnabled = options.GetOption(OptionName::Convert).AsBool();
@@ -163,44 +165,48 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
 
 bool TextureDescriptorTool::InitializeInternal()
 {
-    if (commandAction == ACTION_NONE)
+    if (commandAction == TextureDescriptorTool::ACTION_NONE)
     {
         AddError("Action was specified");
         return false;
     }
 
-    if (filePathname.IsEmpty() && folderPathname.IsEmpty())
+    if (commandAction == TextureDescriptorTool::ACTION_SAVE_PRESET)
     {
-        AddError("File or folder parameter was not specified");
-        return false;
+        if ((!filePathname.IsEmpty() && presetPath.IsEmpty()) || (filePathname.IsEmpty() && !presetPath.IsEmpty()))
+        {
+            AddError("File or preset parameter was not specified");
+            return false;
+        }
+        else if ((!filesList.IsEmpty() && presetsList.IsEmpty()) || (filesList.IsEmpty() && !presetsList.IsEmpty()))
+        {
+            AddError("FilesList or presetsList parameter was not specified");
+            return false;
+        }
     }
+    else
+    {
+        if (filePathname.IsEmpty() && folderPathname.IsEmpty())
+        {
+            AddError("File or folder parameter was not specified");
+            return false;
+        }
 
-    if (!folderPathname.IsEmpty())
-    {
-        folderPathname.MakeDirectoryPathname();
-    }
+        if (!folderPathname.IsEmpty())
+        {
+            folderPathname.MakeDirectoryPathname();
+        }
 
-    switch (commandAction)
-    {
-    case TextureDescriptorTool::ACTION_SET_COMPRESSION:
-    {
-        if (compressionParams.empty())
+        if ((commandAction == TextureDescriptorTool::ACTION_SET_COMPRESSION) && compressionParams.empty())
         {
             AddError("GPU params were not specified");
             return false;
         }
-        break;
-    }
-    case TextureDescriptorTool::ACTION_SET_PRESET:
-    case TextureDescriptorTool::ACTION_SAVE_PRESET:
-    {
-        if (presetPath.IsEmpty())
+        else if ((commandAction == TextureDescriptorTool::ACTION_SET_PRESET) && presetPath.IsEmpty())
         {
             AddError("Preset was not specified");
             return false;
         }
-        break;
-    }
     }
 
     return true;
@@ -261,9 +267,9 @@ void TextureDescriptorTool::ProcessInternal()
     }
     case ACTION_SAVE_PRESET:
     {
-        if (batchingEnabled)
+        if (!filesList.IsEmpty())
         {
-            TextureDescriptorUtils::SavePreset(TextureDescriptorToolLocal::LoadPathesFromFile(filePathname), TextureDescriptorToolLocal::LoadPathesFromFile(presetPath));
+            TextureDescriptorUtils::SavePreset(TextureDescriptorToolLocal::LoadPathesFromFile(filesList), TextureDescriptorToolLocal::LoadPathesFromFile(presetsList));
         }
         else
         {

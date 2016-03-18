@@ -62,11 +62,12 @@ private:
     DAVA::FilePath filePathname;
     DAVA::FilePath presetPath;
 
+    DAVA::FilePath filesList;
+    DAVA::FilePath presetsList;
+
     bool forceModeEnabled = false;
     bool convertEnabled = false;
     bool generateMipMaps = false;
-
-    bool batchingEnabled = false;
 
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
     DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;

@@ -71,7 +71,7 @@ const DAVA::String OptionName::SetCompression("-setcompression");
 const DAVA::String OptionName::SetPreset("-setpreset");
 const DAVA::String OptionName::SavePreset("-savepreset");
 const DAVA::String OptionName::PresetOpt("-preset");
-const DAVA::String OptionName::BatchingEnabled("-batch");
+const DAVA::String OptionName::PresetsList("-presetslist");
 
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {
