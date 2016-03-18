@@ -45,7 +45,7 @@ public slots:
     {
         DVASSERT(ProjectManager::Instance() != nullptr);
 
-        connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &ResourceEditorLauncher::OnProjectOpened);
+        connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &ResourceEditorLauncher::OnProjectOpened, Qt::QueuedConnection);
         ProjectManager::Instance()->OpenLastProject();
     }
 
