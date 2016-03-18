@@ -141,12 +141,6 @@ public:
     void BindDynamicParameters(Camera* camera) override;
     void PrepareToRender(Camera* camera) override;
 
-    void SetDrawWired(bool isWire);
-    bool IsDrawWired() const;
-
-    void SetUseMorphing(bool useMorph);
-    bool IsUseMorphing() const;
-
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
     void SetUpdatable(bool isUpdatable);
     bool IsUpdatable() const;
@@ -164,6 +158,18 @@ protected:
     void RebuildLandscape();
 
     void PrepareMaterial(NMaterial* material);
+
+    void SetDrawWired(bool isWire);
+    bool IsDrawWired() const;
+
+    void SetUseInstancing(bool useInstancing);
+    bool IsUseInstancing() const;
+
+    void SetUseMorphing(bool useMorph);
+    bool IsUseMorphing() const;
+
+    void SetDrawMorphing(bool drawMorph);
+    bool IsDrawMorphing() const;
 
     struct RestoreBufferData
     {
@@ -357,10 +363,11 @@ public:
                          PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
                          PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
-                         PROPERTY("useMorphing", "useMorphing", IsUseMorphing, SetUseMorphing, I_VIEW | I_EDIT)
                          PROPERTY("isDrawWired", "isDrawWired", IsDrawWired, SetDrawWired, I_VIEW | I_EDIT)
+                         PROPERTY("useInstancing", "useInstancing", IsUseInstancing, SetUseInstancing, I_VIEW | I_EDIT)
+                         PROPERTY("useMorphing", "useMorphing", IsUseMorphing, SetUseMorphing, I_VIEW | I_EDIT)
+                         PROPERTY("debugDrawMorphing", "debugDrawMorphing", IsDrawMorphing, SetDrawMorphing, I_VIEW | I_EDIT)
                          MEMBER(debugDrawMetrics, "debugDrawMetrics", I_VIEW | I_EDIT)
-                         MEMBER(debugDrawMorphing, "debugDrawMorphing", I_VIEW | I_EDIT)
                          MEMBER(maxHeightError, "maxHeightError", I_VIEW | I_EDIT)
                          MEMBER(maxPatchRadiusError, "maxPatchRadiusError", I_VIEW | I_EDIT)
                          MEMBER(maxAbsoluteHeightError, "maxAbsoluteHeightError", I_VIEW | I_EDIT)

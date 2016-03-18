@@ -37,6 +37,10 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD5(varFog,4)
     #endif
 
+	#if LANDSCAPE_MORPHING_COLOR
+		VPROG_OUT_COLOR0(morphColor,4)
+	#endif
+	
 VPROG_OUT_END
 
 #if LANDSCAPE_USE_INSTANCING
@@ -112,6 +116,10 @@ VPROG_BEGIN
 	float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
 	float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
 	
+	#if LANDSCAPE_MORPHING_COLOR
+		VP_OUT(morphColor) = float4(1.0 - morphAmount, morphAmount, 1.0, 1.0);
+	#endif
+
 #else
 	
 	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + 0.5 / textureSize, 0.0);

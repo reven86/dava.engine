@@ -150,10 +150,16 @@ void Landscape::ReleaseGeometryData()
 
     ////Instanced data
     if (patchVertexBuffer)
+    {
         rhi::DeleteVertexBuffer(patchVertexBuffer);
+        patchVertexBuffer = rhi::HVertexBuffer();
+    }
 
     if (patchIndexBuffer)
+    {
         rhi::DeleteIndexBuffer(patchIndexBuffer);
+        patchIndexBuffer = rhi::HIndexBuffer();
+    }
 
     for (InstanceDataBuffer* buffer : freeInstanceDataBuffers)
     {
@@ -282,6 +288,7 @@ void Landscape::PrepareMaterial(NMaterial* material)
 {
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, useInstancing ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, useLodMorphing ? 1 : 0);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
 }
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
@@ -507,8 +514,8 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
             //Calculate max error for quad
             for (int32 i = 0; i < 5; ++i)
             {
-                float32 error = Abs(p0[i].z - h1[i]);
-                if (patch->maxError < error)
+                float32 error = p0[i].z - h1[i];
+                if (patch->maxError < Abs(error))
                 {
                     patch->maxError = error;
                     patch->positionOfMaxError = p0[i];
@@ -562,13 +569,13 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     ////////////////////////////////////////////////////////////////////////////////////
 
     float32 distance = Distance(cameraPos, patch->positionOfMaxError);
-    float32 hError = patch->maxError / (distance * tanFovY);
+    float32 hError = Abs(patch->maxError) / (distance * tanFovY);
 
     Vector3 patchOrigin = patch->bbox.GetCenter();
     float32 patchDistance = Distance(cameraPos, patchOrigin);
     float32 rError = patch->radius / (patchDistance * tanFovY);
 
-    if ((level < subdivLevelCount - 1) && ((minSubdivLevelSize > levelInfo.size) || (maxHeightError <= hError) || (maxPatchRadiusError <= rError) || (maxAbsoluteHeightError < patch->maxError)))
+    if ((level < subdivLevelCount - 1) && ((minSubdivLevelSize > levelInfo.size) || (maxHeightError <= hError) || (maxPatchRadiusError <= rError) || (maxAbsoluteHeightError < Abs(patch->maxError))))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdivLevel = level;
@@ -1212,7 +1219,6 @@ void Landscape::DrawLandscapeInstancing()
 void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& nearLevel, float32 patchMorph /* = 0.f */, const Vector4& nearMorph /* = Vector4() */)
 {
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (yy << level) + xx];
 
     float32 levelf = float32(level);
     InstanceData* instanceData = reinterpret_cast<InstanceData*>(instanceDataPtr);
@@ -1580,6 +1586,21 @@ bool Landscape::IsDrawWired() const
     return landscapeMaterial->GetEffectiveFXName() == NMaterialName::TILE_MASK_DEBUG;
 }
 
+void Landscape::SetUseInstancing(bool isUse)
+{
+    bool newValue = isUse && rhi::DeviceCaps().isInstancingSupported;
+    if (useInstancing != newValue)
+    {
+        useInstancing = newValue;
+        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, useInstancing ? 1 : 0);
+        RebuildLandscape();
+    }
+}
+bool Landscape::IsUseInstancing() const
+{
+    return useInstancing;
+}
+
 void Landscape::SetUseMorphing(bool useMorph)
 {
     if (useLodMorphing != useMorph)
@@ -1593,6 +1614,20 @@ void Landscape::SetUseMorphing(bool useMorph)
 bool Landscape::IsUseMorphing() const
 {
     return useLodMorphing;
+}
+
+void Landscape::SetDrawMorphing(bool drawMorph)
+{
+    if (debugDrawMorphing != drawMorph)
+    {
+        debugDrawMorphing = drawMorph;
+        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
+    }
+}
+
+bool Landscape::IsDrawMorphing() const
+{
+    return debugDrawMorphing;
 }
 
 /*

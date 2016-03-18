@@ -10,6 +10,10 @@ FPROG_IN_BEGIN
         FPROG_IN_TEXCOORD5(varFog,4)
     #endif
 
+	#if LANDSCAPE_MORPHING_COLOR
+		FPROG_IN_COLOR0(morphColor,4) //patch color
+	#endif
+	
 FPROG_IN_END
 
 
@@ -52,6 +56,10 @@ FPROG_BEGIN
          
     float4 outColor = float4(color3, 1.0);
     
+#if LANDSCAPE_LOD_MORPHING && LANDSCAPE_MORPHING_COLOR
+	outColor = outColor * 0.25 + FP_IN(morphColor) * 0.75;
+#endif
+	
 #if CURSOR
     float2 cursorCoord = (FP_IN(texCoord) + cursorCoordSize.xy) / cursorCoordSize.zw + float2(0.5, 0.5);
     float4 cursorColor = FP_TEXTURE2D( cursorTexture, cursorCoord );

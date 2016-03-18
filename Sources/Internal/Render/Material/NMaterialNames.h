@@ -201,6 +201,7 @@ public:
 
     static const FastName FLAG_LANDSCAPE_USE_INSTANCING;
     static const FastName FLAG_LANDSCAPE_LOD_MORPHING;
+    static const FastName FLAG_LANDSCAPE_MORPHING_COLOR;
 
     //Illumination params
     static const FastName FLAG_ILLUMINATION_USED;
