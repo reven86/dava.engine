@@ -29,7 +29,7 @@
 #include "DockLODEditor/DistanceSlider.h"
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Functional/Function.h"
 #include "Scene3D/Entity.h"
 #include "Utils/StringFormat.h"
@@ -70,6 +70,7 @@ DistanceSlider::DistanceSlider(QWidget* parent /*= 0*/)
     splitter->setOrientation(Qt::Horizontal);
     splitter->setMinimumHeight(20);
     splitter->setChildrenCollapsible(false);
+    splitter->installEventFilter(this);
 
     layout->addWidget(splitter);
     layout->setSpacing(0);
@@ -102,7 +103,6 @@ void DistanceSlider::SetFramesCount(DAVA::uint32 count)
 
         frame->setPalette(pallete);
         frame->setAutoFillBackground(true);
-
         frame->setMinimumWidth(DistanceSliderDetails::MIN_WIDGET_WIDTH);
 
         splitter->addWidget(frame);
@@ -141,7 +141,7 @@ void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_)
 {
     DVASSERT(distances_.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
 
-    if (distances_ == realDistances)
+    if (distances_ == realDistances || layersCount == 0)
     {
         return;
     }
@@ -149,10 +149,16 @@ void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_)
     DAVA::uint32 distancesCount = static_cast<DAVA::uint32>(DAVA::Min(realDistances.size(), distances_.size()));
     for (DAVA::uint32 layer = 0; layer < distancesCount; ++layer)
     {
-        realDistances[layer] = distances_[layer];
+        realDistances[layer] = DAVA::Round(distances_[layer]);
     }
 
-    const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (splitterHandles.size() - 1);
+    BuildUIFromDistances();
+}
+
+void DistanceSlider::BuildUIFromDistances()
+{
+    const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (layersCount - 1);
+
     const DAVA::float32 scaleSize = GetScaleSize();
     const DAVA::float32 widthCoef = splitterWidth / scaleSize;
 
@@ -160,11 +166,16 @@ void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_)
     DAVA::int32 lastLayerSize = 0;
     for (DAVA::uint32 i = 1; i < layersCount; ++i)
     {
-        DAVA::int32 prevSize = DistanceSliderDetails::RoundFloat32(realDistances[i - 1] * widthCoef);
+        DAVA::int32 prevSize = lastLayerSize;
         lastLayerSize = DistanceSliderDetails::RoundFloat32(realDistances[i] * widthCoef);
         sizes.push_back(lastLayerSize - prevSize);
     }
     sizes.push_back(splitterWidth - lastLayerSize);
+
+    for (DAVA::uint32 i = layersCount; i < framesCount; ++i)
+    {
+        sizes.push_back(DistanceSliderDetails::MIN_WIDGET_WIDTH);
+    }
 
     QSignalBlocker guard(splitter);
     splitter->setSizes(sizes);
@@ -174,8 +185,7 @@ void DistanceSlider::SplitterMoved(int pos, int index)
 {
     DVASSERT(layersCount > 0)
 
-    const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (splitterHandles.size() - 1);
-
+    const int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (layersCount - 1);
     const DAVA::float32 scaleSize = GetScaleSize();
     const DAVA::float32 widthCoef = scaleSize / splitterWidth;
 
@@ -204,6 +214,10 @@ bool DistanceSlider::eventFilter(QObject* obj, QEvent* e)
         {
             emit DistanceHandleReleased();
         }
+    }
+    if (e->type() == QEvent::Resize && obj == splitter)
+    {
+        BuildUIFromDistances();
     }
 
     return retValue;

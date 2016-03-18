@@ -68,6 +68,7 @@ protected:
 
 private:
     DAVA::float32 GetScaleSize() const;
+    void BuildUIFromDistances();
 
 private:
     QSplitter* splitter = nullptr;
