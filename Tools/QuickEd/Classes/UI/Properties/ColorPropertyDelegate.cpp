@@ -152,7 +152,9 @@ void ColorPropertyDelegate::OnTextChanged(const QString& text)
     int pos = -1;
     QString textCopy(text);
     bool valid = lineEdit->validator()->validate(textCopy, pos) == QValidator::Acceptable;
-    palette.setColor(QPalette::Text, valid ? Qt::black : Qt::red);
+    QColor globalTextColor = qApp->palette().color(QPalette::Text);
+    QColor nextColor = valid ? globalTextColor : Qt::red;
+    palette.setColor(QPalette::Text, nextColor);
     lineEdit->setPalette(palette);
 
     if (valid)
