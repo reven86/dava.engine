@@ -467,7 +467,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         default:
             DVASSERT(false && "unrecognised action!");
         }
-        if (pos != nullptr)
+        if (pos != nullptr && destNode != package->GetPackageControlsNode())
         {
             for (const auto& node : nodes)
             {
@@ -516,7 +516,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
     {
         String string = data->text().toStdString();
         auto nodes = commandExecutor->Paste(package, destNode, destIndex, string);
-        if (pos != nullptr)
+        if (pos != nullptr && destNode != package->GetPackageControlsNode())
         {
             for (const auto& node : nodes)
             {
