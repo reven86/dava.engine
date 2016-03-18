@@ -30,15 +30,15 @@
 #ifndef __RESOURCEEDITORQT__COMMANDACTION__
 #define __RESOURCEEDITORQT__COMMANDACTION__
 
-#include "Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class CommandAction : public Command2
 {
 public:
-    CommandAction(int _id, const DAVA::String& _text = "");
-    virtual ~CommandAction();
+    CommandAction(DAVA::int32 _id, const DAVA::String& _text = "");
 
     bool CanUndo() const override;
+
     void Undo() override;
     DAVA::Entity* GetEntity() const override;
 };

@@ -30,7 +30,7 @@
 #ifndef __BAKE_TRANSFORM_COMMAND_H__
 #define __BAKE_TRANSFORM_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Render/Highlevel/RenderObject.h"
 
 class BakeGeometryCommand : public Command2
