@@ -306,6 +306,11 @@ void CommandStack::ClearRedoCommands()
 {
     if (CanRedo())
     {
+        if (nextCommandIndex < cleanCommandIndex)
+        {
+            SetClean(false);
+        }
+
         std::list<Command2*>::iterator i = commandList.begin();
         std::advance(i, nextCommandIndex);
         while (i != commandList.end())
