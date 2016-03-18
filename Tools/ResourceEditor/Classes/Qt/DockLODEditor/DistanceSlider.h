@@ -75,7 +75,6 @@ private:
 
     DAVA::Vector<QFrame*> frames;
     DAVA::Vector<DAVA::float32> realDistances;
-    DAVA::Vector<DAVA::int32> distancesAsIntegers; //because qt works with int and I have errors with int-float conversion
 
     DAVA::uint32 layersCount = 0;
     DAVA::uint32 framesCount = 0;
