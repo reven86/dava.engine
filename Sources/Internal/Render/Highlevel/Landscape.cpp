@@ -981,12 +981,12 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                 }
 
                 *indicesPtr++ = GetVertexIndex(x0aligned, y0aligned);
-                *indicesPtr++ = GetVertexIndex(x1aligned, y0aligned2);
-                *indicesPtr++ = GetVertexIndex(x0aligned2, y1aligned);
-
-                *indicesPtr++ = GetVertexIndex(x1aligned, y0aligned2);
                 *indicesPtr++ = GetVertexIndex(x1aligned2, y1aligned2);
                 *indicesPtr++ = GetVertexIndex(x0aligned2, y1aligned);
+
+                *indicesPtr++ = GetVertexIndex(x0aligned, y0aligned);
+                *indicesPtr++ = GetVertexIndex(x1aligned, y0aligned2);
+                *indicesPtr++ = GetVertexIndex(x1aligned2, y1aligned2);
 
                 queueIndexCount += 6;
             }
