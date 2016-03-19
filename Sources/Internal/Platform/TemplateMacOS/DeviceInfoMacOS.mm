@@ -50,12 +50,12 @@ namespace DAVA
 String GetSysCtlByName(const String& param)
 {
     size_t len = 0;
-    sysctlbyname(param.c_str(), NULL, &len, NULL, 0);
+    sysctlbyname(param.c_str(), nullptr, &len, nullptr, 0);
 
     if (len)
     {
         char model[len];
-        sysctlbyname(param.c_str(), model, &len, NULL, 0);
+        sysctlbyname(param.c_str(), model, &len, nullptr, 0);
         NSString* model_ns = [NSString stringWithUTF8String:model];
         return String([model_ns UTF8String]);
     }

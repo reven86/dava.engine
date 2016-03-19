@@ -61,7 +61,7 @@ public:
     }
     static uint8* MapBuffer(rhi::HVertexBuffer handle, uint32 offset, uint32 size)
     {
-        return (uint8*)rhi::MapVertexBuffer(handle, offset, size);
+        return reinterpret_cast<uint8*>(rhi::MapVertexBuffer(handle, offset, size));
     }
     static void UnmapBuffer(rhi::HVertexBuffer handle)
     {
@@ -86,7 +86,7 @@ public:
     }
     static uint8* MapBuffer(rhi::HIndexBuffer handle, uint32 offset, uint32 size)
     {
-        return (uint8*)rhi::MapIndexBuffer(handle, offset, size);
+        return reinterpret_cast<uint8*>(rhi::MapIndexBuffer(handle, offset, size));
     }
     static void UnmapBuffer(rhi::HIndexBuffer handle)
     {
@@ -249,7 +249,7 @@ AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
 AllocResultIB AllocateIndexBuffer(uint32 indexCount)
 {
     BufferAllocator<rhi::HIndexBuffer>::BufferAllocateResult result = indexBufferAllocator.AllocateData(2, indexCount);
-    return AllocResultIB{ result.buffer, (uint16*)result.data, result.base, result.count };
+    return AllocResultIB{ result.buffer, reinterpret_cast<uint16*>(result.data), result.base, result.count };
 }
 
 const uint32 VERTICES_PER_QUAD = 4;

@@ -268,7 +268,7 @@ bool GraphicFont::IsCharAvaliable(char16 ch) const
 
 uint32 GraphicFont::GetFontHeight() const
 {
-    return (uint32)((fontInternal->lineHeight) * GetSizeScale());
+    return uint32(fontInternal->lineHeight * GetSizeScale());
 }
 
 Font* GraphicFont::Clone() const
@@ -321,7 +321,7 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString& str,
     uint32 vertexAdded = 0;
     charDrawed = 0;
 
-    float32 lastX = (float32)xOffset;
+    float32 lastX = float32(xOffset);
     float32 lastY = 0;
     float32 sizeScale = GetSizeScale();
 
@@ -374,10 +374,10 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString& str,
         startHeight += yOffset;
         fullHeight += yOffset;
 
-        metrics.drawRect.x = Min(metrics.drawRect.x, (int32)startX);
-        metrics.drawRect.y = Min(metrics.drawRect.y, (int32)startHeight);
-        metrics.drawRect.dx = Max(metrics.drawRect.dx, (int32)(startX + width));
-        metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight));
+        metrics.drawRect.x = Min(metrics.drawRect.x, int32(startX));
+        metrics.drawRect.y = Min(metrics.drawRect.y, int32(startHeight));
+        metrics.drawRect.dx = Max(metrics.drawRect.dx, int32(startX + width));
+        metrics.drawRect.dy = Max(metrics.drawRect.dy, int32(fullHeight));
 
         //const float32 borderAlign = (startHeight - yOffset)*2.0f;
         //metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight + borderAlign));
@@ -428,16 +428,16 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString& str,
     }
     lastY += yOffset + fontHeight;
 
-    metrics.drawRect.dy += (int32)(ascent);
+    metrics.drawRect.dy += int32(ascent);
 
     //@note : "-1" fix magic fix from FTFont
     // Transform right/bottom edges into width/height
     metrics.drawRect.dx += -metrics.drawRect.x + 1;
     metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
-    metrics.height = (int32)ceilf(lastY);
-    metrics.width = (int32)ceilf(lastX);
-    metrics.baseline = yOffset + (int32)fontInternal->baselineHeight;
+    metrics.height = int32(ceilf(lastY));
+    metrics.width = int32(ceilf(lastX));
+    metrics.baseline = yOffset + int32(fontInternal->baselineHeight);
     return metrics;
 }
 

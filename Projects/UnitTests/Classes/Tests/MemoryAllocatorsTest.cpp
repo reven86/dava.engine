@@ -74,7 +74,7 @@ DAVA_TESTCLASS (MemoryAllocatorsTest)
 
         for (uint32 k = 0; k < 128; ++k)
         {
-            pointers[k] = (uint8*)pool.New();
+            pointers[k] = static_cast<uint8*>(pool.New());
             //Logger::Debug("ptr: %p", pointers[k]);
         }
 

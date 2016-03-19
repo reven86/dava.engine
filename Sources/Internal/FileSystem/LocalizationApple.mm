@@ -35,7 +35,7 @@
 
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/File.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

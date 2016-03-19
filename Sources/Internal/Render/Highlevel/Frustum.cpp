@@ -111,11 +111,11 @@ void Frustum::Build(const Matrix4& viewProjection)
     for (int32 i = 0; i < planeCount; i++)
     {
         if (planeArray[i].n.x < 0)
-            planeAccesBits |= ((uint32)1) << (i * 3 + 0);
+            planeAccesBits |= 1u << (i * 3 + 0);
         if (planeArray[i].n.y < 0)
-            planeAccesBits |= ((uint32)1) << (i * 3 + 1);
+            planeAccesBits |= 1u << (i * 3 + 1);
         if (planeArray[i].n.z < 0)
-            planeAccesBits |= ((uint32)1) << (i * 3 + 2);
+            planeAccesBits |= 1u << (i * 3 + 2);
     }
 }
 

@@ -31,8 +31,8 @@
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include "Scene3D/Scene.h"
-#include "Commands2/Command2.h"
-#include "Commands2/CommandBatch.h"
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandBatch.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/DeleteLODCommand.h"
@@ -261,83 +261,110 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial* material)
 
 void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    // TODO: VK: need to be redesigned after command notification will be changed
-    auto commandID = command->GetId();
-    if (commandID == CMDID_LOD_DELETE)
+    const DAVA::int32 commandID = command->GetId();
+    if (commandID == CMDID_BATCH)
     {
-        const DeleteLODCommand* lodCommand = static_cast<const DeleteLODCommand*>(command);
-        const DAVA::Vector<DeleteRenderBatchCommand*> batchCommands = lodCommand->GetRenderBatchCommands();
-
-        const DAVA::uint32 count = (const DAVA::uint32)batchCommands.size();
-        for (DAVA::uint32 i = 0; i < count; ++i)
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD }))
         {
-            DAVA::RenderBatch* batch = batchCommands[i]->GetRenderBatch();
+            const DAVA::uint32 count = batch->Size();
+            for (DAVA::uint32 i = 0; i < count; ++i)
+            {
+                ProcessCommand(batch->GetCommand(i), redo);
+            }
+        }
+    }
+    else
+    {
+        switch (commandID)
+        {
+        case CMDID_LOD_DELETE:
+        {
+            const DeleteLODCommand* lodCommand = static_cast<const DeleteLODCommand*>(command);
+            const DAVA::Vector<DeleteRenderBatchCommand*> batchCommands = lodCommand->GetRenderBatchCommands();
+
+            const DAVA::uint32 count = (const DAVA::uint32)batchCommands.size();
+            for (DAVA::uint32 i = 0; i < count; ++i)
+            {
+                DAVA::RenderBatch* batch = batchCommands[i]->GetRenderBatch();
+                if (redo)
+                {
+                    RemoveMaterial(batch->GetMaterial());
+                }
+                else
+                {
+                    AddMaterial(batch->GetMaterial(), MaterialMapping(lodCommand->GetEntity(), batch));
+                }
+            }
+
+            break;
+        }
+
+        case CMDID_LOD_CREATE_PLANE:
+        {
+            const CreatePlaneLODCommand* lodCommand = static_cast<const CreatePlaneLODCommand*>(command);
+            DAVA::RenderBatch* batch = lodCommand->GetRenderBatch();
+            if (redo)
+            {
+                AddMaterial(batch->GetMaterial(), MaterialMapping(lodCommand->GetEntity(), batch));
+            }
+            else
+            {
+                RemoveMaterial(batch->GetMaterial());
+            }
+            break;
+        }
+        case CMDID_DELETE_RENDER_BATCH:
+        {
+            const DeleteRenderBatchCommand* rbCommand = static_cast<const DeleteRenderBatchCommand*>(command);
+            DAVA::RenderBatch* batch = rbCommand->GetRenderBatch();
             if (redo)
             {
                 RemoveMaterial(batch->GetMaterial());
             }
             else
             {
-                AddMaterial(batch->GetMaterial(), MaterialMapping(lodCommand->GetEntity(), batch));
+                AddMaterial(batch->GetMaterial(), MaterialMapping(rbCommand->GetEntity(), batch));
             }
+            break;
         }
-    }
-    else if (commandID == CMDID_LOD_CREATE_PLANE)
-    {
-        const CreatePlaneLODCommand* lodCommand = static_cast<const CreatePlaneLODCommand*>(command);
-        DAVA::RenderBatch* batch = lodCommand->GetRenderBatch();
-        if (redo)
+        case CMDID_CONVERT_TO_SHADOW:
         {
-            AddMaterial(batch->GetMaterial(), MaterialMapping(lodCommand->GetEntity(), batch));
-        }
-        else
-        {
-            RemoveMaterial(batch->GetMaterial());
-        }
-    }
-    else if (commandID == CMDID_DELETE_RENDER_BATCH)
-    {
-        const DeleteRenderBatchCommand* rbCommand = static_cast<const DeleteRenderBatchCommand*>(command);
-        DAVA::RenderBatch* batch = rbCommand->GetRenderBatch();
-        if (redo)
-        {
-            RemoveMaterial(batch->GetMaterial());
-        }
-        else
-        {
-            AddMaterial(batch->GetMaterial(), MaterialMapping(rbCommand->GetEntity(), batch));
-        }
-    }
-    else if (commandID == CMDID_CONVERT_TO_SHADOW)
-    {
-        const ConvertToShadowCommand* swCommand = static_cast<const ConvertToShadowCommand*>(command);
-        DAVA::RenderBatch* oldBatch = swCommand->oldBatch;
-        DAVA::RenderBatch* newBatch = swCommand->newBatch;
+            const ConvertToShadowCommand* swCommand = static_cast<const ConvertToShadowCommand*>(command);
+            DAVA::RenderBatch* oldBatch = swCommand->oldBatch;
+            DAVA::RenderBatch* newBatch = swCommand->newBatch;
 
-        if (!redo)
+            if (!redo)
+            {
+                std::swap(oldBatch, newBatch);
+            }
+
+            RemoveMaterial(oldBatch->GetMaterial());
+            AddMaterial(newBatch->GetMaterial(), MaterialMapping(swCommand->GetEntity(), newBatch));
+            break;
+        }
+        case CMDID_LOD_COPY_LAST_LOD:
         {
-            std::swap(oldBatch, newBatch);
+            const CopyLastLODToLod0Command* copyCommand = static_cast<const CopyLastLODToLod0Command*>(command);
+            DAVA::uint32 batchCount = copyCommand->newBatches.size();
+            for (DAVA::uint32 i = 0; i < batchCount; ++i)
+            {
+                DAVA::RenderBatch* batch = copyCommand->newBatches[i];
+                DAVA::NMaterial* material = batch->GetMaterial();
+                if (redo)
+                {
+                    AddMaterial(material, MaterialMapping(copyCommand->GetEntity(), batch));
+                }
+                else
+                {
+                    RemoveMaterial(material);
+                }
+            }
+            break;
         }
 
-        RemoveMaterial(oldBatch->GetMaterial());
-        AddMaterial(newBatch->GetMaterial(), MaterialMapping(swCommand->GetEntity(), newBatch));
-    }
-    else if (commandID == CMDID_LOD_COPY_LAST_LOD)
-    {
-        const CopyLastLODToLod0Command* copyCommand = static_cast<const CopyLastLODToLod0Command*>(command);
-        DAVA::uint32 batchCount = copyCommand->newBatches.size();
-        for (DAVA::uint32 i = 0; i < batchCount; ++i)
-        {
-            DAVA::RenderBatch* batch = copyCommand->newBatches[i];
-            DAVA::NMaterial* material = batch->GetMaterial();
-            if (redo)
-            {
-                AddMaterial(material, MaterialMapping(copyCommand->GetEntity(), batch));
-            }
-            else
-            {
-                RemoveMaterial(material);
-            }
+        default:
+            break;
         }
     }
 }
