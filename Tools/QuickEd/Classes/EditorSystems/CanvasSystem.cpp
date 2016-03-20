@@ -122,6 +122,7 @@ public:
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
     void FitGridIfParentIsNested(PackageBaseNode* node);
+    bool IsPropertyAffectBackground(AbstractProperty* property);
     RefPtr<UIControl> gridControl;
     RefPtr<UIControl> counterpoiseControl;
     RefPtr<UIControl> positionHolderControl;
@@ -157,16 +158,12 @@ bool BackgroundController::IsNestedControl(const DAVA::UIControl* control) const
 
 void BackgroundController::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
-    const String& name = property->GetName();
-    if (node->GetControl() == nestedControl)
+    if (IsPropertyAffectBackground(property))
     {
-        if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible")
+        if (node->GetControl() == nestedControl)
         {
             UpdateCounterpoise();
         }
-    }
-    if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible")
-    {
         FitGridIfParentIsNested(node);
     }
 }
@@ -294,6 +291,16 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
     }
 }
 
+bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property)
+{
+    if (property == nullptr)
+    {
+        return true;
+    }
+    const String& name = property->GetName();
+    return name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible"; //canvas system can send nullptr property
+}
+
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
@@ -303,6 +310,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
     systemManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
+    systemManager->TransformStateChanged.Connect(this, &CanvasSystem::OnTransformStateChanged);
 }
 
 CanvasSystem::~CanvasSystem()
@@ -320,6 +328,18 @@ void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
     if (nullptr != package)
     {
         package->AddListener(this);
+    }
+}
+
+void CanvasSystem::OnTransformStateChanged(bool inTransformState_)
+{
+    inTransformState = inTransformState_;
+    if (!inTransformState)
+    {
+        for (auto& node : transformedNodes)
+        {
+            ControlPropertyWasChanged(node, nullptr);
+        }
     }
 }
 
@@ -349,13 +369,22 @@ void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* des
 
 void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
-    if (nullptr == controlsCanvas->GetParent())
+    if (nullptr == controlsCanvas->GetParent()) //detached canvas
     {
+        DVASSERT(false);
         return;
     }
-    for (auto& iter : gridControls)
+
+    if (inTransformState)
     {
-        iter->ControlPropertyWasChanged(node, property);
+        transformedNodes.insert(node);
+    }
+    else
+    {
+        for (auto& iter : gridControls)
+        {
+            iter->ControlPropertyWasChanged(node, property);
+        }
     }
 }
 

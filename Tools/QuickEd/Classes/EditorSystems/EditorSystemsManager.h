@@ -142,6 +142,7 @@ public:
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
     DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
+    DAVA::Signal<bool> TransformStateChanged; //indicates when user transform control
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
