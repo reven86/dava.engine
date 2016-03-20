@@ -71,7 +71,6 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
-    void CloseTabRequested();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 public slots:
@@ -129,7 +128,6 @@ private:
     QAction* selectAllAction = nullptr;
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
-    QAction* closeTabAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
 };

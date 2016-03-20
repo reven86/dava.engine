@@ -64,10 +64,13 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
+    connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
+    connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
-    connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setDisabled);
     connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
+    connect(project, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
+
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
     connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::CloseProject);

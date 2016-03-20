@@ -40,6 +40,7 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
@@ -93,8 +94,6 @@ MainWindow::MainWindow(QWidget* parent)
     tabBar->setUsesScrollButtons(true);
     setUnifiedTitleAndToolBarOnMac(true);
 
-    connect(previewWidget, &PreviewWidget::CloseTabRequested, this, &MainWindow::OnCloseCurrentTab);
-
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
     RestoreMainWindowState();
@@ -133,17 +132,17 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
     saveDocumentAction->setShortcut(QKeySequence::Save);
     saveDocumentAction->setIcon(QIcon(":/Icons/savescene.png"));
 
-    QAction* saveAllDocumentsAction = documentGroup->CreateRedoAction(this);
+    QAction* saveAllDocumentsAction = documentGroup->CreateSaveAllAction(this);
     saveAllDocumentsAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
     saveAllDocumentsAction->setIcon(QIcon(":/Icons/savesceneall.png"));
 
     QAction* closeDocumentAction = documentGroup->CreateCloseDocumentAction(this);
-    closeDocumentAction->setShortcut(QKeySequence::Close);
-    closeDocumentAction->setIcon(QIcon(":/Icons/close.png"));
+    closeDocumentAction->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
+    closeDocumentAction->setShortcutContext(Qt::WindowShortcut);
+    previewWidget->GetGLWidget()->addAction(closeDocumentAction);
 
     mainToolbar->addAction(saveDocumentAction);
     mainToolbar->addAction(saveAllDocumentsAction);
-    mainToolbar->addAction(closeDocumentAction);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)
@@ -558,14 +557,5 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
         logWidget->AddMessage(logLevel, output);
-    }
-}
-
-void MainWindow::OnCloseCurrentTab()
-{
-    int currentIndex = tabBar->currentIndex();
-    if (currentIndex != -1)
-    {
-        TabClosed(currentIndex);
     }
 }

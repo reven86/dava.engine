@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -149,6 +149,7 @@
    </attribute>
    <addaction name="actionNew_project"/>
    <addaction name="actionOpen_project"/>
+   <addaction name="actionClose_project"/>
    <addaction name="separator"/>
    <addaction name="actionPixelized"/>
   </widget>

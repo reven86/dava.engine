@@ -55,6 +55,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     }
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
     connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged);
+    connect(undoStack.get(), &QUndoStack::cleanChanged, this, &Document::OnCleanChanged);
 }
 
 Document::~Document()
@@ -151,5 +152,5 @@ void Document::OnFileChanged(const QString& path)
 
 void Document::OnCleanChanged(bool clean)
 {
-    SetCanSave(fileExists && clean);
+    SetCanSave(fileExists && !clean);
 }
