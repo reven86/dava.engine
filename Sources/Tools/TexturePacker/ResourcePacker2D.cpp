@@ -327,9 +327,8 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     	{
             defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
 
-            //printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
-
-            if ((defFile->frameRects[k].dx > (int32)maxTextureSize) || (defFile->frameRects[k].dy > (int32)maxTextureSize))
+            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
+            if ((defFile->frameRects[k].dx > iMaxTextureSize) || (defFile->frameRects[k].dy > iMaxTextureSize))
             {
                 Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize, defFile->frameRects[k].dx, defFile->frameRects[k].dy, width, height);
 
@@ -561,11 +560,12 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
                 if (Core::Instance()->IsConsoleMode())
                 {
-                    Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), mergedFlags.c_str());
+                    Logger::Info("[%u files packed with flags: %s]", static_cast<int32>(definitionFileList.size()), mergedFlags.c_str());
                 }
 
                 const char* result = definitionFileList.empty() ? "[unchanged]" : "[REPACKED]";
-                Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
+                Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(),
+                             static_cast<float64>(packTime) / 1000.0, result);
 
                 for_each(definitionFileList.begin(), definitionFileList.end(), SafeDelete<DefinitionFile>);
 
@@ -663,16 +663,15 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
 
         if (exitCode == AssetClientCode::OK)
         {
-            Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
+            Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(),
+                         static_cast<float64>(getTime) / 1000.0);
             return true;
         }
         else
         {
             Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d (%s)",
-                         inputPath.GetAbsolutePathname().c_str(),
-                         (float64)(getTime) / 1000.0f,
-                         exitCode,
-                         GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
+                         inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0,
+                         exitCode, GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
             const String& procOutput = cacheClient.GetOutput();
             if (!procOutput.empty())
             {
@@ -773,15 +772,15 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
 
             if (exitCode == AssetClientCode::OK)
             {
-                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
+                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(),
+                             static_cast<float64>(getTime) / 1000.0);
                 return true;
             }
             else
             {
-                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)", inputPath.GetAbsolutePathname().c_str(),
-                             (float64)(getTime) / 1000.0f,
-                             exitCode,
-                             GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
+                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)",
+                             inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0,
+                             exitCode, GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
                 const String& procOutput = cacheClient.GetOutput();
                 if (!procOutput.empty())
                 {
