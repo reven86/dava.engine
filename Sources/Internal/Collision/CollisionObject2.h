@@ -87,30 +87,7 @@ public:
 
     uint32 updateFrameIndex;
     bool collisionOnLastFrame;
-
     bool forceUpdate;
-
-    /*	int pointsCount;
-	float *points;
-	
-	DAVA::AABBox bbox;
-	
-	float collisionRadius;
-	float centerX, centerY;
-	
-	// info from base game object	
-	float *collisionVertices;
-	float collX;
-	float collY;
-	
-	float xCoord;
-	float yCoord;
-	float angle; */
-
-    /*bool IsPointsInsidePoints(float* points1, int cnt1, float*points2, int cnt2);
-	void CalcCollisionPoints();
-	bool IsCollideWith(CollisionObject2 * collObject);
-	void DrawCollision(); */
 
     void UpdatePosition(Vector2 newPos);
 };

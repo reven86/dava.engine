@@ -33,42 +33,39 @@
 #include "DAVAEngine.h"
 
 class Command2;
-class EditorLightSystem : public DAVA::SceneSystem
+class EditorLightSystem final : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
     friend class EditorScene;
 
 public:
     EditorLightSystem(DAVA::Scene* scene);
-    virtual ~EditorLightSystem();
+    ~EditorLightSystem() override;
 
-    virtual void AddEntity(DAVA::Entity* entity);
-    virtual void RemoveEntity(DAVA::Entity* entity);
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+
+    void SceneDidLoaded() override;
+
+    void Process(DAVA::float32 timeElapsed) override;
 
     void SetCameraLightEnabled(bool enabled);
-    inline bool GetCameraLightEnabled();
+    bool GetCameraLightEnabled() const;
 
-    virtual void Process(DAVA::float32 timeElapsed);
-
-protected:
-    void ProcessCommand(const Command2* command, bool redo);
-
+private:
     void UpdateCameraLightState();
-
     void UpdateCameraLightPosition();
+
     void AddCameraLightOnScene();
     void RemoveCameraLightFromScene();
 
-    DAVA::int32 CountLightsForEntityRecursive(DAVA::Entity* entity);
-
-protected:
-    bool isEnabled;
-    DAVA::Entity* cameraLight;
-
-    DAVA::int32 lightCountOnScene;
+private:
+    DAVA::Entity* cameraLight = nullptr;
+    DAVA::uint32 lightEntities = 0;
+    bool isEnabled = true;
 };
 
-inline bool EditorLightSystem::GetCameraLightEnabled()
+inline bool EditorLightSystem::GetCameraLightEnabled() const
 {
     return isEnabled;
 }

@@ -26,7 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Core/Core.h"
 
 #include <stdlib.h>
@@ -158,11 +158,11 @@ DAVA::int32 CommandLineParser::GetCommandPosition(const DAVA::String& command)
     int32 position = INVALID_POSITION;
 
     const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
-    for (int32 i = 0; i < (int32)commandLine.size(); ++i)
+    for (size_t i = 0; i < commandLine.size(); ++i)
     {
         if (command == commandLine[i])
         {
-            position = i;
+            position = static_cast<int32>(i);
             break;
         }
     }
@@ -193,6 +193,6 @@ String CommandLineParser::GetCommandParamAdditional(const String& command, const
 int32 CommandLineParser::GetCommandsCount()
 {
     const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
-    return (int32)commandLine.size();
+    return static_cast<int32>(commandLine.size());
 }
 };

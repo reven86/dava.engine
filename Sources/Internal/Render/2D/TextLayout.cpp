@@ -120,7 +120,7 @@ bool TextLayout::NextByWords(const float32 lineWidth)
     DVASSERT(characterSizes.size() == preparedText.length());
     float32 targetWidth = std::floor(lineWidth);
     float32 currentWidth = 0;
-    uint32 textLength = (uint32)preparedText.length();
+    uint32 textLength = uint32(preparedText.length());
     size_t lastPossibleBreak = 0;
 
     for (size_t pos = fromPos; pos < textLength; ++pos)

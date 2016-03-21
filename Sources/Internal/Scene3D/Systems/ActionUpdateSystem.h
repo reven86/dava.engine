@@ -41,10 +41,10 @@ class ActionUpdateSystem : public SceneSystem
 {
 public:
     ActionUpdateSystem(Scene* scene);
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
     void Watch(ActionComponent* component);
     void UnWatch(ActionComponent* component);

@@ -97,8 +97,8 @@ int32 ParticlesQualitySettings::QualitySheet::GetScore() const
 
 void ParticlesQualitySettings::QualitySheet::RecalculateScore()
 {
-    int32 qualitiesScore = selector.qualities.empty() ? 0 : (qualitiesCount - (int32)selector.qualities.size());
-    int32 tagsScore = (int32)selector.tags.size() * 100;
+    int32 qualitiesScore = selector.qualities.empty() ? 0 : (qualitiesCount - static_cast<int32>(selector.qualities.size()));
+    int32 tagsScore = static_cast<int32>(selector.tags.size()) * 100;
     score = qualitiesScore + tagsScore;
 }
 
@@ -246,7 +246,7 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
                     }
                     DVASSERT(actions.size() == actionsNode->GetCount());
                 }
-                qualitySheets.emplace_back(selector, actions, (uint32)qualities.size());
+                qualitySheets.emplace_back(selector, actions, static_cast<uint32>(qualities.size()));
             }
         }
         DVASSERT(qualitySheets.size() == qualitySheetsNode->GetCount());
@@ -403,7 +403,7 @@ ParticlesQualitySettings::FilepathSelector::FilepathSelector(const ParticlesQual
             }
 
             currentIndex += step;
-            if (currentIndex >= (int32)qualities.size() || currentIndex < 0)
+            if (currentIndex >= static_cast<int32>(qualities.size()) || currentIndex < 0)
             {
                 break;
             }

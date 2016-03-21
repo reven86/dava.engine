@@ -67,12 +67,11 @@ public:
     };
 
     SoundComponent();
-    virtual ~SoundComponent();
+    ~SoundComponent() override;
 
-    virtual Component* Clone(Entity* toEntity);
-
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     inline uint32 GetEventsCount() const;
     inline SoundEvent* GetSoundEvent(uint32 index) const;
@@ -107,7 +106,7 @@ public:
 //Inline
 inline SoundEvent* SoundComponent::GetSoundEvent(uint32 index) const
 {
-    DVASSERT(index < (uint32)events.size());
+    DVASSERT(index < static_cast<uint32>(events.size()));
     return events[index].soundEvent;
 }
 
@@ -118,13 +117,13 @@ inline uint32 SoundComponent::GetEventsCount() const
 
 inline uint32 SoundComponent::GetSoundEventFlags(uint32 index) const
 {
-    DVASSERT(index < (uint32)events.size());
+    DVASSERT(index < static_cast<uint32>(events.size()));
     return events[index].flags;
 }
 
 inline const Vector3& SoundComponent::GetLocalDirection(uint32 index) const
 {
-    DVASSERT(index < (uint32)events.size());
+    DVASSERT(index < static_cast<uint32>(events.size()));
     return events[index].localDirection;
 }
 };

@@ -426,14 +426,14 @@ Texture* TilemaskEditorSystem::GetTileTexture()
     return drawSystem->GetLandscapeProxy()->GetLandscapeTexture(Landscape::TEXTURE_TILE);
 }
 
-Color TilemaskEditorSystem::GetTileColor(int32 index)
+Color TilemaskEditorSystem::GetTileColor(uint32 index)
 {
-    if (index < 0 || index >= (int32)GetTileTextureCount())
+    if (index < GetTileTextureCount())
     {
-        return Color::Black;
+        return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
     }
 
-    return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
+    return Color::Black;
 }
 
 void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
@@ -448,7 +448,7 @@ void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
     if (curColor != color)
     {
         SceneEditor2* scene = (SceneEditor2*)(GetScene());
-        scene->Exec(new SetTileColorCommand(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
+        scene->Exec(Command2::Create<SetTileColorCommand>(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
     }
 }
 
@@ -506,7 +506,7 @@ void TilemaskEditorSystem::CreateUndoPoint()
 {
     SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
     DVASSERT(scene);
-    scene->Exec(new ModifyTilemaskCommand(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
+    scene->Exec(Command2::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
 }
 
 int32 TilemaskEditorSystem::GetBrushSize()

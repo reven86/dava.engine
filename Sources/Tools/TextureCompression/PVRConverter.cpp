@@ -187,8 +187,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
 
     Vector<FilePath> convertedPVRs;
 
-    int32 imgCount = (int32)images.size();
-    for(int32 i = 0; i < imgCount; ++i)
+    for (int32 i = 0, e = static_cast<int32>(images.size()); i < e; ++i)
     {
         ImageFormat targetFormat = IMAGE_FORMAT_PNG;
         
@@ -197,7 +196,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
         desc.SetGenerateMipmaps(false);
         desc.dataSettings.sourceFileFormat = targetFormat;
         desc.dataSettings.sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(targetFormat)[0];
-        desc.pathname = dirPath + Format("mip%d%s", i,  desc.dataSettings.sourceFileExtension.c_str());;
+        desc.pathname = dirPath + Format("mip%d%s", i, desc.dataSettings.sourceFileExtension.c_str());
 
         ImageSystem::Instance()->Save(desc.pathname, images[i]);
         FilePath convertedImgPath = ConvertToPvr(desc, gpuFamily, quality, false);
@@ -227,12 +226,12 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	DVASSERT(descriptor.compression);
 	const TextureDescriptor::Compression *compression = &descriptor.compression[gpuFamily];
 
-	String format = pixelFormatToPVRFormat[(PixelFormat) compression->format];
-	FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
-		
-	// input file
-	args.push_back("-i");
-	String inputName = GenerateInputName(descriptor, fileToConvert);
+    String format = pixelFormatToPVRFormat[static_cast<PixelFormat>(compression->format)];
+    FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
+
+    // input file
+    args.push_back("-i");
+    String inputName = GenerateInputName(descriptor, fileToConvert);
 #if defined (__DAVAENGINE_MACOS__)
 	args.push_back(inputName);
 #else //defined (__DAVAENGINE_WINDOWS__)

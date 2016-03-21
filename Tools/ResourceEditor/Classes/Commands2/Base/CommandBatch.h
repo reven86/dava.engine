@@ -27,77 +27,58 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND_STACK_H__
-#define __COMMAND_STACK_H__
+#ifndef __COMMAND_BATCH_H__
+#define __COMMAND_BATCH_H__
 
 #include "Base/BaseTypes.h"
-#include "Commands2/Command2.h"
-#include "Commands2/CommandBatch.h"
 
-struct CommandStackNotify;
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandNotify.h"
 
-class CommandStack : public CommandNotifyProvider
+class CommandBatch final : public Command2
 {
-    friend struct CommandStackNotify;
-
 public:
-    CommandStack();
-    ~CommandStack();
+    CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
 
-    bool CanRedo() const;
-    bool CanUndo() const;
+    void Undo() override;
+    void Redo() override;
 
-    void Clear();
-    void Clear(int commandId);
+    DAVA_DEPRECATED(DAVA::Entity* GetEntity() const override);
 
-    void Undo();
-    void Redo();
-    void Exec(Command2* command);
+    void AddAndExec(Command2::Pointer&& command);
+    void RemoveCommands(DAVA::int32 commandId);
 
-    void BeginBatch(const DAVA::String& text);
-    void EndBatch();
-    bool IsBatchStarted() const;
+    bool Empty() const;
+    DAVA::uint32 Size() const;
 
-    bool IsClean() const;
-    void SetClean(bool clean);
+    Command2* GetCommand(DAVA::uint32 index) const;
 
-    size_t GetCleanIndex() const;
-    size_t GetNextIndex() const;
+    bool MatchCommandID(DAVA::int32 commandID) const override;
+    bool MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const override;
 
-    size_t GetUndoLimit() const;
-    void SetUndoLimit(size_t limit);
-
-    size_t GetCount() const;
-    const Command2* GetCommand(size_t index) const;
+    bool IsMultiCommandBatch() const;
 
 protected:
-    DAVA::List<Command2*> commandList;
-    size_t commandListLimit;
-    size_t nextCommandIndex;
-    size_t cleanCommandIndex;
-    bool lastCheckCleanState;
+    using CommandsContainer = DAVA::Vector<Command2::Pointer>;
+    CommandsContainer commandList;
 
-    DAVA::uint32 nestedBatchesCounter;
-    CommandBatch* curBatchCommand;
-    CommandStackNotify* stackCommandsNotify;
-
-    void ExecInternal(Command2* command, bool runCommand);
-    Command2* GetCommandInternal(size_t index) const;
-
-    void ClearRedoCommands();
-    void ClearLimitedCommands();
-    void ClearCommand(size_t index);
-
-    void CleanCheck();
-    void CommandExecuted(const Command2* command, bool redo);
+    DAVA::UnorderedSet<DAVA::int32> commandIDs;
 };
 
-struct CommandStackNotify : public CommandNotify
+inline bool CommandBatch::Empty() const
 {
-    CommandStack* stack;
+    return commandList.empty();
+}
 
-    CommandStackNotify(CommandStack* _stack);
-    virtual void Notify(const Command2* command, bool redo);
-};
+inline DAVA::uint32 CommandBatch::Size() const
+{
+    return static_cast<DAVA::uint32>(commandList.size());
+}
 
-#endif // __COMMAND_STACK_H__
+inline bool CommandBatch::IsMultiCommandBatch() const
+{
+    return (commandIDs.size() > 1);
+}
+
+
+#endif // __COMMAND_BATCH_H__

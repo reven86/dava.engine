@@ -32,12 +32,12 @@
 
 #include <ctime>
 
-#include <Base/Noncopyable.h>
-#include <FileSystem/Logger.h>
-#include <Platform/DateTime.h>
-#include <Concurrency/Mutex.h>
+#include "Base/Noncopyable.h"
+#include "Logger/Logger.h"
+#include "Platform/DateTime.h"
+#include "Concurrency/Mutex.h"
 
-#include <Network/NetService.h>
+#include "Network/NetService.h"
 
 namespace DAVA
 {
