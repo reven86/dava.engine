@@ -46,7 +46,6 @@ public:
     virtual ~LocalizationSystem();
 
     void InitWithDirectory(const FilePath& directoryPath);
-    void SetDirectory(const FilePath& directoryPath);
 
     void Init();
 
@@ -61,6 +60,7 @@ public:
     void SetLocalizedString(const WideString& key, const WideString& value);
     void RemoveLocalizedString(const WideString& key);
 
+    void SetDirectory(const FilePath& dirPath);
     const FilePath& GetDirectoryPath() const;
 
     void Cleanup();

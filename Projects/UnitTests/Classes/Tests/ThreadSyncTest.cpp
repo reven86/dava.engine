@@ -68,15 +68,6 @@ DAVA_TESTCLASS (ThreadSyncTest)
         someThread = nullptr;
     }
 
-    DAVA_TEST (ThreadSleepTestFunction)
-    {
-        uint64 time = SystemTimer::Instance()->AbsoluteMS();
-        Thread::Sleep(300);
-        uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - time;
-        //elapsed time can be rounded to lowest, so -1 here
-        TEST_VERIFY(elapsedTime >= 299);
-    }
-
     DAVA_TEST (TestThread)
     {
         TEST_VERIFY(true == Thread::IsMainThread());
