@@ -557,7 +557,9 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
             QUrl url(str);
             if (url.isLocalFile())
             {
-                return true;
+                QString path = url.toLocalFile();
+                QFileInfo fileInfo(path);
+                return fileInfo.isFile() && fileInfo.suffix() == "yaml";
             }
         }
     }
