@@ -163,7 +163,10 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
         currentHash = static_cast<size_t>(us.count());
         extraDelta.SetZero();
         prevPos = currentInput->point;
-        systemManager->TransformStateChanged.Emit(true);
+        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
+        {
+            systemManager->TransformStateChanged.Emit(true);
+        }
         return false;
     }
     case UIEvent::Phase::DRAG:
@@ -184,7 +187,10 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
             ClampAngle();
         }
         systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
-        systemManager->TransformStateChanged.Emit(false);
+        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
+        {
+            systemManager->TransformStateChanged.Emit(false);
+        }
         return false;
     default:
         return false;
