@@ -94,7 +94,7 @@ TexturePacker::TexturePacker()
     }
 
     maxTextureSize = DEFAULT_TEXTURE_SIZE;
-	onlySquareTextures = false;
+    onlySquareTextures = false;
 	errors.clear();
 	useTwoSideMargin = false;
 	texturesMargin = 1;
@@ -514,7 +514,7 @@ bool TexturePacker::WriteDefinition(const TextureAtlasPtr& atlas, const FilePath
     {
         String& line = defFile->pathsInfo[pathInfoLine];
         fprintf(fp, "%s", line.c_str());
-	}
+    }
 	
 	fclose(fp);
 	return true;
@@ -608,7 +608,7 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedA
     {
         String& line = defFile->pathsInfo[pathInfoLine];
         fprintf(fp, "%s", line.c_str());
-	}
+    }
 	
 	fclose(fp);
 	return true;
