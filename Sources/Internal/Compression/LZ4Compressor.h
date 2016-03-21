@@ -36,15 +36,15 @@ namespace DAVA
 class LZ4Compressor : public Compressor
 {
 public:
-    bool Compress(const Vector<char8>& in, Vector<char8>& out) const override;
+    bool Compress(const Vector<uint8>& in, Vector<uint8>& out) const override;
     // you should resize output to correct size before call this method
-    bool Uncompress(const Vector<char8>& in, Vector<char8>& out) const override;
+    bool Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const override;
 };
 
 class LZ4HCCompressor final : public LZ4Compressor
 {
 public:
-    bool Compress(const Vector<char8>& in, Vector<char8>& out) const override;
+    bool Compress(const Vector<uint8>& in, Vector<uint8>& out) const override;
 };
 
 } // end namespace DAVA

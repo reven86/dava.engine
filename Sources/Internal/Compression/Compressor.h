@@ -45,9 +45,9 @@ public:
 
     virtual ~Compressor();
 
-    virtual bool Compress(const Vector<char8>& in, Vector<char8>& out) const = 0;
+    virtual bool Compress(const Vector<uint8>& in, Vector<uint8>& out) const = 0;
     // you should resize output to correct size before call this method
-    virtual bool Uncompress(const Vector<char8>& in, Vector<char8>& out) const = 0;
+    virtual bool Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const = 0;
 };
 
 } // end namespace DAVA

@@ -41,7 +41,7 @@ public:
     virtual const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const = 0;
     virtual const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const = 0;
     virtual bool HasFile(const String& fileName) const = 0;
-    virtual bool LoadFile(const String& fileName, Vector<char8>& output) const = 0;
+    virtual bool LoadFile(const String& fileName, Vector<uint8>& output) const = 0;
 };
 } // end namespace DAVA
 

@@ -33,14 +33,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-bool ZipCompressor::Compress(const Vector<char8>& in, Vector<char8>& out) const
+bool ZipCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     uLong destMaxLength = compressBound(in.size());
     if (out.size() < destMaxLength)
     {
         out.resize(destMaxLength);
     }
-    int result = compress(reinterpret_cast<uint8*>(out.data()), &destMaxLength, reinterpret_cast<const uint8*>(in.data()), in.size());
+    int result = compress(out.data(), &destMaxLength, in.data(), in.size());
     if (result != Z_OK)
     {
         Logger::Error("can't compress rfc1951 buffer");
@@ -50,7 +50,7 @@ bool ZipCompressor::Compress(const Vector<char8>& in, Vector<char8>& out) const
     return true;
 }
 
-bool ZipCompressor::Uncompress(const Vector<char8>& in, Vector<char8>& out) const
+bool ZipCompressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     if (in.size() > static_cast<uint32>(std::numeric_limits<int32>::max()))
     {
@@ -58,7 +58,7 @@ bool ZipCompressor::Uncompress(const Vector<char8>& in, Vector<char8>& out) cons
         return false;
     }
     uLong uncompressedSize = out.size();
-    int decompressResult = uncompress(reinterpret_cast<uint8*>(out.data()), &uncompressedSize, reinterpret_cast<const uint8*>(in.data()), in.size());
+    int decompressResult = uncompress(out.data(), &uncompressedSize, in.data(), in.size());
     if (decompressResult != Z_OK)
     {
         Logger::Error("can't uncompress rfc1951 buffer");
@@ -116,7 +116,7 @@ bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOrigin
     return true;
 }
 
-bool ZipFile::LoadFile(const FilePath& fileName, Vector<char8>& fileContent) const
+bool ZipFile::LoadFile(const FilePath& fileName, Vector<uint8>& fileContent) const
 {
     String name = fileName.GetStringValue();
 

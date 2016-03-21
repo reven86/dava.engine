@@ -57,8 +57,8 @@ static Compressor::Type GetPackingBestType(const String& fileName)
 
 static bool Packing(const String& fileName,
                     Vector<FileTableEntry>& fileTable,
-                    Vector<char>& inBuffer,
-                    Vector<char>& packingBuf,
+                    Vector<uint8>& inBuffer,
+                    Vector<uint8>& packingBuf,
                     File* output,
                     uint32 origSize,
                     uint32 startPos,
@@ -117,9 +117,9 @@ static bool Packing(const String& fileName,
 }
 
 static bool CompressFileAndWriteToOutput(const String& fileName,
-                                         Vector<DAVA::FileTableEntry>& fileTable,
-                                         Vector<char>& inBuffer,
-                                         Vector<char>& packingBuf,
+                                         Vector<FileTableEntry>& fileTable,
+                                         Vector<uint8>& inBuffer,
+                                         Vector<uint8>& packingBuf,
                                          File* output)
 {
     using namespace DAVA;
@@ -278,7 +278,7 @@ const ResourceArchive::FileInfo* ResourceArchive::GetFileInfo(const String& file
 }
 
 bool ResourceArchive::LoadFile(const String& fileName,
-                               Vector<char8>& output) const
+                               Vector<uint8>& output) const
 {
     DVASSERT(impl != nullptr);
     return impl->LoadFile(fileName, output);
@@ -344,8 +344,8 @@ bool ResourceArchive::CreatePack(const FilePath& pacName,
 
     auto& fileTable = pack.filesDataBlock.fileTable;
 
-    Vector<char> fileBuffer;
-    Vector<char> compressedFileBuffer;
+    Vector<uint8> fileBuffer;
+    Vector<uint8> compressedFileBuffer;
     UnorderedSet<String> skippedFiles;
 
     auto packedFileTmp = pacName + "_tmp_compressed_files.bin";

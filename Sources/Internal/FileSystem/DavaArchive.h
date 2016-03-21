@@ -88,7 +88,7 @@ public:
     const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
     const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const override;
     bool HasFile(const String& fileName) const override;
-    bool LoadFile(const String& fileName, Vector<char8>& output) const override;
+    bool LoadFile(const String& fileName, Vector<uint8>& output) const override;
 
 private:
     mutable RefPtr<File> file;

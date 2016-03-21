@@ -172,7 +172,7 @@ bool DavaArchive::HasFile(const String& fileName) const
     return iterator != mapFileData.end();
 }
 
-bool DavaArchive::LoadFile(const String& fileName, Vector<char8>& output) const
+bool DavaArchive::LoadFile(const String& fileName, Vector<uint8>& output) const
 {
     using namespace DAVA;
 
@@ -214,7 +214,7 @@ bool DavaArchive::LoadFile(const String& fileName, Vector<char8>& output) const
     case Compressor::Type::Lz4:
     case Compressor::Type::Lz4HC:
     {
-        Vector<char8> packedBuf(fileEntry.compressed);
+        Vector<uint8> packedBuf(fileEntry.compressed);
 
         uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressed);
         if (readOk != fileEntry.compressed)
@@ -232,7 +232,7 @@ bool DavaArchive::LoadFile(const String& fileName, Vector<char8>& output) const
     break;
     case Compressor::Type::RFC1951:
     {
-        Vector<char8> packedBuf(fileEntry.compressed);
+        Vector<uint8> packedBuf(fileEntry.compressed);
 
         uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressed);
         if (readOk != fileEntry.compressed)

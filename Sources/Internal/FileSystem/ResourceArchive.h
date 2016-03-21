@@ -53,7 +53,7 @@ public:
     const Vector<FileInfo>& GetFilesInfo() const;
     const FileInfo* GetFileInfo(const String& fileName) const;
     bool HasFile(const String& fileName) const;
-    bool LoadFile(const String& fileName, Vector<char8>& outputFileContent) const;
+    bool LoadFile(const String& fileName, Vector<uint8>& outputFileContent) const;
 
     static bool CreatePack(const FilePath& pacName,
                            const Vector<String>& fileNames,

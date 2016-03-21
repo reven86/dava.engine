@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-bool LZ4Compressor::Compress(const Vector<char8>& in, Vector<char8>& out) const
+bool LZ4Compressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     if (in.size() > LZ4_MAX_INPUT_SIZE)
     {
@@ -46,7 +46,7 @@ bool LZ4Compressor::Compress(const Vector<char8>& in, Vector<char8>& out) const
     {
         out.resize(maxSize);
     }
-    int compressedSize = LZ4_compress(in.data(), out.data(), in.size());
+    int compressedSize = LZ4_compress(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
     if (compressedSize == 0)
     {
         return false;
@@ -55,10 +55,10 @@ bool LZ4Compressor::Compress(const Vector<char8>& in, Vector<char8>& out) const
     return true;
 }
 
-bool LZ4Compressor::Uncompress(const Vector<char8>& in, Vector<char8>& out) const
+bool LZ4Compressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     bool result = true;
-    int decompressResult = LZ4_decompress_fast(in.data(), out.data(), out.size());
+    int decompressResult = LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), out.size());
     if (decompressResult < 0)
     {
         Logger::Error("LZ4 decompress failed");
@@ -67,7 +67,7 @@ bool LZ4Compressor::Uncompress(const Vector<char8>& in, Vector<char8>& out) cons
     return result;
 }
 
-bool LZ4HCCompressor::Compress(const Vector<char8>& in, Vector<char8>& out) const
+bool LZ4HCCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     if (in.size() > LZ4_MAX_INPUT_SIZE)
     {
@@ -79,7 +79,7 @@ bool LZ4HCCompressor::Compress(const Vector<char8>& in, Vector<char8>& out) cons
     {
         out.resize(maxSize);
     }
-    int compressedSize = LZ4_compressHC(in.data(), out.data(), in.size());
+    int compressedSize = LZ4_compressHC(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
     if (compressedSize == 0)
     {
         return false;

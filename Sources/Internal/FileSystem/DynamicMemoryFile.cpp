@@ -32,6 +32,15 @@
 
 namespace DAVA
 {
+DynamicMemoryFile* DynamicMemoryFile::Create(Vector<uint8>&& data, uint32 attributes)
+{
+    DynamicMemoryFile* f = new DynamicMemoryFile();
+    f->data = std::move(data);
+    f->currentPtr = 0;
+    f->fileAttributes = attributes;
+    return f;
+}
+
 DynamicMemoryFile* DynamicMemoryFile::Create(const uint8* data, int32 dataSize, uint32 attributes)
 {
     DynamicMemoryFile* fl = new DynamicMemoryFile();

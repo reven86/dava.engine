@@ -30,7 +30,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
-#include "FileSystem/ReadOnlyArchiveFile.h"
+#include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
 
 #include "Utils/StringFormat.h"
@@ -76,10 +76,10 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         {
             FileSystem::ResourceArchiveItem& item = ai;
 
-            Vector<char8> contentAndSize;
+            Vector<uint8> contentAndSize;
             if (item.archive->LoadFile(relative, contentAndSize))
             {
-                return ReadOnlyArchiveFile::Create(filename, std::move(contentAndSize));
+                return DynamicMemoryFile::Create(std::move(contentAndSize), READ);
             }
         }
     }

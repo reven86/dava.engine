@@ -43,6 +43,7 @@ protected:
     virtual ~DynamicMemoryFile();
 
 public:
+    static DynamicMemoryFile* Create(Vector<uint8>&& data, uint32 attributes);
     /**
      \brief funciton to create a file instance with give attributes
      \param[in] data pointer to data to create file from

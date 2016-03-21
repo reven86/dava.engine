@@ -97,7 +97,7 @@ bool ZipArchive::HasFile(const String& fileName) const
     return GetFileInfo(fileName) != nullptr;
 }
 
-bool ZipArchive::LoadFile(const String& fileName, Vector<char8>& output) const
+bool ZipArchive::LoadFile(const String& fileName, Vector<uint8>& output) const
 {
     const ResourceArchive::FileInfo* info = GetFileInfo(fileName);
     if (info)
