@@ -110,11 +110,12 @@ public:
     ~BackgroundController() = default;
     UIControl* GetGridControl();
     bool IsNestedControl(const UIControl* control) const;
-    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert);
+    void RecalculateBackgroundProperties(ControlNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
     void UpdateCounterpoise();
     void AdjustToNestedControl();
+    static bool IsPropertyAffectBackground(AbstractProperty* property);
 
     DAVA::Signal<> ContentSizeChanged;
     DAVA::Signal<const DAVA::Vector2&> RootControlPosChanged;
@@ -122,7 +123,6 @@ public:
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
     void FitGridIfParentIsNested(PackageBaseNode* node);
-    bool IsPropertyAffectBackground(AbstractProperty* property) const;
     RefPtr<UIControl> gridControl;
     RefPtr<UIControl> counterpoiseControl;
     RefPtr<UIControl> positionHolderControl;
@@ -156,16 +156,13 @@ bool BackgroundController::IsNestedControl(const DAVA::UIControl* control) const
     return control == nestedControl;
 }
 
-void BackgroundController::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void BackgroundController::RecalculateBackgroundProperties(ControlNode* node)
 {
-    if (IsPropertyAffectBackground(property))
+    if (node->GetControl() == nestedControl)
     {
-        if (node->GetControl() == nestedControl)
-        {
-            UpdateCounterpoise();
-        }
-        FitGridIfParentIsNested(node);
+        UpdateCounterpoise();
     }
+    FitGridIfParentIsNested(node);
 }
 
 namespace
@@ -291,14 +288,11 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
     }
 }
 
-bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property) const
+bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property)
 {
-    if (property == nullptr) //canvas system can send nullptr property to make force update
-    {
-        return true;
-    }
+    DVASSERT(nullptr != property);
     const String& name = property->GetName();
-    return name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible"; //canvas system can send nullptr property
+    return name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible";
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
@@ -340,7 +334,7 @@ void CanvasSystem::OnTransformStateChanged(bool inTransformState_)
         {
             for (auto& iter : gridControls)
             {
-                iter->ControlPropertyWasChanged(node, nullptr);
+                iter->RecalculateBackgroundProperties(node);
             }
         }
     }
@@ -387,9 +381,12 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
     }
     else
     {
-        for (auto& iter : gridControls)
+        if (BackgroundController::IsPropertyAffectBackground(property))
         {
-            iter->ControlPropertyWasChanged(node, property);
+            for (auto& iter : gridControls)
+            {
+                iter->RecalculateBackgroundProperties(node);
+            }
         }
     }
 }
