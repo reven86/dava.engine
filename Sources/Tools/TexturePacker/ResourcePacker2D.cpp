@@ -307,10 +307,11 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
             if ((defFile->frameRects[k - 1].dx > intMaxTextureSize) || (defFile->frameRects[k - 1].dy > intMaxTextureSize))
             {
                 Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
-    				, defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
+                                ,
+                                defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
 
-    			defFile->frameRects[k - 1].dx = width;
-    			defFile->frameRects[k - 1].dy = height;
+                defFile->frameRects[k - 1].dx = width;
+                defFile->frameRects[k - 1].dy = height;
     		}
     		else
     		{

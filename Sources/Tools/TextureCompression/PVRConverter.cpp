@@ -229,7 +229,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 
     // input file
     args.push_back("-i");
-	String inputName = GenerateInputName(descriptor, fileToConvert);
+    String inputName = GenerateInputName(descriptor, fileToConvert);
 #if defined (__DAVAENGINE_MACOS__)
 	args.push_back(inputName);
 #else //defined (__DAVAENGINE_WINDOWS__)

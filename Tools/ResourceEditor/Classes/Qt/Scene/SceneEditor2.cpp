@@ -51,8 +51,8 @@
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-
 
 #include <QShortcut>
 
@@ -149,6 +149,9 @@ SceneEditor2::SceneEditor2()
 
     editorLODSystem = new EditorLODSystem(this);
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+
+    editorStatisticsSystem = new EditorStatisticsSystem(this);
+    AddSystem(editorStatisticsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
 
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
@@ -480,6 +483,8 @@ void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
 
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
+
+    editorLODSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)

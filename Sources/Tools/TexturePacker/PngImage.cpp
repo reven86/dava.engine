@@ -114,8 +114,8 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
     int32 rx, ry;
     ry = sy;
     for (int32 y = srcRect.y; y < srcRect.y + srcRect.dy; ++y)
-	{
-		rx = sx;
+    {
+        rx = sx;
 		for (int32 x = srcRect.x; x < srcRect.x + srcRect.dx; ++x)
 		{
             if (rx < 0 ||
@@ -333,8 +333,8 @@ void PngImageExt::DrawRect(const Rect2i &rect, uint32 color)
     for (int32 i = 0; i < rect.dx; ++i)
     {
         destData32[rect.y * GetWidth() + rect.x + i] = color;
-		destData32[(rect.y + rect.dy - 1) * GetWidth() + rect.x + i] = color;
-	}
+        destData32[(rect.y + rect.dy - 1) * GetWidth() + rect.x + i] = color;
+    }
 	for (int32 i = 0; i < rect.dy; ++i)
 	{
 		destData32[(rect.y + i) * GetWidth() + rect.x] = color;
