@@ -122,7 +122,7 @@ public:
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
     void FitGridIfParentIsNested(PackageBaseNode* node);
-    bool IsPropertyAffectBackground(AbstractProperty* property);
+    bool IsPropertyAffectBackground(AbstractProperty* property) const;
     RefPtr<UIControl> gridControl;
     RefPtr<UIControl> counterpoiseControl;
     RefPtr<UIControl> positionHolderControl;
@@ -291,7 +291,7 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
     }
 }
 
-bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property)
+bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property) const
 {
     if (property == nullptr)
     {
