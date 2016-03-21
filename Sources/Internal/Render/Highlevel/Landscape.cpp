@@ -149,6 +149,9 @@ void Landscape::ReleaseGeometryData()
     quadsInWidthPow2 = 0;
 
     ////Instanced data
+
+    SafeRelease(heightTexture);
+
     if (patchVertexBuffer)
     {
         rhi::DeleteVertexBuffer(patchVertexBuffer);
@@ -281,7 +284,7 @@ void Landscape::RebuildLandscape()
     ReleaseGeometryData();
     AllocateGeometryData();
 
-    UpdatePatchInfo(0, 0, 0);
+    UpdatePatchInfo(0, 0, 0, Rect2i(0, 0, -1, -1));
 }
 
 void Landscape::PrepareMaterial(NMaterial* material)
@@ -291,15 +294,30 @@ void Landscape::PrepareMaterial(NMaterial* material)
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
 }
 
-Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
+Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, bool useMorphing)
+{
+    Vector<Image*> textureData;
+    CreateHeightTextureData(heightmap, textureData, useMorphing);
+
+    Texture* tx = Texture::CreateFromData(textureData);
+    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, useMorphing ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
+
+    for (Image* img : textureData)
+        img->Release();
+
+    return tx;
+}
+
+void Landscape::CreateHeightTextureData(Heightmap* heightmap, Vector<Image*>& dataOut, bool useMorphing)
 {
     const uint32 hmSize = heightmap->Size();
     DVASSERT(IsPowerOf2(heightmap->Size()));
 
-    Vector<Image*> textureData;
-    if (useLodMorphing)
+    dataOut.clear();
+    if (useMorphing)
     {
-        textureData.reserve(HighestBitIndex(hmSize));
+        dataOut.reserve(HighestBitIndex(hmSize));
 
         uint32 mipSize = hmSize;
         uint32 step = 1;
@@ -342,7 +360,7 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
 
             Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_RGBA8888, reinterpret_cast<uint8*>(mipData));
             mipImg->mipmapLevel = mipLevel;
-            textureData.push_back(mipImg);
+            dataOut.push_back(mipImg);
 
             mipSize >>= 1;
             step <<= 1;
@@ -354,17 +372,8 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
     else
     {
         Image* heightImage = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
-        textureData.push_back(heightImage);
+        dataOut.push_back(heightImage);
     }
-
-    Texture* tx = Texture::CreateFromData(textureData);
-    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, useLodMorphing ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
-
-    for (Image* img : textureData)
-        img->Release();
-
-    return tx;
 }
 
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
@@ -447,11 +456,20 @@ Landscape::SubdivisionPatchInfo* Landscape::GetSubdivPatch(uint32 level, uint32 
         return 0;
 }
 
-void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
+void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     if (level >= subdivLevelCount)
+        return;
+
+    int32 hmSize = heightmap->Size();
+    uint32 patchSize = hmSize >> level;
+
+    uint32 xx = x * patchSize;
+    uint32 yy = y * patchSize;
+
+    if (updateRect.dx >= 0 && updateRect.dy >= 0 && !Rect2i(xx, yy, patchSize, patchSize).RectIntersects(updateRect))
         return;
 
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
@@ -461,13 +479,8 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
     patch->positionOfMaxError = Vector3();
     patch->bbox = AABBox3();
 
-    int32 hmSize = heightmap->Size();
-    uint32 patchSize = hmSize >> level;
     uint32 step = patchSize / PATCH_SIZE_QUADS;
     DVASSERT(step);
-
-    uint32 xx = x * patchSize;
-    uint32 yy = y * patchSize;
 
     for (uint32 y0 = yy; y0 < yy + patchSize; y0 += step)
     {
@@ -538,10 +551,10 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
     uint32 x2 = x << 1;
     uint32 y2 = y << 1;
 
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0);
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1);
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1, updateRect);
 }
 
 void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 hError0, float32 rError0)
@@ -1025,7 +1038,7 @@ void Landscape::ClearQueue()
 
 void Landscape::AllocateGeometryDataInstancing()
 {
-    ScopedPtr<Texture> heightTexture(CreateHeightTexture(heightmap));
+    heightTexture = CreateHeightTexture(heightmap, useLodMorphing);
     if (landscapeMaterial->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
         landscapeMaterial->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
     else
@@ -1620,91 +1633,29 @@ bool Landscape::IsDrawMorphing() const
     return debugDrawMorphing;
 }
 
-/*
-void Landscape::UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap)
-{
-    root.data.bbox.Empty();
-
-    for (int32 y = root.data.y, yEnd = root.data.y + root.data.size + 1; y < yEnd; ++y)
-    {
-        auto row = y * fromHeightmap->Size();
-        for (int32 x = root.data.x, xEnd = root.data.x + root.data.size + 1; x < xEnd; ++x)
-        {
-            root.data.bbox.AddPoint(GetPoint(x, y, fromHeightmap->Data()[x + row]));
-        }
-    }
-
-    if (nullptr != root.children)
-    {
-        for (int i = 0; i < 4; ++i)
-        {
-            UpdateNodeChildrenBoundingBoxesRecursive(root.children[i], fromHeightmap);
-        }
-    }
-}
-*/
-
 void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 {
-    //TODO: refactor this!
-    DVASSERT(!useInstancing);
-    /*
-    int32 heightmapSize = fromHeightmap->Size();
-    DVASSERT(heightmap->Size() == heightmapSize);
-
+    DVASSERT(heightmap->Size() == fromHeightmap->Size());
     DVASSERT(!isRequireTangentBasis && "TODO: Landscape::UpdatePart() for HIGH Quality");
 
-    uint32 vertexSize = sizeof(VertexNoInstancing);
-    if (!isRequireTangentBasis)
-    {
-        vertexSize -= sizeof(Vector3); // (Vertex::normal);
-        vertexSize -= sizeof(Vector3); // (Vertex::tangent);
-    }
+    UpdatePatchInfo(0, 0, 0, rect);
 
-    const uint32 quadSize = RENDER_QUAD_WIDTH - 1;
-
-    for (uint32 quadY = 0; quadY < quadsInWidth; ++quadY)
+    if (useInstancing)
     {
-        for (uint32 quadX = 0; quadX < quadsInWidth; ++quadX)
+        Vector<Image*> textureData;
+        CreateHeightTextureData(fromHeightmap, textureData, useLodMorphing);
+
+        for (Image* img : textureData)
         {
-            Rect2i quadRect(quadX * quadSize, quadY * quadSize, quadSize, quadSize);
-            Rect2i intersect = quadRect.Intersection(rect);
-            if (intersect.dx || intersect.dy)
-            {
-                rhi::HVertexBuffer vertexBuffer = vertexBuffers[quadX + quadY * quadsInWidth];
-
-                uint32 verticesCount = (quadSize + 1) * (quadSize + 1);
-                uint8* quadVertices = new uint8[verticesCount * vertexSize];
-
-                uint32 index = 0;
-                for (uint32 y = quadY * quadSize; y < quadY * quadSize + quadSize + 1; ++y)
-                {
-                    auto row = y * heightmapSize;
-                    auto texCoordV = 1.0f - (float32)(y) / (float32)(heightmapSize - 1);
-
-                    for (uint32 x = quadX * quadSize; x < quadX * quadSize + quadSize + 1; ++x)
-                    {
-                        VertexNoInstancing* vertex = reinterpret_cast<VertexNoInstancing*>(&quadVertices[index * vertexSize]);
-
-                        auto texCoordU = (float32)(x) / (float32)(heightmapSize - 1);
-
-                        vertex->position = GetPoint(x, y, fromHeightmap->Data()[x + row]);
-                        vertex->texCoord = Vector2(texCoordU, texCoordV);
-
-                        //TODO: fill tangent data
-
-                        //TODO: need update bbox in subdivide path info
-                        //quad.bbox.AddPoint(quadVertices[index].position);
-                        ++index;
-                    }
-                }
-
-                uint32 vBufferSize = verticesCount * vertexSize;
-                rhi::UpdateVertexBuffer(vertexBuffer, quadVertices, 0, vBufferSize);
-                SafeDeleteArray(quadVertices);
-            }
+            heightTexture->TexImage(img->mipmapLevel, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
+            img->Release();
         }
+        textureData.clear();
     }
-    */
+    else
+    {
+        //update vertex buffers
+        DVASSERT(false && "TODO: Landscape::UpdatePart() for non-instancing render");
+    }
 }
 }

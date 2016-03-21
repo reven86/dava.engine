@@ -241,7 +241,7 @@ protected:
     };
 
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
-    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
+    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect);
     void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 hError0, float32 rError0);
     void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 lastSubdivMorph);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
@@ -340,10 +340,13 @@ protected:
 
     void AllocateGeometryDataInstancing();
 
-    Texture* CreateHeightTexture(Heightmap* heightmap);
+    static Texture* CreateHeightTexture(Heightmap* heightmap, bool useMorphing);
+    static void CreateHeightTextureData(Heightmap* heightmap, Vector<Image*>& dataOut, bool useMorphing);
 
     void DrawLandscapeInstancing();
     void DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& nearLevel, float32 patchMorph = 0.f, const Vector4& nearMorph = Vector4());
+
+    Texture* heightTexture = nullptr;
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
