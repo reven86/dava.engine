@@ -58,7 +58,7 @@ public:
 };
 } // end namespace DAVA
 
-ControlMapper::ControlMapper( QWindow *w )
+ControlMapper::ControlMapper(QWindow* w)
     : window(w)
 {
 }
@@ -131,7 +131,7 @@ void ControlMapper::keyPressEvent(QKeyEvent* e)
     }
 }
 
-void ControlMapper::keyReleaseEvent(QKeyEvent *e)
+void ControlMapper::keyReleaseEvent(QKeyEvent* e)
 {
     using namespace DAVA;
 #ifdef Q_OS_WIN
@@ -165,7 +165,7 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
     }
 }
 
-void ControlMapper::mouseMoveEvent(QMouseEvent * event)
+void ControlMapper::mouseMoveEvent(QMouseEvent* event)
 {
     auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
 
@@ -183,7 +183,7 @@ void ControlMapper::mouseMoveEvent(QMouseEvent * event)
     }
 }
 
-void ControlMapper::mousePressEvent(QMouseEvent * event)
+void ControlMapper::mousePressEvent(QMouseEvent* event)
 {
     auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
 
@@ -194,7 +194,7 @@ void ControlMapper::mousePressEvent(QMouseEvent * event)
     }
 }
 
-void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
+void ControlMapper::mouseReleaseEvent(QMouseEvent* event)
 {
     auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
 
@@ -205,12 +205,12 @@ void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
     }
 }
 
-void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
+void ControlMapper::mouseDoubleClickEvent(QMouseEvent* event)
 {
     Q_UNUSED(event);
 }
 
-void ControlMapper::wheelEvent(QWheelEvent *event)
+void ControlMapper::wheelEvent(QWheelEvent* event)
 {
     DAVA::UIEvent davaEvent;
     davaEvent.wheelDelta.x = event->pixelDelta().x();
@@ -219,14 +219,14 @@ void ControlMapper::wheelEvent(QWheelEvent *event)
     davaEvent.phase = DAVA::UIEvent::Phase::WHEEL;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
-    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
-void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
+void ControlMapper::dragMoveEvent(QDragMoveEvent* event)
 {
     DAVA::UIEvent davaEvent;
     auto pos = event->pos();
-    const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
+    const auto currentDPR = static_cast<int>(window->devicePixelRatio());
 
     davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.mouseButton = DAVA::UIEvent::MouseButton::LEFT;
@@ -234,7 +234,7 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     davaEvent.phase = DAVA::UIEvent::Phase::MOVE;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
-    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
 void ControlMapper::releaseKeyboard()

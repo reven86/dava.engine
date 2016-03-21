@@ -118,17 +118,66 @@ if( WARNING_DISABLE)
 
 elseif( WARNINGS_AS_ERRORS )
 
+if ( MACOS )
+        set(LOCAL_DISABLED_WARNINGS "-Werror")
+endif ()
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
-    -w \
-    -Wno-c++98-compat-pedantic \
-    -Wno-documentation-pedantic \
-    -Wno-documentation \
-    -Wno-nullable-to-nonnull-conversion \
-    -Wno-nonnull \
-    -Wno-nested-anon-types \
-    -Wno-gnu-anonymous-struct \
-")
+-Wno-c++98-compat-pedantic \
+-Wno-newline-eof \
+-Wno-gnu-anonymous-struct \
+-Wno-nested-anon-types \
+-Wno-float-equal \
+-Wno-extra-semi \
+-Wno-unused-parameter \
+-Wno-shadow \
+-Wno-exit-time-destructors \
+-Wno-documentation \
+-Wno-global-constructors \
+-Wno-padded \
+-Wno-weak-vtables \
+-Wno-variadic-macros \
+-Wno-deprecated-register \
+-Wno-sign-conversion \
+-Wno-sign-compare \
+-Wno-format-nonliteral \
+-Wno-cast-align \
+-Wno-conversion \
+-Wno-zero-length-array \
+-Wno-switch-enum \
+-Wno-c99-extensions \
+-Wno-missing-prototypes \
+-Wno-missing-field-initializers \
+-Wno-conditional-uninitialized \
+-Wno-covered-switch-default \
+-Wno-deprecated \
+-Wno-unused-macros \
+-Wno-disabled-macro-expansion \
+-Wno-undef \
+-Wno-char-subscripts \
+-Wno-unneeded-internal-declaration \
+-Wno-unused-variable \
+-Wno-used-but-marked-unused \
+-Wno-missing-variable-declarations \
+-Wno-gnu-statement-expression \
+-Wno-missing-braces \
+-Wno-reorder \
+-Wno-implicit-fallthrough \
+-Wno-ignored-qualifiers \
+-Wno-shift-sign-overflow \
+-Wno-mismatched-tags \
+-Wno-missing-noreturn \
+-Wno-consumed \
+-Wno-sometimes-uninitialized \
+-Wno-delete-non-virtual-dtor \
+-Wno-header-hygiene \
+-Wno-unknown-warning-option \
+-Wno-reserved-id-macro \
+-Wno-documentation-pedantic \
+-Wno-unused-local-typedef \
+-Wno-nullable-to-nonnull-conversion \
+-Wno-super-class-method-mismatch \
+-Wno-nonnull")
 
 
     if( ANDROID )

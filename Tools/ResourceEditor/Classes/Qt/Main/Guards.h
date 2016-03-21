@@ -26,31 +26,34 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#ifndef __GUARDS_H__
+#define __GUARDS_H__
 
-#include "FileSystem/LocalizationWinUAP.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "Platform/DeviceInfo.h"
+#include "Debug/DVAssert.h"
+#include <QObject>
 
-namespace DAVA
+namespace Guard
 {
-void LocalizationWinUAP::SelectPreferedLocalization()
+class ScopedBoolGuard final
 {
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
-
-String LocalizationWinUAP::GetDeviceLang(void)
-{
-    String locale = DeviceInfo::GetLocale();
-    String::size_type posEnd = locale.find('-', 2);
-    if (String::npos != posEnd)
+public:
+    ScopedBoolGuard(bool& value, bool newValue)
+        : guardedValue(value)
+        , oldValue(value)
     {
-        locale = locale.substr(0, posEnd);
+        guardedValue = newValue;
     }
-    return locale;
-}
-};
+    ~ScopedBoolGuard()
+    {
+        guardedValue = oldValue;
+    };
 
-#endif // __DAVAENGINE_WIN_UAP__
+private:
+    bool& guardedValue;
+    const bool oldValue;
+};
+}
+
+
+#endif // __GUARDS_H__

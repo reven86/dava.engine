@@ -27,52 +27,34 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND2_H__
-#define __COMMAND2_H__
+#include "Commands2/Base/CommandNotify.h"
 
-#include "Base/BaseTypes.h"
-#include "Scene3D/Scene.h"
-
-#include "Command/ICommand.h"
-
-#include "Commands2/CommandID.h"
-#include "Commands2/CommandNotify.h"
-
-class Command2 : public CommandNotifyProvider, public DAVA::ICommand
+CommandNotifyProvider::~CommandNotifyProvider()
 {
-public:
-    Command2(int _id, const DAVA::String& _text = "");
-    ~Command2() override = default;
-
-    int GetId() const;
-
-    void Execute() override;
-
-    virtual bool IsModifying() const;
-    virtual bool CanUndo() const;
-
-    virtual DAVA::Entity* GetEntity() const = 0;
-    virtual bool MergeWith(const Command2* command);
-
-    DAVA::String GetText() const;
-    void SetText(const DAVA::String& text);
-
-protected:
-    int id;
-    DAVA::String text;
-
-    void UndoInternalCommand(Command2* command);
-    void RedoInternalCommand(Command2* command);
-};
-
-inline bool Command2::CanUndo() const
-{
-    return true;
+    SafeRelease(curNotify);
 }
 
-inline bool Command2::IsModifying() const
+void CommandNotifyProvider::SetNotify(CommandNotify* notify)
 {
-    return true;
+    if (curNotify != notify)
+    {
+        SafeRelease(curNotify);
+        curNotify = SafeRetain(notify);
+    }
 }
 
-#endif // __COMMAND2_H__
+void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->Notify(command, redo);
+    }
+}
+
+void CommandNotifyProvider::EmitCleanChanged(bool clean)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->CleanChanged(clean);
+    }
+}

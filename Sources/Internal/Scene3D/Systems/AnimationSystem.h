@@ -49,7 +49,7 @@ public:
 
     void RemoveEntity(Entity* entity) override;
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
     void ImmediateEvent(Component* component, uint32 event) override;
 

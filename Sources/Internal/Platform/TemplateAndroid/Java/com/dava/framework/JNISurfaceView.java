@@ -16,7 +16,6 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -461,7 +460,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             }
         }
 
-        JNIActivity.GetActivity().isSurfaceReady = true;
+		JNIActivity.isSurfaceReady = true;
 
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
@@ -485,7 +484,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
 		WaitQueuedEvents();
 
-		JNIActivity.GetActivity().isSurfaceReady = false;
+		JNIActivity.isSurfaceReady = false;
 
         surface = null;
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");

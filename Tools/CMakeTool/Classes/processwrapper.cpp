@@ -156,8 +156,21 @@ void ProcessWrapper::StartNextCommand()
     {
         return;
     }
-    emit processStandardOutput(""); //emit an empty string to make whitespace between build logs
     const Task& task = taskQueue.dequeue();
+    const auto& buildFolder = task.buildFolder;
+    if (!FileSystemHelper::IsDirExists(buildFolder))
+    {
+        if (FileSystemHelper::MkPath(buildFolder))
+        {
+            emit processStandardOutput(tr("created build folder %1").arg(buildFolder));
+        }
+        else
+        {
+            emit processStandardError(tr("can not create build folder %1").arg(buildFolder));
+            QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
+            return;
+        }
+    }
     if (task.needClean)
     {
         CleanBuildFolder(task.buildFolder);

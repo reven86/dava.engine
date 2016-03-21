@@ -31,27 +31,25 @@
 #include <regex>
 #include <sstream>
 
-
 PointerSerializer::PointerSerializer(PointerSerializer&& converter)
     : pointers(std::move(converter.pointers))
-    , typeName(std::move(converter.typeName))    
+    , typeName(std::move(converter.typeName))
     , text(std::move(converter.text))
 {
-
 }
 
-PointerSerializer::PointerSerializer(const DAVA::String &str)
+PointerSerializer::PointerSerializer(const DAVA::String& str)
     : PointerSerializer(ParseString(str))
 {
 }
 
-PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
+PointerSerializer PointerSerializer::ParseString(const DAVA::String& str)
 {
     std::regex rgx(GetRegex());
     std::smatch sm;
     DAVA::String::const_iterator cit = str.cbegin();
 
-    while (std::regex_search(cit, str.cend(), sm, rgx)) 
+    while (std::regex_search(cit, str.cend(), sm, rgx))
     {
         if (sm.size() == 3) // original text, left and righ
         {
@@ -67,7 +65,7 @@ PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
                     DAVA::StringStream ssout(m);
                     DAVA::pointer_size px;
                     ssout >> std::hex >> px; // on MAC std::stringstream >> void* truncate address to 3 bytes, even if this sstream created from valid void*;
-                    void *ptr;
+                    void* ptr;
                     ptr = reinterpret_cast<void*>(px);
                     pointers.push_back(ptr);
                 }
@@ -97,7 +95,7 @@ const char* PointerSerializer::GetRegex()
     return R"(\{\s*([\:\s\w\*\&]+)\s*\:\s*([\,\[\]\w\s]*)\s*\})";
 }
 
-PointerSerializer& PointerSerializer::operator = (PointerSerializer&& converter)
+PointerSerializer& PointerSerializer::operator=(PointerSerializer&& converter)
 {
     if (this != &converter)
     {

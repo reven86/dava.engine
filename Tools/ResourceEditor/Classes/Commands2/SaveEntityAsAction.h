@@ -30,7 +30,7 @@
 #ifndef __RESOURCEEDITORQT__SAVEENTITYASACTION__
 #define __RESOURCEEDITORQT__SAVEENTITYASACTION__
 
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
 #include "Scene/EntityGroup.h"
 
 #include "FileSystem/FilePath.h"

@@ -40,12 +40,10 @@ POP_QT_WARNING_SUPRESSOR
 
 #include "AbstractWidgetModel.h"
 
-
 class WidgetItem;
 
-
 class WidgetModel
-    : public AbstractWidgetModel
+: public AbstractWidgetModel
 {
     friend class WidgetItem;
 
@@ -54,29 +52,29 @@ class WidgetModel
     POP_QT_WARNING_SUPRESSOR
 
 private:
-    using ItemCache = QMap < QWidget *, QSharedPointer<WidgetItem> > ;
+    using ItemCache = QMap<QWidget*, QSharedPointer<WidgetItem>>;
 
 public:
-    explicit WidgetModel( QWidget *w );
+    explicit WidgetModel(QWidget* w);
     ~WidgetModel();
 
-    QWidget* widgetFromIndex( const QModelIndex& index ) const override;
-    QModelIndex indexFromWidget( QWidget *w ) const override;
+    QWidget* widgetFromIndex(const QModelIndex& index) const override;
+    QModelIndex indexFromWidget(QWidget* w) const override;
 
     // QAbstractItemModel
-    int rowCount( const QModelIndex& parent = QModelIndex() ) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    QModelIndex	index( int row, int column, const QModelIndex& parent = QModelIndex() ) const override;
-    QModelIndex	parent( const QModelIndex& index ) const override;
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex& index) const override;
 
 private:
     void rebuildCache();
 
-    QSharedPointer< WidgetItem > root;
+    QSharedPointer<WidgetItem> root;
     ItemCache cache;
 
 private:
-    static void rebuildCacheRecursive( ItemCache& cache, const QSharedPointer<WidgetItem>& item );
+    static void rebuildCacheRecursive(ItemCache& cache, const QSharedPointer<WidgetItem>& item);
 };
 
 

@@ -26,23 +26,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
-#include "CommandAction.h"
+#if defined(__DAVAENGINE_WINDOWS__)
 
-CommandAction::CommandAction(int _id, const DAVA::String& _text)
-    : Command2(_id, _text)
+#include "FileSystem/LocalizationSystem.h"
+#include "Platform/DeviceInfo.h"
+
+namespace DAVA
 {
-}
-
-CommandAction::~CommandAction()
+String LocalizationSystem::GetDeviceLocale(void) const
 {
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
 }
+};
 
-void CommandAction::Undo()
-{
-}
-
-DAVA::Entity* CommandAction::GetEntity() const
-{
-    return NULL;
-}
+#endif // __DAVAENGINE_WIN_UAP__
