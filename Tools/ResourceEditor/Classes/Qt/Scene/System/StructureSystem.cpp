@@ -45,8 +45,8 @@
 
 namespace StructSystemDetails
 {
-void MapEntityGroup(const SelectableGroup& srcGroup, SelectableGroup& dstGroup,
-                    const StructureSystem::InternalMapping& mapping, SceneCollisionSystem* collisionSystem)
+void MapSelectableGroup(const SelectableGroup& srcGroup, SelectableGroup& dstGroup,
+                        const StructureSystem::InternalMapping& mapping, SceneCollisionSystem* collisionSystem)
 {
     DVASSERT(collisionSystem != nullptr);
 
@@ -80,7 +80,7 @@ void StructureSystem::Move(const SelectableGroup& objects, DAVA::Entity* newPare
     sceneEditor->BeginBatch("Move entities");
     for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
     {
-        sceneEditor->Exec(new EntityParentChangeCommand(entity, newParent, newBefore));
+        sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(entity, newParent, newBefore));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -123,7 +123,7 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
         {
             delegate->WillRemove(entity);
         }
-        sceneEditor->Exec(new EntityRemoveCommand(entity));
+        sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(entity));
         for (auto delegate : delegates)
         {
             delegate->DidRemoved(entity);
@@ -157,7 +157,7 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstan
     sceneEditor->BeginBatch("Move particle emitter");
     for (size_t i = 0; i < emitters.size(); ++i)
     {
-        sceneEditor->Exec(new ParticleEmitterMoveCommand(oldEffects[i], emitters[i], newEffect, dropAfter++));
+        sceneEditor->Exec(Command2::Create<ParticleEmitterMoveCommand>(oldEffects[i], emitters[i], newEffect, dropAfter++));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -172,7 +172,7 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers
     sceneEditor->BeginBatch("Move particle layers");
     for (size_t i = 0; i < layers.size(); ++i)
     {
-        sceneEditor->Exec(new ParticleLayerMoveCommand(oldEmitters[i], layers[i], newEmitter, newBefore));
+        sceneEditor->Exec(Command2::Create<ParticleLayerMoveCommand>(oldEmitters[i], layers[i], newEmitter, newBefore));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -187,7 +187,7 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     sceneEditor->BeginBatch("Move particle force");
     for (size_t i = 0; i < forces.size(); ++i)
     {
-        sceneEditor->Exec(new ParticleForceMoveCommand(forces[i], oldLayers[i], newLayer));
+        sceneEditor->Exec(Command2::Create<ParticleForceMoveCommand>(forces[i], oldLayers[i], newLayer));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -226,7 +226,7 @@ SelectableGroup StructureSystem::ReloadEntities(const SelectableGroup& objects, 
     SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
     SelectableGroup result;
-    StructSystemDetails::MapEntityGroup(objects, result, groupMapping, scene->collisionSystem);
+    StructSystemDetails::MapSelectableGroup(objects, result, groupMapping, scene->collisionSystem);
     return result;
 }
 
@@ -256,7 +256,7 @@ SelectableGroup StructureSystem::ReloadEntitiesAs(const SelectableGroup& objects
     SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
     SelectableGroup result;
-    StructSystemDetails::MapEntityGroup(objects, result, entitiesToReload, scene->collisionSystem);
+    StructSystemDetails::MapSelectableGroup(objects, result, entitiesToReload, scene->collisionSystem);
     return result;
 }
 
@@ -301,8 +301,8 @@ void StructureSystem::ReloadInternal(InternalMapping& mapping, const DAVA::FileP
                             CopyLightmapSettings(origEntity, newEntityInstance);
                         }
 
-                        sceneEditor->Exec(new EntityParentChangeCommand(newEntityInstance, origEntity->GetParent(), before));
-                        sceneEditor->Exec(new EntityRemoveCommand(origEntity));
+                        sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(newEntityInstance, origEntity->GetParent(), before));
+                        sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(origEntity));
 
                         newEntityInstance->Release();
                     }
@@ -358,7 +358,7 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
             }
             else
             {
-                sceneEditor->Exec(new EntityAddCommand(loadedEntity, sceneEditor));
+                sceneEditor->Exec(Command2::Create<EntityAddCommand>(loadedEntity, sceneEditor));
             }
 
             // TODO: move this code to some another place (into command itself or into ProcessCommand function)
@@ -399,74 +399,11 @@ void StructureSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void StructureSystem::Draw()
-{
-}
-
 void StructureSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    if (NULL != command)
+    if (command->MatchCommandIDs({ CMDID_PARTICLE_LAYER_REMOVE, CMDID_PARTICLE_LAYER_MOVE, CMDID_PARTICLE_FORCE_REMOVE, CMDID_PARTICLE_FORCE_MOVE }))
     {
-        switch (command->GetId())
-        {
-        case CMDID_PARTICLE_LAYER_REMOVE:
-        case CMDID_PARTICLE_LAYER_MOVE:
-        case CMDID_PARTICLE_FORCE_REMOVE:
-        case CMDID_PARTICLE_FORCE_MOVE:
-            EmitChanged();
-            break;
-
-        default:
-            break;
-        }
-
-        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
-        if (autoSelectionEnabled)
-        {
-            ProcessAutoSelection(command, redo);
-        }
-    }
-}
-
-void StructureSystem::ProcessAutoSelection(const Command2* command, bool redo) const
-{
-    auto commandId = command->GetId();
-
-    auto sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    auto selectionSystem = sceneEditor->selectionSystem;
-
-    if (CMDID_BATCH == commandId)
-    {
-        auto batch = static_cast<const CommandBatch*>(command);
-
-        auto contain = batch->ContainsCommand(CMDID_ENTITY_ADD) || batch->ContainsCommand(CMDID_ENTITY_REMOVE);
-        if (contain)
-        {
-            selectionSystem->Clear();
-
-            auto count = batch->Size();
-            for (auto i = 0; i < count; ++i)
-            {
-                auto cmd = batch->GetCommand(i);
-                auto cmdID = cmd->GetId();
-
-                auto needAddEntity = ((CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo));
-                if (needAddEntity)
-                {
-                    selectionSystem->AddObjectToSelection(cmd->GetEntity());
-                }
-            }
-        }
-    }
-    else if (CMDID_ENTITY_ADD == commandId || CMDID_ENTITY_REMOVE == commandId)
-    {
-        selectionSystem->Clear();
-
-        auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
-        if (needAddEntity)
-        {
-            selectionSystem->AddObjectToSelection(command->GetEntity());
-        }
+        EmitChanged();
     }
 }
 

@@ -64,9 +64,9 @@ public:
     ParticleEffectComponent();
     ~ParticleEffectComponent();
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* sceneFile);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* sceneFile);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     void Start();
     void Stop(bool isDeleteAllParticles = true);

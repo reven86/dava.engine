@@ -90,7 +90,7 @@ PathSystem::~PathSystem()
 void PathSystem::AddPath(DAVA::Entity* entity)
 {
     sceneEditor->BeginBatch("Add path at scene");
-    sceneEditor->Exec(new EntityAddCommand(entity, sceneEditor));
+    sceneEditor->Exec(Command2::Create<EntityAddCommand>(entity, sceneEditor));
 
     if (isEditingEnabled)
         ExpandPathEntity(entity);
@@ -285,45 +285,65 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
 void PathSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    const int commandId = command->GetId();
-    if (CMDID_INSP_MEMBER_MODIFY == commandId)
+    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
-        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-        if (String("name") == cmd->member->Name().c_str())
-        {
-            const DAVA::uint32 count = pathes.size();
-            for (DAVA::uint32 p = 0; p < count; ++p)
+        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
+        isEditingEnabled = redo;
+    }
+    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
+    {
+        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
+        isEditingEnabled = !redo;
+    }
+
+    if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+    {
+        auto ProcessInspCommand = [this](const InspMemberModifyCommand* inspCommand, bool redo) {
+            static const FastName NAME("name");
+            if (NAME == inspCommand->member->Name())
             {
-                const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
-
-                if (cmd->object == pc)
+                const DAVA::uint32 count = pathes.size();
+                for (DAVA::uint32 p = 0; p < count; ++p)
                 {
-                    FastName newPathName = (redo) ? cmd->newValue.AsFastName() : cmd->oldValue.AsFastName();
-                    FastName oldPathName = (redo) ? cmd->oldValue.AsFastName() : cmd->newValue.AsFastName();
-
-                    const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
-                    for (DAVA::uint32 c = 0; c < childrenCount; ++c)
+                    const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
+                    if (inspCommand->object == pc)
                     {
-                        DAVA::WaypointComponent* wp = GetWaypointComponent(pathes[p]->GetChild(c));
+                        FastName newPathName = (redo) ? inspCommand->newValue.AsFastName() : inspCommand->oldValue.AsFastName();
+                        FastName oldPathName = (redo) ? inspCommand->oldValue.AsFastName() : inspCommand->newValue.AsFastName();
 
-                        if (wp && wp->GetPathName() == oldPathName)
+                        const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
+                        for (DAVA::uint32 c = 0; c < childrenCount; ++c)
                         {
-                            wp->SetPathName(newPathName);
+                            DAVA::WaypointComponent* wp = GetWaypointComponent(pathes[p]->GetChild(c));
+                            if (wp && wp->GetPathName() == oldPathName)
+                            {
+                                wp->SetPathName(newPathName);
+                            }
                         }
-                    }
 
-                    break;
+                        break;
+                    }
+                }
+            }
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2* cmd = batch->GetCommand(i);
+                if (cmd->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+                {
+                    ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(cmd), redo);
                 }
             }
         }
-    }
-    else if (commandId == CMDID_ENABLE_WAYEDIT)
-    {
-        isEditingEnabled = redo;
-    }
-    else if (commandId == CMDID_DISABLE_WAYEDIT)
-    {
-        isEditingEnabled = !redo;
+        else
+        {
+            ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(command), redo);
+        }
     }
 }
 
@@ -366,8 +386,8 @@ void PathSystem::EnablePathEdit(bool enable)
 {
     if (enable)
     {
-        sceneEditor->BeginBatch("Enable waypoints edit");
-        sceneEditor->Exec(new EnableWayEditCommand);
+        sceneEditor->BeginBatch("Enable waypoints edit", pathes.size() + 1);
+        sceneEditor->Exec(Command2::Create<EnableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -378,8 +398,8 @@ void PathSystem::EnablePathEdit(bool enable)
     }
     else
     {
-        sceneEditor->BeginBatch("Disable waypoints edit");
-        sceneEditor->Exec(new DisableWayEditCommand);
+        sceneEditor->BeginBatch("Disable waypoints edit", pathes.size() + 1);
+        sceneEditor->Exec(Command2::Create<DisableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -393,23 +413,30 @@ void PathSystem::EnablePathEdit(bool enable)
 void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
 {
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+
+    sceneEditor->BeginBatch("Expand path components", pathComponentCount);
     for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(new ExpandPathCommand(pathComponent));
+        sceneEditor->Exec(Command2::Create<ExpandPathCommand>(pathComponent));
     }
+
+    sceneEditor->EndBatch();
 }
 
 void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
 {
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+    sceneEditor->BeginBatch("Collapse path components", pathComponentCount);
     for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(new CollapsePathCommand(pathComponent));
+        sceneEditor->Exec(Command2::Create<CollapsePathCommand>(pathComponent));
     }
+
+    sceneEditor->EndBatch();
 }
 
 DAVA::PathComponent* PathSystem::CreatePathComponent()

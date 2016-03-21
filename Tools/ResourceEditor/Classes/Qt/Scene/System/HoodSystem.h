@@ -36,7 +36,7 @@
 #include "Scene/System/HoodSystem/MoveHood.h"
 #include "Scene/System/HoodSystem/ScaleHood.h"
 #include "Scene/System/HoodSystem/RotateHood.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "SystemDelegates.h"
 
 // bullet
@@ -85,7 +85,7 @@ public:
 
 private:
     void Draw();
-    void ProcessCommand(const Command2* command, bool redo);
+
     void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
     void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
     void ResetModifValues();

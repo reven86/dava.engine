@@ -1,30 +1,30 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+	* Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	* Neither the name of the binaryzebra nor the
+	names of its contributors may be used to endorse or promote products
+	derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	=====================================================================================*/
 
 
 #include "Qt/Scene/System/ModifSystem.h"
@@ -116,15 +116,15 @@ void EntityModificationSystem::PlaceOnLandscape(const SelectableGroup& entities)
 void EntityModificationSystem::ResetTransform(const SelectableGroup& entities)
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
-
     if (nullptr != sceneEditor && ModifCanStart(entities))
     {
         DAVA::Matrix4 zeroTransform;
         zeroTransform.Identity();
-        sceneEditor->BeginBatch("Multiple transform");
+
+        sceneEditor->BeginBatch("Multiple transform", entities.GetSize());
         for (const auto& item : entities.GetContent())
         {
-            sceneEditor->Exec(new TransformCommand(item, item.GetLocalTransform(), zeroTransform));
+            sceneEditor->Exec(Command2::Create<TransformCommand>(item, item.GetLocalTransform(), zeroTransform));
         }
         sceneEditor->EndBatch();
     }
@@ -297,14 +297,6 @@ void EntityModificationSystem::AddDelegate(EntityModificationSystemDelegate* del
 void EntityModificationSystem::RemoveDelegate(EntityModificationSystemDelegate* delegate)
 {
     delegates.remove(delegate);
-}
-
-void EntityModificationSystem::Draw()
-{
-}
-
-void EntityModificationSystem::ProcessCommand(const Command2* command, bool redo)
-{
 }
 
 SelectableGroup EntityModificationSystem::BeginModification(const SelectableGroup& inputEntities)
@@ -481,11 +473,13 @@ bool EntityModificationSystem::ModifCanStartByMouse(const SelectableGroup& objec
 void EntityModificationSystem::ApplyModification()
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
+
     if (sceneEditor == nullptr)
         return;
 
     bool transformChanged = false;
-    for (size_t i = 0; i < modifEntities.size(); ++i)
+    uint32 count = static_cast<uint32>(modifEntities.size());
+    for (uint32 i = 0; i < count; ++i)
     {
         if (modifEntities[i].originalTransform != modifEntities[i].object.GetLocalTransform())
         {
@@ -496,10 +490,10 @@ void EntityModificationSystem::ApplyModification()
 
     if (transformChanged)
     {
-        sceneEditor->BeginBatch("Multiple transform");
-        for (size_t i = 0; i < modifEntities.size(); ++i)
+        sceneEditor->BeginBatch("Multiple transform", count);
+        for (size_t i = 0; i < count; ++i)
         {
-            sceneEditor->Exec(new TransformCommand(modifEntities[i].object, modifEntities[i].originalTransform, modifEntities[i].object.GetLocalTransform()));
+            sceneEditor->Exec(Command2::Create<TransformCommand>(modifEntities[i].object, modifEntities[i].originalTransform, modifEntities[i].object.GetLocalTransform()));
         }
         sceneEditor->EndBatch();
     }
@@ -823,12 +817,14 @@ void EntityModificationSystem::CloneEnd()
     if (modifEntities.size() > 0 && clonedEntities.size() == modifEntities.size())
     {
         SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-        sceneEditor->BeginBatch("Clone");
+
+        uint32 count = static_cast<uint32>(modifEntities.size());
+        sceneEditor->BeginBatch("Clone", count);
 
         // we just moved original objects. Now we should return them back
         // to there original positions and move cloned object to the new positions
         // and only after that perform "add cloned entities to scene" commands
-        for (size_t i = 0; i < modifEntities.size(); ++i)
+        for (uint32 i = 0; i < count; ++i)
         {
             // remember new transform
             Matrix4 newLocalTransform = modifEntities[i].object.GetLocalTransform();
@@ -841,16 +837,15 @@ void EntityModificationSystem::CloneEnd()
 
             // remove entity from scene
             DAVA::Entity* cloneParent = clonedEntities[i]->GetParent();
-
             if (cloneParent)
             {
                 cloneParent->RemoveNode(clonedEntities[i]);
 
                 // and add it once again with command
-                sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
+                sceneEditor->Exec(Command2::Create<EntityAddCommand>(clonedEntities[i], cloneParent));
             }
 
-            // make cloned entiti selected
+            // make cloned entity selected
             SafeRelease(clonedEntities[i]);
         }
 
@@ -895,10 +890,11 @@ void EntityModificationSystem::LockTransform(const SelectableGroup& entities, bo
         return;
     }
 
-    sceneEditor->BeginBatch("Lock entities");
+    uint32 count = static_cast<uint32>(entities.GetSize());
+    sceneEditor->BeginBatch("Lock entities", count);
     for (auto entity : entities.ObjectsOfType<DAVA::Entity>())
     {
-        sceneEditor->Exec(new EntityLockCommand(entity, lock));
+        sceneEditor->Exec(Command2::Create<EntityLockCommand>(entity, lock));
     }
     sceneEditor->EndBatch();
 }
@@ -950,7 +946,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
             sceneEditor->BeginBatch(commandMessage);
 
             // bake render object
-            sceneEditor->Exec(new BakeGeometryCommand(ro, bakeTransform));
+            sceneEditor->Exec(Command2::Create<BakeGeometryCommand>(ro, bakeTransform));
 
             // inverse bake to be able to move object on same place
             // after it geometry was baked
@@ -965,8 +961,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
                 DAVA::Entity* en = *it;
                 DAVA::Matrix4 origTransform = en->GetLocalTransform();
                 DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
-
-                sceneEditor->Exec(new TransformCommand(Selectable(en), origTransform, newTransform));
+                sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(en), origTransform, newTransform));
 
                 // also modify childs transform to make them be at
                 // right position after parent entity changed
@@ -977,7 +972,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
                     DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
                     DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
 
-                    sceneEditor->Exec(new TransformCommand(Selectable(childEntity), childOrigTransform, childNewTransform));
+                    sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(childEntity), childOrigTransform, childNewTransform));
                 }
             }
 
@@ -994,19 +989,20 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
             newPivotPos = selectionSystem->GetUntransformedBoundingBox(entity).GetCenter();
         }
 
-        sceneEditor->BeginBatch(commandMessage);
+        uint32 count = static_cast<uint32>(entity->GetChildrenCount());
+        sceneEditor->BeginBatch(commandMessage, count + 1);
 
         // transform parent entity
         DAVA::Matrix4 transform;
         transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
-        sceneEditor->Exec(new TransformCommand(Selectable(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
+        sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
 
         // transform child entities with inversed parent transformation
         transform.Inverse();
-        for (size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
+        for (uint32 i = 0; i < count; ++i)
         {
             DAVA::Entity* childEntity = entity->GetChild(i);
-            sceneEditor->Exec(new TransformCommand(Selectable(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
+            sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
         }
 
         sceneEditor->EndBatch();
@@ -1100,7 +1096,7 @@ void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const SelectableGro
 
         DAVA::Matrix4 newMatrix = origMatrix;
         newMatrix.SetTranslationVector(newPos);
-        sceneEditor->Exec(new TransformCommand(item, origMatrix, newMatrix));
+        sceneEditor->Exec(Command2::Create<TransformCommand>(item, origMatrix, newMatrix));
     }
     sceneEditor->EndBatch();
 }
@@ -1151,7 +1147,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableG
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * rotationMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(new TransformCommand(item, origMatrix, newMatrix));
+            sceneEditor->Exec(Command2::Create<TransformCommand>(item, origMatrix, newMatrix));
         }
     }
 
@@ -1205,7 +1201,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * scaleMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(new TransformCommand(item, origMatrix, newMatrix));
+            sceneEditor->Exec(Command2::Create<TransformCommand>(item, origMatrix, newMatrix));
         }
     }
 

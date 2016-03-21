@@ -27,38 +27,34 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND_NOTIFY_H__
-#define __COMMAND_NOTIFY_H__
+#include "Commands2/Base/CommandNotify.h"
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-
-class Command2;
-
-class CommandNotify : public DAVA::BaseObject
+CommandNotifyProvider::~CommandNotifyProvider()
 {
-public:
-    CommandNotify();
-    ~CommandNotify();
+    SafeRelease(curNotify);
+}
 
-    virtual void Notify(const Command2* command, bool redo) = 0;
-    virtual void CleanChanged(bool clean){};
-};
-
-class CommandNotifyProvider
+void CommandNotifyProvider::SetNotify(CommandNotify* notify)
 {
-public:
-    CommandNotifyProvider();
-    virtual ~CommandNotifyProvider();
+    if (curNotify != notify)
+    {
+        SafeRelease(curNotify);
+        curNotify = SafeRetain(notify);
+    }
+}
 
-    void SetNotify(CommandNotify* notify);
-    CommandNotify* GetNotify() const;
+void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->Notify(command, redo);
+    }
+}
 
-    void EmitNotify(const Command2* command, bool redo);
-    void EmitCleanChanged(bool clean);
-
-protected:
-    CommandNotify* curNotify;
-};
-
-#endif // __COMMAND_NOTIFY_H__
+void CommandNotifyProvider::EmitCleanChanged(bool clean)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->CleanChanged(clean);
+    }
+}

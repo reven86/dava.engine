@@ -30,8 +30,7 @@
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 
-#include "SystemDelegates.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "SystemDelegates.h"
 
 #include "Entity/SceneSystem.h"
@@ -88,10 +87,6 @@ public:
     void ApplyMoveValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
     void ApplyRotateValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
     void ApplyScaleValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
-
-    void Draw();
-
-    void ProcessCommand(const Command2* command, bool redo);
 
 protected:
     struct EntityToModify

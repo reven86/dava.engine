@@ -140,9 +140,9 @@ private:
 
     bool IsInspViewAllowed(const DAVA::InspInfo* info) const;
 
-    virtual void OnItemEdited(const QModelIndex& index);
-    virtual void drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-    virtual void mouseReleaseEvent(QMouseEvent* event);
+    void OnItemEdited(const QModelIndex& index) override;
+    void drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
     bool IsParentFavorite(const QtPropertyData* data) const;
     PropEditorUserData* GetUserData(QtPropertyData* data) const;

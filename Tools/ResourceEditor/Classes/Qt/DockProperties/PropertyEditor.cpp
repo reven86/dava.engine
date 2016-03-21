@@ -1,30 +1,30 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+	* Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	* Neither the name of the binaryzebra nor the
+	names of its contributors may be used to endorse or promote products
+	derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	=====================================================================================*/
 
 
 #include "DAVAEngine.h"
@@ -75,30 +75,6 @@
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "QtTools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
-
-namespace PropertyEditorDetails
-{
-void ExecuteCommands(DAVA::Vector<Command2*>&& commands, const DAVA::String& commandName, SceneEditor2* scene)
-{
-    const bool usebatch = commands.size() > 1;
-    if (usebatch)
-    {
-        scene->BeginBatch(commandName);
-    }
-
-    for (Command2* cmd : commands)
-    {
-        scene->Exec(cmd);
-    }
-
-    if (usebatch)
-    {
-        scene->EndBatch();
-    }
-
-    commands.clear();
-}
-}
 
 PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSignals /*= true*/)
     : QtPropertyEditor(parent)
@@ -207,8 +183,8 @@ void PropertyEditor::ClearCurrentNodes()
     curNodes.Clear();
 }
 
-void PropertyEditor::AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtPropertyData>& root, std::unique_ptr<QtPropertyData>& curEntityData,
-                                         bool isFirstInList)
+void PropertyEditor::AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtPropertyData>& root,
+                                         std::unique_ptr<QtPropertyData>& curEntityData, bool isFirstInList)
 {
     // add info about components
     for (int ic = 0; ic < Component::COMPONENT_COUNT; ic++)
@@ -769,42 +745,56 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
 
 void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-    int cmdId = command->GetId();
+    {
+        static const Vector<int32> idsForUpdate =
+        { {
+        CMDID_COMPONENT_ADD,
+        CMDID_COMPONENT_REMOVE,
+        CMDID_CONVERT_TO_SHADOW,
+        CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
+        CMDID_SOUND_ADD_EVENT,
+        CMDID_SOUND_REMOVE_EVENT,
+        CMDID_DELETE_RENDER_BATCH,
+        CMDID_CLONE_LAST_BATCH,
+        CMDID_EXPAND_PATH,
+        CMDID_COLLAPSE_PATH,
+        } };
 
-    switch (cmdId)
-    {
-    case CMDID_COMPONENT_ADD:
-    case CMDID_COMPONENT_REMOVE:
-    case CMDID_CONVERT_TO_SHADOW:
-    case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
-    case CMDID_SOUND_ADD_EVENT:
-    case CMDID_SOUND_REMOVE_EVENT:
-    case CMDID_DELETE_RENDER_BATCH:
-    case CMDID_CLONE_LAST_BATCH:
-    case CMDID_EXPAND_PATH:
-    case CMDID_COLLAPSE_PATH:
-    {
-        if (command->GetEntity() == nullptr)
+        auto ShouldResetPanel = [this](const Command2* cmd) {
+            if (std::count(idsForUpdate.begin(), idsForUpdate.end(), cmd->GetId()) > 0)
+            {
+                Entity* entity = cmd->GetEntity();
+                if ((entity == nullptr) || curNodes.ContainsObject(entity))
+                    return true;
+            }
+            return false;
+        };
+
+        bool resetPropertyPanel = false;
+
+        int32 commandID = command->GetId();
+        if (commandID == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; !resetPropertyPanel && i < count; ++i)
+            {
+                resetPropertyPanel = ShouldResetPanel(batch->GetCommand(i));
+            }
+        }
+        else
+        {
+            resetPropertyPanel = ShouldResetPanel(command);
+        }
+
+        if (resetPropertyPanel)
         {
             propertiesUpdater->Update();
         }
         else
         {
-            for (const auto& item : curNodes.GetContent())
-            {
-                if (command->GetEntity() == item.GetContainedObject())
-                {
-                    propertiesUpdater->Update();
-                    break;
-                }
-            }
+            OnUpdateTimeout();
         }
-        break;
-    }
-
-    default:
-        OnUpdateTimeout();
-        break;
     }
 }
 
@@ -813,28 +803,22 @@ void PropertyEditor::OnItemEdited(const QModelIndex& index) // TODO: fix undo/re
     QtPropertyEditor::OnItemEdited(index);
 
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-    if (curScene == NULL)
+    if (curScene == nullptr)
         return;
+
     QtPropertyData* propData = GetProperty(index);
-
-    if (NULL != propData)
+    if (nullptr != propData)
     {
-        bool useBatch = propData->GetMergedItemCount() > 0;
-        if (useBatch)
-        {
-            curScene->BeginBatch("");
-        }
+        const int nMerged = propData->GetMergedItemCount();
+        curScene->BeginBatch("Edit properties", nMerged + 1);
 
-        curScene->Exec(reinterpret_cast<Command2*>(propData->CreateLastCommand()));
+        curScene->Exec(std::move(propData->CreateLastCommand()));
         propData->ForeachMergedItem([&curScene](QtPropertyData* item) {
-            curScene->Exec(reinterpret_cast<Command2*>(item->CreateLastCommand()));
+            curScene->Exec(std::move(item->CreateLastCommand()));
             return true;
         });
 
-        if (useBatch)
-        {
-            curScene->EndBatch();
-        }
+        curScene->EndBatch();
     }
 
     // this code it used to reload QualitySettingComponent field, when some changes made by user
@@ -965,36 +949,33 @@ void PropertyEditor::ConvertToShadow()
         return nullptr;
     };
 
-    DAVA::Vector<Command2*> commands;
-    commands.reserve(data->GetMergedItemCount() + 1);
-
     DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
-    commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
-    data->ForeachMergedItem([&commands, &findEntityFn](QtPropertyData* item) {
-        QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
-        if (dynamicData != nullptr)
-        {
-            DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
-            commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
-        }
-        return true;
-    });
-
-    PropertyEditorDetails::ExecuteCommands(std::move(commands), "ConvertToShadow batch", curScene);
+    curScene->BeginBatch("ConvertToShadow batch");
+    curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
+    data->ForeachMergedItem([&findEntityFn, curScene](QtPropertyData* item)
+                            {
+                                QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
+                                if (dynamicData != nullptr)
+                                {
+                                    DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
+                                    curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
+                                }
+                                return true;
+                            });
+    curScene->EndBatch();
 }
 
 void PropertyEditor::RebuildTangentSpace()
 {
     QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
-
-    if (NULL != btn)
+    if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-        if (NULL != data && NULL != curScene)
+        if (nullptr != data && nullptr != curScene)
         {
             RenderBatch* batch = (RenderBatch*)data->object;
-            curScene->Exec(new RebuildTangentSpaceCommand(batch, true));
+            curScene->Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
         }
     }
 }
@@ -1003,7 +984,6 @@ void PropertyEditor::DeleteRenderBatch()
 {
     // Code for removing several render batches
     QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
-
     if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
@@ -1012,10 +992,10 @@ void PropertyEditor::DeleteRenderBatch()
 
         if (data != nullptr && curScene != nullptr && node != nullptr)
         {
-            DAVA::Vector<Command2*> commands;
-            commands.reserve(data->GetMergedItemCount() + 1);
+            uint32 count = data->GetMergedItemCount() + 1;
+            curScene->BeginBatch("DeleteRenderBatch batch", count);
 
-            auto createCommand = [&node, &commands](QtPropertyDataIntrospection* dynamicData) {
+            auto createCommand = [&node, &curScene](QtPropertyDataIntrospection* dynamicData) {
                 DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
                 DAVA::RenderObject* ro = batch->GetRenderObject();
                 DVASSERT(ro);
@@ -1026,7 +1006,7 @@ void PropertyEditor::DeleteRenderBatch()
                     DAVA::RenderBatch* b = ro->GetRenderBatch(i);
                     if (b == batch)
                     {
-                        commands.push_back(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i));
+                        curScene->Exec(Command2::Create<DeleteRenderBatchCommand>(node, batch->GetRenderObject(), i));
                         break;
                     }
                 }
@@ -1043,7 +1023,7 @@ void PropertyEditor::DeleteRenderBatch()
                 return true;
             });
 
-            PropertyEditorDetails::ExecuteCommands(std::move(commands), "DeleteRenderBatch", curScene);
+            curScene->EndBatch();
         }
     }
 }
@@ -1357,18 +1337,17 @@ QtPropertyToolButton* PropertyEditor::CreateButton(QtPropertyData* data, const Q
 void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 {
     QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
-
-    if (NULL != btn)
+    if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
-        if (NULL != data)
+        if (nullptr != data)
         {
             DAVA::RenderObject* renderObject = (DAVA::RenderObject*)data->object;
 
             SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
             if (curScene && renderObject)
             {
-                curScene->Exec(new CloneLastBatchCommand(renderObject));
+                curScene->Exec(Command2::Create<CloneLastBatchCommand>(renderObject));
             }
         }
     }
@@ -1384,7 +1363,7 @@ void PropertyEditor::OnAddComponent(Component::eType type)
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
         Component* c = Component::CreateByType(type);
-        curScene->Exec(new AddComponentCommand(entity, c));
+        curScene->Exec(Command2::Create<AddComponentCommand>(entity, c));
     }
     curScene->EndBatch();
 }
@@ -1403,7 +1382,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component* component)
         if (entity->GetComponentCount(component->GetType()) == 0)
         {
             Component* c = component->Clone(entity);
-            curScene->Exec(new AddComponentCommand(entity, c));
+            curScene->Exec(Command2::Create<AddComponentCommand>(entity, c));
         }
     }
 
@@ -1453,7 +1432,7 @@ void PropertyEditor::OnAddPathComponent()
         if ((entity->GetComponentCount(Component::PATH_COMPONENT) == 0) && (entity->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0))
         {
             PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
-            curScene->Exec(new AddComponentCommand(entity, pathComponent));
+            curScene->Exec(Command2::Create<AddComponentCommand>(entity, pathComponent));
         }
     }
 
@@ -1490,34 +1469,32 @@ void PropertyEditor::OnAddVisibilityComponent()
 void PropertyEditor::OnRemoveComponent()
 {
     QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
-
-    if (NULL != btn)
+    if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
 
-        if (NULL != data && NULL != curScene)
+        if (nullptr != data && nullptr != curScene)
         {
-            DAVA::Vector<Command2*> commands;
-            commands.reserve(data->GetMergedItemCount() + 1);
+            curScene->BeginBatch("Remove Component", data->GetMergedItemCount() + 1);
 
             Component* component = (Component*)data->object;
             PropEditorUserData* userData = GetUserData(data);
-            commands.push_back(new RemoveComponentCommand(userData->entity, component));
+            curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
 
-            data->ForeachMergedItem([&commands, this](QtPropertyData* item) {
+            data->ForeachMergedItem([&curScene, this](QtPropertyData* item) {
                 QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
                 if (dynamicData != nullptr)
                 {
                     Component* component = (Component*)dynamicData->object;
                     PropEditorUserData* userData = GetUserData(dynamicData);
-                    commands.push_back(new RemoveComponentCommand(userData->entity, component));
+                    curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
                 }
 
                 return true;
             });
 
-            PropertyEditorDetails::ExecuteCommands(std::move(commands), "Remove Component", curScene);
+            curScene->EndBatch();
         }
     }
 }
@@ -1543,7 +1520,7 @@ QString PropertyEditor::GetDefaultFilePath()
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
     SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-    if (NULL != editor && FileSystem::Instance()->Exists(editor->GetScenePath()))
+    if (nullptr != editor && FileSystem::Instance()->Exists(editor->GetScenePath()))
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
         if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))

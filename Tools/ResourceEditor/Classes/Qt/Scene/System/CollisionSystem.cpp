@@ -1,30 +1,30 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+	* Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	* Neither the name of the binaryzebra nor the
+	names of its contributors may be used to endorse or promote products
+	derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	=====================================================================================*/
 
 
 #include "Base/AlignedAllocator.h"
@@ -81,6 +81,8 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene* scene)
     landCollWorld->setDebugDrawer(landDebugDrawer);
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
@@ -251,11 +253,6 @@ void SceneCollisionSystem::UpdateCollisionObject(DAVA::Entity* entity)
     AddEntity(entity);
 }
 
-void SceneCollisionSystem::RemoveCollisionObject(DAVA::Entity* entity)
-{
-    RemoveEntity(entity);
-}
-
 DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object)
 {
     DAVA::AABBox3 aabox = DAVA::AABBox3(DAVA::Vector3(0, 0, 0), 1.0f);
@@ -403,70 +400,58 @@ void SceneCollisionSystem::Draw()
 
 void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    if (NULL != command)
+    if (command->MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
     {
-        DAVA::Entity* entity = command->GetEntity();
-        switch (command->GetId())
-        {
-        case CMDID_TRANSFORM:
-            UpdateCollisionObject(entity);
-            break;
-        case CMDID_ENTITY_CHANGE_PARENT:
-        {
-            EntityParentChangeCommand* cmd = (EntityParentChangeCommand*)command;
-            if (redo)
+        UpdateCollisionObject(curLandscapeEntity);
+    }
+
+    if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE, CMDID_INSP_MEMBER_MODIFY }))
+    {
+        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
-                if (NULL != cmd->newParent)
+                static const String HEIGHTMAP_PATH = "heightmapPath";
+                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+                if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
                 {
-                    UpdateCollisionObject(entity);
+                    UpdateCollisionObject(curLandscapeEntity);
                 }
             }
-            else
+            else if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE }))
             {
-                if (NULL != cmd->oldParent)
-                {
-                    UpdateCollisionObject(entity);
-                }
-                else
-                {
-                    RemoveCollisionObject(entity);
-                }
+                UpdateCollisionObject(command->GetEntity());
+            }
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                ProcessSingleCommand(batch->GetCommand(i), redo);
             }
         }
-        break;
-        case CMDID_LANDSCAPE_SET_HEIGHTMAP:
-        case CMDID_HEIGHTMAP_MODIFY:
-            UpdateCollisionObject(curLandscapeEntity);
-            break;
-
-        case CMDID_LOD_CREATE_PLANE:
-        case CMDID_LOD_DELETE:
+        else
         {
-            UpdateCollisionObject(command->GetEntity());
-            break;
-        }
-
-        case CMDID_INSP_MEMBER_MODIFY:
-        {
-            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-            if (String("heightmapPath") == cmd->member->Name().c_str())
-            {
-                UpdateCollisionObject(curLandscapeEntity);
-            }
-        }
-        break;
-
-        default:
-            break;
+            ProcessSingleCommand(command, redo);
         }
     }
 }
 
 void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
-    if (EventSystem::SWITCH_CHANGED == event)
+    switch (event)
+    {
+    case EventSystem::SWITCH_CHANGED:
+    case EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case EventSystem::TRANSFORM_PARENT_CHANGED:
     {
         UpdateCollisionObject(component->GetEntity());
+        break;
+    }
+    default:
+        break;
     }
 }
 

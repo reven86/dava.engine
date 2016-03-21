@@ -30,7 +30,7 @@
 #ifndef __PARTICLE_EMITTER_MOVE_COMMANDS_H__
 #define __PARTICLE_EMITTER_MOVE_COMMANDS_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Particles/ParticleEmitter.h"
 

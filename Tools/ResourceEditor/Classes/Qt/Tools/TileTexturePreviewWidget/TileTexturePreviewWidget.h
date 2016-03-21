@@ -58,10 +58,10 @@ public:
     ~TileTexturePreviewWidget();
 
     void AddTexture(Image* previewTexture, const Color& color = Color::White);
-    void UpdateColor(int32 index, const Color& color);
+    void UpdateColor(uint32 index, const Color& color);
 
-    int32 GetSelectedTexture();
-    void SetSelectedTexture(int32 number);
+    uint32 GetSelectedTexture();
+    void SetSelectedTexture(uint32 number);
 
     void SetMode(eWidgetModes mode);
 
@@ -96,9 +96,9 @@ private:
 
     void ConnectToSignals();
 
-    void SetColor(int32 number, const Color& color);
-    void UpdateImage(int32 number);
-    void UpdateColor(int32 number);
+    void SetColor(uint32 number, const Color& color);
+    void UpdateImage(uint32 number);
+    void UpdateColor(uint32 number);
     void UpdateSelection();
 
     void InitWithColors();

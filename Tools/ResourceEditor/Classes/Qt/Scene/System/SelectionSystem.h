@@ -31,7 +31,9 @@
 #define __SCENE_SELECTION_SYSTEM_H__
 
 #include "Scene/SceneTypes.h"
+#include "Commands2/Base/Command2.h"
 #include "Scene/SelectableGroup.h"
+
 #include "SystemDelegates.h"
 
 // framework
@@ -112,11 +114,14 @@ public:
 
     void Input(DAVA::UIEvent* event) override;
 
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+
     void Activate() override;
     void Deactivate() override;
 
-    bool IsEntitySelected(DAVA::Entity* entity);
-    bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
+    void EnableSystem(bool enabled);
+    bool IsSystemEnabled() const;
 
     void Draw();
     void CancelSelection();
@@ -162,6 +167,7 @@ private:
     SelectableGroup recentlySelectedEntities;
     SelectableGroup lastGroupSelection;
     SelectableGroup objectsToSelect;
+    DAVA::List<DAVA::Entity*> entitiesForSelection;
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
@@ -173,6 +179,7 @@ private:
     bool invalidSelectionBoxes = false;
     bool selectionHasChanges = false;
     bool selecting = false;
+    bool systemIsEnabled = false;
 };
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()

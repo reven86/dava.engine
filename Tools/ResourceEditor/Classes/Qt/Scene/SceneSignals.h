@@ -244,11 +244,6 @@ public:
         emit ParticleLayerRemoved(scene, emitter);
     }
 
-    void EmitEditorLightEnabled(bool enabled)
-    {
-        emit EditorLightEnabled(enabled);
-    }
-
     void EmitSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape)
     {
         emit SnapToLandscapeChanged(scene, isSpanToLandscape);

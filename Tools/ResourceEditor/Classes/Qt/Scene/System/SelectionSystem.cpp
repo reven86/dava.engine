@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Commands2/Command2.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/HoodSystem.h"
@@ -49,7 +48,9 @@ SceneSelectionSystem::SceneSelectionSystem(SceneEditor2* editor)
     DVASSERT(collisionSystem != nullptr);
     DVASSERT(hoodSystem != nullptr);
     DVASSERT(modificationSystem != nullptr);
-    editor->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -62,9 +63,20 @@ SceneSelectionSystem::~SceneSelectionSystem()
 
 void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
-    if ((EventSystem::SWITCH_CHANGED == event) && currentSelection.ContainsObject(component->GetEntity()))
+    switch (event)
     {
-        invalidSelectionBoxes = true;
+    case EventSystem::SWITCH_CHANGED:
+    case EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case EventSystem::TRANSFORM_PARENT_CHANGED:
+    {
+        if (currentSelection.ContainsObject(component->GetEntity()))
+        {
+            invalidSelectionBoxes = true;
+        }
+        break;
+    }
+    default:
+        break;
     }
 }
 
@@ -89,13 +101,45 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
     }
 }
 
+namespace SceneSelectionSystem_Details
+{
+bool FindIfParentWasAdded(DAVA::Entity* entity, const DAVA::List<DAVA::Entity*>& container, Scene* scene)
+{
+    DAVA::Entity* parent = entity->GetParent();
+    if (parent == scene || parent == nullptr)
+    {
+        return false;
+    }
+
+    auto found = std::find(container.begin(), container.end(), parent);
+    if (found != container.end())
+    {
+        return true;
+    }
+
+    return FindIfParentWasAdded(parent, container, scene);
+}
+}
+
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
     ForceEmitSignals();
-
     if (IsLocked())
     {
         return;
+    }
+
+    if (!entitiesForSelection.empty())
+    {
+        Clear();
+        for (auto& entity : entitiesForSelection)
+        {
+            if (false == SceneSelectionSystem_Details::FindIfParentWasAdded(entity, entitiesForSelection, GetScene()))
+            {
+                AddObjectToSelection(entity);
+            }
+        }
+        entitiesForSelection.clear();
     }
 
     // if boxes are invalid we should request them from collision system
@@ -286,6 +330,34 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
 
     UpdateSelectionGroup(selectedObjects);
     applyOnPhaseEnd = true;
+}
+
+void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
+{
+    if (systemIsEnabled)
+    {
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
+        if (autoSelectionEnabled && !IsLocked())
+        {
+            DAVA::Entity* parent = entity->GetParent();
+            auto found = std::find(entitiesForSelection.begin(), entitiesForSelection.end(), parent);
+            if (found == entitiesForSelection.end())
+            {
+                entitiesForSelection.push_back(entity); // need add only parent entities to select one
+            }
+        }
+    }
+}
+
+void SceneSelectionSystem::RemoveEntity(Entity* entity)
+{
+    if (!entitiesForSelection.empty())
+    {
+        entitiesForSelection.remove(entity);
+    }
+
+    ExcludeEntityFromSelection(entity);
+    invalidSelectionBoxes = true;
 }
 
 void SceneSelectionSystem::Input(DAVA::UIEvent* event)
@@ -579,26 +651,6 @@ DAVA::Entity* SceneSelectionSystem::GetFirstSelectionEntity() const
     return currentSelection.GetContent().front().AsEntity();
 }
 
-bool SceneSelectionSystem::IsEntitySelected(Entity* entity)
-{
-    return IsLocked() == false ? currentSelection.ContainsObject(entity) : false;
-}
-
-bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity* entity)
-{
-    if (IsLocked())
-        return false;
-
-    while (entity)
-    {
-        if (currentSelection.ContainsObject(entity))
-            return true;
-
-        entity = entity->GetParent();
-    }
-    return false;
-}
-
 void SceneSelectionSystem::CancelSelection()
 {
     // don't change selection on phase end
@@ -768,9 +820,22 @@ void SceneSelectionSystem::Deactivate()
     SetLocked(true);
 }
 
+void SceneSelectionSystem::EnableSystem(bool enabled)
+{
+    systemIsEnabled = enabled;
+}
+
+bool SceneSelectionSystem::IsSystemEnabled() const
+{
+    return systemIsEnabled;
+}
+
 void SceneSelectionSystem::UpdateSelectionGroup(const SelectableGroup& newSelection)
 {
     objectsToSelect.Exclude(lastGroupSelection);
+    objectsToSelect.RemoveIf([](const Selectable& e) {
+        return e.SupportsTransformType(Selectable::TransformType::Disabled);
+    });
 
     if (groupSelectionMode == GroupSelectionMode::Replace)
     {

@@ -151,7 +151,7 @@ private:
     template <typename CMD, typename... Args>
     void ExecuteCommandForSelectedEffects(Args&&...);
 
-    void ExecuteModifyingCommand(Command2* command);
+    void ExecuteModifyingCommand(Command2::Pointer&& command);
 
 private:
     ParticleEffectComponent* selectedEffect = nullptr;
@@ -179,7 +179,7 @@ inline void SceneTree::ExecuteCommandForSelectedEffects(Args&&... arg)
     {
         if (DAVA::GetEffectComponent(entity) != nullptr)
         {
-            sceneEditor->Exec(new CMD(entity, arg...));
+            sceneEditor->Exec(Command2::Create<CMD>(entity, arg...));
         }
     }
     sceneEditor->EndBatch();

@@ -189,11 +189,11 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     position.y = positionYSpinBox->value();
     position.z = positionZSpinBox->value();
 
-    CommandUpdateEmitterPosition* commandUpdateEmitter = new CommandUpdateEmitterPosition(effect, instance);
+    auto commandUpdateEmitter = Command2::Create<CommandUpdateEmitterPosition>(effect, instance);
     commandUpdateEmitter->Init(position);
 
     DVASSERT(activeScene != 0);
-    activeScene->Exec(commandUpdateEmitter);
+    activeScene->Exec(std::move(commandUpdateEmitter));
     activeScene->MarkAsChanged();
 
     Init(activeScene, effect, instance, false, false);
@@ -241,8 +241,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     emitterAngle->GetValue(0, propAngle.GetPropsPtr());
     emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 
-    CommandUpdateEmitter* commandUpdateEmitter = new CommandUpdateEmitter(instance);
-
+    auto commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(instance);
     commandUpdateEmitter->Init(FastName(emitterNameLineEdit->text().toStdString().c_str()),
                                type,
                                emissionRange.GetPropLine(),
@@ -256,7 +255,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
                                isShortEffect);
 
     DVASSERT(activeScene != 0);
-    activeScene->Exec(commandUpdateEmitter);
+    activeScene->Exec(std::move(commandUpdateEmitter));
     activeScene->MarkAsChanged();
 
     Init(activeScene, effect, instance, false, initEmittersByDef);

@@ -30,7 +30,7 @@
 #ifndef __SCENE_STRUCTURE_SYSTEM_H__
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Scene/SelectableGroup.h"
 #include "StringConstants.h"
 #include "SystemDelegates.h"
@@ -79,7 +79,6 @@ private:
     friend class SceneEditor2;
 
     void Process(DAVA::float32 timeElapsed) override;
-    void Draw();
 
     void ProcessCommand(const Command2* command, bool redo);
 
@@ -96,8 +95,6 @@ private:
     void CheckAndMarkSolid(DAVA::Entity* entity);
 
     void SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback);
-
-    void ProcessAutoSelection(const Command2* command, bool redo) const;
 
     void RemoveEntities(DAVA::Vector<DAVA::Entity*>& entitiesToRemove);
 

@@ -30,7 +30,8 @@
 #ifndef __RESOURCEEDITORQT__SAVEENTITYASACTION__
 #define __RESOURCEEDITORQT__SAVEENTITYASACTION__
 
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
+
 #include "FileSystem/FilePath.h"
 
 namespace DAVA

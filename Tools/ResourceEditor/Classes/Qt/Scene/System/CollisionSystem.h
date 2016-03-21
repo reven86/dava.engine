@@ -32,7 +32,7 @@
 
 #include "Scene/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 // bullet
 #include "bullet/btBulletCollisionCommon.h"
@@ -85,7 +85,6 @@ public:
     DAVA::Landscape* GetLandscape() const;
 
     void UpdateCollisionObject(DAVA::Entity* entity);
-    void RemoveCollisionObject(DAVA::Entity* entity);
 
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;

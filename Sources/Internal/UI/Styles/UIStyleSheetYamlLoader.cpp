@@ -84,7 +84,7 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
                                 GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionProps[1]->AsString().c_str(), transitionFunctionType);
 
                             prop.transition = true;
-                            prop.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                            prop.transitionFunction = static_cast<Interpolation::FuncType>(transitionFunctionType);
                             prop.transitionTime = transitionProps[0]->AsFloat();
 
                             break;
