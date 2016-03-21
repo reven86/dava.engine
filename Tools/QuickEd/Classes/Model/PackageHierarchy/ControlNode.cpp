@@ -277,10 +277,10 @@ bool ControlNode::CanInsertControl(ControlNode* node, DAVA::int32 pos) const
     {
         return false;
     }
-    PackageBaseNode* parent = const_cast<ControlNode*>(this); //i will not change this pointer. I promise!
+    const PackageBaseNode* parent = this;
     while (parent != nullptr)
     {
-        const ControlNode* parentNode = dynamic_cast<ControlNode*>(parent);
+        const ControlNode* parentNode = dynamic_cast<const ControlNode*>(parent);
         if (parentNode == nullptr)
         {
             break;

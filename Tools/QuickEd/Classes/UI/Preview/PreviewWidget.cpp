@@ -617,7 +617,7 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
         PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
-        int index = 0;
+        uint32 index = 0;
         if (node == nullptr)
         {
             node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());

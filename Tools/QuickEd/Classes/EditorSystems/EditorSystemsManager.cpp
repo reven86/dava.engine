@@ -142,7 +142,7 @@ ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& po
     return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
 }
 
-int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
+uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
 {
     if (editingRootControls.empty())
     {
@@ -155,7 +155,7 @@ int EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) c
     std::advance(iter, insertToEnd ? index - 1 : index);
     PackageBaseNode* target = *iter;
     PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-    for (int i = 0; i < controlsNode->GetCount(); ++i)
+    for (uint32 i = 0; i < controlsNode->GetCount(); ++i)
     {
         if (controlsNode->Get(i) == target)
         {

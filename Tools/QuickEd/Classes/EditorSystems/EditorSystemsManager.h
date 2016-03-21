@@ -131,7 +131,7 @@ public:
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
     ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point) const;
-    int GetIndexOfNearestControl(const DAVA::Vector2& point) const;
+    DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
