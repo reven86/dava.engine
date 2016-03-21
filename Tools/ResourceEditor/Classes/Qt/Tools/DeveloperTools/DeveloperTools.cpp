@@ -216,3 +216,20 @@ void DeveloperTools::OnReplaceTextureMipmap()
         MipMapReplacer::ReplaceMipMaps(QtMainWindow::Instance()->GetCurrentScene(), FastName(item.toStdString().c_str()));
     }
 }
+
+void DeveloperTools::OnToggleLandscapeInstancing()
+{
+    SceneEditor2* currentScene = QtMainWindow::Instance()->GetCurrentScene();
+
+    Landscape* landscapeObject = nullptr;
+    Vector<Entity*> children;
+    currentScene->GetChildEntitiesWithComponent(children, DAVA::Component::RENDER_COMPONENT);
+    for (Entity* e : children)
+    {
+        landscapeObject = GetLandscape(e);
+        if (landscapeObject)
+        {
+            landscapeObject->SetUseInstancing(!landscapeObject->IsUseInstancing());
+        }
+    }
+}

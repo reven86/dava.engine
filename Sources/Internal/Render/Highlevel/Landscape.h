@@ -147,6 +147,9 @@ public:
 
     void SetForceFirstLod(bool force);
 
+    void SetUseInstancing(bool useInstancing);
+    bool IsUseInstancing() const;
+
 protected:
     void AllocateGeometryData();
     void ReleaseGeometryData();
@@ -162,14 +165,11 @@ protected:
     void SetDrawWired(bool isWire);
     bool IsDrawWired() const;
 
-    void SetUseInstancing(bool useInstancing);
-    bool IsUseInstancing() const;
+    void SetDrawMorphing(bool drawMorph);
+    bool IsDrawMorphing() const;
 
     void SetUseMorphing(bool useMorph);
     bool IsUseMorphing() const;
-
-    void SetDrawMorphing(bool drawMorph);
-    bool IsDrawMorphing() const;
 
     struct RestoreBufferData
     {
@@ -366,9 +366,8 @@ public:
                          PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
                          PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
-                         PROPERTY("isDrawWired", "isDrawWired", IsDrawWired, SetDrawWired, I_VIEW | I_EDIT)
-                         PROPERTY("useInstancing", "useInstancing", IsUseInstancing, SetUseInstancing, I_VIEW | I_EDIT)
                          PROPERTY("useMorphing", "useMorphing", IsUseMorphing, SetUseMorphing, I_VIEW | I_EDIT)
+                         PROPERTY("isDrawWired", "isDrawWired", IsDrawWired, SetDrawWired, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawMorphing", "debugDrawMorphing", IsDrawMorphing, SetDrawMorphing, I_VIEW | I_EDIT)
                          MEMBER(debugDrawMetrics, "debugDrawMetrics", I_VIEW | I_EDIT)
                          MEMBER(maxHeightError, "maxHeightError", I_VIEW | I_EDIT)

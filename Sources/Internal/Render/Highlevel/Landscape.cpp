@@ -257,7 +257,6 @@ void Landscape::AllocateGeometryData()
         subdivLevelInfoArray[k].offset = subdivPatchCount;
         subdivLevelInfoArray[k].size = size;
         subdivPatchCount += size * size;
-        Logger::FrameworkDebug("level: %d size: %d quadCount: %d", k, size, heightmapSize / size);
         size *= 2;
     }
 
@@ -1597,8 +1596,11 @@ void Landscape::SetUseInstancing(bool isUse)
         useInstancing = newValue;
         landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, useInstancing ? 1 : 0);
         RebuildLandscape();
+
+        Logger::FrameworkDebug("Landscape uses instancing: %s", useInstancing ? "true" : "false");
     }
 }
+
 bool Landscape::IsUseInstancing() const
 {
     return useInstancing;
