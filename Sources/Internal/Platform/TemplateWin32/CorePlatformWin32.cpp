@@ -85,6 +85,11 @@ int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
     return 0;
 }
 
+CoreWin32Platform::CoreWin32Platform()
+{
+    SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
+}
+
 bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
 {
     //single instance check

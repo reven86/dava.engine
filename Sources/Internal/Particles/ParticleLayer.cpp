@@ -195,7 +195,7 @@ ParticleLayer* ParticleLayer::Clone()
     // Copy the forces.
     dstLayer->CleanupForces();
     dstLayer->forces.reserve(forces.size());
-    for (int32 f = 0; f < (int32)forces.size(); ++f)
+    for (size_t f = 0; f < forces.size(); ++f)
     {
         ParticleForce* clonedForce = this->forces[f]->Clone();
         dstLayer->AddForce(clonedForce);
@@ -275,7 +275,7 @@ ParticleLayer* ParticleLayer::Clone()
 
 bool ParticleLayer::IsLodActive(int32 lod)
 {
-    if ((lod >= 0) && (lod < (int32)activeLODS.size()))
+    if ((lod >= 0) && (lod < static_cast<int32>(activeLODS.size())))
         return activeLODS[lod];
 
     return false;
@@ -283,7 +283,7 @@ bool ParticleLayer::IsLodActive(int32 lod)
 
 void ParticleLayer::SetLodActive(int32 lod, bool active)
 {
-    if ((lod >= 0) && (lod < (int32)activeLODS.size()))
+    if ((lod >= 0) && (lod < static_cast<int32>(activeLODS.size())))
         activeLODS[lod] = active;
 }
 
@@ -410,7 +410,7 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
     const YamlNode* degradeNode = node->Get("degradeStrategy");
     if (degradeNode)
     {
-        degradeStrategy = (eDegradeStrategy)(degradeNode->AsInt());
+        degradeStrategy = static_cast<eDegradeStrategy>(degradeNode->AsInt());
     }
 
     const YamlNode* nameNode = node->Get("name");
@@ -451,8 +451,8 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
     if (lodsNode)
     {
         const Vector<YamlNode*>& vec = lodsNode->AsVector();
-        for (uint32 i = 0; i < (uint32)vec.size(); ++i)
-            SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
+        for (size_t i = 0; i < vec.size(); ++i)
+            SetLodActive(static_cast<int32>(i), (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
     }
 
     colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
@@ -618,7 +618,7 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
 
     const YamlNode* blendingNode = node->Get("blending");
     if (blendingNode)
-        blending = (eBlending)blendingNode->AsInt();
+        blending = static_cast<eBlending>(blendingNode->AsInt());
     const YamlNode* fogNode = node->Get("enableFog");
     if (fogNode)
     {
@@ -741,7 +741,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath& configPath, YamlNode* parentN
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "layerType",
                                                                  LayerTypeToString(type, "particles"));
 
-    PropertyLineYamlWriter::WritePropertyValueToYamlNode<int32>(layerNode, "degradeStrategy", (int32)degradeStrategy);
+    PropertyLineYamlWriter::WritePropertyValueToYamlNode<int32>(layerNode, "degradeStrategy", static_cast<int32>(degradeStrategy));
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "isLong", isLong);
 
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<Vector2>(layerNode, "pivotPoint", layerPivotPoint);
@@ -809,7 +809,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath& configPath, YamlNode* parentN
 
     YamlNode* lodsNode = new YamlNode(YamlNode::TYPE_ARRAY);
     for (int32 i = 0; i < 4; i++)
-        lodsNode->Add((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
+        lodsNode->Add(static_cast<int32>(activeLODS[i])); //as for now AddValueToArray has no bool type - force it to int
     layerNode->SetNodeToMap("activeLODS", lodsNode);
 
     if ((type == TYPE_SUPEREMITTER_PARTICLES) && innerEmitter)
@@ -826,7 +826,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath& configPath, YamlNode* parentN
 
 void ParticleLayer::SaveForcesToYamlNode(YamlNode* layerNode)
 {
-    int32 forceCount = (int32) this->forces.size();
+    int32 forceCount = static_cast<int32>(this->forces.size());
     if (forceCount == 0)
     {
         // No forces to write.
@@ -868,7 +868,7 @@ void ParticleLayer::GetModifableLines(List<ModifiablePropertyLineBase*>& modifia
     PropertyLineHelper::AddIfModifiable(angleVariation.Get(), modifiables);
     PropertyLineHelper::AddIfModifiable(animSpeedOverLife.Get(), modifiables);
 
-    int32 forceCount = (int32) this->forces.size();
+    int32 forceCount = static_cast<int32>(this->forces.size());
     for (int32 i = 0; i < forceCount; i++)
     {
         forces[i]->GetModifableLines(modifiables);
@@ -900,7 +900,7 @@ void ParticleLayer::RemoveForce(ParticleForce* force)
 
 void ParticleLayer::RemoveForce(int32 forceIndex)
 {
-    if (forceIndex <= (int32) this->forces.size())
+    if (forceIndex <= static_cast<int32>(this->forces.size()))
     {
         SafeRelease(this->forces[forceIndex]);
         this->forces.erase(this->forces.begin() + forceIndex);

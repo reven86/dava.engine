@@ -32,7 +32,7 @@
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"

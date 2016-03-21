@@ -99,7 +99,7 @@ DateTime::DateTime(int32 year, int32 month, int32 day, int32 hour, int32 minute,
 
 DateTime DateTime::Now()
 {
-    return DateTime(time(NULL), GetLocalTimeZoneOffset());
+    return DateTime(time(nullptr), GetLocalTimeZoneOffset());
 }
 
 DateTime DateTime::LocalTime(Timestamp timeStamp)

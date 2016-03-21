@@ -41,6 +41,7 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "DebugTools/DebugTools.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 namespace MainWindow_namespace
 {
@@ -107,6 +108,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
 
+    connect(previewWidget, &PreviewWidget::CloseTabRequested, this, &MainWindow::OnCloseCurrentTab);
+
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
     RestoreMainWindowState();
@@ -116,6 +119,11 @@ MainWindow::MainWindow(QWidget* parent)
     toolBarPlugins->setEnabled(false);
 
     OnDocumentChanged(nullptr);
+}
+
+MainWindow::~MainWindow()
+{
+    SaveMainWindowState();
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
@@ -369,6 +377,26 @@ void MainWindow::SetupViewMenu()
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
 
+    QMenu* appStyleMenu = new QMenu(tr("Application style"), menuView);
+    menuView->addMenu(appStyleMenu);
+    QActionGroup* actionGroup = new QActionGroup(this);
+    for (const QString& theme : Themes::ThemesNames())
+    {
+        QAction* action = new QAction(theme, menuView);
+        actionGroup->addAction(action);
+        action->setCheckable(true);
+        if (theme == Themes::GetCurrentThemeStr())
+        {
+            action->setChecked(true);
+        }
+        appStyleMenu->addAction(action);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [](QAction* action) {
+        if (action->isChecked())
+        {
+            Themes::SetCurrentTheme(action->text());
+        }
+    });
     SetupBackgroundMenu();
     // Another actions below the Set Background Color.
     menuView->addSeparator();
@@ -378,6 +406,7 @@ void MainWindow::SetupViewMenu()
 
 void MainWindow::SetupBackgroundMenu()
 {
+    menuView->addSeparator();
     // Setup the Background Color menu.
     QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
     menuView->addSeparator();
@@ -524,9 +553,14 @@ int MainWindow::AddTab(Document* document, int index)
 
 void MainWindow::closeEvent(QCloseEvent* ev)
 {
-    SaveMainWindowState();
-    emit CloseRequested();
-    ev->ignore();
+    if (!CloseRequested()) //we cannot access to EditorCore directly by parent
+    {
+        ev->ignore();
+    }
+    else
+    {
+        ev->accept();
+    }
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
@@ -613,5 +647,14 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
         logWidget->AddMessage(logLevel, output);
+    }
+}
+
+void MainWindow::OnCloseCurrentTab()
+{
+    int currentIndex = tabBar->currentIndex();
+    if (currentIndex != -1)
+    {
+        TabClosed(currentIndex);
     }
 }

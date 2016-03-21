@@ -77,7 +77,7 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
 #endif
 
     uint32* bitdata = data->GetBlockVisibilityData(blockIndex);
-    uint32 size = (uint32)indexedRenderObjects.size();
+    uint32 size = static_cast<uint32>(indexedRenderObjects.size());
     for (uint32 k = 0; k < size; ++k)
     {
         uint32 index = k / 32; // number of bits in uint32
@@ -132,7 +132,7 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     if (!camera)
         return;
 
-    uint32 size = (uint32)staticOcclusionComponents.size();
+    uint32 size = static_cast<uint32>(staticOcclusionComponents.size());
     if (size == 0)
         return;
 
@@ -149,14 +149,14 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
 
         if ((position.x >= data->bbox.min.x) && (position.x <= data->bbox.max.x) && (position.y >= data->bbox.min.y) && (position.y <= data->bbox.max.y))
         {
-            uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
-            uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);
+            uint32 x = static_cast<uint32>((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * static_cast<float32>(data->sizeX));
+            uint32 y = static_cast<uint32>((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * static_cast<float32>(data->sizeY));
             if ((x < data->sizeX) && (y < data->sizeY)) //
             {
                 float32 dH = data->cellHeightOffset ? data->cellHeightOffset[x + y * data->sizeX] : 0;
                 if ((position.z >= (data->bbox.min.z + dH)) && (position.z <= (data->bbox.max.z + dH)))
                 {
-                    uint32 z = (uint32)((position.z - (data->bbox.min.z + dH)) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);
+                    uint32 z = static_cast<uint32>((position.z - (data->bbox.min.z + dH)) / (data->bbox.max.z - data->bbox.min.z) * static_cast<float32>(data->sizeZ));
 
                     if (z < data->sizeZ)
                     {
@@ -241,7 +241,7 @@ void StaticOcclusionSystem::UnregisterComponent(Entity* entity, Component* compo
 
 void StaticOcclusionSystem::AddEntity(Entity* entity)
 {
-    staticOcclusionComponents.push_back((StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT));
+    staticOcclusionComponents.push_back(static_cast<StaticOcclusionDataComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT)));
 }
 
 void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObject)
@@ -251,7 +251,7 @@ void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObjec
      */
     if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
-        indexedRenderObjects.resize(Max((uint32)indexedRenderObjects.size(), (uint32)(renderObject->GetStaticOcclusionIndex() + 1)));
+        indexedRenderObjects.resize(Max(static_cast<uint32>(indexedRenderObjects.size()), static_cast<uint32>(renderObject->GetStaticOcclusionIndex() + 1)));
         DVASSERT_MSG(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
                      "Static Occlusion merge conflict. Skip this message and invalidate Static Occlusion");
         indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
@@ -272,14 +272,14 @@ void StaticOcclusionSystem::RemoveRenderObjectFromOcclusion(RenderObject* render
 
 void StaticOcclusionSystem::RemoveEntity(Entity* entity)
 {
-    for (uint32 k = 0; k < (uint32)staticOcclusionComponents.size(); ++k)
+    for (uint32 k = 0; k < static_cast<uint32>(staticOcclusionComponents.size()); ++k)
     {
         StaticOcclusionDataComponent* component = staticOcclusionComponents[k];
         if (component == entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT))
         {
             UndoOcclusionVisibility();
 
-            staticOcclusionComponents[k] = staticOcclusionComponents[(uint32)staticOcclusionComponents.size() - 1];
+            staticOcclusionComponents[k] = staticOcclusionComponents[static_cast<uint32>(staticOcclusionComponents.size()) - 1];
             staticOcclusionComponents.pop_back();
             break;
         }

@@ -68,9 +68,9 @@ void TileTexturePreviewWidget::Clear()
 {
     clear();
 
-    for (int32 i = 0; i < (int32)images.size(); ++i)
+    for (auto& image : images)
     {
-        SafeRelease(images[i]);
+        SafeRelease(image);
     }
 
     colors.clear();
@@ -163,27 +163,25 @@ void TileTexturePreviewWidget::ConnectToSignals()
     connect(this, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(OnItemChanged(QTreeWidgetItem*, int)));
 }
 
-int32 TileTexturePreviewWidget::GetSelectedTexture()
+uint32 TileTexturePreviewWidget::GetSelectedTexture()
 {
     return selectedTexture;
 }
 
-void TileTexturePreviewWidget::SetSelectedTexture(int32 number)
+void TileTexturePreviewWidget::SetSelectedTexture(uint32 number)
 {
-    if (number < 0 || number >= (int32)images.size())
+    if (number < static_cast<uint32>(images.size()))
     {
-        return;
+        selectedTexture = number;
+        UpdateSelection();
+
+        emit SelectionChanged(selectedTexture);
     }
-
-    selectedTexture = number;
-    UpdateSelection();
-
-    emit SelectionChanged(selectedTexture);
 }
 
-void TileTexturePreviewWidget::UpdateImage(int32 number)
+void TileTexturePreviewWidget::UpdateImage(uint32 number)
 {
-    DVASSERT(number >= 0 && number < (int32)images.size());
+    DVASSERT(number < static_cast<uint32>(images.size()));
 
     QTreeWidgetItem* item = topLevelItem(number);
 
@@ -210,9 +208,9 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
     item->setIcon(0, QIcon(QPixmap::fromImage(previewImage)));
 }
 
-void TileTexturePreviewWidget::UpdateColor(int32 number)
+void TileTexturePreviewWidget::UpdateColor(uint32 number)
 {
-    DVASSERT(number >= 0 && number < (int32)images.size());
+    DVASSERT(number < static_cast<uint32>(images.size()));
 
     bool blocked = blockSignals(true);
 
@@ -235,7 +233,7 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
 
 void TileTexturePreviewWidget::UpdateSelection()
 {
-    for (int32 i = 0; i < (int32)images.size(); ++i)
+    for (int32 i = 0; i < static_cast<int32>(images.size()); ++i)
     {
         QTreeWidgetItem* item = topLevelItem(i);
         item->setCheckState(0, (i == selectedTexture ? Qt::Checked : Qt::Unchecked));
@@ -293,7 +291,7 @@ void TileTexturePreviewWidget::OnItemChanged(QTreeWidgetItem* item, int column)
 
 bool TileTexturePreviewWidget::eventFilter(QObject* obj, QEvent* ev)
 {
-    for (int32 i = 0; i < (int32)labels.size(); ++i)
+    for (int32 i = 0; i < static_cast<int32>(labels.size()); ++i)
     {
         if (obj == labels[i])
         {
@@ -323,7 +321,7 @@ bool TileTexturePreviewWidget::eventFilter(QObject* obj, QEvent* ev)
     return QObject::eventFilter(obj, ev);
 }
 
-void TileTexturePreviewWidget::SetColor(int32 number, const Color& color)
+void TileTexturePreviewWidget::SetColor(uint32 number, const Color& color)
 {
     colors[number] = color;
     emit TileColorChanged(number, colors[number]);
@@ -376,15 +374,13 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image* image, cons
     return newImage;
 }
 
-void TileTexturePreviewWidget::UpdateColor(int32 index, const Color& color)
+void TileTexturePreviewWidget::UpdateColor(uint32 index, const Color& color)
 {
-    if (index < 0 || index >= (int32)colors.size())
+    if (index < static_cast<uint32>(colors.size()))
     {
-        return;
-    }
-
-    if (colors[index] != color)
-    {
-        SetColor(index, color);
+        if (colors[index] != color)
+        {
+            SetColor(index, color);
+        }
     }
 }

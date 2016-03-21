@@ -60,7 +60,7 @@ Component* CameraComponent::Clone(Entity* toEntity)
 {
     CameraComponent* newComponent = new CameraComponent();
     newComponent->SetEntity(toEntity);
-    newComponent->camera = (Camera*)camera->Clone();
+    newComponent->camera = static_cast<Camera*>(camera->Clone());
 
     return newComponent;
 }

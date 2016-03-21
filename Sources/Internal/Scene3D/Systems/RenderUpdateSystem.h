@@ -51,13 +51,13 @@ class RenderUpdateSystem : public SceneSystem
 {
 public:
     RenderUpdateSystem(Scene* scene);
-    virtual ~RenderUpdateSystem();
+    ~RenderUpdateSystem() override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
     void ImmediateEvent(Component* component, uint32 event) override;
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
 private:
     void UpdateActiveIndexes(Entity* entity, RenderObject* object);

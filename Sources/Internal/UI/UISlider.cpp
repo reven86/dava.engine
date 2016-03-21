@@ -84,7 +84,7 @@ void UISlider::InitInactiveParts(Sprite* spr)
         return;
     }
 
-    leftInactivePart = rightInactivePart = (int32)((spr->GetWidth() / 2.0f));
+    leftInactivePart = rightInactivePart = static_cast<int32>((spr->GetWidth() / 2.0f));
 }
 
 void UISlider::SetThumb(UIControl* newThumb)
@@ -120,7 +120,7 @@ void UISlider::RecalcButtonPos()
 {
     if (thumbButton)
     {
-        thumbButton->relativePosition.x = Interpolation::Linear((float32)leftInactivePart, size.x - rightInactivePart, minValue, currentValue, maxValue);
+        thumbButton->relativePosition.x = Interpolation::Linear(static_cast<float32>(leftInactivePart), size.x - rightInactivePart, minValue, currentValue, maxValue);
         thumbButton->relativePosition.y = GetSize().y / 2; // thumb button pivot point is on center.
     }
 }
@@ -224,7 +224,7 @@ void UISlider::Input(UIEvent* currentInput)
     relTouchPoint -= absRect.GetPosition();
 
     float oldVal = currentValue;
-    currentValue = Interpolation::Linear(minValue, maxValue, (float32)leftInactivePart, relTouchPoint.x, size.x - (float32)rightInactivePart);
+    currentValue = Interpolation::Linear(minValue, maxValue, static_cast<float32>(leftInactivePart), relTouchPoint.x, size.x - static_cast<float32>(rightInactivePart));
 
     if (currentValue < minValue)
     {
@@ -261,7 +261,7 @@ void UISlider::Draw(const UIGeometricData& geometricData)
     float32 screenXMin = fullVirtualScreen.x;
     float32 screenXMax = fullVirtualScreen.x + fullVirtualScreen.dx;
     float32 screenYMin = 0.f;
-    float32 screenYMax = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+    float32 screenYMax = static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
 
     if (minBackground)
     {
@@ -311,7 +311,7 @@ void UISlider::CopyDataFrom(UIControl* srcControl)
     SafeRelease(thumbButton);
 
     UIControl::CopyDataFrom(srcControl);
-    UISlider* t = (UISlider*)srcControl;
+    UISlider* t = static_cast<UISlider*>(srcControl);
 
     isEventsContinuos = t->isEventsContinuos;
 

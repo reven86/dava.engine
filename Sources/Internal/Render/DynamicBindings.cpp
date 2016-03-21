@@ -70,7 +70,7 @@ DynamicBindings::eUniformSemantic DynamicBindings::GetUniformSemanticByName(cons
 {
     for (int32 k = 0; k < DYNAMIC_PARAMETERS_COUNT; ++k)
         if (name == DYNAMIC_PARAM_NAMES[k])
-            return (eUniformSemantic)k;
+            return static_cast<eUniformSemantic>(k);
     return UNKNOWN_SEMANTIC;
 }
 
@@ -86,7 +86,7 @@ void DynamicBindings::SetDynamicParam(DynamicBindings::eUniformSemantic shaderSe
             dynamicParameters[shaderSemantic].updateSemantic = _updateSemantic;
 
         dynamicParameters[shaderSemantic].value = value;
-        dynamicParamersRequireUpdate &= ~(1 << shaderSemantic);
+        dynamicParamersRequireUpdate &= ~(1ull << shaderSemantic);
 
         switch (shaderSemantic)
         {
@@ -122,9 +122,9 @@ void DynamicBindings::ComputeWorldViewObjectCenterIfRequired()
     ComputeWorldViewMatrixIfRequired();
     if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW_OBJECT_CENTER))
     {
-        AABBox3* objectBox = (AABBox3*)GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
-        Matrix4* worldView = (Matrix4*)GetDynamicParam(PARAM_WORLD_VIEW);
-        worldViewObjectCenter = objectBox->GetCenter() * (*worldView);
+        const AABBox3* objectBox = reinterpret_cast<const AABBox3*>(GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX));
+        const Matrix4& worldView = GetDynamicParamMatrix(PARAM_WORLD_VIEW);
+        worldViewObjectCenter = objectBox->GetCenter() * worldView;
         SetDynamicParam(PARAM_WORLD_VIEW_OBJECT_CENTER, &worldViewObjectCenter, UPDATE_SEMANTIC_ALWAYS);
     }
 }
@@ -153,7 +153,7 @@ inline void DynamicBindings::ComputeLocalBoundingBoxSizeIfRequired()
 {
     if (dynamicParamersRequireUpdate & (1 << PARAM_BOUNDING_BOX_SIZE))
     {
-        AABBox3* objectBox = (AABBox3*)DynamicBindings::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
+        const AABBox3* objectBox = reinterpret_cast<const AABBox3*>(GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX));
         boundingBoxSize = objectBox->GetSize();
 
         SetDynamicParam(PARAM_BOUNDING_BOX_SIZE, &boundingBoxSize, UPDATE_SEMANTIC_ALWAYS);
@@ -224,7 +224,7 @@ inline void DynamicBindings::ComputeWorldInvTransposeMatrixIfRequired()
 int32 DynamicBindings::GetDynamicParamArraySize(DynamicBindings::eUniformSemantic shaderSemantic, int32 defaultValue)
 {
     if ((shaderSemantic == PARAM_JOINT_POSITIONS) || (shaderSemantic == PARAM_JOINT_QUATERNIONS))
-        return *((int32*)GetDynamicParam(PARAM_JOINTS_COUNT));
+        return *(reinterpret_cast<const int32*>(GetDynamicParam(PARAM_JOINTS_COUNT)));
     else
         return defaultValue;
 }

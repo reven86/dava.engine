@@ -72,7 +72,7 @@ public:
 
     uint32 GetTileTextureCount() const;
     Texture* GetTileTexture();
-    Color GetTileColor(int32 index);
+    Color GetTileColor(uint32 index);
     void SetTileColor(int32 index, const Color& color);
 
     void SetDrawingType(eTilemaskDrawType type);

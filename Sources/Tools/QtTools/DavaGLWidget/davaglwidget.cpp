@@ -265,6 +265,7 @@ void DavaGLWidget::OnSync()
         emit Initialized();
     }
 }
+
 void DavaGLWidget::resizeEvent(QResizeEvent*)
 {
     if (nullptr != renderer)
@@ -275,5 +276,5 @@ void DavaGLWidget::resizeEvent(QResizeEvent*)
 
 void DavaGLWidget::OnCleanup()
 {
-    DAVA::SafeDelete(renderer);
+    delete renderer;
 }

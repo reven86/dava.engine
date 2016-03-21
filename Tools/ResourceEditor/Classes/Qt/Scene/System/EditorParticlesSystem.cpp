@@ -247,126 +247,132 @@ void EditorParticlesSystem::RestartParticleEffects()
 
 void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    if (!command)
-    {
-        return;
-    }
-
     // Notify that the Particles-related value is changed.
-    SceneEditor2* activeScene = (SceneEditor2*)GetScene();
-    switch (command->GetId())
+    SceneEditor2* activeScene = static_cast<SceneEditor2*>(GetScene());
+    const int32 commandID = command->GetId();
+    if (commandID == CMDID_BATCH)
     {
-    case CMDID_PARTICLE_EMITTER_UPDATE:
-    {
-        const CommandUpdateEmitter* castedCmd = static_cast<const CommandUpdateEmitter*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterValueChanged(activeScene,
-                                                                  castedCmd->GetEmitter());
-        break;
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        if (batch->MatchCommandIDs({ CMDID_PARTICLE_EMITTER_UPDATE, CMDID_PARTICLE_LAYER_UPDATE, CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES,
+                                     CMDID_PARTILCE_LAYER_UPDATE_TIME, CMDID_PARTICLE_LAYER_UPDATE_ENABLED, CMDID_PARTICLE_FORCE_UPDATE,
+                                     CMDID_PARTICLE_EFFECT_START_STOP, CMDID_PARTICLE_EFFECT_RESTART, CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
+                                     CMDID_PARTICLE_EMITTER_SAVE_TO_YAML,
+                                     CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML, CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML,
+                                     //            CMDID_REMOVE_PARTICLE_EMITTER_LAYER,
+                                     CMDID_PARTICLE_EMITTER_LAYER_ADD }))
+        {
+            uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                ProcessCommand(batch->GetCommand(i), redo);
+            }
+        }
     }
+    else
+    {
+        switch (commandID)
+        {
+        case CMDID_PARTICLE_EMITTER_UPDATE:
+        {
+            const CommandUpdateEmitter* castedCmd = static_cast<const CommandUpdateEmitter*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterValueChanged(activeScene, castedCmd->GetEmitter());
+            break;
+        }
 
-    case CMDID_PARTICLE_LAYER_UPDATE:
-    {
-        const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
-        SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
-                                                                castedCmd->GetLayer());
-        break;
-    }
-    case CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES:
-    {
-        QtMainWindow::Instance()->RestartParticleEffects();
+        case CMDID_PARTICLE_LAYER_UPDATE:
+        {
+            const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, castedCmd->GetLayer());
+            break;
+        }
+        case CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES:
+        {
+            QtMainWindow::Instance()->RestartParticleEffects();
 
-        const CommandChangeLayerMaterialProperties* cmd = static_cast<const CommandChangeLayerMaterialProperties*>(command);
-        SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, cmd->GetLayer());
-        break;
-    }
+            const CommandChangeLayerMaterialProperties* cmd = static_cast<const CommandChangeLayerMaterialProperties*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, cmd->GetLayer());
+            break;
+        }
 
-    case CMDID_PARTILCE_LAYER_UPDATE_TIME:
-    case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
-    {
-        const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
-        SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
-                                                                castedCmd->GetLayer());
-        break;
-    }
+        case CMDID_PARTILCE_LAYER_UPDATE_TIME:
+        case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
+        {
+            const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, castedCmd->GetLayer());
+            break;
+        }
 
-    case CMDID_PARTICLE_FORCE_UPDATE:
-    {
-        const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
-        SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene,
-                                                                castedCmd->GetLayer(),
-                                                                castedCmd->GetForceIndex());
-        break;
-    }
+        case CMDID_PARTICLE_FORCE_UPDATE:
+        {
+            const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
+            SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene, castedCmd->GetLayer(), castedCmd->GetForceIndex());
+            break;
+        }
 
-    case CMDID_PARTICLE_EFFECT_START_STOP:
-    {
-        const CommandStartStopParticleEffect* castedCmd = static_cast<const CommandStartStopParticleEffect*>(command);
-        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,
-                                                                 castedCmd->GetEntity(),
-                                                                 castedCmd->GetStarted());
-        break;
-    }
+        case CMDID_PARTICLE_EFFECT_START_STOP:
+        {
+            const CommandStartStopParticleEffect* castedCmd = static_cast<const CommandStartStopParticleEffect*>(command);
+            SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene, castedCmd->GetEntity(), castedCmd->GetStarted());
+            break;
+        }
 
-    case CMDID_PARTICLE_EFFECT_RESTART:
-    {
-        const CommandRestartParticleEffect* castedCmd = static_cast<const CommandRestartParticleEffect*>(command);
+        case CMDID_PARTICLE_EFFECT_RESTART:
+        {
+            const CommandRestartParticleEffect* castedCmd = static_cast<const CommandRestartParticleEffect*>(command);
 
-        // An effect was stopped and then started.
-        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,
-                                                                 castedCmd->GetEntity(),
-                                                                 false);
-        SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,
-                                                                 castedCmd->GetEntity(),
-                                                                 true);
-        break;
-    }
+            // An effect was stopped and then started.
+            SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene, castedCmd->GetEntity(), false);
+            SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene, castedCmd->GetEntity(), true);
+            break;
+        }
 
-    case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
-    {
-        const CommandLoadParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadParticleEmitterFromYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
-        break;
-    }
+        case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
+        {
+            const CommandLoadParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadParticleEmitterFromYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
+            break;
+        }
 
-    case CMDID_PARTICLE_EMITTER_SAVE_TO_YAML:
-    {
-        const CommandSaveParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveParticleEmitterToYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
-        break;
-    }
+        case CMDID_PARTICLE_EMITTER_SAVE_TO_YAML:
+        {
+            const CommandSaveParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveParticleEmitterToYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
+            break;
+        }
 
-    case CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML:
-    {
-        const CommandLoadInnerParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadInnerParticleEmitterFromYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
-        break;
-    }
+        case CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML:
+        {
+            const CommandLoadInnerParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadInnerParticleEmitterFromYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
+            break;
+        }
 
-    case CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML:
-    {
-        const CommandSaveInnerParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveInnerParticleEmitterToYaml*>(command);
-        SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
-        break;
-    }
+        case CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML:
+        {
+            const CommandSaveInnerParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveInnerParticleEmitterToYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
+            break;
+        }
 
-    case CMDID_PARTICLE_EMITTER_LAYER_ADD:
-    {
-        const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
-        SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
+        case CMDID_PARTICLE_EMITTER_LAYER_ADD:
+        {
+            const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
+            SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
+            break;
+        }
+
+        // Return to this code when implementing Layer popup menus.
+        /*
+        case CMDID_REMOVE_PARTICLE_EMITTER_LAYER:
+        {
+        const CommandRemoveParticleEmitterLayer* castedCmd = static_cast<const CommandRemoveParticleEmitterLayer*>(command);
+        SceneSignals::Instance()->EmitParticleLayerRemoved(activeScene, castedCmd->GetEmitter());
         break;
-    }
-    // Return to this code when implementing Layer popup menus.
-    /*
-		case CMDID_REMOVE_PARTICLE_EMITTER_LAYER:
-		{
-			const CommandRemoveParticleEmitterLayer* castedCmd = static_cast<const CommandRemoveParticleEmitterLayer*>(command);
-			SceneSignals::Instance()->EmitParticleLayerRemoved(activeScene, castedCmd->GetEmitter());
-			break;
-		}
-*/
-    default:
-    {
-        break;
-    }
+        }
+        */
+
+        default:
+            break;
+        }
     }
 }

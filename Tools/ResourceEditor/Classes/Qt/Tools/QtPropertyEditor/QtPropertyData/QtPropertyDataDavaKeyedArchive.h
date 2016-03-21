@@ -48,7 +48,7 @@ public:
     ~QtPropertyDataDavaKeyedArcive() override;
 
     const DAVA::MetaInfo* MetaInfo() const override;
-    void* CreateLastCommand() const override;
+    Command2::Pointer CreateLastCommand() const override;
 
     void FinishTreeCreation() override;
 
