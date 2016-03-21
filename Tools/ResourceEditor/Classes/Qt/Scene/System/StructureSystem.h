@@ -30,7 +30,7 @@
 #ifndef __SCENE_STRUCTURE_SYSTEM_H__
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Scene/EntityGroup.h"
 #include "StringConstants.h"
 #include "SystemDelegates.h"
@@ -77,7 +77,6 @@ protected:
     bool structureChanged;
 
     void Process(DAVA::float32 timeElapsed) override;
-    void Draw();
 
     void ProcessCommand(const Command2* command, bool redo);
 
@@ -94,8 +93,6 @@ protected:
     void CheckAndMarkSolid(DAVA::Entity* entity);
 
     void SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback);
-
-    void ProcessAutoSelection(const Command2* command, bool redo) const;
 
 private:
     DAVA::List<StructureSystemDelegate*> delegates;

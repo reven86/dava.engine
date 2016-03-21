@@ -37,6 +37,8 @@
 #include "Functional/Signal.h"
 #include "Functional/Function.h"
 
+#include "Commands2/Base/Command2.h"
+
 #include <QToolButton>
 #include <QVariant>
 
@@ -47,6 +49,7 @@ class QStyleOptionViewItem;
 class QtPropertyModel;
 class QtPropertyData;
 class QtPropertyDataValidator;
+class Command2;
 
 class QtPropertyToolButton : public QToolButton
 {
@@ -191,7 +194,7 @@ public:
     void EmitDataChanged(ValueChangeReason reason);
 
     // edit command
-    virtual void* CreateLastCommand() const;
+    virtual Command2::Pointer CreateLastCommand() const;
 
     // Merging
     bool IsMergedDataEqual() const;

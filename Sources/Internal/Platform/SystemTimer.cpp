@@ -171,24 +171,23 @@ float32 SystemTimer::ElapsedSec()
     uint64 currentTime = GetTickCount();
     return (float32)(currentTime - t0) / 1000.f;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-    uint64_t current = mach_absolute_time();
-    uint64_t elapsed = (current - t0) * timebase.numer / timebase.denom;
-    int highestBitSet = 31;
-    for (int k = 32; k < 64; ++k)
+    uint64 current = mach_absolute_time();
+    uint64 elapsed = (current - t0) * timebase.numer / timebase.denom;
+    int32 highestBitSet = 31;
+    for (int32 k = 32; k < 64; ++k)
         if ((elapsed >> k) & 1)
         {
             highestBitSet = k;
         }
-    uint32_t elapsed32 = (uint32_t)(elapsed >> (highestBitSet - 31));
+    uint32 elapsed32 = static_cast<uint32>(elapsed >> (highestBitSet - 31));
 
-    float mult = 1.0f;
+    float32 mult = 1.0f;
     for (int c = 0; c < highestBitSet - 31; ++c)
     {
         mult *= 2.0f;
     }
 
-    float t2 = (float)elapsed32 * mult / 1000000000.0f;
-    //float t = ((float)(mach_absolute_time() - t0)) * ((float)timebase.numer) / ((float)timebase.denom) / 1000000000.0f;
+    float32 t2 = static_cast<float32>(elapsed32) * mult / 1000000000.0f;
     return t2;
 #else //PLATFORMS
     //other platforms

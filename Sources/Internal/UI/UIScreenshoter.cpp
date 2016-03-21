@@ -75,7 +75,7 @@ void UIScreenshoter::OnFrame()
 Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
+    Texture* screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
     MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha);
 
@@ -85,7 +85,7 @@ Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat fo
 void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
+    Texture* screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
     MakeScreenshotInternal(control, screenshot, callback, false);
 

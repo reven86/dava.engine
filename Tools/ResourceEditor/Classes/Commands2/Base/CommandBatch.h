@@ -27,53 +27,58 @@
 =====================================================================================*/
 
 
-#include "Commands2/Command2.h"
+#ifndef __COMMAND_BATCH_H__
+#define __COMMAND_BATCH_H__
 
-Command2::Command2(int _id, const DAVA::String& _text)
-    : id(_id)
-    , text(_text)
+#include "Base/BaseTypes.h"
+
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandNotify.h"
+
+class CommandBatch final : public Command2
 {
+public:
+    CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
+
+    void Undo() override;
+    void Redo() override;
+
+    DAVA_DEPRECATED(DAVA::Entity* GetEntity() const override);
+
+    void AddAndExec(Command2::Pointer&& command);
+    void RemoveCommands(DAVA::int32 commandId);
+
+    bool Empty() const;
+    DAVA::uint32 Size() const;
+
+    Command2* GetCommand(DAVA::uint32 index) const;
+
+    bool MatchCommandID(DAVA::int32 commandID) const override;
+    bool MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const override;
+
+    bool IsMultiCommandBatch() const;
+
+protected:
+    using CommandsContainer = DAVA::Vector<Command2::Pointer>;
+    CommandsContainer commandList;
+
+    DAVA::UnorderedSet<DAVA::int32> commandIDs;
+};
+
+inline bool CommandBatch::Empty() const
+{
+    return commandList.empty();
 }
 
-bool Command2::MergeWith(const Command2* command)
+inline DAVA::uint32 CommandBatch::Size() const
 {
-    return false;
+    return static_cast<DAVA::uint32>(commandList.size());
 }
 
-int Command2::GetId() const
+inline bool CommandBatch::IsMultiCommandBatch() const
 {
-    return id;
+    return (commandIDs.size() > 1);
 }
 
-DAVA::String Command2::GetText() const
-{
-    return text;
-}
 
-void Command2::SetText(const DAVA::String& _text)
-{
-    text = _text;
-}
-
-void Command2::UndoInternalCommand(Command2* command)
-{
-    if (NULL != command)
-    {
-        command->Undo();
-        EmitNotify(command, false);
-    }
-}
-
-void Command2::RedoInternalCommand(Command2* command)
-{
-    if (NULL != command)
-    {
-        command->Redo();
-        EmitNotify(command, true);
-    }
-}
-
-void Command2::Execute()
-{
-    Redo();
-}
+#endif // __COMMAND_BATCH_H__

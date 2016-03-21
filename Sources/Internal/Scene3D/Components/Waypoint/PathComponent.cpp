@@ -261,7 +261,7 @@ void PathComponent::Serialize(KeyedArchive* archive, SerializationContext* seria
 
 uint32 PathComponent::GetWaypointIndex(const PathComponent::Waypoint* point)
 {
-    const uint32 waypointCount = (const uint32)waypoints.size();
+    const uint32 waypointCount = static_cast<const uint32>(waypoints.size());
     for (uint32 w = 0; w < waypointCount; ++w)
     {
         if (point == waypoints[w])
