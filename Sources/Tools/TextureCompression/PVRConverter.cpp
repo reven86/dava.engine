@@ -109,9 +109,11 @@ PVRConverter::~PVRConverter()
 
 FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
-#if  defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
-    DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
+#ifdef __DAVAENGINE_WIN_UAP__
+
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return FilePath();
+
 #else
 	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
 
