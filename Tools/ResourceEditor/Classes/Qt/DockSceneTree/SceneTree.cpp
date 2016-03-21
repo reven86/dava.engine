@@ -37,9 +37,11 @@
 #include <QDropEvent>
 #include <QMenu>
 #include <QDebug>
+#include <QSignalBlocker>
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
+#include "Main/Guards.h"
 #include "Main/QTUtils.h"
 #include "Project/ProjectManager.h"
 #include "Scene/SceneEditor2.h"
@@ -60,27 +62,6 @@
 
 #include "QtTools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
-
-namespace SceneTreeDetails
-{
-class SyncGuard
-{
-public:
-    SyncGuard(bool& isSync_)
-        : isSync(isSync_)
-    {
-        isSync = true;
-    }
-
-    ~SyncGuard()
-    {
-        isSync = false;
-    }
-
-private:
-    bool& isSync;
-};
-} // namespace SceneTreeDetails
 
 SceneTree::SceneTree(QWidget* parent /*= 0*/)
     : QTreeView(parent)
@@ -263,7 +244,7 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 {
     if (scene == treeModel->GetScene())
     {
-        bool selectionWasBlocked = selectionModel()->blockSignals(true);
+        const QSignalBlocker guard(selectionModel());
         treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
         treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
@@ -275,8 +256,6 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
         {
             ExpandFilteredItems();
         }
-
-        selectionModel()->blockSignals(selectionWasBlocked);
     }
 }
 
@@ -356,9 +335,8 @@ void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLay
     bool sceneTreeItemChecked = item->checkState() == Qt::Checked;
     if (layer->isDisabled == sceneTreeItemChecked)
     {
-        blockSignals(true);
+        const QSignalBlocker guard(this);
         item->setCheckState(sceneTreeItemChecked ? Qt::Unchecked : Qt::Checked);
-        blockSignals(false);
     }
 
     //check if we need to resync tree for superemmiter
@@ -786,7 +764,7 @@ void SceneTree::CollapseAll()
     QTreeView::collapseAll();
     bool needSync = false;
     {
-        SceneTreeDetails::SyncGuard guard(isInSync);
+        Guard::ScopedBoolGuard guard(isInSync, true);
 
         QModelIndexList indexList = selectionModel()->selection().indexes();
         for (int i = 0; i < indexList.size(); ++i)
@@ -814,7 +792,7 @@ void SceneTree::TreeItemCollapsed(const QModelIndex& index)
 
     bool needSync = false;
     {
-        SceneTreeDetails::SyncGuard guard(isInSync);
+        Guard::ScopedBoolGuard guard(isInSync, true);
 
         // if selected items were inside collapsed item, remove them from selection
         QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -858,7 +836,7 @@ void SceneTree::SyncSelectionToTree()
         return;
     }
 
-    SceneTreeDetails::SyncGuard guard(isInSync);
+    Guard::ScopedBoolGuard guard(isInSync, true);
 
     using TSelectionMap = DAVA::Map<QModelIndex, DAVA::Vector<QModelIndex>>;
     TSelectionMap toSelect;
@@ -921,7 +899,7 @@ void SceneTree::SyncSelectionFromTree()
 {
     if (!isInSync)
     {
-        SceneTreeDetails::SyncGuard guard(isInSync);
+        Guard::ScopedBoolGuard guard(isInSync, true);
 
         SceneEditor2* curScene = treeModel->GetScene();
         if (NULL != curScene)
