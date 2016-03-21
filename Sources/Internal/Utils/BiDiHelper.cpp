@@ -233,7 +233,7 @@ bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedSt
 
     ubidi_setPara(para, logicalBuffer.data(), logicalLength, (forceRtl ? UBIDI_RTL : UBIDI_DEFAULT_LTR), nullptr, &errorCode);
 
-    visualLength = ubidi_writeReordered(para, visualBuffer.data(), visualLength, UBIDI_REMOVE_BIDI_CONTROLS, &errorCode);
+    visualLength = ubidi_writeReordered(para, visualBuffer.data(), visualLength, UBIDI_DO_MIRRORING | UBIDI_REMOVE_BIDI_CONTROLS, &errorCode);
     if (errorCode != U_ZERO_ERROR)
     {
         ubidi_close(para);
