@@ -38,10 +38,8 @@ using namespace DAVA;
 class SceneExporter
 {
 public:
-    SceneExporter();
-    virtual ~SceneExporter();
-
     void SetGPUForExporting(const eGPUFamily newGPU);
+    void EnableAllGPUMode(bool enabled);
 
     void SetCompressionQuality(TextureConverter::eConvertQuality quality);
 
@@ -65,14 +63,16 @@ private:
     bool ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog);
     bool ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog);
     bool ExportTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
-    void CompressTextureIfNeed(const TextureDescriptor* descriptor, Set<String>& errorLog);
+    void CompressTexture(const TextureDescriptor* descriptor);
+    bool CopyCompressedTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
 
     bool ExportLandscape(Scene* scene, Set<String>& errorLog);
 
     SceneUtils sceneUtils;
     eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
     TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
-    bool optimizeOnExport = false;
+    bool optimizeOnExport = true;
+    bool exportForAllGPUs = false;
 };
 
 

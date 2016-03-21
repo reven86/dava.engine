@@ -41,17 +41,6 @@
 
 using namespace DAVA;
 
-SceneExporter::SceneExporter()
-{
-    exportForGPU = GPU_ORIGIN;
-    quality = TextureConverter::ECQ_DEFAULT;
-    optimizeOnExport = true;
-}
-
-SceneExporter::~SceneExporter()
-{
-}
-
 void SceneExporter::SetInFolder(const FilePath& folderPathname)
 {
     sceneUtils.SetInFolder(folderPathname);
@@ -65,6 +54,11 @@ void SceneExporter::SetOutFolder(const FilePath& folderPathname)
 void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
 {
     exportForGPU = newGPU;
+}
+
+void SceneExporter::EnableAllGPUMode(bool enabled)
+{
+    exportForAllGPUs = enabled;
 }
 
 void SceneExporter::ExportSceneFolder(const String& folderName, Set<String>& errorLog)
@@ -348,7 +342,14 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String
     bool isExported = ExportTexture(descriptor, errorLog);
     if (isExported)
     {
-        descriptor->Export(sceneUtils.dataFolder + workingPathname);
+        if (exportForAllGPUs)
+        {
+            sceneUtils.CopyFile(pathname, errorLog);
+        }
+        else
+        {
+            descriptor->Export(sceneUtils.dataFolder + workingPathname);
+        }
     }
 
     delete descriptor;
@@ -357,35 +358,8 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String
 
 bool SceneExporter::ExportTexture(const TextureDescriptor* descriptor, Set<String>& errorLog)
 {
-    CompressTextureIfNeed(descriptor, errorLog);
-
-    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
-    if (!GPUFamilyDescriptor::IsGPUForDevice(gpu))
-    {
-        bool copyResult = true;
-
-        if (descriptor->IsCubeMap())
-        {
-            Vector<FilePath> faceNames;
-            descriptor->GetFacePathnames(faceNames);
-            for (auto& faceName : faceNames)
-            {
-                if (faceName.IsEmpty())
-                    continue;
-                bool result = sceneUtils.CopyFile(faceName, errorLog);
-                copyResult = copyResult && result;
-            }
-        }
-        else
-        {
-            copyResult = sceneUtils.CopyFile(descriptor->GetSourceTexturePathname(), errorLog);
-        }
-
-        return copyResult;
-    }
-
-    FilePath compressedTexureName = descriptor->CreatePathnameForGPU((eGPUFamily)descriptor->exportedAsGpuFamily);
-    return sceneUtils.CopyFile(compressedTexureName, errorLog);
+    CompressTexture(descriptor);
+    return CopyCompressedTexture(descriptor, errorLog);
 }
 
 bool SceneExporter::ExportLandscape(Scene* scene, Set<String>& errorLog)
@@ -401,34 +375,89 @@ bool SceneExporter::ExportLandscape(Scene* scene, Set<String>& errorLog)
     return true;
 }
 
-void SceneExporter::CompressTextureIfNeed(const TextureDescriptor* descriptor, Set<String>& errorLog)
+namespace SceneExporterLocal
 {
-    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
-    if (!GPUFamilyDescriptor::IsGPUForDevice(gpu))
-        return;
-
-    FilePath compressedTexureName = descriptor->CreatePathnameForGPU((eGPUFamily)descriptor->exportedAsGpuFamily);
-
-    bool fileExcists = FileSystem::Instance()->IsFile(compressedTexureName);
-    bool needToConvert = SceneValidator::IsTextureChanged(descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);
-
-    if (needToConvert || !fileExcists)
+void CompressTexture(const Vector<eGPUFamily> gpus, TextureConverter::eConvertQuality quality, const TextureDescriptor* descriptor)
+{
+    for (auto& gpu : gpus)
     {
-        //TODO: convert to pvr/dxt
-        //TODO: do we need to convert to pvr if needToConvert is false, but *.pvr file isn't at filesystem
-
-        eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
-
-        TextureConverter::ConvertTexture(*descriptor, gpuFamily, true, quality);
-
-        DAVA::TexturesMap texturesMap = Texture::GetTextureMap();
-
-        DAVA::TexturesMap::iterator found = texturesMap.find(FILEPATH_MAP_KEY(descriptor->pathname));
-        if (found != texturesMap.end())
+        if (!GPUFamilyDescriptor::IsGPUForDevice(gpu))
         {
-            DAVA::Texture* tex = found->second;
-            tex->Reload();
+            continue;
         }
+
+        FilePath compressedTexureName = descriptor->CreatePathnameForGPU(gpu);
+
+        bool fileExists = FileSystem::Instance()->Exists(compressedTexureName);
+        bool needToConvert = SceneValidator::IsTextureChanged(descriptor, gpu);
+
+        if (needToConvert || !fileExists)
+        {
+            //TODO: convert to pvr/dxt
+            //TODO: do we need to convert to pvr if needToConvert is false, but *.pvr file isn't at filesystem
+            TextureConverter::ConvertTexture(*descriptor, gpu, true, quality);
+        }
+    }
+}
+
+bool CopyCompressedTexure(const Vector<eGPUFamily> gpus, SceneUtils& sceneUtils, const TextureDescriptor* descriptor, Set<String>& errorLog)
+{
+    bool result = true;
+
+    for (auto& gpu : gpus)
+    {
+        if (GPUFamilyDescriptor::IsGPUForDevice(gpu))
+        {
+            FilePath compressedTexureName = descriptor->CreatePathnameForGPU(gpu);
+            result &= sceneUtils.CopyFile(compressedTexureName, errorLog);
+        }
+        else
+        {
+            if (descriptor->IsCubeMap())
+            {
+                Vector<FilePath> faceNames;
+                descriptor->GetFacePathnames(faceNames);
+                for (auto& faceName : faceNames)
+                {
+                    if (faceName.IsEmpty())
+                        continue;
+                    result &= sceneUtils.CopyFile(faceName, errorLog);
+                }
+            }
+            else
+            {
+                result &= sceneUtils.CopyFile(descriptor->GetSourceTexturePathname(), errorLog);
+            }
+        }
+    }
+
+    return result;
+}
+}
+
+void SceneExporter::CompressTexture(const TextureDescriptor* descriptor)
+{
+    if (exportForAllGPUs)
+    {
+        static const Vector<eGPUFamily> deviceGPUs = { GPU_POWERVR_IOS, GPU_POWERVR_ANDROID, GPU_TEGRA, GPU_MALI, GPU_ADRENO, GPU_DX11 };
+        SceneExporterLocal::CompressTexture(deviceGPUs, quality, descriptor);
+    }
+    else
+    {
+        SceneExporterLocal::CompressTexture({ exportForGPU }, quality, descriptor);
+    }
+}
+
+bool SceneExporter::CopyCompressedTexture(const TextureDescriptor* descriptor, Set<String>& errorLog)
+{
+    if (exportForAllGPUs)
+    {
+        static const Vector<eGPUFamily> GPUs = { GPU_ORIGIN, GPU_POWERVR_IOS, GPU_POWERVR_ANDROID, GPU_TEGRA, GPU_MALI, GPU_ADRENO, GPU_DX11 };
+        return SceneExporterLocal::CopyCompressedTexure(GPUs, sceneUtils, descriptor, errorLog);
+    }
+    else
+    {
+        return SceneExporterLocal::CopyCompressedTexure({ exportForGPU }, sceneUtils, descriptor, errorLog);
     }
 }
 

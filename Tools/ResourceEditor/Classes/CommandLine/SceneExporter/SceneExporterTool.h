@@ -80,6 +80,7 @@ private:
 
     DAVA::eGPUFamily requestedGPU = DAVA::GPU_ORIGIN;
     bool optimizeOnExport = true;
+    bool exportForAllGPUs = false;
 
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
 };

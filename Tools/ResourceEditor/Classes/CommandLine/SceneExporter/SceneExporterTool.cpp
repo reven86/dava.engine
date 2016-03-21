@@ -54,6 +54,8 @@ SceneExporterTool::SceneExporterTool()
 
     options.AddOption(OptionName::SaveNormals, VariantType(false), "Disable removing of normals from vertexes");
     options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
+
+    options.AddOption(OptionName::AllGPUs, VariantType(false), "Export for all gpus at same time.");
 }
 
 void SceneExporterTool::ConvertOptionsToParamsInternal()
@@ -82,6 +84,8 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
 
     const bool saveNormals = options.GetOption(OptionName::SaveNormals).AsBool();
     optimizeOnExport = !saveNormals;
+
+    exportForAllGPUs = options.GetOption(OptionName::AllGPUs).AsBool();
 }
 
 bool SceneExporterTool::InitializeInternal()
@@ -119,7 +123,7 @@ bool SceneExporterTool::InitializeInternal()
         return false;
     }
 
-    if (requestedGPU == GPU_INVALID)
+    if (requestedGPU == GPU_INVALID && !exportForAllGPUs)
     {
         AddError("Unsupported gpu parameter was selected");
         return false;
