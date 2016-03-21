@@ -294,7 +294,10 @@ ApplicationWindow {
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
-                    onCmakeLaunched: addProjectToHistory();
+                    onCmakeLaunched: {
+                        addProjectToHistory();
+                        textArea_processText.text = "";
+                    }
                 }
 
             }
