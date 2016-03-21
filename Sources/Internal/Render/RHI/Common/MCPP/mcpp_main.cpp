@@ -35,6 +35,11 @@
  * The post-preprocessing routines are also placed here.
  */
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #include "_mcpp.h"
 
 #if PREPROCESSED /* Use "pre-preprocessed" header    */
@@ -1206,3 +1211,7 @@ char* str_end /* The end of the token */
     return str_end;
 }
 #endif /* ! MBCHAR_IS_ESCAPE_FREE  */
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

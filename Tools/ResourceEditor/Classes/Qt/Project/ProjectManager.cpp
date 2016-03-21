@@ -143,7 +143,7 @@ void ProjectManager::SetSpritesPacker(SpritesPackerModule* spritesPacker_)
 void ProjectManager::UpdateParticleSprites()
 {
     useDelayInitialization = false;
-    if (!isParticleSpritesUpdated && spritesPacker != nullptr)
+    if (!isParticleSpritesUpdated && spritesPacker != nullptr && DAVA::FileSystem::Instance()->Exists(projectPath))
     {
         spritesPacker->RepackSilently(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));
         isParticleSpritesUpdated = true;

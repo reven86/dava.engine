@@ -27,370 +27,612 @@
 =====================================================================================*/
 
 
-#include "DAVAEngine.h"
-#include "EditorLODSystem.h"
-#include "Scene/EntityGroup.h"
+#include "Entity/Component.h"
 #include "Entity/SceneSystem.h"
-#include "Scene/SceneSignals.h"
-#include "Commands2/ChangeLODDistanceCommand.h"
-#include "Commands2/CreatePlaneLODCommand.h"
+
+#include "Scene3D/Entity.h"
+#include "Scene3D/Scene.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+
+#include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
+
+#include "Commands2/Base/Command2.h"
 #include "Commands2/DeleteLODCommand.h"
+#include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
-#include "QtTools/ConsoleWidget/PointerSerializer.h"
+#include "Commands2/CreatePlaneLODCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
 
-EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA::float32 newDistance /* = -1 */)
-    : forceLayer(newForceLayer)
-    , forceDistance(newDistance)
+#include "Main/Guards.h"
+
+#include "Scene/EntityGroup.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/SelectionSystem.h"
+
+using namespace DAVA;
+
+void LODComponentHolder::BindToSystem(EditorLODSystem* system_, SceneEditor2* scene_)
 {
+    DVASSERT(system_ != nullptr);
+    DVASSERT(scene_ != nullptr);
+
+    system = system_;
+    scene = scene_;
 }
 
-EditorLODSystem::EditorLODSystem(DAVA::Scene* scene)
-    : DAVA::SceneSystem(scene)
+void LODComponentHolder::SummarizeValues()
 {
-}
+    Array<float32, LodComponent::MAX_LOD_LAYERS> lodDistances;
+    lodDistances.fill(0.f);
 
-EditorLODSystem::~EditorLODSystem()
-{
-}
+    Array<uint32, LodComponent::MAX_LOD_LAYERS> lodCounts;
+    lodCounts.fill(0);
 
-void EditorLODSystem::AddEntity(DAVA::Entity* entity)
-{
-    DVASSERT(entity);
-    DAVA::LodComponent* tmpComponent = GetLodComponent(entity);
-    DVASSERT(tmpComponent);
+    maxLodLayerIndex = LodComponent::INVALID_LOD_LAYER;
 
-    sceneLODs.insert(std::make_pair(tmpComponent, ForceData()));
-}
-
-void EditorLODSystem::RemoveEntity(DAVA::Entity* entity)
-{
-    DVASSERT(entity);
-    DAVA::LodComponent* tmpComponent = GetLodComponent(entity);
-    DVASSERT(tmpComponent);
-
-    sceneLODs.erase(tmpComponent);
-    RemoveSelectedLODsRecursive(entity);
-}
-
-void EditorLODSystem::AddSelectedLODsRecursive(DAVA::Entity* entity)
-{
-    DVASSERT(entity);
-    DAVA::LodComponent* tmpComponent = GetLodComponent(entity);
-    if (tmpComponent)
+    uint32 count = static_cast<uint32>(lodComponents.size());
+    if (count > 0)
     {
-        selectedLODs.push_back(tmpComponent);
-    }
-    if (entity->GetSolid() || !SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool())
-    {
-        DAVA::int32 count = entity->GetChildrenCount();
-        for (DAVA::int32 i = 0; i < count; ++i)
+        for (auto& lc : lodComponents)
         {
-            AddSelectedLODsRecursive(entity->GetChild(i));
+            uint32 layersCount = GetLodLayersCount(lc);
+
+            maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(layersCount) - 1);
+
+            for (uint32 i = 0; i < layersCount; ++i)
+            {
+                lodDistances[i] += lc->GetLodLayerDistance(i);
+                lodCounts[i]++;
+            }
+        }
+
+        for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+        {
+            if (lodCounts[i] != 0)
+            {
+                lodDistances[i] /= lodCounts[i];
+            }
+        }
+
+        auto endOfRange = lodDistances.begin();
+        std::advance(endOfRange, maxLodLayerIndex + 1);
+        std::sort(lodDistances.begin(), endOfRange);
+    }
+
+    for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        mergedComponent.SetLodLayerDistance(i, lodDistances[i]);
+    }
+}
+
+void LODComponentHolder::PropagateValues()
+{
+    scene->BeginBatch("LOD Distance Changed", static_cast<uint32>(lodComponents.size()) * LodComponent::MAX_LOD_LAYERS);
+    for (auto& lc : lodComponents)
+    {
+        const int32 layersCount = static_cast<int32>(GetLodLayersCount(lc));
+        for (int32 i = 0; i < layersCount; ++i)
+        {
+            scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, mergedComponent.GetLodLayerDistance(i)));
         }
     }
+    scene->EndBatch();
 }
 
-void EditorLODSystem::RemoveSelectedLODsRecursive(DAVA::Entity* entity)
+bool LODComponentHolder::DeleteLOD(int32 layer)
 {
-    DVASSERT(entity);
-    DAVA::LodComponent* tmpComponent = GetLodComponent(entity);
-    if (tmpComponent)
-    {
-        selectedLODs.remove(tmpComponent);
-    }
-    DAVA::int32 count = entity->GetChildrenCount();
-    for (DAVA::int32 i = 0; i < count; ++i)
-    {
-        RemoveSelectedLODsRecursive(entity->GetChild(i));
-    }
-}
+    bool wasLayerRemoved = false;
 
-void EditorLODSystem::UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32>& newDistances)
-{
-    if (GetCurrentLODs().empty() || newDistances.empty())
+    scene->BeginBatch(Format("Delete lod layer %", layer), static_cast<uint32>(lodComponents.size()));
+    for (auto& lc : lodComponents)
     {
-        return;
-    }
-
-    for (auto& newDistance : newDistances)
-    {
-        SetLayerDistance(newDistance.first, newDistance.second);
-    }
-}
-
-void EditorLODSystem::SceneSelectionChanged(const EntityGroup* selected, const EntityGroup* deselected)
-{
-    if (!allSceneModeEnabled)
-    {
-        for (const auto& item : deselected->GetContent())
+        if ((GetLodLayersCount(lc) > 0) && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
         {
-            ResetForceState(item.first);
+            scene->Exec(Command2::Create<DeleteLODCommand>(lc, layer, -1));
+            wasLayerRemoved = true;
         }
     }
-    selectedLODs.clear();
-    const auto& selectedItems = selected->GetContent();
-    if (selectedItems.empty())
-    {
-        forceDistance = LodComponent::INVALID_DISTANCE;
-        forceLayer = LodComponent::INVALID_LOD_LAYER;
-    }
+    scene->EndBatch();
 
-    for (const auto& item : selectedItems)
-    {
-        AddSelectedLODsRecursive(item.first);
-    }
-
-    if (allSceneModeEnabled)
-    {
-        return;
-    }
-
-    CollectLODDataFromScene();
-    UpdateForceData();
+    return wasLayerRemoved;
 }
 
-void EditorLODSystem::ResetForceState(DAVA::Entity* entity)
+bool LODComponentHolder::CopyLod(int32 from, int32 to)
 {
-    DVASSERT(entity);
-    DAVA::LodComponent* tmpComponent = GetLodComponent(entity);
-    if (tmpComponent)
-    {
-        ResetForceState(tmpComponent);
-    }
-    DAVA::int32 count = entity->GetChildrenCount();
-    for (DAVA::int32 i = 0; i < count; ++i)
-    {
-        ResetForceState(entity->GetChild(i));
-    }
-}
+    bool wasCopiedRemoved = false;
 
-void EditorLODSystem::ResetForceState(DAVA::LodComponent* lodComponent)
-{
-    DVASSERT(lodComponent);
-    lodComponent->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
-    lodComponent->SetForceLodLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
-    lodComponent->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
-}
-
-void EditorLODSystem::CollectLODDataFromScene()
-{
-    currentLodsLayersCount = 0;
-    std::fill(lodDistances.begin(), lodDistances.end(), 0.0f);
-    std::fill(lodTrianglesCount.begin(), lodTrianglesCount.end(), 0);
-    std::array<DAVA::int32, DAVA::LodComponent::MAX_LOD_LAYERS> lodsComponentsCount = { { 0 } };
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
+    scene->BeginBatch(Format("Copy lod layer %d to %d", from, to), static_cast<uint32>(lodComponents.size()));
+    for (auto& lc : lodComponents)
     {
-        DAVA::int32 layersCount = GetLodLayersCount(lod);
-        DVASSERT(layersCount <= DAVA::LodComponent::MAX_LOD_LAYERS);
-        for (auto layer = 0; layer < layersCount; ++layer)
-        {
-            lodDistances[layer] += lod->GetLodLayerDistance(layer);
-            lodsComponentsCount[layer]++;
-        }
-        //triangles
-        AddTrianglesInfo(lodTrianglesCount, lod, false);
-    }
-    //distances
-    for (auto i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
-    {
-        if (0 != lodsComponentsCount[i])
-        {
-            lodDistances[i] /= lodsComponentsCount[i];
-            ++currentLodsLayersCount;
-        }
-    }
-
-    if (!SettingsManager::GetValue(Settings::Scene_RememberForceParameters).AsBool()
-        && !forceDistanceEnabled
-        && forceLayer >= currentLodsLayersCount)
-    {
-        SetForceLayer(currentLodsLayersCount - 1);
-        return;
-    }
-}
-
-void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS>& triangles, DAVA::LodComponent* lod, bool onlyVisibleBatches)
-{
-    Entity* en = lod->GetEntity();
-    if (nullptr != GetEffectComponent(en))
-    {
-        return;
-    }
-
-    RenderObject* ro = GetRenderObject(en);
-    if (nullptr == ro)
-    {
-        return;
-    }
-
-    DAVA::uint32 batchCount = ro->GetRenderBatchCount();
-    for (DAVA::uint32 i = 0; i < batchCount; ++i)
-    {
-        DAVA::int32 lodIndex = 0;
-        DAVA::int32 switchIndex = 0;
-
-        RenderBatch* rb = ro->GetRenderBatch(i, lodIndex, switchIndex);
-        DVASSERT(lodIndex < DAVA::LodComponent::MAX_LOD_LAYERS);
-        if (lodIndex < 0)
+        Entity* entity = lc->GetEntity();
+        if (HasComponent(entity, Component::PARTICLE_EFFECT_COMPONENT))
         {
             continue;
         }
 
-        if (IsPointerToExactClass<RenderBatch>(rb))
+        if (GetLodLayersCount(entity) < LodComponent::MAX_LOD_LAYERS)
         {
-            if (onlyVisibleBatches)
-            { //check batch visibility
+            scene->Exec(Command2::Create<CopyLastLODToLod0Command>(lc));
+            wasCopiedRemoved = true;
+        }
+    }
+    scene->EndBatch();
+    return wasCopiedRemoved;
+}
 
-                bool batchIsVisible = false;
-                DAVA::uint32 activeBatchCount = ro->GetActiveRenderBatchCount();
-                for (DAVA::uint32 a = 0; a < activeBatchCount && !batchIsVisible; ++a)
-                {
-                    RenderBatch* visibleBatch = ro->GetActiveRenderBatch(a);
-                    batchIsVisible = (visibleBatch == rb);
-                }
+void LODComponentHolder::ApplyForce(const ForceValues& force)
+{
+    for (auto& lc : lodComponents)
+    {
+        if (force.flag & ForceValues::APPLY_LAYER)
+        {
+            lc->currentLod = LodComponent::INVALID_LOD_LAYER;
+            lc->SetForceLodLayer(force.layer);
+        }
 
-                if (batchIsVisible == false) // need to skip this render batch
-                {
-                    continue;
-                }
-            }
+        if (force.flag & ForceValues::APPLY_DISTANCE)
+        {
+            lc->currentLod = LodComponent::INVALID_LOD_LAYER;
+            lc->SetForceDistance(force.distance);
+        }
+    }
+}
 
-            PolygonGroup* pg = rb->GetPolygonGroup();
-            if (nullptr != pg)
+int32 LODComponentHolder::GetMaxLODLayer() const
+{
+    return maxLodLayerIndex;
+}
+
+uint32 LODComponentHolder::GetLODLayersCount() const
+{
+    return (maxLodLayerIndex + 1);
+}
+
+const LodComponent& LODComponentHolder::GetLODComponent() const
+{
+    return mergedComponent;
+}
+
+//SYSTEM
+
+EditorLODSystem::EditorLODSystem(Scene* scene)
+    : SceneSystem(scene)
+{
+    for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
+    {
+        lodData[m].BindToSystem(this, static_cast<SceneEditor2*>(GetScene()));
+    }
+
+    const bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
+    mode = (allSceneModeEnabled) ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION;
+
+    activeLodData = &lodData[mode];
+}
+
+EditorLODSystem::~EditorLODSystem()
+{
+    activeLodData = nullptr;
+}
+
+void EditorLODSystem::Process(float32 timeElapsed)
+{
+    DispatchSignals();
+    ProcessPlaneLODs();
+}
+
+void EditorLODSystem::AddEntity(Entity* entity)
+{
+    LodComponent* lc = GetLodComponent(entity);
+    DVASSERT(lc != nullptr);
+
+    AddComponent(entity, lc);
+}
+
+void EditorLODSystem::RemoveEntity(Entity* entity)
+{
+    LodComponent* lc = GetLodComponent(entity);
+    DVASSERT(lc != nullptr);
+
+    RemoveComponent(entity, lc);
+}
+
+void EditorLODSystem::AddComponent(Entity* entity, Component* component)
+{
+    DVASSERT(component->GetType() == Component::LOD_COMPONENT);
+
+    lodData[eEditorMode::MODE_ALL_SCENE].lodComponents.push_back(static_cast<LodComponent*>(component));
+    lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
+
+    if (mode == eEditorMode::MODE_ALL_SCENE)
+    {
+        EmitInvalidateUI(FLAG_ALL);
+    }
+}
+
+void EditorLODSystem::RemoveComponent(Entity* entity, Component* component)
+{
+    DVASSERT(component->GetType() == Component::LOD_COMPONENT);
+
+    LodComponent* removedComponent = static_cast<LodComponent*>(component);
+    for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
+    {
+        bool removed = FindAndRemoveExchangingWithLast(lodData[m].lodComponents, removedComponent);
+        if (removed)
+        {
+            lodData[m].SummarizeValues();
+            if (m == mode)
             {
-                DVASSERT(lodIndex < DAVA::LodComponent::MAX_LOD_LAYERS);
-                DVASSERT(lodIndex >= 0);
-                triangles[lodIndex] += pg->GetIndexCount() / 3;
+                EmitInvalidateUI(FLAG_ALL);
             }
         }
     }
 }
 
-bool EditorLODSystem::CheckSelectedContainsEntity(const DAVA::Entity* arg) const
+void EditorLODSystem::SceneDidLoaded()
 {
-    DVASSERT(arg);
-    const EntityGroup& selection = static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection();
-    for (const auto& item : selection.GetContent())
+    lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
+    if (mode == eEditorMode::MODE_ALL_SCENE)
     {
-        if (item.first == arg)
+        EmitInvalidateUI(FLAG_ALL);
+    }
+}
+
+eEditorMode EditorLODSystem::GetMode() const
+{
+    return mode;
+}
+
+void EditorLODSystem::SetMode(eEditorMode mode_)
+{
+    DVASSERT(activeLodData != nullptr);
+
+    activeLodData->ApplyForce({ -1, -1, ForceValues::APPLY_ALL });
+    mode = mode_;
+    activeLodData = &lodData[mode];
+    activeLodData->ApplyForce(forceValues);
+
+    EmitInvalidateUI(FLAG_ALL);
+}
+
+const ForceValues& EditorLODSystem::GetForceValues() const
+{
+    return forceValues;
+}
+
+void EditorLODSystem::SetForceValues(const ForceValues& values)
+{
+    DVASSERT(activeLodData != nullptr);
+
+    ForceValues distanceDiffValues;
+    distanceDiffValues.flag = ForceValues::APPLY_ALL;
+
+    if (values.flag != forceValues.flag)
+    {
+        if (values.flag & ForceValues::APPLY_DISTANCE)
         {
-            return true;
+            distanceDiffValues.distance = values.distance;
+            distanceDiffValues.layer = LodComponent::INVALID_LOD_LAYER;
+        }
+        if (values.flag & ForceValues::APPLY_LAYER)
+        {
+            distanceDiffValues.distance = LodComponent::INVALID_DISTANCE;
+            distanceDiffValues.layer = values.layer;
         }
     }
+    if (values.distance != forceValues.distance)
+    {
+        distanceDiffValues.distance = values.distance;
+        distanceDiffValues.layer = LodComponent::INVALID_LOD_LAYER;
+    }
+    if (values.layer != forceValues.layer)
+    {
+        distanceDiffValues.distance = LodComponent::INVALID_DISTANCE;
+        distanceDiffValues.layer = values.layer;
+    }
+
+    activeLodData->ApplyForce(distanceDiffValues);
+    forceValues = values;
+
+    EmitInvalidateUI(FLAG_FORCE);
+}
+
+bool EditorLODSystem::CanDeleteLOD() const
+{
+    DVASSERT(activeLodData != nullptr);
+
+    bool canDeleteLod = (!activeLodData->lodComponents.empty()) && (activeLodData->GetLODLayersCount() > 1);
+    for (auto& lc : activeLodData->lodComponents)
+    {
+        if (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT))
+        {
+            canDeleteLod = false;
+            break;
+        }
+    }
+
+    return canDeleteLod;
+}
+
+bool EditorLODSystem::CanCreateLOD() const
+{
+    DVASSERT(activeLodData != nullptr);
+    if (activeLodData->lodComponents.size() == 1) // we can create lod only for one entity
+    {
+        bool canCreateLod = (activeLodData->GetLODLayersCount() < LodComponent::MAX_LOD_LAYERS);
+        if (canCreateLod)
+        {
+            Entity* entity = activeLodData->lodComponents[0]->GetEntity();
+            if (HasComponent(entity, Component::PARTICLE_EFFECT_COMPONENT))
+            {
+                return false;
+            }
+
+            return HasComponent(entity, Component::RENDER_COMPONENT);
+        }
+    }
+
     return false;
+}
+
+void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const FilePath& texturePath)
+{
+    DVASSERT(activeLodData != nullptr);
+
+    planeLODRequests.reserve(activeLodData->lodComponents.size());
+    for (auto& lc : activeLodData->lodComponents)
+    {
+        auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lc, fromLayer, textureSize, texturePath);
+        planeLODRequests.push_back(request);
+    }
+}
+
+void EditorLODSystem::DeleteFirstLOD()
+{
+    DVASSERT(activeLodData != nullptr);
+    DeleteLOD(0);
+}
+
+void EditorLODSystem::DeleteLastLOD()
+{
+    DVASSERT(activeLodData != nullptr);
+    DeleteLOD(activeLodData->GetMaxLODLayer());
+}
+
+void EditorLODSystem::DeleteLOD(int32 layer)
+{
+    if (activeLodData->GetLODLayersCount() > 0)
+    {
+        Guard::ScopedBoolGuard guard(generateCommands, true);
+        bool deleted = activeLodData->DeleteLOD(layer);
+        if (deleted)
+        {
+            RecalculateData();
+            EmitInvalidateUI(FLAG_ALL);
+        }
+    }
+}
+
+void EditorLODSystem::CopyLastLODToFirst()
+{
+    DVASSERT(activeLodData != nullptr);
+
+    Guard::ScopedBoolGuard guard(generateCommands, true);
+    bool copied = activeLodData->CopyLod(activeLodData->GetMaxLODLayer(), 0);
+    if (copied)
+    {
+        RecalculateData();
+        EmitInvalidateUI(FLAG_FORCE | FLAG_DISTANCE | FLAG_ACTION);
+    }
+}
+
+const LODComponentHolder* EditorLODSystem::GetActiveLODData() const
+{
+    return activeLodData;
+}
+
+void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
+{
+    DVASSERT(activeLodData != nullptr);
+    DVASSERT(distances.size() == LodComponent::MAX_LOD_LAYERS);
+
+    int32 layer = 0;
+    for (auto& dist : distances)
+    {
+        activeLodData->mergedComponent.SetLodLayerDistance(layer++, dist);
+    }
+
+    Guard::ScopedBoolGuard guard(generateCommands, true);
+    activeLodData->PropagateValues();
+
+    RecalculateData();
+    EmitInvalidateUI(FLAG_DISTANCE);
 }
 
 void EditorLODSystem::SolidChanged(const Entity* entity, bool value)
 {
-    DVASSERT(entity);
-    if (!CheckSelectedContainsEntity(entity))
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+    EntityGroup selection(sceneEditor->selectionSystem->GetSelection().CopyContentToVector());
+
+    if (selection.ContainsEntity(const_cast<Entity*>(entity)) == false)
     {
         return;
     }
 
-    if (value)
-    {
-        DAVA::int32 count = entity->GetChildrenCount();
-        for (DAVA::int32 i = 0; i < count; ++i)
-        {
-            AddSelectedLODsRecursive(entity->GetChild(i));
-        }
-    }
-    else
-    {
-        DAVA::int32 count = entity->GetChildrenCount();
-        for (DAVA::int32 i = 0; i < count; ++i)
-        {
-            RemoveSelectedLODsRecursive(entity->GetChild(i));
-        }
-    }
-    CollectLODDataFromScene();
+    SelectionChanged(&selection, nullptr);
 }
 
-bool EditorLODSystem::CanCreatePlaneLOD() const
+void EditorLODSystem::SelectionChanged(const EntityGroup* selected, const EntityGroup* deselected)
 {
-    if (1 != GetCurrentLODs().size())
+    lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
+
+    bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
+
+    uint32 count = selected->Size();
+    Vector<Entity*> lodEntities;
+    lodEntities.reserve(count); //mostly we have less than 5 lods in hierarchy
+
+    const auto& entitiesContent = selected->GetContent();
+    for (auto& it : entitiesContent)
     {
-        return false;
+        Entity* entity = it.first;
+        if (entity->GetSolid() || !ignoreChildren)
+        {
+            entity->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);
+        }
+
+        if (entity->GetComponentCount(Component::LOD_COMPONENT) > 0)
+        {
+            lodEntities.push_back(entity);
+        }
     }
 
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
+    for (auto& entity : lodEntities)
     {
-        if (lod->GetEntity()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
+        uint32 count = entity->GetComponentCount(Component::LOD_COMPONENT);
+        for (uint32 i = 0; i < count; ++i)
         {
+            lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(static_cast<LodComponent*>(entity->GetComponent(Component::LOD_COMPONENT, i)));
+        }
+    }
+
+    lodData[eEditorMode::MODE_SELECTION].SummarizeValues();
+    if (mode == eEditorMode::MODE_SELECTION)
+    {
+        lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
+
+        EmitInvalidateUI(FLAG_ALL);
+    }
+}
+
+void EditorLODSystem::AddDelegate(EditorLODSystemUIDelegate* uiDelegate)
+{
+    DVASSERT(uiDelegate != nullptr);
+
+    uiDelegates.push_back(uiDelegate);
+    if (uiDelegate != nullptr)
+    {
+        uiDelegate->UpdateModeUI(this, mode);
+        uiDelegate->UpdateForceUI(this, forceValues);
+        uiDelegate->UpdateDistanceUI(this, activeLodData);
+        uiDelegate->UpdateActionUI(this);
+    }
+}
+
+void EditorLODSystem::RemoveDelegate(EditorLODSystemUIDelegate* uiDelegate)
+{
+    DVASSERT(uiDelegate != nullptr);
+
+    FindAndRemoveExchangingWithLast(uiDelegates, uiDelegate);
+}
+
+void EditorLODSystem::EmitInvalidateUI(uint32 flags)
+{
+    invalidateUIFlag |= flags;
+}
+
+void EditorLODSystem::DispatchSignals()
+{
+    if (invalidateUIFlag == FLAG_NONE)
+    {
+        return;
+    }
+
+    for (auto& d : uiDelegates)
+    {
+        if (invalidateUIFlag & FLAG_MODE)
+        {
+            d->UpdateModeUI(this, mode);
+        }
+
+        if (invalidateUIFlag & FLAG_FORCE)
+        {
+            d->UpdateForceUI(this, forceValues);
+        }
+
+        if (invalidateUIFlag & FLAG_DISTANCE)
+        {
+            d->UpdateDistanceUI(this, activeLodData);
+        }
+
+        if (invalidateUIFlag & FLAG_ACTION)
+        {
+            d->UpdateActionUI(this);
+        }
+    }
+
+    invalidateUIFlag = FLAG_NONE;
+}
+
+void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
+{
+    if (generateCommands)
+    {
+        return;
+    }
+
+    if (command->MatchCommandID(CMDID_LOD_DISTANCE_CHANGE))
+    {
+        RecalculateData();
+        EmitInvalidateUI(FLAG_DISTANCE);
+    }
+
+    auto InvalidateAllData = [this]()
+    {
+        RecalculateData();
+        activeLodData->ApplyForce(forceValues);
+
+        EmitInvalidateUI(FLAG_ALL);
+    };
+
+    static const Vector<int32> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
+    if (command->MatchCommandIDs(commands))
+    {
+        InvalidateAllData();
+    }
+
+    if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
+    {
+        auto ProcessRemoveCommand = [this, InvalidateAllData](const RemoveComponentCommand* removeCommand)
+        {
+            if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
+            {
+                InvalidateAllData();
+                return true;
+            }
             return false;
-        }
-    }
+        };
 
-    return (GetLodLayersCount(GetCurrentLODs().front()->GetEntity()) < LodComponent::MAX_LOD_LAYERS);
-}
-
-bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath& texturePath)
-{
-    if (GetCurrentLODs().empty())
-    {
-        return false;
-    }
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
-        planeLODRequests.push_back(request);
-    }
-
-    return true;
-}
-
-void EditorLODSystem::Process(DAVA::float32 elapsedTime)
-{
-    bool allRequestsProcessed = !planeLODRequests.empty();
-
-    for (const auto& req : planeLODRequests)
-        allRequestsProcessed = allRequestsProcessed && req->completed;
-
-    if (allRequestsProcessed)
-    {
-        SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
-        sceneEditor2->BeginBatch("LOD Added");
-        for (const auto& req : planeLODRequests)
+        if (command->GetId() == CMDID_BATCH)
         {
-            sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2* cmd = batch->GetCommand(i);
+                if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(cmd)))
+                {
+                    break;
+                }
+            }
         }
-        sceneEditor2->EndBatch();
-
-        planeLODRequests.clear();
+        else
+        {
+            ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(command));
+        }
     }
 }
 
-bool EditorLODSystem::CopyLastLodToLod0()
+FilePath EditorLODSystem::GetPathForPlaneEntity() const
 {
-    if (GetCurrentLODs().empty())
-    {
-        return false;
-    }
-    SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
+    DVASSERT(activeLodData != nullptr);
+    DVASSERT(!activeLodData->lodComponents.empty());
 
-    sceneEditor2->BeginBatch("LOD Added");
+    SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+    Entity* entity = activeLodData->lodComponents.front()->GetEntity();
 
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        sceneEditor2->Exec(new CopyLastLODToLod0Command(lod));
-    }
-    sceneEditor2->EndBatch();
-    return true;
-}
-
-FilePath EditorLODSystem::GetDefaultTexturePathForPlaneEntity() const
-{
-    DVASSERT(GetCurrentLODs().size() == 1)
-    Entity* entity = GetCurrentLODs().back()->GetEntity();
-
-    FilePath entityPath = static_cast<SceneEditor2*>(GetScene())->GetScenePath();
+    FilePath entityPath = editorScene->GetScenePath();
     KeyedArchive* properties = GetCustomPropertiesArchieve(entity);
     if (nullptr != properties && properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
     {
@@ -411,316 +653,41 @@ FilePath EditorLODSystem::GetDefaultTexturePathForPlaneEntity() const
     return texturePath;
 }
 
-bool EditorLODSystem::CanDeleteLod() const
+void EditorLODSystem::ProcessPlaneLODs()
 {
-    if (GetCurrentLODs().empty())
-    {
-        return false;
-    }
-    bool containLayers = false;
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        if (nullptr != lod->GetEntity()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
-        {
-            return false;
-        }
-        else if (!containLayers && GetLodLayersCount(lod) > 1)
-        {
-            containLayers = true;
-        }
-    }
-    return containLayers;
-}
-
-bool EditorLODSystem::DeleteFirstLOD()
-{
-    if (false == CanDeleteLod())
-    {
-        return false;
-    }
-    SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
-    sceneEditor2->BeginBatch("Delete First LOD");
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        if (GetLodLayersCount(lod) > 1)
-        {
-            sceneEditor2->Exec(new DeleteLODCommand(lod, 0, -1));
-        }
-    }
-    sceneEditor2->EndBatch();
-    return true;
-}
-
-bool EditorLODSystem::DeleteLastLOD()
-{
-    if (false == CanDeleteLod())
-    {
-        return false;
-    }
-    SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
-    sceneEditor2->BeginBatch("Delete Last LOD");
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        if (GetLodLayersCount(lod) > 1)
-        {
-            sceneEditor2->Exec(new DeleteLODCommand(lod, GetLodLayersCount(lod) - 1, -1));
-        }
-    }
-    sceneEditor2->EndBatch();
-    return true;
-}
-
-void EditorLODSystem::SetLayerDistance(DAVA::int32 layerNum, DAVA::float32 distance)
-{
-    DVASSERT(layerNum < currentLodsLayersCount);
-    lodDistances[layerNum] = distance;
-    if (GetCurrentLODs().empty())
-    {
-        return;
-    }
-    SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
-    sceneEditor2->BeginBatch("LOD Distance Changed");
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        sceneEditor2->Exec(new ChangeLODDistanceCommand(lod, layerNum, distance));
-    }
-    sceneEditor2->EndBatch();
-    CollectLODDataFromScene();
-}
-
-void EditorLODSystem::SetForceDistanceEnabled(bool enable)
-{
-    if (forceDistanceEnabled == enable)
-    {
-        return;
-    }
-    forceDistanceEnabled = enable;
-    UpdateForceData();
-}
-
-void EditorLODSystem::UpdateForceData()
-{
-    if (forceDistanceEnabled)
-    {
-        UpdateForceDistance();
-    }
-    else
-    {
-        UpdateForceLayer();
-    }
-}
-
-void EditorLODSystem::SetForceDistance(DAVA::float32 distance)
-{
-    if (allSceneModeEnabled)
-    {
-        allSceneForceDistance = distance;
-    }
-    forceDistance = distance;
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        lod->SetForceLodLayer(LodComponent::INVALID_LOD_LAYER);
-        lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
-        lod->SetForceDistance(distance);
-
-        if (!allSceneModeEnabled && SettingsManager::GetValue(Settings::Scene_RememberForceParameters).AsBool())
-        {
-            ForceData force = sceneLODs[lod];
-            force.forceDistance = distance;
-            sceneLODs[lod] = force;
-        }
-    }
-}
-
-DAVA::float32 EditorLODSystem::GetCurrentDistance() const
-{
-    if (!SettingsManager::GetValue(Settings::Scene_RememberForceParameters).AsBool())
-    {
-        return forceDistance;
-    }
-    else if (GetCurrentLODs().empty())
-    {
-        return DAVA::LodComponent::MIN_LOD_DISTANCE;
-    }
-    else if (allSceneModeEnabled)
-    {
-        return allSceneForceDistance;
-    }
-    else
-    {
-        return CalculateForceDistance();
-    }
-}
-
-void EditorLODSystem::UpdateForceDistance()
-{
-    DAVA::Map<int, int> m;
-
-    if (!SettingsManager::GetValue(Settings::Scene_RememberForceParameters).AsBool())
-    {
-        auto lods = GetCurrentLODs();
-        for (auto& lod : lods)
-        {
-            lod->SetForceLodLayer(LodComponent::INVALID_LOD_LAYER);
-            lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
-            lod->SetForceDistance(forceDistance);
-        }
-        return;
-    }
-
-    if (allSceneModeEnabled)
+    if (planeLODRequests.empty())
     {
         return;
     }
 
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
+    bool allRequestsProcessed = true;
+    for (const auto& req : planeLODRequests)
     {
-        lod->SetForceLodLayer(LodComponent::INVALID_LOD_LAYER);
-        lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
-        lod->SetForceDistance(sceneLODs[lod].forceDistance);
+        allRequestsProcessed = allRequestsProcessed && req->completed;
     }
-}
 
-void EditorLODSystem::SetForceLayer(DAVA::int32 layer)
-{
-    if (allSceneModeEnabled)
+    if (allRequestsProcessed)
     {
-        allSceneForceLayer = layer;
-    }
-    forceLayer = layer;
+        Guard::ScopedBoolGuard guard(generateCommands, true);
 
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        lod->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
-        lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
-        lod->SetForceLodLayer(layer);
-
-        if (!allSceneModeEnabled && SettingsManager::GetValue(Settings::Scene_RememberForceParameters).AsBool())
+        SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
+        sceneEditor2->BeginBatch("Create plane lods", static_cast<DAVA::uint32>(planeLODRequests.size()));
+        for (const auto& req : planeLODRequests)
         {
-            ForceData force = sceneLODs[lod];
-            force.forceLayer = layer;
-            sceneLODs[lod] = force;
+            sceneEditor2->Exec(Command2::Create<CreatePlaneLODCommand>(req));
         }
+        sceneEditor2->EndBatch();
+        planeLODRequests.clear();
+
+        RecalculateData();
+        EmitInvalidateUI(FLAG_FORCE | FLAG_DISTANCE | FLAG_ACTION);
     }
 }
 
-DAVA::int32 EditorLODSystem::GetCurrentForceLayer() const
+void EditorLODSystem::RecalculateData()
 {
-    if (!SettingsManager::GetValue(Settings::Scene_RememberForceParameters).AsBool())
+    for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
     {
-        return forceLayer;
+        lodData[m].SummarizeValues();
     }
-    else if (GetCurrentLODs().empty())
-    {
-        return DAVA::LodComponent::INVALID_LOD_LAYER;
-    }
-    else if (allSceneModeEnabled)
-    {
-        return allSceneForceLayer;
-    }
-    else
-    {
-        return CalculateForceLayer();
-    }
-}
-
-void EditorLODSystem::UpdateForceLayer()
-{
-    if (!SettingsManager::GetValue(Settings::Scene_RememberForceParameters).AsBool())
-    {
-        auto lods = GetCurrentLODs();
-        for (auto& lod : lods)
-        {
-            lod->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
-            lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
-            lod->SetForceLodLayer(forceLayer);
-        }
-        return;
-    }
-
-    if (allSceneModeEnabled)
-    {
-        return;
-    }
-
-    auto lods = GetCurrentLODs();
-    for (auto& lod : lods)
-    {
-        lod->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
-        lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
-        lod->SetForceLodLayer(sceneLODs[lod].forceLayer);
-    }
-}
-
-void EditorLODSystem::SetAllSceneModeEnabled(bool enabled)
-{
-    if (allSceneModeEnabled == enabled)
-    {
-        return;
-    }
-    allSceneModeEnabled = enabled;
-    if (!allSceneModeEnabled)
-    {
-        allSceneForceLayer = DAVA::LodComponent::MAX_LOD_LAYERS;
-        allSceneForceDistance = DAVA::LodComponent::INVALID_DISTANCE;
-    }
-    UpdateAllSceneModeEnabled();
-}
-
-void EditorLODSystem::UpdateAllSceneModeEnabled()
-{
-    DAVA::List<DAVA::LodComponent*> lods;
-    for (auto it = sceneLODs.begin(); it != sceneLODs.end(); ++it)
-    {
-        lods.push_back(it->first);
-    }
-
-    for (auto lod : lods)
-    {
-        ResetForceState(lod);
-    }
-    CollectLODDataFromScene();
-    UpdateForceData();
-}
-
-DAVA::int32 EditorLODSystem::CalculateForceLayer() const
-{
-    auto lods = GetCurrentLODs();
-    DAVA::int32 compareLayer = sceneLODs.at(*(lods.begin())).forceLayer;
-    for (auto& lod : lods)
-    {
-        if (sceneLODs.at(lod).forceLayer != compareLayer)
-        {
-            return DAVA::LodComponent::MAX_LOD_LAYERS;
-        }
-    }
-
-    return compareLayer;
-}
-
-DAVA::float32 EditorLODSystem::CalculateForceDistance() const
-{
-    auto lods = GetCurrentLODs();
-    DAVA::int32 compareDistance = sceneLODs.at(*(lods.begin())).forceDistance;
-    for (auto& lod : lods)
-    {
-        if (sceneLODs.at(lod).forceDistance != compareDistance)
-        {
-            return DAVA::LodComponent::INVALID_DISTANCE;
-        }
-    }
-
-    return compareDistance;
 }

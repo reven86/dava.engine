@@ -204,25 +204,25 @@ inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputY(float32 value) c
 
 inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualX(float32 value, DAVA::int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return value * allowedSizes[resourceIndex].toVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualY(float32 value, DAVA::int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return value * allowedSizes[resourceIndex].toVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceX(float32 value, DAVA::int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return value / allowedSizes[resourceIndex].toVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceY(float32 value, DAVA::int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return value / allowedSizes[resourceIndex].toVirtual;
 }
 
@@ -238,19 +238,19 @@ inline Vector2 VirtualCoordinatesSystem::ConvertVirtualToPhysical(const Vector2&
 
 inline Vector2 VirtualCoordinatesSystem::ConvertResourceToVirtual(const Vector2& vector, DAVA::int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return vector * allowedSizes[resourceIndex].toVirtual;
 }
 
 inline Vector2 VirtualCoordinatesSystem::ConvertResourceToPhysical(const Vector2& vector, DAVA::int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return vector * allowedSizes[resourceIndex].toPhysical;
 }
 
 inline Vector2 VirtualCoordinatesSystem::ConvertVirtualToResource(const Vector2& value, int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return value / allowedSizes[resourceIndex].toVirtual;
 }
 
@@ -266,13 +266,13 @@ inline Rect VirtualCoordinatesSystem::ConvertVirtualToPhysical(const Rect& rect)
 
 inline Rect VirtualCoordinatesSystem::ConvertResourceToVirtual(const Rect& rect, int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return ConvertRect(rect, allowedSizes[resourceIndex].toVirtual);
 }
 
 inline Rect VirtualCoordinatesSystem::ConvertResourceToPhysical(const Rect& rect, int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return ConvertRect(rect, allowedSizes[resourceIndex].toPhysical);
 }
 
@@ -319,7 +319,7 @@ inline Rect VirtualCoordinatesSystem::ConvertVirtualToInput(const Rect& rect) co
 
 inline const String& VirtualCoordinatesSystem::GetResourceFolder(int32 resourceIndex) const
 {
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex < int32(allowedSizes.size()));
     return allowedSizes[resourceIndex].folderName;
 }
 
@@ -330,7 +330,7 @@ inline int32 VirtualCoordinatesSystem::GetDesirableResourceIndex() const
 
 inline void VirtualCoordinatesSystem::SetDesirableResourceIndex(int32 resourceIndex)
 {
-    DVASSERT(resourceIndex >= 0 && resourceIndex < (int32)allowedSizes.size());
+    DVASSERT(resourceIndex >= 0 && resourceIndex < int32(allowedSizes.size()));
     desirableIndex = resourceIndex;
 }
 

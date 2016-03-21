@@ -29,7 +29,7 @@
 #ifndef __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
 #define __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
 
-#include "Command2.h"
+#include "Commands2/Base/Command2.h"
 
 #include "Render/Material/NMaterial.h"
 

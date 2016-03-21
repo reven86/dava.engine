@@ -52,10 +52,10 @@ class LightUpdateSystem : public SceneSystem
 {
 public:
     LightUpdateSystem(Scene* scene);
-    virtual ~LightUpdateSystem();
+    ~LightUpdateSystem() override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
     void ImmediateEvent(Component* component, uint32 event) override;
 
 private:

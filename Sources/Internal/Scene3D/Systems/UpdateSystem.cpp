@@ -42,7 +42,7 @@ UpdateSystem::UpdateSystem(Scene* scene)
 
 void UpdateSystem::AddEntity(Entity* entity)
 {
-    UpdatableComponent* component = (UpdatableComponent*)entity->GetComponent(Component::UPDATABLE_COMPONENT);
+    UpdatableComponent* component = static_cast<UpdatableComponent*>(entity->GetComponent(Component::UPDATABLE_COMPONENT));
     IUpdatable* object = component->GetUpdatableObject();
 
     if (object)
@@ -63,7 +63,7 @@ void UpdateSystem::AddEntity(Entity* entity)
 
 void UpdateSystem::RemoveEntity(Entity* entity)
 {
-    UpdatableComponent* component = (UpdatableComponent*)entity->GetComponent(Component::UPDATABLE_COMPONENT);
+    UpdatableComponent* component = static_cast<UpdatableComponent*>(entity->GetComponent(Component::UPDATABLE_COMPONENT));
     IUpdatable* object = component->GetUpdatableObject();
 
     if (object)

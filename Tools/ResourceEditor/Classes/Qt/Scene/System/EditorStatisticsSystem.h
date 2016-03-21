@@ -26,73 +26,72 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TeamcityOutput.h"
-#include "Utils/Utils.h"
 
-#include <iostream>
+#ifndef __EDITOR_STATISTICS_SYSTEM_V2_H__
+#define __EDITOR_STATISTICS_SYSTEM_V2_H__
 
-#if defined(__DAVAENGINE_ANDROID__)
-#   include <android/log.h>
-#   define LOG_TAG      "TeamcityOutput"
-#elif defined(__DAVAENGINE_IPHONE__)
-#   import "UIKit/UIKit.h"
-#endif
+#include "Entity/SceneSystem.h"
+#include "Scene/SceneTypes.h"
 
 namespace DAVA
 {
-    
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
+class Entity;
+class RenderComponent;
+}
+
+class EditorStatisticsSystemUIDelegate;
+struct TrianglesData;
+
+class EditorStatisticsSystem : public DAVA::SceneSystem
 {
-    if(ll < Logger::Instance()->GetLogLevel())
-        return;
-    
-    String outStr = NormalizeString(text);
-    String output;
-    String status;
-    
-    switch (ll)
+    enum eStatisticsSystemFlag : DAVA::uint32
     {
-    case Logger::LEVEL_ERROR:
-        status = "ERROR";
-        break;
-    case Logger::LEVEL_WARNING:
-        status = "WARNING";
-        break;
-    default:
-        status = "NORMAL";
-        break;
-    }
+        FLAG_TRIANGLES = 1 << 0,
 
-    output = "##teamcity[message text=\'" + outStr + "\' errorDetails=\'\' status=\'" + status + "\']\n";
-    PlatformOutput(output);
-}
+        FLAG_NONE = 0
+    };
 
-String TeamcityOutput::NormalizeString(const char8 *text) const
+public:
+    static const DAVA::int32 INDEX_OF_ALL_LODS_TRIANGLES = 0;
+    static const DAVA::int32 INDEX_OF_FIRST_LOD_TRIANGLES = 1;
+
+    EditorStatisticsSystem(DAVA::Scene* scene);
+
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+    void AddComponent(DAVA::Entity* entity, DAVA::Component* component);
+    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component);
+
+    void Process(DAVA::float32 timeElapsed) override;
+
+    const DAVA::Vector<DAVA::uint32>& GetTriangles(eEditorMode mode, bool allTriangles) const;
+
+    void AddDelegate(EditorStatisticsSystemUIDelegate* uiDelegate);
+    void RemoveDelegate(EditorStatisticsSystemUIDelegate* uiDelegate);
+
+private:
+    void CalculateTriangles();
+
+    //signals
+    void EmitInvalidateUI(DAVA::uint32 flags);
+    void DispatchSignals();
+    //signals
+
+private:
+    DAVA::Vector<TrianglesData> triangles;
+
+    DAVA::Vector<EditorStatisticsSystemUIDelegate*> uiDelegates;
+    DAVA::uint32 invalidateUIflag = FLAG_NONE;
+};
+
+class EditorStatisticsSystemUIDelegate
 {
-    String str = text;
-    
-    StringReplace(str, "|", "||");
+public:
+    virtual ~EditorStatisticsSystemUIDelegate() = default;
 
-    StringReplace(str, "'", "|'");
-    StringReplace(str, "\n", "|n");
-    StringReplace(str, "\r", "|r");
+    virtual void UpdateTrianglesUI(EditorStatisticsSystem* forSystem){};
+};
 
-    StringReplace(str, "[", "|[");
-    StringReplace(str, "]", "|]");
-    
-    return str;
-}
 
-void TeamcityOutput::PlatformOutput(const String &text) const
-{
-#ifdef __DAVAENGINE_IPHONE__
-    NSLog(@"%s", text.c_str());
-#elif  defined(__DAVAENGINE_ANDROID__)
-    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
-#else
-    std::cout << text << std::endl << std::flush;
-#endif
-}
-    
-}; // end of namespace DAVA
 
+#endif // __SCENE_LOD_SYSTEM_V2_H__

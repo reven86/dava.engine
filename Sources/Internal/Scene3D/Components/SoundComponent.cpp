@@ -134,7 +134,7 @@ void SoundComponent::Stop(uint32 index)
 
 void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
 {
-    DVASSERT(index < (uint32)events.size());
+    DVASSERT(index < static_cast<uint32>(events.size()));
 
     if (events[index].flags != flags)
     {
@@ -147,7 +147,7 @@ void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
 
 void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3& direction)
 {
-    DVASSERT(eventIndex < (uint32)events.size());
+    DVASSERT(eventIndex < static_cast<uint32>(events.size()));
     events[eventIndex].localDirection = direction;
 }
 

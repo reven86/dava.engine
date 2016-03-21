@@ -26,29 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_TEAMCITY_OUTPUT_H__
-#define __DAVAENGINE_TEAMCITY_OUTPUT_H__
 
-/**
-    \defgroup utils Utilities
- */
+#include "Commands2/Base/CommandAction.h"
 
-#include "FileSystem/Logger.h"
-
-namespace DAVA 
+CommandAction::CommandAction(DAVA::int32 _id, const DAVA::String& _text)
+    : Command2(_id, _text)
 {
-    
-class TeamcityOutput: public LoggerOutput
+}
+
+void CommandAction::Undo()
 {
-public:
-    void Output(Logger::eLogLevel ll, const char8* text) override;
-    
-protected:
-    void PlatformOutput(const String & text) const;
+}
 
-    String NormalizeString(const char8 *text) const;
-};
-
-}   // namespace DAVA 
-
-#endif // __DAVAENGINE_TEAMCITY_OUTPUT_H__
+DAVA::Entity* CommandAction::GetEntity() const
+{
+    return nullptr;
+}

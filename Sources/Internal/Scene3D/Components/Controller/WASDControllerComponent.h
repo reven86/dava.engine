@@ -40,7 +40,7 @@ class WASDControllerComponent : public Component
 public:
     IMPLEMENT_COMPONENT_TYPE(WASD_CONTROLLER_COMPONENT);
 
-    virtual Component* Clone(Entity* toEntity);
+    Component* Clone(Entity* toEntity) override;
 
 public:
     INTROSPECTION_EXTEND(WASDControllerComponent, Component,

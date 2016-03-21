@@ -26,48 +26,72 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
-#define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+#include "Logger/TeamcityOutput.h"
+#include "Utils/Utils.h"
 
-#include "TeamcityOutput/TeamcityOutput.h"
+#include <iostream>
+
+#if defined(__DAVAENGINE_ANDROID__)
+#include <android/log.h>
+#define LOG_TAG "TeamcityOutput"
+#elif defined(__DAVAENGINE_IPHONE__)
+#import "UIKit/UIKit.h"
+#endif
 
 namespace DAVA
 {
-
-class TeamcityTestsOutput : public TeamcityOutput
+void TeamcityOutput::Output(Logger::eLogLevel ll, const char8* text)
 {
-public:
-    virtual void Output(Logger::eLogLevel ll, const char8* text);
+    if (ll < Logger::Instance()->GetLogLevel())
+        return;
 
-    bool CaptureStdoutFlag() const;
-    void SetCaptureStdoutFlag(bool value);
+    String outStr = NormalizeString(text);
+    String output;
+    String status;
 
-    static String FormatTestStarted(const String& testClassName, const String& testName);
-    static String FormatTestFinished(const String& testClassName, const String& testName);
-    static String FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg);
+    switch (ll)
+    {
+    case Logger::LEVEL_ERROR:
+        status = "ERROR";
+        break;
+    case Logger::LEVEL_WARNING:
+        status = "WARNING";
+        break;
+    default:
+        status = "NORMAL";
+        break;
+    }
 
-    static String FormatTestClassStarted(const String& testClassName);
-    static String FormatTestClassFinished(const String& testClassName);
-    static String FormatTestClassDisabled(const String& testClassName);
-
-private:
-    void TestOutput(const String& data);
-
-private:
-    bool captureStdoutFlag = false;     // Flag controls whether TeamCity attribute 'captureStandardOutput=true' is set on test start
-};
-
-//////////////////////////////////////////////////////////////////////////
-inline bool TeamcityTestsOutput::CaptureStdoutFlag() const
-{
-    return captureStdoutFlag;
+    output = "##teamcity[message text=\'" + outStr + "\' errorDetails=\'\' status=\'" + status + "\']\n";
+    PlatformOutput(output);
 }
 
-inline void TeamcityTestsOutput::SetCaptureStdoutFlag(bool value)
+String TeamcityOutput::NormalizeString(const char8* text) const
 {
-    captureStdoutFlag = value;
+    String str = text;
+
+    StringReplace(str, "|", "||");
+
+    StringReplace(str, "'", "|'");
+    StringReplace(str, "\n", "|n");
+    StringReplace(str, "\r", "|r");
+
+    StringReplace(str, "[", "|[");
+    StringReplace(str, "]", "|]");
+
+    return str;
 }
 
-}   // namespace DAVA
+void TeamcityOutput::PlatformOutput(const String& text) const
+{
+#ifdef __DAVAENGINE_IPHONE__
+    NSLog(@"%s", text.c_str());
+#elif defined(__DAVAENGINE_ANDROID__)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
+#else
+    std::cout << text << std::endl
+              << std::flush;
+#endif
+}
 
-#endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+}; // end of namespace DAVA

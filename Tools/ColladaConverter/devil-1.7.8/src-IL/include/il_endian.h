@@ -22,7 +22,8 @@
 #endif
 
 #if (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __BIG_ENDIAN__) \
-|| (defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__))
+|| \
+(defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__))
  	#undef __LITTLE_ENDIAN__
 	#define Short(s) iSwapShort(s)
 	#define UShort(s) iSwapUShort(s)

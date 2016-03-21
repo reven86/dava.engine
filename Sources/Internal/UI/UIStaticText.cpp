@@ -94,7 +94,7 @@ UIStaticText* UIStaticText::Clone()
 void UIStaticText::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIStaticText* t = (UIStaticText*)srcControl;
+    UIStaticText* t = static_cast<UIStaticText*>(srcControl);
 
     SafeRelease(textBlock);
     textBlock = t->textBlock->Clone();
@@ -453,8 +453,8 @@ int32 UIStaticText::GetTextColorInheritType() const
 
 void UIStaticText::SetTextColorInheritType(int32 type)
 {
-    GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)type);
-    GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)type);
+    GetTextBackground()->SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
+    GetShadowBackground()->SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
 }
 
 int32 UIStaticText::GetTextPerPixelAccuracyType() const
@@ -464,8 +464,8 @@ int32 UIStaticText::GetTextPerPixelAccuracyType() const
 
 void UIStaticText::SetTextPerPixelAccuracyType(int32 type)
 {
-    GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)type);
-    GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)type);
+    GetTextBackground()->SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
+    GetShadowBackground()->SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
 }
 
 int32 UIStaticText::GetMultilineType() const

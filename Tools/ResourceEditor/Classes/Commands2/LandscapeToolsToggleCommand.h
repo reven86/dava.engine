@@ -31,8 +31,8 @@
 #define __LANDSCAPETOOLSTOGGLECOMMAND_H__
 
 #include "Functional/Function.h"
-#include "Commands2/Command2.h"
-#include "Qt/Scene/System/LandscapeEditorDrawSystem.h"
+#include "Commands2/Base/Command2.h"
+#include "Scene/System/LandscapeEditorDrawSystem.h"
 
 class SceneEditor2;
 
@@ -45,6 +45,7 @@ public:
 
     void Redo() override;
     void Undo() override;
+    bool IsModifying() const override;
 
     void SaveEnabledToolsState();
     void ApplySavedState();
@@ -66,6 +67,11 @@ protected:
     EnableFunction enableFunction;
     DisableFunction disableFunction;
 };
+
+inline bool LandscapeToolsToggleCommand::IsModifying() const
+{
+    return false;
+}
 
 template <typename ForwardCommand>
 class LandscapeToolsReverseCommand : public ForwardCommand
