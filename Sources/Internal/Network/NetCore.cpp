@@ -115,7 +115,7 @@ void NetCore::DestroyControllerBlocked(TrackId id)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
-    DVASSERT_MSG(GetTrackedObject(id) != NULL, Format("ID: %d", id).c_str());
+    DVASSERT(GetTrackedObject(id) != nullptr);
 
     volatile bool oneStopped = false;
     loop.Post(Bind(&NetCore::DoDestroy, this, id, &oneStopped));
