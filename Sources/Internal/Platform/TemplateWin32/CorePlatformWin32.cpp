@@ -578,7 +578,7 @@ bool IsMouseClickEvent(UINT message)
 
 bool IsMouseMoveEvent(UINT message)
 {
-    return message == WM_MOUSEMOVE;
+    return message == WM_INPUT;
 }
 
 bool IsMouseWheelEvent(UINT message)
@@ -588,7 +588,7 @@ bool IsMouseWheelEvent(UINT message)
 
 bool IsMouseInputEvent(UINT message)
 {
-    return WM_MOUSEFIRST <= message && message <= WM_MOUSELAST;
+    return (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST) || message == WM_INPUT;
 }
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
@@ -701,16 +701,63 @@ bool CoreWin32Platform::ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM w
 
 bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    int xPos = GET_X_LPARAM(lParam);
-    int yPos = GET_Y_LPARAM(lParam);
-
-    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms645590%28v=vs.85%29.aspx
+    bool isApplicationInForeground = (wParam == 0);
+    if (!isApplicationInForeground)
     {
-        SetCursorPosCenterInternal(hWnd);
+        return false;
     }
 
-    OnMouseMove(xPos, yPos);
-    return true;
+    HRAWINPUT hRawInput = reinterpret_cast<HRAWINPUT>(lParam);
+    RAWINPUT input;
+    UINT dwSize = sizeof(input);
+
+    GetRawInputData(hRawInput, RID_INPUT, &input, &dwSize, sizeof(RAWINPUTHEADER));
+
+    if (input.header.dwType == RIM_TYPEMOUSE && input.data.mouse.usFlags == 0)
+    {
+        LONG xPos = input.data.mouse.lLastX;
+        LONG yPos = input.data.mouse.lLastY;
+
+        bool isMove = xPos || yPos;
+        bool isInside = false;
+
+        if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+        {
+            SetCursorPosCenterInternal(hWnd);
+            isInside = true;
+        }
+        else
+        {
+            POINT pnt;
+            GetCursorPos(&pnt);
+            ScreenToClient(hWnd, &pnt);
+
+            xPos += pnt.x;
+            yPos += pnt.y;
+
+            RECT clientRect;
+            GetClientRect(hWnd, &clientRect);
+            isInside = xPos > clientRect.left &&
+                       xPos < clientRect.right &&
+                       yPos > clientRect.top &&
+                       yPos < clientRect.bottom;
+        }
+
+        if (isInside)
+        {
+            bool isMouseWheelChanged = (input.data.mouse.usButtonFlags & RI_MOUSE_WHEEL) != 0;
+            bool isMouseButtonsChanged = !isMouseWheelChanged && 
+                                         (input.data.mouse.usButtonFlags >= RI_MOUSE_BUTTON_1_DOWN);
+
+            if (isMove && !isMouseButtonsChanged)
+            {
+                OnMouseMove(xPos, yPos);
+            }
+            return true;
+        }
+    }
+    return false;
 }
 
 bool CoreWin32Platform::ProcessMouseWheelEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
