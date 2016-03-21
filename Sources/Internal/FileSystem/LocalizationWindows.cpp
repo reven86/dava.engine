@@ -26,26 +26,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
-#ifndef __RESOURCEEDITORQT__COMMANDACTION__
-#define __RESOURCEEDITORQT__COMMANDACTION__
+#if defined(__DAVAENGINE_WINDOWS__)
 
-#include "Command2.h"
+#include "FileSystem/LocalizationSystem.h"
+#include "Platform/DeviceInfo.h"
 
-class CommandAction : public Command2
+namespace DAVA
 {
-public:
-    CommandAction(int _id, const DAVA::String& _text = "");
-    virtual ~CommandAction();
-
-    bool CanUndo() const override;
-    void Undo() override;
-    DAVA::Entity* GetEntity() const override;
+String LocalizationSystem::GetDeviceLocale(void) const
+{
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
+}
 };
 
-inline bool CommandAction::CanUndo() const
-{
-    return false;
-}
-
-#endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
+#endif // __DAVAENGINE_WIN_UAP__

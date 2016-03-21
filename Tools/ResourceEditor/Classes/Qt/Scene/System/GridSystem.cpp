@@ -33,6 +33,7 @@
 // framework
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/RenderSystem.h"
+#include "Scene3D/Scene.h"
 
 #define LOWEST_GRID_STEP 0.1f
 #define LOWEST_GRID_SIZE 1.0f
@@ -79,8 +80,4 @@ void SceneGridSystem::Draw()
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(DAVA::Vector3(-gridMax, 0, 0), DAVA::Vector3(gridMax, 0, 0), grid0Color);
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), grid0Color);
     }
-}
-
-void SceneGridSystem::ProcessCommand(const Command2* command, bool redo)
-{
 }

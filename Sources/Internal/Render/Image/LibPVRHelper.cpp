@@ -89,8 +89,6 @@ bool IsCompressedFormat(PixelFormat format)
     default:
         return false;
     }
-
-    return false;
 }
 }
 
@@ -103,7 +101,7 @@ PVRFile::PVRFile()
 
 PVRFile::~PVRFile()
 {
-    uint32 count = (uint32)metaDatablocks.size();
+    uint32 count = uint32(metaDatablocks.size());
     for (uint32 i = 0; i < count; ++i)
     {
         metaDatablocks[i]->Data = nullptr; //it is stored at this->metaData
@@ -226,10 +224,10 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     crcMetaData->Data = pvrFile->metaData + oldMetaDataSize + METADATA_DATA_OFFSET;
     pvrFile->metaDatablocks.push_back(crcMetaData);
 
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_FOURCC_OFFSET)) = crcMetaData->DevFOURCC;
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_KEY_OFFSET)) = crcMetaData->u32Key;
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_DATASIZE_OFFSET)) = crcMetaData->u32DataSize;
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_DATA_OFFSET)) = CRC32::ForFile(filePathname);
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_FOURCC_OFFSET)) = crcMetaData->DevFOURCC;
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_KEY_OFFSET)) = crcMetaData->u32Key;
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_DATASIZE_OFFSET)) = crcMetaData->u32DataSize;
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_DATA_OFFSET)) = CRC32::ForFile(filePathname);
 
     bool written = false;
 
@@ -400,7 +398,7 @@ bool LibPVRHelper::LoadImages(const PVRFile* pvrFile, Vector<Image*>& imageSet, 
 
     const uint32& mipmapLevelCount = pvrFile->header.u32MIPMapCount;
 
-    fromMipMap = Min(fromMipMap, (int32)(mipmapLevelCount - 1));
+    fromMipMap = Min(fromMipMap, int32(mipmapLevelCount - 1));
 
     bool loadAllPvrData = true;
     for (uint32 i = fromMipMap; i < mipmapLevelCount; ++i)
@@ -453,8 +451,8 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
         uint32 u32HeaderSize = PVRTEX3_HEADERSIZE;
         if (swapBytes)
         {
-            u32HeaderSize = Min(u32HeaderSize, (uint32)PVRTByteSwap32(header->u32Version));
-            uint8* headerData = (uint8*)&header->u32Version;
+            u32HeaderSize = Min(u32HeaderSize, PVRTByteSwap32(header->u32Version));
+            uint8* headerData = reinterpret_cast<uint8*>(&header->u32Version);
             for (uint32 i = 0; i < u32HeaderSize; i += sizeof(uint32))
             {
                 PVRTByteSwap(headerData + i, sizeof(uint32));
@@ -462,7 +460,7 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
         }
 
         //Get a pointer to the header.
-        PVRHeaderV2* sLegacyTextureHeader = (PVRHeaderV2*)header;
+        PVRHeaderV2* sLegacyTextureHeader = reinterpret_cast<PVRHeaderV2*>(header);
 
         //We only really need the channel type.
         uint64 tempFormat;
@@ -471,7 +469,7 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
 
         //Map the enum to get the channel type.
         EPVRTVariableType u32CurrentChannelType = ePVRTVarTypeUnsignedByte;
-        MapLegacyTextureEnumToNewFormat((PVRTPixelType)(sLegacyTextureHeader->dwpfFlags & 0xff), tempFormat, tempColourSpace, u32CurrentChannelType, tempIsPreMult);
+        MapLegacyTextureEnumToNewFormat(PVRTPixelType(sLegacyTextureHeader->dwpfFlags & 0xff), tempFormat, tempColourSpace, u32CurrentChannelType, tempIsPreMult);
         header->u32ChannelType = u32CurrentChannelType;
     }
     else if (swapBytes)
@@ -487,7 +485,7 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
         header->u32NumSurfaces = PVRTByteSwap32(header->u32NumSurfaces);
         header->u32Version = PVRTByteSwap32(header->u32Version);
         header->u32Width = PVRTByteSwap32(header->u32Width);
-        PVRTByteSwap((uint8*)&header->u64PixelFormat, sizeof(uint64));
+        PVRTByteSwap(reinterpret_cast<uint8*>(&header->u64PixelFormat), sizeof(uint64));
     }
 }
 
@@ -552,17 +550,17 @@ void LibPVRHelper::ReadMetaData(File* file, PVRFile* pvrFile, const bool swapByt
     {
         MetaDataBlock* block = new MetaDataBlock();
 
-        uint32 fourCC = *(uint32*)metaDataPtr;
+        uint32 fourCC = *reinterpret_cast<uint32*>(metaDataPtr);
         block->DevFOURCC = (swapBytes) ? PVRTByteSwap32(fourCC) : fourCC;
 
         metaDataPtr += sizeof(uint32);
 
-        uint32 dataKey = *(uint32*)metaDataPtr;
+        uint32 dataKey = *reinterpret_cast<uint32*>(metaDataPtr);
         block->u32Key = (swapBytes) ? PVRTByteSwap32(dataKey) : dataKey;
 
         metaDataPtr += sizeof(uint32);
 
-        uint32 dataSize = *(uint32*)metaDataPtr;
+        uint32 dataSize = *reinterpret_cast<uint32*>(metaDataPtr);
         block->u32DataSize = (swapBytes) ? PVRTByteSwap32(dataSize) : dataSize;
 
         metaDataPtr += sizeof(uint32);
@@ -635,7 +633,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile* pvrFile, const uint32 fileMipM
 //Setup temporary variables.
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             uint8* pTempDecompData = image->data;
-            uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
+            uint8* pTempCompData = reinterpret_cast<uint8*>(pTextureData) + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
 #endif
             if ((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {
@@ -794,7 +792,7 @@ bool LibPVRHelper::GetCRCFromMetaData(const PVRFile* pvrFile, uint32* outputCRC)
         const MetaDataBlock* block = pvrFile->metaDatablocks[i];
         if (block->u32Key == METADATA_CRC_KEY)
         {
-            *outputCRC = *((uint32*)block->Data);
+            *outputCRC = *(reinterpret_cast<uint32*>(block->Data));
 
             crcRead = true;
             break;
@@ -991,7 +989,7 @@ uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLeve
     return (uint32)(uiDataSize / 8) * numsurfs * numfaces;
 
 #else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
-    PVRTextureHeaderV3* header = (PVRTextureHeaderV3*)&textureHeader;
+    PVRTextureHeaderV3* header = reinterpret_cast<PVRTextureHeaderV3*>(&textureHeader);
     return PVRTGetTextureDataSize(*header, mipLevel, allSurfaces, allFaces);
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
@@ -2276,7 +2274,7 @@ void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint
 const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeader)
 {
     uint64 pixelFormat = textureHeader.u64PixelFormat;
-    EPVRTVariableType ChannelType = (EPVRTVariableType)textureHeader.u32ChannelType;
+    EPVRTVariableType ChannelType = EPVRTVariableType(textureHeader.u32ChannelType);
 
     //Get the last 32 bits of the pixel format.
     uint64 PixelFormatPartHigh = pixelFormat & PVRTEX_PFHIGHMASK;
@@ -2371,6 +2369,11 @@ const PixelFormat LibPVRHelper::GetCompressedFormat(const uint64 pixelFormat)
 
     return FORMAT_INVALID;
 }
+    
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
 const PixelFormat LibPVRHelper::GetFloatTypeFormat(const uint64 pixelFormat)
 {
@@ -2527,13 +2530,17 @@ PVRHeaderV3 LibPVRHelper::CreateDecompressedHeader(const PVRHeaderV3& compressed
 
     return decompressedHeader;
 }
+   
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 bool LibPVRHelper::CopyToImage(Image* image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3& header, const uint8* pvrData)
 {
     if (AllocateImageData(image, mipMapLevel, header))
     {
         //Setup temporary variables.
-        uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
+        const uint8* data = pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
 
         if (image->format == FORMAT_RGBA4444)
         {

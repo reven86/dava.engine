@@ -69,7 +69,7 @@ void StaticOcclusionComponent::Serialize(KeyedArchive* archive, SerializationCon
         archive->SetUInt32("soc.zsub", zSubdivisions);
         archive->SetBool("soc.placeOnLandscape", placeOnLandscape);
         if (placeOnLandscape)
-            archive->SetByteArray("soc.cellHeightOffset", (uint8*)(&cellHeightOffset.front()), xSubdivisions * ySubdivisions * sizeof(float32));
+            archive->SetByteArray("soc.cellHeightOffset", reinterpret_cast<uint8*>(&cellHeightOffset.front()), xSubdivisions * ySubdivisions * sizeof(float32));
     }
 }
 
@@ -122,9 +122,9 @@ void StaticOcclusionDataComponent::Serialize(KeyedArchive* archive, Serializatio
         archive->SetUInt32("sodc.subX", data.sizeX);
         archive->SetUInt32("sodc.subY", data.sizeY);
         archive->SetUInt32("sodc.subZ", data.sizeZ);
-        archive->SetByteArray("sodc.data", (uint8*)data.GetData(), data.blockCount * data.objectCount / 32 * sizeof(uint32));
+        archive->SetByteArray("sodc.data", reinterpret_cast<const uint8*>(data.GetData()), data.blockCount * data.objectCount / 32 * sizeof(uint32));
         if (data.cellHeightOffset)
-            archive->SetByteArray("sodc.cellHeightOffset", (uint8*)data.cellHeightOffset, data.sizeX * data.sizeY * sizeof(float32));
+            archive->SetByteArray("sodc.cellHeightOffset", reinterpret_cast<uint8*>(data.cellHeightOffset), data.sizeX * data.sizeY * sizeof(float32));
     }
 }
 

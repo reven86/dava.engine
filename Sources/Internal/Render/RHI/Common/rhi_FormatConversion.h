@@ -35,7 +35,7 @@ inline void
 _FlipRGBA4_ABGR4(void* data, uint32 size)
 {
     // flip RGBA-ABGR order
-    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 2)
+    for (uint8 *d = static_cast<uint8 *>(data), *d_end = static_cast<uint8 *>(data) + size; d != d_end; d += 2)
     {
         uint8 t0 = d[0];
         uint8 t1 = d[1];
@@ -53,7 +53,7 @@ _FlipRGBA4_ABGR4(void* data, uint32 size)
 inline void
 _ABGR1555toRGBA5551(void* data, uint32 size)
 {
-    for (uint16 *d = (uint16 *)data, *d_end = (uint16 *)data + size / sizeof(uint16); d != d_end; ++d)
+    for (uint16 *d = static_cast<uint16 *>(data), *d_end = static_cast<uint16 *>(data) + size / sizeof(uint16); d != d_end; ++d)
     {
         const uint16 in = *d;
         uint16 r = (in & 0xF800) >> 11;
@@ -70,7 +70,7 @@ _ABGR1555toRGBA5551(void* data, uint32 size)
 inline void
 _RGBA5551toABGR1555(void* data, uint32 size)
 {
-    for (uint16 *d = (uint16 *)data, *d_end = (uint16 *)data + size / sizeof(uint16); d != d_end; ++d)
+    for (uint16 *d = static_cast<uint16 *>(data), *d_end = static_cast<uint16 *>(data) + size / sizeof(uint16); d != d_end; ++d)
     {
         const uint16 in = *d;
         uint16 r = (in & 0x001F) << 11;
@@ -87,7 +87,7 @@ _RGBA5551toABGR1555(void* data, uint32 size)
 inline void
 _SwapRB8(void* data, uint32 size)
 {
-    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 4)
+    for (uint8 *d = static_cast<uint8 *>(data), *d_end = static_cast<uint8 *>(data) + size; d != d_end; d += 4)
     {
         uint8 t = d[0];
 
@@ -101,7 +101,7 @@ _SwapRB8(void* data, uint32 size)
 inline void
 _SwapRB4(void* data, uint32 size)
 {
-    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 2)
+    for (uint8 *d = static_cast<uint8 *>(data), *d_end = static_cast<uint8 *>(data) + size; d != d_end; d += 2)
     {
         uint8 t0 = d[0];
         uint8 t1 = d[1];
@@ -116,7 +116,7 @@ _SwapRB4(void* data, uint32 size)
 inline void
 _SwapRB5551(void* data, uint32 size)
 {
-    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 2)
+    for (uint8 *d = static_cast<uint8 *>(data), *d_end = static_cast<uint8 *>(data) + size; d != d_end; d += 2)
     {
         uint8 t0 = d[0];
         uint8 t1 = d[1];

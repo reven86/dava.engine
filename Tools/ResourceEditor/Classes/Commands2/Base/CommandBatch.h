@@ -26,31 +26,59 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#ifndef __COMMAND_BATCH_H__
+#define __COMMAND_BATCH_H__
 
-#include "FileSystem/LocalizationWinUAP.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "Platform/DeviceInfo.h"
+#include "Base/BaseTypes.h"
 
-namespace DAVA
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandNotify.h"
+
+class CommandBatch final : public Command2
 {
-void LocalizationWinUAP::SelectPreferedLocalization()
-{
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
+public:
+    CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
 
-String LocalizationWinUAP::GetDeviceLang(void)
-{
-    String locale = DeviceInfo::GetLocale();
-    String::size_type posEnd = locale.find('-', 2);
-    if (String::npos != posEnd)
-    {
-        locale = locale.substr(0, posEnd);
-    }
-    return locale;
-}
+    void Undo() override;
+    void Redo() override;
+
+    DAVA_DEPRECATED(DAVA::Entity* GetEntity() const override);
+
+    void AddAndExec(Command2::Pointer&& command);
+    void RemoveCommands(DAVA::int32 commandId);
+
+    bool Empty() const;
+    DAVA::uint32 Size() const;
+
+    Command2* GetCommand(DAVA::uint32 index) const;
+
+    bool MatchCommandID(DAVA::int32 commandID) const override;
+    bool MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const override;
+
+    bool IsMultiCommandBatch() const;
+
+protected:
+    using CommandsContainer = DAVA::Vector<Command2::Pointer>;
+    CommandsContainer commandList;
+
+    DAVA::UnorderedSet<DAVA::int32> commandIDs;
 };
 
-#endif // __DAVAENGINE_WIN_UAP__
+inline bool CommandBatch::Empty() const
+{
+    return commandList.empty();
+}
+
+inline DAVA::uint32 CommandBatch::Size() const
+{
+    return static_cast<DAVA::uint32>(commandList.size());
+}
+
+inline bool CommandBatch::IsMultiCommandBatch() const
+{
+    return (commandIDs.size() > 1);
+}
+
+
+#endif // __COMMAND_BATCH_H__

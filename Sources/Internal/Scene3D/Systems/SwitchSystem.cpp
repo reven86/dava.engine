@@ -55,7 +55,7 @@ void SwitchSystem::Process(float32 timeElapsed)
     for (it = updatableEntities.begin(); it != itEnd; ++it)
     {
         Entity* entity = *it;
-        SwitchComponent* sw = (SwitchComponent*)entity->GetComponent(Component::SWITCH_COMPONENT);
+        SwitchComponent* sw = static_cast<SwitchComponent*>(entity->GetComponent(Component::SWITCH_COMPONENT));
 
         if (sw->oldSwitchIndex != sw->newSwitchIndex)
         {

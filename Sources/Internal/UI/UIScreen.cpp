@@ -104,8 +104,8 @@ void UIScreen::FillScreenBorders(const UIGeometricData& geometricData)
 
     Rect drawRect = drawData.GetUnrotatedRect();
     Rect fullRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-    Vector2 virtualSize = Vector2((float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                                  (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+    Vector2 virtualSize = Vector2(static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx),
+                                  static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy));
     if (fullRect.x < 0)
     {
         auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);
