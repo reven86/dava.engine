@@ -68,6 +68,7 @@ class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
 class EditorLODSystem;
+class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
 
@@ -111,7 +112,8 @@ public:
     OwnersSignatureSystem* ownersSignatureSystem;
     StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
     EditorMaterialSystem* materialSystem;
-    EditorLODSystem* editorLODSystem;
+    EditorLODSystem* editorLODSystem = nullptr;
+    EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
