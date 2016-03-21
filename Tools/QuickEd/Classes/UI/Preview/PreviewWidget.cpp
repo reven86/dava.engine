@@ -75,12 +75,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
-#ifdef __DAVAENGINE_DEBUG__
-    , updateInterval(800)
-#else
-    , updateInterval(300)
-#endif //__DAVAENGINE_DEBUG__
-    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, updateInterval))
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f

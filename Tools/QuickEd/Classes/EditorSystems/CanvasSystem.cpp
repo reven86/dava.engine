@@ -293,7 +293,7 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
 
 bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property) const
 {
-    if (property == nullptr)
+    if (property == nullptr) //canvas system can send nullptr property to make force update
     {
         return true;
     }
@@ -338,7 +338,10 @@ void CanvasSystem::OnTransformStateChanged(bool inTransformState_)
     {
         for (auto& node : transformedNodes)
         {
-            ControlPropertyWasChanged(node, nullptr);
+            for (auto& iter : gridControls)
+            {
+                iter->ControlPropertyWasChanged(node, nullptr);
+            }
         }
     }
 }
@@ -369,6 +372,9 @@ void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* des
 
 void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
+    DVASSERT(nullptr != node);
+    DVASSERT(nullptr != property);
+
     if (nullptr == controlsCanvas->GetParent()) //detached canvas
     {
         DVASSERT(false);

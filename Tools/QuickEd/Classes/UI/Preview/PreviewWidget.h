@@ -134,7 +134,6 @@ private:
     QAction* closeTabAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
-    const int updateInterval;
     ContinuousUpdater* continuousUpdater = nullptr;
     SelectedNodes selected, deselected;
 };
