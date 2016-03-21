@@ -134,17 +134,13 @@ void SpyWidgetInfo::updateInformation()
 {
     if (widget.isNull())
     {
-        auto textEditors = {
-            view->classNameText, view->objectNameText, view->objectPos, view->objectSize,
-        };
+        auto textEditors = { view->classNameText, view->objectNameText, view->objectPos, view->objectSize };
         for (auto w : textEditors)
         {
             w->setText(QString());
         }
 
-        auto checkBoxes = {
-            view->visibleState, view->modalState, view->mouseTrackState,
-        };
+        auto checkBoxes = { view->visibleState, view->modalState, view->mouseTrackState };
         for (auto w : checkBoxes)
         {
             w->setChecked(false);

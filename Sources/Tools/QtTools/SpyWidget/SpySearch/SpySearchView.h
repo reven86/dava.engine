@@ -40,10 +40,7 @@ POP_QT_WARNING_SUPRESSOR
 
 class QAbstractItemModel;
 
-class SpySearchView
-: public QWidget
-  ,
-  public Ui::SpySearchView
+class SpySearchView : public QWidget, public Ui::SpySearchView
 {
     PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
