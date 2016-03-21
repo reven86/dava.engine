@@ -39,12 +39,11 @@ ReadOnlyArchiveFile::~ReadOnlyArchiveFile()
 {
 }
 
-ReadOnlyArchiveFile* ReadOnlyArchiveFile::Create(const FilePath& filePath, ResourceArchive::ContentAndSize&& data)
+ReadOnlyArchiveFile* ReadOnlyArchiveFile::Create(const FilePath& filePath, Vector<char8>&& data)
 {
     auto file = new ReadOnlyArchiveFile();
     file->filePath_ = filePath;
-    file->data_.content = std::move(data.content);
-    file->data_.size = data.size;
+    file->data_ = std::move(data);
     return file;
 }
 
@@ -61,16 +60,16 @@ uint32 ReadOnlyArchiveFile::Write(const void* pointerToData, uint32 dataSize)
 
 uint32 ReadOnlyArchiveFile::Read(void* pointerToData, uint32 dataSize)
 {
-    if (pos_ + dataSize <= data_.size)
+    if (pos_ + dataSize <= data_.size())
     {
-        Memcpy(pointerToData, data_.content.get() + pos_, dataSize);
+        Memcpy(pointerToData, data_.data() + pos_, dataSize);
         pos_ += dataSize;
         return dataSize;
     }
     if (!IsEof())
     {
-        uint32 last = data_.size - pos_;
-        Memcpy(pointerToData, data_.content.get() + pos_, last);
+        uint32 last = static_cast<uint32>(data_.size() - pos_);
+        Memcpy(pointerToData, data_.data() + pos_, last);
         pos_ += last;
         return last;
     }
@@ -84,7 +83,7 @@ uint32 ReadOnlyArchiveFile::GetPos() const
 
 uint32 ReadOnlyArchiveFile::GetSize() const
 {
-    return data_.size;
+    return static_cast<uint32>(data_.size());
 }
 
 bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
@@ -93,7 +92,7 @@ bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
     {
     case SEEK_FROM_START:
     {
-        if (static_cast<uint32>(position) > data_.size)
+        if (static_cast<uint32>(position) > data_.size())
         {
             return false;
         }
@@ -102,8 +101,8 @@ bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
     }
     case SEEK_FROM_END:
     {
-        int32 newPos = static_cast<int32>(data_.size) + position;
-        if (static_cast<uint32>(newPos) > data_.size)
+        int32 newPos = static_cast<int32>(data_.size()) + position;
+        if (static_cast<uint32>(newPos) > data_.size())
         {
             return false;
         }
@@ -113,7 +112,7 @@ bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
     case SEEK_FROM_CURRENT:
     {
         uint32 newPos = pos_ + static_cast<uint32>(position);
-        if (newPos > data_.size)
+        if (newPos > data_.size())
         {
             return false;
         }
@@ -126,5 +125,5 @@ bool ReadOnlyArchiveFile::Seek(int32 position, uint32 seekType)
 
 bool ReadOnlyArchiveFile::IsEof() const
 {
-    return pos_ == data_.size;
+    return pos_ == data_.size();
 }

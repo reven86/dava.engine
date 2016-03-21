@@ -26,6 +26,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef COMPRESSION_LZ4_COMPRESSOR_H
+#define COMPRESSION_LZ4_COMPRESSOR_H
+
 #include "Compression/Compressor.h"
 
 namespace DAVA
@@ -43,4 +46,7 @@ class LZ4HCCompressor final : public LZ4Compressor
 public:
     bool Compress(const Vector<char8>& in, Vector<char8>& out) const override;
 };
-}
+
+} // end namespace DAVA
+
+#endif // COMPRESSION_LZ4_COMPRESSOR_H

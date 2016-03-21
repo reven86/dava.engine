@@ -52,7 +52,7 @@ bool ZipCompressor::Compress(const Vector<char8>& in, Vector<char8>& out) const
 
 bool ZipCompressor::Uncompress(const Vector<char8>& in, Vector<char8>& out) const
 {
-    if (in.size() > std::numeric_limits<int32>::max())
+    if (in.size() > static_cast<uint32>(std::numeric_limits<int32>::max()))
     {
         Logger::Error("too big input buffer for uncompress rfc1951");
         return false;
@@ -110,13 +110,13 @@ bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOrigin
         return false;
     }
     fileName = fileStat.m_filename;
-    fileOriginalSize = fileStat.m_uncomp_size;
-    fileCompressedSize = fileStat.m_comp_size;
+    fileOriginalSize = static_cast<uint32>(fileStat.m_uncomp_size);
+    fileCompressedSize = static_cast<uint32>(fileStat.m_comp_size);
     isDirectory = (mz_zip_reader_is_file_a_directory(&zipData->archive, fileIndex) != 0);
     return true;
 }
 
-bool ZipFile::LoadFile(const FilePath& fileName, Vector<int8>& fileContent) const
+bool ZipFile::LoadFile(const FilePath& fileName, Vector<char8>& fileContent) const
 {
     String name = fileName.GetStringValue();
 
@@ -136,7 +136,7 @@ bool ZipFile::LoadFile(const FilePath& fileName, Vector<int8>& fileContent) cons
 
     if (fileContent.size() != fileStat.m_uncomp_size)
     {
-        fileContent.resize(fileStat.m_uncomp_size);
+        fileContent.resize(static_cast<size_t>(fileStat.m_uncomp_size));
     }
 
     mz_bool result = mz_zip_reader_extract_file_to_mem(&zipData->archive, name.c_str(), fileContent.data(), fileContent.size(), 0);

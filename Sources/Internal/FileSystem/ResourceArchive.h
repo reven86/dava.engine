@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_RESOURCE_ARCHIVE_H__
-#define __DAVAENGINE_RESOURCE_ARCHIVE_H__
+#ifndef DAVAENGINE_RESOURCE_ARCHIVE_H
+#define DAVAENGINE_RESOURCE_ARCHIVE_H
 
 #include "Base/BaseObject.h"
 #include "Compression/Compressor.h"
@@ -40,6 +40,7 @@ class ResourceArchive final
 {
 public:
     explicit ResourceArchive(const FilePath& archiveName);
+    ~ResourceArchive();
 
     struct FileInfo
     {
@@ -55,7 +56,7 @@ public:
     bool LoadFile(const String& fileName, Vector<char8>& outputFileContent) const;
 
     static bool CreatePack(const FilePath& pacName,
-                           const Vector<FilePath>& fileNames,
+                           const Vector<String>& fileNames,
                            void (*onPackOneFile)(const FileInfo&));
 
 private:

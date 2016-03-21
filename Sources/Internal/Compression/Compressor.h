@@ -25,6 +25,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#ifndef DAVAENGINE_COMPRESSOR_H
+#define DAVAENGINE_COMPRESSOR_H
 
 #include "Base/BaseTypes.h"
 
@@ -49,3 +51,5 @@ public:
 };
 
 } // end namespace DAVA
+
+#endif // DAVAENGINE_COMPRESSOR_H

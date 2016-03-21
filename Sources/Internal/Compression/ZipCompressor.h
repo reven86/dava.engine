@@ -26,6 +26,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef COMPRESSION_ZIP_COMPRESSOR_H
+#define COMPRESSION_ZIP_COMPRESSOR_H
+
 #include "Compression/Compressor.h"
 
 namespace DAVA
@@ -50,9 +53,11 @@ public:
     uint32 GetNumFiles() const;
     bool GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOriginalSize, uint32& fileCompressedSize, bool& isDirectory) const;
 
-    bool LoadFile(const FilePath& fileName, Vector<int8>& fileContent) const;
+    bool LoadFile(const FilePath& fileName, Vector<char8>& fileContent) const;
 
 private:
     std::unique_ptr<ZipPrivateData> zipData;
 };
-}
+} // end namespace DAVA
+
+#endif // COMPRESSION_ZIP_COMPRESSOR_H

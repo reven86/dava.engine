@@ -80,14 +80,12 @@ void CollectAllFilesInDirectory(const String& pathDirName,
     }
 }
 
-ResourceArchive::CompressionType ToPackType(
-const String& value,
-ResourceArchive::CompressionType defaultVal)
+Compressor::Type ToPackType(const String& value, Compressor::Type defaultVal)
 {
-    const Vector<std::pair<String, ResourceArchive::CompressionType>>
-    packTypes = { { "lz4", ResourceArchive::CompressionType::Lz4 },
-                  { "lz4hc", ResourceArchive::CompressionType::Lz4HC },
-                  { "none", ResourceArchive::CompressionType::None } };
+    const Vector<std::pair<String, Compressor::Type>>
+    packTypes = { { "lz4", Compressor::Type::Lz4 },
+                  { "lz4hc", Compressor::Type::Lz4HC },
+                  { "none", Compressor::Type::None } };
     for (auto& pair : packTypes)
     {
         if (pair.first == value)
@@ -100,7 +98,7 @@ ResourceArchive::CompressionType defaultVal)
     return defaultVal;
 }
 
-String ToString(ResourceArchive::CompressionType packType)
+String ToString(Compressor::Type packType)
 {
     static const Vector<const char*> packTypes = { "none", "lz4", "lz4hc", "rfc1951" };
 
@@ -111,7 +109,7 @@ String ToString(ResourceArchive::CompressionType packType)
 
 void OnOneFilePacked(const ResourceArchive::FileInfo& info)
 {
-    std::cout << "packing file: " << info.name
+    std::cout << "packing file: " << info.fileName
               << " compressed: " << info.compressedSize
               << " original: " << info.originalSize
               << " packingType: " << ToString(info.compressionType) << '\n';
@@ -119,7 +117,6 @@ void OnOneFilePacked(const ResourceArchive::FileInfo& info)
 
 int PackDirectory(const String& dir,
                   const String& pakfileName,
-                  const ResourceArchive::Rules& compressionRules,
                   bool includeHidden)
 {
     std::cout << "===================================================\n"
@@ -164,8 +161,7 @@ int PackDirectory(const String& dir,
     std::stable_sort(begin(files), end(files));
 
     std::cout << "start packing...\n";
-    if (ResourceArchive::CreatePack(absPathPack.GetAbsolutePathname(), files,
-                                    compressionRules, OnOneFilePacked))
+    if (ResourceArchive::CreatePack(absPathPack.GetAbsolutePathname(), files, OnOneFilePacked))
     {
         std::cout << "Success!\n";
         return EXIT_SUCCESS;
@@ -177,39 +173,16 @@ int PackDirectory(const String& dir,
     }
 }
 
-bool ParsePackRules(const ProgramOptions& packOptions,
-                    const ResourceArchive::CompressionType defaultPackTypa,
-                    ResourceArchive::Rules& outputRules)
-{
-    for (uint32 i = 0; i < packOptions.GetOptionValuesCount("--rule"); ++i)
-    {
-        VariantType option = packOptions.GetOption("--rule", i);
-        String str = option.AsString();
-        size_t dotPos = str.find('.');
-        if (dotPos == String::npos)
-        {
-            std::cerr << "incorrect option: " << str << '\n';
-            return false;
-        }
-        String ext = str.substr(0, dotPos);
-        String compressionType = str.substr(dotPos + 1);
-        ResourceArchive::CompressionType packType =
-        ToPackType(compressionType, defaultPackTypa);
-        outputRules.push_back({ ext, packType });
-    }
-    return true;
-}
-
 bool UnpackFile(const ResourceArchive& ra,
                 const ResourceArchive::FileInfo& fileInfo)
 {
-    ResourceArchive::ContentAndSize file;
-    if (!ra.LoadFile(fileInfo.name, file))
+    Vector<char8> file;
+    if (!ra.LoadFile(fileInfo.fileName, file))
     {
-        std::cerr << "can't load file: " << fileInfo.name << " from archive\n";
+        std::cerr << "can't load file: " << fileInfo.fileName << " from archive\n";
         return false;
     }
-    String filePath(fileInfo.name);
+    String filePath(fileInfo.fileName);
     FilePath fullPath = filePath;
     FilePath dirPath = fullPath.GetDirectory();
     FileSystem::eCreateDirectoryResult result =
@@ -223,13 +196,13 @@ bool UnpackFile(const ResourceArchive& ra,
     RefPtr<File> f(File::Create(fullPath, File::CREATE | File::WRITE));
     if (!f)
     {
-        std::cerr << "can't create file: " << fileInfo.name << '\n';
+        std::cerr << "can't create file: " << fileInfo.fileName << '\n';
         return false;
     }
-    uint32 writeOk = f->Write(file.content.get(), file.size);
-    if (writeOk < file.size)
+    uint32 writeOk = f->Write(file.data(), file.size());
+    if (writeOk < file.size())
     {
-        std::cerr << "can't write into file: " << fileInfo.name << '\n';
+        std::cerr << "can't write into file: " << fileInfo.fileName << '\n';
         return false;
     }
     return true;
@@ -258,12 +231,16 @@ int UnpackToDirectory(const String& pak, const String& dir)
         return EXIT_FAILURE;
     }
 
-    RefPtr<ResourceArchive> ra(new ResourceArchive());
-
     String absPathPackFile = cwd + pak;
-    if (!ra->Open(absPathPackFile))
+    RefPtr<ResourceArchive> ra;
+
+    try
     {
-        std::cerr << "can't open archive: " << absPathPackFile << '\n';
+        ra.Set(new ResourceArchive(absPathPackFile));
+    }
+    catch (std::exception& ex)
+    {
+        std::cerr << "can't open archive: " << ex.what() << '\n';
         return EXIT_FAILURE;
     }
 
@@ -291,15 +268,19 @@ int ListContent(const String& pakfile)
         std::cerr << "can't create FileSystem\n";
         return EXIT_FAILURE;
     }
-    RefPtr<ResourceArchive> ra(new ResourceArchive());
-    if (!ra->Open(pakfile))
+    RefPtr<ResourceArchive> ra;
+    try
+    {
+        ra.Set(new ResourceArchive(pakfile));
+    }
+    catch (...)
     {
         return EXIT_FAILURE;
     }
 
     for (auto& info : ra->GetFilesInfo())
     {
-        std::cout << info.name << " compressed: " << info.compressedSize
+        std::cout << info.fileName << " compressed: " << info.compressedSize
                   << " original: " << info.originalSize
                   << " type: " << ToString(info.compressionType) << '\n';
     }
@@ -331,23 +312,14 @@ int main(int argc, char* argv[])
     if (packOptions.Parse(argc, argv))
     {
         String compression = packOptions.GetOption("--compression").AsString();
-        ResourceArchive::CompressionType defaultPackTypa =
-        ToPackType(compression, ResourceArchive::CompressionType::Lz4HC);
-
-        ResourceArchive::Rules compressionRules;
-
-        if (!ParsePackRules(packOptions, defaultPackTypa, compressionRules))
-        {
-            std::cerr << "can't parse packing rules\n";
-            return EXIT_FAILURE;
-        }
+        Compressor::Type defaultPackTypa =
+        ToPackType(compression, Compressor::Type::Lz4HC);
 
         auto dirName = packOptions.GetArgument("directory");
         auto pakFile = packOptions.GetArgument("pakfile");
         auto addHidden = packOptions.GetOption("--add_hidden").AsString();
 
-        return PackDirectory(dirName, pakFile, compressionRules,
-                             addHidden == "true");
+        return PackDirectory(dirName, pakFile, addHidden == "true");
     }
 
     if (unpackOptions.Parse(argc, argv))

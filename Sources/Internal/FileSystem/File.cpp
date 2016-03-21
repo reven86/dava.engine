@@ -76,7 +76,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         {
             FileSystem::ResourceArchiveItem& item = ai;
 
-            ResourceArchive::ContentAndSize contentAndSize;
+            Vector<char8> contentAndSize;
             if (item.archive->LoadFile(relative, contentAndSize))
             {
                 return ReadOnlyArchiveFile::Create(filename, std::move(contentAndSize));

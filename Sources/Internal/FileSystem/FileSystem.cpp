@@ -70,15 +70,14 @@ FileSystem::FileSystem()
 
 FileSystem::~FileSystem()
 {
-    for (List<ResourceArchiveItem>::iterator ai = resourceArchiveList.begin();
-         ai != resourceArchiveList.end(); ++ai)
+    for (auto& archive : resourceArchiveList)
     {
-        ResourceArchiveItem& item = *ai;
-        SafeRelease(item.archive);
+        delete archive.archive;
+        archive.archive = nullptr;
     }
     resourceArchiveList.clear();
 
-    // All locked files should be explicitely unlocked before closing the app.
+    // All locked files should be explicitly unlocked before closing the app.
     DVASSERT(lockedFileHandles.empty());
 }
 
@@ -742,25 +741,25 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 String FileSystem::ReadFileContents(const FilePath& pathname)
 {
     String fileContents;
-    File* fp = File::Create(pathname, File::OPEN | File::READ);
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
     if (!fp)
     {
         Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
-        return 0;
     }
-    uint32 fileSize = fp->GetSize();
-
-    fileContents.resize(fileSize);
-
-    uint32 dataRead = fp->Read(&fileContents[0], fileSize);
-
-    if (dataRead != fileSize)
+    else
     {
-        Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
-        return 0;
-    }
+        uint32 fileSize = fp->GetSize();
 
-    SafeRelease(fp);
+        fileContents.resize(fileSize);
+
+        uint32 dataRead = fp->Read(&fileContents[0], fileSize);
+
+        if (dataRead != fileSize)
+        {
+            Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+            fileContents.clear();
+        }
+    }
     return fileContents;
 }
 
@@ -790,17 +789,9 @@ void FileSystem::AttachArchive(const String& archiveName, const String& attachPa
 {
     DVASSERT(!attachPath.empty());
 
-    ResourceArchive* resourceArchive = new ResourceArchive();
-
-    if (!resourceArchive->Open(archiveName))
-    {
-        SafeRelease(resourceArchive);
-        resourceArchive = nullptr;
-        return;
-    }
     ResourceArchiveItem item;
     item.attachPath = attachPath;
-    item.archive = resourceArchive;
+    item.archive = new ResourceArchive(archiveName);
     resourceArchiveList.push_back(item);
 }
 

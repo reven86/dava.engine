@@ -26,38 +26,23 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAENGINE_READ_ONLY_ARCHIVE_FILE_H__
-#define DAVAENGINE_READ_ONLY_ARCHIVE_FILE_H__
+#ifndef FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
+#define FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/File.h"
 #include "FileSystem/ResourceArchive.h"
 
 namespace DAVA
 {
-class ReadOnlyArchiveFile : public File
+class ResourceArchiveImpl
 {
-protected:
-    ReadOnlyArchiveFile();
-    ~ReadOnlyArchiveFile() override;
-
 public:
-    static ReadOnlyArchiveFile* Create(const FilePath& filePath, Vector<char8>&& data);
+    virtual ~ResourceArchiveImpl() = default;
 
-    const FilePath& GetFilename() override;
-
-    uint32 Write(const void* pointerToData, uint32 dataSize) override;
-    uint32 Read(void* pointerToData, uint32 dataSize) override;
-    uint32 GetPos() const override;
-    uint32 GetSize() const override;
-    bool Seek(int32 position, uint32 seekType) override;
-    bool IsEof() const override;
-
-private:
-    Vector<char8> data_;
-    uint32 pos_;
-    FilePath filePath_;
+    virtual const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const = 0;
+    virtual const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const = 0;
+    virtual bool HasFile(const String& fileName) const = 0;
+    virtual bool LoadFile(const String& fileName, Vector<char8>& output) const = 0;
 };
-};
+} // end namespace DAVA
 
-#endif
+#endif // FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H

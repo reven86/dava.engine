@@ -26,38 +26,31 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAENGINE_READ_ONLY_ARCHIVE_FILE_H__
-#define DAVAENGINE_READ_ONLY_ARCHIVE_FILE_H__
+#ifndef FILE_SYSTEM_ZIP_ARCHIVE_H
+#define FILE_SYSTEM_ZIP_ARCHIVE_H
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/File.h"
-#include "FileSystem/ResourceArchive.h"
+#include "FileSystem/ResourceArchivePrivate.h"
+#include "Compression/ZipCompressor.h"
 
 namespace DAVA
 {
-class ReadOnlyArchiveFile : public File
+class ZipArchive : public ResourceArchiveImpl
 {
-protected:
-    ReadOnlyArchiveFile();
-    ~ReadOnlyArchiveFile() override;
-
 public:
-    static ReadOnlyArchiveFile* Create(const FilePath& filePath, Vector<char8>&& data);
+    ZipArchive(const FilePath& archiveName);
+    ~ZipArchive() override;
 
-    const FilePath& GetFilename() override;
-
-    uint32 Write(const void* pointerToData, uint32 dataSize) override;
-    uint32 Read(void* pointerToData, uint32 dataSize) override;
-    uint32 GetPos() const override;
-    uint32 GetSize() const override;
-    bool Seek(int32 position, uint32 seekType) override;
-    bool IsEof() const override;
+    const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
+    const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const override;
+    bool HasFile(const String& fileName) const override;
+    bool LoadFile(const String& fileName, Vector<char8>& output) const override;
 
 private:
-    Vector<char8> data_;
-    uint32 pos_;
-    FilePath filePath_;
-};
+    ZipFile zipFile;
+    Vector<ResourceArchive::FileInfo> fileInfos;
+    Vector<String> fileNames;
 };
 
-#endif
+} // end namespace DAVA
+
+#endif // FILE_SYSTEM_ZIP_ARCHIVE_H
