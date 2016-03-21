@@ -1254,8 +1254,11 @@ void WebViewControl::CleanData()
 
     if (browserWindow != 0)
     {
+        HWND parent = ::GetParent(browserWindow);
         ::DestroyWindow(browserWindow);
         browserWindow = 0;
+        
+        ::SetFocus(parent);
     }
 
     SafeDelete(browserContainer);
