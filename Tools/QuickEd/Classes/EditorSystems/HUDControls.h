@@ -140,14 +140,7 @@ T* CreateContainerWithBorders()
     return t;
 }
 
-class HUDMagnetLineControl final : public DAVA::UIControl
-{
-public:
-    HUDMagnetLineControl(const DAVA::Rect& rect = DAVA::Rect());
-
-private:
-    ~HUDMagnetLineControl() override = default;
-};
+extern UIControl* CreateHUDMagnetLineControl(const Rect& rect);
 
 class HUDMagnetRect final : public DAVA::UIControl
 {

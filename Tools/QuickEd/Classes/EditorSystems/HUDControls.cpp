@@ -286,12 +286,13 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
     UIControl::Draw(geometricData);
 }
 
-HUDMagnetLineControl::HUDMagnetLineControl(const Rect& rect)
-    : UIControl(rect)
+UIControl* CreateHUDMagnetLineControl(const Rect& rect)
 {
-    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
-    background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
-    background->SetDrawType(UIControlBackground::DRAW_TILED);
+    UIControl* control = new UIControl(rect);
+    control->GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    control->GetBackground()->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+    control->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
+    return control;
 }
 
 HUDMagnetRect::HUDMagnetRect(const Rect& rect)
@@ -302,7 +303,7 @@ HUDMagnetRect::HUDMagnetRect(const Rect& rect)
     for (int i = 0; i < bordersCount; ++i)
     {
         Rect subRect = FrameControl::CreateFrameBorderRect(i, innerRect);
-        ScopedPtr<UIControl> control(new HUDMagnetLineControl(subRect));
+        ScopedPtr<UIControl> control(CreateHUDMagnetLineControl(subRect));
         control->SetName(FastName(String("border of magnet rect")));
         AddControl(control);
     }

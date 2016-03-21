@@ -323,7 +323,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         lineSize[line.axis] *= gd->scale[line.axis];
         Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
-        RefPtr<UIControl> lineControl(new HUDMagnetLineControl(Rect(linePos + gdPos, lineSize)));
+        RefPtr<UIControl> lineControl(CreateHUDMagnetLineControl(Rect(linePos + gdPos, lineSize)));
         lineControl->SetName(FastName("magnet line control"));
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         lineControl->SetSize(lineControl->GetSize() + extraSize);
