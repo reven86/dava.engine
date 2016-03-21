@@ -2042,8 +2042,8 @@
 		9A011C77BA90F38DCDB7F4E6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
 		A6B5D95F185600050011D172 /* IntrospectionDynamic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */; };
 		A6B5D960185600050011D172 /* IntrospectionDynamic.h in Headers */ = {isa = PBXBuildFile; fileRef = A6B5D95E185600050011D172 /* IntrospectionDynamic.h */; };
-		B70DDD221C982FE6004516A8 /* libicucommon_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B70DDD211C982FE6004516A8 /* libicucommon_ios.a */; };
-		B70DDD231C982FF8004516A8 /* libicucommon_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B70DDD211C982FE6004516A8 /* libicucommon_ios.a */; };
+		B74F1C1D1C9FF41900C4CC2B /* libicucommon_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */; };
+		B74F1C1E1C9FF42A00C4CC2B /* libicucommon_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */; };
 		B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
 		B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
 		C7E76D4316DF6CC70041ED9A /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7E76D4216DF6CC70041ED9A /* liblua_ios.a */; };
@@ -3091,33 +3091,7 @@
 		9A0118E18AC6866222998E4C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IntrospectionDynamic.cpp; path = ../../Sources/Internal/Base/IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		A6B5D95E185600050011D172 /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IntrospectionDynamic.h; path = ../../Sources/Internal/Base/IntrospectionDynamic.h; sourceTree = "<group>"; };
-		B70DDD071C982FD1004516A8 /* libcrypto_macos_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto_macos_debug.a; sourceTree = "<group>"; };
-		B70DDD081C982FD1004516A8 /* libssl_macos_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libssl_macos_debug.a; sourceTree = "<group>"; };
-		B70DDD091C982FD1004516A8 /* libcrypto_macos_release.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto_macos_release.a; sourceTree = "<group>"; };
-		B70DDD0A1C982FD1004516A8 /* libcurl_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcurl_macos.a; sourceTree = "<group>"; };
-		B70DDD0B1C982FD1004516A8 /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libdxt_macos.a; sourceTree = "<group>"; };
-		B70DDD0C1C982FD1004516A8 /* libFColladaS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libFColladaS.a; sourceTree = "<group>"; };
-		B70DDD0D1C982FD1004516A8 /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libfmodevent.dylib; sourceTree = "<group>"; };
-		B70DDD0E1C982FD1004516A8 /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libfmodex.dylib; sourceTree = "<group>"; };
-		B70DDD0F1C982FD1004516A8 /* libfreetype_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfreetype_macos.a; sourceTree = "<group>"; };
-		B70DDD101C982FD1004516A8 /* libicucommon_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libicucommon_macos.a; sourceTree = "<group>"; };
-		B70DDD111C982FD1004516A8 /* libjpeg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libjpeg_macos.a; sourceTree = "<group>"; };
-		B70DDD121C982FD1004516A8 /* liblua_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblua_macos.a; sourceTree = "<group>"; };
-		B70DDD131C982FD1004516A8 /* libmongodb_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmongodb_macos.a; sourceTree = "<group>"; };
-		B70DDD141C982FD1004516A8 /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libogg_macos.a; sourceTree = "<group>"; };
-		B70DDD151C982FD1004516A8 /* libpng_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpng_macos.a; sourceTree = "<group>"; };
-		B70DDD161C982FD1004516A8 /* libPVRTexLib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libPVRTexLib.a; sourceTree = "<group>"; };
-		B70DDD171C982FD1004516A8 /* libssl_macos_release.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libssl_macos_release.a; sourceTree = "<group>"; };
-		B70DDD181C982FD1004516A8 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
-		B70DDD191C982FD1004516A8 /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtheora_macos.a; sourceTree = "<group>"; };
-		B70DDD1A1C982FD1004516A8 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libunibreak_macos.a; sourceTree = "<group>"; };
-		B70DDD1B1C982FD1004516A8 /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libuv_macos.a; sourceTree = "<group>"; };
-		B70DDD1C1C982FD1004516A8 /* libvorbis_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvorbis_macos.a; sourceTree = "<group>"; };
-		B70DDD1D1C982FD1004516A8 /* libvorbisfile_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvorbisfile_macos.a; sourceTree = "<group>"; };
-		B70DDD1E1C982FD1004516A8 /* libwebp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwebp.a; sourceTree = "<group>"; };
-		B70DDD1F1C982FD1004516A8 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libxml_macos.a; sourceTree = "<group>"; };
-		B70DDD201C982FD1004516A8 /* libyaml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libyaml_macos.a; sourceTree = "<group>"; };
-		B70DDD211C982FE6004516A8 /* libicucommon_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libicucommon_ios.a; path = ../../Libs/lib_CMake/ios/libicucommon_ios.a; sourceTree = "<group>"; };
+		B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libicucommon_ios.a; path = ../../Libs/lib_CMake/ios/libicucommon_ios.a; sourceTree = "<group>"; };
 		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
 		C7E76D4216DF6CC70041ED9A /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
 		CC677BA4197D46390089547A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -3164,7 +3138,7 @@
 				02FD82021924997C007762C0 /* libyaml_ios.a in Frameworks */,
 				02FD82031924997C007762C0 /* libpng_ios.a in Frameworks */,
 				02FD82051924997C007762C0 /* libfreetype_ios.a in Frameworks */,
-				B70DDD231C982FF8004516A8 /* libicucommon_ios.a in Frameworks */,
+				B74F1C1E1C9FF42A00C4CC2B /* libicucommon_ios.a in Frameworks */,
 				02FD82061924997C007762C0 /* GameController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3173,7 +3147,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B70DDD221C982FE6004516A8 /* libicucommon_ios.a in Frameworks */,
+				B74F1C1D1C9FF41900C4CC2B /* libicucommon_ios.a in Frameworks */,
 				B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */,
 				8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */,
 				CC677BA5197D46390089547A /* SystemConfiguration.framework in Frameworks */,
@@ -4702,10 +4676,10 @@
 				0224B7311598AC2800CDEF9E /* libtheora_ios.a */,
 				0224B7321598AC2800CDEF9E /* libtheora_macos.a */,
 				5C0105D11577993400E0B939 /* libmongodb_ios.a */,
-				B70DDD211C982FE6004516A8 /* libicucommon_ios.a */,
 				5C97964514E3E75000FFFA14 /* libxml_ios.a */,
 				5C97964614E3E75000FFFA14 /* libyaml_ios.a */,
 				5C77ABBE14C7703800E92D28 /* libpng_ios.a */,
+				B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */,
 				B78601471A08EAD40041F817 /* libunibreak_ios.a */,
 				FECFB1D912E5904400C71562 /* External */,
 				FECFB32D12E5904400C71562 /* Internal */,
@@ -4719,7 +4693,6 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				B70DDD051C982FD1004516A8 /* mac */,
 				72C84EB51B29C98B003A52E0 /* libwebp_ios.a */,
 				50194DD01A52D94B00557DAB /* libuv_ios.a */,
 				CC677BA4197D46390089547A /* SystemConfiguration.framework */,
@@ -4775,23 +4748,6 @@
 				7CB7B58D1C75D61A009E7010 /* ProgramOptions.h */,
 			);
 			path = CommandLine;
-			sourceTree = "<group>";
-		};
-				B70DDD1E1C982FD1004516A8 /* libwebp.a */,
-				B70DDD1F1C982FD1004516A8 /* libxml_macos.a */,
-				B70DDD201C982FD1004516A8 /* libyaml_macos.a */,
-			);
-			name = mac;
-			path = ../../Libs/lib_CMake/mac;
-			sourceTree = "<group>";
-		};
-		B70DDD061C982FD1004516A8 /* D */ = {
-			isa = PBXGroup;
-			children = (
-				B70DDD071C982FD1004516A8 /* libcrypto_macos_debug.a */,
-				B70DDD081C982FD1004516A8 /* libssl_macos_debug.a */,
-			);
-			path = D;
 			sourceTree = "<group>";
 		};
 		D7660D1E1C4D071100E81868 /* Apple */ = {
@@ -5739,7 +5695,6 @@
 				02E7C6A91BD624A6002F026D /* ObjectCreator.h in Headers */,
 				02E7CD771BD624A7002F026D /* ParticleEffectSystem.h in Headers */,
 				7C41FCDE1C774EBF00B61435 /* TeamCityTestsOutput.h in Headers */,
-				02E7CD271BD624A7002F026D /* SceneFile.h in Headers */,
 				02E7CC9D1BD624A7002F026D /* DebugRenderComponent.h in Headers */,
 				02E7C88F1BD624A7002F026D /* NetController.h in Headers */,
 				02E7C6171BD624A6002F026D /* AutotestingDB.h in Headers */,
@@ -6246,7 +6201,6 @@
 				02E7C68C1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F71BD6248E002F026D /* CRC32.cpp in Sources */,
 				7C41FCDD1C774EBF00B61435 /* TeamCityTestsOutput.cpp in Sources */,
-				02E7CDAA1BD624A7002F026D /* UserNode.cpp in Sources */,
 				02E7C8701BD624A7002F026D /* NetConfig.cpp in Sources */,
 				02E7CECE1BD624A7002F026D /* UISpinner.cpp in Sources */,
 				02E7CACC1BD624A7002F026D /* RenderBatch.cpp in Sources */,
@@ -6489,7 +6443,6 @@
 			files = (
 				02E7CCBB1BD624A7002F026D /* SpeedTreeComponent.cpp in Sources */,
 				7C41FCD81C774EBF00B61435 /* TeamcityOutput.cpp in Sources */,
-				02E7CD391BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */,
 				02E7C8591BD624A7002F026D /* TCPAcceptor.cpp in Sources */,
 				02E7CB151BD624A7002F026D /* VegetationRenderData.cpp in Sources */,
 				02E7C10C1BD6248E002F026D /* UTF8Utils.cpp in Sources */,
