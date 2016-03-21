@@ -33,8 +33,8 @@ Item {
                 text: qsTr("run cmake")
                 enabled: textField_output.text.length !== 0 && outputComplete
                 onClicked: {
-                    processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))
                     cmakeLaunched();
+                    processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))
                 }
             }
             CheckBox {

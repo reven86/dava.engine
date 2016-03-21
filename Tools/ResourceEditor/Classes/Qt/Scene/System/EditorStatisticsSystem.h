@@ -27,68 +27,71 @@
 =====================================================================================*/
 
 
-#ifndef __DISTANCE_SLIDER_H__
-#define __DISTANCE_SLIDER_H__
+#ifndef __EDITOR_STATISTICS_SYSTEM_V2_H__
+#define __EDITOR_STATISTICS_SYSTEM_V2_H__
 
-#include "Base/BaseTypes.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Entity/SceneSystem.h"
+#include "Scene/SceneTypes.h"
 
-#include <QWidget>
-
-class QSplitter;
-class QFrame;
-
-class LazyUpdater;
-
-class DistanceSlider : public QWidget
+namespace DAVA
 {
-    Q_OBJECT
+class Entity;
+class RenderComponent;
+}
+
+class EditorStatisticsSystemUIDelegate;
+struct TrianglesData;
+
+class EditorStatisticsSystem : public DAVA::SceneSystem
+{
+    enum eStatisticsSystemFlag : DAVA::uint32
+    {
+        FLAG_TRIANGLES = 1 << 0,
+
+        FLAG_NONE = 0
+    };
 
 public:
-    DistanceSlider(QWidget* parent = 0);
+    static const DAVA::int32 INDEX_OF_ALL_LODS_TRIANGLES = 0;
+    static const DAVA::int32 INDEX_OF_FIRST_LOD_TRIANGLES = 1;
 
-    void SetFramesCount(DAVA::uint32 count);
-    DAVA::uint32 GetFramesCount() const;
+    EditorStatisticsSystem(DAVA::Scene* scene);
 
-    void SetLayersCount(DAVA::uint32 count);
-    DAVA::uint32 GetLayersCount() const;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+    void AddComponent(DAVA::Entity* entity, DAVA::Component* component);
+    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component);
 
-    void SetDistances(const DAVA::Vector<DAVA::float32>& distances);
-    const DAVA::Vector<DAVA::float32>& GetDistances() const;
+    void Process(DAVA::float32 timeElapsed) override;
 
-signals:
-    void DistanceHandleMoved();
-    void DistanceHandleReleased();
+    const DAVA::Vector<DAVA::uint32>& GetTriangles(eEditorMode mode, bool allTriangles) const;
 
-protected slots:
-    void SplitterMoved(int pos, int index);
-
-protected:
-    bool eventFilter(QObject* obj, QEvent* e) override;
+    void AddDelegate(EditorStatisticsSystemUIDelegate* uiDelegate);
+    void RemoveDelegate(EditorStatisticsSystemUIDelegate* uiDelegate);
 
 private:
-    DAVA::float32 GetScaleSize() const;
-    void BuildUIFromDistances();
+    void CalculateTriangles();
+
+    //signals
+    void EmitInvalidateUI(DAVA::uint32 flags);
+    void DispatchSignals();
+    //signals
 
 private:
-    QSplitter* splitter = nullptr;
-    DAVA::Vector<QObject*> splitterHandles;
+    DAVA::Vector<TrianglesData> triangles;
 
-    DAVA::Vector<QFrame*> frames;
-    DAVA::Vector<DAVA::float32> realDistances;
-
-    DAVA::uint32 layersCount = 0;
-    DAVA::uint32 framesCount = 0;
+    DAVA::Vector<EditorStatisticsSystemUIDelegate*> uiDelegates;
+    DAVA::uint32 invalidateUIflag = FLAG_NONE;
 };
 
-inline DAVA::uint32 DistanceSlider::GetLayersCount() const
+class EditorStatisticsSystemUIDelegate
 {
-    return layersCount;
-}
+public:
+    virtual ~EditorStatisticsSystemUIDelegate() = default;
 
-inline DAVA::uint32 DistanceSlider::GetFramesCount() const
-{
-    return framesCount;
-}
+    virtual void UpdateTrianglesUI(EditorStatisticsSystem* forSystem){};
+};
 
-#endif // __DISTANCE_SLIDER_H__
+
+
+#endif // __SCENE_LOD_SYSTEM_V2_H__
