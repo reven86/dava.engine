@@ -27,25 +27,33 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__COMMANDACTION__
-#define __RESOURCEEDITORQT__COMMANDACTION__
+#ifndef __GUARDS_H__
+#define __GUARDS_H__
 
-#include "Command2.h"
+#include "Debug/DVAssert.h"
+#include <QObject>
 
-class CommandAction : public Command2
+namespace Guard
+{
+class ScopedBoolGuard final
 {
 public:
-    CommandAction(int _id, const DAVA::String& _text = "");
-    virtual ~CommandAction();
+    ScopedBoolGuard(bool& value, bool newValue)
+        : guardedValue(value)
+        , oldValue(value)
+    {
+        guardedValue = newValue;
+    }
+    ~ScopedBoolGuard()
+    {
+        guardedValue = oldValue;
+    };
 
-    bool CanUndo() const override;
-    void Undo() override;
-    DAVA::Entity* GetEntity() const override;
+private:
+    bool& guardedValue;
+    const bool oldValue;
 };
-
-inline bool CommandAction::CanUndo() const
-{
-    return false;
 }
 
-#endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
+
+#endif // __GUARDS_H__

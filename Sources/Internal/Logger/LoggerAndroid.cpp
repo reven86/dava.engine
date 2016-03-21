@@ -27,53 +27,72 @@
 =====================================================================================*/
 
 
-#include "Commands2/Command2.h"
+#include "Logger/Logger.h"
 
-Command2::Command2(int _id, const DAVA::String& _text)
-    : id(_id)
-    , text(_text)
-{
-}
+#if defined(__DAVAENGINE_ANDROID__)
 
-bool Command2::MergeWith(const Command2* command)
-{
-    return false;
-}
+#include <stdarg.h>
+#include <android/log.h>
+#include "Utils/StringFormat.h"
 
-int Command2::GetId() const
+namespace DAVA
 {
-    return id;
-}
+static DAVA::String androidLogTag = "";
 
-DAVA::String Command2::GetText() const
+int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 {
-    return text;
-}
-
-void Command2::SetText(const DAVA::String& _text)
-{
-    text = _text;
-}
-
-void Command2::UndoInternalCommand(Command2* command)
-{
-    if (NULL != command)
+    int32 androidLL = ANDROID_LOG_DEFAULT;
+    switch (ll)
     {
-        command->Undo();
-        EmitNotify(command, false);
+    case Logger::LEVEL_FRAMEWORK:
+    case Logger::LEVEL_DEBUG:
+        androidLL = ANDROID_LOG_DEBUG;
+        break;
+
+    case Logger::LEVEL_INFO:
+        androidLL = ANDROID_LOG_INFO;
+        break;
+
+    case Logger::LEVEL_WARNING:
+        androidLL = ANDROID_LOG_WARN;
+        break;
+
+    case Logger::LEVEL_ERROR:
+        androidLL = ANDROID_LOG_ERROR;
+        break;
+    default:
+        break;
     }
+
+    return androidLL;
 }
 
-void Command2::RedoInternalCommand(Command2* command)
+void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-    if (NULL != command)
+    size_t len = strlen(text);
+    // about limit on android: http://stackoverflow.com/questions/8888654/android-set-max-length-of-logcat-messages
+    const size_t limit{ 4000 };
+
+    char8* str = const_cast<char*>(text);
+
+    while (len > limit)
     {
-        command->Redo();
-        EmitNotify(command, true);
+        char8 lastChar = str[limit];
+        str[limit] = '\0';
+        __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
+        str[limit] = lastChar;
+        str += limit;
+        len -= limit;
     }
+
+    __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
 }
 
-void Command2::Execute()
+void Logger::SetTag(const char8* logTag)
 {
-    Redo();
+    androidLogTag = Format("%s", logTag);
 }
+
+} // end namespace DAVA
+
+#endif //#if defined(__DAVAENGINE_ANDROID__)

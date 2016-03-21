@@ -57,11 +57,11 @@ public:
     virtual ~WaveSystem();
 
     void ImmediateEvent(Component* component, uint32 event) override;
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
     Vector3 GetWaveDisturbance(const Vector3& inPosition) const;
 
-    virtual void HandleEvent(Observable* observable);
+    void HandleEvent(Observable* observable) override;
 
 protected:
     void ClearWaves();

@@ -30,7 +30,7 @@
 #include "Render/3D/StaticMesh.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/Scene.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Render/Shader.h"
 #include "Scene3D/SceneFileV2.h"
 
@@ -85,7 +85,7 @@ void StaticMesh::AddNode(DataNode* node)
 
 uint32 StaticMesh::GetPolygonGroupCount()
 {
-    return (uint32)children.size();
+    return uint32(children.size());
 }
 
 PolygonGroup* StaticMesh::GetPolygonGroup(uint32 index)

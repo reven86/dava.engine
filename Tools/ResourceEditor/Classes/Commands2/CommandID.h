@@ -30,7 +30,9 @@
 #ifndef __COMMAND_ID_H__
 #define __COMMAND_ID_H__
 
-enum CommandID
+#include "Base/BaseTypes.h"
+
+enum CommandID : DAVA::int32
 {
     CMDID_UNKNOWN = -1,
     CMDID_BATCH = 0,

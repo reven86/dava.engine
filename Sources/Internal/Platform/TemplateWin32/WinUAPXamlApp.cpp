@@ -42,7 +42,7 @@
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"
 #include "Platform/DeviceInfo.h"
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"

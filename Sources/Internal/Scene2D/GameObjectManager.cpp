@@ -28,7 +28,7 @@
 
 
 #include "Scene2D/GameObjectManager.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Collision/CollisionObject2.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"

@@ -32,7 +32,7 @@
     #include "../Common/rhi_Pool.h"
     #include "../Common/rhi_RingBuffer.h"
 
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
     #include "Debug/Profiler.h"
 
@@ -324,7 +324,8 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 
         ConstBuf* cb = ConstBufGLES2Pool::Get(handle);
 
-        if (!cb->Construct(prog, (void**)(&(cbufLastBoundData[bufIndex])), cbuf[bufIndex].location, cbuf[bufIndex].count))
+        void** data = const_cast<void**>(&cbufLastBoundData[bufIndex]);
+        if (!cb->Construct(prog, data, cbuf[bufIndex].location, cbuf[bufIndex].count))
         {
             ConstBufGLES2Pool::Free(handle);
             handle = InvalidHandle;
@@ -355,9 +356,9 @@ bool ProgGLES2::ConstBuf::Construct(uint32 prog, void** lastBoundData, unsigned 
     bool success = true;
 
     glProg = prog;
-    location = (uint16)loc;
-    count = (uint16)cnt;
-    data = (float*)(::malloc(cnt * 4 * sizeof(float)));
+    location = static_cast<uint16>(loc);
+    count = static_cast<uint16>(cnt);
+    data = reinterpret_cast<float*>(::malloc(cnt * 4 * sizeof(float)));
     inst = nullptr;
     lastInst = lastBoundData;
     *lastInst = nullptr;
@@ -540,8 +541,9 @@ void ProgGLES2::ConstBuf::SetToRHI(uint32 progUid, const void* instData) const
     if (instData != *lastInst)
     {
         //SCOPED_NAMED_TIMING("gl-Uniform4fv");
-        GL_CALL(glUniform4fv(location, count, (GLfloat*)instData));
-        *lastInst = (void*)(instData);
+        GLfloat* data = reinterpret_cast<GLfloat*>(const_cast<void*>(instData));
+        GL_CALL(glUniform4fv(location, count, data));
+        *lastInst = const_cast<void*>(instData);
     }
 
     StatSet::IncStat(stat_SET_CB, 1);

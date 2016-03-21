@@ -31,7 +31,7 @@
 #define MAINWINDOW_H
 
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -107,6 +107,7 @@ private slots:
     void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
+    void OnCloseCurrentTab();
 
 private:
     void InitLanguageBox();

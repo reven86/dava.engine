@@ -31,7 +31,6 @@
 #define __DAVAENGINE_SCOPED_PTR_H__
 
 #include "Base/BaseTypes.h"
-#include "FileSystem/Logger.h"
 
 namespace DAVA
 {

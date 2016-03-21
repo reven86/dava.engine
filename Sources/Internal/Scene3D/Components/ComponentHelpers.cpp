@@ -42,6 +42,8 @@
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/SkeletonComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -57,6 +59,16 @@
 
 namespace DAVA
 {
+bool HasComponent(const Entity* fromEntity, const Component::eType componentType)
+{
+    if (fromEntity != nullptr)
+    {
+        return (fromEntity->GetComponentCount(componentType) > 0);
+    }
+
+    return false;
+}
+
 RenderComponent* GetRenderComponent(const Entity* fromEntity)
 {
     if (fromEntity)
@@ -206,7 +218,7 @@ SwitchComponent* GetSwitchComponent(const Entity* fromEntity)
 {
     if (fromEntity)
     {
-        return (SwitchComponent*)fromEntity->GetComponent(Component::SWITCH_COMPONENT);
+        return static_cast<SwitchComponent*>(fromEntity->GetComponent(Component::SWITCH_COMPONENT));
     }
 
     return nullptr;
@@ -256,7 +268,7 @@ uint32 GetLodLayersCount(LodComponent* fromComponent)
 
 void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Entity*, void*))
 {
-    RenderComponent* comp = (RenderComponent*)curr->GetComponent(Component::RENDER_COMPONENT);
+    RenderComponent* comp = static_cast<RenderComponent*>(curr->GetComponent(Component::RENDER_COMPONENT));
     if (comp)
     {
         RenderObject* renderObject = comp->GetRenderObject();
@@ -274,7 +286,7 @@ void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Enti
 
 void RecursiveProcessLodNode(Entity* curr, int32 lod, void* userData, void (*process)(Entity*, void*))
 {
-    LodComponent* lodComp = (LodComponent*)curr->GetComponent(Component::LOD_COMPONENT);
+    LodComponent* lodComp = static_cast<LodComponent*>(curr->GetComponent(Component::LOD_COMPONENT));
     if (lodComp)
     {
         Vector<LodComponent::LodData*> retLodLayers;
@@ -426,7 +438,7 @@ PathComponent* GetPathComponent(const Entity* fromEntity)
 {
     if (fromEntity)
     {
-        return (PathComponent*)fromEntity->GetComponent(Component::PATH_COMPONENT);
+        return static_cast<PathComponent*>(fromEntity->GetComponent(Component::PATH_COMPONENT));
     }
 
     return nullptr;
@@ -436,7 +448,7 @@ WaypointComponent* GetWaypointComponent(const Entity* fromEntity)
 {
     if (fromEntity)
     {
-        return (WaypointComponent*)fromEntity->GetComponent(Component::WAYPOINT_COMPONENT);
+        return static_cast<WaypointComponent*>(fromEntity->GetComponent(Component::WAYPOINT_COMPONENT));
     }
 
     return NULL;
