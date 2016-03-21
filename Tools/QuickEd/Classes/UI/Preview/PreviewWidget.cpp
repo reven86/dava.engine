@@ -513,7 +513,7 @@ void PreviewWidget::OnPressEvent(QMouseEvent* event)
     {
         auto view = davaGLWidget->GetGLView();
         lastCursor = view->cursor();
-        view->setCursor(Qt::ClosedHandCursor);
+        view->setCursor(Qt::OpenHandCursor);
         lastMousePos = event->pos();
     }
 }
