@@ -30,7 +30,7 @@
 #ifndef __CREATE_PLANE_LOD_COOMAND_H__
 #define __CREATE_PLANE_LOD_COOMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "CreatePlaneLODCommandHelper.h"
 #include "DAVAEngine.h"
 

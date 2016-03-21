@@ -31,6 +31,7 @@
 #define __DAVAENGINE_COMPONENT_HELPERS_H__
 
 #include "Base/BaseTypes.h"
+#include "Entity/Component.h"
 
 namespace DAVA
 {
@@ -64,6 +65,8 @@ class EdgeComponent;
 class SnapToLandscapeControllerComponent;
 class StaticOcclusionComponent;
 class StaticOcclusionDebugDrawComponent;
+
+bool HasComponent(const Entity* fromEntity, const Component::eType componentType);
 
 ParticleEffectComponent* GetEffectComponent(const Entity* fromEntity);
 AnimationComponent* GetAnimationComponent(const Entity* fromEntity);

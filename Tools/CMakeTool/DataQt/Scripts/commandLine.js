@@ -1,4 +1,4 @@
-function createOutput(configuration, fileSystemHelper, buildPath, cmakePath, davaPath) { 
+function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath) {
     var outputText = ""; //pass by reference
 
     if(configuration["currentPlatform"] === undefined) {
@@ -7,7 +7,11 @@ function createOutput(configuration, fileSystemHelper, buildPath, cmakePath, dav
     var index = configuration["currentPlatform"];
     var platformObject = configuration["platforms"][index];
     outputText += platformObject.value;
-    outputText += " -B" + buildPath;
+    if(fileSystemHelper.IsDirExists(buildPath)) {
+        outputText += " -B" + buildPath;
+    } else {
+        throw qsTr("build path required");
+    }
 
     var substrings = [];
     var defaults = platformObject.defaults;
@@ -37,22 +41,22 @@ function createOutput(configuration, fileSystemHelper, buildPath, cmakePath, dav
     }
     
     if(outputText.indexOf("$CMAKE_PATH") !== -1) {
-        if(cmakePath.length === 0 || !fileSystemHelper.IsFileExists(cmakePath)) {
+        if(!fileSystemHelper.IsFileExists(cmakePath)) {
             throw qsTr("cmake path required");
         } else {
             outputText = outputText.replace("$CMAKE_PATH", cmakePath);
         }
     }
 
-    if(outputText.indexOf("$BUILD_FOLDER_PATH") !== -1) {
-        if(buildPath.length === 0 || !fileSystemHelper.IsDirExists(buildPath)) {
-            throw qsTr("build folder path required")
+    if(outputText.indexOf("$SOURCE_PATH") !== -1) {
+        if(!fileSystemHelper.IsDirExists(sourcePath)) {
+            throw qsTr("source path required")
         } else {
-            outputText = outputText.replace("$BUILD_FOLDER_PATH", buildPath)
+            outputText = outputText.replace("$SOURCE_PATH", sourcePath)
         }
     }
     if(outputText.indexOf("$DAVA_FRAMEWORK_PATH") !== -1) {
-        if(davaPath.length === 0 || !fileSystemHelper.IsDirExists(davaPath)) {
+        if(!fileSystemHelper.IsDirExists(davaPath)) {
             throw qsTr("DAVA folder path required");
         } else {
             outputText = outputText.replace("$DAVA_FRAMEWORK_PATH", davaPath)

@@ -79,7 +79,7 @@ RingBuffer::Initialize(unsigned sz)
     DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFER);
 
     size = sz;
-    dataPtr = (uint8*)::malloc(sz);
+    dataPtr = static_cast<uint8*>(::malloc(sz));
     ownData = true;
 
     cur = dataPtr;
@@ -93,7 +93,7 @@ inline void
 RingBuffer::Initialize(void* data, unsigned sz)
 {
     size = sz;
-    dataPtr = (uint8*)data;
+    dataPtr = static_cast<uint8*>(data);
     ownData = false;
 
     cur = dataPtr;
@@ -135,7 +135,7 @@ RingBuffer::Alloc(unsigned cnt, unsigned align)
     memUsed += sz;
     ++allocCount;
 
-    return (float*)p;
+    return reinterpret_cast<float*>(p);
 }
 
 //------------------------------------------------------------------------------

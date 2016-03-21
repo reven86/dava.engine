@@ -358,7 +358,7 @@ void KeyedArchive::SetByteArrayFromArchive(const String& key, KeyedArchive* arch
     //DVWARNING(false, "Method is depriceted! Use SetArchive()");
     DynamicMemoryFile* file = DynamicMemoryFile::Create(File::CREATE | File::WRITE);
     archive->Save(file);
-    SetByteArray(key, (uint8*)file->GetData(), file->GetSize());
+    SetByteArray(key, file->GetData(), file->GetSize());
     SafeRelease(file);
 }
 

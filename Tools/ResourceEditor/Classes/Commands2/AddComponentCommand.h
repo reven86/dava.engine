@@ -30,7 +30,7 @@
 #ifndef __ADD_COMPONENT_COMMAND_H__
 #define __ADD_COMPONENT_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class AddComponentCommand : public Command2
 {

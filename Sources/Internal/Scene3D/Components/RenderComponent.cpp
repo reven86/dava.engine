@@ -116,7 +116,7 @@ void RenderComponent::Deserialize(KeyedArchive* archive, SerializationContext* s
         KeyedArchive* roArch = archive->GetArchive("rc.renderObj");
         if (NULL != roArch)
         {
-            RenderObject* ro = (RenderObject*)ObjectFactory::Instance()->New<RenderObject>(roArch->GetString("##name"));
+            RenderObject* ro = static_cast<RenderObject*>(ObjectFactory::Instance()->New<RenderObject>(roArch->GetString("##name")));
             if (NULL != ro)
             {
                 ro->Load(roArch, serializationContext);
