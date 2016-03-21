@@ -41,8 +41,9 @@ POP_QT_WARNING_SUPRESSOR
 class QAbstractItemModel;
 
 class SpySearchView
-    : public QWidget
-    , public Ui::SpySearchView
+: public QWidget
+  ,
+  public Ui::SpySearchView
 {
     PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
@@ -54,10 +55,10 @@ public:
     };
 
 signals:
-    void triggered( const QPoint& globalPos );
+    void triggered(const QPoint& globalPos);
 
 public:
-    explicit SpySearchView( QWidget *parent = nullptr );
+    explicit SpySearchView(QWidget* parent = nullptr);
     ~SpySearchView();
 
 private slots:

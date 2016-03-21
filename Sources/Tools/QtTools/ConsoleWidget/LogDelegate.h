@@ -11,9 +11,8 @@ POP_QT_WARNING_SUPRESSOR
 
 class QAbstractItemView;
 
-
 class LogDelegate
-    : public QStyledItemDelegate
+: public QStyledItemDelegate
 {
     PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT

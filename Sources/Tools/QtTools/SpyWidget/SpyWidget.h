@@ -38,13 +38,14 @@ PUSH_QT_WARNING_SUPRESSOR
 POP_QT_WARNING_SUPRESSOR
 
 class SpyWidget
-    : public QWidget
-    , public Ui::SpyWidget
+: public QWidget
+  ,
+  public Ui::SpyWidget
 {
     Q_OBJECT
 
 public:
-    explicit SpyWidget( QWidget *parent = nullptr );
+    explicit SpyWidget(QWidget* parent = nullptr);
     ~SpyWidget();
 
 private slots:
