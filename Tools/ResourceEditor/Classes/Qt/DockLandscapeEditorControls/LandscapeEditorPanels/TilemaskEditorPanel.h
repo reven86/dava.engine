@@ -32,7 +32,7 @@
 
 #include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 #include "Render/UniqueStateSet.h"
 

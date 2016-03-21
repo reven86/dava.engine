@@ -51,7 +51,7 @@ protected:
     virtual bool UpdateValueInternal();
     virtual bool EditorDoneInternal(QWidget* editor);
 
-    virtual void* CreateLastCommand() const;
+    Command2::Pointer CreateLastCommand() const override;
 
 private:
     void CheckAndFillPresetValues();

@@ -186,7 +186,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     // Prepare occlusion per component
     Entity* entity = occlusionEntities[activeIndex];
 
-    componentInProgress = (StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
+    componentInProgress = static_cast<StaticOcclusionDataComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT));
     if (componentInProgress)
     {
         // We detach component from system, to let system know that this data is not valid right now.
@@ -199,8 +199,8 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     }
     StaticOcclusionData& data = componentInProgress->GetData();
 
-    StaticOcclusionComponent* occlusionComponent = (StaticOcclusionComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT);
-    TransformComponent* transformComponent = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
+    StaticOcclusionComponent* occlusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    TransformComponent* transformComponent = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
     AABBox3 localBox = occlusionComponent->GetBoundingBox();
     AABBox3 worldBox;
     localBox.GetTransformedBox(transformComponent->GetWorldTransform(), worldBox);
@@ -275,10 +275,10 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 {
     Vector<Entity*> lodEntities;
     GetScene()->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);
-    uint32 size = (uint32)lodEntities.size();
+    uint32 size = static_cast<uint32>(lodEntities.size());
     for (uint32 k = 0; k < size; ++k)
     {
-        LodComponent* lodComponent = (LodComponent*)lodEntities[k]->GetComponent(Component::LOD_COMPONENT);
+        LodComponent* lodComponent = static_cast<LodComponent*>(lodEntities[k]->GetComponent(Component::LOD_COMPONENT));
         lodComponent->SetForceLodLayer(forceLodIndex);
     }
     GetScene()->lodSystem->SetForceUpdateAll();
@@ -287,7 +287,7 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
-    if (activeIndex == (uint32)(-1))
+    if (activeIndex == static_cast<uint32>(-1))
         return;
 
     bool finished = staticOcclusion->ProccessBlock();

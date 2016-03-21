@@ -27,22 +27,33 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LOCALIZATION_WINUAP_H__
-#define __DAVAENGINE_LOCALIZATION_WINUAP_H__
+#ifndef __GUARDS_H__
+#define __GUARDS_H__
 
-#include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_WIN_UAP__)
+#include "Debug/DVAssert.h"
+#include <QObject>
 
-namespace DAVA
+namespace Guard
 {
-class LocalizationWinUAP
+class ScopedBoolGuard final
 {
 public:
-    static void SelectPreferedLocalization();
-    static String GetDeviceLang(void);
-};
-};
+    ScopedBoolGuard(bool& value, bool newValue)
+        : guardedValue(value)
+        , oldValue(value)
+    {
+        guardedValue = newValue;
+    }
+    ~ScopedBoolGuard()
+    {
+        guardedValue = oldValue;
+    };
 
-#endif //__DAVAENGINE_WIN_UAP__
+private:
+    bool& guardedValue;
+    const bool oldValue;
+};
+}
 
-#endif //__DAVAENGINE_LOCALIZATION_WINUAP_H__
+
+#endif // __GUARDS_H__

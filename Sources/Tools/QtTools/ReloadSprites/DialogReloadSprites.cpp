@@ -43,11 +43,11 @@ POP_QT_WARNING_SUPRESSOR
 using namespace DAVA;
 namespace
 {
-    const QString GPU = "gpu";
-    const QString QUALITY = "quality";
-    const QString FORCE_REPACK = "force repack";
-    const QString SHOW_CONSOLE = "show console";
-    const QString CONSOLE_STATE = "console state";
+const QString GPU = "gpu";
+const QString QUALITY = "quality";
+const QString FORCE_REPACK = "force repack";
+const QString SHOW_CONSOLE = "show console";
+const QString CONSOLE_STATE = "console state";
 }
 
 DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
@@ -58,7 +58,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
     DVASSERT(nullptr != spritesPacker);
     qRegisterMetaType<DAVA::eGPUFamily>("DAVA::eGPUFamily");
     qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
-    
+
     workerThread.setStackSize(16 * 1024 * 1024);
 
     ui->setupUi(this);
@@ -79,7 +79,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
     connect(ui->pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
     connect(ui->checkBox_showConsole, &QCheckBox::toggled, this, &DialogReloadSprites::OnCheckboxShowConsoleToggled);
 
-    const auto &gpuMap = GlobalEnumMap<eGPUFamily>::Instance();
+    const auto& gpuMap = GlobalEnumMap<eGPUFamily>::Instance();
     for (size_t i = 0; i < gpuMap->GetCount(); ++i)
     {
         int value;
@@ -92,7 +92,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
         ui->comboBox_targetGPU->addItem(gpuMap->ToString(value), value);
     }
 
-    const auto &qualityMap = GlobalEnumMap<TextureConverter::eConvertQuality>::Instance();
+    const auto& qualityMap = GlobalEnumMap<TextureConverter::eConvertQuality>::Instance();
     for (size_t i = 0; i < qualityMap->GetCount(); ++i)
     {
         int value;
@@ -111,7 +111,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
 DialogReloadSprites::~DialogReloadSprites()
 {
     SaveSettings();
-    if(spritesPacker->IsRunning())
+    if (spritesPacker->IsRunning())
     {
         BlockingStop();
     }
@@ -173,7 +173,7 @@ void DialogReloadSprites::OnCheckboxShowConsoleToggled(bool checked)
     }
 }
 
-void DialogReloadSprites::closeEvent(QCloseEvent *event)
+void DialogReloadSprites::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
     BlockingStop();
@@ -183,7 +183,7 @@ void DialogReloadSprites::LoadSettings()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.beginGroup("DialogReloadSprites");
-    const auto &targetGPU = settings.value(GPU);
+    const auto& targetGPU = settings.value(GPU);
     if (targetGPU.isValid())
     {
         for (int i = 0, k = ui->comboBox_targetGPU->count(); i < k; i++)
@@ -194,7 +194,7 @@ void DialogReloadSprites::LoadSettings()
             }
         }
     }
-    const auto &quality = settings.value(QUALITY);
+    const auto& quality = settings.value(QUALITY);
     if (quality.isValid())
     {
         for (int i = 0, k = ui->comboBox_quality->count(); i < k; i++)

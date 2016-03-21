@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 class DefinitionFile;
 class YamlNode;
 
@@ -49,8 +48,7 @@ class ResourcePacker2D
     static const String VERSION;
 
 public:
-
-    void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
+    void InitFolders(const FilePath& inputPath, const FilePath& outputPath);
     bool RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const;
     void RecalculateMD5ForOutputDir();
 
@@ -126,7 +124,6 @@ inline bool ResourcePacker2D::IsRunning() const
 {
     return running;
 }
-
 };
 
 #endif // __DAVAENGINE_RESOURCEPACKER2D_H__
