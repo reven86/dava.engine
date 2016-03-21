@@ -60,7 +60,7 @@ using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 300))
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 500))
 {
 }
 
