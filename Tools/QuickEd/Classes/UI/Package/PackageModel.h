@@ -74,7 +74,7 @@ signals:
     void AfterProcessNodes(const SelectedNodes& nodes);
 
 public slots:
-    void OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, int destIndex, const DAVA::Vector2* pos);
+    void OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::int32 destIndex, const DAVA::Vector2* pos);
 
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;

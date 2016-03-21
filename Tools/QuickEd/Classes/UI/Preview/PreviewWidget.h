@@ -77,7 +77,7 @@ signals:
     void CloseTabRequested();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OpenPackageFile(QString path);
-    void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, int destIndex, const DAVA::Vector2* pos);
+    void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::int32 destIndex, const DAVA::Vector2* pos);
 
 public slots:
     void OnDocumentChanged(Document* document);

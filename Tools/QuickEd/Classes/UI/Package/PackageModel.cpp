@@ -447,7 +447,7 @@ bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, in
     return true; //if we can drop - we must drop. Otherwise CanDropMimeData must return false;
 }
 
-void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* destNode, int destIndex, const DAVA::Vector2* pos)
+void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* destNode, int32 destIndex, const DAVA::Vector2* pos)
 {
     DVASSERT(nullptr != commandExecutor && nullptr != package);
 
