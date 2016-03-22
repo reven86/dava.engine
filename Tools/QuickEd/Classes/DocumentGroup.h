@@ -40,7 +40,6 @@ class QUndoGroup;
 class PackageBaseNode;
 class QAction;
 class QTabBar;
-class Project;
 
 class DocumentGroup : public QObject
 {
@@ -48,7 +47,7 @@ class DocumentGroup : public QObject
     Q_PROPERTY(bool canSave READ CanSave NOTIFY CanSaveChanged)
     Q_PROPERTY(bool canClose READ CanClose NOTIFY CanCloseChanged)
 public:
-    explicit DocumentGroup(Project* project, QObject* parent = nullptr);
+    explicit DocumentGroup(QObject* parent = nullptr);
     ~DocumentGroup();
 
     QList<Document*> GetDocuments() const;
@@ -100,13 +99,13 @@ private:
     void SaveDocument(Document* document);
     Document* CreateDocument(const QString& path);
     void InsertDocument(Document* document, int pos);
+    DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
 
     Document* active;
     QList<Document*> documents;
     QUndoGroup* undoGroup;
     QSet<Document*> changedFiles;
     QList<QPointer<QTabBar>> attachedTabBars;
-    QPointer<Project> project;
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H

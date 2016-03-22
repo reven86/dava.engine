@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-#include "Project/Project.h"
 #include "Document.h"
 #include "DocumentGroup.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -35,6 +34,8 @@
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
+#include "Model/EditorUIPackageBuilder.h"
+#include "UI/UIPackageLoader.h"
 
 #include <QUndoGroup>
 #include <QApplication>
@@ -45,13 +46,11 @@
 
 using namespace DAVA;
 
-DocumentGroup::DocumentGroup(Project* project_, QObject* parent)
+DocumentGroup::DocumentGroup(QObject* parent)
     : QObject(parent)
     , active(nullptr)
     , undoGroup(new QUndoGroup(this))
-    , project(project_)
 {
-    DVASSERT(!project.isNull());
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
 }
 
@@ -474,7 +473,7 @@ Document* DocumentGroup::CreateDocument(const QString& path)
 {
     QString canonicalFilePath = QFileInfo(path).canonicalFilePath();
     FilePath davaPath(canonicalFilePath.toStdString());
-    RefPtr<PackageNode> packageRef = project->OpenPackage(davaPath);
+    RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
 
     Document* document = new Document(packageRef, this);
     connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
@@ -496,4 +495,16 @@ void DocumentGroup::InsertDocument(Document* document, int index)
     {
         InsertTab(tabBar, document, index);
     }
+}
+
+RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
+{
+    EditorUIPackageBuilder builder;
+
+    bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
+
+    if (packageLoaded)
+        return builder.BuildPackage();
+
+    return RefPtr<PackageNode>();
 }

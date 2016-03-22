@@ -50,7 +50,6 @@ public:
     void Close();
     bool CheckAndUnlockProject(const QString& projectPath);
 
-    DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
 

@@ -35,8 +35,6 @@
 
 #include "Project.h"
 #include "EditorFontSystem.h"
-#include "UI/UIPackageLoader.h"
-#include "Model/EditorUIPackageBuilder.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Helpers/ResourcesManageHelper.h"
@@ -167,18 +165,6 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
     }
 
     return true;
-}
-
-RefPtr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
-{
-    EditorUIPackageBuilder builder;
-
-    bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
-
-    if (packageLoaded)
-        return builder.BuildPackage();
-
-    return RefPtr<PackageNode>();
 }
 
 bool Project::IsOpen() const

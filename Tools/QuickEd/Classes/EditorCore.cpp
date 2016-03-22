@@ -59,7 +59,7 @@ EditorCore::EditorCore(QObject* parent)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
     , project(new Project(this))
-    , documentGroup(new DocumentGroup(project, this))
+    , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
