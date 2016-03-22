@@ -172,7 +172,6 @@ void SceneSelectionSystem::ProcessSelectedGroup(const SelectableGroup::Collectio
     SelectableGroup::CollectionType collisionObjects;
     collisionObjects.reserve(allObjects.size());
 
-    auto i = allObjects.begin();
     for (const auto& item : allObjects)
     {
         bool wasAdded = false;
@@ -456,7 +455,6 @@ void SceneSelectionSystem::Draw()
         {
             if (item.SupportsTransformType(Selectable::TransformType::Disabled))
             {
-                auto bbox = collisionSystem->GetBoundingBox(item.GetContainedObject());
                 DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
             }
         }
@@ -657,12 +655,12 @@ void SceneSelectionSystem::CancelSelection()
     applyOnPhaseEnd = false;
 }
 
-void SceneSelectionSystem::SetPivotPoint(ST_PivotPoint pp)
+void SceneSelectionSystem::SetPivotPoint(Selectable::TransformPivot pp)
 {
     curPivotPoint = pp;
 }
 
-ST_PivotPoint SceneSelectionSystem::GetPivotPoint() const
+Selectable::TransformPivot SceneSelectionSystem::GetPivotPoint() const
 {
     return curPivotPoint;
 }
@@ -712,7 +710,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
         bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
         hoodSystem->LockModif(modificationEnabled == false);
 
-        auto hoodCenter = (curPivotPoint == ST_PIVOT_ENTITY_CENTER) ? currentSelection.GetFirstTranslationVector() : currentSelection.GetCommonTranslationVector();
+        auto hoodCenter = (curPivotPoint == Selectable::TransformPivot::EntityCenter) ? currentSelection.GetFirstTranslationVector() : currentSelection.GetCommonTranslationVector();
         hoodSystem->SetPosition(hoodCenter);
 
         bool hasNonTransformableObjects = false;

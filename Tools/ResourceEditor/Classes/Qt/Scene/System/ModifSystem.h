@@ -147,7 +147,6 @@ private:
     DAVA::List<EntityModificationSystemDelegate*> delegates;
 
     // values calculated, when starting modification
-    ST_PivotPoint modifPivotPoint;
     DAVA::Vector3 modifEntitiesCenter;
     DAVA::Vector3 modifStartPos3d;
     DAVA::Vector2 modifStartPos2d;

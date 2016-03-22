@@ -38,6 +38,12 @@ class Selectable
 public:
     using Object = DAVA::InspBase;
 
+    enum class TransformPivot : DAVA::uint32
+    {
+        EntityCenter,
+        CommonCenter
+    };
+    
     enum class TransformType : DAVA::uint32
     {
         Disabled,

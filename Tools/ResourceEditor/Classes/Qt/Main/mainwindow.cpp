@@ -1540,7 +1540,7 @@ void QtMainWindow::OnPivotCenterMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->selectionSystem->SetPivotPoint(ST_PIVOT_ENTITY_CENTER);
+        scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::EntityCenter);
         LoadModificationState(scene);
     }
 }
@@ -1550,7 +1550,7 @@ void QtMainWindow::OnPivotCommonMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->selectionSystem->SetPivotPoint(ST_PIVOT_COMMON_CENTER);
+        scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::CommonCenter);
         LoadModificationState(scene);
     }
 }
@@ -1955,7 +1955,7 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
         }
 
         // pivot point
-        if (scene->selectionSystem->GetPivotPoint() == ST_PIVOT_ENTITY_CENTER)
+        if (scene->selectionSystem->GetPivotPoint() == Selectable::TransformPivot::EntityCenter)
         {
             ui->actionPivotCenter->setChecked(true);
             ui->actionPivotCommon->setChecked(false);

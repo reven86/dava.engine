@@ -32,12 +32,6 @@
 
 #include "Base/BaseTypes.h"
 
-enum ST_PivotPoint
-{
-    ST_PIVOT_ENTITY_CENTER,
-    ST_PIVOT_COMMON_CENTER
-};
-
 enum ST_Axis
 {
     ST_AXIS_NONE = 0,

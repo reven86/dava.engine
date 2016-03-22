@@ -367,7 +367,6 @@ StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity* entity)
 {
-    StaticOcclusionComponent* staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     Matrix4* worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
     //create render object
     ScopedPtr<RenderObject> debugRenderObject(new RenderObject());

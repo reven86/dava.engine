@@ -157,7 +157,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
     }
 
     // current selected entities
-    SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
+    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
     const SelectableGroup& selectedEntities = selectionSystem->GetSelection();
 
     DAVA::Camera* camera = cameraSystem->GetCurCamera();
@@ -352,10 +352,6 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
 
         modifEntities.push_back(etm);
     }
-
-    // remember current selection pivot point
-    SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
-    modifPivotPoint = selectionSystem->GetPivotPoint();
 
     // center of this bbox will modification center, common for all entities
     modifEntitiesCenter = inputEntities.GetCommonTranslationVector();
@@ -646,6 +642,9 @@ DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3& newPos3d)
 
 DAVA::float32 EntityModificationSystem::Rotate(const DAVA::Vector2& newPos2d)
 {
+    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
+    auto pivotPoint = selectionSystem->GetPivotPoint();
+    
     DAVA::Vector2 rotateLength = newPos2d - modifStartPos2d;
     DAVA::float32 rotateForce = -(rotateNormal.DotProduct(rotateLength)) / 70.0f;
 
@@ -655,13 +654,13 @@ DAVA::float32 EntityModificationSystem::Rotate(const DAVA::Vector2& newPos2d)
         rotateModification.Identity();
         rotateModification.CreateRotation(rotateAround * modifEntities[i].inversedParentWorldTransform, rotateForce);
 
-        switch (modifPivotPoint)
+        switch (pivotPoint)
         {
-        case ST_PIVOT_ENTITY_CENTER:
+        case Selectable::TransformPivot::EntityCenter:
             // move to zero, rotate, move back to original center point
             rotateModification = (modifEntities[i].moveToZeroPos * rotateModification) * modifEntities[i].moveFromZeroPos;
             break;
-        case ST_PIVOT_COMMON_CENTER:
+        case Selectable::TransformPivot::CommonCenter:
             // move to zero relative selection center, rotate, move back to original center point
             rotateModification = (moveToZeroPosRelativeCenter * rotateModification) * moveFromZeroPosRelativeCenter;
             break;
@@ -678,12 +677,13 @@ DAVA::float32 EntityModificationSystem::Rotate(const DAVA::Vector2& newPos2d)
 
 DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2& newPos2d)
 {
+    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
+    auto pivotPoint = selectionSystem->GetPivotPoint();
+    
     DAVA::Vector2 scaleDir = (newPos2d - modifStartPos2d);
-    DAVA::float32 scaleForce;
+    DAVA::float32 scaleForce = 1.0f - (scaleDir.y / 70.0f);
 
-    scaleForce = 1.0f - (scaleDir.y / 70.0f);
-
-    if (scaleForce >= 0)
+    if (scaleForce >= 0.0f)
     {
         for (size_t i = 0; i < modifEntities.size(); ++i)
         {
@@ -691,13 +691,13 @@ DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2& newPos2d)
             scaleModification.Identity();
             scaleModification.CreateScale(DAVA::Vector3(scaleForce, scaleForce, scaleForce) * modifEntities[i].inversedParentWorldTransform);
 
-            switch (modifPivotPoint)
+            switch (pivotPoint)
             {
-            case ST_PIVOT_ENTITY_CENTER:
+            case Selectable::TransformPivot::EntityCenter:
                 // move to zero, rotate, move back to original center point
                 scaleModification = (modifEntities[i].moveToZeroPos * scaleModification) * modifEntities[i].moveFromZeroPos;
                 break;
-            case ST_PIVOT_COMMON_CENTER:
+            case Selectable::TransformPivot::CommonCenter:
                 // move to zero relative selection center, rotate, move back to original center point
                 scaleModification = (moveToZeroPosRelativeCenter * scaleModification) * moveFromZeroPosRelativeCenter;
                 break;
