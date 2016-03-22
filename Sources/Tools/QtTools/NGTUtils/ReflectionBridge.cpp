@@ -26,16 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "VariantConverter.h"
+#include "NGTCollectionsImpl.h"
 #include "ReflectionBridge.h"
+
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
+#include "Math/AABBox3.h"
 
 #include "wg_types/vector2.hpp"
 #include "wg_types/vector3.hpp"
 #include "wg_types/vector4.hpp"
-
-#include "VariantConverter.h"
-#include "NGTCollectionsImpl.h"
 
 namespace NGTLayer
 {
