@@ -30,12 +30,11 @@
 #ifndef __QUICKED_PREVIEW_WIDGET_H__
 #define __QUICKED_PREVIEW_WIDGET_H__
 
-#include <QWidget>
-#include <QPointer>
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
-#include <UI/UIControl.h>
+#include <QWidget>
+#include <QCursor>
 
 namespace Ui
 {
@@ -107,6 +106,8 @@ private:
     void ApplyPosChanges();
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
+    void OnPressEvent(QMouseEvent* event);
+    void OnReleaseEvent(QMouseEvent* event);
     void OnMoveEvent(QMouseEvent* event);
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
@@ -115,6 +116,7 @@ private:
     void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
 
     QPoint lastMousePos;
+    QCursor lastCursor;
     QPointer<Document> document;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;

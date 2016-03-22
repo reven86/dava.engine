@@ -26,31 +26,5 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-
-#include "FileSystem/LocalizationWinUAP.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "Platform/DeviceInfo.h"
-
-namespace DAVA
-{
-void LocalizationWinUAP::SelectPreferedLocalization()
-{
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
-
-String LocalizationWinUAP::GetDeviceLang(void)
-{
-    String locale = DeviceInfo::GetLocale();
-    String::size_type posEnd = locale.find('-', 2);
-    if (String::npos != posEnd)
-    {
-        locale = locale.substr(0, posEnd);
-    }
-    return locale;
-}
-};
-
-#endif // __DAVAENGINE_WIN_UAP__
+#include "Main/Guards.h"

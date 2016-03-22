@@ -93,6 +93,12 @@ WideString TrimRight(const WideString& string);
 WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1);
 
 /**
+ * \brief Remove unicode Emoji symbols and surrogates from given string.
+ * \param [in/out] string The string to clearify.
+ * \return output string.
+ */
+bool RemoveEmoji(WideString& string);
+/**
  * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespace.
  * \param t The char16 to process.
  * \return true if space, false if not.

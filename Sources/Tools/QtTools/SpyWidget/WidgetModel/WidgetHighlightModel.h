@@ -38,19 +38,19 @@ PUSH_QT_WARNING_SUPRESSOR
 POP_QT_WARNING_SUPRESSOR
 
 class WidgetHighlightModel
-    : public QIdentityProxyModel
+: public QIdentityProxyModel
 {
     PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
     POP_QT_WARNING_SUPRESSOR
 
 public:
-    explicit WidgetHighlightModel( QObject *parent = nullptr );
+    explicit WidgetHighlightModel(QObject* parent = nullptr);
     ~WidgetHighlightModel();
 
-    QVariant data( const QModelIndex& index, int role = Qt::DisplayRole ) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void setWidgetList( const QSet< QWidget * >& widgetsToHighlight = QSet< QWidget * >() );
+    void setWidgetList(const QSet<QWidget*>& widgetsToHighlight = QSet<QWidget*>());
 
 private slots:
     void onWidgetDestroyed();
@@ -58,7 +58,7 @@ private slots:
 private:
     void invalidate();
 
-    QSet< QWidget * > widgets;
+    QSet<QWidget*> widgets;
 };
 
 
