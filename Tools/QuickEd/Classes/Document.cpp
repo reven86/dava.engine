@@ -61,6 +61,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
 
 Document::~Document()
 {
+    disconnect(undoStack.get(), &QUndoStack::cleanChanged, this, &Document::OnCleanChanged); //destructor of UndoStack send signal here
     for (auto& context : contexts)
     {
         delete context.second;

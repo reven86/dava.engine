@@ -339,7 +339,7 @@ void DocumentGroup::OnFileChanged(Document* document)
 {
     DVASSERT(nullptr != document);
     changedFiles.insert(document);
-    if (document->CanSave() || qApp->applicationState() == Qt::ApplicationActive)
+    if (!document->CanSave() || qApp->applicationState() == Qt::ApplicationActive)
     {
         ApplyFileChanges();
     }
