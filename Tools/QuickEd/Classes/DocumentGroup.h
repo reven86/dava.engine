@@ -60,9 +60,9 @@ public:
     QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const;
     QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const;
 
-    QAction* CreateSaveAction(QObject* parent) const;
-    QAction* CreateSaveAllAction(QObject* parent) const;
-    QAction* CreateCloseDocumentAction(QObject* parent) const;
+    void AttachSaveAction(QAction* action) const;
+    void AttachSaveAllAction(QAction* action) const;
+    void AttachCloseDocumentAction(QAction* action) const;
 
     void ConnectToTabBar(QTabBar* tabBar);
     void DisconnectTabBar(QTabBar* tabBar);

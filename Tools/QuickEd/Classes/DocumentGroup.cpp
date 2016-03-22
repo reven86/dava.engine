@@ -80,29 +80,23 @@ QAction* DocumentGroup::CreateRedoAction(QObject* parent, const QString& prefix)
     return undoGroup->createRedoAction(parent, prefix);
 }
 
-QAction* DocumentGroup::CreateSaveAction(QObject* parent) const
+void DocumentGroup::AttachSaveAction(QAction* saveAction) const
 {
-    QAction* action = new QAction(tr("Save document"), parent);
-    action->setEnabled(CanSave());
-    connect(this, &DocumentGroup::CanSaveChanged, action, &QAction::setEnabled);
-    connect(action, &QAction::triggered, this, &DocumentGroup::SaveCurrentDocument);
-    return action;
+    saveAction->setEnabled(CanSave());
+    connect(this, &DocumentGroup::CanSaveChanged, saveAction, &QAction::setEnabled);
+    connect(saveAction, &QAction::triggered, this, &DocumentGroup::SaveCurrentDocument);
 }
 
-QAction* DocumentGroup::CreateSaveAllAction(QObject* parent) const
+void DocumentGroup::AttachSaveAllAction(QAction* saveAllAction) const
 {
-    QAction* saveAllAction = new QAction(tr("Save all documents"), parent);
     connect(saveAllAction, &QAction::triggered, this, &DocumentGroup::SaveAllDocuments);
-    return saveAllAction;
 }
 
-QAction* DocumentGroup::CreateCloseDocumentAction(QObject* parent) const
+void DocumentGroup::AttachCloseDocumentAction(QAction* closeDocumentAction) const
 {
-    QAction* closeDocumentAction = new QAction(tr("Close document"), parent);
     closeDocumentAction->setEnabled(CanClose());
     connect(this, &DocumentGroup::CanCloseChanged, closeDocumentAction, &QAction::setEnabled);
     connect(closeDocumentAction, &QAction::triggered, this, &DocumentGroup::RemoveCurrentDocument);
-    return closeDocumentAction;
 }
 
 void DocumentGroup::ConnectToTabBar(QTabBar* tabBar)

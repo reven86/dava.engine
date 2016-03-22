@@ -128,21 +128,14 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
     mainToolbar->addAction(redoAction);
 
     Q_ASSERT(documentGroup != nullptr);
-    QAction* saveDocumentAction = documentGroup->CreateSaveAction(this);
-    saveDocumentAction->setShortcut(QKeySequence::Save);
-    saveDocumentAction->setIcon(QIcon(":/Icons/savescene.png"));
+    documentGroup->AttachSaveAction(actionSaveDocument);
+    documentGroup->AttachSaveAllAction(actionSaveAllDocuments);
 
-    QAction* saveAllDocumentsAction = documentGroup->CreateSaveAllAction(this);
-    saveAllDocumentsAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
-    saveAllDocumentsAction->setIcon(QIcon(":/Icons/savesceneall.png"));
-
-    QAction* closeDocumentAction = documentGroup->CreateCloseDocumentAction(this);
-    closeDocumentAction->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
-    closeDocumentAction->setShortcutContext(Qt::WindowShortcut);
-    previewWidget->GetGLWidget()->addAction(closeDocumentAction);
-
-    mainToolbar->addAction(saveDocumentAction);
-    mainToolbar->addAction(saveAllDocumentsAction);
+    QAction* actionCloseDocument = new QAction("Close current document", this);
+    actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
+    actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
+    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+    documentGroup->AttachCloseDocumentAction(actionCloseDocument);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)
