@@ -701,9 +701,7 @@ bool CoreWin32Platform::ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM w
 
 bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms645590%28v=vs.85%29.aspx
-    bool isApplicationInForeground = (wParam == 0);
-    if (!isApplicationInForeground)
+    if (wParam != RIM_INPUT)
     {
         return false;
     }
@@ -754,7 +752,6 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
             {
                 OnMouseMove(xPos, yPos);
             }
-            return true;
         }
     }
     return false;
@@ -801,8 +798,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     if (IsMouseInputEvent(message))
     {
-        bool eventProcessed = core->ProcessMouseInputEvent(hWnd, message, wParam, lParam);
-        if (eventProcessed)
+        bool interruptProcessing = core->ProcessMouseInputEvent(hWnd, message, wParam, lParam);
+        if (interruptProcessing)
         {
             return 0;
         }
