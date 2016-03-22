@@ -29,7 +29,7 @@
 
 #include "Scene2D/GameObject.h"
 #include "Animation/AnimationManager.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Scene2D/GameObjectManager.h"
 
 #include "Animation/LinearAnimation.h"
@@ -128,7 +128,7 @@ Animation* GameObject::ColorAnimation(const Color& finalColor, float32 time, Int
 
 void GameObject::VisibleAnimationCallback(BaseObject* caller, void* param, void* callerData)
 {
-    bool* params = (bool*)param;
+    bool* params = static_cast<bool*>(param);
     SetVisible(params[0]);
     delete[] params;
 }
@@ -139,7 +139,7 @@ Animation* GameObject::VisibleAnimation(bool visible, int32 track /* = 0*/)
     Animation* animation = new Animation(this, 0.01f, Interpolation::LINEAR);
     bool* params = new bool[1];
     params[0] = visible;
-    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &GameObject::VisibleAnimationCallback, (void*)params));
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &GameObject::VisibleAnimationCallback, static_cast<void*>(params)));
     animation->Start(track);
     return animation;
 }
@@ -416,11 +416,11 @@ void GameObject::SetPivotPoint(int32 alignFlags)
     }
     else if (alignFlags & ALIGN_HCENTER)
     {
-        localDrawState.pivotPoint.x = (float32)(sprite->GetWidth() / 2);
+        localDrawState.pivotPoint.x = sprite->GetWidth() / 2.0f;
     }
     else if (alignFlags & ALIGN_RIGHT)
     {
-        localDrawState.pivotPoint.x = (float32)sprite->GetWidth();
+        localDrawState.pivotPoint.x = sprite->GetWidth();
     }
 
     if (alignFlags & ALIGN_TOP)
@@ -429,11 +429,11 @@ void GameObject::SetPivotPoint(int32 alignFlags)
     }
     else if (alignFlags & ALIGN_VCENTER)
     {
-        localDrawState.pivotPoint.y = (float32)(sprite->GetHeight() / 2);
+        localDrawState.pivotPoint.y = sprite->GetHeight() / 2.0f;
     }
     else if (alignFlags & ALIGN_BOTTOM)
     {
-        localDrawState.pivotPoint.y = (float32)sprite->GetHeight();
+        localDrawState.pivotPoint.y = sprite->GetHeight();
     }
 }
 

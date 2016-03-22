@@ -231,8 +231,6 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 
 generate_source_groups_project ()
 
-
-
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
@@ -246,6 +244,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
                                                         "TemplateMacOS/MovieViewControlMacOS.mm"
+                                                        "Logger/TeamcityOutput.cpp"
                                                     IGNORE_LIST_IOS
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"
@@ -254,7 +253,6 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "TemplateiOS"
                                                         "UI/UITextFieldiPhone.mm"
                                                    )
-
 
 include_directories      (.)
 include_directories      ( ${DAVA_INCLUDE_DIR} )

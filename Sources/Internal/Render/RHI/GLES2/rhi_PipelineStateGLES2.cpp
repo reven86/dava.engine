@@ -33,7 +33,7 @@
     #include "rhi_ProgGLES2.h"
     #include "rhi_GLES2.h"
     
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
     #include "FileSystem/File.h"
     #include "FileSystem/FileSystem.h"
 using DAVA::Logger;
@@ -48,8 +48,8 @@ namespace rhi
 namespace PipelineStateGLES2
 {
 static int cachedBlendEnabled = -1;
-static GLenum cachedBlendSrc = (GLenum)0;
-static GLenum cachedBlendDst = (GLenum)0;
+static GLenum cachedBlendSrc = 0;
+static GLenum cachedBlendDst = 0;
 static uint32 cachedProgram = 0;
 static GLboolean mask[4] = { false, false, false, false };
 }
@@ -168,7 +168,7 @@ VertexDeclGLES2
             }
 
             elem[elemCount].count = layout.ElementDataCount(i);
-            elem[elemCount].offset = (void*)(uint64(layout.ElementOffset(i)));
+            elem[elemCount].offset = reinterpret_cast<void*>(uint64(layout.ElementOffset(i)));
             elem[elemCount].index = DAVA::InvalidIndex;
             elem[elemCount].streamIndex = stream_i;
             elem[elemCount].attrDivisor = (layout.StreamFrequency(stream_i) == VDF_PER_INSTANCE) ? 1 : 0;
@@ -279,15 +279,15 @@ VertexDeclGLES2
                     vattr[idx].enabled = true;
                 }
 
-                if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != (GLboolean)(elem[i].normalized) || cur_stride[stream] != stride[stream] || vattr[idx].pointer != (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset)))
+                if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != GLboolean(elem[i].normalized) || cur_stride[stream] != stride[stream] || vattr[idx].pointer != static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset)))
                 {
                     //{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
-                    GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride[stream], (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset))));
+                    GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, GLboolean(elem[i].normalized), stride[stream], static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset))));
 
                     vattr[idx].size = elem[i].count;
                     vattr[idx].type = elem[i].type;
-                    vattr[idx].normalized = (GLboolean)(elem[i].normalized);
-                    vattr[idx].pointer = (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset));
+                    vattr[idx].normalized = GLboolean(elem[i].normalized);
+                    vattr[idx].pointer = static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset));
                 }
 
                 if (!VAttrCacheValid && vattr[idx].divisor != elem[i].attrDivisor)
@@ -479,8 +479,8 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
-    vprogSrcHash = DAVA::HashValue_N((const char*)(&vprog_bin[0]), strlen((const char*)(&vprog_bin[0])));
-    fprogSrcHash = DAVA::HashValue_N((const char*)(&fprog_bin[0]), strlen((const char*)(&fprog_bin[0])));
+    vprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&vprog_bin[0]), strlen(reinterpret_cast<const char*>(&vprog_bin[0])));
+    fprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&fprog_bin[0]), strlen(reinterpret_cast<const char*>(&fprog_bin[0])));
 
     for (std::vector<PipelineStateGLES2_t::ProgramEntry>::iterator p = _ProgramEntry.begin(), p_end = _ProgramEntry.end(); p != p_end; ++p)
     {
@@ -537,7 +537,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
         // construct vprog
 
         entry.vprog = new VertexProgGLES2();
-        if (entry.vprog->Construct((const char*)(&vprog_bin[0])))
+        if (entry.vprog->Construct(reinterpret_cast<const char*>(&vprog_bin[0])))
         {
             entry.vprog->vdecl.Construct(desc.vertexLayout);
             vprog_valid = true;
@@ -546,7 +546,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
         // construct fprog
 
         entry.fprog = new FragmentProgGLES2();
-        if (entry.fprog->Construct((const char*)(&fprog_bin[0])))
+        if (entry.fprog->Construct(reinterpret_cast<const char*>(&fprog_bin[0])))
         {
             fprog_valid = true;
         }
@@ -569,7 +569,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.vprog->ShaderUid() } },
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.fprog->ShaderUid() } },
               { GLCommand::LINK_PROGRAM, { gl_prog } },
-              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, (uint64_t)(&status) } },
+              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, reinterpret_cast<uint64>(&status) } },
             };
 
             ExecGL(cmd2, countof(cmd2));
@@ -843,8 +843,8 @@ ProgramUid(Handle ps)
 void InvalidateCache()
 {
     cachedBlendEnabled = -1;
-    cachedBlendSrc = (GLenum)0;
-    cachedBlendDst = (GLenum)0;
+    cachedBlendSrc = 0;
+    cachedBlendDst = 0;
     cachedProgram = 0;
     mask[0] = mask[1] = mask[2] = mask[3] = false;
 

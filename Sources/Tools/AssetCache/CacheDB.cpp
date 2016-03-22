@@ -197,9 +197,10 @@ void CacheDB::ReduceFullCacheBySize(uint64 toSize)
 {
     while (usedSize > toSize)
     {
-        const auto& found = std::min_element(fullCache.begin(), fullCache.end(), [](const CacheMap::value_type& left, const CacheMap::value_type& right) -> bool {
-            return left.second.GetAccesID() < right.second.GetAccesID();
-        });
+        const auto& found = std::min_element(fullCache.begin(), fullCache.end(), [](const CacheMap::value_type& left, const CacheMap::value_type& right) -> bool
+                                             {
+                                                 return left.second.GetAccesID() < right.second.GetAccesID();
+                                             });
         if (found != fullCache.end())
         {
             Remove(found);
@@ -211,9 +212,10 @@ void CacheDB::ReduceFastCacheByCount(uint32 countToRemove)
 {
     for (; countToRemove > 0; --countToRemove)
     {
-        const auto& oldestFound = std::min_element(fastCache.begin(), fastCache.end(), [](const FastCacheMap::value_type& left, const FastCacheMap::value_type& right) -> bool {
-            return left.second->GetAccesID() < right.second->GetAccesID();
-        });
+        const auto& oldestFound = std::min_element(fastCache.begin(), fastCache.end(), [](const FastCacheMap::value_type& left, const FastCacheMap::value_type& right) -> bool
+                                                   {
+                                                       return left.second->GetAccesID() < right.second->GetAccesID();
+                                                   });
 
         if (oldestFound != fastCache.end())
         {

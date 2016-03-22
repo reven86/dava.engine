@@ -31,7 +31,7 @@
 #define __PARTICLE_EDITOR_COMMANDS_H__
 
 #include <DAVAEngine.h>
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
 
 using namespace DAVA;
 

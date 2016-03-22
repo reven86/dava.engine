@@ -62,9 +62,10 @@ CachedItemValue::~CachedItemValue()
     }
     else
     {
-        DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type& data) {
-            return IsDataLoaded(data.second) == false;
-        }));
+        DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type& data)
+                             {
+                                 return IsDataLoaded(data.second) == false;
+                             }));
     }
 
     dataContainer.clear();
@@ -215,7 +216,8 @@ bool CachedItemValue::operator==(const CachedItemValue& right) const
     if ((isFetched == right.isFetched) && (size == right.size) && (dataContainer.size() == right.dataContainer.size()))
     {
         return std::equal(dataContainer.cbegin(), dataContainer.cend(), right.dataContainer.cbegin(),
-                          [](const ValueDataContainer::value_type& left, const ValueDataContainer::value_type& right) -> bool {
+                          [](const ValueDataContainer::value_type& left, const ValueDataContainer::value_type& right) -> bool
+                          {
                               return left.first == right.first;
                           });
     }

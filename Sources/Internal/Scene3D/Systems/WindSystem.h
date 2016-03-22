@@ -53,15 +53,15 @@ class WindSystem : public SceneSystem, public Observer
 
 public:
     WindSystem(Scene* scene);
-    virtual ~WindSystem();
+    ~WindSystem() override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
-    virtual void Process(float32 timeElapsed);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
 
     Vector3 GetWind(const Vector3& inPosition) const;
 
-    virtual void HandleEvent(Observable* observable);
+    void HandleEvent(Observable* observable) override;
 
 protected:
     float32 GetWindValueFromTable(const Vector3& inPosition, const WindInfo* info) const;

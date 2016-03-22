@@ -54,9 +54,9 @@ RenderObject* SkinnedMesh::Clone(RenderObject* newObject)
 
 void SkinnedMesh::BindDynamicParameters(Camera* camera)
 {
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINTS_COUNT, &jointsCount, (pointer_size)(&jointsCount));
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINT_POSITIONS, &positionArray[0], (pointer_size)positionArray);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINT_QUATERNIONS, &quaternionArray[0], (pointer_size)quaternionArray);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINTS_COUNT, &jointsCount, reinterpret_cast<pointer_size>(&jointsCount));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINT_POSITIONS, &positionArray[0], reinterpret_cast<pointer_size>(positionArray));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINT_QUATERNIONS, &quaternionArray[0], reinterpret_cast<pointer_size>(quaternionArray));
 
     RenderObject::BindDynamicParameters(camera);
 }

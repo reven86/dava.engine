@@ -30,7 +30,7 @@
 #ifndef __CHANGE_LOD_DISTANCE_COMMAND_H__
 #define __CHANGE_LOD_DISTANCE_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "DAVAEngine.h"
 
 class ChangeLODDistanceCommand : public Command2

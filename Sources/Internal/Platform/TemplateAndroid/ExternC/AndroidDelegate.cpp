@@ -28,7 +28,7 @@
 
 
 #include "AndroidDelegate.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 AndroidDelegate::AndroidDelegate(JavaVM* vm)
     :

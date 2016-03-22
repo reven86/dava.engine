@@ -518,18 +518,14 @@ void Entity::GetChildNodes(Container<T, A>& container)
 template <template <typename, typename> class Container, class A>
 void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type)
 {
-    Vector<Entity*>::const_iterator end = children.end();
-    for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
+    for (auto& child : children)
     {
-        Entity* entity = *t;
-        if (entity)
+        if (child->GetComponentCount(type) > 0)
         {
-            Component* component = entity->GetComponent(type);
-            if (component)
-                container.push_back(entity);
+            container.push_back(child);
         }
 
-        entity->GetChildEntitiesWithComponent(container, type);
+        child->GetChildEntitiesWithComponent(container, type);
     }
 }
 
