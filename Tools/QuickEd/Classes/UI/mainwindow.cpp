@@ -143,7 +143,6 @@ void MainWindow::OnDocumentChanged(Document* document)
     bool enabled = (document != nullptr);
     packageWidget->setEnabled(enabled);
     propertiesWidget->setEnabled(enabled);
-    previewWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
 }
 

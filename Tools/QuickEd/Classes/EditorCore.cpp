@@ -50,6 +50,7 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "UI/FileSystemView/FileSystemModel.h"
+#include "UI/Package/PackageModel.h"
 
 using namespace DAVA;
 
@@ -97,9 +98,10 @@ EditorCore::EditorCore(QObject* parent)
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
 
+    connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
     auto packageWidget = mainWindow->packageWidget;
+    connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
@@ -107,6 +109,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
     connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::OnSelectionChanged);
     connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
+    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);

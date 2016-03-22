@@ -347,7 +347,7 @@ void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItem
 {
     const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
     bool canRemove = !indexes.isEmpty();
-    bool canOpen = !indexes.isEmpty();
+    bool canOpen = false;
     for (auto index : indexes)
     {
         canRemove &= CanRemove(index);
