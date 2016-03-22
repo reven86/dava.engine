@@ -293,7 +293,7 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
     DVASSERT(nullptr != property);
     FastName name(property->GetName());
     static FastName matchedNames[] = { FastName("Angle"), FastName("Size"), FastName("Scale"), FastName("Position"), FastName("Pivot"), FastName("Visible") };
-    return find(begin(matchedNames), end(matchedNames), name) != end(matchedNames);
+    return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
