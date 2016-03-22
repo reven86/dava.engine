@@ -336,11 +336,15 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         magnetTargetControls.reserve(count);
         for (int i = 0; i < count; ++i)
         {
-            MagnetLineControl* lineControl = new MagnetLineControl();
+            UIControl* lineControl = new UIControl();
+            lineControl->SetName(FastName("magnet line control"));
+            ::SetupHUDMagnetLineControl(lineControl);
             hudControl->AddControl(lineControl);
             magnetControls.emplace_back(lineControl);
 
-            MagnetLineControl* rectControl = new MagnetLineControl();
+            UIControl* rectControl = new UIControl();
+            rectControl->SetName(FastName("rect of target control which we magnet to"));
+            ::SetupHUDMagnetRectControl(rectControl);
             hudControl->AddControl(rectControl);
             magnetTargetControls.emplace_back(rectControl);
         }
@@ -359,14 +363,12 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         lineSize[line.axis] *= gd->scale[line.axis];
         Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
-        RefPtr<UIControl> lineControl(new UIControl(Rect(linePos + gdPos, lineSize)));
-        ::SetupHUDMagnetLineControl(lineControl.Get());
-        lineControl->SetName(FastName("magnet line control"));
+        UIControl* lineControl = magnetControls.at(i).Get();
+        float32 angle = line.gd->angle;
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         Vector2 extraPos = ::Rotate(extraSize, angle) / 2.0f;
         Rect lineRect(Vector2(linePos + gdPos) - extraPos, lineSize + extraSize);
-
-        hudControl->AddControl(lineControl.Get());
+        lineControl->SetRect(lineRect);
         lineControl->SetAngle(angle);
 
         linePos = line.targetRect.GetPosition();
@@ -376,11 +378,9 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos *= gd->scale;
         lineSize *= gd->scale;
 
-        RefPtr<UIControl> rectControl(new UIControl(Rect(linePos + gdPos, lineSize)));
-        ::SetupHUDMagnetRectControl(rectControl.Get());
-        rectControl->SetName(FastName("rect of target control which we magnet to"));
+        UIControl* rectControl = magnetTargetControls.at(i).Get();
+        rectControl->SetRect(Rect(linePos + gdPos, lineSize));
         rectControl->SetAngle(line.gd->angle);
-        hudControl->AddControl(rectControl.Get());
     }
 }
 
