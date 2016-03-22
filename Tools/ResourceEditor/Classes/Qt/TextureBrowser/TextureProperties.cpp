@@ -242,12 +242,12 @@ void TextureProperties::ReloadEnumFormats()
     bool isSquareTexture = origImageSize.width() == origImageSize.height();
 
     const auto& availableFormats = DAVA::GPUFamilyDescriptor::GetAvailableFormatsForGpu(curGPU);
-    PixelFormat currentFormat = curTextureDescriptor->GetPixelFormatForGPU(curGPU);
+    DAVA::PixelFormat currentFormat = curTextureDescriptor->GetPixelFormatForGPU(curGPU);
 
     for (auto nextFormat : availableFormats)
     {
-        PixelFormat pxFormat = nextFormat.first;
-        bool isOldPVR = pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4;
+        DAVA::PixelFormat pxFormat = nextFormat.first;
+        bool isOldPVR = pxFormat == DAVA::FORMAT_PVR2 || pxFormat == DAVA::FORMAT_PVR4;
         if (!isSquareTexture && isOldPVR && pxFormat != currentFormat)
         {
             // skip PVR2/4 format for non-square textures.
