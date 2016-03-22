@@ -462,10 +462,7 @@ void DocumentGroup::SaveDocument(Document* document)
     {
         return;
     }
-    QString path = document->GetPackageAbsolutePath();
-    auto package = document->GetPackage();
-    DVVERIFY(project->SavePackage(package)); //TODO:log here
-    document->GetUndoStack()->setClean();
+    document->Save();
 }
 
 Document* DocumentGroup::CreateDocument(const QString& path)

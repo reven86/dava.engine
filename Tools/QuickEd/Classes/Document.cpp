@@ -32,6 +32,7 @@
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "Model/YamlPackageSerializer.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
@@ -54,7 +55,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
         DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
     }
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
-    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged);
+    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
     connect(undoStack.get(), &QUndoStack::cleanChanged, this, &Document::OnCleanChanged);
 }
 
@@ -99,6 +100,20 @@ WidgetContext* Document::GetContext(void* requester) const
         return iter->second;
     }
     return nullptr;
+}
+
+void Document::Save()
+{
+    QString path = GetPackageAbsolutePath();
+    fileSystemWatcher->removePath(path);
+    YamlPackageSerializer serializer;
+    serializer.SerializePackage(package.Get());
+    serializer.WriteToFile(package->GetPath());
+    undoStack->setClean();
+    if (!fileSystemWatcher->addPath(path))
+    {
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
+    }
 }
 
 void Document::SetContext(void* requester, WidgetContext* widgetContext)
@@ -146,8 +161,8 @@ void Document::OnFileChanged(const QString& path)
 {
     DVASSERT(path == GetPackageAbsolutePath());
     fileExists = QFile::exists(GetPackageAbsolutePath());
-    emit FileChanged(this);
     SetCanSave(!fileExists || !undoStack->isClean());
+    emit FileChanged(this);
 }
 
 void Document::OnCleanChanged(bool clean)

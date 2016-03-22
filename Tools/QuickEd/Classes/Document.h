@@ -75,6 +75,7 @@ public:
     PackageNode* GetPackage() const;
     QtModelPackageCommandExecutor* GetCommandExecutor() const;
     WidgetContext* GetContext(void* requester) const;
+    void Save();
 
     void SetContext(void* requester, WidgetContext* widgetContext);
     void RefreshLayout();

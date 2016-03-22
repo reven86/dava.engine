@@ -181,14 +181,6 @@ RefPtr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
     return RefPtr<PackageNode>();
 }
 
-bool Project::SavePackage(PackageNode* package)
-{
-    YamlPackageSerializer serializer;
-    serializer.SerializePackage(package);
-    serializer.WriteToFile(package->GetPath());
-    return true;
-}
-
 bool Project::IsOpen() const
 {
     return isOpen;
