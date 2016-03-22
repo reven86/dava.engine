@@ -149,7 +149,7 @@ private:
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
     ContinuousUpdater* continuousUpdater = nullptr;
-    SelectedNodes selected, deselected;
+    SelectionContainer tmpContainerForUpdater;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget() const

@@ -264,8 +264,7 @@ void PreviewWidget::SaveSystemsContextAndClear()
     if (!selectionContainer.selectedNodes.empty())
     {
         DVASSERT(!document.isNull());
-        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
-        systemsManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+        systemsManager->ClearSelection();
         continuousUpdater->Stop();
         DVASSERT(selectionContainer.selectedNodes.empty());
     }
@@ -351,9 +350,9 @@ void PreviewWidget::OnGLInitialized()
     systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
-    connect(focusNextChildAction, &QAction::triggered, [this]() { systemsManager->FocusNextChild.Emit(); });
-    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemsManager->FocusPreviousChild.Emit(); });
-    connect(selectAllAction, &QAction::triggered, [this]() { systemsManager->SelectAllControls.Emit(); });
+    connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
+    connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
+    connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
 }
 
 void PreviewWidget::OnScaleChanged(qreal scale)
@@ -700,10 +699,9 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
     return iter != percentages.end() ? *iter : percentages.last();
 }
 
-void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected_, const SelectedNodes& deselected_)
+void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    selected.insert(selected_.begin(), selected_.end());
-    deselected.insert(deselected_.begin(), deselected_.end());
+    tmpContainerForUpdater.MergeSelection(selected, deselected);
     continuousUpdater->Update();
 }
 
@@ -716,10 +714,13 @@ void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>
 
 void PreviewWidget::NotifySelectionChanged()
 {
-    selectionContainer.MergeSelection(selected, deselected);
+    SelectedNodes selected;
+    SelectedNodes deselected;
+    selectionContainer.GetNotExistedItems(tmpContainerForUpdater.selectedNodes, selected);
+    tmpContainerForUpdater.GetNotExistedItems(selectionContainer.selectedNodes, deselected);
     emit SelectionChanged(selected, deselected);
-    selected.clear();
-    deselected.clear();
+    selectionContainer = tmpContainerForUpdater;
+    tmpContainerForUpdater.selectedNodes.clear();
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
