@@ -43,7 +43,7 @@ public:
         ObjectCenter,
         CommonCenter
     };
-    
+
     enum class TransformType : DAVA::uint32
     {
         Disabled,

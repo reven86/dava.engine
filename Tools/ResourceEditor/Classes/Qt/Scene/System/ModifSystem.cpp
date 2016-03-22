@@ -311,29 +311,29 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
         auto entity = obj.AsEntity();
         return (entity == nullptr) ? false : result.ContainsObject(entity->GetParent());
     });
-    
+
     DAVA::AABBox3 localBox;
     for (const auto& item : result.GetContent())
     {
         localBox.AddPoint(item.GetLocalTransform().GetTranslationVector());
     }
     auto averageLocalTranslation = localBox.GetCenter();
-    
+
     modifEntities.reserve(result.GetSize());
     for (const auto& item : result.GetContent())
     {
         modifEntities.emplace_back();
         EntityToModify& etm = modifEntities.back();
-        
+
         etm.object = item;
         etm.originalTransform = item.GetLocalTransform();
-        
+
         etm.toLocalZero.CreateTranslation(-etm.originalTransform.GetTranslationVector());
         etm.fromLocalZero.CreateTranslation(etm.originalTransform.GetTranslationVector());
-        
+
         etm.toWorldZero.CreateTranslation(-averageLocalTranslation);
         etm.fromWorldZero.CreateTranslation(averageLocalTranslation);
-        
+
         etm.originalParentWorldTransform.Identity();
 
         // inverse parent world transform, and remember it
@@ -625,20 +625,17 @@ DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3& newPos3d)
 
     moveOffset = modifPosWithLocedAxis - modifStartPos3d;
 
-    for (size_t i = 0; i < modifEntities.size(); ++i)
+    for (auto& etm : modifEntities)
     {
-        DAVA::Matrix4 moveModification;
-        moveModification.Identity();
-        moveModification.CreateTranslation(moveOffset * modifEntities[i].inversedParentWorldTransform);
-
-        DAVA::Matrix4 newLocalTransform = modifEntities[i].originalTransform * moveModification;
+        DAVA::Matrix4 moveModification = DAVA::Matrix4::MakeTranslation(moveOffset * etm.inversedParentWorldTransform);
+        DAVA::Matrix4 newLocalTransform = etm.originalTransform * moveModification;
 
         if (snapToLandscape)
         {
-            newLocalTransform = newLocalTransform * SnapToLandscape(newLocalTransform.GetTranslationVector(), modifEntities[i].originalParentWorldTransform);
+            newLocalTransform = newLocalTransform * SnapToLandscape(newLocalTransform.GetTranslationVector(), etm.originalParentWorldTransform);
         }
 
-        modifEntities[i].object.SetLocalTransform(newLocalTransform);
+        etm.object.SetLocalTransform(newLocalTransform);
     }
 
     return moveOffset;
@@ -648,7 +645,7 @@ DAVA::float32 EntityModificationSystem::Rotate(const DAVA::Vector2& newPos2d)
 {
     SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
     auto pivotPoint = selectionSystem->GetPivotPoint();
-    
+
     DAVA::Vector2 rotateLength = newPos2d - modifStartPos2d;
     DAVA::float32 rotateForce = -(rotateNormal.DotProduct(rotateLength)) / 70.0f;
 
@@ -667,7 +664,7 @@ DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2& newPos2d)
 {
     SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
     auto pivotPoint = selectionSystem->GetPivotPoint();
-    
+
     DAVA::Vector2 scaleDir = (newPos2d - modifStartPos2d);
     DAVA::float32 scaleForce = 1.0f - (scaleDir.y / 70.0f);
 

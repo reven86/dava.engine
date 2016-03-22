@@ -335,9 +335,9 @@ void HoodSystem::Draw()
 {
     if ((curHood == nullptr) || !IsVisible())
         return;
-    
+
     TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
-    
+
     // modification isn't locked and whole system isn't locked
     if (!IsLocked() && !lockedModif)
     {
@@ -346,7 +346,7 @@ void HoodSystem::Draw()
         {
             showAsSelected = moseOverAxis;
         }
-        
+
         curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
     }

@@ -92,15 +92,15 @@ protected:
     struct MoveToZeroTransformation
     {
     };
-    
+
     struct EntityToModify
     {
         Selectable object;
-        
+
         DAVA::Matrix4 inversedParentWorldTransform;
         DAVA::Matrix4 originalParentWorldTransform;
         DAVA::Matrix4 originalTransform;
-        
+
         DAVA::Matrix4 toLocalZero;
         DAVA::Matrix4 fromLocalZero;
         DAVA::Matrix4 toWorldZero;
