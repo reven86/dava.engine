@@ -35,6 +35,7 @@
 #include "EditorSystems/SelectionContainer.h"
 #include <QWidget>
 #include <QCursor>
+#include <QPointer>
 
 namespace Ui
 {
