@@ -104,6 +104,7 @@ WinUAPXamlApp::WinUAPXamlApp()
 
 WinUAPXamlApp::~WinUAPXamlApp()
 {
+    SafeRelease(mainLoopThread);
     AllowDisplaySleep(true);
 }
 
@@ -122,7 +123,10 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 {
     // Note: must run on UI thread
     bool fullscreen = ApplicationViewWindowingMode::FullScreen == screenMode;
-    SetFullScreen(fullscreen);
+    if (!isPhoneApiDetected)
+    {
+        SetFullScreen(fullscreen);
+    }
 }
 
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
@@ -196,13 +200,10 @@ void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation:
 
     CreateBaseXamlUI();
 
-    Thread* mainLoopThread = Thread::Create([this, args]() { Run(args); });
+    mainLoopThread = Thread::Create([this, args]() { Run(args); });
     mainLoopThread->Start();
     mainLoopThread->BindToProcessor(0);
     mainLoopThread->SetPriority(Thread::PRIORITY_HIGH);
-    mainLoopThread->Release();
-
-    mainLoopThreadStarted = true;
 }
 
 void WinUAPXamlApp::PreStartAppSettings()
@@ -219,9 +220,9 @@ void WinUAPXamlApp::PreStartAppSettings()
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
-    // If mainLoopThreadStarted is false then app performing cold start
+    // If mainLoopThread is null then app performing cold start
     // else app is restored from background or resumed from suspended state
-    if (!mainLoopThreadStarted)
+    if (mainLoopThread == nullptr)
     {
         StartMainLoopThread(args);
     }
@@ -239,7 +240,7 @@ void WinUAPXamlApp::OnActivated(::Windows::ApplicationModel::Activation::IActiva
 
     if (args->Kind == ActivationKind::Protocol)
     {
-        if (!mainLoopThreadStarted)
+        if (mainLoopThread == nullptr)
         {
             StartMainLoopThread(nullptr);
         }
@@ -996,11 +997,19 @@ void WinUAPXamlApp::PrepareScreenSize()
         windowedMode.bpp = options->GetInt32("bpp", DisplayMode::DEFAULT_BITS_PER_PIXEL);
         isFull = (0 != options->GetInt32("fullscreen", 0));
     }
-    SetFullScreen(isFull);
-    if (!isFullscreen)
+    if (!isPhoneApiDetected)
     {
-        // in units of effective (view) pixels
-        SetPreferredSize(static_cast<float32>(windowedMode.width), static_cast<float32>(windowedMode.height));
+        if (!isFull)
+        {
+            // in units of effective (view) pixels
+            ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(static_cast<float32>(windowedMode.width), static_cast<float32>(windowedMode.height));
+            ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+        }
+        else
+        {
+            ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::FullScreen;
+        }
+        SetFullScreen(isFull);
     }
 }
 
@@ -1024,10 +1033,6 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
         isFullscreen = isFullscreen_;
         return;
     }
-    if (isPhoneApiDetected)
-    {
-        return;
-    }
     if (isFullscreen_)
     {
         isFullscreen = view->TryEnterFullScreenMode();
@@ -1037,18 +1042,6 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
         view->ExitFullScreenMode();
         isFullscreen = false;
     }
-}
-
-void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
-{
-    // Note: must run on UI thread
-    if (isPhoneApiDetected)
-    {
-        return;
-    }
-    // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
-    ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
-    ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 }
 
 void WinUAPXamlApp::EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)

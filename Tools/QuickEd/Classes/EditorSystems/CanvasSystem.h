@@ -44,6 +44,7 @@ public:
     CanvasSystem(EditorSystemsManager* parent);
     ~CanvasSystem() override;
 
+    DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
     void LayoutCanvas();
 
 private:
