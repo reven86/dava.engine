@@ -57,7 +57,7 @@ struct StbTextStruct
 //                                        starting from character #n (see discussion below)
 inline void layout_func(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
-    int remaining_chars = str->field->GetText().length() - start_i;
+    int remaining_chars = static_cast<int>(str->field->GetText().length() - start_i);
     row->num_chars = remaining_chars > 20 ? 20 : remaining_chars; // should do real word wrap here
     row->x0 = 0;
     row->x1 = 20; // need to account for actual size of characters
@@ -66,22 +66,22 @@ inline void layout_func(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start
     row->ymax = 0;
 }
 
-//    STB_TEXTEDIT_DELETECHARS(obj,i,n)      delete n characters starting at i
-inline int delete_chars(STB_TEXTEDIT_STRING* str, int pos, int num)
-{
-    str->field->DeleteText(pos, num);
-    return 1; // always succeeds
-}
-
 //    STB_TEXTEDIT_INSERTCHARS(obj,i,c*,n)   insert n characters at i (pointed to by STB_TEXTEDIT_CHARTYPE*)
 inline int insert_chars(STB_TEXTEDIT_STRING* str, int pos, STB_TEXTEDIT_CHARTYPE* newtext, int num)
 {
-    str->field->InsertText(pos, newtext, num);
+    str->field->innerInsertText(pos, newtext, num);
+    return 1; // always succeeds
+}
+
+//    STB_TEXTEDIT_DELETECHARS(obj,i,n)      delete n characters starting at i
+inline int delete_chars(STB_TEXTEDIT_STRING* str, int pos, int num)
+{
+    str->field->innerDeleteText(pos, num);
     return 1; // always succeeds
 }
 
 //    STB_TEXTEDIT_STRINGLEN(obj)       the length of the string (ideally O(1))
-inline int get_length(STB_TEXTEDIT_STRING* str)
+inline unsigned long get_length(STB_TEXTEDIT_STRING* str)
 {
     return str->field->GetText().length();
 }
@@ -144,9 +144,12 @@ inline int get_char(STB_TEXTEDIT_STRING* str, int i)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if defined(__DAVAENGINE_IPHONE__)
+#include "UIScreenKeyboard.h"
+#else
 namespace DAVA
 {
-class PlatformKeyboard
+class UIScreenKeyboard
 {
 public:
     void OpenKeyboard()
@@ -177,12 +180,18 @@ public:
     {
     }
 };
+}
+#endif
 
+////////////////////////////////////////////////////////////////////////////////
+
+namespace DAVA
+{
 UITextField2::UITextField2(const Rect& rect)
     : UIControl(rect)
     , staticText(new UIStaticText(Rect(Vector2(0, 0), GetSize())))
     , stb_struct(new StbTextStruct())
-    , keyboardImpl(new PlatformKeyboard())
+    , keyboardImpl(new UIScreenKeyboard())
 {
     stb_struct->field = this;
     stb_textedit_initialize_state(&stb_struct->state, 0);
@@ -257,25 +266,28 @@ void UITextField2::CopyDataFrom(UIControl* srcControl)
     SetMaxLength(t->GetMaxLength());
 }
 
-void UITextField2::InsertText(uint32 position, const WideString& str)
-{
-    WideString t = GetText();
-    t.insert(position, str);
-    SetText(t);
-}
-
-void UITextField2::InsertText(uint32 position, const WideString::value_type* str, uint32 length)
+void UITextField2::innerInsertText(uint32 position, const WideString::value_type* str, uint32 length)
 {
     WideString t = GetText();
     t.insert(position, str, length);
     SetText(t);
 }
 
-void UITextField2::DeleteText(uint32 position, uint32 length)
+void UITextField2::innerDeleteText(uint32 position, uint32 length)
 {
     WideString t = GetText();
     t.erase(position, length);
     SetText(t);
+}
+
+void UITextField2::InsertText(uint32 position, const WideString& str)
+{
+    stb_textedit_paste(stb_struct, &stb_struct->state, str.c_str(), static_cast<int>(str.length()));
+}
+
+void UITextField2::SendChar(uint32 codePoint)
+{
+    stb_textedit_key(stb_struct, &stb_struct->state, codePoint);
 }
 
 const WideString& UITextField2::GetText() const
@@ -289,7 +301,7 @@ void UITextField2::SetText(const WideString& newText)
     {
         if (delegate != nullptr)
         {
-            delegate->OnTextChanged(this, text, newText);
+            delegate->OnTextChanged(this, newText, text);
         }
         text = newText;
         staticText->SetText(text, NO_REQUIRED_SIZE);
@@ -608,19 +620,19 @@ void UITextField2::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::LEFT)
         {
-            stb_textedit_key(stb_struct, &stb_struct->state, STB_TEXTEDIT_K_LEFT);
+            SendChar(STB_TEXTEDIT_K_LEFT);
         }
         else if (currentInput->key == Key::DOWN)
         {
-            stb_textedit_key(stb_struct, &stb_struct->state, STB_TEXTEDIT_K_DOWN);
+            SendChar(STB_TEXTEDIT_K_DOWN);
         }
         else if (currentInput->key == Key::RIGHT)
         {
-            stb_textedit_key(stb_struct, &stb_struct->state, STB_TEXTEDIT_K_RIGHT);
+            SendChar(STB_TEXTEDIT_K_RIGHT);
         }
         else if (currentInput->key == Key::UP)
         {
-            stb_textedit_key(stb_struct, &stb_struct->state, STB_TEXTEDIT_K_UP);
+            SendChar(STB_TEXTEDIT_K_UP);
         }
         Logger::Error("KEY_DOWN: %d", currentInput->keyChar);
     }
@@ -649,7 +661,7 @@ void UITextField2::Input(UIEvent* currentInput)
                 SetText(GetAppliedChanges(length, 0, str));
             }
         }*/
-        stb_textedit_key(stb_struct, &stb_struct->state, currentInput->keyChar);
+        SendChar(currentInput->keyChar);
         Logger::Error("CHAR: %d", currentInput->keyChar);
     }
 

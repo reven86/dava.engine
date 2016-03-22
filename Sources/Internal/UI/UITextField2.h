@@ -39,7 +39,7 @@ namespace DAVA
 {
 class UITextField2;
 class UIStaticText;
-class PlatformKeyboard;
+class UIScreenKeyboard;
 
 class UITextField2Delegate
 {
@@ -81,9 +81,11 @@ public:
     void CopyDataFrom(UIControl* srcControl) override;
 
     // Text field text modification
+    void innerInsertText(uint32 position, const WideString::value_type* str, uint32 length);
+    void innerDeleteText(uint32 position, uint32 length);
+
     void InsertText(uint32 position, const WideString& str);
-    void InsertText(uint32 position, const WideString::value_type* str, uint32 length);
-    void DeleteText(uint32 position, uint32 length);
+    void SendChar(uint32 codePoint);
 
     // Text field properties
     const WideString& GetText() const;
@@ -157,7 +159,7 @@ private:
     UITextField2Delegate* delegate = nullptr;
     UIStaticText* staticText = nullptr;
     StbTextStruct* stb_struct = nullptr;
-    PlatformKeyboard* keyboardImpl = nullptr;
+    UIScreenKeyboard* keyboardImpl = nullptr;
 
     // Keyboard customization params
     UITextField::eAutoCapitalizationType autoCapitalizationType;
