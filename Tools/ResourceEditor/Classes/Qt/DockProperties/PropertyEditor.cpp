@@ -950,7 +950,7 @@ void PropertyEditor::ConvertToShadow()
     };
 
     DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
-    curScene->BeginBatch("ConvertToShadow batch");
+    curScene->BeginBatch("ConvertToShadow batch", 1);
     curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
     data->ForeachMergedItem([&findEntityFn, curScene](QtPropertyData* item)
                             {
@@ -1055,7 +1055,7 @@ void PropertyEditor::ActionEditSoundComponent()
     Entity* node = curNodes.GetFirst().AsEntity();
     DVASSERT(node != nullptr)
 
-    scene->BeginBatch("Edit Sound Component");
+    scene->BeginBatch("Edit Sound Component", 1);
     {
         SoundComponentEditor editor(scene, QtMainWindow::Instance());
         editor.SetEditableEntity(node);
@@ -1359,7 +1359,7 @@ void PropertyEditor::OnAddComponent(Component::eType type)
     if (curNodes.IsEmpty())
         return;
 
-    curScene->BeginBatch(Format("Add Component: %d", type));
+    curScene->BeginBatch(Format("Add Component: %d", type), curNodes.GetSize());
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
         Component* c = Component::CreateByType(type);
@@ -1375,7 +1375,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component* component)
         return;
 
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-    curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
+    curScene->BeginBatch(Format("Add Component: %d", component->GetType()), curNodes.GetSize());
 
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
@@ -1425,7 +1425,7 @@ void PropertyEditor::OnAddPathComponent()
         return;
 
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-    curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
+    curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT), curNodes.GetSize());
 
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {

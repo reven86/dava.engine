@@ -89,7 +89,7 @@ PathSystem::~PathSystem()
 
 void PathSystem::AddPath(DAVA::Entity* entity)
 {
-    sceneEditor->BeginBatch("Add path at scene");
+    sceneEditor->BeginBatch("Add path at scene", 1);
     sceneEditor->Exec(Command2::Create<EntityAddCommand>(entity, sceneEditor));
 
     if (isEditingEnabled)

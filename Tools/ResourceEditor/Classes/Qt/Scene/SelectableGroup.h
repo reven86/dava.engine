@@ -280,7 +280,7 @@ inline typename SelectableGroup::Enumerator<T>::Iterator& SelectableGroup::Enume
 }
 
 template <typename T>
-inline bool SelectableGroup::Enumerator<T>::Iterator::operator!=(const SelectableGroup::Enumerator<T>::Iterator& other) const
+inline bool SelectableGroup::Enumerator<T>::Iterator::operator!=(const typename SelectableGroup::Enumerator<T>::Iterator& other) const
 {
     return index != other.index;
 }

@@ -77,7 +77,7 @@ void StructureSystem::Move(const SelectableGroup& objects, DAVA::Entity* newPare
     if ((sceneEditor == nullptr) || objectsContent.empty())
         return;
 
-    sceneEditor->BeginBatch("Move entities");
+    sceneEditor->BeginBatch("Move entities", objects.GetSize());
     for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
     {
         sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(entity, newParent, newBefore));
@@ -116,7 +116,7 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
 
     // actually delete bastards
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    sceneEditor->BeginBatch("Remove entities");
+    sceneEditor->BeginBatch("Remove entities", objects.size());
     for (auto entity : objects)
     {
         for (auto delegate : delegates)
@@ -154,7 +154,7 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstan
     if (sceneEditor == nullptr)
         return;
 
-    sceneEditor->BeginBatch("Move particle emitter");
+    sceneEditor->BeginBatch("Move particle emitter", emitters.size());
     for (size_t i = 0; i < emitters.size(); ++i)
     {
         sceneEditor->Exec(Command2::Create<ParticleEmitterMoveCommand>(oldEffects[i], emitters[i], newEffect, dropAfter++));
@@ -169,7 +169,7 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers
     if (sceneEditor == nullptr)
         return;
 
-    sceneEditor->BeginBatch("Move particle layers");
+    sceneEditor->BeginBatch("Move particle layers", layers.size());
     for (size_t i = 0; i < layers.size(); ++i)
     {
         sceneEditor->Exec(Command2::Create<ParticleLayerMoveCommand>(oldEmitters[i], layers[i], newEmitter, newBefore));
@@ -184,7 +184,7 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     if (sceneEditor == nullptr)
         return;
 
-    sceneEditor->BeginBatch("Move particle force");
+    sceneEditor->BeginBatch("Move particle force", forces.size());
     for (size_t i = 0; i < forces.size(); ++i)
     {
         sceneEditor->Exec(Command2::Create<ParticleForceMoveCommand>(forces[i], oldLayers[i], newLayer));
@@ -280,7 +280,7 @@ void StructureSystem::ReloadInternal(InternalMapping& mapping, const DAVA::FileP
                 InternalMapping::iterator it = mapping.begin();
                 InternalMapping::iterator end = mapping.end();
 
-                sceneEditor->BeginBatch("Reload model");
+                sceneEditor->BeginBatch("Reload model", mapping.size());
 
                 for (; it != end; ++it)
                 {

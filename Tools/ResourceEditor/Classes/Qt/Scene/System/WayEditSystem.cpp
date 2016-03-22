@@ -313,7 +313,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                     Entity* newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
 
                     sceneEditor->selectionSystem->SetLocked(true);
-                    sceneEditor->BeginBatch("Add Waypoint");
+                    sceneEditor->BeginBatch("Add Waypoint", 1 + validPrevPoints.GetSize());
                     sceneEditor->Exec(Command2::Create<EntityAddCommand>(newWaypoint, currentWayParent));
                     if (!validPrevPoints.IsEmpty())
                     {
@@ -333,11 +333,10 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                 SelectableGroup entitiesToAddEdge;
                 SelectableGroup entitiesToRemoveEdge;
                 DefineAddOrRemoveEdges(prevSelectedWaypoints, nextWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
-                size_t countToAdd = entitiesToAddEdge.GetSize();
-                size_t countToRemove = entitiesToRemoveEdge.GetSize();
-                if ((countToAdd + countToRemove) > 0)
+                size_t totalOperations = entitiesToAddEdge.GetSize() + entitiesToRemoveEdge.GetSize();
+                if (totalOperations > 0)
                 {
-                    sceneEditor->BeginBatch(DAVA::Format("Add/remove edges pointed on entity %s", nextWaypoint->GetName().c_str()));
+                    sceneEditor->BeginBatch(DAVA::Format("Add/remove edges pointed on entity %s", nextWaypoint->GetName().c_str()), totalOperations);
                     AddEdges(entitiesToAddEdge, nextWaypoint);
                     RemoveEdges(entitiesToRemoveEdge, nextWaypoint);
                     sceneEditor->EndBatch();

@@ -943,7 +943,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
                 break;
             }
 
-            sceneEditor->BeginBatch(commandMessage);
+            sceneEditor->BeginBatch(commandMessage, entityList.size());
 
             // bake render object
             sceneEditor->Exec(Command2::Create<BakeGeometryCommand>(ro, bakeTransform));
@@ -1072,7 +1072,7 @@ bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const Select
 void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const SelectableGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    sceneEditor->BeginBatch("Multiple move");
+    sceneEditor->BeginBatch("Multiple move", selection.GetSize());
 
     for (const auto& item : selection.GetContent())
     {
@@ -1108,7 +1108,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableG
     DAVA::float32 z = DAVA::DegToRad(values.z);
 
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    sceneEditor->BeginBatch("Multiple rotate");
+    sceneEditor->BeginBatch("Multiple rotate", selection.GetSize());
 
     for (const auto& item : selection.GetContent())
     {
@@ -1175,7 +1175,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
     }
 
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    sceneEditor->BeginBatch("Multiple scale");
+    sceneEditor->BeginBatch("Multiple scale", selection.GetSize());
 
     for (const auto& item : selection.GetContent())
     {
