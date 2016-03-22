@@ -39,6 +39,8 @@
 
 #include "Project/ProjectManager.h"
 
+#include "Base/GlobalEnum.h"
+
 #include <QMessageBox>
 
 namespace Preset
@@ -51,19 +53,9 @@ static const QString presetFilter = "Preset (*.preset)";
 
 namespace Internal
 {
-bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const KeyedArchive* preset)
+bool ArePresetDimensionsCorrect(const ImageInfo& imageInfo, const KeyedArchive* preset)
 {
-    DVASSERT(descriptor);
     DVASSERT(preset);
-
-    const FilePath sourceImagePath = descriptor->GetSourceTexturePathname();
-    const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
-    if (imageInfo.isEmpty())
-    {
-        Logger::Error("Can't get image info for %s", sourceImagePath.GetAbsolutePathname().c_str());
-        return false;
-    }
-
     DVASSERT(imageInfo.width > 0);
     DVASSERT(imageInfo.height > 0);
 
@@ -109,6 +101,46 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
     }
 
     return dimensionsAreCorrect;
+}
+
+bool IsPresetValidForApply(const TextureDescriptor* descriptor, const KeyedArchive* preset)
+{
+    const FilePath sourceImagePath = descriptor->GetSourceTexturePathname();
+    const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
+    if (imageInfo.isEmpty())
+    {
+        Logger::Error("Can't get image info for %s", sourceImagePath.GetAbsolutePathname().c_str());
+        return false;
+    }
+    if (ArePresetDimensionsCorrect(imageInfo, preset) == false)
+        return false;
+
+    if (imageInfo.width == imageInfo.height)
+    {
+        return true;
+    }
+
+    // We can't apply PVR2 or PVR4 compression format for non-square textures
+    // If workflow is here, then destination texture is't square. Try to find PVR2, PVR4 compression format
+    for (uint8 gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+    {
+        String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
+        const KeyedArchive* compressionArchive = preset->GetArchive(gpuName);
+        if (compressionArchive != nullptr)
+        {
+            PixelFormat format = static_cast<PixelFormat>(compressionArchive->GetInt32("format", FORMAT_INVALID));
+            if (format == FORMAT_PVR2 || format == FORMAT_PVR4)
+            {
+                Logger::Error("Can't apply compression format %s in gpu family %s for non-square texture %s",
+                              GlobalEnumMap<PixelFormat>::Instance()->ToString(format),
+                              GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu),
+                              sourceImagePath.GetAbsolutePathname().c_str());
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 FilePath CreatePresetFolderPathname(const String& folder)
@@ -160,7 +192,7 @@ bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* prese
     if (descriptor->IsPresetValid(preset) == false)
         return false;
 
-    if (Internal::ArePresetDimensionsCorrect(descriptor, preset) == false)
+    if (Internal::IsPresetValidForApply(descriptor, preset) == false)
         return false;
 
     bool applied = descriptor->DeserializeFromPreset(preset);

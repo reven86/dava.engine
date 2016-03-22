@@ -139,17 +139,11 @@ bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
 
 eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap) const
 {
-    PVRFile* pvrFile = ReadFile(infile, true, true);
-    if (pvrFile != nullptr)
+    if (LoadImages(infile, imageSet, fromMipmap))
     {
-        bool loaded = LoadImages(pvrFile, imageSet, fromMipmap);
-        delete pvrFile;
-
-        if (loaded)
-        {
-            return eErrorCode::SUCCESS;
-        }
+        return eErrorCode::SUCCESS;
     }
+
     return eErrorCode::ERROR_READ_FAIL;
 }
 
@@ -389,10 +383,25 @@ PVRFile* LibPVRHelper::ReadFile(File* file, bool readMetaData /*= false*/, bool 
     return pvrFile;
 }
 
-bool LibPVRHelper::LoadImages(const PVRFile* pvrFile, Vector<Image*>& imageSet, int32 fromMipMap)
+bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, int32 fromMipMap)
 {
+    PVRFile* pvrFile = ReadFile(infile, true, true);
+    SCOPE_EXIT
+    {
+        DAVA::SafeDelete(pvrFile);
+    };
+
     if (nullptr == pvrFile || pvrFile->compressedData == NULL)
     {
+        return false;
+    }
+
+    PixelFormat pxFormat = GetTextureFormat(pvrFile->header);
+    if (pvrFile->header.u32Height != pvrFile->header.u32Width && (pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4))
+    {
+        Logger::Error("[LibPVRHelper::LoadImages]: Non-square textures with %s compression is unsupported. Failed to load : %s",
+                      GlobalEnumMap<PixelFormat>::Instance()->ToString(pxFormat),
+                      infile->GetFilename().GetAbsolutePathname().c_str());
         return false;
     }
 
