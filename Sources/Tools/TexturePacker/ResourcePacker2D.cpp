@@ -560,7 +560,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
                 if (Core::Instance()->IsConsoleMode())
                 {
-                    Logger::Info("[%u files packed with flags: %s]", static_cast<int32>(definitionFileList.size()), mergedFlags.c_str());
+                    Logger::Info("[%u files packed with flags: %s]", static_cast<uint32>(definitionFileList.size()), mergedFlags.c_str());
                 }
 
                 const char* result = definitionFileList.empty() ? "[unchanged]" : "[REPACKED]";

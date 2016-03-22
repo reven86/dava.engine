@@ -79,7 +79,7 @@ void StyleSheetsNode::Remove(StyleSheetNode* node)
 
 int StyleSheetsNode::GetCount() const
 {
-    return static_cast<int32>(styleSheets.size());
+    return static_cast<int>(styleSheets.size());
 }
 
 StyleSheetNode* StyleSheetsNode::Get(int index) const

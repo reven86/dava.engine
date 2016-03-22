@@ -119,7 +119,7 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
         return;
     }
 
-    int numberOffset = static_cast<int>(std::ceil(static_cast<float>(settings.startPos) / static_cast<float>(tickStep)) * static_cast<float>(tickStep));
+    int numberOffset = std::ceilf((float)(settings.startPos) / (float)(tickStep)) * (float)tickStep;
     int tickOffset = numberOffset - settings.startPos;
 
     int fontPos = 0;
