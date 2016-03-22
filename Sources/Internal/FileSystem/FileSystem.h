@@ -33,6 +33,7 @@
 #include "Base/Singleton.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
+#include "FileSystem/ResourceArchive.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/ZipFile.h"
@@ -42,7 +43,6 @@
  */
 namespace DAVA
 {
-class ResourceArchive;
 /**
 	\ingroup filesystem
 	\brief FileSystem is a wrapper class that allow to perform all basic filesystem operations
@@ -283,7 +283,15 @@ private:
 
     struct ResourceArchiveItem
     {
-        ResourceArchive* archive;
+        ResourceArchiveItem() = default;
+        ResourceArchiveItem(ResourceArchiveItem&& other)
+            :
+            archive(std::move(other.archive))
+            , attachPath(std::move(other.attachPath))
+        {
+        }
+
+        std::unique_ptr<ResourceArchive> archive;
         String attachPath;
     };
 

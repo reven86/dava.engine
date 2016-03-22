@@ -25,6 +25,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#ifndef FILE_SYSTEM_DAVA_ARCHIVE_H
+#define FILE_SYSTEM_DAVA_ARCHIVE_H
 
 #include "FileSystem/ResourceArchivePrivate.h"
 
@@ -75,8 +77,8 @@ struct PackFile
 
 using FileTableEntry = PackFile::FilesDataBlock::Data;
 
-static_assert(sizeof(PackFile::HeaderBlock) == 32, "fix compiler padding");
-static_assert(sizeof(FileTableEntry) == 32, "fix compiler padding");
+static_assert(sizeof(PackFile::HeaderBlock) == 32, "header block size changed");
+static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed");
 } // end of dava_pack_private namespace
 
 namespace DAVA
@@ -91,6 +93,8 @@ public:
     bool HasFile(const String& fileName) const override;
     bool LoadFile(const String& fileName, Vector<uint8>& output) const override;
 
+    static bool Create(const FilePath& archiveName, const FilePath& baseFolder, Vector<ResourceArchive::FileInfo>& infos, void (*onPackOneFile)(const ResourceArchive::FileInfo&));
+
 private:
     mutable RefPtr<File> file;
     dava_pack_private::PackFile packFile;
@@ -98,3 +102,5 @@ private:
     Vector<ResourceArchive::FileInfo> filesInfoSortedByName;
 };
 }
+
+#endif // FILE_SYSTEM_DAVA_ARCHIVE_H

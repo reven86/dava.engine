@@ -70,11 +70,6 @@ FileSystem::FileSystem()
 
 FileSystem::~FileSystem()
 {
-    for (auto& archive : resourceArchiveList)
-    {
-        delete archive.archive;
-        archive.archive = nullptr;
-    }
     resourceArchiveList.clear();
 
     // All locked files should be explicitly unlocked before closing the app.
@@ -793,8 +788,8 @@ void FileSystem::AttachArchive(const String& archiveName, const String& attachPa
 
     ResourceArchiveItem item;
     item.attachPath = attachPath;
-    item.archive = new ResourceArchive(archiveName);
-    resourceArchiveList.push_back(item);
+    item.archive.reset(new ResourceArchive(archiveName));
+    resourceArchiveList.push_back(std::move(item));
 }
 
 int32 FileSystem::Spawn(const String& command)
