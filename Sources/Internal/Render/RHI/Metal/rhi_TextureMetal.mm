@@ -104,11 +104,11 @@ MetalTextureFormat(TextureFormat format)
         return MTLPixelFormatA8Unorm;
     //        TEXTURE_FORMAT_R16,
 
-    //-    case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
-    //-        return MTLPixelFormatPVRTC_RGBA_4BPP;
-    //-    case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
-    //-        return MTLPixelFormatPVRTC_RGBA_2BPP;
-
+    case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
+        return MTLPixelFormatPVRTC_RGBA_4BPP;
+    case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
+        return MTLPixelFormatPVRTC_RGBA_2BPP;
+    /*
     case TEXTURE_FORMAT_PVRTC2_4BPP_RGB:
         return MTLPixelFormatPVRTC_RGB_4BPP;
     case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA:
@@ -117,7 +117,7 @@ MetalTextureFormat(TextureFormat format)
         return MTLPixelFormatPVRTC_RGB_2BPP;
     case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA:
         return MTLPixelFormatPVRTC_RGBA_2BPP;
-
+*/
     //        TEXTURE_FORMAT_ATC_RGB,
     //        TEXTURE_FORMAT_ATC_RGBA_EXPLICIT,
     //        TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED,
