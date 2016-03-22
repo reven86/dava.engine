@@ -157,7 +157,6 @@ private:
     void UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
-    void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
     void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
