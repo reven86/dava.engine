@@ -136,6 +136,7 @@ class HUDControl : public UIControl
     void Draw(const UIGeometricData& geometricData) override
     {
         UpdateLayout();
+        UIControl::Draw(geometricData);
     }
 };
 
