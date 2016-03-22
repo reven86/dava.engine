@@ -43,6 +43,16 @@ PngImageExt::PngImageExt()
 {
 }
 
+PngImageExt::PngImageExt(const PngImageExt& img)
+    : internalData(nullptr)
+{
+    if (img.internalData)
+    {
+        internalData.reset(Image::CreateFromData(img.internalData->GetWidth(), img.internalData->GetHeight(), img.internalData->GetPixelFormat(),
+                                                 img.internalData->GetData()));
+    }
+}
+
 PngImageExt::~PngImageExt()
 {
 }

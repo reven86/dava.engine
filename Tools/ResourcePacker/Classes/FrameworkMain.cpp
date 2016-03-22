@@ -54,6 +54,7 @@ void PrintUsage()
     printf("\t-ip - asset cache ip\n");
     printf("\t-p - asset cache port\n");
     printf("\t-t - asset cache timeout\n");
+    printf("\t-allGPUs - compress atlasses for all GPU\n");
 
     printf("\n");
     printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
@@ -128,6 +129,10 @@ void ProcessRecourcePacker()
         {
             exportForGPU = GPU_ORIGIN;
         }
+    }
+    else if (CommandLineParser::CommandIsFound(String("-allGPUs")))
+    {
+        exportForGPU = GPU_FAMILY_COUNT;
     }
 
     if (CommandLineParser::CommandIsFound(String("-useCache")))

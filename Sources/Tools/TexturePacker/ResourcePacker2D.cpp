@@ -117,9 +117,8 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
                            outputGfxDirectory.GetAbsolutePathname().c_str(),
                            rootDirectory.GetAbsolutePathname().c_str());
 
-    Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
+    Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GlobalEnumMap<eGPUFamily>::Instance()->ToString(forGPU) : "Unknown");
 
-    
     requestedGPUFamily = forGPU;
 
     outputDirModified = false;
@@ -436,7 +435,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     Logger::FrameworkDebug("Flags applied for current folder: %s", mergedFlags.c_str());
 
     String mergedParams = mergedFlags;
-    mergedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
+    mergedParams += String("GPU = ") + GlobalEnumMap<eGPUFamily>::Instance()->ToString(requestedGPUFamily);
     mergedParams += String("PackerVersion = ") + VERSION;
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);

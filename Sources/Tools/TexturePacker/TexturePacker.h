@@ -111,12 +111,12 @@ private:
         ImageFormat imageFormat = IMAGE_FORMAT_UNKNOWN;
         PixelFormat pixelFormat = FORMAT_INVALID;
         ImageQuality imageQuality = DEFAULT_IMAGE_QUALITY;
-        bool toConvertOrigin = false;
         bool toComressForGPU = false;
+        bool toConvertOrigin = false;
     };
-    
-    ImageExportKeys GetExportKeys(eGPUFamily forGPU);
-    void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
+
+    Vector<ImageExportKeys> GetExportKeys(eGPUFamily forGPU);
+    void ExportImage(const PngImageExt& image, const Vector<ImageExportKeys>& exportKeys, const FilePath& exportedPathname);
 
     rhi::TextureAddrMode GetDescriptorWrapMode();
     FilterItem GetDescriptorFilter(bool generateMipMaps = false);
@@ -130,8 +130,8 @@ private:
     uint32 maxTextureSize;
 
     bool onlySquareTextures;
-    bool NeedSquareTextureForCompression(ImageExportKeys keys);
-	
+    bool NeedSquareTextureForCompression(const Vector<ImageExportKeys>& keys);
+
     TextureConverter::eConvertQuality quality;
 
 	bool useTwoSideMargin;

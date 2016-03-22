@@ -41,6 +41,7 @@ class PngImageExt
 {
 public:
     PngImageExt();
+    PngImageExt(const PngImageExt& img);
     ~PngImageExt();
 
     bool Create(uint32 width, uint32 height);
