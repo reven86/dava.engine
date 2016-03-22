@@ -40,7 +40,7 @@ public:
 
     enum class TransformPivot : DAVA::uint32
     {
-        EntityCenter,
+        ObjectCenter,
         CommonCenter
     };
     

@@ -710,7 +710,15 @@ void SceneSelectionSystem::UpdateHoodPos() const
         bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
         hoodSystem->LockModif(modificationEnabled == false);
 
-        auto hoodCenter = (curPivotPoint == Selectable::TransformPivot::EntityCenter) ? currentSelection.GetFirstTranslationVector() : currentSelection.GetCommonTranslationVector();
+        DAVA::Vector3 hoodCenter;
+        if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
+        {
+            hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
+        }
+        else
+        {
+            hoodCenter = currentSelection.GetAverageWorldSpaceTranslationVector();
+        }
         hoodSystem->SetPosition(hoodCenter);
 
         bool hasNonTransformableObjects = false;
@@ -725,7 +733,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
         hoodSystem->SetVisible(hasNonTransformableObjects == false);
     }
 
-    SceneEditor2* sc = (SceneEditor2*)GetScene();
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
     sc->cameraSystem->UpdateDistanceToCamera();
 }
 

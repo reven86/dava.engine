@@ -311,16 +311,29 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
         auto entity = obj.AsEntity();
         return (entity == nullptr) ? false : result.ContainsObject(entity->GetParent());
     });
-
+    
+    DAVA::AABBox3 localBox;
+    for (const auto& item : result.GetContent())
+    {
+        localBox.AddPoint(item.GetLocalTransform().GetTranslationVector());
+    }
+    auto averageLocalTranslation = localBox.GetCenter();
+    
     modifEntities.reserve(result.GetSize());
     for (const auto& item : result.GetContent())
     {
-        EntityToModify etm;
+        modifEntities.emplace_back();
+        EntityToModify& etm = modifEntities.back();
+        
         etm.object = item;
         etm.originalTransform = item.GetLocalTransform();
-        etm.originalCenter = etm.originalTransform.GetTranslationVector();
-        etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
-        etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
+        
+        etm.toLocalZero.CreateTranslation(-etm.originalTransform.GetTranslationVector());
+        etm.fromLocalZero.CreateTranslation(etm.originalTransform.GetTranslationVector());
+        
+        etm.toWorldZero.CreateTranslation(-averageLocalTranslation);
+        etm.fromWorldZero.CreateTranslation(averageLocalTranslation);
+        
         etm.originalParentWorldTransform.Identity();
 
         // inverse parent world transform, and remember it
@@ -344,21 +357,12 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
         }
 
         etm.inversedParentWorldTransform = etm.originalParentWorldTransform;
-        etm.inversedParentWorldTransform.SetTranslationVector(DAVA::Vector3(0, 0, 0));
+        etm.inversedParentWorldTransform.SetTranslationVector(DAVA::Vector3(0.0f, 0.0f, 0.0f));
         if (!etm.inversedParentWorldTransform.Inverse())
         {
             etm.inversedParentWorldTransform.Identity();
         }
-
-        modifEntities.push_back(etm);
     }
-
-    // center of this bbox will modification center, common for all entities
-    modifEntitiesCenter = inputEntities.GetCommonTranslationVector();
-
-    // prepare translation matrix's, used before and after rotation
-    moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
-    moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
 
     // remember axis vector we are rotating around
     switch (curAxis)
@@ -381,6 +385,7 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
     }
 
     // 2d axis projection we are rotating around
+    modifEntitiesCenter = inputEntities.GetAverageWorldSpaceTranslationVector();
     DAVA::Vector2 rotateAxis = Cam2dProjection(modifEntitiesCenter, modifEntitiesCenter + rotateAround);
 
     // axis dot products
@@ -495,7 +500,6 @@ void EntityModificationSystem::ApplyModification()
     }
 }
 
-//DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(const DAVA::Vector3 &camPosition, const DAVA::Vector3 &camPointDirection, const DAVA::Vector3 &planePoint)
 DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(DAVA::Camera* camera, DAVA::Vector2 pos)
 {
     DAVA::Vector3 ret;
@@ -648,28 +652,12 @@ DAVA::float32 EntityModificationSystem::Rotate(const DAVA::Vector2& newPos2d)
     DAVA::Vector2 rotateLength = newPos2d - modifStartPos2d;
     DAVA::float32 rotateForce = -(rotateNormal.DotProduct(rotateLength)) / 70.0f;
 
-    for (size_t i = 0; i < modifEntities.size(); ++i)
+    for (auto& etm : modifEntities)
     {
-        DAVA::Matrix4 rotateModification;
-        rotateModification.Identity();
-        rotateModification.CreateRotation(rotateAround * modifEntities[i].inversedParentWorldTransform, rotateForce);
-
-        switch (pivotPoint)
-        {
-        case Selectable::TransformPivot::EntityCenter:
-            // move to zero, rotate, move back to original center point
-            rotateModification = (modifEntities[i].moveToZeroPos * rotateModification) * modifEntities[i].moveFromZeroPos;
-            break;
-        case Selectable::TransformPivot::CommonCenter:
-            // move to zero relative selection center, rotate, move back to original center point
-            rotateModification = (moveToZeroPosRelativeCenter * rotateModification) * moveFromZeroPosRelativeCenter;
-            break;
-        default:
-            rotateModification.Identity();
-            break;
-        }
-
-        modifEntities[i].object.SetLocalTransform(modifEntities[i].originalTransform * rotateModification);
+        DAVA::Matrix4 rotateModification = DAVA::Matrix4::MakeRotation(rotateAround, rotateForce);
+        auto& toZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.toLocalZero : etm.toWorldZero;
+        auto& fromZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.fromLocalZero : etm.fromWorldZero;
+        etm.object.SetLocalTransform(etm.originalTransform * toZero * rotateModification * fromZero);
     }
 
     return rotateForce;
@@ -685,28 +673,13 @@ DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2& newPos2d)
 
     if (scaleForce >= 0.0f)
     {
-        for (size_t i = 0; i < modifEntities.size(); ++i)
+        for (auto& etm : modifEntities)
         {
-            DAVA::Matrix4 scaleModification;
-            scaleModification.Identity();
-            scaleModification.CreateScale(DAVA::Vector3(scaleForce, scaleForce, scaleForce) * modifEntities[i].inversedParentWorldTransform);
-
-            switch (pivotPoint)
-            {
-            case Selectable::TransformPivot::EntityCenter:
-                // move to zero, rotate, move back to original center point
-                scaleModification = (modifEntities[i].moveToZeroPos * scaleModification) * modifEntities[i].moveFromZeroPos;
-                break;
-            case Selectable::TransformPivot::CommonCenter:
-                // move to zero relative selection center, rotate, move back to original center point
-                scaleModification = (moveToZeroPosRelativeCenter * scaleModification) * moveFromZeroPosRelativeCenter;
-                break;
-            default:
-                scaleModification.Identity();
-                break;
-            }
-
-            modifEntities[i].object.SetLocalTransform(modifEntities[i].originalTransform * scaleModification);
+            DAVA::Vector3 scaleVector(scaleForce, scaleForce, scaleForce);
+            DAVA::Matrix4 scaleModification = DAVA::Matrix4::MakeScale(scaleVector);
+            auto& toZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.toLocalZero : etm.toWorldZero;
+            auto& fromZero = (pivotPoint == Selectable::TransformPivot::ObjectCenter) ? etm.fromLocalZero : etm.fromWorldZero;
+            etm.object.SetLocalTransform(etm.originalTransform * toZero * scaleModification * fromZero);
         }
     }
 

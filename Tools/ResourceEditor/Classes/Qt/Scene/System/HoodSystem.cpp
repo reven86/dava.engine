@@ -333,35 +333,26 @@ void HoodSystem::Input(DAVA::UIEvent* event)
 
 void HoodSystem::Draw()
 {
-    if (NULL != curHood && IsVisible())
+    if ((curHood == nullptr) || !IsVisible())
+        return;
+    
+    TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
+    
+    // modification isn't locked and whole system isn't locked
+    if (!IsLocked() && !lockedModif)
     {
-        TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
-
-        // modification isn't locked and whole system isn't locked
-        if (!IsLocked() && !lockedModif)
+        ST_Axis showAsSelected = curAxis;
+        if ((GetTransformType() != Selectable::TransformType::Disabled) && (ST_AXIS_NONE != moseOverAxis))
         {
-            ST_Axis showAsSelected = curAxis;
-
-            if (GetTransformType() != Selectable::TransformType::Disabled)
-            {
-                if (ST_AXIS_NONE != moseOverAxis)
-                {
-                    showAsSelected = moseOverAxis;
-                }
-            }
-
-            curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-
-            // zero pos point
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
-
-            // debug draw axis collision word
-            //collWorld->debugDrawWorld();
+            showAsSelected = moseOverAxis;
         }
-        else
-        {
-            normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-        }
+        
+        curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
+    }
+    else
+    {
+        normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
     }
 }
 

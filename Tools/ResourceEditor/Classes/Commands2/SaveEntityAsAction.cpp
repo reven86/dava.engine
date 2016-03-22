@@ -120,7 +120,7 @@ void SaveEntityAsAction::Redo()
         {
             container.reset(new Entity());
 
-            const Vector3 oldZero = entities->GetCommonTranslationVector();
+            const Vector3 oldZero = entities->GetAverageWorldSpaceTranslationVector();
             for (auto entity : entities->ObjectsOfType<DAVA::Entity>())
             {
                 ScopedPtr<Entity> clone(entity->Clone());
