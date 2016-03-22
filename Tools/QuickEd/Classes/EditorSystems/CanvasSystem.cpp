@@ -291,8 +291,9 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
 bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property)
 {
     DVASSERT(nullptr != property);
-    const String& name = property->GetName();
-    return name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible";
+    FastName name(property->GetName());
+    static FastName matchedNames[] = { FastName("Angle"), FastName("Size"), FastName("Scale"), FastName("Position"), FastName("Pivot"), FastName("Visible") };
+    return find(begin(matchedNames), end(matchedNames), name) != end(matchedNames);
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
