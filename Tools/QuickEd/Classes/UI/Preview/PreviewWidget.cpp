@@ -35,6 +35,8 @@
 #include <QScreen>
 #include <QMenu>
 #include <QShortCut>
+#include <QFileInfo>
+
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"

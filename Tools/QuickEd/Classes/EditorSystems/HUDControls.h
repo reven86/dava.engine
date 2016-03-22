@@ -115,8 +115,8 @@ private:
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
 };
 
-extern void SetupHUDMagnetLineControl(UIControl* control);
+extern void SetupHUDMagnetLineControl(DAVA::UIControl* control);
 
-extern void SetupHUDMagnetRectControl(UIControl* control);
+extern void SetupHUDMagnetRectControl(DAVA::UIControl* control);
 
 #endif //_QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_
