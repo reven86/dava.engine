@@ -338,6 +338,7 @@ void CanvasSystem::OnTransformStateChanged(bool inTransformState_)
             }
         }
     }
+    transformedNodes.clear();
 }
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
