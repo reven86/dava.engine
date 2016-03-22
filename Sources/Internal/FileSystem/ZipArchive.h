@@ -37,7 +37,7 @@ namespace DAVA
 class ZipArchive : public ResourceArchiveImpl
 {
 public:
-    ZipArchive(const FilePath& archiveName);
+    explicit ZipArchive(const FilePath& archiveName);
     ~ZipArchive() override;
 
     const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;

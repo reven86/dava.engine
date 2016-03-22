@@ -28,9 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FileSystem/ResourceArchivePrivate.h"
 
-namespace DAVA
+namespace dava_pack_private
 {
 using namespace DAVA;
+
 const Array<char8, 4> PackFileMarker = { 'P', 'A', 'C', 'K' };
 const uint32 PackFileMagic = 20150817;
 
@@ -76,14 +77,14 @@ using FileTableEntry = PackFile::FilesDataBlock::Data;
 
 static_assert(sizeof(PackFile::HeaderBlock) == 32, "fix compiler padding");
 static_assert(sizeof(FileTableEntry) == 32, "fix compiler padding");
-} // end of resource_archive_details namespace
+} // end of dava_pack_private namespace
 
 namespace DAVA
 {
 class DavaArchive : public ResourceArchiveImpl
 {
 public:
-    DavaArchive(const FilePath& archiveName);
+    explicit DavaArchive(const FilePath& archiveName);
 
     const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
     const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const override;
@@ -92,8 +93,8 @@ public:
 
 private:
     mutable RefPtr<File> file;
-    PackFile packFile;
-    UnorderedMap<String, FileTableEntry*> mapFileData;
+    dava_pack_private::PackFile packFile;
+    UnorderedMap<String, dava_pack_private::FileTableEntry*> mapFileData;
     Vector<ResourceArchive::FileInfo> filesInfoSortedByName;
 };
 }

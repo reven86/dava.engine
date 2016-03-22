@@ -39,6 +39,7 @@ THIS
 #include <Compression/ZipCompressor.h>
 
 using namespace DAVA;
+using namespace dava_pack_private;
 
 void FrameworkDidLaunched()
 {

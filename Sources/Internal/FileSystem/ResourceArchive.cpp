@@ -69,7 +69,7 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
 
     f.reset();
 
-    if (PackFileMarker == firstBytes)
+    if (dava_pack_private::PackFileMarker == firstBytes)
     {
         impl.reset(new DavaArchive(fileName));
     }

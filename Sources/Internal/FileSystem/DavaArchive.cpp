@@ -35,7 +35,7 @@ namespace DAVA
 {
 DavaArchive::DavaArchive(const FilePath& archiveName)
 {
-    using namespace DAVA;
+    using namespace dava_pack_private;
 
     String fileName = archiveName.GetAbsolutePathname();
 
@@ -174,7 +174,7 @@ bool DavaArchive::HasFile(const String& fileName) const
 
 bool DavaArchive::LoadFile(const String& fileName, Vector<uint8>& output) const
 {
-    using namespace DAVA;
+    using namespace dava_pack_private;
 
     if (!HasFile(fileName))
     {
