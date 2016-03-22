@@ -53,6 +53,19 @@ DAVA_TESTCLASS (ThreadSyncTest)
     AutoResetEvent are;
     ManualResetEvent mre;
 
+    DAVA_TEST (ThreadJoinableTest)
+    {
+        RefPtr<Thread> p(Thread::Create([]() {
+            Thread::Sleep(2000);
+        }));
+
+        TEST_VERIFY(p->IsJoinable() == false);
+        p->Start();
+        TEST_VERIFY(p->IsJoinable() == true);
+        p->Join();
+        TEST_VERIFY(p->IsJoinable() == false);
+    }
+
     DAVA_TEST (ThreadSyncTestFunction)
     {
         cvMutex.Lock();
@@ -66,15 +79,6 @@ DAVA_TESTCLASS (ThreadSyncTest)
         someThread->Join();
         TEST_VERIFY(0 == someThread->Release());
         someThread = nullptr;
-    }
-
-    DAVA_TEST (ThreadSleepTestFunction)
-    {
-        uint64 time = SystemTimer::Instance()->AbsoluteMS();
-        Thread::Sleep(300);
-        uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - time;
-        //elapsed time can be rounded to lowest, so -1 here
-        TEST_VERIFY(elapsedTime >= 299);
     }
 
     DAVA_TEST (TestThread)

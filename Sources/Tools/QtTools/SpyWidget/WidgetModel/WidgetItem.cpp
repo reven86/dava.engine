@@ -36,27 +36,25 @@
 
 #include "WidgetModel.h"
 
-
-
-WidgetItem::WidgetItem( QWidget* w )
-    : QObject( nullptr )
-    , widget( w )
+WidgetItem::WidgetItem(QWidget* w)
+    : QObject(nullptr)
+    , widget(w)
 {
-    if ( !widget.isNull() )
+    if (!widget.isNull())
     {
-        widget->installEventFilter( this );
+        widget->installEventFilter(this);
     }
 }
 
 WidgetItem::~WidgetItem()
 {
-    if ( !widget.isNull() )
+    if (!widget.isNull())
     {
-        widget->removeEventFilter( this );
+        widget->removeEventFilter(this);
 
-        if ( !model.isNull() )
+        if (!model.isNull())
         {
-            model->cache.remove( widget );
+            model->cache.remove(widget);
         }
     }
 }
@@ -64,56 +62,56 @@ WidgetItem::~WidgetItem()
 void WidgetItem::rebuildChildren()
 {
     children.clear();
-    auto childrenWidgets = widget->findChildren<QWidget *>( QString(), Qt::FindDirectChildrenOnly );
+    auto childrenWidgets = widget->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
 
-    children.reserve( childrenWidgets.size() );
-    for ( auto childWidget : childrenWidgets )
+    children.reserve(childrenWidgets.size());
+    for (auto childWidget : childrenWidgets)
     {
-        auto childItem = create( childWidget );
+        auto childItem = create(childWidget);
         childItem->parentItem = self;
         childItem->rebuildChildren();
         children << childItem;
     }
 }
 
-void WidgetItem::onChildAdd( QWidget* w )
+void WidgetItem::onChildAdd(QWidget* w)
 {
-    if ( w == nullptr )
+    if (w == nullptr)
         return;
 
-    auto childItem = create( w );
+    auto childItem = create(w);
     childItem->parentItem = self;
     childItem->rebuildChildren();
 
     children << childItem;
 
-    if ( !model.isNull() )
+    if (!model.isNull())
     {
         model->cache[w] = childItem;
-        auto parentIndex = model->indexFromWidget( w->parentWidget() );
-        model->beginInsertRows( parentIndex, children.size(), children.size() );
+        auto parentIndex = model->indexFromWidget(w->parentWidget());
+        model->beginInsertRows(parentIndex, children.size(), children.size());
         model->endInsertRows();
     }
 }
 
-void WidgetItem::onChildRemove( QWidget* w )
+void WidgetItem::onChildRemove(QWidget* w)
 {
-    if ( w == nullptr )
+    if (w == nullptr)
         return;
 
-    for ( auto it = children.begin(); it != children.end(); ++it )
+    for (auto it = children.begin(); it != children.end(); ++it)
     {
         auto child = it->data()->widget;
-        if ( child == w )
+        if (child == w)
         {
             auto index = it - children.begin();
-            children.erase( it );
+            children.erase(it);
 
-            if ( !model.isNull() )
+            if (!model.isNull())
             {
-                model->cache.remove( w );
-                auto parentIndex = model->indexFromWidget( w->parentWidget() );
-                model->beginRemoveRows( parentIndex, index, index );
+                model->cache.remove(w);
+                auto parentIndex = model->indexFromWidget(w->parentWidget());
+                model->beginRemoveRows(parentIndex, index, index);
                 model->endRemoveRows();
             }
 
@@ -122,38 +120,38 @@ void WidgetItem::onChildRemove( QWidget* w )
     }
 }
 
-bool WidgetItem::eventFilter( QObject* obj, QEvent* e )
+bool WidgetItem::eventFilter(QObject* obj, QEvent* e)
 {
-    if ( obj == widget.data() )
+    if (obj == widget.data())
     {
-        switch ( e->type() )
+        switch (e->type())
         {
         case QEvent::ChildAdded:
-            {
-                auto event = static_cast<QChildEvent *>( e );
-                auto w = qobject_cast< QWidget *>( event->child() );
-                onChildAdd( w );
-            }
-            break;
+        {
+            auto event = static_cast<QChildEvent*>(e);
+            auto w = qobject_cast<QWidget*>(event->child());
+            onChildAdd(w);
+        }
+        break;
         case QEvent::ChildRemoved:
-            {
-                auto event = static_cast<QChildEvent *>( e );
-                auto w = qobject_cast< QWidget *>( event->child() );
-                onChildRemove( w );
-            }
-            break;
+        {
+            auto event = static_cast<QChildEvent*>(e);
+            auto w = qobject_cast<QWidget*>(event->child());
+            onChildRemove(w);
+        }
+        break;
 
         default:
             break;
         }
     }
 
-    return QObject::eventFilter( obj, e );
+    return QObject::eventFilter(obj, e);
 }
 
-QSharedPointer<WidgetItem> WidgetItem::create( QWidget* w )
+QSharedPointer<WidgetItem> WidgetItem::create(QWidget* w)
 {
-    auto item = QSharedPointer< WidgetItem >::create( w );
+    auto item = QSharedPointer<WidgetItem>::create(w);
     item->self = item.toWeakRef();
 
     return item;

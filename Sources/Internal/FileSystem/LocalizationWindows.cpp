@@ -26,27 +26,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
-#ifndef __DAVAENGINE_LOCALIZATION_APPLE_H__
-#define __DAVAENGINE_LOCALIZATION_APPLE_H__
+#if defined(__DAVAENGINE_WINDOWS__)
 
-#include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_APPLE__)
-
-#include "FileSystem/FilePath.h"
+#include "FileSystem/LocalizationSystem.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
-class LocalizationApple
+String LocalizationSystem::GetDeviceLocale(void) const
 {
-public:
-    static void SelectPreferedLocalizationForPath(const FilePath& directoryPath);
-
-    static const char* GetDeviceLang(void);
-};
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
 }
+};
 
-#endif
-
-#endif
+#endif // __DAVAENGINE_WIN_UAP__
