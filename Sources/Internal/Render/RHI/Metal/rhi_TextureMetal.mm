@@ -315,6 +315,10 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 
         uid = nil;
     }
+    else
+    {
+        DAVA::Logger::Debug("failed to create tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
+    }
 
     return handle;
 }
