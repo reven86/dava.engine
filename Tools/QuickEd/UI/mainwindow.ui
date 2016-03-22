@@ -314,9 +314,6 @@
    <property name="toolTip">
     <string>Close project</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+W</string>
-   </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
    </property>
