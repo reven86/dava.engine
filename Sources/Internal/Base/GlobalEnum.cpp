@@ -57,6 +57,7 @@ ENUM_DECLARE(eGPUFamily)
     ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
     ENUM_ADD_DESCR(GPU_DX11, "dx11");
     ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
+    ENUM_ADD_DESCR(GPU_FAMILY_COUNT, "all GPU");
 }
 
 ENUM_DECLARE(Logger::eLogLevel)

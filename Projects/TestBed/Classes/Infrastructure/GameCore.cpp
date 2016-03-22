@@ -51,6 +51,7 @@
 #include "Tests/DlcTest.h"
 #include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
+#include "Tests/GPUTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -87,6 +88,7 @@ void GameCore::RegisterTests()
     new InputTest();
     new CoreTest();
     new FormatsTest();
+    new GPUTest();
     new FloatingPointExceptionTest();
     //$UNITTEST_CTOR
 }

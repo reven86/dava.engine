@@ -26,54 +26,24 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __GPU_TEST_H__
+#define __GPU_TEST_H__
 
-#ifndef __SCENE_EXPORTER_H__
-#define __SCENE_EXPORTER_H__
-
-#include "CommandLine/SceneUtils/SceneUtils.h"
-#include "TextureCompression/TextureConverter.h"
+#include "DAVAEngine.h"
+#include "Infrastructure/BaseScreen.h"
 
 using namespace DAVA;
 
-class SceneExporter
+class GPUTest : public BaseScreen
 {
 public:
-    void SetGPUForExporting(const eGPUFamily newGPU);
+    GPUTest();
 
-    void SetCompressionQuality(TextureConverter::eConvertQuality quality);
+protected:
+    ~GPUTest() = default;
 
-    void SetInFolder(const FilePath& folderPathname);
-    void SetOutFolder(const FilePath& folderPathname);
-
-    void EnableOptimizations(bool enable);
-
-    void ExportSceneFile(const String& fileName, Set<String>& errorLog);
-    void ExportTextureFile(const String& fileName, Set<String>& errorLog);
-
-    void ExportSceneFolder(const String& folderName, Set<String>& errorLog);
-    void ExportTextureFolder(const String& folderName, Set<String>& errorLog);
-
-    void ExportScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
-
-private:
-    void RemoveEditorNodes(Entity* rootNode);
-    void RemoveEditorCustomProperties(Entity* rootNode);
-
-    bool ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog);
-    bool ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog);
-    bool ExportTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
-    void CompressTexture(const TextureDescriptor* descriptor);
-    bool CopyCompressedTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
-
-    bool ExportLandscape(Scene* scene, Set<String>& errorLog);
-
-    SceneUtils sceneUtils;
-    eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
-    TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
-    bool optimizeOnExport = true;
-    bool exportForAllGPUs = false;
+public:
+    void LoadResources() override;
 };
 
-
-
-#endif // __SCENE_EXPORTER_H__
+#endif

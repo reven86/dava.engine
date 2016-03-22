@@ -214,8 +214,7 @@ QtMainWindow::~QtMainWindow()
     TextureBrowser::Instance()->Release();
     MaterialEditor::Instance()->Release();
 
-    delete ui;
-    ui = nullptr;
+    SafeDelete(ui);
 
     ProjectManager::Instance()->Release();
 }
@@ -537,6 +536,15 @@ void QtMainWindow::SetupTitle()
 
 void QtMainWindow::SetupMainMenu()
 {
+    //Setup export actions
+    for (int gpu = GPU_POWERVR_IOS; gpu <= GPU_FAMILY_COUNT; ++gpu) //use int to put it into action::data
+    {
+        String actionText = Format("Export as %s", GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(gpu)));
+
+        QAction* action = ui->menuExport->addAction(QString::fromStdString(actionText));
+        action->setData(gpu);
+    }
+
     ui->menuDockWindows->addAction(ui->dockSceneInfo->toggleViewAction());
     ui->menuDockWindows->addAction(ui->dockLibrary->toggleViewAction());
     ui->menuDockWindows->addAction(ui->dockProperties->toggleViewAction());
@@ -1362,7 +1370,7 @@ void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
 
     WaitStart("Export", "Please wait...");
 
-    eGPUFamily gpuFamily = (eGPUFamily)exportAsAction->data().toInt();
+    eGPUFamily gpuFamily = static_cast<eGPUFamily>(exportAsAction->data().toInt());
     scene->Export(gpuFamily); // errors will be displayed by logger output
 
     WaitStop();

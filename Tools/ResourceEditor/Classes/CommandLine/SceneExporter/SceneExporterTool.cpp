@@ -138,7 +138,14 @@ void SceneExporterTool::ProcessInternal()
 
     exporter.SetOutFolder(outFolder);
     exporter.SetInFolder(inFolder);
-    exporter.SetGPUForExporting(requestedGPU);
+    if (exportForAllGPUs)
+    {
+        exporter.SetGPUForExporting(GPU_FAMILY_COUNT);
+    }
+    else
+    {
+        exporter.SetGPUForExporting(requestedGPU);
+    }
     exporter.EnableOptimizations(optimizeOnExport);
     exporter.SetCompressionQuality(quality);
 

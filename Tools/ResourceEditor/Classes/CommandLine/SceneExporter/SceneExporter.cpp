@@ -54,11 +54,7 @@ void SceneExporter::SetOutFolder(const FilePath& folderPathname)
 void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
 {
     exportForGPU = newGPU;
-}
-
-void SceneExporter::EnableAllGPUMode(bool enabled)
-{
-    exportForAllGPUs = enabled;
+    exportForAllGPUs = (newGPU == GPU_FAMILY_COUNT);
 }
 
 void SceneExporter::ExportSceneFolder(const String& folderName, Set<String>& errorLog)
@@ -317,29 +313,29 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog)
 
 bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog)
 {
-    TextureDescriptor* descriptor = TextureDescriptor::CreateFromFile(pathname);
+    std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(pathname));
     if (!descriptor)
     {
         errorLog.insert(Format("Can't create descriptor for pathname %s", pathname.GetAbsolutePathname().c_str()));
         return false;
     }
 
-    descriptor->exportedAsGpuFamily = exportForGPU;
-    descriptor->format = descriptor->GetPixelFormatForGPU(exportForGPU);
+    if (exportForGPU != GPU_FAMILY_COUNT)
+    {
+        descriptor->exportedAsGpuFamily = exportForGPU;
+        descriptor->format = descriptor->GetPixelFormatForGPU(exportForGPU);
+    }
 
-    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
-    if (GPUFamilyDescriptor::IsGPUForDevice(gpu) && (descriptor->format == FORMAT_INVALID))
+    if (GPUFamilyDescriptor::IsGPUForDevice(exportForGPU) && (descriptor->format == FORMAT_INVALID))
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
-
-        delete descriptor;
         return false;
     }
 
     String workingPathname = descriptor->pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
     sceneUtils.PrepareFolderForCopyFile(workingPathname, errorLog);
 
-    bool isExported = ExportTexture(descriptor, errorLog);
+    bool isExported = ExportTexture(descriptor.get(), errorLog);
     if (isExported)
     {
         if (exportForAllGPUs)
@@ -352,7 +348,6 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String
         }
     }
 
-    delete descriptor;
     return isExported;
 }
 

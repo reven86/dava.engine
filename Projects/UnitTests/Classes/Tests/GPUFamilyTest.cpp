@@ -26,54 +26,34 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-#ifndef __SCENE_EXPORTER_H__
-#define __SCENE_EXPORTER_H__
-
-#include "CommandLine/SceneUtils/SceneUtils.h"
-#include "TextureCompression/TextureConverter.h"
+#include "Infrastructure/TextureUtils.h"
 
 using namespace DAVA;
 
-class SceneExporter
+DAVA_TESTCLASS (GPUFamilyTest)
 {
-public:
-    void SetGPUForExporting(const eGPUFamily newGPU);
+    DAVA_TEST (TestFunction)
+    {
+        TEST_VERIFY(Texture::GetDefaultGPU() == DeviceInfo::GetGPUFamily());
+        
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
+        TEST_VERIFY(Texture::GetDefaultGPU() == GPU_DX11);
+#elif defined(__DAVAENGINE_IPHONE__)
+        TEST_VERIFY(Texture::GetDefaultGPU() == GPU_POWERVR_IOS);
+#elif defined(__DAVAENGINE_ANDROID__)
+        auto gpu = Texture::GetDefaultGPU();
 
-    void SetCompressionQuality(TextureConverter::eConvertQuality quality);
-
-    void SetInFolder(const FilePath& folderPathname);
-    void SetOutFolder(const FilePath& folderPathname);
-
-    void EnableOptimizations(bool enable);
-
-    void ExportSceneFile(const String& fileName, Set<String>& errorLog);
-    void ExportTextureFile(const String& fileName, Set<String>& errorLog);
-
-    void ExportSceneFolder(const String& folderName, Set<String>& errorLog);
-    void ExportTextureFolder(const String& folderName, Set<String>& errorLog);
-
-    void ExportScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
-
-private:
-    void RemoveEditorNodes(Entity* rootNode);
-    void RemoveEditorCustomProperties(Entity* rootNode);
-
-    bool ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog);
-    bool ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog);
-    bool ExportTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
-    void CompressTexture(const TextureDescriptor* descriptor);
-    bool CopyCompressedTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
-
-    bool ExportLandscape(Scene* scene, Set<String>& errorLog);
-
-    SceneUtils sceneUtils;
-    eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
-    TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
-    bool optimizeOnExport = true;
-    bool exportForAllGPUs = false;
+        TEST_VERIFY(
+        gpu == GPU_POWERVR_ANDROID
+        || gpu == GPU_TEGRA
+        || gpu == GPU_MALI
+        || gpu == GPU_ADRENO
+        );
+#else
+        TEST_VERIFY(false);
+#endif
+    }
 };
-
-
-
-#endif // __SCENE_EXPORTER_H__

@@ -287,7 +287,7 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
     exporter.SetGPUForExporting(newGPU);
 
     DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
-    exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
+    exporter.SetCompressionQuality(static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32()));
 
     ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
