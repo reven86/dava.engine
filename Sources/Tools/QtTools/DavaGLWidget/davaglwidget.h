@@ -93,6 +93,9 @@ public:
     explicit DavaGLWidget(QWidget *parent = nullptr);
     void MakeInvisible();
     QQuickWindow* GetGLView();
+    QCursor GetCursor() const;
+    void SetCursor(const QCursor& cursor);
+    void UnsetCursor();
 
 signals:
     void ScreenChanged();
