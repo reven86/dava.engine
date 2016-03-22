@@ -149,11 +149,6 @@ public:
 
 private:
     ~HUDMagnetRect() override = default;
-
-    //this class not designet to be resized
-    using UIControl::SetSize;
-    using UIControl::SetRect;
-    using UIControl::SetAbsoluteRect;
 };
 
 #endif //_QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_
