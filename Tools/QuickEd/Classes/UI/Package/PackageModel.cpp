@@ -71,9 +71,12 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     auto sizeOffset = parent->GetSize() * parent->GetPivot();
     auto angle = parent->GetAngle();
     auto gd = parent->GetGeometricData();
+    const auto& nodeSize = node->GetControl()->GetSize();
+    sizeOffset -= nodeSize / 2;
     sizeOffset *= gd.scale;
     auto controlPos = gd.position - ::Rotate(sizeOffset, angle); //top left corner of dest control
     auto relativePos = pos - controlPos; //new abs pos
+
     //now calculate new relative pos
 
     auto scale = gd.scale;

@@ -68,7 +68,7 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
         return new FrameRectControl(area);
     case HUDAreaInfo::FRAME_AREA:
-        return CreateContainerWithBorders<FrameControl>();
+        return new FrameControl();
     default:
         DVASSERT(!"unacceptable value of area");
         return nullptr;
@@ -131,9 +131,17 @@ HUDSystem::HUD::~HUD()
     hudControl->RemoveControl(container.Get());
 }
 
+class HUDControl : public UIControl
+{
+    void Draw(const UIGeometricData& geometricData) override
+    {
+        UpdateLayout();
+    }
+};
+
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , hudControl(new UIControl())
+    , hudControl(new HUDControl())
     , sortedControlList(CompareByLCA)
 {
     InvalidatePressedPoint();
@@ -271,7 +279,8 @@ void HUDSystem::OnNodesHovered(const Vector<ControlNode*>& nodes)
             auto gd = targetControl->GetGeometricData();
             Rect ur(gd.position, gd.size * gd.scale);
 
-            RefPtr<UIControl> control(new HUDMagnetRect(ur));
+            RefPtr<UIControl> control(new UIControl(ur));
+            ::SetupHUDMagnetRectControl(control.Get());
             control->SetPivot(targetControl->GetPivot());
             control->SetAngle(gd.angle);
             hudControl->AddControl(control.Get());
@@ -323,7 +332,8 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         lineSize[line.axis] *= gd->scale[line.axis];
         Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
-        RefPtr<UIControl> lineControl(CreateHUDMagnetLineControl(Rect(linePos + gdPos, lineSize)));
+        RefPtr<UIControl> lineControl(new UIControl(Rect(linePos + gdPos, lineSize)));
+        ::SetupHUDMagnetLineControl(lineControl.Get());
         lineControl->SetName(FastName("magnet line control"));
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         lineControl->SetSize(lineControl->GetSize() + extraSize);
@@ -339,7 +349,8 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos *= gd->scale;
         lineSize *= gd->scale;
 
-        RefPtr<UIControl> rectControl(new HUDMagnetRect(Rect(linePos + gdPos, lineSize)));
+        RefPtr<UIControl> rectControl(new UIControl(Rect(linePos + gdPos, lineSize)));
+        ::SetupHUDMagnetRectControl(rectControl.Get());
         rectControl->SetName(FastName("rect of target control which we magnet to"));
         rectControl->SetAngle(line.gd->angle);
         hudControl->AddControl(rectControl.Get());
@@ -409,7 +420,7 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
         if (canDrawRect)
         {
             DVASSERT(nullptr == selectionRectControl);
-            selectionRectControl = CreateContainerWithBorders<SelectionRect>();
+            selectionRectControl = new FrameControl();
             hudControl->AddControl(selectionRectControl);
         }
         else
