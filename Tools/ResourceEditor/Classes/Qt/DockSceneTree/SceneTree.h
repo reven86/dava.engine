@@ -175,7 +175,7 @@ inline void SceneTree::ExecuteCommandForSelectedEffects(Args&&... arg)
         return;
 
     const auto& selection = sceneEditor->selectionSystem->GetSelection();
-    
+
     sceneEditor->BeginBatch("Run/Stop Effect(s)", selection.GetSize());
     for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
