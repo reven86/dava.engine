@@ -38,12 +38,15 @@
 class ProcessWrapper : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool running READ IsRunning NOTIFY runningChanged)
+
 public:
     explicit ProcessWrapper(QObject* parent = 0);
     ~ProcessWrapper();
 
     Q_INVOKABLE void LaunchCmake(const QString& command, bool needClean, const QString& buildFolder);
     Q_INVOKABLE void BlockingStopAllTasks();
+    bool IsRunning() const;
 
 signals:
     void processStateChanged(const QString& text);
@@ -51,6 +54,7 @@ signals:
     void processStandardOutput(const QString& text) const;
     void processStandardError(const QString& text) const;
     void testSignal();
+    void runningChanged(bool running);
 
 private slots:
     void OnReadyReadStandardOutput();
@@ -61,6 +65,7 @@ private slots:
 private:
     Q_INVOKABLE void StartNextCommand();
     bool CleanBuildFolder(const QString& buildFolder) const;
+    void SetRunning(bool running);
 
     QProcess process;
     struct Task
@@ -76,6 +81,7 @@ private:
         QString buildFolder;
     };
     QQueue<Task> taskQueue;
+    bool running = false;
 };
 
 #endif // PROCESSWRAPPER_H
