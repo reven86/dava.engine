@@ -43,7 +43,7 @@ const float32 FAR_DISTANCE_COEFF = 0.95f;
 
 LodComponent::LodDistance::LodDistance()
 {
-    distance = nearDistanceSq = farDistanceSq = (float32)INVALID_DISTANCE;
+    distance = nearDistanceSq = farDistanceSq = INVALID_DISTANCE;
 }
 
 void LodComponent::LodDistance::SetDistance(const float32& newDistance)
@@ -203,7 +203,7 @@ LodComponent::LodComponent()
 
 float32 LodComponent::GetDefaultDistance(int32 layer)
 {
-    float32 distance = MIN_LOD_DISTANCE + ((float32)(MAX_LOD_DISTANCE - MIN_LOD_DISTANCE) / (MAX_LOD_LAYERS - 1)) * layer;
+    float32 distance = MIN_LOD_DISTANCE + ((MAX_LOD_DISTANCE - MIN_LOD_DISTANCE) / (MAX_LOD_LAYERS - 1)) * layer;
     return distance;
 }
 

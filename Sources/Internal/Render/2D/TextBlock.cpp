@@ -706,7 +706,7 @@ void TextBlock::CalculateCacheParams()
         textLayout.Seek(0);
         textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
         fontHeight = font->GetFontHeight() + yOffset;
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+        textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(multilineStrings.size()) - yOffset;
 
         if (fittingType && (requestedSize.dy >= 0 /* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
@@ -734,7 +734,7 @@ void TextBlock::CalculateCacheParams()
                             textLayout.Seek(0);
                             textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
                             fontHeight = font->GetFontHeight() + yOffset;
-                            textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+                            textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(multilineStrings.size()) - yOffset;
                             break;
                         }
                     }
@@ -796,13 +796,13 @@ void TextBlock::CalculateCacheParams()
                 textLayout.Seek(0);
                 textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
                 fontHeight = font->GetFontHeight() + yOffset;
-                textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+                textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(multilineStrings.size()) - yOffset;
             };
         }
 
         if (textMetrics.height > drawSize.y && requestedSize.y >= 0.f)
         {
-            int32 needLines = Min((int32)multilineStrings.size(), (int32)ceilf(drawSize.y / fontHeight) + 1);
+            int32 needLines = Min(int32(multilineStrings.size()), int32(ceilf(drawSize.y / fontHeight)) + 1);
             Vector<WideString> oldLines;
             multilineStrings.swap(oldLines);
             if (align & ALIGN_TOP)
@@ -811,19 +811,19 @@ void TextBlock::CalculateCacheParams()
             }
             else if (align & ALIGN_VCENTER)
             {
-                int32 startIndex = ((int32)oldLines.size() - needLines + 1) / 2;
+                int32 startIndex = (int32(oldLines.size()) - needLines + 1) / 2;
                 multilineStrings.assign(oldLines.begin() + startIndex, oldLines.begin() + startIndex + needLines);
             }
             else //if(ALIGN_BOTTOM)
             {
-                int32 startIndex = (int32)oldLines.size() - needLines;
+                int32 startIndex = int32(oldLines.size()) - needLines;
                 multilineStrings.assign(oldLines.begin() + startIndex, oldLines.end());
             }
-            textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+            textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(multilineStrings.size()) - yOffset;
         }
 
         stringSizes.reserve(multilineStrings.size());
-        for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
+        for (int32 line = 0; line < int32(multilineStrings.size()); ++line)
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
             stringSizes.push_back(stringSize.width);
@@ -833,7 +833,7 @@ void TextBlock::CalculateCacheParams()
 
             if (requestedSize.dx >= 0)
             {
-                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, (int32)drawSize.x));
+                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, int32(drawSize.x)));
             }
             else
             {
@@ -859,14 +859,14 @@ void TextBlock::CalculateCacheParams()
 
     if (requestedSize.dx >= 0 && useJustify)
     {
-        textMetrics.drawRect.dx = Max(textMetrics.drawRect.dx, (int)drawSize.dx);
+        textMetrics.drawRect.dx = Max(textMetrics.drawRect.dx, int32(drawSize.dx));
     }
 
     //calculate texture size
-    int32 dx = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)textMetrics.drawRect.dx));
-    int32 dy = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)textMetrics.drawRect.dy));
-    int32 ox = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)textMetrics.drawRect.x));
-    int32 oy = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)textMetrics.drawRect.y));
+    int32 dx = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.dx))));
+    int32 dy = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.dy))));
+    int32 ox = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.x))));
+    int32 oy = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.y))));
 
     cacheUseJustify = useJustify;
     cacheDx = dx;
@@ -879,34 +879,34 @@ void TextBlock::CalculateCacheParams()
     cacheOy = oy;
 
     cacheW = textMetrics.drawRect.dx;
-    cacheFinalSize.x = (float32)textMetrics.drawRect.dx;
-    cacheFinalSize.y = (float32)textMetrics.drawRect.dy;
-    cacheTextSize = Vector2((float32)textMetrics.width, (float32)textMetrics.height);
+    cacheFinalSize.x = float32(textMetrics.drawRect.dx);
+    cacheFinalSize.y = float32(textMetrics.drawRect.dy);
+    cacheTextSize = Vector2(float32(textMetrics.width), float32(textMetrics.height));
 
     // Align sprite offset
     if (align & ALIGN_RIGHT)
     {
-        cacheSpriteOffset.x = (float32)(textMetrics.drawRect.dx - textMetrics.width + textMetrics.drawRect.x);
+        cacheSpriteOffset.x = float32(textMetrics.drawRect.dx - textMetrics.width + textMetrics.drawRect.x);
     }
     else if (align & ALIGN_HCENTER)
     {
-        cacheSpriteOffset.x = ((float32)(textMetrics.drawRect.dx - textMetrics.width) * 0.5f + textMetrics.drawRect.x);
+        cacheSpriteOffset.x = (textMetrics.drawRect.dx - textMetrics.width) * 0.5f + textMetrics.drawRect.x;
     }
     else
     {
-        cacheSpriteOffset.x = (float32)textMetrics.drawRect.x;
+        cacheSpriteOffset.x = float32(textMetrics.drawRect.x);
     }
     if (align & ALIGN_BOTTOM)
     {
-        cacheSpriteOffset.y = (float32)(textMetrics.drawRect.dy - textMetrics.height + textMetrics.drawRect.y);
+        cacheSpriteOffset.y = float32(textMetrics.drawRect.dy - textMetrics.height + textMetrics.drawRect.y);
     }
     else if (align & ALIGN_VCENTER)
     {
-        cacheSpriteOffset.y = ((float32)(textMetrics.drawRect.dy - textMetrics.height) * 0.5f + textMetrics.drawRect.y);
+        cacheSpriteOffset.y = (textMetrics.drawRect.dy - textMetrics.height) * 0.5f + textMetrics.drawRect.y;
     }
     else
     {
-        cacheSpriteOffset.y = (float32)textMetrics.drawRect.y;
+        cacheSpriteOffset.y = float32(textMetrics.drawRect.y);
     }
 
     // Restore font size

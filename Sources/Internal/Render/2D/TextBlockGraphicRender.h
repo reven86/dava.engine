@@ -56,11 +56,11 @@ public:
     static const uint32 GetSharedIndexBufferCapacity();
 
 protected:
-    virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
-    virtual Font::StringMetrics DrawTextML(const WideString& drawText,
-                                           int32 x, int32 y, int32 w,
-                                           int32 xOffset, uint32 yOffset,
-                                           int32 lineSize);
+    Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w) override;
+    Font::StringMetrics DrawTextML(const WideString& drawText,
+                                   int32 x, int32 y, int32 w,
+                                   int32 xOffset, uint32 yOffset,
+                                   int32 lineSize) override;
 
 private:
     Font::StringMetrics InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize);

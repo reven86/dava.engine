@@ -80,13 +80,13 @@ DisplayMode CoreMacOSPlatformBase::GetCurrentDisplayMode()
 
 void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode>& availableModes)
 {
-    CFArrayRef availableModesSystem = CGDisplayCopyAllDisplayModes(kCGDirectMainDisplay, NULL);
+    CFArrayRef availableModesSystem = CGDisplayCopyAllDisplayModes(kCGDirectMainDisplay, nullptr);
     int32 numberOfAvailableModes = CFArrayGetCount(availableModesSystem);
 
     for (int modeIndex = 0; modeIndex < numberOfAvailableModes; ++modeIndex)
     {
         // look at each mode in the available list
-        CGDisplayModeRef modeSystem = (CGDisplayModeRef)CFArrayGetValueAtIndex(availableModesSystem, modeIndex);
+        CGDisplayModeRef modeSystem = static_cast<CGDisplayModeRef>(const_cast<void*>(CFArrayGetValueAtIndex(availableModesSystem, modeIndex)));
 
         DisplayMode mode;
         mode.width = CGDisplayModeGetWidth(modeSystem);

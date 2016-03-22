@@ -30,7 +30,7 @@
 #include "stdafx.h"
 #include <wchar.h>
 #include "ColladaTexture.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/FileSystem.h"

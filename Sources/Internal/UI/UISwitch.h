@@ -58,8 +58,8 @@ protected:
 public:
     UISwitch(const Rect& rect = Rect());
 
-    virtual void LoadFromYamlNodeCompleted();
-    virtual void CopyDataFrom(DAVA::UIControl* srcControl);
+    void LoadFromYamlNodeCompleted() override;
+    void CopyDataFrom(DAVA::UIControl* srcControl) override;
 
     virtual void AddControl(UIControl* control) override;
     virtual void RemoveControl(UIControl* control) override;

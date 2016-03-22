@@ -30,7 +30,7 @@
 #ifndef __DELETE_RENDER_BATCH_COMMAND_H__
 #define __DELETE_RENDER_BATCH_COMMAND_H__
 
-#include "Command2.h"
+#include "Commands2/Base/Command2.h"
 
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"

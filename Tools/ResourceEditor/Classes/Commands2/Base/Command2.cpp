@@ -27,45 +27,47 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND2_H__
-#define __COMMAND2_H__
+#include "Commands2/Base/Command2.h"
 
-#include "Base/BaseTypes.h"
-#include "Scene3D/Scene.h"
-
-#include "Command/ICommand.h"
-
-#include "Commands2/CommandID.h"
-#include "Commands2/CommandNotify.h"
-
-class Command2 : public CommandNotifyProvider, public DAVA::ICommand
+Command2::Command2(DAVA::int32 _id, const DAVA::String& _text)
+    : text(_text)
+    , id(_id)
 {
-public:
-    Command2(int _id, const DAVA::String& _text = "");
-    ~Command2() override = default;
-
-    int GetId() const;
-
-    void Execute() override;
-
-    virtual bool CanUndo() const;
-    virtual DAVA::Entity* GetEntity() const = 0;
-    virtual bool MergeWith(const Command2* command);
-
-    DAVA::String GetText() const;
-    void SetText(const DAVA::String& text);
-
-protected:
-    int id;
-    DAVA::String text;
-
-    void UndoInternalCommand(Command2* command);
-    void RedoInternalCommand(Command2* command);
-};
-
-inline bool Command2::CanUndo() const
-{
-    return true;
 }
 
-#endif // __COMMAND2_H__
+Command2::~Command2() = default;
+
+void Command2::UndoInternalCommand(Command2* command)
+{
+    command->Undo();
+    EmitNotify(command, false);
+}
+
+void Command2::RedoInternalCommand(Command2* command)
+{
+    command->Redo();
+    EmitNotify(command, true);
+}
+
+bool Command2::MatchCommandID(DAVA::int32 commandID) const
+{
+    return (id == commandID);
+}
+
+bool Command2::MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const
+{
+    for (auto commandID : commandIDVector)
+    {
+        if (id == commandID)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Command2::Execute()
+{
+    Redo();
+}

@@ -28,7 +28,7 @@
 
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "FileSystemDockWidget.h"
 #include "ValidatedTextInputDialog.h"

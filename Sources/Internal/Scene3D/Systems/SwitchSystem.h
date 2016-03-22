@@ -40,10 +40,10 @@ class SwitchSystem : public SceneSystem
 public:
     SwitchSystem(Scene* scene);
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
     void ImmediateEvent(Component* component, uint32 event) override;
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
 private:
     Set<Entity*> updatableEntities;
