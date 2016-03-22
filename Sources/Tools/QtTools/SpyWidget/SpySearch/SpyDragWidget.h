@@ -39,7 +39,7 @@ PUSH_QT_WARNING_SUPRESSOR
 POP_QT_WARNING_SUPRESSOR
 
 class SpyDragWidget
-    : public QLabel
+: public QLabel
 {
 private:
     PUSH_QT_WARNING_SUPRESSOR
@@ -48,15 +48,15 @@ private:
 
 signals:
     void mousePressed();
-    void mouseReleased( const QPoint& globalPos );
+    void mouseReleased(const QPoint& globalPos);
 
 public:
-    explicit SpyDragWidget( QWidget *parent = nullptr );
+    explicit SpyDragWidget(QWidget* parent = nullptr);
     ~SpyDragWidget();
 
 private:
-    void mousePressEvent( QMouseEvent * e ) override;
-    void mouseReleaseEvent( QMouseEvent * e ) override;
+    void mousePressEvent(QMouseEvent* e) override;
+    void mouseReleaseEvent(QMouseEvent* e) override;
 
     void onMousePress();
     void onMouseRelease();

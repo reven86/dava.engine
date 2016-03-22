@@ -108,4 +108,46 @@ WideString StringUtils::RemoveNonPrintable(const WideString& string, const int8 
     }
     return out;
 }
+
+bool IsEmoji(int32 sym)
+{
+    // ranges of symbol codes with unicode emojies.
+    static Vector<std::pair<DAVA::int32, DAVA::int32>> ranges = { { 0x2190, 0x21FF }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, { 0xF300, 0x1F64F }, { 0x1F680, 0x1F6FF } };
+    for (auto range : ranges)
+    {
+        if (sym >= range.first && sym <= range.second)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool StringUtils::RemoveEmoji(WideString& string)
+{
+    DAVA::WideString ret;
+    bool isChanged = false;
+
+    auto data = string.data();
+    size_t length = string.length();
+    for (size_t i = 0; i < length; ++i)
+    {
+        int32 sym;
+        Memcpy(&sym, data + i, sizeof(int32));
+
+        if (!IsEmoji(sym))
+        {
+            ret += sym;
+        }
+        else
+        {
+            isChanged = true;
+        }
+    }
+
+    string = ret;
+
+    // true means "we removed some emojies".
+    return isChanged;
+}
 }

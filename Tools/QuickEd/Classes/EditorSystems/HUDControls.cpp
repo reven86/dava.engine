@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include "UI/Layouts/UIAnchorComponent.h"
 #include "EditorSystems/HUDControls.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
@@ -112,11 +113,13 @@ void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
     UIControl::SystemDraw(geometricData);
 }
 
-void FrameControl::Init()
+FrameControl::FrameControl()
+    : ControlContainer(HUDAreaInfo::FRAME_AREA)
 {
+    SetName(FastName("Frame Control"));
     for (uint32 i = 0; i < BORDERS_COUNT; ++i)
     {
-        ScopedPtr<UIControl> control(new UIControl());
+        ScopedPtr<UIControl> control(CreateFrameBorderControl(i));
         control->SetName(FastName(String("border of ") + GetName().c_str()));
         UIControlBackground* background = control->GetBackground();
         background->SetSprite("~res:/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
@@ -133,39 +136,34 @@ void FrameControl::InitFromGD(const UIGeometricData& geometricData)
     Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
     rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
     SetRect(rect);
-
-    auto& children = GetChildren();
-    DVASSERT(children.size() == BORDERS_COUNT);
-    auto chilrenIt = children.begin();
-    for (uint32 i = 0; i < BORDERS_COUNT; ++i, ++chilrenIt)
-    {
-        Rect borderRect = CreateFrameBorderRect(i, rect);
-        (*chilrenIt)->SetRect(borderRect);
-    }
 }
 
-FrameControl::FrameControl()
-    : ControlContainer(HUDAreaInfo::FRAME_AREA)
+UIControl* FrameControl::CreateFrameBorderControl(uint32 border)
 {
-    SetName(FastName("Frame Control"));
-}
-
-Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
-{
+    UIControl* control = new UIControl(Rect(1.0f, 1.0f, 1.0f, 1.0f));
+    UIAnchorComponent* anchor = control->GetOrCreateComponent<UIAnchorComponent>();
+    anchor->SetLeftAnchorEnabled(true);
+    anchor->SetRightAnchorEnabled(true);
+    anchor->SetTopAnchorEnabled(true);
+    anchor->SetBottomAnchorEnabled(true);
     switch (border)
     {
     case BORDER_TOP:
-        return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
+        anchor->SetBottomAnchorEnabled(false);
+        break;
     case BORDER_BOTTOM:
-        return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
+        anchor->SetTopAnchorEnabled(false);
+        break;
     case BORDER_LEFT:
-        return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
+        anchor->SetRightAnchorEnabled(false);
+        break;
     case BORDER_RIGHT:
-        return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
+        anchor->SetLeftAnchorEnabled(false);
+        break;
     default:
         DVASSERT("!impossible value for frame control position");
-        return Rect();
     }
+    return control;
 }
 
 FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
@@ -266,32 +264,21 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
     SetRect(rect);
 }
 
-SelectionRect::SelectionRect()
+void SetupHUDMagnetLineControl(UIControl* control)
 {
-    SetName(FastName("Selection Rect"));
+    control->GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    control->GetBackground()->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+    control->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
 }
 
-void SelectionRect::Draw(const UIGeometricData& geometricData)
+void SetupHUDMagnetRectControl(UIControl* parentControl)
 {
-    Rect rect = geometricData.GetUnrotatedRect();
-    rect.SetPosition(Vector2());
-    auto& children = GetChildren();
-    DVASSERT(children.size() == BORDERS_COUNT);
-    auto chilrenIt = children.begin();
-    for (uint32 i = 0; i < BORDERS_COUNT; ++i, ++chilrenIt)
+    const int bordersCount = 4;
+    for (int i = 0; i < bordersCount; ++i)
     {
-        Rect borderRect = CreateFrameBorderRect(i, rect);
-        (*chilrenIt)->SetRect(borderRect);
+        ScopedPtr<UIControl> control(FrameControl::CreateFrameBorderControl(i));
+        SetupHUDMagnetLineControl(control);
+        control->SetName(FastName(String("border of magnet rect")));
+        parentControl->AddControl(control);
     }
-    UIControl::Draw(geometricData);
-}
-
-MagnetLineControl::MagnetLineControl(const DAVA::Rect& rect)
-    : UIControl(rect)
-{
-    SetName(FastName("Magnet Line"));
-    SetDebugDraw(true);
-    //this code saved to replace debugDraw
-    //background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
-    //background->SetDrawType(UIControlBackground::DRAW_TILED);
 }

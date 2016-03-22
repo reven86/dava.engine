@@ -633,7 +633,7 @@ void SceneSelectionSystem::Clear()
 
 const SelectableGroup& SceneSelectionSystem::GetSelection() const
 {
-    static const SelectableGroup emptyGroup;
+    static const SelectableGroup emptyGroup = SelectableGroup();
     return IsLocked() ? emptyGroup : currentSelection;
 }
 
