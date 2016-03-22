@@ -31,6 +31,8 @@
 #include <DAVAEngine.h>
 #include <QAction>
 #include <QLineEdit>
+#include <QApplication>
+
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialog/FileDialog.h"
