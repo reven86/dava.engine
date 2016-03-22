@@ -35,6 +35,11 @@
  * Some routines are used also to evaluate the value of numerical tokens.
  */
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #include "_mcpp.h"
 
 #if PREPROCESSED
@@ -506,8 +511,6 @@ expr_t eval_if(void)
                 break; /* Read another op.     */
         } /* Stack unwind loop    */
     }
-
-    return 0L; /* Never reach here     */
 }
 
 static int eval_lex(void)
@@ -1863,3 +1866,7 @@ const VAL_SIGN* valp /* -> value vector              */
         mcpp_fputc('\n', MCPP_DBG);
     }
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

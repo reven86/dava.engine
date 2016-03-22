@@ -113,7 +113,7 @@ eGPUFamily GetGPUByName(const String& name)
 {
     for (int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
     {
-        eGPUFamily gpu = (eGPUFamily)i;
+        eGPUFamily gpu = eGPUFamily(i);
         if (name == gpuData[gpu].name)
         {
             return gpu;

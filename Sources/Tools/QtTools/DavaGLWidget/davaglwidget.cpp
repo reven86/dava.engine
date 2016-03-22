@@ -45,7 +45,7 @@
 
 namespace
 {
-    const QSize cMinSize = QSize( 180, 180 );
+const QSize cMinSize = QSize(180, 180);
 }
 
 DavaGLView::DavaGLView()
@@ -57,48 +57,48 @@ DavaGLView::DavaGLView()
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
 
-    setMinimumSize( cMinSize );
+    setMinimumSize(cMinSize);
 }
 
 bool DavaGLView::event(QEvent* event)
 {
-    switch ( event->type() )
+    switch (event->type())
     {
     // Drag-n-drop
     case QEvent::DragEnter:
-        {
-            auto e = static_cast<QDragEnterEvent *>( event );
-            e->setDropAction( Qt::LinkAction );
-            e->accept();
-        }
+    {
+        auto e = static_cast<QDragEnterEvent*>(event);
+        e->setDropAction(Qt::LinkAction);
+        e->accept();
+    }
+    break;
+    case QEvent::DragMove:
+    {
+        auto e = static_cast<QDragMoveEvent*>(event);
+        handleDragMoveEvent(e);
+        e->setDropAction(Qt::LinkAction);
+        e->accept();
+        return QWindow::event(event);
+    }
+    break;
+    case QEvent::DragLeave:
         break;
-        case QEvent::DragMove:
-        {
-            auto e = static_cast<QDragMoveEvent *>( event );
-            handleDragMoveEvent( e );
-            e->setDropAction( Qt::LinkAction );
-            e->accept();
-            return QWindow::event(event);
-        }
-        break;
-        case QEvent::DragLeave:
-            break;
-        case QEvent::Drop:
-        {
-            auto e = static_cast<QDropEvent *>( event );
-            emit OnDrop( e->mimeData() );
-            e->setDropAction( Qt::LinkAction );
-            e->accept();
-        }
+    case QEvent::Drop:
+    {
+        auto e = static_cast<QDropEvent*>(event);
+        emit OnDrop(e->mimeData());
+        e->setDropAction(Qt::LinkAction);
+        e->accept();
+    }
+    break;
+
+    // Focus
+    case QEvent::FocusOut:
+        controlMapper->releaseKeyboard();
         break;
 
-        // Focus
-        case QEvent::FocusOut:
-            controlMapper->releaseKeyboard();
-            break;
-
-        default:
-            break;
+    default:
+        break;
     }
 
     return QQuickWindow::event(event);
@@ -137,13 +137,13 @@ void DavaGLView::mouseDoubleClickEvent(QMouseEvent* e)
 
 void DavaGLView::wheelEvent(QWheelEvent* e)
 {
-    if ( e->phase() != Qt::ScrollUpdate )
+    if (e->phase() != Qt::ScrollUpdate)
     {
         return;
     }
 
     controlMapper->wheelEvent(e);
-    if ( e->orientation() == Qt::Vertical )
+    if (e->orientation() == Qt::Vertical)
     {
         emit mouseScrolled(e->angleDelta().y());
     }
@@ -155,7 +155,7 @@ void DavaGLView::handleDragMoveEvent(QDragMoveEvent* e)
 }
 
 ///=======================
-DavaGLWidget::DavaGLWidget(QWidget *parent)
+DavaGLWidget::DavaGLWidget(QWidget* parent)
     : QWidget(parent)
 {
 //configure Qt Scene Graph to single thread mode
@@ -211,18 +211,33 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 void DavaGLWidget::MakeInvisible()
 {
-    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );    // Remove border
-    setAttribute( Qt::WA_TransparentForMouseEvents );   // Rethrow mouse events
-    setAttribute( Qt::WA_ShowWithoutActivating );       // Do not get focus
-    setWindowOpacity( 0.0 );
-    setFixedSize( 1, 1 );
-    setEnabled( false );
-    move( 0, 0 );
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool); // Remove border
+    setAttribute(Qt::WA_TransparentForMouseEvents); // Rethrow mouse events
+    setAttribute(Qt::WA_ShowWithoutActivating); // Do not get focus
+    setWindowOpacity(0.0);
+    setFixedSize(1, 1);
+    setEnabled(false);
+    move(0, 0);
 }
 
 QQuickWindow* DavaGLWidget::GetGLView()
 {
     return davaGLView;
+}
+
+QCursor DavaGLWidget::GetCursor() const
+{
+    return davaGLView->cursor();
+}
+
+void DavaGLWidget::SetCursor(const QCursor& cursor)
+{
+    davaGLView->setCursor(cursor);
+}
+
+void DavaGLWidget::UnsetCursor()
+{
+    davaGLView->unsetCursor();
 }
 
 void DavaGLWidget::OnResize()

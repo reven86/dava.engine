@@ -45,8 +45,8 @@ public:
 
     int InspFlags() const;
 
-    virtual const DAVA::MetaInfo* MetaInfo() const;
-    virtual void* CreateLastCommand() const;
+    const DAVA::MetaInfo* MetaInfo() const override;
+    Command2::Pointer CreateLastCommand() const override;
 
     DAVA::InspInfoDynamic* GetDynamicInfo() const
     {

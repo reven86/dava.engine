@@ -428,8 +428,8 @@ void ActionComponent::Deserialize(KeyedArchive* archive, SerializationContext* s
             KeyedArchive* actionArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
 
             Action action;
-            action.eventType = (Action::eEvent)actionArchive->GetUInt32("act.event");
-            action.type = (Action::eType)actionArchive->GetUInt32("act.type");
+            action.eventType = static_cast<Action::eEvent>(actionArchive->GetUInt32("act.event"));
+            action.type = static_cast<Action::eType>(actionArchive->GetUInt32("act.type"));
             action.userEventId = actionArchive->GetFastName("act.userEventId", FastName(""));
             action.delay = actionArchive->GetFloat("act.delay");
             action.delayVariation = actionArchive->GetFloat("act.delayVariation");

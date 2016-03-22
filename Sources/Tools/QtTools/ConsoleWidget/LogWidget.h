@@ -17,7 +17,7 @@ class LogModel;
 
 namespace Ui
 {
-    class LogWidget;
+class LogWidget;
 };
 
 class LogWidget : public QWidget
@@ -31,28 +31,28 @@ public:
     ~LogWidget();
     void SetConvertFunction(LogModel::ConvertFunc func); //provide mechanism to convert data string to string to be displayed
     QByteArray Serialize() const;
-    void Deserialize(const QByteArray &data);
+    void Deserialize(const QByteArray& data);
 
 public slots:
     void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& msg);
 
 signals:
-    void ItemClicked(const QString &data);
+    void ItemClicked(const QString& data);
 
 private slots:
     void OnCopy();
     void OnBeforeAdded();
     void UpdateScroll();
-    void OnItemClicked(const QModelIndex &index);
+    void OnItemClicked(const QModelIndex& index);
 
 private:
     void FillFiltersCombo();
-    bool eventFilter( QObject* watched, QEvent* event ) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
     QPointer<LogModel> logModel;
     QPointer<LogFilterModel> logFilterModel;
-    Ui::LogWidget *ui;
-    QTimer *scrollTimer;
+    Ui::LogWidget* ui;
+    QTimer* scrollTimer;
 };
 
 

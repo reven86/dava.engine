@@ -92,7 +92,7 @@ RenderLayer::eRenderLayerID RenderLayer::GetLayerIDByName(const FastName& name)
     {
         if (LAYER_NAMES[id] == name)
         {
-            return (eRenderLayerID)id;
+            return static_cast<eRenderLayerID>(id);
         }
     }
     return RENDER_LAYER_INVALID_ID;
@@ -102,7 +102,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
 {
     TIME_PROFILE("RenderLayer::Draw");
 
-    uint32 size = (uint32)batchArray.GetRenderBatchCount();
+    uint32 size = static_cast<uint32>(batchArray.GetRenderBatchCount());
 
     FrameOcclusionQueryManager::Instance()->BeginQuery(GetLayerNameByID(layerID));
     rhi::Packet packet;

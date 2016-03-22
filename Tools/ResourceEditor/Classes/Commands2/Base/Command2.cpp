@@ -27,50 +27,47 @@
 =====================================================================================*/
 
 
-#include "Commands2/CommandNotify.h"
+#include "Commands2/Base/Command2.h"
 
-CommandNotify::CommandNotify()
+Command2::Command2(DAVA::int32 _id, const DAVA::String& _text)
+    : text(_text)
+    , id(_id)
 {
 }
 
-CommandNotify::~CommandNotify()
+Command2::~Command2() = default;
+
+void Command2::UndoInternalCommand(Command2* command)
 {
+    command->Undo();
+    EmitNotify(command, false);
 }
 
-CommandNotifyProvider::CommandNotifyProvider()
-    : curNotify(NULL)
+void Command2::RedoInternalCommand(Command2* command)
 {
+    command->Redo();
+    EmitNotify(command, true);
 }
 
-CommandNotifyProvider::~CommandNotifyProvider()
+bool Command2::MatchCommandID(DAVA::int32 commandID) const
 {
-    SafeRelease(curNotify);
+    return (id == commandID);
 }
 
-void CommandNotifyProvider::SetNotify(CommandNotify* notify)
+bool Command2::MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const
 {
-    SafeRelease(curNotify);
-    curNotify = notify;
-    SafeRetain(curNotify);
-}
-
-CommandNotify* CommandNotifyProvider::GetNotify() const
-{
-    return curNotify;
-}
-
-void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
-{
-    if (NULL != curNotify)
+    for (auto commandID : commandIDVector)
     {
-        curNotify->Notify(command, redo);
+        if (id == commandID)
+        {
+            return true;
+        }
     }
+
+    return false;
 }
 
-void CommandNotifyProvider::EmitCleanChanged(bool clean)
+void Command2::Execute()
 {
-    if (NULL != curNotify)
-    {
-        curNotify->CleanChanged(clean);
-    }
+    Redo();
 }

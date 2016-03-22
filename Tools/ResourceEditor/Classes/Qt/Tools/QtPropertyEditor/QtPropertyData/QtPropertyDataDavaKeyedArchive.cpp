@@ -266,23 +266,21 @@ void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String
     }
 }
 
-void* QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
+Command2::Pointer QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
 {
-    Command2* command = NULL;
-
-    if (NULL != lastCommand)
+    if (nullptr != lastCommand)
     {
         if (CMDID_KEYEDARCHIVE_REM_KEY == lastCommand->GetId())
         {
-            command = new KeyeadArchiveRemValueCommand(*((KeyeadArchiveRemValueCommand*)lastCommand));
+            return Command2::Create<KeyeadArchiveRemValueCommand>(*((KeyeadArchiveRemValueCommand*)lastCommand));
         }
         else if (CMDID_KEYEDARCHIVE_ADD_KEY == lastCommand->GetId())
         {
-            command = new KeyedArchiveAddValueCommand(*((KeyedArchiveAddValueCommand*)lastCommand));
+            return Command2::Create<KeyedArchiveAddValueCommand>(*((KeyedArchiveAddValueCommand*)lastCommand));
         }
     }
 
-    return command;
+    return Command2::CreateEmptyCommand();
 }
 
 void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()

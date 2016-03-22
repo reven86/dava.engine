@@ -385,7 +385,11 @@ void TextFieldPlatformImpl::GetText(WideString& string) const
     DVASSERT(nullptr != textInField);
 
     const char* cstr = [textInField cStringUsingEncoding:NSUTF8StringEncoding];
-    DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
+    DVASSERT_MSG(nullptr != cstr, "TextFieldText can't be converted into UTF8String.");
+    if (nullptr != cstr)
+    {
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
+    }
 }
 
 void TextFieldPlatformImpl::SetIsPassword(bool isPassword)

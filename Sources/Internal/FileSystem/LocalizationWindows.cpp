@@ -26,23 +26,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
-#ifndef __DAVAENGINE_LOCALIZATION_ANDROID_H__
-#define __DAVAENGINE_LOCALIZATION_ANDROID_H__
+#if defined(__DAVAENGINE_WINDOWS__)
 
-#include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_ANDROID__)
+#include "FileSystem/LocalizationSystem.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
-class LocalizationAndroid
+String LocalizationSystem::GetDeviceLocale(void) const
 {
-public:
-    static void SelectPreferedLocalization();
-    static String GetDeviceLang(void);
-};
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
+}
 };
 
-#endif //__DAVAENGINE_ANDROID__
-
-#endif //__DAVAENGINE_LOCALIZATION_ANDROID_H__
+#endif // __DAVAENGINE_WIN_UAP__

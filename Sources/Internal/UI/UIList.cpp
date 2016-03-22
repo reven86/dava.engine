@@ -179,7 +179,7 @@ void UIList::ScrollToElement(int32 index)
 
 void UIList::SetOrientation(int32 _orientation)
 {
-    orientation = (UIList::eListOrientation)_orientation;
+    orientation = static_cast<UIList::eListOrientation>(_orientation);
 }
 
 float32 UIList::GetScrollPosition()
@@ -384,7 +384,7 @@ void UIList::Update(float32 timeElapsed)
         UIListCell* fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i > ind)
             {
@@ -435,7 +435,7 @@ void UIList::Update(float32 timeElapsed)
         fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i < ind)
             {
@@ -610,7 +610,7 @@ void UIList::OnSelectEvent(BaseObject* pCaller, void* pUserData, void* callerDat
 {
     if (delegate)
     {
-        delegate->OnCellSelected(this, (UIListCell*)pCaller);
+        delegate->OnCellSelected(this, static_cast<UIListCell*>(pCaller));
     }
 }
 
@@ -739,7 +739,7 @@ UIList* UIList::Clone()
 void UIList::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIList* t = (UIList*)srcControl;
+    UIList* t = static_cast<UIList*>(srcControl);
     InitAfterYaml();
     aggregatorPath = t->aggregatorPath;
     orientation = t->orientation;

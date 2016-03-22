@@ -265,7 +265,7 @@ public:
     rhi::InitParam rendererParams;
 
 protected:
-    int32 screenOrientation;
+    eScreenOrientation screenOrientation;
 
     void SetCommandLine(int argc, char* argv[]);
     void SetCommandLine(Vector<String>&& args);

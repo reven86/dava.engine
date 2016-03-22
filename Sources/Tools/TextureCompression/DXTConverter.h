@@ -34,19 +34,16 @@
 
 namespace DAVA
 {
-    
 class FilePath;
 class TextureDescriptor;
-    
+
 class DXTConverter
 {
 public:
-    
-    static FilePath ConvertToDxt(const TextureDescriptor &descriptor, eGPUFamily gpuFamily);
-	static FilePath ConvertCubemapToDxt(const TextureDescriptor &descriptor, eGPUFamily gpuFamily);
-    static FilePath GetDXTOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily);
+    static FilePath ConvertToDxt(const TextureDescriptor& descriptor, eGPUFamily gpuFamily);
+    static FilePath ConvertCubemapToDxt(const TextureDescriptor& descriptor, eGPUFamily gpuFamily);
+    static FilePath GetDXTOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily);
 };
-    
 };
 
 

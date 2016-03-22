@@ -67,25 +67,6 @@ bool AABBox2::IsIntersectsWithRay(Ray2& r, float32& tmin, float32& tmax, float32
     if (tymax < tmax)
         tmax = tymax;
 
-    /*float32 divz = 1.0f / r.direction.z; 
-	if (divz >= 0) 
-	{ 
-		tzmin = (min.z - r.origin.z) * divz; 
-		tzmax = (max.z - r.origin.z) * divz; 
-	} 
-	else 
-	{ 
-		tzmin = (max.z - r.origin.z) * divz; 
-		tzmax = (min.z - r.origin.z) * divz; 
-	} 
-	
-	if ( (tmin > tzmax) || (tzmin > tmax) ) 
-		return false; 
-	if (tzmin > tmin) 
-		tmin = tzmin; 
-	if (tzmax < tmax) 
-		tmax = tzmax; */
-
     return ((tmin < t1) && (tmax > t0));
 }
 
