@@ -142,7 +142,7 @@ void EditorCore::OnReloadSprites()
 {
     for (auto& document : documentGroup->GetDocuments())
     {
-        if (!documentGroup->RemoveDocument(document))
+        if (!documentGroup->TryCloseDocument(document))
         {
             return;
         }
@@ -299,11 +299,7 @@ bool EditorCore::CloseProject()
 
     for (auto& document : documentGroup->GetDocuments())
     {
-        if (!documentGroup->RemoveDocument(document))
-        {
-            DVASSERT(false && "can not close saved documents");
-            return false;
-        }
+        documentGroup->CloseDocument(document);
     }
     project->Close();
     return true;

@@ -106,7 +106,7 @@ void DocumentGroup::AttachCloseDocumentAction(QAction* closeDocumentAction) cons
 {
     closeDocumentAction->setEnabled(CanClose());
     connect(this, &DocumentGroup::CanCloseChanged, closeDocumentAction, &QAction::setEnabled);
-    connect(closeDocumentAction, &QAction::triggered, this, &DocumentGroup::RemoveCurrentDocument);
+    connect(closeDocumentAction, &QAction::triggered, this, &DocumentGroup::TryCloseCurrentDocument);
 }
 
 void DocumentGroup::ConnectToTabBar(QTabBar* tabBar)
@@ -122,7 +122,7 @@ void DocumentGroup::ConnectToTabBar(QTabBar* tabBar)
     connect(tabBar, &QTabBar::currentChanged,
             this, static_cast<void (DocumentGroup::*)(int)>(&DocumentGroup::SetActiveDocument));
     connect(tabBar, &QTabBar::tabCloseRequested,
-            this, static_cast<bool (DocumentGroup::*)(int)>(&DocumentGroup::RemoveDocument));
+            this, static_cast<bool (DocumentGroup::*)(int)>(&DocumentGroup::TryCloseDocument));
 }
 
 void DocumentGroup::DisconnectTabBar(QTabBar* tabBar)
@@ -149,7 +149,7 @@ void DocumentGroup::DisconnectTabBar(QTabBar* tabBar)
     disconnect(tabBar, &QTabBar::currentChanged,
                this, static_cast<void (DocumentGroup::*)(int)>(&DocumentGroup::SetActiveDocument));
     disconnect(tabBar, &QTabBar::tabCloseRequested,
-               this, static_cast<bool (DocumentGroup::*)(int)>(&DocumentGroup::RemoveDocument));
+               this, static_cast<bool (DocumentGroup::*)(int)>(&DocumentGroup::TryCloseDocument));
 }
 
 void DocumentGroup::AddDocument(const QString& path)
@@ -170,22 +170,22 @@ void DocumentGroup::AddDocument(const QString& path)
     SetActiveDocument(index);
 }
 
-bool DocumentGroup::RemoveCurrentDocument()
+bool DocumentGroup::TryCloseCurrentDocument()
 {
     if (CanClose())
     {
-        return RemoveDocument(active);
+        return TryCloseDocument(active);
     }
     return false;
 }
 
-bool DocumentGroup::RemoveDocument(int index)
+bool DocumentGroup::TryCloseDocument(int index)
 {
     DVASSERT(index >= 0 && index < documents.size());
-    return RemoveDocument(documents.at(index));
+    return TryCloseDocument(documents.at(index));
 }
 
-bool DocumentGroup::RemoveDocument(Document* document)
+bool DocumentGroup::TryCloseDocument(Document* document)
 {
     DVASSERT(nullptr != document);
     if (document->CanSave())
@@ -209,6 +209,18 @@ bool DocumentGroup::RemoveDocument(Document* document)
             return false;
         }
     }
+    CloseDocument(document);
+    return true;
+}
+
+void DocumentGroup::CloseDocument(int index)
+{
+    DVASSERT(index >= 0 && index < documents.size());
+    CloseDocument(documents.at(index));
+}
+
+void DocumentGroup::CloseDocument(Document* document)
+{
     int index = documents.indexOf(document);
     DVASSERT(index != -1);
     for (auto& tabBar : attachedTabBars)
@@ -232,14 +244,13 @@ bool DocumentGroup::RemoveDocument(Document* document)
     }
     SetActiveDocument(nextDocument);
     delete document;
-    return true;
 }
 
 void DocumentGroup::ReloadDocument(int index)
 {
     DVASSERT(index >= 0 && index < documents.size());
     QString path = documents.at(index)->GetPackageAbsolutePath();
-    RemoveDocument(index);
+    CloseDocument(index);
     Document* document = CreateDocument(path);
     InsertDocument(document, index);
     SetActiveDocument(index);
@@ -388,10 +399,11 @@ void DocumentGroup::OnFilesRemoved(const QList<Document*>& removedFiles)
         tr("File %1 is renamed or removed").arg(fileInfo.fileName()),
         tr("%1\n\nThis file has been renamed or removed. Do you want to close it?")
         .arg(fileInfo.absoluteFilePath()),
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No
+        );
         if (button == QMessageBox::Yes)
         {
-            RemoveDocument(document);
+            CloseDocument(document);
         }
     }
 }

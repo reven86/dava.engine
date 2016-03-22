@@ -74,9 +74,14 @@ signals:
 
 public slots:
     void AddDocument(const QString& path);
-    bool RemoveCurrentDocument();
-    bool RemoveDocument(int index);
-    bool RemoveDocument(Document* document);
+
+    bool TryCloseCurrentDocument();
+    bool TryCloseDocument(int index);
+    bool TryCloseDocument(Document* document);
+
+    void CloseDocument(int index);
+    void CloseDocument(Document* document);
+
     void ReloadDocument(int index);
     void ReloadDocument(Document* document);
 
@@ -93,6 +98,7 @@ private slots:
 private:
     void OnFilesChanged(const QList<Document*>& changedFiles);
     void OnFilesRemoved(const QList<Document*>& removedFiles);
+
     void ApplyFileChanges();
     int GetIndexByPackagePath(const QString& davaPath) const;
     void InsertTab(QTabBar* tabBar, Document* document, int index);
