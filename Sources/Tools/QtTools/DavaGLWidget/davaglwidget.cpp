@@ -225,6 +225,21 @@ QQuickWindow* DavaGLWidget::GetGLView()
     return davaGLView;
 }
 
+QCursor DavaGLWidget::GetCursor() const
+{
+    return davaGLView->cursor();
+}
+
+void DavaGLWidget::SetCursor(const QCursor& cursor)
+{
+    davaGLView->setCursor(cursor);
+}
+
+void DavaGLWidget::UnsetCursor()
+{
+    davaGLView->unsetCursor();
+}
+
 void DavaGLWidget::OnResize()
 {
     if (nullptr != renderer)
