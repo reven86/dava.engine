@@ -34,6 +34,7 @@
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Math/Math2D.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {

@@ -62,7 +62,7 @@ public:
     Landscape();
     virtual ~Landscape();
 
-    static const int32 PATCH_SIZE_VERTICES = 17;
+    static const int32 PATCH_SIZE_VERTICES = 9;
     static const int32 PATCH_SIZE_QUADS = (PATCH_SIZE_VERTICES - 1);
     static const int32 MAX_LANDSCAPE_SUBDIV_LEVELS = 9;
 

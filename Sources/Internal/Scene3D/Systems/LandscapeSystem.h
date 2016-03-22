@@ -37,6 +37,8 @@
 namespace DAVA
 {
 class Entity;
+class Landscape;
+
 class LandscapeSystem : public SceneSystem
 {
 public:

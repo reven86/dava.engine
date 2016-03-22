@@ -18,9 +18,9 @@ static EGLint _format = 0;
 static EGLConfig _config = 0;
 static ANativeWindow* _nativeWindow = nullptr;
 
-PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced_EXT = nullptr;
-PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced_EXT = nullptr;
-PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT = nullptr;
+PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
+PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
+PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor = nullptr;
 
 static bool needRecreateSurface = false;
 
@@ -95,10 +95,6 @@ void android_gl_init(void* _window)
     _GLES2_Context = _context;
 
     eglMakeCurrent(_display, _surface, _surface, _context);
-
-    glDrawElementsInstanced_EXT = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
-    glDrawArraysInstanced_EXT = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
-    glVertexAttribDivisor_EXT = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
 }
 
 void android_gl_reset(void* _window)

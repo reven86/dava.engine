@@ -78,8 +78,8 @@ Landscape::Landscape()
 
     heightmap = new Heightmap();
 
-    maxHeightError = 0.03f;
-    maxPatchRadiusError = 0.7f;
+    maxHeightError = 0.02f;
+    maxPatchRadiusError = 0.8f;
     maxAbsoluteHeightError = 3.f;
 
     useInstancing = rhi::DeviceCaps().isInstancingSupported;
@@ -1182,8 +1182,6 @@ void Landscape::DrawLandscapeInstancing()
             instanceDataBuffer = freeInstanceDataBuffers.back();
             if (instanceDataBuffer->bufferSize < subdivPatchesDrawCount * instanceDataSize)
             {
-                instanceDataMaxCount = Max(instanceDataMaxCount, subdivPatchesDrawCount);
-
                 rhi::DeleteVertexBuffer(instanceDataBuffer->buffer);
                 SafeDelete(instanceDataBuffer);
             }
@@ -1192,6 +1190,8 @@ void Landscape::DrawLandscapeInstancing()
 
         if (!instanceDataBuffer)
         {
+            instanceDataMaxCount = Max(instanceDataMaxCount, subdivPatchesDrawCount);
+
             rhi::VertexBuffer::Descriptor instanceBufferDesc;
             instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
             instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;

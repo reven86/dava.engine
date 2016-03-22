@@ -255,6 +255,20 @@ gles_check_GL_extensions()
                 _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
                 _GLES2_DeviceCaps.isInstancingSupported = true;
             }
+#ifdef __DAVAENGINE_ANDROID__
+            if (majorVersion >= 3)
+            {
+                glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstanced");
+                glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstanced");
+                glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisor");
+            }
+            else
+            {
+                glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
+                glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
+                glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
+            }
+#endif
         }
         else
         {

@@ -293,7 +293,7 @@ VertexDeclGLES2
                     #if defined(__DAVAENGINE_IPHONE__)
                     GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));
                     #elif defined(__DAVAENGINE_ANDROID__)
-                    GL_CALL(glVertexAttribDivisor_EXT(idx, elem[i].attrDivisor));
+                    GL_CALL(glVertexAttribDivisor(idx, elem[i].attrDivisor));
                     #elif defined(__DAVAENGINE_MACOS__)
                     GL_CALL(glVertexAttribDivisorARB(idx, elem[i].attrDivisor));
                     #else

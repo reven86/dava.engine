@@ -66,6 +66,7 @@
 
 #elif defined(__DAVAENGINE_ANDROID__)
 
+	#include <EGL/egl.h>
 	#include <GLES2/gl2.h>
 	#include <GLES2/gl2ext.h>
 
@@ -94,9 +95,9 @@ typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLe
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
 typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
 
-extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced_EXT;
-extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced_EXT;
-extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
+extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced;
+extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced;
+extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 
 #endif
 
