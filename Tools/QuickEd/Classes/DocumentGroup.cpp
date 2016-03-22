@@ -26,13 +26,24 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+#include "Project/Project.h"
 #include "Document.h"
 #include "DocumentGroup.h"
-#include <QUndoGroup>
-#include <QMutableListIterator>
+#include "Model/PackageHierarchy/PackageNode.h"
+
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
+
+#include <QUndoGroup>
+#include <QApplication>
+#include <QMutableListIterator>
+#include <QAction>
+#include <QTabBar>
+#include <QMessageBox>
+
+using namespace DAVA;
 
 DocumentGroup::DocumentGroup(Project* project_, QObject* parent)
     : QObject(parent)
