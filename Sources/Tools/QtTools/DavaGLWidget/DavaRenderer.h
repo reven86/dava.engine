@@ -43,7 +43,7 @@ class DavaRenderer : public QObject
     Q_OBJECT
     POP_QT_WARNING_SUPRESSOR
 public:
-    DavaRenderer(QSurface * surface, QOpenGLContext * context);
+    DavaRenderer(QSurface* surface, QOpenGLContext* context);
     ~DavaRenderer() override;
 public slots:
     void paint();

@@ -57,11 +57,10 @@ public:
 
 namespace
 {
-
-class OGLContextBinder: public DAVA::Singleton<OGLContextBinder>
+class OGLContextBinder : public DAVA::Singleton<OGLContextBinder>
 {
 public:
-    OGLContextBinder(QSurface * surface, QOpenGLContext * context)
+    OGLContextBinder(QSurface* surface, QOpenGLContext* context)
         : renderSurface(surface)
         , renderContext(context)
     {
@@ -90,11 +89,11 @@ public:
     }
 
 private:
-    QSurface * renderSurface = nullptr;
-    QOpenGLContext * renderContext = nullptr;
+    QSurface* renderSurface = nullptr;
+    QOpenGLContext* renderContext = nullptr;
 
-    QSurface * prevSurface = nullptr;
-    QOpenGLContext * prevContext = nullptr;
+    QSurface* prevSurface = nullptr;
+    QOpenGLContext* prevContext = nullptr;
 };
 
 void AcqureContext()
@@ -106,10 +105,9 @@ void ReleaseContext()
 {
     OGLContextBinder::Instance()->ReleaseContext();
 }
-
 }
 
-DavaRenderer::DavaRenderer(QSurface * surface, QOpenGLContext * context)
+DavaRenderer::DavaRenderer(QSurface* surface, QOpenGLContext* context)
 {
     DVASSERT(OGLContextBinder::Instance() == nullptr);
     new OGLContextBinder(surface, context);

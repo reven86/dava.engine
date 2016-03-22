@@ -176,8 +176,8 @@ public:
     }
 
 private:
-    void * object;
-    const DAVA::InspColl * collection;
+    void* object;
+    const DAVA::InspColl* collection;
     DAVA::InspColl::Iterator iterator = nullptr;
     DAVA::uint32 linearKey = 0;
 #ifdef __DAVAENGINE_DEBUG__
@@ -289,7 +289,7 @@ class NGTKeyedArchiveImpl::Iterator : public CollectionIteratorImplBase
 {
 public:
     static const DAVA::String END_KEY_VALUE;
-    Iterator(DAVA::KeyedArchive * archive_, const DAVA::String & key_)
+    Iterator(DAVA::KeyedArchive* archive_, const DAVA::String& key_)
         : archive(archive_)
         , itemKey(key_)
     {
@@ -344,7 +344,7 @@ public:
     void inc() override
     {
         DVASSERT(itemKey != END_KEY_VALUE);
-        const DAVA::KeyedArchive::UnderlyingMap & data = archive->GetArchieveData();
+        const DAVA::KeyedArchive::UnderlyingMap& data = archive->GetArchieveData();
         DAVA::KeyedArchive::UnderlyingMap::const_iterator iter = data.find(itemKey);
         DVASSERT(iter != data.end());
         iter++;
@@ -360,9 +360,9 @@ public:
 
     bool equals(const CollectionIteratorImplBase& that) const override
     {
-        const Iterator & other = dynamic_cast<const Iterator &>(that);
+        const Iterator& other = dynamic_cast<const Iterator&>(that);
         return archive == other.archive &&
-            itemKey == other.itemKey;
+        itemKey == other.itemKey;
     }
 
     CollectionIteratorImplPtr clone() const override
@@ -378,7 +378,7 @@ public:
 private:
     friend class NGTKeyedArchiveImpl;
 
-    DAVA::KeyedArchive * archive;
+    DAVA::KeyedArchive* archive;
     DAVA::String itemKey;
     TypeId keyTypeId;
     TypeId valueTypeId;
@@ -386,7 +386,7 @@ private:
 
 const DAVA::String NGTKeyedArchiveImpl::Iterator::END_KEY_VALUE = "END_KEY_VALUE";
 
-NGTKeyedArchiveImpl::NGTKeyedArchiveImpl(DAVA::KeyedArchive * keyedArchive)
+NGTKeyedArchiveImpl::NGTKeyedArchiveImpl(DAVA::KeyedArchive* keyedArchive)
     : archive(keyedArchive)
 {
     DVASSERT(archive != nullptr);
@@ -449,7 +449,7 @@ std::pair<CollectionIteratorImplPtr, bool> NGTKeyedArchiveImpl::get(const Varian
 
 CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImplPtr& pos)
 {
-    Iterator * iter = dynamic_cast<Iterator *>(pos.get());
+    Iterator* iter = dynamic_cast<Iterator*>(pos.get());
     DVASSERT(iter != nullptr);
     DVASSERT(iter->isValid());
 
@@ -473,10 +473,10 @@ size_t NGTKeyedArchiveImpl::erase(const Variant& key)
 
 CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last)
 {
-    Iterator * begIter = dynamic_cast<Iterator *>(first.get());
+    Iterator* begIter = dynamic_cast<Iterator*>(first.get());
     DVASSERT(begIter != nullptr);
 
-    Iterator * endIter = dynamic_cast<Iterator *>(last.get());
+    Iterator* endIter = dynamic_cast<Iterator*>(last.get());
     DVASSERT(endIter != nullptr);
 
     Iterator eraseIter = *begIter;

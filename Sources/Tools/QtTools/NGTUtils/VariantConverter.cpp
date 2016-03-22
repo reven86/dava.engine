@@ -180,8 +180,8 @@ Variant DVtoV_matrix3(DAVA::VariantType const& v)
     DAVA::StringStream ss;
     ss.precision(7);
     ss << "[ " << m._00 << "; " << m._01 << "; " << m._02 << " ]\n[ "
-        << m._10 << "; " << m._11 << "; " << m._12 << " ]\n[ "
-        << m._20 << "; " << m._21 << "; " << m._22 << " ]";
+       << m._10 << "; " << m._11 << "; " << m._12 << " ]\n[ "
+       << m._20 << "; " << m._21 << "; " << m._22 << " ]";
     return Variant(ss.str());
 }
 Variant DVtoV_matrix4(DAVA::VariantType const& v)
@@ -190,9 +190,9 @@ Variant DVtoV_matrix4(DAVA::VariantType const& v)
     DAVA::StringStream ss;
     ss.precision(7);
     ss << "[ " << m._00 << "; " << m._01 << "; " << m._02 << ";" << m._03 << " ]\n["
-        << m._10 << "; " << m._11 << "; " << m._12 << ";" << m._13 << " ]\n[ "
-        << m._20 << "; " << m._21 << "; " << m._22 << ";" << m._23 << " ]\n[ "
-        << m._30 << "; " << m._31 << "; " << m._32 << ";" << m._33 << " ]";
+       << m._10 << "; " << m._11 << "; " << m._12 << ";" << m._13 << " ]\n[ "
+       << m._20 << "; " << m._21 << "; " << m._22 << ";" << m._23 << " ]\n[ "
+       << m._30 << "; " << m._31 << "; " << m._32 << ";" << m._33 << " ]";
     return Variant(ss.str());
 }
 Variant DVtoV_color(DAVA::VariantType const& v)

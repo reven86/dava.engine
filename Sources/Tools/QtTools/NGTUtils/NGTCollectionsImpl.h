@@ -84,11 +84,12 @@ private:
     TypeId containerId;
 };
 
-class NGTKeyedArchiveImpl: public CollectionImplBase
+class NGTKeyedArchiveImpl : public CollectionImplBase
 {
     class Iterator;
+
 public:
-    NGTKeyedArchiveImpl(DAVA::KeyedArchive * keyedArchive);
+    NGTKeyedArchiveImpl(DAVA::KeyedArchive* keyedArchive);
 
     bool empty() const override;
     size_t size() const override;
@@ -99,7 +100,7 @@ public:
     CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& pos) override;
     size_t erase(const Variant& key) override;
     CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last) override;
-    
+
     const TypeId& keyType() const override;
     const TypeId& valueType() const override;
     const TypeId& containerType() const override;
