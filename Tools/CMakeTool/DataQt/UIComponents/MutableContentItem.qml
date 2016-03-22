@@ -98,7 +98,6 @@ Item {
                         delegate: RadioButton {
                             text: model.name
                             exclusiveGroup: exclusiveGroup_platforms
-                            checked: model.checked
                             Connections {
                                 target: impl
                                 onConfigUpdated:  {

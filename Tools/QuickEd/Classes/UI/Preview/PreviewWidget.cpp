@@ -396,15 +396,20 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         switch (event->type())
         {
         case QEvent::Wheel:
-            OnWheelEvent(DynamicTypeCheck<QWheelEvent*>(event));
+            OnWheelEvent(static_cast<QWheelEvent*>(event));
             break;
         case QEvent::NativeGesture:
-            OnNativeGuestureEvent(DynamicTypeCheck<QNativeGestureEvent*>(event));
+            OnNativeGuestureEvent(static_cast<QNativeGestureEvent*>(event));
             break;
         case QEvent::MouseMove:
-            OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
+            OnMoveEvent(static_cast<QMouseEvent*>(event));
+            break;
         case QEvent::MouseButtonPress:
-            lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
+            OnPressEvent(static_cast<QMouseEvent*>(event));
+            break;
+        case QEvent::MouseButtonRelease:
+            OnReleaseEvent(static_cast<QMouseEvent*>(event));
+            break;
         default:
             break;
         }
@@ -499,6 +504,24 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
         break;
     default:
         break;
+    }
+}
+
+void PreviewWidget::OnPressEvent(QMouseEvent* event)
+{
+    if (event->button() & Qt::MiddleButton)
+    {
+        lastCursor = davaGLWidget->GetCursor();
+        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+        lastMousePos = event->pos();
+    }
+}
+
+void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() & Qt::MiddleButton)
+    {
+        davaGLWidget->SetCursor(lastCursor);
     }
 }
 

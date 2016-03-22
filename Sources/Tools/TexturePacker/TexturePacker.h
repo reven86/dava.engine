@@ -39,30 +39,28 @@
 
 namespace DAVA
 {
-
 class DefinitionFile;
 class PngImageExt;
 class FilePath;
 
 struct SizeSortItem
 {
-	int					imageSize;
-	DefinitionFile *	defFile;
-	int					frameIndex;
+    int imageSize;
+    DefinitionFile* defFile;
+    int frameIndex;
 };
-    
-class TexturePacker 
+
+class TexturePacker
 {
 public:
+    static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
+    static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
+    static const uint32 DEFAULT_MARGIN = 1;
 
-	static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
-	static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
-	static const uint32 DEFAULT_MARGIN = 1;
-
-	struct FilterItem
-	{
-		int8 minFilter;
-		int8 magFilter;
+    struct FilterItem
+    {
+        int8 minFilter;
+        int8 magFilter;
         int8 mipFilter;
 
         FilterItem(int8 minF, int8 magF, int8 mipF)
@@ -74,7 +72,7 @@ public:
     };
 
 public:
-	TexturePacker();
+    TexturePacker();
 
     // pack textures to single texture
     void PackToTextures(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU);
@@ -89,22 +87,27 @@ public:
 
     float TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas, Vector<SizeSortItem>& tempSortVector);
 
-	void UseOnlySquareTextures();
+    void UseOnlySquareTextures();
 
-	void SetMaxTextureSize(uint32 maxTextureSize);
-	
+    void SetMaxTextureSize(uint32 maxTextureSize);
+
     void SetConvertQuality(TextureConverter::eConvertQuality quality);
 
-	// set visible 1 pixel border for each texture
-	void SetTwoSideMargin(bool val=true) { useTwoSideMargin = val; }
+    // set visible 1 pixel border for each texture
+    void SetTwoSideMargin(bool val = true)
+    {
+        useTwoSideMargin = val;
+    }
 
-	// set space in pixels between two neighboring textures. value is omitted if two-side margin is set
-	void SetTexturesMargin(uint32 margin) { texturesMargin = margin; }
+    // set space in pixels between two neighboring textures. value is omitted if two-side margin is set
+    void SetTexturesMargin(uint32 margin)
+    {
+        texturesMargin = margin;
+    }
 
-	const Set<String>& GetErrors() const;
-	
+    const Set<String>& GetErrors() const;
+
 private:
-
     struct ImageExportKeys
     {
         eGPUFamily forGPU = GPU_ORIGIN;
@@ -114,16 +117,16 @@ private:
         bool toConvertOrigin = false;
         bool toComressForGPU = false;
     };
-    
+
     ImageExportKeys GetExportKeys(eGPUFamily forGPU);
     void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
 
     rhi::TextureAddrMode GetDescriptorWrapMode();
     FilterItem GetDescriptorFilter(bool generateMipMaps = false);
 
-    bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
-    
-	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
+    bool CheckFrameSize(const Size2i& spriteSize, const Size2i& frameSize);
+
+    void WriteDefinitionString(FILE* fp, const Rect2i& writeRect, const Rect2i& originRect, int textureIndex, const String& frameName);
     void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const ImageCell& drawRect, const Rect2i& frameRect);
 
     Vector<SizeSortItem> sortVector;
@@ -131,19 +134,16 @@ private:
 
     bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
-	
+
     TextureConverter::eConvertQuality quality;
 
-	bool useTwoSideMargin;
-	uint32 texturesMargin;
-    
-	Set<String> errors;
-	void AddError(const String& errorMsg);
+    bool useTwoSideMargin;
+    uint32 texturesMargin;
 
+    Set<String> errors;
+    void AddError(const String& errorMsg);
 };
-
 };
 
 
 #endif // __DAVAENGINE_TEXTURE_PACKER_H__
-

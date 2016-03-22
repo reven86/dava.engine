@@ -31,7 +31,7 @@ Item {
                 id: button_runCmake
                 iconSource: "qrc:///Icons/run.png"
                 text: qsTr("run cmake")
-                enabled: textField_output.text.length !== 0 && outputComplete
+                enabled: textField_output.text.length !== 0 && outputComplete && !processWrapper.running
                 onClicked: {
                     cmakeLaunched();
                     processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))

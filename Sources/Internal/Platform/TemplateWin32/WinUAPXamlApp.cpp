@@ -104,6 +104,7 @@ WinUAPXamlApp::WinUAPXamlApp()
 
 WinUAPXamlApp::~WinUAPXamlApp()
 {
+    SafeRelease(mainLoopThread);
     AllowDisplaySleep(true);
 }
 
@@ -196,13 +197,10 @@ void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation:
 
     CreateBaseXamlUI();
 
-    Thread* mainLoopThread = Thread::Create([this, args]() { Run(args); });
+    mainLoopThread = Thread::Create([this, args]() { Run(args); });
     mainLoopThread->Start();
     mainLoopThread->BindToProcessor(0);
     mainLoopThread->SetPriority(Thread::PRIORITY_HIGH);
-    mainLoopThread->Release();
-
-    mainLoopThreadStarted = true;
 }
 
 void WinUAPXamlApp::PreStartAppSettings()
@@ -219,9 +217,9 @@ void WinUAPXamlApp::PreStartAppSettings()
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
-    // If mainLoopThreadStarted is false then app performing cold start
+    // If mainLoopThread is null then app performing cold start
     // else app is restored from background or resumed from suspended state
-    if (!mainLoopThreadStarted)
+    if (mainLoopThread == nullptr)
     {
         StartMainLoopThread(args);
     }
@@ -239,7 +237,7 @@ void WinUAPXamlApp::OnActivated(::Windows::ApplicationModel::Activation::IActiva
 
     if (args->Kind == ActivationKind::Protocol)
     {
-        if (!mainLoopThreadStarted)
+        if (mainLoopThread == nullptr)
         {
             StartMainLoopThread(nullptr);
         }

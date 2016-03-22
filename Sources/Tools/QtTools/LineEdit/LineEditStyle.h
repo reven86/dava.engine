@@ -33,15 +33,14 @@
 
 #include <QProxyStyle>
 
-
 class LineEditStyle
-    : public QProxyStyle
+: public QProxyStyle
 {
 public:
-    explicit LineEditStyle(QStyle *style = NULL);
+    explicit LineEditStyle(QStyle* style = NULL);
     ~LineEditStyle();
 
-    QRect subElementRect( SubElement element, const QStyleOption * option, const QWidget * widget = 0 ) const;
+    QRect subElementRect(SubElement element, const QStyleOption* option, const QWidget* widget = 0) const;
 };
 
 
