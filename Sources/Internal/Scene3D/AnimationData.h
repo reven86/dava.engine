@@ -48,26 +48,25 @@ public:
 
     void AddKey(const SceneNodeAnimationKey& key);
 
-    inline int32 GetKeyCount() const;
+    int32 GetKeyCount() const;
 
     void SetDuration(float32 _duration);
-    inline float32 GetDuration() const;
+    float32 GetDuration() const;
 
     void SetInvPose(const Matrix4& mat);
     const Matrix4& GetInvPose() const;
 
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     AnimationData* Clone() const;
 
     void BakeTransform(const Matrix4& transform);
 
-    float32 duration;
-
-    DAVA::Vector<SceneNodeAnimationKey> keys;
-
+public:
     Matrix4 invPose;
+    DAVA::Vector<SceneNodeAnimationKey> keys;
+    float32 duration;
 };
 
 inline float32 AnimationData::GetDuration() const

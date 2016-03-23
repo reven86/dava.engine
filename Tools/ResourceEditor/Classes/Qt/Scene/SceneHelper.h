@@ -47,7 +47,7 @@ public:
         OnlyActiveTextures = 0x2
     };
 
-    TextureCollector(uint32 options = Default);
+    TextureCollector(DAVA::uint32 options = Default);
 
     void Apply(DAVA::NMaterial* material);
     DAVA::TexturesMap& GetTextures();

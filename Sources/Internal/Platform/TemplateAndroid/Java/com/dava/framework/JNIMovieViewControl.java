@@ -3,8 +3,6 @@ package com.dava.framework;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 import android.graphics.Color;
 import android.media.MediaPlayer;
@@ -29,15 +27,7 @@ public class JNIMovieViewControl {
 	private final static int playerStateErrorData = 4;
 
 	private static class MovieControl {
-		public MovieControl(int id) {
-			this.id = id;
-		}
-
-		public MovieControl(int id, RelativeLayout layout, VideoView view, MediaPlayer player) {
-			this.id = id;
-			this.view = view;
-			this.player = player;
-			this.layout = layout;
+		public MovieControl() {
 		}
 
 		void setPlayerState(int newState) {
@@ -50,7 +40,6 @@ public class JNIMovieViewControl {
 			return _playerState;
 		}
 		
-		public int id = 0;
 		public RelativeLayout layout = null;
 		public VideoView view = null;
 		public MediaPlayer player = null;
@@ -134,7 +123,7 @@ public class JNIMovieViewControl {
 			});
 
 		} else {
-			final MovieControl control = new MovieControl(id);
+			final MovieControl control = new MovieControl();
 			controls.put(id, control);
 			activity.runOnUiThread(new Runnable() {
 

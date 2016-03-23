@@ -55,3 +55,5 @@ set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()
+
+execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )

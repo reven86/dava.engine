@@ -41,6 +41,7 @@ namespace DAVA
 class CoreWin32Platform : public CoreWin32PlatformBase
 {
 public:
+    CoreWin32Platform();
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
     void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
@@ -62,7 +63,7 @@ private:
     bool isFullscreen;
     RECT windowPositionBeforeFullscreen;
 
-    static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
     static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
     void OnMouseMove(float32 x, float32 y);

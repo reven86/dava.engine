@@ -46,7 +46,7 @@ LogModel::LogModel(QObject* parent)
 {
     DVASSERT_MSG(thread() == qApp->thread(), "don't create this model in the separate thread!");
     CreateIcons();
-    func = [](const DAVA::String &str)
+    func = [](const DAVA::String& str)
     {
         return str;
     };
@@ -64,13 +64,13 @@ void LogModel::SetConvertFunction(ConvertFunc func_)
     func = func_;
 }
 
-QVariant LogModel::data(const QModelIndex &index, int role) const
+QVariant LogModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
     {
         return QVariant();
     }
-    const auto &item = items.at(index.row());
+    const auto& item = items.at(index.row());
     switch (role)
     {
     case Qt::ToolTipRole:
@@ -91,7 +91,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     }
 }
 
-int LogModel::rowCount(const QModelIndex &parent) const
+int LogModel::rowCount(const QModelIndex& parent) const
 {
     return items.size();
 }
@@ -102,8 +102,8 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& text)
     int count = rowCount();
     beginInsertRows(QModelIndex(), count, count);
     items.append(LogItem(ll,
-        QString::fromStdString(func(text.toStdString())),
-        text));
+                         QString::fromStdString(func(text.toStdString())),
+                         text));
     RecalculateRowWidth(text);
     endInsertRows();
 }
@@ -158,7 +158,7 @@ void LogModel::Clear()
 
 void LogModel::CreateIcons()
 {
-    const auto &logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
+    const auto& logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
     for (size_t i = 0; i < logMap->GetCount(); ++i)
     {
         int value;
@@ -213,13 +213,15 @@ void LogModel::RecalculateRowWidth(const QString& text)
     const int margin = 10;
     rowSize.setWidth(qMax(rowSize.width(), fm.width(text) + margin));
 }
-const QPixmap &LogModel::GetIcon(int ll) const
+const QPixmap& LogModel::GetIcon(int ll) const
 {
     return icons.at(ll);
 }
 
-LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_, const QString &data_)
-    : ll(ll_), text(text_), data(data_)
+LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_, const QString& data_)
+    : ll(ll_)
+    , text(text_)
+    , data(data_)
 {
     text = text.split('\n', QString::SkipEmptyParts).join("\n");
 }

@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Network/Base/Endpoint.h"
 #include "Network/Base/IOLoop.h"
 #include "Network/Base/NetworkUtils.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA

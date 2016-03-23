@@ -498,25 +498,18 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-    Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
-                                                                                            m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
-                                                                                        }));
-
-    while (action->Status == Windows::Foundation::AsyncStatus::Started)
-    {
-        DAVA::Thread::Sleep(1);
-    }
-
-    // Setup inverse scale on the swap chain
-    DXGI_MATRIX_3X2_F inverseScale = { 0 };
-    inverseScale._11 = m_logicalSize.Width / m_backbufferSize.Width;
-    inverseScale._22 = m_logicalSize.Height / m_backbufferSize.Height;
     ComPtr<IDXGISwapChain2> spSwapChain2;
-    ThrowIfFailed(
-    m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
+    ThrowIfFailed(m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
 
-    ThrowIfFailed(
-    spSwapChain2->SetMatrixTransform(&inverseScale));
+    Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([spSwapChain2]() {
+                                                                                            m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
+                                                                                            DXGI_MATRIX_3X2_F inverseScale = { 0 };
+                                                                                            inverseScale._11 = m_logicalSize.Width / m_backbufferSize.Width;
+                                                                                            inverseScale._22 = m_logicalSize.Height / m_backbufferSize.Height;
+
+                                                                                            ThrowIfFailed(
+                                                                                            spSwapChain2->SetMatrixTransform(&inverseScale));
+                                                                                        }));
 
     // Create a render target view of the swap chain back buffer.
     ThrowIfFailed(
@@ -735,21 +728,16 @@ void init_device_and_swapchain_uap(void* panel)
 
 void resize_swapchain(int32 width, int32 height)
 {
-    bool doResize = int32(m_backbufferSize.Width) != width || int32(m_backbufferSize.Height) != height;
+    SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)));
 
-    if (doResize)
-    {
-        SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)));
+    rhi::CommandBufferDX11::DiscardAll();
+    CreateWindowSizeDependentResources();
 
-        rhi::CommandBufferDX11::DiscardAll();
-        CreateWindowSizeDependentResources();
-
-        _D3D11_SwapChain = m_swapChain.Get();
-        _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();
-        _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
-        _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
-        _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
-    }
+    _D3D11_SwapChain = m_swapChain.Get();
+    _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();
+    _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
+    _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
+    _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
 }
 
 void get_device_description(char* dst)

@@ -92,7 +92,7 @@ bool FMODSoundEvent::Trigger()
             {
                 DVASSERT(direction.Length() > 0.f);
             }
-            FMOD_VERIFY(fmodEventInfo->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : nullptr));
+            FMOD_VERIFY(fmodEventInfo->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
             FMOD_VERIFY(fmodEventInfo->setVolume(volume));
             ApplyParamsToEvent(fmodEventInfo);
         }
@@ -147,7 +147,7 @@ void FMODSoundEvent::SetVelocity(const Vector3& velocity)
         size_t instancesCount = instancesCopy.size();
         for (size_t i = 0; i < instancesCount; ++i)
         {
-            FMOD_VERIFY(instancesCopy[i]->set3DAttributes(0, (FMOD_VECTOR*)&velocity, 0));
+            FMOD_VERIFY(instancesCopy[i]->set3DAttributes(0, reinterpret_cast<const FMOD_VECTOR*>(&velocity), 0));
         }
     }
 }
@@ -175,7 +175,7 @@ void FMODSoundEvent::UpdateInstancesPosition()
         size_t instancesCount = instancesCopy.size();
         for (size_t i = 0; i < instancesCount; ++i)
         {
-            FMOD_VERIFY(instancesCopy[i]->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : NULL));
+            FMOD_VERIFY(instancesCopy[i]->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
         }
     }
 }
@@ -258,9 +258,8 @@ void FMODSoundEvent::InitParamsMap()
 {
     Vector<SoundEvent::SoundEventParameterInfo> paramsInfo;
     GetEventParametersInfo(paramsInfo);
-    for (int32 i = 0; i < (int32)paramsInfo.size(); ++i)
+    for (const SoundEvent::SoundEventParameterInfo& info : paramsInfo)
     {
-        const SoundEvent::SoundEventParameterInfo& info = paramsInfo[i];
         paramsValues[FastName(info.name)] = info.minValue;
     }
 }
@@ -347,8 +346,8 @@ FMOD_RESULT F_CALLBACK FMODSoundEvent::FMODEventCallback(FMOD_EVENT* event, FMOD
     {
         DVASSERT_MSG(Thread::IsMainThread(), DAVA::Format("FMOD Callback type %d", type).c_str());
 
-        FMOD::Event* fEvent = (FMOD::Event*)event;
-        FMODSoundEvent* sEvent = (FMODSoundEvent*)userdata;
+        FMOD::Event* fEvent = reinterpret_cast<FMOD::Event*>(event);
+        FMODSoundEvent* sEvent = reinterpret_cast<FMODSoundEvent*>(userdata);
         if (sEvent && fEvent)
         {
             FMOD_VERIFY(fEvent->setCallback(0, 0));

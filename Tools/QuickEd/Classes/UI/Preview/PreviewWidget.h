@@ -30,12 +30,12 @@
 #ifndef __QUICKED_PREVIEW_WIDGET_H__
 #define __QUICKED_PREVIEW_WIDGET_H__
 
-#include <QWidget>
-#include <QPointer>
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
-#include <UI/UIControl.h>
+#include <QWidget>
+#include <QCursor>
+#include <QPointer>
 
 namespace Ui
 {
@@ -52,6 +52,9 @@ class RulerController;
 class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
+class QDragMoveEvent;
+class QDragLeaveEvent;
+class QDropEvent;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -59,7 +62,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget();
-    DavaGLWidget* GetGLWidget();
+    DavaGLWidget* GetGLWidget() const;
     ScrollAreaController* GetScrollAreaController();
     float GetScale() const;
     RulerController* GetRulerController();
@@ -72,6 +75,8 @@ signals:
     void CopyRequested();
     void PasteRequested();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OpenPackageFile(QString path);
+    void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 
 public slots:
     void OnDocumentChanged(Document* document);
@@ -107,14 +112,23 @@ private:
     void ApplyPosChanges();
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
+    void OnPressEvent(QMouseEvent* event);
+    void OnReleaseEvent(QMouseEvent* event);
     void OnMoveEvent(QMouseEvent* event);
+    void OnDragMoveEvent(QDragMoveEvent* event);
+    bool ProcessDragMoveEvent(QDropEvent* event);
+    void OnDragLeaveEvent(QDragLeaveEvent* event);
+    void OnDropEvent(QDropEvent* event);
+
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
+
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
 
     QPoint lastMousePos;
+    QCursor lastCursor;
     QPointer<Document> document;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
@@ -132,7 +146,7 @@ private:
     std::unique_ptr<EditorSystemsManager> systemsManager;
 };
 
-inline DavaGLWidget* PreviewWidget::GetGLWidget()
+inline DavaGLWidget* PreviewWidget::GetGLWidget() const
 {
     return davaGLWidget;
 }

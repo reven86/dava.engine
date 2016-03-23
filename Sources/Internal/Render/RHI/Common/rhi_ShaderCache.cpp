@@ -54,7 +54,7 @@ _mcpp__fputc(int ch, OUTDEST dst)
     case MCPP_OUT:
     {
         if (_PreprocessedText)
-            _PreprocessedText->push_back((char)ch);
+            _PreprocessedText->push_back(char(ch));
     }
     break;
 
@@ -1176,7 +1176,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
         mcpp__startup();
         mcpp__set_input(src, static_cast<unsigned>(strlen(src)));
         mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
-        mcpp_lib_main(countof(argv), (char**)argv);
+        mcpp_lib_main(countof(argv), const_cast<char**>(argv));
         mcpp__cleanup();
         mcpp__shutdown();
     }
@@ -1233,7 +1233,7 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
     }
 
     bin->clear();
-    bin->insert(bin->begin(), (const uint8*)(&(txt[0])), (const uint8*)(&(txt[txt.length() - 1]) + 1));
+    bin->insert(bin->begin(), reinterpret_cast<const uint8*>(&(txt[0])), reinterpret_cast<const uint8*>(&(txt[txt.length() - 1]) + 1));
     bin->push_back(0);
 }
 
@@ -1261,7 +1261,7 @@ void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& ui
     }
 
     pbin->clear();
-    pbin->insert(pbin->begin(), (const uint8*)(bin), (const uint8*)(bin) + binSize);
+    pbin->insert(pbin->begin(), reinterpret_cast<const uint8*>(bin), reinterpret_cast<const uint8*>(bin) + binSize);
     pbin->push_back(0);
 }
 
