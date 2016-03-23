@@ -29,7 +29,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Compression/ZipCompressor.h"
 #include "Logger/Logger.h"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #include <miniz/miniz.c>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 namespace DAVA
 {
