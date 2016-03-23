@@ -41,12 +41,12 @@ bool LZ4Compressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
         Logger::Error("LZ4 compress failed too big input buffer");
         return false;
     }
-    uint32 maxSize = static_cast<uint32>(LZ4_compressBound(in.size()));
+    uint32 maxSize = static_cast<uint32>(LZ4_compressBound(static_cast<uint32>(in.size())));
     if (out.size() < maxSize)
     {
         out.resize(maxSize);
     }
-    int32 compressedSize = LZ4_compress(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
+    int32 compressedSize = LZ4_compress(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), static_cast<uint32>(in.size()));
     if (compressedSize == 0)
     {
         return false;
@@ -58,7 +58,7 @@ bool LZ4Compressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 bool LZ4Compressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     bool result = true;
-    int decompressResult = LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), out.size());
+    int decompressResult = LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), static_cast<uint32>(out.size()));
     if (decompressResult < 0)
     {
         Logger::Error("LZ4 decompress failed");
@@ -74,12 +74,12 @@ bool LZ4HCCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) cons
         Logger::Error("LZ4 compress failed too big input buffer");
         return false;
     }
-    uint32 maxSize = static_cast<uint32>(LZ4_compressBound(in.size()));
+    uint32 maxSize = static_cast<uint32>(LZ4_compressBound(static_cast<uint32>(in.size())));
     if (out.size() < maxSize)
     {
         out.resize(maxSize);
     }
-    int32 compressedSize = LZ4_compressHC(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
+    int32 compressedSize = LZ4_compressHC(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), static_cast<uint32>(in.size()));
     if (compressedSize == 0)
     {
         return false;

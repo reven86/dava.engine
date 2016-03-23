@@ -35,12 +35,12 @@ namespace DAVA
 {
 bool ZipCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
-    uLong destMaxLength = compressBound(in.size());
+    uLong destMaxLength = static_cast<uLong>(compressBound(in.size()));
     if (out.size() < destMaxLength)
     {
         out.resize(destMaxLength);
     }
-    int32 result = compress(out.data(), &destMaxLength, in.data(), in.size());
+    int32 result = compress(out.data(), &destMaxLength, in.data(), static_cast<uLong>(in.size()));
     if (result != Z_OK)
     {
         Logger::Error("can't compress rfc1951 buffer");
@@ -57,8 +57,8 @@ bool ZipCompressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) cons
         Logger::Error("too big input buffer for uncompress rfc1951");
         return false;
     }
-    uLong uncompressedSize = out.size();
-    int32 decompressResult = uncompress(out.data(), &uncompressedSize, in.data(), in.size());
+    uLong uncompressedSize = static_cast<uLong>(out.size());
+    int32 decompressResult = uncompress(out.data(), &uncompressedSize, in.data(), static_cast<uLong>(in.size()));
     if (decompressResult != Z_OK)
     {
         Logger::Error("can't uncompress rfc1951 buffer");

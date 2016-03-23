@@ -58,7 +58,7 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
         throw std::runtime_error("can't open resource archive: " + fileName);
     }
     Array<char8, 4> firstBytes;
-    unsigned count = f->Read(firstBytes.data(), firstBytes.size());
+    uint32 count = f->Read(firstBytes.data(), static_cast<uint32>(firstBytes.size()));
     if (count != firstBytes.size())
     {
         throw std::runtime_error("can't read from resource archive: " + fileName);
