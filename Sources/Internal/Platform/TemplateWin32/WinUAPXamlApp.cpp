@@ -760,7 +760,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
         for (auto& change : mouseButtonChanges)
         {
             auto fn = [this, window_x, window_y, change]() {
-                //              DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE);
+                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE);
             };
             core->RunOnMainThread(fn);
         }
@@ -776,7 +776,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
                 phase = UIEvent::Phase::MOVE;
 
                 core->RunOnMainThread([this, phase, dx, dy]() {
-                    //                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
+                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
                 });
             }
             else
