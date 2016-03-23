@@ -35,7 +35,7 @@ namespace DAVA
 {
 bool ZipCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
-    uLong destMaxLength = static_cast<uLong>(compressBound(in.size()));
+    uLong destMaxLength = compressBound(static_cast<uint32>(in.size()));
     if (out.size() < destMaxLength)
     {
         out.resize(destMaxLength);
