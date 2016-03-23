@@ -76,8 +76,9 @@ void SetupDispatch(Dispatch* dispatch);
 namespace PipelineStateDX9
 {
 void SetupDispatch(Dispatch* dispatch);
-unsigned VertexLayoutStride(Handle ps);
+unsigned VertexLayoutStride(Handle ps, unsigned stream);
 void SetToRHI(Handle ps, uint32 layoutUID);
+void SetupVertexStreams(Handle ps, uint32 layoutUID, uint32 instCount);
 }
 
 namespace ConstBufferDX9
