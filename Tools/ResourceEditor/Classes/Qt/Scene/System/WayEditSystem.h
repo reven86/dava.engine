@@ -61,7 +61,6 @@ class WayEditSystem : public DAVA::SceneSystem,
 
 public:
     WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* selectionSystem, SceneCollisionSystem* collisionSystem);
-    ~WayEditSystem() override;
 
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
@@ -100,7 +99,7 @@ protected:
     bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
     bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
 
-protected:
+private:
     EntityGroup currentSelection;
     EntityGroup selectedWaypoints;
     EntityGroup prevSelectedWaypoints;
@@ -108,7 +107,7 @@ protected:
     SceneSelectionSystem* selectionSystem = nullptr;
     SceneCollisionSystem* collisionSystem = nullptr;
     DAVA::Vector<DAVA::Entity*> waypointEntities;
-    DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
+    DAVA::Map<DAVA::Entity*, DAVA::Vector<DAVA::Entity*>> mapStartPoints; // mapping [path parent -> path start point]
     DAVA::Entity* underCursorPathEntity = nullptr;
     DAVA::Entity* startPointForRemove = nullptr;
     bool inCloneState = false;
