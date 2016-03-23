@@ -2280,8 +2280,11 @@ void DiscardAll()
                         cb->context->FinishCommandList(FALSE, &(cb->commandList));
                     }
 
-                    cb->contextAnnotation->Release();
-                    cb->contextAnnotation = nullptr;
+                    if (nullptr != cb->contextAnnotation)
+                    {
+                        cb->contextAnnotation->Release();
+                        cb->contextAnnotation = nullptr;
+                    }
 
                     cb->context->Release();
                     cb->context = nullptr;
