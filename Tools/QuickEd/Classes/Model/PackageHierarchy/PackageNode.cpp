@@ -110,6 +110,11 @@ PackageNode* PackageNode::GetPackage()
     return this;
 }
 
+void PackageNode::SetPath(const DAVA::FilePath& path_)
+{
+    path = path_;
+}
+
 const FilePath& PackageNode::GetPath() const
 {
     return path;
