@@ -30,7 +30,7 @@
 
 #include "ReflectionBridge.h"
 #include "VariantConverter.h"
-#include "GlobalContext.h"
+#include "NgtTools/Common/GlobalContext.h"
 
 #include "Base/Introspection.h"
 #include "Base/IntrospectionCollection.h"

@@ -44,7 +44,7 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
-#include "QtTools/NGTUtils/NGTApplication.h"
+#include "NgtTools/Application/NGTApplication.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"

@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "NGTApplication.h"
-#include "GlobalContext.h"
+#include "NgtTools/Common/GlobalContext.h"
 
 #include "Debug/DVAssert.h"
 

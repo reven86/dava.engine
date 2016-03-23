@@ -78,13 +78,8 @@ macro(resolve_qt_pathes)
                           PATH_SUFFIXES lib)
 
         ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")
-
-        set ( QT5_MODULE_PATH ${QT5_LIB_PATH}/cmake)
-        set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
-
-        message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
-
     endif()
+    set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT5_LIB_PATH}/cmake")
 endmacro()
 
 #################################################################

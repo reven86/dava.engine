@@ -10,12 +10,10 @@ set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
 set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
-set                   ( USE_DYNAMIC_CRT 1)
-set                   ( TARGET_PLUGIN_APP_FOLDER_NAME ${PROJECT_NAME})
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
-include               ( CMake-common )
-include               ( NGTMacro )
+include ( CMake-common )
+include ( NGTMacro )
 
 if (DEPLOY)
     set (DEPLOY_ROOT ${DEPLOY_DIR})
@@ -27,30 +25,12 @@ if (DEPLOY)
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
 endif()
 
+configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
-define_ngt_pathes("${FRAMEWORK_PATH}/Sources/External/ngt/")
-get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
-
-list(APPEND EXCLUDE_LIBS "FColladaVS2010.lib" "libdxt.lib" "libdxtd.lib")
-list(APPEND ADDITIONAL_RELEASE_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/FColladaVS2010.lib")
-list(APPEND ADDITIONAL_DEBUG_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/D/FColladaVS2010.lib")
-list(APPEND ADDITIONAL_RELEASE_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/libdxt.lib")
-list(APPEND ADDITIONAL_DEBUG_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/D/libdxtd.lib")
-
-find_package          ( QT5           REQUIRED COMPONENTS ${QT_COMPONENTS} )
-find_package          ( NGT REQUIRED )
-find_package          ( DavaFramework REQUIRED )
-find_package          ( DavaTools     REQUIRED )
-
-if (NOT DEPLOY_DIR)
-      BW_SET_USE_CONFIGURATION_NAME(1)
-endif()
-BW_SET_TEST_DST_DIR(${TOOL_OUTPUT_DIR})
-BW_SET_ASSET_PIPELINE_DST_DIR(${TOOL_OUTPUT_DIR})
-BW_SET_EXECUTABLE_DST_DIR(${TOOL_OUTPUT_DIR})
-
-# NGT build system use this variable on Mac to resolve path where plugins must be copyed
-set( BW_BUNDLE_NAME "ResourceEditor")
+find_package( NgtTools REQUIRED )
+find_package( QT5 REQUIRED)
+find_package( DavaFramework REQUIRED )
+find_package( DavaTools  REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
@@ -132,7 +112,7 @@ set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
-set( LIBRARIES            ${BEAST_LIB} )
+set( LIBRARIES            ${BEAST_LIB} NgtTools)
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 
@@ -145,22 +125,6 @@ DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/con
                            COPY_DIR    ${DEPLOY_DIR}
                          )
 
-# append NGT targets to solution
-foreach(NGT_LIB ${NGT_LIBS})
-    append_ngt_lib(${NGT_LIB})
-endforeach()
-
-foreach(NGT_PLUGIN ${NGT_PLUGINS})
-    append_ngt_plugin(${NGT_PLUGIN})
-endforeach()
-
-list(APPEND TARGET_LIBRARIES core_generic_plugin_manager
-                             core_generic_plugin
-                             core_qt_common
-                             core_ui_framework)
-
-append_deploy_dependency(${PROJECT_NAME})
-set_delayed_deploy_qt()
 setup_main_executable()
 
 if (DEPLOY)

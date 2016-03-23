@@ -1,10 +1,11 @@
 include (CMake-common)
 
 macro(define_ngt_pathes ngt_root)
-    get_filename_component( NGT_ROOT ${ngt_root} ABSOLUTE )
-    set                   ( NGT_SRC_ROOT "${NGT_ROOT}/src/core/")
-    set                   ( NGT_CORE_PATH "${NGT_SRC_ROOT}lib/")
-    set                   ( NGT_PLUGINS_PATH "${NGT_SRC_ROOT}plugins/")
+    get_filename_component( NGT_ROOT_ABS ${ngt_root} ABSOLUTE )
+    set                   ( NGT_ROOT ${NGT_ROOT_ABS} CACHE INTERNAL "")
+    set                   ( NGT_SRC_ROOT "${NGT_ROOT}/src/core/" CACHE INTERNAL "")
+    set                   ( NGT_CORE_PATH "${NGT_SRC_ROOT}lib/" CACHE INTERNAL "")
+    set                   ( NGT_PLUGINS_PATH "${NGT_SRC_ROOT}plugins/" CACHE INTERNAL "")
 endmacro()
 
 macro(get_subdirs_list result curdir)
@@ -48,4 +49,22 @@ function (get_ngt_modules LIB_LIST_VAR PLG_LIST_VAR QTLIBS_LIST_VAR)
     set (${LIB_LIST_VAR} ${NGT_LIBS} PARENT_SCOPE)
     set (${PLG_LIST_VAR} ${NGT_PLUGINS} PARENT_SCOPE)
     set (${QTLIBS_LIST_VAR} ${QT_LIBS} PARENT_SCOPE)
+endfunction()
+
+function (append_ngt_includes)
+    include_directories(${NGT_CORE_PATH})
+    include_directories(${NGT_SRC_ROOT}/interfaces)
+    include_directories(${NGT_SRC_ROOT})
+    include_directories(${NGT_SRC_ROOT}/../)
+endfunction()
+
+function (configure_ngt _PROJECT_NAME _OUTPUT_PATH)
+    append_ngt_includes()
+    set (NGT_OUTPUT_DIR ${_OUTPUT_PATH} CACHE INTERNAL "")
+    
+    # NGT build system use this variable on Mac to resolve path where plugins must be copyed
+    set( BW_BUNDLE_NAME ${_PROJECT_NAME})
+
+    append_deploy_dependency(${PROJECT_NAME})
+    set_delayed_deploy_qt()
 endfunction()

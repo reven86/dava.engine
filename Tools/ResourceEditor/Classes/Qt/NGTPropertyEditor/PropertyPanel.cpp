@@ -29,8 +29,8 @@
 #include "PropertyPanel.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/EntityGroup.h"
-#include "QtTools/NGTUtils/ReflectionBridge.h"
-#include "QtTools/NGTUtils/GlobalContext.h"
+#include "NgtTools/Reflection/ReflectionBridge.h"
+#include "NgtTools/Common/GlobalContext.h"
 
 #include "Scene3D/Entity.h"
 

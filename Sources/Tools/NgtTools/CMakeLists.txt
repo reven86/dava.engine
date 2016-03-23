@@ -1,0 +1,67 @@
+project( NgtTools )
+
+set  ( USE_DYNAMIC_CRT 1 CACHE INTERNAL "")
+
+if (WIN32)
+    add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
+elseif (MACOS AND NOT ANDROID)
+    add_definitions (-DDARWIN_NO_CARBON)
+endif()
+
+include               ( CMake-common )
+include               ( NGTMacro )
+
+define_ngt_pathes("${DAVA_ROOT_DIR}/Sources/External/ngt/")
+get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
+
+include_directories ( ${DAVA_ROOT_DIR}/Sources/Internal)
+include_directories ( ${DAVA_ROOT_DIR}/Sources/Tools)
+
+file(GLOB RELEASE_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/*.lib")
+file(GLOB DEBUG_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/D/*.lib")
+
+set(EXCLUDE_LIBS "FColladaVS2010.lib" "libdxt.lib" "libdxtd.lib" CACHE INTERNAL "")
+set(ADDITIONAL_RELEASE_LIBS ${RELEASE_LIBS} CACHE INTERNAL "")
+set(ADDITIONAL_DEBUG_LIBS ${DEBUG_LIBS} CACHE INTERNAL "")
+
+find_package ( QT5 REQUIRED COMPONENTS ${QT_COMPONENTS} )
+find_package ( NGT REQUIRED )
+
+ASSERT(NGT_OUTPUT_DIR "Please call \"configure_ngt\" function from NGTMarco module before find NgtTools")
+
+ if (NOT DEPLOY_DIR)
+      BW_SET_USE_CONFIGURATION_NAME(1)
+endif()
+BW_SET_TEST_DST_DIR(${NGT_OUTPUT_DIR})
+BW_SET_ASSET_PIPELINE_DST_DIR(${NGT_OUTPUT_DIR})
+BW_SET_EXECUTABLE_DST_DIR(${NGT_OUTPUT_DIR})
+
+set( MOC_APP_SRCS )
+set( UI_APP_HDRS  )
+set( RCC_APP_SRCS )
+
+file              ( GLOB_RECURSE UI_LIST "*.ui" )
+qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
+
+file              ( GLOB_RECURSE RCC_LIST "*.qrc" )
+qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
+
+file( GLOB_RECURSE WIDGETS_SRC "*.h"  "*.cpp" )
+set( ADDED_SRC ${UI_APP_HDRS} ${RCC_APP_SRCS} ${WIDGETS_SRC} )
+set( Generated ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+
+generated_unity_sources        ( ADDED_SRC )
+generate_source_groups_project ( GROUP_FOLDERS Generated )
+
+# append NGT targets to solution
+foreach(NGT_LIB ${NGT_LIBS})
+    append_ngt_lib(${NGT_LIB})
+endforeach()
+
+foreach(NGT_PLUGIN ${NGT_PLUGINS})
+    append_ngt_plugin(${NGT_PLUGIN})
+endforeach()
+
+list(APPEND TARGET_LIBRARIES ${NGT_LIBS})
+add_library                    ( ${PROJECT_NAME} STATIC ${ADDED_SRC} )
+target_link_libraries  ( ${PROJECT_NAME} ${TARGET_LIBRARIES} )
