@@ -35,6 +35,8 @@
 #include <QScreen>
 #include <QMenu>
 #include <QShortCut>
+#include <QFileInfo>
+
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"
@@ -48,6 +50,10 @@
 #include "EditorSystems/HUDSystem.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
+#include "UI/Package/PackageMimeData.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
 
 using namespace DAVA;
 
@@ -410,6 +416,18 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         case QEvent::MouseButtonRelease:
             OnReleaseEvent(static_cast<QMouseEvent*>(event));
             break;
+        case QEvent::DragEnter:
+            return true;
+        case QEvent::DragMove:
+            OnDragMoveEvent(static_cast<QDragMoveEvent*>(event));
+            return true;
+        case QEvent::DragLeave:
+            OnDragLeaveEvent(static_cast<QDragLeaveEvent*>(event));
+            return true;
+        case QEvent::Drop:
+            OnDropEvent(static_cast<QDropEvent*>(event));
+            davaGLWidget->GetGLView()->requestActivate();
+            break;
         default:
             break;
         }
@@ -527,6 +545,7 @@ void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
+    DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
     if (event->buttons() & Qt::MiddleButton)
     {
@@ -540,6 +559,111 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
         int verticalScrollBarValue = verticalScrollBar->value();
         verticalScrollBarValue -= delta.y();
         verticalScrollBar->setValue(verticalScrollBarValue);
+    }
+}
+
+void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
+{
+    DVASSERT(nullptr != event);
+    ProcessDragMoveEvent(event) ? event->accept() : event->ignore();
+}
+
+bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
+{
+    DVASSERT(nullptr != event);
+    auto mimeData = event->mimeData();
+    if (mimeData->hasFormat("text/uri-list"))
+    {
+        QStringList strList = mimeData->text().split("\n");
+        for (const auto& str : strList)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                QString path = url.toLocalFile();
+                QFileInfo fileInfo(path);
+                return fileInfo.isFile() && fileInfo.suffix() == "yaml";
+            }
+        }
+    }
+    else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+    {
+        DVASSERT(nullptr != document);
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        auto node = systemsManager->ControlNodeUnderPoint(pos);
+        systemsManager->NodesHovered.Emit({ node });
+        if (nullptr != node)
+        {
+            if (node->IsReadOnly())
+            {
+                return false;
+            }
+            else
+            {
+                if (mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+                {
+                    const PackageMimeData* controlMimeData = DynamicTypeCheck<const PackageMimeData*>(mimeData);
+                    const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
+                    for (const auto& srcNode : srcControls)
+                    {
+                        if (srcNode == node)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        else
+        {
+            //root node will be added
+            return true;
+        }
+    }
+    return false;
+}
+
+void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
+{
+    systemsManager->NodesHovered.Emit({ nullptr });
+}
+
+void PreviewWidget::OnDropEvent(QDropEvent* event)
+{
+    systemsManager->NodesHovered.Emit({ nullptr });
+    DVASSERT(nullptr != event);
+    auto mimeData = event->mimeData();
+    if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+    {
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
+        String string = mimeData->text().toStdString();
+        auto action = event->dropAction();
+        uint32 index = 0;
+        if (node == nullptr)
+        {
+            node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
+            index = systemsManager->GetIndexOfNearestControl(pos - systemsManager->GetScalableControl()->GetPosition());
+        }
+        else
+        {
+            index = node->GetCount();
+        }
+        emit DropRequested(mimeData, action, node, index, &pos);
+    }
+    else if (mimeData->hasFormat("text/uri-list"))
+    {
+        QStringList list = mimeData->text().split("\n");
+        Vector<FilePath> packages;
+        for (const QString& str : list)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                emit OpenPackageFile(url.toLocalFile());
+            }
+        }
     }
 }
 

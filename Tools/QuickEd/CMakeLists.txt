@@ -60,3 +60,5 @@ else ()
 endif ()
 
 setup_main_executable()
+
+execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
