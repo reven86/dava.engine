@@ -35,9 +35,6 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/ResourceArchive.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-#include "FileSystem/ZipFile.h"
-#endif //__DAVAENGINE_ANDROID__
 /**
 	\defgroup filesystem File System
  */
@@ -299,8 +296,6 @@ private:
 
     friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
-    friend class ZipFile;
-
 public:
     void Init();
 
