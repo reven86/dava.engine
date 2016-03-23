@@ -78,6 +78,8 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
         //-        vb->data = [uid contents];
         vb->size = desc.size;
         vb->uid = uid;
+
+        [vb->uid setPurgeableState:MTLPurgeableStateNonVolatile];
     }
     else
     {

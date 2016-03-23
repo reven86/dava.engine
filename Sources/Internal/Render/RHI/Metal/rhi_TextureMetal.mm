@@ -251,6 +251,8 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
         tex->is_renderable = texDesc.isRenderTarget;
         tex->is_cubemap = texDesc.type == TEXTURE_TYPE_CUBE;
 
+        [tex->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+
         uint32 sliceCount = (texDesc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
 
         for (unsigned s = 0; s != sliceCount; ++s)
@@ -308,6 +310,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 
             if (uid2)
             {
+                [tex->uid2 setPurgeableState:MTLPurgeableStateNonVolatile];
                 tex->uid2 = uid2;
                 uid2 = nil;
             }

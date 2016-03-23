@@ -79,6 +79,8 @@ metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
         ib->size = desc.size;
         ib->uid = uid;
         ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
+
+        [ib->uid setPurgeableState:MTLPurgeableStateNonVolatile];
     }
     else
     {
