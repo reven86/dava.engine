@@ -235,7 +235,7 @@ public:
 		\param[in] archiveName pathname or local filename of archive we want to attach
 		\param[in] attachPath path we attach our archive 
 	*/
-    virtual void AttachArchive(const String& archiveName, const String& attachPath);
+    virtual void Mount(const String& archiveName, const String& attachPath);
 
     /**
 	 \brief Invokes the command processor to execute a command
@@ -285,8 +285,7 @@ private:
     {
         ResourceArchiveItem() = default;
         ResourceArchiveItem(ResourceArchiveItem&& other)
-            :
-            archive(std::move(other.archive))
+            : archive(std::move(other.archive))
             , attachPath(std::move(other.attachPath))
         {
         }

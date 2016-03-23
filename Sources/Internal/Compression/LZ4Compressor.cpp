@@ -46,7 +46,7 @@ bool LZ4Compressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
     {
         out.resize(maxSize);
     }
-    int compressedSize = LZ4_compress(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
+    int32 compressedSize = LZ4_compress(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
     if (compressedSize == 0)
     {
         return false;
@@ -79,7 +79,7 @@ bool LZ4HCCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) cons
     {
         out.resize(maxSize);
     }
-    int compressedSize = LZ4_compressHC(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
+    int32 compressedSize = LZ4_compressHC(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), in.size());
     if (compressedSize == 0)
     {
         return false;

@@ -136,12 +136,6 @@ void FilePath::InitializeBundleName()
         AddResourcesFolder(dataDirPath);
     }
 
-    FilePath dataPackfile(workingDirectory + "data.pak");
-    if (FileSystem::Instance()->Exists(dataPackfile))
-    {
-        FileSystem::Instance()->AttachArchive(dataPackfile.GetAbsolutePathname(), "Data");
-    }
-
 #if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION)
     String additionalResourcePath;
 

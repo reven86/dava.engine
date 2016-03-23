@@ -31,16 +31,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+Compressor::~Compressor()
+{
+}
+
 ZipArchive::ZipArchive(const FilePath& fileName)
     : zipFile(fileName)
 {
     // Get and print information about each file in the archive.
-    unsigned count = zipFile.GetNumFiles();
+    uint32 count = zipFile.GetNumFiles();
     fileNames.clear();
     fileInfos.clear();
     fileNames.reserve(count);
     fileInfos.reserve(count);
-    for (unsigned i = 0u; i < count; i++)
+    for (uint32 i = 0u; i < count; i++)
     {
         String name;
         uint32 origSize = 0;

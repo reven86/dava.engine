@@ -476,7 +476,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         switch (errno)
         {
         case ENOENT:
-            Logger::Error("File %s not found.", cs.c_str());
+            // file not found
             break;
         case EINVAL:
             Logger::Error("Invalid parameter to stat.");
@@ -782,7 +782,7 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
     return bytes;
 };
 
-void FileSystem::AttachArchive(const String& archiveName, const String& attachPath)
+void FileSystem::Mount(const String& archiveName, const String& attachPath)
 {
     DVASSERT(!attachPath.empty());
 

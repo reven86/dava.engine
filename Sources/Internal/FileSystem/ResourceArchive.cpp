@@ -51,8 +51,6 @@ namespace DAVA
 
 ResourceArchive::ResourceArchive(const FilePath& archiveName)
 {
-    using namespace DAVA;
-
     const String& fileName = archiveName.GetAbsolutePathname();
 
     ScopedPtr<File> f(File::Create(fileName, File::OPEN | File::READ));

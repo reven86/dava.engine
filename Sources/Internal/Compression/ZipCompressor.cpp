@@ -40,7 +40,7 @@ bool ZipCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
     {
         out.resize(destMaxLength);
     }
-    int result = compress(out.data(), &destMaxLength, in.data(), in.size());
+    int32 result = compress(out.data(), &destMaxLength, in.data(), in.size());
     if (result != Z_OK)
     {
         Logger::Error("can't compress rfc1951 buffer");
@@ -58,7 +58,7 @@ bool ZipCompressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) cons
         return false;
     }
     uLong uncompressedSize = out.size();
-    int decompressResult = uncompress(out.data(), &uncompressedSize, in.data(), in.size());
+    int32 decompressResult = uncompress(out.data(), &uncompressedSize, in.data(), in.size());
     if (decompressResult != Z_OK)
     {
         Logger::Error("can't uncompress rfc1951 buffer");
@@ -120,7 +120,7 @@ bool ZipFile::LoadFile(const FilePath& fileName, Vector<uint8>& fileContent) con
 {
     String name = fileName.GetStringValue();
 
-    int fileIndex = mz_zip_reader_locate_file(&zipData->archive, name.c_str(), nullptr, 0);
+    int32 fileIndex = mz_zip_reader_locate_file(&zipData->archive, name.c_str(), nullptr, 0);
     if (fileIndex < 0)
     {
         Logger::Error("file: %s not found in archive: %s!", name.c_str(), zipData->fileName.c_str());

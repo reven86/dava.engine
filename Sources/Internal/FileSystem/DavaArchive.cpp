@@ -44,71 +44,71 @@ DavaArchive::DavaArchive(const FilePath& archiveName)
     {
         throw std::runtime_error("can't Open file: " + fileName);
     }
-    auto& header_block = packFile.headerBlock;
-    uint32 isOk = file->Read(&header_block, sizeof(header_block));
-    if (isOk <= 0)
+    auto& headerBlock = packFile.headerBlock;
+    uint32 numBytesRead = file->Read(&headerBlock, sizeof(headerBlock));
+    if (numBytesRead != sizeof(headerBlock))
     {
         throw std::runtime_error("can't read header from packfile: " + fileName);
     }
-    if (header_block.resPackMarker != PackFileMarker)
+    if (headerBlock.resPackMarker != PackFileMarker)
     {
         throw std::runtime_error("incorrect marker in pack file: " + fileName);
     }
-    if (PackFileMagic != header_block.magic)
+    if (PackFileMagic != headerBlock.magic)
     {
         throw std::runtime_error("can't read packfile incorrect magic");
     }
-    if (header_block.numFiles == 0)
+    if (headerBlock.numFiles == 0)
     {
         throw std::runtime_error("can't load packfile no files inside");
     }
-    if (header_block.startFileNames != file->GetPos())
+    if (headerBlock.startFileNames != file->GetPos())
     {
         throw std::runtime_error("error in header of packfile start position for file names incorrect");
     }
     String& fileNames = packFile.namesBlock.sortedNames;
-    fileNames.resize(header_block.namesBlockSize, '\0');
+    fileNames.resize(headerBlock.namesBlockSize, '\0');
 
-    isOk = file->Read(&fileNames[0], static_cast<uint32>(fileNames.size()));
-    if (isOk <= 0)
+    numBytesRead = file->Read(&fileNames[0], static_cast<uint32>(fileNames.size()));
+    if (numBytesRead != fileNames.size())
     {
         throw std::runtime_error("can't read file names from packfile");
     }
 
-    if (header_block.startFilesTable != file->GetPos())
+    if (headerBlock.startFilesTable != file->GetPos())
     {
         throw std::runtime_error("can't load packfile incorrect start position of files data");
     }
 
     Vector<FileTableEntry>& fileTable = packFile.filesDataBlock.fileTable;
-    fileTable.resize(header_block.numFiles);
+    fileTable.resize(headerBlock.numFiles);
 
-    if (header_block.filesTableBlockSize / header_block.numFiles !=
+    if (headerBlock.filesTableBlockSize / headerBlock.numFiles !=
         sizeof(FileTableEntry))
     {
         throw std::runtime_error("can't load packfile bad originalSize of file table");
     }
 
-    isOk = file->Read(reinterpret_cast<char*>(&fileTable[0]),
-                      header_block.filesTableBlockSize);
-    if (isOk <= 0)
+    numBytesRead = file->Read(reinterpret_cast<char*>(&fileTable[0]),
+                              headerBlock.filesTableBlockSize);
+    if (numBytesRead != headerBlock.filesTableBlockSize)
     {
         throw std::runtime_error("can't read files table from packfile");
     }
 
-    if (header_block.startPackedFiles != file->GetPos())
+    if (headerBlock.startPackedFiles != file->GetPos())
     {
         throw std::runtime_error("can't read packfile, incorrect start position of compressed content");
     }
 
-    filesInfoSortedByName.reserve(header_block.numFiles);
+    filesInfoSortedByName.reserve(headerBlock.numFiles);
 
-    size_t num_files =
+    size_t numFiles =
     std::count_if(fileNames.begin(), fileNames.end(), [](const char& ch)
                   {
                       return '\0' == ch;
                   });
-    if (num_files != fileTable.size())
+    if (numFiles != fileTable.size())
     {
         throw std::runtime_error("number of file names not match with table");
     }
@@ -136,7 +136,7 @@ DavaArchive::DavaArchive(const FilePath& archiveName)
                                  [](const ResourceArchive::FileInfo& first,
                                     const ResourceArchive::FileInfo& second)
                                  {
-                                     return first.fileName < second.fileName;
+                                     return std::strcmp(first.fileName, second.fileName) <= 0;
                                  });
     if (!result)
     {
@@ -376,33 +376,7 @@ static bool CompressFileAndWriteToOutput(const ResourceArchive::FileInfo& fInfo,
 
     Compressor::Type compressType = fInfo.compressionType;
 
-    switch (compressType)
-    {
-    case Compressor::Type::Lz4:
-    {
-        if (!Packing(fInfo.fileName, fileTable, inBuffer, packingBuf, output,
-                     origSize, startPos, Compressor::Type::Lz4))
-        {
-            return false;
-        }
-    }
-    break;
-    case Compressor::Type::Lz4HC:
-    {
-        if (!Packing(fInfo.fileName, fileTable, inBuffer, packingBuf, output,
-                     origSize, startPos, Compressor::Type::Lz4HC))
-        {
-            return false;
-        }
-    }
-    break;
-    case Compressor::Type::RFC1951:
-        if (!Packing(fInfo.fileName, fileTable, inBuffer, packingBuf, output, origSize, startPos, Compressor::Type::RFC1951))
-        {
-            return false;
-        }
-        break;
-    case Compressor::Type::None:
+    if (fInfo.compressionType == Compressor::Type::None)
     {
         PackFile::FilesDataBlock::Data fileData{
             startPos,
@@ -419,7 +393,13 @@ static bool CompressFileAndWriteToOutput(const ResourceArchive::FileInfo& fInfo,
             return false;
         }
     }
-    break;
+    else
+    {
+        if (!Packing(fInfo.fileName, fileTable, inBuffer, packingBuf, output,
+                     origSize, startPos, fInfo.compressionType))
+        {
+            return false;
+        }
     }
     return true;
 }
@@ -466,7 +446,7 @@ bool DavaArchive::Create(const FilePath& archiveName,
 
     std::stable_sort(begin(infos), end(infos), [](const ResourceArchive::FileInfo& left, const ResourceArchive::FileInfo& right) -> bool
                      {
-                         return std::string(left.fileName) < right.fileName;
+                         return std::strcmp(left.fileName, right.fileName) <= 0;
                      });
 
     RefPtr<File> packFileOutput(File::Create(archiveName, File::CREATE | File::WRITE));

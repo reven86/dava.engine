@@ -77,8 +77,8 @@ struct PackFile
 
 using FileTableEntry = PackFile::FilesDataBlock::Data;
 
-static_assert(sizeof(PackFile::HeaderBlock) == 32, "header block size changed");
-static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed");
+static_assert(sizeof(PackFile::HeaderBlock) == 32, "header block size changed, something bad happened!");
+static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed, something bad happened!");
 } // end of dava_pack_private namespace
 
 namespace DAVA
