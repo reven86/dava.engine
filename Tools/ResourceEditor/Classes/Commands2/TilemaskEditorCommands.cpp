@@ -28,11 +28,11 @@
 
 
 #include "TilemaskEditorCommands.h"
-#include "../Qt/Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
-#include "../Qt/Scene/SceneEditor2.h"
-#include "../Qt/Scene/SceneSignals.h"
+#include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneSignals.h"
 
-#include "../Qt/Main/QtUtils.h"
+#include "Main/QtUtils.h"
 
 ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy_, const Rect& updatedRect_)
     : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")

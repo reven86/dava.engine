@@ -50,18 +50,18 @@ class StaticOcclusionSystem : public SceneSystem
 {
 public:
     StaticOcclusionSystem(Scene* scene);
-    virtual ~StaticOcclusionSystem();
+    ~StaticOcclusionSystem() override;
 
-    inline void SetCamera(Camera* camera);
+    void SetCamera(Camera* camera);
 
-    virtual void RegisterEntity(Entity* entity);
-    virtual void UnregisterEntity(Entity* entity);
-    virtual void RegisterComponent(Entity* entity, Component* component);
-    virtual void UnregisterComponent(Entity* entity, Component* component);
+    void RegisterEntity(Entity* entity) override;
+    void UnregisterEntity(Entity* entity) override;
+    void RegisterComponent(Entity* entity, Component* component) override;
+    void UnregisterComponent(Entity* entity, Component* component) override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
-    virtual void Process(float32 timeElapsed);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
 
     void AddRenderObjectToOcclusion(RenderObject* renderObject);
     void RemoveRenderObjectFromOcclusion(RenderObject* renderObject);
@@ -91,8 +91,8 @@ class StaticOcclusionDebugDrawSystem : public SceneSystem
 public:
     StaticOcclusionDebugDrawSystem(Scene* scene);
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
     void ImmediateEvent(Component* component, uint32 event) override;
 
     /*HVertexBuffer CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);

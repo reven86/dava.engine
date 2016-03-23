@@ -30,8 +30,13 @@
 #ifndef __LOD_EDITOR_H__
 #define __LOD_EDITOR_H__
 
-#include <QWidget>
+#include "Base/BaseTypes.h"
+
+#include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/EditorStatisticsSystem.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
+
+#include <QWidget>
 
 namespace Ui
 {
@@ -42,86 +47,100 @@ class QLabel;
 class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
-class EditorLODSystem;
 class EntityGroup;
 class Command2;
 class QPushButton;
 class QFrame;
 
 class LazyUpdater;
-class LODEditor : public QWidget
+class LODEditor : public QWidget, private EditorLODSystemUIDelegate, EditorStatisticsSystemUIDelegate
 {
     Q_OBJECT
 
 public:
     explicit LODEditor(QWidget* parent = nullptr);
-    ~LODEditor();
+    ~LODEditor() override;
 
 private slots:
-    void LODEditorSettingsButtonReleased();
-    void ViewLODButtonReleased();
-    void EditLODButtonReleased();
 
+    //Panels buttons
+    void LODEditorSettingsButtonClicked();
+    void ViewLODButtonClicked();
+    void EditLODButtonClicked();
+
+    //force signals
     void ForceDistanceStateChanged(bool checked);
     void ForceDistanceChanged(int distance);
+    void ForceLayerActivated(int index);
 
+    //scene signals
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
     void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
 
-    void LODDataChanged(SceneEditor2* scene = nullptr);
-
+    //distance signals
     void LODDistanceChangedBySpinbox(double value);
-    void LODDistanceChangedBySlider(const QVector<int>& changedLayers, bool continious);
+    void LODDistanceIsChangingBySlider();
+    void LODDistanceChangedBySlider();
 
-    void ForceLayerActivated(int index);
-    void EditorModeChanged(int newMode);
+    //mode signal
+    void SceneOrSelectionModeSelected(bool allSceneModeActivated);
 
-    //TODO: remove after lod editing implementation
-    void CopyLODToLod0Clicked();
+    //action
+    void CopyLastLODToLOD0Clicked();
     void CreatePlaneLODClicked();
     void DeleteFirstLOD();
     void DeleteLastLOD();
 
 private:
-    void SetupInternalUI();
-    void InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index);
-    void UpdateSpinboxesBorders();
-
     void SetupSceneSignals();
+    void SetupInternalUI();
 
-    void SetSpinboxValue(QDoubleSpinBox* spinbox, double value);
-    void CreateForceLayerValues(int layersCount);
+    void SetupForceUI();
+    void CreateForceLayerValues(DAVA::uint32 layersCount);
 
+    void SetupPanelsButtonUI();
     void InvertFrameVisibility(QFrame* frame, QPushButton* frameButton);
+    void UpdatePanelsUI(SceneEditor2* forScene);
+    void UpdatePanelsForCurrentScene();
 
-    void SetForceLayerValues(const EditorLODSystem* editorLODSystem, int layersCount);
-    void UpdateWidgetVisibility(const EditorLODSystem* editorLODSystem);
-    void UpdateLODButtons(const EditorLODSystem* editorLODSystem);
-    void UpdateForceLayer(const EditorLODSystem* editorLODSystem);
-    void UpdateForceDistance(const EditorLODSystem* editorLODSystem);
+    void SetupDistancesUI();
+    void InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index);
+    void UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, DAVA::int32 count);
 
-    EditorLODSystem* GetCurrentEditorLODSystem();
+    void SetupActionsUI();
 
-    void UpdateUI();
+    //EditorLODSystemV2UIDelegate
+    void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode) override;
+    void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues) override;
+    void UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData) override;
+    void UpdateActionUI(EditorLODSystem* forSystem) override;
+    //end of EditorLODSystemV2UIDelegate
+
+    //EditorStatisticsSystemUIDelegate
+    void UpdateTrianglesUI(EditorStatisticsSystem* forSystem) override;
+    //end of EditorStatisticsSystemUIDelegate
+
+    EditorLODSystem* GetCurrentEditorLODSystem() const;
+    EditorStatisticsSystem* GetCurrentEditorStatisticsSystem() const;
 
 private:
-    Ui::LODEditor* ui;
+    std::unique_ptr<Ui::LODEditor> ui;
 
-    bool frameViewVisible;
-    bool frameEditVisible;
+    bool frameViewVisible = true;
+    bool frameEditVisible = true;
 
     struct DistanceWidget
     {
-        QLabel* name;
-        QDoubleSpinBox* distance;
+        QLabel* name = nullptr;
+        QDoubleSpinBox* distance = nullptr;
         void SetVisible(bool visible);
     };
-    DAVA::Map<DAVA::uint32, DistanceWidget> distanceWidgets;
 
-    LazyUpdater* uiUpdater = nullptr;
+    DAVA::Vector<DistanceWidget> distanceWidgets;
+
+    LazyUpdater* panelsUpdater = nullptr;
 };
 
 #endif //#ifndef __LOD_EDITOR_H__

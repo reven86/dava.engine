@@ -29,21 +29,23 @@
 
 #include "BeastSystem.h"
 
-BeastSystem::BeastSystem(Scene* scene)
+#include "FileSystem/KeyedArchive.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Entity.h"
+#include "Scene3D/Scene.h"
+
+BeastSystem::BeastSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
 {
 }
 
-BeastSystem::~BeastSystem()
-{
-}
-
-void BeastSystem::AddEntity(Entity* entity)
+void BeastSystem::AddEntity(DAVA::Entity* entity)
 {
     SetDefaultPropertyValues(entity);
 }
 
-void BeastSystem::SetDefaultPropertyValues(Entity* entity)
+void BeastSystem::SetDefaultPropertyValues(DAVA::Entity* entity)
 {
     DAVA::KeyedArchive* propertyList = GetOrCreateCustomProperties(entity)->GetArchive();
 
@@ -61,7 +63,7 @@ void BeastSystem::SetDefaultPropertyValues(Entity* entity)
     }
 }
 
-void BeastSystem::SetBool(KeyedArchive* propertyList, const String& key, bool value)
+void BeastSystem::SetBool(DAVA::KeyedArchive* propertyList, const DAVA::String& key, bool value)
 {
     if (!propertyList->IsKeyExists(key))
     {
@@ -69,7 +71,7 @@ void BeastSystem::SetBool(KeyedArchive* propertyList, const String& key, bool va
     }
 }
 
-void BeastSystem::SetFloat(KeyedArchive* propertyList, const String& key, float32 value)
+void BeastSystem::SetFloat(DAVA::KeyedArchive* propertyList, const DAVA::String& key, DAVA::float32 value)
 {
     if (!propertyList->IsKeyExists(key))
     {
@@ -77,7 +79,7 @@ void BeastSystem::SetFloat(KeyedArchive* propertyList, const String& key, float3
     }
 }
 
-void BeastSystem::SetInt32(KeyedArchive* propertyList, const String& key, int32 value)
+void BeastSystem::SetInt32(DAVA::KeyedArchive* propertyList, const DAVA::String& key, DAVA::int32 value)
 {
     if (!propertyList->IsKeyExists(key))
     {

@@ -81,27 +81,14 @@ void RenderSystem::RenderPermanent(RenderObject* renderObject)
     /*on add calculate valid world bbox*/
     renderObject->Retain();
     renderObjectArray.push_back(renderObject);
-    renderObject->SetRemoveIndex((uint32)(renderObjectArray.size() - 1));
+    renderObject->SetRemoveIndex(static_cast<uint32>(renderObjectArray.size() - 1));
 
     AddRenderObject(renderObject);
-    //    uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-    //    for (uint32 k = 0; k < renderBatchCount; ++k)
-    //    {
-    //        RenderBatch * batch = renderObject->GetRenderBatch(k);
-    //        AddRenderBatch(batch);
-    //    }
 }
 
 void RenderSystem::RemoveFromRender(RenderObject* renderObject)
 {
     DVASSERT(renderObject->GetRemoveIndex() != static_cast<uint32>(-1));
-
-    //	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-    //	for (uint32 k = 0; k < renderBatchCount; ++k)
-    //	{
-    //		RenderBatch * batch = renderObject->GetRenderBatch(k);
-    //		RemoveRenderBatch(batch);
-    //	}
 
     FindAndRemoveExchangingWithLast(markedObjects, renderObject);
     renderObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
@@ -298,8 +285,8 @@ void RenderSystem::FindNearestLights(RenderObject* renderObject)
 
 void RenderSystem::FindNearestLights()
 {
-    uint32 size = (uint32)renderObjectArray.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = renderObjectArray.size();
+    for (size_t k = 0; k < size; ++k)
     {
         FindNearestLights(renderObjectArray[k]);
     }

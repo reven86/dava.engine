@@ -98,7 +98,6 @@ Item {
                         delegate: RadioButton {
                             text: model.name
                             exclusiveGroup: exclusiveGroup_platforms
-                            checked: model.checked
                             Connections {
                                 target: impl
                                 onConfigUpdated:  {
@@ -182,7 +181,7 @@ Item {
                         RadioButton {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                impl.processDataChanged(checked, loaderDelegate.createObj(), "currentOptions");
+                                impl.processDataChanged(checked, createObj(), "currentOptions");
                             }
                             exclusiveGroup: exclusiveGroup_localOptions
 
@@ -193,7 +192,7 @@ Item {
                         CheckBox {
                             text: modelData ? modelData.name : ""
                             onCheckedChanged: {
-                                impl.processDataChanged(checked, loaderDelegate.createObj(), "currentOptions");
+                                impl.processDataChanged(checked, createObj(), "currentOptions");
                             }
                         }
                     }

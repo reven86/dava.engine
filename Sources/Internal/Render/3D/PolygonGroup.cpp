@@ -364,7 +364,7 @@ void PolygonGroup::Save(KeyedArchive* keyedArchive, SerializationContext* serial
     keyedArchive->SetInt32("packing", PACKING_NONE);
     keyedArchive->SetByteArray("vertices", meshData, vertexCount * vertexStride);
     keyedArchive->SetInt32("indexFormat", indexFormat);
-    keyedArchive->SetByteArray("indices", (uint8*)indexArray, indexCount * INDEX_FORMAT_SIZE[indexFormat]);
+    keyedArchive->SetByteArray("indices", reinterpret_cast<uint8*>(indexArray), indexCount * INDEX_FORMAT_SIZE[indexFormat]);
     keyedArchive->SetInt32("cubeTextureCoordCount", cubeTextureCoordCount);
 
     //    for (int32 k = 0; k < GetVertexCount(); ++k)
@@ -384,7 +384,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
     vertexCount = keyedArchive->GetInt32("vertexCount");
     indexCount = keyedArchive->GetInt32("indexCount");
     textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
-    primitiveType = (rhi::PrimitiveType)keyedArchive->GetInt32("rhi_primitiveType", rhi::PRIMITIVE_TRIANGLELIST);
+    primitiveType = rhi::PrimitiveType(keyedArchive->GetInt32("rhi_primitiveType", rhi::PRIMITIVE_TRIANGLELIST));
     cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
 
     int32 formatPacking = keyedArchive->GetInt32("packing");
@@ -516,8 +516,8 @@ int32 PolygonGroup::OptimazeVertexes(const uint8* meshData, Vector<uint8>& optMe
 
     for (uint32 i = 0; i < optimizedVertexCount; ++i)
     {
-        const float32* optData = (float32*)(&optMeshData[i * GetVertexSize(vertexFormat)]);
-        const float32* tmpMeshData = (float32*)meshData;
+        const float32* optData = reinterpret_cast<float32*>(&optMeshData[i * GetVertexSize(vertexFormat)]);
+        const float32* tmpMeshData = reinterpret_cast<const float32*>(meshData);
 
         bool skip = false;
         for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)

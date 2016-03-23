@@ -27,22 +27,34 @@
 =====================================================================================*/
 
 
-#include "CommandAction.h"
+#include "Commands2/Base/CommandNotify.h"
 
-CommandAction::CommandAction(int _id, const DAVA::String& _text)
-    : Command2(_id, _text)
+CommandNotifyProvider::~CommandNotifyProvider()
 {
+    SafeRelease(curNotify);
 }
 
-CommandAction::~CommandAction()
+void CommandNotifyProvider::SetNotify(CommandNotify* notify)
 {
+    if (curNotify != notify)
+    {
+        SafeRelease(curNotify);
+        curNotify = SafeRetain(notify);
+    }
 }
 
-void CommandAction::Undo()
+void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
 {
+    if (nullptr != curNotify)
+    {
+        curNotify->Notify(command, redo);
+    }
 }
 
-DAVA::Entity* CommandAction::GetEntity() const
+void CommandNotifyProvider::EmitCleanChanged(bool clean)
 {
-    return NULL;
+    if (nullptr != curNotify)
+    {
+        curNotify->CleanChanged(clean);
+    }
 }

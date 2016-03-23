@@ -197,7 +197,7 @@ gles2_TextureFormatSupported(TextureFormat format)
 static void
 gles_check_GL_extensions()
 {
-    const char* ext = (const char*)glGetString(GL_EXTENSIONS);
+    const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
 
     if (!IsEmptyString(ext))
     {
@@ -234,7 +234,7 @@ gles_check_GL_extensions()
 
     _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
 
-    const char* version = (const char*)glGetString(GL_VERSION);
+    const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
     {
         int majorVersion = 2;
@@ -273,7 +273,7 @@ gles_check_GL_extensions()
         }
     }
 
-    const char* renderer = (const char*)glGetString(GL_RENDERER);
+    const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
         if (strstr(renderer, "Mali"))
