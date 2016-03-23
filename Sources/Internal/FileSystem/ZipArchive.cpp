@@ -56,7 +56,7 @@ ZipArchive::ZipArchive(const FilePath& fileName)
             throw std::runtime_error("failed! get file info");
         }
 
-        if (isDirectory)
+        if (!isDirectory)
         {
             fileNames.push_back(name);
             ResourceArchive::FileInfo info;
@@ -108,7 +108,7 @@ bool ZipArchive::LoadFile(const String& fileName, Vector<uint8>& output) const
     {
         output.resize(info->originalSize);
 
-        if (zipFile.LoadFile(fileName, output))
+        if (!zipFile.LoadFile(fileName, output))
         {
             Logger::Error("can't extract file: %s into memory", fileName.c_str());
             return false;

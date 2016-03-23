@@ -116,14 +116,12 @@ bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOrigin
     return true;
 }
 
-bool ZipFile::LoadFile(const FilePath& fileName, Vector<uint8>& fileContent) const
+bool ZipFile::LoadFile(const String& fileName, Vector<uint8>& fileContent) const
 {
-    String name = fileName.GetStringValue();
-
-    int32 fileIndex = mz_zip_reader_locate_file(&zipData->archive, name.c_str(), nullptr, 0);
+    int32 fileIndex = mz_zip_reader_locate_file(&zipData->archive, fileName.c_str(), nullptr, 0);
     if (fileIndex < 0)
     {
-        Logger::Error("file: %s not found in archive: %s!", name.c_str(), zipData->fileName.c_str());
+        Logger::Error("file: %s not found in archive: %s!", fileName.c_str(), zipData->fileName.c_str());
         return false;
     }
 
@@ -139,10 +137,10 @@ bool ZipFile::LoadFile(const FilePath& fileName, Vector<uint8>& fileContent) con
         fileContent.resize(static_cast<size_t>(fileStat.m_uncomp_size));
     }
 
-    mz_bool result = mz_zip_reader_extract_file_to_mem(&zipData->archive, name.c_str(), fileContent.data(), fileContent.size(), 0);
+    mz_bool result = mz_zip_reader_extract_file_to_mem(&zipData->archive, fileName.c_str(), fileContent.data(), fileContent.size(), 0);
     if (result == 0)
     {
-        Logger::Error("can't extract file: %s into memory", name.c_str());
+        Logger::Error("can't extract file: %s into memory", fileName.c_str());
         return false;
     }
     return true;

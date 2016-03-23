@@ -104,7 +104,7 @@ DavaArchive::DavaArchive(const FilePath& archiveName)
     filesInfoSortedByName.reserve(headerBlock.numFiles);
 
     size_t numFiles =
-    std::count_if(fileNames.begin(), fileNames.end(), [](const char& ch)
+    std::count_if(begin(fileNames), end(fileNames), [](const char& ch)
                   {
                       return '\0' == ch;
                   });
@@ -119,7 +119,7 @@ DavaArchive::DavaArchive(const FilePath& archiveName)
     std::for_each(begin(fileTable), end(fileTable), [&](FileTableEntry& fileEntry)
                   {
                       const char* fileNameLoc = &fileNames[fileNameIndex];
-                      mapFileData.emplace(fileName, &fileEntry);
+                      mapFileData.emplace(fileNameLoc, &fileEntry);
 
                       filesInfoSortedByName.push_back(
                       ResourceArchive::FileInfo{ fileNameLoc,
@@ -539,6 +539,12 @@ bool DavaArchive::Create(const FilePath& archiveName,
     headerBlock.startPackedFiles = headerBlock.startFilesTable + sizeOfFilesTable;
 
     uint32 delta = headerBlock.startPackedFiles;
+
+    if (fileTable.empty())
+    {
+        Logger::Error("no input files for dava pack");
+        return false;
+    }
 
     for (auto& fileData : fileTable)
     {

@@ -54,7 +54,7 @@ public:
     uint32 GetNumFiles() const;
     bool GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOriginalSize, uint32& fileCompressedSize, bool& isDirectory) const;
 
-    bool LoadFile(const FilePath& fileName, Vector<uint8>& fileContent) const;
+    bool LoadFile(const String& fileName, Vector<uint8>& fileContent) const;
 
 private:
     std::unique_ptr<ZipPrivateData> zipData;
