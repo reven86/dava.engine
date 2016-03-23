@@ -54,6 +54,7 @@ public:
     const FileInfo* GetFileInfo(const String& fileName) const;
     bool HasFile(const String& fileName) const;
     bool LoadFile(const String& fileName, Vector<uint8>& outputFileContent) const;
+
 private:
     std::unique_ptr<ResourceArchiveImpl> impl;
 };

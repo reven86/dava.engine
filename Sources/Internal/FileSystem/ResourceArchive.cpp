@@ -48,7 +48,6 @@ THIS
 
 namespace DAVA
 {
-
 ResourceArchive::ResourceArchive(const FilePath& archiveName)
 {
     const String& fileName = archiveName.GetAbsolutePathname();
