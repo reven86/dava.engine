@@ -146,8 +146,11 @@ private:
     QAction* focusPreviousChildAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
+
     ContinuousUpdater* continuousUpdater = nullptr;
-    SelectionContainer tmpContainerForUpdater;
+
+    SelectedNodes tmpSelected; //for continuousUpdater
+    SelectedNodes tmpDeselected; //for continuousUpdater
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget() const

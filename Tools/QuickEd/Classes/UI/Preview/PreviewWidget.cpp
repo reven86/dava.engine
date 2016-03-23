@@ -695,7 +695,17 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
 
 void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    tmpContainerForUpdater.MergeSelection(selected, deselected);
+    for (const auto& node : deselected)
+    {
+        tmpSelected.erase(node);
+        tmpDeselected.insert(node);
+    }
+    for (const auto& node : selected)
+    {
+        tmpSelected.insert(node);
+        tmpDeselected.erase(node);
+    }
+    selectionContainer.MergeSelection(selected, deselected);
     continuousUpdater->Update();
 }
 
@@ -708,16 +718,10 @@ void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>
 
 void PreviewWidget::NotifySelectionChanged()
 {
-    SelectedNodes selected;
-    SelectedNodes deselected;
-    selectionContainer.GetNotExistedItems(tmpContainerForUpdater.selectedNodes, selected);
-    tmpContainerForUpdater.GetNotExistedItems(selectionContainer.selectedNodes, deselected);
-    if (!selected.empty() || !deselected.empty())
+    if (!tmpSelected.empty() || !tmpDeselected.empty())
     {
-        emit SelectionChanged(selected, deselected);
+        emit SelectionChanged(tmpSelected, tmpDeselected);
     }
-    selectionContainer = tmpContainerForUpdater;
-    tmpContainerForUpdater.selectedNodes.clear();
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
