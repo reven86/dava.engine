@@ -35,6 +35,7 @@
 #include <QProcess>
 #include <QUrl>
 #include <QDesktopServices>
+#include <QProcess>
 
 Help::Help(QObject* parent)
     : QObject(parent)
@@ -45,11 +46,18 @@ Help::Help(QObject* parent)
 #elif defined Q_OS_MAC
     "/../Resources/Data/CMakeToolHelp.pdf";
 #else
-        #ERROR "usupported platform";
+    #ERROR "usupported platform";
 #endif //platform
 }
 
 void Help::Show() const
 {
-    QDesktopServices::openUrl(QUrl(helpPath));
+    QFileInfo fileInfo(helpPath);
+#ifdef Q_OS_WIN
+    QDesktopServices::openUrl(QUrl(fileInfo.absoluteFilePath()));
+#elif defined Q_OS_MAC
+    QProcess::startDetached("open", QStringList() << fileInfo.absoluteFilePath(), fileInfo.absolutePath());
+#else
+#ERROR "usupported platform";
+#endif //platform
 }

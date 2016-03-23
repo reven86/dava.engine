@@ -30,7 +30,6 @@
 #include "filesystemhelper.h"
 #include <QDir>
 #include <QRegularExpression>
-#include <QApplication>
 
 FileSystemHelper::FileSystemHelper(QObject* parent)
     : QObject(parent)
