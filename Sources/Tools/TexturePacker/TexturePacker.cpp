@@ -835,7 +835,7 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
     descriptor->drawSettings.magFilter = ftItem.magFilter;
     descriptor->drawSettings.mipFilter = ftItem.mipFilter;
 
-    descriptor->pathname = TextureDescriptor::GetDescriptorPathname(exportedPathname);
+    descriptor->pathname = exportedPathname + TextureDescriptor::GetDescriptorExtension();
 
     Set<FilePath> imagesForDeletion;
     for (const auto& key : keys)
@@ -847,7 +847,7 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
         }
 
         const String extension = ImageSystem::Instance()->GetExtensionsFor(key.imageFormat)[0];
-        FilePath srcImagePathname = FilePath::CreateWithNewExtension(exportedPathname, extension);
+        FilePath srcImagePathname = exportedPathname + extension;
 
         PngImageExt imageForGPU(image);
         if (key.toConvertOrigin)
