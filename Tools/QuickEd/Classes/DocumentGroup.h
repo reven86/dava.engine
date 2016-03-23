@@ -70,6 +70,7 @@ signals:
     void ActiveIndexChanged(int index);
     void ActiveDocumentChanged(Document*);
     void CanSaveChanged(bool canSave);
+    void CanSaveAllChanged(bool canSaveAll);
     void CanCloseChanged(bool canClose);
 
 public slots:

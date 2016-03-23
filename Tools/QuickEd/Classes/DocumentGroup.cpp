@@ -99,6 +99,8 @@ void DocumentGroup::AttachSaveAction(QAction* saveAction) const
 
 void DocumentGroup::AttachSaveAllAction(QAction* saveAllAction) const
 {
+    saveAllAction->setEnabled(documents.empty());
+    connect(this, &DocumentGroup::CanSaveAllChanged, saveAllAction, &QAction::setEnabled);
     connect(saveAllAction, &QAction::triggered, this, &DocumentGroup::SaveAllDocuments);
 }
 
@@ -230,6 +232,7 @@ void DocumentGroup::CloseDocument(Document* document)
         tabBar->blockSignals(signalsWasBlocked);
     }
     DVVERIFY(documents.removeAll(document) == 1);
+    emit CanSaveAllChanged(!documents.empty());
 
     undoGroup->removeStack(document->GetUndoStack());
 
@@ -503,6 +506,7 @@ void DocumentGroup::InsertDocument(Document* document, int index)
         return;
     }
     documents.insert(index, document);
+    emit CanSaveAllChanged(!documents.empty());
     for (auto& tabBar : attachedTabBars)
     {
         InsertTab(tabBar, document, index);
