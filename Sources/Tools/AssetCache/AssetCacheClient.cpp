@@ -247,7 +247,7 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
     }
     else
     {
-        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, currentRequest.requestID);
+        //skip this request, because it was canceled by timeout
     }
 }
 
