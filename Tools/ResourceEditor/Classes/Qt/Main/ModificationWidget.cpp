@@ -239,7 +239,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
     // remove child objects, to avoid double transformation
     selection.RemoveIf([&selection](const Selectable& obj) {
         auto entity = obj.AsEntity();
-        return (entity == nullptr) || selection.ContainsObject(entity->GetParent());
+        return (entity == nullptr) ? false : selection.ContainsObject(entity->GetParent());
     });
 
     switch (modifMode)
