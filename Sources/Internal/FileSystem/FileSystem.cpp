@@ -357,12 +357,7 @@ File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint
         frameworkPath.GetAbsolutePathname().c_str()[0] != '/')
     {
 #ifdef USE_LOCAL_RESOURCES
-        File* res = File::CreateFromSystemPath(frameworkPath, attributes);
-        if (!res)
-            res = ZipFile::CreateFromZip(frameworkPath, attributes);
-        return res;
-#else
-        return ZipFile::CreateFromAPK(frameworkPath, attributes);
+        return File::CreateFromSystemPath(frameworkPath, attributes);
 #endif
     }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
