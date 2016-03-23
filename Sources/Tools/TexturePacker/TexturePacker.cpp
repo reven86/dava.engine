@@ -823,7 +823,7 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(eGPUFamily f
     return compressionTargets;
 }
 
-void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExportKeys>& keys, const FilePath& exportedPathname)
+void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExportKeys>& keys, const FilePath& exportedPathnameWithoutExtension)
 {
     std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
 
@@ -835,19 +835,19 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
     descriptor->drawSettings.magFilter = ftItem.magFilter;
     descriptor->drawSettings.mipFilter = ftItem.mipFilter;
 
-    descriptor->pathname = exportedPathname + TextureDescriptor::GetDescriptorExtension();
+    descriptor->pathname = exportedPathnameWithoutExtension + TextureDescriptor::GetDescriptorExtension();
 
     Set<FilePath> imagesForDeletion;
     for (const auto& key : keys)
     {
         if (key.imageFormat == IMAGE_FORMAT_UNKNOWN)
         {
-            Logger::Error("Cannot export texture %s for %s", exportedPathname.GetStringValue().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(key.forGPU));
+            Logger::Error("Cannot export texture %s for %s", exportedPathnameWithoutExtension.GetStringValue().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(key.forGPU));
             continue;
         }
 
         const String extension = ImageSystem::Instance()->GetExtensionsFor(key.imageFormat)[0];
-        FilePath srcImagePathname = exportedPathname + extension;
+        FilePath srcImagePathname = exportedPathnameWithoutExtension + extension;
 
         PngImageExt imageForGPU(image);
         if (key.toConvertOrigin)
