@@ -16,7 +16,7 @@ dava.debug.dump_table = function(tbl, indent)
 		formatting = string.rep("  ", indent) .. key .. ": "
 		if type(val) == "table" then
 			print(formatting)
-			dava.dump_table(val, indent+1)
+			dava.debug.dump_table(val, indent+1)
 		elseif type(val) == 'boolean' then
 			print(formatting .. tostring(val))      
 		else
@@ -61,18 +61,17 @@ dava.add_pack_file = function(pack_name, file)
 end
 
 dava.match_pack = function(dir, file)
-	ret = dava.default_pack
-	full_path = dir .. "/" .. file
+	local ret = {}
+	local full_path = dir .. "/" .. file
+
 	for pack_name, pack_rules in pairs(dava.pack_rules) do
-
+		local found = false
 		for k, rule in pairs(pack_rules) do
-
 			-- simple string pattern 
 			if(type(rule) == "string") then
 				if full_path == rule then
 					--print(full_path .. " is matching to [" .. pattern)
-					dava.add_pack_file(pack_name, file)
-					ret = pack_name
+					found = true
 					break
 				end
 			-- dir pattern + file pattern
@@ -81,32 +80,48 @@ dava.match_pack = function(dir, file)
 				rule_file = rule[2]
 
 				if dir:match(rule_dir) and file:match(rule_file) then
-					--print(dir .. " and " .. "is matching to [" .. dir_pattern .. " and " .. file_pattern .. "]")
-					dava.add_pack_file(pack_name, file)
-					ret = pack_name
+					--print(full_path .. " is matching to [" .. rule_dir .. " and " .. rule_file .. "]")
+					found = true
 					break
+				else
+					--print("FAIL: ".. full_path .. " is NOT matching to [" .. rule_dir .. " and " .. rule_file .. "]")
 				end
 			end
 		end
+
+		if found == true then
+			if #ret ~= 0 then
+				print("Warning: file " .. file .." match more than one pack: " .. ret[1] .. " and " .. pack_name)
+			end
+			dava.add_pack_file(pack_name, file)
+			ret[#ret + 1] = pack_name
+		end
 	end
+
+	if #ret == 0 then
+		ret[#ret + 1] = dava.default_pack
+	end
+
 	return ret
 end
 
 
-dava.run_tup = function()
+dava.create_lists = function()
 	files = tup.glob("*")
 
 	affected_packs = {}
 
 	for k, file in pairs(files) do
-		pack_name = dava.match_pack(dava.tup_dir, file)
+		pack_names = dava.match_pack(dava.tup_dir, file)
 
-		if affected_packs[pack_name] == nil then
-			affected_packs[pack_name] = {}
+		for n, pack_name in pairs(pack_names) do
+			if affected_packs[pack_name] == nil then
+				affected_packs[pack_name] = {}
+			end
+
+			sz = #affected_packs[pack_name]
+			affected_packs[pack_name][sz + 1] = file
 		end
-
-		sz = #affected_packs[pack_name]
-		affected_packs[pack_name][sz + 1] = file
 	end
 
 	for affected_pack, affected_files in pairs(affected_packs) do
@@ -114,6 +129,24 @@ dava.run_tup = function()
 		pack_list_output = dava.output_dir .. dava.packlist_dir .. affected_pack .. "-" .. dava.tup_dir:gsub("/", "_") .. "." .. dava.packlist_ext
 
 		tup.rule(affected_files, "^ Gen " .. affected_pack .. "^" .. dava.dep_tool .. " " .. dava.tup_dir .. " %\"f > %o", { pack_list_output, pack_group })
+	end
+end
+
+dava.create_packs = function()
+	for pack_name, pack_rule in pairs(dava.pack_rules) do
+	    pack_output = dava.output_dir .. pack_name .. ".pack.zip"
+	    pack_group = dava.root_dir .. "/<"  .. pack_name .. ">"
+	    pack_merged_list = dava.output_dir .. pack_name .. "." .. dava.packlist_ext
+
+	    tup.frule{
+	        inputs = { pack_group },
+	        command = "cat %<" .. pack_name .. "> > %o",
+	        outputs = { pack_merged_list }
+	    }
+
+	    if pack_name ~= dava.default_pack then
+	        tup.rule(pack_merged_list, "cat %f | zip %o -@", pack_output)
+	    end
 	end
 end
 
