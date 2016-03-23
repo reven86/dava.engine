@@ -399,7 +399,7 @@ bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, int32 from
     PixelFormat pxFormat = GetTextureFormat(pvrFile->header);
     if (pvrFile->header.u32Height != pvrFile->header.u32Width && (pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4))
     {
-        Logger::Error("[LibPVRHelper::LoadImages]: Non-square textures with %s compression is unsupported. Failed to load : %s",
+        Logger::Error("[LibPVRHelper::LoadImages]: Non-square textures with %s compression are unsupported. Failed to load : %s",
                       GlobalEnumMap<PixelFormat>::Instance()->ToString(pxFormat),
                       infile->GetFilename().GetAbsolutePathname().c_str());
         return false;
