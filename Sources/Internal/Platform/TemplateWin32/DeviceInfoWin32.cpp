@@ -40,8 +40,44 @@
 #include "winsock2.h"
 #include "Iphlpapi.h"
 
+#include <VersionHelpers.h>
+
 namespace DAVA
 {
+namespace RegistryReader
+{
+const WideString oemRegistryPath(L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\OEMInformation");
+const WideString infoRegistryPath(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+const WideString manufacturer(L"Manufacturer");
+const WideString model(L"Model");
+const WideString currentOSVersion(L"CurrentVersion");
+const WideString currentBuildNumber(L"CurrentBuildNumber");
+const WideString currentBuild(L"CurrentBuild");
+const WideString operationSystemName(L"ProductName");
+
+String GetStringForKey(const WideString& path, const WideString& key)
+{
+    WideString val;
+
+    HKEY hKey;
+    LONG openRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, path.c_str(), 0, KEY_READ, &hKey);
+    if (ERROR_SUCCESS == openRes)
+    {
+        WCHAR szBuffer[512];
+        DWORD dwBufferSize = sizeof(szBuffer);
+        ULONG error;
+        error = RegQueryValueExW(hKey, key.c_str(), 0, NULL, reinterpret_cast<LPBYTE>(szBuffer), &dwBufferSize);
+        if (ERROR_SUCCESS == error)
+        {
+            val = szBuffer;
+        }
+    }
+
+    String ret = WStringToString(val);
+    return ret;
+}
+}
+
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
 }
@@ -58,32 +94,84 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    return "Not yet implemented";
+    String currentOSVersion = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentOSVersion);
+    String currentBuildNumber = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentBuildNumber);
+    if ("" == currentBuildNumber)
+    {
+        currentBuildNumber = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentBuild);
+    }
+    String operationSystemName = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::operationSystemName);
+
+    String version = currentOSVersion + "." + currentBuildNumber;
+
+    return version;
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-    return "Not yet implemented";
+    String manufacturer = RegistryReader::GetStringForKey(RegistryReader::oemRegistryPath, RegistryReader::manufacturer);
+    return manufacturer;
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-    return "Not yet implemented";
+    String model = RegistryReader::GetStringForKey(RegistryReader::oemRegistryPath, RegistryReader::model);
+    return model;
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-    return "Not yet implemented";
+    WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
+    int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
+    String locale;
+    if (0 != size)
+    {
+        locale = WStringToString(localeBuffer);
+    }
+    return locale;
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    return "Not yet implemented";
+    GEOID myGEO = GetUserGeoID(GEOCLASS_NATION);
+    int sizeOfBuffer = GetGeoInfo(myGEO, GEO_ISO2, NULL, 0, 0);
+    if (0 == sizeOfBuffer)
+    {
+        return "";
+    }
+
+    WCHAR* buffer = new WCHAR[sizeOfBuffer];
+    int result = GetGeoInfo(myGEO, GEO_ISO2, buffer, sizeOfBuffer, 0);
+    DVASSERT(0 != result);
+    String country = WStringToString(buffer);
+    delete[] buffer;
+
+    return country;
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
     return "Not yet implemented";
+
+    /*don't remove that code please. it is needed for the nex task*/
+    TIME_ZONE_INFORMATION timeZoneInformation;
+    DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
+
+    WCHAR* name;
+    switch (ret)
+    {
+    case TIME_ZONE_ID_DAYLIGHT:
+        name = timeZoneInformation.DaylightName;
+        break;
+    case TIME_ZONE_ID_STANDARD:
+    case TIME_ZONE_ID_UNKNOWN:
+    default:
+        name = timeZoneInformation.StandardName;
+        break;
+    }
+
+    String timeZone = WStringToString(name);
+    return timeZone;
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {

@@ -45,7 +45,7 @@ class QMutex;
 class QTimer;
 
 class LogModel
-    : public QAbstractListModel
+: public QAbstractListModel
 {
     PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
@@ -57,16 +57,16 @@ public:
         LEVEL_ROLE = Qt::UserRole,
         INTERNAL_DATA_ROLE
     };
-    using ConvertFunc = std::function < DAVA::String(const DAVA::String &) >;
+    using ConvertFunc = std::function<DAVA::String(const DAVA::String&)>;
 
     explicit LogModel(QObject* parent = nullptr);
     ~LogModel() = default;
     void SetConvertFunction(ConvertFunc func); //provide mechanism to convert data string to string to be displayed
 
-    const QPixmap &GetIcon(int ll) const;
+    const QPixmap& GetIcon(int ll) const;
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& text);
     void AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray& msg);
@@ -82,7 +82,7 @@ private:
     void RecalculateRowWidth(const QString& text);
     struct LogItem
     {
-        LogItem(DAVA::Logger::eLogLevel ll_ = DAVA::Logger::LEVEL_FRAMEWORK, const QString &text_ = QString(), const QString &data_ = QString());
+        LogItem(DAVA::Logger::eLogLevel ll_ = DAVA::Logger::LEVEL_FRAMEWORK, const QString& text_ = QString(), const QString& data_ = QString());
         DAVA::Logger::eLogLevel ll;
         QString text;
         QString data;

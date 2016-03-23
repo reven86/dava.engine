@@ -36,44 +36,38 @@
 #include "FileSystem/FilePath.h"
 #include "TextureCompression/TextureConverter.h"
 
-
 namespace DAVA
 {
-    
 class TextureDescriptor;
-class PVRConverter: public StaticSingleton<PVRConverter>
-{    
+class PVRConverter : public StaticSingleton<PVRConverter>
+{
 public:
-	PVRConverter();
-	virtual ~PVRConverter();
+    PVRConverter();
+    virtual ~PVRConverter();
 
-    FilePath ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC = true);
-    FilePath ConvertNormalMapToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality);
+    FilePath ConvertToPvr(const TextureDescriptor& descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC = true);
+    FilePath ConvertNormalMapToPvr(const TextureDescriptor& descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality);
 
-	void SetPVRTexTool(const FilePath &textToolPathname);
+    void SetPVRTexTool(const FilePath& textToolPathname);
 
-	FilePath GetPVRToolOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily);
-	
-protected:
-	
-	FilePath PrepareCubeMapForPvrConvert(const TextureDescriptor& descriptor);
-	void CleanupCubemapAfterConversion(const TextureDescriptor& descriptor);
-	
-	void GetToolCommandLine(const TextureDescriptor &descriptor, const FilePath & fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args);
-
-	String GenerateInputName(const TextureDescriptor& descriptor, const FilePath & fileToConvert);
+    FilePath GetPVRToolOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily);
 
 protected:
-	
+    FilePath PrepareCubeMapForPvrConvert(const TextureDescriptor& descriptor);
+    void CleanupCubemapAfterConversion(const TextureDescriptor& descriptor);
+
+    void GetToolCommandLine(const TextureDescriptor& descriptor, const FilePath& fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args);
+
+    String GenerateInputName(const TextureDescriptor& descriptor, const FilePath& fileToConvert);
+
+protected:
     Map<PixelFormat, String> pixelFormatToPVRFormat;
 
-	FilePath pvrTexToolPathname;
-	
-	Vector<String> pvrToolSuffixes;
-	Vector<String> cubemapSuffixes;
+    FilePath pvrTexToolPathname;
 
+    Vector<String> pvrToolSuffixes;
+    Vector<String> cubemapSuffixes;
 };
-
 };
 
 

@@ -37,15 +37,7 @@
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
-#if defined(__DAVAENGINE_APPLE__)
-#include "FileSystem/LocalizationApple.h"
-#elif defined(__DAVAENGINE_ANDROID__)
-#include "FileSystem/LocalizationAndroid.h"
-#elif defined(__DAVAENGINE_WIN_UAP__)
-#include "FileSystem/LocalizationWinUAP.h"
-#else
-#include "Core/Core.h"
-#endif
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -89,13 +81,12 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
-#if defined(__DAVAENGINE_APPLE__)
-    LocalizationApple::SelectPreferedLocalizationForPath(directoryPath);
-#elif defined(__DAVAENGINE_ANDROID__)
-    LocalizationAndroid::SelectPreferedLocalization();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    LocalizationWinUAP::SelectPreferedLocalization();
+
+#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
+    String locale = GetDeviceLocale();
+    SetCurrentLocale(locale);    
 #else
+    DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
     String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
     SetCurrentLocale(loc);
 #endif
@@ -104,19 +95,6 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 void LocalizationSystem::Init()
 {
     LoadStringFile(langId, directoryPath + (langId + ".yaml"));
-}
-
-String LocalizationSystem::GetDeviceLocale() const
-{
-#if defined(__DAVAENGINE_APPLE__)
-    return String(LocalizationApple::GetDeviceLang());
-#elif defined(__DAVAENGINE_ANDROID__)
-    return LocalizationAndroid::GetDeviceLang();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    return LocalizationWinUAP::GetDeviceLang();
-#else
-    return DEFAULT_LOCALE;
-#endif
 }
 
 const String& LocalizationSystem::GetCurrentLocale() const
