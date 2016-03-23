@@ -410,7 +410,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
             break;
         }
 
-        DX9Command cmd = { DX9Command::LOCK_CUBETEXTURE_RECT, { uint64_t(self->cubetex9), f, level, uint64(&rc), NULL, 0 } };
+        DX9Command cmd = { DX9Command::LOCK_CUBETEXTURE_RECT, { uint64_t(&(self->cubetex9)), f, level, uint64(&rc), NULL, 0 } };
 
         ExecDX9(&cmd, 1);
         hr = cmd.retval;
@@ -453,7 +453,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
                 if (cmd3.retval == D3D_OK)
                 {
-                    DX9Command cmd4 = { DX9Command::LOCK_TEXTURE_RECT, { uint64_t(self->rt_tex9), level, uint64(&rc), NULL, 0 } };
+                    DX9Command cmd4 = { DX9Command::LOCK_TEXTURE_RECT, { uint64_t(&(self->tex9)), level, uint64(&rc), NULL, 0 } };
 
                     ExecDX9(&cmd4, 1);
                     hr = cmd4.retval;
@@ -471,7 +471,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
         }
         else
         {
-            DX9Command cmd = { DX9Command::LOCK_TEXTURE_RECT, { uint64_t(self->tex9), level, uint64(&rc), NULL, 0 } };
+            DX9Command cmd = { DX9Command::LOCK_TEXTURE_RECT, { uint64_t(&(self->tex9)), level, uint64(&rc), NULL, 0 } };
 
             ExecDX9(&cmd, 1);
 
@@ -550,7 +550,7 @@ dx9_Texture_Unmap(Handle tex)
             break;
         }
 
-        DX9Command cmd = { DX9Command::UNLOCK_CUBETEXTURE_RECT, { uint64_t(self->cubetex9), f, self->mappedLevel } };
+        DX9Command cmd = { DX9Command::UNLOCK_CUBETEXTURE_RECT, { uint64_t(&(self->cubetex9)), f, self->mappedLevel } };
 
         ExecDX9(&cmd, 1);
 
@@ -560,7 +560,7 @@ dx9_Texture_Unmap(Handle tex)
     else
     {
         IDirect3DTexture9* tex = (self->isRenderTarget) ? self->rt_tex9 : self->tex9;
-        DX9Command cmd = { DX9Command::UNLOCK_TEXTURE_RECT, { uint64_t(self->tex9), self->mappedLevel } };
+        DX9Command cmd = { DX9Command::UNLOCK_TEXTURE_RECT, { uint64_t(&(self->tex9)), self->mappedLevel } };
 
         ExecDX9(&cmd, 1);
     }
@@ -644,11 +644,13 @@ void ReleaseAll()
     for (TextureDX9Pool::Iterator t = TextureDX9Pool::Begin(), t_end = TextureDX9Pool::End(); t != t_end; ++t)
     {
         t->Destroy(true);
+        t->MarkNeedRestore();
     }
 }
 
 void ReCreateAll()
 {
+    LCP;
     TextureDX9Pool::ReCreateAll();
 }
 

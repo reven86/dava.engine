@@ -52,7 +52,7 @@ namespace rhi
 {
 //==============================================================================
 
-static bool _ResetPending = false;
+static bool _DX9_ResetPending = false;
 
 struct
 FrameDX9
@@ -1107,7 +1107,7 @@ _DX9_ExecuteQueuedCommands()
     unsigned frame_n = 0;
     bool do_render = true;
 
-    if (_ResetPending || NeedRestoreResources())
+    if (_DX9_ResetPending || NeedRestoreResources())
         _RejectAllFrames();
 
     _DX9_FrameSync.Lock();
@@ -1194,7 +1194,7 @@ _DX9_ExecuteQueuedCommands()
 
     HRESULT hr;
 
-    if (_ResetPending)
+    if (_DX9_ResetPending)
     {
         hr = _D3D9_Device->TestCooperativeLevel();
 
@@ -1219,7 +1219,7 @@ _DX9_ExecuteQueuedCommands()
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
 
-                _ResetPending = false;
+                _DX9_ResetPending = false;
             }
             else
             {
@@ -1240,7 +1240,7 @@ _DX9_ExecuteQueuedCommands()
 
         if (hr == D3DERR_DEVICELOST)
         {
-            _ResetPending = true;
+            _DX9_ResetPending = true;
             _RejectAllFrames();
         }
     }
@@ -1399,14 +1399,18 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::LOCK_TEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DTexture9*)(arg[0]))->LockRect(UINT(arg[1]), (D3DLOCKED_RECT*)(arg[2]), (const RECT*)(arg[3]), DWORD(arg[4]));
+            IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
+
+            cmd->retval = tex->LockRect(UINT(arg[1]), (D3DLOCKED_RECT*)(arg[2]), (const RECT*)(arg[3]), DWORD(arg[4]));
             CHECK_HR(cmd->retval);
         }
         break;
 
         case DX9Command::UNLOCK_TEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DTexture9*)(arg[0]))->UnlockRect(UINT(arg[1]));
+            IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
+
+            cmd->retval = tex->UnlockRect(UINT(arg[1]));
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1443,14 +1447,18 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::LOCK_CUBETEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->LockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]), (D3DLOCKED_RECT*)(arg[3]), (const RECT*)(arg[4]), DWORD(arg[5]));
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+            cmd->retval = tex->LockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]), (D3DLOCKED_RECT*)(arg[3]), (const RECT*)(arg[4]), DWORD(arg[5]));
             CHECK_HR(cmd->retval);
         }
         break;
 
         case DX9Command::UNLOCK_CUBETEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->UnlockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]));
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+            cmd->retval = tex->UnlockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]));
             CHECK_HR(cmd->retval);
         }
         break;
