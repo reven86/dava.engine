@@ -39,7 +39,7 @@ POP_QT_WARNING_SUPRESSOR
 
 namespace Ui
 {
-    class DialogReloadSprites;
+class DialogReloadSprites;
 }
 
 class DialogReloadSprites : public QDialog
@@ -59,7 +59,7 @@ private slots:
     void OnCheckboxShowConsoleToggled(bool checked);
 
 protected:
-    void closeEvent(QCloseEvent *event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 private:
     void LoadSettings();
@@ -67,7 +67,7 @@ private:
     void BlockingStop();
 
     std::unique_ptr<Ui::DialogReloadSprites> ui;
-    SpritesPacker *spritesPacker;
+    SpritesPacker* spritesPacker;
     QThread workerThread; //we need this thread only for "cancel" button
 };
 

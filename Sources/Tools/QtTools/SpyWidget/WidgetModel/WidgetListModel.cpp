@@ -32,9 +32,8 @@
 #include <QWidget>
 #include <QMetaObject>
 
-
-WidgetListModel::WidgetListModel( QObject* parent )
-    : AbstractWidgetModel( parent )
+WidgetListModel::WidgetListModel(QObject* parent)
+    : AbstractWidgetModel(parent)
 {
 }
 
@@ -42,59 +41,59 @@ WidgetListModel::~WidgetListModel()
 {
 }
 
-QWidget* WidgetListModel::widgetFromIndex( const QModelIndex& index ) const
+QWidget* WidgetListModel::widgetFromIndex(const QModelIndex& index) const
 {
-    if ( !index.isValid() )
+    if (!index.isValid())
         return nullptr;
 
-    auto widget = static_cast<QWidget *>( index.internalPointer() );
+    auto widget = static_cast<QWidget*>(index.internalPointer());
     return widget;
 }
 
-QModelIndex WidgetListModel::indexFromWidget( QWidget* w ) const
+QModelIndex WidgetListModel::indexFromWidget(QWidget* w) const
 {
-    auto row = widgets.indexOf( w );
-    if ( row == -1 )
+    auto row = widgets.indexOf(w);
+    if (row == -1)
         return QModelIndex();
 
-    return createIndex( row, 0, w );
+    return createIndex(row, 0, w);
 }
 
-int WidgetListModel::rowCount( const QModelIndex& parent ) const
+int WidgetListModel::rowCount(const QModelIndex& parent) const
 {
-    if ( !parent.isValid() )
+    if (!parent.isValid())
         return widgets.size();
 
     return 0;
 }
 
-QModelIndex WidgetListModel::index( int row, int column, const QModelIndex& parent ) const
+QModelIndex WidgetListModel::index(int row, int column, const QModelIndex& parent) const
 {
-    if ( !hasIndex( row, column, parent ) )
+    if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    return createIndex( row, column, widgets[row] );
+    return createIndex(row, column, widgets[row]);
 }
 
-QModelIndex WidgetListModel::parent( const QModelIndex& index ) const
+QModelIndex WidgetListModel::parent(const QModelIndex& index) const
 {
     return QModelIndex();
 }
 
-void WidgetListModel::setWidgetList( const QWidgetList& widgetList )
+void WidgetListModel::setWidgetList(const QWidgetList& widgetList)
 {
     beginResetModel();
 
-    for ( auto w : widgets )
+    for (auto w : widgets)
     {
-        disconnect( w, nullptr, this, nullptr );
+        disconnect(w, nullptr, this, nullptr);
     }
 
     widgets = widgetList;
-    widgets.removeAll( nullptr );
-    for ( auto w : widgets )
+    widgets.removeAll(nullptr);
+    for (auto w : widgets)
     {
-        connect( w, &QObject::destroyed, this, &WidgetListModel::onWidgetDestroyed );
+        connect(w, &QObject::destroyed, this, &WidgetListModel::onWidgetDestroyed);
     }
 
     endResetModel();
@@ -102,11 +101,11 @@ void WidgetListModel::setWidgetList( const QWidgetList& widgetList )
 
 void WidgetListModel::onWidgetDestroyed()
 {
-    auto w = qobject_cast<QWidget *>( sender() );
-    const auto row = widgets.indexOf( w );
-    Q_ASSERT( row >= 0 );
+    auto w = qobject_cast<QWidget*>(sender());
+    const auto row = widgets.indexOf(w);
+    Q_ASSERT(row >= 0);
 
-    beginRemoveRows( QModelIndex(), row, row );
-    widgets.removeAt( row );
+    beginRemoveRows(QModelIndex(), row, row);
+    widgets.removeAt(row);
     endRemoveRows();
 }

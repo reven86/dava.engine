@@ -44,7 +44,8 @@ class TextureDescriptorTool : public CommandLineTool
         ACTION_RESAVE_DESCRIPTORS,
         ACTION_CREATE_DESCRIPTORS,
         ACTION_SET_COMPRESSION,
-        ACTION_SET_PRESET
+        ACTION_SET_PRESET,
+        ACTION_SAVE_PRESET
     };
 
 public:
@@ -59,6 +60,10 @@ private:
 
     DAVA::FilePath folderPathname;
     DAVA::FilePath filePathname;
+    DAVA::FilePath presetPath;
+
+    DAVA::FilePath filesList;
+    DAVA::FilePath presetsList;
 
     bool forceModeEnabled = false;
     bool convertEnabled = false;
@@ -66,8 +71,6 @@ private:
 
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
     DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
-
-    DAVA::FilePath presetPath;
 };
 
 

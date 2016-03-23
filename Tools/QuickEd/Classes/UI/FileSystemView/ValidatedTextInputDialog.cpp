@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ValidatedTextInputDialog.h"
 #include <QPushButton>
 #include <QDialogButtonBox>
+#include <QApplication>
 
 ValidatedTextInputDialog::ValidatedTextInputDialog(QWidget* parent)
     : QInputDialog(parent)
@@ -70,7 +71,8 @@ void ValidatedTextInputDialog::OnTextChanged(const QString& text)
     else
     {
         QInputDialog::setLabelText(labelText);
-        palette.setColor(QPalette::Text, Qt::black);
+        QColor globalTextColor = qApp->palette().color(QPalette::Text);
+        palette.setColor(QPalette::Text, globalTextColor);
         enabled = true;
     }
     lineEdit->setPalette(palette);

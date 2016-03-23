@@ -59,55 +59,53 @@ String("6") //nz
 
 static DAVA::String PVR_QUALITY_SETTING[] =
 {
-    "pvrtcfastest",
-    "pvrtcfast",
-    "pvrtcnormal",
-    "pvrtchigh",
-    "pvrtcbest"
+  "pvrtcfastest",
+  "pvrtcfast",
+  "pvrtcnormal",
+  "pvrtchigh",
+  "pvrtcbest"
 };
 
 static DAVA::String ETC_QUALITY_SETTING[] =
 {
-	"etcfast",
-	"etcfast",
-	"etcslow",
-	"etcfastperceptual",
-	"etcslowperceptual"
+  "etcfast",
+  "etcfast",
+  "etcslow",
+  "etcfastperceptual",
+  "etcslowperceptual"
 };
-
 
 PVRConverter::PVRConverter()
 {
-//	PVRTC1_2, PVRTC1_4, PVRTC1_2_RGB, PVRTC1_4_RGB, PVRTC2_2, PVRTC2_4, ETC1, BC1, BC2, BC3,UYVY, YUY2, 1BPP, RGBE9995, RGBG8888, GRGB8888, ETC2_RGB, ETC2_RGBA, ETC2_RGB_A1, EAC_R11, EAC_RG11
+    //	PVRTC1_2, PVRTC1_4, PVRTC1_2_RGB, PVRTC1_4_RGB, PVRTC2_2, PVRTC2_4, ETC1, BC1, BC2, BC3,UYVY, YUY2, 1BPP, RGBE9995, RGBG8888, GRGB8888, ETC2_RGB, ETC2_RGBA, ETC2_RGB_A1, EAC_R11, EAC_RG11
 
-	// pvr map
-	pixelFormatToPVRFormat[FORMAT_RGBA8888] = "r8g8b8a8";//"OGL8888";
-	pixelFormatToPVRFormat[FORMAT_RGBA4444] = "r4g4b4a4";//"OGL4444";
-	pixelFormatToPVRFormat[FORMAT_RGBA5551] = "r5g5b5a1";//"OGL5551";
-	pixelFormatToPVRFormat[FORMAT_RGB565] = "r5g6b5";//"OGL565";
-	pixelFormatToPVRFormat[FORMAT_RGB888] = "r8g8b8";//"OGL888";
-	pixelFormatToPVRFormat[FORMAT_PVR2] = "PVRTC1_2";
-	pixelFormatToPVRFormat[FORMAT_PVR4] = "PVRTC1_4";
-	pixelFormatToPVRFormat[FORMAT_A8] = "l8";//"OGL8";
-	pixelFormatToPVRFormat[FORMAT_ETC1] = "ETC1";
+    // pvr map
+    pixelFormatToPVRFormat[FORMAT_RGBA8888] = "r8g8b8a8"; //"OGL8888";
+    pixelFormatToPVRFormat[FORMAT_RGBA4444] = "r4g4b4a4"; //"OGL4444";
+    pixelFormatToPVRFormat[FORMAT_RGBA5551] = "r5g5b5a1"; //"OGL5551";
+    pixelFormatToPVRFormat[FORMAT_RGB565] = "r5g6b5"; //"OGL565";
+    pixelFormatToPVRFormat[FORMAT_RGB888] = "r8g8b8"; //"OGL888";
+    pixelFormatToPVRFormat[FORMAT_PVR2] = "PVRTC1_2";
+    pixelFormatToPVRFormat[FORMAT_PVR4] = "PVRTC1_4";
+    pixelFormatToPVRFormat[FORMAT_A8] = "l8"; //"OGL8";
+    pixelFormatToPVRFormat[FORMAT_ETC1] = "ETC1";
 
     pixelFormatToPVRFormat[FORMAT_PVR2_2] = "PVRTC2_2";
-	pixelFormatToPVRFormat[FORMAT_PVR4_2] = "PVRTC2_4";
-	pixelFormatToPVRFormat[FORMAT_EAC_R11_UNSIGNED] = "EAC_R11";
-	pixelFormatToPVRFormat[FORMAT_EAC_R11_SIGNED] = "EAC_R11";
-	pixelFormatToPVRFormat[FORMAT_EAC_RG11_UNSIGNED] = "EAC_RG11";
-	pixelFormatToPVRFormat[FORMAT_EAC_RG11_SIGNED] = "EAC_RG11";
-	pixelFormatToPVRFormat[FORMAT_ETC2_RGB] = "ETC2_RGB";
-	pixelFormatToPVRFormat[FORMAT_ETC2_RGBA] = "ETC2_RGBA";
-	pixelFormatToPVRFormat[FORMAT_ETC2_RGB_A1] = "ETC2_RGB_A1";
+    pixelFormatToPVRFormat[FORMAT_PVR4_2] = "PVRTC2_4";
+    pixelFormatToPVRFormat[FORMAT_EAC_R11_UNSIGNED] = "EAC_R11";
+    pixelFormatToPVRFormat[FORMAT_EAC_R11_SIGNED] = "EAC_R11";
+    pixelFormatToPVRFormat[FORMAT_EAC_RG11_UNSIGNED] = "EAC_RG11";
+    pixelFormatToPVRFormat[FORMAT_EAC_RG11_SIGNED] = "EAC_RG11";
+    pixelFormatToPVRFormat[FORMAT_ETC2_RGB] = "ETC2_RGB";
+    pixelFormatToPVRFormat[FORMAT_ETC2_RGBA] = "ETC2_RGBA";
+    pixelFormatToPVRFormat[FORMAT_ETC2_RGB_A1] = "ETC2_RGB_A1";
 }
 
 PVRConverter::~PVRConverter()
 {
-
 }
 
-FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
+FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
 
@@ -115,67 +113,67 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFam
     return FilePath();
 
 #else
-	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
+    FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
 
-	Vector<String> args;
-	GetToolCommandLine(descriptor, outputName, gpuFamily, quality, args);
-	Process process(pvrTexToolPathname, args);
-	if(process.Run(false))
-	{
-		process.Wait();
-			
-		const String& procOutput = process.GetOutput();
-		if(procOutput.size() > 0)
-		{
-			Logger::FrameworkDebug(procOutput.c_str());
-		}
-			
-		outputName = GetPVRToolOutput(descriptor, gpuFamily);
-	}
-	else
-	{
-		Logger::Error("Failed to run PVR tool! %s", pvrTexToolPathname.GetAbsolutePathname().c_str());
-		DVASSERT(false);
-	}
-		
-	if(descriptor.IsCubeMap())
-	{
-		CleanupCubemapAfterConversion(descriptor);
-	}
-		
-    if(addCRC)
+    Vector<String> args;
+    GetToolCommandLine(descriptor, outputName, gpuFamily, quality, args);
+    Process process(pvrTexToolPathname, args);
+    if (process.Run(false))
+    {
+        process.Wait();
+
+        const String& procOutput = process.GetOutput();
+        if (procOutput.size() > 0)
+        {
+            Logger::FrameworkDebug(procOutput.c_str());
+        }
+
+        outputName = GetPVRToolOutput(descriptor, gpuFamily);
+    }
+    else
+    {
+        Logger::Error("Failed to run PVR tool! %s", pvrTexToolPathname.GetAbsolutePathname().c_str());
+        DVASSERT(false);
+    }
+
+    if (descriptor.IsCubeMap())
+    {
+        CleanupCubemapAfterConversion(descriptor);
+    }
+
+    if (addCRC)
     {
         LibPVRHelper helper;
-	    helper.AddCRCIntoMetaData(outputName);
+        helper.AddCRCIntoMetaData(outputName);
     }
-	return outputName;
+    return outputName;
 #endif
 }
 
-FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
+FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
 {
     FilePath filePath = descriptor.GetSourceTexturePathname();
 
-    Vector<Image *> images;
+    Vector<Image*> images;
     ImageSystem::Instance()->Load(filePath, images);
 
-    if(!images.size())
+    if (!images.size())
     {
         return FilePath();
     }
 
     DVASSERT(images.size() == 1);
 
-    Image * originalImage = images[0];
+    Image* originalImage = images[0];
     bool normalized = originalImage->Normalize();
-    if(!normalized)
+    if (!normalized)
     {
         Logger::Error("[PVRConverter::ConvertNormalMapToPvr] Cannot normalize image %s", filePath.GetStringValue().c_str());
         SafeRelease(originalImage);
         return FilePath();
     }
-    
-    if(descriptor.GetGenerateMipMaps())
+
+    if (descriptor.GetGenerateMipMaps())
     {
         images = originalImage->CreateMipMapsImages(true);
         SafeRelease(originalImage);
@@ -190,7 +188,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
     for (int32 i = 0, e = static_cast<int32>(images.size()); i < e; ++i)
     {
         ImageFormat targetFormat = IMAGE_FORMAT_PNG;
-        
+
         TextureDescriptor desc;
         desc.Initialize(&descriptor);
         desc.SetGenerateMipmaps(false);
@@ -209,7 +207,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
 
     FileSystem::Instance()->DeleteDirectory(dirPath, true);
 
-    if(ret)
+    if (ret)
     {
         LibPVRHelper helper;
         helper.AddCRCIntoMetaData(outputName);
@@ -221,29 +219,29 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
     }
 }
 
-void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const FilePath & fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args)
+void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const FilePath& fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args)
 {
-	DVASSERT(descriptor.compression);
-	const TextureDescriptor::Compression *compression = &descriptor.compression[gpuFamily];
+    DVASSERT(descriptor.compression);
+    const TextureDescriptor::Compression* compression = &descriptor.compression[gpuFamily];
 
     String format = pixelFormatToPVRFormat[static_cast<PixelFormat>(compression->format)];
     FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
 
     // input file
     args.push_back("-i");
-	String inputName = GenerateInputName(descriptor, fileToConvert);
-#if defined (__DAVAENGINE_MACOS__)
-	args.push_back(inputName);
+    String inputName = GenerateInputName(descriptor, fileToConvert);
+#if defined(__DAVAENGINE_MACOS__)
+    args.push_back(inputName);
 #else //defined (__DAVAENGINE_WINDOWS__)
-	args.push_back(String("\"") + inputName + String("\""));
+    args.push_back(String("\"") + inputName + String("\""));
 #endif //MAC-WIN
 
-	// output file
-	args.push_back("-o");
-#if defined (__DAVAENGINE_MACOS__)
-	args.push_back(outputFile.GetAbsolutePathname());
+    // output file
+    args.push_back("-o");
+#if defined(__DAVAENGINE_MACOS__)
+    args.push_back(outputFile.GetAbsolutePathname());
 #else //defined (__DAVAENGINE_WINDOWS__)
-	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
+    args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
 #endif //MAC-WIN
 
     // flip for some TGA files
@@ -283,134 +281,131 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
         }
     }
 
-	//quality
-	args.push_back("-q");
-	if(FORMAT_ETC1 == descriptor.compression[gpuFamily].format)
-	{
-		args.push_back(ETC_QUALITY_SETTING[quality]);
-	}
-	else
-	{
-		args.push_back(PVR_QUALITY_SETTING[quality]);
-	}
+    //quality
+    args.push_back("-q");
+    if (FORMAT_ETC1 == descriptor.compression[gpuFamily].format)
+    {
+        args.push_back(ETC_QUALITY_SETTING[quality]);
+    }
+    else
+    {
+        args.push_back(PVR_QUALITY_SETTING[quality]);
+    }
 
-	// mipmaps
-	if(descriptor.GetGenerateMipMaps())
-	{
-		args.push_back("-m");
-	}
-    
-	if(descriptor.IsCubeMap())
-	{
-		args.push_back("-cube");
-	}
-		
-	// output format
-	args.push_back("-f");
-	args.push_back(format);
+    // mipmaps
+    if (descriptor.GetGenerateMipMaps())
+    {
+        args.push_back("-m");
+    }
 
-	// base mipmap level (base resize)
-	if(0 != compression->compressToWidth && compression->compressToHeight != 0)
-	{
+    if (descriptor.IsCubeMap())
+    {
+        args.push_back("-cube");
+    }
+
+    // output format
+    args.push_back("-f");
+    args.push_back(format);
+
+    // base mipmap level (base resize)
+    if (0 != compression->compressToWidth && compression->compressToHeight != 0)
+    {
         args.push_back("-r");
-		args.push_back(Format("%d,%d", compression->compressToWidth, compression->compressToHeight));
-	}
-    
-    //args.push_back("-l"); //Alpha Bleed: Discards any data in fully transparent areas to optimise the texture for better compression.
+        args.push_back(Format("%d,%d", compression->compressToWidth, compression->compressToHeight));
+    }
 
+    //args.push_back("-l"); //Alpha Bleed: Discards any data in fully transparent areas to optimise the texture for better compression.
 }
 
-FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
+FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
     return descriptor.CreatePathnameForGPU(gpuFamily);
 }
 
-void PVRConverter::SetPVRTexTool(const FilePath &textToolPathname)
+void PVRConverter::SetPVRTexTool(const FilePath& textToolPathname)
 {
-	pvrTexToolPathname = textToolPathname;
+    pvrTexToolPathname = textToolPathname;
 
-	if(!FileSystem::Instance()->IsFile(pvrTexToolPathname))
-	{
-		Logger::Error("PVRTexTool doesn't found in %s\n", pvrTexToolPathname.GetAbsolutePathname().c_str());
-		pvrTexToolPathname = FilePath();
-	}
+    if (!FileSystem::Instance()->IsFile(pvrTexToolPathname))
+    {
+        Logger::Error("PVRTexTool doesn't found in %s\n", pvrTexToolPathname.GetAbsolutePathname().c_str());
+        pvrTexToolPathname = FilePath();
+    }
 }
 
 FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& descriptor)
 {
-	DAVA::Vector<DAVA::FilePath> pvrToolFaceNames;
-	DAVA::Vector<DAVA::FilePath> cubemapFaceNames;
-	descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
-	descriptor.GetFacePathnames(cubemapFaceNames);
-		
-	if(!FileSystem::Instance()->IsDirectory(CUBEMAP_TMP_DIR))
-	{
-		int createResult = FileSystem::Instance()->CreateDirectory(CUBEMAP_TMP_DIR);
-		if(FileSystem::DIRECTORY_CREATED != createResult)
-		{
-			DAVA::Logger::Error("Failed to create temp dir for cubemap generation!");
-			return FilePath();
-		}
-	}
-		
-	for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)
-	{
-		//cleanup in case previous cleanup failed
-		if(FileSystem::Instance()->IsFile(pvrToolFaceNames[i]))
-		{
-			FileSystem::Instance()->DeleteFile(pvrToolFaceNames[i]);
-		}
-			
-		bool result = FileSystem::Instance()->CopyFile(cubemapFaceNames[i], pvrToolFaceNames[i]);
-		if(!result)
-		{
-			DAVA::Logger::Error("Failed to copy tmp files for cubemap generation!");
-			return FilePath();
-		}
-	}
-		
-	return FilePath(pvrToolFaceNames[0]);
+    DAVA::Vector<DAVA::FilePath> pvrToolFaceNames;
+    DAVA::Vector<DAVA::FilePath> cubemapFaceNames;
+    descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
+    descriptor.GetFacePathnames(cubemapFaceNames);
+
+    if (!FileSystem::Instance()->IsDirectory(CUBEMAP_TMP_DIR))
+    {
+        int createResult = FileSystem::Instance()->CreateDirectory(CUBEMAP_TMP_DIR);
+        if (FileSystem::DIRECTORY_CREATED != createResult)
+        {
+            DAVA::Logger::Error("Failed to create temp dir for cubemap generation!");
+            return FilePath();
+        }
+    }
+
+    for (size_t i = 0; i < pvrToolFaceNames.size(); ++i)
+    {
+        //cleanup in case previous cleanup failed
+        if (FileSystem::Instance()->IsFile(pvrToolFaceNames[i]))
+        {
+            FileSystem::Instance()->DeleteFile(pvrToolFaceNames[i]);
+        }
+
+        bool result = FileSystem::Instance()->CopyFile(cubemapFaceNames[i], pvrToolFaceNames[i]);
+        if (!result)
+        {
+            DAVA::Logger::Error("Failed to copy tmp files for cubemap generation!");
+            return FilePath();
+        }
+    }
+
+    return FilePath(pvrToolFaceNames[0]);
 }
 
 void PVRConverter::CleanupCubemapAfterConversion(const TextureDescriptor& descriptor)
 {
-	Vector<FilePath> pvrToolFaceNames;
-	descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
-		
-	for(auto& faceName : pvrToolFaceNames)
-	{
-		if(FileSystem::Instance()->IsFile(faceName))
-		{
-			FileSystem::Instance()->DeleteFile(faceName);
-		}
-	}
+    Vector<FilePath> pvrToolFaceNames;
+    descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
+
+    for (auto& faceName : pvrToolFaceNames)
+    {
+        if (FileSystem::Instance()->IsFile(faceName))
+        {
+            FileSystem::Instance()->DeleteFile(faceName);
+        }
+    }
 }
 
-
-DAVA::String PVRConverter::GenerateInputName( const TextureDescriptor& descriptor, const FilePath & fileToConvert)
+DAVA::String PVRConverter::GenerateInputName(const TextureDescriptor& descriptor, const FilePath& fileToConvert)
 {
-	if(descriptor.IsCubeMap())
-	{
-		Vector<FilePath> pvrToolFaceNames;
-		descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
+    if (descriptor.IsCubeMap())
+    {
+        Vector<FilePath> pvrToolFaceNames;
+        descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
 
-		String retNames;
-		for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)
-		{
-			if(i)
-			{
-				retNames += ",";
-			}
+        String retNames;
+        for (size_t i = 0; i < pvrToolFaceNames.size(); ++i)
+        {
+            if (i)
+            {
+                retNames += ",";
+            }
 
-			retNames += pvrToolFaceNames[i].GetAbsolutePathname();
-		}
+            retNames += pvrToolFaceNames[i].GetAbsolutePathname();
+        }
 
-		return retNames;
-	}
+        return retNames;
+    }
 
-	return	fileToConvert.GetAbsolutePathname();
+    return fileToConvert.GetAbsolutePathname();
 }
-
 };
 
 #endif // #ifndef __DAVAENGINE_WIN_UAP__
