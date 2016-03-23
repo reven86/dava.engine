@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class PngImageExt
 {
 public:
@@ -46,15 +45,15 @@ public:
 
     bool Create(uint32 width, uint32 height);
 
-    bool Read(const FilePath &filename);
-    void Write(const FilePath &filename, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
+    bool Read(const FilePath& filename);
+    void Write(const FilePath& filename, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
 
     void DrawImage(const ImageCell& drawRect, const Rect2i& imageOffsetRect, PngImageExt* image);
-    void DrawImage(int32 sx, int32 sy, PngImageExt *image, const Rect2i &srcRect);
+    void DrawImage(int32 sx, int32 sy, PngImageExt* image, const Rect2i& srcRect);
 
-    void DrawRect(const Rect2i &rect, uint32 color);
+    void DrawRect(const Rect2i& rect, uint32 color);
 
-    void FindNonOpaqueRect(Rect2i &rect);
+    void FindNonOpaqueRect(Rect2i& rect);
 
     bool ConvertToFormat(PixelFormat format);
 
@@ -64,8 +63,7 @@ public:
     inline uint32 GetHeight() const;
 
 private:
-
-    inline uint8 * GetData() const;
+    inline uint8* GetData() const;
 
     bool IsHorzLineOpaque(int32 y);
     bool IsVertLineOpaque(int32 x);
@@ -75,12 +73,11 @@ private:
     ScopedPtr<Image> internalData;
 };
 
-inline uint8 * PngImageExt::GetData() const
+inline uint8* PngImageExt::GetData() const
 {
     DVASSERT(internalData);
     return internalData->GetData();
 }
-
 
 inline uint32 PngImageExt::GetWidth() const
 {
@@ -93,7 +90,6 @@ inline uint32 PngImageExt::GetHeight() const
     DVASSERT(internalData);
     return internalData->GetHeight();
 }
-
 };
 
 

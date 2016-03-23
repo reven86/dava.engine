@@ -49,7 +49,6 @@ namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.1";
 
-
 enum AssetClientCode : int
 {
     OK = 0,
@@ -100,15 +99,15 @@ void ResourcePacker2D::SetRunning(bool arg)
     }
     running = arg;
 }
-void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & outputPath)
+void ResourcePacker2D::InitFolders(const FilePath& inputPath, const FilePath& outputPath)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
-    
+
     inputGfxDirectory = inputPath;
     outputGfxDirectory = outputPath;
     rootDirectory = inputPath + "../";
 }
-    
+
 void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 {
     SetRunning(true);
@@ -129,7 +128,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     FilePath processDirectoryPath = rootDirectory + GetProcessFolderName();
     if (FileSystem::Instance()->CreateDirectory(processDirectoryPath, true) == FileSystem::DIRECTORY_CANT_CREATE)
     {
-    	//Logger::Error("Can't create directory: %s", processDirectoryPath.c_str());
+        //Logger::Error("Can't create directory: %s", processDirectoryPath.c_str());
     }
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
@@ -267,26 +266,26 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
     bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
-    
+
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
-    
+
     IMagickHelper::CroppedData cropped_data;
-    
-    IMagickHelper::ConvertToPNGCroppedGeometry( psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str() , &cropped_data, true );
-    	
-    if ( cropped_data.layers_array_size == 0 )
+
+    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), &cropped_data, true);
+
+    if (cropped_data.layers_array_size == 0)
     {
-    	AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
-    	return nullptr;
+        AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
+        return nullptr;
     }
-    	
+
     //Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
-    	
-    int width  = cropped_data.layer_width;
+
+    int width = cropped_data.layer_width;
     int height = cropped_data.layer_height;
-    	
-    DefinitionFile * defFile = new DefinitionFile;
+
+    DefinitionFile* defFile = new DefinitionFile;
     defFile->filename = psdNameWithoutExtension + ".txt";
 
     defFile->spriteWidth = width;
@@ -294,11 +293,11 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     defFile->frameCount = static_cast<int>(cropped_data.layers_array_size) - 1;
     defFile->frameRects = new Rect2i[defFile->frameCount];
 
-    for(int k = 1; k < static_cast<int>(cropped_data.layers_array_size); ++k)
+    for (int k = 1; k < static_cast<int>(cropped_data.layers_array_size); ++k)
     {
-    	//save layer names
+        //save layer names
         String layerName;
-        
+
         if (useLayerNames)
         {
             layerName.assign(cropped_data.layers_array[k].name);
@@ -318,16 +317,15 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
             layerName.assign("frame");
             layerName.append(std::to_string(k - 1));
         }
-        
-    	defFile->frameNames.push_back(layerName);
 
+        defFile->frameNames.push_back(layerName);
 
-    	//save layer rects
-    	if ( !withAlpha )
-    	{
-    		defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy) ;
+        //save layer rects
+        if (!withAlpha)
+        {
+            defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy);
 
-    		//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
+            //printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
 
             int32 intMaxTextureSize = static_cast<int32>(maxTextureSize);
             if ((defFile->frameRects[k - 1].dx > intMaxTextureSize) || (defFile->frameRects[k - 1].dy > intMaxTextureSize))
@@ -337,41 +335,40 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
                                 defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
 
                 defFile->frameRects[k - 1].dx = width;
-    			defFile->frameRects[k - 1].dy = height;
-    		}
-    		else
-    		{
-    			if ((defFile->frameRects[k - 1].dx > width))
-    			{
-    				Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
-    				defFile->frameRects[k - 1].dx = width;
-    			}
+                defFile->frameRects[k - 1].dy = height;
+            }
+            else
+            {
+                if ((defFile->frameRects[k - 1].dx > width))
+                {
+                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
+                    defFile->frameRects[k - 1].dx = width;
+                }
 
-    			if ((defFile->frameRects[k - 1].dy > height))
-    			{
-    				Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
-    				defFile->frameRects[k - 1].dy = height;
-    			}
-    		}
-    	}
+                if ((defFile->frameRects[k - 1].dy > height))
+                {
+                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
+                    defFile->frameRects[k - 1].dy = height;
+                }
+            }
+        }
         else
         {
             defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
         }
     }
-    	
-    return defFile;
 
+    return defFile;
 }
 
-Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
+Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
 {
     Vector<String> tokens;
 
     ScopedPtr<File> file(File::Create(flagsPathname, File::READ | File::OPEN));
     if (!file)
     {
-    	AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
+        AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
         return tokens;
     }
 
@@ -381,7 +378,7 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
     return tokens;
 }
 
-void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & passedFlags)
+void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<String>& passedFlags)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
 
@@ -591,23 +588,23 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
     for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
-    	if (fileList->IsDirectory(fi))
-    	{
-    		String filename = fileList->GetFilename(fi);
-    		if (!fileList->IsNavigationDirectory(fi) && (filename != "$process") && (filename != ".svn"))
-    		{
-    			if ((filename.size() > 0) && (filename[0] != '.'))
+        if (fileList->IsDirectory(fi))
+        {
+            String filename = fileList->GetFilename(fi);
+            if (!fileList->IsNavigationDirectory(fi) && (filename != "$process") && (filename != ".svn"))
+            {
+                if ((filename.size() > 0) && (filename[0] != '.'))
                 {
                     FilePath input = inputPath + filename;
                     input.MakeDirectoryPathname();
-                    
+
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
 
                     RecursiveTreeWalk(input, output, flagsToPass);
                 }
-    		}
-    	}
+            }
+        }
     }
 }
 

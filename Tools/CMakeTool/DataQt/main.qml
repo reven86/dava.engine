@@ -23,7 +23,6 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
-        property alias customOptions: textField_customOptions.text
         property string historyStr;
         Component.onDestruction: historyStr = JSON.stringify(historyToSave)
     }
@@ -44,14 +43,13 @@ ApplicationWindow {
         } catch(e) {
             history = [];
         }
-
+        historyToSave = [];
         if(history && Array.isArray(history) && history.length > 0) {
             for(var i = 0, length = history.length; i < length; ++i) {
                 if(history[i].source) {
                     rowLayout_sourceFolder.item.addString(history[i].source)
                 } else {
                     history = [];
-                    historyToSave = [];
                     return;
                 }
             }

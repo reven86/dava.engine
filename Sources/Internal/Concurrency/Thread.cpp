@@ -137,6 +137,7 @@ Thread::Thread(const Procedure& proc)
 
 Thread::~Thread()
 {
+    Cancel();
     Shutdown();
 
     auto threadListAccessor = GetThreadList().GetAccessor();
@@ -150,8 +151,6 @@ void Thread::ThreadFunction(void* param)
 
     t->threadFunc();
     t->state = STATE_ENDED;
-
-    t->Release();
 }
 
 void Thread::Yield()
