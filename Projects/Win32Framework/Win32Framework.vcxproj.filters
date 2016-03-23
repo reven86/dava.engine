@@ -198,6 +198,7 @@
     </Filter>
     <Filter Include="Internal\Logger">
       <UniqueIdentifier>{682affb5-27b3-42fb-acbe-665faf6b9f98}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Command">
       <UniqueIdentifier>{ca088d15-197c-4f02-b9aa-2d32ba8fb3af}</UniqueIdentifier>
     </Filter>
@@ -1682,6 +1683,7 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Logger\Logger.h">
       <Filter>Internal\Logger</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UILoadingScreen.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -3007,6 +3009,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Logger\Logger.cpp">
       <Filter>Internal\Logger</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UILoadingScreen.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -3018,6 +3021,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp">
       <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp">
+      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

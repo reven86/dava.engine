@@ -57,12 +57,12 @@ void SpritesPacker::ClearTasks()
 void SpritesPacker::ReloadSprites(bool clearDirs, bool forceRepack, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     SetRunning(true);
-    void *pool = QtLayer::Instance()->CreateAutoreleasePool();
+    void* pool = QtLayer::Instance()->CreateAutoreleasePool();
     resourcePacker2D.SetRunning(true);
-    for (const auto &task : tasks)
+    for (const auto& task : tasks)
     {
-        const auto &inputDir = task.first;
-        const auto &outputDir = task.second;
+        const auto& inputDir = task.first;
+        const auto& outputDir = task.second;
         if (!outputDir.exists())
         {
             outputDir.mkpath(".");
@@ -100,7 +100,7 @@ void SpritesPacker::SetRunning(bool arg)
     if (arg != running)
     {
         running = arg;
-        if(!arg)
+        if (!arg)
         {
             emit Finished();
         }

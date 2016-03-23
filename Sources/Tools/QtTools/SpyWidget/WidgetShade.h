@@ -34,15 +34,13 @@
 #include <QWidget>
 #include <QPointer>
 
-
-
 class WidgetShade
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit WidgetShade( QWidget *source );
+    explicit WidgetShade(QWidget* source);
     ~WidgetShade();
 };
 

@@ -77,7 +77,9 @@ public:
     static const DAVA::String CopyConverted;
     static const DAVA::String SetCompression;
     static const DAVA::String SetPreset;
+    static const DAVA::String SavePreset;
     static const DAVA::String PresetOpt;
+    static const DAVA::String PresetsList;
 
     static const DAVA::String UseAssetCache;
     static const DAVA::String AssetCacheIP;

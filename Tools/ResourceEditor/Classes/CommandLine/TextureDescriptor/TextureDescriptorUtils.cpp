@@ -252,4 +252,38 @@ void SetPreset(const FilePath& descriptorPath, const FilePath& presetPath, bool 
     }
 }
 
+void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vector<DAVA::FilePath>& presets)
+{
+    if (descriptors.size() != presets.size())
+    {
+        Logger::Error("Descriptors size differs from presets size");
+        return;
+    }
+
+    size_t count = descriptors.size();
+    for (size_t i = 0; i < count; ++i)
+    {
+        std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptors[i]));
+        if (!descriptor)
+        {
+            Logger::Error("Cannot create descriptor from file %s", descriptors[i].GetStringValue().c_str());
+            continue;
+        }
+
+        ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive());
+        if (descriptor->SerializeToPreset(presetArchive) == false)
+        {
+            Logger::Error("Can't create preset from descriptor");
+            continue;
+        }
+
+        FileSystem::Instance()->CreateDirectory(presets[i].GetDirectory(), true);
+        if (Preset::SaveArchive(presetArchive, presets[i]) == false)
+        {
+            Logger::Error("Can't save preset as %s", presets[i].GetStringValue().c_str());
+            continue;
+        }
+    }
+}
+
 } // namespace TextureDescriptorUtils

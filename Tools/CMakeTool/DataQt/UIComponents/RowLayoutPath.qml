@@ -44,6 +44,7 @@ RowLayout {
         onAccepted: {
             var url = fileDialog.fileUrls[0].toString()
             url = fileSystemHelper.ResolveUrl(url);
+            loader.item.text = "";
             loader.item.text = url;
         }
     }

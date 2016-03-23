@@ -37,21 +37,23 @@
 #include <QDir>
 #include <atomic>
 
-namespace DAVA {
-    class ResourcePacker2D;
-    class AssetCacheClient;
+namespace DAVA
+{
+class ResourcePacker2D;
+class AssetCacheClient;
 }
 
 class SpritesPacker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
+
 public:
     SpritesPacker(QObject *parent = nullptr);
 
     void SetCacheClient(DAVA::AssetCacheClient* cacheClient, const DAVA::String& comment);
 
-    void AddTask(const QDir &inputDir, const QDir &outputDir);
+    void AddTask(const QDir& inputDir, const QDir& outputDir);
     void ClearTasks();
     Q_INVOKABLE void ReloadSprites(bool clearDirs, bool forceRepack, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
 
@@ -64,7 +66,7 @@ signals:
 
 private:
     DAVA::ResourcePacker2D resourcePacker2D;
-    QList < QPair<QDir, QDir> > tasks;
+    QList<QPair<QDir, QDir>> tasks;
 
     //properties section
 public:
@@ -73,6 +75,7 @@ public slots:
     void SetRunning(bool arg);
 signals:
     void RunningStateChanged(bool arg);
+
 private:
     std::atomic<bool> running;
 };
