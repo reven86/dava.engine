@@ -84,21 +84,21 @@ DAVA::Key ConvertQtCommandKeysToDava(int qtKey)
         result = DAVA::Key::LWIN;
         break;
     default:
+    {
+        const int Kostil_KeyForRussianLanguage_A = 1060;
+        const int Kostil_KeyForRussianLanguage_Z = 1060 + 26;
+        if (qtKey >= Qt::Key_A && qtKey <= Qt::Key_Z)
         {
-            const int Kostil_KeyForRussianLanguage_A = 1060;
-            const int Kostil_KeyForRussianLanguage_Z = 1060 + 26;
-            if (qtKey >= Qt::Key_A && qtKey <= Qt::Key_Z)
-            {
-                int key = static_cast<int>(DAVA::Key::KEY_A) + (qtKey - Qt::Key_A);
-                result = static_cast<DAVA::Key>(key);
-            }
-            else if (qtKey >= Kostil_KeyForRussianLanguage_A && qtKey <= Kostil_KeyForRussianLanguage_Z)
-            {
-                int key = static_cast<int>(DAVA::Key::KEY_A) + (qtKey - Kostil_KeyForRussianLanguage_A);
-                result = static_cast<DAVA::Key>(key);
-            }
+            int key = static_cast<int>(DAVA::Key::KEY_A) + (qtKey - Qt::Key_A);
+            result = static_cast<DAVA::Key>(key);
         }
-        break;
+        else if (qtKey >= Kostil_KeyForRussianLanguage_A && qtKey <= Kostil_KeyForRussianLanguage_Z)
+        {
+            int key = static_cast<int>(DAVA::Key::KEY_A) + (qtKey - Kostil_KeyForRussianLanguage_A);
+            result = static_cast<DAVA::Key>(key);
+        }
+    }
+    break;
     }
     return result;
 }
