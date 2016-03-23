@@ -99,7 +99,7 @@ void DocumentGroup::AttachSaveAction(QAction* saveAction) const
 
 void DocumentGroup::AttachSaveAllAction(QAction* saveAllAction) const
 {
-    saveAllAction->setEnabled(documents.empty());
+    saveAllAction->setEnabled(!documents.empty());
     connect(this, &DocumentGroup::CanSaveAllChanged, saveAllAction, &QAction::setEnabled);
     connect(saveAllAction, &QAction::triggered, this, &DocumentGroup::SaveAllDocuments);
 }
