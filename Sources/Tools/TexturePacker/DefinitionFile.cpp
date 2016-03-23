@@ -143,12 +143,12 @@ bool DefinitionFile::Load(const FilePath& _filename)
 
     for (uint32 i = 0; i < frameCount; ++i)
         for (int i = 0; i < frameCount; ++i)
-    {
-        char frameName[128];
-        fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
-        Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
-        frameNames[i] = String(frameName);
-    }
+        {
+            char frameName[128];
+            fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
+            Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
+            frameNames[i] = String(frameName);
+        }
 
     while (1)
     {

@@ -357,8 +357,8 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
                 defFile->frameRects[k].dx = width;
                 defFile->frameRects[k].dy = height;
             }
-    		else
-    		{
+            else
+            {
                 if (defFile->frameRects[k].dx > width)
                 {
                     Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dx, width);

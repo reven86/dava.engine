@@ -88,7 +88,10 @@ public:
     void SetAlgorithms(const Vector<PackingAlgorithm>& algorithms);
 
     // set visible 1 pixel border for each texture
-    void SetTwoSideMargin(bool val=true) { useTwoSideMargin = val; }
+    void SetTwoSideMargin(bool val = true)
+    {
+        useTwoSideMargin = val;
+    }
     void SetTexturesMargin(uint32 margin)
     {
         texturesMargin = margin;
@@ -113,7 +116,7 @@ private:
     rhi::TextureAddrMode GetDescriptorWrapMode();
     FilterItem GetDescriptorFilter(bool generateMipMaps = false);
 
-    bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
+    bool CheckFrameSize(const Size2i& spriteSize, const Size2i& frameSize);
 
     Vector<SpriteItem> PrepareSpritesVector(const List<DefinitionFile*>& defList);
     Vector<std::unique_ptr<SpritesheetLayout>> PackSprites(Vector<SpriteItem>& spritesToPack, const ImageExportKeys& imageExportKeys);
