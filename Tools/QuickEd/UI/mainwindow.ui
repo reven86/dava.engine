@@ -224,7 +224,7 @@
    <widget class="QWidget" name="logWidgetContainer">
     <layout class="QVBoxLayout" name="verticalLayout1">
      <item>
-      <widget class="LogWidget" name="logWidget"/>
+      <widget class="LogWidget" name="logWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -306,16 +306,13 @@
   <action name="actionClose_project">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/101.png</normaloff>:/Icons/101.png</iconset>
+     <normaloff>:/Icons/close.png</normaloff>:/Icons/close.png</iconset>
    </property>
    <property name="text">
     <string>Close project</string>
    </property>
    <property name="toolTip">
     <string>Close project</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+W</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
