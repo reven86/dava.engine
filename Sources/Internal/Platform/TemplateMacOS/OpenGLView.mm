@@ -72,7 +72,7 @@ extern void FrameworkMain(int argc, char* argv[]);
 
     // Just as a diagnostic, report the renderer ID that this pixel format binds to.  CGLRenderers.h contains a list of known renderers and their corresponding RendererID codes.
     [pixelFormat getValues:&rendererID forAttribute:NSOpenGLPFARendererID forVirtualScreen:0];
-    NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", (unsigned)rendererID);
+    NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", static_cast<unsigned>(rendererID));
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     trackingArea = nil;
@@ -150,7 +150,6 @@ extern void FrameworkMain(int argc, char* argv[]);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-        UIScreenManager::Instance()->ScreenSizeChanged();
     }
 
     [super reshape];
@@ -348,7 +347,6 @@ extern int mouseMoveSkipCounter;
     default:
         break;
     }
-
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];

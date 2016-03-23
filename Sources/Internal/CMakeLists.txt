@@ -6,6 +6,13 @@ set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/
 
 include( CMake-common )
 
+# STEAM_SDK_FOUND inits from Sources/CMake/Modules/FindSteam.cmake
+# it inits only if STEAM definition passed as command line parameter
+if ( STEAM_SDK_FOUND )
+    include_directories( ${STEAM_SDK_HEADERS} )
+    add_definitions ( -D__DAVAENGINE_STEAM__ )
+endif ()
+
 set ( FRAMEWORK_DEFINITIONS 
 -D_UNICODE 
 -DUNICODE 
@@ -209,8 +216,6 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 
 generate_source_groups_project ()
 
-
-
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
@@ -224,6 +229,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
                                                         "TemplateMacOS/MovieViewControlMacOS.mm"
+                                                        "Logger/TeamcityOutput.cpp"
                                                     IGNORE_LIST_IOS
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"
@@ -232,7 +238,6 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "TemplateiOS"
                                                         "UI/UITextFieldiPhone.mm"
                                                    )
-
 
 include_directories      (.)
 include_directories      ( ${DAVA_INCLUDE_DIR} )

@@ -120,9 +120,9 @@ public:
 
     void Update(float32 timeElapsed);
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay);
     static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay, int32 switchIndex);

@@ -47,7 +47,7 @@ int AddRequest::SendRequest()
 
     AssetCache::CachedItemValue value;
 
-    uint32 filesCount = options.GetOptionsCount("-f");
+    uint32 filesCount = options.GetOptionValuesCount("-f");
     for (uint32 i = 0; i < filesCount; ++i)
     {
         const FilePath path = options.GetOption("-f", i).AsString();

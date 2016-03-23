@@ -38,7 +38,6 @@
 
 #include "LineEditStyle.h"
 
-
 LineEditEx::LineEditEx(QWidget* parent)
     : QLineEdit(parent)
     , timer(new QTimer(this))
@@ -49,14 +48,11 @@ LineEditEx::LineEditEx(QWidget* parent)
     SetAcceptInterval(500);
     SetUseDelayedUpdate(useDelayedUpdate);
 
-    QHBoxLayout *l = new QHBoxLayout();
+    QHBoxLayout* l = new QHBoxLayout();
     l->setContentsMargins(QMargins());
     l->setSpacing(1);
     l->addStretch();
     setLayout(l);
-
-    LineEditStyle *proxyStyle = new LineEditStyle( style() );
-    setStyle(proxyStyle);
 }
 
 LineEditEx::~LineEditEx()
@@ -85,10 +81,10 @@ void LineEditEx::SetUseDelayedUpdate(bool use)
     SetupConnections(useDelayedUpdate, !useDelayedUpdate);
 }
 
-QAbstractButton* LineEditEx::CreateButton(const QAction * action)
+QAbstractButton* LineEditEx::CreateButton(const QAction* action)
 {
-    QPushButton *btn = new QPushButton();
-    SyncButtonWithAction( action, btn );
+    QPushButton* btn = new QPushButton();
+    SyncButtonWithAction(action, btn);
 
     btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     btn->setFixedSize(ButtonSizeHint(action));
@@ -118,7 +114,7 @@ int LineEditEx::ButtonsWidth() const
 void LineEditEx::AddCustomWidget(QWidget* w)
 {
     if (widgets.contains(w))
-        return ;
+        return;
 
     widgets.insert(w);
     layout()->addWidget(w);
@@ -128,7 +124,7 @@ void LineEditEx::AddCustomWidget(QWidget* w)
 void LineEditEx::RemoveCustomWidget(QWidget* w)
 {
     if (!widgets.contains(w))
-        return ;
+        return;
 
     widgets.remove(w);
     layout()->removeWidget(w);
@@ -149,13 +145,13 @@ void LineEditEx::OnAcceptEdit()
 void LineEditEx::UpdatePadding()
 {
     buttonsWidth = 0;
-    for ( auto it = widgets.constBegin(); it != widgets.constEnd(); ++it )
+    for (auto it = widgets.constBegin(); it != widgets.constEnd(); ++it)
     {
         buttonsWidth += (*it)->width();
     }
-    if ( buttons.size() > 0 )
+    if (buttons.size() > 0)
     {
-        buttonsWidth += layout()->spacing() * ( buttons.size() - 1 );
+        buttonsWidth += layout()->spacing() * (buttons.size() - 1);
     }
     updateGeometry();
     update();
@@ -163,14 +159,14 @@ void LineEditEx::UpdatePadding()
 
 void LineEditEx::OnActionChanged()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
-    if ( action == NULL)
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action == NULL)
         return;
 
     auto it = buttons.find(action);
-    if ( it != buttons.end() )
+    if (it != buttons.end())
     {
-        SyncButtonWithAction( it.key(), it.value() );
+        SyncButtonWithAction(it.key(), it.value());
     }
 }
 
@@ -178,41 +174,41 @@ void LineEditEx::SetupConnections(bool delayed, bool instant)
 {
     if (delayed)
     {
-        connect(timer, SIGNAL( timeout() ), this, SLOT( OnAcceptEdit() ));
-        connect(this, SIGNAL( editingFinished() ), this, SLOT( OnAcceptEdit() ));
-        connect(this, SIGNAL( textChanged( const QString& ) ), this, SLOT( OnTextEdit() ));
+        connect(timer, SIGNAL(timeout()), this, SLOT(OnAcceptEdit()));
+        connect(this, SIGNAL(editingFinished()), this, SLOT(OnAcceptEdit()));
+        connect(this, SIGNAL(textChanged(const QString&)), this, SLOT(OnTextEdit()));
     }
     else
     {
-        disconnect(timer, SIGNAL( timeout() ), this, SLOT( OnAcceptEdit() ));
-        disconnect(this, SIGNAL( editingFinished() ), this, SLOT( OnAcceptEdit() ));
-        disconnect(this, SIGNAL( textChanged( const QString& ) ), this, SLOT( OnTextEdit() ));
+        disconnect(timer, SIGNAL(timeout()), this, SLOT(OnAcceptEdit()));
+        disconnect(this, SIGNAL(editingFinished()), this, SLOT(OnAcceptEdit()));
+        disconnect(this, SIGNAL(textChanged(const QString&)), this, SLOT(OnTextEdit()));
     }
 
     if (instant)
     {
-        connect(this, SIGNAL( textChanged( const QString& ) ), this, SIGNAL( textUpdated( const QString& ) ));
+        connect(this, SIGNAL(textChanged(const QString&)), this, SIGNAL(textUpdated(const QString&)));
     }
     else
     {
-        disconnect(this, SIGNAL( textChanged( const QString& ) ), this, SIGNAL( textUpdated( const QString& ) ));
+        disconnect(this, SIGNAL(textChanged(const QString&)), this, SIGNAL(textUpdated(const QString&)));
     }
 }
 
 void LineEditEx::AddActionHandler(QAction* action)
 {
-    QAbstractButton *btn = CreateButton(action);
+    QAbstractButton* btn = CreateButton(action);
     buttons[action] = btn;
     AddCustomWidget(btn);
 
-    connect( action, SIGNAL( changed() ), SLOT( OnActionChanged() ) );
-    connect( btn, SIGNAL( clicked() ), action, SLOT( trigger() ) );
+    connect(action, SIGNAL(changed()), SLOT(OnActionChanged()));
+    connect(btn, SIGNAL(clicked()), action, SLOT(trigger()));
 }
 
 void LineEditEx::RemoveActionHandler(QAction* action)
 {
     auto it = buttons.find(action);
-    if ( it != buttons.end() )
+    if (it != buttons.end())
     {
         RemoveCustomWidget(it.value());
         it.value()->deleteLater();
@@ -222,7 +218,7 @@ void LineEditEx::RemoveActionHandler(QAction* action)
 
 void LineEditEx::actionEvent(QActionEvent* event)
 {
-    switch ( event->type() )
+    switch (event->type())
     {
     case QEvent::ActionAdded:
         AddActionHandler(event->action());

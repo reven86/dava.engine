@@ -47,6 +47,7 @@ public:
 
     void SetFirst(int screenId);
     void SetScreen(int screenId, UIScreenTransition* transition = 0);
+    void ResetScreen();
 
     UIScreen* GetScreen(int screenId);
     UIScreen* GetScreen();
@@ -55,8 +56,6 @@ public:
     void* GetController(int controllerId);
     void* GetController();
     int GetControllerId();
-
-    void ScreenSizeChanged();
 
     // GetScreen, GetController
     // Stack of the screens

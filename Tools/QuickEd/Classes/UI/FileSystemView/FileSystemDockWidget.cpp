@@ -28,7 +28,7 @@
 
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "FileSystemDockWidget.h"
 #include "ValidatedTextInputDialog.h"
@@ -124,12 +124,11 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
     ui->treeView->showColumn(0);
 }
 
+//refresh actions by menu invoke pos
 void FileSystemDockWidget::RefreshActions()
 {
     bool canCreateFile = !ui->treeView->isColumnHidden(0);
     bool canCreateDir = !ui->treeView->isColumnHidden(0); //column is hidden if no open projects
-    bool canRemove = false;
-    bool canOpen = false;
     bool canShow = false;
     bool canRename = false;
     auto index = ui->treeView->indexAt(menuInvokePos);
@@ -138,16 +137,12 @@ void FileSystemDockWidget::RefreshActions()
     {
         bool isDir = model->isDir(index);
         canCreateDir = isDir;
-        canRemove = CanRemove(index);
-        canOpen = !isDir;
         canShow = true;
         canRename = true;
     }
+
     newFileAction->setEnabled(canCreateFile);
     newFolderAction->setEnabled(canCreateDir);
-    deleteAction->setEnabled(canRemove);
-    openFileAction->setEnabled(canOpen);
-    openFileAction->setVisible(canOpen);
     showInSystemExplorerAction->setEnabled(canShow);
     showInSystemExplorerAction->setVisible(canShow);
     renameAction->setEnabled(canRename);
@@ -324,8 +319,14 @@ void FileSystemDockWidget::OnRename()
 
 void FileSystemDockWidget::OnOpenFile()
 {
-    auto index = ui->treeView->indexAt(menuInvokePos);
-    onDoubleClicked(index);
+    const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
+    for (auto index : indexes)
+    {
+        if (!model->isDir(index))
+        {
+            emit OpenPackageFile(model->filePath(index));
+        }
+    }
 }
 
 void FileSystemDockWidget::OnCustomContextMenuRequested(const QPoint& pos)
@@ -340,9 +341,13 @@ void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItem
 {
     const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
     bool canRemove = !indexes.isEmpty();
+    bool canOpen = false;
     for (auto index : indexes)
     {
         canRemove &= CanRemove(index);
+        canOpen |= !model->isDir(index);
     }
     deleteAction->setEnabled(canRemove);
+    openFileAction->setEnabled(canOpen);
+    openFileAction->setVisible(canOpen);
 }

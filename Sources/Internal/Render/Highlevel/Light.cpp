@@ -36,20 +36,13 @@ namespace DAVA
 {
 Light::Light()
     : BaseObject()
-    ,
-    flags(IS_DYNAMIC | CAST_SHADOW)
-    ,
-    camera(NULL)
-    ,
-    lastUpdatedFrame(0)
-    ,
-    type(TYPE_DIRECTIONAL)
-    ,
-    ambientColor(0.0f, 0.0f, 0.0f, 1.0f)
-    ,
-    diffuseColor(1.0f, 1.0f, 1.0f, 1.0f)
-    ,
-    intensity(300.0f)
+    , flags(IS_DYNAMIC | CAST_SHADOW)
+    , camera(nullptr)
+    , lastUpdatedFrame(0)
+    , type(TYPE_DIRECTIONAL)
+    , ambientColor(0.0f, 0.0f, 0.0f, 1.0f)
+    , diffuseColor(1.0f, 1.0f, 1.0f, 1.0f)
+    , intensity(300.0f)
 {
 }
 
@@ -87,7 +80,7 @@ BaseObject* Light::Clone(BaseObject* dstNode)
 
     //BaseObject::Clone(dstNode);
 
-    Light* lightNode = (Light*)dstNode;
+    Light* lightNode = static_cast<Light*>(dstNode);
     lightNode->type = type;
     lightNode->ambientColor = ambientColor;
     lightNode->diffuseColor = diffuseColor;
@@ -106,7 +99,7 @@ void Light::SetPositionDirectionFromMatrix(const Matrix4& worldTransform)
 
 Light::eType Light::GetType() const
 {
-    return (eType)type;
+    return eType(type);
 }
 const Vector3& Light::GetPosition() const
 {
@@ -167,7 +160,7 @@ void Light::Load(KeyedArchive* archive, SerializationContext* serializationConte
 {
     BaseObject::LoadObject(archive);
 
-    type = (eType)archive->GetInt32("type");
+    type = eType(archive->GetInt32("type"));
 
     ambientColor.r = archive->GetFloat("ambColor.r", ambientColor.r);
     ambientColor.g = archive->GetFloat("ambColor.g", ambientColor.g);

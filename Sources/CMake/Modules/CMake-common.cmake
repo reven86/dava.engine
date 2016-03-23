@@ -35,9 +35,6 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
 
-
-set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
-
 #
 macro ( set_project_files_properties FILES_LIST )
     if( APPLE )
@@ -443,7 +440,10 @@ macro ( add_static_config_libs_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST
     ENDFOREACH ()
     
     #unique all platforms' lib list
-    list ( REMOVE_DUPLICATES LIB_FILE_LIST )
+    list ( LENGTH LIB_FILE_LIST LIB_FILE_LIST_SIZE )
+    if ( LIB_FILE_LIST_SIZE )
+        list ( REMOVE_DUPLICATES LIB_FILE_LIST )
+    endif ()
     
     #compare lists size
     list ( LENGTH REF_LIB_LIST REF_LIB_LIST_SIZE )
@@ -486,10 +486,11 @@ macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
     if ( NOT CONF_TAG_EXIST AND NOT ARCH_TAG_EXIST )
         #if no tags, use default variant
         set ( LIBS_LOCATION_FINAL "${LIBS_LOCATION}/ARCHITECTURE_TAG/CONFIGURATION_TAG" )
-    elseif ( CONF_TAG_EXIST OR ARCH_TAG_EXIST )
-        message ( FATAL_ERROR "Libs location path should contain all tags or no tags: ${LIBS_LOCATION}" )
+    elseif ( CONF_TAG_EXIST AND ARCH_TAG_EXIST )
+        #all tags are set
+        set ( LIBS_LOCATION_FINAL "${LIBS_LOCATION}" )
     else ()
-        set ( LIBS_LOCATION_FINAL LIBS_LOCATION )
+        message ( FATAL_ERROR "Libs location path should contain all tags or no tags: ${LIBS_LOCATION}" )
     endif ()
 
     add_static_config_libs_win_uap ( "DEBUG"   ${LIBS_LOCATION_FINAL} ${OUTPUT_LIB_LIST} )

@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 class DefinitionFile;
 class PngImageExt;
 class FilePath;
@@ -52,18 +51,17 @@ struct SpriteItem
     uint32 frameIndex = 0;
 };
 
-class TexturePacker 
+class TexturePacker
 {
 public:
+    static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
+    static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
+    static const uint32 DEFAULT_MARGIN = 1;
 
-	static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
-	static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
-	static const uint32 DEFAULT_MARGIN = 1;
-
-	struct FilterItem
-	{
-		int8 minFilter;
-		int8 magFilter;
+    struct FilterItem
+    {
+        int8 minFilter;
+        int8 magFilter;
         int8 mipFilter;
 
         FilterItem(int8 minF, int8 magF, int8 mipF)
@@ -75,7 +73,7 @@ public:
     };
 
 public:
-	TexturePacker();
+    TexturePacker();
 
     // pack textures to single texture
     void PackToTextures(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU);
@@ -91,14 +89,14 @@ public:
 
     // set visible 1 pixel border for each texture
     void SetTwoSideMargin(bool val=true) { useTwoSideMargin = val; }
+    void SetTexturesMargin(uint32 margin)
+    {
+        texturesMargin = margin;
+    }
 
-	// set space in pixels between two neighboring textures. value is omitted if two-side margin is set
-	void SetTexturesMargin(uint32 margin) { texturesMargin = margin; }
+    const Set<String>& GetErrors() const;
 
-	const Set<String>& GetErrors() const;
-	
 private:
-
     struct ImageExportKeys
     {
         eGPUFamily forGPU = GPU_ORIGIN;
@@ -108,7 +106,7 @@ private:
         bool toConvertOrigin = false;
         bool toComressForGPU = false;
     };
-    
+
     ImageExportKeys GetExportKeys(eGPUFamily forGPU);
     void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
 
@@ -133,19 +131,17 @@ private:
 
     bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
-	
+
     TextureConverter::eConvertQuality quality;
 
-	bool useTwoSideMargin;
-	uint32 texturesMargin;
+    bool useTwoSideMargin;
+    uint32 texturesMargin;
     Vector<PackingAlgorithm> packAlgorithms;
 
     Set<String> errors;
     void AddError(const String& errorMsg);
 };
-
 };
 
 
 #endif // __DAVAENGINE_TEXTURE_PACKER_H__
-

@@ -33,23 +33,21 @@
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
 
-class TextureDescriptorUtils
+namespace TextureDescriptorUtils
 {
-public:
-    static void ResaveDescriptorsForFolder(const DAVA::FilePath& folderPathname);
-    static void CopyCompressionParamsForFolder(const DAVA::FilePath& folderPathname);
-    static void CreateDescriptorsForFolder(const DAVA::FilePath& folderPathname);
-    static void SetCompressionParamsForFolder(const DAVA::FilePath& folderPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression>& compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
+void ResaveDescriptorsForFolder(const DAVA::FilePath& folder);
+void ResaveDescriptor(const DAVA::FilePath& descriptorPath);
 
-    static void SetCompressionParams(const DAVA::FilePath& descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression>& compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
-    static bool CreateDescriptorIfNeed(const DAVA::FilePath& originalPathname);
+void CreateDescriptorsForFolder(const DAVA::FilePath& folder, const DAVA::FilePath& presetPath);
+bool CreateOrUpdateDescriptor(const DAVA::FilePath& texturePath, const DAVA::FilePath& presetPath = DAVA::FilePath());
 
-private:
-    static void ResaveDescriptor(const DAVA::FilePath& descriptorPathname);
-    static void CopyCompressionParams(const DAVA::FilePath& descriptorPathname);
+void SetCompressionParamsForFolder(const DAVA::FilePath& folder, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression>& compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
+void SetCompressionParams(const DAVA::FilePath& descriptorPath, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression>& compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
 
-    static bool IsCorrectDirectory(DAVA::FileList* fileList, const DAVA::int32 fileIndex);
-    static bool IsDescriptorPathname(const DAVA::FilePath& pathname);
+void SetPresetForFolder(const DAVA::FilePath& folder, const DAVA::FilePath& presetPath, bool toConvert, DAVA::TextureConverter::eConvertQuality quality);
+void SetPreset(const DAVA::FilePath& descriptorPath, const DAVA::FilePath& presetPath, bool toConvert, DAVA::TextureConverter::eConvertQuality quality);
+
+void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptorPath, const DAVA::Vector<DAVA::FilePath>& presetPath);
 };
 
 

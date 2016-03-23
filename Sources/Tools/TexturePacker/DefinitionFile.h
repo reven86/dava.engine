@@ -36,8 +36,7 @@
 
 namespace DAVA
 {
- 
-class DefinitionFile 
+class DefinitionFile
 {
 public:
     bool Load(const FilePath& filename);
@@ -62,7 +61,6 @@ public:
     Vector<String> pathsInfo;
     Vector<String> frameNames;
 };
-
 };
 
 

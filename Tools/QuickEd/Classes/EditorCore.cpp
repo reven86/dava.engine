@@ -49,6 +49,7 @@
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "UI/Package/PackageModel.h"
 
 using namespace DAVA;
 
@@ -72,8 +73,8 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
-    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::Exit);
-    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::Exit);
+    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
+    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
     connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
     connect(mainWindow.get(), &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
@@ -98,9 +99,10 @@ EditorCore::EditorCore(QObject* parent)
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
 
+    connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
     auto packageWidget = mainWindow->packageWidget;
+    connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
@@ -108,6 +110,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
     connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::OnSelectionChanged);
     connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
+    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
@@ -333,14 +336,6 @@ void EditorCore::SaveAllDocuments()
     }
 }
 
-void EditorCore::Exit()
-{
-    if (CloseProject())
-    {
-        QCoreApplication::exit();
-    }
-}
-
 void EditorCore::RecentMenu(QAction* recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
@@ -515,6 +510,14 @@ bool EditorCore::CloseProject()
         CloseDocument(0);
     }
     return true;
+}
+
+void EditorCore::OnExit()
+{
+    if (CloseProject())
+    {
+        qApp->quit();
+    }
 }
 
 void EditorCore::CloseDocument(int index)

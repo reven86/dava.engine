@@ -43,6 +43,8 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
@@ -61,6 +63,7 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
         core->ReleaseSingletons();
     }
 
+    DAVA_MEMORY_PROFILER_FINISH();
     return 0;
 }
 
@@ -77,7 +80,14 @@ int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
     FrameworkDidLaunched();
     FrameworkWillTerminate();
     core->ReleaseSingletons();
+
+    DAVA_MEMORY_PROFILER_FINISH();
     return 0;
+}
+
+CoreWin32Platform::CoreWin32Platform()
+{
+    SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
 }
 
 bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)

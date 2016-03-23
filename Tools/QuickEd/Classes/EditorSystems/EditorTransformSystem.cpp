@@ -392,7 +392,7 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const Vector<MagnetLin
             linePos[axis] = line.targetPosition;
             linePos[oppositeAxis] = Min(controlTop, targetTop);
             Vector2 lineSize;
-            lineSize[axis] = 0.0f;
+            lineSize[axis] = 1.0f;
             lineSize[oppositeAxis] = Max(controlBottom, targetBottom) - linePos[oppositeAxis];
 
             Rect lineRect(linePos, lineSize);
@@ -417,9 +417,12 @@ Vector2 EditorTransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<M
         std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [](const MagnetLine& left, const MagnetLine& right) -> bool {
             return fabs(left.interval) < fabs(right.interval);
         };
-        DVASSERT(!magnetLines.empty());
-        MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+        if (magnetLines.empty())
+        {
+            continue;
+        }
 
+        MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
         float32 areaNearLineRight = nearestLine.targetPosition + magnetRange[axis];
         float32 areaNearLineLeft = nearestLine.targetPosition - magnetRange[axis];
         if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
@@ -636,12 +639,13 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
                 }
                 return needRemove;
             };
-            magnetLines.erase(std::remove_if(magnetLines.begin(), magnetLines.end(), removePredicate));
 
+            magnetLines.erase(std::remove_if(magnetLines.begin(), magnetLines.end(), removePredicate));
             if (magnetLines.empty())
             {
                 continue;
             }
+
             std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
                 float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
                 float32 shareRight = right.controlSharePos - transformPoint[right.axis];
@@ -704,8 +708,8 @@ void CreateMagnetLinesForPivot(Vector<MagnetLineInfo>& magnetLines, Vector2 targ
 
     Vector2 verticalLinePos(offset.x, 0.0f);
 
-    Rect horizontalRect(horizontalLinePos, Vector2(targetSize.x, 0.0f));
-    Rect verticalRect(verticalLinePos, Vector2(0.0f, targetSize.y));
+    Rect horizontalRect(horizontalLinePos, Vector2(targetSize.x, 1.0f));
+    Rect verticalRect(verticalLinePos, Vector2(1.0f, targetSize.y));
     Rect targetBox(Vector2(0.0f, 0.0f), targetSize);
     magnetLines.emplace_back(targetBox, horizontalRect, &controlGeometricData, Vector2::AXIS_X);
     magnetLines.emplace_back(targetBox, verticalRect, &controlGeometricData, Vector2::AXIS_Y);

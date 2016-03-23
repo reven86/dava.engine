@@ -193,6 +193,14 @@
     <Filter Include="Internal\Render\RHI\DX11">
       <UniqueIdentifier>{b48afc8e-9353-403b-a35d-d68a17d86a0f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\CommandLine">
+      <UniqueIdentifier>{de111723-0223-4ea4-93a7-cc216095165c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Logger">
+      <UniqueIdentifier>{682affb5-27b3-42fb-acbe-665faf6b9f98}</UniqueIdentifier>
+    <Filter Include="Internal\Command">
+      <UniqueIdentifier>{ca088d15-197c-4f02-b9aa-2d32ba8fb3af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h">
@@ -316,9 +324,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h">
-      <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h">
@@ -453,9 +458,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlock.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\3D\AnimatedMesh.h">
-      <Filter>Internal\Render\3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\3D\PolygonGroup.h">
       <Filter>Internal\Render\3D</Filter>
     </ClInclude>
@@ -471,34 +473,13 @@
     <ClInclude Include="..\..\Sources\Internal\Scene2D\GameObjectManager.h">
       <Filter>Internal\Scene2D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\BoneNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\MeshInstanceNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\PathManip.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Scene.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFile.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimation.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimationKey.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimationList.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SkeletonNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h">
@@ -535,9 +516,6 @@
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIListCell.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UILoadingTransition.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIMoveInTransition.h">
@@ -603,9 +581,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIFileSystemDialog.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\BillboardNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
@@ -618,23 +593,14 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFileV2.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ShadowVolumeNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.h">
       <Filter>Internal\Render\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\LodNode.h">
-      <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h">
       <Filter>Internal\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\RectPacker.h">
       <Filter>Internal\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\UserNode.h">
-      <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h">
       <Filter>Internal\Autotesting</Filter>
@@ -651,17 +617,11 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.h">
       <Filter>Internal\Autotesting</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEmitterNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderOptions.h">
       <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SwitchNode.h">
-      <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h">
       <Filter>Internal\Base</Filter>
@@ -695,9 +655,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\FastNameMap.h">
       <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.h">
-      <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterial.h">
       <Filter>Internal\Render\Material</Filter>
@@ -881,9 +838,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Frustum.h">
       <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h">
-      <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h">
       <Filter>Internal\Utils</Filter>
@@ -1269,9 +1223,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
-      <Filter>Internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
       <Filter>Internal\DataStorage</Filter>
@@ -1717,6 +1668,35 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\CommandLineParser.h">
+      <Filter>Internal\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\ProgramOptions.h">
+      <Filter>Internal\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamcityOutput.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\Logger.h">
+      <Filter>Internal\Logger</Filter>
+    <ClInclude Include="..\..\Sources\Internal\UI\UILoadingScreen.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\ICommand.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\ObjectHandle.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1803,9 +1783,6 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\Logger.cpp">
-      <Filter>Internal\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
@@ -1884,40 +1861,16 @@
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlock.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\3D\AnimatedMesh.cpp">
-      <Filter>Internal\Render\3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\3D\PolygonGroup.cpp">
       <Filter>Internal\Render\3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\3D\StaticMesh.cpp">
       <Filter>Internal\Render\3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\BoneNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\MeshInstanceNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\PathManip.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Scene.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFile.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimation.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimationList.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SkeletonNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp">
@@ -1954,9 +1907,6 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIListCell.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UILoadingTransition.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIMoveInTransition.cpp">
@@ -2004,9 +1954,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIFileSystemDialog.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\BillboardNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\BaseObject.cpp">
       <Filter>Internal\Base</Filter>
     </ClCompile>
@@ -2022,14 +1969,8 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFileV2.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ShadowVolumeNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.cpp">
       <Filter>Internal\Render\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\LodNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\XMLParser.cpp">
       <Filter>Internal\FileSystem</Filter>
@@ -2039,9 +1980,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp">
       <Filter>Internal\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\UserNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp">
       <Filter>Internal\Database</Filter>
@@ -2058,16 +1996,10 @@
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEmitterNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.cpp">
       <Filter>Internal\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderOptions.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SwitchNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp">
@@ -2078,9 +2010,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\FastName.cpp">
       <Filter>Internal\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterial.cpp">
       <Filter>Internal\Render\Material</Filter>
@@ -2262,9 +2191,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
@@ -2279,9 +2205,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\EnumMap.cpp">
       <Filter>Internal\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\LoggerWin.cpp">
-      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\KeyedArchiveSwig.cpp">
       <Filter>Internal\Autotesting</Filter>
@@ -2640,9 +2563,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
-      <Filter>Internal</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
       <Filter>Internal\DataStorage\Windows</Filter>
@@ -3069,6 +2989,38 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\CommandLineParser.cpp">
+      <Filter>Internal\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\ProgramOptions.cpp">
+      <Filter>Internal\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\LoggerWin.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamcityOutput.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\Logger.cpp">
+      <Filter>Internal\Logger</Filter>
+    <ClCompile Include="..\..\Sources\Internal\UI\UILoadingScreen.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Command\ObjectHandle.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp">
+      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

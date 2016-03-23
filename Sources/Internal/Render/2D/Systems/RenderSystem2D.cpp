@@ -145,9 +145,11 @@ void RenderSystem2D::BeginFrame()
     defaultSpriteDrawState.material = DEFAULT_2D_COLOR_MATERIAL;
 
     rhi::RenderPassConfig renderPass2DConfig;
-    renderPass2DConfig.priority = PRIORITY_MAIN_2D;
+    renderPass2DConfig.priority = PRIORITY_MAIN_2D + mainTargetDescriptor.priority;
+    renderPass2DConfig.colorBuffer[0].texture = mainTargetDescriptor.colorAttachment;
     renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment;
     renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
@@ -175,48 +177,62 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
+const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetActiveTargetDescriptor()
+{
+    return IsRenderTargetPass() ? renderPassTargetDescriptor : mainTargetDescriptor;
+}
+const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetMainTargetDescriptor()
+{
+    return mainTargetDescriptor;
+}
+void RenderSystem2D::SetMainTargetDescriptor(const RenderSystem2D::RenderTargetPassDescriptor& descriptor)
+{
+    mainTargetDescriptor = descriptor;
+}
+
 void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
     RenderTargetPassDescriptor desc;
-    desc.target = target;
+    desc.colorAttachment = target->handle;
+    desc.depthAttachment = target->handleDepthStencil;
+    desc.width = target->GetWidth();
+    desc.height = target->GetHeight();
     desc.clearColor = clearColor;
     desc.priority = priority;
-    desc.shouldClear = needClear;
-    desc.shouldTransformVirtualToPhysical = true;
+    desc.clearTarget = needClear;
+    desc.transformVirtualToPhysical = true;
     BeginRenderTargetPass(desc);
 }
 
 void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& desc)
 {
     DVASSERT(!IsRenderTargetPass());
-    DVASSERT(desc.target);
-    DVASSERT(desc.target->GetWidth() && desc.target->GetHeight())
 
     Flush();
 
-    SetVirtualToPhysicalTransformEnabled(desc.shouldTransformVirtualToPhysical);
+    renderPassTargetDescriptor = desc;
+
+    UpdateVirtualToPhysicalMatrix(desc.transformVirtualToPhysical);
 
     rhi::RenderPassConfig renderTargetPassConfig;
-    renderTargetPassConfig.colorBuffer[0].texture = desc.target->handle;
+    renderTargetPassConfig.colorBuffer[0].texture = desc.colorAttachment;
     renderTargetPassConfig.colorBuffer[0].clearColor[0] = desc.clearColor.r;
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
     renderTargetPassConfig.priority = desc.priority;
-    renderTargetPassConfig.viewport.width = desc.target->GetWidth();
-    renderTargetPassConfig.viewport.height = desc.target->GetHeight();
+    renderTargetPassConfig.viewport.width = desc.width;
+    renderTargetPassConfig.viewport.height = desc.height;
     renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    renderTargetPassConfig.colorBuffer[0].loadAction = desc.shouldClear ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
+    renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
 
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
     rhi::BeginRenderPass(passTargetHandle);
     rhi::BeginPacketList(currentPacketListHandle);
 
-    renderTargetWidth = desc.target->GetWidth();
-    renderTargetHeight = desc.target->GetHeight();
-
+    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -231,10 +247,8 @@ void RenderSystem2D::EndRenderTargetPass()
 
     currentPacketListHandle = packetList2DHandle;
 
-    renderTargetWidth = 0;
-    renderTargetHeight = 0;
-
-    SetVirtualToPhysicalTransformEnabled(virtualToPhysicalTransformEnabledDefaultValue);
+    UpdateVirtualToPhysicalMatrix(virtualToPhysicalTransformEnabledDefaultValue);
+    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -248,25 +262,19 @@ void RenderSystem2D::SetViewMatrix(const Matrix4& _viewMatrix)
 
 void RenderSystem2D::Setup2DMatrices()
 {
-    ShaderDescriptorCache::ClearDynamicBindigs();
-    if (IsRenderTargetPass())
+    Size2f targetSize;
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
+    targetSize.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+    targetSize.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
+
+    if ((descr.colorAttachment != rhi::InvalidHandle) && (!rhi::DeviceCaps().isUpperLeftRTOrigin))
     {
-        if (rhi::DeviceCaps().isUpperLeftRTOrigin)
-        {
-            projMatrix.glOrtho(0.0f, float32(renderTargetWidth),
-                               float32(renderTargetHeight), 0.f,
-                               -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
-        }
-        else
-        {
-            projMatrix.glOrtho(0.0f, float32(renderTargetWidth),
-                               0.0f, float32(renderTargetHeight),
-                               -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
-        }
+        //invert projection
+        projMatrix.glOrtho(0.0f, targetSize.dx, 0.0f, targetSize.dy, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
     else
     {
-        projMatrix.glOrtho(0.0f, float32(Renderer::GetFramebufferWidth()), float32(Renderer::GetFramebufferHeight()), 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
+        projMatrix.glOrtho(0.0f, targetSize.dx, targetSize.dy, 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
 
     if (rhi::DeviceCaps().isCenterPixelMapping)
@@ -298,16 +306,15 @@ void RenderSystem2D::ScreenSizeChanged()
     actualVirtualToPhysicalMatrix = glScale * glTranslate;
     actualPhysicalToVirtualScale.x = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(1.0f);
     actualPhysicalToVirtualScale.y = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(1.0f);
-    if (virtualToPhysicalTransformEnabled)
+    if (GetActiveTargetDescriptor().transformVirtualToPhysical)
     {
         currentVirtualToPhysicalMatrix = actualVirtualToPhysicalMatrix;
         currentPhysicalToVirtualScale = actualPhysicalToVirtualScale;
     }
 }
 
-void RenderSystem2D::SetVirtualToPhysicalTransformEnabled(bool value)
+void RenderSystem2D::UpdateVirtualToPhysicalMatrix(bool value)
 {
-    virtualToPhysicalTransformEnabled = value;
     currentVirtualToPhysicalMatrix = value ? actualVirtualToPhysicalMatrix : Matrix4::IDENTITY;
     currentPhysicalToVirtualScale = value ? actualPhysicalToVirtualScale : Vector2(1.0f, 1.0f);
 }
@@ -340,10 +347,10 @@ void RenderSystem2D::IntersectClipRect(const Rect& rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        //RHI_COMPLETE - Mikhail please review this
+        const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
-                    IsRenderTargetPass() ? float32(renderTargetWidth) : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                    IsRenderTargetPass() ? float32(renderTargetHeight) : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+                    static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width),
+                    static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height));
         Rect res = screen.Intersection(rect);
         SetClip(res);
     }
@@ -399,13 +406,15 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
 {
     Rect clipRect = currentClip;
+
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
     if (int32(clipRect.dx) == -1)
     {
-        clipRect.dx = static_cast<float32>(IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
+        clipRect.dx = static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width);
     }
     if (int32(clipRect.dy) == -1)
     {
-        clipRect.dy = static_cast<float32>(IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        clipRect.dy = static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height);
     }
 
     float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
@@ -958,7 +967,7 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         Texture* t = sprite->GetTexture(frame);
 
         Vector2 virtualTexSize = Vector2(float32(t->width), float32(t->height));
-        if (virtualToPhysicalTransformEnabled)
+        if (GetActiveTargetDescriptor().transformVirtualToPhysical)
         {
             if (sprite->type == Sprite::SPRITE_FROM_FILE)
             {
@@ -1145,20 +1154,23 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     spriteVertexCount = int32(sd.transformedVertices.size());
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
-    BatchDescriptor batch;
-    batch.singleColor = color;
-    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
-    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
-    batch.material = state->GetMaterial();
-    batch.vertexCount = spriteVertexCount;
-    batch.indexCount = spriteIndexCount;
-    batch.vertexStride = 2;
-    batch.texCoordStride = 2;
-    batch.vertexPointer = sd.transformedVertices.data()->data;
-    batch.texCoordPointer = sd.texCoords.data()->data;
-    batch.indexPointer = sd.indeces;
+    if (spriteVertexCount > 0 && spriteIndexCount > 0) // Ignore incorrect streched data
+    {
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
+        batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
+        batch.material = state->GetMaterial();
+        batch.vertexCount = spriteVertexCount;
+        batch.indexCount = spriteIndexCount;
+        batch.vertexStride = 2;
+        batch.texCoordStride = 2;
+        batch.vertexPointer = sd.transformedVertices.data()->data;
+        batch.texCoordPointer = sd.texCoords.data()->data;
+        batch.indexPointer = sd.indeces;
 
-    PushBatch(batch);
+        PushBatch(batch);
+    }
 
     if (!pStreachData)
     {
@@ -1235,23 +1247,24 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
         td.GenerateTransformData();
     }
 
-    spriteVertexCount = static_cast<int32>(td.transformedVertices.size());
-    spriteIndexCount = static_cast<int32>(td.indeces.size());
-
-    BatchDescriptor batch;
-    batch.singleColor = color;
-    batch.material = state->GetMaterial();
-    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
-    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
-    batch.vertexCount = spriteVertexCount;
-    batch.indexCount = spriteIndexCount;
-    batch.vertexStride = 2;
-    batch.texCoordStride = 2;
-    batch.vertexPointer = td.transformedVertices.data()->data;
-    batch.texCoordPointer = td.texCoords.data()->data;
-    batch.indexPointer = td.indeces.data();
-
-    PushBatch(batch);
+    const uint32 uCount = static_cast<uint32>(td.units.size());
+    for (uint32 uIndex = 0; uIndex < uCount; ++uIndex)
+    {
+        TiledDrawData::Unit& unit = td.units[uIndex];
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.material = state->GetMaterial();
+        batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
+        batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
+        batch.vertexCount = static_cast<int32>(unit.transformedVertices.size());
+        batch.indexCount = static_cast<int32>(unit.indeces.size());
+        batch.vertexStride = 2;
+        batch.texCoordStride = 2;
+        batch.vertexPointer = unit.transformedVertices.data()->data;
+        batch.texCoordPointer = unit.texCoords.data()->data;
+        batch.indexPointer = unit.indeces.data();
+        PushBatch(batch);
+    }
 
     if (!pTiledData)
     {
@@ -1592,20 +1605,15 @@ void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMateria
 void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
     Rect destRect(_dstRect);
-    if ((destRect.dx < 0.0f) || (destRect.dy < 0.0f))
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
+    if (destRect.dx < 0.f || destRect.dy < 0.f)
     {
-        if (IsRenderTargetPass())
+        destRect.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+        destRect.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
+        if (descr.transformVirtualToPhysical)
         {
-            destRect.dx = float32(renderTargetWidth);
-            destRect.dy = float32(renderTargetHeight);
+            destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
         }
-        else
-        {
-            destRect.dx = float32(Renderer::GetFramebufferWidth());
-            destRect.dy = float32(Renderer::GetFramebufferHeight());
-        }
-
-        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
     }
 
     Rect srcRect;
@@ -1631,23 +1639,36 @@ void TiledDrawData::GenerateTileData()
     GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
                      VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(float32(texture->GetHeight()), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
-    int32 vertexCount = int32(4 * cellsHeight.size() * cellsWidth.size());
-    if (vertexCount >= std::numeric_limits<uint16>::max())
+    uint32 vertexLimitPerUnit = MAX_VERTICES - (MAX_VERTICES % 4); // Round for 4 vertexes
+    uint32 indexLimitPerUnit = vertexLimitPerUnit / 4 * 6;
+    uint32 vertexTotalCount = static_cast<uint32>(4 * cellsHeight.size() * cellsWidth.size());
+    uint32 indexTotalCount = static_cast<uint32>(6 * cellsHeight.size() * cellsWidth.size());
+    uint32 unitsCount = vertexTotalCount / vertexLimitPerUnit + (vertexTotalCount % vertexLimitPerUnit > 0 ? 1 : 0);
+
     {
-        vertices.clear();
-        transformedVertices.clear();
-        texCoords.clear();
-        Logger::Error("[TiledDrawData::GenerateTileData] tile background too big!");
-        return;
+        // Resize units
+        units.resize(unitsCount);
+        // Resize buffers for first part of units
+        for (uint32 i = 0; i < unitsCount - 1; ++i)
+        {
+            Unit& u = units[i];
+            u.vertices.resize(vertexLimitPerUnit);
+            u.texCoords.resize(vertexLimitPerUnit);
+            u.transformedVertices.resize(vertexLimitPerUnit);
+            u.indeces.resize(indexLimitPerUnit);
+        }
+        // Resize buffers for last unit
+        Unit& u = units[unitsCount - 1];
+        uint32 lastUnitVertexCount = vertexTotalCount - vertexLimitPerUnit * (unitsCount - 1);
+        uint32 lastUnitIndexCount = indexTotalCount - indexLimitPerUnit * (unitsCount - 1);
+        u.vertices.resize(lastUnitVertexCount);
+        u.texCoords.resize(lastUnitVertexCount);
+        u.transformedVertices.resize(lastUnitVertexCount);
+        u.indeces.resize(lastUnitIndexCount);
     }
-    vertices.resize(vertexCount);
-    transformedVertices.resize(vertexCount);
-    texCoords.resize(vertexCount);
 
-    int32 indecesCount = int32(6 * cellsHeight.size() * cellsWidth.size());
-    indeces.resize(indecesCount);
-
-    int32 offsetIndex = 0;
+    uint32 unitNumber = 0;
+    uint32 offsetIndex = 0;
     const float32* textCoords = sprite->GetTextureCoordsForFrame(frame);
     Vector2 trasformOffset;
     const Vector2 tempTexCoordsPt(textCoords[0], textCoords[1]);
@@ -1660,11 +1681,21 @@ void TiledDrawData::GenerateTileData()
 
         for (uint32 column = 0; column < cellsWidth.size(); ++column, ++offsetIndex)
         {
+            uint32 vertIndex = offsetIndex * 4;
+            if (vertIndex >= vertexLimitPerUnit)
+            {
+                offsetIndex = 0;
+                vertIndex = 0;
+                ++unitNumber;
+            }
+            Vector<Vector2>& vertices = units[unitNumber].vertices;
+            Vector<Vector2>& texCoords = units[unitNumber].texCoords;
+            Vector<uint16>& indeces = units[unitNumber].indeces;
+
             cellSize.x = cellsWidth[column].x;
             texCellSize.x = cellsWidth[column].y;
             texTrasformOffset.x = cellsWidth[column].z;
 
-            int32 vertIndex = offsetIndex * 4;
             vertices[vertIndex + 0] = trasformOffset;
             vertices[vertIndex + 1] = trasformOffset + Vector2(cellSize.x, 0.0f);
             vertices[vertIndex + 2] = trasformOffset + Vector2(0.0f, cellSize.y);
@@ -1676,7 +1707,7 @@ void TiledDrawData::GenerateTileData()
             texCoords[vertIndex + 2] = texel + Vector2(0.0f, texCellSize.y);
             texCoords[vertIndex + 3] = texel + texCellSize;
 
-            int32 indecesIndex = offsetIndex * 6;
+            uint32 indecesIndex = offsetIndex * 6;
             indeces[indecesIndex + 0] = vertIndex;
             indeces[indecesIndex + 1] = vertIndex + 1;
             indeces[indecesIndex + 2] = vertIndex + 2;
@@ -1713,6 +1744,8 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
     if (sideSize > 0.0f)
         gridSize += 2;
 
+    DVASSERT_MSG(gridSize >= 0, "Incorrect grid size value!")
+
     axisData.resize(gridSize);
 
     int32 beginOffset = 0;
@@ -1742,10 +1775,15 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
 
 void TiledDrawData::GenerateTransformData()
 {
-    const uint32 size = uint32(vertices.size());
-    for (uint32 index = 0; index < size; ++index)
+    const uint32 uCount = static_cast<uint32>(units.size());
+    for (uint32 uIndex = 0; uIndex < uCount; ++uIndex)
     {
-        transformedVertices[index] = vertices[index] * transformMatr;
+        Unit& unit = units[uIndex];
+        const uint32 vCount = static_cast<uint32>(unit.vertices.size());
+        for (uint32 vIndex = 0; vIndex < vCount; ++vIndex)
+        {
+            unit.transformedVertices[vIndex] = unit.vertices[vIndex] * transformMatr;
+        }
     }
 }
 

@@ -238,9 +238,13 @@ void CustomColorsSystem::UpdateBrushTool()
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = colorTexture;
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.priority = PRIORITY_SERVICE_2D;
+    desc.colorAttachment = colorTexture->handle;
+    desc.depthAttachment = colorTexture->handleDepthStencil;
+    desc.width = colorTexture->GetWidth();
+    desc.height = colorTexture->GetHeight();
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -303,7 +307,7 @@ void CustomColorsSystem::CreateUndoPoint()
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);
 
-        scene->Exec(new ModifyCustomColorsCommand(originalImage, ScopedPtr<Image>(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory()), drawSystem->GetCustomColorsProxy(), updatedRect));
+        scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, ScopedPtr<Image>(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory()), drawSystem->GetCustomColorsProxy(), updatedRect));
     }
 
     SafeRelease(originalImage);
@@ -341,14 +345,14 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
 
         if (createUndo)
         {
+            DVASSERT(originalImage == nullptr);
             originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory();
 
-            SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+            SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
-            scene->BeginBatch("Load custom colors texture");
+            scene->BeginBatch("Load custom colors texture", 2);
             StoreSaveFileName(filePath);
-            scene->Exec(new ModifyCustomColorsCommand(originalImage, image,
-                                                      drawSystem->GetCustomColorsProxy(), GetUpdatedRect()));
+            scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, image, drawSystem->GetCustomColorsProxy(), GetUpdatedRect()));
             scene->EndBatch();
 
             SafeRelease(originalImage);
@@ -356,16 +360,19 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
         else
         {
             SafeRelease(loadedTexture);
-
             loadedTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false);
 
             Texture* target = drawSystem->GetCustomColorsProxy()->GetTexture();
 
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::RenderTargetPassDescriptor desc;
-            desc.target = target;
-            desc.shouldClear = false;
-            desc.shouldTransformVirtualToPhysical = false;
+            desc.priority = PRIORITY_SERVICE_2D;
+            desc.colorAttachment = target->handle;
+            desc.depthAttachment = target->handleDepthStencil;
+            desc.width = target->GetWidth();
+            desc.height = target->GetHeight();
+            desc.clearTarget = false;
+            desc.transformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -407,35 +414,33 @@ bool CustomColorsSystem::CouldApplyImage(Image* image, const String& imageName) 
 
 void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)
 {
-    Command2* command = CreateSaveFileNameCommand(GetRelativePathToProjectPath(filePath));
+    Command2::Pointer command = CreateSaveFileNameCommand(GetRelativePathToProjectPath(filePath));
     if (command)
     {
-        ((SceneEditor2*)GetScene())->Exec(command);
+        SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+        sc->Exec(std::move(command));
     }
 }
 
-Command2* CustomColorsSystem::CreateSaveFileNameCommand(const String& filePath)
+Command2::Pointer CustomColorsSystem::CreateSaveFileNameCommand(const String& filePath)
 {
     KeyedArchive* customProps = drawSystem->GetLandscapeCustomProperties();
     bool keyExists = customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 
-    Command2* command = NULL;
     if (keyExists)
     {
         String curPath = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
         if (curPath != filePath)
         {
-            command = new KeyeadArchiveSetValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,
-                                                       VariantType(filePath));
+            return Command2::Create<KeyeadArchiveSetValueCommand>(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, VariantType(filePath));
         }
     }
     else
     {
-        command = new KeyedArchiveAddValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,
-                                                  VariantType(filePath));
+        return Command2::Create<KeyedArchiveAddValueCommand>(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, VariantType(filePath));
     }
 
-    return command;
+    return Command2::CreateEmptyCommand();
 }
 
 FilePath CustomColorsSystem::GetCurrentSaveFileName()

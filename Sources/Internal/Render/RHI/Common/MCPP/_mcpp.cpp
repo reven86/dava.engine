@@ -18,7 +18,7 @@ FileEntry
 const char* MCPP_Text = "<input>";
 std::vector<std::string> IncludeSearchPath;
 static std::vector<FileEntry> _FileEntry;
-static FILE* const _HandleBase = (FILE*)(0x1000);
+static FILE* const _HandleBase = reinterpret_cast<FILE*>(0x1000);
 
 //------------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ void mcpp__set_input(const void* data, unsigned data_sz)
 
     FileEntry entry;
 
-    entry.file = DAVA::DynamicMemoryFile::Create((const uint8*)data, data_sz, DAVA::File::READ);
+    entry.file = DAVA::DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(data), data_sz, DAVA::File::READ);
     entry.file_name = MCPP_Text;
     entry.eof = 0;
     entry.handle = _HandleBase + 0;
@@ -179,7 +179,7 @@ char* mcpp__fgets(char* buf, int max_size, FILE* file)
             }
             else
             {
-                f->file->ReadLine((void*)buf, max_size);
+                f->file->ReadLine(static_cast<void*>(buf), max_size);
 
                 // workaround to prevent MCPP from ignoring line
                 if (!buf[0])

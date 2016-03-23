@@ -148,7 +148,7 @@ FPROG_BEGIN
         float3 eyeDist = FP_IN(eyeDist);    
         float2 waveOffset = normal.xy*max(0.1, 1.0-dot(eyeDist, eyeDist)*distortionFallSquareDist);
         float4 fragPos = FP_IN(normalizedFragPos);
-        float2 texturePos =  fragPos.xy/fragPos.w*0.5 + 0.5; //(gl_FragCoord.xy-viewportOffset)*rcpViewpoviewportOffset;    
+        float2 texturePos =  fragPos.xy/fragPos.w*0.5 + 0.5;		
         float3 reflectionColor = FP_TEXTURE2D(dynamicReflection, texturePos+waveOffset*reflectionDistortion).rgb;
         texturePos.y=1.0-texturePos.y;
         float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb * refractionTintColor;

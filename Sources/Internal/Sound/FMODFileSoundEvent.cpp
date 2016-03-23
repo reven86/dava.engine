@@ -151,7 +151,7 @@ bool FMODFileSoundEvent::Trigger()
         FMOD_VERIFY(fmodInstance->setChannelGroup(fmodInstanceGroup));
 
         if (flags & SOUND_EVENT_CREATE_3D)
-            FMOD_VERIFY(fmodInstance->set3DAttributes((FMOD_VECTOR*)&position, 0));
+            FMOD_VERIFY(fmodInstance->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0));
 
         FMOD_VERIFY(fmodInstanceGroup->setPaused(false));
         FMOD_VERIFY(fmodInstance->setPaused(false));
@@ -183,7 +183,7 @@ void FMODFileSoundEvent::UpdateInstancesPosition()
         {
             FMOD::Channel* inst = 0;
             FMOD_VERIFY(fmodInstanceGroup->getChannel(i, &inst));
-            FMOD_VERIFY(inst->set3DAttributes((FMOD_VECTOR*)&position, 0));
+            FMOD_VERIFY(inst->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0));
         }
     }
 }
@@ -251,11 +251,11 @@ FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL*
 {
     if (type == FMOD_CHANNEL_CALLBACKTYPE_END)
     {
-        FMOD::Channel* cppchannel = (FMOD::Channel*)channel;
+        FMOD::Channel* cppchannel = reinterpret_cast<FMOD::Channel*>(channel);
         if (cppchannel)
         {
             FMODFileSoundEvent* sound = 0;
-            FMOD_VERIFY(cppchannel->getUserData((void**)&sound));
+            FMOD_VERIFY(cppchannel->getUserData(reinterpret_cast<void**>(&sound)));
             if (sound)
             {
                 sound->PerformEvent(EVENT_END);

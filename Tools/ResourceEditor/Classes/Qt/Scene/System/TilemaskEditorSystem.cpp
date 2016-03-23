@@ -211,8 +211,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             Rect toolRect(std::floor(toolPos.x), std::floor(toolPos.y), std::ceil(toolSize.x), std::ceil(toolSize.y));
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
-            desc.target = toolTexture;
-            desc.shouldTransformVirtualToPhysical = false;
+            desc.priority = PRIORITY_SERVICE_2D;
+            desc.colorAttachment = toolTexture->handle;
+            desc.depthAttachment = toolTexture->handleDepthStencil;
+            desc.width = toolTexture->GetWidth();
+            desc.height = toolTexture->GetHeight();
+            desc.transformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -422,14 +426,14 @@ Texture* TilemaskEditorSystem::GetTileTexture()
     return drawSystem->GetLandscapeProxy()->GetLandscapeTexture(Landscape::TEXTURE_TILE);
 }
 
-Color TilemaskEditorSystem::GetTileColor(int32 index)
+Color TilemaskEditorSystem::GetTileColor(uint32 index)
 {
-    if (index < 0 || index >= (int32)GetTileTextureCount())
+    if (index < GetTileTextureCount())
     {
-        return Color::Black;
+        return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
     }
 
-    return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
+    return Color::Black;
 }
 
 void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
@@ -444,7 +448,7 @@ void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
     if (curColor != color)
     {
         SceneEditor2* scene = (SceneEditor2*)(GetScene());
-        scene->Exec(new SetTileColorCommand(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
+        scene->Exec(Command2::Create<SetTileColorCommand>(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
     }
 }
 
@@ -461,9 +465,13 @@ void TilemaskEditorSystem::CreateMaskTexture()
         DAVA::Rect sourceRect(0.0f, 0.0f, 1.0f, 1.0f);
 
         RenderSystem2D::RenderTargetPassDescriptor desc;
-        desc.target = srcTexture;
-        desc.shouldClear = true;
-        desc.shouldTransformVirtualToPhysical = false;
+        desc.priority = PRIORITY_SERVICE_2D;
+        desc.colorAttachment = srcTexture->handle;
+        desc.depthAttachment = srcTexture->handleDepthStencil;
+        desc.width = srcTexture->GetWidth();
+        desc.height = srcTexture->GetHeight();
+        desc.transformVirtualToPhysical = false;
+        desc.clearTarget = true;
 
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         RenderSystem2D::Instance()->DrawTextureWithoutAdjustingRects(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL,
@@ -498,7 +506,7 @@ void TilemaskEditorSystem::CreateUndoPoint()
 {
     SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
     DVASSERT(scene);
-    scene->Exec(new ModifyTilemaskCommand(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
+    scene->Exec(Command2::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
 }
 
 int32 TilemaskEditorSystem::GetBrushSize()

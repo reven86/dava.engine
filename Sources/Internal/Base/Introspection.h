@@ -295,10 +295,10 @@ protected:
 
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \
-	DAVA::CreateInspColl(&((ObjectT*)0)->_name, #_name, _desc, (ptrdiff_t)((intptr_t) & ((ObjectT*)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	DAVA::CreateInspColl(&static_cast<ObjectT*>(nullptr)->_name, #_name, _desc, reinterpret_cast<size_t>(&static_cast<ObjectT*>(nullptr)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции с динамической структурой. Структуру определяет _dynamic, импементирующая интерфейс InspDynamicInfo
 #define DYNAMIC(_name, _desc, _dynamic, _flags) \
-	new DAVA::InspMemberDynamic(#_name, _desc, reinterpret_cast<size_t>(&((static_cast<ObjectT*>(nullptr))->_name)), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
+	new DAVA::InspMemberDynamic(#_name, _desc, DAVA::MetaInfo::Instance<void*>(), _flags, _dynamic),
 
 #endif // __DAVAENGINE_INTROSPECTION_H__

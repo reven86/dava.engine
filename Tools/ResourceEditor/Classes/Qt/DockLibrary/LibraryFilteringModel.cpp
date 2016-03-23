@@ -30,7 +30,7 @@
 #include "LibraryFilteringModel.h"
 #include "LibraryFileSystemModel.h"
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 LibraryFilteringModel::LibraryFilteringModel(QObject* parent /* = NULL */)
     : QSortFilterProxyModel(parent)

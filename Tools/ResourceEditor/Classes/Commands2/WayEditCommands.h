@@ -30,7 +30,7 @@
 #ifndef __WAYEDIT_COMMANDS_H__
 #define __WAYEDIT_COMMANDS_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class EnableWayEditCommand : public Command2
 {

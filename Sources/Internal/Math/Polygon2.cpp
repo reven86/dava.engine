@@ -238,7 +238,7 @@ void Polygon2::CalculateCenterPoint(Vector2& center) const
     {
         center += points[p];
     }
-    center /= (float32)pointCount;
+    center /= static_cast<float32>(pointCount);
 }
 
 void Polygon2::CalculateSizeRect(Vector2& size) const

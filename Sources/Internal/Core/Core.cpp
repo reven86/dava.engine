@@ -26,9 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "DAVAClassRegistrator.h"
-
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
 #include "Core/ApplicationCore.h"
@@ -63,6 +61,10 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Job/JobManager.h"
+
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
@@ -291,6 +293,10 @@ void Core::CreateSingletons()
 
     new Net::NetCore();
 
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Init();
+#endif
+
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
@@ -300,7 +306,7 @@ void Core::CreateSingletons()
 void Core::CreateRenderer()
 {
     DVASSERT(options->IsKeyExists("renderer"));
-    rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
+    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
 
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
@@ -333,6 +339,9 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Deinit();
+#endif
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -383,10 +392,10 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
     options = SafeRetain(archiveOfOptions);
     
 #if defined(__DAVAENGINE_WIN_UAP__)
-    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view
-    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT));
 #endif
 }
 
@@ -397,7 +406,7 @@ KeyedArchive* Core::GetOptions()
 
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
-    return (Core::eScreenOrientation)screenOrientation;
+    return screenOrientation;
 }
 
 Core::eScreenMode Core::GetScreenMode()
@@ -442,7 +451,7 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
     {
         int32 minDiffWidth = 0;
         int32 minDiffHeight = 0;
-        float32 requestedAspect = (requestedMode.height > 0 ? (float32)requestedMode.width / (float32)requestedMode.height : 1.0f);
+        float32 requestedAspect = (requestedMode.height > 0 ? float32(requestedMode.width) / float32(requestedMode.height) : 1.0f);
         float32 minDiffAspect = 0;
 
         for (List<DisplayMode>::iterator it = availableDisplayModes.begin(); it != availableDisplayModes.end(); ++it)
@@ -452,7 +461,7 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
             int32 diffWidth = abs(availableMode.width - requestedMode.width);
             int32 diffHeight = abs(availableMode.height - requestedMode.height);
 
-            float32 availableAspect = (availableMode.height > 0 ? (float32)availableMode.width / (float32)availableMode.height : 1.0f);
+            float32 availableAspect = (availableMode.height > 0 ? float32(availableMode.width) / float32(availableMode.height) : 1.0f);
             float32 diffAspect = fabsf(availableAspect - requestedAspect);
 
             //          if (diffWidth >= 0 && diffHeight >= 0)
@@ -521,8 +530,8 @@ DisplayMode Core::GetCurrentDisplayMode()
 
 void Core::Quit()
 {
+    Logger::FrameworkDebug("[Core::Quit] is not supported by platform implementation of core");
     exit(0);
-    Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
 }
 
 void Core::SetApplicationCore(ApplicationCore* _core)
@@ -664,11 +673,10 @@ void Core::SystemProcessFrame()
         //#endif
 
         // recalc frame inside begin / end frame
-        if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+        if (vsc->WasScreenSizeChanged())
         {
-            VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-            UIScreenManager::Instance()->ScreenSizeChanged();
-            UIControlSystem::Instance()->ScreenSizeChanged();
+            vsc->ScreenSizeChanged();
         }
 
         float32 frameDelta = SystemTimer::Instance()->FrameDelta();

@@ -290,7 +290,7 @@ void Polygon3::CalculateCenterPoint(Vector3& center) const
     {
         center += points[p];
     }
-    center /= (float32)pointCount;
+    center /= static_cast<float32>(pointCount);
 }
 
 float32 Polygon3::CalculateSquareRadius(const Vector3& center) const

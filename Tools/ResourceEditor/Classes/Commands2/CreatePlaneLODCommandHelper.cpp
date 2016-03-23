@@ -288,7 +288,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
     renderPassConfig.colorBuffer[0].texture = request->targetTexture->handle;
     renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
-    renderPassConfig.priority = eDefaultPassPriority::PRIORITY_SERVICE_3D;
+    renderPassConfig.priority = PRIORITY_SERVICE_3D;
     renderPassConfig.viewport = viewport;
     renderPassConfig.depthStencilBuffer.texture = request->depthTexture;
     memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
@@ -359,9 +359,10 @@ void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily 
 {
     auto entity = lodComponent->GetEntity();
 
-    DAVA::TexturesMap textures;
-    SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, textures,
-                                         SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+    SceneHelper::TextureCollector collector;
+    SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, collector);
+    DAVA::TexturesMap& textures = collector.GetTextures();
+
     for (auto& tex : textures)
     {
         tex.second->ReloadAs(targetGPU);

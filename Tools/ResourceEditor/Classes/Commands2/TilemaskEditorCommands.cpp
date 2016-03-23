@@ -28,11 +28,11 @@
 
 
 #include "TilemaskEditorCommands.h"
-#include "../Qt/Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
-#include "../Qt/Scene/SceneEditor2.h"
-#include "../Qt/Scene/SceneSignals.h"
+#include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneSignals.h"
 
-#include "../Qt/Main/QtUtils.h"
+#include "Main/QtUtils.h"
 
 ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy_, const Rect& updatedRect_)
     : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
@@ -89,9 +89,12 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex)
     auto material = RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = dstTex;
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.colorAttachment = dstTex->handle;
+    desc.depthAttachment = dstTex->handleDepthStencil;
+    desc.width = dstTex->GetWidth();
+    desc.height = dstTex->GetHeight();
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(fboTexture, material, Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();

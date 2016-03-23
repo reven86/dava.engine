@@ -46,10 +46,10 @@ class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
 signals:
     // scene
     void Opened(SceneEditor2* scene);
-    void Closed(SceneEditor2* scene);
-
     void Loaded(SceneEditor2* scene);
+    void Updated(SceneEditor2* scene);
     void Saved(SceneEditor2* scene);
+    void Closed(SceneEditor2* scene);
 
     void Activated(SceneEditor2* scene);
     void Deactivated(SceneEditor2* scene);
@@ -115,6 +115,10 @@ public:
     void EmitSaved(SceneEditor2* scene)
     {
         emit Saved(scene);
+    }
+    void EmitUpdated(SceneEditor2* scene)
+    {
+        emit Updated(scene);
     }
 
     void EmitActivated(SceneEditor2* scene)
@@ -238,11 +242,6 @@ public:
     void EmitParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
     {
         emit ParticleLayerRemoved(scene, emitter);
-    }
-
-    void EmitEditorLightEnabled(bool enabled)
-    {
-        emit EditorLightEnabled(enabled);
     }
 
     void EmitSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape)

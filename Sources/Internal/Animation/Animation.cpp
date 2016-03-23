@@ -29,7 +29,7 @@
 
 #include "Animation/Animation.h"
 #include "Animation/AnimationManager.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

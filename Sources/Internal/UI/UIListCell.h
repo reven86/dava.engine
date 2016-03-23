@@ -50,7 +50,7 @@ public:
 		 \param[in] rect Used only size part of the rect. Incoming rect size can be modified by the UIList if this is neccesary.
 		 \param[in] cellIdentifier literal identifier to represents cell type. For example: "Name cell", "Phone number cell", etc.
 		 */
-    UIListCell(const Rect& rect = Rect(), const String& cellIdentifier = String(), const FilePath& aggregatorPath = FilePath());
+    UIListCell(const Rect& rect = Rect(), const String& cellIdentifier = String());
 
     /**
 		 \brief Returns cell's identifier.
@@ -69,11 +69,8 @@ public:
 		 */
     int32 GetIndex() const;
 
-    virtual UIListCell* Clone();
-    void CopyDataFrom(UIControl* srcControl);
-
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
+    UIListCell* Clone() override;
+    void CopyDataFrom(UIControl* srcControl) override;
 
 protected:
     virtual ~UIListCell();

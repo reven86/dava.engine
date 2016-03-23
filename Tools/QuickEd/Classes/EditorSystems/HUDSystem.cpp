@@ -26,6 +26,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+#include <numeric>
 #include "HUDSystem.h"
 
 #include "UI/UIControl.h"
@@ -66,7 +68,7 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
         return new FrameRectControl(area);
     case HUDAreaInfo::FRAME_AREA:
-        return CreateContainerWithBorders<FrameControl>();
+        return new FrameControl();
     default:
         DVASSERT(!"unacceptable value of area");
         return nullptr;
@@ -129,15 +131,25 @@ HUDSystem::HUD::~HUD()
     hudControl->RemoveControl(container.Get());
 }
 
+class HUDControl : public UIControl
+{
+    void Draw(const UIGeometricData& geometricData) override
+    {
+        UpdateLayout();
+        UIControl::Draw(geometricData);
+    }
+};
+
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , hudControl(new UIControl())
+    , hudControl(new HUDControl())
     , sortedControlList(CompareByLCA)
 {
     InvalidatePressedPoint();
     hudControl->SetName(FastName("hudControl"));
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
@@ -175,30 +187,30 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     }
 
     UpdateAreasVisibility();
-
-    ProcessCursor(pressedPoint, SEARCH_BACKWARD);
+    ProcessCursor(hoveredPoint, SEARCH_BACKWARD);
 }
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
     bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    hoveredPoint = currentInput->point;
     switch (currentInput->phase)
     {
     case UIEvent::Phase::MOVE:
-        ProcessCursor(currentInput->point, searchOrder);
+        ProcessCursor(hoveredPoint, searchOrder);
         return false;
     case UIEvent::Phase::BEGAN:
     {
-        ProcessCursor(currentInput->point, searchOrder);
-        pressedPoint = currentInput->point;
+        ProcessCursor(hoveredPoint, searchOrder);
+        pressedPoint = hoveredPoint;
         if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)
         {
             return true;
         }
         //check that we can draw rect
         Vector<ControlNode*> nodesUnderPoint;
-        Vector2 point = currentInput->point;
+        Vector2 point = hoveredPoint;
         auto predicate = [point](const ControlNode* node) -> bool {
             const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
             DVASSERT(node->GetControl() != nullptr);
@@ -216,7 +228,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         if (canDrawRect)
         {
             Vector2 point(pressedPoint);
-            Vector2 size(currentInput->point - pressedPoint);
+            Vector2 size(hoveredPoint - pressedPoint);
             if (size.x < 0.0f)
             {
                 point.x += size.x;
@@ -233,10 +245,10 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return true;
     case UIEvent::Phase::ENDED:
     {
-        ProcessCursor(currentInput->point, searchOrder);
+        ProcessCursor(hoveredPoint, searchOrder);
         SetCanDrawRect(false);
         dragRequested = false;
-        bool retVal = (pressedPoint - currentInput->point).Length() > 0;
+        bool retVal = (pressedPoint - hoveredPoint).Length() > 0;
         InvalidatePressedPoint();
         return retVal;
     }
@@ -256,6 +268,39 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
     inEmulationMode = emulationMode;
     UpdatePlacedOnScreenStatus();
+}
+
+void HUDSystem::OnNodesHovered(const Vector<ControlNode*>& nodes)
+{
+    for (const auto& node : nodes)
+    {
+        if (hoveredNodes.find(node) == hoveredNodes.end() && node != nullptr)
+        {
+            UIControl* targetControl = node->GetControl();
+            auto gd = targetControl->GetGeometricData();
+            Rect ur(gd.position, gd.size * gd.scale);
+
+            RefPtr<UIControl> control(new UIControl(ur));
+            ::SetupHUDMagnetRectControl(control.Get());
+            control->SetPivot(targetControl->GetPivot());
+            control->SetAngle(gd.angle);
+            hudControl->AddControl(control.Get());
+            hoveredNodes[node] = control;
+        }
+    }
+    for (auto it = hoveredNodes.begin(); it != hoveredNodes.end();)
+    {
+        if (std::find(nodes.begin(), nodes.end(), it->first) == nodes.end())
+        {
+            UIControl* control = it->second.Get();
+            hoveredNodes.erase(it++);
+            hudControl->RemoveControl(control);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
@@ -285,15 +330,17 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
         linePos = DAVA::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
-        lineSize *= gd->scale;
+        lineSize[line.axis] *= gd->scale[line.axis];
         Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
-        MagnetLineControl* lineControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
+        RefPtr<UIControl> lineControl(new UIControl(Rect(linePos + gdPos, lineSize)));
+        ::SetupHUDMagnetLineControl(lineControl.Get());
+        lineControl->SetName(FastName("magnet line control"));
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         lineControl->SetSize(lineControl->GetSize() + extraSize);
         lineControl->SetPivotPoint(extraSize / 2.0f);
         lineControl->SetAngle(line.gd->angle);
-        hudControl->AddControl(lineControl);
+        hudControl->AddControl(lineControl.Get());
         magnetControls.emplace_back(lineControl);
 
         linePos = line.targetRect.GetPosition();
@@ -303,9 +350,11 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos *= gd->scale;
         lineSize *= gd->scale;
 
-        MagnetLineControl* rectControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
+        RefPtr<UIControl> rectControl(new UIControl(Rect(linePos + gdPos, lineSize)));
+        ::SetupHUDMagnetRectControl(rectControl.Get());
+        rectControl->SetName(FastName("rect of target control which we magnet to"));
         rectControl->SetAngle(line.gd->angle);
-        hudControl->AddControl(rectControl);
+        hudControl->AddControl(rectControl.Get());
         magnetTargetControls.emplace_back(rectControl);
     }
 }
@@ -336,14 +385,14 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
-            if (hud->container->GetVisible())
+            if (hud->container->GetVisibilityFlag())
             {
                 HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
                 auto hudControlsIter = hud->hudControls.find(area);
                 if (hudControlsIter != hud->hudControls.end())
                 {
                     const auto& controlContainer = hudControlsIter->second;
-                    if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+                    if (controlContainer->GetVisibilityFlag() && controlContainer->IsPointInside(pos))
                     {
                         return HUDAreaInfo(hud->node, area);
                     }
@@ -372,7 +421,7 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
         if (canDrawRect)
         {
             DVASSERT(nullptr == selectionRectControl);
-            selectionRectControl = CreateContainerWithBorders<SelectionRect>();
+            selectionRectControl = new FrameControl();
             hudControl->AddControl(selectionRectControl);
         }
         else

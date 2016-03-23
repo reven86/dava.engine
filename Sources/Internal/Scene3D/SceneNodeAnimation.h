@@ -42,7 +42,7 @@ class SceneNodeAnimationList;
 class SceneNodeAnimation : public BaseObject
 {
 protected:
-    virtual ~SceneNodeAnimation();
+    ~SceneNodeAnimation() override;
 
 public:
     SceneNodeAnimation(int32 keyCount);
@@ -89,12 +89,6 @@ public:
     SceneNodeAnimationKey currentValue;
 
     Matrix4 invPose;
-
-    void SetParent(SceneNodeAnimationList* list);
-    SceneNodeAnimationList* GetParent();
-
-private:
-    SceneNodeAnimationList* parent;
 };
 
 inline float32 SceneNodeAnimation::GetCurrentTime()

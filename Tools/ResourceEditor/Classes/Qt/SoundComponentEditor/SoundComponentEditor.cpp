@@ -116,11 +116,11 @@ void SoundComponentEditor::OnAutoTrigger(bool checked)
         uint32 flags = component->GetSoundEventFlags(selectedEventIndex);
         if (checked)
         {
-            scene->Exec(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags | SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+            scene->Exec(Command2::Create<SetSoundEventFlagsCommand>(entity, selectedEventIndex, flags | SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
         }
         else
         {
-            scene->Exec(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags & ~SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+            scene->Exec(Command2::Create<SetSoundEventFlagsCommand>(entity, selectedEventIndex, flags & ~SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
         }
     }
 }
@@ -200,7 +200,7 @@ void SoundComponentEditor::OnAddEvent()
             DAVA::String selectedEventName = browser->GetSelectSoundEvent();
             DAVA::SoundEvent* sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(FastName(selectedEventName), DAVA::FastName("FX"));
 
-            scene->Exec(new AddSoundEventCommand(component->GetEntity(), sEvent));
+            scene->Exec(Command2::Create<AddSoundEventCommand>(component->GetEntity(), sEvent));
 
             selectedEventIndex = component->GetEventsCount() - 1;
 
@@ -215,7 +215,7 @@ void SoundComponentEditor::OnRemoveEvent()
 {
     if (selectedEventIndex != -1 && component)
     {
-        scene->Exec(new RemoveSoundEventCommand(component->GetEntity(), component->GetSoundEvent(selectedEventIndex)));
+        scene->Exec(Command2::Create<RemoveSoundEventCommand>(component->GetEntity(), component->GetSoundEvent(selectedEventIndex)));
     }
 
     OnEventSelected(0);

@@ -191,7 +191,7 @@ DAVA_TESTCLASS (FileSystemTest)
         TEST_VERIFY(FileSystem::Instance()->IsDirectory("~doc:/TestData/FileSystemTest/"));
         TEST_VERIFY(!FileSystem::Instance()->IsFile("~doc:/TestData/FileSystemTest/"));
 
-        TEST_VERIFY(FilePath::FilepathInDocuments((const char*)"Test/test.file")
+        TEST_VERIFY(FilePath::FilepathInDocuments("Test/test.file")
                     == FilePath::FilepathInDocuments(String("Test/test.file")));
 
         FileSystem::eCreateDirectoryResult created = FileSystem::Instance()->CreateDirectory("~doc:/TestData/FileSystemTest/1/2/3", false);
