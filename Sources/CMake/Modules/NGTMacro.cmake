@@ -1,12 +1,10 @@
 include (CMake-common)
 
-macro(define_ngt_pathes ngt_root)
-    get_filename_component( NGT_ROOT_ABS ${ngt_root} ABSOLUTE )
-    set                   ( NGT_ROOT ${NGT_ROOT_ABS} CACHE INTERNAL "")
-    set                   ( NGT_SRC_ROOT "${NGT_ROOT}/src/core/" CACHE INTERNAL "")
-    set                   ( NGT_CORE_PATH "${NGT_SRC_ROOT}lib/" CACHE INTERNAL "")
-    set                   ( NGT_PLUGINS_PATH "${NGT_SRC_ROOT}plugins/" CACHE INTERNAL "")
-endmacro()
+get_filename_component( NGT_ROOT_ABS "${DAVA_ROOT_DIR}/Sources/External/ngt/" ABSOLUTE )
+set                   ( NGT_ROOT ${NGT_ROOT_ABS} CACHE INTERNAL "")
+set                   ( NGT_SRC_ROOT "${NGT_ROOT}/src/core/" CACHE INTERNAL "")
+set                   ( NGT_CORE_PATH "${NGT_SRC_ROOT}lib/" CACHE INTERNAL "")
+set                   ( NGT_PLUGINS_PATH "${NGT_SRC_ROOT}plugins/" CACHE INTERNAL "")
 
 macro(get_subdirs_list result curdir)
     file(GLOB children RELATIVE ${curdir} ${curdir}/*)

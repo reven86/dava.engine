@@ -11,7 +11,6 @@ endif()
 include               ( CMake-common )
 include               ( NGTMacro )
 
-define_ngt_pathes("${DAVA_ROOT_DIR}/Sources/External/ngt/")
 get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
 
 include_directories ( ${DAVA_ROOT_DIR}/Sources/Internal)
