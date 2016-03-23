@@ -43,6 +43,7 @@ DAVA_TESTCLASS (ArchiveTest)
 
         FilePath baseDir("~res:/");
 
+#ifndef __DAVAENGINE_IPHONE__
         TEST_VERIFY(DavaArchive::Create("dava.pak", baseDir, infos, nullptr));
 
         {
@@ -83,6 +84,7 @@ DAVA_TESTCLASS (ArchiveTest)
         }
 
         TEST_VERIFY(FileSystem::Instance()->DeleteFile("dava.pak"));
+#endif // __DAVAENGINE_IPHONE__
     }
 
     DAVA_TEST (TestZipArchive)
