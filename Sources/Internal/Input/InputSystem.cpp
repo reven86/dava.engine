@@ -33,6 +33,8 @@
 #include "UI/UIControlSystem.h"
 #include "Render/Cursor.h"
 
+#include "Input/MouseCapture.h"
+
 namespace DAVA
 {
 InputSystem::InputSystem()
@@ -104,7 +106,8 @@ void InputSystem::OnAfterUpdate()
 InputSystem::eMouseCaptureMode InputSystem::GetMouseCaptureMode()
 {
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
-    return Cursor::GetMouseCaptureMode();
+    return MouseCapture::GetMouseCaptureMode();
+//     return Cursor::GetMouseCaptureMode();
 #else
     return eMouseCaptureMode::OFF;
 #endif
@@ -113,7 +116,9 @@ InputSystem::eMouseCaptureMode InputSystem::GetMouseCaptureMode()
 bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
 {
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
-    return Cursor::SetMouseCaptureMode(mode);
+    MouseCapture::SetMouseCaptureMode(mode);
+    return true;
+//    return Cursor::SetMouseCaptureMode(mode);
 #else
     return mode == eMouseCaptureMode::OFF;
 #endif

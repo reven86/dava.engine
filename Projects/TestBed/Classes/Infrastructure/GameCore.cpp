@@ -51,6 +51,7 @@
 #include "Tests/DlcTest.h"
 #include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
+#include "Tests/MouseCaptureTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -81,6 +82,7 @@ void GameCore::RegisterTests()
     new WebViewTest();
     new FunctionSignalTest();
     new KeyboardTest();
+    new MouseCaptureTest();
     new FullscreenTest();
     new UIBackgroundTest();
     new ClipTest();

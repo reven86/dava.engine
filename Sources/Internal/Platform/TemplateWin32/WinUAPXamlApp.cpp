@@ -50,6 +50,8 @@
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
 
+#include "Input/MouseCapture.h"
+
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
@@ -213,6 +215,7 @@ void WinUAPXamlApp::PreStartAppSettings()
         // will be changed in SetDisplayOrientations()
         StatusBar::GetForCurrentView()->HideAsync();
     }
+    Window::Current->CoreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 }
 
@@ -389,6 +392,8 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
 {
     CoreWindowActivationState state = args->WindowActivationState;
 
+    //Logger::Info("\n!!!!! ActivationChanged UI Thread timestamp = %f, state = %d\n", (SystemTimer::FrameStampTimeMS() / 1000.0), (int)state);
+
     if (state == CoreWindowActivationState::CodeActivated ||
         state == CoreWindowActivationState::PointerActivated)
     {
@@ -407,6 +412,8 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             Core::Instance()->SetIsActive(isFocused);
             return;
         }
+
+        MouseCapture::SetApplicationFocus(isFocused);
 
         if (isFocused)
         {
@@ -521,6 +528,8 @@ void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProp
 
 void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRoutedEventArgs ^ args)
 {
+    //    Logger::Info("\n!!!!! PointerPressed UI Thread timestamp = %f\n", (SystemTimer::FrameStampTimeMS() / 1000.0));
+
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
@@ -817,7 +826,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
         for (auto& change : mouseButtonChanges)
         {
             auto fn = [this, window_x, window_y, change]() {
-                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE);
+                //              DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE);
             };
             core->RunOnMainThread(fn);
         }
@@ -833,7 +842,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
                 phase = UIEvent::Phase::MOVE;
 
                 core->RunOnMainThread([this, phase, dx, dy]() {
-                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
+                    //                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
                 });
             }
             else
@@ -857,7 +866,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.device = device;
     newTouch.tapCount = 1;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-
+    //Logger::Info("\n!!!!! DAVATouchEvent Main thread timestamp = %f, phase %d\n", newTouch.timestamp, int(phase));
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
 
@@ -867,7 +876,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     Resuming += ref new EventHandler<::Platform::Object ^>(this, &WinUAPXamlApp::OnResuming);
 
     CoreWindow ^ coreWindow = Window::Current->CoreWindow;
-    coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
+    //    coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
     auto coreWindowSizeChanged = ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg) {
@@ -887,9 +896,9 @@ void WinUAPXamlApp::SetupEventHandlers()
     // Receive mouse events from SwapChainPanel, not CoreWindow, to not handle native controls' events
     swapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerPressed);
     swapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerReleased);
-    swapChainPanel->PointerEntered += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerEntered);
+    //     swapChainPanel->PointerEntered += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerEntered);
     swapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerMoved);
-    swapChainPanel->PointerExited += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerExited);
+    //     swapChainPanel->PointerExited += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerExited);
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
 
     coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);

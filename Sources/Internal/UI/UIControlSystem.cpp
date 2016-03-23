@@ -43,6 +43,7 @@
 #include "UI/UIScreenshoter.h"
 #include "Debug/Profiler.h"
 #include "Render/2D/TextBlock.h"
+#include "Input/MouseCapture.h"
 
 namespace DAVA
 {
@@ -410,6 +411,9 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     {
         return;
     }
+
+    if (MouseCapture::SkipEvents(newEvent))
+        return;
 
     if (frameSkip <= 0)
     {
