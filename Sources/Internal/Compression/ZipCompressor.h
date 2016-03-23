@@ -36,6 +36,7 @@ namespace DAVA
 class FilePath;
 class ZipPrivateData;
 
+// deflate/inflate
 class ZipCompressor : public Compressor
 {
 public:
