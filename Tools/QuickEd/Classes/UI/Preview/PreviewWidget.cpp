@@ -718,7 +718,10 @@ void PreviewWidget::NotifySelectionChanged()
     SelectedNodes deselected;
     selectionContainer.GetNotExistedItems(tmpContainerForUpdater.selectedNodes, selected);
     tmpContainerForUpdater.GetNotExistedItems(selectionContainer.selectedNodes, deselected);
-    emit SelectionChanged(selected, deselected);
+    if (!selected.empty() && !deselected.empty())
+    {
+        emit SelectionChanged(selected, deselected);
+    }
     selectionContainer = tmpContainerForUpdater;
     tmpContainerForUpdater.selectedNodes.clear();
 }
