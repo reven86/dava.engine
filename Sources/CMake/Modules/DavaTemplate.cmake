@@ -501,14 +501,12 @@ elseif( MACOS )
     endif()
 
 elseif ( WIN32 )
+	
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
     else()
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
     endif()
-
 
     if( DEBUG_INFO )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
@@ -619,7 +617,7 @@ if( DEPLOY )
 
         endif()
 
-        foreach ( ITEM fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll )
+		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
@@ -675,7 +673,7 @@ endmacro ()
 macro( DEPLOY_SCRIPT )
 
     if( DEPLOY )
-        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
+        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_WIN64;COPY_MACOS;COPY_DIR" ${ARGN})
 
         if( NOT COPY_DIR )
             set( COPY_DIR ${DEPLOY_DIR} )
@@ -688,8 +686,12 @@ macro( DEPLOY_SCRIPT )
             list( APPEND COPY_LIST ${ARG_COPY} )
         endif()
 
-        if( ARG_COPY_WIN32 AND WIN32 )
+        if( ARG_COPY_WIN32 AND WIN32 AND NOT X64_MODE )
             list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+        endif()
+
+        if( ARG_COPY_WIN64 AND WIN32 AND X64_MODE )
+            list( APPEND COPY_LIST ${ARG_COPY_WIN64} )
         endif()
 
         if( ARG_COPY_MACOS AND MACOS )

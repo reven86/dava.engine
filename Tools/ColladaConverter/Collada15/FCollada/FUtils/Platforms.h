@@ -41,7 +41,7 @@
 #endif // __PPU__
 
 // Ensure that both UNICODE and _UNICODE are set.
-#ifdef UNICODE
+#if (1)
 #ifndef _UNICODE
 #define _UNICODE
 #endif
@@ -198,7 +198,7 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2)
 // For Doxygen purposes, we stopped using the "using namespace std;" statement and use shortcuts instead.
 
 // fstring and character definition
-#ifdef UNICODE
+#if (1)
 
 	#define fchar wchar_t
 	#define FC(a) L##a

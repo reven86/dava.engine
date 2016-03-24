@@ -451,26 +451,14 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
     {
         ColladaVertex* tvj = &unoptimizedVerteces[indexArray[index]];
 
-        int optSize = optVertexArray.size();
-        int oIndex = 0;
+        size_t optSize = optVertexArray.size();
+        size_t oIndex = 0;
         for (oIndex = 0; oIndex < optSize; ++oIndex)
         {
             ColladaVertex* tvi = &optVertexArray[oIndex];
 
             bool equalIJ = true;
-            /*if (tvi->position != tvj->position)
-			{
-				equalIJ = false;
-			}
- 			if (tvi->normal != tvj->normal)
-			{
-				equalIJ = false;
-			} 
 
-			if (tvi->texCoords[0] != tvj->texCoords[0])
-			{
-				equalIJ = false;
-			}*/
             const float32 EPS = 0.00001f;
 
             if (!FLOAT_EQUAL_EPS(tvi->position.x, tvj->position.x, EPS))
