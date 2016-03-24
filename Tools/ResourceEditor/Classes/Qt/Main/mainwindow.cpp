@@ -2497,7 +2497,7 @@ void QtMainWindow::OnForceFirstLod(bool enabled)
         return;
     }
 
-    landscape->SetForceFirstLod(enabled);
+    landscape->SetForceMaxSubdiv(enabled);
     scene->visibilityCheckSystem->Recalculate();
 }
 

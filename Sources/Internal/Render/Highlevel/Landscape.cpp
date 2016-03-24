@@ -598,7 +598,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 patchDistance = Distance(cameraPos, patchOrigin);
     float32 rError = patch->radius / (patchDistance * tanFovY);
 
-    if ((level < subdivLevelCount - 1) && ((maxPatchRadiusError <= rError) || (maxHeightError <= hError) || (maxAbsoluteHeightError < Abs(patch->maxError)) || (minSubdivLevelSize > levelInfo.size)))
+    if ((level < subdivLevelCount - 1) && ((maxPatchRadiusError <= rError) || (maxHeightError <= hError) || (maxAbsoluteHeightError < Abs(patch->maxError)) || (minSubdivLevelSize > levelInfo.size) || forceMaxSubdiv))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdivLevel = level;
@@ -1572,9 +1572,9 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
     }
 };
 
-void Landscape::SetForceFirstLod(bool force)
+void Landscape::SetForceMaxSubdiv(bool force)
 {
-    forceFirstLod = force;
+    forceMaxSubdiv = force;
 }
 
 void Landscape::SetUpdatable(bool isUpdatable)

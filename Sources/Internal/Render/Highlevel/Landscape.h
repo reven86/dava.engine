@@ -145,7 +145,7 @@ public:
     void SetUpdatable(bool isUpdatable);
     bool IsUpdatable() const;
 
-    void SetForceFirstLod(bool force);
+    void SetForceMaxSubdiv(bool force);
 
     void SetUseInstancing(bool useInstancing);
     bool IsUseInstancing() const;
@@ -199,7 +199,7 @@ protected:
 
     uint32 drawIndices = 0;
 
-    bool forceFirstLod = false;
+    bool forceMaxSubdiv = false;
     bool updatable = false;
 
     bool debugDrawMetrics = false;
