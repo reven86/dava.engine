@@ -35,8 +35,6 @@
 
 #include "Project.h"
 #include "EditorFontSystem.h"
-#include "UI/UIPackageLoader.h"
-#include "Model/EditorUIPackageBuilder.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Helpers/ResourcesManageHelper.h"
@@ -60,6 +58,13 @@ bool Project::Open(const QString& path)
     bool result = OpenInternal(path);
     SetIsOpen(result);
     return result;
+}
+
+void Project::Close()
+{
+    SetProjectName("");
+    SetProjectPath("");
+    SetIsOpen(false);
 }
 
 bool Project::OpenInternal(const QString& path)
@@ -159,26 +164,6 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
         return false;
     }
 
-    return true;
-}
-
-RefPtr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
-{
-    EditorUIPackageBuilder builder;
-
-    bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
-
-    if (packageLoaded)
-        return builder.BuildPackage();
-
-    return RefPtr<PackageNode>();
-}
-
-bool Project::SavePackage(PackageNode* package)
-{
-    YamlPackageSerializer serializer;
-    serializer.SerializePackage(package);
-    serializer.WriteToFile(package->GetPath());
     return true;
 }
 

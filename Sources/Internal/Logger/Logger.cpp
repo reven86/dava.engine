@@ -118,7 +118,7 @@ void Logger::Logv(const FilePath& customLogFilename, eLogLevel ll, const char8* 
 static const Array<const char8*, 5> logLevelString
 {
   {
-  "framwork",
+  "framework",
   "debug",
   "info",
   "warning",
