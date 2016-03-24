@@ -43,6 +43,7 @@ class UIControl;
 class UIGeometricData;
 struct TiledDrawData;
 struct StretchDrawData;
+struct TiledMultilayerData;
 class NMaterial;
 
 /**
@@ -329,6 +330,7 @@ protected:
 private:
     TiledDrawData* tiledData;
     StretchDrawData* stretchData;
+    TiledMultilayerData* tiledMultulayerData;
 
     UIMargins* margins;
 

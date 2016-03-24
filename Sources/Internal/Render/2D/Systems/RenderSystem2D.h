@@ -86,8 +86,60 @@ struct StretchDrawData
     Matrix3 transformMatr;
 };
 
+struct TiledMultilayerData
+{
+    Vector<Vector2> vertices;
+    Vector<Vector2> transformedVertices;
+    Vector<Vector2> texCoordsMask;
+    Vector<Vector2> texCoordsDetail;
+    Vector<Vector2> texCoordsGradient;
+    Vector<Vector2> texCoordsContour;
+    Vector<uint16> indices;
+
+    rhi::HTextureSet textureSet;
+    rhi::HSamplerState samplerState;
+
+    Sprite* mask = nullptr;
+    Sprite* detail = nullptr;
+    Sprite* gradient = nullptr;
+    Sprite* contour = nullptr;
+    Vector2 size;
+    Vector2 stretchCap;
+    Matrix3 transformMatr;
+
+    void GenerateTileData();
+    void GenerateTransformData();
+    ~TiledMultilayerData();
+
+private:
+    struct AxisData
+    {
+        float32 pos;
+        float32 texCoordsMask;
+        float32 texCoordsDetail;
+        float32 texCoordsGradient;
+        float32 texCoordsContour;
+    };
+
+    struct SingleStretchData
+    {
+        Vector2 uvBase;
+        Vector2 uvCapMin;
+        Vector2 uvCapMax;
+        Vector2 uvSize;
+    };
+
+    SingleStretchData GenerateStretchData(Sprite* sprite);
+    Vector<AxisData> GenerateSingleAxisData(float32 inSize, float32 inTileSize, float32 inStratchCap,
+                                            float32 gradientBase, float32 gradientDelta, float32 detailBase, float32 detailDelta,
+                                            float32 contourBase, float32 contourStretchBase, float32 contourStretchDelta, float32 contourDelta,
+                                            float32 maskBase, float32 maskStretchBase, float32 xMaskStretchDelta, float32 xMaskDelta); //unlike in TileData, this method generates actual vertices info along the axis
+};
+
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
+    static const uint32 MAX_TEXTURE_STREAMS_COUNT = 4;
+
 public:
     struct BatchDescriptor
     {
@@ -96,8 +148,9 @@ public:
         uint32 indexCount = 0;
         const float32* vertexPointer = nullptr;
         uint32 vertexStride = 0;
-        const float32* texCoordPointer = nullptr;
+        Array<const float32*, MAX_TEXTURE_STREAMS_COUNT> texCoordPointer = {};
         uint32 texCoordStride = 0;
+        uint32 texCoordCount = 0;
         const uint32* colorPointer = nullptr;
         uint32 colorStride = 0;
         const uint16* indexPointer = nullptr;
@@ -137,6 +190,7 @@ public:
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
     static NMaterial* DEFAULT_2D_FILL_ALPHA_MATERIAL;
+    static NMaterial* DEFAULT_COMPOSIT_MATERIAL;
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
@@ -146,6 +200,8 @@ public:
     void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
     void DrawStretched(Sprite* sprite, Sprite::DrawState* drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
     void DrawTiled(Sprite* sprite, Sprite::DrawState* drawState, const Vector2& streatchCap, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color);
+    void DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
+                             Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, float32 grayscale);
 
     void SetViewMatrix(const Matrix4& viewMatrix);
 
@@ -334,16 +390,10 @@ private:
 
     bool spriteClipping = true;
 
-    struct BatchVertex
-    {
-        Vector3 pos;
-        Vector2 uv;
-        uint32 color;
-    };
-
-    BatchVertex* currentVertexBuffer = nullptr;
+    uint8* currentVertexBuffer = nullptr;
     uint16* currentIndexBuffer = nullptr;
     rhi::Packet currentPacket;
+    uint32 currentTexcoordStreamCount = 1; //1 is for default draw
     uint32 currentIndexBase = 0;
     uint32 vertexIndex = 0;
     uint32 indexIndex = 0;
@@ -352,6 +402,9 @@ private:
     Matrix4 lastCustomWorldMatrix;
     bool lastUsedCustomWorldMatrix = false;
     uint32 lastCustomMatrixSematic = 0;
+
+    uint32 VBO_STRIDE[MAX_TEXTURE_STREAMS_COUNT];
+    uint32 vertexLayouts2d[MAX_TEXTURE_STREAMS_COUNT];
 
     // Batching errors handling
     enum ErrorFlag

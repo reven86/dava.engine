@@ -46,7 +46,6 @@ const bool virtualToPhysicalTransformEnabledDefaultValue = true;
 
 const uint32 MAX_VERTICES = 1024;
 const uint32 MAX_INDECES = MAX_VERTICES * 2;
-const uint32 VBO_STRIDE = 3 * sizeof(float32) + 2 * sizeof(float32) + 4;
 const float32 SEGMENT_LENGTH = 15.0f;
 }
 
@@ -60,6 +59,7 @@ NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL = nullptr;
 
 RenderSystem2D::RenderSystem2D()
 {
@@ -100,10 +100,22 @@ void RenderSystem2D::Init()
     DEFAULT_2D_FILL_ALPHA_MATERIAL->SetFXName(FastName("~res:/Materials/2d.AlphaFill.material"));
     DEFAULT_2D_FILL_ALPHA_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
+    DEFAULT_COMPOSIT_MATERIAL = new NMaterial();
+    DEFAULT_COMPOSIT_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Composit.material"));
+    DEFAULT_COMPOSIT_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
     layout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
+    vertexLayouts2d[0] = rhi::VertexLayout::UniqueId(layout);
+    VBO_STRIDE[0] = 3 * sizeof(float32) + 2 * sizeof(float32) + 4; //position, uv, color
+    for (uint32 i = 1; i < MAX_TEXTURE_STREAMS_COUNT; ++i)
+    {
+        layout.AddElement(rhi::VS_TEXCOORD, i, rhi::VDT_FLOAT, 2);
+        vertexLayouts2d[i] = rhi::VertexLayout::UniqueId(layout);
+        VBO_STRIDE[i] = 3 * sizeof(float32) + 2 * sizeof(float32) * i + 4;
+    }
 
     currentVertexBuffer = nullptr;
     currentIndexBuffer = nullptr;
@@ -111,7 +123,7 @@ void RenderSystem2D::Init()
     currentPacket.primitiveCount = 0;
     currentPacket.vertexStreamCount = 1;
     currentPacket.options = 0;
-    currentPacket.vertexLayoutUID = rhi::VertexLayout::UniqueId(layout);
+    currentPacket.vertexLayoutUID = vertexLayouts2d[0];
 
     vertexIndex = 0;
     indexIndex = 0;
@@ -494,7 +506,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
                  (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
                  "Incorrect textureSet or samplerState handle");
 
-    DVASSERT_MSG(batchDesc.texCoordPointer == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
+    DVASSERT_MSG(batchDesc.texCoordPointer[0] == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
 
     if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
@@ -514,11 +526,11 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     ++Renderer::GetRenderStats().batches2d;
 #endif
 
-    if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES))
+    if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES) || (batchDesc.texCoordCount != currentTexcoordStreamCount))
     {
         // Buffer overflow. Switch to next VBO.
         Flush();
-
+        currentTexcoordStreamCount = batchDesc.texCoordCount;
         // TODO: Make draw for big buffers (bigger than buffers in pool)
         // Draw immediately if batch is too big to buffer
         if (batchDesc.vertexCount > MAX_VERTICES || batchDesc.indexCount > MAX_INDECES)
@@ -533,18 +545,19 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             DVASSERT(currentVertexBuffer == nullptr && currentIndexBuffer == nullptr);
             if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
             {
-                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE, batchDesc.vertexCount);
+                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount], batchDesc.vertexCount);
                 DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(batchDesc.indexCount);
                 DVASSERT(vertexBuffer.allocatedVertices == batchDesc.vertexCount);
                 DVASSERT(indexBuffer.allocatedindices == batchDesc.indexCount);
 
-                currentVertexBuffer = reinterpret_cast<BatchVertex*>(vertexBuffer.data);
+                currentVertexBuffer = vertexBuffer.data;
                 currentIndexBuffer = indexBuffer.data;
 
                 currentPacket.vertexStream[0] = vertexBuffer.buffer;
                 currentPacket.vertexCount = vertexBuffer.allocatedVertices;
                 currentPacket.baseVertex = vertexBuffer.baseVertex;
                 currentPacket.indexBuffer = indexBuffer.buffer;
+                currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount];
                 currentIndexBase = indexBuffer.baseIndex;
             }
             // End create vertex and index buffers
@@ -554,18 +567,19 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     // Begin create vertex and index buffers
     if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
     {
-        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE, MAX_VERTICES);
+        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount], MAX_VERTICES);
         DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(MAX_INDECES);
         DVASSERT(vertexBuffer.allocatedVertices == MAX_VERTICES);
         DVASSERT(indexBuffer.allocatedindices == MAX_INDECES);
 
-        currentVertexBuffer = reinterpret_cast<BatchVertex*>(vertexBuffer.data);
+        currentVertexBuffer = vertexBuffer.data;
         currentIndexBuffer = indexBuffer.data;
 
         currentPacket.vertexStream[0] = vertexBuffer.buffer;
         currentPacket.vertexCount = vertexBuffer.allocatedVertices;
         currentPacket.baseVertex = vertexBuffer.baseVertex;
         currentPacket.indexBuffer = indexBuffer.buffer;
+        currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount];
         currentIndexBase = indexBuffer.baseIndex;
     }
     // End create vertex and index buffers
@@ -591,7 +605,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     }
 
     // Prepare texture coordinates ptr (batchDesc.texCoordPointer or zero vector)
-    const float32* texPtr = batchDesc.texCoordPointer;
+    const float32* texPtr = batchDesc.texCoordPointer[0];
     uint32 texStride = batchDesc.texCoordStride;
     if (texPtr == nullptr)
     {
@@ -601,18 +615,41 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     }
 
     // Begin fill vertex and index buffers
-    uint32 vi = vertexIndex;
+    struct BatchVertex
+    {
+        Vector3 pos;
+        Vector2 uv;
+        uint32 color;
+        //optional explicit params
+        Vector2 uv1;
+        Vector2 uv2;
+        Vector2 uv3;
+    };
+
     uint32 ii = indexIndex;
     for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        BatchVertex& v = currentVertexBuffer[vi++];
+        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount] * (vertexIndex + i));
         v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
         v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
+        //TODO: rethink do we still require z in rhi?
         v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
         v.uv.x = texPtr[i * texStride];
         v.uv.y = texPtr[i * texStride + 1];
         v.color = colorPtr[i * colorStride];
     }
+    //add optional texture streams
+    for (uint32 texStream = 1; texStream < batchDesc.texCoordCount; ++texStream)
+    {
+        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
+        {
+            DVASSERT(batchDesc.texCoordPointer[texStream] != nullptr);
+            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount] * (vertexIndex + i));
+            v.uv.x = batchDesc.texCoordPointer[texStream][i * texStride];
+            v.uv.y = texPtr[i * texStride + 1];
+        }
+    }
+
     for (uint32 i = 0; i < batchDesc.indexCount; ++i)
     {
         currentIndexBuffer[ii++] = vertexIndex + batchDesc.indexPointer[i];
@@ -1053,13 +1090,13 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
     if (!sprite->clipPolygon)
     {
         batch.vertexPointer = spriteTempVertices.data();
-        batch.texCoordPointer = sprite->texCoords[frame];
+        batch.texCoordPointer[0] = sprite->texCoords[frame];
         batch.indexPointer = spriteIndeces;
     }
     else
     {
         batch.vertexPointer = spriteClippedVertices.data()->data;
-        batch.texCoordPointer = spriteClippedTexCoords.data()->data;
+        batch.texCoordPointer[0] = spriteClippedTexCoords.data()->data;
         batch.indexPointer = spriteClippedIndecex.data();
     }
     PushBatch(batch);
@@ -1166,7 +1203,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
         batch.vertexPointer = sd.transformedVertices.data()->data;
-        batch.texCoordPointer = sd.texCoords.data()->data;
+        batch.texCoordPointer[0] = sd.texCoords.data()->data;
         batch.indexPointer = sd.indeces;
 
         PushBatch(batch);
@@ -1261,12 +1298,138 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
         batch.vertexPointer = unit.transformedVertices.data()->data;
-        batch.texCoordPointer = unit.texCoords.data()->data;
+        batch.texCoordPointer[0] = unit.texCoords.data()->data;
         batch.indexPointer = unit.indeces.data();
         PushBatch(batch);
     }
 
     if (!pTiledData)
+    {
+        SafeDelete(tiledData);
+    }
+}
+
+void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
+                                         Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, float32 grayscale)
+{
+    if (!contour || !mask || !detail || !gradient)
+        return;
+
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    {
+        return;
+    }
+
+    int32 frame = Clamp(state->frame, 0, 0);
+
+    const Vector2& size = gd.size;
+
+    if (stretchCapVector.x < 0.0f || stretchCapVector.y < 0.0f ||
+        size.x <= 0.0f || size.y <= 0.0f)
+        return;
+
+    Vector2 stretchCap(Min(size.x, contour->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH)),
+                       Min(size.y, contour->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)));
+
+    //UniqueHandle textureHandle = contour->GetTextureHandle(frame);
+
+    stretchCap.x = Min(stretchCap.x * 0.5f, stretchCapVector.x);
+    stretchCap.y = Min(stretchCap.y * 0.5f, stretchCapVector.y);
+
+    bool needGenerateData = false;
+
+    TiledMultilayerData* tiledData = 0;
+    if (pTileData)
+    {
+        tiledData = *pTileData;
+        if (!tiledData)
+        {
+            tiledData = new TiledMultilayerData();
+            needGenerateData = true;
+            *pTileData = tiledData;
+        }
+        else
+        {
+            needGenerateData |= stretchCap != tiledData->stretchCap;
+            needGenerateData |= mask != tiledData->mask;
+            needGenerateData |= detail != tiledData->detail;
+            needGenerateData |= gradient != tiledData->gradient;
+            needGenerateData |= contour != tiledData->contour;
+            needGenerateData |= size != tiledData->size;
+        }
+    }
+    else
+    {
+        tiledData = new TiledMultilayerData();
+        needGenerateData = true;
+    }
+
+    TiledMultilayerData& td = *tiledData;
+
+    if (needGenerateData)
+    {
+        td.stretchCap = stretchCap;
+        td.size = size;
+        td.mask = mask;
+        td.detail = detail;
+        td.gradient = gradient;
+        td.contour = contour;
+
+        rhi::TextureSetDescriptor textureSetDescriptor;
+        rhi::SamplerState::Descriptor samplerStateSetDescriptor;
+        textureSetDescriptor.fragmentTextureCount = 4;
+        samplerStateSetDescriptor.fragmentSamplerCount = 4;
+        textureSetDescriptor.fragmentTexture[0] = mask->GetTexture(0)->handle;
+        samplerStateSetDescriptor.fragmentSampler[0] = mask->GetTexture(0)->samplerState;
+        textureSetDescriptor.fragmentTexture[1] = detail->GetTexture(0)->handle;
+        samplerStateSetDescriptor.fragmentSampler[1] = detail->GetTexture(0)->samplerState;
+        textureSetDescriptor.fragmentTexture[2] = gradient->GetTexture(0)->handle;
+        samplerStateSetDescriptor.fragmentSampler[2] = gradient->GetTexture(0)->samplerState;
+        textureSetDescriptor.fragmentTexture[3] = contour->GetTexture(0)->handle;
+        samplerStateSetDescriptor.fragmentSampler[3] = contour->GetTexture(0)->samplerState;
+
+        rhi::HTextureSet textureSet = rhi::AcquireTextureSet(textureSetDescriptor);
+        rhi::HSamplerState samplerState = rhi::AcquireSamplerState(samplerStateSetDescriptor);
+
+        rhi::ReleaseTextureSet(td.textureSet);
+        td.textureSet = textureSet;
+        rhi::ReleaseSamplerState(td.samplerState);
+        td.samplerState = samplerState;
+
+        td.GenerateTileData();
+    }
+
+    Matrix3 transformMatr;
+    gd.BuildTransformMatrix(transformMatr);
+
+    if (needGenerateData || td.transformMatr != transformMatr)
+    {
+        td.transformMatr = transformMatr;
+        td.GenerateTransformData();
+    }
+
+    spriteVertexCount = (int32)td.transformedVertices.size();
+    spriteIndexCount = (int32)td.indices.size();
+
+    BatchDescriptor batch;
+    batch.singleColor = Color::White; //IF U SEE THIS COMMENT IN REVIEW, THIS MEANS I'VE FORGOT OT THINK ABOUT ALL THIS COLOR STUFF
+    batch.material = state->GetMaterial();
+    batch.textureSetHandle = td.textureSet;
+    batch.samplerStateHandle = td.samplerState;
+    batch.texCoordCount = 4;
+    batch.vertexCount = static_cast<int32>(td.transformedVertices.size());
+    batch.indexCount = static_cast<int32>(td.indices.size());
+    batch.vertexStride = 2;
+    batch.texCoordStride = 2;
+    batch.vertexPointer = td.transformedVertices.data()->data;
+    batch.texCoordPointer[0] = td.texCoordsMask.data()->data;
+    batch.texCoordPointer[0] = td.texCoordsDetail.data()->data;
+    batch.texCoordPointer[0] = td.texCoordsGradient.data()->data;
+    batch.texCoordPointer[0] = td.texCoordsContour.data()->data;
+    batch.indexPointer = td.indices.data();
+    PushBatch(batch);
+
+    if (!pTileData)
     {
         SafeDelete(tiledData);
     }
@@ -1597,7 +1760,7 @@ void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMateria
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
     batch.vertexPointer = spriteTempVertices.data();
-    batch.texCoordPointer = texCoords;
+    batch.texCoordPointer[0] = texCoords;
     batch.indexPointer = indices;
     PushBatch(batch);
 }
@@ -1995,5 +2158,176 @@ void StretchDrawData::GenerateStretchData()
     }
     break;
     }
+}
+
+TiledMultilayerData::~TiledMultilayerData()
+{
+    rhi::ReleaseTextureSet(textureSet);
+    rhi::ReleaseSamplerState(samplerState);
+}
+
+Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisData(float32 inSize, float32 inTileSize, float32 inStratchCap,
+                                                                                  float32 gradientBase, float32 gradientDelta, float32 detailBase, float32 detailDelta,
+                                                                                  float32 contourBase, float32 contourStretchBase, float32 contourStretchDelta, float32 contourDelta,
+                                                                                  float32 maskBase, float32 maskStretchBase, float32 xMaskStretchDelta, float32 xMaskDelta)
+{
+    Vector<AxisData> result;
+
+    int32 tileCount = static_cast<int32>(ceilf(inSize / inTileSize));
+    int32 totalCount = tileCount * 2;
+    if (inStratchCap > 0.0f)
+        totalCount += 4;
+    result.resize(totalCount);
+
+    int32 vid = 0;
+    //position tile and gradient
+    for (int32 i = 0; i < tileCount; i++)
+    {
+        float32 posl = inTileSize * i;
+        float32 posr = inTileSize * (i + 1);
+        posr = Max(posr, inSize);
+
+        result[vid].pos = posl;
+        result[vid].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+        result[vid].texCoordsDetail = detailBase;
+        vid++;
+
+        if ((posl < inStratchCap) && (posr >= inStratchCap)) //insert stretch line
+        {
+            result[vid].pos = result[vid + 1].pos = inStratchCap;
+            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+            result[vid].texCoordsDetail = result[vid + 1].texCoordsDetail = detailBase + (result[vid].pos - posl) / inTileSize * detailDelta;
+            vid += 2;
+        }
+        if ((posl <= (inSize - inStratchCap)) && (posr > (inSize - inStratchCap))) //insert stretch line
+        {
+            result[vid].pos = result[vid + 1].pos = inSize - inStratchCap;
+            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+            result[vid].texCoordsDetail = result[vid + 1].texCoordsDetail = detailBase + (result[vid].pos - posl) / inTileSize * detailDelta;
+            vid += 2;
+        }
+
+        result[vid].pos = posr;
+        result[vid].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+        result[vid].texCoordsDetail = detailBase + (posr - posl) / inTileSize * detailDelta;
+        vid++;
+    }
+
+    for (int32 i = 0; i < totalCount; i++)
+    {
+        if (result[i].pos <= inStratchCap) //before stretch
+        {
+            result[i].texCoordsMask = maskBase + maskStretchBase * result[i].pos / inStratchCap;
+            result[i].texCoordsContour = contourBase + contourStretchBase * result[i].pos / inStratchCap;
+        }
+        else if (result[i].pos > (inSize - inStratchCap)) //after stretch
+        {
+            result[i].texCoordsMask = maskBase + xMaskDelta * result[i].pos / inSize;
+            result[i].texCoordsContour = contourBase + contourDelta * result[i].pos / inSize;
+        }
+        else //in between
+        {
+            result[i].texCoordsMask = maskStretchBase + xMaskStretchDelta * (result[i].pos - inStratchCap) / (inSize - 2 * inStratchCap);
+            result[i].texCoordsContour = contourStretchBase + contourStretchDelta * (result[i].pos - inStratchCap) / (inSize - 2 * inStratchCap);
+        }
+    }
+
+    return result;
+}
+
+TiledMultilayerData::SingleStretchData TiledMultilayerData::GenerateStretchData(Sprite* sprite)
+{
+    SingleStretchData res;
+    int32 resoureceSizeIndex = sprite->GetResourceSizeIndex();
+    const Vector2 sizeInTex(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT));
+    const Vector2 offsetInTex(sprite->GetRectOffsetValueForFrame(0, Sprite::X_OFFSET_TO_ACTIVE), sprite->GetRectOffsetValueForFrame(0, Sprite::Y_OFFSET_TO_ACTIVE));
+    const Vector2& spriteSize = sprite->GetSize();
+
+    const Vector2 xyLeftTopCap(offsetInTex - stretchCap);
+    const Vector2 xyRightBottomCap(spriteSize - sizeInTex - offsetInTex - stretchCap);
+
+    const Vector2 xyRealLeftTopCap(Max(0.0f, -xyLeftTopCap.x), Max(0.0f, -xyLeftTopCap.y));
+    const Vector2 xyRealRightBottomCap(Max(0.0f, -xyRightBottomCap.x), Max(0.0f, -xyRightBottomCap.y));
+
+    const Texture* texture = sprite->GetTexture(0);
+    const Vector2 textureSize(float32(texture->GetWidth()), float32(texture->GetHeight()));
+    Vector2 value(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT));
+
+    res.uvBase = Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x, sprite->GetRectOffsetValueForFrame(0, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
+    res.uvSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResource(value, resoureceSizeIndex) / textureSize;
+    res.uvCapMin = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResource(xyRealLeftTopCap, resoureceSizeIndex) / textureSize;
+    res.uvCapMax = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResource(xyRealRightBottomCap, resoureceSizeIndex) / textureSize;
+
+    return res;
+}
+
+void TiledMultilayerData::GenerateTileData()
+{
+    if ((size.x <= 0) || (size.y <= 0))
+        return;
+
+    //generate data
+    SingleStretchData contourStretchData = GenerateStretchData(contour);
+    SingleStretchData maskStretchData = GenerateStretchData(mask);
+    Vector2 tileSize = detail->GetSize();
+    Vector2 transformedStretchCap = stretchCap; //IF SEEN ON REVEIEW FORGOT TO
+    Vector<AxisData> xData = GenerateSingleAxisData(size.x, tileSize.x, transformedStretchCap.x,
+                                                    gradient->GetTextureCoordsForFrame(0)[0], gradient->GetTextureCoordsForFrame(0)[2], detail->GetTextureCoordsForFrame(0)[0], detail->GetTextureCoordsForFrame(0)[2],
+                                                    contourStretchData.uvBase.x, contourStretchData.uvCapMin.x, contourStretchData.uvCapMax.x - contourStretchData.uvCapMin.x, contourStretchData.uvSize.x,
+                                                    maskStretchData.uvBase.x, maskStretchData.uvCapMin.x, maskStretchData.uvCapMax.x - maskStretchData.uvCapMin.x, maskStretchData.uvSize.x);
+    Vector<AxisData> yData = GenerateSingleAxisData(size.y, tileSize.y, transformedStretchCap.y,
+                                                    gradient->GetTextureCoordsForFrame(0)[1], gradient->GetTextureCoordsForFrame(0)[5], detail->GetTextureCoordsForFrame(0)[1], detail->GetTextureCoordsForFrame(0)[5],
+                                                    contourStretchData.uvBase.y, contourStretchData.uvCapMin.y, contourStretchData.uvCapMax.y - contourStretchData.uvCapMin.y, contourStretchData.uvSize.y,
+                                                    maskStretchData.uvBase.y, maskStretchData.uvCapMin.y, maskStretchData.uvCapMax.y - maskStretchData.uvCapMin.y, maskStretchData.uvSize.y);
+
+    //fill geom
+    size_t xLinesCount = xData.size();
+    size_t yLinesCount = yData.size();
+
+    DVASSERT(((xLinesCount % 2) == 0) && ((yLinesCount % 2) == 0));
+
+    size_t verticesCount = xData.size() * yData.size();
+    vertices.resize(verticesCount);
+    transformedVertices.resize(verticesCount);
+    texCoordsMask.resize(verticesCount);
+    texCoordsDetail.resize(verticesCount);
+    texCoordsGradient.resize(verticesCount);
+    texCoordsContour.resize(verticesCount);
+    size_t vertexId = 0;
+    for (size_t y = 0, szy = yLinesCount; y < szy; ++y)
+    {
+        for (size_t x = 0, szx = xLinesCount; x < szx; ++x)
+        {
+            vertices[vertexId] = Vector2(xData[x].pos, yData[y].pos);
+            texCoordsMask[vertexId] = Vector2(xData[x].texCoordsMask, yData[y].texCoordsMask);
+            texCoordsDetail[vertexId] = Vector2(xData[x].texCoordsDetail, yData[y].texCoordsDetail);
+            texCoordsGradient[vertexId] = Vector2(xData[x].texCoordsGradient, yData[y].texCoordsGradient);
+            texCoordsContour[vertexId] = Vector2(xData[x].texCoordsContour, yData[y].texCoordsContour);
+            ++vertexId;
+        }
+    }
+    size_t indexCount = (xLinesCount / 2) * (yLinesCount / 2) * 6;
+    indices.resize(indexCount);
+    size_t indexId = 0;
+    for (size_t y = 0, szy = yLinesCount - 1; y < szy; ++y)
+    {
+        size_t baseV = y * 2 * xLinesCount;
+        size_t nextV = (y * 2 + 1) * xLinesCount;
+        for (size_t x = 0, szx = xLinesCount - 1; x < szx; ++x)
+        {
+            indices[indexId++] = baseV + x * 2;
+            indices[indexId++] = baseV + x * 2 + 1;
+            indices[indexId++] = nextV + x * 2;
+            indices[indexId++] = baseV + x * 2 + 1;
+            indices[indexId++] = nextV + x * 2 + 1;
+            indices[indexId++] = nextV + x * 2;
+        }
+    }
+}
+
+void TiledMultilayerData::GenerateTransformData()
+{
+    for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+        transformedVertices[i] = vertices[i] * transformMatr;
 }
 };
