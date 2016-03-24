@@ -27,36 +27,22 @@
  =====================================================================================*/
 
 
-#include <QApplication>
+#ifndef HELP_H
+#define HELP_H
+
+#include <QObject>
 #include <QString>
-#include <QQmlApplicationEngine>
-#include <QProcessEnvironment>
-#include <QMessageBox>
-#include <QtQuick>
-#include <QtQML>
-#include "configstorage.h"
-#include "processwrapper.h"
-#include "filesystemhelper.h"
-#include "help.h"
 
-int main(int argc, char* argv[])
+class Help : public QObject
 {
-    QApplication app(argc, argv);
-    app.setOrganizationName("DAVA");
-    app.setApplicationName("CMakeTool");
-    QQmlApplicationEngine engine;
-    auto rootContext = engine.rootContext();
-    qmlRegisterType<ProcessWrapper>("Cpp.Utils", 1, 0, "ProcessWrapper");
-    qmlRegisterType<FileSystemHelper>("Cpp.Utils", 1, 0, "FileSystemHelper");
-    qmlRegisterType<ConfigStorage>("Cpp.Utils", 1, 0, "ConfigStorage");
-    qmlRegisterType<Help>("Cpp.Utils", 1, 0, "Help");
+    Q_OBJECT
 
-    rootContext->setContextProperty("applicationDirPath", app.applicationDirPath());
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    if (engine.rootObjects().empty())
-    {
-        QMessageBox::critical(nullptr, QObject::tr("Failed to load QML file"), QObject::tr("QML file not loaded!"));
-        return 0;
-    }
-    return app.exec();
-}
+public:
+    explicit Help(QObject* parent = 0);
+    Q_INVOKABLE void Show() const;
+
+private:
+    QString helpPath;
+};
+
+#endif // HELP_H

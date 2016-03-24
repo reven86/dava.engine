@@ -27,36 +27,37 @@
  =====================================================================================*/
 
 
-#include <QApplication>
-#include <QString>
-#include <QQmlApplicationEngine>
-#include <QProcessEnvironment>
-#include <QMessageBox>
-#include <QtQuick>
-#include <QtQML>
-#include "configstorage.h"
-#include "processwrapper.h"
-#include "filesystemhelper.h"
 #include "help.h"
+#include <QFile>
+#include <QMessageBox>
+#include <QApplication>
+#include <QDir>
+#include <QProcess>
+#include <QUrl>
+#include <QDesktopServices>
+#include <QProcess>
 
-int main(int argc, char* argv[])
+Help::Help(QObject* parent)
+    : QObject(parent)
 {
-    QApplication app(argc, argv);
-    app.setOrganizationName("DAVA");
-    app.setApplicationName("CMakeTool");
-    QQmlApplicationEngine engine;
-    auto rootContext = engine.rootContext();
-    qmlRegisterType<ProcessWrapper>("Cpp.Utils", 1, 0, "ProcessWrapper");
-    qmlRegisterType<FileSystemHelper>("Cpp.Utils", 1, 0, "FileSystemHelper");
-    qmlRegisterType<ConfigStorage>("Cpp.Utils", 1, 0, "ConfigStorage");
-    qmlRegisterType<Help>("Cpp.Utils", 1, 0, "Help");
+    helpPath = qApp->applicationDirPath() +
+#ifdef Q_OS_WIN
+    "/Data/CMakeToolHelp.pdf";
+#elif defined Q_OS_MAC
+    "/../Resources/Data/CMakeToolHelp.pdf";
+#else
+    #ERROR "usupported platform";
+#endif //platform
+}
 
-    rootContext->setContextProperty("applicationDirPath", app.applicationDirPath());
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    if (engine.rootObjects().empty())
-    {
-        QMessageBox::critical(nullptr, QObject::tr("Failed to load QML file"), QObject::tr("QML file not loaded!"));
-        return 0;
-    }
-    return app.exec();
+void Help::Show() const
+{
+    QFileInfo fileInfo(helpPath);
+#ifdef Q_OS_WIN
+    QDesktopServices::openUrl(QUrl(fileInfo.absoluteFilePath()));
+#elif defined Q_OS_MAC
+    QProcess::startDetached("open", QStringList() << fileInfo.absoluteFilePath(), fileInfo.absolutePath());
+#else
+#ERROR "usupported platform";
+#endif //platform
 }
