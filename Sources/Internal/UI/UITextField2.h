@@ -37,9 +37,9 @@ struct StbTextStruct;
 
 namespace DAVA
 {
-class UITextField2;
 class UIStaticText;
-class UIScreenKeyboard;
+class UITextField2;
+class IUITextField2Impl;
 
 class UITextField2Delegate
 {
@@ -159,7 +159,7 @@ private:
     UITextField2Delegate* delegate = nullptr;
     UIStaticText* staticText = nullptr;
     StbTextStruct* stb_struct = nullptr;
-    UIScreenKeyboard* keyboardImpl = nullptr;
+    IUITextField2Impl* pImpl = nullptr;
 
     // Keyboard customization params
     UITextField::eAutoCapitalizationType autoCapitalizationType;
