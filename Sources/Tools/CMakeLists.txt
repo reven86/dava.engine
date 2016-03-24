@@ -14,7 +14,7 @@ add_definitions       (
 -D_LIB
 )
 
-include ( PlatformSettings )
+include ( CMake-common )
 
 include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
@@ -42,7 +42,11 @@ add_library                 ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 if( MACOS AND NOT ANDROID )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )
 elseif( WIN32 )
-    target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/IMagickHelper.lib )
+	if ( X64_MODE )
+    	target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/win64/IMagickHelper.lib )
+	else ()
+    	target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/win32/IMagickHelper.lib )
+	endif ()
 endif()
 
 foreach ( FILE ${DAVA_IMAGE_MAGICK_LIBRARIES_DEBUG} )

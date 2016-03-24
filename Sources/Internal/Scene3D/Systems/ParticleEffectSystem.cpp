@@ -144,7 +144,9 @@ void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
         for (auto layer : emitter.emitter->layers)
         {
             if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
+            {
                 GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
+            }
         }
     }
 }

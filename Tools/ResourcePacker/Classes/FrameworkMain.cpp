@@ -153,7 +153,7 @@ void ProcessRecourcePacker()
         resourcePacker.PackResources(exportForGPU);
     }
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
-    Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
+    Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", static_cast<float64>(elapsedTime) / 1000.0);
 }
 
 void FrameworkDidLaunched()

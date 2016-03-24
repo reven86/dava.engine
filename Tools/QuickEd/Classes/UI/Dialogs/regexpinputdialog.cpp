@@ -41,7 +41,7 @@ RegExpInputDialog::RegExpInputDialog(QWidget* parent, int flags)
 {
     if (flags != 0)
     {
-        setWindowFlags(windowFlags() & (Qt::WindowFlags)flags);
+        setWindowFlags(windowFlags() & static_cast<Qt::WindowFlags>(flags));
     }
 
     QVBoxLayout* l = new QVBoxLayout(this);
