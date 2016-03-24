@@ -65,7 +65,7 @@ private:
     struct addrinfo hints;
     Array<char, 6> portstring;
 
-    std::atomic<bool> isRequestInProcess = false;
+    std::atomic<bool> isRequestInProcess;
 };
 }
 }

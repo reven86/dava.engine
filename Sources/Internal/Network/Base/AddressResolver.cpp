@@ -39,6 +39,8 @@ namespace Net
 {
 AddressResolver::AddressResolver(IOLoop* _loop)
     : loop(_loop)
+    , isRequestInProcess(false)
+
 {
     DVASSERT(nullptr != loop);
 
