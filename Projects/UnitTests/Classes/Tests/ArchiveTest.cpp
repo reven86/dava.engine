@@ -44,7 +44,8 @@ DAVA_TESTCLASS (ArchiveTest)
 
         FilePath baseDir("~res:/");
 
-#ifndef __DAVAENGINE_IPHONE__
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+
         TEST_VERIFY(DavaArchive::Create("dava.pak", baseDir, infos, nullptr));
 
         {
