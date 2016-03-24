@@ -1437,8 +1437,8 @@ doCommandBySelector:(SEL)commandSelector
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl)
         {
             DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl);
-            davaCtrl->StartEdit();
         }
+        davaCtrl->StartEdit();
 
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
         if (delegate != nullptr)
@@ -1524,7 +1524,7 @@ doCommandBySelector:(SEL)commandSelector
         DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
         {
-            textField->OnKeyboardShown(DAVA::Rect());
+            textField->StartEdit();
         }
         else
             return NO;
@@ -1548,6 +1548,15 @@ doCommandBySelector:(SEL)commandSelector
     {
         // call client delegate
         DAVA::UITextField* textField = (*text).ctrl->davaText;
+
+        // if user paste text with gesture in native control
+        // we need make dava control in sync with focus
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
+        }
+        textField->StartEdit();
+
         DAVA::UITextFieldDelegate* delegate = textField->GetDelegate();
         if (delegate)
         {

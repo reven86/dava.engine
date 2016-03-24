@@ -336,17 +336,17 @@ void UITextField::StartEdit()
     if (!isEditing)
     {
         isEditing = true;
+        textFieldImpl->OpenKeyboard();
         OnStartEditing();
     }
-    textFieldImpl->OpenKeyboard();
 }
 
 void UITextField::StopEdit()
 {
-    textFieldImpl->CloseKeyboard();
     if (isEditing)
     {
         isEditing = false;
+        textFieldImpl->CloseKeyboard();
         OnStopEditing();
     }
 }
@@ -407,11 +407,7 @@ void UITextField::OnTouchOutsideFocus()
 
 void UITextField::ReleaseFocus() // TODO: rename method
 {
-    if (isEditing)
-    {
-        isEditing = false;
-        StopEdit();
-    }
+    StopEdit();
 }
 
 void UITextField::SetFont(Font* font)
