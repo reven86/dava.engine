@@ -45,18 +45,18 @@ inline int delete_chars(STB_TEXTEDIT_STRING* str, int pos, int num)
 }
 
 //    STB_TEXTEDIT_STRINGLEN(obj)       the length of the string (ideally O(1))
-inline unsigned long get_length(STB_TEXTEDIT_STRING* str)
+inline int get_length(STB_TEXTEDIT_STRING* str)
 {
-    return str->field->GetText().length();
+    return static_cast<int>(str->field->GetText().length());
 }
 
 //    STB_TEXTEDIT_GETWIDTH(obj,n,i)    returns the pixel delta from the xpos of the i'th character
 //                                        to the xpos of the i+1'th char for a line of characters
 //                                        starting at character #n (i.e. accounts for kerning
 //                                        with previous char)
-inline int get_width(STB_TEXTEDIT_STRING* str, int n, int i)
+inline float get_width(STB_TEXTEDIT_STRING* str, int n, int i)
 {
-    return 1;
+    return 1.f;
 }
 
 //    STB_TEXTEDIT_KEYTOTEXT(k)         maps a keyboard input to an insertable character
@@ -67,7 +67,7 @@ inline int key_to_text(int key)
 }
 
 //    STB_TEXTEDIT_GETCHAR(obj,i)       returns the i'th character of obj, 0-based
-inline int get_char(STB_TEXTEDIT_STRING* str, int i)
+inline STB_TEXTEDIT_CHARTYPE get_char(STB_TEXTEDIT_STRING* str, int i)
 {
     return str->field->GetText()[i];
 }
