@@ -48,12 +48,12 @@ public:
     void ClearPackedFrames();
     void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
 
-    Size2i GetFrameSize(int frame) const;
-    int GetFrameWidth(int frame) const;
-    int GetFrameHeight(int frame) const;
+    Size2i GetFrameSize(uint32 frame) const;
+    int GetFrameWidth(uint32 frame) const;
+    int GetFrameHeight(uint32 frame) const;
 
     FilePath filename;
-    int frameCount;
+    uint32 frameCount;
     int spriteWidth;
     int spriteHeight;
     Rect2i* frameRects;

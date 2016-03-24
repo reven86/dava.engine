@@ -42,7 +42,6 @@ class DocumentGroup;
 class Project;
 class PackageNode;
 class SpritesPacker;
-class QFileSystemWatcher;
 
 namespace DAVA
 {
@@ -60,22 +59,14 @@ public:
     void Start();
 
 private slots:
+
     void OnReloadSpritesStarted();
     void OnReloadSpritesFinished();
-    void OnFilesChanged(const QStringList& changedFiles);
-    void OnFilesRemoved(const QStringList& removedFiles);
 
-    void OnOpenPackageFile(const QString& path);
     void OnProjectPathChanged(const QString& path);
     void OnGLWidgedInitialized();
 
-    bool CloseAllDocuments();
-    bool CloseOneDocument(int index);
-    void SaveDocument(int index);
-    void SaveAllDocuments();
-
     void RecentMenu(QAction*);
-    void OnCurrentTabChanged(int index);
 
     void UpdateLanguage();
 
@@ -83,8 +74,6 @@ private slots:
     void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString& classesStr);
 
-    void OnApplicationStateChanged(Qt::ApplicationState state);
-    void OnFileChanged(const QString& path);
     bool CloseProject();
     void OnExit();
 
@@ -94,21 +83,13 @@ private:
     void OpenProject(const QString& path);
 
     int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
-    void SaveDocument(Document* document);
-
-    void CloseDocument(int index);
-    int GetIndexByPackagePath(const DAVA::FilePath& davaPath) const;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 
     Project* project = nullptr;
-    QList<Document*> documents;
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
-    DAVA::UIControl* rootControl = nullptr;
-    QFileSystemWatcher* fileSystemWatcher = nullptr;
-    QSet<QString> changedFiles;
 };
 
 inline EditorFontSystem* GetEditorFontSystem()
