@@ -1445,7 +1445,7 @@ void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationC
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     debugFlags = archive->GetUInt32("ro.debugflags", 0);
-    staticOcclusionIndex = (uint16)archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX);
+    staticOcclusionIndex = uint16(archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX));
 
     //VI: load only VISIBLE flag for now. May be extended in the future.
     uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::SERIALIZATION_CRITERIA);

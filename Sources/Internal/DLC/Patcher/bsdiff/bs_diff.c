@@ -32,6 +32,11 @@
 #include <limits.h>
 #include <string.h>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 static void split(int64_t* I, int64_t* V, int64_t start, int64_t len, int64_t h)
@@ -227,7 +232,7 @@ static int64_t writedata(struct bsdiff_stream* stream, const void* buffer, int64
 
     while (length > 0)
     {
-        const int smallsize = (int)MIN(length, INT_MAX);
+        const int smallsize = (const int)MIN(length, (size_t)INT_MAX);
         const int writeresult = stream->write(stream, buffer, smallsize);
         if (writeresult == -1)
         {
@@ -560,3 +565,8 @@ int main(int argc, char* argv[])
 #endif
 
 #endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+

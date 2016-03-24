@@ -550,7 +550,7 @@ void NMaterial::SetParent(NMaterial* _parent)
     }
 
     parent = _parent;
-    sortingKey = (uint32)((uint64)parent);
+    sortingKey = uint32(uint64(parent));
 
     if (parent)
     {
@@ -1155,13 +1155,13 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
             FastName propName = FastName(it->first);
             uint8 propType = *ptr;
             ptr += sizeof(uint8);
-            uint32 propSize = *(uint32*)ptr;
+            uint32 propSize = *(reinterpret_cast<const uint32*>(ptr));
             ptr += sizeof(uint32);
-            float32* data = (float32*)ptr;
+            const float32* data = reinterpret_cast<const float32*>(ptr);
 
             NMaterialProperty* newProp = new NMaterialProperty();
             newProp->name = propName;
-            newProp->type = (rhi::ShaderProp::Type)propType;
+            newProp->type = rhi::ShaderProp::Type(propType);
             newProp->arraySize = propSize;
             newProp->data.reset(new float32[ShaderDescriptor::CalculateDataSize(newProp->type, newProp->arraySize)]);
             newProp->SetPropertyValue(data);
@@ -1360,11 +1360,11 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
             const uint8* ptr = propVariant->AsByteArray();
 
             FastName propName = FastName(it->first);
-            uint32 propType = *(uint32*)ptr;
+            uint32 propType = *(reinterpret_cast<const uint32*>(ptr));
             ptr += sizeof(uint32);
-            uint8 propSize = *(uint8*)ptr;
+            uint8 propSize = *(reinterpret_cast<const uint8*>(ptr));
             ptr += sizeof(uint8);
-            float32* data = (float32*)ptr;
+            const float32* data = reinterpret_cast<const float32*>(ptr);
             for (uint32 i = 0; i < originalTypesCount; i++)
             {
                 if (propType == propertyTypeRemapping[i].originalType)
@@ -1383,9 +1383,9 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
                         {
                             float32 data4[4];
                             Memcpy(data4, data, 3 * sizeof(float32));
-                            data[3] = 1.f;
+                            data4[3] = 1.f;
 
-                            AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT4, 1);
+                            AddProperty(propName, data4, rhi::ShaderProp::TYPE_FLOAT4, 1);
                             continue;
                         }
                     }
@@ -1432,7 +1432,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 
     if (archive->IsKeyExists("illumination.lightmapSize"))
     {
-        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize", static_cast<int32>(DEFAULT_LIGHTMAP_SIZE));
+        float32 lighmapSize = float32(archive->GetInt32("illumination.lightmapSize", static_cast<int32>(DEFAULT_LIGHTMAP_SIZE)));
         if (HasLocalProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE))
             SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize);
         else

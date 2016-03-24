@@ -35,7 +35,7 @@
     #include "../Common/dbg_StatSet.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"
@@ -197,7 +197,7 @@ gles2_TextureFormatSupported(TextureFormat format)
 static void
 gles_check_GL_extensions()
 {
-    const char* ext = (const char*)glGetString(GL_EXTENSIONS);
+    const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
 
     if (!IsEmptyString(ext))
     {
@@ -236,7 +236,7 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
     }
 
-    const char* version = (const char*)glGetString(GL_VERSION);
+    const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
     {
         int majorVersion = 2, minorVersion = 0;
@@ -292,7 +292,7 @@ gles_check_GL_extensions()
         }
     }
 
-    const char* renderer = (const char*)glGetString(GL_RENDERER);
+    const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
         if (strstr(renderer, "Mali"))

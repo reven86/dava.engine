@@ -279,7 +279,7 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial* mat, KeyedArch
         String heightmapKeyName = NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str();
         if (props->IsKeyExists(heightmapKeyName))
         {
-            Texture* heightmap = (Texture*)props->GetUInt64(heightmapKeyName);
+            Texture* heightmap = reinterpret_cast<Texture*>(props->GetUInt64(heightmapKeyName));
             if (mat->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
                 mat->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
             else
@@ -334,8 +334,8 @@ void VegetationGeometry::GenerateClusterPositionData(const Vector<VegetationLaye
             uint32 matrixCellX = cellX / layerMaxClusters;
             uint32 matrixCellY = cellY / layerMaxClusters;
 
-            float32 randomX = unitSize.x * (float32)Random::Instance()->RandFloat();
-            float32 randomY = unitSize.y * (float32)Random::Instance()->RandFloat();
+            float32 randomX = unitSize.x * float32(Random::Instance()->RandFloat());
+            float32 randomY = unitSize.y * float32(Random::Instance()->RandFloat());
 
             clusters.push_back(ClusterPositionData());
             ClusterPositionData& cluster = clusters[clusters.size() - 1];
@@ -343,8 +343,8 @@ void VegetationGeometry::GenerateClusterPositionData(const Vector<VegetationLaye
             cluster.pos = Vector3((matrixCellX * unitSize.x) + randomX,
                                   (matrixCellY * unitSize.y) + randomY,
                                   0.0f);
-            cluster.rotation = layerParamsData.instanceRotationVariation * ((float32)Random::Instance()->RandFloat() - 0.5f);
-            cluster.scale = 1.0f - layerParamsData.instanceScaleVariation * (float32)Random::Instance()->RandFloat();
+            cluster.rotation = layerParamsData.instanceRotationVariation * (float32(Random::Instance()->RandFloat()) - 0.5f);
+            cluster.scale = 1.0f - layerParamsData.instanceScaleVariation * float32(Random::Instance()->RandFloat());
             cluster.densityId = densityId[clusterIndex];
             cluster.layerId = static_cast<uint32>(layerIndex);
 
@@ -467,8 +467,8 @@ void VegetationGeometry::GenerateVertexData(const Vector<CustomGeometryEntityDat
 
             //vertex.normal = transformedNormals[vertexIndex]; uncomment, when normals will be used for vertex lit implementation
 
-            vertex.texCoord1.x = (float32)clusterData.resolutionId;
-            vertex.texCoord1.y = (float32)clusterData.position.layerId;
+            vertex.texCoord1.x = float32(clusterData.resolutionId);
+            vertex.texCoord1.y = float32(clusterData.position.layerId);
             vertex.texCoord1.z = Max(0.0f, ((vertex.coord.z - clusterGeometry.pivot.z) / (clusterGeometry.bbox.max.z - clusterGeometry.pivot.z)));
 
             vertex.texCoord2.x = clusterData.position.pos.x + clusterGeometry.pivot.x;
@@ -551,7 +551,7 @@ void VegetationGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData
         {
             uint32 index = rangeData.vertexStartIndex + vertexIndexOffset + layerGeometry.sourceIndices[i];
 
-            sourceCellIndices.push_back((VegetationIndex)index);
+            sourceCellIndices.push_back(VegetationIndex(index));
         }
 
         vertexIndexOffset += static_cast<uint32>(layerGeometry.sourcePositions.size());

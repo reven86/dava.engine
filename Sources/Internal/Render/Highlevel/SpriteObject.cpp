@@ -133,25 +133,25 @@ void SpriteObject::UpdateBufferData(RenderBatch* batch)
 
         float32* pT = sprite->GetTextureVerts(i);
 
-        *((Vector3*)verticesPtr) = Vector3(x0, y0, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x0, y0, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 0));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 0));
         verticesPtr += 2;
-        *((Vector3*)verticesPtr) = Vector3(x1, y0, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x1, y0, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 2));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 2));
         verticesPtr += 2;
-        *((Vector3*)verticesPtr) = Vector3(x0, y1, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x0, y1, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 4));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 4));
         verticesPtr += 2;
-        *((Vector3*)verticesPtr) = Vector3(x1, y1, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x1, y1, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 6));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 6));
         verticesPtr += 2;
 
         *indicesPtr = i * 4 + 0;
@@ -350,7 +350,7 @@ void SpriteObject::BindDynamicParameters(Camera* camera)
     };
     }
 
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMatrix, (pointer_size)&worldMatrix);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMatrix, reinterpret_cast<pointer_size>(&worldMatrix));
 }
 
 void SpriteObject::Save(KeyedArchive* archive, SerializationContext* serializationContext)

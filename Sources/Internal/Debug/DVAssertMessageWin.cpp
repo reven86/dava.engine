@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Debug/DVAssertMessage.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

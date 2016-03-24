@@ -41,18 +41,17 @@ POP_QT_WARNING_SUPRESSOR
 #include "QtTools/SpyWidget/WidgetModel/WidgetListModel.h"
 #include "QtTools/SpyWidget/SpyWidgetInfo.h"
 
-
-SpySearch::SpySearch( QObject* parent )
-    : QObject( parent )
-    , view( new SpySearchView() )
-    , resultModel( new WidgetListModel(this) )
+SpySearch::SpySearch(QObject* parent)
+    : QObject(parent)
+    , view(new SpySearchView())
+    , resultModel(new WidgetListModel(this))
 {
-    view->setAttribute( Qt::WA_DeleteOnClose );
-    view->resultTree->setModel( resultModel );
+    view->setAttribute(Qt::WA_DeleteOnClose);
+    view->resultTree->setModel(resultModel);
 
-    connect( view.data(), &QObject::destroyed, this, &QObject::deleteLater );
-    connect( view.data(), &SpySearchView::triggered, this, &SpySearch::trigger );
-    connect( view->resultTree, &QAbstractItemView::doubleClicked, this, &SpySearch::onWidgetSelect );
+    connect(view.data(), &QObject::destroyed, this, &QObject::deleteLater);
+    connect(view.data(), &SpySearchView::triggered, this, &SpySearch::trigger);
+    connect(view->resultTree, &QAbstractItemView::doubleClicked, this, &SpySearch::onWidgetSelect);
 }
 
 SpySearch::~SpySearch()
@@ -70,45 +69,45 @@ void SpySearch::show()
     view->show();
 }
 
-void SpySearch::trigger( const QPoint& pos )
+void SpySearch::trigger(const QPoint& pos)
 {
     const bool isHidden = view->autoHide->isChecked();
-    if ( isHidden )
+    if (isHidden)
     {
-        view->setWindowOpacity( 0.0 );
+        view->setWindowOpacity(0.0);
         view->hide();
     }
 
-    auto widget = QApplication::widgetAt( pos );
+    auto widget = QApplication::widgetAt(pos);
 
-    if ( isHidden )
+    if (isHidden)
     {
         view->show();
-        view->setWindowOpacity( 1.0 );
+        view->setWindowOpacity(1.0);
     }
 
-    if ( isSelf( widget ) )
+    if (isSelf(widget))
         return;
 
-    resultModel->setWidgetList( QWidgetList() << widget );
+    resultModel->setWidgetList(QWidgetList() << widget);
 }
 
-void SpySearch::onWidgetSelect( const QModelIndex& index )
+void SpySearch::onWidgetSelect(const QModelIndex& index)
 {
-    auto w = resultModel->widgetFromIndex( index );
-    showWidgetInfo( w );
+    auto w = resultModel->widgetFromIndex(index);
+    showWidgetInfo(w);
 
-    if ( view->autoClose->isChecked() )
+    if (view->autoClose->isChecked())
         deleteLater();
 }
 
-bool SpySearch::isSelf( QWidget* w ) const
+bool SpySearch::isSelf(QWidget* w) const
 {
     auto p = w;
 
-    while ( p != nullptr )
+    while (p != nullptr)
     {
-        if ( p == view.data() )
+        if (p == view.data())
             return true;
 
         p = p->parentWidget();
@@ -117,9 +116,9 @@ bool SpySearch::isSelf( QWidget* w ) const
     return false;
 }
 
-void SpySearch::showWidgetInfo( QWidget* w ) const
+void SpySearch::showWidgetInfo(QWidget* w) const
 {
-    if ( w == nullptr )
+    if (w == nullptr)
         return;
 
     //auto root = new QWidget();
@@ -141,6 +140,6 @@ void SpySearch::showWidgetInfo( QWidget* w ) const
     //}
 
     auto info = new SpyWidgetInfo();
-    info->trackWidget( w );
+    info->trackWidget(w);
     info->show();
 }

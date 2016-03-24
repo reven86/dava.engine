@@ -96,16 +96,16 @@ public:
     VegetationRenderObject();
     virtual ~VegetationRenderObject();
 
-    RenderObject* Clone(RenderObject* newObject);
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+    RenderObject* Clone(RenderObject* newObject) override;
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    virtual void PrepareToRender(Camera* camera);
-    virtual void RecalcBoundingBox();
+    void PrepareToRender(Camera* camera) override;
+    void RecalcBoundingBox() override;
 
     void CollectMetrics(VegetationMetrics& metrics);
     void DebugDrawVisibleNodes(RenderHelper* drawer);
-    virtual void GetDataNodes(Set<DataNode*>& dataNodes);
+    void GetDataNodes(Set<DataNode*>& dataNodes) override;
 
     inline void SetHeightmap(Heightmap* _heightmap);
     inline Heightmap* GetHeightmap() const;
@@ -315,13 +315,12 @@ inline uint32 VegetationRenderObject::MapToResolution(float32 squareDistance)
 {
     uint32 resolutionId = 0;
 
-    size_t rangesCount = resolutionRanges.size();
-    for (size_t i = 0; i < rangesCount; ++i)
+    for (size_t i = 0, rangesCount = resolutionRanges.size(); i < rangesCount; ++i)
     {
         if (squareDistance > resolutionRanges[i].x &&
             squareDistance <= resolutionRanges[i].y)
         {
-            resolutionId = (uint32)i;
+            resolutionId = static_cast<uint32>(i);
             break;
         }
     }
@@ -419,7 +418,8 @@ inline void VegetationRenderObject::SetLightmapAndGenerateDensityMap(const FileP
 
 inline void VegetationRenderObject::SetClusterLimit(const uint32& maxClusters)
 {
-    Vector4 tmpVec((float32)maxClusters, (float32)maxClusters, (float32)maxClusters, (float32)maxClusters);
+    float32 maxClustersf = float32(maxClusters);
+    Vector4 tmpVec(maxClustersf, maxClustersf, maxClustersf, maxClustersf);
     SetLayerClusterLimit(tmpVec);
 }
 
@@ -564,7 +564,7 @@ inline void VegetationRenderObject::SetLayerClusterLimit(const Vector4& maxClust
     size_t layerCount = layerParams.size();
     for (size_t i = 0; i < layerCount; ++i)
     {
-        layerParams[i].maxClusterCount = Clamp((uint32)Abs(maxClusters.data[i]), (uint32)1, (uint32)0x00000FFF);
+        layerParams[i].maxClusterCount = Clamp(uint32(Abs(maxClusters.data[i])), 1U, uint32(0x00000FFF));
     }
 
     UpdateVegetationSetup();
@@ -572,10 +572,10 @@ inline void VegetationRenderObject::SetLayerClusterLimit(const Vector4& maxClust
 
 inline Vector4 VegetationRenderObject::GetLayerClusterLimit() const
 {
-    return Vector4((float32)layerParams[0].maxClusterCount,
-                   (float32)layerParams[1].maxClusterCount,
-                   (float32)layerParams[2].maxClusterCount,
-                   (float32)layerParams[3].maxClusterCount);
+    return Vector4(float32(layerParams[0].maxClusterCount),
+                   float32(layerParams[1].maxClusterCount),
+                   float32(layerParams[2].maxClusterCount),
+                   float32(layerParams[3].maxClusterCount));
 }
 
 inline void VegetationRenderObject::SetScaleVariation(const Vector4& scaleVariation)

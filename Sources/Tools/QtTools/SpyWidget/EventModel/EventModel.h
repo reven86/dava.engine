@@ -38,7 +38,7 @@ PUSH_QT_WARNING_SUPRESSOR
 POP_QT_WARNING_SUPRESSOR
 
 class EventModel
-    : public QStandardItemModel
+: public QStandardItemModel
 {
     Q_OBJECT
 
@@ -49,17 +49,15 @@ public:
     };
 
 public:
-    explicit EventModel( QObject *parent = nullptr );
+    explicit EventModel(QObject* parent = nullptr);
     ~EventModel() = default;
 
 private:
-
 private:
-    static void build( QStandardItemModel& model );
+    static void build(QStandardItemModel& model);
 };
 
-
-Q_DECLARE_METATYPE( EventModel::Roles );
+Q_DECLARE_METATYPE(EventModel::Roles);
 
 
 #endif // QTTOOLS_EVENTMODEL_H

@@ -35,7 +35,7 @@
     #include "../Common/dbg_StatSet.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
     #include "Core/Core.h"
     #include "Debug/Profiler.h"
@@ -2283,8 +2283,11 @@ void DiscardAll()
                         cb->context->FinishCommandList(FALSE, &(cb->commandList));
                     }
 
-                    cb->contextAnnotation->Release();
-                    cb->contextAnnotation = nullptr;
+                    if (nullptr != cb->contextAnnotation)
+                    {
+                        cb->contextAnnotation->Release();
+                        cb->contextAnnotation = nullptr;
+                    }
 
                     cb->context->Release();
                     cb->context = nullptr;
