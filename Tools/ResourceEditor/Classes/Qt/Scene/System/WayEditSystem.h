@@ -107,7 +107,7 @@ private:
     SceneSelectionSystem* selectionSystem = nullptr;
     SceneCollisionSystem* collisionSystem = nullptr;
     DAVA::Vector<DAVA::Entity*> waypointEntities;
-    DAVA::Map<DAVA::Entity*, DAVA::Vector<DAVA::Entity*>> mapStartPoints; // mapping [path parent -> path start point]
+    DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
     DAVA::Entity* underCursorPathEntity = nullptr;
     DAVA::Entity* startPointForRemove = nullptr;
     bool inCloneState = false;
