@@ -722,6 +722,8 @@ void PreviewWidget::NotifySelectionChanged()
     {
         emit SelectionChanged(tmpSelected, tmpDeselected);
     }
+    tmpSelected.clear();
+    tmpDeselected.clear();
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
