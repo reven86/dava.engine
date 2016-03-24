@@ -31,6 +31,8 @@
 #include <FileSystem/ZipArchive.h>
 #include <FileSystem/FileSystem.h>
 
+#include <cstring>
+
 using namespace DAVA;
 
 DAVA_TESTCLASS (ArchiveTest)
@@ -93,34 +95,36 @@ DAVA_TESTCLASS (ArchiveTest)
     {
         try
         {
+            Logger::Error("phase 0");
             ZipArchive archive("~res:/TestData/ArchiveTest/archive.zip");
-
+            Logger::Error("phase 1");
             {
                 const char* filename = "Utf8Test/utf16le.txt";
 
                 TEST_VERIFY(archive.HasFile(filename));
-
+                Logger::Error("phase 2");
                 const ResourceArchive::FileInfo* archiveInfo = archive.GetFileInfo(filename);
                 TEST_VERIFY(archiveInfo->compressionType == Compressor::Type::RFC1951);
-
+                Logger::Error("phase 3");
                 Vector<uint8> fileFromArchive;
                 TEST_VERIFY(archive.LoadFile(filename, fileFromArchive));
-
+                Logger::Error("phase 4");
                 FilePath filePath("~res:/TestData/Utf8Test/utf16le.txt");
 
                 ScopedPtr<File> file(File::Create(filePath, File::OPEN | File::READ));
-
+                Logger::Error("phase 5");
                 uint32 fileSize = file->GetSize();
 
                 Vector<uint8> fileFromHDD(fileSize, 0);
-
+                Logger::Error("phase 6");
                 file->Read(fileFromHDD.data(), fileSize);
-
+                Logger::Error("phase 7");
                 //too slow on iOS bool isEqual = std::equal(begin(fileFromHDD), end(fileFromHDD), begin(fileFromArchive));
 
                 int32 compare = std::memcmp(fileFromHDD.data(), fileFromArchive.data(), fileSize);
                 TEST_VERIFY(compare == 0);
                 //TEST_VERIFY(isEqual);
+                Logger::Error("phase 8");
             }
         }
         catch (std::exception& ex)
