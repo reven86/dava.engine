@@ -87,7 +87,7 @@ public:
         {
         public:
             Iterator(SelectableGroup::CollectionType&);
-            Iterator(SelectableGroup::CollectionType&, DAVA::uint32);
+            Iterator(SelectableGroup::CollectionType&, DAVA::size_type);
             void SetIndex(DAVA::uint32);
 
             Iterator& operator++();
@@ -96,8 +96,8 @@ public:
             T* operator*();
 
         private:
-            DAVA::uint32 index = 0;
-            DAVA::uint32 endIndex = 0;
+            DAVA::size_type index = 0;
+            DAVA::size_type endIndex = 0;
             SelectableGroup::CollectionType& collection;
         };
 
@@ -122,7 +122,7 @@ public:
         {
         public:
             Iterator(const SelectableGroup::CollectionType&);
-            Iterator(const SelectableGroup::CollectionType&, DAVA::uint32);
+            Iterator(const SelectableGroup::CollectionType&, DAVA::size_type);
             void SetIndex(DAVA::uint32);
 
             Iterator& operator++();
@@ -130,8 +130,8 @@ public:
             T* operator*() const;
 
         private:
-            DAVA::uint32 index = 0;
-            DAVA::uint32 endIndex = 0;
+            DAVA::size_type index = 0;
+            DAVA::size_type endIndex = 0;
             const SelectableGroup::CollectionType& collection;
         };
 
@@ -252,7 +252,7 @@ inline typename SelectableGroup::Enumerator<T>::Iterator& SelectableGroup::Enume
 template <typename T>
 inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::CollectionType& c)
     : collection(c)
-    , endIndex(static_cast<DAVA::uint32>(c.size()))
+    , endIndex(c.size())
 {
     while ((index < endIndex) && (collection[index].template CanBeCastedTo<T>() == false))
     {
@@ -261,10 +261,10 @@ inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::Colle
 }
 
 template <typename T>
-inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::CollectionType& c, DAVA::uint32 end)
+inline SelectableGroup::Enumerator<T>::Iterator::Iterator(SelectableGroup::CollectionType& c, DAVA::size_type end)
     : collection(c)
     , index(end)
-    , endIndex(static_cast<DAVA::uint32>(c.size()))
+    , endIndex(c.size())
 {
 }
 
@@ -326,7 +326,7 @@ inline const typename SelectableGroup::ConstEnumerator<T>::Iterator& SelectableG
 template <typename T>
 inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableGroup::CollectionType& c)
     : collection(c)
-    , endIndex(static_cast<DAVA::uint32>(c.size()))
+    , endIndex(c.size())
 {
     while ((index < endIndex) && (collection[index].template CanBeCastedTo<T>() == false))
     {
@@ -335,10 +335,10 @@ inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableG
 }
 
 template <typename T>
-inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableGroup::CollectionType& c, DAVA::uint32 end)
+inline SelectableGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableGroup::CollectionType& c, DAVA::size_type end)
     : collection(c)
     , index(end)
-    , endIndex(static_cast<DAVA::uint32>(c.size()))
+    , endIndex(c.size())
 {
 }
 

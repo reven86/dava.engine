@@ -334,13 +334,12 @@ CommandUpdateParticleLayerLods::CommandUpdateParticleLayerLods(ParticleLayer* la
 
 void CommandUpdateParticleLayerLods::Redo()
 {
-    if (this->layer)
+    if (layer == nullptr)
+        return;
+
+    for (DAVA::size_type i = 0; i < lods.size(); i++)
     {
-        for (size_t i = 0; i < lods.size(); i++)
-        {
-            this->layer->SetLodActive(i, lods[i]);
-        }
-        //ParticlesEditorController::Instance()->RefreshSelectedNode(true); //looks like depricated
+        layer->SetLodActive(static_cast<DAVA::int32>(i), lods[i]);
     }
 }
 
@@ -377,7 +376,7 @@ void CommandAddParticleEmitter::Redo()
 
     ParticleEffectComponent* effectComponent = GetEffectComponent(effectEntity);
     DVASSERT(effectComponent);
-    effectComponent->AddEmitterInstance(new ParticleEmitter());
+    effectComponent->AddEmitterInstance(ScopedPtr<ParticleEmitter>(new ParticleEmitter()));
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart)
@@ -389,10 +388,8 @@ CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* eff
 
 void CommandStartStopParticleEffect::Redo()
 {
-    if (!effectEntity)
-    {
+    if (effectEntity == nullptr)
         return;
-    }
 
     ParticleEffectComponent* effectComponent = cast_if_equal<ParticleEffectComponent*>(effectEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
     DVASSERT(effectComponent);
@@ -555,7 +552,7 @@ void CommandLoadParticleEmitterFromYaml::Redo()
     if ((instance == nullptr) || (selectedEffect == nullptr))
         return;
 
-    auto emitterIndex = selectedEffect->GetEmitterInstanceIndex(instance.Get());
+    auto emitterIndex = selectedEffect->GetEmitterInstanceIndex(instance);
     if (emitterIndex == -1)
         return;
 
@@ -583,7 +580,7 @@ void CommandSaveParticleEmitterToYaml::Redo()
     if ((instance == nullptr) || (selectedEffect == nullptr))
         return;
 
-    if (selectedEffect->GetEmitterInstanceIndex(instance.Get()) != -1)
+    if (selectedEffect->GetEmitterInstanceIndex(instance) != -1)
     {
         instance->GetEmitter()->SaveToYaml(filePath);
     }

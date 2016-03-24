@@ -154,7 +154,7 @@ void PaintHeightDeltaAction::PrepareDeltaImage(DAVA::Image* heightmapImage,
     DVASSERT(widthPixelRatio > 0.0f);
     DVASSERT(heightPixelRatio > 0.0f);
 
-    DAVA::int32 colorCount = colors.size();
+    DAVA::int32 colorCount = static_cast<int32>(colors.size());
 
     DVASSERT(colorCount >= 2);
 

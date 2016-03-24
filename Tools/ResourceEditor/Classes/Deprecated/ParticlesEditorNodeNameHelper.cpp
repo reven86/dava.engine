@@ -38,7 +38,7 @@ String ParticlesEditorNodeNameHelper::GetBaseName(const String& name)
     String numberName;
     // Get numbers string at the end of entity name
     const char* cName = baseName.c_str();
-    for (int i = baseName.length() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(baseName.length()) - 1; i >= 0; --i)
     {
         char a = cName[i];
         if (a >= '0' && a <= '9')

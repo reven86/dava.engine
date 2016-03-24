@@ -414,12 +414,12 @@ public:
 
     ParticleEmitterInstance* GetEmitterInstance() const
     {
-        return instance.Get();
+        return instance;
     };
 
 protected:
     ParticleEffectComponent* selectedEffect = nullptr;
-    RefPtr<ParticleEmitterInstance> instance;
+    ParticleEmitterInstance* instance = nullptr;
     FilePath filePath;
 };
 
@@ -431,12 +431,12 @@ public:
 
     ParticleEmitterInstance* GetEmitterInstance() const
     {
-        return instance.Get();
+        return instance;
     };
 
 protected:
     ParticleEffectComponent* selectedEffect = nullptr;
-    RefPtr<ParticleEmitterInstance> instance;
+    ParticleEmitterInstance* instance = nullptr;
     FilePath filePath;
 };
 

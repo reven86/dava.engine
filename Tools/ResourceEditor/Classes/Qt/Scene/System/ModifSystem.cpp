@@ -965,7 +965,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
 
                 // also modify childs transform to make them be at
                 // right position after parent entity changed
-                for (size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
+                for (DAVA::int32 i = 0; i < en->GetChildrenCount(); ++i)
                 {
                     DAVA::Entity* childEntity = en->GetChild(i);
 
@@ -1025,7 +1025,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
                 // if renderObjects has same number of render batches we also should
                 // check if polygon groups used inside that render batches are completely identical
                 // but we should deal with the fact, that polygon groups order can differ
-                for (size_t j = 0; j < enRenderObject->GetRenderBatchCount(); ++j)
+                for (DAVA::uint32 j = 0; j < enRenderObject->GetRenderBatchCount(); ++j)
                 {
                     bool found = false;
                     DAVA::PolygonGroup* pg = enRenderObject->GetRenderBatch(j)->GetPolygonGroup();

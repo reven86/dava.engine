@@ -151,6 +151,18 @@ public:
         return _ptr == 0;
     }
 
+    template <typename... Arg>
+    void ConstructInplace(Arg&&... arg)
+    {
+        Set(new T(std::forward<Arg>(arg)...));
+    }
+
+    template <typename... Arg>
+    static RefPtr<T> Construct(Arg&&... arg)
+    {
+        return RefPtr<T>(new T(std::forward<Arg>(arg)...));
+    }
+
 private:
     class Tester
     {
