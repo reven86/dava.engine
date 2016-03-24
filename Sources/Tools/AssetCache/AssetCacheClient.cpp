@@ -253,7 +253,6 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
     }
 }
 
-
 void AssetCacheClient::ProcessNetwork()
 {
     isJobStarted = true;

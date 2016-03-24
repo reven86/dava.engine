@@ -49,7 +49,7 @@ class SpritesPacker : public QObject
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
 
 public:
-    SpritesPacker(QObject *parent = nullptr);
+    SpritesPacker(QObject* parent = nullptr);
 
     void SetCacheClient(DAVA::AssetCacheClient* cacheClient, const DAVA::String& comment);
 

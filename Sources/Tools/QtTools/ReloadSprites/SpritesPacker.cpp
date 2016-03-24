@@ -44,7 +44,7 @@ SpritesPacker::SpritesPacker(QObject* parent)
 {
 }
 
-void SpritesPacker::AddTask(const QDir &inputDir, const QDir &outputDir)
+void SpritesPacker::AddTask(const QDir& inputDir, const QDir& outputDir)
 {
     tasks.push_back(qMakePair(inputDir, outputDir));
 }
@@ -119,4 +119,3 @@ void SpritesPacker::SetCacheClient(AssetCacheClient* cacheClient, const String& 
 {
     resourcePacker2D.SetCacheClient(cacheClient, comment);
 }
-

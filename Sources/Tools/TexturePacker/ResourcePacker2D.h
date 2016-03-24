@@ -110,7 +110,6 @@ private:
     std::atomic<bool> running;
 };
 
-
 inline bool ResourcePacker2D::IsRunning() const
 {
     return running;

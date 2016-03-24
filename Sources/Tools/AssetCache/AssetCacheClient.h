@@ -40,8 +40,12 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
     {
         Request() = default;
         Request(const AssetCache::CacheItemKey& key_, const FilePath& outputFolder_, AssetCache::ePacketID requestID_)
-            : key(key_), outputFolder(outputFolder_), requestID(requestID_)
-            , result(AssetCache::Error::CODE_NOT_INITIALIZED), recieved(false), processingRequest(false)
+            : key(key_)
+            , outputFolder(outputFolder_)
+            , requestID(requestID_)
+            , result(AssetCache::Error::CODE_NOT_INITIALIZED)
+            , recieved(false)
+            , processingRequest(false)
         {
         }
 

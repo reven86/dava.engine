@@ -52,7 +52,7 @@ enum ePacketID : uint8
     PACKET_COUNT
 };
 
-enum class Error: int32
+enum class Error : int32
 {
     NO_ERRORS = 0,
     CODE_NOT_INITIALIZED,

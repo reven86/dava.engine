@@ -54,7 +54,6 @@ namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.1";
 
-
 String ResourcePacker2D::GetProcessFolderName()
 {
     return "$process/";
@@ -640,7 +639,6 @@ void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const Stri
 
     cacheItemDescription.comment = comment;
 }
-
 
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
 {

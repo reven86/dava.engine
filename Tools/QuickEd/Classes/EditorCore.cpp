@@ -70,7 +70,7 @@ EditorCore::EditorCore(QObject* parent)
 
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
-    
+
     connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
@@ -137,7 +137,6 @@ void EditorCore::Start()
 {
     mainWindow->show();
 }
-
 
 void EditorCore::OnReloadSpritesStarted()
 {

@@ -95,8 +95,8 @@ TexturePacker::TexturePacker()
     maxTextureSize = DEFAULT_TEXTURE_SIZE;
     onlySquareTextures = false;
     errors.clear();
-	useTwoSideMargin = false;
-	texturesMargin = 1;
+    useTwoSideMargin = false;
+    texturesMargin = 1;
 }
 
 DAVA::int32 TexturePacker::TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem>& tempSortVector, bool fullPackOnly)
@@ -390,7 +390,7 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
     }
 
     fclose(fp);
-	return true;
+    return true;
 }
 
 void TexturePacker::SetUseOnlySquareTextures()

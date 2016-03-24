@@ -115,7 +115,7 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
     ConnectCacheClient();
     spritesPacker->ReloadSprites(clearDirs, forceRepack, gpu, quality);
 
-    AssetCacheClient *disconnectingClient = cacheClient;
+    AssetCacheClient* disconnectingClient = cacheClient;
     cacheClient = nullptr;
     JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClient, this, disconnectingClient));
 
@@ -186,7 +186,7 @@ void SpritesPackerModule::ConnectCacheClient()
         DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
         if (connected != DAVA::AssetCache::Error::NO_ERRORS)
         {
-            AssetCacheClient *disconnectingClient = cacheClient;
+            AssetCacheClient* disconnectingClient = cacheClient;
             cacheClient = nullptr;
             JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClient, this, disconnectingClient));
         }

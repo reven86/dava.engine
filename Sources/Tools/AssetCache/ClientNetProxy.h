@@ -59,7 +59,6 @@ public:
     ClientNetProxy();
     ~ClientNetProxy();
 
-
     void AddListener(ClientNetProxyListener*);
     void RemoveListener(ClientNetProxyListener*);
 
