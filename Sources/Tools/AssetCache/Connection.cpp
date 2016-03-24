@@ -67,13 +67,10 @@ Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, 
 
 Connection::~Connection()
 {
+    listener = nullptr;
     if (Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance() != nullptr)
     {
         DisconnectBlocked();
-    }
-    else
-    {
-        listener = nullptr;
     }
 }
 

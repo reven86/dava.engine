@@ -39,13 +39,10 @@ namespace Net
 {
 AddressResolver::AddressResolver(IOLoop* _loop)
     : loop(_loop)
-    , isRequestInProcess(false)
-
 {
     DVASSERT(nullptr != loop);
 
-    handle = new uv_getaddrinfo_t;
-    handle->data = this;
+    handle.data = this;
 
     hints.ai_family = PF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -57,20 +54,18 @@ AddressResolver::~AddressResolver()
 {
     Cancel();
 
-    handle->data = nullptr;
-    SafeDelete(handle);
+    handle.data = nullptr;
 }
 
 bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(loop != nullptr);
-    DVASSERT(handle != nullptr);
 
     Snprintf(portstring.data(), portstring.size(), "%hu", port);
 
     isRequestInProcess = true;
-    int32 res = uv_getaddrinfo(loop->Handle(), handle, &AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
+    int32 res = uv_getaddrinfo(loop->Handle(), &handle, &AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
     if (0 == res)
     {
         resolverCallbackFn = cbk;
@@ -94,7 +89,7 @@ void AddressResolver::Cancel()
     if (isRequestInProcess)
     {
         isRequestInProcess = false;
-        uv_cancel(reinterpret_cast<uv_req_t*>(handle));
+        uv_cancel(reinterpret_cast<uv_req_t*>(&handle));
     }
 #endif
 }
@@ -106,8 +101,6 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     if (nullptr != resolver)
     {
         resolver->isRequestInProcess = false;
-        DVASSERT(resolver->handle == handle);
-
         resolver->GotAddrInfo(status, response);
     }
 

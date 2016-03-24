@@ -73,7 +73,8 @@ private:
     void ReloadObjects();
 
     void ConnectCacheClient();
-    void DisconnectCacheClient(DAVA::AssetCacheClient* cacheClient);
+    void DisconnectCacheClient();
+    void DisconnectCacheClientInternal(DAVA::AssetCacheClient* cacheClient);
 
     void ProcessSilentPacking(bool clearDirs, bool forceRepack, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
 

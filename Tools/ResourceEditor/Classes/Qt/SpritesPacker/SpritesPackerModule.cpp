@@ -52,8 +52,7 @@ SpritesPackerModule::~SpritesPackerModule()
 {
     if (cacheClient != nullptr)
     {
-        DisconnectCacheClient(cacheClient);
-        cacheClient = nullptr;
+        DisconnectCacheClient();
     }
 }
 
@@ -85,8 +84,7 @@ void SpritesPackerModule::RepackWithDialog()
 
     ShowPackerDialog();
 
-    DisconnectCacheClient(cacheClient);
-    cacheClient = nullptr;
+    DisconnectCacheClient();
 
     ReloadObjects();
 }
@@ -114,10 +112,7 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
 {
     ConnectCacheClient();
     spritesPacker->ReloadSprites(clearDirs, forceRepack, gpu, quality);
-
-    AssetCacheClient* disconnectingClient = cacheClient;
-    cacheClient = nullptr;
-    JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClient, this, disconnectingClient));
+    DisconnectCacheClient();
 
     JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::CloseWaitDialog));
     JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::ReloadObjects));
@@ -186,20 +181,29 @@ void SpritesPackerModule::ConnectCacheClient()
         DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
         if (connected != DAVA::AssetCache::Error::NO_ERRORS)
         {
-            AssetCacheClient* disconnectingClient = cacheClient;
-            cacheClient = nullptr;
-            JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClient, this, disconnectingClient));
+            DisconnectCacheClient();
         }
     }
 
     spritesPacker->SetCacheClient(cacheClient, "ResourceEditor.ReloadParticles");
 }
 
-void SpritesPackerModule::DisconnectCacheClient(DAVA::AssetCacheClient* cacheClientForDisconnect)
+void SpritesPackerModule::DisconnectCacheClient()
 {
-    if (cacheClientForDisconnect != nullptr)
+    if (cacheClient != nullptr)
     {
-        cacheClientForDisconnect->Disconnect();
-        SafeDelete(cacheClientForDisconnect);
+        AssetCacheClient* disconnectingClient = cacheClient;
+        cacheClient = nullptr;
+
+        //we should destroy cache client on main thread
+        JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClientInternal, this, disconnectingClient));
     }
+}
+
+void SpritesPackerModule::DisconnectCacheClientInternal(DAVA::AssetCacheClient* cacheClientForDisconnect)
+{
+    DVASSERT(cacheClientForDisconnect != nullptr);
+
+    cacheClientForDisconnect->Disconnect();
+    SafeDelete(cacheClientForDisconnect);
 }
