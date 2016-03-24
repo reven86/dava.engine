@@ -78,9 +78,16 @@ Landscape::Landscape()
 
     heightmap = new Heightmap();
 
-    maxHeightError = 0.02f;
-    maxPatchRadiusError = 0.8f;
-    maxAbsoluteHeightError = 3.f;
+    normalFov = 70.f;
+    zoomFov = 6.5f;
+
+    normalMaxHeightError = 0.02f;
+    normalMaxPatchRadiusError = 0.8f;
+    normalMaxAbsoluteHeightError = 3.f;
+
+    zoomMaxHeightError = 0.04f;
+    zoomMaxPatchRadiusError = 0.8f;
+    zoomMaxAbsoluteHeightError = 3.f;
 
     useInstancing = rhi::DeviceCaps().isInstancingSupported;
     useLodMorphing = useInstancing;
@@ -295,8 +302,7 @@ void Landscape::PrepareMaterial(NMaterial* material)
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, bool useMorphing)
 {
-    Vector<Image*> textureData;
-    CreateHeightTextureData(heightmap, textureData, useMorphing);
+    Vector<Image*> textureData = CreateHeightTextureData(heightmap, useMorphing);
 
     Texture* tx = Texture::CreateFromData(textureData);
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
@@ -308,12 +314,12 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, bool useMorphing)
     return tx;
 }
 
-void Landscape::CreateHeightTextureData(Heightmap* heightmap, Vector<Image*>& dataOut, bool useMorphing)
+Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, bool useMorphing)
 {
     const uint32 hmSize = heightmap->Size();
     DVASSERT(IsPowerOf2(heightmap->Size()));
 
-    dataOut.clear();
+    Vector<Image*> dataOut;
     if (useMorphing)
     {
         dataOut.reserve(HighestBitIndex(hmSize));
@@ -373,6 +379,8 @@ void Landscape::CreateHeightTextureData(Heightmap* heightmap, Vector<Image*>& da
         Image* heightImage = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
         dataOut.push_back(heightImage);
     }
+
+    return dataOut;
 }
 
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
@@ -590,7 +598,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 patchDistance = Distance(cameraPos, patchOrigin);
     float32 rError = patch->radius / (patchDistance * tanFovY);
 
-    if ((level < subdivLevelCount - 1) && ((minSubdivLevelSize > levelInfo.size) || (maxHeightError <= hError) || (maxPatchRadiusError <= rError) || (maxAbsoluteHeightError < Abs(patch->maxError))))
+    if ((level < subdivLevelCount - 1) && ((maxPatchRadiusError <= rError) || (maxHeightError <= hError) || (maxAbsoluteHeightError < Abs(patch->maxError)) || (minSubdivLevelSize > levelInfo.size)))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdivLevel = level;
@@ -1275,6 +1283,11 @@ void Landscape::PrepareToRender(Camera* camera)
         frustum = camera->GetFrustum();
         cameraPos = camera->GetPosition();
 
+        float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) / (normalFov - zoomFov), 0.f, 1.f);
+        maxHeightError = zoomMaxHeightError + (normalMaxHeightError - zoomMaxHeightError) * fovLerp;
+        maxPatchRadiusError = zoomMaxPatchRadiusError + (normalMaxPatchRadiusError - zoomMaxPatchRadiusError) * fovLerp;
+        maxAbsoluteHeightError = zoomMaxAbsoluteHeightError + (normalMaxAbsoluteHeightError - zoomMaxAbsoluteHeightError) * fovLerp;
+
         tanFovY = tanf(camera->GetFOV() * PI / 360.f) / camera->GetAspect();
 
         subdivPatchesDrawCount = 0;
@@ -1644,8 +1657,7 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 
     if (useInstancing)
     {
-        Vector<Image*> textureData;
-        CreateHeightTextureData(fromHeightmap, textureData, useLodMorphing);
+        Vector<Image*> textureData = CreateHeightTextureData(fromHeightmap, useLodMorphing);
 
         for (Image* img : textureData)
         {

@@ -259,6 +259,17 @@ protected:
     Vector3 cameraPos;
     float32 tanFovY;
 
+    float32 normalFov;
+    float32 zoomFov;
+
+    float32 normalMaxHeightError;
+    float32 normalMaxPatchRadiusError;
+    float32 normalMaxAbsoluteHeightError;
+
+    float32 zoomMaxHeightError;
+    float32 zoomMaxPatchRadiusError;
+    float32 zoomMaxAbsoluteHeightError;
+
     float32 maxHeightError;
     float32 maxPatchRadiusError;
     float32 maxAbsoluteHeightError;
@@ -341,7 +352,7 @@ protected:
     void AllocateGeometryDataInstancing();
 
     static Texture* CreateHeightTexture(Heightmap* heightmap, bool useMorphing);
-    static void CreateHeightTextureData(Heightmap* heightmap, Vector<Image*>& dataOut, bool useMorphing);
+    static Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, bool useMorphing);
 
     void DrawLandscapeInstancing();
     void DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& nearLevel, float32 patchMorph = 0.f, const Vector4& nearMorph = Vector4());
@@ -370,9 +381,12 @@ public:
                          PROPERTY("isDrawWired", "isDrawWired", IsDrawWired, SetDrawWired, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawMorphing", "debugDrawMorphing", IsDrawMorphing, SetDrawMorphing, I_VIEW | I_EDIT)
                          MEMBER(debugDrawMetrics, "debugDrawMetrics", I_VIEW | I_EDIT)
-                         MEMBER(maxHeightError, "maxHeightError", I_VIEW | I_EDIT)
-                         MEMBER(maxPatchRadiusError, "maxPatchRadiusError", I_VIEW | I_EDIT)
-                         MEMBER(maxAbsoluteHeightError, "maxAbsoluteHeightError", I_VIEW | I_EDIT)
+                         MEMBER(normalMaxHeightError, "normalMaxHeightError", I_VIEW | I_EDIT)
+                         MEMBER(normalMaxPatchRadiusError, "normalMaxPatchRadiusError", I_VIEW | I_EDIT)
+                         MEMBER(normalMaxAbsoluteHeightError, "normalMaxAbsoluteHeightError", I_VIEW | I_EDIT)
+                         MEMBER(zoomMaxHeightError, "zoomMaxHeightError", I_VIEW | I_EDIT)
+                         MEMBER(zoomMaxPatchRadiusError, "zoomMPatchRadiusError", I_VIEW | I_EDIT)
+                         MEMBER(zoomMaxAbsoluteHeightError, "zoomMAbsoluteHeightError", I_VIEW | I_EDIT)
                          );
 };
 
