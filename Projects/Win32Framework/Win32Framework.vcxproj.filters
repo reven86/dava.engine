@@ -1684,6 +1684,9 @@
     <ClInclude Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.h">
       <Filter>Internal\Command</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LandscapeSystem.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -2997,6 +3000,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp">
       <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LandscapeSystem.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
