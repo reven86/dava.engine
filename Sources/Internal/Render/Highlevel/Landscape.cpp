@@ -86,7 +86,7 @@ Landscape::Landscape()
     normalMaxAbsoluteHeightError = 3.f;
 
     zoomMaxHeightError = 0.04f;
-    zoomMaxPatchRadiusError = 0.8f;
+    zoomMaxPatchRadiusError = 1.6f;
     zoomMaxAbsoluteHeightError = 3.f;
 
     useInstancing = rhi::DeviceCaps().isInstancingSupported;
