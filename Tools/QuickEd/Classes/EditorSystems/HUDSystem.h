@@ -51,6 +51,7 @@ private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
+    void OnNodesHovered(const DAVA::Vector<ControlNode*>& node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 
@@ -67,6 +68,7 @@ private:
     DAVA::RefPtr<DAVA::UIControl> hudControl;
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
+    DAVA::Vector2 hoveredPoint;
     bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
@@ -76,6 +78,7 @@ private:
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     SelectionContainer selectionContainer;
+    DAVA::Map<ControlNode*, DAVA::RefPtr<DAVA::UIControl>> hoveredNodes;
     bool inEmulationMode = false;
     EditorSystemsManager::SortedPackageBaseNodeSet rootControls;
     bool isPlacedOnScreen = false;

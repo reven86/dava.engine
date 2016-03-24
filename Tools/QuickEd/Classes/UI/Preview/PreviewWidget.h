@@ -35,6 +35,7 @@
 #include "EditorSystems/SelectionContainer.h"
 #include <QWidget>
 #include <QCursor>
+#include <QPointer>
 
 namespace Ui
 {
@@ -51,6 +52,9 @@ class RulerController;
 class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
+class QDragMoveEvent;
+class QDragLeaveEvent;
+class QDropEvent;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -70,8 +74,9 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
-    void CloseTabRequested();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OpenPackageFile(QString path);
+    void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 
 public slots:
     void OnDocumentChanged(Document* document);
@@ -110,9 +115,15 @@ private:
     void OnPressEvent(QMouseEvent* event);
     void OnReleaseEvent(QMouseEvent* event);
     void OnMoveEvent(QMouseEvent* event);
+    void OnDragMoveEvent(QDragMoveEvent* event);
+    bool ProcessDragMoveEvent(QDropEvent* event);
+    void OnDragLeaveEvent(QDragLeaveEvent* event);
+    void OnDropEvent(QDropEvent* event);
+
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
+
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
 
@@ -131,7 +142,6 @@ private:
     QAction* selectAllAction = nullptr;
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
-    QAction* closeTabAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
 };

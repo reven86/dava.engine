@@ -34,6 +34,7 @@
 #include <QLabel>
 #include <QAction>
 #include <QColorDialog>
+#include <QApplication>
 
 #include "PropertiesTreeItemDelegate.h"
 #include "PropertiesModel.h"
