@@ -119,6 +119,7 @@ private:
     bool CheckFrameSize(const Size2i& spriteSize, const Size2i& frameSize);
 
     Vector<SpriteItem> PrepareSpritesVector(const List<DefinitionFile*>& defList);
+
     Vector<std::unique_ptr<SpritesheetLayout>> PackSprites(Vector<SpriteItem>& spritesToPack, const Vector<ImageExportKeys>& imageExportKeys);
     void SaveResultSheets(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const Vector<ImageExportKeys>& imageExportKeys);
 
