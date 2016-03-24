@@ -37,6 +37,7 @@
 #include "configstorage.h"
 #include "processwrapper.h"
 #include "filesystemhelper.h"
+#include "help.h"
 
 int main(int argc, char* argv[])
 {
@@ -48,6 +49,7 @@ int main(int argc, char* argv[])
     qmlRegisterType<ProcessWrapper>("Cpp.Utils", 1, 0, "ProcessWrapper");
     qmlRegisterType<FileSystemHelper>("Cpp.Utils", 1, 0, "FileSystemHelper");
     qmlRegisterType<ConfigStorage>("Cpp.Utils", 1, 0, "ConfigStorage");
+    qmlRegisterType<Help>("Cpp.Utils", 1, 0, "Help");
 
     rootContext->setContextProperty("applicationDirPath", app.applicationDirPath());
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

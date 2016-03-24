@@ -49,10 +49,9 @@ public:
     explicit Project(QObject* parent = nullptr);
     virtual ~Project();
     bool Open(const QString& path);
+    void Close();
     bool CheckAndUnlockProject(const QString& projectPath);
 
-    DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
-    bool SavePackage(PackageNode* package);
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
     static QString GetScreenRelativePath();
@@ -60,8 +59,6 @@ public:
 public slots:
     DAVA::Result CreateNewProject(const QString& path);
 
-signals:
-    void ProjectOpened();
 
 private:
     bool OpenInternal(const QString& path);
