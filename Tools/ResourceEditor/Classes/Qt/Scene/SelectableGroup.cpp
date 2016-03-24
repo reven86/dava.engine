@@ -145,7 +145,7 @@ bool SelectableGroup::SupportsTransformType(Selectable::TransformType transformT
     return true;
 }
 
-DAVA::Vector3 SelectableGroup::GetAverageWorldSpaceTranslationVector() const
+DAVA::Vector3 SelectableGroup::GetCommonWorldSpaceTranslationVector() const
 {
     DAVA::AABBox3 tmp;
     for (const auto& item : objects)

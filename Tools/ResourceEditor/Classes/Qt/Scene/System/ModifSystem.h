@@ -89,10 +89,6 @@ public:
     void ApplyScaleValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
 
 protected:
-    struct MoveToZeroTransformation
-    {
-    };
-
     struct EntityToModify
     {
         Selectable object;

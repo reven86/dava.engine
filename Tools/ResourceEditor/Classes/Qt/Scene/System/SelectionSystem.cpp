@@ -717,7 +717,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
         }
         else
         {
-            hoodCenter = currentSelection.GetAverageWorldSpaceTranslationVector();
+            hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
         }
         hoodSystem->SetPosition(hoodCenter);
 

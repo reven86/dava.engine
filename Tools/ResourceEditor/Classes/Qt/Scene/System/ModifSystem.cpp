@@ -385,7 +385,7 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
     }
 
     // 2d axis projection we are rotating around
-    modifEntitiesCenter = inputEntities.GetAverageWorldSpaceTranslationVector();
+    modifEntitiesCenter = inputEntities.GetCommonWorldSpaceTranslationVector();
     DAVA::Vector2 rotateAxis = Cam2dProjection(modifEntitiesCenter, modifEntitiesCenter + rotateAround);
 
     // axis dot products

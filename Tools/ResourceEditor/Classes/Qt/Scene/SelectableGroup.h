@@ -69,7 +69,7 @@ public:
     const DAVA::AABBox3& GetIntegralBoundingBox() const;
 
     bool SupportsTransformType(Selectable::TransformType transformType) const;
-    DAVA::Vector3 GetAverageWorldSpaceTranslationVector() const;
+    DAVA::Vector3 GetCommonWorldSpaceTranslationVector() const;
 
     const Selectable& GetFirst() const;
 
