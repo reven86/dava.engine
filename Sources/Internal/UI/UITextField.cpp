@@ -337,16 +337,16 @@ void UITextField::StartEdit()
     {
         isEditing = true;
         OnStartEditing();
-        textFieldImpl->OpenKeyboard();
     }
+    textFieldImpl->OpenKeyboard();
 }
 
 void UITextField::StopEdit()
 {
+    textFieldImpl->CloseKeyboard();
     if (isEditing)
     {
         isEditing = false;
-        textFieldImpl->CloseKeyboard();
         OnStopEditing();
     }
 }

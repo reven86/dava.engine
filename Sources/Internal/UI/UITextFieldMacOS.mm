@@ -776,7 +776,7 @@ public:
                     if (isKeyboardOpened)
                     {
                         //                        // select text field
-                        if (davaText->GetCloseKeyboardPolicy() == UITextField::CLOSE_KEYBOARD_WHEN_FOCUS_LOST)
+                        if (davaText->GetStopEditPolicy() == UITextField::STOP_EDIT_WHEN_FOCUS_LOST)
                         {
                             [window makeFirstResponder:nsTextField];
                             // remove selection to caret at end
@@ -1437,6 +1437,7 @@ doCommandBySelector:(SEL)commandSelector
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl)
         {
             DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl);
+            davaCtrl->StartEdit();
         }
 
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
