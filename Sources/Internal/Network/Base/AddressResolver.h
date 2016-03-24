@@ -59,13 +59,8 @@ private:
 
 private:
     IOLoop* loop = nullptr;
-    uv_getaddrinfo_t handle;
+    uv_getaddrinfo_t* handle = nullptr;
     ResolverCallbackFn resolverCallbackFn = nullptr;
-
-    struct addrinfo hints;
-    Array<char, 6> portstring;
-
-    std::atomic<bool> isRequestInProcess{ false };
 };
 }
 }

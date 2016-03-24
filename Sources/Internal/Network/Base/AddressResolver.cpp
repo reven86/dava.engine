@@ -41,31 +41,32 @@ AddressResolver::AddressResolver(IOLoop* _loop)
     : loop(_loop)
 {
     DVASSERT(nullptr != loop);
-
-    handle.data = this;
-
-    hints.ai_family = PF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = 0;
-    hints.ai_protocol = IPPROTO_TCP;
 }
 
 AddressResolver::~AddressResolver()
 {
     Cancel();
-
-    handle.data = nullptr;
 }
 
 bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(loop != nullptr);
+    DVASSERT(handle == nullptr);
 
+    handle = new uv_getaddrinfo_t;
+    handle->data = this;
+
+    struct addrinfo hints;
+    hints.ai_family = PF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = 0;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    Array<char, 6> portstring;
     Snprintf(portstring.data(), portstring.size(), "%hu", port);
 
-    isRequestInProcess = true;
-    int32 res = uv_getaddrinfo(loop->Handle(), &handle, &AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
+    int32 res = uv_getaddrinfo(loop->Handle(), handle, &AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
     if (0 == res)
     {
         resolverCallbackFn = cbk;
@@ -73,7 +74,7 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
     }
     else
     {
-        isRequestInProcess = false;
+        SafeDelete(handle);
 
         Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", Net::ErrorToString(res));
         return false;
@@ -86,10 +87,10 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
 void AddressResolver::Cancel()
 {
 #if !defined(DAVA_NETWORK_DISABLE)
-    if (isRequestInProcess)
+    if (handle != nullptr)
     {
-        isRequestInProcess = false;
-        uv_cancel(reinterpret_cast<uv_req_t*>(&handle));
+        uv_cancel(reinterpret_cast<uv_req_t*>(handle));
+        handle = nullptr;
     }
 #endif
 }
@@ -100,9 +101,13 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
     if (nullptr != resolver)
     {
-        resolver->isRequestInProcess = false;
         resolver->GotAddrInfo(status, response);
+
+        DVASSERT(resolver->handle == handle);
+        resolver->handle = nullptr;
     }
+
+    SafeDelete(handle);
 
     uv_freeaddrinfo(response);
 #endif
