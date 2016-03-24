@@ -81,7 +81,7 @@ UIControl* UIFocusSystem::GetFocusedControl() const
 
 void UIFocusSystem::SetFocusedControl(UIControl* control)
 {
-    bool keyboardWasOpened = false;
+    bool textFieldWasEditing = false;
     if (control != focusedControl.Get())
     {
         if (focusedControl.Valid())
@@ -89,7 +89,7 @@ void UIFocusSystem::SetFocusedControl(UIControl* control)
             UITextField* textField = dynamic_cast<UITextField*>(focusedControl.Get());
             if (textField)
             {
-                keyboardWasOpened = textField->IsKeyboardOpened();
+                textFieldWasEditing = textField->IsEditing();
             }
 
             focusedControl->SystemOnFocusLost();
@@ -104,12 +104,12 @@ void UIFocusSystem::SetFocusedControl(UIControl* control)
                 focusedControl->SystemOnFocused();
                 UIControlHelpers::ScrollToControl(focusedControl.Get());
 
-                if (keyboardWasOpened)
+                if (textFieldWasEditing)
                 {
                     UITextField* textField = dynamic_cast<UITextField*>(focusedControl.Get());
                     if (textField)
                     {
-                        textField->OpenKeyboard();
+                        textField->StartEdit();
                     }
                 }
             }
