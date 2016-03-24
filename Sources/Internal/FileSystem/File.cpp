@@ -82,7 +82,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
             Vector<uint8> contentAndSize;
             if (item.archive->LoadFile(relative, contentAndSize))
             {
-                return DynamicMemoryFile::Create(std::move(contentAndSize), READ);
+                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }
         }
     }
@@ -129,7 +129,7 @@ static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, con
     }
     zip_fclose(file);
 
-    return DynamicMemoryFile::Create(std::move(data), attributes);
+    return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
 }
 
 static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
