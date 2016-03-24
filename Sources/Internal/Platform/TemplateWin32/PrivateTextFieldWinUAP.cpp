@@ -660,7 +660,12 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
             Rect rect = WindowToVirtual(keyboardRect);
-            uiTextField->OnKeyboardShown(rect);
+            // If keyboard rect is not empty so manually notify delegate about keyboard size and position
+            if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
+            {
+                Rect rect = WindowToVirtual(keyboardRect);
+                uiTextField->OnKeyboardShown(rect);
+            }
         }
     });
 }
@@ -678,6 +683,7 @@ void PrivateTextFieldWinUAP::OnLostFocus()
         if (uiTextField != nullptr)
         {
             uiTextField->OnKeyboardHidden();
+            uiTextField->ReleaseFocus();
         }
     });
 }
