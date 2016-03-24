@@ -161,11 +161,9 @@ void MallocHook::Install()
     char* (*realStrdup)(const char*) = &_strdup;
 
 #if defined(_WIN64)
-    RealMalloc = HookedMalloc;
-    RealRealloc = HookedRealloc;
-    realCalloc = HookedCalloc;
-    realStrdup = HookedStrdup;
-    RealFree = HookedFree;
+    RealMalloc = &malloc;
+    RealRealloc = &realloc;
+    RealFree = &free;
 #else
     auto detours = [](PVOID* what, PVOID hook) -> void {
         LONG result = 0;
