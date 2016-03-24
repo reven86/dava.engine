@@ -34,7 +34,7 @@
     #include "../Common/dbg_StatSet.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
     #include "Core/Core.h"
     #include "Debug/Profiler.h"

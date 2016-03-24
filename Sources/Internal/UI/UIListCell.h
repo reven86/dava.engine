@@ -69,8 +69,8 @@ public:
 		 */
     int32 GetIndex() const;
 
-    virtual UIListCell* Clone();
-    void CopyDataFrom(UIControl* srcControl);
+    UIListCell* Clone() override;
+    void CopyDataFrom(UIControl* srcControl) override;
 
 protected:
     virtual ~UIListCell();

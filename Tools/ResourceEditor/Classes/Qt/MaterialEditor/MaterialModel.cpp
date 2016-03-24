@@ -454,26 +454,21 @@ bool MaterialModel::dropMimeData(const QMimeData* data, Qt::DropAction action, i
         MaterialItem* targetMaterialItem = itemFromIndex(targetIndex);
         DAVA::NMaterial* targetMaterial = targetMaterialItem->GetMaterial();
 
-        if (materials.size() > 1)
-        {
-            curScene->BeginBatch("Change materials parent");
-        }
+        uint32 count = materials.size();
+        curScene->BeginBatch("Change materials parent", count);
 
         // change parent material
         // NOTE: model synchronization will be done in OnCommandExecuted handler
-        for (int i = 0; i < materials.size(); ++i)
+        for (uint32 i = 0; i < count; ++i)
         {
             MaterialItem* sourceMaterialItem = itemFromIndex(GetIndex(materials[i]));
             if (NULL != sourceMaterialItem)
             {
-                curScene->Exec(new MaterialSwitchParentCommand(materials[i], targetMaterial));
+                curScene->Exec(Command2::Create<MaterialSwitchParentCommand>(materials[i], targetMaterial));
             }
         }
 
-        if (materials.size() > 1)
-        {
-            curScene->EndBatch();
-        }
+        curScene->EndBatch();
     }
 
     return true;

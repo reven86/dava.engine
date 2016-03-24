@@ -131,7 +131,7 @@ inline Entity* Component::GetEntity() const
 };
 
 #define IMPLEMENT_COMPONENT_TYPE(TYPE) \
-    virtual uint32 GetType() const { return TYPE; }; \
+    uint32 GetType() const override { return TYPE; }; \
     static const uint32 C_TYPE = TYPE; 
 
 #define MAKE_COMPONENT_MASK(x) (1ULL << static_cast<uint64>(x))

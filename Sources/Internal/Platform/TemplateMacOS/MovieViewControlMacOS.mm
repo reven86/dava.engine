@@ -29,7 +29,7 @@
 
 #include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
@@ -335,7 +335,7 @@ MovieViewControl::~MovieViewControl()
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
 
-    MoviePlayerHelper* helper = (MoviePlayerHelper*)moviePlayerHelper;
+    MoviePlayerHelper* helper = static_cast<MoviePlayerHelper*>(moviePlayerHelper);
     [helper release];
 }
 
@@ -347,32 +347,32 @@ void MovieViewControl::Initialize(const Rect& rect)
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
     NSURL* movieURL = [NSURL fileURLWithPath:[NSString stringWithCString:moviePath.GetAbsolutePathname().c_str() encoding:NSASCIIStringEncoding]];
-    [(MoviePlayerHelper*)moviePlayerHelper loadMovie:movieURL scalingMode:params.scalingMode];
+    [static_cast<MoviePlayerHelper*>(moviePlayerHelper) loadMovie:movieURL scalingMode:params.scalingMode];
 }
 
 void MovieViewControl::SetRect(const Rect& rect)
 {
-    [(MoviePlayerHelper*)moviePlayerHelper setRect:rect];
+    [static_cast<MoviePlayerHelper*>(moviePlayerHelper) setRect:rect];
 }
 
 void MovieViewControl::SetVisible(bool isVisible)
 {
-    [(MoviePlayerHelper*)moviePlayerHelper setVisible:isVisible];
+    [static_cast<MoviePlayerHelper*>(moviePlayerHelper) setVisible:isVisible];
 }
 
 void MovieViewControl::Play()
 {
-    [(MoviePlayerHelper*)moviePlayerHelper play];
+    [static_cast<MoviePlayerHelper*>(moviePlayerHelper) play];
 }
 
 void MovieViewControl::Stop()
 {
-    [(MoviePlayerHelper*)moviePlayerHelper stop];
+    [static_cast<MoviePlayerHelper*>(moviePlayerHelper) stop];
 }
 
 void MovieViewControl::Pause()
 {
-    [(MoviePlayerHelper*)moviePlayerHelper pause];
+    [static_cast<MoviePlayerHelper*>(moviePlayerHelper) pause];
 }
 
 void MovieViewControl::Resume()
@@ -382,7 +382,7 @@ void MovieViewControl::Resume()
 
 bool MovieViewControl::IsPlaying()
 {
-    return [(MoviePlayerHelper*)moviePlayerHelper isPlaying];
+    return [static_cast<MoviePlayerHelper*>(moviePlayerHelper) isPlaying];
 }
 
 void MovieViewControl::OnAppMinimizedRestored(bool minimized)

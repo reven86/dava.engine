@@ -108,7 +108,7 @@ class BackgroundController final
 public:
     BackgroundController(UIControl* nestedControl);
     ~BackgroundController() = default;
-    UIControl* GetGridControl();
+    UIControl* GetGridControl() const;
     bool IsNestedControl(const UIControl* control) const;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
@@ -145,7 +145,7 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     counterpoiseControl->AddControl(nestedControl);
 }
 
-UIControl* BackgroundController::GetGridControl()
+UIControl* BackgroundController::GetGridControl() const
 {
     return gridControl.Get();
 }
@@ -383,6 +383,22 @@ void CanvasSystem::AddBackgroundControllerToCanvas(BackgroundController* backgro
     }
     backgroundController->UpdateCounterpoise();
     backgroundController->AdjustToNestedControl();
+}
+
+uint32 CanvasSystem::GetIndexByPos(const DAVA::Vector2& pos) const
+{
+    uint32 index = 0;
+    for (auto& iter : gridControls)
+    {
+        auto grid = iter->GetGridControl();
+
+        if (pos.y < (grid->GetPosition().y + grid->GetSize().y / 2.0f))
+        {
+            return index;
+        }
+        index++;
+    }
+    return index;
 }
 
 void CanvasSystem::LayoutCanvas()

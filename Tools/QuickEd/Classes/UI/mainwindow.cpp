@@ -30,6 +30,7 @@
 #include "mainwindow.h"
 #include "Project/Project.h"
 #include "Document.h"
+#include "DocumentGroup.h"
 
 #include "Helpers/ResourcesManageHelper.h"
 
@@ -39,6 +40,7 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
@@ -59,20 +61,6 @@ void SetColoredIconToAction(QAction* action, QColor color)
 }
 
 using namespace DAVA;
-
-struct MainWindow::TabState
-{
-    TabState(Document* document_, const QString& tabText_)
-        : document(document_)
-        , tabText(tabText_)
-    {
-        DVASSERT(document != nullptr);
-    }
-    Document* document = nullptr;
-    QString tabText;
-};
-
-Q_DECLARE_METATYPE(MainWindow::TabState*);
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -104,8 +92,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
-    connect(tabBar, &QTabBar::tabCloseRequested, this, &MainWindow::TabClosed);
-    connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
@@ -119,24 +105,37 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 }
 
-void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
+MainWindow::~MainWindow()
 {
-    Q_ASSERT(undoGroup);
-    QAction* undoAction = undoGroup->createUndoAction(this);
-    undoAction->setShortcuts(QKeySequence::Undo);
+    SaveMainWindowState();
+}
+
+void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
+{
+    Q_ASSERT(documentGroup != nullptr);
+
+    documentGroup->ConnectToTabBar(tabBar);
+
+    QAction* undoAction = documentGroup->CreateUndoAction(this);
+    undoAction->setShortcut(QKeySequence::Undo);
     undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
 
-    QAction* redoAction = undoGroup->createRedoAction(this);
-    redoAction->setShortcuts(QKeySequence::Redo);
+    QAction* redoAction = documentGroup->CreateRedoAction(this);
+    redoAction->setShortcut(QKeySequence::Redo);
     redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
 
     mainToolbar->addAction(undoAction);
     mainToolbar->addAction(redoAction);
-}
 
-void MainWindow::OnCountChanged(int count)
-{
-    actionSaveAllDocuments->setEnabled(count > 0);
+    Q_ASSERT(documentGroup != nullptr);
+    documentGroup->AttachSaveAction(actionSaveDocument);
+    documentGroup->AttachSaveAllAction(actionSaveAllDocuments);
+
+    QAction* actionCloseDocument = new QAction("Close current document", this);
+    actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
+    actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
+    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+    documentGroup->AttachCloseDocumentAction(actionCloseDocument);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)
@@ -144,35 +143,7 @@ void MainWindow::OnDocumentChanged(Document* document)
     bool enabled = (document != nullptr);
     packageWidget->setEnabled(enabled);
     propertiesWidget->setEnabled(enabled);
-    previewWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
-
-    actionSaveDocument->setEnabled(nullptr != document && !document->GetUndoStack()->isClean());
-
-    for (int index = 0, count = tabBar->count(); index < count; ++index)
-    {
-        QVariant var = tabBar->tabData(index);
-        DVASSERT(var.canConvert<TabState*>());
-        TabState* tabState = var.value<TabState*>();
-        if (tabState->document == document)
-        {
-            tabBar->setCurrentIndex(index);
-            return;
-        }
-    }
-}
-
-int MainWindow::CloseTab(int index)
-{
-    delete tabBar->tabData(index).value<TabState*>();
-    tabBar->removeTab(index);
-    OnCountChanged(tabBar->count());
-    return tabBar->currentIndex();
-}
-
-void MainWindow::SetCurrentTab(int index)
-{
-    tabBar->setCurrentIndex(index);
 }
 
 void MainWindow::SaveMainWindowState()
@@ -206,33 +177,6 @@ void MainWindow::RestoreMainWindowState()
 QComboBox* MainWindow::GetComboBoxLanguage()
 {
     return comboboxLanguage;
-}
-
-void MainWindow::OnCleanChanged(bool isClean)
-{
-    QUndoStack* undoStack = qobject_cast<QUndoStack*>(sender());
-    DVASSERT(nullptr != undoStack);
-    Document* document = qobject_cast<Document*>(undoStack->parent());
-    if (nullptr == document)
-    {
-        return; //undostack emit clear when destroyed
-    }
-    for (int index = 0, count = tabBar->count(); index < count; ++index)
-    {
-        QVariant var = tabBar->tabData(index);
-        DVASSERT(var.canConvert<TabState*>());
-        TabState* tabState = var.value<TabState*>();
-        if (tabState->document == document)
-        {
-            QString tabText = tabState->tabText;
-            if (!isClean)
-            {
-                tabText += "*";
-            }
-            tabBar->setTabText(index, tabText);
-            actionSaveDocument->setEnabled(!isClean);
-        }
-    }
 }
 
 bool MainWindow::IsInEmulationMode() const
@@ -326,8 +270,6 @@ void MainWindow::InitMenu()
 {
     SetupViewMenu();
 
-    connect(actionSaveDocument, &QAction::triggered, this, &MainWindow::OnSaveDocument);
-    connect(actionSaveAllDocuments, &QAction::triggered, this, &MainWindow::SaveAllDocuments);
     connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProject);
     connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
 
@@ -348,14 +290,6 @@ void MainWindow::InitMenu()
     // Pixelization.
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
     actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
-    DisableActions();
-}
-
-void MainWindow::OnSaveDocument()
-{
-    int index = tabBar->currentIndex();
-    DVASSERT(index >= 0);
-    emit SaveDocument(index);
 }
 
 void MainWindow::SetupViewMenu()
@@ -481,14 +415,6 @@ void MainWindow::SetupBackgroundMenu()
     }
 }
 
-void MainWindow::DisableActions()
-{
-    actionSaveAllDocuments->setEnabled(false);
-    actionSaveDocument->setEnabled(false);
-
-    actionClose_project->setEnabled(false);
-}
-
 void MainWindow::RebuildRecentMenu()
 {
     menuRecent->clear();
@@ -528,27 +454,16 @@ void MainWindow::OnBackgroundCustomColorClicked()
     EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 
-int MainWindow::AddTab(Document* document, int index)
-{
-    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &MainWindow::OnCleanChanged);
-
-    QFileInfo fileInfo(document->GetPackageAbsolutePath());
-    QString tabText(fileInfo.fileName());
-    bool blockSignals = tabBar->blockSignals(true); //block signals, because insertTab emit currentTabChanged
-    int insertedIndex = tabBar->insertTab(index, tabText);
-    tabBar->blockSignals(blockSignals);
-    tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
-    TabState* tabState = new TabState(document, tabText);
-    tabBar->setTabData(insertedIndex, QVariant::fromValue<TabState*>(tabState));
-    OnCountChanged(tabBar->count());
-    return insertedIndex;
-}
-
 void MainWindow::closeEvent(QCloseEvent* ev)
 {
-    SaveMainWindowState();
-    emit CloseRequested();
-    ev->ignore();
+    if (!CloseRequested()) //we cannot access to EditorCore directly by parent
+    {
+        ev->ignore();
+    }
+    else
+    {
+        ev->accept();
+    }
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
@@ -561,7 +476,6 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         UpdateProjectSettings(projectPath);
 
         RebuildRecentMenu();
-        fileSystemDockWidget->SetProjectDir(projectPath);
         FillComboboxLanguages(project);
         this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }

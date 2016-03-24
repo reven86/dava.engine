@@ -49,7 +49,7 @@ WindSystem::WindInfo::WindInfo(WindComponent* c)
     :
     component(c)
 {
-    timeValue = (float32)Random::Instance()->RandFloat(1000.f);
+    timeValue = static_cast<float32>(Random::Instance()->RandFloat(1000.f));
 }
 
 WindSystem::WindSystem(Scene* scene)
@@ -64,7 +64,7 @@ WindSystem::WindSystem(Scene* scene)
 
     for (int32 i = 0; i < WIND_TABLE_SIZE; i++)
     {
-        float32 t = WIND_PERIOD * i / (float32)WIND_TABLE_SIZE;
+        float32 t = WIND_PERIOD * i / static_cast<float32>(WIND_TABLE_SIZE);
         windValuesTable[i] = (2.f + sinf(t) * 0.7f + cosf(t * 10) * 0.3f);
     }
 }
@@ -134,7 +134,7 @@ float32 WindSystem::GetWindValueFromTable(const Vector3& inPosition, const WindI
     float32 t = projPt.Length() + info->timeValue;
 
     float32 tMod = fmodf(t, WIND_PERIOD);
-    int32 i = (int32)floorf(tMod / WIND_PERIOD * WIND_TABLE_SIZE);
+    int32 i = static_cast<int32>(floorf(tMod / WIND_PERIOD * WIND_TABLE_SIZE));
 
     DVASSERT(i >= 0 && i < WIND_TABLE_SIZE);
     return windValuesTable[i];

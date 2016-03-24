@@ -203,13 +203,13 @@ public:
     static Ret invokeTrivial(const Closure& c, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
         HolderFree* holder = c.GetTrivialHolder<HolderFree>();
-        return (Ret)holder->fn(std::forward<Args>(args)...);
+        return holder->fn(std::forward<Args>(args)...);
     }
 
     static Ret invokeShared(const Closure& c, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
         HolderFree* holder = c.GetSharedHolder<HolderFree>();
-        return (Ret)holder->fn(std::forward<Args>(args)...);
+        return holder->fn(std::forward<Args>(args)...);
     }
 
 protected:
@@ -232,13 +232,13 @@ public:
     static Ret invokeTrivial(const Closure& c, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderClass* holder = c.GetTrivialHolder<HolderClass>();
-        return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
+        return (static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
     static Ret invokeShared(const Closure& c, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderClass* holder = c.GetSharedHolder<HolderClass>();
-        return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
+        return (static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
 protected:
@@ -262,13 +262,13 @@ public:
     static Ret invokeTrivial(const Closure& c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderObject* holder = c.GetTrivialHolder<HolderObject>();
-        return (Ret)(static_cast<Cls*>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
+        return (static_cast<Cls*>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
     static Ret invokeShared(const Closure& c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderObject* holder = c.GetSharedHolder<HolderObject>();
-        return (Ret)(static_cast<Cls*>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
+        return (static_cast<Cls*>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
 protected:

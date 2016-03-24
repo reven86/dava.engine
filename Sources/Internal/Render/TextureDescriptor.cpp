@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -554,7 +554,7 @@ void TextureDescriptor::LoadVersion8(File* file)
         {
             uint8 format;
             file->Read(&format);
-            compression[i].format = (PixelFormat)format;
+            compression[i].format = PixelFormat(format);
 
             file->Read(&compression[i].compressToWidth);
             file->Read(&compression[i].compressToHeight);
@@ -898,7 +898,7 @@ uint32 TextureDescriptor::ReadSourceCRC_V8_or_less() const
 
             // read crc
             f->Read(buffer, 4);
-            crc += ((uint32*)buffer)[0];
+            crc += (reinterpret_cast<uint32*>(buffer))[0];
         }
 
         f->Release();
@@ -1103,7 +1103,7 @@ uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
     //end of convertation params
 #endif //
 
-    return CRC32::ForBuffer((const char8*)crcBuffer.data(), CRC_BUFFER_SIZE);
+    return CRC32::ForBuffer(reinterpret_cast<const char8*>(crcBuffer.data()), CRC_BUFFER_SIZE);
 }
 
 bool TextureDescriptor::IsPresetValid(const KeyedArchive* presetArchive) const
