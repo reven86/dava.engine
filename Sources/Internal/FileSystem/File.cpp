@@ -34,6 +34,9 @@
 #include "FileSystem/FileAPIHelper.h"
 
 #include "Utils/StringFormat.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -87,6 +90,70 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     return PureCreate(filename, attributes);
 }
 
+#ifdef __DAVAENGINE_ANDROID__
+
+static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes)
+{
+    int index = zip_name_locate(package, path.c_str(), 0);
+    if (-1 == index)
+    {
+        //Logger::Error("[ZipFile::CreateFromAssets] Can't locate file in the archive: %s", path.c_str());
+        return NULL;
+    }
+
+    struct zip_stat stat;
+
+    int32 error = zip_stat_index(package, index, 0, &stat);
+    if (-1 == error)
+    {
+        Logger::FrameworkDebug("[APK::CreateFromAssets] Can't get file info: %s", path.c_str());
+        return NULL;
+    }
+
+    zip_file* file = zip_fopen_index(package, index, 0);
+    if (NULL == file)
+    {
+        Logger::FrameworkDebug("[APK::CreateFromAssets] Can't open file in the archive: %s", path.c_str());
+        return NULL;
+    }
+
+    DVASSERT(stat.size >= 0);
+
+    Vector<uint8> data(stat.size, 0);
+
+    if (zip_fread(file, &data[0], stat.size) != stat.size)
+    {
+        Logger::FrameworkDebug("[APK::CreateFromAssets] Error reading file: %s", path.c_str());
+        zip_fclose(file);
+        return nullptr;
+    }
+    zip_fclose(file);
+
+    return DynamicMemoryFile::Create(std::move(data), attributes);
+}
+
+static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
+{
+    static Mutex mutex;
+
+    LockGuard<Mutex> guard(mutex);
+
+    AssetsManager* assetsManager = AssetsManager::Instance();
+    DVASSERT_MSG(assetsManager, "[APK::CreateFromAssets] Need to create AssetsManager before loading files");
+
+    zip* package = assetsManager->GetApplicationPackage();
+    if (nullptr == package)
+    {
+        DVASSERT_MSG(false, "[APK::CreateFromAssets] Package file should be initialized.");
+        return nullptr;
+    }
+
+    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
+    return CreateFromAPKAssetsPath(package, filePath, assetFileStr, attributes);
+}
+
+#endif // __DAVAENGINE_ANDROID__
+
 File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
     FILE* file = 0;
@@ -105,7 +172,13 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         }
 
         if (!file)
+        {
+#ifdef __DAVAENGINE_ANDROID__
+            return CreateFromAPK(filePath, attributes);
+#else
             return nullptr;
+#endif
+        }
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
