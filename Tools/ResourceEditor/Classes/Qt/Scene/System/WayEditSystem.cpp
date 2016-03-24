@@ -80,7 +80,7 @@ void WayEditSystem::RemoveEntity(DAVA::Entity* removedPoint)
         }
     }
 
-    DVASSERT_MSG(0, "Invalid (not tracked) waypoint removed");
+    DVASSERT_MSG(0, "Invalid (not tracked) starting waypoint removed");
 }
 
 void WayEditSystem::WillRemove(DAVA::Entity* removedPoint)
