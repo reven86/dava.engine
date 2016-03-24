@@ -49,7 +49,6 @@ namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.1";
 
-
 enum AssetClientCode : int
 {
     OK = 0,

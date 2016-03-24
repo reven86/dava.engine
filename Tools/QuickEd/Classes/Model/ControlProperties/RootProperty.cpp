@@ -127,7 +127,7 @@ uint32 RootProperty::GetCount() const
 AbstractProperty* RootProperty::GetProperty(int index) const
 {
     DVASSERT(index >= 0);
-    
+
     if (index < static_cast<int>(baseProperties.size()))
         return baseProperties[index];
     index -= baseProperties.size();
@@ -143,7 +143,7 @@ AbstractProperty* RootProperty::GetProperty(int index) const
     if (index < static_cast<int>(backgroundProperties.size()))
         return backgroundProperties[index];
     index -= backgroundProperties.size();
-    
+
     DVASSERT(index < internalControlProperties.size());
     return internalControlProperties[index];
 }
