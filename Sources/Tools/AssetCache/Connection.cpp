@@ -71,6 +71,10 @@ Connection::~Connection()
     {
         DisconnectBlocked();
     }
+    else
+    {
+        listener = nullptr;
+    }
 }
 
 bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
@@ -133,7 +137,7 @@ void Connection::Delete(Net::IChannelListener* obj, void* context)
 
 void Connection::OnChannelOpen(Net::IChannel* channel)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnChannelOpen(channel);
     }
@@ -141,7 +145,7 @@ void Connection::OnChannelOpen(Net::IChannel* channel)
 
 void Connection::OnChannelClosed(Net::IChannel* channel, const char8* message)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnChannelClosed(channel, message);
     }
@@ -149,7 +153,7 @@ void Connection::OnChannelClosed(Net::IChannel* channel, const char8* message)
 
 void Connection::OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnPacketReceived(channel, buffer, length);
     }
@@ -157,7 +161,7 @@ void Connection::OnPacketReceived(Net::IChannel* channel, const void* buffer, si
 
 void Connection::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnPacketSent(channel, buffer, length);
     }
@@ -165,7 +169,7 @@ void Connection::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t
 
 void Connection::OnPacketDelivered(Net::IChannel* channel, uint32 packetId)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnPacketDelivered(channel, packetId);
     }

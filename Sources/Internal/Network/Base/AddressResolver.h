@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Functional/Function.h"
 #include "Network/Base/Endpoint.h"
 #include <libuv/uv.h>
+#include <atomic>
 
 namespace DAVA
 {
@@ -59,7 +60,12 @@ private:
 private:
     IOLoop* loop = nullptr;
     uv_getaddrinfo_t* handle = nullptr;
-    ResolverCallbackFn resolverCallbackFn;
+    ResolverCallbackFn resolverCallbackFn = nullptr;
+
+    struct addrinfo hints;
+    Array<char, 6> portstring;
+
+    std::atomic<bool> isRequestInProcess = false;
 };
 }
 }

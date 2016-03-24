@@ -57,6 +57,8 @@ class ClientNetProxy : public DAVA::Net::IChannelListener
 {
 public:
     ClientNetProxy();
+    ~ClientNetProxy();
+
 
     void AddListener(ClientNetProxyListener*);
     void RemoveListener(ClientNetProxyListener*);

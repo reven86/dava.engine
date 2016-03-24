@@ -52,7 +52,8 @@ SpritesPackerModule::~SpritesPackerModule()
 {
     if (cacheClient != nullptr)
     {
-        DisconnectCacheClient();
+        DisconnectCacheClient(cacheClient);
+        cacheClient = nullptr;
     }
 }
 
@@ -84,7 +85,8 @@ void SpritesPackerModule::RepackWithDialog()
 
     ShowPackerDialog();
 
-    JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &SpritesPackerModule::DisconnectCacheClient));
+    DisconnectCacheClient(cacheClient);
+    cacheClient = nullptr;
 
     ReloadObjects();
 }
@@ -113,7 +115,9 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
     ConnectCacheClient();
     spritesPacker->ReloadSprites(clearDirs, forceRepack, gpu, quality);
 
-    DisconnectCacheClient();
+    AssetCacheClient *disconnectingClient = cacheClient;
+    cacheClient = nullptr;
+    JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClient, this, disconnectingClient));
 
     JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::CloseWaitDialog));
     JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &SpritesPackerModule::ReloadObjects));
@@ -182,18 +186,20 @@ void SpritesPackerModule::ConnectCacheClient()
         DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
         if (connected != DAVA::AssetCache::Error::NO_ERRORS)
         {
-            SafeDelete(cacheClient);
+            AssetCacheClient *disconnectingClient = cacheClient;
+            cacheClient = nullptr;
+            JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClient, this, disconnectingClient));
         }
     }
 
     spritesPacker->SetCacheClient(cacheClient, "ResourceEditor.ReloadParticles");
 }
 
-void SpritesPackerModule::DisconnectCacheClient()
+void SpritesPackerModule::DisconnectCacheClient(DAVA::AssetCacheClient* cacheClientForDisconnect)
 {
-    if (cacheClient != nullptr)
+    if (cacheClientForDisconnect != nullptr)
     {
-        cacheClient->Disconnect();
-        SafeDelete(cacheClient);
+        cacheClientForDisconnect->Disconnect();
+        SafeDelete(cacheClientForDisconnect);
     }
 }

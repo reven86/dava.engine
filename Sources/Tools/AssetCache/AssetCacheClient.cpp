@@ -48,6 +48,8 @@ AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
 
 AssetCacheClient::~AssetCacheClient()
 {
+    client.RemoveListener(this);
+
     DVASSERT(isActive == false);
     DVASSERT(isJobStarted == false);
 }
