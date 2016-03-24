@@ -124,7 +124,7 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
     else
     {
         QDir dir(path);
-        auto index = model->setRootPath(dir.path() + Project::GetScreenRelativePath());
+        auto index = model->setRootPath(dir.path() + Project::GetScreensRelativePath());
         ui->treeView->setRootIndex(index);
         ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
         ui->treeView->showColumn(0);
@@ -236,10 +236,12 @@ void FileSystemDockWidget::onNewFolder()
     if (ret == QDialog::Accepted)
     {
         DVASSERT(!folderName.isEmpty());
-        auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-        DVASSERT(selectedIndexes.empty() || selectedIndexes.size() == 1);
-        QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
-        model->mkdir(currIndex, folderName);
+        QModelIndex index = ui->treeView->indexAt(menuInvokePos);
+        if (!index.isValid())
+        {
+            index = ui->treeView->rootIndex();
+        }
+        model->mkdir(index, folderName);
     }
     RefreshActions();
 }

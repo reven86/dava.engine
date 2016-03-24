@@ -54,11 +54,9 @@ public:
 
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
-    static QString GetScreenRelativePath();
-
-public slots:
-    DAVA::Result CreateNewProject(const QString& path);
-
+    static const QString& GetScreensRelativePath();
+    static const QString& GetProjectFileName();
+    QString CreateNewProject(DAVA::Result* result = nullptr);
 
 private:
     bool OpenInternal(const QString& path);

@@ -307,17 +307,13 @@ void EditorCore::OnExit()
 
 void EditorCore::OnNewProject()
 {
-    QString projectFilePath = QFileDialog::getSaveFileName(qApp->activeWindow(), tr("new project file name"), "", "*.uieditor");
-    if (projectFilePath.isEmpty())
-    {
-        return;
-    }
-    Result result = project->CreateNewProject(projectFilePath);
+    Result result;
+    auto projectPath = project->CreateNewProject(&result);
     if (result)
     {
-        OpenProject(projectFilePath);
+        OpenProject(projectPath);
     }
-    else
+    else if (result.type == Result::RESULT_ERROR)
     {
         QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
     }

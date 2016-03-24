@@ -88,7 +88,7 @@ bool Project::OpenInternal(const QString& path)
     editorLocalizationSystem->Cleanup();
 
     QDir projectDir = fileInfo.absoluteDir();
-    if (!projectDir.mkpath("." + GetScreenRelativePath()))
+    if (!projectDir.mkpath("." + GetScreensRelativePath()))
     {
         return false;
     }
@@ -183,25 +183,59 @@ EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
     return editorLocalizationSystem;
 }
 
-QString Project::GetScreenRelativePath()
+const QString& Project::GetScreensRelativePath()
 {
-    return "/Data/UI";
+    static const QString relativePath("/Data/UI");
+    return relativePath;
 }
 
-Result Project::CreateNewProject(const QString& path)
+const QString& Project::GetProjectFileName()
 {
-    QFile projectFile(path);
-    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate))
+    static const QString projectFile("ui.uieditor");
+    return projectFile;
+}
+
+QString Project::CreateNewProject(Result* result /*=nullptr*/)
+{
+    if (result == nullptr)
     {
-        return Result(Result::RESULT_ERROR, String("Can not open project file ") + path.toUtf8().data());
+        Result dummy; //code cleaner
+        result = &dummy;
     }
-    QFileInfo fileInfo(path);
-    QDir projectDir(fileInfo.absoluteDir());
-    if (!projectDir.mkpath(projectDir.canonicalPath() + GetScreenRelativePath()))
+    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), tr("Select directory for new project"));
+    if (projectDirPath.isEmpty())
     {
-        return Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
+        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
+        return "";
     }
-    return Result();
+    bool needOverwriteProjectFile = true;
+    QDir projectDir(projectDirPath);
+    const QString projectFileName = GetProjectFileName();
+    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
+    if (QFile::exists(fullProjectFilePath))
+    {
+        if (QMessageBox::Yes == QMessageBox::question(qApp->activeWindow(), tr("Project file exists!"), tr("Project file %1 exists! Open this project?").arg(fullProjectFilePath)))
+        {
+            return fullProjectFilePath;
+        }
+
+        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
+        return "";
+    }
+    QFile projectFile(fullProjectFilePath);
+    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate)) // create project file
+    {
+        *result = Result(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
+        return "";
+    }
+    if (!projectDir.mkpath(projectDir.canonicalPath() + GetScreensRelativePath()))
+    {
+        *result = Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
+        return "";
+    }
+    return fullProjectFilePath;
+}
+
 bool Project::IsOpen() const
 {
     return isOpen;
