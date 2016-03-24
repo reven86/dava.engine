@@ -74,13 +74,11 @@ public:
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
-    Windows::Foundation::Size GetCurrentScreenSize();
 
     bool GetCursorVisible();
     bool SetCursorVisible(bool isVisible);
 
     bool IsPhoneApiDetected();
-    void ResetScreen();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
 
@@ -119,7 +117,7 @@ private:
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
 
     // Swap chain panel state change handlers
-    void MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY);
+    void ScreenMetricsUpdated(float32 widht, float32 height, float32 scaleX, float32 scaleY);
 
     // Mouse and touch handlers
     void OnSwapChainPanelPointerPressed(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
@@ -148,13 +146,7 @@ private:
     void SetDisplayOrientations();
     void LoadWindowMinimumSizeSettings();
 
-    void ResetRender();
-
-    void InitCoordinatesSystem();
-    void ReInitCoordinatesSystem();
-
     void PrepareScreenSize();
-    void UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
@@ -212,13 +204,6 @@ private:
     bool GetMouseButtonState(UIEvent::MouseButton button);
 
     void SetMouseButtonState(UIEvent::MouseButton button, bool value);
-
-    float32 viewScaleX = 1.f;
-    float32 viewScaleY = 1.f;
-    int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
-    int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
-    int32 physicalWidth = static_cast<int32>(viewWidth * viewScaleX);
-    int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
     std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
