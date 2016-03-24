@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Compression/ZipCompressor.h"
+#include "FileSystem/File.h"
 #include "Logger/Logger.h"
 
 #include <cstring> // need on android for std::memset
@@ -36,6 +37,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
 
+#define MINIZ_NO_STDIO
+#define MINIZ_NO_ARCHIVE_WRITING_APIS
+
+#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 1
+#define MINIZ_LITTLE_ENDIAN 1
+//#define MINIZ_HAS_64BIT_REGISTERS 1
 #include <miniz/miniz.c>
 
 #ifdef __clang__
@@ -84,22 +91,61 @@ class ZipPrivateData
 public:
     mz_zip_archive archive;
     String fileName;
+    ScopedPtr<File> file{ nullptr };
 };
 
-ZipFile::ZipFile(const FilePath& file)
+static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size_t n)
+{
+    File* file = static_cast<File*>(pOpaque);
+    if (!file)
+    {
+        DVASSERT(false && "can't happen");
+        Logger::Error("nullptr zip archive File object");
+        return 0;
+    }
+
+    if (!file->Seek(static_cast<uint32>(file_ofs), File::SEEK_FROM_START))
+    {
+        Logger::Error("can't set seek pos to %d in zip archive file", static_cast<uint32>(file_ofs));
+        return 0;
+    }
+
+    uint32 result = file->Read(pBuf, static_cast<uint32>(n));
+
+    if (result != n)
+    {
+        Logger::Error("can't read bytes from zip archive");
+    }
+
+    return static_cast<size_t>(result);
+}
+
+ZipFile::ZipFile(const FilePath& fileName)
 {
     zipData.reset(new ZipPrivateData());
 
     std::memset(&zipData->archive, 0, sizeof(zipData->archive));
 
-    String fileName = file.GetAbsolutePathname();
-    zipData->fileName = fileName;
+    zipData->file.reset(File::Create(fileName, File::OPEN | File::READ));
 
-    mz_bool status = mz_zip_reader_init_file(&zipData->archive, fileName.c_str(), 0);
-    if (!status)
+    if (!zipData->file)
     {
-        throw std::runtime_error("mz_zip_reader_init_file() failed!");
+        throw std::runtime_error("can't open archive file: " + fileName.GetAbsolutePathname());
     }
+
+    uint32 fileSize = zipData->file->GetSize();
+
+    zipData->archive.m_pIO_opaque = zipData->file.get();
+    zipData->archive.m_pRead = &file_read_func;
+    zipData->archive.m_archive_size = fileSize;
+
+    if (mz_zip_reader_init(&zipData->archive, fileSize, 0) == 0)
+    {
+        throw std::runtime_error("can't init zip from file: " + fileName.GetAbsolutePathname());
+    }
+
+    String fName = fileName.GetAbsolutePathname();
+    zipData->fileName = fName;
 }
 
 ZipFile::~ZipFile()
