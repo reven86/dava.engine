@@ -91,28 +91,36 @@ DAVA_TESTCLASS (ArchiveTest)
 
     DAVA_TEST (TestZipArchive)
     {
-        ZipArchive archive("~res:/TestData/ArchiveTest/archive.zip");
+        try
+        {
+            ZipArchive archive("~res:/TestData/ArchiveTest/archive.zip");
 
-        const char* filename = "Utf8Test/utf16le.txt";
+            const char* filename = "Utf8Test/utf16le.txt";
 
-        TEST_VERIFY(archive.HasFile(filename));
+            TEST_VERIFY(archive.HasFile(filename));
 
-        const ResourceArchive::FileInfo* archiveInfo = archive.GetFileInfo(filename);
-        TEST_VERIFY(archiveInfo->compressionType == Compressor::Type::RFC1951);
+            const ResourceArchive::FileInfo* archiveInfo = archive.GetFileInfo(filename);
+            TEST_VERIFY(archiveInfo->compressionType == Compressor::Type::RFC1951);
 
-        Vector<uint8> fileFromArchive;
-        TEST_VERIFY(archive.LoadFile(filename, fileFromArchive));
+            Vector<uint8> fileFromArchive;
+            TEST_VERIFY(archive.LoadFile(filename, fileFromArchive));
 
-        FilePath filePath("~res:/TestData/Utf8Test/utf16le.txt");
+            FilePath filePath("~res:/TestData/Utf8Test/utf16le.txt");
 
-        ScopedPtr<File> file(File::Create(filePath, File::OPEN | File::READ));
+            ScopedPtr<File> file(File::Create(filePath, File::OPEN | File::READ));
 
-        uint32 fileSize = file->GetSize();
+            uint32 fileSize = file->GetSize();
 
-        Vector<uint8> fileFromHDD(fileSize, 0);
+            Vector<uint8> fileFromHDD(fileSize, 0);
 
-        file->Read(fileFromHDD.data(), fileSize);
+            file->Read(fileFromHDD.data(), fileSize);
 
-        TEST_VERIFY(fileFromHDD == fileFromArchive);
+            TEST_VERIFY(fileFromHDD == fileFromArchive);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("%s", ex.what());
+            TEST_VERIFY(false);
+        }
     }
 };
