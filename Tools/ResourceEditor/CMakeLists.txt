@@ -56,7 +56,6 @@ include_directories   ( "Classes/Qt/TextureBrowser" )
 include_directories   ( "Classes/Collada" )
 
 add_definitions       (
--D__DAVAENGINE_SPEEDTREE__
 -D__DAVAENGINE_RENDERSTATS__
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
@@ -77,6 +76,10 @@ add_definitions       (
 -DDISABLE_NATIVE_TEXTFIELD
 )
 
+if (NOT PUBLIC_BUILD)
+    add_definitions(-D__DAVAENGINE_SPEEDTREE__)
+endif()
+
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
@@ -87,9 +90,13 @@ file              ( GLOB QML_LIST "DataQt/*.qml")
 file              ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
 
 if( WIN32 )
-    add_definitions( -D__DAVAENGINE_BEAST__ )
-    set( BEAST_WRAPPER   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
-    set( BEAST_LIB       "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
+    if (NOT PUBLIC_BUILD)
+        add_definitions( -D__DAVAENGINE_BEAST__ )
+        set( BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} )
+        set( BEAST_WRAPPER   "${BEAST_DIR}/wrapper" )
+        set( BEAST_LIB                 "${BEAST_DIR}/beast/lib/beast32.lib" )
+        set( BEAST_DLL                "${BEAST_DIR}/beast/bin/beast32.dll")
+    endif()
 
     set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_release_bullet.lib )    
     set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_debug_bullet.lib )    
@@ -100,8 +107,10 @@ elseif( MACOS )
 
 endif()
 
-set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
-set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+if (NOT PUBLIC_BUILD)
+  set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+  set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+endif()
 set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
 define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
@@ -120,15 +129,13 @@ set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
-DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
-                           COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll
-                           COPY_DIR    ${DEPLOY_DIR}
-                         )
+DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
+                                   COPY_WIN32  ${BEAST_DLL}
+                                   COPY_DIR    ${DEPLOY_DIR})
 
 setup_main_executable()
 
 if (DEPLOY)
-    set(BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR})
     if (NOT WIN32)
         set(BEAST_DIR "")
     endif()
