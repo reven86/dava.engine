@@ -308,6 +308,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Compression/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
