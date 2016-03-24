@@ -1,10 +1,19 @@
 include (CMake-common)
 
+set  ( USE_DYNAMIC_CRT 1 CACHE INTERNAL "")
+
 get_filename_component( NGT_ROOT_ABS "${DAVA_ROOT_DIR}/Sources/External/ngt/" ABSOLUTE )
 set                   ( NGT_ROOT ${NGT_ROOT_ABS} CACHE INTERNAL "")
 set                   ( NGT_SRC_ROOT "${NGT_ROOT}/src/core/" CACHE INTERNAL "")
 set                   ( NGT_CORE_PATH "${NGT_SRC_ROOT}lib/" CACHE INTERNAL "")
 set                   ( NGT_PLUGINS_PATH "${NGT_SRC_ROOT}plugins/" CACHE INTERNAL "")
+
+file(GLOB RELEASE_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/*.lib")
+file(GLOB DEBUG_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/D/*.lib")
+
+set(EXCLUDE_LIBS "FColladaVS2010.lib" "libdxt.lib" "libdxtd.lib" CACHE INTERNAL "")
+set(ADDITIONAL_RELEASE_LIBS ${RELEASE_LIBS} CACHE INTERNAL "")
+set(ADDITIONAL_DEBUG_LIBS ${DEBUG_LIBS} CACHE INTERNAL "")
 
 macro(get_subdirs_list result curdir)
     file(GLOB children RELATIVE ${curdir} ${curdir}/*)

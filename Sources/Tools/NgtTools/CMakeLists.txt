@@ -1,7 +1,5 @@
 project( NgtTools )
 
-set  ( USE_DYNAMIC_CRT 1 CACHE INTERNAL "")
-
 if (WIN32)
     add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
 elseif (MACOS AND NOT ANDROID)
@@ -15,13 +13,6 @@ get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
 
 include_directories ( ${DAVA_ROOT_DIR}/Sources/Internal)
 include_directories ( ${DAVA_ROOT_DIR}/Sources/Tools)
-
-file(GLOB RELEASE_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/*.lib")
-file(GLOB DEBUG_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/D/*.lib")
-
-set(EXCLUDE_LIBS "FColladaVS2010.lib" "libdxt.lib" "libdxtd.lib" CACHE INTERNAL "")
-set(ADDITIONAL_RELEASE_LIBS ${RELEASE_LIBS} CACHE INTERNAL "")
-set(ADDITIONAL_DEBUG_LIBS ${DEBUG_LIBS} CACHE INTERNAL "")
 
 find_package ( QT5 REQUIRED COMPONENTS ${QT_COMPONENTS} )
 find_package ( NGT REQUIRED )
