@@ -96,6 +96,7 @@ public:
 
 static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size_t n)
 {
+    Logger::Error("Start file_read_func");
     File* file = static_cast<File*>(pOpaque);
     if (!file)
     {
@@ -103,13 +104,13 @@ static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size
         Logger::Error("nullptr zip archive File object");
         return 0;
     }
-
+    Logger::Error("Start file_read_func before seek");
     if (!file->Seek(static_cast<uint32>(file_ofs), File::SEEK_FROM_START))
     {
         Logger::Error("can't set seek pos to %d in zip archive file", static_cast<uint32>(file_ofs));
         return 0;
     }
-
+    Logger::Error("Start file_read_func before reed");
     uint32 result = file->Read(pBuf, static_cast<uint32>(n));
 
     if (result != n)
