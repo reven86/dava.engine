@@ -438,14 +438,12 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                 {
                     if (str[i - 1] == L' ')
                     {
-                        pen.x += justifyOffset << ftToPixelShift;
-                        layoutWidth += justifyOffset << ftToPixelShift;
+                        advances[i].x += justifyOffset << ftToPixelShift;  //Increase advance of character
                     }
                     if (fixJustifyOffset > 0)
                     {
                         fixJustifyOffset--;
-                        pen.x += 1 << ftToPixelShift;
-                        layoutWidth += 1 << ftToPixelShift;
+                        advances[i].x += 1 << ftToPixelShift; //Increase advance of character
                     }
                 }
 
@@ -527,7 +525,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                     {
                         for (int32 w = 0; w < realW; w++)
                         {
-                            *writeBuf++ += *readBuf++;
+                            *writeBuf++ |= *readBuf++;
                         }
                         writeBuf += bufWidth - realW;
                         // DF-1827 - Increment read buffer with proper value

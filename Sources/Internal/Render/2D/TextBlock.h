@@ -206,6 +206,7 @@ private:
     WideString logicalText;
     WideString visualText;
     Vector<WideString> multilineStrings;
+    Vector<float32> charactersSizes;
     Vector<int32> stringSizes;
 
     bool isMultilineEnabled : 1;

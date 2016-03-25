@@ -33,19 +33,19 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
-#include "Private/IUITextField2Impl.h"
-#include "Private/UITextField2StbBind.h"
+#include "UI/Private/IUITextField2Impl.h"
+#include "UI/Private/UITextField2StbBind.h"
 
 #if defined(__DAVAENGINE_WIN32__)
-#include "Private/Win32/UITextField2Impl.h"
+#include "UI/Private/Win32/UITextField2Impl.h"
 #elif defined(__DAVAENGINE_IOS__)
-#include "Private/iOS/UITextField2Impl.h"
+#include "UI/Private/iOS/UITextField2Impl.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#include "Private/MacOS/UITextField2Impl.h"
+#include "UI/Private/MacOS/UITextField2Impl.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "Private/UWP/UITextField2Impl.h"
+#include "UI/Private/UWP/UITextField2Impl.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Private/Android/UITextField2Impl.h"
+#include "UI/Private/Android/UITextField2Impl.h"
 #endif
 
 
@@ -457,8 +457,8 @@ void UITextField2::Update(float32 timeElapsed)
     if (this == UIControlSystem::Instance()->GetFocusedControl())
     {
         WideString txtWithCursor = txt;
-        auto pos = stb_struct->state.cursor;
-        txtWithCursor.insert(pos, showCursor ? L"|" : L" ", 1);
+        //auto pos = stb_struct->state.cursor;
+        //txtWithCursor.insert(pos, showCursor ? L"|" : L" ", 1);
         staticText->SetText(txtWithCursor, NO_REQUIRED_SIZE);
     }
     else
@@ -512,6 +512,20 @@ void UITextField2::Input(UIEvent* currentInput)
     {
         SendChar(currentInput->keyChar);
         Logger::Error("CHAR: ch:%d vk:%d", currentInput->keyChar, currentInput->key);
+    }
+    else if (currentInput->phase == UIEvent::Phase::BEGAN)
+    {
+        Vector2 localPoint = currentInput->point - GetPosition();
+        auto pos = stb_text_locate_coord(stb_struct, localPoint.x, localPoint.y);
+        Logger::Debug("MouseDown: point = %fx%f, pos = %d", localPoint.x, localPoint.y, pos);
+        //stb_textedit_click(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
+    }
+    else if (currentInput->phase == UIEvent::Phase::DRAG)
+    {
+        Vector2 localPoint = currentInput->point - GetPosition();
+        auto pos = stb_text_locate_coord(stb_struct, localPoint.x, localPoint.y);
+        Logger::Debug("MouseDrag: point = %fx%f, pos = %d", localPoint.x, localPoint.y, pos);
+        //stb_textedit_drag(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.

@@ -63,6 +63,7 @@ inline float get_width(STB_TEXTEDIT_STRING* str, int n, int i)
 //                                        (return type is int, -1 means not valid to insert)
 inline int key_to_text(int key)
 {
+    if ('\r' == key) return '\n';
     return key;
 }
 

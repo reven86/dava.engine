@@ -431,6 +431,7 @@ void TextBlock::CalculateCacheParams()
     needCalculateCacheParams = false;
     stringSizes.clear();
     multilineStrings.clear();
+    charactersSizes.clear();
 
 #if defined(LOCALIZATION_DEBUG)
     fittingTypeUsed = FITTING_DISABLED;
@@ -471,16 +472,16 @@ void TextBlock::CalculateCacheParams()
     isRtl = textLayout.IsRtlText();
     visualText = textLayout.GetVisualText(false);
 
-    Vector<float32> charSizes;
-    Font::StringMetrics textMetrics = font->GetStringMetrics(visualText, &charSizes);
+    Font::StringMetrics textMetrics = font->GetStringMetrics(visualText, &charactersSizes);
 
     if (visualText != textLayout.GetPreparedText())
     {
         textLayout.CalculateCharSizes(*font);
+        charactersSizes = textLayout.GetCharSizes();
     }
     else
     {
-        textLayout.SetCharSizes(charSizes);
+        textLayout.SetCharSizes(charactersSizes);
     }
 
     // This is a temporary fix to correctly handle long multiline texts
@@ -494,7 +495,7 @@ void TextBlock::CalculateCacheParams()
 
     if (!isMultilineEnabled || treatMultilineAsSingleLine)
     {
-        for (float32& val : charSizes)
+        for (float32& val : charactersSizes)
         {
             val = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(val);
         }
@@ -504,7 +505,7 @@ void TextBlock::CalculateCacheParams()
         {
             static float32 FT_WIDTH_EPSILON = 0.3f;
 
-            uint32 length = static_cast<uint32>(charSizes.size());
+            uint32 length = static_cast<uint32>(charactersSizes.size());
             Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
             float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width) - FT_WIDTH_EPSILON;
             pointsStr.clear();
@@ -519,7 +520,7 @@ void TextBlock::CalculateCacheParams()
                     pointsStr += L"...";
                     break;
                 }
-                fullWidth -= charSizes[i - 1];
+                fullWidth -= charactersSizes[i - 1];
             }
             if (pointsStr.empty())
             {
@@ -528,7 +529,7 @@ void TextBlock::CalculateCacheParams()
         }
         else if (!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textMetrics.width) && (requestedSize.x >= 0))
         {
-            uint32 length = static_cast<uint32>(charSizes.size());
+            uint32 length = static_cast<uint32>(charactersSizes.size());
             float32 fullWidth = static_cast<float32>(textMetrics.width);
             if (ALIGN_RIGHT & align)
             {
@@ -540,7 +541,7 @@ void TextBlock::CalculateCacheParams()
                         pointsStr.append(visualText, i, length - i);
                         break;
                     }
-                    fullWidth -= charSizes[i];
+                    fullWidth -= charactersSizes[i];
                 }
             }
             else if (ALIGN_HCENTER & align)
@@ -560,11 +561,11 @@ void TextBlock::CalculateCacheParams()
 
                     if (cutFromBegin)
                     {
-                        fullWidth -= charSizes[left++];
+                        fullWidth -= charactersSizes[left++];
                     }
                     else
                     {
-                        fullWidth -= charSizes[right--];
+                        fullWidth -= charactersSizes[right--];
                     }
                     cutFromBegin = !cutFromBegin;
                 }
@@ -573,7 +574,7 @@ void TextBlock::CalculateCacheParams()
             {
                 for (uint32 i = 1U; i < length; ++i)
                 {
-                    fullWidth -= charSizes[length - i];
+                    fullWidth -= charactersSizes[length - i];
                     if (fullWidth <= drawSize.x)
                     {
                         pointsStr.clear();
@@ -702,11 +703,13 @@ void TextBlock::CalculateCacheParams()
         int32 fontHeight = 0;
         textMetrics.width = textMetrics.drawRect.dx = 0;
 
-        multilineStrings.clear();
+        Vector<TextLayout::Line> lines;
         textLayout.Seek(0);
-        textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
+        textLayout.FillList(lines, drawSize.dx, isMultilineBySymbolEnabled);
         fontHeight = font->GetFontHeight() + yOffset;
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+        textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)lines.size() - yOffset;
+
+        DVASSERT_MSG(!lines.empty(), "Empty lines information");
 
         if (fittingType && (requestedSize.dy >= 0 /* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
@@ -729,12 +732,13 @@ void TextBlock::CalculateCacheParams()
                             renderSize = lastSize;
                             font->SetSize(renderSize);
 
-                            multilineStrings.clear();
+                            lines.clear();
                             textLayout.CalculateCharSizes(*font);
                             textLayout.Seek(0);
-                            textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
+                            textLayout.FillList(lines, drawSize.dx, isMultilineBySymbolEnabled);
+                            charactersSizes = textLayout.GetCharSizes();
                             fontHeight = font->GetFontHeight() + yOffset;
-                            textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+                            textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)lines.size() - yOffset;
                             break;
                         }
                     }
@@ -791,41 +795,47 @@ void TextBlock::CalculateCacheParams()
                 renderSize = finalSize;
                 font->SetSize(renderSize);
 
-                multilineStrings.clear();
+                lines.clear();
                 textLayout.CalculateCharSizes(*font);
                 textLayout.Seek(0);
-                textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
+                textLayout.FillList(lines, drawSize.dx, isMultilineBySymbolEnabled);
+                charactersSizes = textLayout.GetCharSizes();
                 fontHeight = font->GetFontHeight() + yOffset;
-                textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+                textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)lines.size() - yOffset;
             };
         }
 
+        // Detect visible lines
         if (textMetrics.height > drawSize.y && requestedSize.y >= 0.f)
         {
-            int32 needLines = Min((int32)multilineStrings.size(), (int32)ceilf(drawSize.y / fontHeight) + 1);
-            Vector<WideString> oldLines;
-            multilineStrings.swap(oldLines);
+            int32 needLines = Min((int32)lines.size(), (int32)ceilf(drawSize.y / fontHeight) + 1);
+            Vector<TextLayout::Line> oldLines;
+            lines.swap(oldLines);
             if (align & ALIGN_TOP)
             {
-                multilineStrings.assign(oldLines.begin(), oldLines.begin() + needLines);
+                lines.assign(oldLines.begin(), oldLines.begin() + needLines);
             }
             else if (align & ALIGN_VCENTER)
             {
                 int32 startIndex = ((int32)oldLines.size() - needLines + 1) / 2;
-                multilineStrings.assign(oldLines.begin() + startIndex, oldLines.begin() + startIndex + needLines);
+                lines.assign(oldLines.begin() + startIndex, oldLines.begin() + startIndex + needLines);
             }
             else //if(ALIGN_BOTTOM)
             {
                 int32 startIndex = (int32)oldLines.size() - needLines;
-                multilineStrings.assign(oldLines.begin() + startIndex, oldLines.end());
+                lines.assign(oldLines.begin() + startIndex, oldLines.end());
             }
-            textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+            textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)lines.size() - yOffset;
         }
 
-        stringSizes.reserve(multilineStrings.size());
+        // Get lines as visual strings and its metrics
+        stringSizes.resize(lines.size());
+        multilineStrings.reserve(lines.size());
         for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
         {
-            Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
+            const WideString& visualLine = textLayout.GetVisualLine(lines[line], true);
+            const Font::StringMetrics& stringSize = font->GetStringMetrics(visualLine);
+            multilineStrings.push_back(visualLine);
             stringSizes.push_back(stringSize.width);
 
             textMetrics.drawRect.dx = Max(textMetrics.drawRect.dx, stringSize.drawRect.dx + stringSize.drawRect.x);
@@ -840,6 +850,7 @@ void TextBlock::CalculateCacheParams()
                 textMetrics.width = Max(textMetrics.width, stringSize.width);
             }
 
+            // Get draw rectangle Y position from first line only
             if (0 == line)
             {
                 textMetrics.drawRect.y = stringSize.drawRect.y;
@@ -852,6 +863,7 @@ void TextBlock::CalculateCacheParams()
             }
 #endif
         }
+       
         // Translate right/bottom edge to width/height
         textMetrics.drawRect.dx -= textMetrics.drawRect.x;
         textMetrics.drawRect.dy -= textMetrics.drawRect.y;
