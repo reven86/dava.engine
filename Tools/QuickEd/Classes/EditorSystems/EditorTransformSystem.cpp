@@ -286,18 +286,17 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
     if (canAdjust)
     {
         //find hovered node alias in nodesToMoveInfos
-        auto iter = std::find_if(nodesToMoveInfos.begin(), nodesToMoveInfos.end(), [this](const std::unique_ptr<MoveInfo>& nodeInfoPtr)
+        DAVA::Vector<PackageBaseNode*> activeControlNodeHierarchy;
+        PackageBaseNode* parent = activeControlNode;
+        while (parent != nullptr && parent->GetControl() != nullptr)
+        {
+            activeControlNodeHierarchy.push_back(parent);
+            parent = parent->GetParent();
+        }
+        auto iter = std::find_if(nodesToMoveInfos.begin(), nodesToMoveInfos.end(), [&activeControlNodeHierarchy](const std::unique_ptr<MoveInfo>& nodeInfoPtr)
                                  {
-                                     PackageBaseNode* parent = activeControlNode;
                                      PackageBaseNode* target = nodeInfoPtr->node;
-                                     while (parent != nullptr || parent->GetControl() != nullptr)
-                                     {
-                                         if (parent == target)
-                                         {
-                                             return true;
-                                         }
-                                         parent = parent->GetParent();
-                                     }
+                                     return std::find(activeControlNodeHierarchy.begin(), activeControlNodeHierarchy.end(), target) != activeControlNodeHierarchy.end();
                                  });
         DVASSERT(iter != nodesToMoveInfos.end());
         const auto& nodeToMoveInfo = iter->get();
