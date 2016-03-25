@@ -122,6 +122,7 @@ static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size
 
 ZipFile::ZipFile(const FilePath& fileName)
 {
+    Logger::Error("phase open zip_file");
     zipData.reset(new ZipPrivateData());
 
     std::memset(&zipData->archive, 0, sizeof(zipData->archive));
@@ -130,6 +131,7 @@ ZipFile::ZipFile(const FilePath& fileName)
 
     if (!zipData->file)
     {
+        Logger::Error("phase before throw exception 1");
         throw std::runtime_error("can't open archive file: " + fileName.GetAbsolutePathname());
     }
 
@@ -141,11 +143,13 @@ ZipFile::ZipFile(const FilePath& fileName)
 
     if (mz_zip_reader_init(&zipData->archive, fileSize, 0) == 0)
     {
+        Logger::Error("phase before throw exception 1");
         throw std::runtime_error("can't init zip from file: " + fileName.GetAbsolutePathname());
     }
 
     String fName = fileName.GetAbsolutePathname();
     zipData->fileName = fName;
+    Logger::Error("phase finish zip_file");
 }
 
 ZipFile::~ZipFile()
