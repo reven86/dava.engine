@@ -70,7 +70,7 @@ function (configure_ngt _PROJECT_NAME _OUTPUT_PATH)
     set (NGT_OUTPUT_DIR ${_OUTPUT_PATH} CACHE INTERNAL "")
     
     # NGT build system use this variable on Mac to resolve path where plugins must be copyed
-    set( BW_BUNDLE_NAME ${_PROJECT_NAME})
+    set( BW_BUNDLE_NAME ${_PROJECT_NAME} CACHE INTERNAL "")
 
     append_deploy_dependency(${PROJECT_NAME})
     set_delayed_deploy_qt()
