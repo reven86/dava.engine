@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace DAVA;
 
 ArchiveUnpackTool::ArchiveUnpackTool()
-    : CommandLineTool("-pack")
+    : CommandLineTool("-unpack")
 {
     options.AddArgument("directory");
     options.AddArgument("pakfile");

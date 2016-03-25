@@ -236,7 +236,7 @@ void ArchivePackTool::ProcessInternal()
         return;
     }
 
-    std::stable_sort(files.begin(), files.end());
+    // std::stable_sort(files.begin(), files.end());
 
     //     if (FileSystem::Instance()->Exists(packFilePath))
     //     {
