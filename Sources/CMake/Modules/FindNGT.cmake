@@ -27,8 +27,6 @@ else()
 endif()
 
 append_ngt_includes()
-
-set(QML_SCAN_DIR ${DAVA_ROOT_DIR})
 get_subdirs_list(SUBDIRS ${NGT_CORE_PATH})
 
 foreach(SUBDIR ${SUBDIRS})
