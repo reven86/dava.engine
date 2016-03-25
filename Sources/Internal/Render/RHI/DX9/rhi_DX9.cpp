@@ -149,6 +149,21 @@ dx9_Uninitialize()
 static void
 dx9_Reset(const ResetParam& param)
 {
+    UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+
+    if (param.width != _DX9_PresentParam.BackBufferWidth
+        || param.height != _DX9_PresentParam.BackBufferHeight
+        || param.fullScreen != !_DX9_PresentParam.Windowed
+        || interval != _DX9_PresentParam.PresentationInterval
+        )
+    {
+        _DX9_PresentParam.BackBufferWidth = param.width;
+        _DX9_PresentParam.BackBufferHeight = param.height;
+        _DX9_PresentParam.Windowed = !param.fullScreen;
+        _DX9_PresentParam.PresentationInterval = interval;
+
+        _DX9_ResetPending = true;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -174,7 +189,7 @@ void _InitDX9()
         HWND wnd = (HWND)_DX9_InitParam.window;
         unsigned backbuf_width = _DX9_InitParam.width;
         unsigned backbuf_height = _DX9_InitParam.height;
-        bool use_vsync = true; //(vsync)  ? (bool)(*vsync)  : false;
+        bool use_vsync = _DX9_InitParam.vsyncEnabled;
         D3DADAPTER_IDENTIFIER9 info = { 0 };
         D3DCAPS9 caps;
         DWORD vertex_processing = E_FAIL;

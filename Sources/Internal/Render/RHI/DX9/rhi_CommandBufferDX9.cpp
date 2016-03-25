@@ -52,8 +52,6 @@ namespace rhi
 {
 //==============================================================================
 
-static bool _DX9_ResetPending = false;
-
 struct
 FrameDX9
 {
@@ -80,6 +78,8 @@ static DAVA::Semaphore _DX9_RenderThreadStartedSync(0);
 static DX9Command* _DX9_PendingImmediateCmd = nullptr;
 static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
+
+static bool _D3D9_DeviceLost = false;
 
 //------------------------------------------------------------------------------
 
@@ -1380,7 +1380,9 @@ _DX9_ExecuteQueuedCommands()
     {
         hr = _D3D9_Device->TestCooperativeLevel();
 
-        if (hr == D3DERR_DEVICENOTRESET)
+        if ((_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET)
+            || (!_D3D9_DeviceLost && SUCCEEDED(hr))
+            )
         {
             D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
 
@@ -1402,6 +1404,7 @@ _DX9_ExecuteQueuedCommands()
                 IndexBufferDX9::ReCreateAll();
 
                 _DX9_ResetPending = false;
+                _D3D9_DeviceLost = false;
             }
             else
             {
@@ -1410,6 +1413,7 @@ _DX9_ExecuteQueuedCommands()
         }
         else
         {
+            Logger::Info("can't reset now\n");
             ::Sleep(100);
         }
     }
@@ -1422,6 +1426,7 @@ _DX9_ExecuteQueuedCommands()
 
         if (hr == D3DERR_DEVICELOST)
         {
+            _D3D9_DeviceLost = true;
             _DX9_ResetPending = true;
             _RejectAllFrames();
         }
