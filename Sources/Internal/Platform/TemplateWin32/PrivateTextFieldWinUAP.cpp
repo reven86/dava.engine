@@ -39,6 +39,7 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UITextField.h"
+#include "UI/Focus/FocusHelpers.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/ImageConvert.h"
@@ -655,8 +656,15 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             // 1. click on text field in multiline mode as it is always shown on screen
             // 2. tab navigation
             UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-            if (curFocused != uiTextField)
+            if (curFocused != uiTextField && FocusHelpers::CanFocusControl(uiTextField))
+            {
                 uiTextField->SetFocused();
+            }
+
+            if (uiTextField == UIControlSystem::Instance()->GetFocusedControl() && !uiTextField->IsEditing())
+            {
+                uiTextField->StartEdit();
+            }
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
             // If keyboard rect is not empty so manually notify delegate about keyboard size and position
