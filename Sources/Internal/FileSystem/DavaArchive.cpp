@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileSystem/DavaArchive.h"
 #include "Compression/ZipCompressor.h"
 #include "Compression/LZ4Compressor.h"
-#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 #include <cstring> // for std::strcmp
 
 namespace DAVA
