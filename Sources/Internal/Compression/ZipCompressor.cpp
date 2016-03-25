@@ -40,9 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MINIZ_NO_STDIO
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
 
-#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 1
-#define MINIZ_LITTLE_ENDIAN 1
-//#define MINIZ_HAS_64BIT_REGISTERS 1
 #include <miniz/miniz.c>
 
 #ifdef __clang__
@@ -96,7 +93,6 @@ public:
 
 static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size_t n)
 {
-    Logger::Error("Start file_read_func");
     File* file = static_cast<File*>(pOpaque);
     if (!file)
     {
@@ -104,15 +100,13 @@ static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size
         Logger::Error("nullptr zip archive File object");
         return 0;
     }
-    Logger::Error("Start file_read_func before seek");
     if (!file->Seek(static_cast<uint32>(file_ofs), File::SEEK_FROM_START))
     {
         Logger::Error("can't set seek pos to %d in zip archive file", static_cast<uint32>(file_ofs));
         return 0;
     }
-    Logger::Error("Start file_read_func before reed");
-    uint32 result = file->Read(pBuf, static_cast<uint32>(n));
 
+    uint32 result = file->Read(pBuf, static_cast<uint32>(n));
     if (result != n)
     {
         Logger::Error("can't read bytes from zip archive");
@@ -123,7 +117,6 @@ static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size
 
 ZipFile::ZipFile(const FilePath& fileName)
 {
-    Logger::Error("phase open zip_file");
     zipData.reset(new ZipPrivateData());
 
     std::memset(&zipData->archive, 0, sizeof(zipData->archive));
@@ -132,7 +125,6 @@ ZipFile::ZipFile(const FilePath& fileName)
 
     if (!zipData->file)
     {
-        Logger::Error("phase before throw exception 1");
         throw std::runtime_error("can't open archive file: " + fileName.GetAbsolutePathname());
     }
 
@@ -144,13 +136,11 @@ ZipFile::ZipFile(const FilePath& fileName)
 
     if (mz_zip_reader_init(&zipData->archive, fileSize, 0) == 0)
     {
-        Logger::Error("phase before throw exception 1");
         throw std::runtime_error("can't init zip from file: " + fileName.GetAbsolutePathname());
     }
 
     String fName = fileName.GetAbsolutePathname();
     zipData->fileName = fName;
-    Logger::Error("phase finish zip_file");
 }
 
 ZipFile::~ZipFile()
@@ -165,20 +155,18 @@ uint32 ZipFile::GetNumFiles() const
 
 bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOriginalSize, uint32& fileCompressedSize, bool& isDirectory) const
 {
-    Logger::Error("Start GetFileInfo");
     mz_zip_archive_file_stat fileStat;
     if (!mz_zip_reader_file_stat(&zipData->archive, fileIndex, &fileStat))
     {
-        Logger::Error("phase inside ZipFile exception");
-        Logger::Error("mz_zip_reader_file_stat() failed!");
+        Logger::Error("can't get file status from zip archive: %s", fileName.c_str());
         return false;
     }
-    Logger::Error("after file_stat");
+
     fileName = fileStat.m_filename;
     fileOriginalSize = static_cast<uint32>(fileStat.m_uncomp_size);
     fileCompressedSize = static_cast<uint32>(fileStat.m_comp_size);
     isDirectory = (mz_zip_reader_is_file_a_directory(&zipData->archive, fileIndex) != 0);
-    Logger::Error("phase inside ZipFile finish GetFileInfo");
+
     return true;
 }
 
