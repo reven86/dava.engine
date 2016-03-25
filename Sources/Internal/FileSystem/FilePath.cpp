@@ -32,6 +32,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <pwd.h>
@@ -189,7 +190,7 @@ void FilePath::InitializeBundleName()
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-FilePath FilePath::FilepathInDocuments(const char* relativePathname)
+FilePath FilePath::FilepathInDocuments(const char8* relativePathname)
 {
     FilePath path(FileSystem::Instance()->GetCurrentDocumentsDirectory() + relativePathname);
     path.pathType = PATH_IN_DOCUMENTS;
@@ -211,7 +212,7 @@ bool FilePath::ContainPath(const FilePath& basePath, const String& partPath)
     return basePath.GetAbsolutePathname().find(partPath) != std::string::npos;
 }
 
-bool FilePath::ContainPath(const FilePath& basePath, const char* partPath)
+bool FilePath::ContainPath(const FilePath& basePath, const char8* partPath)
 {
     return ContainPath(basePath, String(partPath));
 }
@@ -240,9 +241,14 @@ FilePath::FilePath(FilePath&& path) DAVA_NOEXCEPT
     path.pathType = PATH_EMPTY;
 }
 
-FilePath::FilePath(const char* sourcePath)
+FilePath::FilePath(const char8* sourcePath)
 {
     Initialize(String(sourcePath));
+}
+
+FilePath::FilePath(const char16* sourcePath)
+{
+    Initialize(WideString(sourcePath));
 }
 
 FilePath::FilePath(const String& pathname)
@@ -250,25 +256,29 @@ FilePath::FilePath(const String& pathname)
     Initialize(pathname);
 }
 
-FilePath::FilePath(const char* directory, const String& filename)
+FilePath::FilePath(const WideString& pathname)
 {
-    FilePath directoryPath(directory);
-    DVASSERT(!directoryPath.IsEmpty());
+    Initialize(pathname);
+}
 
-    directoryPath.MakeDirectoryPathname();
-
-    pathType = directoryPath.pathType;
-    absolutePathname = AddPath(directoryPath, filename);
+FilePath::FilePath(const char8* directory, const String& filename)
+{
+    InitializeWithDirectoryAndName(String(directory), filename);
 }
 
 FilePath::FilePath(const String& directory, const String& filename)
 {
-    FilePath directoryPath(directory);
-    DVASSERT(!directoryPath.IsEmpty());
-    directoryPath.MakeDirectoryPathname();
+    InitializeWithDirectoryAndName(directory, filename);
+}
 
-    pathType = directoryPath.pathType;
-    absolutePathname = AddPath(directoryPath, filename);
+FilePath::FilePath(const char16* directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(WideString(directory), filename);
+}
+
+FilePath::FilePath(const WideString& directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(directory, filename);
 }
 
 FilePath::FilePath(const FilePath& directory, const String& filename)
@@ -277,6 +287,29 @@ FilePath::FilePath(const FilePath& directory, const String& filename)
 
     pathType = directory.pathType;
     absolutePathname = AddPath(directory, filename);
+}
+
+FilePath::FilePath(const FilePath& directory, const WideString& filename)
+{
+    DVASSERT(directory.IsDirectoryPathname());
+
+    pathType = directory.pathType;
+    absolutePathname = AddPath(directory, UTF8Utils::EncodeToUTF8(filename));
+}
+
+void FilePath::InitializeWithDirectoryAndName(const String& directory, const String& filename)
+{
+    FilePath directoryPath(directory);
+    DVASSERT(!directoryPath.IsEmpty());
+    directoryPath.MakeDirectoryPathname();
+
+    pathType = directoryPath.pathType;
+    absolutePathname = AddPath(directoryPath, filename);
+}
+
+void FilePath::InitializeWithDirectoryAndName(const WideString& directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(UTF8Utils::EncodeToUTF8(directory), UTF8Utils::EncodeToUTF8(filename));
 }
 
 void FilePath::Initialize(const String& _pathname)
@@ -338,6 +371,11 @@ void FilePath::Initialize(const String& _pathname)
         absolutePathname = path.GetAbsolutePathname();
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     }
+}
+
+void FilePath::Initialize(const WideString& _pathname)
+{
+    Initialize(UTF8Utils::EncodeToUTF8(_pathname));
 }
 
 FilePath::~FilePath()
@@ -548,7 +586,7 @@ String FilePath::GetRelativePathname(const String& forDirectory) const
     return GetRelativePathname(FilePath(forDirectory));
 }
 
-String FilePath::GetRelativePathname(const char* forDirectory) const
+String FilePath::GetRelativePathname(const char8* forDirectory) const
 {
     if (forDirectory == NULL)
         return String();

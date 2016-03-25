@@ -353,7 +353,7 @@ fm::string AddNodeSid(xmlNode* node, const char* wantedSid);
 		@param subId The wanted sub-id. This string is modified
 			to hold the actual sub-id written to the XML tree node. */
 void AddNodeSid(xmlNode* node, fm::string& subId);
-#ifdef UNICODE
+#if (1)
 void AddNodeSid(xmlNode* node, fstring& subId); /**< See above. */
 #endif
 };

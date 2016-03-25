@@ -33,6 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+static const char8* localResourcesPath = "/mnt/sdcard/DavaProject/";
+
 /**
     \ingroup filesystem
     \brief class to work with file pathname
@@ -53,11 +55,21 @@ public:
     FilePath();
     FilePath(const FilePath& path);
     FilePath(FilePath&& path) DAVA_NOEXCEPT;
+
     FilePath(const String& sourcePath);
-    FilePath(const char* sourcePath);
+    FilePath(const WideString& sourcePath);
+
+    FilePath(const char8* sourcePath);
+    FilePath(const char16* sourcePath);
+
     FilePath(const FilePath& directory, const String& filename);
+    FilePath(const FilePath& directory, const WideString& filename);
+
     FilePath(const String& directory, const String& filename);
-    FilePath(const char* directory, const String& filename);
+    FilePath(const WideString& directory, const WideString& filename);
+
+    FilePath(const char8* directory, const String& filename);
+    FilePath(const char16* directory, const WideString& filename);
 
     ~FilePath();
 
@@ -150,7 +162,7 @@ public:
         */
     String GetRelativePathname(const FilePath& forDirectory) const;
     String GetRelativePathname(const String& forDirectory) const;
-    String GetRelativePathname(const char* forDirectory) const;
+    String GetRelativePathname(const char8* forDirectory) const;
 
     /**
         \brief Function to retrieve string path value, passed in constructor
@@ -245,7 +257,7 @@ public:
         \brief Function to retrieve full path relative current documents folder
         \returns path relative corrent documents folder
         */
-    static FilePath FilepathInDocuments(const char* relativePathname);
+    static FilePath FilepathInDocuments(const char8* relativePathname);
 
     /**
         \brief Function to retrieve full path relative current documents folder
@@ -261,7 +273,7 @@ public:
 
     static bool ContainPath(const FilePath& basePath, const FilePath& partPath);
     static bool ContainPath(const FilePath& basePath, const String& partPath);
-    static bool ContainPath(const FilePath& basePath, const char* partPath);
+    static bool ContainPath(const FilePath& basePath, const char8* partPath);
 
     static void AddResourcesFolder(const FilePath& folder);
     static void AddTopResourcesFolder(const FilePath& folder);
@@ -274,6 +286,9 @@ public:
 
 protected:
     void Initialize(const String& pathname);
+    void Initialize(const WideString& pathname);
+    void InitializeWithDirectoryAndName(const String& directory, const String& filename);
+    void InitializeWithDirectoryAndName(const WideString& directory, const WideString& filename);
 
     String ResolveResourcesPath() const;
 
