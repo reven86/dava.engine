@@ -53,6 +53,7 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(loop != nullptr);
     DVASSERT(handle == nullptr);
+    DVASSERT(cbk != nullptr);
 
     handle = new uv_getaddrinfo_t;
     handle->data = this;
@@ -116,15 +117,12 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
 void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
 {
     Endpoint endpoint;
-    if (0 == status && response != nullptr)
+    if (0 == status)
     {
         endpoint = Endpoint(response->ai_addr);
     }
 
-    if (resolverCallbackFn != nullptr)
-    {
-        resolverCallbackFn(endpoint, status);
-    }
+    resolverCallbackFn(endpoint, status);
 }
 
 } // end of namespace Net

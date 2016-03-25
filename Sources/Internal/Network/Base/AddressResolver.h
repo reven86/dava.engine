@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Functional/Function.h"
 #include "Network/Base/Endpoint.h"
 #include <libuv/uv.h>
-#include <atomic>
 
 namespace DAVA
 {
