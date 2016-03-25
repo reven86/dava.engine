@@ -143,8 +143,8 @@ endif ()
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
 DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
-                           COPY_WIN32  ${BEAST}
-                           COPY_WIN64  ${BEAST}
+                           COPY_WIN32  ${BEAST_DLL}
+                           COPY_WIN64  ${BEAST_DLL}
                            COPY_DIR    ${DEPLOY_DIR})
 
 setup_main_executable()
