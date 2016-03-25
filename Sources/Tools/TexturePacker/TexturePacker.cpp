@@ -462,7 +462,7 @@ uint8 GetImageParametersAt(const Vector<String>& gpuParams, uint8 gpuParamPositi
 }
 
 bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& imageFormat,
-                      ImageQuality& imageQuality, uint8& pixelParamsRead, uint8& imageParamsRead)
+                      ImageQuality& imageQuality)
 {
     const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(forGPU);
     // gpu flag has at least one additional parameter: pixel format or image format, or both of them
@@ -471,7 +471,7 @@ bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& 
 
     // suppose pixel parameter is at first position and read it
     uint8 gpuParamPosition = 0;
-    pixelParamsRead = GetPixelParameterAt(gpuParams, gpuParamPosition, pixelFormat);
+    uint8 pixelParamsRead = GetPixelParameterAt(gpuParams, gpuParamPosition, pixelFormat);
 
     if (pixelParamsRead == 1)
     {
@@ -479,7 +479,7 @@ bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& 
     }
 
     // read image parameters
-    imageParamsRead = GetImageParametersAt(gpuParams, gpuParamPosition, imageFormat, imageQuality);
+    uint8 imageParamsRead = GetImageParametersAt(gpuParams, gpuParamPosition, imageFormat, imageQuality);
 
     // read pixel parameter in case if image parameters were on first position
     if (!pixelParamsRead && imageParamsRead)
@@ -494,10 +494,10 @@ bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& 
 Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(eGPUFamily forGPU)
 {
     Vector<ImageExportKeys> compressionTargets;
-    if (forGPU == GPU_FAMILY_COUNT)
+    if (forGPU == eGPUFamily::GPU_FAMILY_COUNT)
     {
-        compressionTargets.resize(GPU_FAMILY_COUNT);
-        for (uint32 i = 0; i < GPU_FAMILY_COUNT; ++i)
+        compressionTargets.resize(eGPUFamily::GPU_FAMILY_COUNT);
+        for (uint32 i = 0; i < eGPUFamily::GPU_FAMILY_COUNT; ++i)
         {
             compressionTargets[i].forGPU = static_cast<eGPUFamily>(i);
         }
@@ -510,164 +510,154 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(eGPUFamily f
 
     for (auto& keys : compressionTargets)
     {
-        if (GPUFamilyDescriptor::IsGPUForDevice(keys.forGPU))
+        if (keys.forGPU == eGPUFamily::GPU_ORIGIN)
         {
-            uint8 pixelParamsRead = 0;
-            uint8 imageParamsRead = 0;
+            keys.pixelFormat = PixelFormat::FORMAT_RGBA8888;
+            keys.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+        }
+        else if (GPUFamilyDescriptor::IsGPUForDevice(keys.forGPU))
+        {
+            { // read GPU parameters
+                const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(keys.forGPU);
+                bool gpuParametersRead = false;
+                if (CommandLineParser::Instance()->IsFlagSet(gpuNameFlag) || (forGPU == eGPUFamily::GPU_FAMILY_COUNT))
+                {
+                    gpuParametersRead = GetGpuParameters(keys.forGPU, keys.pixelFormat, keys.imageFormat, keys.imageQuality);
+                }
 
-            const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(keys.forGPU);
-            if (CommandLineParser::Instance()->IsFlagSet(gpuNameFlag) || (forGPU == GPU_FAMILY_COUNT))
-            {
-                GetGpuParameters(keys.forGPU, keys.pixelFormat, keys.imageFormat, keys.imageQuality, pixelParamsRead, imageParamsRead);
+                if (!gpuParametersRead)
+                {
+                    AddError(Format("Cannot read compression options for GPU '%s'", GlobalEnumMap<eGPUFamily>::Instance()->ToString(keys.forGPU)));
+                    continue;
+                }
             }
 
-            if (pixelParamsRead)
-            {
-                bool compressedImageFormatRead = false;
-                if (imageParamsRead)
+            { // validate pixel and image formats
+                if (keys.pixelFormat == PixelFormat::FORMAT_INVALID)
+                { //we should always set target pixel format in flags.txt
+                    AddError(Format("Compression format was not selected for GPU '%s'", GlobalEnumMap<eGPUFamily>::Instance()->ToString(keys.forGPU)));
+                    keys.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+                    continue;
+                }
+
+                if (keys.imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN)
                 {
-                    auto wrapper = ImageSystem::Instance()->GetImageFormatInterface(keys.imageFormat);
-                    if (keys.imageFormat == IMAGE_FORMAT_PVR || keys.imageFormat == IMAGE_FORMAT_DDS)
+                    keys.imageFormat = GPUFamilyDescriptor::GetCompressedFileFormat(keys.forGPU, keys.pixelFormat);
+                }
+                else if (keys.imageFormat == ImageFormat::IMAGE_FORMAT_PVR || keys.imageFormat == ImageFormat::IMAGE_FORMAT_DDS)
+                {
+                    if (GPUFamilyDescriptor::GetCompressedFileFormat(keys.forGPU, keys.pixelFormat) != keys.imageFormat)
                     {
-                        if (GPUFamilyDescriptor::GetCompressedFileFormat(keys.forGPU, keys.pixelFormat) == keys.imageFormat)
-                        {
-                            compressedImageFormatRead = true;
-                        }
-                        else
-                        {
-                            AddError(Format("Compression format '%s' can't be saved to %s image for GPU '%s'",
-                                            GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                                            wrapper->Name(),
-                                            GlobalEnumMap<eGPUFamily>::Instance()->ToString(keys.forGPU)));
-
-                            keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
-                        }
-                    }
-                    else
-                    {
-                        if (wrapper->IsFormatSupported(keys.pixelFormat))
-                        {
-                            // TO DO: link intermediate atlass pixelformat with code which genetates it.
-                            const PixelFormat intermediateAtlassFormat = FORMAT_RGBA8888;
-
-                            // Try to setup kays only if destination pixelformat is different
-                            if (intermediateAtlassFormat != keys.pixelFormat)
-                            {
-                                keys.toConvertOrigin = ImageConvert::CanConvertFromTo(intermediateAtlassFormat, keys.pixelFormat);
-                                if (!keys.toConvertOrigin)
-                                {
-                                    AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat)));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            AddError(Format("Format '%s' is not supported for %s images.",
-                                            GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                                            wrapper->Name()));
-                        }
+                        keys.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
                     }
                 }
 
-                if (!imageParamsRead || compressedImageFormatRead)
+                if (keys.imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN)
+                {
+                    keys.pixelFormat = PixelFormat::FORMAT_INVALID;
+                    AddError(Format("Incorrect settings were selected for GPU '%s'", GlobalEnumMap<eGPUFamily>::Instance()->ToString(keys.forGPU)));
+                    continue;
+                }
+            }
+
+            { // define internal format convertation options. should be refactored after PVR/DXT formats will be moved into ImageConvert
+                if (keys.imageFormat == ImageFormat::IMAGE_FORMAT_WEBP
+                    || keys.imageFormat == ImageFormat::IMAGE_FORMAT_JPEG
+                    || keys.imageFormat == ImageFormat::IMAGE_FORMAT_TGA
+                    || keys.imageFormat == ImageFormat::IMAGE_FORMAT_PNG
+                    )
+                {
+                    keys.toConvertOrigin = ImageConvert::CanConvertFromTo(PixelFormat::FORMAT_RGBA8888, keys.pixelFormat);
+                    if (!keys.toConvertOrigin)
+                    {
+                        AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat)));
+
+                        keys.pixelFormat = PixelFormat::FORMAT_INVALID;
+                        keys.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+                        continue;
+                    }
+                }
+                else if (keys.imageFormat == ImageFormat::IMAGE_FORMAT_PVR || keys.imageFormat == ImageFormat::IMAGE_FORMAT_DDS)
                 {
                     keys.toComressForGPU = GPUFamilyDescriptor::IsFormatSupported(keys.forGPU, keys.pixelFormat);
                     if (!keys.toComressForGPU)
                     {
-                        AddError(Format("Compression format '%s' is not supported for GPU '%s'",
+                        AddError(Format("DVASSERT: Compression format '%s' is not supported for GPU '%s'",
                                         GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
                                         GlobalEnumMap<eGPUFamily>::Instance()->ToString(keys.forGPU)));
+
+                        keys.pixelFormat = PixelFormat::FORMAT_INVALID;
+                        keys.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+                        continue;
                     }
                 }
             }
-            else if (imageParamsRead)
-            {
-                if (keys.imageFormat == IMAGE_FORMAT_PVR || keys.imageFormat == IMAGE_FORMAT_DDS)
-                {
-                    AddError(Format("Compression format is not specified for '%s' token",
-                                    ImageSystem::Instance()->GetImageFormatInterface(keys.imageFormat)->Name()));
-
-                    keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
-                }
-            }
-            else
-            {
-                AddError(Format("Params for GPU %s were not set.\n", GlobalEnumMap<eGPUFamily>::Instance()->ToString(keys.forGPU)));
-                continue;
-            }
-        }
-
-        if (keys.imageFormat == IMAGE_FORMAT_UNKNOWN && keys.toComressForGPU)
-        {
-            keys.imageFormat = IMAGE_FORMAT_PNG;
         }
     }
 
     return compressionTargets;
 }
 
-void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExportKeys>& keys, const FilePath& exportedPathnameWithoutExtension)
+void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExportKeys>& keys, const FilePath& pathnameWithoutExtension)
 {
     std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
 
-    descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = GetDescriptorWrapMode();
-    descriptor->SetGenerateMipmaps(CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps")));
+    { // prepare general info for sprite drawing
+        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = GetDescriptorWrapMode();
+        descriptor->SetGenerateMipmaps(CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps")));
 
-    TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
-    descriptor->drawSettings.minFilter = ftItem.minFilter;
-    descriptor->drawSettings.magFilter = ftItem.magFilter;
-    descriptor->drawSettings.mipFilter = ftItem.mipFilter;
+        TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
+        descriptor->drawSettings.minFilter = ftItem.minFilter;
+        descriptor->drawSettings.magFilter = ftItem.magFilter;
+        descriptor->drawSettings.mipFilter = ftItem.mipFilter;
+        descriptor->pathname = pathnameWithoutExtension + TextureDescriptor::GetDescriptorExtension();
+    }
 
-    descriptor->pathname = exportedPathnameWithoutExtension + TextureDescriptor::GetDescriptorExtension();
-
-    Set<FilePath> imagesForDeletion;
     for (const auto& key : keys)
     {
-        if (key.imageFormat == IMAGE_FORMAT_UNKNOWN)
+        if (key.imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN || key.pixelFormat == PixelFormat::FORMAT_INVALID)
         {
-            Logger::Error("Cannot export texture %s for %s", exportedPathnameWithoutExtension.GetStringValue().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(key.forGPU));
+            Logger::Error("Cannot export texture %s for GPU %s", pathnameWithoutExtension.GetStringValue().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(key.forGPU));
             continue;
         }
 
-        const String extension = ImageSystem::Instance()->GetExtensionsFor(key.imageFormat)[0];
-        FilePath srcImagePathname = exportedPathnameWithoutExtension + extension;
-
         PngImageExt imageForGPU(image);
-        if (key.toConvertOrigin)
+        if (key.imageFormat == ImageFormat::IMAGE_FORMAT_DDS || key.imageFormat == ImageFormat::IMAGE_FORMAT_PVR)
         {
-            imageForGPU.ConvertToFormat(key.pixelFormat);
+            descriptor->dataSettings.sourceFileFormat = IMAGE_FORMAT_PNG;
         }
+        else
+        {
+            descriptor->dataSettings.sourceFileFormat = key.imageFormat;
+            if (key.toConvertOrigin)
+            {
+                imageForGPU.ConvertToFormat(key.pixelFormat);
+            }
+        }
+        String srcExtension = ImageSystem::Instance()->GetExtensionsFor(descriptor->dataSettings.sourceFileFormat)[0];
+        descriptor->dataSettings.sourceFileExtension = srcExtension;
+
         imageForGPU.DitherAlpha();
-        imageForGPU.Write(srcImagePathname, key.imageQuality);
+        imageForGPU.Write(descriptor->GetSourceTexturePathname(), key.imageQuality);
 
         descriptor->compression[key.forGPU].format = key.pixelFormat;
         if (key.toComressForGPU)
         {
             descriptor->exportedAsGpuFamily = key.forGPU;
             descriptor->format = key.pixelFormat;
-        }
 
-        descriptor->dataSettings.sourceFileFormat = key.imageFormat;
-        descriptor->dataSettings.sourceFileExtension = extension;
-
-        if (key.toComressForGPU)
-        {
             TextureConverter::ConvertTexture(*descriptor, key.forGPU, false, quality);
-            imagesForDeletion.insert(srcImagePathname);
         }
     }
 
-    if (keys.size() == GPU_FAMILY_COUNT)
-    {
-        descriptor->Save(descriptor->pathname);
-    }
-    else if (imagesForDeletion.empty() == false)
+    if (keys.size() == 1)
     {
         descriptor->Export(descriptor->pathname);
-        for (auto& path : imagesForDeletion)
-        {
-            FileSystem::Instance()->DeleteFile(path);
-        }
+        FileSystem::Instance()->DeleteFile(descriptor->GetSourceTexturePathname());
+    }
+    else
+    {
+        descriptor->Save(descriptor->pathname);
     }
 }
 
