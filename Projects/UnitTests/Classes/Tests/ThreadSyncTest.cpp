@@ -34,7 +34,7 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(ThreadSyncTest)
+DAVA_TESTCLASS (ThreadSyncTest)
 {
     Thread* someThread = nullptr;
 
@@ -53,7 +53,20 @@ DAVA_TESTCLASS(ThreadSyncTest)
     AutoResetEvent are;
     ManualResetEvent mre;
 
-    DAVA_TEST(ThreadSyncTestFunction)
+    DAVA_TEST (ThreadJoinableTest)
+    {
+        RefPtr<Thread> p(Thread::Create([]() {
+            Thread::Sleep(2000);
+        }));
+
+        TEST_VERIFY(p->IsJoinable() == false);
+        p->Start();
+        TEST_VERIFY(p->IsJoinable() == true);
+        p->Join();
+        TEST_VERIFY(p->IsJoinable() == false);
+    }
+
+    DAVA_TEST (ThreadSyncTestFunction)
     {
         cvMutex.Lock();
         someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
@@ -68,16 +81,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         someThread = nullptr;
     }
 
-    DAVA_TEST(ThreadSleepTestFunction)
-    {
-        uint64 time = SystemTimer::Instance()->AbsoluteMS();
-        Thread::Sleep(300);
-        uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - time;
-        //elapsed time can be rounded to lowest, so -1 here
-        TEST_VERIFY(elapsedTime >= 299);
-    }
-
-    DAVA_TEST(TestThread)
+    DAVA_TEST (TestThread)
     {
         TEST_VERIFY(true == Thread::IsMainThread());
 
@@ -154,7 +158,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         */
     }
 
-    DAVA_TEST(TestAutoResetEvent)
+    DAVA_TEST (TestAutoResetEvent)
     {
         Thread* threads[autoResetThreadCount];
 
@@ -230,7 +234,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         autoResetValue++;
     }
 
-    DAVA_TEST(TestManualResetEvent)
+    DAVA_TEST (TestManualResetEvent)
     {
         Thread* threads[autoResetThreadCount];
 
@@ -329,7 +333,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     }
 
     //if stack size is not set, app will crash
-    DAVA_TEST(StackHurtTest)
+    DAVA_TEST (StackHurtTest)
     {
         auto stackHurtThread = RefPtr<Thread>(Thread::Create(StackHurtFunc));
         stackHurtThread->SetStackSize(2 * 1024 * 1024); //2 MB

@@ -112,7 +112,7 @@ typedef struct memnod
 #endif
 #define HDR_SIZE sizeof(MEMHDR)
 #define RESERVE_SIZE (((HDR_SIZE + (ALIGN_SIZE - 1)) \
-                       / ALIGN_SIZE) *               \
+                       / ALIGN_SIZE) * \
                       ALIGN_SIZE)
 
 

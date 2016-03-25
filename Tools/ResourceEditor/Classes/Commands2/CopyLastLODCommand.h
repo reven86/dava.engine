@@ -30,7 +30,7 @@
 #ifndef __COPY_LAST_LOD_COMMAND_H__
 #define __COPY_LAST_LOD_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "DAVAEngine.h"
 
 class CopyLastLODToLod0Command : public Command2

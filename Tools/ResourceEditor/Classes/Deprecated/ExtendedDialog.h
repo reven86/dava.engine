@@ -42,18 +42,22 @@ protected:
 
 public:
     ExtendedDialog();
-
+    virtual void Show();
     virtual void Close();
 
-    virtual void WillAppear();
+    virtual void OnActive();
 
 protected:
+    bool IsShown() const;
     const Rect GetScreenRect() const;
 
     virtual void UpdateSize();
 
     virtual const Rect GetDialogRect() const;
     DraggableDialog* draggableDialog;
+
+private:
+    bool isShown = false;
 };
 
 #endif //__EXTENDED_DIALOG_H__

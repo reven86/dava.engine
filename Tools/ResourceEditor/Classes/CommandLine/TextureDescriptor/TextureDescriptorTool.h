@@ -42,10 +42,10 @@ class TextureDescriptorTool : public CommandLineTool
         ACTION_NONE = -1,
 
         ACTION_RESAVE_DESCRIPTORS,
-        ACTION_COPY_COMPRESSION,
         ACTION_CREATE_DESCRIPTORS,
-        ACTION_SET_COMPRESSION_FOR_FOLDER,
-        ACTION_SET_COMPRESSION_FOR_DESCRIPTOR
+        ACTION_SET_COMPRESSION,
+        ACTION_SET_PRESET,
+        ACTION_SAVE_PRESET
     };
 
 public:
@@ -60,6 +60,10 @@ private:
 
     DAVA::FilePath folderPathname;
     DAVA::FilePath filePathname;
+    DAVA::FilePath presetPath;
+
+    DAVA::FilePath filesList;
+    DAVA::FilePath presetsList;
 
     bool forceModeEnabled = false;
     bool convertEnabled = false;

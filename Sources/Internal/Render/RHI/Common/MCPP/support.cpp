@@ -70,6 +70,11 @@
  *              buffer.
  */
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #include "_mcpp.h"
 #include <atomic>
 #include "Base/FixedSizePoolAllocator.h"
@@ -255,8 +260,8 @@ OUTDEST od)
 #endif /* MCPP_LIB */
 
 #define DEST2FP(od) \
-    (od == MCPP_OUT) ? fp_out :                                           \
-                       ((od == MCPP_ERR) ? fp_err :                       \
+    (od == MCPP_OUT) ? fp_out : \
+                       ((od == MCPP_ERR) ? fp_err : \
                                            ((od == MCPP_DBG) ? fp_debug : \
                                                                (NULL)))
 
@@ -2178,8 +2183,6 @@ size_t* sizp /* Size of the comment  */
 
         c = *sp++;
     } /* End comment loop     */
-
-    return sp; /* Never reach here     */
 }
 
 static char* mcpp_fgets(
@@ -3279,3 +3282,7 @@ char*(xrealloc)(void* ptr, size_t size)
 
     return newData;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

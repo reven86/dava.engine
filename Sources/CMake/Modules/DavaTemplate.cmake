@@ -61,6 +61,25 @@ elseif( ANDROID_DATA )
 
 endif()
 
+if ( STEAM_SDK_FOUND )
+    add_definitions ( -D__DAVAENGINE_STEAM__ )
+    include_directories( ${STEAM_SDK_HEADERS} )
+    list ( APPEND LIBRARIES ${STEAM_SDK_STATIC_LIBRARIES} )
+
+    if ( WIN32 )
+        list ( APPEND ADDITIONAL_DLL_FILES ${STEAM_SDK_DYNAMIC_LIBRARIES} )
+        list ( APPEND DAVA_BINARY_WIN32_DIR ${STEAM_SDK_DYNAMIC_LIBRARIES_PATH} )
+    endif ()
+
+    if ( MACOS )
+       list ( APPEND MACOS_DYLIB  ${STEAM_SDK_DYNAMIC_LIBRARIES} )
+    endif ()
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/SteamAppid.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
+
+endif ()
+
 if( ANDROID )
     if( NOT ANDROID_JAVA_SRC )
         list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )
@@ -331,36 +350,58 @@ else()
 
 endif()
 
+if ( STEAM_SDK_FOUND AND WIN32 )
+    if(DEPLOY)
+        set( STEAM_APPID_DIR ${DEPLOY_DIR} )
+    else()
+        set( STEAM_APPID_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR} )
+    endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy
+       ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt
+       ${STEAM_APPID_DIR}/steam_appid.txt
+    )
+endif ()
+
+
 if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
 if ( QT5_FOUND )
-    if ( WIN32 )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
-    elseif ( APPLE )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+    set (QTCONF_TARGET_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    if (DEPLOY_DIR AND DEPLOY)
+        set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
     endif()
 
-    if     ( TEAMCITY_DEPLOY AND WIN32 )
+    if ( WIN32 )
+        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
+    elseif ( APPLE )
+        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+    endif()
+
+     if ( TEAMCITY_DEPLOY AND WIN32 )
         set ( PLUGINS_PATH .)
+        set ( QML_IMPORT_PATH .)
+        set ( QML2_IMPORT_PATH .)
     elseif ( TEAMCITY_DEPLOY AND APPLE )
         set ( PLUGINS_PATH PlugIns )
+        set ( QML_IMPORT_PATH Resources/qml)
+        set ( QML2_IMPORT_PATH Resources/qml)
     else()
-        set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
-        get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
+        get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
+        set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
+        set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
+        set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
     endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelWithDebinfo.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
+                             ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
-       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig$(CONFIGURATION).in
+       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in
        ${QTCONF_DEPLOY_PATH}
     )
 
@@ -466,14 +507,12 @@ elseif( MACOS )
     endif()
 
 elseif ( WIN32 )
+	
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
     else()
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
     endif()
-
 
     if( DEBUG_INFO )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
@@ -584,7 +623,7 @@ if( DEPLOY )
 
         endif()
 
-        foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} ${ADDITIONAL_DLL_FILES} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
@@ -635,7 +674,7 @@ endmacro ()
 macro( DEPLOY_SCRIPT )
 
     if( DEPLOY )
-        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
+        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_WIN64;COPY_MACOS;COPY_DIR" ${ARGN})
 
         if( NOT COPY_DIR )
             set( COPY_DIR ${DEPLOY_DIR} )
@@ -648,8 +687,12 @@ macro( DEPLOY_SCRIPT )
             list( APPEND COPY_LIST ${ARG_COPY} )
         endif()
 
-        if( ARG_COPY_WIN32 AND WIN32 )
+        if( ARG_COPY_WIN32 AND WIN32 AND NOT X64_MODE )
             list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+        endif()
+
+        if( ARG_COPY_WIN64 AND WIN32 AND X64_MODE )
+            list( APPEND COPY_LIST ${ARG_COPY_WIN64} )
         endif()
 
         if( ARG_COPY_MACOS AND MACOS )

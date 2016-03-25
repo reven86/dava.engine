@@ -47,7 +47,6 @@
 namespace DAVA
 {
 class Scene;
-class SceneNodeAnimation;
 class SceneNodeAnimationKey;
 class SceneFileV2;
 class DataNode;
@@ -59,7 +58,7 @@ class TransformComponent;
  */
 class Entity : public BaseObject
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY)
 
 protected:
     virtual ~Entity();
@@ -204,7 +203,7 @@ public:
 
     // properties
     void SetVisible(const bool& isVisible);
-    inline const bool GetVisible();
+    bool GetVisible();
     inline Entity* GetParent();
     DAVA_DEPRECATED(void SetUpdatable(bool isUpdatable));
     DAVA_DEPRECATED(inline bool GetUpdatable(void));
@@ -275,23 +274,15 @@ public:
     inline uint32 GetIndexInParent()
     {
         return (flags >> ENTITY_INDEX_POSITION) & ENTITY_INDEX_MASK;
-    };
+    }
     inline void SetIndexInParent(uint32 index)
     {
         flags |= (index & ENTITY_INDEX_MASK) << ENTITY_INDEX_POSITION;
-    };
+    }
     void SetSceneID(uint32 sceneId);
     uint32 GetSceneID() const;
 
-    // animations
-    // 	void ExecuteAnimation(SceneNodeAnimation * animation);
-    // 	void DetachAnimation(SceneNodeAnimation * animation);
-    // 	virtual void StopAllAnimations(bool recursive = true);
-
     virtual Entity* Clone(Entity* dstNode = NULL);
-
-    // Do not use variables
-    //std::deque<SceneNodeAnimation *> nodeAnimations;
 
     // Do we need enum, or we can use virtual functions?
     enum
@@ -437,10 +428,10 @@ public:
                          MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-                         );
+                         )
 };
 
-inline const bool Entity::GetVisible()
+inline bool Entity::GetVisible()
 {
     return (flags & NODE_VISIBLE) != 0;
 }
@@ -526,18 +517,14 @@ void Entity::GetChildNodes(Container<T, A>& container)
 template <template <typename, typename> class Container, class A>
 void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type)
 {
-    Vector<Entity*>::const_iterator end = children.end();
-    for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
+    for (auto& child : children)
     {
-        Entity* entity = *t;
-        if (entity)
+        if (child->GetComponentCount(type) > 0)
         {
-            Component* component = entity->GetComponent(type);
-            if (component)
-                container.push_back(entity);
+            container.push_back(child);
         }
 
-        entity->GetChildEntitiesWithComponent(container, type);
+        child->GetChildEntitiesWithComponent(container, type);
     }
 }
 
@@ -553,7 +540,7 @@ inline Entity* Entity::GetChild(int32 index) const
 
 inline int32 Entity::GetChildrenCount() const
 {
-    return (int32)children.size();
+    return static_cast<int32>(children.size());
 }
 
 inline uint32 Entity::GetComponentCount() const

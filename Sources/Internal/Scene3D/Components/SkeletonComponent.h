@@ -61,7 +61,7 @@ public:
         inline Vector3 TransformVector(const Vector3& inVec) const;
     };
 
-    struct JointConfig
+    struct JointConfig : public InspBase
     {
         JointConfig();
 
@@ -88,9 +88,9 @@ public:
     void SetConfigJoints(const Vector<JointConfig>& config);
     uint16 GetConfigJointsCount();
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     inline void SetJointPosition(uint16 jointId, const Vector3& position);
     inline void SetJointOrientation(uint16 jointId, const Quaternion& orientation);

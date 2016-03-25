@@ -37,9 +37,9 @@ const float32 MAX_DIFFERENCE = 2.f; // in percents
 
 #ifndef __DAVAENGINE_WIN_UAP__
 
-DAVA_TESTCLASS(FormatsTest)
+DAVA_TESTCLASS (FormatsTest)
 {
-    DAVA_TEST(TestJpeg)
+    DAVA_TEST (TestJpeg)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_A8);
@@ -53,7 +53,7 @@ DAVA_TESTCLASS(FormatsTest)
         }
     }
 
-    DAVA_TEST(TestPng)
+    DAVA_TEST (TestPng)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_A8);
@@ -68,7 +68,7 @@ DAVA_TESTCLASS(FormatsTest)
         }
     }
 
-    DAVA_TEST(TestPvr)
+    DAVA_TEST (TestPvr)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_RGBA8888);
@@ -112,19 +112,19 @@ DAVA_TESTCLASS(FormatsTest)
             {
                 const DAVA::PixelFormat comparedFormat = ((DAVA::FORMAT_A8 == requestedFormat) || (DAVA::FORMAT_A16 == requestedFormat))
                 ?
-                (const DAVA::PixelFormat)requestedFormat
+                static_cast<DAVA::PixelFormat>(requestedFormat)
                 :
                 DAVA::FORMAT_RGBA8888;
 
                 const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], compressedImages[0], comparedFormat);
-                float32 differencePercentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
+                float32 differencePercentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePercentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePercentage, 100.f - differencePercentage));
             }
         }
     }
     
 #if !defined(__DAVAENGINE_IPHONE__)
-    DAVA_TEST(TestDds)
+    DAVA_TEST (TestDds)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_DXT1);
@@ -147,8 +147,11 @@ DAVA_TESTCLASS(FormatsTest)
             continue;
 #endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
 
-#if defined(__DAVAENGINE_MACOS__) && (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
-            continue;
+#if defined(__DAVAENGINE_MACOS__)
+            if (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+            {
+                continue;
+            }
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
             const DAVA::PixelFormatDescriptor& descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
@@ -171,20 +174,20 @@ DAVA_TESTCLASS(FormatsTest)
             {
                 const DAVA::PixelFormat comparedFormat = ((DAVA::FORMAT_A8 == requestedFormat) || (DAVA::FORMAT_A16 == requestedFormat))
                 ?
-                (const DAVA::PixelFormat)requestedFormat
+                static_cast<DAVA::PixelFormat>(requestedFormat)
                 :
                 DAVA::FORMAT_RGBA8888;
 
                 const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], compressedImages[0], comparedFormat);
 
-                float32 differencePersentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
+                float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));
             }
         }
     }
 #endif
 
-    DAVA_TEST(TestWebP)
+    DAVA_TEST (TestWebP)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_RGB888);

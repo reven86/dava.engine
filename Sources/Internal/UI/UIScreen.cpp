@@ -61,28 +61,10 @@ UIScreen::~UIScreen()
     }
 }
 
-void UIScreen::SystemWillAppear()
-{
-    bool needNotify = false;
-    const Rect& virtualRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-    if (GetSize() != virtualRect.GetSize())
-    {
-        SetSize(virtualRect.GetSize());
-        needNotify = true;
-    }
-
-    UIControl::SystemWillAppear();
-
-    if (needNotify)
-    {
-        SystemScreenSizeDidChanged(virtualRect);
-    }
-}
-
-void UIScreen::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
+void UIScreen::SystemScreenSizeChanged(const Rect& newFullScreenRect)
 {
     SetSize(newFullScreenRect.GetSize());
-    UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
+    UIControl::SystemScreenSizeChanged(newFullScreenRect);
 }
 
 void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
@@ -122,8 +104,8 @@ void UIScreen::FillScreenBorders(const UIGeometricData& geometricData)
 
     Rect drawRect = drawData.GetUnrotatedRect();
     Rect fullRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-    Vector2 virtualSize = Vector2((float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                                  (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+    Vector2 virtualSize = Vector2(static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx),
+                                  static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy));
     if (fullRect.x < 0)
     {
         auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);

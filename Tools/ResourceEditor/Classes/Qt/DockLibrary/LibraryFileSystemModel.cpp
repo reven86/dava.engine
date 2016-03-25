@@ -29,7 +29,7 @@
 
 #include "LibraryFileSystemModel.h"
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include <QDir>
 #include <QFileInfoList>

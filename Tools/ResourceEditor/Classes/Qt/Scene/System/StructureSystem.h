@@ -30,9 +30,10 @@
 #ifndef __SCENE_STRUCTURE_SYSTEM_H__
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Scene/EntityGroup.h"
 #include "StringConstants.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -44,15 +45,6 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Functional/Function.h"
 
-class StructureSystemDelegate
-{
-public:
-    virtual ~StructureSystemDelegate() = default;
-
-    virtual void WillRemove(DAVA::Entity* removedEntity) = 0;
-    virtual void DidRemoved(DAVA::Entity* removedEntity) = 0;
-};
-
 class StructureSystem : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
@@ -60,8 +52,6 @@ class StructureSystem : public DAVA::SceneSystem
 public:
     StructureSystem(DAVA::Scene* scene);
     ~StructureSystem();
-
-    bool Init(const DAVA::FilePath& path);
 
     void Move(const EntityGroup& entityGroup, DAVA::Entity* newParent, DAVA::Entity* newBefore);
     void Remove(const EntityGroup& entityGroup);
@@ -87,7 +77,6 @@ protected:
     bool structureChanged;
 
     void Process(DAVA::float32 timeElapsed) override;
-    void Draw();
 
     void ProcessCommand(const Command2* command, bool redo);
 
@@ -104,8 +93,6 @@ protected:
     void CheckAndMarkSolid(DAVA::Entity* entity);
 
     void SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback);
-
-    void ProcessAutoSelection(const Command2* command, bool redo) const;
 
 private:
     DAVA::List<StructureSystemDelegate*> delegates;

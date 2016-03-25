@@ -185,20 +185,16 @@ private:
         Methods call sequence:
         When the control adds to the hierarchy:
 
-            -if hierarchy is allready on the screen SystemWillAppear() will be called. SystemWillAppear()
-                calls WillAppear() for the control and then calls SystemWillAppear() for all control children.
+            -if hierarchy is allready on the screen SystemActive() will be called after adding control to hierarhy. SystemActive()
+                calls OnActive() for the control and then calls SystemActive() for all control children.
 
-            -when the control adding to the hierarchy is done SystemDidAppear() and DidAppear() calls at the same way.
-
-            -if hierarchy is not on the screen all methods would be called only when the hierarcy parent
+            -if hierarchy is not on the screen methods would be called only when the hierarcy parent
                 be placed to the screen.
 
         When the control removes from hierarchy:
 
-            -SystemWillDisappear() will be called. SystemWillDisappear()
-                calls WillDisappear() for the control and then calls SystemWillDisappear() for all control children.
-
-            -when the control is removed from the hierarchy SystemDidDisappear() and DidDisappear() calls at the same way.
+            -SystemInactive() will be called. SystemInactive()
+                calls OnInactive() for the control and then calls SystemInactive() for all control children.
 
         Every frame:
 
@@ -228,7 +224,6 @@ private:
 class UIControl : public AnimatedObject
 {
     friend class UIControlSystem;
-    friend class UIScreenTransition;
 
 public:
     /**
@@ -271,8 +266,6 @@ public:
         DRAW_ONLY_IF_NONZERO, //!<Draw the Pivot Point only if it is defined (nonzero).
         DRAW_ALWAYS //!<Always draw the Pivot Point mark.
     };
-
-    friend class ControlSystem;
 
 public:
     /**
@@ -529,7 +522,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \returns control visibility.
      */
-    inline bool GetVisible() const;
+    inline bool GetVisibilityFlag() const;
 
     /**
      \brief Sets contol recursive visibility.
@@ -537,7 +530,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \param[in] isVisible new control visibility.
      */
-    virtual void SetVisible(bool isVisible);
+    virtual void SetVisibilityFlag(bool isVisible);
 
     /**
      \brief Returns control input processing ability.
@@ -671,14 +664,14 @@ public:
         Later you can find control by this name.
      \param[in] _name new control name.
      */
-    void SetName(const String& _name);
+    void SetName(const String& name_);
+    void SetName(const FastName& name_);
 
     /**
      \brief Returns current name of the control.
      \returns control name.
      */
-    inline const String& GetName() const;
-    inline const FastName& GetFastName() const;
+    inline const FastName& GetName() const;
 
     /**
      \brief Sets the contol tag.
@@ -699,11 +692,19 @@ public:
      \returns first control with given name.
      */
     UIControl* FindByName(const String& name, bool recursive = true) const;
+    UIControl* FindByName(const FastName& name, bool recursive = true) const;
 
-    UIControl* FindByPath(const String& path) const;
+    const UIControl* FindByPath(const String& path) const;
+    UIControl* FindByPath(const String& path);
 
     template <class C>
     C FindByPath(const String& path) const
+    {
+        return DynamicTypeCheck<C>(FindByPath(path));
+    }
+
+    template <class C>
+    C FindByPath(const String& path)
     {
         return DynamicTypeCheck<C>(FindByPath(path));
     }
@@ -977,67 +978,6 @@ public:
 
 public:
     /**
-     \brief Called before control will be added to view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void WillAppear();
-    /**
-     \brief Called before control will be removed from the view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void WillDisappear();
-    /**
-     \brief Called when control added to view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void DidAppear();
-    /**
-     \brief Called when control removed from the view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void DidDisappear();
-    /**
-     \brief Called before control will be added to view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemWillAppear();
-    /**
-     \brief Called before control will be removed from the view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemWillDisappear();
-    /**
-     \brief Called when control added to view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemDidAppear();
-    /**
-     \brief Called when control removed from the view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemDidDisappear();
-
-    /**
-     \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     \param[in] newFullScreenSize New full screen size in virtual coordinates.
-        Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
-     */
-    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenRect);
-    /**
-     \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
-     \param[in] newFullScreenSize New full screen size in virtual coordinates.
-        Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
-     */
-    virtual void ScreenSizeDidChanged(const Rect& newFullScreenRect);
-
-    /**
      \brief SystemUpdate() calls Updadte() for the control then SystemUpdate() calls for the all control children.
         Internal method used by ControlSystem. Can be overriden to prevent hierarchical call or adjust functionality.
      \param[in] timeElapsed Current frame time delta.
@@ -1144,20 +1084,37 @@ public:
     virtual void DrawAfterChilds(const UIGeometricData& geometricData);
 
 protected:
-    virtual void SystemWillBecomeVisible();
-    virtual void SystemWillBecomeInvisible();
+    enum class eViewState : int32
+    {
+        INACTIVE,
+        ACTIVE,
+        VISIBLE,
+    };
 
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
+    virtual void SystemVisible();
+    virtual void SystemInvisible();
+
+    virtual void OnVisible();
+    virtual void OnInvisible();
+
+    virtual void SystemActive();
+    virtual void SystemInactive();
+
+    virtual void OnActive();
+    virtual void OnInactive();
+
+    virtual void SystemScreenSizeChanged(const Rect& newFullScreenRect);
+    virtual void OnScreenSizeChanged(const Rect& newFullScreenRect);
+
+    void InvokeActive(eViewState parentViewState);
+    void InvokeInactive();
+
+    void InvokeVisible(eViewState parentViewState);
+    void InvokeInvisible();
+
+    void ChangeViewState(eViewState newViewState);
 
 public:
-    //TODO: Борода напиши дескрипшн.
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    /**
-     \brief Save the control to YAML node and return it.
-     */
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
-
     /**
      \brief Called when this control and his children are loaded.
      */
@@ -1167,13 +1124,13 @@ public:
      \brief Returns control in hierarchy status.
      \returns True if control in view hierarchy for now.
      */
-    bool InViewHierarchy() const;
+    bool IsActive() const;
 
     /**
      \brief Returns control on screen status.
      \returns True if control visible now.
      */
-    bool IsOnScreen() const;
+    bool IsVisible() const;
     /**
      \brief Returns point status realtive to control .
      \param[in] point Point to check.
@@ -1192,7 +1149,7 @@ public:
 
     virtual void OnFocused();
 
-    virtual void OnAllAnimationsFinished();
+    void OnAllAnimationsFinished() override;
 
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
@@ -1203,24 +1160,17 @@ public:
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
 
-    // Get/set visible flag for UI editor. Should not be serialized.
-    bool GetVisibleForUIEditor() const
-    {
-        return visibleForUIEditor;
-    };
-    virtual void SetVisibleForUIEditor(bool value);
-
     void DumpInputs(int32 depthLevel);
 
     static void DumpControls(bool onlyOrphans);
 
 private:
-    String name;
-    FastName fastName;
+    FastName name;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
+
 protected:
     UIControl* parent;
-    List<UIControl*> childs;
+    List<UIControl*> children;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1243,8 +1193,6 @@ protected:
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
     bool multiInput : 1;
-
-    bool visibleForUIEditor : 1;
 
     // Enable align options
     bool isUpdated : 1;
@@ -1273,10 +1221,6 @@ protected:
 
     virtual ~UIControl();
 
-    // Set the preferred node type. Needed for saving controls to Yaml while taking
-    // custom controls into account.
-    void SetPreferredNodeType(YamlNode* node, const String& nodeTypeName);
-
     void RegisterInputProcessor();
     void RegisterInputProcessors(int32 processorsCount);
     void UnregisterInputProcessor();
@@ -1286,7 +1230,8 @@ protected:
     void DrawPivotPoint(const Rect& drawRect);
 
 private:
-    int32 tag;
+    int32 tag = 0;
+    eViewState viewState = eViewState::INACTIVE;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
 
@@ -1364,6 +1309,7 @@ public:
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
+    UIControl* GetParentWithContext() const;
 
 private:
     UIStyleSheetClassSet classes;
@@ -1376,9 +1322,6 @@ private:
     /* Styles */
 
 public:
-    inline bool GetSystemVisible() const;
-    void SystemNotifyVisibilityChanged();
-
     virtual int32 GetBackgroundComponentsCount() const;
     virtual UIControlBackground* GetBackgroundComponent(int32 index) const;
     virtual UIControlBackground* CreateBackgroundComponent(int32 index) const;
@@ -1410,7 +1353,7 @@ public:
                          PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("visible", "Visible", GetVisibilityFlag, SetVisibilityFlag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
@@ -1463,14 +1406,9 @@ float32 UIControl::GetAngleInDegrees() const
     return RadToDeg(angle);
 }
 
-const String& UIControl::GetName() const
+const FastName& UIControl::GetName() const
 {
     return name;
-}
-
-const FastName& UIControl::GetFastName() const
-{
-    return fastName;
 }
 
 int32 UIControl::GetTag() const
@@ -1483,7 +1421,7 @@ Rect UIControl::GetRect() const
     return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
-bool UIControl::GetVisible() const
+bool UIControl::GetVisibilityFlag() const
 {
     return visible;
 }
@@ -1516,11 +1454,6 @@ bool UIControl::GetMultiInput() const
 int32 UIControl::GetState() const
 {
     return controlState;
-}
-
-bool UIControl::GetSystemVisible() const
-{
-    return visible & visibleForUIEditor;
 }
 
 bool UIControl::GetEnabled() const

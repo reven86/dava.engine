@@ -148,6 +148,7 @@ public:
     /** Wait until thread's finished.
     */
     void Join();
+    bool IsJoinable() const;
 
     /** Kill thread by OS. No signals will be sent.
     */
@@ -222,6 +223,7 @@ private:
     Procedure threadFunc;
     Atomic<eThreadState> state;
     Atomic<bool> isCancelling;
+    Atomic<bool> isJoinable{ false };
     size_t stackSize;
     eThreadPriority threadPriority;
 
@@ -242,7 +244,6 @@ private:
     /**
     \brief Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there.
     */
-    static ConcurrentObject<Set<Thread*>> threadList;
     static Id mainThreadId;
     static Id glThreadId;
 };
@@ -267,6 +268,11 @@ inline Thread::eThreadState Thread::GetState() const
 inline void Thread::Cancel()
 {
     isCancelling = true;
+}
+
+inline bool Thread::IsJoinable() const
+{
+    return isJoinable.Get();
 }
 
 inline bool Thread::IsCancelling() const

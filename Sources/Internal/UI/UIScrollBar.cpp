@@ -30,13 +30,11 @@
 #include "UI/UIScrollBar.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlHelpers.h"
-#include "UI/UIYamlLoader.h"
-#include "FileSystem/YamlNode.h"
 
 namespace DAVA
 {
 //use these names for children controls to define UIScrollBar in .yaml
-static const String UISCROLLBAR_SLIDER_NAME = "slider";
+static const FastName UISCROLLBAR_SLIDER_NAME("slider");
 
 UIScrollBar::UIScrollBar(const Rect& rect, eScrollOrientation requiredOrientation)
     : UIControl(rect)
@@ -127,65 +125,6 @@ void UIScrollBar::LoadFromYamlNodeCompleted()
     {
         InitControls();
     }
-}
-
-void UIScrollBar::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    RemoveControl(slider);
-
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* orientNode = node->Get("orientation");
-    if (orientNode)
-    {
-        if (orientNode->AsString() == "ORIENTATION_VERTICAL")
-            orientation = ORIENTATION_VERTICAL;
-        else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
-            orientation = ORIENTATION_HORIZONTAL;
-        else
-        {
-            DVASSERT(0 && "Orientation constant is wrong");
-        }
-    }
-    const YamlNode* delegateNode = node->Get("linkedScrollBarDelegate");
-    if (delegateNode)
-    {
-        String delegatePath = delegateNode->AsString();
-        loader->AddScrollBarToLink(this, delegatePath);
-    }
-}
-
-YamlNode* UIScrollBar::SaveToYamlNode(UIYamlLoader* loader)
-{
-    slider->SetName(UISCROLLBAR_SLIDER_NAME);
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    //Temp variables
-    String stringValue;
-
-    //Orientation
-    eScrollOrientation orient = (eScrollOrientation)GetOrientation();
-    switch (orient)
-    {
-    case ORIENTATION_VERTICAL:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    case ORIENTATION_HORIZONTAL:
-        stringValue = "ORIENTATION_HORIZONTAL";
-        break;
-    default:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    }
-    node->Set("orientation", stringValue);
-
-    if (delegate)
-    {
-        UIControl* delegateControl = dynamic_cast<UIControl*>(delegate);
-        node->Set("linkedScrollBarDelegate", UIControlHelpers::GetControlPath(delegateControl));
-    }
-
-    return node;
 }
 
 void UIScrollBar::Input(UIEvent* currentInput)
@@ -291,11 +230,11 @@ void UIScrollBar::Draw(const UIGeometricData& geometricData)
                 slider->size.y = GetValidSliderSize(slider->size.y);
                 if ((slider->size.y >= size.y) || FLOAT_EQUAL(totalSize, 0.0f))
                 {
-                    slider->SetVisible(false);
+                    slider->SetVisibilityFlag(false);
                 }
                 else
                 {
-                    slider->SetVisible(true);
+                    slider->SetVisibilityFlag(true);
                 }
             }
             //TODO: optimize
@@ -325,11 +264,11 @@ void UIScrollBar::Draw(const UIGeometricData& geometricData)
                 slider->size.x = GetValidSliderSize(slider->size.x);
                 if ((slider->size.x >= size.x) || FLOAT_EQUAL(totalSize, 0.0f))
                 {
-                    slider->SetVisible(false);
+                    slider->SetVisibilityFlag(false);
                 }
                 else
                 {
-                    slider->SetVisible(true);
+                    slider->SetVisibilityFlag(true);
                 }
             }
             slider->relativePosition.x = (size.x - slider->size.x) * (viewPos / diff);
@@ -362,7 +301,7 @@ int32 UIScrollBar::GetOrientation() const
 
 void UIScrollBar::SetOrientation(int32 value)
 {
-    orientation = (eScrollOrientation)value;
+    orientation = static_cast<eScrollOrientation>(value);
 }
 
 float32 UIScrollBar::GetValidSliderSize(float32 size)

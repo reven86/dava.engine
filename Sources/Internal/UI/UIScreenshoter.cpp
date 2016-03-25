@@ -75,7 +75,7 @@ void UIScreenshoter::OnFrame()
 Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
+    Texture* screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
     MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha);
 
@@ -85,7 +85,7 @@ Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat fo
 void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
+    Texture* screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
     MakeScreenshotInternal(control, screenshot, callback, false);
 
@@ -106,7 +106,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
 {
     if (control == nullptr)
         return;
-
+    DVASSERT(screenshot);
     // Prepare waiter
     ScreenshotWaiter waiter;
     waiter.texture = SafeRetain(screenshot);
@@ -116,66 +116,35 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     // End preparing
 
     // Render to texture
-    List<Control3dInfo> controls3d;
-    FindAll3dViews(control, controls3d);
-    for (auto& info : controls3d)
-    {
-        SafeRetain(info.control);
-        if (nullptr != info.control->GetScene())
-        {
-            rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            info.scenePassConfig = config;
 
-            config.priority = PRIORITY_SCREENSHOT_3D;
-            config.colorBuffer[0].texture = waiter.texture->handle;
-            config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-            Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
-            if (waiter.texture->handleDepthStencil != rhi::InvalidHandle)
-                config.depthStencilBuffer.texture = waiter.texture->handleDepthStencil;
-        }
-    }
-    RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D);
+    //[CLEAR]
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = screenshot->GetWidth();
+    viewport.height = screenshot->GetHeight();
+    RenderHelper::CreateClearPass(screenshot->handle, screenshot->handleDepthStencil, PRIORITY_SCREENSHOT + PRIORITY_CLEAR, Color::Clear, viewport);
+
+    //[DRAW]
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.colorAttachment = screenshot->handle;
+    desc.depthAttachment = screenshot->handleDepthStencil;
+    desc.width = screenshot->GetWidth();
+    desc.height = screenshot->GetHeight();
+    desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = true;
+
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     control->SystemUpdate(0.0f);
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+
+    //[CLEAR ALPHA]
     if (clearAlpha)
     {
         RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, static_cast<float32>(screenshot->GetWidth()), static_cast<float32>(screenshot->GetHeight())), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
     }
+
     RenderSystem2D::Instance()->EndRenderTargetPass();
-    for (auto& info : controls3d)
-    {
-        if (nullptr != info.control->GetScene())
-        {
-            rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            config = info.scenePassConfig;
-        }
-        SafeRelease(info.control);
-    }
     // End render
-}
-
-void UIScreenshoter::FindAll3dViews(UIControl* control, List<UIScreenshoter::Control3dInfo>& foundViews)
-{
-    List<UIControl*> processControls;
-    processControls.push_back(control);
-    while (!processControls.empty())
-    {
-        auto currentCtrl = processControls.front();
-        processControls.pop_front();
-
-        auto& children = currentCtrl->GetChildren();
-        for (auto child : children)
-        {
-            processControls.push_back(child);
-        }
-
-        UI3DView* current3dView = dynamic_cast<UI3DView*>(currentCtrl);
-        if (nullptr != current3dView)
-        {
-            Control3dInfo info;
-            info.control = current3dView;
-            foundViews.push_back(info);
-        }
-    }
 }
 };

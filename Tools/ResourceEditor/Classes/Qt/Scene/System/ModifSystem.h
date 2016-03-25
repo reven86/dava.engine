@@ -30,7 +30,8 @@
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
+#include "SystemDelegates.h"
 
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Entity.h"
@@ -44,16 +45,7 @@ class SceneCameraSystem;
 class EntityGroup;
 class HoodSystem;
 
-class EntityModificationSystemDelegate
-{
-public:
-    virtual ~EntityModificationSystemDelegate() = default;
-
-    virtual void WillClone(DAVA::Entity* originalEntity) = 0;
-    virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) = 0;
-};
-
-class EntityModificationSystem : public DAVA::SceneSystem
+class EntityModificationSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -92,14 +84,9 @@ public:
     void AddDelegate(EntityModificationSystemDelegate* delegate);
     void RemoveDelegate(EntityModificationSystemDelegate* delegate);
 
-protected:
-    SceneCollisionSystem* collisionSystem;
-    SceneCameraSystem* cameraSystem;
-    HoodSystem* hoodSystem;
-
-    void Draw();
-
-    void ProcessCommand(const Command2* command, bool redo);
+    void ApplyMoveValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyRotateValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyScaleValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
 
 protected:
     struct EntityToModify
@@ -113,50 +100,20 @@ protected:
         DAVA::Matrix4 moveFromZeroPos;
     };
 
-    enum CloneState
+    enum CloneState : DAVA::uint32
     {
         CLONE_DONT,
         CLONE_NEED,
         CLONE_DONE
     };
 
-    enum BakeMode
+    enum BakeMode : DAVA::uint32
     {
         BAKE_ZERO_PIVOT,
         BAKE_CENTER_PIVOT
     };
 
-    CloneState cloneState;
-
-    bool inModifState;
-    bool isOrthoModif;
-    bool modified;
-
-    ST_ModifMode curMode;
-    ST_Axis curAxis;
-
-    bool snapToLandscape;
-
-    // starting modification pos
-    DAVA::Vector3 modifStartPos3d;
-    DAVA::Vector2 modifStartPos2d;
-
-    // entities to modify
-    DAVA::Vector<EntityToModify> modifEntities;
-    DAVA::Vector<DAVA::Entity*> clonedEntities;
-
-    // values calculated, when starting modification
-    ST_PivotPoint modifPivotPoint;
-    DAVA::Vector3 modifEntitiesCenter;
-    DAVA::Matrix4 moveToZeroPosRelativeCenter;
-    DAVA::Matrix4 moveFromZeroPosRelativeCenter;
-    DAVA::Vector2 rotateNormal;
-    DAVA::Vector3 rotateAround;
-    DAVA::float32 crossXY;
-    DAVA::float32 crossXZ;
-    DAVA::float32 crossYZ;
-
-    void BeginModification(const EntityGroup& entities);
+    EntityGroup BeginModification(const EntityGroup& entities);
     void EndModification();
 
     void CloneBegin();
@@ -176,8 +133,40 @@ protected:
     DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
     bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
 
+    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
+
 private:
+    SceneCollisionSystem* collisionSystem = nullptr;
+    SceneCameraSystem* cameraSystem = nullptr;
+    HoodSystem* hoodSystem = nullptr;
+
+    // entities to modify
+    DAVA::Vector<EntityToModify> modifEntities;
+    DAVA::Vector<DAVA::Entity*> clonedEntities;
     DAVA::List<EntityModificationSystemDelegate*> delegates;
+
+    // values calculated, when starting modification
+    ST_PivotPoint modifPivotPoint;
+    DAVA::Vector3 modifEntitiesCenter;
+    DAVA::Vector3 modifStartPos3d;
+    DAVA::Vector2 modifStartPos2d;
+    DAVA::Matrix4 moveToZeroPosRelativeCenter;
+    DAVA::Matrix4 moveFromZeroPosRelativeCenter;
+    DAVA::Vector2 rotateNormal;
+    DAVA::Vector3 rotateAround;
+    DAVA::float32 crossXY = 0.0f;
+    DAVA::float32 crossXZ = 0.0f;
+    DAVA::float32 crossYZ = 0.0f;
+
+    CloneState cloneState = CloneState::CLONE_DONT;
+    ST_ModifMode curMode = ST_ModifMode::ST_MODIF_OFF;
+    ST_Axis curAxis = ST_Axis::ST_AXIS_NONE;
+
+    bool inModifState = false;
+    bool isOrthoModif = false;
+    bool modified = false;
+    bool snapToLandscape = false;
 };
 
 #endif //__ENTITY_MODIFICATION_SYSTEM_H__

@@ -30,7 +30,7 @@
     #include "../Common/rhi_Impl.h"
     
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
     #include "Core/Core.h"
 using DAVA::Logger;
 
@@ -161,6 +161,32 @@ dx11_Reset(const ResetParam& param)
 //------------------------------------------------------------------------------
 
 static void
+dx11_SuspendRendering()
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    CommandBufferDX11::DiscardAll();
+
+    IDXGIDevice3* dxgiDevice3 = NULL;
+
+    if (SUCCEEDED(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3))))
+    {
+        _D3D11_ImmediateContext->ClearState();
+        dxgiDevice3->Trim();
+        dxgiDevice3->Release();
+    }
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_ResumeRendering()
+{
+}
+
+//------------------------------------------------------------------------------
+
+static void
 dx11_TakeScreenshot(ScreenShotCallback callback)
 {
     _D3D11_ScreenshotCallbackSync.Lock();
@@ -177,6 +203,7 @@ void _InitDX11()
 
     init_device_and_swapchain_uap(_DX11_InitParam.window);
     _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+    get_device_description(_DeviceCapsDX11.deviceDescription);
 
 #else
 
@@ -297,11 +324,9 @@ void _InitDX11()
 
                     if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
                     {
-                        char info[128];
+                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, _DeviceCapsDX11.deviceDescription, countof(_DeviceCapsDX11.deviceDescription), NULL, NULL);
 
-                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
-
-                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
+                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", _DeviceCapsDX11.deviceDescription, desc.VendorId, desc.DeviceId);
                     }
                 }
             }
@@ -366,6 +391,8 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
     DispatchDX11.impl_TakeScreenshot = &dx11_TakeScreenshot;
+    DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
+    DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
 
     SetDispatchTable(DispatchDX11);
 

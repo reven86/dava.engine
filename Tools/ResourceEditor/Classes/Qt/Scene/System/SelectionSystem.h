@@ -32,7 +32,9 @@
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
-#include "Commands2/Command2.h"
+
+#include "Commands2/Base/Command2.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -66,16 +68,20 @@ public:
     SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys);
     ~SceneSelectionSystem();
 
-    void SetSelection(DAVA::Entity* entity);
-    void SetSelection(const EntityGroup& newSelection);
-    void AddSelection(DAVA::Entity* entity);
+    void AddEntityToSelection(DAVA::Entity* entity);
     void AddSelection(const EntityGroup& entities);
-    void ExcludeSelection(DAVA::Entity* entity);
+
+    void ExcludeEntityFromSelection(DAVA::Entity* entity);
     void ExcludeSelection(const EntityGroup& entities);
+
     void Clear();
 
     bool IsEntitySelectable(DAVA::Entity* entity) const;
 
+    /*
+	 * SetSelection could remove not selectable items from provided EntityGroup
+	 */
+    void SetSelection(EntityGroup& newSelection);
     const EntityGroup& GetSelection() const;
 
     size_t GetSelectionCount() const;
@@ -93,8 +99,8 @@ public:
 
     void SetLocked(bool lock) override;
 
-    DAVA::AABBox3 GetSelectionAABox(DAVA::Entity* entity) const;
-    DAVA::AABBox3 GetSelectionAABox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
+    DAVA::AABBox3 GetUntransformedBoundingBox(DAVA::Entity* entity) const;
+    DAVA::AABBox3 GetTransformedBoundingBox(const EntityGroup& group) const;
 
     void ForceEmitSignals();
 
@@ -105,17 +111,25 @@ public:
 
     void Input(DAVA::UIEvent* event) override;
 
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+
     void Activate() override;
     void Deactivate() override;
 
-    bool IsEntitySelected(DAVA::Entity* entity);
-    bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
+    void EnableSystem(bool enabled);
+    bool IsSystemEnabled() const;
 
     void Draw();
     void CancelSelection();
 
+    void AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+    void RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+
 private:
-    void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
+    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
+
+    DAVA::AABBox3 GetTransformedBoundingBox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
 
     void UpdateHoodPos() const;
 
@@ -146,13 +160,15 @@ private:
 private:
     SceneCollisionSystem* collisionSystem = nullptr;
     HoodSystem* hoodSystem = nullptr;
-    EntityGroup curSelections;
-    EntityGroup curDeselections;
+    EntityGroup currentSelection;
+    EntityGroup recentlySelectedEntities;
     EntityGroup lastGroupSelection;
     EntityGroup objectsToSelect;
+    DAVA::List<DAVA::Entity*> entitiesForSelection;
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
+    DAVA::Vector<SceneSelectionSystemDelegate*> selectionDelegates;
     ST_PivotPoint curPivotPoint = ST_PIVOT_COMMON_CENTER;
     GroupSelectionMode groupSelectionMode = GroupSelectionMode::Replace;
     bool selectionAllowed = true;
@@ -160,6 +176,7 @@ private:
     bool invalidSelectionBoxes = false;
     bool selectionHasChanges = false;
     bool selecting = false;
+    bool systemIsEnabled = false;
 };
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()

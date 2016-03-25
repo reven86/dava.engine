@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 PngImageExt::PngImageExt()
     : internalData(nullptr)
 {
@@ -47,7 +46,7 @@ PngImageExt::~PngImageExt()
 {
 }
 
-bool PngImageExt::Read(const FilePath &filename)
+bool PngImageExt::Read(const FilePath& filename)
 {
     internalData.reset();
 
@@ -69,7 +68,7 @@ bool PngImageExt::Read(const FilePath &filename)
     return internalData.get() != nullptr;
 }
 
-void PngImageExt::Write(const FilePath &filename, ImageQuality quality)
+void PngImageExt::Write(const FilePath& filename, ImageQuality quality)
 {
     DVASSERT(internalData);
     ImageSystem::Instance()->Save(filename, internalData, internalData->format, quality);
@@ -80,11 +79,11 @@ bool PngImageExt::Create(uint32 width, uint32 height)
     internalData = Image::Create(width, height, FORMAT_RGBA8888);
     if (internalData)
     {
-        memset( GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes( FORMAT_RGBA8888 ) );
+        memset(GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888));
         return true;
     }
 
-	return false;
+    return false;
 }
 
 bool PngImageExt::ConvertToFormat(PixelFormat newFormat)
@@ -106,18 +105,18 @@ bool PngImageExt::ConvertToFormat(PixelFormat newFormat)
     return convertResult;
 }
 
-void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2i & srcRect)
+void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt* image, const Rect2i& srcRect)
 {
-    uint32 * destData32 = (uint32*)GetData();
-	uint32 * srcData32 = (uint32*)image->GetData();
+    uint32* destData32 = reinterpret_cast<uint32*>(GetData());
+    uint32* srcData32 = reinterpret_cast<uint32*>(image->GetData());
 
-	int32 rx, ry;
-	ry = sy;
-	for (int32 y = srcRect.y; y < srcRect.y + srcRect.dy; ++y)
-	{
-		rx = sx;
-		for (int32 x = srcRect.x; x < srcRect.x + srcRect.dx; ++x)
-		{
+    int32 rx, ry;
+    ry = sy;
+    for (int32 y = srcRect.y; y < srcRect.y + srcRect.dy; ++y)
+    {
+        rx = sx;
+        for (int32 x = srcRect.x; x < srcRect.x + srcRect.dx; ++x)
+        {
             if (rx < 0 ||
                 rx >= static_cast<int32>(GetWidth()) ||
                 ry < 0 ||
@@ -130,18 +129,18 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
                 continue;
             }
 
-            destData32[(rx)+(ry)* GetWidth()] = srcData32[x + y * image->GetWidth()];
-			rx++;
-		}
-		ry++;
-	}
+            destData32[(rx) + (ry)*GetWidth()] = srcData32[x + y * image->GetWidth()];
+            rx++;
+        }
+        ry++;
+    }
 }
 
-void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffsetRect, PngImageExt* image)
+void PngImageExt::DrawImage(const SpriteBoundsRect& packedCell, const Rect2i& alphaOffsetRect, PngImageExt* image)
 {
-    uint32* destData32 = (uint32*)GetData();
-    uint32* srcData32 = (uint32*)image->GetData();
-    const Rect2i& img = packedCell.imageRect;
+    uint32* destData32 = reinterpret_cast<uint32*>(GetData());
+    uint32* srcData32 = reinterpret_cast<uint32*>(image->GetData());
+    const Rect2i& img = packedCell.spriteRect;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
 
@@ -149,12 +148,12 @@ void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffs
     int32 sy = img.y;
 
     if (withAlpha)
-	{
-		sx += alphaOffsetRect.x;
-		sy += alphaOffsetRect.y;
-	}
+    {
+        sx += alphaOffsetRect.x;
+        sy += alphaOffsetRect.y;
+    }
 
-	// add image
+    // add image
     const int32 imageHeight = static_cast<int32>(image->GetHeight());
     const int32 imageWidth = static_cast<int32>(image->GetWidth());
     int32 srcPos = 0;
@@ -242,41 +241,41 @@ void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffs
 
 bool PngImageExt::IsHorzLineOpaque(int32 y)
 {
-	uint8 * line = GetData() + y * GetWidth() * 4;
-	for (uint32 x = 0; x < GetWidth(); ++x)
+    uint8* line = GetData() + y * GetWidth() * 4;
+    for (uint32 x = 0; x < GetWidth(); ++x)
     {
-		if (line[x * 4 + 3] != 0)
+        if (line[x * 4 + 3] != 0)
         {
-			return false;
+            return false;
         }
     }
-	return true;
+    return true;
 }
 
 bool PngImageExt::IsVertLineOpaque(int32 x)
 {
-	uint8 * vertLine = GetData() + x * 4;
-	for (uint32 i = 0; i < GetHeight(); ++i)
-	{
-		if (vertLine[3] != 0)
+    uint8* vertLine = GetData() + x * 4;
+    for (uint32 i = 0; i < GetHeight(); ++i)
+    {
+        if (vertLine[3] != 0)
         {
-			return false;
+            return false;
         }
 
-		vertLine += GetWidth() * 4;
-	}
-	return true;
+        vertLine += GetWidth() * 4;
+    }
+    return true;
 }
 
-void PngImageExt::FindNonOpaqueRect(Rect2i &rect)
+void PngImageExt::FindNonOpaqueRect(Rect2i& rect)
 {
-	rect = Rect2i(0, 0, GetWidth(), GetHeight());
-	for (uint32 y = 0; y < GetHeight(); ++y)
+    rect = Rect2i(0, 0, GetWidth(), GetHeight());
+    for (uint32 y = 0; y < GetHeight(); ++y)
     {
-		if (IsHorzLineOpaque(y))
-		{
-			rect.y++;
-			rect.dy--;
+        if (IsHorzLineOpaque(y))
+        {
+            rect.y++;
+            rect.dy--;
         }
         else
         {
@@ -284,24 +283,25 @@ void PngImageExt::FindNonOpaqueRect(Rect2i &rect)
         }
     }
 
-	for (uint32 x = 0; x < GetWidth(); ++x)
+    for (uint32 x = 0; x < GetWidth(); ++x)
     {
-		if (IsVertLineOpaque(x))
-		{
-			rect.x++;
-			rect.dx--;
+        if (IsVertLineOpaque(x))
+        {
+            rect.x++;
+            rect.dx--;
         }
-        else break;
+        else
+            break;
     }
 
-	if ((rect.dx == 0) && (rect.dy == 0))
-	{
+    if ((rect.dx == 0) && (rect.dy == 0))
+    {
         rect.x = rect.y = 0;
-		rect.dx = rect.dy = 1;
-		return;
-	}
+        rect.dx = rect.dy = 1;
+        return;
+    }
 
-	for (int32 y = GetHeight() - 1; y >= 0; --y)
+    for (int32 y = GetHeight() - 1; y >= 0; --y)
     {
         if (IsHorzLineOpaque(y))
         {
@@ -313,7 +313,7 @@ void PngImageExt::FindNonOpaqueRect(Rect2i &rect)
         }
     }
 
-	for (int32 x = GetWidth() - 1; x >= 0; --x)
+    for (int32 x = GetWidth() - 1; x >= 0; --x)
     {
         if (IsVertLineOpaque(x))
         {
@@ -326,20 +326,20 @@ void PngImageExt::FindNonOpaqueRect(Rect2i &rect)
     }
 }
 
-void PngImageExt::DrawRect(const Rect2i &rect, uint32 color)
+void PngImageExt::DrawRect(const Rect2i& rect, uint32 color)
 {
-    uint32 *destData32 = (uint32*)GetData();
+    uint32* destData32 = reinterpret_cast<uint32*>(GetData());
 
-	for (int32 i = 0; i < rect.dx; ++i)
-	{
-		destData32[rect.y * GetWidth() + rect.x + i] = color;
-		destData32[(rect.y + rect.dy - 1) * GetWidth() + rect.x + i] = color;
-	}
-	for (int32 i = 0; i < rect.dy; ++i)
-	{
-		destData32[(rect.y + i) * GetWidth() + rect.x] = color;
-		destData32[(rect.y + i) * GetWidth() + rect.x + rect.dx - 1] = color;
-	}
+    for (int32 i = 0; i < rect.dx; ++i)
+    {
+        destData32[rect.y * GetWidth() + rect.x + i] = color;
+        destData32[(rect.y + rect.dy - 1) * GetWidth() + rect.x + i] = color;
+    }
+    for (int32 i = 0; i < rect.dy; ++i)
+    {
+        destData32[(rect.y + i) * GetWidth() + rect.x] = color;
+        destData32[(rect.y + i) * GetWidth() + rect.x + rect.dx - 1] = color;
+    }
 }
 
 void PngImageExt::DitherAlpha()
@@ -350,8 +350,8 @@ void PngImageExt::DitherAlpha()
     {
         ScopedPtr<Image> image(Image::Create(GetWidth(), GetHeight(), FORMAT_RGBA8888));
 
-        uint8 *ditheredPtr = image->GetData();
-        uint8 *dataPtr = GetData();
+        uint8* ditheredPtr = image->GetData();
+        uint8* dataPtr = GetData();
 
         for (uint32 y = 0; y < GetHeight(); ++y)
         {
@@ -365,9 +365,9 @@ void PngImageExt::DitherAlpha()
                 {
                     Color color = GetDitheredColorForPoint(x, y);
 
-                    ditheredPtr[0] = (uint8)color.r;
-                    ditheredPtr[1] = (uint8)color.g;
-                    ditheredPtr[2] = (uint8)color.b;
+                    ditheredPtr[0] = static_cast<uint8>(color.r);
+                    ditheredPtr[1] = static_cast<uint8>(color.g);
+                    ditheredPtr[2] = static_cast<uint8>(color.b);
                     ditheredPtr[3] = 0;
                 }
 
@@ -383,12 +383,12 @@ void PngImageExt::DitherAlpha()
 Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
 {
     int32 count = 0;
-    Color newColor(0, 0, 0, 0);
+    Color newColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     int32 startY = Max(y - 1, 0);
-    int32 endY = Min(y + 1, (int32)GetHeight());
+    int32 endY = Min(y + 1, static_cast<int32>(GetHeight()));
     int32 startX = Max(x - 1, 0);
-    int32 endX = Min(x + 1, (int32)GetWidth());
+    int32 endX = Min(x + 1, static_cast<int32>(GetWidth()));
 
     for (int32 alphaY = startY; alphaY < endY; ++alphaY)
     {
@@ -398,20 +398,18 @@ Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
             if (GetData()[offset + 3])
             {
                 ++count;
-                newColor.r += (float32)(GetData()[offset]);
-                newColor.g += (float32)(GetData()[offset + 1]);
-                newColor.b += (float32)(GetData()[offset + 2]);
+                newColor.r += static_cast<float32>(GetData()[offset]);
+                newColor.g += static_cast<float32>(GetData()[offset + 1]);
+                newColor.b += static_cast<float32>(GetData()[offset + 2]);
             }
         }
     }
 
-    if (count)
+    if (count > 0)
     {
-        newColor /= (float32)count;
+        newColor /= static_cast<float32>(count);
     }
 
     return newColor;
 }
-
 };
-

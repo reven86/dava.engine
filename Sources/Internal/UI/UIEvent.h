@@ -122,10 +122,25 @@ public:
     eInputHandledType GetInputHandledType()
     {
         return inputHandledType;
-    };
+    }
+
     void ResetInputHandledType()
     {
         inputHandledType = INPUT_NOT_HANDLED;
+    }
+
+    struct WheelDelta
+    {
+        float32 x;
+        float32 y;
+    };
+
+    struct Gesture
+    {
+        float32 magnification; // delta -1..1
+        float32 rotation; // delta angle in degrees -cw +ccw
+        float32 dx; // -1..1 (-1 left)
+        float32 dy; // -1..1 (-1 top)
     };
 
     union {
@@ -134,18 +149,8 @@ public:
         char32_t keyChar; // unicode utf32 char
         MouseButton mouseButton;
         GamepadDevice::eDavaGamepadElement element;
-        struct
-        {
-            float32 x;
-            float32 y;
-        } wheelDelta; // scroll delta in mouse wheel clicks (or lines)
-        struct
-        {
-            float32 magnification; // delta -1..1
-            float32 rotation; // delta angle in degrees -cw +ccw
-            float32 dx; // -1..1 (-1 left)
-            float32 dy; // -1..1 (-1 top)
-        } gesture; // pinch/rotate/swipe
+        WheelDelta wheelDelta; // scroll delta in mouse wheel clicks (or lines)
+        Gesture gesture; // pinch/rotate/swipe
     };
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates

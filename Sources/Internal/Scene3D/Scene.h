@@ -49,14 +49,11 @@ namespace DAVA
 
 class Texture;
 class StaticMesh;
-class AnimatedMesh;
-class SceneNodeAnimationList;
 class DataNode;
 class ShadowVolumeNode;
 class Light;
 class ShadowRect;
 class QuadTree;
-class MeshInstanceNode;
 class Component;
 class SceneSystem;
 class RenderSystem;
@@ -164,7 +161,7 @@ public:
      */
     void UnregisterComponent(Entity* entity, Component* component);
 
-    virtual void AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem* insertBeforeSceneForProcess = NULL);
+    virtual void AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem* insertBeforeSceneForProcess = nullptr);
     virtual void RemoveSystem(SceneSystem* sceneSystem);
 
     //virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
@@ -198,20 +195,15 @@ public:
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
      */
-    virtual Scene* GetScene();
+    Scene* GetScene() override;
 
-    void AddAnimatedMesh(AnimatedMesh* mesh);
-    void RemoveAnimatedMesh(AnimatedMesh* mesh);
-    AnimatedMesh* GetAnimatedMesh(int32 index);
-    inline int32 GetAnimatedMeshCount();
-
-    virtual void HandleEvent(Observable* observable); //Handle RenderOptions
+    void HandleEvent(Observable* observable) override; //Handle RenderOptions
 
     //virtual void StopAllAnimations(bool recursive = true);
 
-    virtual void Update(float timeElapsed);
-    virtual void Draw();
-    virtual void SceneDidLoaded();
+    virtual void Update(float32 timeElapsed);
+    void Draw() override;
+    void SceneDidLoaded() override;
 
     virtual void SetupTestLighting();
 
@@ -240,8 +232,8 @@ public:
     RenderSystem* GetRenderSystem() const;
     AnimationSystem* GetAnimationSystem() const;
 
-    SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
-    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
+    virtual SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
+    virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
 
@@ -279,7 +271,6 @@ protected:
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
 
-    Vector<AnimatedMesh*> animatedMeshes;
     Vector<Camera*> cameras;
 
     NMaterial* sceneGlobalMaterial;
@@ -293,14 +284,9 @@ protected:
     friend class Entity;
 };
 
-int32 Scene::GetAnimatedMeshCount()
-{
-    return (int32)animatedMeshes.size();
-}
-
 int32 Scene::GetCameraCount()
 {
-    return (int32)cameras.size();
+    return static_cast<int32>(cameras.size());
 }
 };
 

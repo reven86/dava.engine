@@ -42,7 +42,7 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
 
@@ -329,8 +329,10 @@ ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
 
 ENUM_DECLARE(UILinearLayoutComponent::eOrientation)
 {
-    ENUM_ADD_DESCR(UILinearLayoutComponent::HORIZONTAL, "Horizontal");
-    ENUM_ADD_DESCR(UILinearLayoutComponent::VERTICAL, "Vertical");
+    ENUM_ADD_DESCR(UILinearLayoutComponent::LEFT_TO_RIGHT, "LeftToRight");
+    ENUM_ADD_DESCR(UILinearLayoutComponent::RIGHT_TO_LEFT, "RightToLeft");
+    ENUM_ADD_DESCR(UILinearLayoutComponent::TOP_DOWN, "TopDown");
+    ENUM_ADD_DESCR(UILinearLayoutComponent::BOTTOM_UP, "BottomUp");
 };
 
 ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)

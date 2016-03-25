@@ -103,7 +103,7 @@ protected slots:
     virtual void OnUpdateTimeout();
 
     virtual void rowsAboutToBeInserted(const QModelIndex& parent, int start, int end);
-    virtual void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end);
+    void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
     virtual void rowsOp(const QModelIndex& parent, int start, int end);
 
 private:

@@ -670,7 +670,7 @@ void EmitterLayerWidget::OnValueChanged()
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
+    std::unique_ptr<CommandUpdateParticleLayer> updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(emitter, layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,
@@ -717,7 +717,7 @@ void EmitterLayerWidget::OnValueChanged()
                          (float32)pivotPointYSpinBox->value());
 
     DVASSERT(activeScene);
-    activeScene->Exec(updateLayerCmd);
+    activeScene->Exec(std::move(updateLayerCmd));
     activeScene->MarkAsChanged();
 
     Update(false);
@@ -738,8 +738,7 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     const FilePath spritePath(spritePathLabel->text().toStdString());
 
     DVASSERT(activeScene);
-    CommandChangeLayerMaterialProperties* updateLayerCmd = new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked());
-    activeScene->Exec(updateLayerCmd);
+    activeScene->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
 
     UpdateLayerSprite();
 
@@ -756,8 +755,8 @@ void EmitterLayerWidget::OnLodsChanged()
     {
         lods[i] = layerLodsCheckBox[i]->isChecked();
     }
-    CommandUpdateParticleLayerLods* updateLodsCmd = new CommandUpdateParticleLayerLods(layer, lods);
-    activeScene->Exec(updateLodsCmd);
+
+    activeScene->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
     activeScene->MarkAsChanged();
     emit ValueChanged();
 }
@@ -973,9 +972,13 @@ void EmitterLayerWidget::UpdateLayerSprite()
     if (layer->sprite)
     {
         RenderSystem2D::RenderTargetPassDescriptor desc;
-        desc.target = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-        desc.shouldClear = true;
-        desc.shouldTransformVirtualToPhysical = false;
+        Texture* dstTex = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        desc.colorAttachment = dstTex->handle;
+        desc.depthAttachment = dstTex->handleDepthStencil;
+        desc.width = dstTex->GetWidth();
+        desc.height = dstTex->GetHeight();
+        desc.clearTarget = true;
+        desc.transformVirtualToPhysical = false;
         desc.clearColor = Color::Clear;
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         {
@@ -984,7 +987,7 @@ void EmitterLayerWidget::UpdateLayerSprite()
             RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
         }
         RenderSystem2D::Instance()->EndRenderTargetPass();
-        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), desc.target });
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), dstTex });
         spriteUpdateTimer->start(0);
         spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
     }

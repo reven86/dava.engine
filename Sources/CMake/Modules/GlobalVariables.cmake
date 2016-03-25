@@ -11,8 +11,8 @@ function ( load_config CONFIG_FILE )
         string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
         string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
         string( REPLACE "${Name}=" "" Value ${NameAndValue} )
-        string( REGEX REPLACE " " "" Name   "${Name}" )
-        string( REGEX REPLACE " " "" Value  "${Value}" )
+        string( STRIP "${Name}" Name)
+        string( STRIP "${Value}" Value)
         if( NOT ${Name} )
             set( ${Name} "${Value}" PARENT_SCOPE )
         endif()
@@ -47,7 +47,26 @@ set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_TOOLS_BIN_DIR                 "${DAVA_ROOT_DIR}/Tools/Bin" )
+if (WIN32)
+	string ( FIND ${CMAKE_GENERATOR} "Win64" X64_PROJECT )
+
+	if( ${X64_PROJECT} EQUAL -1 )
+		set ( X64_MODE false )
+	else ()
+		set ( X64_MODE true )
+	endif ()
+
+	if( X64_MODE )
+		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
+        set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll fmod_event64.dll IMagickHelper.dll glew32.dll TextureConverter.dll )  
+	else ()
+		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
+        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )  
+	endif ()
+else ()
+	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
+endif()
+
 set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
 set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
@@ -104,6 +123,14 @@ if( NOT DEPLOY_DIR )
 endif()
 
 #DavaConfig
+if( CUSTOM_DAVA_CONFIG_PATH_MAC AND MACOS )
+    set(CUSTOM_DAVA_CONFIG_PATH ${CUSTOM_DAVA_CONFIG_PATH_MAC} )
+endif()
+
+if( CUSTOM_DAVA_CONFIG_PATH_WIN AND WIN32 )
+    set(CUSTOM_DAVA_CONFIG_PATH ${CUSTOM_DAVA_CONFIG_PATH_WIN} )    
+endif()
+
 if( CUSTOM_DAVA_CONFIG_PATH  )
     set( DAVA_CONFIG_PATH ${CUSTOM_DAVA_CONFIG_PATH} )
 

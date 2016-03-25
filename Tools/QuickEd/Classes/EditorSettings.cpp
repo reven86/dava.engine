@@ -46,6 +46,7 @@ EditorSettings::EditorSettings()
 
 EditorSettings::~EditorSettings()
 {
+    Save();
     SafeRelease(settings);
 }
 
@@ -111,12 +112,12 @@ void EditorSettings::AddLastOpenedFile(const String& pathToFile)
         filesList.erase(filesList.begin() + RECENT_FILES_COUNT, filesList.end());
     }
 
-    for (int32 i = 0; i < (int32)filesList.size(); ++i)
+    for (int32 i = 0; i < static_cast<int32>(filesList.size()); ++i)
     {
         settings->SetString(Format("LastOpenedFile_%d", i), filesList[i]);
     }
 
-    settings->SetInt32("LastOpenedFilesCount", filesList.size());
+    settings->SetInt32("LastOpenedFilesCount", static_cast<int32>(filesList.size()));
 
     Save();
 }
@@ -143,26 +144,6 @@ bool EditorSettings::IsPixelized() const
     return settings->GetBool("editor.pixelized", true);
 }
 
-Color EditorSettings::GetCurrentBackgroundFrameColor() const
-{
-    return GetColor("editor.currentBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
-}
-
-void EditorSettings::SetCurrentBackgroundFrameColor(const Color& color)
-{
-    SetColor("editor.currentBackgroundFrameColor", color);
-}
-
-Color EditorSettings::GetCustomBackgroundFrameColor() const
-{
-    return GetColor("editor.customBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
-}
-
-void EditorSettings::SetCustomBackgroundFrameColor(const Color& color)
-{
-    SetColor("editor.customBackgroundFrameColor", color);
-}
-
 Color EditorSettings::GetGrigColor() const
 {
     return GetColor("editor.gridColor", DEFAULT_BACKGROUND_FRAME_COLOR);
@@ -171,6 +152,19 @@ Color EditorSettings::GetGrigColor() const
 void EditorSettings::SetGrigColor(const Color& color)
 {
     SetColor("editor.gridColor", color);
+    GridColorChanged.Emit(color);
+}
+
+eBackgroundType EditorSettings::GetGridType() const
+{
+    int64 value = settings->GetInt64("editor.gridType");
+    return static_cast<eBackgroundType>(value);
+}
+
+void EditorSettings::SetGridType(eBackgroundType type)
+{
+    settings->SetInt64("editor.gridType", type);
+    GridTypeChanged.Emit(type);
 }
 
 Color EditorSettings::GetColor(const String& colorName, const Color& defaultColor) const

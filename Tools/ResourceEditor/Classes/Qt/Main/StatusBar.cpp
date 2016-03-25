@@ -29,11 +29,13 @@
 
 #include "StatusBar.h"
 
+#include "Platform/SystemTimer.h"
+
 #include "Main/mainwindow.h"
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 #include <QLabel>
 #include <QLayout>
@@ -46,6 +48,11 @@ StatusBar::StatusBar(QWidget* parent)
     sceneGeometry->setToolTip("Resolution");
     sceneGeometry->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     addPermanentWidget(sceneGeometry);
+
+    fpsCounter = new QLabel(this);
+    fpsCounter->setToolTip("Current FPS for active scene");
+    fpsCounter->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    addPermanentWidget(fpsCounter);
 
     distanceToCamera = new QLabel(this);
     distanceToCamera->setToolTip("Distance from camera to center of the selection");
@@ -112,17 +119,7 @@ void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* se
 
 void StatusBar::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-    int id = command->GetId();
-    if (id == CMDID_BATCH)
-    {
-        CommandBatch* batch = (CommandBatch*)command;
-        Command2* firstCommand = batch->GetCommand(0);
-        if (firstCommand && (firstCommand->GetId() == CMDID_TRANSFORM))
-        {
-            UpdateSelectionBoxSize(scene);
-        }
-    }
-    else if (id == CMDID_TRANSFORM)
+    if (command->MatchCommandID(CMDID_TRANSFORM))
     {
         UpdateSelectionBoxSize(scene);
     }
@@ -136,6 +133,7 @@ void StatusBar::StructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 void StatusBar::UpdateByTimer()
 {
     UpdateDistanceToCamera();
+    UpdateFPS();
 }
 
 void StatusBar::OnSceneGeometryChaged(int width, int height)
@@ -162,4 +160,29 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
         selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
         selectionBoxSize->setVisible(true);
     }
+}
+
+void StatusBar::UpdateFPS()
+{
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    DAVA::uint32 frames = 0;
+    if (scene != nullptr)
+    {
+        frames = scene->GetFramesCount();
+        scene->ResetFramesCount();
+    }
+
+    DAVA::uint64 currentTimeMS = DAVA::SystemTimer::Instance()->AbsoluteMS();
+
+    if (frames > 0 && lastTimeMS != 0 && lastTimeMS != currentTimeMS)
+    {
+        DAVA::uint64 deltaTime = currentTimeMS - lastTimeMS;
+        fpsCounter->setText(QString::fromStdString(DAVA::Format("FPS: %lld", frames * 1000 / deltaTime)));
+    }
+    else
+    {
+        fpsCounter->setText(QString::fromStdString("FPS: unknown"));
+    }
+
+    lastTimeMS = currentTimeMS;
 }

@@ -30,15 +30,15 @@
 #ifndef QTTOOLS_EVENTMODEL_H
 #define QTTOOLS_EVENTMODEL_H
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QStandardItemModel>
 #include <QEvent>
-
-
-
+POP_QT_WARNING_SUPRESSOR
 
 class EventModel
-    : public QStandardItemModel
+: public QStandardItemModel
 {
     Q_OBJECT
 
@@ -49,17 +49,15 @@ public:
     };
 
 public:
-    explicit EventModel( QObject *parent = nullptr );
+    explicit EventModel(QObject* parent = nullptr);
     ~EventModel() = default;
 
 private:
-
 private:
-    static void build( QStandardItemModel& model );
+    static void build(QStandardItemModel& model);
 };
 
-
-Q_DECLARE_METATYPE( EventModel::Roles );
+Q_DECLARE_METATYPE(EventModel::Roles);
 
 
 #endif // QTTOOLS_EVENTMODEL_H

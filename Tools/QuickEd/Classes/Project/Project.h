@@ -31,7 +31,6 @@
 #define QUICKED__PROJECT_H__
 
 #include <QObject>
-#include "Model/LegacyEditorUIPackageLoader.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 
@@ -48,19 +47,15 @@ public:
     explicit Project(QObject* parent = nullptr);
     virtual ~Project();
     bool Open(const QString& path);
+    void Close();
     bool CheckAndUnlockProject(const QString& projectPath);
 
-    DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
-    bool SavePackage(PackageNode* package);
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
-signals:
-    void ProjectOpened();
 
 private:
     bool OpenInternal(const QString& path);
 
-    LegacyControlData* legacyData;
     EditorFontSystem* editorFontSystem;
     EditorLocalizationSystem* editorLocalizationSystem;
 

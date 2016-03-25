@@ -26,29 +26,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "FileSystem/LocalizationApple.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_APPLE__)
 
 #import <Foundation/Foundation.h>
 
 #include "FileSystem/LocalizationSystem.h"
-#include "FileSystem/File.h"
-#include "FileSystem/Logger.h"
 
 namespace DAVA
 {
-void LocalizationApple::SelectPreferedLocalizationForPath(const FilePath& directoryPath)
-{
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
-
-const char* LocalizationApple::GetDeviceLang(void)
+String LocalizationSystem::GetDeviceLocale(void) const
 {
     NSArray* ar = [NSLocale preferredLanguages];
 
-    return [[ar objectAtIndex:0] UTF8String];
+    String ret([[ar objectAtIndex:0] UTF8String]);
+    return ret;
 }
 }
 #endif

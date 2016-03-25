@@ -35,6 +35,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/Frustum.h"
 
 namespace DAVA
@@ -50,7 +51,7 @@ CullingSystem::~CullingSystem()
 
 void CullingSystem::ImmediateUpdate(Entity* entity)
 {
-    RenderObject* renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
+    RenderObject* renderObject = GetRenderObject(entity);
     if (!renderObject)
         return;
 

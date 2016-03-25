@@ -39,6 +39,7 @@
 
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
+#import <Foundation/NSProcessInfo.h>
 #import <AppKit/NSScreen.h>
 #include "Utils/StringFormat.h"
 #include "OpenUDIDMacOS.h"
@@ -49,12 +50,12 @@ namespace DAVA
 String GetSysCtlByName(const String& param)
 {
     size_t len = 0;
-    sysctlbyname(param.c_str(), NULL, &len, NULL, 0);
+    sysctlbyname(param.c_str(), nullptr, &len, nullptr, 0);
 
     if (len)
     {
         char model[len];
-        sysctlbyname(param.c_str(), model, &len, NULL, 0);
+        sysctlbyname(param.c_str(), model, &len, nullptr, 0);
         NSString* model_ns = [NSString stringWithUTF8String:model];
         return String([model_ns UTF8String]);
     }
@@ -78,11 +79,14 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    SInt32 versionMajor = 0, versionMinor = 0, versionBugFix = 0;
-    Gestalt(gestaltSystemVersionMajor, &versionMajor);
-    Gestalt(gestaltSystemVersionMinor, &versionMinor);
-    Gestalt(gestaltSystemVersionBugFix, &versionBugFix);
-    NSString* systemVersion = [NSString stringWithFormat:@"%d.%d.%d", versionMajor, versionMinor, versionBugFix];
+    NSOperatingSystemVersion sysVersion;
+    NSProcessInfo* procInfo = [NSProcessInfo processInfo];
+    sysVersion = procInfo.operatingSystemVersion;
+
+    NSString* systemVersion =
+    [NSString stringWithFormat:@"%ld.%ld.%ld", sysVersion.majorVersion,
+                               sysVersion.minorVersion,
+                               sysVersion.patchVersion];
 
     return String([systemVersion UTF8String]);
 }
@@ -147,7 +151,7 @@ WideString DeviceInfoPrivate::GetName()
     NSStringEncoding pEncode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
     NSData* pSData = [deviceName dataUsingEncoding:pEncode];
 
-    return WideString((wchar_t*)[pSData bytes], [pSData length] / sizeof(wchar_t));
+    return WideString(reinterpret_cast<const wchar_t*>([pSData bytes]), [pSData length] / sizeof(wchar_t));
 }
 
 // Not impletemted yet

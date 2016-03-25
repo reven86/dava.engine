@@ -30,6 +30,7 @@
 #include "mainwindow.h"
 #include "Project/Project.h"
 #include "Document.h"
+#include "DocumentGroup.h"
 
 #include "Helpers/ResourcesManageHelper.h"
 
@@ -39,37 +40,30 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "DebugTools/DebugTools.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
-namespace
+namespace MainWindow_namespace
 {
 const QString APP_GEOMETRY = "geometry";
 const QString APP_STATE = "windowstate";
-const char* COLOR_PROPERTY_ID = "color";
 const QString CONSOLE_STATE = "console state";
+
+void SetColoredIconToAction(QAction* action, QColor color)
+{
+    QPixmap pixmap(16, 16);
+    pixmap.fill(color);
+    action->setIcon(pixmap);
+    action->setData(color);
+}
 }
 
 using namespace DAVA;
 
-struct MainWindow::TabState
-{
-    TabState(Document* document_, const QString& tabText_)
-        : document(document_)
-        , tabText(tabText_)
-    {
-        DVASSERT(document != nullptr);
-    }
-    Document* document = nullptr;
-    QString tabText;
-};
-
-Q_DECLARE_METATYPE(MainWindow::TabState*);
-
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , backgroundFrameUseCustomColorAction(nullptr)
-    , backgroundFrameSelectCustomColorAction(nullptr)
     , loggerOutput(new LoggerOutputObject)
 {
     setupUi(this);
@@ -98,8 +92,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
-    connect(tabBar, &QTabBar::tabCloseRequested, this, &MainWindow::TabClosed);
-    connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
@@ -110,33 +102,40 @@ MainWindow::MainWindow(QWidget* parent)
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
 
-    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
     OnDocumentChanged(nullptr);
 }
 
-void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
+MainWindow::~MainWindow()
 {
-    Q_ASSERT(undoGroup);
-    QAction* undoAction = undoGroup->createUndoAction(this);
-    undoAction->setShortcuts(QKeySequence::Undo);
+    SaveMainWindowState();
+}
+
+void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
+{
+    Q_ASSERT(documentGroup != nullptr);
+
+    documentGroup->ConnectToTabBar(tabBar);
+
+    QAction* undoAction = documentGroup->CreateUndoAction(this);
+    undoAction->setShortcut(QKeySequence::Undo);
     undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
 
-    QAction* redoAction = undoGroup->createRedoAction(this);
-    redoAction->setShortcuts(QKeySequence::Redo);
+    QAction* redoAction = documentGroup->CreateRedoAction(this);
+    redoAction->setShortcut(QKeySequence::Redo);
     redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
 
     mainToolbar->addAction(undoAction);
     mainToolbar->addAction(redoAction);
-}
 
-void MainWindow::OnProjectIsOpenChanged(bool arg)
-{
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
-}
+    Q_ASSERT(documentGroup != nullptr);
+    documentGroup->AttachSaveAction(actionSaveDocument);
+    documentGroup->AttachSaveAllAction(actionSaveAllDocuments);
 
-void MainWindow::OnCountChanged(int count)
-{
-    actionSaveAllDocuments->setEnabled(count > 0);
+    QAction* actionCloseDocument = new QAction("Close current document", this);
+    actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
+    actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
+    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+    documentGroup->AttachCloseDocumentAction(actionCloseDocument);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)
@@ -144,59 +143,31 @@ void MainWindow::OnDocumentChanged(Document* document)
     bool enabled = (document != nullptr);
     packageWidget->setEnabled(enabled);
     propertiesWidget->setEnabled(enabled);
-    previewWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
-
-    actionSaveDocument->setEnabled(nullptr != document && !document->GetUndoStack()->isClean());
-
-    for (int index = 0, count = tabBar->count(); index < count; ++index)
-    {
-        QVariant var = tabBar->tabData(index);
-        DVASSERT(var.canConvert<TabState*>());
-        TabState* tabState = var.value<TabState*>();
-        if (tabState->document == document)
-        {
-            tabBar->setCurrentIndex(index);
-            return;
-        }
-    }
-}
-
-int MainWindow::CloseTab(int index)
-{
-    delete tabBar->tabData(index).value<TabState*>();
-    tabBar->removeTab(index);
-    OnCountChanged(tabBar->count());
-    return tabBar->currentIndex();
-}
-
-void MainWindow::SetCurrentTab(int index)
-{
-    tabBar->setCurrentIndex(index);
 }
 
 void MainWindow::SaveMainWindowState()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.setValue(APP_GEOMETRY, saveGeometry());
-    settings.setValue(APP_STATE, saveState());
-    settings.setValue(CONSOLE_STATE, logWidget->Serialize());
+    settings.setValue(MainWindow_namespace::APP_GEOMETRY, saveGeometry());
+    settings.setValue(MainWindow_namespace::APP_STATE, saveState());
+    settings.setValue(MainWindow_namespace::CONSOLE_STATE, logWidget->Serialize());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    auto val = settings.value(APP_GEOMETRY);
+    auto val = settings.value(MainWindow_namespace::APP_GEOMETRY);
     if (val.canConvert<QByteArray>())
     {
-        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
+        restoreGeometry(settings.value(MainWindow_namespace::APP_GEOMETRY).toByteArray());
     }
-    val = settings.value(APP_STATE);
+    val = settings.value(MainWindow_namespace::APP_STATE);
     if (val.canConvert<QByteArray>())
     {
-        restoreState(settings.value(APP_STATE).toByteArray());
+        restoreState(settings.value(MainWindow_namespace::APP_STATE).toByteArray());
     }
-    val = settings.value(CONSOLE_STATE);
+    val = settings.value(MainWindow_namespace::CONSOLE_STATE);
     if (val.canConvert<QByteArray>())
     {
         logWidget->Deserialize(val.toByteArray());
@@ -208,41 +179,9 @@ QComboBox* MainWindow::GetComboBoxLanguage()
     return comboboxLanguage;
 }
 
-void MainWindow::OnCleanChanged(bool isClean)
-{
-    QUndoStack* undoStack = qobject_cast<QUndoStack*>(sender());
-    DVASSERT(nullptr != undoStack);
-    Document* document = qobject_cast<Document*>(undoStack->parent());
-    if (nullptr == document)
-    {
-        return; //undostack emit clear when destroyed
-    }
-    for (int index = 0, count = tabBar->count(); index < count; ++index)
-    {
-        QVariant var = tabBar->tabData(index);
-        DVASSERT(var.canConvert<TabState*>());
-        TabState* tabState = var.value<TabState*>();
-        if (tabState->document == document)
-        {
-            QString tabText = tabState->tabText;
-            if (!isClean)
-            {
-                tabText += "*";
-            }
-            tabBar->setTabText(index, tabText);
-            actionSaveDocument->setEnabled(!isClean);
-        }
-    }
-}
-
 bool MainWindow::IsInEmulationMode() const
 {
     return emulationBox->isChecked();
-}
-
-bool MainWindow::isPixelized() const
-{
-    return actionPixelized->isChecked();
 }
 
 void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
@@ -289,33 +228,17 @@ void MainWindow::FillComboboxLanguages(const Project* project)
 
 void MainWindow::InitRtlBox()
 {
-    QCheckBox* rtlBox = new QCheckBox();
-    rtlBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("Right-to-left"));
-    label->setBuddy(rtlBox);
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(rtlBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
+    rtlBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(rtlBox);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
 }
 
 void MainWindow::InitBiDiSupportBox()
 {
-    QCheckBox* bidiSupportBox = new QCheckBox();
-    bidiSupportBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("BiDi Support"));
-    label->setBuddy(bidiSupportBox);
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(bidiSupportBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
+    bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(bidiSupportBox);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
 }
 
@@ -337,25 +260,16 @@ void MainWindow::InitGlobalClasses()
 
 void MainWindow::InitEmulationMode()
 {
-    emulationBox = new QCheckBox();
-    emulationBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("Emulation"));
-    label->setBuddy(emulationBox);
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(emulationBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    emulationBox = new QCheckBox("Emulation", this);
+    emulationBox->setLayoutDirection(Qt::RightToLeft);
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
+    toolBarPlugins->addWidget(emulationBox);
 }
 
 void MainWindow::InitMenu()
 {
     SetupViewMenu();
 
-    connect(actionSaveDocument, &QAction::triggered, this, &MainWindow::OnSaveDocument);
-    connect(actionSaveAllDocuments, &QAction::triggered, this, &MainWindow::SaveAllDocuments);
     connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProject);
     connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
 
@@ -374,16 +288,8 @@ void MainWindow::InitMenu()
     connect(actionHelp, &QAction::triggered, this, &MainWindow::OnShowHelp);
 
     // Pixelization.
-    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
-    DisableActions();
-}
-
-void MainWindow::OnSaveDocument()
-{
-    int index = tabBar->currentIndex();
-    DVASSERT(index >= 0);
-    emit SaveDocument(index);
+    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
 }
 
 void MainWindow::SetupViewMenu()
@@ -398,11 +304,54 @@ void MainWindow::SetupViewMenu()
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
 
-    // Setup the Background Color menu.
-    QMenu* setBackgroundColorMenu = new QMenu("Background Color", this);
+    QMenu* appStyleMenu = new QMenu(tr("Application style"), menuView);
+    menuView->addMenu(appStyleMenu);
+    QActionGroup* actionGroup = new QActionGroup(this);
+    for (const QString& theme : Themes::ThemesNames())
+    {
+        QAction* action = new QAction(theme, menuView);
+        actionGroup->addAction(action);
+        action->setCheckable(true);
+        if (theme == Themes::GetCurrentThemeStr())
+        {
+            action->setChecked(true);
+        }
+        appStyleMenu->addAction(action);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [](QAction* action) {
+        if (action->isChecked())
+        {
+            Themes::SetCurrentTheme(action->text());
+        }
+    });
+    SetupBackgroundMenu();
+    // Another actions below the Set Background Color.
     menuView->addSeparator();
-    menuView->addMenu(setBackgroundColorMenu);
+    menuView->addAction(actionZoomIn);
+    menuView->addAction(actionZoomOut);
+}
 
+void MainWindow::SetupBackgroundMenu()
+{
+    menuView->addSeparator();
+    // Setup the Background Color menu.
+    QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
+    menuView->addSeparator();
+    menuView->addMenu(backgroundColorMenu);
+
+    QActionGroup* actionGroup = new QActionGroup(backgroundColorMenu);
+    QAction* defaultBackgroundColorAction = new QAction(tr("Default"), backgroundColorMenu);
+
+    actionGroup->addAction(defaultBackgroundColorAction);
+    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
+        if (toggled)
+        {
+            EditorSettings::Instance()->SetGridType(BackgroundTexture);
+        }
+    });
+
+    backgroundColorMenu->addAction(defaultBackgroundColorAction);
+    backgroundColorMenu->addSeparator();
     static const struct
     {
         QColor color;
@@ -410,59 +359,60 @@ void MainWindow::SetupViewMenu()
     } colorsMap[] =
     {
       { Qt::black, "Black" },
-      { QColor(0x33, 0x33, 0x33, 0xFF), "Default" },
-      { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
-      { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
-      { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
+      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
+      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
+      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
     };
-
-    Color curBackgroundColor = EditorSettings::Instance()->GetCurrentBackgroundFrameColor();
-    int32 itemsCount = COUNT_OF(colorsMap);
-
-    bool isCustomColor = true;
-    for (int32 i = 0; i < itemsCount; i++)
+    for (const auto& colorItem : colorsMap)
     {
-        QAction* colorAction = new QAction(colorsMap[i].colorName, setBackgroundColorMenu);
-        colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
+        QAction* colorAction = new QAction(colorItem.colorName, backgroundColorMenu);
+        QColor color(colorItem.color);
+        MainWindow_namespace::SetColoredIconToAction(colorAction, color);
 
-        Color curColor = QColorToColor(colorsMap[i].color);
-        if (curColor == curBackgroundColor)
-        {
-            isCustomColor = false;
-        }
-
-        colorAction->setCheckable(true);
-        colorAction->setChecked(curColor == curBackgroundColor);
-
-        backgroundFramePredefinedColorActions.append(colorAction);
-        setBackgroundColorMenu->addAction(colorAction);
+        actionGroup->addAction(colorAction);
+        backgroundColorMenu->addAction(colorAction);
+        connect(colorAction, &QAction::toggled, [color](bool toggled) {
+            if (toggled)
+            {
+                EditorSettings::Instance()->SetGridType(BackgroundColor);
+                EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
+            }
+        });
     }
+    QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
+    backgroundColorMenu->addAction(backgroundCustomColorAction);
+    connect(backgroundCustomColorAction, &QAction::triggered, this, &MainWindow::OnBackgroundCustomColorClicked);
+    actionGroup->addAction(backgroundCustomColorAction);
 
-    backgroundFrameUseCustomColorAction = new QAction("Custom", setBackgroundColorMenu);
-    backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
-    backgroundFrameUseCustomColorAction->setCheckable(true);
-    backgroundFrameUseCustomColorAction->setChecked(isCustomColor);
-    setBackgroundColorMenu->addAction(backgroundFrameUseCustomColorAction);
+    for (auto& action : actionGroup->actions())
+    {
+        action->setCheckable(true);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
+        previousBackgroundColorAction = action;
+    });
 
-    setBackgroundColorMenu->addSeparator();
-
-    backgroundFrameSelectCustomColorAction = new QAction("Select Custom Color...", setBackgroundColorMenu);
-    setBackgroundColorMenu->addAction(backgroundFrameSelectCustomColorAction);
-
-    connect(setBackgroundColorMenu, SIGNAL(triggered(QAction*)), this, SLOT(SetBackgroundColorMenuTriggered(QAction*)));
-
-    // Another actions below the Set Background Color.
-    menuView->addAction(actionZoomIn);
-    menuView->insertSeparator(actionZoomIn);
-    menuView->addAction(actionZoomOut);
-}
-
-void MainWindow::DisableActions()
-{
-    actionSaveAllDocuments->setEnabled(false);
-    actionSaveDocument->setEnabled(false);
-
-    actionClose_project->setEnabled(false);
+    auto editorSettings = EditorSettings::Instance();
+    if (!editorSettings->GetGridType())
+    {
+        defaultBackgroundColorAction->trigger();
+    }
+    else
+    {
+        QColor color = ColorToQColor(editorSettings->GetGrigColor());
+        for (auto& action : actionGroup->actions())
+        {
+            if (action->data().value<QColor>() == color)
+            {
+                action->trigger();
+            }
+        }
+        if (actionGroup->checkedAction() == nullptr)
+        {
+            MainWindow_namespace::SetColoredIconToAction(backgroundCustomColorAction, color);
+            backgroundCustomColorAction->setChecked(true);
+        }
+    }
 }
 
 void MainWindow::RebuildRecentMenu()
@@ -486,27 +436,34 @@ void MainWindow::RebuildRecentMenu()
     menuRecent->setEnabled(projectCount > 0);
 }
 
-int MainWindow::AddTab(Document* document, int index)
+void MainWindow::OnBackgroundCustomColorClicked()
 {
-    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &MainWindow::OnCleanChanged);
-
-    QFileInfo fileInfo(document->GetPackageAbsolutePath());
-    QString tabText(fileInfo.fileName());
-    bool blockSignals = tabBar->blockSignals(true); //block signals, because insertTab emit currentTabChanged
-    int insertedIndex = tabBar->insertTab(index, tabText);
-    tabBar->blockSignals(blockSignals);
-    tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
-    TabState* tabState = new TabState(document, tabText);
-    tabBar->setTabData(insertedIndex, QVariant::fromValue<TabState*>(tabState));
-    OnCountChanged(tabBar->count());
-    return insertedIndex;
+    QAction* customColorAction = qobject_cast<QAction*>(sender());
+    QColor curColor = customColorAction->data().value<QColor>();
+    QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
+    if (!color.isValid())
+    {
+        if (previousBackgroundColorAction != nullptr && previousBackgroundColorAction != customColorAction) //if we launch app with custom color previous color action will be nullptr
+        {
+            previousBackgroundColorAction->trigger();
+        }
+        return;
+    }
+    MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
+    EditorSettings::Instance()->SetGridType(BackgroundColor);
+    EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 
 void MainWindow::closeEvent(QCloseEvent* ev)
 {
-    SaveMainWindowState();
-    emit CloseRequested();
-    ev->ignore();
+    if (!CloseRequested()) //we cannot access to EditorCore directly by parent
+    {
+        ev->ignore();
+    }
+    else
+    {
+        ev->accept();
+    }
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
@@ -519,8 +476,8 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         UpdateProjectSettings(projectPath);
 
         RebuildRecentMenu();
-        fileSystemDockWidget->SetProjectDir(projectPath);
         FillComboboxLanguages(project);
+        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -530,6 +487,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
             errors << QString::fromStdString(result.message);
         }
         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
+        this->setWindowTitle("QuickEd");
     }
 }
 
@@ -564,12 +522,11 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
 
-void MainWindow::OnPixelizationStateChanged()
+void MainWindow::OnPixelizationStateChanged(bool isPixelized)
 {
-    bool isPixelized = actionPixelized->isChecked();
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
-    emit PixelizationChanged(isPixelized);
+    Texture::SetPixelization(isPixelized);
 }
 
 void MainWindow::OnRtlChanged(int arg)
@@ -593,54 +550,4 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     {
         logWidget->AddMessage(logLevel, output);
     }
-}
-
-void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
-{
-    Color newColor;
-
-    if (action == backgroundFrameSelectCustomColorAction)
-    {
-        // Need to select new Background Frame color.
-        QColor curColor = ColorToQColor(EditorSettings::Instance()->GetCustomBackgroundFrameColor());
-        QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
-        if (color.isValid() == false)
-        {
-            return;
-        }
-
-        newColor = QColorToColor(color);
-        EditorSettings::Instance()->SetCustomBackgroundFrameColor(newColor);
-    }
-    else if (action == backgroundFrameUseCustomColorAction)
-    {
-        // Need to use custom Background Frame Color set up earlier.
-        newColor = EditorSettings::Instance()->GetCustomBackgroundFrameColor();
-    }
-    else
-    {
-        // Need to use predefined Background Frame Color.
-        newColor = QColorToColor(action->property(COLOR_PROPERTY_ID).value<QColor>());
-    }
-
-    EditorSettings::Instance()->SetCurrentBackgroundFrameColor(newColor);
-
-    // Update the check marks.
-    bool colorFound = false;
-    foreach (QAction* colorAction, backgroundFramePredefinedColorActions)
-    {
-        Color color = QColorToColor(colorAction->property(COLOR_PROPERTY_ID).value<QColor>());
-        if (color == newColor)
-        {
-            colorAction->setChecked(true);
-            colorFound = true;
-        }
-        else
-        {
-            colorAction->setChecked(false);
-        }
-    }
-
-    // In case we don't found current color in predefined ones - select "Custom" menu item.
-    backgroundFrameUseCustomColorAction->setChecked(!colorFound);
 }

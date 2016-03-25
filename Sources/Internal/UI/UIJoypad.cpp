@@ -29,12 +29,11 @@
 
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
-#include "FileSystem/Logger.h"
-#include "FileSystem/YamlNode.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
-static const String UIJOYPAD_STICK_NAME = "stick";
+static const FastName UIJOYPAD_STICK_NAME("stick");
 
 UIJoypad::UIJoypad(const Rect& rect)
     : UIControl(rect)
@@ -132,8 +131,8 @@ const Vector2& UIJoypad::GetDigitalPosition()
     float32 xSign = v.x >= 0.0f ? digitalSense : -digitalSense;
     float32 ySign = v.y >= 0.0f ? digitalSense : -digitalSense;
 
-    digitalVector.x = 0.0f + (int32)(v.x + xSign);
-    digitalVector.y = 0.0f + (int32)(v.y + ySign);
+    digitalVector.x = v.x + xSign;
+    digitalVector.y = v.y + ySign;
 
     //Logger::Info("Digital joy pos x = %f, y = %f", digitalVector.x, digitalVector.y);
 
@@ -327,63 +326,6 @@ void UIJoypad::InputCancelled(UIEvent* currentInput)
         needRecalcAnalog = true;
         needRecalcDigital = true;
     }
-}
-
-void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode* node, DAVA::UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* stickSpriteNode = node->Get("stickSprite");
-    const YamlNode* stickFrameNode = node->Get("stickFrame");
-    const YamlNode* deadAreaSizeNode = node->Get("deadAreaSize");
-    const YamlNode* digitalSenseNode = node->Get("digitalSense");
-
-    if (stickSpriteNode)
-    {
-        int32 spriteFrame = 0;
-        if (stickFrameNode)
-        {
-            spriteFrame = stickFrameNode->AsInt32();
-        }
-
-        SetStickSprite(stickSpriteNode->AsString(), spriteFrame);
-    }
-
-    if (deadAreaSizeNode)
-    {
-        SetDeadAreaSize(deadAreaSizeNode->AsFloat());
-    }
-
-    if (digitalSenseNode)
-    {
-        SetDigitalSense(digitalSenseNode->AsFloat());
-    }
-}
-
-YamlNode* UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader* loader)
-{
-    ScopedPtr<UIJoypad> baseControl(new UIJoypad());
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    // Sprite
-    if (stick && stick->GetSprite())
-    {
-        node->Set("stickSprite", Sprite::GetPathString(stick->GetSprite()));
-        node->Set("stickFrame", stick->GetFrame());
-    }
-
-    if (baseControl->GetDeadAreaSize() != GetDeadAreaSize())
-    {
-        node->Set("deadAreaSize", GetDeadAreaSize());
-    }
-
-    if (baseControl->GetDigitalSense() != GetDigitalSense())
-    {
-        node->Set("digitalSense", GetDigitalSense());
-    }
-
-    return node;
 }
 
 float32 UIJoypad::GetDeadAreaSize() const

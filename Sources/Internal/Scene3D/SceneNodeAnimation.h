@@ -42,10 +42,10 @@ class SceneNodeAnimationList;
 class SceneNodeAnimation : public BaseObject
 {
 protected:
-    virtual ~SceneNodeAnimation();
+    ~SceneNodeAnimation() override;
 
 public:
-    SceneNodeAnimation(int32 keyCount);
+    SceneNodeAnimation(uint32 keyCount);
 
     SceneNodeAnimationKey& Intepolate(float32 t);
 
@@ -72,29 +72,25 @@ public:
     Vector3 SetStartPosition(const Vector3& position);
     void ShiftStartPosition(const Vector3& position);
 
-    // this is node of animation this animation is supposed for
-    Entity* bindNode;
-    FastName bindName;
-    bool apply;
-    float32 weight;
-
-    float32 delayTime;
-    float32 currentTime;
-    float32 duration;
-
-    int32 startIdx;
-
-    int32 keyCount;
-    SceneNodeAnimationKey* keys;
-    SceneNodeAnimationKey currentValue;
-
-    Matrix4 invPose;
-
     void SetParent(SceneNodeAnimationList* list);
     SceneNodeAnimationList* GetParent();
 
+    // this is node of animation this animation is supposed for
+    Entity* bindNode = nullptr;
+    FastName bindName;
+    float32 weight = 0.0f;
+    float32 delayTime = 0.0f;
+    float32 currentTime = 0.0f;
+    float32 duration = 0.0f;
+    int32 startIdx = 0;
+    uint32 keyCount = 0;
+    SceneNodeAnimationKey* keys = nullptr;
+    SceneNodeAnimationKey currentValue;
+    Matrix4 invPose;
+    bool apply = true;
+
 private:
-    SceneNodeAnimationList* parent;
+    SceneNodeAnimationList* parent = nullptr;
 };
 
 inline float32 SceneNodeAnimation::GetCurrentTime()

@@ -30,7 +30,7 @@
 #ifndef __BEAST_ACTION_H__
 #define __BEAST_ACTION_H__
 
-#include "CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
 #include "Beast/BeastProxy.h"
 
 #if defined(__DAVAENGINE_BEAST__)

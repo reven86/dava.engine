@@ -42,6 +42,8 @@ class UIScrollBarDelegate
 {
 public:
     friend class UIScrollBar;
+    virtual ~UIScrollBarDelegate() = default;
+
     virtual float32 VisibleAreaSize(UIScrollBar* forScrollBar) = 0;
     virtual float32 TotalAreaSize(UIScrollBar* forScrollBar) = 0;
     virtual float32 ViewPosition(UIScrollBar* forScrollBar) = 0;
@@ -72,17 +74,15 @@ public:
     const String GetDelegatePath(const UIControl* rootControl) const;
     UIControl* GetSlider();
 
-    virtual void Draw(const UIGeometricData& geometricData);
-    virtual void AddControl(UIControl* control);
-    virtual void RemoveControl(UIControl* control);
+    void Draw(const UIGeometricData& geometricData) override;
+    void AddControl(UIControl* control) override;
+    void RemoveControl(UIControl* control) override;
     UIScrollBar* Clone() override;
-    virtual void CopyDataFrom(UIControl* srcControl);
+    void CopyDataFrom(UIControl* srcControl) override;
 
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    virtual void LoadFromYamlNodeCompleted();
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
+    void LoadFromYamlNodeCompleted() override;
 
-    void Input(UIEvent* currentInput);
+    void Input(UIEvent* currentInput) override;
 
     int32 GetOrientation() const;
     void SetOrientation(int32 value);

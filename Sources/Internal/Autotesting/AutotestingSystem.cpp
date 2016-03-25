@@ -385,7 +385,8 @@ void AutotestingSystem::MakeScreenShot()
     Logger::Info("AutotestingSystem::MakeScreenShot");
     String currentDateTime = GetCurrentTimeString();
     screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-    Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+    String log = Format("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+    AutotestingDB::Instance()->Log("INFO", log.c_str());
     Renderer::RequestGLScreenShot(this);
 }
 
@@ -399,6 +400,7 @@ void AutotestingSystem::OnScreenShot(Image* image)
 {
     Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
     JobManager::Instance()->CreateWorkerJob(fn);
+    isScreenShotSaving = true;
 }
 
 void AutotestingSystem::OnScreenShotInternal(Image* image)
@@ -410,7 +412,7 @@ void AutotestingSystem::OnScreenShotInternal(Image* image)
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
     uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
-
+    isScreenShotSaving = false;
     SafeRelease(image);
 }
 
@@ -436,7 +438,7 @@ void AutotestingSystem::OnInput(const UIEvent& input)
 {
     if (UIScreenManager::Instance())
     {
-        String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
+        String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName().c_str() : "noname";
         Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
     }
 

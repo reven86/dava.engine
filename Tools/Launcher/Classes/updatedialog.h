@@ -31,7 +31,7 @@
 #define UPDATEDIALOG_H
 
 #include "configparser.h"
-#include "zipunpacker.h"
+#include "ziputils.h"
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -49,8 +49,7 @@ class ApplicationManager;
 struct UpdateTask
 {
     UpdateTask(const QString& branch, const QString& app, const AppVersion& _version, bool _isSelfUpdate = false, bool _isRemove = false)
-        :
-        branchID(branch)
+        : branchID(branch)
         , appID(app)
         , version(_version)
         , isSelfUpdate(_isSelfUpdate)
@@ -73,16 +72,14 @@ public:
     explicit UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent = 0);
     ~UpdateDialog();
 
+    void UpdateLastLogValue(const QString& log);
+    void BreakLog();
+
 signals:
-    void UpdateDownloadProgress(int value);
-    void UpdateUnpackProgress(int value);
     void AppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
 public slots:
     void OnCancelClicked();
-    void UnpackProgress(int, int);
-    void UnpackComplete();
-    void UnpackError(int);
 
 private slots:
     void NetworkError(QNetworkReply::NetworkError code);
@@ -92,33 +89,32 @@ private slots:
     void StartNextTask();
 
 private:
+    bool ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files);
+    bool TestArchive(const QString& archivePath, const ZipUtils::CompressedFilesAndSizes& files);
+    bool UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files);
     void UpdateButton();
 
     void AddTopLogValue(const QString& log);
     void AddLogValue(const QString& log);
-    void UpdateLastLogValue(const QString& log);
-    void BreakLog();
     void CompleteLog();
 
-    Ui::UpdateDialog* ui;
+    std::unique_ptr<Ui::UpdateDialog> ui;
 
-    QNetworkAccessManager* networkManager;
-    QNetworkReply* currentDownload;
+    QNetworkAccessManager* networkManager = nullptr;
+    QNetworkReply* currentDownload = nullptr;
 
-    int tasksCount;
+    int tasksCount = 0;
 
     QFile outputFile;
     QQueue<UpdateTask> tasks;
 
-    QTreeWidgetItem* currentLogItem;
-    QTreeWidgetItem* currentTopLogItem;
+    QTreeWidgetItem* currentLogItem = nullptr;
+    QTreeWidgetItem* currentTopLogItem = nullptr;
 
-    ZipUnpacker* unpacker;
-
-    int lastErrorCode;
+    int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;
 
-    ApplicationManager* appManager;
+    ApplicationManager* appManager = nullptr;
 };
 
 #endif // UPDATEDIALOG_H

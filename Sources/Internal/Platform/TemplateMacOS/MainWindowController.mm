@@ -44,39 +44,60 @@
     // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
     if ([theEvent type] == NSKeyDown)
     {
-        if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
+        int cmdOrCmdWithCaps = ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask);
+        if ((cmdOrCmdWithCaps == NSCommandKeyMask) || (cmdOrCmdWithCaps == (NSCommandKeyMask | NSAlphaShiftKeyMask)))
         {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"x"])
+            if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"x"])
             {
                 if ([self sendAction:@selector(cut:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"c"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"c"])
             {
-                if ([self sendAction:@selector(copy:) to:nil from:self])
+                if ([self sendAction:@selector(copy:) to:[[NSApp keyWindow] firstResponder] from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"v"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"v"])
             {
-                if ([self sendAction:@selector(paste:) to:nil from:self])
-                    return;
+                // HACK if user trying to paste text into textfield
+                // we have to check room for it
+                // and if no more room skip paste operation here
+                // because some time NSFormatter not called
+                NSResponder* view = [[NSApp keyWindow] firstResponder];
+                DAVA::UIControl* focused = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+                if (focused != nullptr)
+                {
+                    DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focused);
+                    if (tf)
+                    {
+                        DAVA::WideString text = tf->GetText();
+                        int size = tf->GetMaxLength();
+                        int textSize = static_cast<int>(text.length());
+                        if (size > 0 && size > (textSize + 1))
+                        {
+                            if ([self sendAction:@selector(paste:) to:view from:self])
+                                return;
+                        }
+                        else
+                        {
+                            // skip paste into no room textfield
+                        }
+                    }
+                }
+                else
+                {
+                    if ([self sendAction:@selector(paste:) to:view from:self])
+                        return;
+                }
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"z"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"z"])
             {
                 if ([self sendAction:@selector(undo:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"a"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"a"])
             {
                 if ([self sendAction:@selector(selectAll:) to:nil from:self])
-                    return;
-            }
-        }
-        else if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
-        {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"Z"])
-            {
-                if ([self sendAction:@selector(redo:) to:nil from:self])
                     return;
             }
         }
@@ -145,9 +166,16 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
     // window controller used from app delegate
     [appDelegate setWindowController:mainWindowController];
 
-    [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+    [[DavaApp sharedApplication] setDelegate:static_cast<id<NSApplicationDelegate>>(appDelegate)];
 
-    int retVal = NSApplicationMain(argc, (const char**)argv);
+    // NSApplicationMain expects const char*[]
+    const char* argvForNSApplicationMain[argc];
+    for (int i = 0; i < argc; ++i)
+    {
+        argvForNSApplicationMain[i] = argv[i];
+    }
+    int retVal = NSApplicationMain(argc, argvForNSApplicationMain);
+
     // This method never returns, so release code transfered to termination message
     // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
     // core->ReleaseSingletons() is called from there
@@ -226,6 +254,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         mainWindow = nil;
         animationTimer = nil;
         core = 0;
+        assertionID = kIOPMNullAssertionID;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
@@ -234,22 +264,55 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyDuringTextFieldInFocus:)
                                                      name:@"DavaKey"
                                                    object:nil];
+
+        [self allowDisplaySleep:false];
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [self allowDisplaySleep:true];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
 
+- (void)allowDisplaySleep:(bool)sleep
+{
+    bool displaySleepAllowed = assertionID == kIOPMNullAssertionID;
+    if (sleep == displaySleepAllowed)
+    {
+        return;
+    }
+
+    IOReturn result;
+
+    if (sleep)
+    {
+        result = IOPMAssertionRelease(assertionID);
+        assertionID = kIOPMNullAssertionID;
+    }
+    else
+    {
+        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                             kIOPMAssertionLevelOn,
+                                             CFSTR("DAVA display sleeping preventing"),
+                                             &assertionID);
+    }
+
+    if (result != kIOReturnSuccess)
+    {
+        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        return;
+    }
+}
+
 - (void)createWindows
 {
-    core = Core::GetApplicationCore();
-
     FrameworkDidLaunched();
+
+    core = Core::GetApplicationCore();
 
     String title;
     int32 width = 800;
@@ -305,32 +368,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     if (isFull)
     {
         [self setFullScreen:true];
-    }
-
-    // OS X application has no way to detect when she is no longer in control,
-    // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
-    // And application has no chance to release mouse capture.
-
-    // Install mouse hook which determines whether Mission Control, Launchpad is active
-    // and temporary turns off mouse pinning
-    // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
-    CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
-                                             kCGTailAppendEventTap,
-                                             kCGEventTapOptionListenOnly,
-                                             NSAnyEventMask,
-                                             &EventTapCallback,
-                                             nullptr);
-
-    if (portRef != nullptr)
-    {
-        CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
-        CFRelease(portRef);
-        CFRelease(loopSourceRef);
-    }
-    else
-    {
-        Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
     }
 
     NSSize windowSize = [openGLView frame].size;
@@ -410,12 +447,12 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
 {
-    [self keyUp:(NSEvent*)[notification object]];
+    [self keyUp:static_cast<NSEvent*>([notification object])];
 }
 
 - (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification
 {
-    NSEvent* theEvent = (NSEvent*)[notification object];
+    NSEvent* theEvent = static_cast<NSEvent*>([notification object]);
 
     if (theEvent.type == NSKeyDown)
     {
@@ -563,36 +600,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
 }
 
-static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
-{
-    static bool restorePinning = false;
-    static int64_t myPid = static_cast<int64_t>(getpid());
-
-    int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
-    if (targetPid != myPid)
-    {
-        // Turn off mouse cature if event target is not our application and
-        // current capture mode is pinning
-        InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-        if (InputSystem::eMouseCaptureMode::PINING == captureMode)
-        {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
-            restorePinning = true;
-        }
-    }
-    else
-    {
-        if (restorePinning)
-        {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
-            restorePinning = false;
-        }
-    }
-    return event;
-}
-
 - (void)OnSuspend
 {
+    [self allowDisplaySleep:true];
+
     if (core)
     {
         core->OnSuspend();
@@ -605,6 +616,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnResume
 {
+    [self allowDisplaySleep:false];
+
     if (core)
     {
         core->OnResume();
@@ -655,8 +668,11 @@ void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
 
         //This magick needed to correctly 'reshape' GLView and resize back-buffer.
         //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
-        [mainWindowController->mainWindow setContentView:nil];
-        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+        NSSize sz = [mainWindowController->openGLView frame].size;
+        sz.width += 1;
+        [mainWindowController->mainWindow setContentSize:sz];
+        sz.width -= 1;
+        [mainWindowController->mainWindow setContentSize:sz];
     }
 }
 };

@@ -36,7 +36,7 @@
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
-#include "Commands2/CommandStack.h"
+#include "Commands2/Base/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
 //TODO: move all includes to .cpp file
@@ -68,13 +68,14 @@ class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
 class EditorLODSystem;
+class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
 
 class SceneEditor2 : public DAVA::Scene
 {
 public:
-    enum LandscapeTools
+    enum LandscapeTools : DAVA::uint32
     {
         LANDSCAPE_TOOL_CUSTOM_COLOR = 1 << 0,
         LANDSCAPE_TOOL_HEIGHTMAP_EDITOR = 1 << 1,
@@ -82,11 +83,13 @@ public:
         LANDSCAPE_TOOL_RULER = 1 << 3,
         LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN = 1 << 4,
 
-        LANDSCAPE_TOOLS_ALL = 0x7FFFFFFF
+        LANDSCAPE_TOOLS_ALL = LANDSCAPE_TOOL_CUSTOM_COLOR | LANDSCAPE_TOOL_HEIGHTMAP_EDITOR | LANDSCAPE_TOOL_TILEMAP_EDITOR |
+        LANDSCAPE_TOOL_RULER |
+        LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN
     };
 
     SceneEditor2();
-    ~SceneEditor2();
+    ~SceneEditor2() override;
 
     // editor systems
     SceneCameraSystem* cameraSystem;
@@ -109,20 +112,21 @@ public:
     OwnersSignatureSystem* ownersSignatureSystem;
     StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
     EditorMaterialSystem* materialSystem;
-    EditorLODSystem* editorLODSystem;
+    EditorLODSystem* editorLODSystem = nullptr;
+    EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
-    DAVA::WASDControllerSystem* wasdSystem;
-    DAVA::RotationControllerSystem* rotationSystem;
-    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem;
+    DAVA::WASDControllerSystem* wasdSystem = nullptr;
+    DAVA::RotationControllerSystem* rotationSystem = nullptr;
+    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem = nullptr;
 
     WayEditSystem* wayEditSystem;
     PathSystem* pathSystem;
 
     // save/load
-    bool Load(const DAVA::FilePath& path);
-    virtual SceneFileV2::eError Save(const DAVA::FilePath& pathname, bool saveForGame = false);
-    SceneFileV2::eError Save();
+    SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
+    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
+    SceneFileV2::eError SaveScene();
     bool Export(const DAVA::eGPUFamily newGPU);
 
     const DAVA::FilePath& GetScenePath();
@@ -135,12 +139,12 @@ public:
     void Undo();
     void Redo();
 
-    void BeginBatch(const DAVA::String& text);
+    void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
-    bool IsBatchStarted() const;
 
-    void Exec(Command2* command);
-    void ClearCommands(int commandId);
+    void Exec(Command2::Pointer&& command);
+    void RemoveCommands(DAVA::int32 commandId);
+
     void ClearAllCommands();
     const CommandStack* GetCommandStack() const;
 
@@ -154,7 +158,7 @@ public:
     bool IsHUDVisible() const;
 
     // DAVA events
-    virtual void Update(float timeElapsed);
+    void Update(float timeElapsed) override;
 
     // this function should be called each time UI3Dview changes its position
     // viewport rect is used to calc. ray from camera to any 2d point on this viewport
@@ -165,7 +169,8 @@ public:
 
     const RenderStats& GetRenderStats() const;
 
-    void DisableTools(int32 toolFlags, bool saveChanges = true);
+    void EnableToolsInstantly(int32 toolFlags);
+    void DisableToolsInstantly(int32 toolFlags, bool saveChanges = true);
     bool IsToolsEnabled(int32 toolFlags);
     int32 GetEnabledTools();
 
@@ -174,6 +179,11 @@ public:
 
     void Activate() override;
     void Deactivate() override;
+
+    void EnableEditorSystems();
+
+    uint32 GetFramesCount() const;
+    void ResetFramesCount();
 
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
@@ -186,17 +196,18 @@ public:
                   )
 
 protected:
-    bool isLoaded;
-    bool isHUDVisible;
+    bool isLoaded = false;
+    bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack commandStack;
+    CommandStack* commandStack = nullptr;
     RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    virtual void EditorCommandProcess(const Command2* command, bool redo);
-    virtual void Draw();
+    void EditorCommandProcess(const Command2* command, bool redo);
+
+    void Draw() override;
 
     void ExtractEditorEntities();
     void InjectEditorEntities();
@@ -207,16 +218,20 @@ protected:
 
     void Setup3DDrawing();
 
+    uint32 framesCount = 0;
+
 private:
     friend struct EditorCommandNotify;
 
-    struct EditorCommandNotify : public CommandNotify
+    class EditorCommandNotify : public CommandNotify
     {
-        SceneEditor2* editor;
-
+    public:
         EditorCommandNotify(SceneEditor2* _editor);
-        virtual void Notify(const Command2* command, bool redo);
-        virtual void CleanChanged(bool clean);
+        void Notify(const Command2* command, bool redo) override;
+        void CleanChanged(bool clean) override;
+
+    private:
+        SceneEditor2* editor = nullptr;
     };
 };
 

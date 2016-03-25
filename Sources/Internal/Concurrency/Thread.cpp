@@ -38,8 +38,13 @@
 
 namespace DAVA
 {
-ConcurrentObject<Set<Thread*>> Thread::threadList;
 Thread::Id Thread::mainThreadId;
+
+ConcurrentObject<Set<Thread*>>& GetThreadList()
+{
+    static ConcurrentObject<Set<Thread*>> threadList;
+    return threadList;
+}
 
 void Thread::InitMainThread()
 {
@@ -86,7 +91,7 @@ void Thread::Kill()
 
 void Thread::KillAll()
 {
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     for (auto& x : *threadListAccessor)
     {
         x->Kill();
@@ -95,7 +100,7 @@ void Thread::KillAll()
 
 void Thread::CancelAll()
 {
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     for (auto& x : *threadListAccessor)
     {
         x->Cancel();
@@ -104,16 +109,15 @@ void Thread::CancelAll()
 
 Thread::Thread()
     : state(STATE_CREATED)
-    , threadPriority(PRIORITY_NORMAL)
     , isCancelling(false)
     , stackSize(0)
-    , id(Id())
     , handle(Handle())
+    , id(Id())
     , name("DAVA::Thread")
 {
     Init();
 
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     threadListAccessor->insert(this);
 }
 
@@ -133,21 +137,20 @@ Thread::Thread(const Procedure& proc)
 
 Thread::~Thread()
 {
+    Cancel();
     Shutdown();
 
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     threadListAccessor->erase(this);
 }
 
 void Thread::ThreadFunction(void* param)
 {
-    Thread* t = (Thread*)param;
+    Thread* t = reinterpret_cast<Thread*>(param);
     t->id = GetCurrentId();
 
     t->threadFunc();
     t->state = STATE_ENDED;
-
-    t->Release();
 }
 
 void Thread::Yield()

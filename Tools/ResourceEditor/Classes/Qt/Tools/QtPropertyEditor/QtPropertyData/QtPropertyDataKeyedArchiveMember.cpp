@@ -139,14 +139,12 @@ bool QtPropertyKeyedArchiveMember::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-void* QtPropertyKeyedArchiveMember::CreateLastCommand() const
+Command2::Pointer QtPropertyKeyedArchiveMember::CreateLastCommand() const
 {
-    Command2* command = NULL;
-
-    if (NULL != lastCommand)
+    if (nullptr != lastCommand)
     {
-        command = new KeyeadArchiveSetValueCommand(*lastCommand);
+        return Command2::Create<KeyeadArchiveSetValueCommand>(*lastCommand);
     }
 
-    return command;
+    return Command2::CreateEmptyCommand();
 }

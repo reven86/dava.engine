@@ -135,7 +135,7 @@ bool Process::Run(bool showWindow)
         SECURITY_ATTRIBUTES saAttr;
         saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
         saAttr.bInheritHandle = TRUE;
-        saAttr.lpSecurityDescriptor = NULL;
+        saAttr.lpSecurityDescriptor = nullptr;
 
         if (::CreatePipe(&childProcOut[READ], &childProcOut[WRITE], &saAttr, 0))
         {
@@ -191,36 +191,36 @@ bool Process::Run(bool showWindow)
 
 #if defined(UNICODE)
 
-        wchar_t* execPathW = NULL;
+        wchar_t* execPathW = nullptr;
         size_t execPathWLength = 0;
-        wchar_t* execArgsW = NULL;
+        wchar_t* execArgsW = nullptr;
         size_t execArgsWLength = 0;
 
         //VI: TODO: UNICODE: Use framework methods to convert to Unicode once it will be ready.
         ConvertToWideChar(runArgsFlat, &execArgsW, &execArgsWLength);
 
-        bSuccess = CreateProcess(NULL,
+        bSuccess = CreateProcess(nullptr,
                                  execArgsW, // command line
-                                 NULL, // process security attributes
-                                 NULL, // primary thread security attributes
+                                 nullptr, // process security attributes
+                                 nullptr, // primary thread security attributes
                                  TRUE, // handles are inherited
                                  (showWindow) ? 0 : CREATE_NO_WINDOW, // creation flags
-                                 NULL, // use parent's environment
-                                 NULL, // use parent's current directory
+                                 nullptr, // use parent's environment
+                                 nullptr, // use parent's current directory
                                  &siStartInfo, // STARTUPINFO pointer
                                  &piProcInfo); // receives PROCESS_INFORMATION
 
         SafeDeleteArray(execArgsW);
 
 #else
-        bSuccess = CreateProcess(NULL,
+        bSuccess = CreateProcess(nullptr,
                                  runArgsFlat.c_str(), // command line
-                                 NULL, // process security attributes
-                                 NULL, // primary thread security attributes
+                                 nullptr, // process security attributes
+                                 nullptr, // primary thread security attributes
                                  TRUE, // handles are inherited
                                  (showWindow) ? 0 : CREATE_NO_WINDOW, , // creation flags
-                                 NULL, // use parent's environment
-                                 NULL, // use parent's current directory
+                                 nullptr, // use parent's environment
+                                 nullptr, // use parent's current directory
                                  &siStartInfo, // STARTUPINFO pointer
                                  &piProcInfo); // receives PROCESS_INFORMATION
 
@@ -261,11 +261,11 @@ void Process::Wait()
         DWORD bytesRead = 0;
         BOOL readResult = FALSE;
 
-        readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, NULL);
+        readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, nullptr);
         while (bytesRead > 0 && readResult != FALSE)
         {
             output.append(readBuf, bytesRead);
-            readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, NULL);
+            readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, nullptr);
         }
     }
 
@@ -287,10 +287,10 @@ void Process::Wait()
 
 void Process::ConvertToWideChar(const String& str, wchar_t** outStr, size_t* outLength)
 {
-    *outStr = NULL;
+    *outStr = nullptr;
     *outLength = 0;
 
-    *outLength = mbstowcs(NULL, str.c_str(), str.size()) + 1;
+    *outLength = mbstowcs(nullptr, str.c_str(), str.size()) + 1;
 
     if (*outLength > 0)
     {
@@ -331,7 +331,7 @@ bool Process::Run(bool showWindow)
         execArgs.push_back(&(*it)[0]);
     }
 
-    execArgs.push_back(NULL);
+    execArgs.push_back(nullptr);
 
     pid = fork();
 
@@ -351,7 +351,6 @@ bool Process::Run(bool showWindow)
         int execResult = execv(execPath.c_str(), &execArgs[0]);
         DVASSERT(execResult >= 0);
         _exit(0); //if we got here - there's a problem
-        break;
     }
 
     case -1: //error

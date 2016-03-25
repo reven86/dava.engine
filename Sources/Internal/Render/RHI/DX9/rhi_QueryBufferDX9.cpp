@@ -31,7 +31,7 @@
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_dx9.h"
@@ -96,7 +96,7 @@ dx9_QueryBuffer_Delete(Handle handle)
             cmd.push_back(c);
         }
 
-        ExecDX9(&cmd[0], cmd.size());
+        ExecDX9(&cmd[0], static_cast<uint32>(cmd.size()));
         buf->query.clear();
     }
 

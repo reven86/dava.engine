@@ -49,7 +49,8 @@ namespace DAVA
 class AutoResetEvent final
 {
 public:
-    AutoResetEvent(bool isSignaled = false)
+    AutoResetEvent(bool isSignaled = false, uint32 spinCount_ = SemaphoreLite::defaultSpinCount)
+        : sem(0, spinCount_)
     {
         status.store((isSignaled) ? 1 : 0, std::memory_order_release);
     }

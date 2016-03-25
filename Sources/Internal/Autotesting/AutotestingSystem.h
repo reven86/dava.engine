@@ -100,6 +100,7 @@ public:
 
     const String& GetScreenShotName();
     void MakeScreenShot();
+    bool GetIsScreenShotSaving() const;
 
     // DB Master-Helper relations
 
@@ -131,6 +132,9 @@ protected:
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();
+
+private:
+    bool isScreenShotSaving = false;
 
 public:
     uint64 startTimeMS;
@@ -180,6 +184,11 @@ public:
 
     String screenShotName;
 };
+
+inline bool AutotestingSystem::GetIsScreenShotSaving() const
+{
+    return isScreenShotSaving;
+}
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

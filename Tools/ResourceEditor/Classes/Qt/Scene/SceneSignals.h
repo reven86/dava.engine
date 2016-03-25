@@ -46,10 +46,10 @@ class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
 signals:
     // scene
     void Opened(SceneEditor2* scene);
-    void Closed(SceneEditor2* scene);
-
     void Loaded(SceneEditor2* scene);
+    void Updated(SceneEditor2* scene);
     void Saved(SceneEditor2* scene);
+    void Closed(SceneEditor2* scene);
 
     void Activated(SceneEditor2* scene);
     void Deactivated(SceneEditor2* scene);
@@ -94,11 +94,7 @@ signals:
     void RulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength);
     void SnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
 
-    void CustomColorsToggled(SceneEditor2* scene);
-    void HeightmapEditorToggled(SceneEditor2* scene);
-    void TilemaskEditorToggled(SceneEditor2* scene);
-    void RulerToolToggled(SceneEditor2* scene);
-    void NotPassableTerrainToggled(SceneEditor2* scene);
+    void LandscapeEditorToggled(SceneEditor2* scene);
 
     void EditorLightEnabled(bool enabled);
 
@@ -119,6 +115,10 @@ public:
     void EmitSaved(SceneEditor2* scene)
     {
         emit Saved(scene);
+    }
+    void EmitUpdated(SceneEditor2* scene)
+    {
+        emit Updated(scene);
     }
 
     void EmitActivated(SceneEditor2* scene)
@@ -153,25 +153,9 @@ public:
         emit ModifyStatusChanged(scene, modified);
     }
 
-    void EmitCustomColorsToggled(SceneEditor2* scene)
+    void EmitLandscapeEditorToggled(SceneEditor2* scene)
     {
-        emit CustomColorsToggled(scene);
-    }
-    void EmitHeightmapEditorToggled(SceneEditor2* scene)
-    {
-        emit HeightmapEditorToggled(scene);
-    }
-    void EmitTilemaskEditorToggled(SceneEditor2* scene)
-    {
-        emit TilemaskEditorToggled(scene);
-    }
-    void EmitRulerToolToggled(SceneEditor2* scene)
-    {
-        emit RulerToolToggled(scene);
-    }
-    void EmitNotPassableTerrainToggled(SceneEditor2* scene)
-    {
-        emit NotPassableTerrainToggled(scene);
+        emit LandscapeEditorToggled(scene);
     }
 
     void EmitDropperHeightChanged(SceneEditor2* scene, DAVA::float32 height)
@@ -258,11 +242,6 @@ public:
     void EmitParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
     {
         emit ParticleLayerRemoved(scene, emitter);
-    }
-
-    void EmitEditorLightEnabled(bool enabled)
-    {
-        emit EditorLightEnabled(enabled);
     }
 
     void EmitSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape)

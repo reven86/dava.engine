@@ -46,25 +46,19 @@ CursorSystem::CursorSystem(EditorSystemsManager* parent)
     systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
-void CursorSystem::OnDeactivated()
-{
-    OnActiveAreaChanged(HUDAreaInfo());
-}
-
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
     DavaGLWidget* davaGLWidget = EditorCore::Instance()->GetMainWindow()->previewWidget->GetGLWidget();
-    auto view = davaGLWidget->GetGLView();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
-        view->unsetCursor();
+        davaGLWidget->UnsetCursor();
     }
     else
     {
         auto control = areaInfo.owner->GetControl();
         float angle = control->GetGeometricData().angle;
         QPixmap pixmap = CreatePixmapForArea(angle, areaInfo.area);
-        view->setCursor(QCursor(pixmap));
+        davaGLWidget->SetCursor(QCursor(pixmap));
     }
 }
 

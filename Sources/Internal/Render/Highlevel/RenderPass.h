@@ -38,7 +38,7 @@
 namespace DAVA
 {
 class Camera;
-class RenderPass
+class RenderPass : public InspBase
 {
 public:
     RenderPass(const FastName& name);
@@ -98,10 +98,10 @@ inline rhi::RenderPassConfig& RenderPass::GetPassConfig()
 inline void RenderPass::SetViewport(const Rect& _viewport)
 {
     viewport = _viewport;
-    passConfig.viewport.x = (int32)viewport.x;
-    passConfig.viewport.y = (int32)viewport.y;
-    passConfig.viewport.width = (int32)viewport.dx;
-    passConfig.viewport.height = (int32)viewport.dy;
+    passConfig.viewport.x = int32(viewport.x);
+    passConfig.viewport.y = int32(viewport.y);
+    passConfig.viewport.width = int32(viewport.dx);
+    passConfig.viewport.height = int32(viewport.dy);
 }
 
 inline const FastName& RenderPass::GetName() const
@@ -111,7 +111,7 @@ inline const FastName& RenderPass::GetName() const
 
 inline uint32 RenderPass::GetRenderLayerCount() const
 {
-    return (uint32)renderLayers.size();
+    return uint32(renderLayers.size());
 }
 
 inline RenderLayer* RenderPass::GetRenderLayer(uint32 index) const

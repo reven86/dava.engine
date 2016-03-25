@@ -62,6 +62,10 @@ class UIList;
  */
 class UIListDelegate
 {
+public:
+    virtual ~UIListDelegate() = default;
+
+private:
     friend class UIList;
 
     /**
@@ -202,9 +206,9 @@ public:
 
     void ScrollToPosition(float32 position, float32 timeSec = 0.3f);
 
-    virtual void SetRect(const Rect& rect);
+    void SetRect(const Rect& rect) override;
 
-    virtual void SetSize(const Vector2& newSize);
+    void SetSize(const Vector2& newSize) override;
 
     void SetOrientation(int32 orientation);
     inline int32 GetOrientation() const
@@ -216,20 +220,17 @@ public:
 
     UIListCell* GetReusableCell(const String& cellIdentifier); //returns cell from the cells cache, if returns 0 you need to create the new one
 
-    virtual void SystemWillAppear(); // Internal method used by ControlSystem
+    void OnActive() override;
 
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
-
-    virtual float32 VisibleAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 TotalAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 ViewPosition(UIScrollBar* forScrollBar);
-    virtual void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition);
+    float32 VisibleAreaSize(UIScrollBar* forScrollBar) override;
+    float32 TotalAreaSize(UIScrollBar* forScrollBar) override;
+    float32 ViewPosition(UIScrollBar* forScrollBar) override;
+    void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition) override;
 
     UIList* Clone() override;
-    virtual void CopyDataFrom(UIControl* srcControl);
+    void CopyDataFrom(UIControl* srcControl) override;
 
-    virtual const String GetDelegateControlPath(const UIControl* rootControl) const;
+    const String GetDelegateControlPath(const UIControl* rootControl) const override;
 
     bool GetNeedRefresh();
 
@@ -239,10 +240,10 @@ protected:
 
     void FullRefresh();
 
-    virtual void Update(float32 timeElapsed);
+    void Update(float32 timeElapsed) override;
 
-    virtual void Input(UIEvent* currentInput);
-    virtual bool SystemInput(UIEvent* currentInput); // Internal method used by ControlSystem
+    void Input(UIEvent* currentInput) override;
+    bool SystemInput(UIEvent* currentInput) override; // Internal method used by ControlSystem
 
     Vector<UIListCell*>* GetStoreVector(const String& cellIdentifier);
     void AddCellAtPos(UIListCell* cell, float32 pos, float32 size, int32 index);

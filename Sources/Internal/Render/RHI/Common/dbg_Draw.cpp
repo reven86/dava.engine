@@ -301,8 +301,8 @@ DbgDraw::Buffer<Vertex, Prim>::alloc_vertices(unsigned count)
     {
         if (!_cur_v)
         {
-            _cur_v = (Vertex*)rhi::MapVertexBuffer(_vb[_cur_vb_i], 0, _vb_size);
-            _end_v = (Vertex*)((uint8*)_cur_v + _vb_size);
+            _cur_v = reinterpret_cast<Vertex*>(rhi::MapVertexBuffer(_vb[_cur_vb_i], 0, _vb_size));
+            _end_v = reinterpret_cast<Vertex*>(reinterpret_cast<uint8*>(_cur_v) + _vb_size);
         }
 
         if (_cur_v && _cur_v + count < _end_v)

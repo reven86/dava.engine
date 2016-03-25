@@ -13,12 +13,12 @@ g_ios_toolchain = "ios.toolchain.cmake"
 g_android_toolchain = "android.toolchain.cmake"
 
 g_cmake_file_path = ""
-g_add_definitions = ""
 g_generation_dir = ""
 g_supported_platforms = ["macos", "ios", "android", "windows"]
-g_supported_additional_parameters = ["console", "uap"]
+g_supported_additional_parameters = ["console", "uap", "x64"]
 g_is_console = False
 g_is_uap = False
+g_is_x64 = False
 g_is_unity_build = False
 
 def is_exe(fpath):
@@ -35,6 +35,8 @@ def search_program(program):
         for path in folders:
             path = path.strip('"')
             exe_file = os.path.join(path, program)
+            if platform.system() == 'Windows':
+                exe_file = exe_file + '.exe'
             if is_exe(exe_file):
                 return exe_file
 
@@ -43,6 +45,7 @@ def search_program(program):
 def parse_additional_params(additional):
     global g_is_console
     global g_is_uap
+    global g_is_x64
     global g_is_unity_build
 
     if not additional:
@@ -50,10 +53,13 @@ def parse_additional_params(additional):
 
     for param in additional:
         param = param.lower()
+
         if "console" == param:
             g_is_console = True
         elif "uap" == param:
             g_is_uap = True
+        elif "x64" == param:
+            g_is_x64 = True
         elif "ub" == param:
             g_is_unity_build = True                
         else:
@@ -97,10 +103,13 @@ def setup_framework_env():
 def get_project_type(dst_platform, is_console):
     dst_platform = dst_platform.lower()
     project_string = ""
+
     if "macos" == dst_platform or "ios" == dst_platform:
         project_string += "Xcode"
+
     if "windows" == dst_platform:
         project_string += "Visual Studio 12"
+
     if "android" == dst_platform:
         current_platform = platform.system()
 
@@ -117,19 +126,25 @@ def get_project_type(dst_platform, is_console):
     return project_string
 
 
-def get_toolchain(dst_platform):
+def get_toolchain(input_platform, input_project_type):
     global g_ios_toolchain
     global g_android_toolchain
+    global g_is_x64
 
     toolchain_base = "-DCMAKE_TOOLCHAIN_FILE=" + g_toolchains_full_path;
     toolchain_string = ""
+    output_project = input_project_type
 
-    if "ios" == dst_platform:
+    if "ios" == input_platform:
         toolchain_string = toolchain_base + g_ios_toolchain
-    if "android" == dst_platform:
+
+    if "android" == input_platform:
         toolchain_string = toolchain_base + g_android_toolchain
 
-    return toolchain_string
+    if "windows" == input_platform and g_is_x64:
+        output_project += " Win64";
+
+    return toolchain_string, output_project
 
 def main():
     global g_supported_additional_parameters
@@ -141,6 +156,8 @@ def main():
     parser.add_argument('cmake_path', help='relative path to cmake list')
     parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
     parser.add_argument('--add_definitions', '-defs', default="", help="add definitions" )
+    parser.add_argument('--x64', default=False )
+    parser.add_argument('-D', action='append', default=[], help="add definitions" )
 
     options = parser.parse_args()
 
@@ -149,6 +166,11 @@ def main():
         exit()
 
     destination_platform = ""
+
+    g_is_x64          = options.x64
+    g_cmake_file_path = os.path.realpath(options.cmake_path)
+    g_generation_dir  = options.generation_dir
+    g_add_definitions = options.add_definitions.replace(',',' ')
 
     if options.platform_name not in g_supported_platforms:
         print "Wrong destination OS name " + "'" + options.platform_name + "'"
@@ -166,9 +188,10 @@ def main():
         parser.print_help()
         exit()
 
-    toolchain = get_toolchain(destination_platform)
+    toolchain, project_type = get_toolchain(destination_platform, project_type)
 
     g_cmake_file_path = os.path.realpath(options.cmake_path)
+
     g_generation_dir  = options.generation_dir
     g_add_definitions = options.add_definitions.replace(',',' ')
 
@@ -185,8 +208,11 @@ def main():
 
     call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
 
-    if len(g_add_definitions) :
-        call_string +=  g_add_definitions.split(' ') 
+    if len(options.add_definitions):
+        call_string += options.add_definitions.split(',') 
+
+    if len(options.D):
+        call_string += map(lambda val: '=' in val and '-D'+val or '-D'+val+'=true', options.D )
     
     if g_is_unity_build:
         call_string.append("-DUNITY_BUILD=true")

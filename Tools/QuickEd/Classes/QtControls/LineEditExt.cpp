@@ -115,10 +115,6 @@ QString LineEditExt::styleSheetForCurrentState() const
     style += "padding-left: 3px;";
     style += QString("padding-right: %1px;").arg(clearButton->sizeHint().width() + frameWidth + 1);
     style += "border-width: 3px;";
-    style += "background-color: rgba(255, 255, 255, 204);";
-    style += "}";
-    style += "QLineEdit:hover, QLineEdit:focus {";
-    style += "background-color: rgba(255, 255, 255, 255);";
     style += "}";
     return style;
 }

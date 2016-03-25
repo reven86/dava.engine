@@ -31,6 +31,7 @@
 #include "QtPropertyModel.h"
 #include "QtPropertyDataValidator.h"
 
+#include "Commands2/Base/Command2.h"
 QtPropertyData::ChildKey::ChildKey(const QtPropertyData* child_)
     : child(child_)
 {
@@ -69,8 +70,8 @@ QtPropertyData::QtPropertyData(const DAVA::FastName& name_)
 }
 
 QtPropertyData::QtPropertyData(const DAVA::FastName& name_, const QVariant& value)
-    : name(name_)
-    , curValue(value)
+    : curValue(value)
+    , name(name_)
 {
     childrenData.reserve(16);
     mergedData.reserve(128);
@@ -700,7 +701,21 @@ int QtPropertyData::ChildIndex(const QtPropertyData* data) const
 {
     TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data));
     if (iter != keyToDataMap.end())
-        return iter->second;
+    {
+        if (iter->first.child == data)
+        {
+            return iter->second;
+        }
+
+        auto iter = std::find_if(childrenData.begin(), childrenData.end(), [data](const std::unique_ptr<QtPropertyData>& child)
+                                 {
+                                     return data == child.get();
+                                 });
+        if (iter != childrenData.end())
+        {
+            return std::distance(childrenData.begin(), iter);
+        }
+    }
 
     return -1;
 }
@@ -816,11 +831,10 @@ void QtPropertyData::SetOWViewport(QWidget* viewport)
     }
 }
 
-void* QtPropertyData::CreateLastCommand() const
+Command2::Pointer QtPropertyData::CreateLastCommand() const
 {
     // can be re-implemented by sub-class
-
-    return NULL;
+    return Command2::CreateEmptyCommand();
 }
 
 QVariant QtPropertyData::GetValueInternal() const

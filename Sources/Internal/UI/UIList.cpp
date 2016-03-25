@@ -32,8 +32,6 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
-#include "FileSystem/YamlNode.h"
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 
 namespace DAVA
@@ -183,7 +181,7 @@ void UIList::ScrollToElement(int32 index)
 
 void UIList::SetOrientation(int32 _orientation)
 {
-    orientation = (UIList::eListOrientation)_orientation;
+    orientation = static_cast<UIList::eListOrientation>(_orientation);
 }
 
 float32 UIList::GetScrollPosition()
@@ -313,23 +311,23 @@ void UIList::Update(float32 timeElapsed)
     float32 d = newPos - oldPos;
     oldPos = newPos;
 
-    float32 deltaScroll = newScroll - oldScroll;
+    float32 deltaWheel = newScroll - oldScroll;
     oldScroll = newScroll;
 
     const float32 accuracyDelta = 0.1f;
 
     Rect r = scrollContainer->GetRect();
 
-    if (accuracyDelta <= Abs(deltaScroll))
+    if (accuracyDelta <= Abs(deltaWheel))
     {
         // this code works for mouse or touchpad scrolls
         if (orientation == ORIENTATION_HORIZONTAL)
         {
-            scroll->ScrollWithoutAnimation(deltaScroll, r.dx, &r.x);
+            scroll->ScrollWithoutAnimation(deltaWheel, r.dx, &r.x);
         }
         else
         {
-            scroll->ScrollWithoutAnimation(deltaScroll, r.dy, &r.y);
+            scroll->ScrollWithoutAnimation(deltaWheel, r.dy, &r.y);
         }
     }
     else
@@ -388,7 +386,7 @@ void UIList::Update(float32 timeElapsed)
         UIListCell* fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i > ind)
             {
@@ -439,7 +437,7 @@ void UIList::Update(float32 timeElapsed)
         fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i < ind)
             {
@@ -499,7 +497,21 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+        if (UIEvent::Device::MOUSE == currentInput->device)
+        {
+            newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+        }
+        else // UIEvent::Phase::TOUCH_PAD
+        {
+            if (ORIENTATION_HORIZONTAL == orientation)
+            {
+                newScroll += currentInput->wheelDelta.x * GetWheelSensitivity();
+            }
+            else
+            {
+                newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            }
+        }
     }
     else
     {
@@ -605,7 +617,7 @@ void UIList::OnSelectEvent(BaseObject* pCaller, void* pUserData, void* callerDat
 {
     if (delegate)
     {
-        delegate->OnCellSelected(this, (UIListCell*)pCaller);
+        delegate->OnCellSelected(this, static_cast<UIListCell*>(pCaller));
     }
 }
 
@@ -661,9 +673,6 @@ void UIList::AddCellAtPos(UIListCell* cell, float32 pos, float32 size, int32 ind
     cell->SetRect(r);
     cell->UpdateLayout();
 
-    // Full refresh removes the cells and adds them again, losing the IsVisibleForUIEditor flag
-    // (see please DF-2860). So need to recover it basing on what is set on parent's level.
-    cell->SetVisibleForUIEditor(GetVisibleForUIEditor());
     scrollContainer->AddControl(cell);
 }
 
@@ -721,37 +730,10 @@ void UIList::SetBorderMoveModifer(float newValue)
     scroll->SetBorderMoveModifer(newValue);
 }
 
-void UIList::SystemWillAppear()
+void UIList::OnActive()
 {
-    UIControl::SystemWillAppear();
+    UIControl::OnActive();
     Refresh();
-}
-
-void UIList::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* orientNode = node->Get("orientation");
-    if (orientNode)
-    {
-        if (orientNode->AsString() == "ORIENTATION_VERTICAL")
-            orientation = ORIENTATION_VERTICAL;
-        else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
-            orientation = ORIENTATION_HORIZONTAL;
-        else
-        {
-            DVASSERT(0 && "Orientation constant is wrong");
-        }
-    }
-    // Load aggregator path
-    const YamlNode* aggregatorPathNode = node->Get("aggregatorPath");
-    if (aggregatorPathNode)
-    {
-        aggregatorPath = aggregatorPathNode->AsString();
-    }
-
-    // TODO
-    InitAfterYaml();
 }
 
 UIList* UIList::Clone()
@@ -764,7 +746,7 @@ UIList* UIList::Clone()
 void UIList::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIList* t = (UIList*)srcControl;
+    UIList* t = static_cast<UIList*>(srcControl);
     InitAfterYaml();
     aggregatorPath = t->aggregatorPath;
     orientation = t->orientation;
@@ -778,43 +760,6 @@ const FilePath& UIList::GetAggregatorPath()
 void UIList::SetAggregatorPath(const FilePath& aggregatorPath)
 {
     this->aggregatorPath = aggregatorPath;
-}
-
-YamlNode* UIList::SaveToYamlNode(UIYamlLoader* loader)
-{
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    //Temp variables
-    String stringValue;
-
-    //Orientation
-    eListOrientation orient = (eListOrientation)GetOrientation();
-    switch (orient)
-    {
-    case ORIENTATION_VERTICAL:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    case ORIENTATION_HORIZONTAL:
-        stringValue = "ORIENTATION_HORIZONTAL";
-        break;
-    default:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    }
-    node->Set("orientation", stringValue);
-
-    if (delegate)
-    {
-        // Set aggregator path from current List delegate
-        delegate->SaveToYaml(this, node);
-    }
-
-    // Save aggregator path only if it is not empty
-    if (!aggregatorPath.IsEmpty())
-    {
-        node->Set("aggregatorPath", aggregatorPath.GetFrameworkPath());
-    }
-
-    return node;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar* forScrollBar)

@@ -28,7 +28,7 @@
 
 
 #include "Base/BaseMath.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Animation/KeyframeAnimation.h"
 
 namespace DAVA
@@ -129,7 +129,7 @@ void KeyframeAnimation::Update(float32 timeElapsed)
             float32 frameDelta = time - currentFrame->time;
             float32 duration = currentFrame->next->time - currentFrame->time;
             float32 frame = currentFrame->frame + (currentFrame->next->frame - currentFrame->frame) * frameDelta / duration;
-            *var = (int)frame;
+            *var = static_cast<int>(frame);
             //Logger::FrameworkDebug("%0.2f", frame);
         }
     }

@@ -26,13 +26,15 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "MaterialTree.h"
 #include "MaterialFilterModel.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneSignals.h"
 #include "MaterialEditor/MaterialAssignSystem.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Entity/Component.h"
 
 #include <QDragMoveEvent>
 #include <QDragEnterEvent>
@@ -111,7 +113,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
             if (nullptr != entity)
             {
-                curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+                curScene->selectionSystem->AddEntityToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
             }
             const Vector<NMaterial*>& children = material->GetChildren();
             for (auto child : children)
@@ -226,20 +228,44 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
 {
     if (QtMainWindow::Instance()->GetCurrentScene() == scene)
     {
-        const int commandID = command->GetId();
-        switch (commandID)
+        if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
-        case CMDID_INSP_MEMBER_MODIFY:
             treeModel->invalidate();
-            break;
-        case CMDID_DELETE_RENDER_BATCH:
-        case CMDID_CLONE_LAST_BATCH:
-        case CMDID_CONVERT_TO_SHADOW:
-        case CMDID_MATERIAL_SWITCH_PARENT:
+        }
+        else if (command->MatchCommandIDs({ CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_MATERIAL_SWITCH_PARENT,
+                                            CMDID_MATERIAL_REMOVE_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD }))
+        {
             Update();
-            break;
-        default:
-            break;
+        }
+        else if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
+        {
+            auto ProcessRemoveCommand = [this](const Command2* command, bool redo)
+            {
+                const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
+                DVASSERT(removeCommand->GetComponent() != nullptr);
+                if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
+                {
+                    Update();
+                }
+            };
+
+            if (command->GetId() == CMDID_BATCH)
+            {
+                const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+                const uint32 count = batch->Size();
+                for (uint32 i = 0; i < count; ++i)
+                {
+                    const Command2* cmd = batch->GetCommand(i);
+                    if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
+                    {
+                        ProcessRemoveCommand(cmd, redo);
+                    }
+                }
+            }
+            else
+            {
+                ProcessRemoveCommand(command, redo);
+            }
         }
     }
 }

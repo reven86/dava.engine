@@ -74,11 +74,11 @@ bool BeastCommandLineTool::InitializeInternal()
 void BeastCommandLineTool::ProcessInternal()
 {
     ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-    if (scene->Load(scenePathname))
+    if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
     {
         scene->Update(0.1f);
-        scene->Exec(new BeastAction(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr));
-        scene->Save();
+        scene->Exec(Command2::Create<BeastAction>(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr));
+        scene->SaveScene();
     }
     RenderObjectsFlusher::Flush();
 }

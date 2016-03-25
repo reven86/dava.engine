@@ -29,34 +29,23 @@
 
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/MeshInstanceNode.h"
 #include "Render/Texture.h"
-#include "Render/3D/AnimatedMesh.h"
 #include "Scene3D/PathManip.h"
-#include "Scene3D/SkeletonNode.h"
-#include "Scene3D/BoneNode.h"
-#include "Scene3D/SwitchNode.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Mesh.h"
 #include "Render/3D/MeshUtils.h"
 #include "Render/Material/NMaterialNames.h"
 
-#include "Scene3D/SceneNodeAnimationList.h"
-#include "Scene3D/LodNode.h"
 #include "Scene3D/Systems/TransformSystem.h"
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/ParticleEmitterNode.h"
-#include "Scene3D/ParticleEffectNode.h"
 #include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/UserComponent.h"
-#include "Scene3D/ShadowVolumeNode.h"
-#include "Scene3D/UserNode.h"
 
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
@@ -93,9 +82,6 @@ SceneFileV2::SceneFileV2()
 
     serializationContext.SetDebugLogEnabled(isDebugLogEnabled);
     serializationContext.SetLastError(lastError);
-
-    UserNode* n = new UserNode();
-    n->Release();
 }
 
 SceneFileV2::~SceneFileV2()
@@ -130,7 +116,7 @@ SceneFileV2::eError SceneFileV2::GetError()
 
 SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, DAVA::Scene* scene, SceneFileV2::eFileType fileType)
 {
-    File* file = File::Create(filename, File::CREATE | File::WRITE);
+    ScopedPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
     if (!file)
     {
         Logger::Error("SceneFileV2::SaveScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
@@ -287,12 +273,10 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, DAVA::Scene
         if (!SaveHierarchy(scene->GetChild(ci), file, 1))
         {
             Logger::Error("SceneFileV2::SaveScene failed to save hierarchy file: %s", filename.GetAbsolutePathname().c_str());
-            SafeRelease(file);
             return GetError();
         }
     }
 
-    SafeRelease(file);
     return GetError();
 }
 
@@ -346,7 +330,7 @@ bool SceneFileV2::ReadVersionTags(VersionInfo::SceneVersion& _version, File* fil
 
 VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath& filename)
 {
-    File* file = File::Create(filename, File::OPEN | File::READ);
+    ScopedPtr<File> file(File::Create(filename, File::OPEN | File::READ));
     if (!file)
     {
         Logger::Error("SceneFileV2::LoadSceneVersion failed to open file: %s", filename.GetAbsolutePathname().c_str());
@@ -366,14 +350,18 @@ VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath& filename
             version = VersionInfo::SceneVersion();
         }
     }
+    else
+    {
+        Logger::Error("SceneFileV2::LoadSceneVersion  header is wrong in file: %s", filename.GetAbsolutePathname().c_str());
+        return version;
+    }
 
-    SafeRelease(file);
     return version;
 }
 
 SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scene)
 {
-    File* file = File::Create(filename, File::OPEN | File::READ);
+    ScopedPtr<File> file(File::Create(filename, File::OPEN | File::READ));
     if (!file)
     {
         Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
@@ -385,16 +373,14 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     if (!headerValid)
     {
-        SafeRelease(file);
-        Logger::Error("SceneFileV2::LoadScene: scene header is not valid");
+        Logger::Error("SceneFileV2::LoadScene: scene header is not valid in file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_VERSION_IS_TOO_OLD);
         return GetError();
     }
 
     if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
     {
-        SafeRelease(file);
-        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
+        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d. File: %s", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION, filename.GetAbsolutePathname().c_str());
         SetError(ERROR_VERSION_IS_TOO_OLD);
         return GetError();
     }
@@ -404,9 +390,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     const bool versionValid = ReadVersionTags(scene->version, file);
     if (!versionValid)
     {
-        Logger::Error("SceneFileV2::LoadScene version tags are wrong");
-
-        SafeRelease(file);
+        Logger::Error("SceneFileV2::LoadScene version tags are wrong in file: ", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
@@ -429,7 +413,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     {
         const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(scene->version);
         Logger::Error("SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
-        SafeRelease(file);
         SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
@@ -510,7 +493,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         scene->OnSceneReady(scene);
     }
 
-    SafeRelease(file);
     return GetError();
 }
 
@@ -555,7 +537,7 @@ void SceneFileV2::ApplyFogQuality()
 SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
 {
     SceneArchive* res = nullptr;
-    File* file = File::Create(filename, File::OPEN | File::READ);
+    ScopedPtr<File> file(File::Create(filename, File::OPEN | File::READ));
     if (!file)
     {
         Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
@@ -567,14 +549,12 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     if (!headerValid)
     {
         Logger::Error("SceneFileV2::LoadScene: scene header is not valid");
-        SafeRelease(file);
         return res;
     }
 
     if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
     {
         Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
-        SafeRelease(file);
         return res;
     }
 
@@ -585,7 +565,6 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     if (!versionValid)
     {
         Logger::Error("SceneFileV2::LoadScene version tags are wrong");
-        SafeRelease(file);
         return res;
     }
 
@@ -607,7 +586,6 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     {
         const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(version);
         Logger::Error("SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
-        SafeRelease(file);
         return res;
     }
     default:
@@ -635,7 +613,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         child->LoadHierarchy(file);
         res->children.push_back(child);
     }
-    SafeRelease(file);
+
     return res;
 }
 
@@ -920,30 +898,6 @@ Entity* SceneFileV2::LoadLight(Scene* scene, KeyedArchive* archive)
     return lightEntity;
 }
 
-void SceneFileV2::ConvertShadows(Entity* currentNode)
-{
-    for (int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
-    {
-        Entity* childNode = currentNode->GetChild(c);
-        if (String::npos != childNode->GetName().find("_shadow"))
-        {
-            DVASSERT(childNode->GetChildrenCount() == 1);
-            Entity* svn = childNode->FindByName(FastName("dynamicshadow.shadowvolume"));
-            if (!svn)
-            {
-                MeshInstanceNode* mi = dynamic_cast<MeshInstanceNode*>(childNode->GetChild(0));
-                DVASSERT(mi);
-                mi->ConvertToShadowVolume();
-                childNode->RemoveNode(mi);
-            }
-        }
-        else
-        {
-            ConvertShadows(childNode);
-        }
-    }
-}
-
 bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity* currentNode)
 {
     for (int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
@@ -1072,241 +1026,6 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity* currentNode)
         }
     }
     return false;
-}
-
-bool SceneFileV2::ReplaceNodeAfterLoad(Entity* node)
-{
-    MeshInstanceNode* oldMeshInstanceNode = dynamic_cast<MeshInstanceNode*>(node);
-    if (oldMeshInstanceNode)
-    {
-        Entity* newMeshInstanceNode = new Entity();
-        oldMeshInstanceNode->Entity::Clone(newMeshInstanceNode);
-
-        Component* clonedComponent = oldMeshInstanceNode->GetComponent(Component::TRANSFORM_COMPONENT)->Clone(newMeshInstanceNode);
-        newMeshInstanceNode->RemoveComponent(Component::TRANSFORM_COMPONENT);
-        newMeshInstanceNode->AddComponent(clonedComponent);
-
-        Mesh* mesh = new Mesh();
-
-        Vector<PolygonGroupWithMaterial*> polygroups = oldMeshInstanceNode->GetPolygonGroups();
-        for (uint32 k = 0; k < (uint32)polygroups.size(); ++k)
-        {
-            PolygonGroupWithMaterial* group = polygroups[k];
-            NMaterial* material = group->GetMaterial();
-            if (material)
-            {
-                NMaterial* batchMaterial = new NMaterial();
-                batchMaterial->SetParent(material);
-                batchMaterial->SetMaterialName(FastName(Format("Instance-%u",
-                                                               static_cast<uint32>(material->GetChildren().size()))));
-                mesh->AddPolygonGroup(group->GetPolygonGroup(), batchMaterial);
-            }
-        }
-
-        mesh->SetOwnerDebugInfo(oldMeshInstanceNode->GetName());
-
-        //
-        Entity* parent = oldMeshInstanceNode->GetParent();
-        for (int32 k = 0; k < parent->GetChildrenCount(); ++k)
-        {
-            ShadowVolumeNode* oldShadowVolumeNode = dynamic_cast<ShadowVolumeNode*>(parent->GetChild(k));
-            if (oldShadowVolumeNode)
-            {
-                ShadowVolume* newShadowVolume = new ShadowVolume();
-                PolygonGroup* pg = oldShadowVolumeNode->GetPolygonGroup();
-                Matrix4 matrix = oldMeshInstanceNode->GetLocalTransform();
-                if (matrix != Matrix4::IDENTITY)
-                {
-                    matrix.Inverse();
-                    pg->ApplyMatrix(matrix);
-                    pg->BuildBuffers();
-                }
-
-                newShadowVolume->SetPolygonGroup(pg);
-                mesh->AddRenderBatch(newShadowVolume);
-
-                mesh->SetOwnerDebugInfo(FastName(Format("%s shadow:%s", oldMeshInstanceNode->GetName().c_str(), oldShadowVolumeNode->GetName().c_str()).c_str()));
-
-                parent->RemoveNode(oldShadowVolumeNode);
-                SafeRelease(newShadowVolume);
-            }
-        }
-
-        RenderComponent* renderComponent = new RenderComponent;
-        renderComponent->SetRenderObject(mesh);
-        newMeshInstanceNode->AddComponent(renderComponent);
-
-        if (parent)
-        {
-            parent->InsertBeforeNode(newMeshInstanceNode, oldMeshInstanceNode);
-            parent->RemoveNode(oldMeshInstanceNode);
-        }
-        else
-        {
-            DVASSERT(0 && "How we appeared here");
-        }
-        newMeshInstanceNode->Release();
-        mesh->Release();
-        return true;
-    }
-
-    LodNode* lod = dynamic_cast<LodNode*>(node);
-    if (lod)
-    {
-        Entity* newNode = new Entity();
-        lod->Entity::Clone(newNode);
-        Entity* parent = lod->GetParent();
-
-        LodComponent* lc = new LodComponent();
-        newNode->AddComponent(lc);
-
-        for (int32 iLayer = 0; iLayer < LodComponent::MAX_LOD_LAYERS; ++iLayer)
-        {
-            lc->lodLayersArray[iLayer].distance = lod->GetLodLayerDistance(iLayer);
-            lc->lodLayersArray[iLayer].nearDistanceSq = lod->GetLodLayerNearSquare(iLayer);
-            lc->lodLayersArray[iLayer].farDistanceSq = lod->GetLodLayerFarSquare(iLayer);
-        }
-
-        List<LodNode::LodData*> oldLodData;
-        lod->GetLodData(oldLodData);
-        for (List<LodNode::LodData*>::iterator it = oldLodData.begin(); it != oldLodData.end(); ++it)
-        {
-            LodNode::LodData* oldDataItem = *it;
-            LodComponent::LodData newLodDataItem;
-            newLodDataItem.indexes = oldDataItem->indexes;
-            newLodDataItem.isDummy = oldDataItem->isDummy;
-            newLodDataItem.layer = oldDataItem->layer;
-
-            //			newLodDataItem.nodes = oldDataItem->nodes;
-            for (uint32 n = 0; n < oldDataItem->nodes.size(); ++n)
-            {
-                Entity* nn = oldDataItem->nodes[n];
-
-                int32 childrenCount = lod->GetChildrenCount();
-                for (int32 c = 0; c < childrenCount; ++c)
-                {
-                    if (nn == lod->GetChild(c))
-                    {
-                        newLodDataItem.nodes.push_back(newNode->GetChild(c));
-                        break;
-                    }
-                }
-            }
-
-            lc->lodLayers.push_back(newLodDataItem);
-        }
-
-        DVASSERT(parent);
-        if (parent)
-        {
-            parent->InsertBeforeNode(newNode, lod);
-            parent->RemoveNode(lod);
-        }
-
-        //GlobalEventSystem::Instance()->Event(newNode, )
-        //newNode->GetScene()->transformSystem->ImmediateEvent(newNode, EventSystem::LOCAL_TRANSFORM_CHANGED);
-        newNode->Release();
-        return true;
-    }
-
-    ParticleEmitterNode* particleEmitterNode = dynamic_cast<ParticleEmitterNode*>(node);
-    if (particleEmitterNode)
-    {
-        Entity* newNode = new Entity();
-        particleEmitterNode->Entity::Clone(newNode);
-        Entity* parent = particleEmitterNode->GetParent();
-
-        DVASSERT(parent);
-        if (parent)
-        {
-            parent->InsertBeforeNode(newNode, particleEmitterNode);
-            parent->RemoveNode(particleEmitterNode);
-        }
-
-        newNode->Release();
-        return true;
-    }
-
-    ParticleEffectNode* particleEffectNode = dynamic_cast<ParticleEffectNode*>(node);
-    if (particleEffectNode)
-    {
-        Entity* newNode = new Entity();
-        particleEffectNode->Entity::Clone(newNode);
-        Entity* parent = particleEffectNode->GetParent();
-
-        DVASSERT(parent);
-        if (parent)
-        {
-            parent->InsertBeforeNode(newNode, particleEffectNode);
-            parent->RemoveNode(particleEffectNode);
-        }
-
-        newNode->AddComponent(new ParticleEffectComponent());
-        newNode->Release();
-        return true;
-    }
-
-    SwitchNode* sw = dynamic_cast<SwitchNode*>(node);
-    if (sw)
-    {
-        Entity* newNode = new Entity();
-        sw->Entity::Clone(newNode);
-
-        SwitchComponent* swConponent = new SwitchComponent();
-        newNode->AddComponent(swConponent);
-        swConponent->SetSwitchIndex(sw->GetSwitchIndex());
-
-        Entity* parent = sw->GetParent();
-        DVASSERT(parent);
-        if (parent)
-        {
-            parent->InsertBeforeNode(newNode, sw);
-            parent->RemoveNode(sw);
-        }
-
-        newNode->Release();
-        return true;
-    }
-
-    UserNode* un = dynamic_cast<UserNode*>(node);
-    if (un)
-    {
-        Entity* newNode = new Entity();
-        un->Clone(newNode);
-
-        newNode->AddComponent(new UserComponent());
-
-        Entity* parent = un->GetParent();
-        DVASSERT(parent);
-        if (parent)
-        {
-            parent->InsertBeforeNode(newNode, un);
-            parent->RemoveNode(un);
-        }
-
-        newNode->Release();
-        return true;
-    }
-
-    return false;
-}
-
-void SceneFileV2::ReplaceOldNodes(Entity* currentNode)
-{
-    for (int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
-    {
-        Entity* childNode = currentNode->GetChild(c);
-        ReplaceOldNodes(childNode);
-        /**
-			Here it's very important to call ReplaceNodeAfterLoad after recursion, to replace nodes that 
-			was deep in hierarchy first.
-			*/
-        bool wasReplace = ReplaceNodeAfterLoad(childNode);
-        if (wasReplace)
-        {
-            c--;
-        }
-    }
 }
 
 void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity* node)
@@ -1472,9 +1191,7 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
     removedNodeCount = 0;
     rootNode->BakeTransforms();
 
-    //ConvertShadows(rootNode);
     RemoveEmptySceneNodes(rootNode);
-    ReplaceOldNodes(rootNode);
     RemoveEmptyHierarchy(rootNode);
 
     if (header.version < SHADOW_VOLUME_SCENE_VERSION)

@@ -34,9 +34,10 @@
 namespace DAVA
 {
 //use these names for children buttons to define UISpinner in .yaml
-static const String UISPINNER_BUTTON_NEXT_NAME = "buttonNext";
-static const String UISPINNER_BUTTON_PREVIOUS_NAME = "buttonPrevious";
-static const String UISPINNER_CONTENT_NAME = "content";
+static const FastName UISPINNER_BUTTON_NEXT_NAME("buttonNext");
+static const FastName UISPINNER_BUTTON_PREVIOUS_NAME("buttonPrevious");
+static const FastName UISPINNER_CONTENT_NAME("content");
+
 static const float32 UISPINNER_ANIRMATION_TIME = 0.1f;
 static const int32 UISPINNER_MOVE_ANIMATION_TRACK = 10;
 static const float32 UISPINNER_X_UNDEFINED = 10000;
@@ -265,14 +266,6 @@ void UISpinner::OnScrollAnimationEnd(BaseObject* caller, void* param, void* call
     AddControl(content.Get());
 }
 
-void UISpinner::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    //release default buttons - they have to be loaded from yaml
-    RemoveAllControls();
-    content = nullptr;
-    UIControl::LoadFromYamlNode(node, loader);
-}
-
 void UISpinner::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
@@ -320,16 +313,6 @@ void UISpinner::LoadFromYamlNodeCompleted()
 {
     SetupInternalControls();
     SetAdapter(nullptr);
-}
-
-YamlNode* UISpinner::SaveToYamlNode(UIYamlLoader* loader)
-{
-    buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);
-    buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
-    content->SetName(UISPINNER_CONTENT_NAME);
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    return node;
 }
 
 void UISpinner::SetAdapter(SpinnerAdapter* anAdapter)
@@ -390,7 +373,7 @@ void UISpinner::OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, boo
 
 void UISpinner::SetupInternalControls()
 {
-    content = FindByPath(UISPINNER_CONTENT_NAME);
+    content = FindByName(UISPINNER_CONTENT_NAME, false);
     content->SetInputEnabled(false);
     contentViewport->SetRect(content->GetRect());
     contentViewport->SetPivotPoint(content->GetPivotPoint());

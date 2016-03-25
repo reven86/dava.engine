@@ -35,8 +35,7 @@
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
-#include "Commands2/RulerToolActions.h"
-#include "Commands2/LandscapeEditorDrawSystemActions.h"
+#include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
@@ -51,8 +50,8 @@
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-
 
 #include <QShortcut>
 
@@ -63,14 +62,10 @@ const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
     : Scene()
-    , wasdSystem(nullptr)
-    , rotationSystem(nullptr)
-    , snapToLandscapeSystem(nullptr)
-    , isLoaded(false)
-    , isHUDVisible(true)
+    , commandStack(new CommandStack())
 {
     EditorCommandNotify* notify = new EditorCommandNotify(this);
-    commandStack.SetNotify(notify);
+    commandStack->SetNotify(notify);
     SafeRelease(notify);
 
     gridSystem = new SceneGridSystem(this);
@@ -154,8 +149,15 @@ SceneEditor2::SceneEditor2()
     editorLODSystem = new EditorLODSystem(this);
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
+    editorStatisticsSystem = new EditorStatisticsSystem(this);
+    AddSystem(editorStatisticsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
+
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+
+    selectionSystem->AddSelectionDelegate(modifSystem);
+    selectionSystem->AddSelectionDelegate(hoodSystem);
+    selectionSystem->AddSelectionDelegate(wayEditSystem);
 
     float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
@@ -171,13 +173,14 @@ SceneEditor2::~SceneEditor2()
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
+
+    SafeRelease(commandStack);
 }
 
-bool SceneEditor2::Load(const DAVA::FilePath& path)
+SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 {
-    bool ret = structureSystem->Init(path);
-
-    if (ret)
+    SceneFileV2::eError ret = Scene::LoadScene(path);
+    if (ret == SceneFileV2::ERROR_NO_ERROR)
     {
         for (int32 i = 0, e = GetScene()->GetChildrenCount(); i < e; ++i)
         {
@@ -185,7 +188,7 @@ bool SceneEditor2::Load(const DAVA::FilePath& path)
         }
         curScenePath = path;
         isLoaded = true;
-        commandStack.SetClean(true);
+        commandStack->SetClean(true);
     }
 
     SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
@@ -196,14 +199,14 @@ bool SceneEditor2::Load(const DAVA::FilePath& path)
     return ret;
 }
 
-SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath& path, bool saveForGame /*= false*/)
+SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
     ExtractEditorEntities();
 
     ScopedPtr<Texture> tilemaskTexture(nullptr);
     bool needToRestoreTilemask = false;
     if (landscapeEditorDrawSystem)
-    { //dirty magic to work with new saving of materials and FBO landsacpe texture
+    { //dirty magic to work with new saving of materials and FBO landscape texture
         tilemaskTexture = SafeRetain(landscapeEditorDrawSystem->GetTileMaskTexture());
 
         needToRestoreTilemask = landscapeEditorDrawSystem->SaveTileMaskTexture();
@@ -218,7 +221,7 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath& path, bool saveForG
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack.SetClean(true);
+        commandStack->SetClean(true);
     }
 
     if (needToRestoreTilemask)
@@ -255,6 +258,9 @@ void SceneEditor2::ExtractEditorEntities()
 
 void SceneEditor2::InjectEditorEntities()
 {
+    bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
+    selectionSystem->EnableSystem(false);
+
     for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
     {
         AddEditorEntity(editorEntities[i]);
@@ -262,11 +268,12 @@ void SceneEditor2::InjectEditorEntities()
     }
 
     editorEntities.clear();
+    selectionSystem->EnableSystem(isSelectionEnabled);
 }
 
-SceneFileV2::eError SceneEditor2::Save()
+SceneFileV2::eError SceneEditor2::SaveScene()
 {
-    return Save(curScenePath);
+    return SaveScene(curScenePath);
 }
 
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
@@ -309,57 +316,55 @@ void SceneEditor2::SetScenePath(const DAVA::FilePath& newScenePath)
 
 bool SceneEditor2::CanUndo() const
 {
-    return commandStack.CanUndo();
+    return commandStack->CanUndo();
 }
 
 bool SceneEditor2::CanRedo() const
 {
-    return commandStack.CanRedo();
+    return commandStack->CanRedo();
 }
 
 void SceneEditor2::Undo()
 {
-    commandStack.Undo();
+    commandStack->Undo();
 }
 
 void SceneEditor2::Redo()
 {
-    commandStack.Redo();
+    commandStack->Redo();
 }
 
-void SceneEditor2::BeginBatch(const DAVA::String& text)
+void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)
 {
-    commandStack.BeginBatch(text);
+    commandStack->BeginBatch(text, commandsCount);
 }
 
 void SceneEditor2::EndBatch()
 {
-    commandStack.EndBatch();
+    commandStack->EndBatch();
 }
 
-bool SceneEditor2::IsBatchStarted() const
+void SceneEditor2::Exec(Command2::Pointer&& command)
 {
-    return commandStack.IsBatchStarted();
+    if (command)
+    {
+        commandStack->Exec(std::move(command));
+    }
 }
 
-void SceneEditor2::Exec(Command2* command)
+void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
 {
-    commandStack.Exec(command);
-}
-
-void SceneEditor2::ClearCommands(int commandId)
-{
-    commandStack.Clear(commandId);
+    commandStack->RemoveCommands(commandId);
 }
 
 void SceneEditor2::ClearAllCommands()
 {
-    commandStack.Clear();
+    commandStack->Clear();
 }
 
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
-    return (&commandStack);
+    return commandStack;
 }
 
 bool SceneEditor2::IsLoaded() const
@@ -380,16 +385,18 @@ bool SceneEditor2::IsHUDVisible() const
 
 bool SceneEditor2::IsChanged() const
 {
-    return ((!commandStack.IsClean()) || wasChanged);
+    return ((!commandStack->IsClean()) || wasChanged);
 }
 
 void SceneEditor2::SetChanged(bool changed)
 {
-    commandStack.SetClean(!changed);
+    commandStack->SetClean(!changed);
 }
 
 void SceneEditor2::Update(float timeElapsed)
 {
+    ++framesCount;
+
     renderStats = Renderer::GetRenderStats();
     Renderer::GetRenderStats().Reset();
 
@@ -412,14 +419,10 @@ void SceneEditor2::Draw()
 
         if (collisionSystem)
             collisionSystem->Draw();
-
-        modifSystem->Draw();
-
-        if (structureSystem)
-            structureSystem->Draw();
     }
 
     tilemaskEditorSystem->Draw();
+
     //VI: restore 3d camera state
     Setup3DDrawing();
 
@@ -440,34 +443,31 @@ void SceneEditor2::Draw()
 
 void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
 {
-    gridSystem->ProcessCommand(command, redo);
-    cameraSystem->ProcessCommand(command, redo);
+    DVASSERT(command != nullptr);
 
     if (collisionSystem)
+    {
         collisionSystem->ProcessCommand(command, redo);
-
-    selectionSystem->ProcessCommand(command, redo);
-    hoodSystem->ProcessCommand(command, redo);
-    modifSystem->ProcessCommand(command, redo);
+    }
 
     if (structureSystem)
+    {
         structureSystem->ProcessCommand(command, redo);
+    }
 
     particlesSystem->ProcessCommand(command, redo);
-
-    if (editorLightSystem)
-        editorLightSystem->ProcessCommand(command, redo);
-
-    if (ownersSignatureSystem)
-        ownersSignatureSystem->ProcessCommand(command, redo);
 
     materialSystem->ProcessCommand(command, redo);
 
     if (landscapeEditorDrawSystem)
+    {
         landscapeEditorDrawSystem->ProcessCommand(command, redo);
+    }
 
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
+
+    editorLODSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)
@@ -489,7 +489,7 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 
 void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool redo)
 {
-    if (NULL != editor)
+    if (nullptr != editor)
     {
         editor->EditorCommandProcess(command, redo);
         SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
@@ -498,7 +498,7 @@ void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool red
 
 void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 {
-    if (NULL != editor)
+    if (nullptr != editor)
     {
         SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
     }
@@ -509,31 +509,59 @@ const RenderStats& SceneEditor2::GetRenderStats() const
     return renderStats;
 }
 
-void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
+void SceneEditor2::EnableToolsInstantly(int32 toolFlags)
 {
     if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
     {
-        Exec(new ActionDisableCustomColors(this, saveChanges));
+        EnableCustomColorsCommand(this, true).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
-        Exec(new ActionDisableHeightmapEditor(this));
+        EnableHeightmapEditorCommand(this).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
-        Exec(new ActionDisableTilemaskEditor(this));
+        EnableTilemaskEditorCommand(this).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_RULER)
     {
-        Exec(new ActionDisableRulerTool(this));
+        EnableRulerToolCommand(this).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
     {
-        Exec(new ActionDisableNotPassable(this));
+        EnableNotPassableCommand(this).Redo();
+    }
+}
+
+void SceneEditor2::DisableToolsInstantly(int32 toolFlags, bool saveChanges /*= true*/)
+{
+    if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+    {
+        EnableCustomColorsCommand(this, saveChanges).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+    {
+        EnableHeightmapEditorCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+    {
+        EnableTilemaskEditorCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_RULER)
+    {
+        EnableRulerToolCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+    {
+        EnableNotPassableCommand(this).Undo();
     }
 }
 
@@ -614,8 +642,11 @@ Entity* SceneEditor2::Clone(Entity* dstNode /*= NULL*/)
 
 SceneEditor2* SceneEditor2::CreateCopyForExport()
 {
+    auto originalPath = curScenePath;
+    auto tempName = Format(".tmp_%llu.sc2", static_cast<uint64>(time(nullptr)) ^ static_cast<uint64>(reinterpret_cast<pointer_size>(this)));
+
     SceneEditor2* ret = nullptr;
-    FilePath tmpScenePath = FilePath::CreateWithNewExtension(curScenePath, ".tmp_exported.sc2");
+    FilePath tmpScenePath = FilePath::CreateWithNewExtension(curScenePath, tempName);
     if (SceneFileV2::ERROR_NO_ERROR == SaveScene(tmpScenePath))
     {
         SceneEditor2* sceneCopy = new SceneEditor2();
@@ -632,11 +663,21 @@ SceneEditor2* SceneEditor2::CreateCopyForExport()
         FileSystem::Instance()->DeleteFile(tmpScenePath);
     }
 
+    curScenePath = originalPath; // because SaveScene overwrites curScenePath
+    SceneSignals::Instance()->EmitUpdated(this);
+
     return ret;
 }
 
 void SceneEditor2::RemoveSystems()
 {
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->RemoveSelectionDelegate(modifSystem);
+        selectionSystem->RemoveSelectionDelegate(hoodSystem);
+        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+    }
+
     if (editorLightSystem)
     {
         editorLightSystem->SetCameraLightEnabled(false);
@@ -702,4 +743,22 @@ void SceneEditor2::Deactivate()
 {
     Scene::Deactivate();
     SceneSignals::Instance()->EmitDeactivated(this);
+}
+
+void SceneEditor2::EnableEditorSystems()
+{
+    cameraSystem->EnableSystem();
+
+    // must be last to enable selection after all systems add their entities
+    selectionSystem->EnableSystem(true);
+}
+
+uint32 SceneEditor2::GetFramesCount() const
+{
+    return framesCount;
+}
+
+void SceneEditor2::ResetFramesCount()
+{
+    framesCount = 0;
 }

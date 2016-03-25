@@ -484,6 +484,8 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4* externalCl
     {
         currentFrustum->Build(viewProjMatrix);
     }
+
+    projectionFlip = invertProjection ? -1.0f : 1.0f;
 }
 
 void Camera::SetupDynamicParameters(bool invertProjection, Vector4* externalClipPlane)
@@ -499,6 +501,8 @@ void Camera::SetupDynamicParameters(bool invertProjection, Vector4* externalClip
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &position, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_DIR, &direction, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_UP, &up, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJECTION_FLIP, &projectionFlip, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
 
 BaseObject* Camera::Clone(BaseObject* dstNode)
@@ -509,7 +513,7 @@ BaseObject* Camera::Clone(BaseObject* dstNode)
         dstNode = new Camera();
     }
     // SceneNode::Clone(dstNode);
-    Camera* cnd = (Camera*)dstNode;
+    Camera* cnd = static_cast<Camera*>(dstNode);
     cnd->znear = znear;
     cnd->zfar = zfar;
     cnd->aspect = aspect;

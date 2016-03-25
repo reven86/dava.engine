@@ -157,7 +157,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     }
 
     Rect2i updateRect = Rect2i(0, 0, GetHeightmapProxy()->Size(), GetHeightmapProxy()->Size());
-    notPassableTerrainProxy->Enable();
+    notPassableTerrainProxy->SetEnabled(true);
     notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
 
     landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture(), false);
@@ -165,17 +165,18 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
-void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
+bool LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 {
     if (!notPassableTerrainProxy || !notPassableTerrainProxy->IsEnabled())
     {
-        return;
+        return false;
     }
 
-    notPassableTerrainProxy->Disable();
+    notPassableTerrainProxy->SetEnabled(false);
     landscapeProxy->SetToolTexture(nullptr, false);
 
     DisableCustomDraw();
+    return true;
 }
 
 void LandscapeEditorDrawSystem::EnableCursor()
@@ -248,12 +249,10 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 
 void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 {
-    Heightmap* h = new Heightmap();
+    ScopedPtr<Heightmap> h(new Heightmap());
     heightmapProxy->Clone(h);
 
     baseLandscape->SetHeightmap(h);
-
-    SafeRelease(h);
 
     GetScene()->foliageSystem->SyncFoliageWithLandscape();
 }
@@ -450,6 +449,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(E
 
     UpdateTilemaskPathname();
 
+    DVASSERT(landscapeProxy == nullptr);
     landscapeProxy = new LandscapeProxy(baseLandscape, landscapeNode);
 
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -492,7 +492,7 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
         bool needRemoveBaseLandscape = sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL
                                                                    & ~SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR);
 
-        sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+        sceneEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
         if (needRemoveBaseLandscape)
         {
@@ -656,42 +656,52 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    if (command == NULL)
-    {
-        return;
-    }
+    static const FastName heightmapPath("heightmapPath");
 
-    switch (command->GetId())
+    if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-    case CMDID_INSP_MEMBER_MODIFY:
-    {
-        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-        if (String("heightmapPath") == cmd->member->Name().c_str())
-        {
-            Heightmap* heightmap = baseLandscape->GetHeightmap();
-            if ((heightmap != nullptr) && (heightmap->Size() > 0))
+        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
-                ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
-                heightmapProxy = new HeightmapProxy(clonedHeightmap);
+                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+                if (heightmapPath == cmd->member->Name() && baseLandscape != nullptr)
+                {
+                    Heightmap* heightmap = baseLandscape->GetHeightmap();
+                    if ((heightmap != nullptr) && (heightmap->Size() > 0))
+                    {
+                        ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
+                        SafeRelease(heightmapProxy);
+                        heightmapProxy = new HeightmapProxy(clonedHeightmap);
 
-                int32 size = heightmapProxy->Size();
-                heightmapProxy->UpdateRect(Rect(0.f, 0.f, (float32)size, (float32)size));
+                        float32 size = static_cast<float32>(heightmapProxy->Size());
+                        heightmapProxy->UpdateRect(Rect(0.f, 0.f, size, size));
+                    }
+                }
+            }
+            else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
+            {
+                const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
+                if (Landscape::TEXTURE_TILEMASK == cmd->key)
+                {
+                    UpdateTilemaskPathname();
+                }
+            }
+
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                ProcessSingleCommand(batch->GetCommand(i), redo);
             }
         }
-        break;
-    }
-    case CMDID_INSP_DYNAMIC_MODIFY:
-    {
-        const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
-        if (DAVA::FastName("tileMask") == cmd->key)
+        else
         {
-            UpdateTilemaskPathname();
+            ProcessSingleCommand(command, redo);
         }
-        break;
-    }
-
-    default:
-        break;
     }
 }
 

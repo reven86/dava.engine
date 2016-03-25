@@ -92,7 +92,6 @@ extern void FrameworkWillTerminate();
 
 - (void)applicationWillResignActive:(NSApplication*)application
 {
-    [mainWindowController OnSuspend];
 }
 
 - (void)applicationDidEnterBackground:(NSApplication*)application
@@ -132,6 +131,12 @@ extern void FrameworkWillTerminate();
 
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
+
+    // Wait job completion before releasing singletons
+    // But client should stop its jobs in GameCore::OnAppFinished or in FrameworkWillTerminate
+    JobManager::Instance()->WaitWorkerJobs();
+    JobManager::Instance()->WaitMainJobs();
+
     Core::Instance()->ReleaseSingletons();
 
     NSLog(@"[CoreMacOSPlatform] Application has terminated");

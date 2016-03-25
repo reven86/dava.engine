@@ -1,35 +1,65 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if( WIN32 )
+	if( X64_MODE )
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN64})
+	else ()
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN})
+	endif ()	
+elseif ( MACOS )
+	set (QT_ACTUAL_PATH ${QT5_PATH_MAC})
+endif ()
+
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
     endif ()
 
+    set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
+    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
+
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
         foreach ( ITEM  ${BINARY_ITEMS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/bin/${ITEM}.dll  ${DEPLOY_DIR} )
+            string(TOLOWER ${ITEM} ITEM)
+            if (EXISTS ${QT_ACTUAL_PATH}/bin/Qt5${ITEM}.dll)
+                LIST(APPEND QT_ITEMS_LIST --${ITEM})
+            endif()
         endforeach ()
 
-        file ( GLOB FILE_LIST ${QT5_PATH_WIN}/bin/icu*.dll )
-        foreach ( ITEM  ${FILE_LIST} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
-        endforeach ()
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "--qmldir ${QML_SCAN_DIR}")
+        endif()
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
-                                                         ${DEPLOY_DIR}/platforms )
+        set(DEPLOY_PLATFORM "WIN")
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
+        set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QT_ITEMS_LIST}")
 
     elseif( MACOS )
 
-        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
-        )
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
+        endif()
+
+        set(DEPLOY_PLATFORM "MAC")
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
+        set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
+
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+            COMMAND "python"
+                    ${DEPLOY_SCRIPT_PATH}
+                    "-p" "${DEPLOY_PLATFORM}"
+                    "-q" "${DEPLOY_QT_FOLDER}"
+                    "-d" "${DEPLOY_ROOT_FOLDER}"
+                    "-a" "${DEPLOY_ARGUMENTS}"
+        )
 
 endmacro ()
 
@@ -43,7 +73,7 @@ macro(resolve_qt_pathes)
         endif()
 
         find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
-                          PATHS ${QT5_PATH_MAC} ${QT5_PATH_WIN}
+                          PATHS ${QT_ACTUAL_PATH}
                           PATH_SUFFIXES lib)
 
         ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")
