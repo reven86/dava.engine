@@ -90,6 +90,7 @@ void AddressResolver::Cancel()
 #if !defined(DAVA_NETWORK_DISABLE)
     if (handle != nullptr)
     {
+        handle->data = nullptr;
         uv_cancel(reinterpret_cast<uv_req_t*>(handle));
         handle = nullptr;
     }
@@ -100,11 +101,10 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
-    if (nullptr != resolver)
+    if (nullptr != resolver && resolver->handle != nullptr)
     {
-        resolver->GotAddrInfo(status, response);
-
         DVASSERT(resolver->handle == handle);
+        resolver->GotAddrInfo(status, response);
         resolver->handle = nullptr;
     }
 
