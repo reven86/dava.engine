@@ -460,11 +460,11 @@ bool DavaArchive::Create(const FilePath& archiveName,
     std::unique_ptr<File, void (*)(File*)> outTmpFile(
     File::Create(packedFileTmp, File::CREATE | File::WRITE), [](File* f)
     {
-        auto name = f->GetFilename().GetAbsolutePathname();
+        FilePath tmpName = f->GetFilename();
         SafeRelease(f);
-        if (FileSystem::Instance()->DeleteFile(f->GetFilename()))
+        if (FileSystem::Instance()->DeleteFile(tmpName))
         {
-            Logger::Error("can't delete tmp file: %s", name.c_str());
+            Logger::Error("can't delete tmp file: %s", tmpName.GetAbsolutePathname().c_str());
         }
     });
 
