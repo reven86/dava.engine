@@ -52,10 +52,11 @@ public:
     };
 
     explicit ModificationWidget(QWidget* parent = nullptr);
-    ~ModificationWidget();
 
     void SetPivotMode(PivotMode pivotMode);
     void SetTransformType(Selectable::TransformType modifMode);
+
+    void ReloadValues();
 
 public slots:
     void OnSnapToLandscapeChanged();
@@ -71,7 +72,6 @@ private slots:
     void OnZChanged();
 
 private:
-    void ReloadValues();
     void ApplyValues(ST_Axis axis);
 
 private:

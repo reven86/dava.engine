@@ -1086,24 +1086,17 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 void QtMainWindow::UpdateModificationActionsState()
 {
-    bool canModify = false;
-    bool isMultiple = false;
-
     SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
-    {
-        const SelectableGroup& selection = scene->selectionSystem->GetSelection();
-        canModify = scene->modifSystem->ModifCanStart(selection);
-        isMultiple = (selection.GetSize() > 1);
-    }
+    bool isMultiple = (nullptr != scene) && (scene->selectionSystem->GetSelection().GetSize() > 1);
+
+    // modificationWidget determines inside, if values could be modified and enables/disables itself
+    modificationWidget->ReloadValues();
+    bool canModify = modificationWidget->isEnabled();
 
     ui->actionModifyReset->setEnabled(canModify);
     ui->actionModifyPlaceOnLandscape->setEnabled(canModify);
-
     ui->actionCenterPivotPoint->setEnabled(canModify && !isMultiple);
     ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
-
-    modificationWidget->setEnabled(canModify);
 }
 
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
@@ -1971,6 +1964,8 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
 
         // way editor
         ui->actionWayEditor->setChecked(scene->wayEditSystem->IsWayEditEnabled());
+
+        UpdateModificationActionsState();
     }
 }
 

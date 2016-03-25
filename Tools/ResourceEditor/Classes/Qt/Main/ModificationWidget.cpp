@@ -78,10 +78,6 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &ModificationWidget::OnSceneCommand);
 }
 
-ModificationWidget::~ModificationWidget()
-{
-}
-
 void ModificationWidget::SetPivotMode(PivotMode mode)
 {
     pivotMode = mode;
@@ -119,111 +115,114 @@ void ModificationWidget::ReloadValues()
         zAxisModify->setVisible(true);
     }
 
-    if (nullptr != curScene)
+    if (curScene == nullptr)
     {
-        const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
-        if ((modifMode != Selectable::TransformType::Disabled) && !selection.IsEmpty() && selection.SupportsTransformType(modifMode))
+        setEnabled(false);
+        OnSnapToLandscapeChanged();
+        return;
+    }
+
+    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
+    bool canModify = (modifMode != Selectable::TransformType::Disabled) && !selection.IsEmpty() && selection.SupportsTransformType(modifMode);
+    if (canModify)
+    {
+        xAxisModify->showButtons(true);
+        yAxisModify->showButtons(true);
+        zAxisModify->showButtons(true);
+
+        if (selection.GetSize() > 1)
         {
-            xAxisModify->setEnabled(true);
-            yAxisModify->setEnabled(true);
-            zAxisModify->setEnabled(true);
-            xAxisModify->showButtons(true);
-            yAxisModify->showButtons(true);
-            zAxisModify->showButtons(true);
+            groupMode = true;
 
-            if (selection.GetSize() > 1)
+            if (pivotMode == PivotRelative)
             {
-                groupMode = true;
-
-                if (pivotMode == PivotRelative)
-                {
-                    xAxisModify->setValue(0);
-                    yAxisModify->setValue(0);
-                    zAxisModify->setValue(0);
-                }
-                else
-                {
-                    xAxisModify->showButtons(false);
-                    yAxisModify->showButtons(false);
-                    zAxisModify->showButtons(false);
-
-                    xAxisModify->clear();
-                    yAxisModify->clear();
-                    zAxisModify->clear();
-                }
+                xAxisModify->setValue(0);
+                yAxisModify->setValue(0);
+                zAxisModify->setValue(0);
             }
             else
             {
-                groupMode = false;
-
-                if (pivotMode == PivotRelative)
-                {
-                    xAxisModify->setValue(0);
-                    yAxisModify->setValue(0);
-                    zAxisModify->setValue(0);
-                }
-                else
-                {
-                    const auto& firstObject = selection.GetFirst();
-                    DAVA::Matrix4 localMatrix = firstObject.GetLocalTransform();
-                    DAVA::float32 x = 0;
-                    DAVA::float32 y = 0;
-                    DAVA::float32 z = 0;
-                    switch (modifMode)
-                    {
-                    case Selectable::TransformType::Translation:
-                    {
-                        DAVA::Vector3 translation = localMatrix.GetTranslationVector();
-                        x = translation.x;
-                        y = translation.y;
-                        z = translation.z;
-                    }
-                    break;
-                    case Selectable::TransformType::Rotation:
-                    {
-                        DAVA::Vector3 pos, scale, rotate;
-                        if (localMatrix.Decomposition(pos, scale, rotate))
-                        {
-                            x = DAVA::RadToDeg(rotate.x);
-                            y = DAVA::RadToDeg(rotate.y);
-                            z = DAVA::RadToDeg(rotate.z);
-                        }
-                    }
-                    break;
-                    case Selectable::TransformType::Scale:
-                    {
-                        DAVA::Vector3 pos, scale, rotate;
-                        if (localMatrix.Decomposition(pos, scale, rotate))
-                        {
-                            x = scale.x;
-                            y = scale.y;
-                            z = scale.z;
-                        }
-                    }
-                    break;
-                    default:
-                        break;
-                    }
-
-                    xAxisModify->setValue(x);
-                    yAxisModify->setValue(y);
-                    zAxisModify->setValue(z);
-                }
+                xAxisModify->showButtons(false);
+                yAxisModify->showButtons(false);
+                zAxisModify->showButtons(false);
+                xAxisModify->clear();
+                yAxisModify->clear();
+                zAxisModify->clear();
             }
         }
         else
         {
-            xAxisModify->setEnabled(false);
-            yAxisModify->setEnabled(false);
-            zAxisModify->setEnabled(false);
-            xAxisModify->showButtons(true);
-            yAxisModify->showButtons(true);
-            zAxisModify->showButtons(true);
-            xAxisModify->clear();
-            yAxisModify->clear();
-            zAxisModify->clear();
+            groupMode = false;
+
+            if (pivotMode == PivotRelative)
+            {
+                xAxisModify->setValue(0);
+                yAxisModify->setValue(0);
+                zAxisModify->setValue(0);
+            }
+            else
+            {
+                const auto& firstObject = selection.GetFirst();
+                DAVA::Matrix4 localMatrix = firstObject.GetLocalTransform();
+                DAVA::float32 x = 0;
+                DAVA::float32 y = 0;
+                DAVA::float32 z = 0;
+                switch (modifMode)
+                {
+                case Selectable::TransformType::Translation:
+                {
+                    DAVA::Vector3 translation = localMatrix.GetTranslationVector();
+                    x = translation.x;
+                    y = translation.y;
+                    z = translation.z;
+                }
+                break;
+                case Selectable::TransformType::Rotation:
+                {
+                    DAVA::Vector3 pos, scale, rotate;
+                    if (localMatrix.Decomposition(pos, scale, rotate))
+                    {
+                        x = DAVA::RadToDeg(rotate.x);
+                        y = DAVA::RadToDeg(rotate.y);
+                        z = DAVA::RadToDeg(rotate.z);
+                    }
+                }
+                break;
+                case Selectable::TransformType::Scale:
+                {
+                    DAVA::Vector3 pos, scale, rotate;
+                    if (localMatrix.Decomposition(pos, scale, rotate))
+                    {
+                        x = scale.x;
+                        y = scale.y;
+                        z = scale.z;
+                    }
+                }
+                break;
+                default:
+                    break;
+                }
+
+                xAxisModify->setValue(x);
+                yAxisModify->setValue(y);
+                zAxisModify->setValue(z);
+            }
         }
     }
+    else
+    {
+        xAxisModify->showButtons(true);
+        yAxisModify->showButtons(true);
+        zAxisModify->showButtons(true);
+        xAxisModify->clear();
+        yAxisModify->clear();
+        zAxisModify->clear();
+    }
+
+    xAxisModify->setEnabled(canModify);
+    yAxisModify->setEnabled(canModify);
+    zAxisModify->setEnabled(canModify);
+    setEnabled(canModify);
 
     OnSnapToLandscapeChanged();
 }
