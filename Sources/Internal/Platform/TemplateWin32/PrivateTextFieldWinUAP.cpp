@@ -659,7 +659,6 @@ void PrivateTextFieldWinUAP::OnGotFocus()
                 uiTextField->SetFocused();
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
-            Rect rect = WindowToVirtual(keyboardRect);
             // If keyboard rect is not empty so manually notify delegate about keyboard size and position
             if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
             {
@@ -677,6 +676,14 @@ void PrivateTextFieldWinUAP::OnLostFocus()
         waitRenderToTextureComplete = true;
         RenderToTexture(true);
     }
+
+    // prevent lose focus on pointer up event
+    if (uiTextField != nullptr && UIControlSystem::Instance()->GetFocusedControl() == uiTextField && uiTextField->IsEditing())
+    {
+        nativeControl->Focus(FocusState::Programmatic);
+        return;
+    }
+
 
     auto self{ shared_from_this() };
     core->RunOnMainThread([this, self]() {
