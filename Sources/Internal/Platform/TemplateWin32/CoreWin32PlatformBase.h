@@ -45,12 +45,6 @@ public:
     void InitArgs();
     void Quit() override;
 
-    void SetCursorPositionCenter();
-    void SetCursorPosition(Point2i position);
-    Point2i GetCursorPosition();
-
-protected:
-    static void SetCursorPosCenterInternal(HWND hWnd);
 };
 };
 

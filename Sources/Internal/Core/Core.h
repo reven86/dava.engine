@@ -165,9 +165,9 @@ public:
     virtual DisplayMode FindBestMode(const DisplayMode& requestedMode);
 
     /**
-		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
+		\brief Current size nativeView. Now is only for Win32, WinUAP, MacOS.
 	*/
-    virtual DisplayMode GetCurrentDisplayMode();
+    Vector2 GetWindowSize();
 
     /**
 		\brief Quit from application & release all subsystems

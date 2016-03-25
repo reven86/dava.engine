@@ -38,10 +38,10 @@ class Cursor
 {
 public:
 #if defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    static InputSystem::eMouseCaptureMode GetMouseCaptureMode();
-    static bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-    static bool GetSystemCursorVisibility();
-    static bool SetSystemCursorVisibility(bool show);
+//     static InputSystem::eMouseCaptureMode GetMouseCaptureMode();
+//     static bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+//     static bool GetSystemCursorVisibility();
+//     static bool SetSystemCursorVisibility(bool show);
 #endif
 };
 };

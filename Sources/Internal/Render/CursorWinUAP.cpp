@@ -37,29 +37,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
-{
-    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->GetMouseCaptureMode();
-}
-
-bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
-{
-    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->SetMouseCaptureMode(mode);
-}
-
-bool Cursor::GetSystemCursorVisibility()
-{
-    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->GetCursorVisibility();
-}
-
-bool Cursor::SetSystemCursorVisibility(bool show)
-{
-    DVASSERT("Cursor::SetSystemCursorVisibility not implemented");
-    return false;
-}
+// InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
+// {
+//     CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
+//     return winCore->GetMouseCaptureMode();
+// }
+//
+// bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
+// {
+//     CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
+//     return winCore->SetMouseCaptureMode(mode);
+// }
+//
+// bool Cursor::GetSystemCursorVisibility()
+// {
+//     CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
+//     return winCore->GetCursorVisibility();
+// }
+//
+// bool Cursor::SetSystemCursorVisibility(bool show)
+// {
+//     DVASSERT("Cursor::SetSystemCursorVisibility not implemented");
+//     return false;
+// }
 };
 
 #endif //  (__DAVAENGINE_WIN_UAP__)

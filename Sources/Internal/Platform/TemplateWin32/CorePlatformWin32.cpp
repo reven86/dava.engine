@@ -46,6 +46,8 @@
 
 #include "MemoryManager/MemoryProfiler.h"
 
+#include "Input/MouseCapture.h"
+
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
@@ -175,7 +177,20 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     KeyedArchive* options = Core::GetOptions();
 
     bool shouldEnableFullscreen = false;
-    fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
+
+    DWORD iModeNum = 0;
+    DEVMODE dmi;
+    ZeroMemory(&dmi, sizeof(dmi));
+    dmi.dmSize = sizeof(dmi);
+    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
+    {
+        fullscreenMode.width = dmi.dmPelsWidth;
+        fullscreenMode.height = dmi.dmPelsHeight;
+        fullscreenMode.bpp = dmi.dmBitsPerPel;
+        fullscreenMode.refreshRate = dmi.dmDisplayFrequency;
+        ZeroMemory(&dmi, sizeof(dmi));
+    }
+
     if (options)
     {
         windowedMode.width = options->GetInt32("width");
@@ -423,25 +438,6 @@ void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDis
     }
 }
 
-DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
-{
-    DWORD iModeNum = 0;
-    DEVMODE dmi;
-    ZeroMemory(&dmi, sizeof(dmi));
-    dmi.dmSize = sizeof(dmi);
-
-    DisplayMode mode;
-    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
-    {
-        mode.width = dmi.dmPelsWidth;
-        mode.height = dmi.dmPelsHeight;
-        mode.bpp = dmi.dmBitsPerPel;
-        mode.refreshRate = dmi.dmDisplayFrequency;
-        ZeroMemory(&dmi, sizeof(dmi));
-    }
-
-    return mode;
-}
 
 void CoreWin32Platform::SetIcon(int32 iconId)
 {
@@ -467,6 +463,71 @@ void CoreWin32Platform::SetWindowMinimumSize(float32 width, float32 height)
 Vector2 CoreWin32Platform::GetWindowMinimumSize() const
 {
     return Vector2(minWindowWidth, minWindowHeight);
+}
+
+static bool lastSystemCursorShowState = true;
+
+bool CoreWin32Platform::SetSystemCursorVisibility(bool show)
+{
+    int32 showCount = 0;
+    showCount = ShowCursor(show); // No cursor info available, just call
+
+    if (show && showCount >= 0)
+    {
+        // If system cursor is visible then showCount should be >= 0
+        lastSystemCursorShowState = true;
+    }
+    else if (!show && showCount < 0)
+    {
+        // If system cursor is not visible then showCount should be -1
+        lastSystemCursorShowState = false;
+    }
+    else
+    {
+        // Setup failure
+        return false;
+    }
+    return true;
+}
+
+bool CoreWin32Platform::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
+{
+    static DAVA::Point2i lastCursorPosition;
+
+    switch (mode)
+    {
+    case DAVA::InputSystem::eMouseCaptureMode::OFF:
+    case DAVA::InputSystem::eMouseCaptureMode::PINING:
+    {
+        SetSystemCursorVisibility(mode != DAVA::InputSystem::eMouseCaptureMode::PINING);
+        if (mode == DAVA::InputSystem::eMouseCaptureMode::PINING)
+        {
+            POINT p;
+            GetCursorPos(&p);
+            lastCursorPosition.x = p.x;
+            lastCursorPosition.y = p.y;
+
+            HWND hWnd = static_cast<HWND>(GetNativeView());
+            RECT wndRect;
+            GetWindowRect(hWnd, &wndRect);
+            int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
+            int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
+            SetCursorPos(centerX, centerY);
+        }
+        else
+        {
+            SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
+        }
+        return true;
+    }
+    case DAVA::InputSystem::eMouseCaptureMode::FRAME:
+        Logger::Error("Unsupported cursor capture mode");
+        return false;
+    default:
+        DVASSERT_MSG(false, "Incorrect cursor capture mode");
+        Logger::Error("Incorrect cursor capture mode");
+        return false;
+    }
 }
 
 struct MouseButtonChange
@@ -740,7 +801,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
                 if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
                 {
-                    SetCursorPosCenterInternal(hWnd);
+                    //                     RECT wndRect;
+                    //                     GetWindowRect(hWnd, &wndRect);
+                    //                     int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
+                    //                     int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
+                    //                     SetCursorPos(centerX, centerY);
+
                     isInside = true;
                 }
                 else
@@ -844,6 +910,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
             if (appCore)
             {
+                MouseCapture::SetApplicationFocus(false);
                 appCore->OnSuspend();
             }
             else
@@ -856,6 +923,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             Logger::FrameworkDebug("[PlatformWin32] activate application");
             if (appCore)
             {
+                MouseCapture::SetApplicationFocus(true);
                 appCore->OnResume();
             }
             else

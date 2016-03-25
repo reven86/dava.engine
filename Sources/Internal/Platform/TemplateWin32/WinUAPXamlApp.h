@@ -75,9 +75,6 @@ public:
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
 
-    bool GetCursorVisible();
-    bool SetCursorVisible(bool isVisible);
-
     bool IsPhoneApiDetected();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
@@ -85,8 +82,6 @@ public:
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
     Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
-    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
     void SetWindowMinimumSize(float32 width, float32 height);
     Vector2 GetWindowMinimumSize() const;
@@ -164,6 +159,8 @@ private:
     Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
+
+    Windows::UI::Input::PointerPoint ^ mousePointer = nullptr;
 
     Thread* mainLoopThread = nullptr;
 
@@ -249,16 +246,6 @@ inline void WinUAPXamlApp::SetQuitFlag()
 inline bool WinUAPXamlApp::IsPhoneApiDetected()
 {
     return isPhoneApiDetected;
-}
-
-inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
-{
-    return mouseCaptureMode;
-}
-
-inline bool WinUAPXamlApp::GetCursorVisible()
-{
-    return isMouseCursorShown;
 }
 
 }   // namespace DAVA

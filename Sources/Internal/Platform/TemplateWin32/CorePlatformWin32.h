@@ -35,6 +35,7 @@
 
 #include "CoreWin32PlatformBase.h"
 #include "UI/UIEvent.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -46,8 +47,6 @@ public:
     bool SetScreenMode(eScreenMode screenMode) override;
     void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
 
-    DisplayMode GetCurrentDisplayMode() override;
-
     bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
     void Run();
 
@@ -56,7 +55,13 @@ public:
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
 
+    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+
 private:
+    bool SetSystemCursorVisibility(bool show);
+
+    void SetCursorPositionCenter();
+
     DisplayMode currentMode;
     DisplayMode fullscreenMode;
     DisplayMode windowedMode;

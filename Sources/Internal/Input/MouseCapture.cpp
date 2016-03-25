@@ -1,4 +1,5 @@
 #include "Base/Platform.h"
+#include "Core/Core.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Platform/TemplateiOS/MouseCaptureIOS.h"
@@ -18,22 +19,96 @@ MouseCapturePrivate* MouseCapture::GetPrivateImpl()
     return &privateImpl;
 }
 
-void MouseCapture::SetMouseCaptureMode(DAVA::InputSystem::eMouseCaptureMode mode)
+void MouseCapture::SetMouseCaptureMode(DAVA::InputSystem::eMouseCaptureMode newMode)
 {
-    GetPrivateImpl()->SetMouseCaptureMode(mode);
+    if (mode != newMode)
+    {
+        DAVA::Logger::Info("!!!!!! SetMouseCaptureMode %d", int(newMode));
+        mode = newMode;
+        if (DAVA::InputSystem::eMouseCaptureMode::OFF == mode)
+        {
+            SetNativePining(mode);
+            deferredCapture = false;
+        }
+
+        if (DAVA::InputSystem::eMouseCaptureMode::PINING == mode)
+        {
+            if (focused)
+            {
+                SetNativePining(mode);
+            }
+            else
+            {
+                deferredCapture = true;
+            }
+        }
+    }
 }
 
 DAVA::InputSystem::eMouseCaptureMode MouseCapture::GetMouseCaptureMode()
 {
-    return GetPrivateImpl()->GetMouseCaptureMode();
+    return mode;
 }
 
 void MouseCapture::SetApplicationFocus(bool isFocused)
 {
-    GetPrivateImpl()->SetApplicationFocus(isFocused);
+    if (focused != isFocused)
+    {
+        DAVA::Logger::Info("!!!!!! focus %d", int(isFocused));
+
+        focused = isFocused;
+        if (DAVA::InputSystem::eMouseCaptureMode::PINING == mode)
+        {
+            if (focused)
+            {
+                DAVA::Logger::Info("!!!!!! deferredCapture = true ");
+                deferredCapture = true;
+            }
+            else
+            {
+                SetNativePining(DAVA::InputSystem::eMouseCaptureMode::OFF);
+            }
+        }
+    }
 }
 
 bool MouseCapture::SkipEvents(DAVA::UIEvent* event)
 {
-    return GetPrivateImpl()->SkipEvents(event);
+    if (DAVA::InputSystem::eMouseCaptureMode::PINING == mode && focused && !deferredCapture)
+    {
+        GetPrivateImpl()->SetCursorPosition();
+    }
+    if (!deferredCapture && focused)
+    {
+        return false;
+    }
+    if (event->phase == DAVA::UIEvent::Phase::ENDED)
+    {
+        bool inRect = true;
+        DAVA::Vector2& windowSize = DAVA::Core::Instance()->GetWindowSize();
+        inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.x);
+        inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
+        if (inRect)
+        {
+            DAVA::Logger::Info("!!!!!! SkipEvents deferredCapture = false");
+            deferredCapture = false;
+            SetNativePining(DAVA::InputSystem::eMouseCaptureMode::PINING);
+        }
+    }
+    return true;
 }
+
+void MouseCapture::SetNativePining(DAVA::InputSystem::eMouseCaptureMode newNativeMode)
+{
+    if (newNativeMode != nativeMode)
+    {
+        nativeMode = newNativeMode;
+        GetPrivateImpl()->SetNativePining(nativeMode);
+    }
+}
+
+DAVA::InputSystem::eMouseCaptureMode MouseCapture::mode = DAVA::InputSystem::eMouseCaptureMode::OFF;
+DAVA::InputSystem::eMouseCaptureMode MouseCapture::nativeMode = DAVA::InputSystem::eMouseCaptureMode::OFF;
+bool MouseCapture::modeChanged = false;
+bool MouseCapture::focused = false;
+bool MouseCapture::deferredCapture = false;

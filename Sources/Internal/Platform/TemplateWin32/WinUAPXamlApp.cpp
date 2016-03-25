@@ -131,65 +131,6 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
     }
 }
 
-bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
-{
-    // should be started on UI thread
-    if (isPhoneApiDetected)
-    {
-        return false;
-    }
-
-    if (mouseCaptureMode != newMode)
-    {
-        // Setup new capture mode
-        switch (newMode)
-        {
-        case DAVA::InputSystem::eMouseCaptureMode::OFF:
-            // Nothing to setup on platform
-            mouseCaptureMode = newMode;
-            break;
-        case DAVA::InputSystem::eMouseCaptureMode::FRAME:
-            // Mode unsupported yet
-            Logger::Error("Unsupported cursor capture mode");
-            break;
-        case DAVA::InputSystem::eMouseCaptureMode::PINING:
-            mouseCaptureMode = newMode;
-            break;
-        default:
-            DVASSERT("Incorrect cursor capture mode");
-            Logger::Error("Incorrect cursor capture mode");
-            break;
-        }
-    }
-
-    return mouseCaptureMode == newMode;
-}
-
-bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
-{
-    // should be started on UI thread
-    if (isPhoneApiDetected)
-    {
-        return isMouseCursorShown == isVisible;
-    }
-
-    if (isVisible != isMouseCursorShown)
-    {
-        if (isVisible)
-        {
-            MouseDevice::GetForCurrentView()->MouseMoved -= token;
-            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
-        }
-        else
-        {
-            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
-            Window::Current->CoreWindow->PointerCursor = nullptr;
-        }
-        isMouseCursorShown = isVisible;
-    }
-    return true;
-}
-
 void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     PreStartAppSettings();
@@ -508,6 +449,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRo
     int32 pointerOrButtonIndex = pointerPoint->PointerId;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
 
+    if (!isPhoneApiDetected)
+    {
+        mousePointer = pointerPoint;
+    }
+
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
@@ -536,6 +482,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
     int32 pointerOrButtonIndex = pointerPoint->PointerId;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
 
+    if (!isPhoneApiDetected)
+    {
+        mousePointer = pointerPoint;
+    }
+
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
@@ -559,6 +510,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
+    Logger::Info("\n!!!!! PointerMoved ");
     UIEvent::Phase phase = UIEvent::Phase::DRAG;
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
@@ -579,7 +531,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             core->RunOnMainThread(fn);
         }
 
-        if (mouseCaptureMode != InputSystem::eMouseCaptureMode::PINING)
+        if (MouseCapture::GetMouseCaptureMode() != InputSystem::eMouseCaptureMode::PINING)
         {
             if (mouseButtonsState.none())
             {
@@ -741,15 +693,16 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
 {
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
 
-    PointerPoint ^ pointerPoint = nullptr;
-    try
-    {
-        pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
-    }
-    catch (Platform::Exception ^ e)
-    {
-        Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
-    }
+    PointerPoint ^ pointerPoint = mousePointer;
+
+    //     try
+    //     {
+    //         pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
+    //     }
+    //     catch (Platform::Exception ^ e)
+    //     {
+    //         Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
+    //     }
 
     if (pointerPoint != nullptr)
     {
@@ -757,6 +710,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
 
         float window_x = pointerPoint->Position.X;
         float window_y = pointerPoint->Position.Y;
+
         for (auto& change : mouseButtonChanges)
         {
             auto fn = [this, window_x, window_y, change]() {
@@ -764,12 +718,13 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
             };
             core->RunOnMainThread(fn);
         }
-
+    }
+    {
         float32 dx = static_cast<float32>(args->MouseDelta.X);
         float32 dy = static_cast<float32>(args->MouseDelta.Y);
 
         // win10 send dx == 0 and dy == 0 if mouse buttons change state only if one button already pressed
-        if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
+        if (MouseCapture::GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
         {
             if (mouseButtonsState.none())
             {
@@ -829,6 +784,8 @@ void WinUAPXamlApp::SetupEventHandlers()
     swapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerReleased);
     swapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerMoved);
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
+
+    token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);
     coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WinUAPXamlApp::OnChar);

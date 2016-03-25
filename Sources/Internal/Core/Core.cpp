@@ -527,9 +527,9 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
     return bestMatchMode;
 }
 
-DisplayMode Core::GetCurrentDisplayMode()
+Vector2 Core::GetWindowSize()
 {
-    return DisplayMode(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+    return Vector2(screenMetrics.width, screenMetrics.height);
 }
 
 void Core::Quit()

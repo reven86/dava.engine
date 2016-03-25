@@ -13,77 +13,36 @@
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #endif
 
-#include "Platform/SystemTimer.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-void MouseCapturePrivate::SetMouseCaptureMode(DAVA::InputSystem::eMouseCaptureMode newMode)
+using namespace ::Windows::UI::Core;
+using namespace ::Windows::UI::Xaml;
+using namespace ::Windows::UI::Xaml::Controls;
+
+void MouseCapturePrivate::SetNativePining(DAVA::InputSystem::eMouseCaptureMode newMode)
 {
-    DAVA::Logger::Info("!!!!! SetMouseCaptureMode %d", (int)newMode);
-    if (mode != newMode)
-    {
-        mode = newMode;
-        if (DAVA::InputSystem::eMouseCaptureMode::OFF == mode)
-        {
-            return NativePining(mode);
-        }
+    SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
+    DVASSERT(swapchain);
+    DAVA::Logger::Info("!!!!!! SetNativePining %d", (int)newMode);
 
-        if (DAVA::InputSystem::eMouseCaptureMode::PINING == mode)
-        {
-            if (focused)
-            {
-                NativePining(mode);
-            }
-            else
-            {
-                deferredCapture = true;
-            }
-        }
+    if (DAVA::InputSystem::eMouseCaptureMode::PINING == newMode)
+    {
+        swapchain->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([]()
+                                                                                                  {
+                                                                                                      Window::Current->CoreWindow->PointerCursor = nullptr;
+                                                                                                  }));
+    }
+    else
+    {
+        swapchain->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([]()
+                                                                                                  {
+                                                                                                      Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+                                                                                                  }));
     }
 }
 
-DAVA::InputSystem::eMouseCaptureMode MouseCapturePrivate::GetMouseCaptureMode()
+void MouseCapturePrivate::SetCursorPosition()
 {
-    return mode;
 }
 
-void MouseCapturePrivate::SetApplicationFocus(bool isFocused)
-{
-    DAVA::Logger::Info("!!!!! SetApplicationFocus focusChanged %d, isFocused %d, focused %d, mode %d", (int)focusChanged, (int)isFocused, (int)focused, (int)mode);
-    if (focused != isFocused)
-    {
-        focused = isFocused;
-        if (mode == DAVA::InputSystem::eMouseCaptureMode::PINING)
-        {
-            if (focused)
-            {
-                deferredCapture = true;
-            }
-            else
-            {
-                NativePining(DAVA::InputSystem::eMouseCaptureMode::OFF);
-                focusChanged = false;
-            }
-        }
-    }
-}
-
-bool MouseCapturePrivate::SkipEvents(DAVA::UIEvent* event)
-{
-    if (!deferredCapture && focused)
-    {
-        return false;
-    }
-    if (event->phase == DAVA::UIEvent::Phase::ENDED)
-    {
-        DAVA::Logger::Info("!!!!! SkipEvents deferredCapture  false");
-        deferredCapture = false;
-        focusChanged = false;
-        NativePining(DAVA::InputSystem::eMouseCaptureMode::PINING);
-    }
-    return true;
-}
-
-void MouseCapturePrivate::NativePining(DAVA::InputSystem::eMouseCaptureMode newMode)
-{
-    DAVA::Logger::Info("!!!!! @@@@ NativePining %d", (int)newMode);
-    (static_cast<DAVA::CorePlatformWinUAP*>(DAVA::Core::Instance()))->SetMouseCaptureMode(newMode);
-}
+#endif
