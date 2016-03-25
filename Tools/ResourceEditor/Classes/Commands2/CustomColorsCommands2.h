@@ -59,7 +59,6 @@ private:
     CustomColorsProxy* customColorsProxy = nullptr;
     Image* undoImage = nullptr;
     Image* redoImage = nullptr;
-    Texture* texture = nullptr;
     Rect updatedRect;
     bool shouldClearTexture = false;
 };
