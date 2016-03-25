@@ -651,7 +651,12 @@ void UIControlSystem::SetFocusedControl(UIControl* newFocused)
     focusSystem->SetFocusedControl(newFocused);
 }
 
-void UIControlSystem::ControlBecomeInvisible(UIControl* control)
+void UIControlSystem::OnControlVisible(UIControl* control)
+{
+    focusSystem->OnControlVisible(control);
+}
+
+void UIControlSystem::OnControlInvisible(UIControl* control)
 {
     if (control->GetHover())
     {

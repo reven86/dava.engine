@@ -269,7 +269,8 @@ public:
 	 */
     void SetFocusedControl(UIControl* newFocused);
 
-    void ControlBecomeInvisible(UIControl* control);
+    void OnControlVisible(UIControl* control);
+    void OnControlInvisible(UIControl* control);
 
     /**
 	 \brief Returns currently focused control

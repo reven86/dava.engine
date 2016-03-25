@@ -155,7 +155,4 @@ void UIKeyInputSystem::BindGlobalAction(const FastName& actionName, const UIActi
     globalActions.Put(actionName, action);
 }
 
-void UIKeyInputSystem::PerformFocusedControlAction()
-{
-}
 }

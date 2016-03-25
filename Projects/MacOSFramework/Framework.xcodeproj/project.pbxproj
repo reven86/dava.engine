@@ -2849,8 +2849,25 @@
 		176DEB6E174B5561007A983B /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		176DEB6F174B5561007A983B /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
 		176DEB70174B5561007A983B /* libfreetype_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA29C33F1446EF270049FD7A /* libfreetype_macos.a */; };
+		1CE8234F1C91C93B00D4087C /* ICommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE823481C91C93B00D4087C /* ICommand.h */; };
+		1CE823501C91C93B00D4087C /* ObjectHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE823491C91C93B00D4087C /* ObjectHandle.cpp */; };
+		1CE823511C91C93B00D4087C /* ObjectHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234A1C91C93B00D4087C /* ObjectHandle.h */; };
+		1CE823521C91C93B00D4087C /* SetCollectionItemValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */; };
+		1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */; };
+		1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */; };
+		1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */; };
 		320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */; };
 		320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */; };
+		321513001CA5662E007D0600 /* UIActionBindingComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321512F81CA5662E007D0600 /* UIActionBindingComponent.cpp */; };
+		321513011CA5662E007D0600 /* UIActionBindingComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 321512F91CA5662E007D0600 /* UIActionBindingComponent.h */; };
+		321513021CA5662E007D0600 /* UIActionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321512FA1CA5662E007D0600 /* UIActionComponent.cpp */; };
+		321513031CA5662E007D0600 /* UIActionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 321512FB1CA5662E007D0600 /* UIActionComponent.h */; };
+		321513041CA5662E007D0600 /* UIActionMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321512FC1CA5662E007D0600 /* UIActionMap.cpp */; };
+		321513051CA5662E007D0600 /* UIActionMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 321512FD1CA5662E007D0600 /* UIActionMap.h */; };
+		321513061CA5662E007D0600 /* UIInputMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321512FE1CA5662E007D0600 /* UIInputMap.cpp */; };
+		321513071CA5662E007D0600 /* UIInputMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 321512FF1CA5662E007D0600 /* UIInputMap.h */; };
+		3215130A1CA566A9007D0600 /* KeyboardShortcut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321513081CA566A9007D0600 /* KeyboardShortcut.cpp */; };
+		3215130B1CA566A9007D0600 /* KeyboardShortcut.h in Headers */ = {isa = PBXBuildFile; fileRef = 321513091CA566A9007D0600 /* KeyboardShortcut.h */; };
 		321CCA521C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */; };
 		321CCA531C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */; };
 		321CCA541C6E04490048FAC9 /* FocusHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */; };
@@ -2861,13 +2878,6 @@
 		321CCA591C6E04490048FAC9 /* UIFocusSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */; };
 		321CCA5A1C6E04490048FAC9 /* UIKeyInputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */; };
 		321CCA5B1C6E04490048FAC9 /* UIKeyInputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */; };
-		1CE8234F1C91C93B00D4087C /* ICommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE823481C91C93B00D4087C /* ICommand.h */; };
-		1CE823501C91C93B00D4087C /* ObjectHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE823491C91C93B00D4087C /* ObjectHandle.cpp */; };
-		1CE823511C91C93B00D4087C /* ObjectHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234A1C91C93B00D4087C /* ObjectHandle.h */; };
-		1CE823521C91C93B00D4087C /* SetCollectionItemValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */; };
-		1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */; };
-		1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */; };
-		1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED4A19A23C3300D3869D /* libcurl_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E89CE91116C549D2006BEFF4 /* libcurl_macos.a */; };
 		50C16DDE1A52D8C4003C307A /* libuv_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C16DDD1A52D8C4003C307A /* libuv_macos.a */; };
@@ -3937,8 +3947,25 @@
 		15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
 		15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		176DEB77174B5561007A983B /* libFrameworkNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CE823481C91C93B00D4087C /* ICommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICommand.h; path = Command/ICommand.h; sourceTree = "<group>"; };
+		1CE823491C91C93B00D4087C /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ObjectHandle.cpp; path = Command/ObjectHandle.cpp; sourceTree = "<group>"; };
+		1CE8234A1C91C93B00D4087C /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ObjectHandle.h; path = Command/ObjectHandle.h; sourceTree = "<group>"; };
+		1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetCollectionItemValueCommand.cpp; path = Command/SetCollectionItemValueCommand.cpp; sourceTree = "<group>"; };
+		1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
+		1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
+		1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
 		3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TabTraversalAlgorithm.cpp; sourceTree = "<group>"; };
 		320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabTraversalAlgorithm.h; sourceTree = "<group>"; };
+		321512F81CA5662E007D0600 /* UIActionBindingComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionBindingComponent.cpp; sourceTree = "<group>"; };
+		321512F91CA5662E007D0600 /* UIActionBindingComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIActionBindingComponent.h; sourceTree = "<group>"; };
+		321512FA1CA5662E007D0600 /* UIActionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionComponent.cpp; sourceTree = "<group>"; };
+		321512FB1CA5662E007D0600 /* UIActionComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIActionComponent.h; sourceTree = "<group>"; };
+		321512FC1CA5662E007D0600 /* UIActionMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionMap.cpp; sourceTree = "<group>"; };
+		321512FD1CA5662E007D0600 /* UIActionMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIActionMap.h; sourceTree = "<group>"; };
+		321512FE1CA5662E007D0600 /* UIInputMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIInputMap.cpp; sourceTree = "<group>"; };
+		321512FF1CA5662E007D0600 /* UIInputMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIInputMap.h; sourceTree = "<group>"; };
+		321513081CA566A9007D0600 /* KeyboardShortcut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyboardShortcut.cpp; sourceTree = "<group>"; };
+		321513091CA566A9007D0600 /* KeyboardShortcut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyboardShortcut.h; sourceTree = "<group>"; };
 		321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionBasedNavigationAlgorithm.cpp; sourceTree = "<group>"; };
 		321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DirectionBasedNavigationAlgorithm.h; sourceTree = "<group>"; };
 		321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FocusHelpers.cpp; sourceTree = "<group>"; };
@@ -3949,13 +3976,6 @@
 		321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusSystem.h; sourceTree = "<group>"; };
 		321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIKeyInputSystem.cpp; sourceTree = "<group>"; };
 		321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyInputSystem.h; sourceTree = "<group>"; };
-		1CE823481C91C93B00D4087C /* ICommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICommand.h; path = Command/ICommand.h; sourceTree = "<group>"; };
-		1CE823491C91C93B00D4087C /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ObjectHandle.cpp; path = Command/ObjectHandle.cpp; sourceTree = "<group>"; };
-		1CE8234A1C91C93B00D4087C /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ObjectHandle.h; path = Command/ObjectHandle.h; sourceTree = "<group>"; };
-		1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetCollectionItemValueCommand.cpp; path = Command/SetCollectionItemValueCommand.cpp; sourceTree = "<group>"; };
-		1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
-		1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
-		1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		50C16DDD1A52D8C4003C307A /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_macos.a; path = ../../Libs/libs/libuv_macos.a; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
@@ -4445,6 +4465,8 @@
 		028C09391BD66A5E00B2266F /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				321513081CA566A9007D0600 /* KeyboardShortcut.cpp */,
+				321513091CA566A9007D0600 /* KeyboardShortcut.h */,
 				028C093A1BD66A5E00B2266F /* Accelerometer.cpp */,
 				028C093B1BD66A5E00B2266F /* Accelerometer.h */,
 				028C093F1BD66A5E00B2266F /* GamepadDevice.cpp */,
@@ -5295,6 +5317,7 @@
 		028C0C7B1BD66A5F00B2266F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				321512F71CA5662E007D0600 /* Actions */,
 				321CCA471C6E04490048FAC9 /* Focus */,
 				0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */,
 				0347B7DF1C64C211004DB76C /* UITextFieldMacOS.mm */,
@@ -5558,6 +5581,35 @@
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
 		};
+		1CE823471C91C93000D4087C /* Command */ = {
+			isa = PBXGroup;
+			children = (
+				1CE823481C91C93B00D4087C /* ICommand.h */,
+				1CE823491C91C93B00D4087C /* ObjectHandle.cpp */,
+				1CE8234A1C91C93B00D4087C /* ObjectHandle.h */,
+				1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */,
+				1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */,
+				1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */,
+				1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */,
+			);
+			name = Command;
+			sourceTree = "<group>";
+		};
+		321512F71CA5662E007D0600 /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				321512F81CA5662E007D0600 /* UIActionBindingComponent.cpp */,
+				321512F91CA5662E007D0600 /* UIActionBindingComponent.h */,
+				321512FA1CA5662E007D0600 /* UIActionComponent.cpp */,
+				321512FB1CA5662E007D0600 /* UIActionComponent.h */,
+				321512FC1CA5662E007D0600 /* UIActionMap.cpp */,
+				321512FD1CA5662E007D0600 /* UIActionMap.h */,
+				321512FE1CA5662E007D0600 /* UIInputMap.cpp */,
+				321512FF1CA5662E007D0600 /* UIInputMap.h */,
+			);
+			path = Actions;
+			sourceTree = "<group>";
+		};
 		321CCA471C6E04490048FAC9 /* Focus */ = {
 			isa = PBXGroup;
 			children = (
@@ -5575,20 +5627,6 @@
 				321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */,
 			);
 			path = Focus;
-			sourceTree = "<group>";
-        };
-		1CE823471C91C93000D4087C /* Command */ = {
-			isa = PBXGroup;
-			children = (
-				1CE823481C91C93B00D4087C /* ICommand.h */,
-				1CE823491C91C93B00D4087C /* ObjectHandle.cpp */,
-				1CE8234A1C91C93B00D4087C /* ObjectHandle.h */,
-				1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */,
-				1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */,
-				1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */,
-				1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */,
-			);
-			name = Command;
 			sourceTree = "<group>";
 		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
@@ -5799,7 +5837,6 @@
 				028C10201BD66A6000B2266F /* XMLParser.h in Headers */,
 				028C0E671BD66A6000B2266F /* Result.h in Headers */,
 				7C8D0F781C7752FE0078B69F /* TeamcityOutput.h in Headers */,
-				028C1A191BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C19651BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0FF61BD66A6000B2266F /* LocalizationSystem.h in Headers */,
 				028C0FBA1BD66A6000B2266F /* File.h in Headers */,
@@ -6222,6 +6259,7 @@
 				028C15281BD66A6000B2266F /* SkinnedMesh.h in Headers */,
 				028C13DB1BD66A6000B2266F /* WebViewControlMacOS.h in Headers */,
 				028C19571BD66A6000B2266F /* SoundEvent.h in Headers */,
+				321513071CA5662E007D0600 /* UIInputMap.h in Headers */,
 				028C19ED1BD66A6000B2266F /* UIStyleSheetPropertyTable.h in Headers */,
 				028C17261BD66A6000B2266F /* RuntimeTextures.h in Headers */,
 				028C14E91BD66A6000B2266F /* Mesh.h in Headers */,
@@ -6285,6 +6323,7 @@
 				028C19631BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0E4A1BD66A6000B2266F /* ObjectFactory.h in Headers */,
 				028C18131BD66A6000B2266F /* WindComponent.h in Headers */,
+				321513011CA5662E007D0600 /* UIActionBindingComponent.h in Headers */,
 				028C1B4C1BD66A6100B2266F /* NSStringUtils.h in Headers */,
 				028C0E711BD66A6000B2266F /* StaticSingleton.h in Headers */,
 				028C0D9C1BD66A6000B2266F /* MongodbUpdateObject.h in Headers */,
@@ -6419,6 +6458,7 @@
 				028C19691BD66A6000B2266F /* AbstractUIPackageBuilder.h in Headers */,
 				028C185E1BD66A6000B2266F /* Scene.h in Headers */,
 				028C1AA11BD66A6100B2266F /* UIParticles.h in Headers */,
+				321513031CA5662E007D0600 /* UIActionComponent.h in Headers */,
 				028C12161BD66A6000B2266F /* LocalNotificationText.h in Headers */,
 				028C1B491BD66A6100B2266F /* MD5.h in Headers */,
 				028C17831BD66A6000B2266F /* CameraComponent.h in Headers */,
@@ -6518,6 +6558,7 @@
 				028C0DF91BD66A6000B2266F /* Exception.h in Headers */,
 				028C17591BD66A6000B2266F /* TextGameObject.h in Headers */,
 				028C180D1BD66A6000B2266F /* WaypointComponent.h in Headers */,
+				321513051CA5662E007D0600 /* UIActionMap.h in Headers */,
 				028C1B431BD66A6100B2266F /* CRC32.h in Headers */,
 				028C10A51BD66A6000B2266F /* Math2DTemplateClasses.h in Headers */,
 				028C19C31BD66A6000B2266F /* UILayoutSystem.h in Headers */,
@@ -6533,6 +6574,7 @@
 				028C16571BD66A6000B2266F /* rhi_Private.h in Headers */,
 				028C18CA1BD66A6000B2266F /* DebugRenderSystem.h in Headers */,
 				028C139C1BD66A6000B2266F /* DeviceInfoMacOS.h in Headers */,
+				3215130B1CA566A9007D0600 /* KeyboardShortcut.h in Headers */,
 				028C116B1BD66A6000B2266F /* NetConfig.h in Headers */,
 				028C15011BD66A6000B2266F /* RenderLayer.h in Headers */,
 				028C15F41BD66A6000B2266F /* RenderHelper.h in Headers */,
@@ -7768,7 +7810,6 @@
 				028C17AC1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E2B1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
 				028C0F6F1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
-				028C183F1BD66A6000B2266F /* LodNode.cpp in Sources */,
 				7C8D0F751C7752FE0078B69F /* TeamcityOutput.cpp in Sources */,
 				028C175E1BD66A6000B2266F /* AnimationData.cpp in Sources */,
 				028C1B3C1BD66A6100B2266F /* BiDiHelper.cpp in Sources */,
@@ -7832,6 +7873,8 @@
 				028C17C81BD66A6000B2266F /* SkeletonComponent.cpp in Sources */,
 				028C11291BD66A6000B2266F /* Endpoint.cpp in Sources */,
 				028C10241BD66A6000B2266F /* YamlArchive.cpp in Sources */,
+				321513001CA5662E007D0600 /* UIActionBindingComponent.cpp in Sources */,
+				321513061CA5662E007D0600 /* UIInputMap.cpp in Sources */,
 				028C17F81BD66A6000B2266F /* WaveComponent.cpp in Sources */,
 				028C19C01BD66A6000B2266F /* UILayoutSystem.cpp in Sources */,
 				028C162A1BD66A6000B2266F /* mcpp_main.cpp in Sources */,
@@ -7851,7 +7894,6 @@
 				028C0D8A1BD66A6000B2266F /* GameAPI.cpp in Sources */,
 				028C163F1BD66A6000B2266F /* PreProcess.cpp in Sources */,
 				028C19F01BD66A6000B2266F /* UIStyleSheetSelectorChain.cpp in Sources */,
-				028C18491BD66A6000B2266F /* ParticleEffectNode.cpp in Sources */,
 				7CBC9E7F1C75D7F400A7C4C6 /* CommandLineParser.cpp in Sources */,
 				028C17861BD66A6000B2266F /* ComponentHelpers.cpp in Sources */,
 				028C17501BD66A6000B2266F /* GameObjectManager.cpp in Sources */,
@@ -8070,6 +8112,7 @@
 				028C19D81BD66A6000B2266F /* UIPriorityStyleSheet.cpp in Sources */,
 				028C11F81BD66A6000B2266F /* LocalNotificationDelayed.cpp in Sources */,
 				028C17801BD66A6000B2266F /* CameraComponent.cpp in Sources */,
+				3215130A1CA566A9007D0600 /* KeyboardShortcut.cpp in Sources */,
 				028C15371BD66A6000B2266F /* SpriteObject.cpp in Sources */,
 				028C186D1BD66A6000B2266F /* VersionInfo.cpp in Sources */,
 				028C1A681BD66A6100B2266F /* UIJoypad.cpp in Sources */,
@@ -8116,6 +8159,7 @@
 				028C19E41BD66A6000B2266F /* UIStyleSheetPropertyDataBase.cpp in Sources */,
 				028C16031BD66A6000B2266F /* dbg_Draw.cpp in Sources */,
 				028C0E351BD66A6000B2266F /* Message.cpp in Sources */,
+				321513041CA5662E007D0600 /* UIActionMap.cpp in Sources */,
 				028C14D11BD66A6000B2266F /* Heightmap.cpp in Sources */,
 				028C194B1BD66A6000B2266F /* FMODSoundSystem.cpp in Sources */,
 				028C178C1BD66A6000B2266F /* RotationControllerComponent.cpp in Sources */,
@@ -8239,6 +8283,7 @@
 				028C15F11BD66A6000B2266F /* RenderHelper.cpp in Sources */,
 				028C113B1BD66A6000B2266F /* IPAddress.cpp in Sources */,
 				0347B7E31C64C211004DB76C /* UITextFieldMacOS.mm in Sources */,
+				321513021CA5662E007D0600 /* UIActionComponent.cpp in Sources */,
 				028C18A91BD66A6000B2266F /* AnimationSystem.cpp in Sources */,
 				028C15311BD66A6000B2266F /* SpeedTreeObject.cpp in Sources */,
 				028C165A1BD66A6000B2266F /* rhi_Render.cpp in Sources */,
@@ -8685,7 +8730,6 @@
 				028C17AB1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E2A1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
 				028C0F6E1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
-				028C183E1BD66A6000B2266F /* LodNode.cpp in Sources */,
 				7C8D0F741C7752FE0078B69F /* TeamcityOutput.cpp in Sources */,
 				028C175D1BD66A6000B2266F /* AnimationData.cpp in Sources */,
 				028C1B3B1BD66A6100B2266F /* BiDiHelper.cpp in Sources */,

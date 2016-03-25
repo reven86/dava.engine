@@ -52,7 +52,8 @@ public:
     UIControl* GetFocusedControl() const;
     void SetFocusedControl(UIControl* control);
 
-    void ControlBecomInvisible(UIControl* control);
+    void OnControlVisible(UIControl* control);
+    void OnControlInvisible(UIControl* control);
 
     void MoveFocusLeft();
     void MoveFocusRight();

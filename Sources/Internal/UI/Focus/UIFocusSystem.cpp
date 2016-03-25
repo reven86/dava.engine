@@ -123,7 +123,11 @@ void UIFocusSystem::SetFocusedControl(UIControl* control)
     }
 }
 
-void UIFocusSystem::ControlBecomInvisible(UIControl* control)
+void UIFocusSystem::OnControlVisible(UIControl* control)
+{
+}
+
+void UIFocusSystem::OnControlInvisible(UIControl* control)
 {
     if (focusedControl == control)
     {

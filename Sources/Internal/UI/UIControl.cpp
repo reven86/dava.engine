@@ -1586,6 +1586,7 @@ void UIControl::SystemVisible()
 
     ChangeViewState(eViewState::VISIBLE);
 
+    UIControlSystem::Instance()->OnControlVisible(this);
     OnVisible();
 
     auto it = children.begin();
@@ -1638,8 +1639,7 @@ void UIControl::SystemInvisible()
 
     ChangeViewState(eViewState::ACTIVE);
 
-    UIControlSystem::Instance()->ControlBecomeInvisible(this);
-
+    UIControlSystem::Instance()->OnControlInvisible(this);
     OnInvisible();
 }
 
