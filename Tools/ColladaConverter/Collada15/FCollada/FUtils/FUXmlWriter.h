@@ -57,7 +57,7 @@ FCOLLADA_EXPORT xmlNode* AddChild(xmlNode* parent, const char* name);
 		@param content The content to add to the new child XML tree node.
 		@return The new child XML tree node. */
 FCOLLADA_EXPORT xmlNode* AddChild(xmlNode* parent, const char* name, const char* content);
-#ifdef UNICODE
+#if (1)
 FCOLLADA_EXPORT xmlNode* AddChild(xmlNode* parent, const char* name, const fstring& content); /**< See above. */
 #endif
 inline xmlNode* AddChild(xmlNode* parent, const char* name, const fm::string& content)
@@ -161,7 +161,7 @@ inline xmlNode* AddChildOnce(xmlNode* parent, const char* name, const T& value)
 		@param node The XML tree node.
 		@param content The content to add to the XML tree node. */
 FCOLLADA_EXPORT void AddContent(xmlNode* node, const char* content);
-#ifdef UNICODE
+#if (1)
 FCOLLADA_EXPORT void AddContent(xmlNode* node, const fstring& content); /**< See above. */
 #endif
 inline void AddContent(xmlNode* node, const fm::string& content)
@@ -195,7 +195,7 @@ inline void AddContent(xmlNode* node, const T& value)
 		@param attributeName The name of the XML attribute.
 		@param attributeValue The value of the XML attribute. */
 FCOLLADA_EXPORT void AddAttribute(xmlNode* node, const char* attributeName, const char* attributeValue);
-#ifdef UNICODE
+#if (1)
 FCOLLADA_EXPORT void AddAttribute(xmlNode* node, const char* attributeName, const fstring& attributeValue); /**< See above. */
 #endif
 inline void AddAttribute(xmlNode* node, const char* attributeName, FUSStringBuilder& attributeValue)

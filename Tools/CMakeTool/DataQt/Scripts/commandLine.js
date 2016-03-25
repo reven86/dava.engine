@@ -7,11 +7,11 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
     var index = configuration["currentPlatform"];
     var platformObject = configuration["platforms"][index];
     outputText += platformObject.value;
-    if(fileSystemHelper.IsDirExists(buildPath)) {
-        outputText += " -B" + buildPath;
-    } else {
+    if(!buildPath || buildPath.length === 0) {
         throw qsTr("build path required");
     }
+
+    outputText += " -B" + buildPath;
 
     var substrings = [];
     var defaults = platformObject.defaults;

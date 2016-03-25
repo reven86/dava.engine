@@ -35,13 +35,12 @@
 #include <QDebug>
 #include <QMetaEnum>
 
-
-SpyDragWidget::SpyDragWidget( QWidget* parent )
-    : QLabel( parent )
-    , pix( QPixmap( ":/QtTools/Icons/wand.png" ) )
+SpyDragWidget::SpyDragWidget(QWidget* parent)
+    : QLabel(parent)
+    , pix(QPixmap(":/QtTools/Icons/wand.png"))
 {
-    setPixmap( pix );
-    cur = QCursor( pix, 9, 8 );
+    setPixmap(pix);
+    cur = QCursor(pix, 9, 8);
 
     //const auto& mo = QEvent::staticMetaObject;
     //auto me = mo.enumerator( mo.indexOfEnumerator( "Type" ) );
@@ -52,20 +51,20 @@ SpyDragWidget::~SpyDragWidget()
 {
 }
 
-void SpyDragWidget::mousePressEvent( QMouseEvent* e )
+void SpyDragWidget::mousePressEvent(QMouseEvent* e)
 {
     onMousePress();
 }
 
-void SpyDragWidget::mouseReleaseEvent( QMouseEvent* e )
+void SpyDragWidget::mouseReleaseEvent(QMouseEvent* e)
 {
     onMouseRelease();
 }
 
 void SpyDragWidget::onMousePress()
 {
-    QApplication::setOverrideCursor( cur );
-    setPixmap( QPixmap() );
+    QApplication::setOverrideCursor(cur);
+    setPixmap(QPixmap());
 
     emit mousePressed();
 }
@@ -73,7 +72,7 @@ void SpyDragWidget::onMousePress()
 void SpyDragWidget::onMouseRelease()
 {
     QApplication::restoreOverrideCursor();
-    setPixmap( pix );
+    setPixmap(pix);
 
-    emit mouseReleased( QCursor::pos() );
+    emit mouseReleased(QCursor::pos());
 }

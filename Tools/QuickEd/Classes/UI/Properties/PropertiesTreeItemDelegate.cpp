@@ -258,12 +258,12 @@ bool PropertyWidget::event(QEvent* e)
     switch (e->type())
     {
     case QEvent::ShortcutOverride:
-        if (((QObject*)editWidget)->event(e))
+        if (static_cast<QObject*>(editWidget)->event(e))
             return true;
         break;
 
     case QEvent::InputMethod:
-        return ((QObject*)editWidget)->event(e);
+        return static_cast<QObject*>(editWidget)->event(e);
         break;
 
     default:
@@ -275,7 +275,7 @@ bool PropertyWidget::event(QEvent* e)
 
 void PropertyWidget::keyPressEvent(QKeyEvent* e)
 {
-    ((QObject*)editWidget)->event(e);
+    static_cast<QObject*>(editWidget)->event(e);
 }
 
 void PropertyWidget::mousePressEvent(QMouseEvent* e)
@@ -293,12 +293,12 @@ void PropertyWidget::mouseReleaseEvent(QMouseEvent* e)
 
 void PropertyWidget::focusInEvent(QFocusEvent* e)
 {
-    ((QObject*)editWidget)->event(e);
+    static_cast<QObject*>(editWidget)->event(e);
     QWidget::focusInEvent(e);
 }
 
 void PropertyWidget::focusOutEvent(QFocusEvent* e)
 {
-    ((QObject*)editWidget)->event(e);
+    static_cast<QObject*>(editWidget)->event(e);
     QWidget::focusOutEvent(e);
 }

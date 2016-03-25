@@ -59,6 +59,16 @@
 
 namespace DAVA
 {
+bool HasComponent(const Entity* fromEntity, const Component::eType componentType)
+{
+    if (fromEntity != nullptr)
+    {
+        return (fromEntity->GetComponentCount(componentType) > 0);
+    }
+
+    return false;
+}
+
 RenderComponent* GetRenderComponent(const Entity* fromEntity)
 {
     if (fromEntity)

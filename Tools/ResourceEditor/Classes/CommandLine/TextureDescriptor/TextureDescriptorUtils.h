@@ -46,6 +46,8 @@ void SetCompressionParams(const DAVA::FilePath& descriptorPath, const DAVA::Map<
 
 void SetPresetForFolder(const DAVA::FilePath& folder, const DAVA::FilePath& presetPath, bool toConvert, DAVA::TextureConverter::eConvertQuality quality);
 void SetPreset(const DAVA::FilePath& descriptorPath, const DAVA::FilePath& presetPath, bool toConvert, DAVA::TextureConverter::eConvertQuality quality);
+
+void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptorPath, const DAVA::Vector<DAVA::FilePath>& presetPath);
 };
 
 
