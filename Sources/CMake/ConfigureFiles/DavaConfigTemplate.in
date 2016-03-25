@@ -1,5 +1,6 @@
 
 QT5_PATH_WIN             = $ENV{QT5_HOME}
+QT5_PATH_WIN64           = $ENV{QT5_HOME_64}
 
 QT5_PATH_MAC             = $ENV{HOME}/Qt/5.4/clang_64
 

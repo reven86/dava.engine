@@ -70,6 +70,7 @@ using int64 = int64_t;
 
 //Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
 using pointer_size = uintptr_t;
+using size_type = size_t;
 
 using char8 = char;
 using char16 = wchar_t;

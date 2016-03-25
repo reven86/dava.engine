@@ -43,7 +43,8 @@ void FrameworkDidLaunched()
     appOptions->SetBool("trackFont", true);
 
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
-    appOptions->SetString("title", DAVA::Format("DAVA Framework - QuickEd | %s-%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
+    appOptions->SetString("title", DAVA::Format("DAVA Framework - QuickEd | %s-%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
+                                                static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8)));
 
     Size2i screenSize = DPIHelper::GetScreenSize();
     appOptions->SetInt32("width", screenSize.dx);
