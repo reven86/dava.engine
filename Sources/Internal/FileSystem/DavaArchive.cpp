@@ -187,12 +187,6 @@ bool DavaArchive::LoadFile(const String& fileName, Vector<uint8>& output) const
     const FileTableEntry& fileEntry = *mapFileData.find(fileName)->second;
     output.resize(fileEntry.original);
 
-    if (!file)
-    {
-        Logger::Error("can't load file: %s course: no opened packfile\n", fileName.c_str());
-        return false;
-    }
-
     bool isOk = file->Seek(fileEntry.start, File::SEEK_FROM_START);
     if (!isOk)
     {
@@ -253,17 +247,13 @@ bool DavaArchive::LoadFile(const String& fileName, Vector<uint8>& output) const
     return true;
 }
 
-static bool Packing(const String& fileName,
-                    Vector<dava_pack_private::FileTableEntry>& fileTable,
+static bool Packing(Vector<dava_pack_private::FileTableEntry>& fileTable,
                     Vector<uint8>& inBuffer,
                     Vector<uint8>& packingBuf,
                     File* output,
-                    uint32 origSize,
                     uint32 startPos,
                     Compressor::Type packingType)
 {
-    using namespace DAVA;
-
     bool result = false;
 
     if (packingType == Compressor::Type::Lz4HC)
@@ -284,15 +274,15 @@ static bool Packing(const String& fileName,
         return false;
     }
 
-    uint32_t packedSize = static_cast<uint32>(packingBuf.size());
+    uint32 packedSize = static_cast<uint32>(packingBuf.size());
 
     // if packed size worse then raw leave raw bytes
     uint32 writeOk = 0;
-    if (packedSize >= origSize)
+    if (packedSize >= inBuffer.size())
     {
-        packedSize = origSize;
+        packedSize = static_cast<uint32>(inBuffer.size());
         packingType = Compressor::Type::None;
-        writeOk = output->Write(&inBuffer[0], origSize);
+        writeOk = output->Write(&inBuffer[0], packedSize);
     }
     else
     {
@@ -306,7 +296,7 @@ static bool Packing(const String& fileName,
     }
 
     dava_pack_private::PackFile::FilesDataBlock::Data fileData{
-        startPos, packedSize, origSize, packingType
+        startPos, packedSize, static_cast<uint32>(inBuffer.size()), packingType
     };
 
     fileTable.push_back(fileData);
@@ -387,8 +377,8 @@ static bool CompressFileAndWriteToOutput(const ResourceArchive::FileInfo& fInfo,
         };
 
         fileTable.push_back(fileData);
-        uint32 writeOk = output->Write(&inBuffer[0], origSize);
-        if (writeOk <= 0)
+        bool writeOk = (output->Write(&inBuffer[0], origSize) == origSize);
+        if (writeOk)
         {
             Logger::Error("can't write into tmp archive file");
             return false;
@@ -396,8 +386,7 @@ static bool CompressFileAndWriteToOutput(const ResourceArchive::FileInfo& fInfo,
     }
     else
     {
-        if (!Packing(fInfo.fileName, fileTable, inBuffer, packingBuf, output,
-                     origSize, startPos, fInfo.compressionType))
+        if (!Packing(fileTable, inBuffer, packingBuf, output, startPos, fInfo.compressionType))
         {
             return false;
         }
@@ -473,11 +462,10 @@ bool DavaArchive::Create(const FilePath& archiveName,
     {
         auto name = f->GetFilename().GetAbsolutePathname();
         SafeRelease(f);
-        if (0 != std::remove(name.c_str()))
+        if (FileSystem::Instance()->DeleteFile(f->GetFilename()))
         {
             Logger::Error("can't delete tmp file: %s", name.c_str());
         }
-
     });
 
     if (!outTmpFile)
