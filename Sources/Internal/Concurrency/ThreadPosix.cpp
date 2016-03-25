@@ -76,7 +76,6 @@ void Thread::Init()
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     Join();
 }
 
@@ -128,22 +127,30 @@ void* PthreadMain(void* param)
 void Thread::Start()
 {
     DVASSERT(STATE_CREATED == state);
-    Retain();
 
     pthread_attr_t attr{};
     pthread_attr_init(&attr);
     if (stackSize != 0)
         pthread_attr_setstacksize(&attr, stackSize);
 
-    pthread_create(&handle, &attr, PthreadMain, this);
-    state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    int err = pthread_create(&handle, &attr, PthreadMain, this);
+    if (0 == err)
+    {
+        isJoinable.Set(true);
+        state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    }
+    else
+    {
+        Memset(&handle, 0, sizeof(handle));
+        Logger::Error("Thread::Start failed to create thread: error=%d", err);
+    }
 
     pthread_attr_destroy(&attr);
 }
 
 void Thread::Join()
 {
-    if (state != STATE_ENDED && state != STATE_KILLED)
+    if (isJoinable.CompareAndSwap(true, false))
     {
         pthread_join(handle, nullptr);
     }

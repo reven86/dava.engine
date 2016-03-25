@@ -88,6 +88,11 @@ void ProcessWrapper::BlockingStopAllTasks()
     progressDialog.exec();
 }
 
+bool ProcessWrapper::IsRunning() const
+{
+    return running;
+}
+
 void ProcessWrapper::OnReadyReadStandardOutput()
 {
     QString text = process.readAllStandardOutput();
@@ -102,6 +107,7 @@ void ProcessWrapper::OnReadyReadStandardError()
 
 void ProcessWrapper::OnProcessStateChanged(QProcess::ProcessState newState)
 {
+    SetRunning(newState != QProcess::NotRunning);
     QString processState;
     switch (newState)
     {
@@ -217,4 +223,13 @@ bool ProcessWrapper::CleanBuildFolder(const QString& buildFolder) const
         emit processStandardError(text);
     }
     return errCode == FileSystemHelper::NO_ERRORS;
+}
+
+void ProcessWrapper::SetRunning(bool running_)
+{
+    if (running_ != running)
+    {
+        running = running_;
+        emit runningChanged(running);
+    }
 }

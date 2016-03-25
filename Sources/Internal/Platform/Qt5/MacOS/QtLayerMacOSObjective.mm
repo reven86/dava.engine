@@ -44,7 +44,7 @@ void* QtLayer::CreateAutoreleasePool()
 
 void QtLayer::ReleaseAutoreleasePool(void* pool)
 {
-    NSAutoreleasePool* autoreleasePool = (NSAutoreleasePool*)pool;
+    NSAutoreleasePool* autoreleasePool = reinterpret_cast<NSAutoreleasePool*>(pool);
     [autoreleasePool release];
 }
 

@@ -41,7 +41,7 @@ ComboBoxModel::ComboBoxModel(QObject* parent)
 {
 }
 
-Qt::ItemFlags ComboBoxModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ComboBoxModel::flags(const QModelIndex& index) const
 {
     return QStandardItemModel::flags(index) | Qt::ItemIsUserCheckable;
 }
@@ -66,7 +66,7 @@ QVariantList CheckableComboBox::selectedUserData() const
     const auto& indexes = checkedIndexes();
     QVariantList list;
 
-    for ( auto i = 0; i < indexes.size(); i++)
+    for (auto i = 0; i < indexes.size(); i++)
     {
         list << indexes[i].data(Qt::UserRole);
     }
@@ -78,7 +78,7 @@ void CheckableComboBox::selectUserData(const QVariantList& dataList)
 {
     auto m = model();
     const auto n = m->rowCount();
-    for ( auto i = 0; i < n; i++)
+    for (auto i = 0; i < n; i++)
     {
         const auto index = m->index(i, 0, QModelIndex());
         const auto checkState = dataList.contains(index.data(Qt::UserRole)) ? Qt::Checked : Qt::Unchecked;
@@ -89,8 +89,8 @@ void CheckableComboBox::selectUserData(const QVariantList& dataList)
     emit selectedUserDataChanged(dataList);
 }
 
-void CheckableComboBox::onDataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight, const QVector<int> & roles)
-{       
+void CheckableComboBox::onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+{
     emit selectedUserDataChanged(selectedUserData());
 }
 
@@ -116,7 +116,7 @@ QModelIndexList CheckableComboBox::checkedIndexes() const
 
     auto m = model();
     const auto n = m->rowCount();
-    for ( auto i = 0; i < n; i++)
+    for (auto i = 0; i < n; i++)
     {
         const auto index = m->index(i, 0, QModelIndex());
         const auto isChecked = (index.data(Qt::CheckStateRole).toInt() == Qt::Checked);
@@ -136,14 +136,14 @@ bool CheckableComboBox::eventFilter(QObject* obj, QEvent* e)
         switch (e->type())
         {
         case QEvent::MouseButtonPress:
-            {
-                auto v = view();
-                auto m = v->model();
-                const auto index = v->currentIndex();
-                const auto isChecked = (m->data(index, Qt::CheckStateRole).toInt() == Qt::Checked);
-                m->setData(index, isChecked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
-            }
-            break;
+        {
+            auto v = view();
+            auto m = v->model();
+            const auto index = v->currentIndex();
+            const auto isChecked = (m->data(index, Qt::CheckStateRole).toInt() == Qt::Checked);
+            m->setData(index, isChecked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
+        }
+        break;
         case QEvent::MouseButtonRelease:
             return true;
         default:

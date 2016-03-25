@@ -39,29 +39,27 @@
 #include "QtTools/SpyWidget/WidgetModel/WidgetModel.h"
 #include "QtTools/SpyWidget/WidgetModel/WidgetHighlightModel.h"
 
-
 namespace
 {
-    const int updateDelay = 50; // set to 0, if you don't care about performace and need real-time, event-driven updates
+const int updateDelay = 50; // set to 0, if you don't care about performace and need real-time, event-driven updates
 }
 
-
-SpyWidgetInfo::SpyWidgetInfo( QObject* parent )
-    : QObject( parent )
-    , view( new SpyWidget() )
-    , updateTimer( new QTimer(this) )
-    , widgetModel( nullptr )
-    , widgetHighlightModel( new WidgetHighlightModel(this) )
+SpyWidgetInfo::SpyWidgetInfo(QObject* parent)
+    : QObject(parent)
+    , view(new SpyWidget())
+    , updateTimer(new QTimer(this))
+    , widgetModel(nullptr)
+    , widgetHighlightModel(new WidgetHighlightModel(this))
 {
-    view->setAttribute( Qt::WA_DeleteOnClose );
+    view->setAttribute(Qt::WA_DeleteOnClose);
 
-    updateTimer->setInterval( updateDelay );    
-    updateTimer->setSingleShot( true );
+    updateTimer->setInterval(updateDelay);
+    updateTimer->setSingleShot(true);
 
-    connect( updateTimer.data(), &QTimer::timeout, this, &SpyWidgetInfo::updateInformation );
-    connect( view.data(), &QObject::destroyed, this, &QObject::deleteLater );
-    connect( view->selectCurrent, &QPushButton::clicked, this, &SpyWidgetInfo::onSelectWidget );
-    connect( view->hierarhyTree, &QAbstractItemView::doubleClicked, this, &SpyWidgetInfo::onChangeWidget );
+    connect(updateTimer.data(), &QTimer::timeout, this, &SpyWidgetInfo::updateInformation);
+    connect(view.data(), &QObject::destroyed, this, &QObject::deleteLater);
+    connect(view->selectCurrent, &QPushButton::clicked, this, &SpyWidgetInfo::onSelectWidget);
+    connect(view->hierarhyTree, &QAbstractItemView::doubleClicked, this, &SpyWidgetInfo::onChangeWidget);
 }
 
 SpyWidgetInfo::~SpyWidgetInfo()
@@ -69,42 +67,41 @@ SpyWidgetInfo::~SpyWidgetInfo()
     delete view;
 }
 
-void SpyWidgetInfo::trackWidget( QWidget* w )
+void SpyWidgetInfo::trackWidget(QWidget* w)
 {
-    if ( !widget.isNull() )
+    if (!widget.isNull())
     {
-        widget->removeEventFilter( this );
-        disconnect( widget.data(), nullptr, this, nullptr );
+        widget->removeEventFilter(this);
+        disconnect(widget.data(), nullptr, this, nullptr);
         delete widgetModel;
     }
 
     widget = w;
 
     auto rootWidget = w->window();
-    widgetModel = new WidgetModel( rootWidget );
-    widgetHighlightModel->setSourceModel( widgetModel );
-    view->hierarhyTree->setModel( widgetHighlightModel );
-    selectWidget( widget );
-    widgetHighlightModel->setWidgetList( QSet< QWidget *>() << widget );
+    widgetModel = new WidgetModel(rootWidget);
+    widgetHighlightModel->setSourceModel(widgetModel);
+    view->hierarhyTree->setModel(widgetHighlightModel);
+    selectWidget(widget);
+    widgetHighlightModel->setWidgetList(QSet<QWidget*>() << widget);
 
-    if ( !widget.isNull() )
+    if (!widget.isNull())
     {
-        widget->installEventFilter( this );
-        connect( widget.data(), &QObject::objectNameChanged, updateTimer.data(), static_cast< void ( QTimer::* )( )>( &QTimer::start ) );
-        connect( widget.data(), &QObject::destroyed, this, &QObject::deleteLater );
+        widget->installEventFilter(this);
+        connect(widget.data(), &QObject::objectNameChanged, updateTimer.data(), static_cast<void (QTimer::*)()>(&QTimer::start));
+        connect(widget.data(), &QObject::destroyed, this, &QObject::deleteLater);
     }
 
     updateInformation();
 }
 
-bool SpyWidgetInfo::eventFilter( QObject* obj, QEvent* e )
+bool SpyWidgetInfo::eventFilter(QObject* obj, QEvent* e)
 {
-    if ( obj == widget )
+    if (obj == widget)
     {
-
         // Modality is tracked throught show/hide: http://doc.qt.io/qt-5/qwidget.html#windowModality-prop
 
-        switch ( e->type() )
+        switch (e->type())
         {
         case QEvent::Show:
         case QEvent::Hide:
@@ -125,7 +122,7 @@ bool SpyWidgetInfo::eventFilter( QObject* obj, QEvent* e )
         }
     }
 
-    return QObject::eventFilter( obj, e );
+    return QObject::eventFilter(obj, e);
 }
 
 void SpyWidgetInfo::show()
@@ -135,18 +132,18 @@ void SpyWidgetInfo::show()
 
 void SpyWidgetInfo::updateInformation()
 {
-    if ( widget.isNull() )
+    if (widget.isNull())
     {
-        auto textEditors = { view->classNameText, view->objectNameText, view->objectPos, view->objectSize, };
-        for ( auto w : textEditors )
+        auto textEditors = { view->classNameText, view->objectNameText, view->objectPos, view->objectSize };
+        for (auto w : textEditors)
         {
-            w->setText( QString() );
+            w->setText(QString());
         }
 
-        auto checkBoxes = { view->visibleState, view->modalState, view->mouseTrackState, };
-        for ( auto w : checkBoxes )
+        auto checkBoxes = { view->visibleState, view->modalState, view->mouseTrackState };
+        for (auto w : checkBoxes)
         {
-            w->setChecked( false );
+            w->setChecked(false);
         }
 
         return;
@@ -156,43 +153,43 @@ void SpyWidgetInfo::updateInformation()
 
     const auto classNameText = mo->className();
     const auto objectNameText = widget->objectName();
-    const auto positionText = QString( "QPoint( %1, %2 )" ).arg( widget->x() ).arg( widget->y() );
-    const auto sizeText = QString( "QSize( %1, %2 )" ).arg( widget->width() ).arg( widget->height() );
+    const auto positionText = QString("QPoint( %1, %2 )").arg(widget->x()).arg(widget->y());
+    const auto sizeText = QString("QSize( %1, %2 )").arg(widget->width()).arg(widget->height());
     const auto isVisible = widget->isVisible();
     const auto isModal = widget->isModal();
     const auto isMouseTracked = widget->hasMouseTracking();
 
-    view->classNameText->setText( classNameText );
-    view->objectNameText->setText( objectNameText );
-    view->objectPos->setText( positionText );
-    view->objectSize->setText( sizeText );
-    view->visibleState->setChecked( isVisible );
-    view->modalState->setChecked( isModal );
-    view->mouseTrackState->setChecked( isMouseTracked );
+    view->classNameText->setText(classNameText);
+    view->objectNameText->setText(objectNameText);
+    view->objectPos->setText(positionText);
+    view->objectSize->setText(sizeText);
+    view->visibleState->setChecked(isVisible);
+    view->modalState->setChecked(isModal);
+    view->mouseTrackState->setChecked(isMouseTracked);
 }
 
-void SpyWidgetInfo::onChangeWidget( const QModelIndex& index )
+void SpyWidgetInfo::onChangeWidget(const QModelIndex& index)
 {
-    auto w = widgetModel->widgetFromIndex( index );
-    Q_ASSERT( w != nullptr );
-    if ( w == nullptr )
+    auto w = widgetModel->widgetFromIndex(index);
+    Q_ASSERT(w != nullptr);
+    if (w == nullptr)
         return;
 
-    trackWidget( w );
+    trackWidget(w);
 }
 
 void SpyWidgetInfo::onSelectWidget()
 {
-    selectWidget( widget );
+    selectWidget(widget);
 }
 
-void SpyWidgetInfo::selectWidget( QWidget* w )
+void SpyWidgetInfo::selectWidget(QWidget* w)
 {
-    auto realIndex = widgetModel->indexFromWidget( w );
-    auto index = widgetHighlightModel->mapFromSource( realIndex );
+    auto realIndex = widgetModel->indexFromWidget(w);
+    auto index = widgetHighlightModel->mapFromSource(realIndex);
 
     view->hierarhyTree->collapseAll();
-    view->hierarhyTree->scrollTo( index );
-    view->hierarhyTree->setCurrentIndex( index );
-    view->hierarhyTree->selectionModel()->select( index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows );
+    view->hierarhyTree->scrollTo(index);
+    view->hierarhyTree->setCurrentIndex(index);
+    view->hierarhyTree->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 }
