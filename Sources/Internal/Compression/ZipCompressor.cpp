@@ -164,6 +164,7 @@ uint32 ZipFile::GetNumFiles() const
 
 bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOriginalSize, uint32& fileCompressedSize, bool& isDirectory) const
 {
+    Logger::Error("Start GetFileInfo");
     mz_zip_archive_file_stat fileStat;
     if (!mz_zip_reader_file_stat(&zipData->archive, fileIndex, &fileStat))
     {
@@ -171,6 +172,7 @@ bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOrigin
         Logger::Error("mz_zip_reader_file_stat() failed!");
         return false;
     }
+    Logger::Error("after file_stat");
     fileName = fileStat.m_filename;
     fileOriginalSize = static_cast<uint32>(fileStat.m_uncomp_size);
     fileCompressedSize = static_cast<uint32>(fileStat.m_comp_size);
