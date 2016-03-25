@@ -139,10 +139,7 @@ private:
     static EmitterCacheMap emitterCache;
 
 public:
-    INTROSPECTION_EXTEND(ParticleEmitter, BaseObject,
-                         MEMBER(name, "Name", I_VIEW | I_EDIT | I_SAVE)
-                         COLLECTION(layers, "Layers", I_VIEW)
-                         )
+    INTROSPECTION_EXTEND(ParticleEmitter, BaseObject, nullptr);
 };
 }
 

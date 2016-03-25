@@ -63,10 +63,7 @@ private:
     bool isInnerEmitter = false;
 
 public:
-    INTROSPECTION_EXTEND(ParticleEmitterInstance, BaseObject,
-                         PROPERTY("emitter", "Emitter", GetEmitter, SetEmitter, I_VIEW)
-                         MEMBER(spawnPosition, "Spawn Position", I_VIEW)
-                         )
+    INTROSPECTION_EXTEND(ParticleEmitterInstance, BaseObject, nullptr)
 };
 
 inline ParticleEmitter* ParticleEmitterInstance::GetEmitter() const

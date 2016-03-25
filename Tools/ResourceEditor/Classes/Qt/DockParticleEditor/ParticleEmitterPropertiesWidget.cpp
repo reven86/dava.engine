@@ -37,10 +37,8 @@
 #define EMISSION_RANGE_MAX_LIMIT_DEGREES 180.0f
 
 ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : QWidget(parent)
+    , BaseParticleEditorContentWidget()
 {
     mainLayout = new QVBoxLayout();
     this->setLayout(mainLayout);
@@ -162,11 +160,9 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
     }
     emitterYamlPath->installEventFilter(this);
 
-    blockSignals = false;
-}
+    connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &ParticleEmitterPropertiesWidget::OnCommand);
 
-ParticleEmitterPropertiesWidget::~ParticleEmitterPropertiesWidget()
-{
+    blockSignals = false;
 }
 
 void ParticleEmitterPropertiesWidget::InitWidget(QWidget* widget, bool connectWidget)
@@ -198,6 +194,14 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
 
     Init(activeScene, effect, instance, false, false);
     emit ValueChanged();
+}
+
+void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Command2* command, bool redo)
+{
+    if ((blockSignals == false) && (GetActiveScene() == scene) && (instance != nullptr) && (effect != nullptr))
+    {
+        UpdateProperties();
+    }
 }
 
 void ParticleEmitterPropertiesWidget::OnValueChanged()
@@ -263,16 +267,22 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 }
 
 void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect_, DAVA::ParticleEmitterInstance* instance_,
-                                           bool updateMinimize, bool needUpdateTimeLimits)
+                                           bool updateMinimize_, bool needUpdateTimeLimits_)
 {
     DVASSERT(instance_ != nullptr);
 
     instance = instance_;
     effect = effect_;
+    updateMinimize = updateMinimize_;
+    needUpdateTimeLimits = needUpdateTimeLimits_;
     SetActiveScene(scene);
 
     blockSignals = true;
+    UpdateProperties();
+}
 
+void ParticleEmitterPropertiesWidget::UpdateProperties()
+{
     auto emitter = instance->GetEmitter();
     emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
     shortEffectCheckBox->setChecked(emitter->shortEffect);
