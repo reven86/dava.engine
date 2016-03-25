@@ -52,7 +52,7 @@ public:
 
     FCDGeometryMesh* mesh;
 
-    fstring name;
+    fm::string name;
     std::vector<ColladaPolygonGroup*> polygons;
 };
 };

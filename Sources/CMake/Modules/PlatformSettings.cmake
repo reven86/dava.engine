@@ -99,6 +99,8 @@ elseif ( WIN32 )
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
+    add_definitions ( -D_UNICODE )
+    add_definitions ( -DUNICODE )
 endif  ()
 
 if( NOT DISABLE_DEBUG )
@@ -226,7 +228,12 @@ elseif ( IOS     )
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
 
-elseif ( WIN32)
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win" ) 
+elseif ( WIN32 )
+
+	if ( X64_MODE )
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
+	else ()
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
+	endif ()
     
 endif  ()
