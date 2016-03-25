@@ -167,6 +167,7 @@ bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOrigin
     mz_zip_archive_file_stat fileStat;
     if (!mz_zip_reader_file_stat(&zipData->archive, fileIndex, &fileStat))
     {
+        Logger::Error("phase inside ZipFile exception");
         Logger::Error("mz_zip_reader_file_stat() failed!");
         return false;
     }
@@ -174,6 +175,7 @@ bool ZipFile::GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOrigin
     fileOriginalSize = static_cast<uint32>(fileStat.m_uncomp_size);
     fileCompressedSize = static_cast<uint32>(fileStat.m_comp_size);
     isDirectory = (mz_zip_reader_is_file_a_directory(&zipData->archive, fileIndex) != 0);
+    Logger::Error("phase inside ZipFile finish GetFileInfo");
     return true;
 }
 

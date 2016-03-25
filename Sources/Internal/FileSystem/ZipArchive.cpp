@@ -54,12 +54,13 @@ ZipArchive::ZipArchive(const FilePath& fileName)
         uint32 compressedSize = 0;
         bool isDirectory = false;
 
+        Logger::Error("phase inside ZipArchive before GetFileInfo");
         if (!zipFile.GetFileInfo(i, name, origSize, compressedSize, isDirectory))
         {
             Logger::Error("phase inside ZipArchive Exception!!!");
             throw std::runtime_error("failed! get file info");
         }
-
+        Logger::Error("phase inside ZipArchive after GetFileInfo");
         if (!isDirectory)
         {
             fileNames.push_back(name);
