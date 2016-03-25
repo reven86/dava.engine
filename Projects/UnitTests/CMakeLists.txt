@@ -15,7 +15,6 @@ include      ( CMake-common )
 
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED )
-find_package( DavaTools     REQUIRED )
 
 include_directories   ( "Classes" )
 

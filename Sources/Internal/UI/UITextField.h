@@ -166,16 +166,16 @@ public:
         RETURN_KEY_EMERGENCY_CALL
     };
 
-    enum eOpenKeyboardPolicy
+    enum eStartEditPolicy
     {
-        OPEN_KEYBOARD_WHEN_FOCUSED,
-        OPEN_KEYBOARD_WHEN_ACTIVATED,
+        START_EDIT_WHEN_FOCUSED,
+        START_EDIT_BY_USER_REQUEST,
     };
 
-    enum eCloseKeyboardPolicy
+    enum eStopEditPolicy
     {
-        CLOSE_KEYBOARD_WHEN_FOCUS_LOST,
-        CLOSE_KEYBOARD_WHEN_DEACTIVATED,
+        STOP_EDIT_WHEN_FOCUS_LOST,
+        STOP_EDIT_BY_USER_REQUEST,
     };
 
     UITextField(const Rect& rect = Rect());
@@ -192,8 +192,9 @@ public:
 
     void Update(float32 timeElapsed) override;
 
-    void OpenKeyboard();
-    void CloseKeyboard();
+    bool IsEditing() const;
+    void StartEdit();
+    void StopEdit();
 
     void SetSpriteAlign(int32 align) override;
 
@@ -330,11 +331,11 @@ public:
     int32 GetReturnKeyType() const;
     void SetReturnKeyType(int32 value);
 
-    eOpenKeyboardPolicy GetOpenKeyboardPolicy() const;
-    void SetOpenKeyboardPolicy(eOpenKeyboardPolicy policy);
+    eStartEditPolicy GetStartEditPolicy() const;
+    void SetStartEditPolicy(eStartEditPolicy policy);
 
-    eCloseKeyboardPolicy GetCloseKeyboardPolicy() const;
-    void SetCloseKeyboardPolicy(eCloseKeyboardPolicy policy);
+    eStopEditPolicy GetStopEditPolicy() const;
+    void SetStopEditPolicy(eStopEditPolicy policy);
 
     /**
       \brief Enable return key automatically.
@@ -364,6 +365,9 @@ public:
 
     WideString GetVisibleText() const;
 
+    virtual void OnStartEditing();
+    virtual void OnStopEditing();
+
     virtual void OnKeyboardShown(const Rect& keyboardRect);
     virtual void OnKeyboardHidden();
 
@@ -381,11 +385,11 @@ private:
     */
     void SetupDefaults();
 
-    int32 GetOpenKeyboardPolicyAsInt() const;
-    void SetOpenKeyboardPolicyFromInt(int32 policy);
+    int32 GetStartEditPolicyAsInt() const;
+    void SetStartEditPolicyFromInt(int32 policy);
 
-    int32 GetCloseKeyboardPolicyAsInt() const;
-    void SetCloseKeyboardPolicyFromInt(int32 policy);
+    int32 GetStopEditPolicyAsInt() const;
+    void SetStopEditPolicyFromInt(int32 policy);
 
     WideString text;
     UITextFieldDelegate* delegate = nullptr;
@@ -398,13 +402,14 @@ private:
     eKeyboardAppearanceType keyboardAppearanceType;
     eKeyboardType keyboardType;
     eReturnKeyType returnKeyType;
-    eOpenKeyboardPolicy openKeyboardPolicy = OPEN_KEYBOARD_WHEN_ACTIVATED;
-    eCloseKeyboardPolicy closeKeyboardPolicy = CLOSE_KEYBOARD_WHEN_DEACTIVATED;
+    eStartEditPolicy startEditPolicy = START_EDIT_BY_USER_REQUEST;
+    eStopEditPolicy stopEditPolicy = STOP_EDIT_BY_USER_REQUEST;
 
     // All Boolean variables are grouped together because of DF-2149.
     bool isPassword;
     bool enableReturnKeyAutomatically;
     bool isMultiline_ = false;
+    bool isEditing = false;
 
     TextFieldPlatformImpl* textFieldImpl = nullptr;
     int32 maxLength = -1;
@@ -428,8 +433,8 @@ public:
                          PROPERTY("keyboardType", InspDesc("Keyboard type", GlobalEnumMap<eKeyboardType>::Instance()), GetKeyboardType, SetKeyboardType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("returnKeyType", InspDesc("Return key type", GlobalEnumMap<eReturnKeyType>::Instance()), GetReturnKeyType, SetReturnKeyType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("openKeyboardPolicy", InspDesc("Open Keyboard Policy", GlobalEnumMap<eOpenKeyboardPolicy>::Instance()), GetOpenKeyboardPolicyAsInt, SetOpenKeyboardPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("closeKeyboardPolicy", InspDesc("Close Keyboard Policy", GlobalEnumMap<eCloseKeyboardPolicy>::Instance()), GetCloseKeyboardPolicyAsInt, SetCloseKeyboardPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("startEditPolicy", InspDesc("Start Edit", GlobalEnumMap<eStartEditPolicy>::Instance()), GetStartEditPolicyAsInt, SetStartEditPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("stopEditPolicy", InspDesc("Stop Edit", GlobalEnumMap<eStopEditPolicy>::Instance()), GetStopEditPolicyAsInt, SetStopEditPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
                          )
 };
 

@@ -40,7 +40,7 @@ static void DebugString(const fchar* message)
     STRING_OUT(message);
 }
 
-#ifdef UNICODE
+#if (1)
 static void DebugString(const char* message)
 {
     fstring str = TO_FSTRING(message);
@@ -52,7 +52,7 @@ static void DebugString(const fchar* UNUSED(message))
 {
 }
 
-#ifdef UNICODE
+#if (1)
 static void DebugString(const char* UNUSED(message))
 {
 }
@@ -102,7 +102,7 @@ void FUDebug::DebugOutV(uint8 verbosity, const char* message, va_list& vars)
     SAFE_DELETE_ARRAY(buffer);
 }
 
-#ifdef UNICODE
+#if (1)
 void FUDebug::DebugOut(uint8 verbosity, uint32 line, const char* filename, const fchar* message, ...)
 {
     va_list vars;
@@ -122,7 +122,7 @@ void FUDebug::DebugOut(uint8 verbosity, const fchar* message, ...)
 void FUDebug::DebugOutV(uint8 verbosity, const char* filename, uint32 line, const fchar* message, va_list& vars)
 {
     char buffer[256];
-    snprintf(buffer, 256, "[%s@%lu] ", filename, line);
+    snprintf(buffer, 256, "[%s@%u] ", filename, line);
     buffer[255] = 0;
     DebugString(buffer);
 

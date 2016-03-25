@@ -161,7 +161,7 @@ public:
      */
     void UnregisterComponent(Entity* entity, Component* component);
 
-    virtual void AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem* insertBeforeSceneForProcess = NULL);
+    virtual void AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem* insertBeforeSceneForProcess = nullptr);
     virtual void RemoveSystem(SceneSystem* sceneSystem);
 
     //virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
@@ -195,15 +195,15 @@ public:
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
      */
-    virtual Scene* GetScene();
+    Scene* GetScene() override;
 
-    virtual void HandleEvent(Observable* observable); //Handle RenderOptions
+    void HandleEvent(Observable* observable) override; //Handle RenderOptions
 
     //virtual void StopAllAnimations(bool recursive = true);
 
-    virtual void Update(float timeElapsed);
-    virtual void Draw();
-    virtual void SceneDidLoaded();
+    virtual void Update(float32 timeElapsed);
+    void Draw() override;
+    void SceneDidLoaded() override;
 
     virtual void SetupTestLighting();
 
@@ -286,7 +286,7 @@ protected:
 
 int32 Scene::GetCameraCount()
 {
-    return (int32)cameras.size();
+    return static_cast<int32>(cameras.size());
 }
 };
 

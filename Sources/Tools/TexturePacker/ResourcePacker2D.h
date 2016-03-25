@@ -34,13 +34,13 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "TextureCompression/TextureConverter.h"
+#include "TexturePacker/Spritesheet.h"
 #include <atomic>
 
 #include "AssetCache/CacheItemKey.h"
 
 namespace DAVA
 {
-
 class DefinitionFile;
 class YamlNode;
 
@@ -49,8 +49,7 @@ class ResourcePacker2D
     static const String VERSION;
 
 public:
-
-    void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
+    void InitFolders(const FilePath& inputPath, const FilePath& outputPath);
     bool RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const;
     void RecalculateMD5ForOutputDir();
 
@@ -99,6 +98,7 @@ public:
     bool clearOutputDirectory = true;
     eGPUFamily requestedGPUFamily = GPU_INVALID;
     TextureConverter::eConvertQuality quality = TextureConverter::ECQ_VERY_HIGH;
+    Vector<PackingAlgorithm> packAlgorithms;
 
 private:
     FilePath cacheClientTool;
@@ -126,7 +126,6 @@ inline bool ResourcePacker2D::IsRunning() const
 {
     return running;
 }
-
 };
 
 #endif // __DAVAENGINE_RESOURCEPACKER2D_H__

@@ -33,7 +33,7 @@
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
 using DAVA::uint16;
@@ -821,8 +821,8 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
     ps->vprog.uid = desc.vprogUid;
     ps->fprog.uid = desc.fprogUid;
 
-    vprog_valid = ps->vprog.Construct((const char*)(&vprog_bin[0]), vprog_bin.size(), desc.vertexLayout);
-    fprog_valid = ps->fprog.Construct((const char*)(&fprog_bin[0]), fprog_bin.size());
+    vprog_valid = ps->vprog.Construct((const char*)(&vprog_bin[0]), static_cast<unsigned>(vprog_bin.size()), desc.vertexLayout);
+    fprog_valid = ps->fprog.Construct((const char*)(&fprog_bin[0]), static_cast<unsigned>(fprog_bin.size()));
 
     if (vprog_valid && fprog_valid)
     {

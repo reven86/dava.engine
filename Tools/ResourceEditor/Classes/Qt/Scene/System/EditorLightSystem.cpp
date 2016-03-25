@@ -39,7 +39,7 @@ using namespace DAVA;
 EditorLightSystem::EditorLightSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
 {
-    Light* light = new Light();
+    ScopedPtr<Light> light(new Light());
     light->SetType(Light::TYPE_POINT);
     light->SetAmbientColor(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f));
 
@@ -47,12 +47,13 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene* scene)
     cameraLight->SetLocked(true);
     cameraLight->SetName(ResourceEditor::EDITOR_CAMERA_LIGHT);
     cameraLight->AddComponent(new LightComponent(light));
-    light->Release();
 
-    lightCountOnScene = 0;
     SetRequiredComponents(MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT));
 
-    isEnabled = true;
+    if (isEnabled)
+    {
+        AddCameraLightOnScene();
+    }
 }
 
 EditorLightSystem::~EditorLightSystem()
@@ -60,29 +61,13 @@ EditorLightSystem::~EditorLightSystem()
     SafeRelease(cameraLight);
 }
 
-void EditorLightSystem::ProcessCommand(const Command2* command, bool redo)
-{
-    if (command->GetEntity() != cameraLight)
-        return;
-
-    int id = command->GetId();
-    if (CMDID_ENTITY_REMOVE == id && redo)
-    {
-        SetCameraLightEnabled(false);
-    }
-    else if (CMDID_ENTITY_REMOVE == id && !redo)
-    {
-        SetCameraLightEnabled(true);
-    }
-}
-
 void EditorLightSystem::UpdateCameraLightState()
 {
-    if (isEnabled && (lightCountOnScene == 0))
+    if (isEnabled && lightEntities == 0)
     {
         AddCameraLightOnScene();
     }
-    else
+    else if (!isEnabled || lightEntities != 0)
     {
         RemoveCameraLightFromScene();
     }
@@ -90,7 +75,7 @@ void EditorLightSystem::UpdateCameraLightState()
 
 void EditorLightSystem::UpdateCameraLightPosition()
 {
-    if (GetScene() && cameraLight && cameraLight->GetParent())
+    if (cameraLight && cameraLight->GetParent())
     {
         Camera* camera = GetScene()->GetCurrentCamera();
         if (!camera)
@@ -110,15 +95,13 @@ void EditorLightSystem::SetCameraLightEnabled(bool enabled)
     {
         isEnabled = enabled;
         UpdateCameraLightState();
-
-        SceneSignals::Instance()->EmitEditorLightEnabled(isEnabled);
     }
 }
 
 void EditorLightSystem::AddCameraLightOnScene()
 {
-    SceneEditor2* sc = (SceneEditor2*)GetScene();
-    if (sc && (cameraLight->GetParent() == NULL))
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+    if (cameraLight->GetParent() == nullptr)
     {
         sc->AddEditorEntity(cameraLight);
     }
@@ -132,18 +115,24 @@ void EditorLightSystem::RemoveCameraLightFromScene()
     }
 }
 
+void EditorLightSystem::SceneDidLoaded()
+{
+    if (isEnabled && lightEntities == 0)
+    {
+        AddCameraLightOnScene();
+    }
+}
+
 void EditorLightSystem::AddEntity(DAVA::Entity* entity)
 {
+    DVASSERT(GetLightComponent(entity) != nullptr);
     if (entity == cameraLight)
     {
         return;
     }
 
-    lightCountOnScene += CountLightsForEntityRecursive(entity);
-    if (isEnabled && (lightCountOnScene > 0))
-    {
-        RemoveCameraLightFromScene();
-    }
+    ++lightEntities;
+    RemoveCameraLightFromScene();
 }
 
 void EditorLightSystem::RemoveEntity(DAVA::Entity* entity)
@@ -153,41 +142,18 @@ void EditorLightSystem::RemoveEntity(DAVA::Entity* entity)
         return;
     }
 
-    lightCountOnScene -= CountLightsForEntityRecursive(entity);
+    --lightEntities;
 
-    if (isEnabled)
+    if (isEnabled && lightEntities == 0)
     {
-        DVASSERT(lightCountOnScene >= 0);
-
-        if (lightCountOnScene == 0)
-        {
-            AddCameraLightOnScene();
-        }
+        AddCameraLightOnScene();
     }
-}
-
-DAVA::int32 EditorLightSystem::CountLightsForEntityRecursive(DAVA::Entity* entity)
-{
-    int32 lightsCount = 0;
-    if (entity != cameraLight && GetLight(entity))
-    {
-        ++lightsCount;
-    }
-
-    int32 childrenCount = entity->GetChildrenCount();
-    for (int32 i = 0; i < childrenCount; ++i)
-    {
-        lightsCount += CountLightsForEntityRecursive(entity->GetChild(i));
-    }
-
-    return lightsCount;
 }
 
 void EditorLightSystem::Process(float32 timeElapsed)
 {
     if (isEnabled)
     {
-        UpdateCameraLightState();
         UpdateCameraLightPosition();
     }
 }

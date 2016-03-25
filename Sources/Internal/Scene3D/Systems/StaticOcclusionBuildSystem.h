@@ -51,14 +51,14 @@ class StaticOcclusionBuildSystem : public SceneSystem
 {
 public:
     StaticOcclusionBuildSystem(Scene* scene);
-    virtual ~StaticOcclusionBuildSystem();
+    ~StaticOcclusionBuildSystem() override;
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
-    virtual void Process(float32 timeElapsed);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
     void ImmediateEvent(Component* component, uint32 event) override;
 
-    inline void SetCamera(Camera* camera);
+    void SetCamera(Camera* camera);
 
     void Build();
     void Cancel();

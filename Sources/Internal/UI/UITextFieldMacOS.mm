@@ -353,7 +353,7 @@ public:
 
         [nsScrollView setDocumentView:nsTextView];
 
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView addSubview:nsScrollView];
 
         CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
@@ -383,7 +383,7 @@ public:
 
     void OpenKeyboard() override
     {
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView.window makeFirstResponder:nsTextView];
 
         if (!isKeyboardOpened)
@@ -404,7 +404,7 @@ public:
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [[NSApp keyWindow] makeFirstResponder:openGLView];
     }
 
@@ -418,7 +418,7 @@ public:
 
     void SetText(const WideString& string) override
     {
-        NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
+        NSString* text = [[[NSString alloc] initWithBytes:reinterpret_cast<const char*>(string.data())
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextView setString:text];
@@ -610,7 +610,7 @@ public:
 
         [nsTextField setDelegate:objcDelegate];
 
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView addSubview:nsTextField];
 
         [nsTextField setEditable:YES];
@@ -704,7 +704,7 @@ public:
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [[NSApp keyWindow] makeFirstResponder:openGLView];
     }
 
@@ -728,7 +728,7 @@ public:
 
         updateViewState = true;
 
-        NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
+        NSString* text = [[[NSString alloc] initWithBytes:reinterpret_cast<const char*>(string.data())
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
@@ -747,7 +747,7 @@ public:
             !insideTextShouldReturn &&
             davaText == UIControlSystem::Instance()->GetFocusedControl())
         {
-            UIControlSystem::Instance()->SetFocusedControl(nullptr);
+            davaText->ReleaseFocus();
         }
     }
 
@@ -767,7 +767,7 @@ public:
             else
             {
                 BOOL isNSText = [currentResponder isKindOfClass:[NSText class]];
-                if (isNSText && [(id)currentResponder delegate] == (id)nsTextField)
+                if (isNSText && [static_cast<id>(currentResponder) delegate] == static_cast<id>(nsTextField))
                 {
                     // we still has focus do nothing
                 }
@@ -775,13 +775,16 @@ public:
                 {
                     if (isKeyboardOpened)
                     {
-                        // select text field
-                        [window makeFirstResponder:nsTextField];
-                        // remove selection to caret at end
-                        if ([[nsTextField stringValue] length] > 0)
+                        //                        // select text field
+                        if (davaText->GetStopEditPolicy() == UITextField::STOP_EDIT_WHEN_FOCUS_LOST)
                         {
-                            NSRange range = [[nsTextField currentEditor] selectedRange];
-                            [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+                            [window makeFirstResponder:nsTextField];
+                            // remove selection to caret at end
+                            if ([[nsTextField stringValue] length] > 0)
+                            {
+                                NSRange range = [[nsTextField currentEditor] selectedRange];
+                                [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+                            }
                         }
                     }
                 }
@@ -834,8 +837,8 @@ public:
         [nsTextField setTextColor:nsColor];
 
         // make cursor same color as text (default - black caret on white back)
-        NSTextView* fieldEditor = (NSTextView*)[nsTextField.window fieldEditor:YES
-                                                                     forObject:nsTextField];
+        NSTextView* fieldEditor = static_cast<NSTextView*>([nsTextField.window fieldEditor:YES
+                                                                                 forObject:nsTextField]);
         fieldEditor.insertionPointColor = nsColor;
     }
 
@@ -1001,7 +1004,7 @@ public:
             nsTextField.drawsBackground = NO;
             nsTextField.bezeled = NO;
 
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+            NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
             [openGLView addSubview:nsTextField];
 
             // copy all current properties
@@ -1370,7 +1373,7 @@ doCommandBySelector:(SEL)commandSelector
 
 - (NSString*)stringForObjectValue:(id)object
 {
-    return (NSString*)object;
+    return static_cast<NSString*>(object);
 }
 
 - (BOOL)getObjectValue:(id*)object
@@ -1435,6 +1438,7 @@ doCommandBySelector:(SEL)commandSelector
         {
             DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl);
         }
+        davaCtrl->StartEdit();
 
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
         if (delegate != nullptr)
@@ -1518,6 +1522,12 @@ doCommandBySelector:(SEL)commandSelector
     if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
     {
         DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
+        {
+            textField->StartEdit();
+        }
+        else
+            return NO;
     }
     return YES;
 }
@@ -1538,6 +1548,15 @@ doCommandBySelector:(SEL)commandSelector
     {
         // call client delegate
         DAVA::UITextField* textField = (*text).ctrl->davaText;
+
+        // if user paste text with gesture in native control
+        // we need make dava control in sync with focus
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
+        }
+        textField->StartEdit();
+
         DAVA::UITextFieldDelegate* delegate = textField->GetDelegate();
         if (delegate)
         {
@@ -1545,7 +1564,7 @@ doCommandBySelector:(SEL)commandSelector
 
             DAVA::WideString repString;
             const char* cstr = [replacementString cStringUsingEncoding:NSUTF8StringEncoding];
-            DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), repString);
+            DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), repString);
 
             bool isValid = delegate->TextFieldKeyPressed(
             textField,
@@ -1557,7 +1576,7 @@ doCommandBySelector:(SEL)commandSelector
             {
                 DAVA::WideString newStr;
                 const char* cstr = [newString cStringUsingEncoding:NSUTF8StringEncoding];
-                DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newStr);
+                DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
                 delegate->TextFieldOnTextChanged(textField, newStr, oldStr);
             }
 
@@ -1602,8 +1621,8 @@ doCommandBySelector:(SEL)commandSelector
 
 - (void)selectWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject start:(long)selStart length:(long)selLength
 {
-    CustomTextField* textField = (CustomTextField*)controlView;
-    CustomTextFieldFormatter* formatter = (CustomTextFieldFormatter*)textField.formatter;
+    CustomTextField* textField = static_cast<CustomTextField*>(controlView);
+    CustomTextFieldFormatter* formatter = static_cast<CustomTextFieldFormatter*>(textField.formatter);
     isMultilineControl = formatter->text->ctrl->IsMultiline();
     if (isMultilineControl)
     {
@@ -1620,8 +1639,8 @@ doCommandBySelector:(SEL)commandSelector
 
 - (void)editWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject event:(NSEvent*)theEvent
 {
-    CustomTextField* textField = (CustomTextField*)controlView;
-    CustomTextFieldFormatter* formatter = (CustomTextFieldFormatter*)textField.formatter;
+    CustomTextField* textField = static_cast<CustomTextField*>(controlView);
+    CustomTextFieldFormatter* formatter = static_cast<CustomTextFieldFormatter*>(textField.formatter);
     isMultilineControl = formatter->text->ctrl->IsMultiline();
     if (isMultilineControl)
     {
@@ -1689,34 +1708,10 @@ doCommandBySelector:(SEL)commandSelector
 - (void)mouseDown:(NSEvent*)theEvent
 {
     // pass event to DAVA input for selection and focus work
-    NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
+    NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     [openGLView mouseDown:theEvent];
 }
 
-//
-//- (BOOL)performKeyEquivalent:(NSEvent*)event
-//{
-//    if (([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
-//    {   // The command key is the ONLY modifier key being pressed.
-//        if ([[event charactersIgnoringModifiers] isEqualToString:@"x"])
-//        {
-//            return [NSApp sendAction:@selector(cut:) to:[[self window] firstResponder] from:self];
-//        }
-//        else if ([[event charactersIgnoringModifiers] isEqualToString:@"c"])
-//        {
-//            return [NSApp sendAction:@selector(copy:) to:[[self window] firstResponder] from:self];
-//        }
-//        else if ([[event charactersIgnoringModifiers] isEqualToString:@"v"])
-//        {
-//            return [NSApp sendAction:@selector(paste:) to:[[self window] firstResponder] from:self];
-//        }
-//        else if ([[event charactersIgnoringModifiers] isEqualToString:@"a"])
-//        {
-//            return [NSApp sendAction:@selector(selectAll:) to:[[self window] firstResponder] from:self];
-//        }
-//    }
-//    return [super performKeyEquivalent:event];
-//}
 @end
 
 @implementation CustomTextView

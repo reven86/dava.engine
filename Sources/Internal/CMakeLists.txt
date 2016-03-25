@@ -170,10 +170,10 @@ elseif( WIN32 )
 
 #    link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
     link_directories       ( ${WINDOWSSDK_LATEST_DIR}/lib/x86 )
-    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 
-    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
     # list each library on its own line to ease library addition
@@ -189,17 +189,30 @@ elseif( WIN32 )
             "psapi.lib"
             "dbghelp.lib"
             "userenv.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"
-            "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
             "delayimp.lib"
             "dxgi.lib"
-    )
+	)
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
+
+    if( X64_MODE )
+	    list ( APPEND LIST_SHARED_LIBRARIES
+            "$ENV{DXSDK_DIR}/lib/x64/d3dx9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d11.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3dcompiler.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
+    	)
+	else ()
+	    list ( APPEND LIST_SHARED_LIBRARIES
+            "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
+    	)
+	endif ()
 
     set ( IGNORED_RHI_FOLDER "Metal" )
 
@@ -216,8 +229,6 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 
 generate_source_groups_project ()
 
-
-
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
@@ -231,6 +242,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
                                                         "TemplateMacOS/MovieViewControlMacOS.mm"
+                                                        "Logger/TeamcityOutput.cpp"
                                                     IGNORE_LIST_IOS
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"
@@ -239,7 +251,6 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "TemplateiOS"
                                                         "UI/UITextFieldiPhone.mm"
                                                    )
-
 
 include_directories      (.)
 include_directories      ( ${DAVA_INCLUDE_DIR} )

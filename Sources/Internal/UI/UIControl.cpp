@@ -1616,8 +1616,6 @@ void UIControl::SystemInvisible()
         return;
     }
 
-    UIControlSystem::Instance()->ControlBecomeInvisible(this);
-
     auto it = children.rbegin();
     isIteratorCorrupted = false;
     while (it != children.rend())
@@ -1639,6 +1637,8 @@ void UIControl::SystemInvisible()
     }
 
     ChangeViewState(eViewState::ACTIVE);
+
+    UIControlSystem::Instance()->ControlBecomeInvisible(this);
 
     OnInvisible();
 }
@@ -1910,7 +1910,7 @@ Animation* UIControl::ScaledSizeAnimation(const Vector2& newSize, float32 time, 
 
 void UIControl::TouchableAnimationCallback(BaseObject* caller, void* param, void* callerData)
 {
-    bool* params = (bool*)param;
+    bool* params = static_cast<bool*>(param);
     SetInputEnabled(params[0], params[1]);
     delete[] params;
 }
@@ -1922,14 +1922,14 @@ Animation* UIControl::TouchableAnimation(bool touchable, bool hierarhic /* = tru
     bool* params = new bool[2];
     params[0] = touchable;
     params[1] = hierarhic;
-    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::TouchableAnimationCallback, (void*)params));
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::TouchableAnimationCallback, static_cast<void*>(params)));
     animation->Start(track);
     return animation;
 }
 
 void UIControl::DisabledAnimationCallback(BaseObject* caller, void* param, void* callerData)
 {
-    bool* params = (bool*)param;
+    bool* params = static_cast<bool*>(param);
     SetDisabled(params[0], params[1]);
     delete[] params;
 }
@@ -1941,7 +1941,7 @@ Animation* UIControl::DisabledAnimation(bool disabled, bool hierarhic /* = true*
     bool* params = new bool[2];
     params[0] = disabled;
     params[1] = hierarhic;
-    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::DisabledAnimationCallback, (void*)params));
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::DisabledAnimationCallback, static_cast<void*>(params)));
     animation->Start(track);
     return animation;
 }
@@ -1955,7 +1955,7 @@ void UIControl::VisibleAnimationCallback(BaseObject* caller, void* param, void* 
 Animation* UIControl::VisibleAnimation(bool visible, int32 track /* = 0*/)
 {
     Animation* animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::VisibleAnimationCallback, (void*)(pointer_size)visible));
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::VisibleAnimationCallback, reinterpret_cast<void*>(static_cast<pointer_size>(visible))));
     animation->Start(track);
     return animation;
 }

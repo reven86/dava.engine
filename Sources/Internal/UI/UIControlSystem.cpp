@@ -29,7 +29,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
@@ -239,11 +239,11 @@ void UIControlSystem::ProcessScreenLogic()
             nextScreenProcessed->LoadGroup();
         }
         currentScreen = nextScreenProcessed;
-        focusSystem->SetRoot(currentScreen.Get());
         if (currentScreen)
         {
             currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
         }
+        focusSystem->SetRoot(currentScreen.Get());
 
         NotifyListenersDidSwitch(currentScreen.Get());
 
@@ -465,21 +465,20 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             }
             else
             {
-                if (phase == UIEvent::Phase::BEGAN)
-                {
-                    UIControl* focusedControl = focusSystem->GetFocusedControl();
-                    if (focusedControl)
-                    {
-                        if (!focusedControl->IsPointInside(eventToHandle->point))
-                        {
-                            focusedControl->OnTouchOutsideFocus();
-                        }
-                    }
-                }
+                UIControl* prevFocus = focusSystem->GetFocusedControl();
 
                 if (!popupContainer->SystemInput(eventToHandle))
                 {
                     currentScreen->SystemInput(eventToHandle);
+                }
+
+                if (phase == UIEvent::Phase::BEGAN)
+                {
+                    UIControl* focusedControl = focusSystem->GetFocusedControl();
+                    if (focusedControl != nullptr && focusedControl == prevFocus && !focusedControl->IsPointInside(eventToHandle->point))
+                    {
+                        focusedControl->OnTouchOutsideFocus();
+                    }
                 }
             }
         }

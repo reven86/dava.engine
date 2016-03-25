@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -195,6 +195,14 @@
     </Filter>
     <Filter Include="Internal\UI\Focus">
       <UniqueIdentifier>{a57eef44-c7c5-4047-bdad-016274548eff}</UniqueIdentifier>
+    <Filter Include="Internal\CommandLine">
+      <UniqueIdentifier>{de111723-0223-4ea4-93a7-cc216095165c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Logger">
+      <UniqueIdentifier>{682affb5-27b3-42fb-acbe-665faf6b9f98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Command">
+      <UniqueIdentifier>{ca088d15-197c-4f02-b9aa-2d32ba8fb3af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -319,9 +327,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h">
-      <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h">
@@ -1222,9 +1227,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
-      <Filter>Internal</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
       <Filter>Internal\DataStorage</Filter>
     </ClInclude>
@@ -1669,6 +1671,21 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\CommandLineParser.h">
+      <Filter>Internal\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\ProgramOptions.h">
+      <Filter>Internal\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamcityOutput.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\Logger.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UILoadingScreen.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1689,6 +1706,17 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.h">
       <Filter>Internal\UI\Focus</Filter>
+    <ClInclude Include="..\..\Sources\Internal\Command\ICommand.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\ObjectHandle.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.h">
+      <Filter>Internal\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.h">
+      <Filter>Internal\Command</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1774,9 +1802,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp">
-      <Filter>Internal\FileSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\Logger.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp">
@@ -2202,9 +2227,6 @@
     <ClCompile Include="..\..\Sources\Internal\Base\EnumMap.cpp">
       <Filter>Internal\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\LoggerWin.cpp">
-      <Filter>Internal\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\KeyedArchiveSwig.cpp">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
@@ -2562,9 +2584,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
-      <Filter>Internal</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
       <Filter>Internal\DataStorage\Windows</Filter>
@@ -2992,6 +3011,24 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\CommandLineParser.cpp">
+      <Filter>Internal\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\ProgramOptions.cpp">
+      <Filter>Internal\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\LoggerWin.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamcityOutput.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\Logger.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UILoadingScreen.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -3012,6 +3049,17 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.cpp">
       <Filter>Internal\UI\Focus</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Command\ObjectHandle.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Command\SetCollectionItemValueCommand.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp">
+      <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp">
+      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

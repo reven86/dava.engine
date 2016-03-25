@@ -83,21 +83,41 @@ UIControl* UIFocusSystem::GetFocusedControl() const
 
 void UIFocusSystem::SetFocusedControl(UIControl* control)
 {
+    bool textFieldWasEditing = false;
     if (control != focusedControl.Get())
     {
-        if (focusedControl)
+        if (focusedControl.Valid())
         {
+            UITextField* textField = dynamic_cast<UITextField*>(focusedControl.Get());
+            if (textField)
+            {
+                textFieldWasEditing = textField->IsEditing();
+            }
+
             focusedControl->SystemOnFocusLost();
             focusedControl = nullptr;
         }
 
-        if (!focusedControl.Valid())
+        if (control != nullptr)
         {
-            focusedControl = control;
-            if (focusedControl)
+            if (FocusHelpers::CanFocusControl(control))
             {
+                focusedControl = control;
                 focusedControl->SystemOnFocused();
                 UIControlHelpers::ScrollToControl(focusedControl.Get());
+
+                if (textFieldWasEditing)
+                {
+                    UITextField* textField = dynamic_cast<UITextField*>(focusedControl.Get());
+                    if (textField)
+                    {
+                        textField->StartEdit();
+                    }
+                }
+            }
+            else
+            {
+                DVASSERT(false);
             }
         }
     }
@@ -107,7 +127,16 @@ void UIFocusSystem::ControlBecomInvisible(UIControl* control)
 {
     if (focusedControl == control)
     {
-        SetFocusedControl(nullptr);
+        if (root.Valid())
+        {
+            UIControl* focusedControl = FindFirstControl(root.Get());
+            ClearFocusState(root.Get());
+            SetFocusedControl(focusedControl);
+        }
+        else
+        {
+            SetFocusedControl(nullptr);
+        }
     }
 }
 
@@ -205,43 +234,47 @@ void UIFocusSystem::ClearFocusState(UIControl* control)
 
 UIControl* UIFocusSystem::FindFirstControl(UIControl* control) const
 {
-    return FindFirstControlImpl(control, nullptr);
-}
-
-UIControl* UIFocusSystem::FindFirstControlImpl(UIControl* control, UIControl* candidate) const
-{
-    if (FocusHelpers::CanFocusControl(control))
-    {
-        UIFocusComponent* focus = control->GetComponent<UIFocusComponent>();
-        if (candidate == nullptr)
-        {
-            return control;
-        }
-        else if ((control->GetState() & UIControl::STATE_FOCUSED) != 0)
-        {
-            return control;
-        }
-        else if (focus->IsRequestFocus() && (candidate == nullptr || ((candidate->GetState() & UIControl::STATE_FOCUSED) == 0)))
-        {
-            return control;
-        }
-    }
-
-    UIControl* test = candidate;
+    UIControl* candidate = nullptr;
     for (UIControl* c : control->GetChildren())
     {
-        UIControl* res = FindFirstControlImpl(c, candidate);
-        if (res)
+        UIControl* res = FindFirstControl(c);
+        if (res != nullptr && IsControlBetterForFocusThanCandidate(res, candidate))
         {
-            if (test == nullptr || ((res->GetState() & UIControl::STATE_FOCUSED) == 0))
-            {
-                test = res;
-                if ((test->GetState() & UIControl::STATE_FOCUSED) != 0)
-                    return test;
-            }
+            candidate = res;
         }
     }
 
-    return test;
+    if (candidate == nullptr && FocusHelpers::CanFocusControl(control))
+    {
+        return control;
+    }
+
+    return candidate;
+}
+
+bool UIFocusSystem::IsControlBetterForFocusThanCandidate(UIControl* c1, UIControl* c2) const
+{
+    DVASSERT(c1 != nullptr);
+    if (c2 == nullptr)
+    {
+        return true;
+    }
+
+    UIFocusComponent* f1 = c1->GetComponent<UIFocusComponent>();
+    DVASSERT(f1 != nullptr);
+    UIFocusComponent* f2 = c2->GetComponent<UIFocusComponent>();
+    DVASSERT(f2 != nullptr);
+
+    if ((c1->GetState() & UIControl::STATE_FOCUSED) != 0 && (c2->GetState() & UIControl::STATE_FOCUSED) == 0)
+    {
+        return true;
+    }
+
+    if (f1->IsRequestFocus() && !f2->IsRequestFocus())
+    {
+        return true;
+    }
+
+    return false;
 }
 }

@@ -62,7 +62,7 @@ rhiScreenShotCallback(uint32 width, uint32 height, const void* rgba)
 {
     if (screenshotCallback)
     {
-        DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, (const uint8*)rgba);
+        DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, static_cast<const uint8*>(rgba));
 
         if (img)
         {

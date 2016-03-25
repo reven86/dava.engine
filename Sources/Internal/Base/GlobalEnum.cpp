@@ -43,7 +43,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
 
@@ -306,16 +306,16 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_EMERGENCY_CALL, "RETURN_KEY_EMERGENCY_CALL");
 };
 
-ENUM_DECLARE(UITextField::eOpenKeyboardPolicy)
+ENUM_DECLARE(UITextField::eStartEditPolicy)
 {
-    ENUM_ADD_DESCR(UITextField::OPEN_KEYBOARD_WHEN_FOCUSED, "WhenFocused");
-    ENUM_ADD_DESCR(UITextField::OPEN_KEYBOARD_WHEN_ACTIVATED, "WhenActivated");
+    ENUM_ADD_DESCR(UITextField::START_EDIT_WHEN_FOCUSED, "WhenFocused");
+    ENUM_ADD_DESCR(UITextField::START_EDIT_BY_USER_REQUEST, "ByUserRequest");
 };
 
-ENUM_DECLARE(UITextField::eCloseKeyboardPolicy)
+ENUM_DECLARE(UITextField::eStopEditPolicy)
 {
-    ENUM_ADD_DESCR(UITextField::CLOSE_KEYBOARD_WHEN_FOCUS_LOST, "WhenFocusLost");
-    ENUM_ADD_DESCR(UITextField::CLOSE_KEYBOARD_WHEN_DEACTIVATED, "WhenDeactivated");
+    ENUM_ADD_DESCR(UITextField::STOP_EDIT_WHEN_FOCUS_LOST, "WhenFocusLost");
+    ENUM_ADD_DESCR(UITextField::STOP_EDIT_BY_USER_REQUEST, "ByUserRequest");
 };
 
 ENUM_DECLARE(UIComponent::eType)

@@ -127,7 +127,7 @@ fribidi_unicode_to_utf8 (
     }
   *t = 0;
 
-  return (t - s);
+  return (FriBidiStrIndex)(t - s);
 }
 
 /* Editor directions:

@@ -83,9 +83,19 @@ public:
     }
     void OpenKeyboard()
     {
+        if (!isKeyboardOpened)
+        {
+            isKeyboardOpened = true;
+            control_->OnKeyboardShown(Rect());
+        }
     }
     void CloseKeyboard()
     {
+        if (isKeyboardOpened)
+        {
+            isKeyboardOpened = false;
+            control_->OnKeyboardHidden();
+        }
     }
     void SetRenderToTexture(bool)
     {
@@ -112,7 +122,7 @@ public:
     {
         // see comment for TextFieldPlatformImpl class above
 
-        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl() && isKeyboardOpened)
         {
             float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
             cursorTime += timeElapsed;
@@ -265,6 +275,7 @@ private:
     float32 cursorTime = 0.0f;
     bool needRedraw = true;
     bool showCursor = true;
+    bool isKeyboardOpened = false;
 };
 } // end namespace DAVA
 #endif
@@ -315,14 +326,29 @@ UITextField::~UITextField()
     UIControl::RemoveAllControls();
 }
 
-void UITextField::OpenKeyboard()
+bool UITextField::IsEditing() const
 {
-    textFieldImpl->OpenKeyboard();
+    return isEditing;
 }
 
-void UITextField::CloseKeyboard()
+void UITextField::StartEdit()
 {
-    textFieldImpl->CloseKeyboard();
+    if (!isEditing)
+    {
+        isEditing = true;
+        textFieldImpl->OpenKeyboard();
+        OnStartEditing();
+    }
+}
+
+void UITextField::StopEdit()
+{
+    if (isEditing)
+    {
+        isEditing = false;
+        textFieldImpl->CloseKeyboard();
+        OnStopEditing();
+    }
 }
 
 void UITextField::Update(float32 timeElapsed)
@@ -348,9 +374,9 @@ void UITextField::OnInactive()
 void UITextField::OnFocused()
 {
     SetRenderToTexture(false);
-    if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_FOCUSED)
+    if (startEditPolicy == START_EDIT_WHEN_FOCUSED)
     {
-        OpenKeyboard();
+        StartEdit();
     }
 }
 
@@ -363,7 +389,7 @@ void UITextField::OnFocusLost()
 {
     SetRenderToTexture(true);
 
-    CloseKeyboard();
+    StopEdit();
 
     if (delegate != nullptr)
     {
@@ -373,15 +399,15 @@ void UITextField::OnFocusLost()
 
 void UITextField::OnTouchOutsideFocus()
 {
-    if (closeKeyboardPolicy == CLOSE_KEYBOARD_WHEN_DEACTIVATED)
+    if (stopEditPolicy == STOP_EDIT_BY_USER_REQUEST)
     {
-        CloseKeyboard();
+        StopEdit();
     }
 }
 
-void UITextField::ReleaseFocus()
+void UITextField::ReleaseFocus() // TODO: rename method
 {
-    // TODO: remove method
+    StopEdit();
 }
 
 void UITextField::SetFont(Font* font)
@@ -556,17 +582,17 @@ void UITextField::Input(UIEvent* currentInput)
     {
         if (currentInput->key == Key::ENTER)
         {
-            if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_ACTIVATED)
+            if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
             {
-                OpenKeyboard();
+                StartEdit();
             }
         }
     }
     if (currentInput->phase == UIEvent::Phase::ENDED)
     {
-        if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_ACTIVATED)
+        if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
         {
-            OpenKeyboard();
+            StartEdit();
         }
     }
     
@@ -594,6 +620,10 @@ void UITextField::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::ENTER)
         {
+            if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
+            {
+                StartEdit();
+            }
             delegate->TextFieldShouldReturn(this);
         }
         else if (currentInput->key == Key::ESCAPE)
@@ -625,6 +655,13 @@ void UITextField::Input(UIEvent* currentInput)
             {
                 SetText(GetAppliedChanges(length, 0, str));
             }
+        }
+    }
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
+        {
+            StartEdit();
         }
     }
 
@@ -778,24 +815,24 @@ void UITextField::SetReturnKeyType(int32 value)
     textFieldImpl->SetReturnKeyType(value);
 }
 
-UITextField::eOpenKeyboardPolicy UITextField::GetOpenKeyboardPolicy() const
+UITextField::eStartEditPolicy UITextField::GetStartEditPolicy() const
 {
-    return openKeyboardPolicy;
+    return startEditPolicy;
 }
 
-void UITextField::SetOpenKeyboardPolicy(eOpenKeyboardPolicy policy)
+void UITextField::SetStartEditPolicy(eStartEditPolicy policy)
 {
-    openKeyboardPolicy = policy;
+    startEditPolicy = policy;
 }
 
-UITextField::eCloseKeyboardPolicy UITextField::GetCloseKeyboardPolicy() const
+UITextField::eStopEditPolicy UITextField::GetStopEditPolicy() const
 {
-    return closeKeyboardPolicy;
+    return stopEditPolicy;
 }
 
-void UITextField::SetCloseKeyboardPolicy(eCloseKeyboardPolicy policy)
+void UITextField::SetStopEditPolicy(eStopEditPolicy policy)
 {
-    closeKeyboardPolicy = policy;
+    stopEditPolicy = policy;
 }
 
 bool UITextField::IsEnableReturnKeyAutomatically() const
@@ -851,6 +888,14 @@ void UITextField::SetMaxLength(int32 newMaxLength)
 int32 UITextField::GetMaxLength() const
 {
     return maxLength;
+}
+
+void UITextField::OnStartEditing()
+{
+}
+
+void UITextField::OnStopEditing()
+{
 }
 
 void UITextField::OnKeyboardShown(const Rect& keyboardRect)
@@ -916,24 +961,24 @@ void UITextField::SystemDraw(const UIGeometricData& geometricData)
     textFieldImpl->SystemDraw(localData);
 }
 
-int32 UITextField::GetOpenKeyboardPolicyAsInt() const
+int32 UITextField::GetStartEditPolicyAsInt() const
 {
-    return GetOpenKeyboardPolicy();
+    return GetStartEditPolicy();
 }
 
-void UITextField::SetOpenKeyboardPolicyFromInt(int32 policy)
+void UITextField::SetStartEditPolicyFromInt(int32 policy)
 {
-    SetOpenKeyboardPolicy(static_cast<eOpenKeyboardPolicy>(policy));
+    SetStartEditPolicy(static_cast<eStartEditPolicy>(policy));
 }
 
-int32 UITextField::GetCloseKeyboardPolicyAsInt() const
+int32 UITextField::GetStopEditPolicyAsInt() const
 {
-    return GetCloseKeyboardPolicy();
+    return GetStopEditPolicy();
 }
 
-void UITextField::SetCloseKeyboardPolicyFromInt(int32 policy)
+void UITextField::SetStopEditPolicyFromInt(int32 policy)
 {
-    SetCloseKeyboardPolicy(static_cast<eCloseKeyboardPolicy>(policy));
+    SetStopEditPolicy(static_cast<eStopEditPolicy>(policy));
 }
 
 } // namespace DAVA

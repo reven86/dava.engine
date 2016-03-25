@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "Math/Color.h"
 
@@ -39,6 +39,7 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UITextField.h"
+#include "UI/Focus/FocusHelpers.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/ImageConvert.h"
@@ -655,12 +656,23 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             // 1. click on text field in multiline mode as it is always shown on screen
             // 2. tab navigation
             UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-            if (curFocused != uiTextField)
+            if (curFocused != uiTextField && FocusHelpers::CanFocusControl(uiTextField))
+            {
                 uiTextField->SetFocused();
+            }
+
+            if (uiTextField == UIControlSystem::Instance()->GetFocusedControl() && !uiTextField->IsEditing())
+            {
+                uiTextField->StartEdit();
+            }
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
-            Rect rect = WindowToVirtual(keyboardRect);
-            uiTextField->OnKeyboardShown(rect);
+            // If keyboard rect is not empty so manually notify delegate about keyboard size and position
+            if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
+            {
+                Rect rect = WindowToVirtual(keyboardRect);
+                uiTextField->OnKeyboardShown(rect);
+            }
         }
     });
 }
@@ -673,11 +685,19 @@ void PrivateTextFieldWinUAP::OnLostFocus()
         RenderToTexture(true);
     }
 
+    // prevent lose focus on pointer up event
+    if (uiTextField != nullptr && UIControlSystem::Instance()->GetFocusedControl() == uiTextField && uiTextField->IsEditing())
+    {
+        nativeControl->Focus(FocusState::Programmatic);
+        return;
+    }
+
     auto self{ shared_from_this() };
     core->RunOnMainThread([this, self]() {
         if (uiTextField != nullptr)
         {
             uiTextField->OnKeyboardHidden();
+            uiTextField->ReleaseFocus();
         }
     });
 }

@@ -99,6 +99,8 @@ elseif ( WIN32 )
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
+    add_definitions ( -D_UNICODE )
+    add_definitions ( -DUNICODE )
 endif  ()
 
 if( NOT DISABLE_DEBUG )
@@ -118,17 +120,66 @@ if( WARNING_DISABLE)
 
 elseif( WARNINGS_AS_ERRORS )
 
+if ( MACOS )
+        set(LOCAL_DISABLED_WARNINGS "-Werror")
+endif ()
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
-    -w \
-    -Wno-c++98-compat-pedantic \
-    -Wno-documentation-pedantic \
-    -Wno-documentation \
-    -Wno-nullable-to-nonnull-conversion \
-    -Wno-nonnull \
-    -Wno-nested-anon-types \
-    -Wno-gnu-anonymous-struct \
-")
+-Wno-c++98-compat-pedantic \
+-Wno-newline-eof \
+-Wno-gnu-anonymous-struct \
+-Wno-nested-anon-types \
+-Wno-float-equal \
+-Wno-extra-semi \
+-Wno-unused-parameter \
+-Wno-shadow \
+-Wno-exit-time-destructors \
+-Wno-documentation \
+-Wno-global-constructors \
+-Wno-padded \
+-Wno-weak-vtables \
+-Wno-variadic-macros \
+-Wno-deprecated-register \
+-Wno-sign-conversion \
+-Wno-sign-compare \
+-Wno-format-nonliteral \
+-Wno-cast-align \
+-Wno-conversion \
+-Wno-zero-length-array \
+-Wno-switch-enum \
+-Wno-c99-extensions \
+-Wno-missing-prototypes \
+-Wno-missing-field-initializers \
+-Wno-conditional-uninitialized \
+-Wno-covered-switch-default \
+-Wno-deprecated \
+-Wno-unused-macros \
+-Wno-disabled-macro-expansion \
+-Wno-undef \
+-Wno-char-subscripts \
+-Wno-unneeded-internal-declaration \
+-Wno-unused-variable \
+-Wno-used-but-marked-unused \
+-Wno-missing-variable-declarations \
+-Wno-gnu-statement-expression \
+-Wno-missing-braces \
+-Wno-reorder \
+-Wno-implicit-fallthrough \
+-Wno-ignored-qualifiers \
+-Wno-shift-sign-overflow \
+-Wno-mismatched-tags \
+-Wno-missing-noreturn \
+-Wno-consumed \
+-Wno-sometimes-uninitialized \
+-Wno-delete-non-virtual-dtor \
+-Wno-header-hygiene \
+-Wno-unknown-warning-option \
+-Wno-reserved-id-macro \
+-Wno-documentation-pedantic \
+-Wno-unused-local-typedef \
+-Wno-nullable-to-nonnull-conversion \
+-Wno-super-class-method-mismatch \
+-Wno-nonnull")
 
 
     if( ANDROID )
@@ -177,7 +228,12 @@ elseif ( IOS     )
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
 
-elseif ( WIN32)
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win" ) 
+elseif ( WIN32 )
+
+	if ( X64_MODE )
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
+	else ()
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
+	endif ()
     
 endif  ()

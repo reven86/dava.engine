@@ -70,7 +70,7 @@ public:
 private:
     void ClearFocusState(UIControl* control);
     UIControl* FindFirstControl(UIControl* control) const;
-    UIControl* FindFirstControlImpl(UIControl* control, UIControl* candidate) const;
+    bool IsControlBetterForFocusThanCandidate(UIControl* c1, UIControl* c2) const;
 
     RefPtr<UIControl> focusedControl;
     RefPtr<UIControl> root;

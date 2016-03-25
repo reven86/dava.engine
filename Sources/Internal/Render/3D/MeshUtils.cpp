@@ -328,7 +328,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
     outJoints.resize(childrenNodes.size());
 
     int32 currentTargetIndex = 0;
-    for (int32 nodeIndex = 0; nodeIndex < (int32)childrenNodes.size(); ++nodeIndex)
+    for (int32 nodeIndex = 0; nodeIndex < int32(childrenNodes.size()); ++nodeIndex)
     {
         Entity* child = childrenNodes[nodeIndex];
         RenderObject* ro = GetRenderObject(child);
@@ -368,7 +368,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
         }
         else
         {
-            for (int32 i = 0; i < (int32)childrenNodes.size(); ++i)
+            for (int32 i = 0; i < int32(childrenNodes.size()); ++i)
             {
                 if (parentEntity == childrenNodes[i])
                 {
@@ -389,7 +389,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
         int32 vxCount = 0;
         int32 indCount = 0;
         int32 meshFormat = data.front().batch->GetPolygonGroup()->GetFormat();
-        for (int32 dataIndex = 0; dataIndex < (int32)data.size(); ++dataIndex)
+        for (int32 dataIndex = 0; dataIndex < int32(data.size()); ++dataIndex)
         {
             vxCount += data[dataIndex].batch->GetPolygonGroup()->GetVertexCount();
             indCount += data[dataIndex].batch->GetPolygonGroup()->GetIndexCount();
@@ -402,7 +402,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
 
         int32 vertexOffset = 0;
         int32 indexOffset = 0;
-        for (int32 dataIndex = 0; dataIndex < (int32)data.size(); ++dataIndex)
+        for (int32 dataIndex = 0; dataIndex < int32(data.size()); ++dataIndex)
         {
             PolygonGroup* currentGroup = data[dataIndex].batch->GetPolygonGroup();
             int32 currentBatchVxCount = currentGroup->GetVertexCount();
@@ -420,7 +420,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
             {
                 int32 index;
                 currentGroup->GetIndex(currentBatchIdxIndex, index);
-                polygonGroup->SetIndex(indexOffset + currentBatchIdxIndex, (int16)(vertexOffset + index));
+                polygonGroup->SetIndex(indexOffset + currentBatchIdxIndex, int16(vertexOffset + index));
             }
 
             vertexOffset += currentBatchVxCount;
