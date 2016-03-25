@@ -35,7 +35,7 @@ private:
 		@param level The error level: FUError::DEBUG_LEVEL is recommended.
 		@param message The formatted message to output. */
     static void DebugOut(uint8 level, const char* message, ...);
-#ifdef UNICODE
+#if (1)
     static void DebugOut(uint8 level, const fchar* message, ...); /**< See above. */
 #endif // UNICODE
 
@@ -44,7 +44,7 @@ private:
 		@param message The formatted message to output.
 		@param vars A standard variable argument list. */
     static void DebugOutV(uint8 level, const char* message, va_list& vars);
-#ifdef UNICODE
+#if (1)
     static void DebugOutV(uint8 level, const fchar* message, va_list& vars); /**< See above. */
 #endif // UNICODE
 
@@ -55,7 +55,7 @@ private:
 		@param message The formatted message to output.
 		@param vars A standard variable argument list. */
     static void DebugOutV(uint8 level, const char* filename, uint32 line, const char* message, va_list& vars);
-#ifdef UNICODE
+#if (1)
     static void DebugOutV(uint8 level, const char* filename, uint32 line, const fchar* message, va_list& vars); /**< See above. */
 #endif // UNICODE
 
@@ -66,7 +66,7 @@ public:
 		@param line The line number of the code trace.
 		@param message The formatted message to output. */
     static void DebugOut(uint8 level, uint32 line, const char* filename, const char* message, ...);
-#ifdef UNICODE
+#if (1)
     static void DebugOut(uint8 level, uint32 line, const char* filename, const fchar* message, ...); /**< See above. */
 #endif // UNICODE
 };

@@ -266,10 +266,9 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     psdNameWithoutExtension.TruncateExtension();
 
     IMagickHelper::CroppedData cropped_data;
+    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), cropped_data, true);
 
-    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), &cropped_data, true);
-
-    if (cropped_data.layers_array_size == 0)
+    if (cropped_data.layers_count == 0)
     {
         AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
         return nullptr;
@@ -285,7 +284,7 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
 
     defFile->spriteWidth = width;
     defFile->spriteHeight = height;
-    defFile->frameCount = static_cast<uint32>(cropped_data.layers_array_size) - 1;
+    defFile->frameCount = cropped_data.layers_count;
     defFile->frameRects = new Rect2i[defFile->frameCount];
 
     for (uint32 k = 0; k < defFile->frameCount; ++k)
@@ -295,7 +294,7 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
 
         if (useLayerNames)
         {
-            layerName.assign(cropped_data.layers_array[k + 1].name);
+            layerName.assign(cropped_data.layers[k].name);
             if (layerName.empty())
             {
                 Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k);
@@ -318,12 +317,10 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
         //save layer rects
         if (!withAlpha)
         {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers_array[k + 1].x, cropped_data.layers_array[k + 1].y, cropped_data.layers_array[k + 1].dx, cropped_data.layers_array[k + 1].dy);
+            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
 
-            //printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
-
-            int32 maxSize = static_cast<int32>(maxTextureSize);
-            if ((defFile->frameRects[k].dx > maxSize) || (defFile->frameRects[k].dy > maxSize))
+            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
+            if ((defFile->frameRects[k].dx > iMaxTextureSize) || (defFile->frameRects[k].dy > iMaxTextureSize))
             {
                 Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k, maxTextureSize, defFile->frameRects[k].dx, defFile->frameRects[k].dy, width, height);
 
@@ -347,7 +344,7 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
         }
         else
         {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers_array[k + 1].x, cropped_data.layers_array[k + 1].y, width, height);
+            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, width, height);
         }
     }
 
@@ -586,7 +583,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                 }
 
                 const char* result = definitionFileList.empty() ? "[unchanged]" : "[REPACKED]";
-                Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(packTime) / 1000.0f, result);
+                Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(),
+                             static_cast<float64>(packTime) / 1000.0, result);
 
                 for_each(definitionFileList.begin(), definitionFileList.end(), SafeDelete<DefinitionFile>);
 

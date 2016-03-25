@@ -52,7 +52,12 @@ set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icn
 set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
+
+if ( X64_MODE )
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
+else ()
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+endif ()
 
 setup_main_executable()
 

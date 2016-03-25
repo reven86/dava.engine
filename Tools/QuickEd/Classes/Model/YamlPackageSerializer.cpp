@@ -132,7 +132,7 @@ String YamlPackageSerializer::WriteToString() const
 {
     DynamicMemoryFile* file = DynamicMemoryFile::Create(File::WRITE);
     YamlEmitter::SaveToYamlFile(GetYamlNode(), file);
-    String str((const char*)file->GetData(), file->GetSize());
+    String str(reinterpret_cast<const char*>(file->GetData()), file->GetSize());
     SafeRelease(file);
     return str;
 }
