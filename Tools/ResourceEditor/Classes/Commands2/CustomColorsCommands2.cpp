@@ -33,8 +33,10 @@
 #include "../Qt/Scene/SceneSignals.h"
 #include "../Qt/Main/QtUtils.h"
 
-ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* _customColorsProxy, const Rect& _updatedRect)
+ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* _customColorsProxy,
+                                                     const Rect& _updatedRect, bool shouldClear)
     : Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
+    , shouldClearTexture(shouldClear)
 {
     const Vector2 topLeft(floorf(_updatedRect.x), floorf(_updatedRect.y));
     const Vector2 bottomRight(ceilf(_updatedRect.x + _updatedRect.dx), ceilf(_updatedRect.y + _updatedRect.dy));
@@ -56,32 +58,34 @@ ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
 
 void ModifyCustomColorsCommand::Undo()
 {
-    ApplyImage(undoImage);
+    ApplyImage(undoImage, true);
     customColorsProxy->DecrementChanges();
 }
 
 void ModifyCustomColorsCommand::Redo()
 {
-    ApplyImage(redoImage);
+    ApplyImage(redoImage, false);
     customColorsProxy->IncrementChanges();
 }
 
-void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image)
+void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image, bool disableBlend)
 {
     ScopedPtr<Texture> fboTexture(Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
+
+    auto material = disableBlend ? RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL : customColorsProxy->GetBrushMaterial();
 
     Texture* proxy = customColorsProxy->GetTexture();
     desc.colorAttachment = proxy->handle;
     desc.depthAttachment = proxy->handleDepthStencil;
     desc.width = proxy->GetWidth();
     desc.height = proxy->GetHeight();
-    desc.clearTarget = false;
+    desc.clearTarget = shouldClearTexture;
     desc.transformVirtualToPhysical = false;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    RenderSystem2D::Instance()->DrawTexture(fboTexture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(fboTexture, material, Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 
     customColorsProxy->UpdateRect(updatedRect);

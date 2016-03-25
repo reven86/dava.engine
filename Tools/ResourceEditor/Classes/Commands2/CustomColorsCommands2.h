@@ -44,20 +44,24 @@ using namespace DAVA;
 class ModifyCustomColorsCommand : public Command2
 {
 public:
-    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* customColorsProxy, const Rect& updatedRect);
+    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* customColorsProxy,
+                              const Rect& updatedRect, bool clearTexture);
     ~ModifyCustomColorsCommand() override;
 
     void Undo() override;
     void Redo() override;
     Entity* GetEntity() const override;
 
-protected:
-    CustomColorsProxy* customColorsProxy;
-    Image* undoImage;
-    Image* redoImage;
-    Rect updatedRect;
+private:
+    void ApplyImage(Image* image, bool disableBlend);
 
-    void ApplyImage(Image* image);
+private:
+    CustomColorsProxy* customColorsProxy = nullptr;
+    Image* undoImage = nullptr;
+    Image* redoImage = nullptr;
+    Texture* texture = nullptr;
+    Rect updatedRect;
+    bool shouldClearTexture = false;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__) */

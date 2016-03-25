@@ -40,13 +40,13 @@ class CustomColorsSystem : public LandscapeEditorSystem
 {
 public:
     CustomColorsSystem(Scene* scene);
-    virtual ~CustomColorsSystem();
+    ~CustomColorsSystem() override;
 
     LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
     bool DisableLandscapeEdititing(bool saveNeeded = true);
 
-    virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent* event);
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent* event) override;
 
     void SetBrushSize(int32 brushSize, bool updateDrawSystem = true);
     int32 GetBrushSize();
@@ -54,27 +54,13 @@ public:
     int32 GetColor();
 
     void SaveTexture(const FilePath& filePath);
-    bool LoadTexture(const FilePath& filePath, bool createUndo = true);
+    bool LoadTexture(const FilePath& filePath, bool createUndo);
     FilePath GetCurrentSaveFileName();
 
     bool ChangesPresent();
 
-protected:
+private:
     bool CouldApplyImage(Image* image, const String& imageName) const;
-
-    int32 curToolSize;
-    Texture* toolImageTexture = nullptr;
-
-    Texture* loadedTexture = nullptr;
-
-    Color drawColor;
-    int32 colorIndex = 0;
-
-    Rect updatedRectAccumulator;
-
-    bool editingIsEnabled = false;
-
-    Image* originalImage = nullptr;
 
     void UpdateToolImage(bool force = false);
     void UpdateBrushTool();
@@ -98,6 +84,16 @@ protected:
     void FinishEditing();
 
     Command2::Pointer CreateSaveFileNameCommand(const String& filePath);
+
+private:
+    Texture* toolImageTexture = nullptr;
+    Texture* loadedTexture = nullptr;
+    Image* originalImage = nullptr;
+    Color drawColor = Color::Transparent;
+    int32 colorIndex = 0;
+    int32 curToolSize = 120;
+    Rect updatedRectAccumulator;
+    bool editingIsEnabled = false;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */
