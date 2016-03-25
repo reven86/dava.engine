@@ -122,7 +122,7 @@ void ModificationWidget::ReloadValues()
     if (nullptr != curScene)
     {
         const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
-        if (!selection.IsEmpty() && selection.SupportsTransformType(modifMode))
+        if ((modifMode != Selectable::TransformType::Disabled) && !selection.IsEmpty() && selection.SupportsTransformType(modifMode))
         {
             xAxisModify->setEnabled(true);
             yAxisModify->setEnabled(true);
