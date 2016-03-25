@@ -39,8 +39,10 @@ Compressor::~Compressor()
 ZipArchive::ZipArchive(const FilePath& fileName)
     : zipFile(fileName)
 {
+    Logger::Error("phase inside ZipArchive 0");
     // Get and print information about each file in the archive.
     uint32 count = zipFile.GetNumFiles();
+    Logger::Error("phase inside ZipArchive 1");
     fileNames.clear();
     fileInfos.clear();
     fileNames.reserve(count);
@@ -54,6 +56,7 @@ ZipArchive::ZipArchive(const FilePath& fileName)
 
         if (!zipFile.GetFileInfo(i, name, origSize, compressedSize, isDirectory))
         {
+            Logger::Error("phase inside ZipArchive Exception!!!");
             throw std::runtime_error("failed! get file info");
         }
 
@@ -68,10 +71,12 @@ ZipArchive::ZipArchive(const FilePath& fileName)
             fileInfos.push_back(info);
         }
     }
+    Logger::Error("phase inside ZipArchive 2 start sort");
     std::stable_sort(begin(fileInfos), end(fileInfos), [](const ResourceArchive::FileInfo& left, const ResourceArchive::FileInfo& right)
                      {
                          return std::strcmp(left.fileName, right.fileName) < 0;
                      });
+    Logger::Error("phase inside ZipArchive finish constructor");
 }
 
 ZipArchive::~ZipArchive()
