@@ -204,17 +204,30 @@ elseif( WIN32 )
             "psapi.lib"
             "dbghelp.lib"
             "userenv.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"
-            "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
             "delayimp.lib"
             "dxgi.lib"
-    )
+	)
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
+
+    if( X64_MODE )
+	    list ( APPEND LIST_SHARED_LIBRARIES
+            "$ENV{DXSDK_DIR}/lib/x64/d3dx9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d11.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3dcompiler.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
+    	)
+	else ()
+	    list ( APPEND LIST_SHARED_LIBRARIES
+            "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
+    	)
+	endif ()
 
     set ( IGNORED_RHI_FOLDER "Metal" )
 

@@ -1,6 +1,16 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if( WIN32 )
+	if( X64_MODE )
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN64})
+	else ()
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN})
+	endif ()	
+elseif ( MACOS )
+	set (QT_ACTUAL_PATH ${QT5_PATH_MAC})
+endif ()
+
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
@@ -17,7 +27,7 @@ macro ( qt_deploy )
         endif()
 
         set(DEPLOY_PLATFORM "WIN")
-        set(DEPLOY_QT_FOLDER ${QT5_PATH_WIN})
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
@@ -35,7 +45,7 @@ macro ( qt_deploy )
         endif()
 
         set(DEPLOY_PLATFORM "MAC")
-        set(DEPLOY_QT_FOLDER ${QT5_PATH_MAC})
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
@@ -74,7 +84,7 @@ macro(resolve_qt_pathes)
         endif()
 
         find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
-                          PATHS ${QT5_PATH_MAC} ${QT5_PATH_WIN}
+                          PATHS ${QT_ACTUAL_PATH}
                           PATH_SUFFIXES lib)
 
         ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")

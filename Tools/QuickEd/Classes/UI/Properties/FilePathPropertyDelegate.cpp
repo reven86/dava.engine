@@ -29,6 +29,7 @@
 
 #include "FilePathPropertyDelegate.h"
 #include <QLineEdit>
+#include <QApplication>
 #include "DAVAEngine.h"
 #include "Utils/QtDavaConvertion.h"
 #include "PropertiesTreeItemDelegate.h"

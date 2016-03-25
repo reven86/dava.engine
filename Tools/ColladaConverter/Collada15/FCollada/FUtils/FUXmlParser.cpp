@@ -42,7 +42,7 @@ fm::string XmlToString(const char* s)
     return xmlSBuilder.ToString();
 }
 
-#ifdef UNICODE
+#if (1)
 // Convert a XML string to a text string: handles the '%' character
 fstring XmlToString(const fchar* s)
 {

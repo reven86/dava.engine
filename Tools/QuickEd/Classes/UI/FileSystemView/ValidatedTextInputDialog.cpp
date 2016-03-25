@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ValidatedTextInputDialog.h"
 #include <QPushButton>
 #include <QDialogButtonBox>
+#include <QApplication>
 
 ValidatedTextInputDialog::ValidatedTextInputDialog(QWidget* parent)
     : QInputDialog(parent)

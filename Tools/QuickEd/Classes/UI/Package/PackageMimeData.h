@@ -47,7 +47,6 @@ class PackageMimeData : public QMimeData
 public:
     static const QString MIME_TYPE;
 
-public:
     PackageMimeData();
     virtual ~PackageMimeData();
 

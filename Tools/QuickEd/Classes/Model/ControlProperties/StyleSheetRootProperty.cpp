@@ -264,7 +264,7 @@ StyleSheetProperty* StyleSheetRootProperty::FindPropertyByPropertyIndex(DAVA::ui
 
 StyleSheetSelectorProperty* StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int32 index) const
 {
-    if (0 <= index && index < (int32)selectors->GetCount())
+    if (0 <= index && index < static_cast<int32>(selectors->GetCount()))
     {
         return static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(index));
     }

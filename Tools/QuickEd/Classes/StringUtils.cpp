@@ -38,7 +38,7 @@ QString TruncateFileExtension(const QString& fileName, const QString& extension)
 
     String truncatedName = fileName.toStdString();
 
-    int truncatedStringLen = truncatedName.length() - extension.length();
+    size_t truncatedStringLen = truncatedName.length() - extension.length();
     bool endsWithExtension = false;
     if (fileName.length() >= extension.length())
     {
