@@ -33,7 +33,6 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
-
 #include "Private/IUITextField2Impl.h"
 #include "Private/UITextField2StbBind.h"
 
