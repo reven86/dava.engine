@@ -69,6 +69,7 @@ public:
 
     PackageNode* GetPackage() override;
     const PackageNode* GetPackage() const override;
+    void SetPath(const DAVA::FilePath& path);
     const DAVA::FilePath& GetPath() const;
     DAVA::UIControlPackageContext* GetContext() const;
     bool IsImported() const;

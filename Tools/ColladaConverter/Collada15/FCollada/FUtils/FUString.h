@@ -722,7 +722,7 @@ inline bool IsEquivalentI(const fm::string& sz1, const fm::string& sz2)
 {
     return _stricmp(sz1.c_str(), sz2.c_str()) == 0;
 } /**< See above. */
-#ifdef UNICODE
+#if (1)
 inline bool IsEquivalentI(const fchar* sz1, const fchar* sz2)
 {
     return fstricmp(sz1, sz2) == 0;
@@ -750,7 +750,7 @@ inline bool operator==(const fm::string& sz1, const char* sz2)
     return strcmp(sz1.c_str(), sz2) == 0;
 }
 
-#ifdef UNICODE
+#if (1)
 /** Returns whether two Unicode strings are equivalent. This is a case-sensitive comparison.
 	@param sz1 The first Unicode string to compare.
 	@param sz2 The second Unicode string to compare.
@@ -813,7 +813,7 @@ inline bool IsEquivalent(FUSStringBuilder& builder, const fm::string& sz)
 {
     return IsEquivalent(builder.ToCharPtr(), sz.c_str());
 } /**< See above. */
-#ifdef UNICODE
+#if (1)
 inline bool IsEquivalent(FUStringBuilder& builder, const fchar* sz)
 {
     return IsEquivalent(builder.ToCharPtr(), sz);

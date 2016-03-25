@@ -36,10 +36,10 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FCollada )
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
-include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 
 include_directories   (.)
 include_directories   ( "../TextureTools" )
@@ -66,7 +66,6 @@ add_definitions       (
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
 -DDAVA_FMOD
--D_DISABLE_IMAGE_MAGICK
 )
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
@@ -78,10 +77,16 @@ qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 if( WIN32 )
     add_definitions( -D__DAVAENGINE_BEAST__ )
     set( BEAST_WRAPPER   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
+	if( X64_MODE )
+    	set( BEAST_LIB       "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast64.lib" )
+	    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN64_release_bullet.lib )    
+    	set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN64_debug_bullet.lib )    
+	else ()
     set( BEAST_LIB       "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
-
     set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_release_bullet.lib )    
     set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_debug_bullet.lib )    
+	endif()
+
 
 elseif( MACOS )
     set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/MACOS_release_bullet.a )    
@@ -105,18 +110,21 @@ set( LIBRARIES            ${BEAST_LIB} )
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
                                                        
-
-set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+if ( WIN32 AND X64_MODE )
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
+else ()
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+endif ()
 
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
 DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
                            COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll
+                           COPY_WIN64  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast64.dll                           
                            COPY_DIR    ${DEPLOY_DIR}
                          )
 
 setup_main_executable()
-
 if (DEPLOY)
     set(BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR})
     if (NOT WIN32)

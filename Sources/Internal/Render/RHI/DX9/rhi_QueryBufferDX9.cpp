@@ -96,7 +96,7 @@ dx9_QueryBuffer_Delete(Handle handle)
             cmd.push_back(c);
         }
 
-        ExecDX9(&cmd[0], cmd.size());
+        ExecDX9(&cmd[0], static_cast<uint32>(cmd.size()));
         buf->query.clear();
     }
 
