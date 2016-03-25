@@ -80,7 +80,6 @@ static const String EDITOR_DYNAMIC_LIGHT_ENABLE = "editor.dynamiclight.enable";
 static const String DOCUMENTATION_PATH = "~doc:/ResourceEditorHelp/";
 
 //service strings
-static const String TAG = "tag";
 
 static const String CUSTOM_COLOR_TEXTURE_PROP = "customColorTexture";
 

@@ -61,7 +61,7 @@ bool FUFile::Open(const fchar* filename, Mode mode)
         break;
     }
 
-#ifdef UNICODE
+#if (1)
 #ifdef WIN32
     filePtr = _wfopen(filename, openMode);
 #else
