@@ -773,7 +773,7 @@ void Landscape::AllocateGeometryDataNoInstancing()
     if (quadsInWidth == 0)
         quadsInWidth = 1;
 
-    quadsInWidthPow2 = HighestBitIndex(quadsInWidth);
+    quadsInWidthPow2 = uint32(HighestBitIndex(quadsInWidth));
 
     for (uint32 y = 0; y < quadsInWidth; ++y)
     {
