@@ -237,7 +237,7 @@ public:
         STATE_DISABLED = 1 << 3, //!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
         STATE_SELECTED = 1 << 4, //!<Just a state for base control, nothing more.
         STATE_HOVER = 1 << 5, //!<This bit is rise then mouse is over the control.
-        STATE_FOCUSED = 1 << 6,
+        STATE_FOCUSED = 1 << 6, //!<Control under focus and will receive keyboard input. Additional this state can be used for setting visual style of control.
 
         STATE_COUNT = 7
     };
