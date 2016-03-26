@@ -50,8 +50,32 @@ LandscapeSystem::~LandscapeSystem()
 
 void LandscapeSystem::AddEntity(Entity* entity)
 {
-    if (GetLandscape(entity))
+    Landscape* landscapeObject = GetLandscape(entity);
+    if (landscapeObject)
+    {
         landscapeEntities.push_back(entity);
+
+        const LandscapeQuality* quality = QualitySettingsSystem::Instance()->GetLandscapeQuality(QualitySettingsSystem::Instance()->GetCurLandscapeQuality());
+        if (quality)
+        {
+            landscapeObject->normalMaxHeightError = quality->normalMaxHeightError;
+            landscapeObject->normalMaxPatchRadiusError = quality->normalMaxPatchRadiusError;
+            landscapeObject->normalMaxAbsoluteHeightError = quality->normalMaxAbsoluteHeightError;
+
+            landscapeObject->zoomMaxHeightError = quality->zoomMaxHeightError;
+            landscapeObject->zoomMaxPatchRadiusError = quality->zoomMaxPatchRadiusError;
+            landscapeObject->zoomMaxAbsoluteHeightError = quality->zoomMaxAbsoluteHeightError;
+
+            if (landscapeObject->useLodMorphing != quality->morphing)
+            {
+                landscapeObject->SetUseMorphing(quality->morphing);
+            }
+            else
+            {
+                landscapeObject->UpdatePatchInfo(0, 0, 0, Rect2i(0, 0, -1, -1));
+            }
+        }
+    }
 }
 
 void LandscapeSystem::RemoveEntity(Entity* entity)

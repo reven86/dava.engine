@@ -63,3 +63,34 @@ materials:
   group: "Spherical Harmonics"
   quality: ["HIGH", "MEDIUM", "LOW"]
   default: "HIGH"
+
+landscape:
+ default: "LOW"
+ qualities:
+  - 
+   quality: "LOW"
+   morphing: true
+   normalMaxHeightError: 0.02
+   normalMaxPatchRadiusError: 0.8
+   normalMaxAbsoluteHeightError: 3.0
+   zoomMaxHeightError: 0.04
+   zoomMaxPatchRadiusError: 1.6
+   zoomMaxAbsoluteHeightError: 3.0
+  - 
+   quality: "MEDIUM"
+   morphing: true
+   normalMaxHeightError: 0.01
+   normalMaxPatchRadiusError: 0.4
+   normalMaxAbsoluteHeightError: 2.0
+   zoomMaxHeightError: 0.02
+   zoomMaxPatchRadiusError: 0.8
+   zoomMaxAbsoluteHeightError: 2.0
+  -
+   quality: "HIGH"
+   morphing: true
+   normalMaxHeightError: 0.005
+   normalMaxPatchRadiusError: 0.2
+   normalMaxAbsoluteHeightError: 1.0
+   zoomMaxHeightError: 0.01
+   zoomMaxPatchRadiusError: 0.4
+   zoomMaxAbsoluteHeightError: 1.0
