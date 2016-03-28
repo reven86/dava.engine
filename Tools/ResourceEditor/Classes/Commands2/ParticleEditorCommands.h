@@ -120,6 +120,16 @@ public:
     CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter);
     void Redo() override;
 
+    ParticleEffectComponent* GetEffect() const
+    {
+        return selectedEffect;
+    }
+
+    ParticleEmitterInstance* GetEmitterInstance() const
+    {
+        return instance;
+    }
+
 protected:
     ParticleEffectComponent* selectedEffect = nullptr;
     ParticleEmitterInstance* instance = nullptr;

@@ -40,7 +40,6 @@ class ParticleEmitterInstance : public BaseObject
 public:
     ParticleEmitterInstance(ParticleEffectComponent* owner, bool isInner = false);
     ParticleEmitterInstance(ParticleEffectComponent* owner, ParticleEmitter* emitter, bool isInner = false);
-    ~ParticleEmitterInstance();
 
     ParticleEmitter* GetEmitter() const;
     const FilePath& GetFilePath() const;

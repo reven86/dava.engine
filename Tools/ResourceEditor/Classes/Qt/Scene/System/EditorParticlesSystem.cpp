@@ -118,13 +118,13 @@ void EditorParticlesSystem::Draw()
 {
     for (auto entity : entities)
     {
-        if ((entity == selectedEffectEntity) && (selectedEmitter != nullptr))
+        auto effect = static_cast<ParticleEffectComponent*>(entity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
+        if (effect != nullptr)
         {
-            DrawEmitter(selectedEmitter, selectedEffectEntity);
-        }
-        else
-        {
-            DrawDebugInfoForEffect(entity);
+            for (DAVA::uint32 i = 0, e = effect->GetEmittersCount(); i < e; ++i)
+            {
+                DrawEmitter(effect->GetEmitterInstance(i), entity);
+            }
         }
     }
 }

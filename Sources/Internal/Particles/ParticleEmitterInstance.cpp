@@ -43,11 +43,6 @@ ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_
 {
 }
 
-ParticleEmitterInstance::~ParticleEmitterInstance()
-{
-    Logger::Info("KILLED...");
-}
-
 ParticleEmitterInstance* ParticleEmitterInstance::Clone() const
 {
     ScopedPtr<ParticleEmitter> clonedEmitter(emitter->Clone());

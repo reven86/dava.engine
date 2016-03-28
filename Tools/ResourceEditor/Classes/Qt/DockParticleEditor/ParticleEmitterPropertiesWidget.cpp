@@ -198,7 +198,20 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
 
 void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Command2* command, bool redo)
 {
-    if ((blockSignals == false) && (GetActiveScene() == scene) && (instance != nullptr) && (effect != nullptr))
+    if (blockSignals || (GetActiveScene() != scene))
+        return;
+
+    if (command->GetId() == CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
+    {
+        auto cmd = static_cast<const CommandRemoveParticleEmitter*>(command);
+        if (cmd->GetEmitterInstance() == instance)
+        {
+            instance = nullptr;
+            effect = nullptr;
+        }
+    }
+
+    if ((instance != nullptr) && (effect != nullptr))
     {
         UpdateProperties();
     }
