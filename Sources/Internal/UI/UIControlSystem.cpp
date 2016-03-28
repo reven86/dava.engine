@@ -668,7 +668,7 @@ void UIControlSystem::OnControlInvisible(UIControl* control)
         CancelInputs(control, false);
     }
 
-    focusSystem->ControlBecomInvisible(control);
+    focusSystem->OnControlInvisible(control);
 }
 
 UIControl* UIControlSystem::GetFocusedControl()
