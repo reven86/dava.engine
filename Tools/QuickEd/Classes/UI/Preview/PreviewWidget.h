@@ -53,6 +53,7 @@ class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
 class QDragMoveEvent;
+class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
 
@@ -127,6 +128,7 @@ private:
 
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
+    void NotifySelectionChanged();
 
     QPoint lastMousePos;
     QCursor lastCursor;
@@ -145,6 +147,11 @@ private:
     QAction* focusPreviousChildAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
+
+    ContinuousUpdater* continuousUpdater = nullptr;
+
+    SelectedNodes tmpSelected; //for continuousUpdater
+    SelectedNodes tmpDeselected; //for continuousUpdater
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget() const
