@@ -31,9 +31,9 @@
 #include "Render/Cursor.h"
 #include "FileSystem/FileSystem.h"
 
-#if defined(__DAVAENGINE_MACOS__) 
+#if defined(__DAVAENGINE_MACOS__)
 
-
+/*
 #if defined(Q_OS_MAC)
 #include "Platform/Qt/MacOS/CorePlatformMacOS.h"
 #else //#if defined(Q_OS_MAC)
@@ -155,5 +155,5 @@ bool Cursor::GetSystemCursorVisibility()
 }
 };
 
-
+*/
 #endif // __DAVAENGINE_MACOS__

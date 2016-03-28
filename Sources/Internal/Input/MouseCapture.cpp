@@ -33,7 +33,7 @@ void MouseCapture::SetMouseCaptureMode(DAVA::InputSystem::eMouseCaptureMode newM
 
         if (DAVA::InputSystem::eMouseCaptureMode::PINING == mode)
         {
-            if (focused)
+            if (focused && !focusChenged)
             {
                 SetNativePining(mode);
             }
@@ -47,13 +47,14 @@ void MouseCapture::SetMouseCaptureMode(DAVA::InputSystem::eMouseCaptureMode newM
 
 DAVA::InputSystem::eMouseCaptureMode MouseCapture::GetMouseCaptureMode()
 {
-    return mode;
+    return nativeMode;
 }
 
 void MouseCapture::SetApplicationFocus(bool isFocused)
 {
     if (focused != isFocused)
     {
+        focusChenged = true;
         DAVA::Logger::Info("!!!!!! focus %d", int(isFocused));
 
         focused = isFocused;
@@ -74,6 +75,7 @@ void MouseCapture::SetApplicationFocus(bool isFocused)
 
 bool MouseCapture::SkipEvents(DAVA::UIEvent* event)
 {
+    focusChenged = false;
     if (DAVA::InputSystem::eMouseCaptureMode::PINING == mode && focused && !deferredCapture)
     {
         GetPrivateImpl()->SetCursorPosition();
@@ -85,7 +87,7 @@ bool MouseCapture::SkipEvents(DAVA::UIEvent* event)
     if (event->phase == DAVA::UIEvent::Phase::ENDED)
     {
         bool inRect = true;
-        DAVA::Vector2& windowSize = DAVA::Core::Instance()->GetWindowSize();
+        DAVA::Vector2 windowSize = DAVA::Core::Instance()->GetWindowSize();
         inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.x);
         inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
         if (inRect)
@@ -109,6 +111,6 @@ void MouseCapture::SetNativePining(DAVA::InputSystem::eMouseCaptureMode newNativ
 
 DAVA::InputSystem::eMouseCaptureMode MouseCapture::mode = DAVA::InputSystem::eMouseCaptureMode::OFF;
 DAVA::InputSystem::eMouseCaptureMode MouseCapture::nativeMode = DAVA::InputSystem::eMouseCaptureMode::OFF;
-bool MouseCapture::modeChanged = false;
 bool MouseCapture::focused = false;
+bool MouseCapture::focusChenged = false;
 bool MouseCapture::deferredCapture = false;

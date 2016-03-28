@@ -141,6 +141,10 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
+        float32 scaleX = 0.f, scaleY = 0.f;
+        scaleX = backingSize[0] / windowSize.width;
+        scaleY = backingSize[1] / windowSize.height;
+        /*
         rhi::ResetParam params;
         params.window = self;
         params.width = backingSize[0];
@@ -150,6 +154,9 @@ extern void FrameworkMain(int argc, char* argv[]);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        */
+        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scaleX, scaleY);
+        Core::Instance()->SetNativeView(self);
     }
 
     [super reshape];
@@ -327,7 +334,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 }
 
 // For explanation of mouseMoveSkipCounter see CursorMacOS.mm file, Cursor::SetMouseCaptureMode method
-extern int mouseMoveSkipCounter;
+//extern int mouseMoveSkipCounter;
 
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
@@ -338,11 +345,11 @@ extern int mouseMoveSkipCounter;
     case NSLeftMouseDragged:
     case NSRightMouseDragged:
     case NSOtherMouseDragged:
-        if (mouseMoveSkipCounter > 0)
-        {
-            mouseMoveSkipCounter -= 1;
-            return;
-        }
+        //       if (mouseMoveSkipCounter > 0)
+        //       {
+        //           mouseMoveSkipCounter -= 1;
+        //           return;
+        //       }
         break;
     default:
         break;
@@ -432,7 +439,7 @@ extern int mouseMoveSkipCounter;
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 
-void OSXShowCursor();
+//void OSXShowCursor();
 
 - (void)mouseExited:(NSEvent*)theEvent
 {
@@ -441,7 +448,7 @@ void OSXShowCursor();
     {
         // This event is sometimes delivered when mouse pinning is on
         // So do not show cursor while pinning is on
-        OSXShowCursor();
+        //OSXShowCursor();
     }
 }
 

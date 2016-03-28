@@ -31,6 +31,7 @@
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Input/MouseCapture.h"
 
 #import <AppKit/NSApplication.h>
 #import "Platform/TemplateMacOS/HelperAppDelegate.h"
@@ -354,7 +355,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
     }
 
-    Core::Instance()->SetNativeView(openGLView);
+    //    Core::Instance()->SetNativeView(openGLView);
 
     // start animation
     currFPS = Renderer::GetDesiredFPS();
@@ -378,6 +379,12 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
 
+    float32 scaleX = 0.f, scaleY = 0.f;
+    scaleX = backingSize[0] / windowSize.width;
+    scaleY = backingSize[1] / windowSize.height;
+
+    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scaleX, scaleY);
+    /*
     rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
     rendererParams.window = mainWindowController->openGLView;
     rendererParams.width = backingSize[0];
@@ -385,6 +392,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
+     */
 }
 
 - (void)setMinimumWindowSize:(float32)width height:(float32)height
@@ -424,11 +432,13 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)windowDidBecomeKey:(NSNotification*)notification
 {
+    MouseCapture::SetApplicationFocus(true);
     Core::Instance()->FocusReceived();
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification
 {
+    MouseCapture::SetApplicationFocus(false);
     Core::Instance()->FocusLost();
     InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
