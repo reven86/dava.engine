@@ -31,9 +31,9 @@
 
 #include <QTimer>
 
-LazyUpdater::LazyUpdater(Updater _updater, QObject* parent /* = nullptr */)
+LazyUpdater::LazyUpdater(Updater updater_, QObject* parent /* = nullptr */)
     : QObject(parent)
-    , updater(_updater)
+    , updater(updater_)
 {
 }
 
