@@ -414,24 +414,36 @@ bool VertexLayout::MakeCompatible(const VertexLayout& vbLayout, const VertexLayo
 
 //------------------------------------------------------------------------------
 
-void VertexLayout::Save(DAVA::File* out) const
+bool VertexLayout::Save(DAVA::File* out) const
 {
-    out->Write(&_elem_count);
-    out->Write(_elem, _elem_count * sizeof(Element));
+#define WRITE_CHECK(exp) if (!(exp)) { return false; }
 
-    out->Write(&_stream_count);
-    out->Write(_stream, _stream_count * sizeof(Stream));
+    WRITE_CHECK(out->Write(&_elem_count) == sizeof(_elem_count));
+    WRITE_CHECK(out->Write(_elem, _elem_count * sizeof(Element)) == _elem_count * sizeof(Element));
+
+    WRITE_CHECK(out->Write(&_stream_count) == sizeof(_stream_count));
+    WRITE_CHECK(out->Write(_stream, _stream_count * sizeof(Stream)) == _stream_count * sizeof(Stream));
+    
+#undef WRITE_CHECK
+
+    return true;
 }
 
 //------------------------------------------------------------------------------
 
-void VertexLayout::Load(DAVA::File* in)
+bool VertexLayout::Load(DAVA::File* in)
 {
-    in->Read(&_elem_count);
-    in->Read(&_elem, _elem_count * sizeof(Element));
+#define READ_CHECK(exp) if (!(exp)) { return false; }
 
-    in->Read(&_stream_count);
-    in->Read(&_stream, _stream_count * sizeof(Stream));
+    READ_CHECK(in->Read(&_elem_count) == sizeof(_elem_count));
+    READ_CHECK(in->Read(&_elem, _elem_count * sizeof(Element)) == _elem_count * sizeof(Element));
+
+    READ_CHECK(in->Read(&_stream_count) == sizeof(_stream_count));
+    READ_CHECK(in->Read(&_stream, _stream_count * sizeof(Stream)) == _stream_count * sizeof(Stream));
+    
+#undef READ_CHECK
+
+    return true;
 }
 
 //==============================================================================

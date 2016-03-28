@@ -277,7 +277,10 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         return;
     }
-    disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+    if (active != nullptr)
+    {
+        disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+    }
 
     active = document;
 

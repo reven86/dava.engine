@@ -55,7 +55,7 @@ int32 AbstractProperty::GetIndex(AbstractProperty* property) const
     for (uint32 i = 0; i < GetCount(); i++)
     {
         if (GetProperty(i) == property)
-            return (int32)i;
+            return static_cast<int32>(i);
     }
     return -1;
 }
