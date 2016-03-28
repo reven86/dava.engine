@@ -324,7 +324,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 void TextureGLES2_t::Destroy(bool force_immediate)
 {
     GLCommand cmd[16];
-    unsigned cmd_cnt = 1;
+    size_t cmd_cnt = 1;
 
     if (isRenderTarget)
     {
@@ -364,7 +364,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[1] = uint64(&(uid));
     }
 
-    ExecGL(cmd, cmd_cnt, force_immediate);
+    ExecGL(cmd, static_cast<uint32>(cmd_cnt), force_immediate);
 
     fbo.clear();
 

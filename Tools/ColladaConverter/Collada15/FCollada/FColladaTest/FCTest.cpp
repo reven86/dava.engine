@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     {
         testBed.GetLogFile().WriteLine(sz);
     }
-#ifdef UNICODE
+#if (1)
     catch (const fchar* sz)
     {
         testBed.GetLogFile().WriteLine(sz);

@@ -205,7 +205,7 @@ DavaGLWidget::DavaGLWidget(QWidget* parent)
     layout->addWidget(container);
     
 #if defined(Q_OS_MAC)
-    DAVA::Core::Instance()->SetNativeView((void*)davaGLView->winId());
+    DAVA::Core::Instance()->SetNativeView(reinterpret_cast<void*>(davaGLView->winId()));
 #endif //Q_OS_MAC
 }
 
