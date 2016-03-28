@@ -20,5 +20,6 @@ private:
     static DAVA::InputSystem::eMouseCaptureMode nativeMode;
     static bool focused;
     static bool focusChenged;
+    static bool firstEntered;
     static bool deferredCapture;
 };

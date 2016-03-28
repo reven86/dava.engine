@@ -55,6 +55,11 @@ void MouseCapture::SetApplicationFocus(bool isFocused)
     if (focused != isFocused)
     {
         focusChenged = true;
+        if (firstEntered)
+        {
+            firstEntered = false;
+            focusChenged = false;
+        }
         DAVA::Logger::Info("!!!!!! focus %d", int(isFocused));
 
         focused = isFocused;
@@ -113,4 +118,5 @@ DAVA::InputSystem::eMouseCaptureMode MouseCapture::mode = DAVA::InputSystem::eMo
 DAVA::InputSystem::eMouseCaptureMode MouseCapture::nativeMode = DAVA::InputSystem::eMouseCaptureMode::OFF;
 bool MouseCapture::focused = false;
 bool MouseCapture::focusChenged = false;
+bool MouseCapture::firstEntered = true;
 bool MouseCapture::deferredCapture = false;
