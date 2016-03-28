@@ -31,13 +31,13 @@
 
 using namespace DAVA;
 
-RegKey::RegKey(HKEY scope, const char* keyName, bool createIfNotExist)
+RegKey::RegKey(HKEY scope, const wchar_t* keyName, bool createIfNotExist)
 {
-    long res = ::RegOpenKeyEx(scope, keyName, 0, KEY_READ | KEY_WOW64_64KEY, &key);
+    long res = ::RegOpenKeyExW(scope, keyName, 0, KEY_READ | KEY_WOW64_64KEY, &key);
 
     if (res != ERROR_SUCCESS && createIfNotExist)
     {
-        res = ::RegCreateKeyEx(
+        res = ::RegCreateKeyExW(
         scope, keyName, 0, 0, 0, KEY_WRITE | KEY_WOW64_64KEY, 0, &key, 0);
         isCreated = res == ERROR_SUCCESS;
     }
@@ -45,48 +45,48 @@ RegKey::RegKey(HKEY scope, const char* keyName, bool createIfNotExist)
     isExist = res == ERROR_SUCCESS;
 }
 
-String RegKey::QueryString(const char* valueName) const
+WideString RegKey::QueryString(const wchar_t* valueName) const
 {
-    Array<char, 1024> arr{};
+    Array<wchar_t, 1024> arr{};
     DWORD size = arr.size();
     DWORD type;
 
-    ::RegQueryValueEx(key,
-                      valueName,
-                      NULL,
-                      &type,
-                      reinterpret_cast<LPBYTE>(arr.data()),
-                      &size);
+    ::RegQueryValueExW(key,
+                       valueName,
+                       NULL,
+                       &type,
+                       reinterpret_cast<LPBYTE>(arr.data()),
+                       &size);
 
-    return type == REG_SZ ? arr.data() : "";
+    return type == REG_SZ ? arr.data() : L"";
 }
 
-bool RegKey::SetValue(const String& valName, const String& val)
+bool RegKey::SetValue(const WideString& valName, const WideString& val)
 {
-    long res = ::RegSetValueEx(key, valName.c_str(), 0, REG_SZ,
-                               (LPBYTE)val.c_str(), val.size() + 1);
+    long res = ::RegSetValueExW(key, valName.c_str(), 0, REG_SZ,
+                                (LPBYTE)val.c_str(), val.size() + 1);
     return res == ERROR_SUCCESS;
 }
 
-DWORD RegKey::QueryDWORD(const char* valueName) const
+DWORD RegKey::QueryDWORD(const wchar_t* valueName) const
 {
     DWORD result;
     DWORD size = sizeof(result);
     DWORD type;
 
-    ::RegQueryValueEx(key,
-                      valueName,
-                      NULL,
-                      &type,
-                      reinterpret_cast<LPBYTE>(&result),
-                      &size);
+    ::RegQueryValueExW(key,
+                       valueName,
+                       NULL,
+                       &type,
+                       reinterpret_cast<LPBYTE>(&result),
+                       &size);
 
     return type == REG_DWORD ? result : -1;
 }
 
-bool RegKey::SetValue(const String& valName, DWORD val)
+bool RegKey::SetValue(const WideString& valName, DWORD val)
 {
-    long res = ::RegSetValueEx(key, valName.c_str(), 0, REG_DWORD,
-                               (LPBYTE)&val, sizeof(DWORD));
+    long res = ::RegSetValueExW(key, valName.c_str(), 0, REG_DWORD,
+                                (LPBYTE)&val, sizeof(DWORD));
     return res == ERROR_SUCCESS;
 }

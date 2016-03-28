@@ -35,11 +35,11 @@
 class SvcHelper
 {
 public:
-    SvcHelper(const DAVA::String& name);
+    SvcHelper(const DAVA::WideString& name);
     ~SvcHelper();
 
-    DAVA::String ServiceName() const;
-    DAVA::String ServiceDescription() const;
+    DAVA::WideString ServiceName() const;
+    DAVA::WideString ServiceDescription() const;
 
     bool IsInstalled() const;
     bool IsRunning() const;
@@ -47,7 +47,7 @@ public:
     bool Stop();
 
 private:
-    DAVA::String serviceName;
+    DAVA::WideString serviceName;
     SC_HANDLE serviceControlManager = nullptr;
     SC_HANDLE service = nullptr;
 };

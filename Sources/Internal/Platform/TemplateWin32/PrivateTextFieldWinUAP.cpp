@@ -692,7 +692,6 @@ void PrivateTextFieldWinUAP::OnLostFocus()
         return;
     }
 
-
     auto self{ shared_from_this() };
     core->RunOnMainThread([this, self]() {
         if (uiTextField != nullptr)

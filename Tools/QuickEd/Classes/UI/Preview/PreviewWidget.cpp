@@ -43,6 +43,7 @@
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Updaters/ContinuousUpdater.h"
 
 #include "Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -81,6 +82,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
@@ -130,6 +132,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
 PreviewWidget::~PreviewWidget()
 {
+    continuousUpdater->Stop();
 }
 
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
@@ -232,6 +235,7 @@ void PreviewWidget::CreateActions()
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
     DVASSERT(nullptr != systemsManager);
+    continuousUpdater->Stop();
     SaveContext();
     document = arg;
     if (document.isNull())
@@ -255,8 +259,8 @@ void PreviewWidget::SaveSystemsContextAndClear()
     if (!selectionContainer.selectedNodes.empty())
     {
         DVASSERT(!document.isNull());
-        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
-        systemsManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+        systemsManager->ClearSelection();
+        continuousUpdater->Stop();
         DVASSERT(selectionContainer.selectedNodes.empty());
     }
 }
@@ -356,9 +360,9 @@ void PreviewWidget::OnGLInitialized()
     systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
     systemsManager->EditingRootControlsChanged.Connect(this, &PreviewWidget::OnEditingRootControlsChanged);
-    connect(focusNextChildAction, &QAction::triggered, [this]() { systemsManager->FocusNextChild.Emit(); });
-    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemsManager->FocusPreviousChild.Emit(); });
-    connect(selectAllAction, &QAction::triggered, [this]() { systemsManager->SelectAllControls.Emit(); });
+    connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
+    connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
+    connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
 }
 
 void PreviewWidget::OnScaleChanged(qreal scale)
@@ -707,8 +711,18 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
 
 void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
+    for (const auto& node : deselected)
+    {
+        tmpSelected.erase(node);
+        tmpDeselected.insert(node);
+    }
+    for (const auto& node : selected)
+    {
+        tmpSelected.insert(node);
+        tmpDeselected.erase(node);
+    }
     selectionContainer.MergeSelection(selected, deselected);
-    emit SelectionChanged(selected, deselected);
+    continuousUpdater->Update();
 }
 
 void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
@@ -716,6 +730,16 @@ void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>
     DVASSERT(!document.isNull());
     auto commandExecutor = document->GetCommandExecutor();
     commandExecutor->ChangeProperty(propertyActions, hash);
+}
+
+void PreviewWidget::NotifySelectionChanged()
+{
+    if (!tmpSelected.empty() || !tmpDeselected.empty())
+    {
+        emit SelectionChanged(tmpSelected, tmpDeselected);
+    }
+    tmpSelected.clear();
+    tmpDeselected.clear();
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
