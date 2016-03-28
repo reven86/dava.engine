@@ -39,7 +39,7 @@
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/SceneSignals.h"
-#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
