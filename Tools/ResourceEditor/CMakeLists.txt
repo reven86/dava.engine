@@ -128,7 +128,6 @@ generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" GROUP_FOLDERS Speed
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
-set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
 set( LIBRARIES            ${BEAST_LIB} NgtTools)
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )

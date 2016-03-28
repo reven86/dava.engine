@@ -26,50 +26,34 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QUICKED_SELECTION_SYSTEM_H__
-#define __QUICKED_SELECTION_SYSTEM_H__
 
-#include "EditorSystems/SelectionContainer.h"
-#include "EditorSystems/BaseEditorSystem.h"
-#include "Math/Rect.h"
-#include "UI/UIEvent.h"
-#include <Functional/SignalBase.h>
-#include "Model/PackageHierarchy/PackageListener.h"
+#ifndef __TOOL_CONTINUOUS_UPDATER_H__
+#define __TOOL_CONTINUOUS_UPDATER_H__
 
-class EditorSystemsManager;
-class ControlNode;
-class ControlsContainerNode;
+#include "Functional/Function.h"
 
-namespace DAVA
+#include <QObject>
+
+class QTimer;
+class ContinuousUpdater : public QObject
 {
-class Vector2;
-}
-
-class SelectionSystem final : public BaseEditorSystem, PackageListener
-{
+    Q_OBJECT
 public:
-    SelectionSystem(EditorSystemsManager* doc);
-    ~SelectionSystem() override;
+    using Updater = DAVA::Function<void()>;
 
-    void ClearSelection();
-    void SelectAllControls();
-    void FocusNextChild();
-    void FocusPreviousChild();
+public:
+    ContinuousUpdater(Updater updater, QObject* parent = nullptr, int updateInterval = 0);
+
+    void Update();
+    void Stop(); //sync method to stop timer and call Update if it's needed
+
+private slots:
+    void OnTimer();
 
 private:
-    bool OnInput(DAVA::UIEvent* currentInput) override;
-    void OnPackageNodeChanged(PackageNode* packageNode);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
-    void OnSelectByRect(const DAVA::Rect& rect);
-
-    void FocusToChild(bool next);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
-    bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
-
-    bool mousePressed = false;
-    SelectionContainer selectionContainer;
-    PackageNode* packageNode = nullptr;
+    Updater updater;
+    QTimer* timer = nullptr;
+    bool needUpdate = false;
 };
 
-#endif // __QUICKED_SELECTION_SYSTEM_H__
+#endif // __TOOL_CONTINUOUS_UPDATER_H__

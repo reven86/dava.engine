@@ -70,6 +70,7 @@ GLenum _GLES2_LastSetTex0Target = GL_TEXTURE_2D;
 int _GLES2_LastActiveTexture = -1;
 bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
+bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
@@ -230,6 +231,8 @@ gles_check_GL_extensions()
 #endif
 
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
+
+        _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
     }
 
     _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
@@ -237,11 +240,12 @@ gles_check_GL_extensions()
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
     {
-        int majorVersion = 2;
+        int majorVersion = 2, minorVersion = 0;
         const char* dotChar = strchr(version, '.');
-        if (dotChar && dotChar != version)
+        if (dotChar && dotChar != version && *(dotChar + 1))
         {
             majorVersion = atoi(dotChar - 1);
+            minorVersion = atoi(dotChar + 1);
         }
 
         if (strstr(version, "OpenGL ES"))
@@ -257,6 +261,13 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
+
+            if (majorVersion >= 3)
+            {
+                if ((majorVersion > 3) || (minorVersion >= 2))
+                    _GLES2_IsSeamlessCubmapSupported = true;
+            }
+
 
 #if defined(GL_R16F) && defined(GL_RG16F)
             RG16F_Supported = majorVersion >= 3;
@@ -587,8 +598,8 @@ void gles2_Initialize(const InitParam& param)
         glDebugMessageCallback(&_OGLErrorCallback, 0);
 
 #endif
-
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        if (_GLES2_IsSeamlessCubmapSupported)
+            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -700,7 +711,8 @@ void gles2_Initialize(const InitParam& param)
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
 
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    if (_GLES2_IsSeamlessCubmapSupported)
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

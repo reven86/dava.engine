@@ -542,6 +542,12 @@ function (link_with_qt5 TARGET)
     target_link_libraries( ${TARGET} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${QT_LINKAGE_LIST_VALUE} )
 endfunction()
 
+function (append_property KEY_PROP  VALUE)
+    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
+    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
+endfunction()
+
 function (set_delayed_deploy_qt)
     SET_PROPERTY(GLOBAL PROPERTY DELAYED_DEPLOY_TARGET true)
 endfunction()
