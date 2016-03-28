@@ -104,6 +104,12 @@ inline void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core:
     if (!isPhoneApiDetected)
     {
         lockUpdate = true;
+        Windows::UI::Xaml::Controls::SwapChainPanel^ sw = dynamic_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(Windows::UI::Xaml::Window::Current->Content);
+        DVASSERT(sw);
+        scaleX = sw->CompositionScaleX;
+        scaleY = sw->CompositionScaleY;
+        width = sw->ActualWidth;
+        height = sw->ActualHeight;
         timer->Start();
     }
 }
