@@ -773,16 +773,16 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
             RECT clientRect;
             GetClientRect(hWnd, &clientRect);
             isInside = xPos > clientRect.left &&
-                       xPos < clientRect.right &&
-                       yPos > clientRect.top &&
-                       yPos < clientRect.bottom;
+            xPos < clientRect.right &&
+            yPos > clientRect.top &&
+            yPos < clientRect.bottom;
         }
 
         if (isInside)
         {
             bool isMouseWheelChanged = (input.data.mouse.usButtonFlags & RI_MOUSE_WHEEL) != 0;
-            bool isMouseButtonsChanged = !isMouseWheelChanged && 
-                                         (input.data.mouse.usButtonFlags >= RI_MOUSE_BUTTON_1_DOWN);
+            bool isMouseButtonsChanged = !isMouseWheelChanged &&
+            (input.data.mouse.usButtonFlags >= RI_MOUSE_BUTTON_1_DOWN);
 
             if (isMove && !isMouseButtonsChanged)
             {
