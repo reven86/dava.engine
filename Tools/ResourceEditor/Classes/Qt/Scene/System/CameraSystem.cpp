@@ -275,7 +275,7 @@ void SceneCameraSystem::Process(float timeElapsed)
             if (nullptr != curSceneCamera)
             {
                 SceneCollisionSystem* collSystem = ((SceneEditor2*)GetScene())->collisionSystem;
-                collSystem->UpdateCollisionObject(GetEntityFromCamera(curSceneCamera));
+                collSystem->UpdateCollisionObject(Selectable(GetEntityFromCamera(curSceneCamera)));
             }
 
             // remember current scene camera

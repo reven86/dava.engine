@@ -220,11 +220,11 @@ void SceneSelectionSystem::ProcessSelectedGroup(const SelectableGroup::Collectio
     bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
     bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
 
-    if (addSelection)
+    if (addSelection && (firstEntity != nullptr))
     {
         AddObjectToSelection(firstEntity);
     }
-    else if (excludeSelection)
+    else if (excludeSelection && (firstEntity != nullptr))
     {
         ExcludeEntityFromSelection(firstEntity);
     }

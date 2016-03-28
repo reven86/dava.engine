@@ -68,8 +68,6 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
 {
     DVASSERT((emitter != nullptr) && (owner != nullptr));
 
-    DrawDebugInfoForEffect(owner);
-
     SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
     ParticleEffectComponent* effect = GetEffectComponent(owner);
 
@@ -125,6 +123,7 @@ void EditorParticlesSystem::Draw()
             {
                 DrawEmitter(effect->GetEmitterInstance(i), entity);
             }
+            DrawDebugInfoForEffect(entity);
         }
     }
 }

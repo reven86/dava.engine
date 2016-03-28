@@ -36,6 +36,8 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 
+#include "Commands2/TransformCommand.h"
+#include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 
@@ -247,10 +249,19 @@ DAVA::Landscape* SceneCollisionSystem::GetLandscape() const
     return DAVA::GetLandscape(curLandscapeEntity);
 }
 
-void SceneCollisionSystem::UpdateCollisionObject(DAVA::Entity* entity)
+void SceneCollisionSystem::UpdateCollisionObject(const Selectable& object)
 {
-    RemoveEntity(entity);
-    AddEntity(entity);
+    if (object.CanBeCastedTo<DAVA::Entity>())
+    {
+        auto entity = object.AsEntity();
+        RemoveEntity(entity);
+        AddEntity(entity);
+    }
+    else
+    {
+        objectsToRemove.insert(object.GetContainedObject());
+        objectsToAdd.insert(object.GetContainedObject());
+    }
 }
 
 DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object)
@@ -402,40 +413,58 @@ void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
 {
     if (command->MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
     {
-        UpdateCollisionObject(curLandscapeEntity);
+        UpdateCollisionObject(Selectable(curLandscapeEntity));
     }
 
-    if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE, CMDID_INSP_MEMBER_MODIFY }))
+    static DAVA::Vector<DAVA::int32> acceptableCommands =
     {
-        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
-            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
-            {
-                static const String HEIGHTMAP_PATH = "heightmapPath";
-                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-                if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
-                {
-                    UpdateCollisionObject(curLandscapeEntity);
-                }
-            }
-            else if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE }))
-            {
-                UpdateCollisionObject(command->GetEntity());
-            }
-        };
+      CMDID_LOD_CREATE_PLANE,
+      CMDID_LOD_DELETE,
+      CMDID_INSP_MEMBER_MODIFY,
+      CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
+      CMDID_TRANSFORM
+    };
 
-        if (command->GetId() == CMDID_BATCH)
+    if (command->MatchCommandIDs(acceptableCommands) == false)
+        return;
+
+    auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+        if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-            uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
+            static const String HEIGHTMAP_PATH = "heightmapPath";
+            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+            if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
             {
-                ProcessSingleCommand(batch->GetCommand(i), redo);
+                UpdateCollisionObject(Selectable(curLandscapeEntity));
             }
         }
-        else
+        else if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE }))
         {
-            ProcessSingleCommand(command, redo);
+            UpdateCollisionObject(Selectable(command->GetEntity()));
         }
+        else if (command->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
+        {
+            auto cmd = static_cast<const CommandRemoveParticleEmitter*>(command);
+            (redo ? objectsToRemove : objectsToAdd).insert(cmd->GetEmitterInstance());
+        }
+        else if (command->MatchCommandID(CMDID_TRANSFORM))
+        {
+            auto cmd = static_cast<const TransformCommand*>(command);
+            UpdateCollisionObject(cmd->GetTransformedObject());
+        }
+    };
+
+    if (command->GetId() == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        for (uint32 i = 0, count = batch->Size(); i < count; ++i)
+        {
+            ProcessSingleCommand(batch->GetCommand(i), redo);
+        }
+    }
+    else
+    {
+        ProcessSingleCommand(command, redo);
     }
 }
 
@@ -447,7 +476,7 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
     case EventSystem::LOCAL_TRANSFORM_CHANGED:
     case EventSystem::TRANSFORM_PARENT_CHANGED:
     {
-        UpdateCollisionObject(component->GetEntity());
+        UpdateCollisionObject(Selectable(component->GetEntity()));
         break;
     }
     default:

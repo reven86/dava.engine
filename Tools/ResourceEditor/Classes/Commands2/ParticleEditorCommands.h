@@ -114,26 +114,37 @@ protected:
     ParticleLayer* selectedLayer = nullptr;
 };
 
-class CommandRemoveParticleEmitter : public CommandAction
+class CommandRemoveParticleEmitter : public Command2
 {
 public:
     CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter);
+    ~CommandRemoveParticleEmitter();
     void Redo() override;
+    void Undo() override;
 
-    ParticleEffectComponent* GetEffect() const
-    {
-        return selectedEffect;
-    }
-
-    ParticleEmitterInstance* GetEmitterInstance() const
-    {
-        return instance;
-    }
+    DAVA::Entity* GetEntity() const;
+    ParticleEffectComponent* GetEffect() const;
+    ParticleEmitterInstance* GetEmitterInstance() const;
 
 protected:
     ParticleEffectComponent* selectedEffect = nullptr;
     ParticleEmitterInstance* instance = nullptr;
 };
+
+inline DAVA::Entity* CommandRemoveParticleEmitter::GetEntity() const
+{
+    return nullptr;
+}
+
+inline ParticleEffectComponent* CommandRemoveParticleEmitter::GetEffect() const
+{
+    return selectedEffect;
+}
+
+inline ParticleEmitterInstance* CommandRemoveParticleEmitter::GetEmitterInstance() const
+{
+    return instance;
+}
 
 // Clone a layer inside Particle Emitter.
 class CommandCloneParticleEmitterLayer : public CommandAction

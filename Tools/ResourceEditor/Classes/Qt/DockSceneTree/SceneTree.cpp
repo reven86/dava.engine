@@ -269,7 +269,7 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
     CMDID_ENTITY_LOCK,
     CMDID_PARTICLE_EMITTER_ADD,
     CMDID_PARTICLE_EMITTER_MOVE,
-    CMDID_PARTICLE_EMITTER_REMOVE,
+    CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
     CMDID_PARTICLE_LAYER_REMOVE,
     CMDID_PARTICLE_LAYER_MOVE,
     CMDID_PARTICLE_FORCE_REMOVE,
@@ -1074,6 +1074,8 @@ void SceneTree::RemoveEmitter()
         return;
 
     DVASSERT((nullptr != selectedEffect) && (nullptr != selectedEmitterInstance));
+
+    sceneEditor->selectionSystem->ExcludeEntityFromSelection(selectedEmitterInstance);
     ExecuteModifyingCommand(Command2::Create<CommandRemoveParticleEmitter>(selectedEffect, selectedEmitterInstance));
 }
 
@@ -1374,7 +1376,7 @@ void SceneTree::SetCustomDrawCamera()
 
 void SceneTree::UpdateTree()
 {
-    dataChanged(QModelIndex(), QModelIndex());
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
 }
 
 void SceneTree::PropagateSolidFlag()
@@ -1411,5 +1413,6 @@ void SceneTree::ExecuteModifyingCommand(Command2::Pointer&& command)
     SceneEditor2* sceneEditor = treeModel->GetScene();
     sceneEditor->Exec(std::move(command));
     sceneEditor->MarkAsChanged();
+
     treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }

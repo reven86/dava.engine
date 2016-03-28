@@ -476,18 +476,27 @@ void CommandRemoveParticleEmitterLayer::Redo()
 }
 
 CommandRemoveParticleEmitter::CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter)
-    : CommandAction(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
+    : Command2(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
     , selectedEffect(effect)
-    , instance(emitter)
+    , instance(SafeRetain(emitter))
 {
+    DVASSERT(selectedEffect != nullptr);
+    DVASSERT(instance != nullptr);
+}
+
+CommandRemoveParticleEmitter::~CommandRemoveParticleEmitter()
+{
+    DAVA::SafeRelease(instance);
 }
 
 void CommandRemoveParticleEmitter::Redo()
 {
-    if ((selectedEffect == nullptr) || (instance == nullptr))
-        return;
-
     selectedEffect->RemoveEmitterInstance(instance);
+}
+
+void CommandRemoveParticleEmitter::Undo()
+{
+    selectedEffect->AddEmitterInstance(instance);
 }
 
 CommandCloneParticleEmitterLayer::CommandCloneParticleEmitterLayer(ParticleEmitterInstance* emitter, ParticleLayer* layer)

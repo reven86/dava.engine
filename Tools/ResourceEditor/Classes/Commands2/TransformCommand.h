@@ -39,7 +39,9 @@ public:
 
     void Undo() override;
     void Redo() override;
+
     DAVA::Entity* GetEntity() const override;
+    const Selectable& GetTransformedObject() const;
 
 protected:
     Selectable object;
