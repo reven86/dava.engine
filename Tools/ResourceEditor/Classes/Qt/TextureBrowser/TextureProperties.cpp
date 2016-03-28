@@ -31,7 +31,7 @@
 #include "Render/TextureDescriptor.h"
 
 #include "TextureProperties.h"
-#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 
 namespace PropertyItemName
 {
@@ -104,6 +104,7 @@ void TextureProperties::setOriginalImageSize(const QSize& size)
 
     // Init mipmap sizes based on original image size
     MipMapSizesInit(size.width(), size.height());
+    updater->Update();
 }
 
 const DAVA::TextureDescriptor* TextureProperties::getTextureDescriptor()
@@ -238,9 +239,22 @@ void TextureProperties::ReloadEnumFormats()
 
     enumFormats.UnregistelAll();
 
+    bool isSquareTexture = origImageSize.width() == origImageSize.height();
+
     const auto& availableFormats = DAVA::GPUFamilyDescriptor::GetAvailableFormatsForGpu(curGPU);
+    DAVA::PixelFormat currentFormat = curTextureDescriptor->GetPixelFormatForGPU(curGPU);
+
     for (auto nextFormat : availableFormats)
     {
+        DAVA::PixelFormat pxFormat = nextFormat.first;
+        bool isOldPVR = pxFormat == DAVA::FORMAT_PVR2 || pxFormat == DAVA::FORMAT_PVR4;
+        if (!isSquareTexture && isOldPVR && pxFormat != currentFormat)
+        {
+            // skip PVR2/4 format for non-square textures.
+            // but if texture has already had PVR2 or PVR4 compression format we have to show it.
+            continue;
+        }
+
         enumFormats.Register(nextFormat.first, globalFormats->ToString(nextFormat.first));
     }
 }
@@ -383,7 +397,7 @@ void TextureProperties::OnItemEdited(const QModelIndex& index)
 
 void TextureProperties::OnPropertyChanged(int type)
 {
-    if (PROP_MIPMAP == type)
+    if (PROP_MIPMAP == type || PROP_FORMAT == type)
     {
         updater->Update();
     }

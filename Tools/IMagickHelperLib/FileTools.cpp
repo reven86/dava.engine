@@ -1,14 +1,7 @@
 #include "FileTools.h"
 
-
 #if defined(WIN32)
-#include <direct.h>
-#include <io.h> 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <Shlobj.h>
-#include <tchar.h>
-
+#include <Windows.h>
 #else
 #include <sys/types.h>
 #include <sys/stat.h>

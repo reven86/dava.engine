@@ -306,6 +306,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
@@ -387,7 +388,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DataStorage/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Timer/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Logger/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)
 

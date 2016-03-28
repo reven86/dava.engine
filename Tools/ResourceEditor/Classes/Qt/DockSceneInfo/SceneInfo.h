@@ -38,29 +38,14 @@
 
 class SceneEditor2;
 class EntityGroup;
+class EditorStatisticsSystem;
+class Command2;
 
 class SceneInfo : public QtPropertyEditor
 {
     Q_OBJECT
 
 protected:
-    struct LODInfo
-    {
-        std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> trianglesOnLod;
-        DAVA::uint32 trianglesOnObjects;
-
-        void Clear()
-        {
-            for (DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
-            {
-                trianglesOnLod[i] = 0;
-            }
-            trianglesOnObjects = 0;
-        }
-
-        void AddTriangles(DAVA::int32 index, DAVA::int32 count);
-    };
-
     struct SpeedTreeInfo
     {
         SpeedTreeInfo()
@@ -80,7 +65,7 @@ protected:
 
 public:
     SceneInfo(QWidget* parent = 0);
-    ~SceneInfo();
+    ~SceneInfo() override;
 
 public slots:
     void UpdateInfoByTimer();
@@ -95,10 +80,11 @@ protected slots:
     void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
     void OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool isRedo);
 
-protected:
-    virtual void showEvent(QShowEvent* event);
+private:
+    void showEvent(QShowEvent* event) override;
 
-protected:
+    EditorStatisticsSystem* GetCurrentEditorStatisticsSystem() const;
+
     void InitializeInfo();
     void InitializeGeneralSection();
     void Initialize3DDrawSection();
@@ -140,13 +126,9 @@ protected:
 
     void CollectSceneData(SceneEditor2* scene);
     void CollectParticlesData();
-    void CollectLODDataInFrame();
-    void CollectLODDataInScene();
-    void CollectLODDataInEntityRecursive(DAVA::Entity* entity);
     void CollectSpeedTreeLeafsSquare(const EntityGroup* forGroup);
     void CollectSelectedRenderObjects(const EntityGroup* selected);
     void CollectSelectedRenderObjectsRecursivly(DAVA::Entity* entity);
-    static void CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent*>& lods, LODInfo& info);
 
     void CollectTexture(DAVA::TexturesMap& textures, const DAVA::FilePath& pathname, DAVA::Texture* tex);
 
@@ -160,9 +142,9 @@ protected:
     QtPosSaver posSaver;
     PropertyEditorStateHelper treeStateHelper;
 
-    SceneEditor2* activeScene;
+    SceneEditor2* activeScene = nullptr;
     DAVA::Vector<DAVA::Entity*> nodesAtScene;
-    DAVA::Landscape* landscape;
+    DAVA::Landscape* landscape = nullptr;
 
     DAVA::TexturesMap particleTextures;
 
@@ -170,19 +152,16 @@ protected:
 
     DAVA::Vector<SpeedTreeInfo> speedTreeLeafInfo;
 
-    DAVA::uint32 sceneTexturesSize;
-    DAVA::uint32 particleTexturesSize;
+    DAVA::uint32 sceneTexturesSize = 0;
+    DAVA::uint32 particleTexturesSize = 0;
 
-    DAVA::uint32 emittersCount;
-    DAVA::uint32 spritesCount;
-
-    LODInfo lodInfoSelection;
-    LODInfo lodInfoInFrame;
+    DAVA::uint32 emittersCount = 0;
+    DAVA::uint32 spritesCount = 0;
 
     DAVA::Vector<DAVA::RenderObject*> visibilityArray;
     DAVA::Set<DAVA::RenderObject*> selectedRenderObjects;
 
-    bool isUpToDate;
+    bool isUpToDate = false;
 };
 
 #endif // __SCENE_INFO_H__

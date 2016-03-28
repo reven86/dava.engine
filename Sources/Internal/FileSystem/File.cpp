@@ -368,13 +368,13 @@ bool File::WriteString(const String& strtowrite, bool shouldNullBeWritten)
 {
     const char* str = strtowrite.c_str();
     uint32 null = (shouldNullBeWritten) ? (1) : (0);
-    return (Write((void*)str, (uint32)(strtowrite.length() + null)) == strtowrite.length() + null);
+    return (Write(str, static_cast<uint32>(strtowrite.length() + null)) == strtowrite.length() + null);
 }
 
 bool File::WriteNonTerminatedString(const String& strtowrite)
 {
     const char* str = strtowrite.c_str();
-    return (Write((void*)str, (uint32)(strtowrite.length())) == strtowrite.length());
+    return (Write(str, static_cast<uint32>(strtowrite.length())) == strtowrite.length());
 }
 
 bool File::WriteLine(const String& string)
@@ -382,8 +382,8 @@ bool File::WriteLine(const String& string)
     uint32 written = 0;
     const char* str = string.c_str();
     const char* endLine = "\r\n";
-    uint32 endLength = (uint32)strlen(endLine);
-    uint32 strLength = (uint32)string.length();
+    uint32 endLength = static_cast<uint32>(strlen(endLine));
+    uint32 strLength = static_cast<uint32>(string.length());
 
     written += Write(str, strLength);
     written += Write(endLine, endLength);

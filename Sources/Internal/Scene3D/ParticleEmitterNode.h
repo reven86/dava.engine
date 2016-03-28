@@ -48,13 +48,13 @@ public:
     ParticleEmitter* GetEmitter();
 
     virtual void Update(float32 timeElapsed);
-    virtual void Draw();
+    void Draw() override;
 
-    virtual Entity* Clone(Entity* dstNode = NULL);
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+    Entity* Clone(Entity* dstNode = nullptr) override;
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    virtual void GetDataNodes(Set<DataNode*>& dataNodes);
+    void GetDataNodes(Set<DataNode*>& dataNodes) override;
 
 protected:
     void LoadFromYaml(const FilePath& yamlPath);

@@ -152,17 +152,15 @@ void AddSwitchEntityDialog::accept()
 
     if (canCreateSwitch)
     {
-        scene->BeginBatch("Unite entities into switch entity.");
-
+        scene->BeginBatch("Unite entities into switch entity.", switchCount + 1);
         for (DAVA::uint32 i = 0; i < switchCount; ++i)
         {
             vector[i]->Retain();
-            scene->Exec(new EntityRemoveCommand(vector[i]));
+            scene->Exec(Command2::Create<EntityRemoveCommand>(vector[i]));
         }
 
         Entity* switchEntity = creator.CreateSwitchEntity(vector);
-
-        scene->Exec(new EntityAddCommand(switchEntity, scene));
+        scene->Exec(Command2::Create<EntityAddCommand>(switchEntity, scene));
 
         for (DAVA::uint32 i = 0; i < switchCount; ++i)
         {

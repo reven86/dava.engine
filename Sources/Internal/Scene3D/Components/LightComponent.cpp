@@ -60,7 +60,7 @@ Component* LightComponent::Clone(Entity* toEntity)
     component->SetEntity(toEntity);
 
     if (light)
-        component->light = (Light*)light->Clone();
+        component->light = static_cast<Light*>(light->Clone());
 
     return component;
 }
@@ -116,7 +116,7 @@ void LightComponent::SetLightType(const uint32& _type)
 {
     if (light)
     {
-        light->SetType((Light::eType)_type);
+        light->SetType(static_cast<Light::eType>(_type));
 
         NotifyRenderSystemLightChanged();
     }

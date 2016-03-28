@@ -30,7 +30,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_ANDROID__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "ExternC/AndroidLayer.h"

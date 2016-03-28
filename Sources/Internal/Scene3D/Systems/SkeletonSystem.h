@@ -45,10 +45,10 @@ public:
     SkeletonSystem(Scene* scene);
     ~SkeletonSystem();
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
     void ImmediateEvent(Component* component, uint32 event) override;
 
 private:

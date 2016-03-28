@@ -86,7 +86,7 @@ xmlNode* AddChild(xmlNode* parent, const char* name, const char* content)
     return node;
 }
 
-#ifdef UNICODE
+#if (1)
 xmlNode* AddChild(xmlNode* parent, const char* name, const fstring& content)
 {
     fm::string s = FUStringConversion::ToString(content);
@@ -161,7 +161,7 @@ void AddContent(xmlNode* node, const char* content)
     }
 }
 
-#ifdef UNICODE
+#if (1)
 void AddContent(xmlNode* node, const fstring& content)
 {
     fm::string s = FUStringConversion::ToString(content);
@@ -202,7 +202,7 @@ void AddAttribute(xmlNode* node, const char* attributeName, const char* value)
     }
 }
 
-#ifdef UNICODE
+#if (1)
 void AddAttribute(xmlNode* node, const char* attributeName, const fstring& attributeValue)
 {
     fm::string s = FUStringConversion::ToString(attributeValue);
