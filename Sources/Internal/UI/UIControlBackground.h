@@ -70,7 +70,8 @@ public:
         DRAW_STRETCH_HORIZONTAL, //!<Stretch sprite horizontally along the control rect.
         DRAW_STRETCH_VERTICAL, //!<Stretch sprite vertically along the control rect.
         DRAW_STRETCH_BOTH, //!<Stretch sprite along the all control rect.
-        DRAW_TILED //!<Fill control with sprite tiles
+        DRAW_TILED, //!<Fill control with sprite tiles
+        DRAW_TILED_MULTILAYER //!uses for texture - tiled background (withot stretch caps!), stretch mask and contour using same stratch caps, and full back gradient overlay
     };
 
     /**
@@ -314,7 +315,7 @@ public:
     NMaterial* GetMaterial() const;
 
 protected:
-    Sprite* spr;
+    Sprite* spr = nullptr;
     int32 align;
     eDrawType type;
     int32 spriteModification;
@@ -327,12 +328,17 @@ protected:
 
     ePerPixelAccuracyType perPixelAccuracyType; //!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
-private:
-    TiledDrawData* tiledData;
-    StretchDrawData* stretchData;
-    TiledMultilayerData* tiledMultulayerData;
+    Sprite* mask = nullptr;
+    Sprite* detail = nullptr;
+    Sprite* gradient = nullptr;
+    Sprite* contour = nullptr;
 
-    UIMargins* margins;
+private:
+    TiledDrawData* tiledData = nullptr;
+    StretchDrawData* stretchData = nullptr;
+    TiledMultilayerData* tiledMultulayerData = nullptr;
+
+    UIMargins* margins = nullptr;
 
 public:
     void ReleaseDrawData(); // Delete all spec draw data
@@ -362,10 +368,23 @@ public:
     Vector4 GetMarginsAsVector4() const;
     void SetMarginsAsVector4(const Vector4& margins);
 
+    inline FilePath GetMaskSpritePath() const;
+    inline void SetMaskSpriteFromPath(const FilePath& path);
+    inline FilePath GetDetailSpritePath() const;
+    inline void SetDetailSpriteFromPath(const FilePath& path);
+    inline FilePath GetGradientSpritePath() const;
+    inline void SetGradientSpriteFromPath(const FilePath& path);
+    inline FilePath GetContourSpritePath() const;
+    inline void SetContourSpriteFromPath(const FilePath& path);
+
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
+                         /*PROPERTY("mask", "Mask", GetMaskSpritePath, SetMaskSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("detail", "Detail", GetDetailSpritePath, SetDetailSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("gradient", "Gradient", GetGradientSpritePath, SetGradientSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("contour", "Contour", GetContourSpritePath, SetContourSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)*/
                          PROPERTY("spriteModification", "Sprite Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
@@ -440,6 +459,55 @@ void UIControlBackground::SetBgSpriteFromPath(const FilePath& path)
         SetSprite(NULL, 0);
     else
         SetSprite(path, GetFrame());
+}
+
+FilePath UIControlBackground::GetMaskSpritePath() const
+{
+    Sprite* sprite = mask;
+    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(sprite);
+}
+void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
+{
+    SafeRelease(mask);
+    if (path != "")
+        mask = Sprite::Create(path);
+}
+FilePath UIControlBackground::GetDetailSpritePath() const
+{
+    Sprite* sprite = detail;
+    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(sprite);
+}
+void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
+{
+    SafeRelease(detail);
+    if (path != "")
+        detail = Sprite::Create(path);
+}
+FilePath UIControlBackground::GetGradientSpritePath() const
+{
+    Sprite* sprite = gradient;
+    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(sprite);
+}
+void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
+{
+    SafeRelease(gradient);
+    if (path != "")
+        gradient = Sprite::Create(path);
+}
+FilePath UIControlBackground::GetContourSpritePath() const
+{
+    Sprite* sprite = contour;
+    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(sprite);
+}
+void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
+{
+    SafeRelease(contour);
+    if (path != "")
+        contour = Sprite::Create(path);
 }
 
 int32 UIControlBackground::GetBgColorInherit() const

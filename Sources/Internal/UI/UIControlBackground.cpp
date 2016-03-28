@@ -43,7 +43,6 @@ namespace DAVA
 {
 UIControlBackground::UIControlBackground()
     : color(Color::White)
-    , spr(NULL)
     , align(ALIGN_HCENTER | ALIGN_VCENTER)
     , type(DRAW_ALIGNED)
     , spriteModification(0)
@@ -53,9 +52,6 @@ UIControlBackground::UIControlBackground()
     , frame(0)
     , lastDrawPos(0, 0)
     , perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
-    , tiledData(NULL)
-    , stretchData(NULL)
-    , margins(NULL)
     , drawColor(Color::White)
     , material(SafeRetain(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL))
 {
@@ -524,6 +520,8 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
     case DRAW_TILED:
         RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData, drawColor);
         break;
+    case DRAW_TILED_MULTILAYER:
+        RenderSystem2D::Instance()->DrawTiledMultylayer(mask, detail, gradient, contour, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledMultulayerData, 0);
     default:
         break;
     }
