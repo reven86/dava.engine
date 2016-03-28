@@ -1018,7 +1018,7 @@ void TextureBrowser::convertStatusQueue(int curJob, int jobCount)
     }
 }
 
-void TextureBrowser::setScene(DAVA::Scene* scene)
+void TextureBrowser::setScene(SceneEditor2* scene)
 {
     if (scene != curScene)
     {
@@ -1026,11 +1026,27 @@ void TextureBrowser::setScene(DAVA::Scene* scene)
         curScene = DAVA::SafeRetain(scene);
     }
 
+    DAVA::TextureDescriptor* selectedDescriptor = curDescriptor;
     // reset current texture
     setTexture(nullptr, nullptr);
 
     // set new scene
     textureListModel->setScene(curScene);
+
+    if (selectedDescriptor != nullptr)
+    {
+        DAVA::Texture* texture = textureListModel->getTexture(selectedDescriptor);
+        if (texture != nullptr)
+        {
+            setTexture(texture, selectedDescriptor);
+
+            QModelIndex index = textureListModel->getIndex(selectedDescriptor);
+            if (index.isValid())
+            {
+                ui->listViewTextures->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+            }
+        }
+    }
 }
 
 void TextureBrowser::sceneActivated(SceneEditor2* scene)

@@ -100,13 +100,13 @@ private:
     QMap<QString, int> textureListSortModes;
     QMap<int, DAVA::eGPUFamily> tabIndexToViewMode;
 
-    DAVA::Scene* curScene;
+    SceneEditor2* curScene;
     DAVA::eGPUFamily curTextureView;
 
     DAVA::Texture* curTexture;
     DAVA::TextureDescriptor* curDescriptor;
 
-    void setScene(DAVA::Scene* scene);
+    void setScene(SceneEditor2* scene);
 
     void setupTextureListToolbar();
     void setupTextureToolbar();
