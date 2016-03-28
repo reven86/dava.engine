@@ -772,7 +772,7 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
 void AutotestingSystemLua::ScrollToControl(const String& path) const
 {
     UIControl* control = FindControl(path);
-    if (control)
+    if (control != nullptr)
     {
         UIControlHelpers::ScrollToControl(control);
     }

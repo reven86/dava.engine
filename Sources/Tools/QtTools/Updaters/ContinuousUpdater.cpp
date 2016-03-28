@@ -26,50 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QUICKED_SELECTION_SYSTEM_H__
-#define __QUICKED_SELECTION_SYSTEM_H__
 
-#include "EditorSystems/SelectionContainer.h"
-#include "EditorSystems/BaseEditorSystem.h"
-#include "Math/Rect.h"
-#include "UI/UIEvent.h"
-#include <Functional/SignalBase.h>
-#include "Model/PackageHierarchy/PackageListener.h"
+#include "ContinuousUpdater.h"
 
-class EditorSystemsManager;
-class ControlNode;
-class ControlsContainerNode;
+#include <QTimer>
 
-namespace DAVA
+ContinuousUpdater::ContinuousUpdater(Updater updater_, QObject* parent, int updateInterval)
+    : QObject(parent)
+    , updater(updater_)
+    , timer(new QTimer(this))
 {
-class Vector2;
+    timer->setSingleShot(true);
+    timer->setInterval(updateInterval);
+    connect(timer, &QTimer::timeout, this, &ContinuousUpdater::OnTimer);
 }
 
-class SelectionSystem final : public BaseEditorSystem, PackageListener
+void ContinuousUpdater::Update()
 {
-public:
-    SelectionSystem(EditorSystemsManager* doc);
-    ~SelectionSystem() override;
+    needUpdate = true;
 
-    void ClearSelection();
-    void SelectAllControls();
-    void FocusNextChild();
-    void FocusPreviousChild();
+    if (!timer->isActive())
+    {
+        QTimer::singleShot(0, this, &ContinuousUpdater::OnTimer);
+    }
+}
 
-private:
-    bool OnInput(DAVA::UIEvent* currentInput) override;
-    void OnPackageNodeChanged(PackageNode* packageNode);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
-    void OnSelectByRect(const DAVA::Rect& rect);
+void ContinuousUpdater::Stop()
+{
+    timer->stop();
+    if (needUpdate)
+    {
+        updater();
+        needUpdate = false;
+    }
+}
 
-    void FocusToChild(bool next);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
-    bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
-
-    bool mousePressed = false;
-    SelectionContainer selectionContainer;
-    PackageNode* packageNode = nullptr;
-};
-
-#endif // __QUICKED_SELECTION_SYSTEM_H__
+void ContinuousUpdater::OnTimer()
+{
+    if (needUpdate)
+    {
+        updater();
+        needUpdate = false;
+        timer->start();
+    }
+}
