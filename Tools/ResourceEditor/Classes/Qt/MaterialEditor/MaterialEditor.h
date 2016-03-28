@@ -87,7 +87,7 @@ protected:
     void showEvent(QShowEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
 
-    void SetCurMaterial(const QList< DAVA::NMaterial *>& materials);
+    void SetCurMaterial(const QList<DAVA::NMaterial*>& materials);
 
     void FillBase();
     void FillDynamic(QtPropertyData* root, const FastName& dynamicName);
