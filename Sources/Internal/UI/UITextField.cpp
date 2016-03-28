@@ -83,17 +83,17 @@ public:
     }
     void OpenKeyboard()
     {
-        if (!isKeyboardOpened)
+        if (!isEditing)
         {
-            isKeyboardOpened = true;
+            isEditing = true;
             control_->OnKeyboardShown(Rect());
         }
     }
     void CloseKeyboard()
     {
-        if (isKeyboardOpened)
+        if (isEditing)
         {
-            isKeyboardOpened = false;
+            isEditing = false;
             control_->OnKeyboardHidden();
         }
     }
@@ -122,7 +122,7 @@ public:
     {
         // see comment for TextFieldPlatformImpl class above
 
-        if (control_ == UIControlSystem::Instance()->GetFocusedControl() && isKeyboardOpened)
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
         {
             float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
             cursorTime += timeElapsed;
@@ -275,7 +275,7 @@ private:
     float32 cursorTime = 0.0f;
     bool needRedraw = true;
     bool showCursor = true;
-    bool isKeyboardOpened = false;
+    bool isEditing = false;
 };
 } // end namespace DAVA
 #endif

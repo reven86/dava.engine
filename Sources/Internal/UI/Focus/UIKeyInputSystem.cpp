@@ -58,7 +58,7 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
     UIControl* focusedControl = focusSystem->GetFocusedControl();
     UIControl* rootControl = focusSystem->GetRoot();
 
-    if (!processed && focusedControl)
+    if (focusedControl)
     {
         UIControl* c = focusedControl;
         while (c != nullptr && c != rootControl && !processed)
