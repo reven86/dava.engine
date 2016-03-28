@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/Image/Image.h"
-#include "TexturePacker/TextureAtlas.h"
+#include "TexturePacker/Spritesheet.h"
 
 namespace DAVA
 {
@@ -47,7 +47,7 @@ public:
     bool Read(const FilePath& filename);
     void Write(const FilePath& filename, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
 
-    void DrawImage(const ImageCell& drawRect, const Rect2i& imageOffsetRect, PngImageExt* image);
+    void DrawImage(const SpriteBoundsRect& drawRect, const Rect2i& imageOffsetRect, PngImageExt* image);
     void DrawImage(int32 sx, int32 sy, PngImageExt* image, const Rect2i& srcRect);
 
     void DrawRect(const Rect2i& rect, uint32 color);

@@ -91,8 +91,11 @@ EditorSystemsManager::EditorSystemsManager()
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
-    systems.emplace_back(new CanvasSystem(this));
-    systems.emplace_back(new SelectionSystem(this));
+    canvasSystemPtr = new CanvasSystem(this);
+    systems.emplace_back(canvasSystemPtr);
+
+    selectionSystemPtr = new SelectionSystem(this);
+    systems.emplace_back(selectionSystemPtr);
     systems.emplace_back(new HUDSystem(this));
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
@@ -100,12 +103,12 @@ EditorSystemsManager::EditorSystemsManager()
 
 EditorSystemsManager::~EditorSystemsManager() = default;
 
-UIControl* EditorSystemsManager::GetRootControl()
+UIControl* EditorSystemsManager::GetRootControl() const
 {
     return rootControl.Get();
 }
 
-UIControl* EditorSystemsManager::GetScalableControl()
+UIControl* EditorSystemsManager::GetScalableControl() const
 {
     return scalableControl.Get();
 }
@@ -126,6 +129,63 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
     rootControl->SetEmulationMode(emulationMode);
     EmulationModeChangedSignal.Emit(emulationMode);
+}
+
+ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point) const
+{
+    Vector<ControlNode*> nodesUnderPoint;
+    auto predicate = [point](const ControlNode* node) -> bool {
+        auto control = node->GetControl();
+        DVASSERT(control != nullptr);
+        return control->IsVisible() && control->IsPointInside(point);
+    };
+    CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
+    return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
+}
+
+uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
+{
+    if (editingRootControls.empty())
+    {
+        return 0;
+    }
+    uint32 index = canvasSystemPtr->GetIndexByPos(point);
+    bool insertToEnd = (index == editingRootControls.size());
+
+    auto iter = editingRootControls.begin();
+    std::advance(iter, insertToEnd ? index - 1 : index);
+    PackageBaseNode* target = *iter;
+    PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+    for (uint32 i = 0; i < controlsNode->GetCount(); ++i)
+    {
+        if (controlsNode->Get(i) == target)
+        {
+            return insertToEnd ? i + 1 : i;
+        }
+    }
+    DVASSERT(false && "editingRootControls contains nodes not from GetPackageControlsNode");
+
+    return 0;
+}
+
+void EditorSystemsManager::SelectAll()
+{
+    selectionSystemPtr->SelectAllControls();
+}
+
+void EditorSystemsManager::FocusNextChild()
+{
+    selectionSystemPtr->FocusNextChild();
+}
+
+void EditorSystemsManager::FocusPreviousChild()
+{
+    selectionSystemPtr->FocusPreviousChild();
+}
+
+void EditorSystemsManager::ClearSelection()
+{
+    selectionSystemPtr->ClearSelection();
 }
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)

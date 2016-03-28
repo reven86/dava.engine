@@ -16,6 +16,17 @@ ApplicationWindow {
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
+    menuBar: MenuBar {
+        Menu {
+            title: "&Help"
+            MenuItem {
+                text: "Show help"
+                shortcut: StandardKey.HelpContents
+                onTriggered: help.Show();
+            }
+        }
+    }
+
     Settings {
         id: settings
         property int mainWrapperWidth: 400
@@ -23,7 +34,6 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
-        property alias customOptions: textField_customOptions.text
         property string historyStr;
         Component.onDestruction: historyStr = JSON.stringify(historyToSave)
     }
@@ -44,14 +54,13 @@ ApplicationWindow {
         } catch(e) {
             history = [];
         }
-
+        historyToSave = [];
         if(history && Array.isArray(history) && history.length > 0) {
             for(var i = 0, length = history.length; i < length; ++i) {
                 if(history[i].source) {
                     rowLayout_sourceFolder.item.addString(history[i].source)
                 } else {
                     history = [];
-                    historyToSave = [];
                     return;
                 }
             }
@@ -112,6 +121,10 @@ ApplicationWindow {
 
     FileSystemHelper {
         id: fileSystemHelper;
+    }
+
+    Help {
+        id: help;
     }
 
     property var configuration; //main JS object, contained in config file

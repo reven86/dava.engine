@@ -23,7 +23,7 @@ namespace FUXmlParser
 {
 // Parse an XML compatable string for the std representation
 FCOLLADA_EXPORT fm::string XmlToString(const char* s);
-#ifdef UNICODE
+#if (1)
 FCOLLADA_EXPORT fstring XmlToString(const fchar* s);
 #endif // UNICODE
 

@@ -35,11 +35,14 @@
 #include <QScreen>
 #include <QMenu>
 #include <QShortCut>
+#include <QFileInfo>
+
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Updaters/ContinuousUpdater.h"
 
 #include "Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -48,6 +51,10 @@
 #include "EditorSystems/HUDSystem.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
+#include "UI/Package/PackageMimeData.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
 
 using namespace DAVA;
 
@@ -74,6 +81,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
@@ -123,6 +131,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
 PreviewWidget::~PreviewWidget()
 {
+    continuousUpdater->Stop();
 }
 
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
@@ -220,17 +229,12 @@ void PreviewWidget::CreateActions()
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
     davaGLWidget->addAction(focusPreviousChildAction);
-
-    closeTabAction = new QAction(tr("Close current tab"), this);
-    closeTabAction->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
-    closeTabAction->setShortcutContext(Qt::WindowShortcut);
-    connect(closeTabAction, &QAction::triggered, this, &PreviewWidget::CloseTabRequested);
-    davaGLWidget->addAction(closeTabAction);
 }
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
     DVASSERT(nullptr != systemsManager);
+    continuousUpdater->Stop();
     SaveContext();
     document = arg;
     if (document.isNull())
@@ -254,8 +258,8 @@ void PreviewWidget::SaveSystemsContextAndClear()
     if (!selectionContainer.selectedNodes.empty())
     {
         DVASSERT(!document.isNull());
-        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
-        systemsManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+        systemsManager->ClearSelection();
+        continuousUpdater->Stop();
         DVASSERT(selectionContainer.selectedNodes.empty());
     }
 }
@@ -340,9 +344,9 @@ void PreviewWidget::OnGLInitialized()
     systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
-    connect(focusNextChildAction, &QAction::triggered, [this]() { systemsManager->FocusNextChild.Emit(); });
-    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemsManager->FocusPreviousChild.Emit(); });
-    connect(selectAllAction, &QAction::triggered, [this]() { systemsManager->SelectAllControls.Emit(); });
+    connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
+    connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
+    connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
 }
 
 void PreviewWidget::OnScaleChanged(qreal scale)
@@ -396,15 +400,32 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         switch (event->type())
         {
         case QEvent::Wheel:
-            OnWheelEvent(DynamicTypeCheck<QWheelEvent*>(event));
+            OnWheelEvent(static_cast<QWheelEvent*>(event));
             break;
         case QEvent::NativeGesture:
-            OnNativeGuestureEvent(DynamicTypeCheck<QNativeGestureEvent*>(event));
+            OnNativeGuestureEvent(static_cast<QNativeGestureEvent*>(event));
             break;
         case QEvent::MouseMove:
-            OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
+            OnMoveEvent(static_cast<QMouseEvent*>(event));
+            break;
         case QEvent::MouseButtonPress:
-            lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
+            OnPressEvent(static_cast<QMouseEvent*>(event));
+            break;
+        case QEvent::MouseButtonRelease:
+            OnReleaseEvent(static_cast<QMouseEvent*>(event));
+            break;
+        case QEvent::DragEnter:
+            return true;
+        case QEvent::DragMove:
+            OnDragMoveEvent(static_cast<QDragMoveEvent*>(event));
+            return true;
+        case QEvent::DragLeave:
+            OnDragLeaveEvent(static_cast<QDragLeaveEvent*>(event));
+            return true;
+        case QEvent::Drop:
+            OnDropEvent(static_cast<QDropEvent*>(event));
+            davaGLWidget->GetGLView()->requestActivate();
+            break;
         default:
             break;
         }
@@ -502,8 +523,27 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     }
 }
 
+void PreviewWidget::OnPressEvent(QMouseEvent* event)
+{
+    if (event->button() & Qt::MiddleButton)
+    {
+        lastCursor = davaGLWidget->GetCursor();
+        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+        lastMousePos = event->pos();
+    }
+}
+
+void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() & Qt::MiddleButton)
+    {
+        davaGLWidget->SetCursor(lastCursor);
+    }
+}
+
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
+    DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
     if (event->buttons() & Qt::MiddleButton)
     {
@@ -517,6 +557,111 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
         int verticalScrollBarValue = verticalScrollBar->value();
         verticalScrollBarValue -= delta.y();
         verticalScrollBar->setValue(verticalScrollBarValue);
+    }
+}
+
+void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
+{
+    DVASSERT(nullptr != event);
+    ProcessDragMoveEvent(event) ? event->accept() : event->ignore();
+}
+
+bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
+{
+    DVASSERT(nullptr != event);
+    auto mimeData = event->mimeData();
+    if (mimeData->hasFormat("text/uri-list"))
+    {
+        QStringList strList = mimeData->text().split("\n");
+        for (const auto& str : strList)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                QString path = url.toLocalFile();
+                QFileInfo fileInfo(path);
+                return fileInfo.isFile() && fileInfo.suffix() == "yaml";
+            }
+        }
+    }
+    else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+    {
+        DVASSERT(nullptr != document);
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        auto node = systemsManager->ControlNodeUnderPoint(pos);
+        systemsManager->NodesHovered.Emit({ node });
+        if (nullptr != node)
+        {
+            if (node->IsReadOnly())
+            {
+                return false;
+            }
+            else
+            {
+                if (mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+                {
+                    const PackageMimeData* controlMimeData = DynamicTypeCheck<const PackageMimeData*>(mimeData);
+                    const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
+                    for (const auto& srcNode : srcControls)
+                    {
+                        if (srcNode == node)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        else
+        {
+            //root node will be added
+            return true;
+        }
+    }
+    return false;
+}
+
+void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
+{
+    systemsManager->NodesHovered.Emit({ nullptr });
+}
+
+void PreviewWidget::OnDropEvent(QDropEvent* event)
+{
+    systemsManager->NodesHovered.Emit({ nullptr });
+    DVASSERT(nullptr != event);
+    auto mimeData = event->mimeData();
+    if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+    {
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
+        String string = mimeData->text().toStdString();
+        auto action = event->dropAction();
+        uint32 index = 0;
+        if (node == nullptr)
+        {
+            node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
+            index = systemsManager->GetIndexOfNearestControl(pos - systemsManager->GetScalableControl()->GetPosition());
+        }
+        else
+        {
+            index = node->GetCount();
+        }
+        emit DropRequested(mimeData, action, node, index, &pos);
+    }
+    else if (mimeData->hasFormat("text/uri-list"))
+    {
+        QStringList list = mimeData->text().split("\n");
+        Vector<FilePath> packages;
+        for (const QString& str : list)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                emit OpenPackageFile(url.toLocalFile());
+            }
+        }
     }
 }
 
@@ -550,8 +695,18 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
 
 void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
+    for (const auto& node : deselected)
+    {
+        tmpSelected.erase(node);
+        tmpDeselected.insert(node);
+    }
+    for (const auto& node : selected)
+    {
+        tmpSelected.insert(node);
+        tmpDeselected.erase(node);
+    }
     selectionContainer.MergeSelection(selected, deselected);
-    emit SelectionChanged(selected, deselected);
+    continuousUpdater->Update();
 }
 
 void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
@@ -559,6 +714,16 @@ void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>
     DVASSERT(!document.isNull());
     auto commandExecutor = document->GetCommandExecutor();
     commandExecutor->ChangeProperty(propertyActions, hash);
+}
+
+void PreviewWidget::NotifySelectionChanged()
+{
+    if (!tmpSelected.empty() || !tmpDeselected.empty())
+    {
+        emit SelectionChanged(tmpSelected, tmpDeselected);
+    }
+    tmpSelected.clear();
+    tmpDeselected.clear();
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
