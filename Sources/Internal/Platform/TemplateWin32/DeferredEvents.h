@@ -108,8 +108,8 @@ inline void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core:
         DVASSERT(sw);
         scaleX = sw->CompositionScaleX;
         scaleY = sw->CompositionScaleY;
-        width = sw->ActualWidth;
-        height = sw->ActualHeight;
+        width = static_cast<float32>(sw->ActualWidth);
+        height = static_cast<float32>(sw->ActualHeight);
         timer->Start();
     }
 }
