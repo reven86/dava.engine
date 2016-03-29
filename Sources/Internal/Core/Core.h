@@ -298,7 +298,6 @@ private:
         float32 userScale = 0.f;
         float32 scaleX = 0.f;
         float32 scaleY = 0.f;
-        bool nativeViewModified = false;
         bool screenMetricsModified = false;
         bool initialized = false;
     };

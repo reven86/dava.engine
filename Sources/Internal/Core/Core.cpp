@@ -861,7 +861,6 @@ void Core::SetNativeView(void* newNativeView)
     DVASSERT(nullptr != newNativeView);
     if (screenMetrics.nativeView != newNativeView)
     {
-        screenMetrics.nativeViewModified = true;
         screenMetrics.nativeView = newNativeView;
     }
 }
@@ -881,7 +880,6 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
     screenMetrics.height = height;
     screenMetrics.scaleX = scaleX;
     screenMetrics.scaleY = scaleY;
-    screenMetrics.nativeViewModified = false;
     screenMetrics.screenMetricsModified = false;
     screenMetrics.initialized = true;
 
@@ -917,6 +915,7 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
 void Core::ApplyWindowSize()
 {
+    screenMetrics.screenMetricsModified = false;
     DVASSERT(Renderer::IsInitialized());
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
     int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
@@ -925,19 +924,13 @@ void Core::ApplyWindowSize()
     rhi::ResetParam params;
     params.width = physicalWidth;
     params.height = physicalHeight;
-    screenMetrics.screenMetricsModified = false;
-    //    if (screenMetrics.nativeViewModified)
-    {
-        screenMetrics.nativeViewModified = false;
-        params.window = screenMetrics.nativeView;
-    }
+    params.window = screenMetrics.nativeView;
     Renderer::Reset(params);
 
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
     virtSystem->ScreenSizeChanged();
-    Logger::Info("!!!!!  %f %f %f %f %f", screenMetrics.width, screenMetrics.height, screenMetrics.scaleX, screenMetrics.scaleY, screenMetrics.userScale);
 }
 
 void Core::SetIsActive(bool _isActive)
