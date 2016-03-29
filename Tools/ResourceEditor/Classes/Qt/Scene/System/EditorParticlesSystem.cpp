@@ -190,8 +190,6 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::Partic
     RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
     drawer->DrawAABoxTransformed(AABBox3(-0.5f * emitterSize, 0.5f * emitterSize), wMat,
                                  DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
-    drawer->DrawAABoxTransformed(AABBox3(-0.5f * emitterSize, 0.5f * emitterSize), wMat,
-                                 DAVA::Color(0.7f, 0.0f, 0.0f, 0.5f), RenderHelper::DRAW_WIRE_DEPTH);
 }
 
 void EditorParticlesSystem::DrawVectorArrow(DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
