@@ -892,10 +892,18 @@ int32 UITextField::GetMaxLength() const
 
 void UITextField::OnStartEditing()
 {
+    if (delegate != nullptr)
+    {
+        delegate->OnStartEditing();
+    }
 }
 
 void UITextField::OnStopEditing()
 {
+    if (delegate != nullptr)
+    {
+        delegate->OnStopEditing();
+    }
 }
 
 void UITextField::OnKeyboardShown(const Rect& keyboardRect)

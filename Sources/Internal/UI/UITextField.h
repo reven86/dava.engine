@@ -93,6 +93,14 @@ public:
     virtual void OnKeyboardHidden()
     {
     }
+
+    virtual void OnStartEditing()
+    {
+    }
+
+    virtual void OnStopEditing()
+    {
+    }
 };
 
 /**
