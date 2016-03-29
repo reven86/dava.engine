@@ -46,11 +46,10 @@
 
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseCapture.h"
 
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
-
-#include "Input/MouseCapture.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -152,7 +151,6 @@ void WinUAPXamlApp::PreStartAppSettings()
         // will be changed in SetDisplayOrientations()
         StatusBar::GetForCurrentView()->HideAsync();
     }
-    Window::Current->CoreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
     Window::Current->CoreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
 }
@@ -332,22 +330,34 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
 
     core->RunOnMainThread([this, state] {
         switch (state)
-
         {
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
-            MouseCapture::SetApplicationFocus(true);
+            if (isPhoneApiDetected)
+            {
+                Core::Instance()->SetIsActive(true);
+            }
+            else
+            {
+                Core::Instance()->FocusReceived();
+                MouseCapture::SetApplicationFocus(true);
+            }
             break;
         case CoreWindowActivationState::Deactivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
+            if (isPhoneApiDetected)
+            {
+                Core::Instance()->SetIsActive(false);
+            }
+            else
+            {
+                Core::Instance()->FocusLost();
+                MouseCapture::SetApplicationFocus(false);
+            }
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            MouseCapture::SetApplicationFocus(false);
             break;
         default:
             break;
         }
-
     });
 }
 
@@ -441,18 +451,12 @@ void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProp
 
 void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRoutedEventArgs ^ args)
 {
-    //    Logger::Info("\n!!!!! PointerPressed UI Thread timestamp = %f\n", (SystemTimer::FrameStampTimeMS() / 1000.0));
-
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
     int32 pointerOrButtonIndex = pointerPoint->PointerId;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-
-    if (!isPhoneApiDetected)
-    {
-        mousePointer = pointerPoint;
-    }
+    mousePointer = pointerPoint;
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
@@ -481,11 +485,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
     float32 y = pointerPoint->Position.Y;
     int32 pointerOrButtonIndex = pointerPoint->PointerId;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-
-    if (!isPhoneApiDetected)
-    {
-        mousePointer = pointerPoint;
-    }
+    mousePointer = pointerPoint;
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
@@ -510,7 +510,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
-    Logger::Info("\n!!!!! PointerMoved ");
     UIEvent::Phase phase = UIEvent::Phase::DRAG;
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
@@ -531,12 +530,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             core->RunOnMainThread(fn);
         }
 
-        if (MouseCapture::GetMouseCaptureMode() != InputSystem::eMouseCaptureMode::PINING)
+        if (MouseCapture::GetMouseCaptureModeNative() != InputSystem::eMouseCaptureMode::PINING)
         {
             if (mouseButtonsState.none())
             {
                 phase = UIEvent::Phase::MOVE;
-
                 core->RunOnMainThread([this, phase, x, y, type]() {
                     DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), ToDavaDeviceId(type));
                 });
@@ -692,24 +690,12 @@ void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Devic
 void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ args)
 {
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
-
-    PointerPoint ^ pointerPoint = mousePointer;
-
-    //     try
-    //     {
-    //         pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
-    //     }
-    //     catch (Platform::Exception ^ e)
-    //     {
-    //         Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
-    //     }
-
-    if (pointerPoint != nullptr)
+    if (mousePointer != nullptr)
     {
-        UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
+        UpdateMouseButtonsState(mousePointer->Properties, mouseButtonChanges);
 
-        float window_x = pointerPoint->Position.X;
-        float window_y = pointerPoint->Position.Y;
+        float window_x = mousePointer->Position.X;
+        float window_y = mousePointer->Position.Y;
 
         for (auto& change : mouseButtonChanges)
         {
@@ -724,7 +710,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
         float32 dy = static_cast<float32>(args->MouseDelta.Y);
 
         // win10 send dx == 0 and dy == 0 if mouse buttons change state only if one button already pressed
-        if (MouseCapture::GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
+        if (MouseCapture::GetMouseCaptureModeNative() == InputSystem::eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
         {
             if (mouseButtonsState.none())
             {

@@ -38,7 +38,6 @@ class CoreMacOSPlatformBase : public Core
 {
 public:
     void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
-    //    DisplayMode GetCurrentDisplayMode() override;
 
     // Signal is emitted when window has been miniaturized/deminiaturized or
     // when application has been hidden/unhidden.

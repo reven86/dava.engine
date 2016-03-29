@@ -26,14 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Input/MouseCapture.h"
+#ifndef __FRAMEWORK__MOUSECAPTUREMACOS__
+#define __FRAMEWORK__MOUSECAPTUREMACOS__
 
 #include "Base/Platform.h"
 
+#if defined(__DAVAENGINE_MACOS__)
+
+#include "Input/MouseCapture.h"
+
+namespace DAVA
+{
 class MouseCapturePrivate
 {
 public:
-    void SetNativePining(DAVA::InputSystem::eMouseCaptureMode newMode);
+    void SetNativePining(InputSystem::eMouseCaptureMode newMode);
     void SetCursorPosition();
 
 private:
@@ -43,3 +50,9 @@ private:
     void OSXShowCursor();
     void OSXHideCursor();
 };
+
+} //  namespace DAVA
+
+#endif //  __DAVAENGINE_MACOS__
+
+#endif //  __FRAMEWORK__MOUSECAPTUREMACOS__

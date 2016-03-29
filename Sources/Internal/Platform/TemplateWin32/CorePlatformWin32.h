@@ -27,19 +27,20 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_PLATFORM_WIN32_H__
-#define __DAVAENGINE_CORE_PLATFORM_WIN32_H__
+#ifndef __DAVAENGINE_CORE_PLATFORM_WIN32__
+#define __DAVAENGINE_CORE_PLATFORM_WIN32__
 
 #include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "CoreWin32PlatformBase.h"
+#include "Core.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
 
 namespace DAVA
 {
-class CoreWin32Platform : public CoreWin32PlatformBase
+class CoreWin32Platform : public Core
 {
 public:
     CoreWin32Platform();
@@ -55,13 +56,10 @@ public:
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
 
-    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+    void InitArgs();
+    void Quit() override;
 
 private:
-    bool SetSystemCursorVisibility(bool show);
-
-    void SetCursorPositionCenter();
-
     DisplayMode currentMode;
     DisplayMode fullscreenMode;
     DisplayMode windowedMode;
@@ -92,4 +90,4 @@ private:
 
 } // end namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_PLATFORM_WIN32_H__
+#endif // __DAVAENGINE_CORE_PLATFORM_WIN32__

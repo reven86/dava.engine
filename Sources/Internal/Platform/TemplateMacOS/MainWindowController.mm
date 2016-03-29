@@ -355,8 +355,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
     }
 
-    //    Core::Instance()->SetNativeView(openGLView);
-
     // start animation
     currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
@@ -379,20 +377,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
 
-    float32 scaleX = 0.f, scaleY = 0.f;
-    scaleX = backingSize[0] / windowSize.width;
-    scaleY = backingSize[1] / windowSize.height;
-
-    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scaleX, scaleY);
-    /*
-    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
-    rendererParams.window = mainWindowController->openGLView;
-    rendererParams.width = backingSize[0];
-    rendererParams.height = backingSize[1];
-
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-     */
+    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, backingScale, backingScale);
 }
 
 - (void)setMinimumWindowSize:(float32)width height:(float32)height
@@ -543,10 +528,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent
-{
-}
-
-- (void)mouseExited:(NSEvent*)theEvent
 {
 }
 

@@ -31,8 +31,6 @@
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
-#include "Render/Cursor.h"
-
 #include "Input/MouseCapture.h"
 
 namespace DAVA
@@ -105,22 +103,12 @@ void InputSystem::OnAfterUpdate()
 
 InputSystem::eMouseCaptureMode InputSystem::GetMouseCaptureMode()
 {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
     return MouseCapture::GetMouseCaptureMode();
-//     return Cursor::GetMouseCaptureMode();
-#else
-    return eMouseCaptureMode::OFF;
-#endif
 }
 
 bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
 {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
     MouseCapture::SetMouseCaptureMode(mode);
     return true;
-//    return Cursor::SetMouseCaptureMode(mode);
-#else
-    return mode == eMouseCaptureMode::OFF;
-#endif
 }
 };

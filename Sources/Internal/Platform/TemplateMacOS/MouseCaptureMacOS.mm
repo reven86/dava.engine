@@ -26,31 +26,31 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_MACOS__)
+
 #include "MouseCaptureMacOS.h"
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
 #include <Cocoa/Cocoa.h>
 
-#if defined(__DAVAENGINE_MACOS__)
-
-void MouseCapturePrivate::SetNativePining(DAVA::InputSystem::eMouseCaptureMode newMode)
+namespace DAVA
+{
+void MouseCapturePrivate::SetNativePining(InputSystem::eMouseCaptureMode newMode)
 {
     switch (newMode)
     {
-    case DAVA::InputSystem::eMouseCaptureMode::OFF:
-        //OSXDisablePinning();
+    case InputSystem::eMouseCaptureMode::OFF:
         OSXShowCursor();
         CGAssociateMouseAndMouseCursorPosition(true);
         break;
-    case DAVA::InputSystem::eMouseCaptureMode::PINING:
-        //OSXEnablePinning();
+    case InputSystem::eMouseCaptureMode::PINING:
         OSXHideCursor();
         MovePointerToWindowCenter();
         CGAssociateMouseAndMouseCursorPosition(false);
         break;
-    case DAVA::InputSystem::eMouseCaptureMode::FRAME:
+    case InputSystem::eMouseCaptureMode::FRAME:
     // Unsupported yet
     default:
         DVASSERT_MSG(false, "Unsupported cursor capture mode");
@@ -59,13 +59,11 @@ void MouseCapturePrivate::SetNativePining(DAVA::InputSystem::eMouseCaptureMode n
 
 void MouseCapturePrivate::SetCursorPosition()
 {
-    MovePointerToWindowCenter();
 }
 
 void MouseCapturePrivate::MovePointerToWindowCenter()
 {
-    /*
-    NSRect windowRect = [[static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView()) window] frame];
+    NSRect windowRect = [[static_cast<NSView*>(Core::Instance()->GetNativeView()) window] frame];
     NSRect screenRect = [[NSScreen mainScreen] frame];
     
     // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
@@ -73,7 +71,6 @@ void MouseCapturePrivate::MovePointerToWindowCenter()
     float x = windowRect.origin.x + windowRect.size.width / 2.0f;
     float y = windowRect.origin.y + windowRect.size.height / 2.0f;
     CGWarpMouseCursorPosition(CGPointMake(x, y));
-     */
 }
 
 void MouseCapturePrivate::OSXShowCursor()
@@ -93,5 +90,7 @@ void MouseCapturePrivate::OSXHideCursor()
         cursorVisible = false;
     }
 }
+
+} //  namespace DAVA
 
 #endif // __DAVAENGINE_MACOS__

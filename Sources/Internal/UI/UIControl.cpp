@@ -37,6 +37,7 @@
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseCapture.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -1219,7 +1220,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 {
     Vector2 point = _point;
 
-    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+    if (MouseCapture::GetMouseCaptureModeNative() == InputSystem::eMouseCaptureMode::PINING)
     {
         const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;

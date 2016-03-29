@@ -465,71 +465,6 @@ Vector2 CoreWin32Platform::GetWindowMinimumSize() const
     return Vector2(minWindowWidth, minWindowHeight);
 }
 
-static bool lastSystemCursorShowState = true;
-
-bool CoreWin32Platform::SetSystemCursorVisibility(bool show)
-{
-    int32 showCount = 0;
-    showCount = ShowCursor(show); // No cursor info available, just call
-
-    if (show && showCount >= 0)
-    {
-        // If system cursor is visible then showCount should be >= 0
-        lastSystemCursorShowState = true;
-    }
-    else if (!show && showCount < 0)
-    {
-        // If system cursor is not visible then showCount should be -1
-        lastSystemCursorShowState = false;
-    }
-    else
-    {
-        // Setup failure
-        return false;
-    }
-    return true;
-}
-
-bool CoreWin32Platform::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
-{
-    static DAVA::Point2i lastCursorPosition;
-
-    switch (mode)
-    {
-    case DAVA::InputSystem::eMouseCaptureMode::OFF:
-    case DAVA::InputSystem::eMouseCaptureMode::PINING:
-    {
-        SetSystemCursorVisibility(mode != DAVA::InputSystem::eMouseCaptureMode::PINING);
-        if (mode == DAVA::InputSystem::eMouseCaptureMode::PINING)
-        {
-            POINT p;
-            GetCursorPos(&p);
-            lastCursorPosition.x = p.x;
-            lastCursorPosition.y = p.y;
-
-            HWND hWnd = static_cast<HWND>(GetNativeView());
-            RECT wndRect;
-            GetWindowRect(hWnd, &wndRect);
-            int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
-            int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
-            SetCursorPos(centerX, centerY);
-        }
-        else
-        {
-            SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
-        }
-        return true;
-    }
-    case DAVA::InputSystem::eMouseCaptureMode::FRAME:
-        Logger::Error("Unsupported cursor capture mode");
-        return false;
-    default:
-        DVASSERT_MSG(false, "Incorrect cursor capture mode");
-        Logger::Error("Incorrect cursor capture mode");
-        return false;
-    }
-}
-
 struct MouseButtonChange
 {
     UIEvent::MouseButton button;
@@ -799,14 +734,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
                 GetCursorPos(&p);
                 ScreenToClient(hWnd, &p);
 
-                if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+                if (MouseCapture::GetMouseCaptureModeNative() == InputSystem::eMouseCaptureMode::PINING)
                 {
-                    //                     RECT wndRect;
-                    //                     GetWindowRect(hWnd, &wndRect);
-                    //                     int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
-                    //                     int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
-                    //                     SetCursorPos(centerX, centerY);
-
                     isInside = true;
                 }
                 else
@@ -945,5 +874,31 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+void CoreWin32Platform::InitArgs()
+{
+    int argc = 0;
+    LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+
+    if (argc > 0 && NULL != szArglist)
+    {
+        Vector<String> args;
+        args.reserve(argc);
+        for (int i = 0; i < argc; ++i)
+        {
+            args.emplace_back(WStringToString(szArglist[i]));
+        }
+
+        SetCommandLine(std::move(args));
+    }
+
+    ::LocalFree(szArglist);
+}
+
+void CoreWin32Platform::Quit()
+{
+    PostQuitMessage(0);
+}
+
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)

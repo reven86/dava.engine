@@ -29,6 +29,7 @@
 
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
+#include "Input/MouseCapture.h"
 #include <ApplicationServices/ApplicationServices.h>
 
 extern void FrameworkMain(int argc, char* argv[]);
@@ -141,21 +142,7 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        float32 scaleX = 0.f, scaleY = 0.f;
-        scaleX = backingSize[0] / windowSize.width;
-        scaleY = backingSize[1] / windowSize.height;
-        /*
-        rhi::ResetParam params;
-        params.window = self;
-        params.width = backingSize[0];
-        params.height = backingSize[1];
-        Renderer::Reset(params);
-
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-        */
-        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scaleX, scaleY);
+        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, backingScale, backingScale);
         Core::Instance()->SetNativeView(self);
     }
 
@@ -192,7 +179,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
 
-    if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    if (MouseCapture::GetMouseCaptureModeNative() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
@@ -333,9 +320,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     }
 }
 
-// For explanation of mouseMoveSkipCounter see CursorMacOS.mm file, Cursor::SetMouseCaptureMode method
-//extern int mouseMoveSkipCounter;
-
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
     NSEventType type = [touch type];
@@ -345,11 +329,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     case NSLeftMouseDragged:
     case NSRightMouseDragged:
     case NSOtherMouseDragged:
-        //       if (mouseMoveSkipCounter > 0)
-        //       {
-        //           mouseMoveSkipCounter -= 1;
-        //           return;
-        //       }
         break;
     default:
         break;
@@ -437,19 +416,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 - (void)mouseDragged:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
-}
-
-//void OSXShowCursor();
-
-- (void)mouseExited:(NSEvent*)theEvent
-{
-    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-    if (captureMode != InputSystem::eMouseCaptureMode::PINING)
-    {
-        // This event is sometimes delivered when mouse pinning is on
-        // So do not show cursor while pinning is on
-        //OSXShowCursor();
-    }
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent
