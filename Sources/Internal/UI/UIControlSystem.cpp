@@ -44,6 +44,7 @@
 #include "Debug/Profiler.h"
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
+#include "Platform/DeviceInfo.h"
 #include "Input/MouseCapture.h"
 
 namespace DAVA
