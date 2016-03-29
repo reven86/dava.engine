@@ -8,5 +8,5 @@ dava.add_pack_rule("pack1",
 
 dava.add_pack_rule("pack2",
 {
-    { "Data", ".*" }
+    { "Data", "%.sc2" }
 })
