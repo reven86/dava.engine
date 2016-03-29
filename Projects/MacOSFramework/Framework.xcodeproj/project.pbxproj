@@ -2912,12 +2912,12 @@
 		7CCE26A81C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
 		7CCE26A91C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
 		87464EF91C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87464EF81C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp */; };
+		B70DDCF91C980336004516A8 /* libicucommon_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B70DDCF81C980336004516A8 /* libicucommon_macos.a */; };
+		B70DDCFA1C980339004516A8 /* libicucommon_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B70DDCF81C980336004516A8 /* libicucommon_macos.a */; };
+		B70DDCFB1C98033A004516A8 /* libicucommon_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B70DDCF81C980336004516A8 /* libicucommon_macos.a */; };
 		B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CD1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CE1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
-		B7BEB94819CB1A47005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
-		B7BEB94919CB1A48005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
-		B7D6C98419CAC6980095250A /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
 		C7FBCFB816CD1FE5006F1B3F /* AutotestingSystemYaml.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */; };
 		C7FBCFC116CD2060006F1B3F /* liblua_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7FBCFC016CD2060006F1B3F /* liblua_macos.a */; };
 		D2AAC088055469A000DB518D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
@@ -3965,8 +3965,8 @@
 		7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenManagerDefault.cpp; sourceTree = "<group>"; };
 		7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerDefault.h; sourceTree = "<group>"; };
 		87464EF81C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rhi_PerfQuerySetGLES2.cpp; sourceTree = "<group>"; };
+		B70DDCF81C980336004516A8 /* libicucommon_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libicucommon_macos.a; path = ../../Libs/lib_CMake/mac/libicucommon_macos.a; sourceTree = "<group>"; };
 		B77953CB1A07D528001FB673 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_macos.a; path = ../../Libs/libs/libunibreak_macos.a; sourceTree = "<group>"; };
-		B7D6C98319CAC6980095250A /* libfribidi_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_macos.a; path = ../../Libs/libs/libfribidi_macos.a; sourceTree = "<group>"; };
 		C151B18B16D37DD400E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystemYaml.h; sourceTree = "<group>"; };
 		C7FBCFC016CD2060006F1B3F /* liblua_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_macos.a; path = ../../Libs/libs/liblua_macos.a; sourceTree = "<group>"; };
@@ -4001,6 +4001,7 @@
 			files = (
 				176DEB61174B5561007A983B /* libcurl_macos.a in Frameworks */,
 				176DEB62174B5561007A983B /* libdxt_macos.a in Frameworks */,
+				B70DDCFB1C98033A004516A8 /* libicucommon_macos.a in Frameworks */,
 				176DEB63174B5561007A983B /* libPVRTexLib.a in Frameworks */,
 				176DEB64174B5561007A983B /* libtheora_macos.a in Frameworks */,
 				176DEB65174B5561007A983B /* libmongodb_macos.a in Frameworks */,
@@ -4015,7 +4016,6 @@
 				B77953CE1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */,
 				176DEB6F174B5561007A983B /* libvorbisfile_macos.a in Frameworks */,
 				176DEB70174B5561007A983B /* libfreetype_macos.a in Frameworks */,
-				B7BEB94919CB1A48005B4BC7 /* libfribidi_macos.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4024,10 +4024,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				72C84EB31B29C220003A52E0 /* libwebp_macos.a in Frameworks */,
+				B70DDCF91C980336004516A8 /* libicucommon_macos.a in Frameworks */,
 				0381655E1C4FDA8900D8D9E1 /* SystemConfiguration.framework in Frameworks */,
 				50C16DDE1A52D8C4003C307A /* libuv_macos.a in Frameworks */,
 				B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */,
-				B7D6C98419CAC6980095250A /* libfribidi_macos.a in Frameworks */,
 				620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */,
 				C7FBCFC116CD2060006F1B3F /* liblua_macos.a in Frameworks */,
 				E89CE91216C549D2006BEFF4 /* libcurl_macos.a in Frameworks */,
@@ -4056,12 +4056,12 @@
 				4F53ED4A19A23C3300D3869D /* libcurl_macos.a in Frameworks */,
 				6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */,
 				E898A2B116BD265400732C04 /* libdxt_macos.a in Frameworks */,
+				B70DDCFA1C980339004516A8 /* libicucommon_macos.a in Frameworks */,
 				E898A2B216BD265400732C04 /* libPVRTexLib.a in Frameworks */,
 				E898A2B316BD265400732C04 /* libtheora_macos.a in Frameworks */,
 				E898A2B416BD265400732C04 /* libmongodb_macos.a in Frameworks */,
 				E898A2B516BD265400732C04 /* libyaml_macos.a in Frameworks */,
 				E898A2B616BD265400732C04 /* libxml_macos.a in Frameworks */,
-				B7BEB94819CB1A47005B4BC7 /* libfribidi_macos.a in Frameworks */,
 				E898A2B716BD265400732C04 /* libpng_macos.a in Frameworks */,
 				E898A2B916BD265400732C04 /* Cocoa.framework in Frameworks */,
 				E898A2BA16BD265400732C04 /* ApplicationServices.framework in Frameworks */,
@@ -5494,12 +5494,12 @@
 		0867D691FE84028FC02AAC07 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				B70DDCF81C980336004516A8 /* libicucommon_macos.a */,
 				FECFC0A512E87E3000C71562 /* Internal */,
 				03C12A9A1C4FD8D3002D4636 /* SystemConfiguration.framework */,
 				72C84EB21B29C220003A52E0 /* libwebp_macos.a */,
 				50C16DDD1A52D8C4003C307A /* libuv_macos.a */,
 				B77953CB1A07D528001FB673 /* libunibreak_macos.a */,
-				B7D6C98319CAC6980095250A /* libfribidi_macos.a */,
 				CCE2CA18197950A600D8086F /* AVFoundation.framework */,
 				627AFA6C18E964E300F2A52A /* libjpeg_macos.a */,
 				C7FBCFC016CD2060006F1B3F /* liblua_macos.a */,
@@ -8703,6 +8703,7 @@
 					./../../Libs/include/,
 					./../../Libs/oggvorbis/include,
 					./../../Libs/fmod/include,
+					./../../Libs/icucommon/source/common,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
@@ -8713,6 +8714,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/mac\"",
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
@@ -8746,6 +8748,7 @@
 					./../../Libs/include/,
 					./../../Libs/oggvorbis/include,
 					./../../Libs/fmod/include,
+					./../../Libs/icucommon/source/common,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
@@ -8756,6 +8759,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/mac\"",
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
@@ -8792,6 +8796,7 @@
 					./../../Libs/oggvorbis/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
@@ -8802,6 +8807,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/mac\"",
 				);
 				PRODUCT_NAME = Framework;
 				SKIP_INSTALL = YES;
@@ -8836,6 +8842,7 @@
 					./../../Libs/oggvorbis/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
@@ -8846,6 +8853,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/mac\"",
 				);
 				PRODUCT_NAME = Framework;
 				SKIP_INSTALL = YES;
@@ -8952,6 +8960,7 @@
 					./../../Libs/oggvorbis/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
@@ -8962,7 +8971,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/victorkleschenko/Work/WoT/dava.framework/Libs/libs,
+					"\"$(SRCROOT)/../../Libs/lib_CMake/mac\"",
 				);
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = (
@@ -8995,6 +9004,7 @@
 					./../../Libs/oggvorbis/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
@@ -9005,7 +9015,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/victorkleschenko/Work/WoT/dava.framework/Libs/libs,
+					"\"$(SRCROOT)/../../Libs/lib_CMake/mac\"",
 				);
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = (

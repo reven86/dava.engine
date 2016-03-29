@@ -84,14 +84,21 @@ DAVA::Key ConvertQtCommandKeysToDava(int qtKey)
         result = DAVA::Key::LWIN;
         break;
     default:
-        if (qtKey >= Qt::Key_A &&
-            qtKey <= Qt::Key_Z)
+    {
+        const int Kostil_KeyForRussianLanguage_A = 1060;
+        const int Kostil_KeyForRussianLanguage_Z = 1060 + 26;
+        if (qtKey >= Qt::Key_A && qtKey <= Qt::Key_Z)
         {
             int key = static_cast<int>(DAVA::Key::KEY_A) + (qtKey - Qt::Key_A);
             result = static_cast<DAVA::Key>(key);
-            return result;
         }
-        break;
+        else if (qtKey >= Kostil_KeyForRussianLanguage_A && qtKey <= Kostil_KeyForRussianLanguage_Z)
+        {
+            int key = static_cast<int>(DAVA::Key::KEY_A) + (qtKey - Kostil_KeyForRussianLanguage_A);
+            result = static_cast<DAVA::Key>(key);
+        }
+    }
+    break;
     }
     return result;
 }
@@ -231,7 +238,6 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent* event)
     davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.mouseButton = DAVA::UIEvent::MouseButton::LEFT;
     davaEvent.timestamp = 0;
-    davaEvent.tapCount = 1;
     davaEvent.phase = DAVA::UIEvent::Phase::MOVE;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
@@ -257,7 +263,6 @@ DAVA::Vector<DAVA::UIEvent>& ControlMapper::MapMouseEventToDAVA(const QPoint& po
     UIEvent davaEvent;
     davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.timestamp = timestamp;
-    davaEvent.tapCount = 1;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
     if (davaButtons.empty())

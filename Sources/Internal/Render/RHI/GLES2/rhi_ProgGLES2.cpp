@@ -165,7 +165,7 @@ bool ProgGLES2::Construct(const char* srcCode)
         {
             Logger::Error("%sprog-compile failed:", (type == PROG_VERTEX) ? "v" : "f");
             Logger::Error(info);
-            DumpShaderTextGLES2(srcCode, strlen(srcCode));
+            DumpShaderTextGLES2(srcCode, static_cast<unsigned>(strlen(srcCode)));
         }
 
         memset(cbufLastBoundData, 0, sizeof(cbufLastBoundData));

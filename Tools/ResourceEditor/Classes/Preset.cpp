@@ -39,6 +39,8 @@
 
 #include "Project/ProjectManager.h"
 
+#include "Base/GlobalEnum.h"
+
 #include <QMessageBox>
 
 namespace Preset
@@ -53,8 +55,8 @@ namespace Internal
 {
 bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const KeyedArchive* preset)
 {
-    DVASSERT(descriptor);
     DVASSERT(preset);
+    DVASSERT(descriptor);
 
     const FilePath sourceImagePath = descriptor->GetSourceTexturePathname();
     const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
@@ -66,7 +68,6 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
 
     DVASSERT(imageInfo.width > 0);
     DVASSERT(imageInfo.height > 0);
-
     bool dimensionsAreCorrect = true;
 
     float32 imageRatio = imageInfo.width / imageInfo.height;
@@ -77,6 +78,19 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
         const KeyedArchive* compressionArchive = preset->GetArchive(gpuName);
         if (compressionArchive != nullptr)
         {
+            if (imageInfo.width != imageInfo.height)
+            {
+                PixelFormat format = static_cast<PixelFormat>(compressionArchive->GetInt32("format", FORMAT_INVALID));
+                if (format == FORMAT_PVR2 || format == FORMAT_PVR4)
+                {
+                    Logger::Error("Can't apply compression format %s in gpu family %s for non-square texture %s",
+                                  GlobalEnumMap<PixelFormat>::Instance()->ToString(format),
+                                  GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu),
+                                  sourceImagePath.GetAbsolutePathname().c_str());
+                    return false;
+                }
+            }
+
             auto compressToWidth = static_cast<uint32>(compressionArchive->GetInt32("width"));
             auto compressToHeight = static_cast<uint32>(compressionArchive->GetInt32("height"));
 

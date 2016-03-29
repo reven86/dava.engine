@@ -23,7 +23,7 @@
 //
 
 // Convert a UTF-8 string to a fstring
-#ifdef UNICODE
+#if (1)
 fstring FUStringConversion::ToFString(const char* value)
 {
     FUStringBuilder builder;
@@ -46,7 +46,7 @@ fstring FUStringConversion::ToFString(const char* value)
 #endif // UNICODE
 
 // Convert a fstring string to a UTF-8 string
-#ifdef UNICODE
+#if (1)
 fm::string FUStringConversion::ToString(const fchar* value)
 {
     FUSStringBuilder builder;
@@ -180,7 +180,7 @@ void FUStringConversion::ToStringList(const char* s, StringList& array)
     array.resize(index);
 }
 
-#ifdef UNICODE
+#if (1)
 void FUStringConversion::ToStringList(const fchar* value, StringList& array)
 {
     // Performance could be improved...
