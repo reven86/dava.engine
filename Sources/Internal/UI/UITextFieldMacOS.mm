@@ -42,7 +42,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
-
+#include "UI/Focus/FocusHelpers.h"
 // +-----------+          +------+
 // |ObjCWrapper+----------+IField|
 // +-----+-----+          +----+-+
@@ -1434,7 +1434,7 @@ doCommandBySelector:(SEL)commandSelector
 
         // if user paste text with gesture in native control
         // we need make dava control in sync with focus
-        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl)
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl && DAVA::FocusHelpers::CanFocusControl(davaCtrl))
         {
             DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl);
         }
