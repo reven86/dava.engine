@@ -37,6 +37,7 @@
 namespace DAVA
 {
 // The purpose of UIMovieView class is to display movies.
+class MovieViewControl;
 class UIMovieView : public UIControl
 {
 public:
@@ -71,9 +72,11 @@ public:
     // Whether the movie is being played?
     bool IsPlaying();
 
+    void Update(float32 timeElapsed) override;
+
 protected:
     // Platform-specific implementation of the Movie Control.
-    IMovieViewControl* movieViewControl;
+    MovieViewControl* movieViewControl;
 
 public:
     INTROSPECTION_EXTEND(UIMovieView, UIControl,

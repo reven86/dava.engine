@@ -31,6 +31,10 @@
 #define __DAVAENGINE_UAP_NETWORK_HELPER_H__
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+{
+
 #include "Network/Base/Endpoint.h"
 #include "Network/NetworkCommon.h"
 
@@ -50,4 +54,7 @@ public:
 
 } // namespace DAVA
 
+}
+
+#endif
 #endif // __DAVAENGINE_UAP_NETWORK_HELPER_H__
