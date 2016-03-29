@@ -201,14 +201,29 @@ void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Comma
     if (blockSignals || (GetActiveScene() != scene))
         return;
 
-    if (command->GetId() == CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
-    {
-        auto cmd = static_cast<const CommandRemoveParticleEmitter*>(command);
-        if (cmd->GetEmitterInstance() == instance)
+    auto tryRemoveSelectedEmitter = [this](const Command2* inCommand) {
+        if (inCommand->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
         {
-            instance = nullptr;
-            effect = nullptr;
+            auto cmd = static_cast<const CommandRemoveParticleEmitter*>(inCommand);
+            if (cmd->GetEmitterInstance() == instance)
+            {
+                instance = nullptr;
+                effect = nullptr;
+            }
         }
+    };
+
+    if (command->GetId() == CMDID_BATCH)
+    {
+        auto batch = static_cast<const CommandBatch*>(command);
+        for (DAVA::uint32 i = 0, e = batch->Size(); i < e; ++i)
+        {
+            tryRemoveSelectedEmitter(batch->GetCommand(i));
+        }
+    }
+    else
+    {
+        tryRemoveSelectedEmitter(command);
     }
 
     if ((instance != nullptr) && (effect != nullptr))

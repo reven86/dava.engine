@@ -164,7 +164,7 @@ void ParticleEffectPropertiesWidget::UpdateVaribleTables()
     blockTables = true;
     Set<String> variablesSet = particleEffect->EnumerateVariables();
     effectVariables->clearContents();
-    effectVariables->setRowCount(variablesSet.size());
+    effectVariables->setRowCount(static_cast<int>(variablesSet.size()));
     int32 i = 0;
     for (Set<String>::iterator it = variablesSet.begin(), e = variablesSet.end(); it != e; ++it)
     {
@@ -178,7 +178,7 @@ void ParticleEffectPropertiesWidget::UpdateVaribleTables()
 
     Map<String, float32> globalVariablesSet = particleEffect->GetEntity()->GetScene()->particleEffectSystem->GetGlobalExternals();
     globalVariables->clearContents();
-    globalVariables->setRowCount(globalVariablesSet.size());
+    globalVariables->setRowCount(static_cast<int>(globalVariablesSet.size()));
     i = 0;
     for (Map<String, float32>::iterator it = globalVariablesSet.begin(), e = globalVariablesSet.end(); it != e; ++it)
     {
@@ -870,17 +870,17 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
             }
         }
         data.externalParamId = 0;
-        //layers
-        int32 numLayers = emitter->layers.size();
-        for (int32 layerId = 0; layerId < numLayers; ++layerId)
+
+        // layers
+        for (auto layer : emitter->layers)
         {
-            ParticleLayer* layer = emitter->layers[layerId];
             QTreeWidgetItem* layerItem = new QTreeWidgetItem(emitterItem, TreeItemTypeLayer);
             data.layer = layer;
             layerItem->setText(0, QString(layer->layerName.c_str()));
             layerItem->setIcon(0, iconLayer);
             layerItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
-            //externals
+
+            // externals
             for (int32 externalId = EE_TOTAL; externalId < EL_TOTAL; ++externalId)
             {
                 if (GetLayerLine(layer, LayerExternals(externalId)))
@@ -893,11 +893,10 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
                 }
             }
             data.externalParamId = 0;
-            //forces
-            int32 numForces = layer->forces.size();
-            for (int32 forceId = 0; forceId < numForces; ++forceId)
+
+            // forces
+            for (auto force : layer->forces)
             {
-                ParticleForce* force = layer->forces[forceId];
                 data.force = force;
                 QTreeWidgetItem* forceItem = new QTreeWidgetItem(layerItem, TreeItemTypeForce);
                 forceItem->setText(0, QString("force"));
