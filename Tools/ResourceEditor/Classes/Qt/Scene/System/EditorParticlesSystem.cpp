@@ -86,18 +86,18 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
     {
-        DrawSizeCircle(owner, emitter, center);
+        DrawSizeCircle(owner, emitter);
         break;
     }
     case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
     {
-        DrawSizeCircleShockWave(owner, emitter, center);
+        DrawSizeCircleShockWave(owner, emitter);
         break;
     }
 
     case DAVA::ParticleEmitter::EMITTER_RECT:
     {
-        DrawSizeBox(owner, emitter, center);
+        DrawSizeBox(owner, emitter);
         break;
     }
 
@@ -128,19 +128,26 @@ void EditorParticlesSystem::Draw()
     }
 }
 
-void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
+void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter)
 {
     float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
     float32 emitterRadius = (emitter->GetEmitter()->radius) ? emitter->GetEmitter()->radius->GetValue(time) : 0.0f;
     Vector3 emissionVector(0.0f, 0.0f, 1.0f);
 
     if (emitter->GetEmitter()->emissionVector)
-        emissionVector = emitter->GetEmitter()->emissionVector->GetValue(time);
+    {
+        DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
+        wMat.SetTranslationVector(Vector3(0.0f, 0.0f, 0.0f));
+        emissionVector = emitter->GetEmitter()->emissionVector->GetValue(time) * wMat;
+    }
 
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emissionVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
+    auto center = Selectable(emitter).GetWorldTransform().GetTranslationVector();
+
+    auto drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    drawer->DrawCircle(center, emissionVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
-void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
+void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter)
 {
     float32 emitterRadius = 0.0f;
     DAVA::Vector3 emitterVector;
@@ -154,16 +161,18 @@ void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::Par
     if (emitter->GetEmitter()->emissionVector)
     {
         DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
-        wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
-
-        emitterVector = emitter->GetEmitter()->emissionVector->GetValue(time);
-        emitterVector = emitterVector * wMat;
+        wMat.SetTranslationVector(Vector3(0.0f, 0.0f, 0.0f));
+        emitterVector = emitter->GetEmitter()->emissionVector->GetValue(time) * wMat;
     }
 
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emitterVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
+    auto center = Selectable(emitter).GetWorldTransform().GetTranslationVector();
+
+    auto drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    drawer->DrawCircle(center, emitterVector, emitterRadius, 12,
+                       DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
-void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)
+void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter)
 {
     // Default value of emitter size
     DAVA::Vector3 emitterSize;
@@ -176,10 +185,13 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity* effectEntity, DAVA::Partic
     }
 
     DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
-    wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
+    wMat.SetTranslationVector(Selectable(emitter).GetWorldTransform().GetTranslationVector());
 
     RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
-    drawer->DrawAABoxTransformed(AABBox3(center - emitterSize / 2, center + emitterSize / 2), wMat, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
+    drawer->DrawAABoxTransformed(AABBox3(-0.5f * emitterSize, 0.5f * emitterSize), wMat,
+                                 DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
+    drawer->DrawAABoxTransformed(AABBox3(-0.5f * emitterSize, 0.5f * emitterSize), wMat,
+                                 DAVA::Color(0.7f, 0.0f, 0.0f, 0.5f), RenderHelper::DRAW_WIRE_DEPTH);
 }
 
 void EditorParticlesSystem::DrawVectorArrow(DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center)

@@ -56,9 +56,9 @@ private:
     void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
     void DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner);
 
-    void DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center);
-    void DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center);
-    void DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center);
+    void DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
+    void DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
+    void DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
     void DrawVectorArrow(DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center);
 
     DAVA::Vector<DAVA::Entity*> entities;
