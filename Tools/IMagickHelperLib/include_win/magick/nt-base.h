@@ -103,7 +103,7 @@ extern "C" {
 #if !defined(fseek) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
 !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
- \
+\
 !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #define fseek _fseeki64
 #endif
@@ -111,7 +111,7 @@ extern "C" {
 #if !defined(fstat) && !defined(__BORLANDC__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
 !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
- \
+\
 !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #define fstat _fstati64
 #else
@@ -124,7 +124,7 @@ extern "C" {
 #if !defined(ftell) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
 !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
- \
+\
 !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #define ftell _ftelli64
 #endif
@@ -152,7 +152,7 @@ extern "C" {
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
 !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
- \
+\
 !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #if !defined(lseek)
 #define lseek _lseeki64
@@ -234,7 +234,7 @@ extern "C" {
 #if !defined(stat) && !defined(__BORLANDC__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
 !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
- \
+\
 !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #define stat _stati64
 #else
@@ -252,7 +252,7 @@ extern "C" {
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
 !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
- \
+\
 !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #define tell _telli64
 #else
@@ -287,7 +287,7 @@ extern "C" {
 #if !defined(wstat) && !defined(__BORLANDC__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
 !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
- \
+\
 !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #define wstat _wstati64
 #else

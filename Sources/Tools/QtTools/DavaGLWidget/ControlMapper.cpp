@@ -238,7 +238,6 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent* event)
     davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.mouseButton = DAVA::UIEvent::MouseButton::LEFT;
     davaEvent.timestamp = 0;
-    davaEvent.tapCount = 1;
     davaEvent.phase = DAVA::UIEvent::Phase::MOVE;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
@@ -264,7 +263,6 @@ DAVA::Vector<DAVA::UIEvent>& ControlMapper::MapMouseEventToDAVA(const QPoint& po
     UIEvent davaEvent;
     davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.timestamp = timestamp;
-    davaEvent.tapCount = 1;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
     if (davaButtons.empty())

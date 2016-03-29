@@ -46,15 +46,7 @@ namespace UpdateDialog_local
 class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
 {
 public:
-    UpdateDialogZipFunctor(const QString& progressMessage_
-                           ,
-                           const QString& finishMessage_
-                           ,
-                           const QString& errorMessage_
-                           ,
-                           UpdateDialog* dialog_
-                           ,
-                           QProgressBar* progressBar_)
+    UpdateDialogZipFunctor(const QString& progressMessage_, const QString& finishMessage_, const QString& errorMessage_, UpdateDialog* dialog_, QProgressBar* progressBar_)
         : progressMessage(progressMessage_)
         , finishMessage(finishMessage_)
         , errorMessage(errorMessage_)
