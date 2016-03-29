@@ -893,14 +893,6 @@
 		02E7CA961BD624A7002F026D /* StaticMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C39E1BD624A5002F026D /* StaticMesh.cpp */; };
 		02E7CA971BD624A7002F026D /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C39F1BD624A5002F026D /* StaticMesh.h */; };
 		02E7CA981BD624A7002F026D /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C39F1BD624A5002F026D /* StaticMesh.h */; };
-		02E7CA991BD624A7002F026D /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3A01BD624A5002F026D /* Cursor.h */; };
-		02E7CA9A1BD624A7002F026D /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3A01BD624A5002F026D /* Cursor.h */; };
-		02E7CA9B1BD624A7002F026D /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A11BD624A5002F026D /* CursorMacOS.mm */; };
-		02E7CA9C1BD624A7002F026D /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A11BD624A5002F026D /* CursorMacOS.mm */; };
-		02E7CA9D1BD624A7002F026D /* CursorWin32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A21BD624A5002F026D /* CursorWin32.cpp */; };
-		02E7CA9E1BD624A7002F026D /* CursorWin32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A21BD624A5002F026D /* CursorWin32.cpp */; };
-		02E7CA9F1BD624A7002F026D /* CursorWinUAP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A31BD624A5002F026D /* CursorWinUAP.cpp */; };
-		02E7CAA01BD624A7002F026D /* CursorWinUAP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A31BD624A5002F026D /* CursorWinUAP.cpp */; };
 		02E7CAA11BD624A7002F026D /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A41BD624A5002F026D /* DynamicBindings.cpp */; };
 		02E7CAA21BD624A7002F026D /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3A41BD624A5002F026D /* DynamicBindings.cpp */; };
 		02E7CAA31BD624A7002F026D /* DynamicBindings.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3A51BD624A5002F026D /* DynamicBindings.h */; };
@@ -2511,10 +2503,6 @@
 		02E7C39D1BD624A5002F026D /* PolygonGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PolygonGroup.h; sourceTree = "<group>"; };
 		02E7C39E1BD624A5002F026D /* StaticMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMesh.cpp; sourceTree = "<group>"; };
 		02E7C39F1BD624A5002F026D /* StaticMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticMesh.h; sourceTree = "<group>"; };
-		02E7C3A01BD624A5002F026D /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
-		02E7C3A11BD624A5002F026D /* CursorMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CursorMacOS.mm; sourceTree = "<group>"; };
-		02E7C3A21BD624A5002F026D /* CursorWin32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CursorWin32.cpp; sourceTree = "<group>"; };
-		02E7C3A31BD624A5002F026D /* CursorWinUAP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CursorWinUAP.cpp; sourceTree = "<group>"; };
 		02E7C3A41BD624A5002F026D /* DynamicBindings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBindings.cpp; sourceTree = "<group>"; };
 		02E7C3A51BD624A5002F026D /* DynamicBindings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DynamicBindings.h; sourceTree = "<group>"; };
 		02E7C3A61BD624A5002F026D /* DynamicBufferAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBufferAllocator.cpp; sourceTree = "<group>"; };
@@ -3806,10 +3794,6 @@
 			children = (
 				02E7C37A1BD624A5002F026D /* 2D */,
 				02E7C3951BD624A5002F026D /* 3D */,
-				02E7C3A01BD624A5002F026D /* Cursor.h */,
-				02E7C3A11BD624A5002F026D /* CursorMacOS.mm */,
-				02E7C3A21BD624A5002F026D /* CursorWin32.cpp */,
-				02E7C3A31BD624A5002F026D /* CursorWinUAP.cpp */,
 				02E7C3A41BD624A5002F026D /* DynamicBindings.cpp */,
 				02E7C3A51BD624A5002F026D /* DynamicBindings.h */,
 				02E7C3A61BD624A5002F026D /* DynamicBufferAllocator.cpp */,
@@ -5289,7 +5273,6 @@
 				02E7CC2C1BD624A7002F026D /* rhi_Metal.h in Headers */,
 				02E7CDC61BD624A7002F026D /* RawTimer.h in Headers */,
 				02E7C6021BD624A6002F026D /* BezierSplineAnimation.h in Headers */,
-				02E7CA9A1BD624A7002F026D /* Cursor.h in Headers */,
 				02E7CF8A1BD639E1002F026D /* BSDiff.h in Headers */,
 				02E7CE321BD624A7002F026D /* UIStyleSheetYamlLoader.h in Headers */,
 				02E7CDC01BD624A7002F026D /* SoundSystem.h in Headers */,
@@ -5691,7 +5674,6 @@
 				02E7C6A91BD624A6002F026D /* ObjectCreator.h in Headers */,
 				02E7CD771BD624A7002F026D /* ParticleEffectSystem.h in Headers */,
 				7C41FCDE1C774EBF00B61435 /* TeamCityTestsOutput.h in Headers */,
-				02E7CD271BD624A7002F026D /* SceneFile.h in Headers */,
 				02E7CC9D1BD624A7002F026D /* DebugRenderComponent.h in Headers */,
 				02E7C88F1BD624A7002F026D /* NetController.h in Headers */,
 				02E7C6171BD624A6002F026D /* AutotestingDB.h in Headers */,
@@ -5831,7 +5813,6 @@
 				02E7CC2B1BD624A7002F026D /* rhi_Metal.h in Headers */,
 				02E7CDC51BD624A7002F026D /* RawTimer.h in Headers */,
 				02E7C6011BD624A6002F026D /* BezierSplineAnimation.h in Headers */,
-				02E7CA991BD624A7002F026D /* Cursor.h in Headers */,
 				02E7CF891BD639E1002F026D /* BSDiff.h in Headers */,
 				02E7CE311BD624A7002F026D /* UIStyleSheetYamlLoader.h in Headers */,
 				02E7CDBF1BD624A7002F026D /* SoundSystem.h in Headers */,
@@ -6039,7 +6020,6 @@
 				02E7CB601BD624A7002F026D /* MipmapReplacer.cpp in Sources */,
 				02E7CB761BD624A7002F026D /* Renderer.cpp in Sources */,
 				02E7CC0E1BD624A7002F026D /* rhi_CommandBufferGLES2.cpp in Sources */,
-				02E7CA9C1BD624A7002F026D /* CursorMacOS.mm in Sources */,
 				02E7CEFA1BD624A7002F026D /* TestCore.cpp in Sources */,
 				02E7C8DA1BD624A7002F026D /* LocalNotificationNotImplemented.cpp in Sources */,
 				02E7CB541BD624A7002F026D /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
@@ -6128,7 +6108,6 @@
 				02E7C7261BD624A7002F026D /* SharedPreferences.cpp in Sources */,
 				02E7CA761BD624A7002F026D /* TextBlockGraphicRender.cpp in Sources */,
 				02E7CD2A1BD624A7002F026D /* SceneFileV2.cpp in Sources */,
-				02E7CAA01BD624A7002F026D /* CursorWinUAP.cpp in Sources */,
 				02E7C8521BD624A7002F026D /* IPAddress.cpp in Sources */,
 				02E7CE281BD624A7002F026D /* UIStyleSheetStructs.cpp in Sources */,
 				02E7C7081BD624A7002F026D /* Core.cpp in Sources */,
@@ -6198,7 +6177,6 @@
 				02E7C68C1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F71BD6248E002F026D /* CRC32.cpp in Sources */,
 				7C41FCDD1C774EBF00B61435 /* TeamCityTestsOutput.cpp in Sources */,
-				02E7CDAA1BD624A7002F026D /* UserNode.cpp in Sources */,
 				02E7C8701BD624A7002F026D /* NetConfig.cpp in Sources */,
 				02E7CECE1BD624A7002F026D /* UISpinner.cpp in Sources */,
 				02E7CACC1BD624A7002F026D /* RenderBatch.cpp in Sources */,
@@ -6373,7 +6351,6 @@
 				02E7C6381BD624A6002F026D /* MongodbUpdateObject.cpp in Sources */,
 				02E7CD221BD624A7002F026D /* VersionInfo.cpp in Sources */,
 				02E7CF951BD63A20002F026D /* DynamicMemoryFile.cpp in Sources */,
-				02E7CA9E1BD624A7002F026D /* CursorWin32.cpp in Sources */,
 				02E7C8401BD624A7002F026D /* DeadlineTimer.cpp in Sources */,
 				02E7CAC41BD624A7002F026D /* Light.cpp in Sources */,
 				02E7C8461BD624A7002F026D /* Endpoint.cpp in Sources */,
@@ -6441,7 +6418,6 @@
 			files = (
 				02E7CCBB1BD624A7002F026D /* SpeedTreeComponent.cpp in Sources */,
 				7C41FCD81C774EBF00B61435 /* TeamcityOutput.cpp in Sources */,
-				02E7CD391BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */,
 				02E7C8591BD624A7002F026D /* TCPAcceptor.cpp in Sources */,
 				02E7CB151BD624A7002F026D /* VegetationRenderData.cpp in Sources */,
 				02E7C10C1BD6248E002F026D /* UTF8Utils.cpp in Sources */,
@@ -6518,7 +6494,6 @@
 				02E7CB5F1BD624A7002F026D /* MipmapReplacer.cpp in Sources */,
 				02E7CB751BD624A7002F026D /* Renderer.cpp in Sources */,
 				02E7CC0D1BD624A7002F026D /* rhi_CommandBufferGLES2.cpp in Sources */,
-				02E7CA9B1BD624A7002F026D /* CursorMacOS.mm in Sources */,
 				02E7CEF91BD624A7002F026D /* TestCore.cpp in Sources */,
 				02E7C8D91BD624A7002F026D /* LocalNotificationNotImplemented.cpp in Sources */,
 				02E7CB531BD624A7002F026D /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
@@ -6608,7 +6583,6 @@
 				02E7C7251BD624A7002F026D /* SharedPreferences.cpp in Sources */,
 				02E7CA751BD624A7002F026D /* TextBlockGraphicRender.cpp in Sources */,
 				02E7CD291BD624A7002F026D /* SceneFileV2.cpp in Sources */,
-				02E7CA9F1BD624A7002F026D /* CursorWinUAP.cpp in Sources */,
 				02E7C8511BD624A7002F026D /* IPAddress.cpp in Sources */,
 				02E7CE271BD624A7002F026D /* UIStyleSheetStructs.cpp in Sources */,
 				02E7C7071BD624A7002F026D /* Core.cpp in Sources */,
@@ -6855,7 +6829,6 @@
 				02E7C6371BD624A6002F026D /* MongodbUpdateObject.cpp in Sources */,
 				02E7CD211BD624A7002F026D /* VersionInfo.cpp in Sources */,
 				02E7CF941BD63A20002F026D /* DynamicMemoryFile.cpp in Sources */,
-				02E7CA9D1BD624A7002F026D /* CursorWin32.cpp in Sources */,
 				02E7C83F1BD624A7002F026D /* DeadlineTimer.cpp in Sources */,
 				02E7CAC31BD624A7002F026D /* Light.cpp in Sources */,
 				02E7C8451BD624A7002F026D /* Endpoint.cpp in Sources */,
