@@ -35,6 +35,8 @@
 #include "Concurrency/LockGuard.h"
 #include "UI/UIControlSystem.h"
 
+#include <numeric>
+
 namespace DAVA
 {
 #define NEW_RENDER 1
@@ -288,6 +290,18 @@ void TextBlock::SetUseRtlAlign(eUseRtlAlign _useRtlAlign)
     }
 }
 
+const Vector<TextBlock::Line>& TextBlock::GetMultilineInfo()
+{
+    CalculateCacheParamsIfNeed();
+    return multitlineInfo;
+}
+
+const Vector<float32>& TextBlock::GetCharactersSize()
+{
+    CalculateCacheParamsIfNeed();
+    return charactersSizes;
+}
+
 const Vector<WideString>& TextBlock::GetMultilineStrings()
 {
     CalculateCacheParamsIfNeed();
@@ -432,6 +446,7 @@ void TextBlock::CalculateCacheParams()
     stringSizes.clear();
     multilineStrings.clear();
     charactersSizes.clear();
+    multitlineInfo.clear();
 
 #if defined(LOCALIZATION_DEBUG)
     fittingTypeUsed = FITTING_DISABLED;
@@ -495,11 +510,6 @@ void TextBlock::CalculateCacheParams()
 
     if (!isMultilineEnabled || treatMultilineAsSingleLine)
     {
-        for (float32& val : charactersSizes)
-        {
-            val = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(val);
-        }
-
         WideString pointsStr;
         if ((fittingType & FITTING_POINTS) && (drawSize.x < textMetrics.width))
         {
@@ -687,12 +697,18 @@ void TextBlock::CalculateCacheParams()
 #endif
         }
 
+        Line lineInfo;
+        lineInfo.offset = 0;
+        lineInfo.length = visualText.size();
+        lineInfo.number = 0;
+        lineInfo.xadvance = std::accumulate(charactersSizes.begin(), charactersSizes.end(), 0.f); //static_cast<float32>(stringSize.width);
+        lineInfo.yadvance = static_cast<float32>(textMetrics.height);
+        multitlineInfo.push_back(lineInfo);
+
         if (treatMultilineAsSingleLine)
         {
             // Another temporary solution to return correct multiline strings/
             // string sizes.
-            multilineStrings.clear();
-            stringSizes.clear();
             multilineStrings.push_back(visualText);
             stringSizes.push_back(textMetrics.width);
         }
@@ -829,12 +845,24 @@ void TextBlock::CalculateCacheParams()
         }
 
         // Get lines as visual strings and its metrics
-        stringSizes.resize(lines.size());
-        multilineStrings.reserve(lines.size());
-        for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
+        uint32 linesCount = static_cast<uint32>(lines.size());
+        multitlineInfo.reserve(linesCount);
+        stringSizes.reserve(linesCount);
+        multilineStrings.reserve(linesCount);
+        Line lineInfo;
+        for (uint32 lineInd = 0; lineInd < linesCount; ++lineInd)
         {
-            const WideString& visualLine = textLayout.GetVisualLine(lines[line], true);
+            const TextLayout::Line& line = lines[lineInd];
+            const WideString& visualLine = textLayout.GetVisualLine(line, true);
             const Font::StringMetrics& stringSize = font->GetStringMetrics(visualLine);
+
+            lineInfo.offset = line.offset;
+            lineInfo.length = line.length;
+            lineInfo.number = lineInd;
+            lineInfo.xadvance = std::accumulate(charactersSizes.begin() + line.offset, charactersSizes.begin() + line.offset + line.length, 0.f); //static_cast<float32>(stringSize.width);
+            lineInfo.yadvance = static_cast<float32>(stringSize.height);
+            multitlineInfo.push_back(lineInfo);
+
             multilineStrings.push_back(visualLine);
             stringSizes.push_back(stringSize.width);
 
@@ -843,7 +871,7 @@ void TextBlock::CalculateCacheParams()
 
             if (requestedSize.dx >= 0)
             {
-                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, (int32)drawSize.x));
+                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, static_cast<int32>(drawSize.x)));
             }
             else
             {
@@ -851,7 +879,7 @@ void TextBlock::CalculateCacheParams()
             }
 
             // Get draw rectangle Y position from first line only
-            if (0 == line)
+            if (0 == lineInd)
             {
                 textMetrics.drawRect.y = stringSize.drawRect.y;
             }

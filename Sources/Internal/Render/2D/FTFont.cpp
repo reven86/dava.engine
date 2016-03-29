@@ -486,7 +486,9 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
             if (charSizes)
             {
-                charSizes->push_back((float32)advances[i].x / ftToPixelScale);
+                float32 charSize = (float32)advances[i].x / ftToPixelScale; // Convert to pixels
+                charSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(charSize); // Convert to virtual space
+                charSizes->push_back(charSize);
             }
 
             layoutWidth += advances[i].x;

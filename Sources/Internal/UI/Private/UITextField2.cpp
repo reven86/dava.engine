@@ -32,6 +32,7 @@
 #include "UI/UIStaticText.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #include "UI/Private/IUITextField2Impl.h"
 #include "UI/Private/UITextField2StbBind.h"
@@ -48,6 +49,7 @@
 #include "UI/Private/Android/UITextField2Impl.h"
 #endif
 
+#include <numeric>
 
 // Use NO_REQUIRED_SIZE to notify textFieldImpl->SetText that we don't want
 // to enable of any kind of static text fitting
@@ -151,6 +153,16 @@ void UITextField2::innerDeleteText(uint32 position, uint32 length)
     SetText(t);
 }
 
+const Vector<TextBlock::Line>& UITextField2::innerGetMultilineInfo()
+{
+    return staticText->GetTextBlock()->GetMultilineInfo();
+}
+
+const Vector<float32>& UITextField2::innerGetCharactersSize()
+{
+    return staticText->GetTextBlock()->GetCharactersSize();
+}
+
 void UITextField2::InsertText(uint32 position, const WideString& str)
 {
     stb_textedit_paste(stb_struct, &stb_struct->state, str.c_str(), static_cast<int>(str.length()));
@@ -175,7 +187,10 @@ void UITextField2::SetText(const WideString& newText)
             delegate->OnTextChanged(this, newText, text);
         }
         text = newText;
-        staticText->SetText(text, NO_REQUIRED_SIZE);
+
+        // Update field with visibled text (for password mode it is ***)
+        const WideString& visText = this->GetVisibleText();
+        staticText->SetText(visText, NO_REQUIRED_SIZE);
     }
 }
 
@@ -438,34 +453,13 @@ void UITextField2::Update(float32 timeElapsed)
         {
             cursorTime = 0;
             showCursor = !showCursor;
-            needRedraw = true;
         }
     }
     else if (showCursor)
     {
         cursorTime = 0;
         showCursor = false;
-        needRedraw = true;
     }
-
-    if (!needRedraw)
-    {
-        return;
-    }
-
-    const WideString& txt = this->GetVisibleText();
-    if (this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        WideString txtWithCursor = txt;
-        //auto pos = stb_struct->state.cursor;
-        //txtWithCursor.insert(pos, showCursor ? L"|" : L" ", 1);
-        staticText->SetText(txtWithCursor, NO_REQUIRED_SIZE);
-    }
-    else
-    {
-        staticText->SetText(txt, NO_REQUIRED_SIZE);
-    }
-    needRedraw = false;
 }
 
 void UITextField2::Input(UIEvent* currentInput)
@@ -481,6 +475,10 @@ void UITextField2::Input(UIEvent* currentInput)
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
         currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
+        const auto& kDevice = InputSystem::Instance()->GetKeyboard();
+        auto isShift = kDevice.IsKeyPressed(Key::LSHIFT) || kDevice.IsKeyPressed(Key::RSHIFT);
+        auto isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
+
         if (currentInput->key == Key::ENTER)
         {
             delegate->OnSubmit(this);
@@ -491,50 +489,200 @@ void UITextField2::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::LEFT)
         {
-            SendChar(STB_TEXTEDIT_K_LEFT);
-        }
-        else if (currentInput->key == Key::DOWN)
-        {
-            SendChar(STB_TEXTEDIT_K_DOWN);
+            if (isCtrl)
+            {
+                SendChar(STB_TEXTEDIT_K_WORDLEFT);
+            }
+            else
+            {
+                SendChar(STB_TEXTEDIT_K_LEFT | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            }
         }
         else if (currentInput->key == Key::RIGHT)
         {
-            SendChar(STB_TEXTEDIT_K_RIGHT);
+            if (isCtrl)
+            {
+                SendChar(STB_TEXTEDIT_K_WORDRIGHT);
+            }
+            else
+            {
+                SendChar(STB_TEXTEDIT_K_RIGHT | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            }
         }
         else if (currentInput->key == Key::UP)
         {
-            SendChar(STB_TEXTEDIT_K_UP);
+            SendChar(STB_TEXTEDIT_K_UP | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
         }
-        Logger::Error("KEY_DOWN: ch:%d vk:%d", currentInput->keyChar, currentInput->key);
+        else if (currentInput->key == Key::DOWN)
+        {
+            SendChar(STB_TEXTEDIT_K_DOWN | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+        }
+        else if (currentInput->key == Key::HOME)
+        {
+            if (isCtrl)
+            {
+                SendChar(STB_TEXTEDIT_K_TEXTSTART | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            }
+            else
+            {
+                SendChar(STB_TEXTEDIT_K_LINESTART | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            }
+        }
+        else if (currentInput->key == Key::END)
+        {
+            if (isCtrl)
+            {
+                SendChar(STB_TEXTEDIT_K_TEXTEND | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            }
+            else
+            {
+                SendChar(STB_TEXTEDIT_K_LINEEND | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            }
+        }
     }
     else if (currentInput->phase == UIEvent::Phase::CHAR ||
              currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
     {
         SendChar(currentInput->keyChar);
-        Logger::Error("CHAR: ch:%d vk:%d", currentInput->keyChar, currentInput->key);
     }
     else if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
         Vector2 localPoint = currentInput->point - GetPosition();
-        auto pos = stb_text_locate_coord(stb_struct, localPoint.x, localPoint.y);
-        Logger::Debug("MouseDown: point = %fx%f, pos = %d", localPoint.x, localPoint.y, pos);
-        //stb_textedit_click(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
+        stb_textedit_click(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
         Vector2 localPoint = currentInput->point - GetPosition();
-        auto pos = stb_text_locate_coord(stb_struct, localPoint.x, localPoint.y);
-        Logger::Debug("MouseDrag: point = %fx%f, pos = %d", localPoint.x, localPoint.y, pos);
-        //stb_textedit_drag(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
+        stb_textedit_drag(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
+}
+
+void UITextField2::Draw(const UIGeometricData & geometricData)
+{
+    auto selStart = static_cast<uint32>(std::min(stb_struct->state.select_start, stb_struct->state.select_end));
+    auto selEnd = static_cast<uint32>(std::max(stb_struct->state.select_start, stb_struct->state.select_end));
+    if (cachedSelectionEnd != selEnd || cachedSelectionStart != selStart)
+    {
+        UpdateSelection();
+    }
+    for (const auto& r : selectionRects)
+    {
+        RenderSystem2D::Instance()->FillRect(r + geometricData.GetUnrotatedRect().GetPosition(), selectionColor);
+    }
+
+    UIControl::Draw(geometricData);
+
+    if(showCursor)
+    {
+        auto cursorPos = static_cast<uint32>(stb_struct->state.cursor);
+        if (cachedCursorPos != cursorPos)
+        {
+            UpdateCursor();
+        }
+        RenderSystem2D::Instance()->FillRect(cursorRect + geometricData.GetUnrotatedRect().GetPosition(), cursorColor);
+    }
 }
 
 void UITextField2::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
     staticText->SetSize(newSize);
+}
+
+void UITextField2::UpdateSelection()
+{
+    selectionRects.clear();
+    auto selStart = static_cast<uint32>(std::min(stb_struct->state.select_start, stb_struct->state.select_end));
+    auto selEnd = static_cast<uint32>(std::max(stb_struct->state.select_start, stb_struct->state.select_end));
+    if (selStart < selEnd)
+    {
+        const auto& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
+        const auto& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
+        for (const auto& line : linesInfo)
+        {
+            if (selStart >= line.offset + line.length || selEnd <= line.offset)
+            {
+                continue;
+            }
+
+            Rect r;
+            r.y = line.number * line.yadvance;
+            r.dy = line.yadvance;
+            if (selStart > line.offset)
+            {
+                r.x = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
+            }
+
+            if (selEnd >= line.offset + line.length)
+            {
+                r.dx = line.xadvance;
+            }
+            else
+            {
+                r.dx = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selEnd, 0.f);
+            }
+            r.dx -= r.x;
+
+            if (r.x > GetSize().x)
+            {
+                continue;
+            }
+            if (r.x + r.dx > GetSize().x)
+            {
+                r.dx = GetSize().x - r.x;
+            }
+
+            selectionRects.push_back(r);
+        }
+    }
+    cachedSelectionStart = selStart;
+    cachedSelectionEnd = selEnd;
+}
+
+void UITextField2::UpdateCursor()
+{
+    auto cursorPos = static_cast<uint32>(stb_struct->state.cursor);
+    const auto& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
+    const auto& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
+
+    Rect r;
+    r.dy = staticText->GetFont() ? staticText->GetFont()->GetFontHeight() : 0.f;
+    r.dx = 1.f;
+
+    if (!linesInfo.empty())
+    {
+        auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [cursorPos](const DAVA::TextBlock::Line& l)
+        {
+            return l.offset <= cursorPos && cursorPos < l.offset + l.length;
+        });
+        if (lineInfoIt != linesInfo.end())
+        {
+            auto line = *lineInfoIt;
+            r.y = line.number * line.yadvance;
+            r.dy = line.yadvance;
+            if (cursorPos != line.offset)
+            {
+                r.x = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
+            }
+        }
+        else
+        {
+            auto line = *linesInfo.rbegin();
+            r.y = line.number * line.yadvance;
+            r.dy = line.yadvance;
+            r.x = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
+        }
+
+        if (r.x + r.dx > GetSize().x)
+        {
+            r.x = GetSize().x - r.dx;
+        }
+    }
+
+    cursorRect = r;
+    cachedCursorPos = cursorPos;
 }
 
 } // namespace DAVA

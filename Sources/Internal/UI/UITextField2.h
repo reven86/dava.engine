@@ -83,7 +83,9 @@ public:
     // Text field text modification
     void innerInsertText(uint32 position, const WideString::value_type* str, uint32 length);
     void innerDeleteText(uint32 position, uint32 length);
-
+    const Vector<TextBlock::Line>& innerGetMultilineInfo();
+    const Vector<float32>& innerGetCharactersSize();
+    
     void InsertText(uint32 position, const WideString& str);
     void SendChar(uint32 codePoint);
 
@@ -146,6 +148,7 @@ public:
     void OnFocusLost(UIControl* newFocus) override;
     void Update(float32 timeElapsed) override;
     void Input(UIEvent* currentInput) override;
+    void Draw(const UIGeometricData& geometricData) override;
     void SetSize(const DAVA::Vector2& newSize) override;
 
 protected:
@@ -153,6 +156,8 @@ protected:
 
 private:
     void SetupDefaults();
+    void UpdateSelection();
+    void UpdateCursor();
 
     WideString text;
 
@@ -170,6 +175,9 @@ private:
     UITextField::eReturnKeyType returnKeyType;
 
     int32 maxLength = -1;
+    uint32 cachedSelectionStart = UINT32_MAX;
+    uint32 cachedSelectionEnd = UINT32_MAX;
+    uint32 cachedCursorPos = UINT32_MAX;
 
     bool isPassword = false;
     bool enableReturnKeyAutomatically = false;
@@ -179,6 +187,11 @@ private:
 
     float32 cursorBlinkingTime = 0.0f;
     float32 cursorTime = 0.0f;
+
+    Color selectionColor = Color(0.f,0.f, 0.7f, 0.7f);
+    Color cursorColor = Color::White;
+    Vector<Rect> selectionRects;
+    Rect cursorRect;
 
 public:
     INTROSPECTION_EXTEND(UITextField2, UIControl,

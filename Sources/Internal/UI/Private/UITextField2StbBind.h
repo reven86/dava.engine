@@ -2,6 +2,7 @@
 #define __DAVA_UITEXTFIELD2STBBIND_H__
 
 #include "UI/UITextField2.h"
+#include "Render/2D/TextLayout.h"
 
 #define STB_TEXTEDIT_CHARTYPE DAVA::WideString::value_type
 #define STB_TEXTEDIT_STRING StbTextStruct
@@ -21,13 +22,27 @@ struct StbTextStruct
 //                                        starting from character #n (see discussion below)
 inline void layout_func(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
-    int remaining_chars = static_cast<int>(str->field->GetText().length() - start_i);
-    row->num_chars = remaining_chars > 20 ? 20 : remaining_chars; // should do real word wrap here
-    row->x0 = 0;
-    row->x1 = 20; // need to account for actual size of characters
-    row->baseline_y_delta = 1.25;
-    row->ymin = -1;
-    row->ymax = 0;
+    auto linesInfo = str->field->innerGetMultilineInfo();
+
+    DAVA::uint32 n = static_cast<DAVA::uint32>(start_i);
+    auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [n](const DAVA::TextBlock::Line& l)
+    {
+        return l.offset == n;
+    });
+    if (lineInfoIt == linesInfo.end() && !linesInfo.empty())
+    {
+        lineInfoIt = linesInfo.end() - 1;
+    }
+    DVASSERT(lineInfoIt != linesInfo.end());
+
+    auto line = *lineInfoIt;
+
+    row->num_chars = line.length;
+    row->x0 = 0.f;
+    row->x1 = line.xadvance;
+    row->baseline_y_delta = 0.f;
+    row->ymin = line.number * line.yadvance;
+    row->ymax = (line.number + 1) * line.yadvance;
 }
 
 //    STB_TEXTEDIT_INSERTCHARS(obj,i,c*,n)   insert n characters at i (pointed to by STB_TEXTEDIT_CHARTYPE*)
@@ -56,7 +71,9 @@ inline int get_length(STB_TEXTEDIT_STRING* str)
 //                                        with previous char)
 inline float get_width(STB_TEXTEDIT_STRING* str, int n, int i)
 {
-    return 1.f;
+    auto linesInfo = str->field->innerGetCharactersSize();
+    DVASSERT(static_cast<DAVA::uint32>(linesInfo.size()) > static_cast<DAVA::uint32>(n + i));
+    return linesInfo[n + i];
 }
 
 //    STB_TEXTEDIT_KEYTOTEXT(k)         maps a keyboard input to an insertable character

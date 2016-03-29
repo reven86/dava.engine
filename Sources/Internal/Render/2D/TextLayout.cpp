@@ -112,7 +112,7 @@ void TextLayout::Seek(const uint32 _position)
 
 bool TextLayout::IsEndOfText()
 {
-    return lineData.offset >= preparedText.length();
+    return lineData.offset + lineData.length >= preparedText.length();
 }
 
 bool TextLayout::NextByWords(const float32 lineWidth)
@@ -131,7 +131,7 @@ bool TextLayout::NextByWords(const float32 lineWidth)
         char16 ch = preparedText[pos];
         uint8 canBreak = breaks[pos];
 
-        currentWidth += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(characterSizes[pos]);
+        currentWidth += characterSizes[pos];
 
         // Check that targetWidth defined and currentWidth less than targetWidth.
         // If symbol is whitespace skip it and go to next (add all whitespace to current line)
@@ -187,7 +187,7 @@ bool TextLayout::NextBySymbols(const float32 lineWidth)
             return true;
         }
 
-        float32 characterSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(characterSizes[pos]);
+        float32 characterSize = characterSizes[pos];
 
         // Use additional condition to prevent endless loop, when target size is less than
         // size of one symbol (sizes[pos] > targetWidth)

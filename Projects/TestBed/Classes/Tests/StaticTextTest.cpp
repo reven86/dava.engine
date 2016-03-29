@@ -123,6 +123,7 @@ void StaticTextTest::LoadResources()
     AddControl(label);
 
     inputText = new UITextField2(Rect(20, 260, 400, 200));
+    inputText->SetPassword(true);
     inputText->SetFont(bigFont);
     inputText->SetTextColor(Color::White);
     inputText->SetText(L"");

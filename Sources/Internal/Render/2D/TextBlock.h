@@ -53,14 +53,21 @@ class TextBlockGraphicRender;
 class TextBlock : public BaseObject
 {
 public:
+
+    struct Line 
+    {
+        uint32 number;
+        uint32 offset;
+        uint32 length;
+        float32 xadvance;
+        float32 yadvance;
+    };
+
     enum eFitType
     {
-        FITTING_DISABLED = 0
-        ,
-        FITTING_ENLARGE = 1
-        ,
-        FITTING_REDUCE = 2
-        ,
+        FITTING_DISABLED = 0,
+        FITTING_ENLARGE = 1,
+        FITTING_REDUCE = 2,
         FITTING_POINTS = 4
     };
 
@@ -110,6 +117,8 @@ public:
     virtual const WideString& GetText();
     virtual const WideString& GetVisualText();
     virtual const Vector<WideString>& GetMultilineStrings();
+    virtual const Vector<Line>& GetMultilineInfo();
+    virtual const Vector<float32>& GetCharactersSize();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
@@ -206,6 +215,7 @@ private:
     WideString logicalText;
     WideString visualText;
     Vector<WideString> multilineStrings;
+    Vector<Line> multitlineInfo;
     Vector<float32> charactersSizes;
     Vector<int32> stringSizes;
 
