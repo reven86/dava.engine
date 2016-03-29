@@ -39,6 +39,31 @@ extern void FrameworkWillTerminate();
 
 namespace DAVA
 {
+void CoreWin32PlatformQt::InitArgs()
+{
+    int argc = 0;
+    LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+
+    if (argc > 0 && NULL != szArglist)
+    {
+        Vector<String> args;
+        args.reserve(argc);
+        for (int i = 0; i < argc; ++i)
+        {
+            args.emplace_back(WStringToString(szArglist[i]));
+        }
+
+        SetCommandLine(std::move(args));
+    }
+
+    ::LocalFree(szArglist);
+}
+
+void CoreWin32PlatformQt::Quit()
+{
+    PostQuitMessage(0);
+}
+
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
     CoreWin32PlatformQt* core = new CoreWin32PlatformQt();
