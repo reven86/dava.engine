@@ -897,7 +897,7 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
 
 void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    if ((width == 0.f) || (height == 0.f) || (scaleX == 0.f) || (scaleY != 0.f))
+    if ((width == 0.f) || (height == 0.f) || (scaleX == 0.f) || (scaleY == 0.f))
     {
         return;
     }
