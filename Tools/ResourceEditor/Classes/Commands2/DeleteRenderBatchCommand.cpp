@@ -39,12 +39,12 @@ DeleteRenderBatchCommand::DeleteRenderBatchCommand(DAVA::Entity* en, DAVA::Rende
     DVASSERT(batchIndex < renderObject->GetRenderBatchCount());
 
     renderBatch = renderObject->GetRenderBatch(batchIndex, lodIndex, switchIndex);
-    renderBatch->Retain();
+    DAVA::SafeRetain(renderBatch);
 }
 
 DeleteRenderBatchCommand::~DeleteRenderBatchCommand()
 {
-    SafeRelease(renderBatch);
+    DAVA::SafeRelease(renderBatch);
 }
 
 void DeleteRenderBatchCommand::Redo()
