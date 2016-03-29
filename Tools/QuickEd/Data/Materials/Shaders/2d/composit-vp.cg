@@ -23,10 +23,10 @@ VPROG_BEGIN
     float3 in_pos      = VP_IN_POSITION.xyz;
 	VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
 
-    VP_OUT(uv0) = VP_IN_TEXCOORD0;
-	VP_OUT(uv1) = VP_IN_TEXCOORD1;
-	VP_OUT(uv2) = VP_IN_TEXCOORD2;
-	VP_OUT(uv3) = VP_IN_TEXCOORD3;
+    VP_OUT(uvMask) = VP_IN_TEXCOORD0;
+	VP_OUT(uvDetail) = VP_IN_TEXCOORD1;
+	VP_OUT(uvGradient) = VP_IN_TEXCOORD2;
+	VP_OUT(uvContour) = VP_IN_TEXCOORD3;
 
     VP_OUT(color) =  VP_IN_COLOR0;
 

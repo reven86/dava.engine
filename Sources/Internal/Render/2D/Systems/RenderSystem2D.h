@@ -150,7 +150,7 @@ public:
         uint32 vertexStride = 0;
         Array<const float32*, MAX_TEXTURE_STREAMS_COUNT> texCoordPointer = {};
         uint32 texCoordStride = 0;
-        uint32 texCoordCount = 0;
+        uint32 texCoordCount = 1;
         const uint32* colorPointer = nullptr;
         uint32 colorStride = 0;
         const uint16* indexPointer = nullptr;

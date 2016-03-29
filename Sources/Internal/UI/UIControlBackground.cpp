@@ -521,6 +521,7 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
         RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData, drawColor);
         break;
     case DRAW_TILED_MULTILAYER:
+        drawState.SetMaterial(RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL);
         RenderSystem2D::Instance()->DrawTiledMultylayer(mask, detail, gradient, contour, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledMultulayerData, 0);
     default:
         break;
