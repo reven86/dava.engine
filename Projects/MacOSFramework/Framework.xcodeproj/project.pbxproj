@@ -1355,12 +1355,6 @@
 		028C149E1BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
 		028C149F1BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
 		028C14A01BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
-		028C14A11BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A21BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A31BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A41BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
-		028C14A51BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
-		028C14A61BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
 		028C14AD1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
 		028C14AE1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
 		028C14AF1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
@@ -3431,8 +3425,6 @@
 		028C0AC71BD66A5E00B2266F /* PolygonGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PolygonGroup.h; sourceTree = "<group>"; };
 		028C0AC81BD66A5E00B2266F /* StaticMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMesh.cpp; sourceTree = "<group>"; };
 		028C0AC91BD66A5E00B2266F /* StaticMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticMesh.h; sourceTree = "<group>"; };
-		028C0ACA1BD66A5E00B2266F /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
-		028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CursorMacOS.mm; sourceTree = "<group>"; };
 		028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBindings.cpp; sourceTree = "<group>"; };
 		028C0ACF1BD66A5E00B2266F /* DynamicBindings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DynamicBindings.h; sourceTree = "<group>"; };
 		028C0AD01BD66A5E00B2266F /* DynamicBufferAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBufferAllocator.cpp; sourceTree = "<group>"; };
@@ -4735,8 +4727,6 @@
 			children = (
 				028C0AA41BD66A5E00B2266F /* 2D */,
 				028C0ABF1BD66A5E00B2266F /* 3D */,
-				028C0ACA1BD66A5E00B2266F /* Cursor.h */,
-				028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */,
 				028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */,
 				028C0ACF1BD66A5E00B2266F /* DynamicBindings.h */,
 				028C0AD01BD66A5E00B2266F /* DynamicBufferAllocator.cpp */,
@@ -5812,7 +5802,6 @@
 				028C15421BD66A6000B2266F /* StaticOcclusion.h in Headers */,
 				028C156C1BD66A6000B2266F /* CRCAdditionInterface.h in Headers */,
 				028C139B1BD66A6000B2266F /* CorePlatformMacOS.h in Headers */,
-				028C14A31BD66A6000B2266F /* Cursor.h in Headers */,
 				028C16231BD66A6000B2266F /* internal.h in Headers */,
 				028C158D1BD66A6000B2266F /* LibJpegHelper.h in Headers */,
 				028C0FB41BD66A6000B2266F /* DynamicMemoryFile.h in Headers */,
@@ -6592,7 +6581,6 @@
 				028C15911BD66A6000B2266F /* LibPngHelper.h in Headers */,
 				028C13AB1BD66A6000B2266F /* MovieViewControlMacOS.h in Headers */,
 				028C18251BD66A6000B2266F /* TreeToAnimatedTreeConverter.h in Headers */,
-				028C14A11BD66A6000B2266F /* Cursor.h in Headers */,
 				028C15071BD66A6000B2266F /* RenderObject.h in Headers */,
 				028C10751BD66A6000B2266F /* JobManager.h in Headers */,
 				028C17951BD66A6000B2266F /* SnapToLandscapeControllerComponent.h in Headers */,
@@ -6864,7 +6852,6 @@
 				028C15411BD66A6000B2266F /* StaticOcclusion.h in Headers */,
 				028C156B1BD66A6000B2266F /* CRCAdditionInterface.h in Headers */,
 				028C139A1BD66A6000B2266F /* CorePlatformMacOS.h in Headers */,
-				028C14A21BD66A6000B2266F /* Cursor.h in Headers */,
 				028C16221BD66A6000B2266F /* internal.h in Headers */,
 				028C158C1BD66A6000B2266F /* LibJpegHelper.h in Headers */,
 				028C0FB31BD66A6000B2266F /* DynamicMemoryFile.h in Headers */,
@@ -7530,7 +7517,6 @@
 				028C19621BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D91BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C15211BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A61BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5D1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7F1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E8B1BD66A6000B2266F /* Collisions.cpp in Sources */,
@@ -7985,7 +7971,6 @@
 				028C19601BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D71BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C151F1BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A41BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5B1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7D1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E891BD66A6000B2266F /* Collisions.cpp in Sources */,
@@ -8440,7 +8425,6 @@
 				028C19611BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D81BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C15201BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A51BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5C1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7E1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E8A1BD66A6000B2266F /* Collisions.cpp in Sources */,
