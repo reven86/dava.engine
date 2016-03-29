@@ -1018,7 +1018,7 @@ SetupVertexStreams(Handle ps, uint32 layoutUID, uint32 instCount)
 //------------------------------------------------------------------------------
 
 unsigned
-VertexLayoutStride(Handle ps, unsigned stream)
+VertexLayoutStride(Handle ps, uint32 stream)
 {
     PipelineStateDX9_t* ps9 = PipelineStateDX9Pool::Get(ps);
 
