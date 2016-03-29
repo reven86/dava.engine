@@ -550,7 +550,7 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
     hwnd = parentWindow;
 
     CComPtr<IOleObject> oleObject;
-    HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject, 
+    HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject,
                                     reinterpret_cast<void**>(&oleObject));
     if (FAILED(hRes))
     {
@@ -1257,7 +1257,7 @@ void WebViewControl::CleanData()
         HWND parent = ::GetParent(browserWindow);
         ::DestroyWindow(browserWindow);
         browserWindow = 0;
-        
+
         ::SetFocus(parent);
     }
 
