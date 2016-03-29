@@ -438,7 +438,6 @@ void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDis
     }
 }
 
-
 void CoreWin32Platform::SetIcon(int32 iconId)
 {
     HWND hWindow = static_cast<HWND>(GetNativeView());

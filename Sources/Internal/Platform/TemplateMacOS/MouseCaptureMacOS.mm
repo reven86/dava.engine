@@ -65,7 +65,7 @@ void MouseCapturePrivate::MovePointerToWindowCenter()
 {
     NSRect windowRect = [[static_cast<NSView*>(Core::Instance()->GetNativeView()) window] frame];
     NSRect screenRect = [[NSScreen mainScreen] frame];
-    
+
     // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
     windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
     float x = windowRect.origin.x + windowRect.size.width / 2.0f;
