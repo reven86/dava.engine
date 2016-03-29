@@ -74,7 +74,7 @@ struct Point2Base
     inline bool operator!=(const Point2Base<TYPE>&) const;
 
     // Vector2 operations (for using 2d point as 2d vector)
-    inline TYPE Lenght();
+    inline TYPE Length();
     inline void Normalize();
 };
 
@@ -109,6 +109,7 @@ struct Rect2Base
     inline Rect2Base(const Rect2Base<TYPE>& Rect);
     inline Rect2Base(const Point2Base<TYPE>& Point, const Size2Base<TYPE>& Size);
     inline bool PointInside(const Point2Base<TYPE>& Point) const;
+    inline bool RectInside(const Rect2Base<TYPE>& rect) const;
     inline Rect2Base<TYPE> Intersection(const Rect2Base<TYPE>& Rect) const;
     inline bool RectIntersects(const Rect2Base<TYPE>& Rect) const;
 
@@ -288,7 +289,7 @@ inline bool Point2Base<TYPE>::operator!=(const Point2Base<TYPE>& _p) const
 }
 
 template <class TYPE>
-inline TYPE Point2Base<TYPE>::Lenght()
+inline TYPE Point2Base<TYPE>::Length()
 {
     return static_cast<TYPE>(sqrt(x * x + y * y));
 }
@@ -296,7 +297,7 @@ inline TYPE Point2Base<TYPE>::Lenght()
 template <class TYPE>
 inline void Point2Base<TYPE>::Normalize()
 {
-    TYPE Len = Lenght();
+    TYPE Len = Length();
     x /= Len;
     y /= Len;
 }
@@ -343,10 +344,13 @@ inline Rect2Base<TYPE>::Rect2Base(const Rect2Base<TYPE>& Rect)
 template <class TYPE>
 inline bool Rect2Base<TYPE>::PointInside(const Point2Base<TYPE>& Point) const
 {
-    if ((Point.x >= x) && (Point.x <= x + dx)
-        && (Point.y >= y) && (Point.y <= y + dy))
-        return true;
-    return false;
+    return ((Point.x >= x) && (Point.x <= x + dx) && (Point.y >= y) && (Point.y <= y + dy));
+}
+
+template <class TYPE>
+inline bool Rect2Base<TYPE>::RectInside(const Rect2Base<TYPE>& rect) const
+{
+    return (PointInside({ rect.x, rect.y }) && PointInside({ rect.x + rect.dx, rect.y + rect.dy }));
 }
 
 template <class TYPE>

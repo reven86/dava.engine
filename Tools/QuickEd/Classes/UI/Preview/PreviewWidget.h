@@ -53,6 +53,7 @@ class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
 class QDragMoveEvent;
+class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
 
@@ -74,7 +75,6 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
-    void CloseTabRequested();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OpenPackageFile(QString path);
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
@@ -127,6 +127,7 @@ private:
 
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
+    void NotifySelectionChanged();
 
     QPoint lastMousePos;
     QCursor lastCursor;
@@ -143,9 +144,13 @@ private:
     QAction* selectAllAction = nullptr;
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
-    QAction* closeTabAction = nullptr;
 
     std::unique_ptr<EditorSystemsManager> systemsManager;
+
+    ContinuousUpdater* continuousUpdater = nullptr;
+
+    SelectedNodes tmpSelected; //for continuousUpdater
+    SelectedNodes tmpDeselected; //for continuousUpdater
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget() const

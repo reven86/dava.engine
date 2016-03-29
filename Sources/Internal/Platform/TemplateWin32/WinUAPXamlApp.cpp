@@ -738,7 +738,6 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.point.y = y;
     newTouch.phase = phase;
     newTouch.device = device;
-    newTouch.tapCount = 1;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
@@ -955,7 +954,6 @@ void WinUAPXamlApp::SendBackKeyEvents()
     core->RunOnMainThread([this]() {
         UIEvent ev;
         ev.keyChar = 0;
-        ev.tapCount = 1;
         ev.phase = UIEvent::Phase::KEY_DOWN;
         ev.key = Key::BACK;
         ev.device = UIEvent::Device::KEYBOARD;

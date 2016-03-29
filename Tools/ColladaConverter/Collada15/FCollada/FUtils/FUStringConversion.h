@@ -241,7 +241,7 @@ public:
 		@param array A list of strings that will be filled in. */
     static void ToFStringList(const fstring& value, FStringList& array);
     static void ToStringList(const char* value, StringList& array); /**< See above. */
-#ifdef UNICODE
+#if (1)
     static void ToStringList(const fchar* value, StringList& array); /**< See above. */
 #endif // UNICODE
     template <class CH>
