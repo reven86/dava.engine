@@ -34,7 +34,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Core.h"
+#include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
 
