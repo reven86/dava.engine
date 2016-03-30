@@ -146,7 +146,6 @@ protected:
 
 private:
     void SetupDefaults();
-    void DropCaches();
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
 
@@ -166,16 +165,12 @@ private:
     UITextField::eReturnKeyType returnKeyType;
 
     int32 maxLength = -1;
-    uint32 cachedSelectionStart = UINT32_MAX;
-    uint32 cachedSelectionEnd = UINT32_MAX;
-    uint32 cachedCursorPos = UINT32_MAX;
 
     bool isPassword = false;
     bool enableReturnKeyAutomatically = false;
     bool isMultiline = false;
     bool needRedraw = true;
     bool showCursor = true;
-    bool cachedInsertMode = false;
 
     float32 cursorBlinkingTime = 0.0f;
     float32 cursorTime = 0.0f;

@@ -51,11 +51,6 @@
 
 #include <numeric>
 
-// Use NO_REQUIRED_SIZE to notify textFieldImpl->SetText that we don't want
-// to enable of any kind of static text fitting
-static const DAVA::Vector2 NO_REQUIRED_SIZE = DAVA::Vector2(-1, -1);
-
-
 namespace DAVA
 {
 class UITextFieldStbBridgeImpl : public StbTextEditBridge
@@ -156,17 +151,6 @@ void UITextField2::SetupDefaults()
     SetText(L"");
 }
 
-void UITextField2::DropCaches()
-{
-    cachedInsertMode = !stb->IsInsertMode();
-    cachedCursorPos = UINT32_MAX;
-    cachedSelectionStart = UINT32_MAX;
-    cachedSelectionEnd = UINT32_MAX;
-
-    selectionRects.clear();
-    cursorRect = Rect();
-}
-
 UITextField2* UITextField2::Clone()
 {
     UITextField2* t = new UITextField2();
@@ -218,7 +202,7 @@ void UITextField2::SetText(const WideString& newText)
 
         // Update field with visibled text (for password mode it is ***)
         const WideString& visText = this->GetVisibleText();
-        staticText->SetText(visText /*, NO_REQUIRED_SIZE*/);
+        staticText->SetText(visText, UIStaticText::NO_REQUIRED_SIZE);
     }
 }
 
@@ -434,7 +418,6 @@ int32 UITextField2::GetTextAlign() const
 void UITextField2::SetTextAlign(int32 align)
 {
     staticText->SetTextAlign(align);
-    DropCaches();
 }
 
 TextBlock::eUseRtlAlign UITextField2::GetTextUseRtlAlign() const
@@ -459,13 +442,11 @@ void UITextField2::SetTextUseRtlAlignFromInt(int32 value)
 
 void UITextField2::OnFocused()
 {
-    DropCaches();
     OpenKeyboard();
 }
 
 void UITextField2::OnFocusLost(UIControl* newFocus)
 {
-    DropCaches();
     CloseKeyboard();
     if (delegate != nullptr)
     {
@@ -490,14 +471,8 @@ void UITextField2::Update(float32 timeElapsed)
         auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
         auto cursorPos = stb->GetCursor();
         auto insertMode = stb->IsInsertMode();
-        if (cachedSelectionEnd != selEnd || cachedSelectionStart != selStart)
-        {
-            UpdateSelection(selStart, selEnd);
-        }
-        if (cachedCursorPos != cursorPos || cachedInsertMode != insertMode)
-        {
-            UpdateCursor(cursorPos, insertMode);
-        }
+        UpdateSelection(selStart, selEnd);
+        UpdateCursor(cursorPos, insertMode);
     }
     else if (showCursor)
     {
@@ -642,7 +617,6 @@ void UITextField2::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
     staticText->SetSize(newSize);
-    DropCaches();
 }
 
 void UITextField2::UpdateSelection(uint32 start, uint32 end)
@@ -692,8 +666,6 @@ void UITextField2::UpdateSelection(uint32 start, uint32 end)
             selectionRects.push_back(r);
         }
     }
-    cachedSelectionStart = selStart;
-    cachedSelectionEnd = selEnd;
 }
 
 void UITextField2::UpdateCursor(uint32 cursorPos, bool insertMode)
@@ -746,10 +718,7 @@ void UITextField2::UpdateCursor(uint32 cursorPos, bool insertMode)
             r.dx = GetSize().x - r.x;
         }
     }
-
     cursorRect = r;
-    cachedCursorPos = cursorPos;
-    cachedInsertMode = insertMode;
 }
 
 } // namespace DAVA

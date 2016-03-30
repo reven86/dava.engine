@@ -40,9 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-// Use NO_REQUIRED_SIZE to notify textFieldImpl->SetText that we don't want
-// to enable of any kind of static text fitting
-static const Vector2 NO_REQUIRED_SIZE = Vector2(-1, -1);
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* control)
     : staticText(new UIStaticText(Rect(Vector2::Zero, control->GetSize())))
@@ -131,7 +128,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect&)
     }
 
     const WideString& txt = control->GetVisibleText();
-    staticText->SetText(txt, NO_REQUIRED_SIZE);
+    staticText->SetText(txt, UIStaticText::NO_REQUIRED_SIZE);
     needRedraw = false;
 }
 

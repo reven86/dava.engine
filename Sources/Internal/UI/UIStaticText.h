@@ -39,6 +39,14 @@ namespace DAVA
 class UIStaticText : public UIControl
 {
 public:
+    // Use NO_REQUIRED_SIZE to notify SetText that we don't want
+    // to enable of any kind of static text fitting
+    static const Vector2 NO_REQUIRED_SIZE;
+    // Use REQUIRED_CONTROL_SIZE to notify SetText that we want
+    // to enable of some kind of static text fitting with staticText control
+    // size
+    static const Vector2 REQUIRED_CONTROL_SIZE;
+
     enum eMultiline
     {
         MULTILINE_DISABLED = 0,
@@ -71,7 +79,7 @@ public:
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
-    virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2(0, 0));
+    virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2::Zero);
     void SetTextWithoutRect(const WideString& text);
 
     void SetFont(Font* font);
