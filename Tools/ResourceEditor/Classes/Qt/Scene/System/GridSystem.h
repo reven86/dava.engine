@@ -30,7 +30,7 @@
 #ifndef __SCENE_GRID_SYSTEM_H__
 #define __SCENE_GRID_SYSTEM_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
@@ -44,12 +44,10 @@ public:
     SceneGridSystem(DAVA::Scene* scene);
     ~SceneGridSystem();
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
 
 protected:
     void Draw();
-
-    void ProcessCommand(const Command2* command, bool redo);
 };
 
 #endif

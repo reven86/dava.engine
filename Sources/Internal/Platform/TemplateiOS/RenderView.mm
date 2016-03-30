@@ -235,7 +235,6 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
         newTouch.physPoint.x = p.x;
         newTouch.physPoint.y = p.y;
         newTouch.timestamp = curTouch.timestamp;
-        newTouch.tapCount = static_cast<DAVA::int32>(curTouch.tapCount);
         newTouch.device = DAVA::UIEvent::Device::TOUCH_SURFACE;
 
         switch (curTouch.phase)

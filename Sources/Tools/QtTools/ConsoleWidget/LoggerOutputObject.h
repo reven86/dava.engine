@@ -30,7 +30,7 @@
 #ifndef __LOGGER_OUTPUT_OBJECT_H__
 #define __LOGGER_OUTPUT_OBJECT_H__
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include <QObject>
 
 class LoggerOutputObject final

@@ -69,7 +69,7 @@ UIListCell* UIListCell::Clone()
 void UIListCell::CopyDataFrom(UIControl* srcControl)
 {
     UIButton::CopyDataFrom(srcControl);
-    UIListCell* srcListCell = (UIListCell*)srcControl;
+    UIListCell* srcListCell = static_cast<UIListCell*>(srcControl);
     identifier = srcListCell->identifier;
 }
 };

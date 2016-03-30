@@ -88,7 +88,7 @@ inline void RenderBatchArray::SetSortingFlags(uint32 _flags)
 
 inline uint32 RenderBatchArray::GetRenderBatchCount() const
 {
-    return (uint32)renderBatchArray.size();
+    return uint32(renderBatchArray.size());
 }
 
 inline RenderBatch* RenderBatchArray::Get(uint32 index) const

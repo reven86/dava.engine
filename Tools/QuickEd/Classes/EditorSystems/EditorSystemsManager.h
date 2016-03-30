@@ -107,6 +107,8 @@ struct ChangePropertyAction
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
+class CanvasSystem;
+class SelectionSystem;
 
 class EditorSystemsManager : PackageListener
 {
@@ -119,8 +121,8 @@ public:
     explicit EditorSystemsManager();
     ~EditorSystemsManager();
 
-    DAVA::UIControl* GetRootControl();
-    DAVA::UIControl* GetScalableControl();
+    DAVA::UIControl* GetRootControl() const;
+    DAVA::UIControl* GetScalableControl() const;
 
     bool OnInput(DAVA::UIEvent* currentInput);
 
@@ -128,6 +130,14 @@ public:
 
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
+
+    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point) const;
+    DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
+
+    void SelectAll();
+    void FocusNextChild();
+    void FocusPreviousChild();
+    void ClearSelection();
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
@@ -137,11 +147,10 @@ public:
     DAVA::Signal<const DAVA::Vector<ChangePropertyAction>& /*propertyActions*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
-    DAVA::Signal<> SelectAllControls;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> RootControlPositionChanged;
-    DAVA::Signal<> FocusNextChild;
-    DAVA::Signal<> FocusPreviousChild;
     DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
+    DAVA::Signal<const DAVA::Vector<ControlNode*>&> NodesHovered;
+    DAVA::Signal<bool> TransformStateChanged; //indicates when user transform control
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
@@ -168,6 +177,8 @@ private:
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
     SelectionContainer selectionContainer;
+    CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
+    SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
 };
 
 template <class OutIt, class Predicate>

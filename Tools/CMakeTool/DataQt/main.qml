@@ -16,6 +16,17 @@ ApplicationWindow {
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
+    menuBar: MenuBar {
+        Menu {
+            title: "&Help"
+            MenuItem {
+                text: "Show help"
+                shortcut: StandardKey.HelpContents
+                onTriggered: help.Show();
+            }
+        }
+    }
+
     Settings {
         id: settings
         property int mainWrapperWidth: 400
@@ -23,13 +34,14 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
-        property alias customOptions: textField_customOptions.text
         property string historyStr;
-        Component.onDestruction: historyStr = JSON.stringify(history)
+        Component.onDestruction: historyStr = JSON.stringify(historyToSave)
     }
     property var history;
-    function applyBuildSettings(buildSettings) {
+    property var historyToSave; //we need this because combobox with sources and history can be different
+    function applyProjectSettings(buildSettings) {
         columnLayoutOutput.needClean = buildSettings.needClean;
+        rowLayout_buildFolder.path = buildSettings.buildFolder;
         rowLayout_cmakeFolder.path = buildSettings.cmakePath;
         rowLayout_davaFolder.path = buildSettings.davaPath;
         textField_customOptions.text = buildSettings.customOptions
@@ -42,48 +54,57 @@ ApplicationWindow {
         } catch(e) {
             history = [];
         }
-
+        historyToSave = [];
         if(history && Array.isArray(history) && history.length > 0) {
             for(var i = 0, length = history.length; i < length; ++i) {
-                rowLayout_buildFolder.item.addString(history[i].build)
+                if(history[i].source) {
+                    rowLayout_sourceFolder.item.addString(history[i].source)
+                } else {
+                    history = [];
+                    return;
+                }
             }
-            applyBuildSettings(history[0])
+            applyProjectSettings(history[0])
+            historyToSave = JSON.parse(JSON.stringify(history));
         }
     }
 
-    function onCurrentBuildChaged(index) {
+    function onCurrentProjectChaged(index) {
         if(history && Array.isArray(history) && history.length > index) {
-            applyBuildSettings(history[index])
+            applyProjectSettings(history[index])
         }
     }
+
     property int maxHistoryLength: 10;
-    function addBuildToHistory() {
+
+    function addProjectToHistory() {
         var found = false;
-        var build = rowLayout_buildFolder.path;
+        var source = rowLayout_sourceFolder.path;
         var i = 0;
-        for(var length = history.length; i < length && !found; ++i) {
-            if(history[i].build === build) {
+        for(var length = historyToSave.length; i < length && !found; ++i) {
+            if(historyToSave[i].source === source) {
                 found = true;
             }
         }
 
         if(!found) {
-            rowLayout_buildFolder.item.addString(build)
+            rowLayout_sourceFolder.item.addString(source)
         }
 
         var newItem = {};
-        newItem.build = build
+        newItem.source = source
         newItem.needClean = columnLayoutOutput.needClean
+        newItem.buildFolder = rowLayout_buildFolder.path
         newItem.cmakePath = rowLayout_cmakeFolder.path
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
-        history.unshift(newItem);
+        historyToSave.unshift(newItem);
         if(found) {
-            history.splice(i, 1);
+            historyToSave.splice(i, 1);
         }
-        if(history.length > maxHistoryLength) {
-            history = history.slice(0, maxHistoryLength);
+        if(historyToSave.length > maxHistoryLength) {
+            historyToSave = historyToSave.slice(0, maxHistoryLength);
         }
     }
 
@@ -102,6 +123,10 @@ ApplicationWindow {
         id: fileSystemHelper;
     }
 
+    Help {
+        id: help;
+    }
+
     property var configuration; //main JS object, contained in config file
 
     Timer {
@@ -117,11 +142,12 @@ ApplicationWindow {
 
     function updateOutputStringImpl() {
         if(configuration) {
+            var sourcePath = fileSystemHelper.NormalizePath(rowLayout_sourceFolder.path)
             var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
             var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
             var davaPath = fileSystemHelper.NormalizePath(rowLayout_davaFolder.path)
             try {
-                var outputText = JSTools.createOutput(configuration, fileSystemHelper, buildPath, cmakePath, davaPath);
+                var outputText = JSTools.createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath);
                 columnLayoutOutput.outputComplete = true;
                 columnLayoutOutput.outputText = outputText;
             } catch(errorText) {
@@ -174,16 +200,29 @@ ApplicationWindow {
                 anchors.fill: parent
 
                 RowLayoutPath {
-                    id: rowLayout_buildFolder
-                    labelText: qsTr("Build folder")
-                    dialogTitle: qsTr("select DAVA folder");
+                    id: rowLayout_sourceFolder
+                    labelText: qsTr("Source folder");
+                    dialogTitle: qsTr("select Source folder");
                     selectFolders: true;
                     inputComponent: ComboBoxBuilds {
-                        id: comboBoxBuilds
                         onTextChanged: {
                             updateOutputString()
                         }
-                        onCurrentIndexChanged: onCurrentBuildChaged(currentIndex);
+                        onCurrentIndexChanged: onCurrentProjectChaged(currentIndex);
+                    }
+                }
+
+                RowLayoutPath {
+                    id: rowLayout_buildFolder
+                    labelText: qsTr("Build folder")
+                    dialogTitle: qsTr("select build folder");
+                    selectFolders: true;
+                    inputComponent: TextField {
+                        id: textField_buildFolder
+                        placeholderText: qsTr("path to source folder")
+                        onTextChanged: {
+                            updateOutputString();
+                        }
                     }
                 }
 
@@ -200,9 +239,9 @@ ApplicationWindow {
                         }
                     }
                     Connections {
-                        target: rowLayout_buildFolder
+                        target: rowLayout_sourceFolder
                         onPathChanged: {
-                            var path = rowLayout_buildFolder.path;
+                            var path = rowLayout_sourceFolder.path;
                             var index = path.indexOf(davaFolderName);
                             if(index !== -1) {
                                 path = path.substring(0, index + davaFolderName.length);
@@ -268,7 +307,10 @@ ApplicationWindow {
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
-                    onCmakeLaunched: addBuildToHistory();
+                    onCmakeLaunched: {
+                        addProjectToHistory();
+                        textArea_processText.text = "";
+                    }
                 }
 
             }

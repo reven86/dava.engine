@@ -137,8 +137,6 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
 {
     const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
     ScopedPtr<PolygonGroup> renderData(new PolygonGroup());
     renderData->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, 4, 6);
     renderData->SetPrimitiveType(rhi::PrimitiveType::PRIMITIVE_TRIANGLELIST);

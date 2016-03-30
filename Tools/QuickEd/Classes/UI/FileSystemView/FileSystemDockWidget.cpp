@@ -28,7 +28,7 @@
 
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "FileSystemDockWidget.h"
 #include "ValidatedTextInputDialog.h"
@@ -116,12 +116,18 @@ FileSystemDockWidget::~FileSystemDockWidget() = default;
 
 void FileSystemDockWidget::SetProjectDir(const QString& path)
 {
-    QDir dir(path);
-    dir.cdUp();
-    auto index = model->setRootPath(dir.path() + "/Data/UI");
-    ui->treeView->setRootIndex(index);
-    ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
-    ui->treeView->showColumn(0);
+    if (path.isEmpty())
+    {
+        ui->treeView->hideColumn(0);
+    }
+    else
+    {
+        QDir dir(path);
+        auto index = model->setRootPath(dir.path() + "/Data/UI");
+        ui->treeView->setRootIndex(index);
+        ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
+        ui->treeView->showColumn(0);
+    }
 }
 
 //refresh actions by menu invoke pos
@@ -341,7 +347,7 @@ void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItem
 {
     const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
     bool canRemove = !indexes.isEmpty();
-    bool canOpen = !indexes.isEmpty();
+    bool canOpen = false;
     for (auto index : indexes)
     {
         canRemove &= CanRemove(index);

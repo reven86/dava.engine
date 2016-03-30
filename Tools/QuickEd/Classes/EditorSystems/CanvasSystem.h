@@ -44,11 +44,13 @@ public:
     CanvasSystem(EditorSystemsManager* parent);
     ~CanvasSystem() override;
 
+    DAVA::uint32 GetIndexByPos(const DAVA::Vector2& pos) const;
     void LayoutCanvas();
 
 private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_);
     void OnPackageNodeChanged(PackageNode* node);
+    void OnTransformStateChanged(bool inTransformState);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -60,6 +62,8 @@ private:
 
     DAVA::Set<PackageBaseNode*> rootControls;
     PackageNode* package = nullptr;
+    bool inTransformState = false;
+    DAVA::Set<ControlNode*> transformedNodes; //vector of weak pointers
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

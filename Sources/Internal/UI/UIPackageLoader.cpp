@@ -122,7 +122,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     const YamlNode* importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
-        int32 count = (int32)importedPackagesNode->GetCount();
+        int32 count = static_cast<int32>(importedPackagesNode->GetCount());
         for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
@@ -138,7 +138,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     const YamlNode* controlsNode = rootNode->Get("Controls");
     if (controlsNode)
     {
-        int32 count = (int32)controlsNode->GetCount();
+        int32 count = static_cast<int32>(controlsNode->GetCount());
         for (int32 i = 0; i < count; i++)
         {
             const YamlNode* node = controlsNode->Get(i);
@@ -245,7 +245,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
                                     {
                                         int32 transitionFunctionType = Interpolation::LINEAR;
                                         GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionFunction->AsString().c_str(), transitionFunctionType);
-                                        property.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                                        property.transitionFunction = static_cast<Interpolation::FuncType>(transitionFunctionType);
                                     }
                                 }
                             }

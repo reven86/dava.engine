@@ -28,7 +28,7 @@
 
 
 #include "FileListAndroid.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 

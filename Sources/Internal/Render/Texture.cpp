@@ -29,7 +29,7 @@
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 #include "Utils/Utils.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
@@ -79,9 +79,9 @@ bool IsFormatSupported(PixelFormat format)
 
 bool AreImagesSquare(const Vector<DAVA::Image*>& imageSet)
 {
-    for (int32 i = 0; i < (int32)imageSet.size(); ++i)
+    for (Image* image : imageSet)
     {
-        if (!IsPowerOf2(imageSet[i]->GetWidth()) || !IsPowerOf2(imageSet[i]->GetHeight()))
+        if (!IsPowerOf2(image->GetWidth()) || !IsPowerOf2(image->GetHeight()))
         {
             return false;
         }
@@ -313,7 +313,7 @@ Texture* Texture::CreateTextFromData(PixelFormat format, uint8* data, uint32 wid
 
 void Texture::TexImage(int32 level, uint32 width, uint32 height, const void* _data, uint32 dataSize, uint32 cubeFaceId)
 {
-    rhi::UpdateTexture(handle, _data, level, (rhi::TextureFace)cubeFaceId);
+    rhi::UpdateTexture(handle, _data, level, rhi::TextureFace(cubeFaceId));
 }
 
 Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32 _width, uint32 _height, bool generateMipMaps)
@@ -545,18 +545,18 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     descriptor.type = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_2D : rhi::TEXTURE_TYPE_CUBE;
     descriptor.format = formatDescriptor.format;
 
-    descriptor.levelCount = (descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? (uint32)images->size() / 6 : (uint32)images->size();
+    descriptor.levelCount = static_cast<uint32>((descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? images->size() / 6 : images->size());
 
     for (Image* img : (*images))
         descriptor.levelCount = Max(descriptor.levelCount, img->mipmapLevel + 1);
 
-    DVASSERT(descriptor.format != ((rhi::TextureFormat)-1)); //unsupported format
+    DVASSERT(descriptor.format != static_cast<rhi::TextureFormat>(-1)); //unsupported format
 
 #if 1
 
     if (descriptor.type == rhi::TEXTURE_TYPE_2D)
     {
-        for (uint32 i = 0; i < (uint32)images->size(); ++i)
+        for (size_t i = 0, sz = images->size(); i < sz; ++i)
             descriptor.initialData[i] = (*images)[i]->data;
     }
     else if (descriptor.type == rhi::TEXTURE_TYPE_CUBE)
@@ -570,7 +570,7 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
             {
                 *data = nullptr;
 
-                for (uint32 i = 0; i != (uint32)images->size(); ++i)
+                for (size_t i = 0, sz = images->size(); i < sz; ++i)
                 {
                     Image* img = (*images)[i];
 
@@ -786,13 +786,13 @@ Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
     bool needDepth = fboDesc.needDepth;
     rhi::TextureType requestedType = fboDesc.textureType;
 
-    int32 dx = Max((int32)w, 8);
+    int32 dx = Max(static_cast<int32>(w), 8);
     if (fboDesc.ensurePowerOf2)
     {
         EnsurePowerOf2(dx);
     }
 
-    int32 dy = Max((int32)h, 8);
+    int32 dy = Max(static_cast<int32>(h), 8);
     if (fboDesc.ensurePowerOf2)
     {
         EnsurePowerOf2(dy);
@@ -821,7 +821,7 @@ Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
         descriptor.cpuAccessWrite = false;
     }
 
-    DVASSERT(descriptor.format != ((rhi::TextureFormat)-1)); //unsupported format
+    DVASSERT(descriptor.format != static_cast<rhi::TextureFormat>(-1)); //unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
 
     if (needDepth)
@@ -871,7 +871,7 @@ void Texture::DumpTextures()
     for (TexturesMap::iterator it = textureMap.begin(); it != textureMap.end(); ++it)
     {
         Texture* t = it->second;
-        Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), (uint32)(t->handle), t->width, t->height,
+        Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), static_cast<uint32>(t->handle), t->width, t->height,
                                t->GetRetainCount(), t->debugInfo.c_str(), PixelFormatDescriptor::GetPixelFormatString(t->texDescriptor->format));
         cnt++;
 
@@ -931,10 +931,10 @@ void Texture::RestoreRenderResource()
         }
     }
 
-    for (uint32 i = 0; i < (uint32)images.size(); ++i)
+    for (uint32 i = 0, sz = static_cast<uint32>(images.size()); i < sz; ++i)
     {
         Image* img = images[i];
-        TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
+        TexImage((img->mipmapLevel != static_cast<uint32>(-1)) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
     }
 
     ReleaseImages(&images);
@@ -947,7 +947,7 @@ Image* Texture::CreateImageFromMemory()
     Image* image = nullptr;
 
     void* mappedData = rhi::MapTexture(handle);
-    image = Image::CreateFromData(width, height, texDescriptor->format, (uint8*)mappedData);
+    image = Image::CreateFromData(width, height, texDescriptor->format, static_cast<uint8*>(mappedData));
     rhi::UnmapTexture(handle);
 
     return image;
@@ -1035,7 +1035,7 @@ eGPUFamily Texture::GetDefaultGPU()
 eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor)
 {
     if (descriptor->IsCompressedFile())
-        return (eGPUFamily)descriptor->exportedAsGpuFamily;
+        return eGPUFamily(descriptor->exportedAsGpuFamily);
 
     return requestedGPU;
 }
@@ -1081,9 +1081,9 @@ void Texture::SetPixelization(bool value)
     for (Map<FilePath, Texture*>::const_iterator iter = texturesMap.begin(); iter != texturesMap.end(); iter++)
     {
         Texture* texture = iter->second;
-        rhi::TextureFilter minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : (rhi::TextureFilter)texture->GetDescriptor()->drawSettings.minFilter;
-        rhi::TextureFilter magFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : (rhi::TextureFilter)texture->GetDescriptor()->drawSettings.magFilter;
-        rhi::TextureMipFilter mipFilter = pixelizationFlag ? rhi::TextureMipFilter::TEXMIPFILTER_NONE : (rhi::TextureMipFilter)texture->GetDescriptor()->drawSettings.mipFilter;
+        rhi::TextureFilter minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : rhi::TextureFilter(texture->GetDescriptor()->drawSettings.minFilter);
+        rhi::TextureFilter magFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : rhi::TextureFilter(texture->GetDescriptor()->drawSettings.magFilter);
+        rhi::TextureMipFilter mipFilter = pixelizationFlag ? rhi::TextureMipFilter::TEXMIPFILTER_NONE : rhi::TextureMipFilter(texture->GetDescriptor()->drawSettings.mipFilter);
 
         texture->SetMinMagFilter(minFilter, magFilter, mipFilter);
     }

@@ -163,12 +163,11 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     std::unordered_set<uint32> invisibleObjects;
     Vector3 cameraPosition = occlusionCamera->GetPosition();
 
-    for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
+    for (RenderLayer* layer : renderLayers)
     {
-        RenderLayer* layer = renderLayers[k];
         const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
 
-        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
+        uint32 batchCount = static_cast<uint32>(renderBatchArray.GetRenderBatchCount());
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
             RenderBatch* batch = renderBatchArray.Get(batchIndex);
@@ -186,7 +185,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
                 meshBatchesWithDepthWriteOption.emplace_back(batch, option);
 
                 Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-                batch->layerSortingKey = ((uint32)((position - cameraPosition).SquareLength() * 100.0f));
+                batch->layerSortingKey = static_cast<uint32>((position - cameraPosition).SquareLength() * 100.0f);
 
                 auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
                 bool occlusionIndexIsInvalid = occlusionId == INVALID_STATIC_OCCLUSION_INDEX;

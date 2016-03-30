@@ -301,7 +301,7 @@ int32 UIScrollBar::GetOrientation() const
 
 void UIScrollBar::SetOrientation(int32 value)
 {
-    orientation = (eScrollOrientation)value;
+    orientation = static_cast<eScrollOrientation>(value);
 }
 
 float32 UIScrollBar::GetValidSliderSize(float32 size)

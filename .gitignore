@@ -58,6 +58,10 @@ AppPackages
 !/Libs/lib_CMake/win10/x64/Release
 !/Libs/lib_CMake/win10/Win32/Debug
 !/Libs/lib_CMake/win10/Win32/Release
+!/Libs/lib_CMake/win/x86/Release
+!/Libs/lib_CMake/win/x86/Debug
+!/Libs/lib_CMake/win/x64/Release
+!/Libs/lib_CMake/win/x64/Debug
 !/Sources/Internal/Debug
 Projects/TestBed/android/assets/
 Projects/TestBed/android/obj/
