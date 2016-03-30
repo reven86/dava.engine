@@ -351,6 +351,7 @@ public:
 
     void SetFontByPresetName(const String& presetName);
 
+    void Draw(const UIGeometricData& geometricData) override;
     void SystemDraw(const UIGeometricData& geometricData) override;
 
     WideString GetVisibleText() const;

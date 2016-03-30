@@ -17,7 +17,7 @@ if(MACOS)
     list( APPEND ADDED_H_PATTERNS Private/MacOS/*.h)
 endif()
 
-if(WIN32 and (NOT WINDOWS_UAP))
+if((WIN32) AND (NOT WINDOWS_UAP))
     list( APPEND ADDED_CPP_PATTERNS Private/Win32/*.cpp)
     list( APPEND ADDED_H_PATTERNS Private/Win32/*.h)
 endif()
