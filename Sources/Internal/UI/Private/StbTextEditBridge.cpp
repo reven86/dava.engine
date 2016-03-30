@@ -39,13 +39,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 inline void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
-    if (start_i >= str->GetLength())
+    auto start = DAVA::uint32(start_i);
+    if (start >= str->GetLength())
         return;
 
     auto linesInfo = str->GetMultilineInfo();
-    auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [start_i](const DAVA::TextBlock::Line& l)
+    auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [start](const DAVA::TextBlock::Line& l)
                                    {
-                                       return l.offset == static_cast<DAVA::uint32>(start_i);
+                                       return l.offset == static_cast<DAVA::uint32>(start);
                                    });
     DVASSERT(lineInfoIt != linesInfo.end());
     auto line = *lineInfoIt;
@@ -59,25 +60,25 @@ inline void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* row, STB_TEXTEDIT_STRING* str
 
 inline int STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* str, int pos, STB_TEXTEDIT_CHARTYPE* newtext, int num)
 {
-    str->InsertText(pos, newtext, num);
+    str->InsertText(DAVA::uint32(pos), newtext, DAVA::uint32(num));
     return 1;
 }
 
 inline int STB_TEXTEDIT_DELETECHARS(STB_TEXTEDIT_STRING* str, int pos, int num)
 {
-    str->DeleteText(pos, num);
+    str->DeleteText(DAVA::uint32(pos), DAVA::uint32(num));
     return 1;
 }
 
 inline int STB_TEXTEDIT_STRINGLEN(STB_TEXTEDIT_STRING* str)
 {
-    return static_cast<int>(str->GetLength());
+    return int(str->GetLength());
 }
 
 inline float STB_TEXTEDIT_GETWIDTH(STB_TEXTEDIT_STRING* str, int n, int i)
 {
     auto charsSizes = str->GetCharactersSizes();
-    DVASSERT(static_cast<DAVA::uint32>(charsSizes.size()) > static_cast<DAVA::uint32>(n + i));
+    DVASSERT(DAVA::uint32(charsSizes.size()) > DAVA::uint32(n + i));
     return charsSizes[n + i];
 }
 
@@ -88,7 +89,7 @@ inline int STB_TEXTEDIT_KEYTOTEXT(int key)
 
 inline STB_TEXTEDIT_CHARTYPE STB_TEXTEDIT_GETCHAR(STB_TEXTEDIT_STRING* str, int i)
 {
-    return str->GetChar(i);
+    return str->GetChar(DAVA::uint32(i));
 }
 
 inline int STB_TEXTEDIT_IS_SPACE(STB_TEXTEDIT_CHARTYPE ch)
