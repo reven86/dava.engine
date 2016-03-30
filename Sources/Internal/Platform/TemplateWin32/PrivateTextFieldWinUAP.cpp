@@ -679,17 +679,17 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    if (!IsMultiline())
-    {
-        waitRenderToTextureComplete = true;
-        RenderToTexture(true);
-    }
-
     // prevent lose focus on pointer up event
     if (uiTextField != nullptr && UIControlSystem::Instance()->GetFocusedControl() == uiTextField && uiTextField->IsEditing())
     {
         nativeControl->Focus(FocusState::Programmatic);
         return;
+    }
+
+    if (!IsMultiline())
+    {
+        waitRenderToTextureComplete = true;
+        RenderToTexture(true);
     }
 
     auto self{ shared_from_this() };

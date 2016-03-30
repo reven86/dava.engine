@@ -29,6 +29,7 @@
 
 #include "UI/UITextField.h"
 #include "Input/KeyboardDevice.h"
+#include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 
@@ -580,7 +581,7 @@ void UITextField::Input(UIEvent* currentInput)
 
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN || currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        if (currentInput->key == Key::ENTER)
+        if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
         {
             if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
             {
@@ -618,7 +619,7 @@ void UITextField::Input(UIEvent* currentInput)
                 SetText(GetAppliedChanges(length, 1, str));
             }
         }
-        else if (currentInput->key == Key::ENTER)
+        else if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
         {
             if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
             {
