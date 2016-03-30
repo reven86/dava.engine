@@ -2292,7 +2292,7 @@ void SuspendGLES2()
     _GLES2_RenderThreadSuspendSync.Reset();
     _GLES2_FramePreparedEvent.Signal(); //avoid stall
     GL_CALL(glFinish());
-    Logger::Info("Render GLES Suspended");
+    Logger::Error("Render GLES Suspended");
 }
 
 //------------------------------------------------------------------------------
@@ -2301,7 +2301,7 @@ void ResumeGLES2()
 {
     _GLES2_RenderThreadSuspendSync.Signal();
     _GLES2_RenderThreadSuspended.Set(false);
-    Logger::Info("Render GLES Resumed");
+    Logger::Error("Render GLES Resumed");
 }
 
 //------------------------------------------------------------------------------
