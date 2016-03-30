@@ -33,8 +33,14 @@
 #include "Render/Image/ImageConvert.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
+
+extern void CreateTextField(DAVA::UITextField*);
+extern void ReleaseTextField();
+extern void OpenKeyboard();
+extern void CloseKeyboard();
 
 JniTextField::JniTextField(uint32_t id)
     : jniTextField("com/dava/framework/JNITextField")

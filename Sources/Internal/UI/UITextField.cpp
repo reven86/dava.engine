@@ -34,13 +34,6 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
-#include "Utils/UTF8Utils.h"
-
-extern void CreateTextField(DAVA::UITextField*);
-extern void ReleaseTextField();
-extern void OpenKeyboard();
-extern void CloseKeyboard();
-
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -48,11 +41,8 @@ extern void CloseKeyboard();
 #elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldMacOS.h"
 #else
+#define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
-#endif
-
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_WIN_UAP__)
-#define DAVA_TEXTFIELD_USE_NATIVE
 #endif
 
 namespace DAVA
@@ -174,9 +164,9 @@ void UITextField::ReleaseFocus()
 
 void UITextField::SetFont(Font* font)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetFont(font);
-#endif // !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#endif // !defined(DAVA_TEXTFIELD_USE_STB)
 }
 
 void UITextField::SetTextColor(const Color& fontColor)
@@ -186,14 +176,14 @@ void UITextField::SetTextColor(const Color& fontColor)
 
 void UITextField::SetShadowOffset(const DAVA::Vector2& offset)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetShadowOffset(offset);
 #endif
 }
 
 void UITextField::SetShadowColor(const Color& color)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetShadowColor(color);
 #endif
 }
@@ -205,19 +195,19 @@ void UITextField::SetTextAlign(int32 align)
 
 TextBlock::eUseRtlAlign UITextField::GetTextUseRtlAlign() const
 {
-#ifdef DAVA_TEXTFIELD_USE_NATIVE
-    return textFieldImpl->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
-#else
+#ifdef DAVA_TEXTFIELD_USE_STB
     return textFieldImpl->GetTextUseRtlAlign();
+#else
+    return textFieldImpl->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #endif
 }
 
 void UITextField::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 {
-#ifdef DAVA_TEXTFIELD_USE_NATIVE
-    textFieldImpl->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
-#else
+#ifdef DAVA_TEXTFIELD_USE_STB
     textFieldImpl->SetTextUseRtlAlign(useRtlAlign);
+#else
+    textFieldImpl->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #endif
 }
 
@@ -257,7 +247,7 @@ void UITextField::SetSpriteAlign(int32 align)
 void UITextField::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetSize(newSize);
 #endif
 }
@@ -295,37 +285,37 @@ const WideString& UITextField::GetText()
 
 Font* UITextField::GetFont() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return nullptr;
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetFont();
+#else
+    return nullptr;
 #endif
 }
 
 Color UITextField::GetTextColor() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return Color::White;
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetTextColor();
+#else
+    return Color::White;
 #endif
 }
 
 Vector2 UITextField::GetShadowOffset() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return Vector2(0, 0);
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetShadowOffset();
+#else
+    return Vector2::Zero;
 #endif
 }
 
 Color UITextField::GetShadowColor() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return Color::White;
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetShadowColor();
+#else
+    return Color::White;
 #endif
 }
 
@@ -336,7 +326,7 @@ int32 UITextField::GetTextAlign() const
 
 void UITextField::Input(UIEvent* currentInput)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->Input(currentInput);
 #endif
 }
@@ -380,14 +370,13 @@ void UITextField::CopyDataFrom(UIControl* srcControl)
     UIControl::CopyDataFrom(srcControl);
     UITextField* t = static_cast<UITextField*>(srcControl);
 
-    isPassword = t->isPassword;
-    SetText(t->text);
-    SetRect(t->GetRect());
-
-    cursorBlinkingTime = t->cursorBlinkingTime;
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->CopyDataFrom(t->textFieldImpl);
 #endif
+    isPassword = t->isPassword;
+    cursorBlinkingTime = t->cursorBlinkingTime;
+    SetText(t->text);
+    SetRect(t->GetRect());
 
     SetAutoCapitalizationType(t->GetAutoCapitalizationType());
     SetAutoCorrectionType(t->GetAutoCorrectionType());
@@ -582,13 +571,13 @@ void UITextField::SetFontByPresetName(const String& presetName)
 
 void UITextField::Draw(const UIGeometricData& geometricData)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->DrawSelection(geometricData);
 #endif
 
     UIControl::Draw(geometricData);
 
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->DrawCursor(geometricData);
 #endif
 }

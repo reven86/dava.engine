@@ -45,7 +45,7 @@ namespace DAVA
 static const Vector2 NO_REQUIRED_SIZE = Vector2(-1, -1);
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* control)
-    : staticText(new UIStaticText(Rect(Vector2(0, 0), control->GetSize())))
+    : staticText(new UIStaticText(Rect(Vector2::Zero, control->GetSize())))
     , control(control)
 {
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
