@@ -25,32 +25,61 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#ifndef DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H
-#define DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H
 
-#include "FileSystem/Private/ResourceArchivePrivate.h"
-#include "FileSystem/Private/PackFormatSpec.h"
+#ifndef DAVAENGINE_FILE_SYSTEM_PACK_FORMAT_SPEC_H
+#define DAVAENGINE_FILE_SYSTEM_PACK_FORMAT_SPEC_H
 
 namespace DAVA
 {
-
-class PackArchive final : public ResourceArchiveImpl
+namespace PackFormat
 {
-public:
-    explicit PackArchive(const FilePath& archiveName);
+const Array<char8, 4> FileMarker = { 'P', 'A', 'C', 'K' };
 
-    const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
-    const ResourceArchive::FileInfo* GetFileInfo(const String& relativeFilePath) const override;
-    bool HasFile(const String& relativeFilePath) const override;
-    bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const override;
+struct PackFile
+{
+    struct HeaderBlock
+    {
+        Array<char8, 4> marker;
+        uint32 namesBlockSizeCompressedLZ4HC;
+        uint32 namesBlockSizeOriginal;
+        uint32 filesTableBlockSize;
+        uint32 startNamesBlockPosition;
+        uint32 startFilesDataBlockPosition;
+        uint32 startPackedFilesBlockPosition;
+        uint32 numFiles;
+    } header;
 
-private:
-    mutable RefPtr<File> file;
-    PackFormat::PackFile packFile;
-    UnorderedMap<String, PackFormat::FileTableEntry*> mapFileData;
-    Vector<ResourceArchive::FileInfo> filesInfoSortedByName;
-};
+    struct NamesBlock
+    {
+        String sortedNamesLz4hc; // '\0' separated all file names in pack file compressed with lz4hc
+    } names;
 
-} // end namespace DAVA
+    struct FilesDataBlock
+    {
+        struct Data
+        {
+            uint32 startPositionInPackedFilesBlock;
+            uint32 compressed;
+            uint32 original;
+            Compressor::Type packType;
+            Array<char8, 16> reserved; // do we really need it? leave for future
+        };
+        Vector<Data> files;
+    } filesData;
 
-#endif // DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H
+    struct PackedFilesBlock
+    {
+        uint8* packedFiles;
+    } notUsedReadDirectlyFromFile;
+}; // end PackFile struct
+
+using FileTableEntry = PackFile::FilesDataBlock::Data;
+
+static_assert(sizeof(PackFile::HeaderBlock) == 32, "header block size changed, something bad happened!");
+static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed, something bad happened!");
+
+} // end of PackFormat namespace
+
+} // end of DAVA namespace
+
+#endif // DAVAENGINE_FILE_SYSTEM_PACK_FORMAT_SPEC_H
