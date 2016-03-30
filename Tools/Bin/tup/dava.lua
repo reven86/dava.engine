@@ -37,6 +37,7 @@ dava.init = function()
         dava.im.cmd_cp = "cp"
         dava.im.cmd_cat = "cat"
         dava.im.cmd_dep = dava.project_dir .. "/" .. dava_get_dir(dava.framework_dir) .. "dep"
+        dava.im.cmd_zip = dava.project_dir .. "/" .. dava_get_dir(dava.framework_dir) .. "../7za"
 
         if dava.platform == "win32" then
             dava.im.cmd_cat = "type"
@@ -198,8 +199,8 @@ dava.create_packs = function()
 	        outputs = { pack_merged_list_output }
 	    }
 
-	    if pack_name ~= dava.default_pack then
-	        --tup.rule(pack_merged_list, "cat %f | zip %o -@", pack_output)
+	    if pack_name ~= dava.im.packlist_default then
+	        tup.rule(pack_merged_list_output, "^ Pack " .. pack_name .. "^ " ..dava.im.cmd_zip .. " a -bd -bso0 -- %o @%f", pack_output)
 	    end
 	end
 end
