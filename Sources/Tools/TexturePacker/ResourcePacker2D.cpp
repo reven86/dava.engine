@@ -148,10 +148,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     std::transform(gfxDirName.begin(), gfxDirName.end(), gfxDirName.begin(), ::tolower);
 
     FilePath processDirectoryPath = rootDirectory + GetProcessFolderName();
-    if (FileSystem::Instance()->CreateDirectory(processDirectoryPath, true) == FileSystem::DIRECTORY_CANT_CREATE)
-    {
-        //Logger::Error("Can't create directory: %s", processDirectoryPath.c_str());
-    }
+    FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
@@ -211,15 +208,13 @@ bool ResourcePacker2D::ReadMD5FromFile(const FilePath& md5file, MD5::MD5Digest& 
     }
 }
 
-bool ResourcePacker2D::WriteMD5ToFile(const FilePath& md5file, const MD5::MD5Digest& digest) const
+void ResourcePacker2D::WriteMD5ToFile(const FilePath& md5file, const MD5::MD5Digest& digest) const
 {
     ScopedPtr<File> file(File::Create(md5file, File::CREATE | File::WRITE));
     DVASSERT(file && "Can't create md5 file");
 
     auto bytesWritten = file->Write(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
     DVASSERT(bytesWritten == MD5::MD5Digest::DIGEST_SIZE && "16 bytes should be always written for md5 file");
-
-    return true;
 }
 
 bool ResourcePacker2D::RecalculateParamsMD5(const String& params, const FilePath& md5file) const
