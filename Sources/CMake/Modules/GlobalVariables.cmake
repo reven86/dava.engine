@@ -58,10 +58,10 @@ if (WIN32)
 
 	if( X64_MODE )
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
-        set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll fmod_event64.dll IMagickHelper.dll glew32.dll TextureConverter.dll )  
+        set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll fmod_event64.dll glew32.dll TextureConverter.dll )  
 	else ()
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
-        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )  
+        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll )  
 	endif ()
 else ()
 	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
@@ -78,6 +78,7 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH     "${DAVA_THIRD_PARTY_ROOT_PATH}/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/icucommon/source/common" 
                                       ) 
 
 set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )                                      

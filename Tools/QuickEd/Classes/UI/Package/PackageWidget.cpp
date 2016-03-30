@@ -722,8 +722,9 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
     {
         return;
     }
-    emit SelectedNodesChanged(nodes, selectionContainer.selectedNodes);
-
+    auto deselected = selectionContainer.selectedNodes; //make a copy of a class member
+    OnSelectionChanged(nodes, deselected);
+    emit SelectedNodesChanged(nodes, deselected); //this is only way to select manually in package widget
     for (const auto& node : expandedNodes)
     {
         QModelIndex srcIndex = packageModel->indexByNode(node);
