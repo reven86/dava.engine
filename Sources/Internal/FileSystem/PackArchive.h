@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H
 #define DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H
 
-#include "FileSystem/ResourceArchivePrivate.h"
+#include "FileSystem/Private/ResourceArchivePrivate.h"
 
 namespace DAVA
 {

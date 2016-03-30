@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H
 #define DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H
 
-#include "FileSystem/ResourceArchivePrivate.h"
+#include "FileSystem/Private/ResourceArchivePrivate.h"
 #include "Compression/ZipCompressor.h"
 
 namespace DAVA
