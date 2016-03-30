@@ -56,11 +56,14 @@ public:
 
     struct Line 
     {
-        uint32 number;
-        uint32 offset;
-        uint32 length;
-        float32 xadvance;
-        float32 yadvance;
+        uint32 number = 0;
+        uint32 offset = 0;
+        uint32 length = 0;
+        float32 xadvance = 0.f;
+        float32 yadvance = 0.f;
+        float32 visibleadvance = 0.f;
+        float32 xoffset = 0.f;
+        float32 yoffset = 0.f;
     };
 
     enum eFitType

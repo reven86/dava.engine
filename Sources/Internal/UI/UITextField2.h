@@ -33,13 +33,12 @@
 #include "UI/UITextField.h"
 #include "Render/2D/TextBlock.h"
 
-struct StbTextStruct;
-
 namespace DAVA
 {
 class UIStaticText;
 class UITextField2;
 class IUITextField2Impl;
+class UITextFieldStbBridgeImpl;
 
 class UITextField2Delegate
 {
@@ -79,15 +78,6 @@ public:
     UITextField2(const Rect& rect = Rect());
     UITextField2* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
-
-    // Text field text modification
-    void innerInsertText(uint32 position, const WideString::value_type* str, uint32 length);
-    void innerDeleteText(uint32 position, uint32 length);
-    const Vector<TextBlock::Line>& innerGetMultilineInfo();
-    const Vector<float32>& innerGetCharactersSize();
-    
-    void InsertText(uint32 position, const WideString& str);
-    void SendChar(uint32 codePoint);
 
     // Text field properties
     const WideString& GetText() const;
@@ -156,15 +146,16 @@ protected:
 
 private:
     void SetupDefaults();
-    void UpdateSelection();
-    void UpdateCursor();
+    void DropCaches();
+    void UpdateSelection(uint32 start, uint32 end);
+    void UpdateCursor(uint32 cursorPos, bool insertMode);
 
     WideString text;
 
     UITextField2Delegate* delegate = nullptr;
     UIStaticText* staticText = nullptr;
-    StbTextStruct* stb_struct = nullptr;
     IUITextField2Impl* pImpl = nullptr;
+    UITextFieldStbBridgeImpl* stb = nullptr;
 
     // Keyboard customization params
     UITextField::eAutoCapitalizationType autoCapitalizationType;
@@ -184,6 +175,7 @@ private:
     bool isMultiline = false;
     bool needRedraw = true;
     bool showCursor = true;
+    bool cachedInsertMode = false;
 
     float32 cursorBlinkingTime = 0.0f;
     float32 cursorTime = 0.0f;
@@ -192,6 +184,8 @@ private:
     Color cursorColor = Color::White;
     Vector<Rect> selectionRects;
     Rect cursorRect;
+
+    friend UITextFieldStbBridgeImpl;
 
 public:
     INTROSPECTION_EXTEND(UITextField2, UIControl,

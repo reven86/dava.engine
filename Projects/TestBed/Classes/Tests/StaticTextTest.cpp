@@ -33,7 +33,7 @@ using namespace DAVA;
 
 namespace
 {
-class InputDelegate : public UITextField2Delegate
+class InputDelegate : public UITextFieldDelegate
 {
 public:
     InputDelegate(StaticTextTest* _test)
@@ -41,7 +41,7 @@ public:
     {
     }
 
-    void OnTextChanged(UITextField2* textField, const WideString& newText, const WideString& oldText) override
+    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override
     {
         test->SetPreviewText(newText);
     }
@@ -65,12 +65,15 @@ static const ButtonInfo alignButtonsInfo[] = {
     { L"Top left", ALIGN_TOP | ALIGN_LEFT, Rect(450, 30, 100, 20) },
     { L"Top center", ALIGN_TOP | ALIGN_HCENTER, Rect(560, 30, 100, 20) },
     { L"Top right", ALIGN_TOP | ALIGN_RIGHT, Rect(670, 30, 100, 20) },
+    { L"Top justify", ALIGN_TOP | ALIGN_HJUSTIFY, Rect(780, 30, 100, 20) },
     { L"Middle left", ALIGN_VCENTER | ALIGN_LEFT, Rect(450, 55, 100, 20) },
     { L"Middle center", ALIGN_VCENTER | ALIGN_HCENTER, Rect(560, 55, 100, 20) },
     { L"Middle right", ALIGN_VCENTER | ALIGN_RIGHT, Rect(670, 55, 100, 20) },
+    { L"Middle justify", ALIGN_VCENTER | ALIGN_HJUSTIFY, Rect(780, 55, 100, 20) },
     { L"Bottom left", ALIGN_BOTTOM | ALIGN_LEFT, Rect(450, 80, 100, 20) },
     { L"Bottom center", ALIGN_BOTTOM | ALIGN_HCENTER, Rect(560, 80, 100, 20) },
     { L"Bottom right", ALIGN_BOTTOM | ALIGN_RIGHT, Rect(670, 80, 100, 20) },
+    { L"Bottom justify", ALIGN_BOTTOM | ALIGN_HJUSTIFY, Rect(780, 80, 100, 20) },
 };
 
 static const ButtonInfo fittingButtonsInfo[] = {
@@ -122,8 +125,7 @@ void StaticTextTest::LoadResources()
     label->SetTextAlign(ALIGN_LEFT);
     AddControl(label);
 
-    inputText = new UITextField2(Rect(20, 260, 400, 200));
-    inputText->SetPassword(true);
+    inputText = new UITextField(Rect(20, 260, 400, 200));
     inputText->SetFont(bigFont);
     inputText->SetTextColor(Color::White);
     inputText->SetText(L"");
@@ -234,6 +236,7 @@ void StaticTextTest::SetPreviewText(const DAVA::WideString& text)
 void StaticTextTest::SetPreviewAlign(DAVA::int32 align)
 {
     previewText->SetTextAlign(align);
+    inputText->SetTextAlign(align);
     for (auto btn : alignButtons)
     {
         btn->SetDebugDrawColor(btn->GetTag() == align ? GREEN : RED);

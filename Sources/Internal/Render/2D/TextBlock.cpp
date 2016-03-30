@@ -701,7 +701,8 @@ void TextBlock::CalculateCacheParams()
         lineInfo.offset = 0;
         lineInfo.length = visualText.size();
         lineInfo.number = 0;
-        lineInfo.xadvance = std::accumulate(charactersSizes.begin(), charactersSizes.end(), 0.f); //static_cast<float32>(stringSize.width);
+        lineInfo.xadvance = std::accumulate(charactersSizes.begin(), charactersSizes.end(), 0.f);
+        lineInfo.visibleadvance = static_cast<float32>(textMetrics.width);
         lineInfo.yadvance = static_cast<float32>(textMetrics.height);
         multitlineInfo.push_back(lineInfo);
 
@@ -860,6 +861,7 @@ void TextBlock::CalculateCacheParams()
             lineInfo.length = line.length;
             lineInfo.number = lineInd;
             lineInfo.xadvance = std::accumulate(charactersSizes.begin() + line.offset, charactersSizes.begin() + line.offset + line.length, 0.f); //static_cast<float32>(stringSize.width);
+            lineInfo.visibleadvance = static_cast<float32>(stringSize.width);
             lineInfo.yadvance = static_cast<float32>(stringSize.height);
             multitlineInfo.push_back(lineInfo);
 
@@ -900,6 +902,38 @@ void TextBlock::CalculateCacheParams()
     if (requestedSize.dx >= 0 && useJustify)
     {
         textMetrics.drawRect.dx = Max(textMetrics.drawRect.dx, (int)drawSize.dx);
+    }
+
+    float32 lyoffset = 0.f;
+    for (auto& line : multitlineInfo)
+    {
+        if (align & ALIGN_RIGHT)
+        {
+            line.xoffset = drawSize.x - line.visibleadvance;
+        }
+        else if (align & ALIGN_HCENTER)
+        {
+            line.xoffset = (drawSize.x - line.visibleadvance) * 0.5f;
+        }
+        else
+        {
+            line.xoffset = 0.f;
+        }
+
+        if (align & ALIGN_BOTTOM)
+        {
+            line.yoffset = lyoffset + drawSize.y - static_cast<float32>(textMetrics.height);
+        }
+        else if (align & ALIGN_VCENTER)
+        {
+            line.yoffset = lyoffset + (drawSize.y - static_cast<float32>(textMetrics.height)) * 0.5f;
+        }
+        else
+        {
+            line.yoffset = lyoffset;
+        }
+
+        lyoffset += line.yadvance;
     }
 
     //calculate texture size

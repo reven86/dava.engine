@@ -35,7 +35,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 #include "UI/Private/IUITextField2Impl.h"
-#include "UI/Private/UITextField2StbBind.h"
+#include "UI/Private/StbTextEditBridge.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 #include "UI/Private/Win32/UITextField2Impl.h"
@@ -56,19 +56,72 @@
 static const DAVA::Vector2 NO_REQUIRED_SIZE = DAVA::Vector2(-1, -1);
 
 
-////////////////////////////////////////////////////////////////////////////////
-
 namespace DAVA
 {
+class UITextFieldStbBridgeImpl : public StbTextEditBridge
+{
+public:
+    UITextField2* tf = nullptr;
+
+    UITextFieldStbBridgeImpl(UITextField2* textField)
+        : tf(textField)
+    {
+        DVASSERT(tf);
+    }
+
+    // Inherited via UITextFieldStbBridge
+    inline void InsertText(uint32 position, const WideString::value_type* str, uint32 length) override
+    {
+        WideString t = tf->GetText();
+        t.insert(position, str, length);
+        tf->SetText(t);
+    }
+
+    inline void DeleteText(uint32 position, uint32 length) override
+    {
+        WideString t = tf->GetText();
+        t.erase(position, length);
+        tf->SetText(t);
+    }
+
+    inline const Vector<TextBlock::Line>& GetMultilineInfo() override
+    {
+        return tf->staticText->GetTextBlock()->GetMultilineInfo();
+    }
+
+    inline const Vector<float32>& GetCharactersSizes() override
+    {
+        return tf->staticText->GetTextBlock()->GetCharactersSize();
+    }
+
+    inline uint32 GetLength() override
+    {
+        return tf->GetText().length();
+    }
+
+    inline WideString::value_type GetChar(uint32 i) override
+    {
+        return tf->GetText()[i];
+    }
+
+    inline void SendKey(uint32 codePoint) override
+    {
+        if (codePoint == '\r')
+        {
+            codePoint = tf->GetMultiline() ? '\n' : '\0';
+        }
+        StbTextEditBridge::SendKey(codePoint);
+    }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 UITextField2::UITextField2(const Rect& rect)
     : UIControl(rect)
     , staticText(new UIStaticText(Rect(Vector2(0, 0), GetSize())))
-    , stb_struct(new StbTextStruct())
     , pImpl(new UITextField2Impl(this))
+    , stb(new UITextFieldStbBridgeImpl(this))
 {
-    stb_struct->field = this;
-    stb_textedit_initialize_state(&stb_struct->state, 0);
-
     AddControl(staticText);
     SetupDefaults();
 }
@@ -76,8 +129,8 @@ UITextField2::UITextField2(const Rect& rect)
 UITextField2::~UITextField2()
 {
     SafeRelease(staticText);
-    SafeDelete(stb_struct);
     SafeDelete(pImpl);
+    SafeDelete(stb);
     UIControl::RemoveAllControls();
 }
 
@@ -103,6 +156,17 @@ void UITextField2::SetupDefaults()
     SetText(L"");
 }
 
+void UITextField2::DropCaches()
+{
+    cachedInsertMode = !stb->IsInsertMode();
+    cachedCursorPos = UINT32_MAX;
+    cachedSelectionStart = UINT32_MAX;
+    cachedSelectionEnd = UINT32_MAX;
+
+    selectionRects.clear();
+    cursorRect = Rect();
+}
+
 UITextField2* UITextField2::Clone()
 {
     UITextField2* t = new UITextField2();
@@ -115,10 +179,8 @@ void UITextField2::CopyDataFrom(UIControl* srcControl)
     UIControl::CopyDataFrom(srcControl);
     UITextField2* t = static_cast<UITextField2*>(srcControl);
 
-    stb_struct = new StbTextStruct(*t->stb_struct);
-    stb_struct->field = this;
+    stb->CopyStbStateFrom(*t->stb);
     staticText->CopyDataFrom(t->staticText);
-
     cursorBlinkingTime = t->cursorBlinkingTime;
     cursorTime = t->cursorTime;
     needRedraw = t->needRedraw;
@@ -139,40 +201,6 @@ void UITextField2::CopyDataFrom(UIControl* srcControl)
     SetMaxLength(t->GetMaxLength());
 }
 
-void UITextField2::innerInsertText(uint32 position, const WideString::value_type* str, uint32 length)
-{
-    WideString t = GetText();
-    t.insert(position, str, length);
-    SetText(t);
-}
-
-void UITextField2::innerDeleteText(uint32 position, uint32 length)
-{
-    WideString t = GetText();
-    t.erase(position, length);
-    SetText(t);
-}
-
-const Vector<TextBlock::Line>& UITextField2::innerGetMultilineInfo()
-{
-    return staticText->GetTextBlock()->GetMultilineInfo();
-}
-
-const Vector<float32>& UITextField2::innerGetCharactersSize()
-{
-    return staticText->GetTextBlock()->GetCharactersSize();
-}
-
-void UITextField2::InsertText(uint32 position, const WideString& str)
-{
-    stb_textedit_paste(stb_struct, &stb_struct->state, str.c_str(), static_cast<int>(str.length()));
-}
-
-void UITextField2::SendChar(uint32 codePoint)
-{
-    stb_textedit_key(stb_struct, &stb_struct->state, codePoint);
-}
-
 const WideString& UITextField2::GetText() const
 {
     return text;
@@ -190,7 +218,7 @@ void UITextField2::SetText(const WideString& newText)
 
         // Update field with visibled text (for password mode it is ***)
         const WideString& visText = this->GetVisibleText();
-        staticText->SetText(visText, NO_REQUIRED_SIZE);
+        staticText->SetText(visText /*, NO_REQUIRED_SIZE*/);
     }
 }
 
@@ -406,6 +434,7 @@ int32 UITextField2::GetTextAlign() const
 void UITextField2::SetTextAlign(int32 align)
 {
     staticText->SetTextAlign(align);
+    DropCaches();
 }
 
 TextBlock::eUseRtlAlign UITextField2::GetTextUseRtlAlign() const
@@ -430,11 +459,13 @@ void UITextField2::SetTextUseRtlAlignFromInt(int32 value)
 
 void UITextField2::OnFocused()
 {
+    DropCaches();
     OpenKeyboard();
 }
 
 void UITextField2::OnFocusLost(UIControl* newFocus)
 {
+    DropCaches();
     CloseKeyboard();
     if (delegate != nullptr)
     {
@@ -453,6 +484,19 @@ void UITextField2::Update(float32 timeElapsed)
         {
             cursorTime = 0;
             showCursor = !showCursor;
+        }
+
+        auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
+        auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
+        auto cursorPos = stb->GetCursor();
+        auto insertMode = stb->IsInsertMode();
+        if (cachedSelectionEnd != selEnd || cachedSelectionStart != selStart)
+        {
+            UpdateSelection(selStart, selEnd);
+        }
+        if (cachedCursorPos != cursorPos || cachedInsertMode != insertMode)
+        {
+            UpdateCursor(cursorPos, insertMode);
         }
     }
     else if (showCursor)
@@ -491,69 +535,89 @@ void UITextField2::Input(UIEvent* currentInput)
         {
             if (isCtrl)
             {
-                SendChar(STB_TEXTEDIT_K_WORDLEFT);
+                stb->SendKey(STB_TEXTEDIT_K_WORDLEFT);
             }
             else
             {
-                SendChar(STB_TEXTEDIT_K_LEFT | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+                stb->SendKey(STB_TEXTEDIT_K_LEFT | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
             }
         }
         else if (currentInput->key == Key::RIGHT)
         {
             if (isCtrl)
             {
-                SendChar(STB_TEXTEDIT_K_WORDRIGHT);
+                stb->SendKey(STB_TEXTEDIT_K_WORDRIGHT);
             }
             else
             {
-                SendChar(STB_TEXTEDIT_K_RIGHT | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+                stb->SendKey(STB_TEXTEDIT_K_RIGHT | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
             }
         }
         else if (currentInput->key == Key::UP)
         {
-            SendChar(STB_TEXTEDIT_K_UP | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            stb->SendKey(STB_TEXTEDIT_K_UP | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
         }
         else if (currentInput->key == Key::DOWN)
         {
-            SendChar(STB_TEXTEDIT_K_DOWN | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+            stb->SendKey(STB_TEXTEDIT_K_DOWN | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
         }
         else if (currentInput->key == Key::HOME)
         {
             if (isCtrl)
             {
-                SendChar(STB_TEXTEDIT_K_TEXTSTART | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+                stb->SendKey(STB_TEXTEDIT_K_TEXTSTART | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
             }
             else
             {
-                SendChar(STB_TEXTEDIT_K_LINESTART | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+                stb->SendKey(STB_TEXTEDIT_K_LINESTART | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
             }
         }
         else if (currentInput->key == Key::END)
         {
             if (isCtrl)
             {
-                SendChar(STB_TEXTEDIT_K_TEXTEND | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+                stb->SendKey(STB_TEXTEDIT_K_TEXTEND | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
             }
             else
             {
-                SendChar(STB_TEXTEDIT_K_LINEEND | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
+                stb->SendKey(STB_TEXTEDIT_K_LINEEND | (isShift ? STB_TEXTEDIT_K_SHIFT : 0));
             }
+        }
+        else if (currentInput->key == Key::DELETE)
+        {
+            stb->SendKey(STB_TEXTEDIT_K_DELETE);
+        }
+        else if (currentInput->key == Key::INSERT)
+        {
+            stb->SendKey(STB_TEXTEDIT_K_INSERT);
+        }
+        else if (currentInput->key == Key::KEY_X && isCtrl)
+        {
+            stb->Cut();
+        }
+        else if (currentInput->key == Key::KEY_C && isCtrl)
+        {
+        }
+        else if (currentInput->key == Key::KEY_V && isCtrl)
+        {
+            WideString clipboard = L"test";
+            stb->Paste(clipboard);
         }
     }
     else if (currentInput->phase == UIEvent::Phase::CHAR ||
              currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
     {
-        SendChar(currentInput->keyChar);
+        stb->SendKey(currentInput->keyChar);
     }
     else if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
         Vector2 localPoint = currentInput->point - GetPosition();
-        stb_textedit_click(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
+        stb->Click(localPoint);
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
         Vector2 localPoint = currentInput->point - GetPosition();
-        stb_textedit_drag(stb_struct, &stb_struct->state, localPoint.x, localPoint.y);
+        stb->Drag(localPoint);
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
@@ -561,12 +625,6 @@ void UITextField2::Input(UIEvent* currentInput)
 
 void UITextField2::Draw(const UIGeometricData & geometricData)
 {
-    auto selStart = static_cast<uint32>(std::min(stb_struct->state.select_start, stb_struct->state.select_end));
-    auto selEnd = static_cast<uint32>(std::max(stb_struct->state.select_start, stb_struct->state.select_end));
-    if (cachedSelectionEnd != selEnd || cachedSelectionStart != selStart)
-    {
-        UpdateSelection();
-    }
     for (const auto& r : selectionRects)
     {
         RenderSystem2D::Instance()->FillRect(r + geometricData.GetUnrotatedRect().GetPosition(), selectionColor);
@@ -576,12 +634,7 @@ void UITextField2::Draw(const UIGeometricData & geometricData)
 
     if(showCursor)
     {
-        auto cursorPos = static_cast<uint32>(stb_struct->state.cursor);
-        if (cachedCursorPos != cursorPos)
-        {
-            UpdateCursor();
-        }
-        RenderSystem2D::Instance()->FillRect(cursorRect + geometricData.GetUnrotatedRect().GetPosition(), cursorColor);
+        RenderSystem2D::Instance()->DrawRect(cursorRect + geometricData.GetUnrotatedRect().GetPosition(), cursorColor);
     }
 }
 
@@ -589,13 +642,14 @@ void UITextField2::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
     staticText->SetSize(newSize);
+    DropCaches();
 }
 
-void UITextField2::UpdateSelection()
+void UITextField2::UpdateSelection(uint32 start, uint32 end)
 {
     selectionRects.clear();
-    auto selStart = static_cast<uint32>(std::min(stb_struct->state.select_start, stb_struct->state.select_end));
-    auto selEnd = static_cast<uint32>(std::max(stb_struct->state.select_start, stb_struct->state.select_end));
+    auto selStart = std::min(start, end);
+    auto selEnd = std::max(start, end);
     if (selStart < selEnd)
     {
         const auto& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
@@ -608,11 +662,11 @@ void UITextField2::UpdateSelection()
             }
 
             Rect r;
-            r.y = line.number * line.yadvance;
+            r.y = line.yoffset;
             r.dy = line.yadvance;
             if (selStart > line.offset)
             {
-                r.x = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
+                r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
             }
 
             if (selEnd >= line.offset + line.length)
@@ -624,12 +678,13 @@ void UITextField2::UpdateSelection()
                 r.dx = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selEnd, 0.f);
             }
             r.dx -= r.x;
+            r.x += line.xoffset;
 
             if (r.x > GetSize().x)
             {
                 continue;
             }
-            if (r.x + r.dx > GetSize().x)
+            else if (r.x + r.dx > GetSize().x)
             {
                 r.dx = GetSize().x - r.x;
             }
@@ -641,9 +696,8 @@ void UITextField2::UpdateSelection()
     cachedSelectionEnd = selEnd;
 }
 
-void UITextField2::UpdateCursor()
+void UITextField2::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
-    auto cursorPos = static_cast<uint32>(stb_struct->state.cursor);
     const auto& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
     const auto& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
 
@@ -660,29 +714,42 @@ void UITextField2::UpdateCursor()
         if (lineInfoIt != linesInfo.end())
         {
             auto line = *lineInfoIt;
-            r.y = line.number * line.yadvance;
+            r.y = line.yoffset;
             r.dy = line.yadvance;
             if (cursorPos != line.offset)
             {
-                r.x = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
+                r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
+            }
+            r.x += line.xoffset;
+
+            if (insertMode != 0)
+            {
+                r.dx = charsSizes[cursorPos];
             }
         }
         else
         {
             auto line = *linesInfo.rbegin();
-            r.y = line.number * line.yadvance;
+            r.y = line.yoffset;
             r.dy = line.yadvance;
             r.x = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
+            r.x += line.xoffset;
         }
 
-        if (r.x + r.dx > GetSize().x)
+        if (r.x + 1.0f > GetSize().x)
         {
+            r.dx = 1.0f;
             r.x = GetSize().x - r.dx;
+        }
+        else if (r.x + r.dx > GetSize().x)
+        {
+            r.dx = GetSize().x - r.x;
         }
     }
 
     cursorRect = r;
     cachedCursorPos = cursorPos;
+    cachedInsertMode = insertMode;
 }
 
 } // namespace DAVA
