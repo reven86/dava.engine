@@ -264,9 +264,6 @@ void EditorCore::OpenProject(const QString& path)
         QString message = tr("Can not open project %1").arg(path);
         resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
     }
-    if (!resultList)
-    {
-    }
     mainWindow->OnProjectOpened(resultList, project);
 }
 
