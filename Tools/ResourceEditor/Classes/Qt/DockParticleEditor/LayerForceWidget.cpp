@@ -65,7 +65,7 @@ void LayerForceWidget::InitWidget(QWidget* widget)
             SLOT(OnValueChanged()));
 }
 
-void LayerForceWidget::Init(SceneEditor2* scene, ParticleLayer* layer, uint32 forceIndex, bool updateMinimized)
+void LayerForceWidget::Init(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::uint32 forceIndex, bool updateMinimized)
 {
     if (!layer || layer->forces.size() <= forceIndex)
     {
@@ -78,19 +78,19 @@ void LayerForceWidget::Init(SceneEditor2* scene, ParticleLayer* layer, uint32 fo
 
     blockSignals = true;
 
-    float32 lifeTime = layer->endTime;
-    ParticleForce* curForce = layer->forces[forceIndex];
+    DAVA::float32 lifeTime = layer->endTime;
+    DAVA::ParticleForce* curForce = layer->forces[forceIndex];
 
-    Vector<QColor> colors;
+    DAVA::Vector<QColor> colors;
     colors.push_back(Qt::red);
     colors.push_back(Qt::darkGreen);
     colors.push_back(Qt::blue);
-    Vector<QString> legends;
+    DAVA::Vector<QString> legends;
     legends.push_back("force x");
     legends.push_back("force y");
     legends.push_back("force z");
     forceTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true, false);
-    forceTimeLine->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(curForce->force)).GetProps(), colors, legends);
+    forceTimeLine->AddLines(DAVA::PropLineWrapper<DAVA::Vector3>(DAVA::PropertyLineHelper::GetValueLine(curForce->force)).GetProps(), colors, legends);
     forceTimeLine->EnableLock(true);
 
     legends.clear();
@@ -99,12 +99,12 @@ void LayerForceWidget::Init(SceneEditor2* scene, ParticleLayer* layer, uint32 fo
     legends.push_back("force variable z");
 
     forceOverLifeTimeLine->Init(0, 1, updateMinimized, true, false);
-    forceOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(curForce->forceOverLife)).GetProps(), Qt::blue, "forces over life");
+    forceOverLifeTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(curForce->forceOverLife)).GetProps(), Qt::blue, "forces over life");
 
     blockSignals = false;
 }
 
-void LayerForceWidget::RestoreVisualState(KeyedArchive* visualStateProps)
+void LayerForceWidget::RestoreVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
@@ -113,12 +113,12 @@ void LayerForceWidget::RestoreVisualState(KeyedArchive* visualStateProps)
     forceOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("FORCE_OVER_LIFE_PROPS"));
 }
 
-void LayerForceWidget::StoreVisualState(KeyedArchive* visualStateProps)
+void LayerForceWidget::StoreVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
 
-    KeyedArchive* props = new KeyedArchive();
+    DAVA::KeyedArchive* props = new DAVA::KeyedArchive();
 
     forceTimeLine->GetVisualState(props);
     visualStateProps->SetArchive("FORCE_PROPS", props);
@@ -127,7 +127,7 @@ void LayerForceWidget::StoreVisualState(KeyedArchive* visualStateProps)
     forceOverLifeTimeLine->GetVisualState(props);
     visualStateProps->SetArchive("FORCE_OVER_LIFE_PROPS", props);
 
-    SafeRelease(props);
+    DAVA::SafeRelease(props);
 }
 
 void LayerForceWidget::OnValueChanged()
@@ -135,9 +135,9 @@ void LayerForceWidget::OnValueChanged()
     if (blockSignals)
         return;
 
-    PropLineWrapper<Vector3> propForce;
+    DAVA::PropLineWrapper<DAVA::Vector3> propForce;
     forceTimeLine->GetValues(propForce.GetPropsPtr());
-    PropLineWrapper<float32> propForceOverLife;
+    DAVA::PropLineWrapper<DAVA::float32> propForceOverLife;
     forceOverLifeTimeLine->GetValue(0, propForceOverLife.GetPropsPtr());
 
     std::unique_ptr<CommandUpdateParticleForce> updateForceCmd = Command2::Create<CommandUpdateParticleForce>(layer, forceIndex);

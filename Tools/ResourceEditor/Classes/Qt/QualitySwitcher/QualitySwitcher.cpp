@@ -136,13 +136,13 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
         QComboBox* comboQuality = new QComboBox(particlesGroup);
         comboQuality->setObjectName("ParticlesQualityCombo");
 
-        const ParticlesQualitySettings& particlesSettings = DAVA::QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
+        const DAVA::ParticlesQualitySettings& particlesSettings = DAVA::QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
         bool qualityAvailable = particlesSettings.GetQualitiesCount() > 0;
 
-        FastName currentQualityName = particlesSettings.GetCurrentQuality();
+        DAVA::FastName currentQualityName = particlesSettings.GetCurrentQuality();
         for (size_t i = 0, size = particlesSettings.GetQualitiesCount(); i < size; ++i)
         {
-            FastName qualityName = particlesSettings.GetQualityName(i);
+            DAVA::FastName qualityName = particlesSettings.GetQualityName(i);
             comboQuality->addItem(qualityName.c_str());
 
             if (qualityName == currentQualityName)
@@ -161,7 +161,7 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
         editTagsCloud->setObjectName("ParticlesTagsCloudEdit");
 
         QString tagsCloudText;
-        for (const FastName& tag : particlesSettings.GetTagsCloud())
+        for (const DAVA::FastName& tag : particlesSettings.GetTagsCloud())
         {
             if (!tagsCloudText.isEmpty())
             {
@@ -187,15 +187,15 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
         optionsGroup->setTitle("Options");
         optionsGroup->setLayout(optionsLayout);
 
-        int32 optionsCount = QualitySettingsSystem::Instance()->GetOptionsCount();
-        for (int32 i = 0; i < optionsCount; ++i)
+        DAVA::int32 optionsCount = DAVA::QualitySettingsSystem::Instance()->GetOptionsCount();
+        for (DAVA::int32 i = 0; i < optionsCount; ++i)
         {
-            DAVA::FastName optionName = QualitySettingsSystem::Instance()->GetOptionName(i);
+            DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
 
             QLabel* labOp = new QLabel(QString(optionName.c_str()) + ":", materialsGroup);
             QCheckBox* checkOp = new QCheckBox(materialsGroup);
             checkOp->setObjectName(QString(optionName.c_str()) + "CheckBox");
-            checkOp->setChecked(QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
+            checkOp->setChecked(DAVA::QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
             checkOp->setProperty("qualityOptionName", QVariant(optionName.c_str()));
 
             QObject::connect(checkOp, SIGNAL(clicked(bool)), this, SLOT(OnOptionClick(bool)));
@@ -276,7 +276,7 @@ void QualitySwitcher::ApplyMa()
 void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity* e)
 {
     DAVA::QualitySettingsSystem::Instance()->UpdateEntityVisibility(e);
-    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+    for (DAVA::int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
     {
         UpdateEntitiesToQuality(e->GetChild(i));
     }
@@ -286,7 +286,7 @@ void QualitySwitcher::UpdateParticlesToQuality()
 {
     SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
     SceneSignals* sceneSignals = SceneSignals::Instance();
-    for (int32 tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+    for (DAVA::int32 tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
     {
         SceneEditor2* scene = tabWidget->GetTabScene(tab);
         ReloadEntityEmitters(scene);
@@ -296,13 +296,13 @@ void QualitySwitcher::UpdateParticlesToQuality()
 
 void QualitySwitcher::ReloadEntityEmitters(DAVA::Entity* e)
 {
-    ParticleEffectComponent* comp = GetEffectComponent(e);
+    DAVA::ParticleEffectComponent* comp = GetEffectComponent(e);
     if (comp)
     {
         comp->ReloadEmitters();
     }
 
-    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+    for (DAVA::int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
     {
         ReloadEntityEmitters(e->GetChild(i));
     }
@@ -350,7 +350,7 @@ void QualitySwitcher::ApplySettings()
                     SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
                     for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
                     {
-                        Scene* scene = tabWidget->GetTabScene(tab);
+                        DAVA::Scene* scene = tabWidget->GetTabScene(tab);
                         UpdateEntitiesToQuality(scene);
                     }
 
@@ -362,7 +362,7 @@ void QualitySwitcher::ApplySettings()
 
     //particles
     {
-        ParticlesQualitySettings& particlesSettings = QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
+        DAVA::ParticlesQualitySettings& particlesSettings = DAVA::QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
         if (particlesSettings.GetQualitiesCount() > 0)
         {
             bool settingsChanged = false;
@@ -380,13 +380,13 @@ void QualitySwitcher::ApplySettings()
             QLineEdit* edit = findChild<QLineEdit*>("ParticlesTagsCloudEdit");
             if (nullptr != edit)
             {
-                Vector<String> tags;
-                Split(edit->text().toStdString(), " ", tags);
+                DAVA::Vector<DAVA::String> tags;
+                DAVA::Split(edit->text().toStdString(), " ", tags);
 
-                Set<FastName> newTagsCloud;
-                for (const String& tag : tags)
+                DAVA::Set<DAVA::FastName> newTagsCloud;
+                for (const DAVA::String& tag : tags)
                 {
-                    newTagsCloud.insert(FastName(tag));
+                    newTagsCloud.insert(DAVA::FastName(tag));
                 }
 
                 if (particlesSettings.GetTagsCloud() != newTagsCloud)
@@ -406,20 +406,20 @@ void QualitySwitcher::ApplySettings()
 
     // options
     {
-        int32 optionsCount = QualitySettingsSystem::Instance()->GetOptionsCount();
-        for (int32 i = 0; i < optionsCount; ++i)
+        DAVA::int32 optionsCount = DAVA::QualitySettingsSystem::Instance()->GetOptionsCount();
+        for (DAVA::int32 i = 0; i < optionsCount; ++i)
         {
-            DAVA::FastName optionName = QualitySettingsSystem::Instance()->GetOptionName(i);
+            DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
             QCheckBox* checkBox = findChild<QCheckBox*>(QString(optionName.c_str()) + "CheckBox");
             if (nullptr != checkBox)
             {
-                FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
-                QualitySettingsSystem::Instance()->EnableOption(optionName, checkBox->isChecked());
+                DAVA::FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
+                DAVA::QualitySettingsSystem::Instance()->EnableOption(optionName, checkBox->isChecked());
 
                 SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
                 for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
                 {
-                    Scene* scene = tabWidget->GetTabScene(tab);
+                    DAVA::Scene* scene = tabWidget->GetTabScene(tab);
                     UpdateEntitiesToQuality(scene);
                 }
             }

@@ -669,7 +669,7 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
 {
     SceneTreeItem* item = GetItem(_index);
     const QString& name = item->ItemName();
-    uint32 id = 0xFFFFFFFF;
+    DAVA::uint32 id = 0xFFFFFFFF;
 
     DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
     if (nullptr != entity)
@@ -858,7 +858,7 @@ QVariant SceneTreeModel::data(const QModelIndex& _index, int role) const
     case Qt::BackgroundRole:
     {
         SceneTreeItem* item = GetItem(_index);
-        ParticleEmitter* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+        DAVA::ParticleEmitter* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
         if (nullptr != emitter && emitter->shortEffect)
         {
             static const QVariant brush(QBrush(QColor(255, 0, 0, 20)));

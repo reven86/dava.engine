@@ -41,8 +41,7 @@
 #include "DockSceneTree/SceneTreeDelegate.h"
 
 class LazyUpdater;
-class SceneTree
-: public QTreeView
+class SceneTree : public QTreeView
 {
     Q_OBJECT
 
@@ -125,7 +124,8 @@ private:
     QString GetParticlesConfigPath();
 
     // Perform save for selected Emitters.
-    void PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName);
+    void PerformSaveEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter,
+                            bool forceAskFileName, const QString& defaultName);
 
     void PerformSaveEffectEmitters(bool forceAskFileName);
 
@@ -149,10 +149,10 @@ private:
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
-    ParticleEffectComponent* selectedEffect;
-    ParticleEmitter* selectedEmitter;
-    ParticleLayer* selectedLayer;
-    ParticleForce* selectedForce;
+    DAVA::ParticleEffectComponent* selectedEffect;
+    DAVA::ParticleEmitter* selectedEmitter;
+    DAVA::ParticleLayer* selectedLayer;
+    DAVA::ParticleForce* selectedForce;
 
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
