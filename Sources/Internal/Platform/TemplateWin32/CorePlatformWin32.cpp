@@ -543,7 +543,6 @@ void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device devic
     newTouch.physPoint = Vector2(x, y);
     newTouch.phase = phase;
     newTouch.device = deviceId;
-    newTouch.tapCount = 1;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     UIControlSystem::Instance()->OnInput(&newTouch);
