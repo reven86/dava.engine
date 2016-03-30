@@ -543,10 +543,8 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
     UIEvent keyPress;
     keyPress.keyChar = keyChar;
     keyPress.phase = UIEvent::Phase::CHAR;
-    keyPress.keyChar = keyChar;
 
-    Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.key, keyPress.phase,
-                           keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
+    Logger::Info("AutotestingSystemLua::KeyPress %d phase=%d key=%c", keyPress.key, keyPress.phase, keyPress.keyChar);
     switch (keyPress.keyChar)
     {
     case '\b':
@@ -720,12 +718,12 @@ bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String& key)
     return false;
 }
 
-void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId, uint32 tapCount)
+void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId)
 {
     UIEvent touchDown;
     touchDown.phase = UIEvent::Phase::BEGAN;
     touchDown.touchId = touchId;
-    touchDown.tapCount = tapCount;
+    touchDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000;
     touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
     touchDown.point = point;
     ProcessInput(touchDown);
@@ -735,6 +733,7 @@ void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
 {
     UIEvent touchMove;
     touchMove.touchId = touchId;
+    touchMove.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000;
     touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
     touchMove.point = point;
 
@@ -763,6 +762,7 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
     }
     touchUp.phase = UIEvent::Phase::ENDED;
     touchUp.touchId = touchId;
+    touchUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000;
 
     ProcessInput(touchUp);
 }
