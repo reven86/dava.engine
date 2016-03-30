@@ -50,7 +50,7 @@ public:
     virtual ~Project();
     bool Open(const QString& path);
     void Close();
-    bool CheckAndUnlockProject(const QString& projectPath);
+    bool CanOpenProject(const QString& path) const;
 
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;

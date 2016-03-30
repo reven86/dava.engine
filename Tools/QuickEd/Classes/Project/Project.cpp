@@ -148,30 +148,15 @@ bool Project::OpenInternal(const QString& path)
     return true;
 }
 
-bool Project::CheckAndUnlockProject(const QString& projectPath)
+bool Project::CanOpenProject(const QString& projectPath) const
 {
-    if (!FileSystem::Instance()->IsFileLocked(projectPath.toStdString()))
+    if (projectPath.isEmpty())
     {
-        // Nothing to unlock.
-        return true;
+        return false; //this is not performace fix. QDir return true for empty path
     }
-
-    if (QMessageBox::question(qApp->activeWindow(), tr("File is locked!"), tr("The project file %1 is locked by other user. Do you want to unlock it?").arg(projectPath)) == QMessageBox::No)
-    {
-        return false;
-    }
-
-    // Check whether it is possible to unlock project file.
-    if (!FileSystem::Instance()->LockFile(projectPath.toStdString(), false))
-    {
-        QMessageBox::critical(qApp->activeWindow(), tr("Unable to unlock project file!"),
-                              tr("Unable to unlock project file %1. Please check whether the project is opened in another QuickEd and close it, if yes.").arg(projectPath));
-        return false;
-    }
-
-    return true;
+    QFileInfo fileInfo(projectPath);
+    return fileInfo.exists() && fileInfo.isFile();
 }
-
 
 EditorFontSystem* Project::GetEditorFontSystem() const
 {

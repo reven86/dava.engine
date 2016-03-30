@@ -249,15 +249,23 @@ void EditorCore::OpenProject(const QString& path)
     {
         return;
     }
-
-    if (!project->CheckAndUnlockProject(path))
-    {
-        return;
-    }
     ResultList resultList;
-    if (!project->Open(path))
+
+    if (project->CanOpenProject(path))
     {
-        resultList.AddResult(Result::RESULT_ERROR, "Error while loading project");
+        if (!project->Open(path))
+        {
+            QString message = tr("Error while opening project %1").arg(path);
+            resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        }
+    }
+    else
+    {
+        QString message = tr("Can not open project %1").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+    }
+    if (!resultList)
+    {
     }
     mainWindow->OnProjectOpened(resultList, project);
 }
