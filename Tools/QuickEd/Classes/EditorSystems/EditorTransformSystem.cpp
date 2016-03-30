@@ -69,7 +69,6 @@ struct EditorTransformSystem::MoveInfo
 
 namespace
 {
-const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
 const DAVA::Vector2 magnetRange = DAVA::Vector2(7.0f, 7.0f);
 const DAVA::float32 moveStepByKeyboard = 10.0f;
 const DAVA::float32 expandedMoveStepByKeyboard = 1.0f;

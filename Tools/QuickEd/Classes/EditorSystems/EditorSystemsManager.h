@@ -45,6 +45,8 @@ class VariantType;
 class UIGeometricData;
 }
 
+extern const DAVA::Vector2 minimumSize;
+
 struct HUDAreaInfo
 {
     enum eArea
