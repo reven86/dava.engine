@@ -33,6 +33,7 @@
 #include "Render/Image/ImageConvert.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Focus/FocusHelpers.h"
 
 using namespace DAVA;
 
@@ -501,7 +502,7 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
     {
         if (hasFocus)
         {
-            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField && FocusHelpers::CanFocusControl(textField))
             {
                 DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
             }
