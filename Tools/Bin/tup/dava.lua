@@ -1,9 +1,7 @@
-local info = debug.getinfo(1,'S');
 
 dava = {}
-dava.initialized = false;
-dava.config = { }
 dava.im = { }
+dava.initialized = false;
 
 require("dava_debug")
 
@@ -11,13 +9,13 @@ require("dava_debug")
 -- this can be used in user rules
 --
 dava.platform = tup.getconfig("TUP_PLATFORM");
-dava.framework_dir = info.short_src
 dava.project_dir = tup.getcwd()
 dava.current_dir = tup.getrelativedir(dava.project_dir)
 
 -- 
--- this can be configuren in user rules
+-- this can be configuren by user
 --
+dava.config = { }
 dava.config.output_dir = "Output"
 dava.config.packlist_output_dir = "Output/packlist"
 dava.config.packlist_ext = "list"
@@ -34,14 +32,31 @@ dava.init = function()
         dava.im.packlist_default = dava.config.packlist_default
         dava.im.packs = { __everything_else__ = { } }
 
+        -- get directory path where this dava.lua file is located 
+        local info = debug.getinfo(1, 'S');
+        local fwpath = dava_get_dir(info.short_src, "/")
+        if fwpath == nil then
+            fwpath = dava_get_dir(info.short_src, "\\")
+        end
+
+        -- if got dir isn't absolute we should concat
+        -- it with project dir
+        if fwpath[1] ~= "/" and fwpath:match(":\\") == nil then
+            fwpath = dava.project_dir .. "/" .. fwpath
+        end
+
+        -- commands
         dava.im.cmd_cp = "cp"
         dava.im.cmd_cat = "cat"
-        dava.im.cmd_dep = dava.project_dir .. "/" .. dava_get_dir(dava.framework_dir) .. "dep"
-        dava.im.cmd_zip = dava.project_dir .. "/" .. dava_get_dir(dava.framework_dir) .. "../7za"
+        dava.im.cmd_fwdep = fwpath .. "dep"
+        dava.im.cmd_fwzip = fwpath .. "../7za"
 
+        -- edit commands for win32
         if dava.platform == "win32" then
             dava.im.cmd_cat = "type"
+            dava.im.cmd_fwzip = fwpath .. "../7z"
 
+            -- make slashes in commands win compatible
             for k,v in pairs(dava.im) do
                 if type(v) == "string" then
                     dava.im[k] = v:gsub("/", "\\")
@@ -175,7 +190,7 @@ dava.create_lists = function()
         local pack_listoutput = dava.im.packlist_output_dir .. "/" .. pack_listname
 
         print(pack_listoutput)
-		tup.rule(affected_files, "^ Gen " .. affected_pack .. "^ " .. dava.im.cmd_dep .. " \"" .. dava.current_dir .. "\" %\"f > %o", { pack_listoutput, pack_group })
+		tup.rule(affected_files, "^ Gen " .. affected_pack .. "^ " .. dava.im.cmd_fwdep .. " \"" .. dava.current_dir .. "\" %\"f > %o", { pack_listoutput, pack_group })
 	end
 end
 
@@ -195,12 +210,12 @@ dava.create_packs = function()
 
 	    tup.frule{
 	        inputs = { pack_in_group },
-	        command = dava.im.cmd_cat .." " .. pack_in_mask .. " > %o",
+	        command = "^ Gen big " .. pack_name .. " list^ " .. dava.im.cmd_cat .." " .. pack_in_mask .. " > %o",
 	        outputs = { pack_merged_list_output }
 	    }
 
 	    if pack_name ~= dava.im.packlist_default then
-	        tup.rule(pack_merged_list_output, "^ Pack " .. pack_name .. "^ " ..dava.im.cmd_zip .. " a -bd -bso0 -- %o @%f", pack_output)
+	        tup.rule(pack_merged_list_output, "^ Pack " .. pack_name .. "^ " .. dava.im.cmd_fwzip .. " a -bd -bso0 -- %o @%f", pack_output)
 	    end
 	end
 end
