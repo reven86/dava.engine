@@ -465,20 +465,31 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             }
             else
             {
-                UIControl* prevFocus = focusSystem->GetFocusedControl();
+                if (phase == UIEvent::Phase::BEGAN)
+                {
+                    focusedControlWhenTouchBegan = focusSystem->GetFocusedControl();
+                    positionOfTouchWhenTouchBegan = eventToHandle->point;
+                }
 
                 if (!popupContainer->SystemInput(eventToHandle))
                 {
                     currentScreen->SystemInput(eventToHandle);
                 }
 
-                if (phase == UIEvent::Phase::BEGAN)
+                if (phase == UIEvent::Phase::ENDED)
                 {
                     UIControl* focusedControl = focusSystem->GetFocusedControl();
-                    if (focusedControl != nullptr && focusedControl == prevFocus && !focusedControl->IsPointInside(eventToHandle->point))
+                    if (focusedControl != nullptr)
                     {
-                        focusedControl->OnTouchOutsideFocus();
+                        bool focusWasntChanged = focusedControl == focusedControlWhenTouchBegan;
+                        bool touchWasntDragged = positionOfTouchWhenTouchBegan == eventToHandle->point;
+                        bool touchOutsideControl = !focusedControl->IsPointInside(eventToHandle->point);
+                        if (focusWasntChanged && touchWasntDragged && touchOutsideControl)
+                        {
+                            focusedControl->OnTouchOutsideFocus();
+                        }
                     }
+                    focusedControlWhenTouchBegan = nullptr;
                 }
             }
         }

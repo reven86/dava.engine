@@ -339,7 +339,8 @@ private:
 
     UIControl* exclusiveInputLocker = nullptr;
     UIControl* hovered = nullptr;
-    UIControl* focusedControl = nullptr;
+    UIControl* focusedControlWhenTouchBegan = nullptr;
+    Vector2 positionOfTouchWhenTouchBegan;
 
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;
