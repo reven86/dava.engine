@@ -26,24 +26,24 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef FILE_SYSTEM_ZIP_ARCHIVE_H
-#define FILE_SYSTEM_ZIP_ARCHIVE_H
+#ifndef DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H
+#define DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H
 
 #include "FileSystem/ResourceArchivePrivate.h"
 #include "Compression/ZipCompressor.h"
 
 namespace DAVA
 {
-class ZipArchive : public ResourceArchiveImpl
+class ZipArchive final : public ResourceArchiveImpl
 {
 public:
     explicit ZipArchive(const FilePath& archiveName);
     ~ZipArchive() override;
 
     const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
-    const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const override;
-    bool HasFile(const String& fileName) const override;
-    bool LoadFile(const String& fileName, Vector<uint8>& output) const override;
+    const ResourceArchive::FileInfo* GetFileInfo(const String& relativeFilePath) const override;
+    bool HasFile(const String& relativeFilePath) const override;
+    bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const override;
 
 private:
     ZipFile zipFile;
@@ -53,4 +53,4 @@ private:
 
 } // end namespace DAVA
 
-#endif // FILE_SYSTEM_ZIP_ARCHIVE_H
+#endif // DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H

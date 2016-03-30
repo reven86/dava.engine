@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "UnitTests/UnitTests.h"
-#include <FileSystem/DavaArchive.h>
+#include <FileSystem/PackArchive.h>
 #include <FileSystem/ZipArchive.h>
 #include <FileSystem/FileSystem.h>
 
@@ -40,36 +40,45 @@ DAVA_TESTCLASS (ArchiveTest)
     DAVA_TEST (TestDavaArchive)
     {
         Vector<ResourceArchive::FileInfo> infos{
-            { "TestData/Utf8Test/utf16le.txt", 0, 0, Compressor::Type::Lz4HC },
-            { "TestData/LoadImageTest/10x10_rgba8888_norle.tga", 0, 0, Compressor::Type::Lz4HC },
+            { "Folder1/file1", 0, 0, Compressor::Type::None },
+            { "Folder1/file2.txt", 0, 0, Compressor::Type::None },
+            { "Folder1/file3.doc", 0, 0, Compressor::Type::None },
+
+            { "Folder2/file1", 0, 0, Compressor::Type::None },
+            { "Folder2/file1.txt", 0, 0, Compressor::Type::None },
+            { "Folder2/file2", 0, 0, Compressor::Type::None },
+            { "Folder2/file2.txt", 0, 0, Compressor::Type::None },
+            { "Folder2/file3", 0, 0, Compressor::Type::None },
+            { "Folder2/file3.doc", 0, 0, Compressor::Type::None },
+
+            { "Folder2/file1", 0, 0, Compressor::Type::None },
+            { "Folder2/file3.doc", 0, 0, Compressor::Type::None },
         };
 
-        FilePath baseDir("~res:/");
+        FilePath baseDir("~res:/TestData/FileListTest/");
 
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 
-        TEST_VERIFY(DavaArchive::Create("dava.pak", baseDir, infos, nullptr));
-
         {
-            DavaArchive archive("dava.pak");
+            PackArchive archive("~res:/TestData/ArchiveTest/archive.pak");
 
             for (auto& info : infos)
             {
-                TEST_VERIFY(archive.HasFile(info.fileName));
-                const ResourceArchive::FileInfo* archiveInfo = archive.GetFileInfo(info.fileName);
+                TEST_VERIFY(archive.HasFile(info.relativeFilePath));
+                const ResourceArchive::FileInfo* archiveInfo = archive.GetFileInfo(info.relativeFilePath);
                 TEST_VERIFY(archiveInfo != nullptr);
                 if (archiveInfo)
                 {
                     TEST_VERIFY(archiveInfo->compressionType == info.compressionType);
-                    TEST_VERIFY(archiveInfo->compressedSize != 0);
-                    TEST_VERIFY(archiveInfo->originalSize != 0);
-                    TEST_VERIFY(archiveInfo->compressedSize != archiveInfo->originalSize);
+                    TEST_VERIFY(archiveInfo->compressedSize == info.compressedSize);
+                    TEST_VERIFY(archiveInfo->originalSize == info.originalSize);
+                    TEST_VERIFY(archiveInfo->relativeFilePath == String(info.relativeFilePath));
 
                     Vector<uint8> fileContentFromArchive;
 
-                    TEST_VERIFY(archive.LoadFile(info.fileName, fileContentFromArchive));
+                    TEST_VERIFY(archive.LoadFile(info.relativeFilePath, fileContentFromArchive));
 
-                    String fileOnHDD = baseDir.GetAbsolutePathname() + info.fileName;
+                    String fileOnHDD = baseDir.GetAbsolutePathname() + info.relativeFilePath;
 
                     ScopedPtr<File> file(File::Create(fileOnHDD, File::OPEN | File::READ));
                     TEST_VERIFY(file);
@@ -86,8 +95,6 @@ DAVA_TESTCLASS (ArchiveTest)
                 }
             }
         }
-
-        TEST_VERIFY(FileSystem::Instance()->DeleteFile("dava.pak"));
 #endif // __DAVAENGINE_IPHONE__
     }
 

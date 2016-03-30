@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAENGINE_RESOURCE_ARCHIVE_H
-#define DAVAENGINE_RESOURCE_ARCHIVE_H
+#ifndef DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_H
+#define DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_H
 
 #include "Base/BaseObject.h"
 #include "Compression/Compressor.h"
@@ -36,28 +36,30 @@ namespace DAVA
 {
 class ResourceArchiveImpl;
 
+class FilePath;
+
 class ResourceArchive final
 {
 public:
-    explicit ResourceArchive(const FilePath& archiveName);
+    explicit ResourceArchive(const FilePath& filePath);
     ~ResourceArchive();
 
     struct FileInfo
     {
-        const char8* fileName;
+        const char8* relativeFilePath;
         uint32 originalSize;
         uint32 compressedSize;
         Compressor::Type compressionType;
     };
 
     const Vector<FileInfo>& GetFilesInfo() const;
-    const FileInfo* GetFileInfo(const String& fileName) const;
-    bool HasFile(const String& fileName) const;
-    bool LoadFile(const String& fileName, Vector<uint8>& outputFileContent) const;
+    const FileInfo* GetFileInfo(const String& relativeFilePath) const;
+    bool HasFile(const String& relativeFilePath) const;
+    bool LoadFile(const String& relativeFilePath, Vector<uint8>& outputFileContent) const;
 
 private:
     std::unique_ptr<ResourceArchiveImpl> impl;
 };
 } // end namespace DAVA
 
-#endif // __DAVAENGINE_RESOURCE_ARCHIVE_H__
+#endif // DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_H

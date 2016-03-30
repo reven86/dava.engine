@@ -26,8 +26,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
-#define FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
+#ifndef DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
+#define DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
 
 #include "FileSystem/ResourceArchive.h"
 
@@ -39,10 +39,11 @@ public:
     virtual ~ResourceArchiveImpl() = default;
 
     virtual const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const = 0;
-    virtual const ResourceArchive::FileInfo* GetFileInfo(const String& fileName) const = 0;
-    virtual bool HasFile(const String& fileName) const = 0;
-    virtual bool LoadFile(const String& fileName, Vector<uint8>& output) const = 0;
+    virtual const ResourceArchive::FileInfo* GetFileInfo(const String& relativeFilePath) const = 0;
+    virtual bool HasFile(const String& relativeFilePath) const = 0;
+    virtual bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const = 0;
 };
+
 } // end namespace DAVA
 
-#endif // FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
+#endif // DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_PRIVATE_H
