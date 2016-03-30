@@ -40,11 +40,9 @@
 #include "Collada/ColladaMeshInstance.h"
 #include "Collada/ColladaSceneNode.h"
 #include "Collada/ColladaScene.h"
-
 #include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
-
 #include "Collada/ColladaToSc2Importer/ImportSettings.h"
-
+#include "Utils/UTF8Utils.h"
 #include "Qt/Main/QtUtils.h"
 
 namespace DAVA
@@ -186,7 +184,7 @@ eColladaErrorCodes ColladaToSc2Importer::BuildSceneAsCollada(Entity* root, Colla
 
     ScopedPtr<Entity> nodeEntity(new Entity());
 
-    String name(colladaNode->originalNode->GetName());
+    String name = UTF8Utils::MakeUTF8String(colladaNode->originalNode->GetName().c_str());
     if (name.empty())
     {
         name = Format("UNNAMED");

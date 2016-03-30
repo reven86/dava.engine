@@ -218,6 +218,20 @@ void SetCompressionParams(const FilePath& descriptorPath, const DAVA::Map<DAVA::
 
         if (force || (descriptor->compression[gpu].format == FORMAT_INVALID))
         {
+            PixelFormat dstFormat = static_cast<PixelFormat>(compressionParam.second.format);
+            if (dstFormat == FORMAT_PVR2 || dstFormat == FORMAT_PVR4)
+            {
+                DAVA::FilePath path = descriptor->GetSourceTexturePathname();
+                ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(descriptor->GetSourceTexturePathname());
+                if (imgInfo.width != imgInfo.height)
+                {
+                    DAVA::Logger::Error("Can't set %s compression for non-squared texture %s",
+                                        GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat),
+                                        path.GetAbsolutePathname().c_str());
+                    continue;
+                }
+            }
+
             descriptor->compression[gpu] = compressionParam.second;
 
             if (convertionEnabled)
