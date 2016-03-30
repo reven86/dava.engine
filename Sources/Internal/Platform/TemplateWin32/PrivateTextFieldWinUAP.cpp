@@ -661,11 +661,6 @@ void PrivateTextFieldWinUAP::OnGotFocus()
                 uiTextField->SetFocused();
             }
 
-            if (uiTextField == UIControlSystem::Instance()->GetFocusedControl() && !uiTextField->IsEditing())
-            {
-                uiTextField->StartEdit();
-            }
-
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
             // If keyboard rect is not empty so manually notify delegate about keyboard size and position
             if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
@@ -1143,7 +1138,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
                 UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-                uiTextField->SetSprite(sprite.Get(), 0);
+                if (!uiTextField->IsEditing())
+                {
+                    // Do not set rendered texture if control has focus
+                    uiTextField->SetSprite(sprite.Get(), 0);
+                }
             }
             if (moveOffScreenOnCompletion)
             {
