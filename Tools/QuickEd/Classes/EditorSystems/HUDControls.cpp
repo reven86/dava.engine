@@ -76,9 +76,6 @@ void HUDContainer::AddChild(ControlContainer* container)
 
 void HUDContainer::InitFromGD(const UIGeometricData& gd)
 {
-    Rect ur(gd.position - ::Rotate(gd.pivotPoint, gd.angle), gd.size * gd.scale);
-    SetRect(ur);
-    SetAngle(gd.angle);
     bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
     bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
     if (valid)
@@ -96,31 +93,43 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
         }
     }
     SetVisibilityFlag(valid);
-
     if (valid)
     {
+        auto actualSize = gd.size * gd.scale;
+        auto changedGD = gd;
+        for (int i = Vector2::AXIS_X; i < Vector2::AXIS_COUNT; ++i)
+        {
+            Vector2::eAxis axis = static_cast<Vector2::eAxis>(i);
+            if (actualSize[axis] < minimumSize[axis])
+            {
+                auto posDiff = (minimumSize[axis] - actualSize[axis]) / 2.0f;
+                changedGD.position[axis] -= posDiff;
+                changedGD.size[axis] = minimumSize[axis] / gd.scale[axis];
+            }
+        }
+        Rect ur(changedGD.position - ::Rotate(changedGD.pivotPoint, changedGD.angle) * changedGD.scale, changedGD.size * changedGD.scale);
+        SetRect(ur);
+
+        SetAngle(changedGD.angle);
+
         for (auto child : childs)
         {
-            child->InitFromGD(gd);
+            if (child->GetArea() != HUDAreaInfo::FRAME_AREA)
+            {
+                bool visible = gd.scale.x > 0.0f && gd.scale.y > 0.0f && actualSize.dx >= minimumSize.dx && actualSize.dy >= minimumSize.dy;
+                child->SetVisibilityFlag(systemVisible && visible);
+            }
+
+            child->InitFromGD(changedGD);
         }
     }
 }
 
-void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
+void HUDContainer::SystemDraw(const UIGeometricData& gd)
 {
-    auto gd = control->GetGeometricData();
-    auto actualSize = gd.size * gd.scale;
-    for (int i = Vector2::AXIS_X; i < Vector2::AXIS_COUNT; ++i)
-    {
-        Vector2::eAxis axis = static_cast<Vector2::eAxis>(i);
-        if (actualSize[axis] < minimumSize[axis])
-        {
-            gd.position[axis] -= (minimumSize[axis] - actualSize[axis]) / 2.0f;
-            gd.size[axis] = minimumSize[axis] / gd.scale[axis];
-        }
-    }
-    InitFromGD(gd);
-    UIControl::SystemDraw(geometricData);
+    auto controlGD = control->GetGeometricData();
+    InitFromGD(controlGD);
+    UIControl::SystemDraw(gd);
 }
 
 FrameControl::FrameControl()
@@ -180,10 +189,10 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
-void FrameRectControl::InitFromGD(const UIGeometricData& geometricData)
+void FrameRectControl::InitFromGD(const UIGeometricData& gd)
 {
     Rect rect(Vector2(), FRAME_RECT_SIZE);
-    rect.SetCenter(GetPos(geometricData));
+    rect.SetCenter(GetPos(gd));
     SetRect(rect);
 }
 
@@ -226,9 +235,6 @@ PivotPointControl::PivotPointControl()
 void PivotPointControl::InitFromGD(const UIGeometricData& gd)
 {
     Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
-    Rect controlRect(Vector2(0.0f, 0.0f), gd.size * gd.scale);
-    bool visible = controlRect.GetSize().x > minimumSize.x && controlRect.GetSize().y > minimumSize.y && gd.scale.x > 0.0f && gd.scale.y > 0.0f;
-    SetVisibilityFlag(systemVisible && visible);
     rect.SetCenter(gd.pivotPoint * gd.scale);
     SetRect(rect);
 }
@@ -246,8 +252,7 @@ void RotateControl::InitFromGD(const UIGeometricData& gd)
 {
     Rect rect(Vector2(0.0f, 0.0f), ROTATE_CONTROL_SIZE);
     Rect controlRect(Vector2(0.0f, 0.0f), gd.size * gd.scale);
-    bool visible = controlRect.GetSize().x > minimumSize.x && controlRect.GetSize().y > minimumSize.y && gd.scale.x > 0.0f && gd.scale.y > 0.0f;
-    SetVisibilityFlag(systemVisible && visible);
+
     const int margin = 5;
     rect.SetCenter(Vector2(controlRect.dx / 2.0f, controlRect.GetPosition().y - ROTATE_CONTROL_SIZE.y - margin));
 
