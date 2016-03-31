@@ -269,7 +269,7 @@ protected:
             Connect(menu.addAction(SharedIcon(":/QtIcons/save_as.png"), QStringLiteral("Save Entity As...")), this, &EntityContextMenu::SaveEntityAs);
 
             DAVA::KeyedArchive* customProp = GetCustomPropertiesArchieve(entity);
-            if (NULL != customProp)
+            if (nullptr != customProp)
             {
                 DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
                 if (!ownerRef.IsEmpty())
@@ -287,7 +287,7 @@ protected:
 
             // particle effect
             DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
-            if (NULL != effect)
+            if (nullptr != effect)
             {
                 menu.addSeparator();
                 QMenu* particleEffectMenu = menu.addMenu("Particle Effect");
@@ -933,7 +933,7 @@ void SceneTree::SceneDeactivated(SceneEditor2* scene)
     if (treeModel->GetScene() == scene)
     {
         selectionModel()->clear();
-        treeModel->SetScene(NULL);
+        treeModel->SetScene(nullptr);
     }
 }
 
@@ -1008,7 +1008,7 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
 void SceneTree::TreeItemClicked(const QModelIndex& index)
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (NULL != sceneEditor)
+    if (nullptr != sceneEditor)
     {
         // TODO:
         // ...
@@ -1265,7 +1265,7 @@ void SceneTree::SyncSelectionFromTree()
         Guard::ScopedBoolGuard guard(isInSync, true);
 
         SceneEditor2* curScene = treeModel->GetScene();
-        if (NULL != curScene)
+        if (nullptr != curScene)
         {
             // select items in scene
             EntityGroup group;
@@ -1302,14 +1302,14 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
         if (indexList.size())
         {
             SceneTreeItem* item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
-            if (NULL != item)
+            if (nullptr != item)
             {
                 switch (item->ItemType())
                 {
                 case SceneTreeItem::EIT_Entity:
                 {
                     DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
-                    if (NULL != DAVA::GetEffectComponent(entity))
+                    if (nullptr != DAVA::GetEffectComponent(entity))
                     {
                         SceneSignals::Instance()->EmitEffectSelected(curScene, GetEffectComponent(entity));
                         isParticleElements = true;
@@ -1326,7 +1326,7 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                 case SceneTreeItem::EIT_Layer:
                 {
                     SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)item;
-                    if (NULL != itemLayer->emitter && NULL != itemLayer->layer)
+                    if (nullptr != itemLayer->emitter && nullptr != itemLayer->layer)
                     {
                         SceneSignals::Instance()->EmitLayerSelected(curScene, itemLayer->effect, itemLayer->emitter, itemLayer->layer, false);
                         isParticleElements = true;
@@ -1337,7 +1337,7 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                 {
                     SceneTreeItemParticleForce* itemForce = (SceneTreeItemParticleForce*)item;
                     DAVA::ParticleLayer* layer = itemForce->layer;
-                    if (NULL != layer)
+                    if (nullptr != layer)
                     {
                         for (int i = 0; i < (int)layer->forces.size(); ++i)
                         {
@@ -1358,10 +1358,10 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
     }
 
     if (!emitterSelected)
-        curScene->particlesSystem->SetEmitterSelected(NULL, NULL);
+        curScene->particlesSystem->SetEmitterSelected(nullptr, nullptr);
     if (!isParticleElements)
     {
-        SceneSignals::Instance()->EmitEmitterSelected(NULL, NULL, NULL);
+        SceneSignals::Instance()->EmitEmitterSelected(nullptr, nullptr, nullptr);
     }
 }
 
