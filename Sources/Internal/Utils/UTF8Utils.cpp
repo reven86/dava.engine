@@ -37,7 +37,7 @@ namespace DAVA
 
 #ifdef __DAVAENGINE_WINDOWS__
 
-static_assert(sizeof(wchar_t) == 2, "check size of wchar_t on current platform");
+static_assert(sizeof(char16) == 2, "check size of wchar_t on current platform");
 
 void UTF8Utils::EncodeToWideString(const uint8* string, size_t size, WideString& result)
 {
@@ -57,9 +57,9 @@ String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 
 #else
 
-static_assert(sizeof(wchar_t) == 4, "check size of wchar_t on current platform");
+static_assert(sizeof(char16) == 4, "check size of wchar_t on current platform");
 
-void UTF8Utils::EncodeToWideString(const uint8* string, size_t size, WideString& result)
+void UTF8Utils::EncodeToWideString(const uint8* string, size_type size, WideString& result)
 {
     DVASSERT(nullptr != string);
     result.clear();

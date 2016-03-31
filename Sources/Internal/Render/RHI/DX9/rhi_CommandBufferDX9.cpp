@@ -447,8 +447,8 @@ dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
         cb->text->Initialize(64 * 1024);
     }
 
-    int len = strlen(text);
-    char* txt = (char*)cb->text->Alloc(len / sizeof(float) + 1);
+    size_t len = strlen(text);
+    char* txt = (char*)cb->text->Alloc(static_cast<unsigned>(len / sizeof(float) + 1));
 
     memcpy(txt, text, len);
     txt[len] = '\0';
@@ -1027,7 +1027,7 @@ dx9_Present(Handle sync)
         }
         _DX9_FrameSync.Unlock();
 
-        unsigned frame_cnt = 0;
+        size_t frame_cnt = 0;
 
         do
         {

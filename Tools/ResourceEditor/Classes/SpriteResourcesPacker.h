@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __SPRITES_PACKER_H__
-#define __SPRITES_PACKER_H__
+#ifndef __SPRITE_RESOURCES_PACKER_H__
+#define __SPRITE_RESOURCES_PACKER_H__
 
 #include "FileSystem/FilePath.h"
 #include "Render/RenderBase.h"

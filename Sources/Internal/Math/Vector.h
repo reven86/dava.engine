@@ -100,7 +100,7 @@ public:
 
     //! Get operators
     float32& operator[](eAxis axis);
-    float32 operator[](eAxis axis) const;
+    const float32 operator[](eAxis axis) const;
     //! On operations
     inline const Vector2& operator+=(const Vector2& _v);
     inline const Vector2& operator-=(const Vector2& _v);
@@ -406,7 +406,7 @@ inline float32& Vector2::operator[](eAxis axis)
     return data[axis];
 }
 
-inline float32 Vector2::operator[](eAxis axis) const
+inline const float32 Vector2::operator[](eAxis axis) const
 {
     return data[axis];
 }

@@ -2045,10 +2045,10 @@
 		9A011C77BA90F38DCDB7F4E6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
 		A6B5D95F185600050011D172 /* IntrospectionDynamic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */; };
 		A6B5D960185600050011D172 /* IntrospectionDynamic.h in Headers */ = {isa = PBXBuildFile; fileRef = A6B5D95E185600050011D172 /* IntrospectionDynamic.h */; };
+		B74F1C1D1C9FF41900C4CC2B /* libicucommon_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */; };
+		B74F1C1E1C9FF42A00C4CC2B /* libicucommon_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */; };
 		B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
 		B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
-		B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
-		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
 		C7E76D4316DF6CC70041ED9A /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7E76D4216DF6CC70041ED9A /* liblua_ios.a */; };
 		CC677BA5197D46390089547A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC677BA4197D46390089547A /* SystemConfiguration.framework */; };
 		CC677BA6197D46420089547A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC677BA4197D46390089547A /* SystemConfiguration.framework */; };
@@ -3095,8 +3095,8 @@
 		9A0118E18AC6866222998E4C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IntrospectionDynamic.cpp; path = ../../Sources/Internal/Base/IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		A6B5D95E185600050011D172 /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IntrospectionDynamic.h; path = ../../Sources/Internal/Base/IntrospectionDynamic.h; sourceTree = "<group>"; };
+		B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libicucommon_ios.a; path = ../../Libs/lib_CMake/ios/libicucommon_ios.a; sourceTree = "<group>"; };
 		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
-		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
 		C7E76D4216DF6CC70041ED9A /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
 		CC677BA4197D46390089547A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3129,7 +3129,6 @@
 				02FD81F61924997C007762C0 /* libfmodex_iphoneos.a in Frameworks */,
 				02FD81F71924997C007762C0 /* libfmodex_iphonesimulator.a in Frameworks */,
 				02FD81F91924997C007762C0 /* liblua_ios.a in Frameworks */,
-				B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */,
 				02FD81FA1924997C007762C0 /* libcurl_ios.a in Frameworks */,
 				02FD81FB1924997C007762C0 /* libdxt_ios.a in Frameworks */,
 				02FD81FC1924997C007762C0 /* libogg_ios.a in Frameworks */,
@@ -3142,6 +3141,7 @@
 				02FD82021924997C007762C0 /* libyaml_ios.a in Frameworks */,
 				02FD82031924997C007762C0 /* libpng_ios.a in Frameworks */,
 				02FD82051924997C007762C0 /* libfreetype_ios.a in Frameworks */,
+				B74F1C1E1C9FF42A00C4CC2B /* libicucommon_ios.a in Frameworks */,
 				02FD82061924997C007762C0 /* GameController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3150,8 +3150,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B74F1C1D1C9FF41900C4CC2B /* libicucommon_ios.a in Frameworks */,
 				B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */,
-				B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */,
 				8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */,
 				CC677BA5197D46390089547A /* SystemConfiguration.framework in Frameworks */,
 				6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */,
@@ -4683,7 +4683,7 @@
 				5C97964514E3E75000FFFA14 /* libxml_ios.a */,
 				5C97964614E3E75000FFFA14 /* libyaml_ios.a */,
 				5C77ABBE14C7703800E92D28 /* libpng_ios.a */,
-				B7D6C97319C9856B0095250A /* libfribidi_ios.a */,
+				B74F1C1C1C9FF41900C4CC2B /* libicucommon_ios.a */,
 				B78601471A08EAD40041F817 /* libunibreak_ios.a */,
 				FECFB1D912E5904400C71562 /* External */,
 				FECFB32D12E5904400C71562 /* Internal */,
@@ -5699,7 +5699,6 @@
 				02E7C6A91BD624A6002F026D /* ObjectCreator.h in Headers */,
 				02E7CD771BD624A7002F026D /* ParticleEffectSystem.h in Headers */,
 				7C41FCDE1C774EBF00B61435 /* TeamCityTestsOutput.h in Headers */,
-				02E7CD271BD624A7002F026D /* SceneFile.h in Headers */,
 				02E7CC9D1BD624A7002F026D /* DebugRenderComponent.h in Headers */,
 				02E7C88F1BD624A7002F026D /* NetController.h in Headers */,
 				02E7C6171BD624A6002F026D /* AutotestingDB.h in Headers */,
@@ -6206,7 +6205,6 @@
 				02E7C68C1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F71BD6248E002F026D /* CRC32.cpp in Sources */,
 				7C41FCDD1C774EBF00B61435 /* TeamCityTestsOutput.cpp in Sources */,
-				02E7CDAA1BD624A7002F026D /* UserNode.cpp in Sources */,
 				02E7C8701BD624A7002F026D /* NetConfig.cpp in Sources */,
 				02E7CECE1BD624A7002F026D /* UISpinner.cpp in Sources */,
 				02E7CACC1BD624A7002F026D /* RenderBatch.cpp in Sources */,
@@ -6450,7 +6448,6 @@
 			files = (
 				02E7CCBB1BD624A7002F026D /* SpeedTreeComponent.cpp in Sources */,
 				7C41FCD81C774EBF00B61435 /* TeamcityOutput.cpp in Sources */,
-				02E7CD391BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */,
 				02E7C8591BD624A7002F026D /* TCPAcceptor.cpp in Sources */,
 				02E7CB151BD624A7002F026D /* VegetationRenderData.cpp in Sources */,
 				02E7C10C1BD6248E002F026D /* UTF8Utils.cpp in Sources */,
@@ -6969,6 +6966,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6976,7 +6974,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -7017,6 +7015,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7024,7 +7023,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -7060,6 +7059,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7067,7 +7067,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -7103,6 +7103,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7110,7 +7111,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -7154,6 +7155,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7161,6 +7163,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";
@@ -7203,6 +7206,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7210,6 +7214,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";
@@ -7388,6 +7393,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7395,6 +7401,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";
@@ -7478,6 +7485,7 @@
 					./../../Libs/include,
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
+					./../../Libs/icucommon/source/common,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7485,6 +7493,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					"\"$(SRCROOT)/../../Libs/lib_CMake/ios\"",
 				);
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";

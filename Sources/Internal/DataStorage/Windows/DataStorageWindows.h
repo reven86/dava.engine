@@ -34,8 +34,6 @@ namespace DAVA
 {
 
 #if defined(__DAVAENGINE_WIN_UAP__)
-using namespace Windows::Storage;
-using namespace Windows::Foundation;
 
 class DataStorageWin : public IDataStorage
 {
@@ -52,7 +50,7 @@ public:
     }
 
 private:
-    ApplicationDataContainer ^ roamingSettings = nullptr;
+    Windows::Storage::ApplicationDataContainer ^ roamingSettings = nullptr;
 };
 #endif // Win UAP
 
