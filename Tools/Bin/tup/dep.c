@@ -10,8 +10,8 @@ int main(int argc, const char* argv[])
         if(NULL != f)
         {
             printf("%s/%s\n", dir, path);
+            fclose(f);
         }
-        fclose(f);
     }
 
     return 0;
