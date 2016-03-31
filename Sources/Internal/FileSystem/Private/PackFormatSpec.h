@@ -62,7 +62,7 @@ struct PackFile
             uint32 compressed;
             uint32 original;
             Compressor::Type packType;
-            Array<char8, 16> reserved; // do we really need it? leave for future
+            Array<uint8, 16> reserved; // do we really need it? leave for future
         };
         Vector<Data> files;
     } filesData;
