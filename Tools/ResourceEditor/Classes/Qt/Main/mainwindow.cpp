@@ -244,11 +244,7 @@ bool QtMainWindow::SaveScene(SceneEditor2* scene)
     }
     else
     {
-        // SZ: df-2128
-        // This check was removed until all editor actions will be done through commands
-        // because it's not possible to save scene if some thing changes without command
-        //
-        //if(scene->IsChanged())
+        if (scene->IsChanged())
         {
             SaveAllSceneEmitters(scene);
             SceneFileV2::eError ret = scene->SaveScene(scenePath);
