@@ -97,16 +97,13 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     {
         auto actualSize = gd.size * gd.scale;
         auto changedGD = gd;
-        for (int i = Vector2::AXIS_X; i < Vector2::AXIS_COUNT; ++i)
+        bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;
+        if (controlIsMoveOnly)
         {
-            Vector2::eAxis axis = static_cast<Vector2::eAxis>(i);
-            if (actualSize[axis] < minimumSize[axis])
-            {
-                auto posDiff = (minimumSize[axis] - actualSize[axis]) / 2.0f;
-                changedGD.position[axis] -= posDiff;
-                changedGD.size[axis] = minimumSize[axis] / gd.scale[axis];
-            }
+            changedGD.position -= (minimumSize - actualSize) / 2.0f;
+            changedGD.size = minimumSize / gd.scale;
         }
+
         Rect ur(changedGD.position - ::Rotate(changedGD.pivotPoint, changedGD.angle) * changedGD.scale, changedGD.size * changedGD.scale);
         SetRect(ur);
 
@@ -116,7 +113,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
         {
             if (child->GetArea() != HUDAreaInfo::FRAME_AREA)
             {
-                bool visible = gd.scale.x > 0.0f && gd.scale.y > 0.0f && actualSize.dx >= minimumSize.dx && actualSize.dy >= minimumSize.dy;
+                bool visible = gd.scale.x > 0.0f && gd.scale.y > 0.0f && !controlIsMoveOnly;
                 child->SetVisibilityFlag(systemVisible && visible);
             }
 
