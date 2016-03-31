@@ -43,6 +43,9 @@ IDataStorage* DataStorage::Create()
 #endif
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+using namespace Windows::Storage;
+using namespace Windows::Foundation;
+
 DataStorageWin::DataStorageWin()
 {
     roamingSettings = ApplicationData::Current->RoamingSettings;
