@@ -100,7 +100,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
         bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;
         if (controlIsMoveOnly)
         {
-            changedGD.position -= (minimumSize - actualSize) / 2.0f;
+            changedGD.position -= ::Rotate((minimumSize - actualSize) / 2.0f, changedGD.angle);
             changedGD.size = minimumSize / gd.scale;
         }
 
