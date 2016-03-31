@@ -113,7 +113,7 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String>& errors, const DAVA::String& 
         return;
 
     const uint32 maxErrorsPerDialog = 6;
-    uint32 totalErrors = errors.size();
+    uint32 totalErrors = static_cast<uint32>(errors.size());
 
     const String dialogTitle = title + Format(" %u error(s) occured.", totalErrors);
     const String errorDivideLine("\n--------------------\n");

@@ -164,13 +164,13 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         }
     }
 
-    // enumerate drscriptor pathnames
+    // enumerate descriptor pathnames
     for (const auto& matTex : materialTextures)
     {
         descriptorPathnames.insert(matTex->path);
     }
 
-    // create pathames for textures
+    // create pathnames for textures
     for (const auto& descriptorPath : descriptorPathnames)
     {
         DVASSERT(descriptorPath.IsEmpty() == false);
@@ -182,7 +182,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         {
             if (descriptor->IsCompressedFile())
             {
-                FilePath compressedTexureName = descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily));
+                FilePath compressedTexureName = descriptor->CreatePathnameForGPU(descriptor->gpu);
                 links.insert(compressedTexureName);
             }
             else

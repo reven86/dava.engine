@@ -324,7 +324,7 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap& textures)
         auto baseMipmap = tex->GetBaseMipMap();
 
         auto descriptor = tex->GetDescriptor();
-        eGPUFamily gpu = descriptor->IsCompressedFile() ? static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily) : requestedGPU;
+        eGPUFamily gpu = descriptor->IsCompressedFile() ? descriptor->gpu : requestedGPU;
         textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), gpu, baseMipmap);
     }
 

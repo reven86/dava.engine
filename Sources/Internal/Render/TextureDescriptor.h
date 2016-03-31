@@ -34,17 +34,18 @@
 #include "Base/BaseObject.h"
 #include "Utils/MD5.h"
 #include "FileSystem/FilePath.h"
+#include "Render/Texture.h"
 
 namespace DAVA
 {
 
 class File;
-class TextureDescriptor
+class TextureDescriptor final
 {
     static const String DESCRIPTOR_EXTENSION;
     static const String DEFAULT_CUBEFACE_EXTENSION;
 
-    enum eSignatures
+    enum eSignatures: uint32
     {
         COMPRESSED_FILE = 0x00EEEE00,
         NOTCOMPRESSED_FILE = 0x00EE00EE
@@ -55,19 +56,14 @@ public:
 
     struct TextureDrawSettings : public InspBase
     {
-    public:
-        TextureDrawSettings()
-        {
-            SetDefaultValues();
-        }
         void SetDefaultValues();
 
-        int8 wrapModeS;
-        int8 wrapModeT;
+        int8 wrapModeS = rhi::TEXADDR_WRAP;
+        int8 wrapModeT = rhi::TEXADDR_WRAP;
 
-        int8 minFilter;
-        int8 magFilter;
-        int8 mipFilter;
+        int8 minFilter = rhi::TEXFILTER_LINEAR;
+        int8 magFilter = rhi::TEXFILTER_LINEAR;
+        int8 mipFilter = rhi::TEXMIPFILTER_LINEAR;
 
         INTROSPECTION(TextureDrawSettings,
                       MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
@@ -79,14 +75,15 @@ public:
 
     struct TextureDataSettings : public InspBase
     {
-    public:
-        enum eOptionsFlag
+        enum eOptionsFlag: uint8
         {
-            FLAG_GENERATE_MIPMAPS = 1 << 0,
-            FLAG_IS_NORMAL_MAP = 1 << 1,
-            FLAG_INVALID = 1 << 7,
+            FLAG_GENERATE_MIPMAPS       = 1 << 0,
+            FLAG_IS_NORMAL_MAP          = 1 << 1,
+            FLAG_HAS_SEPARATE_HD_MIP    = 1 << 2,
 
-            FLAG_DEFAULT = FLAG_GENERATE_MIPMAPS
+            FLAG_INVALID                = 1 << 7,
+
+            FLAG_DEFAULT                = FLAG_GENERATE_MIPMAPS
         };
 
         TextureDataSettings()
@@ -95,17 +92,17 @@ public:
         }
         void SetDefaultValues();
 
-        void SetGenerateMipmaps(const bool& generateMipmaps);
+        void SetGenerateMipmaps(bool generateMipmaps);
         bool GetGenerateMipMaps() const;
 
-        void SetIsNormalMap(const bool& isNormalMap);
+        void SetIsNormalMap(bool isNormalMap);
         bool GetIsNormalMap() const;
 
-        int8 textureFlags;
-        uint8 cubefaceFlags;
-        ImageFormat sourceFileFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
-        String sourceFileExtension;
         String cubefaceExtensions[Texture::CUBE_FACE_COUNT];
+        String sourceFileExtension;
+        uint8 textureFlags = eOptionsFlag::FLAG_DEFAULT;
+        uint8 cubefaceFlags = 0;
+        ImageFormat sourceFileFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
 
         INTROSPECTION(TextureDataSettings,
                       PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
@@ -143,7 +140,6 @@ public:
 
 public:
     TextureDescriptor();
-    virtual ~TextureDescriptor();
 
     static TextureDescriptor* CreateFromFile(const FilePath& filePathname);
     static TextureDescriptor* CreateDescriptor(rhi::TextureAddrMode wrap, bool generateMipmaps);
@@ -155,7 +151,7 @@ public:
     void SetDefaultValues();
 
     void SetQualityGroup(const FastName& group);
-    FastName GetQualityGroup() const;
+    const FastName& GetQualityGroup() const;
 
     bool Load(const FilePath& filePathname); //may be protected?
 
@@ -209,26 +205,19 @@ public:
 protected:
     const Compression* GetCompressionParams(eGPUFamily forGPU) const;
 
-    void WriteCompression(File* file, const Compression* compression) const;
-
     //loading
-    DAVA_DEPRECATED(void LoadVersion6(File* file));
-    DAVA_DEPRECATED(void LoadVersion7(File* file));
-    DAVA_DEPRECATED(void LoadVersion8(File* file));
     DAVA_DEPRECATED(void LoadVersion9(File* file));
+    DAVA_DEPRECATED(void LoadVersion10(File* file));
 
-    void LoadVersion10(File* file);
     void LoadVersion11(File* file);
-    //end of loading
+    void LoadVersion12(File* file);
 
-    void RecalculateCompressionSourceCRC();
     uint32 ReadSourceCRC() const;
-    uint32 ReadSourceCRC_V8_or_less() const;
     uint32 GetConvertedCRC(eGPUFamily forGPU) const;
 
     uint32 GenerateDescriptorCRC(eGPUFamily forGPU) const;
 
-    void SaveInternal(File* file, const int32 signature, const uint8 compressionCount) const;
+    void SaveInternal(File* file, const int32 signature, const eGPUFamily forGPU) const;
 
 public:
     FilePath pathname;
@@ -239,18 +228,16 @@ public:
     TextureDataSettings dataSettings;
     Compression compression[GPU_FAMILY_COUNT];
 
-    struct ExportedImageInfo
-    {
-        eGPUFamily gpu = eGPUFamily::GPU_INVALID;
-        ImageFormat imageContaier = ImageFormat::IMAGE_FORMAT_UNKNOWN;
-        PixelFormat pixelFormat = PixelFormat::FORMAT_INVALID; // texture format
-    };
-
-    ExportedImageInfo exportedInfo;
-    bool isCompressedFile;
-
     static Array<ImageFormat, 5> sourceTextureTypes;
     static Array<ImageFormat, 2> compressedTextureTypes;
+
+private:
+public:
+    eGPUFamily gpu = eGPUFamily::GPU_INVALID;
+    ImageFormat containerType = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+    PixelFormat format = PixelFormat::FORMAT_INVALID; // texture format
+
+    bool isCompressedFile = false;
 };
 };
 #endif // __DAVAENGINE_TEXTURE_DESCRIPTOR_H__

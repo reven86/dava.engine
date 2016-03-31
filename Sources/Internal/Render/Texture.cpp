@@ -775,8 +775,7 @@ int32 Texture::Release()
     return BaseObject::Release();
 }
 
-Texture*
-Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
+Texture* Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1035,7 +1034,7 @@ eGPUFamily Texture::GetDefaultGPU()
 eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor)
 {
     if (descriptor->IsCompressedFile())
-        return eGPUFamily(descriptor->exportedAsGpuFamily);
+        return eGPUFamily(descriptor->gpu);
 
     return requestedGPU;
 }

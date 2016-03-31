@@ -320,13 +320,7 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String
         return false;
     }
 
-    if (exportForGPU != GPU_FAMILY_COUNT)
-    {
-        descriptor->exportedAsGpuFamily = exportForGPU;
-        descriptor->format = descriptor->GetPixelFormatForGPU(exportForGPU);
-    }
-
-    if (GPUFamilyDescriptor::IsGPUForDevice(exportForGPU) && (descriptor->format == FORMAT_INVALID))
+    if (GPUFamilyDescriptor::IsGPUForDevice(exportForGPU) && (descriptor->GetPixelFormatForGPU(exportForGPU) == FORMAT_INVALID))
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
         return false;
@@ -344,7 +338,7 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String
         }
         else
         {
-            descriptor->Export(sceneUtils.dataFolder + workingPathname);
+            descriptor->Export(sceneUtils.dataFolder + workingPathname, exportForGPU);
         }
     }
 

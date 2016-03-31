@@ -643,16 +643,13 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
         descriptor->compression[key.forGPU].format = key.pixelFormat;
         if (key.toComressForGPU)
         {
-            descriptor->exportedAsGpuFamily = key.forGPU;
-            descriptor->format = key.pixelFormat;
-
             TextureConverter::ConvertTexture(*descriptor, key.forGPU, false, quality);
         }
     }
 
     if (keys.size() == 1)
     {
-        descriptor->Export(descriptor->pathname);
+        descriptor->Export(descriptor->pathname, keys[0].forGPU);
         FileSystem::Instance()->DeleteFile(descriptor->GetSourceTexturePathname());
     }
     else

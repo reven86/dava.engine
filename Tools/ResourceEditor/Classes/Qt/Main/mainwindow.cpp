@@ -425,7 +425,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         if (!allScenesTextures.empty())
         {
             int progress = 0;
-            WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
+            WaitStart("Reloading textures...", "", 0, static_cast<int>(allScenesTextures.size()));
 
             DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
             DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
