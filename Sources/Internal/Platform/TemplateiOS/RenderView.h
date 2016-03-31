@@ -43,7 +43,7 @@
 // This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 // The view content is basically an EAGL surface you render your OpenGL scene into.
 // Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
-@interface RenderView : UIView<UIKeyInput, UITextInput, UITextInputTraits>
+@interface RenderView : UIView
 {
 @private
     BOOL animating;
@@ -73,14 +73,7 @@
 
     // Used to limit fps while device keyboard is changed
     bool limitKeyboardFps;
-
-    //Text field
-    UIKeyboardType keyboardType;
-    UIReturnKeyType returnKeyType;
 }
-
-@property(nonatomic) UIKeyboardType keyboardType;
-@property(nonatomic) UIReturnKeyType returnKeyType;
 
 @property(readonly, nonatomic, getter=isAnimating) BOOL animating;
 @property(nonatomic) NSInteger animationFrameInterval;
@@ -93,12 +86,6 @@
 // when assertion happened.
 - (void)blockDrawing;
 - (void)unblockDrawing;
-
-// Text input methods
-- (BOOL)hasText;
-- (void)insertText:(NSString*)theText;
-- (void)deleteBackward;
-- (BOOL)canBecomeFirstResponder;
 
 @end
 
