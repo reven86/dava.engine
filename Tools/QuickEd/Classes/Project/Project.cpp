@@ -87,19 +87,9 @@ bool Project::OpenInternal(const QString& path)
         return false;
     }
 
-    FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
     SetProjectPath(fileInfo.absolutePath());
-    projectPath.MakeDirectoryPathname();
-
-    const auto& resFolders = FilePath::GetResourcesFolders();
-    const auto& searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
-
-    if (searchIt == resFolders.end())
-    {
-        FilePath::AddResourcesFolder(projectPath);
-    }
 
     const YamlNode* fontNode = projectRoot->Get("font");
 
@@ -200,7 +190,13 @@ void Project::SetProjectPath(QString arg)
 {
     if (GetProjectPath() != arg)
     {
+        FilePath::RemoveResourcesFolder(projectPath);
         projectPath = arg.toStdString().c_str();
+        if (!projectPath.IsEmpty())
+        {
+            projectPath.MakeDirectoryPathname();
+            FilePath::AddResourcesFolder(projectPath);
+        }
         emit ProjectPathChanged(arg);
     }
 }
