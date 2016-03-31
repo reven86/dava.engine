@@ -38,12 +38,13 @@
 #include "Commands2/KeyedArchiveCommand.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Scene/SceneSignals.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Deprecated/EditorConfig.h"
 #include "Project/ProjectManager.h"
+#include "Main/QtUtils.h"
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
     , drawColor(Color(0.f, 0.f, 0.f, 0.f))
 {
     curToolSize = 120;
@@ -212,7 +213,7 @@ void CustomColorsSystem::UpdateToolImage(bool force)
 
 void CustomColorsSystem::CreateToolImage(const FilePath& filePath)
 {
-    Texture* toolTexture = Texture::CreateFromFile(filePath);
+    Texture* toolTexture = Create3DTextureFromPng(filePath);
     if (!toolTexture)
     {
         return;

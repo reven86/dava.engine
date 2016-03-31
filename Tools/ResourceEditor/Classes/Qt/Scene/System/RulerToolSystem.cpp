@@ -40,7 +40,7 @@
 #include "../SceneSignals.h"
 
 RulerToolSystem::RulerToolSystem(Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
     , curToolSize(0)
     , previewEnabled(true)
 {

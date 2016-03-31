@@ -32,6 +32,7 @@
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 
 #include "Scene/SceneEditor2.h"
+#include "Main/QtUtils.h"
 
 using namespace DAVA;
 
@@ -40,7 +41,7 @@ LandscapeEditorSystem::LandscapeEditorSystem(Scene* scene, const DAVA::FilePath&
     , cursorPosition(-100.f, -100.f)
     , prevCursorPos(-1.f, -1.f)
 {
-    cursorTexture = Texture::CreateFromFile(cursorPathname);
+    cursorTexture = Create3DTextureFromPng(cursorPathname);
     cursorTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
 
     collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;

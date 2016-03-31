@@ -108,33 +108,45 @@ DAVA_DEPRECATED(void ConvertV10orLessToV11(TextureDescriptor& descriptor))
 
 DAVA_DEPRECATED(void FillImageContainerFromFormat(TextureDescriptor& descriptor))
 {
-    if (!descriptor.IsCompressedFile())
+    static const Map<PixelFormat, ImageFormat> imageContainersMapping =
     {
-        static const Map<PixelFormat, ImageFormat> imageContainersMapping =
+        { PixelFormat::FORMAT_INVALID, ImageFormat::IMAGE_FORMAT_UNKNOWN },
+
+        { PixelFormat::FORMAT_RGBA8888, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_RGBA5551, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_RGBA4444, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_RGB888, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_RGB565, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_A8, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_A16, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_PVR4, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_PVR2, ImageFormat::IMAGE_FORMAT_PVR },
+        { PixelFormat::FORMAT_ETC1, ImageFormat::IMAGE_FORMAT_PVR },
+
+        { PixelFormat::FORMAT_DXT1, ImageFormat::IMAGE_FORMAT_DDS },
+        { PixelFormat::FORMAT_DXT1A, ImageFormat::IMAGE_FORMAT_DDS },
+        { PixelFormat::FORMAT_DXT3, ImageFormat::IMAGE_FORMAT_DDS },
+        { PixelFormat::FORMAT_DXT5, ImageFormat::IMAGE_FORMAT_DDS },
+        { PixelFormat::FORMAT_DXT5NM, ImageFormat::IMAGE_FORMAT_DDS },
+        { PixelFormat::FORMAT_ATC_RGB, ImageFormat::IMAGE_FORMAT_DDS },
+        { PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA, ImageFormat::IMAGE_FORMAT_DDS },
+        { PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, ImageFormat::IMAGE_FORMAT_DDS }
+    };
+
+    if (descriptor.IsCompressedFile())
+    {
+        if (GPUFamilyDescriptor::IsGPUForDevice(descriptor.gpu))
         {
-            { PixelFormat::FORMAT_INVALID, ImageFormat::IMAGE_FORMAT_UNKNOWN },
-
-            { PixelFormat::FORMAT_RGBA8888, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_RGBA5551, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_RGBA4444, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_RGB888, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_RGB565, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_A8, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_A16, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_PVR4, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_PVR2, ImageFormat::IMAGE_FORMAT_PVR },
-            { PixelFormat::FORMAT_ETC1, ImageFormat::IMAGE_FORMAT_PVR },
-
-            { PixelFormat::FORMAT_DXT1, ImageFormat::IMAGE_FORMAT_DDS },
-            { PixelFormat::FORMAT_DXT1A, ImageFormat::IMAGE_FORMAT_DDS },
-            { PixelFormat::FORMAT_DXT3, ImageFormat::IMAGE_FORMAT_DDS },
-            { PixelFormat::FORMAT_DXT5, ImageFormat::IMAGE_FORMAT_DDS },
-            { PixelFormat::FORMAT_DXT5NM, ImageFormat::IMAGE_FORMAT_DDS },
-            { PixelFormat::FORMAT_ATC_RGB, ImageFormat::IMAGE_FORMAT_DDS },
-            { PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA, ImageFormat::IMAGE_FORMAT_DDS },
-            { PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, ImageFormat::IMAGE_FORMAT_DDS },
-        };
-
+            DVASSERT(imageContainersMapping.count(descriptor.format) == 1);
+            descriptor.containerType = static_cast<ImageFormat>(imageContainersMapping.at(descriptor.format));
+        }
+        else
+        {
+            descriptor.containerType = descriptor.dataSettings.sourceFileFormat;
+        }
+    }
+    else
+    {
         for (auto &compression : descriptor.compression)
         {
             DVASSERT(imageContainersMapping.count(static_cast<PixelFormat>(compression.format)) == 1);
@@ -498,15 +510,18 @@ void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eG
     //compressions
     if (forGPU == GPU_FAMILY_COUNT)
     {   // save internal data for compression 
-        uint32 compressionCount = GPU_FAMILY_COUNT;
+        uint8 compressionCount = GPU_FAMILY_COUNT;
         file->Write(&compressionCount);
-        for (uint32 i = 0; i < compressionCount; ++i)
+        for (uint8 i = 0; i < compressionCount; ++i)
         {
             DescriptorFileOperation::WriteCompression12(file, compression[i]);
         }
     }
     else if (forGPU != GPU_INVALID)
     {   //export
+        uint8 compressionCount = 0;
+        file->Write(&compressionCount);
+
         uint8 exportedAsGpu = forGPU;
         uint8 exportedAsContainer = compression[forGPU].containerType;
         uint8 exportedAsFormat = compression[forGPU].format;

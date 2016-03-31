@@ -513,7 +513,7 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(eGPUFamily f
         if (keys.forGPU == eGPUFamily::GPU_ORIGIN)
         {
             keys.pixelFormat = PixelFormat::FORMAT_RGBA8888;
-            keys.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+            keys.imageFormat = ImageFormat::IMAGE_FORMAT_PNG;
         }
         else if (GPUFamilyDescriptor::IsGPUForDevice(keys.forGPU))
         {
@@ -621,6 +621,9 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
             continue;
         }
 
+        descriptor->compression[key.forGPU].format = key.pixelFormat;
+        descriptor->compression[key.forGPU].containerType = key.imageFormat;
+
         PngImageExt imageForGPU(image);
         if (key.imageFormat == ImageFormat::IMAGE_FORMAT_DDS || key.imageFormat == ImageFormat::IMAGE_FORMAT_PVR)
         {
@@ -634,13 +637,13 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
                 imageForGPU.ConvertToFormat(key.pixelFormat);
             }
         }
+
         String srcExtension = ImageSystem::Instance()->GetExtensionsFor(descriptor->dataSettings.sourceFileFormat)[0];
         descriptor->dataSettings.sourceFileExtension = srcExtension;
 
         imageForGPU.DitherAlpha();
         imageForGPU.Write(descriptor->GetSourceTexturePathname(), key.imageQuality);
 
-        descriptor->compression[key.forGPU].format = key.pixelFormat;
         if (key.toComressForGPU)
         {
             TextureConverter::ConvertTexture(*descriptor, key.forGPU, false, quality);
@@ -650,7 +653,10 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
     if (keys.size() == 1)
     {
         descriptor->Export(descriptor->pathname, keys[0].forGPU);
-        FileSystem::Instance()->DeleteFile(descriptor->GetSourceTexturePathname());
+        if (keys[0].toComressForGPU)
+        {
+            FileSystem::Instance()->DeleteFile(descriptor->GetSourceTexturePathname());
+        }
     }
     else
     {

@@ -60,7 +60,7 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_TOOL_MIX, 0);
     landscapeEditorMaterial->AddProperty(LANDSCAPE_PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
 
-    ScopedPtr<Texture> texture(Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex"));
+    ScopedPtr<Texture> texture(Create3DTextureFromPng("~res:/LandscapeEditor/Tools/cursor/cursor.png"));
     texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
     landscapeEditorMaterial->AddTexture(LANDSCAPE_TEXTURE_CURSOR, texture);

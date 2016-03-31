@@ -84,5 +84,7 @@ void SaveSpriteToFile(DAVA::Sprite* sprite, const DAVA::FilePath& path);
 void SaveTextureToFile(DAVA::Texture* texture, const DAVA::FilePath& path);
 void SaveImageToFile(DAVA::Image* image, const DAVA::FilePath& path);
 
+DAVA::Texture * Create3DTextureFromPng(const DAVA::FilePath& pngPathname);
+
 
 #endif // __QT_UTILS_H__

@@ -1034,7 +1034,7 @@ eGPUFamily Texture::GetDefaultGPU()
 eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor)
 {
     if (descriptor->IsCompressedFile())
-        return eGPUFamily(descriptor->gpu);
+        return descriptor->gpu;
 
     return requestedGPU;
 }

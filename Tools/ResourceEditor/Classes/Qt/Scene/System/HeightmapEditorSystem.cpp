@@ -44,7 +44,7 @@
 #include <QApplication>
 
 HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
     , copyPasteFrom(-1.f, -1.f)
     , copyPasteTo(-1.f, -1.f)
 {
