@@ -40,19 +40,19 @@ DAVA_TESTCLASS (ArchiveTest)
     DAVA_TEST (TestDavaArchive)
     {
         Vector<ResourceArchive::FileInfo> infos{
-            { "Folder1/file1", 0, 0, Compressor::Type::None },
-            { "Folder1/file2.txt", 0, 0, Compressor::Type::None },
-            { "Folder1/file3.doc", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder1/file1", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder1/file2.txt", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder1/file3.doc", 0, 0, Compressor::Type::None },
 
-            { "Folder2/file1", 0, 0, Compressor::Type::None },
-            { "Folder2/file1.txt", 0, 0, Compressor::Type::None },
-            { "Folder2/file2", 0, 0, Compressor::Type::None },
-            { "Folder2/file2.txt", 0, 0, Compressor::Type::None },
-            { "Folder2/file3", 0, 0, Compressor::Type::None },
-            { "Folder2/file3.doc", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file1.txt", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file2", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file2.txt", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file3", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, Compressor::Type::None },
 
-            { "Folder2/file1", 0, 0, Compressor::Type::None },
-            { "Folder2/file3.doc", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, Compressor::Type::None },
         };
 
         FilePath baseDir("~res:/TestData/FileListTest/");

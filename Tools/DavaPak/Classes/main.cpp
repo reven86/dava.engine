@@ -285,10 +285,14 @@ static bool Create(const FilePath& archiveName,
                       else if (onPackOneFile != nullptr)
                       {
                           FileTableEntry& last = fileTable.back();
-                          ResourceArchive::FileInfo info = { fileInfo.relativeFilePath,
-                                                             last.original,
-                                                             last.compressed,
-                                                             last.packType };
+
+                          ResourceArchive::FileInfo info;
+
+                          info.relativeFilePath = fileInfo.relativeFilePath;
+                          info.originalSize = last.original;
+                          info.compressedSize = last.compressed;
+                          info.compressionType = last.packType;
+
                           onPackOneFile(info);
                       }
                   });

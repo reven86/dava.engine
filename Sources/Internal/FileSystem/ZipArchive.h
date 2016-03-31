@@ -38,7 +38,6 @@ class ZipArchive final : public ResourceArchiveImpl
 {
 public:
     explicit ZipArchive(const FilePath& archiveName);
-    ~ZipArchive() override;
 
     const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
     const ResourceArchive::FileInfo* GetFileInfo(const String& relativeFilePath) const override;

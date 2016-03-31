@@ -51,7 +51,7 @@ DAVA_TESTCLASS (CompressorTest)
 
             Vector<uint8> uncompressedLz4(inSize, '\0');
 
-            TEST_VERIFY(lz4.Uncompress(compressedLz4, uncompressedLz4));
+            TEST_VERIFY(lz4.Decompress(compressedLz4, uncompressedLz4));
 
             TEST_VERIFY(uncompressedLz4 == in);
         }
@@ -67,7 +67,7 @@ DAVA_TESTCLASS (CompressorTest)
 
             Vector<uint8> uncompressedLz4hc(inSize, '\0');
 
-            TEST_VERIFY(lz4hc.Uncompress(compressedLz4hc, uncompressedLz4hc));
+            TEST_VERIFY(lz4hc.Decompress(compressedLz4hc, uncompressedLz4hc));
 
             TEST_VERIFY(uncompressedLz4hc == in);
         }
@@ -83,7 +83,7 @@ DAVA_TESTCLASS (CompressorTest)
 
             Vector<uint8> uncompressedZip(inSize, '\0');
 
-            TEST_VERIFY(zip.Uncompress(compressedDeflate, uncompressedZip));
+            TEST_VERIFY(zip.Decompress(compressedDeflate, uncompressedZip));
 
             TEST_VERIFY(uncompressedZip == in);
         }

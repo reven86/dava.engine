@@ -64,7 +64,7 @@ bool ZipCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
     return true;
 }
 
-bool ZipCompressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const
+bool ZipCompressor::Decompress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     if (in.size() > static_cast<uint32>(std::numeric_limits<int32>::max()))
     {

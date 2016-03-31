@@ -75,11 +75,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         String relative = filename.GetAbsolutePathname();
         relative = relative.substr(6); // skip "~res:/"
 
+        Vector<uint8> contentAndSize;
         for (auto& ai : fileSystem->resourceArchiveList)
         {
             FileSystem::ResourceArchiveItem& item = ai;
 
-            Vector<uint8> contentAndSize;
             if (item.archive->LoadFile(relative, contentAndSize))
             {
                 return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
@@ -97,8 +97,7 @@ static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, con
     int index = zip_name_locate(package, path.c_str(), 0);
     if (-1 == index)
     {
-        //Logger::Error("[ZipFile::CreateFromAssets] Can't locate file in the archive: %s", path.c_str());
-        return NULL;
+        return nullptr;
     }
 
     struct zip_stat stat;
@@ -106,15 +105,15 @@ static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, con
     int32 error = zip_stat_index(package, index, 0, &stat);
     if (-1 == error)
     {
-        Logger::FrameworkDebug("[APK::CreateFromAssets] Can't get file info: %s", path.c_str());
-        return NULL;
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't get file info: %s", path.c_str());
+        return nullptr;
     }
 
     zip_file* file = zip_fopen_index(package, index, 0);
-    if (NULL == file)
+    if (nullptr == file)
     {
-        Logger::FrameworkDebug("[APK::CreateFromAssets] Can't open file in the archive: %s", path.c_str());
-        return NULL;
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't open file in the archive: %s", path.c_str());
+        return nullptr;
     }
 
     DVASSERT(stat.size >= 0);
@@ -123,7 +122,7 @@ static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, con
 
     if (zip_fread(file, &data[0], stat.size) != stat.size)
     {
-        Logger::FrameworkDebug("[APK::CreateFromAssets] Error reading file: %s", path.c_str());
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Error reading file: %s", path.c_str());
         zip_fclose(file);
         return nullptr;
     }
@@ -139,12 +138,12 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
     LockGuard<Mutex> guard(mutex);
 
     AssetsManager* assetsManager = AssetsManager::Instance();
-    DVASSERT_MSG(assetsManager, "[APK::CreateFromAssets] Need to create AssetsManager before loading files");
+    DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
     zip* package = assetsManager->GetApplicationPackage();
     if (nullptr == package)
     {
-        DVASSERT_MSG(false, "[APK::CreateFromAssets] Package file should be initialized.");
+        DVASSERT_MSG(false, "[CreateFromAPK] Package file should be initialized.");
         return nullptr;
     }
 

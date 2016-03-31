@@ -74,7 +74,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
     Vector<uint8> compressedNames(begin(fileNames), end(fileNames));
     Vector<uint8> originalNames;
     originalNames.resize(packFile.header.namesBlockSizeOriginal);
-    if (!LZ4HCCompressor().Uncompress(compressedNames, originalNames))
+    if (!LZ4HCCompressor().Decompress(compressedNames, originalNames))
     {
         throw std::runtime_error("can't uncompress file names");
     }
@@ -126,11 +126,14 @@ PackArchive::PackArchive(const FilePath& archiveName)
                       const char* fileNameLoc = &fileNames[fileNameIndex];
                       mapFileData.emplace(fileNameLoc, &fileEntry);
 
-                      filesInfoSortedByName.push_back(
-                      ResourceArchive::FileInfo{ fileNameLoc,
-                                                 fileEntry.original,
-                                                 fileEntry.compressed,
-                                                 fileEntry.packType });
+                      ResourceArchive::FileInfo info;
+
+                      info.relativeFilePath = fileNameLoc;
+                      info.originalSize = fileEntry.original;
+                      info.compressedSize = fileEntry.compressed;
+                      info.compressionType = fileEntry.packType;
+
+                      filesInfoSortedByName.push_back(info);
 
                       fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
                       ++fileNameIndex;
@@ -220,7 +223,7 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
             return false;
         }
 
-        if (!LZ4Compressor().Uncompress(packedBuf, output))
+        if (!LZ4Compressor().Decompress(packedBuf, output))
         {
             Logger::Error("can't load file: %s  course: decompress error\n", relativeFilePath.c_str());
             return false;
@@ -238,7 +241,7 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
             return false;
         }
 
-        if (!ZipCompressor().Uncompress(packedBuf, output))
+        if (!ZipCompressor().Decompress(packedBuf, output))
         {
             Logger::Error("can't load file: %s  course: decompress error\n", relativeFilePath.c_str());
             return false;

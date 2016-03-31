@@ -32,17 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-Compressor::~Compressor()
-{
-}
-
 ZipArchive::ZipArchive(const FilePath& fileName)
     : zipFile(fileName)
 {
     // Get and print information about each file in the archive.
     uint32 count = zipFile.GetNumFiles();
-    fileNames.clear();
-    fileInfos.clear();
+
     fileNames.reserve(count);
     fileInfos.reserve(count);
     for (uint32 i = 0u; i < count; i++)
@@ -75,10 +70,6 @@ ZipArchive::ZipArchive(const FilePath& fileName)
                      });
 }
 
-ZipArchive::~ZipArchive()
-{
-}
-
 const Vector<ResourceArchive::FileInfo>& ZipArchive::GetFilesInfo() const
 {
     return fileInfos;
@@ -106,7 +97,7 @@ bool ZipArchive::HasFile(const String& relativeFilePath) const
 bool ZipArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output) const
 {
     const ResourceArchive::FileInfo* info = GetFileInfo(relativeFilePath);
-    if (info)
+    if (info != nullptr)
     {
         output.resize(info->originalSize);
 

@@ -34,6 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+Compressor::~Compressor() = default; // only one virtual table(fix warning)
+
 bool LZ4Compressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     if (in.size() > LZ4_MAX_INPUT_SIZE)
@@ -55,16 +57,15 @@ bool LZ4Compressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
     return true;
 }
 
-bool LZ4Compressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const
+bool LZ4Compressor::Decompress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
-    bool result = true;
-    int decompressResult = LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), static_cast<uint32>(out.size()));
+    int32 decompressResult = LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()), reinterpret_cast<char*>(out.data()), static_cast<uint32>(out.size()));
     if (decompressResult < 0)
     {
         Logger::Error("LZ4 decompress failed");
-        result = false;
+        return false;
     }
-    return result;
+    return true;
 }
 
 bool LZ4HCCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const

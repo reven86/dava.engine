@@ -46,10 +46,13 @@ public:
 
     struct FileInfo
     {
-        const char8* relativeFilePath;
-        uint32 originalSize;
-        uint32 compressedSize;
-        Compressor::Type compressionType;
+        FileInfo() = default;
+        FileInfo(const char8* relativePath, uint32 originalSize, uint32 compressedSize, Compressor::Type compressionType);
+
+        const char8* relativeFilePath = nullptr;
+        uint32 originalSize = 0;
+        uint32 compressedSize = 0;
+        Compressor::Type compressionType = Compressor::Type::None;
     };
 
     const Vector<FileInfo>& GetFilesInfo() const;

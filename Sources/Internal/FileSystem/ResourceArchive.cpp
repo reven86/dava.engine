@@ -78,6 +78,14 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
 
 ResourceArchive::~ResourceArchive() = default;
 
+ResourceArchive::FileInfo::FileInfo(const char8* relativePath_, uint32 originalSize_, uint32 compressedSize_, Compressor::Type compressionType_)
+    : relativeFilePath(relativePath_)
+    , originalSize(originalSize_)
+    , compressedSize(compressedSize_)
+    , compressionType(compressionType_)
+{
+}
+
 const Vector<ResourceArchive::FileInfo>& ResourceArchive::GetFilesInfo() const
 {
     return impl->GetFilesInfo();
