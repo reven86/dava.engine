@@ -470,9 +470,10 @@ FilePath UIControlBackground::GetMaskSpritePath() const
 }
 void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
 {
-    SafeRelease(mask);
+    Sprite* tmp = mask;
     if (path != "")
         mask = Sprite::Create(path);
+    SafeRelease(tmp);
 }
 FilePath UIControlBackground::GetDetailSpritePath() const
 {
@@ -483,9 +484,10 @@ FilePath UIControlBackground::GetDetailSpritePath() const
 }
 void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
 {
-    SafeRelease(detail);
+    Sprite* tmp = detail;
     if (path != "")
         detail = Sprite::Create(path);
+    SafeRelease(tmp);
 }
 FilePath UIControlBackground::GetGradientSpritePath() const
 {
@@ -496,9 +498,10 @@ FilePath UIControlBackground::GetGradientSpritePath() const
 }
 void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
 {
-    SafeRelease(gradient);
+    Sprite* tmp = gradient;
     if (path != "")
         gradient = Sprite::Create(path);
+    SafeRelease(tmp);
 }
 FilePath UIControlBackground::GetContourSpritePath() const
 {
@@ -509,9 +512,10 @@ FilePath UIControlBackground::GetContourSpritePath() const
 }
 void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
 {
-    SafeRelease(contour);
+    Sprite* tmp = contour;
     if (path != "")
         contour = Sprite::Create(path);
+    SafeRelease(tmp);
 }
 
 int32 UIControlBackground::GetBgColorInherit() const

@@ -126,14 +126,14 @@ private:
         Vector2 uvBase;
         Vector2 uvCapMin;
         Vector2 uvCapMax;
-        Vector2 uvSize;
+        Vector2 uvMax;
     };
 
     SingleStretchData GenerateStretchData(Sprite* sprite);
     Vector<AxisData> GenerateSingleAxisData(float32 inSize, float32 inTileSize, float32 inStratchCap,
                                             float32 gradientBase, float32 gradientDelta, float32 detailBase, float32 detailDelta,
-                                            float32 contourBase, float32 contourStretchBase, float32 contourStretchDelta, float32 contourDelta,
-                                            float32 maskBase, float32 maskStretchBase, float32 xMaskStretchDelta, float32 xMaskDelta); //unlike in TileData, this method generates actual vertices info along the axis
+                                            float32 contourBase, float32 contourStretchBase, float32 contourStretchMax, float32 contourMax,
+                                            float32 maskBase, float32 maskStretchBase, float32 maskStretchMax, float32 maskMax); //unlike in TileData, this method generates actual vertices info along the axis
 };
 
 class RenderSystem2D : public Singleton<RenderSystem2D>

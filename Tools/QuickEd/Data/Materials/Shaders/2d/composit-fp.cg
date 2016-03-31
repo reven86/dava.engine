@@ -52,6 +52,6 @@ FPROG_BEGIN
     resColor.a = resColor.a + in_color.a;
 #endif
 
-    FP_OUT_COLOR = detailColor;//resColor; //float4(FP_IN(uvDetail)*10, 1, 1);//float4(1, 0, 1, 1);//
+    FP_OUT_COLOR = resColor; //float4(FP_IN(uvDetail)*10, 1, 1);//float4(1, 0, 1, 1);//
 
 FPROG_END

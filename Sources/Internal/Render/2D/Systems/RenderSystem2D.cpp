@@ -2166,8 +2166,8 @@ TiledMultilayerData::~TiledMultilayerData()
 
 Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisData(float32 inSize, float32 inTileSize, float32 inStratchCap,
                                                                                   float32 gradientBase, float32 gradientDelta, float32 detailBase, float32 detailDelta,
-                                                                                  float32 contourBase, float32 contourStretchBase, float32 contourStretchDelta, float32 contourDelta,
-                                                                                  float32 maskBase, float32 maskStretchBase, float32 xMaskStretchDelta, float32 xMaskDelta)
+                                                                                  float32 contourBase, float32 contourStretchBase, float32 contourStretchMax, float32 contourMax,
+                                                                                  float32 maskBase, float32 maskStretchBase, float32 maskStretchMax, float32 maskMax)
 {
     Vector<AxisData> result;
 
@@ -2178,6 +2178,8 @@ Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisDat
     result.resize(totalCount);
 
     int32 vid = 0;
+    int32 lastBefore = 0;
+    int32 firstAfter = totalCount;
     //position tile and gradient
     for (int32 i = 0; i < tileCount; i++)
     {
@@ -2186,47 +2188,52 @@ Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisDat
         posr = Min(posr, inSize);
 
         result[vid].pos = posl;
-        result[vid].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+        result[vid].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
         result[vid].texCoordsDetail = detailBase;
         vid++;
 
         if ((posl < inStratchCap) && (posr >= inStratchCap)) //insert stretch line
         {
             result[vid].pos = result[vid + 1].pos = inStratchCap;
-            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
             result[vid].texCoordsDetail = result[vid + 1].texCoordsDetail = detailBase + (result[vid].pos - posl) / inTileSize * detailDelta;
+            lastBefore = vid;
             vid += 2;
         }
         if ((posl <= (inSize - inStratchCap)) && (posr > (inSize - inStratchCap))) //insert stretch line
         {
             result[vid].pos = result[vid + 1].pos = inSize - inStratchCap;
-            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
             result[vid].texCoordsDetail = result[vid + 1].texCoordsDetail = detailBase + (result[vid].pos - posl) / inTileSize * detailDelta;
+            firstAfter = vid + 1;
             vid += 2;
         }
 
         result[vid].pos = posr;
-        result[vid].texCoordsGradient = inSize / result[vid].pos * gradientDelta + gradientBase;
+        result[vid].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
         result[vid].texCoordsDetail = detailBase + (posr - posl) / inTileSize * detailDelta;
         vid++;
     }
 
     for (int32 i = 0; i < totalCount; i++)
     {
-        if (result[i].pos <= inStratchCap) //before stretch
+        if (i <= lastBefore) //before stretch
         {
-            result[i].texCoordsMask = maskBase + maskStretchBase * result[i].pos / inStratchCap;
-            result[i].texCoordsContour = contourBase + contourStretchBase * result[i].pos / inStratchCap;
+            float32 val = result[i].pos / inStratchCap;
+            result[i].texCoordsMask = maskBase + (maskStretchBase - maskBase) * val;
+            result[i].texCoordsContour = contourBase + (contourStretchBase - contourBase) * val;
         }
-        else if (result[i].pos > (inSize - inStratchCap)) //after stretch
+        else if (i >= firstAfter) //after stretch
         {
-            result[i].texCoordsMask = maskBase + xMaskDelta * result[i].pos / inSize;
-            result[i].texCoordsContour = contourBase + contourDelta * result[i].pos / inSize;
+            float32 val = (result[i].pos - (inSize - inStratchCap)) / inStratchCap;
+            result[i].texCoordsMask = maskStretchMax + (maskMax - maskStretchMax) * val;
+            result[i].texCoordsContour = contourStretchMax + (contourMax - contourStretchMax) * val;
         }
         else //in between
         {
-            result[i].texCoordsMask = maskStretchBase + xMaskStretchDelta * (result[i].pos - inStratchCap) / (inSize - 2 * inStratchCap);
-            result[i].texCoordsContour = contourStretchBase + contourStretchDelta * (result[i].pos - inStratchCap) / (inSize - 2 * inStratchCap);
+            float32 val = (result[i].pos - inStratchCap) / (inSize - 2 * inStratchCap);
+            result[i].texCoordsMask = maskStretchBase + (maskStretchMax - maskStretchBase) * val;
+            result[i].texCoordsContour = contourStretchBase + (contourStretchMax - contourStretchBase) * val;
         }
     }
 
@@ -2235,26 +2242,21 @@ Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisDat
 
 TiledMultilayerData::SingleStretchData TiledMultilayerData::GenerateStretchData(Sprite* sprite)
 {
+    if ((sprite->GetRectOffsetValueForFrame(0, Sprite::X_OFFSET_TO_ACTIVE) != 0) || (sprite->GetRectOffsetValueForFrame(0, Sprite::Y_OFFSET_TO_ACTIVE) != 0))
+    {
+        Logger::Error("wrong sprite %s", Sprite::GetPathString(sprite).c_str());
+        ;
+        Logger::Error("texture for sprite atlas for tiled multi-layered should be packed with --disableCropAlpha flag");
+    }
     SingleStretchData res;
     int32 resoureceSizeIndex = sprite->GetResourceSizeIndex();
-    const Vector2 sizeInTex(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT));
-    const Vector2 offsetInTex(sprite->GetRectOffsetValueForFrame(0, Sprite::X_OFFSET_TO_ACTIVE), sprite->GetRectOffsetValueForFrame(0, Sprite::Y_OFFSET_TO_ACTIVE));
-    const Vector2& spriteSize = sprite->GetSize();
 
-    const Vector2 xyLeftTopCap(offsetInTex - stretchCap);
-    const Vector2 xyRightBottomCap(spriteSize - sizeInTex - offsetInTex - stretchCap);
-
-    const Vector2 xyRealLeftTopCap(Max(0.0f, -xyLeftTopCap.x), Max(0.0f, -xyLeftTopCap.y));
-    const Vector2 xyRealRightBottomCap(Max(0.0f, -xyRightBottomCap.x), Max(0.0f, -xyRightBottomCap.y));
-
-    const Texture* texture = sprite->GetTexture(0);
-    const Vector2 textureSize(float32(texture->GetWidth()), float32(texture->GetHeight()));
-    Vector2 value(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT));
-
-    res.uvBase = Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x, sprite->GetRectOffsetValueForFrame(0, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
-    res.uvSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResource(value, resoureceSizeIndex) / textureSize;
-    res.uvCapMin = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResource(xyRealLeftTopCap, resoureceSizeIndex) / textureSize;
-    res.uvCapMax = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResource(xyRealRightBottomCap, resoureceSizeIndex) / textureSize;
+    Vector2 origSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT)), resoureceSizeIndex);
+    res.uvBase = Vector2(sprite->GetTextureCoordsForFrame(0)[0], sprite->GetTextureCoordsForFrame(0)[1]);
+    res.uvMax = Vector2(sprite->GetTextureCoordsForFrame(0)[2], sprite->GetTextureCoordsForFrame(0)[5]);
+    Vector2 uvSize = res.uvMax - res.uvBase;
+    res.uvCapMin = res.uvBase + uvSize * stretchCap / origSize;
+    res.uvCapMax = res.uvBase + uvSize * (origSize - stretchCap) / origSize;
 
     return res;
 }
@@ -2268,15 +2270,17 @@ void TiledMultilayerData::GenerateTileData()
     SingleStretchData contourStretchData = GenerateStretchData(contour);
     SingleStretchData maskStretchData = GenerateStretchData(mask);
     Vector2 tileSize = detail->GetSize();
-    Vector2 transformedStretchCap = stretchCap; //IF SEEN ON REVEIEW FORGOT TO
-    Vector<AxisData> xData = GenerateSingleAxisData(size.x, tileSize.x, transformedStretchCap.x,
-                                                    gradient->GetTextureCoordsForFrame(0)[0], gradient->GetTextureCoordsForFrame(0)[2], detail->GetTextureCoordsForFrame(0)[0], detail->GetTextureCoordsForFrame(0)[2],
-                                                    contourStretchData.uvBase.x, contourStretchData.uvCapMin.x, contourStretchData.uvCapMax.x - contourStretchData.uvCapMin.x, contourStretchData.uvSize.x,
-                                                    maskStretchData.uvBase.x, maskStretchData.uvCapMin.x, maskStretchData.uvCapMax.x - maskStretchData.uvCapMin.x, maskStretchData.uvSize.x);
-    Vector<AxisData> yData = GenerateSingleAxisData(size.y, tileSize.y, transformedStretchCap.y,
-                                                    gradient->GetTextureCoordsForFrame(0)[1], gradient->GetTextureCoordsForFrame(0)[5], detail->GetTextureCoordsForFrame(0)[1], detail->GetTextureCoordsForFrame(0)[5],
-                                                    contourStretchData.uvBase.y, contourStretchData.uvCapMin.y, contourStretchData.uvCapMax.y - contourStretchData.uvCapMin.y, contourStretchData.uvSize.y,
-                                                    maskStretchData.uvBase.y, maskStretchData.uvCapMin.y, maskStretchData.uvCapMax.y - maskStretchData.uvCapMin.y, maskStretchData.uvSize.y);
+    Vector2 gradientBase = Vector2(gradient->GetTextureCoordsForFrame(0)[0], gradient->GetTextureCoordsForFrame(0)[1]);
+    Vector2 gradientDelta = Vector2(gradient->GetTextureCoordsForFrame(0)[2], gradient->GetTextureCoordsForFrame(0)[5]) - gradientBase;
+    Vector2 detailBase = Vector2(detail->GetTextureCoordsForFrame(0)[0], detail->GetTextureCoordsForFrame(0)[1]);
+    Vector2 detailDelta = Vector2(detail->GetTextureCoordsForFrame(0)[2], detail->GetTextureCoordsForFrame(0)[5]) - detailBase;
+
+    Vector<AxisData> xData = GenerateSingleAxisData(size.x, tileSize.x, stretchCap.x, gradientBase.x, gradientDelta.x, detailBase.x, detailDelta.x,
+                                                    contourStretchData.uvBase.x, contourStretchData.uvCapMin.x, contourStretchData.uvCapMax.x, contourStretchData.uvMax.x,
+                                                    maskStretchData.uvBase.x, maskStretchData.uvCapMin.x, maskStretchData.uvCapMax.x, maskStretchData.uvMax.x);
+    Vector<AxisData> yData = GenerateSingleAxisData(size.y, tileSize.y, stretchCap.y, gradientBase.y, gradientDelta.y, detailBase.y, detailDelta.y,
+                                                    contourStretchData.uvBase.y, contourStretchData.uvCapMin.y, contourStretchData.uvCapMax.y, contourStretchData.uvMax.y,
+                                                    maskStretchData.uvBase.y, maskStretchData.uvCapMin.y, maskStretchData.uvCapMax.y, maskStretchData.uvMax.y);
 
     //fill geom
     size_t xLinesCount = xData.size();
