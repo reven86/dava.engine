@@ -244,7 +244,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_MENU] = Key::LALT;
     keyTranslator[VK_SHIFT] = Key::LSHIFT;
     keyTranslator[VK_APPS] = Key::APPS;
-    
+
     keyTranslator[256 + VK_CONTROL] = Key::RCTRL;
     keyTranslator[256 + VK_MENU] = Key::RALT;
     keyTranslator[256 + VK_SHIFT] = Key::RSHIFT;

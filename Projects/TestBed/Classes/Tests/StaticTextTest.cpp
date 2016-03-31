@@ -199,7 +199,7 @@ void StaticTextTest::LoadResources()
 
 void StaticTextTest::UnloadResources()
 {
-    if(inputText)
+    if (inputText)
         inputText->SetDelegate(nullptr);
     SafeDelete(inputDelegate);
     SafeRelease(previewText);

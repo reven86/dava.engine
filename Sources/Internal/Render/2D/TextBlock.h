@@ -53,8 +53,7 @@ class TextBlockGraphicRender;
 class TextBlock : public BaseObject
 {
 public:
-
-    struct Line 
+    struct Line
     {
         uint32 number = 0;
         uint32 offset = 0;

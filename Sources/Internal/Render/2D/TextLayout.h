@@ -42,13 +42,11 @@ namespace DAVA
 class TextLayout
 {
 public:
-
     struct Line
     {
         uint32 offset = 0;
         uint32 length = 0;
     };
-
 
     /**
      * \brief Create TextLayout with word wrap and disabled BiDi transformations
@@ -222,7 +220,7 @@ private:
 
     bool useBiDi;
     bool isRtl;
-    
+
     Vector<float32> characterSizes;
     Vector<uint8> breaks;
     BiDiHelper bidiHelper;
@@ -269,14 +267,10 @@ inline const uint32 TextLayout::Tell() const
     return lineData.offset;
 }
 
-
-
 inline const WideString TextLayout::GetVisualLine(const bool trimEnd) const
 {
     return GetVisualLine(GetLine(), trimEnd);
 }
-
-
 }
 
 #endif // __DAVAENGINE_TEXT_LAYOUT_H__

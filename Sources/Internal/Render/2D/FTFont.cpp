@@ -447,7 +447,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                 {
                     if (str[i - 1] == L' ')
                     {
-                        advances[i].x += justifyOffset << ftToPixelShift;  //Increase advance of character
+                        advances[i].x += justifyOffset << ftToPixelShift; //Increase advance of character
                     }
                     if (fixJustifyOffset > 0)
                     {

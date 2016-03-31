@@ -893,7 +893,7 @@ void TextBlock::CalculateCacheParams()
             }
 #endif
         }
-       
+
         // Translate right/bottom edge to width/height
         textMetrics.drawRect.dx -= textMetrics.drawRect.x;
         textMetrics.drawRect.dy -= textMetrics.drawRect.y;
