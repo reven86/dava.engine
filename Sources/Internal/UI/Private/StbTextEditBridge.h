@@ -37,125 +37,125 @@ namespace DAVA
 struct StbState;
 
 /**
- * @brief Class that implements bridge for stb_textedit
+ * \brief Class that implements bridge for stb_textedit
  */
 class StbTextEditBridge
 {
 public:
     /**
-     * @brief Default constructor
+     * \brief Default constructor
      */
     StbTextEditBridge();
 
     /**
-     * @brief Copy constructor
-     * @param c original object
+     * \brief Copy constructor
+     * \param[in] c original object
      */
     StbTextEditBridge(const StbTextEditBridge& c);
 
     /**
-     * @brief Destructor
+     * \brief Destructor
      */
     virtual ~StbTextEditBridge();
 
     /**
-     * @brief Copy class data to currect instanse
-     * @param c object to copy data
+     * \brief Copy class data to currect instanse
+     * \param[in] c object to copy data
      */
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
 
     /**
-     * @brief Send key to STB text edit
-     * @param codePoint key code
+     * \brief Send key to STB text edit
+     * \param[in] codePoint key code
      */
     virtual void SendKey(uint32 codePoint);
 
     /**
-     * @brief Cut (delete) selected text
+     * \brief Cut (delete) selected text
      */
     virtual void Cut();
 
     /**
-     * @brief Insert (replace selected) new text in field
-     * @param str string to pasting
+     * \brief Insert (replace selected) new text in field
+     * \param[in] str string to pasting
      */
     virtual void Paste(const WideString& str);
 
     /**
-     * @brief Send mouse click to STB text edit
-     * @param point mouse point (x,y) in control's local cordinates
+     * \brief Send mouse click to STB text edit
+     * \param[in] point mouse point (x,y) in control's local cordinates
      */
     virtual void Click(const Vector2& point);
 
     /**
-     * @brief Send mouse drag event to STB text edit
-     * @param point mouse point (x,y) in control's local cordinates
+     * \brief Send mouse drag event to STB text edit
+     * \param[in] point mouse point (x,y) in control's local cordinates
      */
     virtual void Drag(const Vector2& point);
 
     /**
-     * @brief Returs character index of selection start
-     * @return character index
+     * \brief Returs character index of selection start
+     * \return character index
      */
     uint32 GetSelectionStart() const;
 
     /**
-     * @brief Returs character index of selection end
-     * @return character index
+     * \brief Returs character index of selection end
+     * \return character index
      */
     uint32 GetSelectionEnd() const;
 
     /**
-     * @brief Returs character index of cursor position. 
+     * \brief Returs character index of cursor position. 
      *        Cursor equal 0 - cursor before first symbol, 
      *        cursor equal text length - cursro after last symbol
-     * @return character index
+     * \return character index
      */
     uint32 GetCursor() const;
 
     /**
-     * @brief Return inserting mode flag
-     * @return if True that insertiog mode is enabled
+     * \brief Return inserting mode flag
+     * \return if True that insertiog mode is enabled
      */
     bool IsInsertMode() const;
 
     /**
-     * @brief Service fuction for insert text in data structure
-     * @param position poisiton of inserting
-     * @param str string to inserting
-     * @param length string length
+     * \brief Service fuction for insert text in data structure
+     * \param[in] position poisiton of inserting
+     * \param[in] str string to inserting
+     * \param[in] length string length
      */
     virtual void InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
 
     /**
-     * @brief Service function for delete text from data structure
-     * @param position positon of deleting
-     * @param length deleting substring length
+     * \brief Service function for delete text from data structure
+     * \param[in] position positon of deleting
+     * \param[in] length deleting substring length
      */
     virtual void DeleteText(uint32 position, uint32 length) = 0;
 
     /**
-     * @brief Service function for getting information about lines in text
-     * @return vector of lines infromation
+     * \brief Service function for getting information about lines in text
+     * \return vector of lines infromation
      */
     virtual const Vector<TextBlock::Line>& GetMultilineInfo() = 0;
 
     /**
-     * @brief Service function for getting infromation of cahracters sizes
-     * @return vector of characters sizes
+     * \brief Service function for getting infromation of cahracters sizes
+     * \return vector of characters sizes
      */
     virtual const Vector<float32>& GetCharactersSizes() = 0;
 
     /**
-     * @brief Service function for getting text length
-     * @return text length
+     * \brief Service function for getting text length
+     * \return text length
      */
     virtual uint32 GetLength() = 0;
 
     /**
-     * @brief Service function for getting character from text
-     * @param i character index
-     * @return character
+     * \brief Service function for getting character from text
+     * \param[in] i character index
+     * \return character
      */
     virtual WideString::value_type GetChar(uint32 i) = 0;
 
