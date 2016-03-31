@@ -44,8 +44,6 @@
 #include "DAVAEngine.h"
 #include "Utils/Utils.h"
 
-#include "UI/UIControlSystem.h"
-
 static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
 @implementation RenderView
@@ -312,7 +310,6 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
         limitKeyboardFps = false;
     }
 }
-
 @end
 
 ///////////////////////////////////////////////////////////////////////

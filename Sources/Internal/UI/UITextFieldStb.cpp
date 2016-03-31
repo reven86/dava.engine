@@ -518,17 +518,19 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         {
             SendKey(STB_TEXTEDIT_K_INSERT);
         }
-        //         else if (currentInput->key == Key::KEY_X && isCtrl)
-        //         {
-        //             Cut();
-        //         }
-        //         else if (currentInput->key == Key::KEY_C && isCtrl)
-        //         {
-        //         }
-        //         else if (currentInput->key == Key::KEY_V && isCtrl)
-        //         {
-        //             Paste(L"test");
-        //         }
+#if 0 // Disable cut/copy/paste keybinding for now
+        else if (currentInput->key == Key::KEY_X && isCtrl)
+        {
+            Cut();
+        }
+        else if (currentInput->key == Key::KEY_C && isCtrl)
+        {
+        }
+        else if (currentInput->key == Key::KEY_V && isCtrl)
+        {
+            Paste(L"test");
+        }
+#endif
     }
     else if (currentInput->phase == UIEvent::Phase::CHAR ||
              currentInput->phase == UIEvent::Phase::CHAR_REPEAT)

@@ -83,6 +83,10 @@ public:
      */
     void SetCharSizes(const Vector<float32>& charSizes);
 
+    /**
+     * \brief Return sizes for characters of text
+     * \return characters sizes as vector of float
+     */
     const Vector<float32>& GetCharSizes() const;
 
     /**

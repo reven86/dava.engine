@@ -59,7 +59,7 @@
 
 void GameCore::RunOnlyThisTest()
 {
-    runOnlyThisTest = "TextAlignTest";
+    //runOnlyThisTest = "NotificationScreen";
 }
 
 void GameCore::OnError()

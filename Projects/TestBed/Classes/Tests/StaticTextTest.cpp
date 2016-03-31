@@ -236,7 +236,6 @@ void StaticTextTest::SetPreviewText(const DAVA::WideString& text)
 void StaticTextTest::SetPreviewAlign(DAVA::int32 align)
 {
     previewText->SetTextAlign(align);
-    inputText->SetTextAlign(align);
     for (auto btn : alignButtons)
     {
         btn->SetDebugDrawColor(btn->GetTag() == align ? GREEN : RED);

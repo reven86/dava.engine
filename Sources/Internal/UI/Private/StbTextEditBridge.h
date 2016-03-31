@@ -36,34 +36,131 @@ namespace DAVA
 {
 struct StbState;
 
+/**
+ * @brief Class that implements bridge for stb_textedit
+ */
 class StbTextEditBridge
 {
 public:
+    /**
+     * @brief Default constructor
+     */
     StbTextEditBridge();
+
+    /**
+     * @brief Copy constructor
+     * @param c original object
+     */
     StbTextEditBridge(const StbTextEditBridge& c);
-    ~StbTextEditBridge();
+
+    /**
+     * @brief Destructor
+     */
+    virtual ~StbTextEditBridge();
+
+    /**
+     * @brief Copy class data to currect instanse
+     * @param c object to copy data
+     */
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
 
+    /**
+     * @brief Send key to STB text edit
+     * @param codePoint key code
+     */
     virtual void SendKey(uint32 codePoint);
+
+    /**
+     * @brief Cut (delete) selected text
+     */
     virtual void Cut();
+
+    /**
+     * @brief Insert (replace selected) new text in field
+     * @param str string to pasting
+     */
     virtual void Paste(const WideString& str);
+
+    /**
+     * @brief Send mouse click to STB text edit
+     * @param point mouse point (x,y) in control's local cordinates
+     */
     virtual void Click(const Vector2& point);
+
+    /**
+     * @brief Send mouse drag event to STB text edit
+     * @param point mouse point (x,y) in control's local cordinates
+     */
     virtual void Drag(const Vector2& point);
 
+    /**
+     * @brief Returs character index of selection start
+     * @return character index
+     */
     uint32 GetSelectionStart() const;
+
+    /**
+     * @brief Returs character index of selection end
+     * @return character index
+     */
     uint32 GetSelectionEnd() const;
+
+    /**
+     * @brief Returs character index of cursor position. 
+     *        Cursor equal 0 - cursor before first symbol, 
+     *        cursor equal text length - cursro after last symbol
+     * @return character index
+     */
     uint32 GetCursor() const;
+
+    /**
+     * @brief Return inserting mode flag
+     * @return if True that insertiog mode is enabled
+     */
     bool IsInsertMode() const;
 
+    /**
+     * @brief Service fuction for insert text in data structure
+     * @param position poisiton of inserting
+     * @param str string to inserting
+     * @param length string length
+     */
     virtual void InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
+
+    /**
+     * @brief Service function for delete text from data structure
+     * @param position positon of deleting
+     * @param length deleting substring length
+     */
     virtual void DeleteText(uint32 position, uint32 length) = 0;
+
+    /**
+     * @brief Service function for getting information about lines in text
+     * @return vector of lines infromation
+     */
     virtual const Vector<TextBlock::Line>& GetMultilineInfo() = 0;
+
+    /**
+     * @brief Service function for getting infromation of cahracters sizes
+     * @return vector of characters sizes
+     */
     virtual const Vector<float32>& GetCharactersSizes() = 0;
+
+    /**
+     * @brief Service function for getting text length
+     * @return text length
+     */
     virtual uint32 GetLength() = 0;
+
+    /**
+     * @brief Service function for getting character from text
+     * @param i character index
+     * @return character
+     */
     virtual WideString::value_type GetChar(uint32 i) = 0;
 
 private:
-    StbState* stb_state = nullptr;
+    StbState* stb_state = nullptr; //!< Inner STB state structure ptr
 };
 }
 
