@@ -233,4 +233,3 @@ dava.create_packs = function()
 	    end
 	end
 end
-
