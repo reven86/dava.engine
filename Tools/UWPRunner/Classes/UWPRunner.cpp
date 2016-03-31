@@ -471,22 +471,22 @@ void UWPRunner::NetLogOutput(const String& logString)
             ss << "\n";
         }
 
-        if (!options.useTeamCityTestOutput)
-        {
-            std::cout << ss.str();
-        }
+        std::cout << ss.str();
 
         if (!options.outputFile.empty())
         {
             if (!outputFile)
             {
                 FileSystem::Instance()->DeleteFile(options.outputFile);
-                uint32 attributes = File::WRITE | File::APPEND;
+                uint32 attributes = File::WRITE;
                 outputFile.Set(File::Create(options.outputFile, attributes));
             }
 
-            outputFile->WriteString(ss.str(), false);
-            outputFile->Flush();
+            if (outputFile)
+            {
+                outputFile->WriteString(ss.str(), false);
+                outputFile->Flush();
+            }
         }
     }
 

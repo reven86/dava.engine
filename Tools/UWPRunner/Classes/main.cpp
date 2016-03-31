@@ -39,7 +39,7 @@ bool succeed = false;
 int main(int argc, char* argv[])
 {
     DAVA::Core::RunCmdTool(0, 0, 0);
-    return succeed ? 0 : -1;
+    return succeed ? 0 : 1;
 }
 
 void FrameworkDidLaunched()
