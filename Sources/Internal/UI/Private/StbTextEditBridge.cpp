@@ -35,6 +35,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define STB_TEXTEDIT_POSITIONTYPE    int // Use by default
 #define STB_TEXTEDIT_NEWLINE L'\n'
 
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #include <stb/stb_textedit.h>
 
 inline void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
@@ -99,6 +104,10 @@ inline int STB_TEXTEDIT_IS_SPACE(STB_TEXTEDIT_CHARTYPE ch)
 
 #define STB_TEXTEDIT_IMPLEMENTATION
 #include <stb/stb_textedit.h>
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
