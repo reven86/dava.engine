@@ -19,7 +19,7 @@ dava.config = { }
 dava.config.output_dir = "Output"
 dava.config.packlist_output_dir = "Output/packlist"
 dava.config.packlist_ext = "list"
-dava.config.packlist_default = "__everything_else__"
+dava.config.packlist_default = "__else__"
 
 -- 
 -- this function will be automatically called
@@ -30,7 +30,7 @@ dava.init = function()
         dava.im.packlist_output_dir = dava.project_dir .. "/" .. dava.config.packlist_output_dir
         dava.im.packlist_ext = dava.config.packlist_ext
         dava.im.packlist_default = dava.config.packlist_default
-        dava.im.packs = { __everything_else__ = { } }
+        dava.im.packs = { __else__ = { } }
 
         -- get directory path where this dava.lua file is located 
         local info = debug.getinfo(1, 'S');
@@ -186,11 +186,25 @@ dava.create_lists = function()
     --
 	for affected_pack, affected_files in pairs(affected_packs) do
 		local pack_group = dava.project_dir .. "/<" .. affected_pack .. ">"
-        local pack_listname = affected_pack .. "-" .. dava.current_dir:gsub("/", "_") .. "." .. dava.im.packlist_ext
-        local pack_listoutput = dava.im.packlist_output_dir .. "/" .. pack_listname
+        local pack_listname = affected_pack .. "_" .. dava.current_dir:gsub("/", "_")
 
-        print(pack_listoutput)
-		tup.rule(affected_files, "^ Gen " .. affected_pack .. "^ " .. dava.im.cmd_fwdep .. " \"" .. dava.current_dir .. "\" %\"f > %o", { pack_listoutput, pack_group })
+        -- divide list of file on goups of 300 files
+        -- and add tup rule for each group
+        local files_to_process = 300
+        local files_count = #affected_files
+        local i = 0
+        while i < files_count do
+            local index = i / files_to_process
+            local part_output = dava.im.packlist_output_dir .. "/" .. pack_listname .. "_" .. index .. "." .. dava.im.packlist_ext
+            local part_files = {}
+            
+            for j = 1, math.min(files_to_process, files_count - i) do
+                part_files[j] = affected_files[i + j]
+            end
+
+            tup.rule(part_files, "^ Gen " .. affected_pack .. i .. "^ " .. dava.im.cmd_fwdep .. " \"" .. dava.current_dir .. "\" %\"f > %o", { part_output, pack_group })
+            i = i + files_to_process
+        end
 	end
 end
 
@@ -202,7 +216,7 @@ dava.create_packs = function()
         local pack_merged_list_output = dava.im.output_dir .. "/" .. pack_name .. "." .. dava.im.packlist_ext
 
 	    local pack_in_group = dava.project_dir .. "/<"  .. pack_name .. ">"
-        local pack_in_mask = dava.im.packlist_output_dir .. "/" .. pack_name .. "-*"
+        local pack_in_mask = dava.im.packlist_output_dir .. "/" .. pack_name .. "_*"
 
         if dava.platform == "win32" then
             pack_in_mask = pack_in_mask:gsub("/", "\\")
