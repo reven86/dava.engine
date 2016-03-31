@@ -533,7 +533,7 @@ psd_status psd_get_pattern(psd_context * context)
 	// The image mode of the file. Supported values are: Bitmap = 0; Grayscale
 	// = 1; Indexed = 2; RGB = 3; CMYK = 4; Multichannel = 7; Duotone = 8;
 	// Lab = 9.
-	pattern->color_mode = psd_stream_get_int(context);
+	pattern->color_mode = (psd_color_mode)psd_stream_get_int(context);
 	switch(pattern->color_mode)
 	{
 		case psd_color_mode_bitmap:

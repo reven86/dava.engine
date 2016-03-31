@@ -23,13 +23,10 @@ set ( LIBRARIES_DIR  "${CMAKE_CURRENT_LIST_DIR}/lib" )
 if( APPLE )
     find_package(ZLIB )
     list (APPEND LIBRARIES ${ZLIB_LIBRARY} )
-	list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac/libpsd.a" )
 elseif( WIN32 )
 	if (X64_MODE)
-		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64/Release/libpsd.lib" )
 		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64/Release/z.lib" )
 	else()
-		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86/Release/libpsd.lib" )
 		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86/Release/zlib.lib" )
 	endif()
 endif()
@@ -41,10 +38,11 @@ include_directories ( ${DAVA_THIRD_PARTY_ROOT_PATH}/libpng/include/libpng )
 
 file ( GLOB LIB_SOURCES "*.h" "*.cpp" )
 file ( GLOB LIB_SOURCES_PNG "${DAVA_THIRD_PARTY_ROOT_PATH}/libpng/src/*.c" )
+file ( GLOB LIB_SOURCES_PSD "${DAVA_THIRD_PARTY_ROOT_PATH}/libpsd/src/*.c" )
 
 generate_source_groups_project ()
 
-add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} ${LIB_SOURCES_PNG} )
+add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} ${LIB_SOURCES_PNG} ${LIB_SOURCES_PSD} )
 
 set_property( TARGET ${PROJECT_NAME} PROPERTY FOLDER "libraries")
 

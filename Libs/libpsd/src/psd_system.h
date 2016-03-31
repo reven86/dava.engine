@@ -10,7 +10,7 @@ extern "C" {
 
 
 #if 1
-#define psd_assert(x)			assert(x)
+#define psd_assert(x)			{ int result = (x); assert(result); }
 #else
 #define psd_assert(x)			do {} while(0)
 // or

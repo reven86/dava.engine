@@ -782,7 +782,7 @@ psd_blend_mode psd_stream_get_object_blend_mode(psd_context * context)
 	}
 	else
 	{
-		psd_stream_get(context, keychar, length);
+		psd_stream_get(context, (psd_uchar*)keychar, length);
 		keychar[length] = 0;
 		if(strcmp(keychar, "linearBurn") == 0)
 			blend_mode = psd_blend_mode_linear_burn;

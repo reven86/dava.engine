@@ -83,7 +83,7 @@ psd_status psd_get_file_header(psd_context * context)
 			return psd_status_unsupport_color_depth;
 		
 		// The color mode of the file
-		context->color_mode = PSD_CHAR_TO_SHORT(header.color_mode);
+		context->color_mode = (psd_color_mode)(PSD_CHAR_TO_SHORT(header.color_mode));
 		switch(context->color_mode)
 		{
 			case psd_color_mode_bitmap:

@@ -76,7 +76,7 @@ psd_status psd_get_layer_pattern_overlay2(psd_context * context, psd_layer_effec
 		else
 		{
 			rootkey = 0;
-			psd_stream_get(context, keychar, length);
+			psd_stream_get(context, (psd_uchar*)keychar, length);
 			keychar[length] = 0;
 		}
 		// Type: OSType key
@@ -196,7 +196,7 @@ psd_status psd_layer_effects_blend_pattern_overlay(psd_context * context, psd_la
 
 	for(i = 0; i < context->pattern_count; i ++)
 	{
-		if(strcmp(context->patterns[i].unique_id, pattern_overlay->pattern_info.identifier) == 0)
+		if(strcmp((const psd_char*)context->patterns[i].unique_id, (const psd_char*)pattern_overlay->pattern_info.identifier) == 0)
 		{
 			psd_pattern_fill(&dst_bmp, &context->patterns[i], pattern_overlay->scale, 
 				pattern_overlay->horz_phase, pattern_overlay->vert_phase);

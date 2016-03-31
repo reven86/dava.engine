@@ -30,32 +30,9 @@
 #include "psd_bitmap.h"
 #include "psd_gradient.h"
 #include "psd_math.h"
-
+#include <math.h>
 
 #define PSD_COLOR_SCALE				4
-
-
-// from quake3 source code
-psd_float psd_carm_sqrt(psd_float x)
-{
-	union
-	{
-		psd_int 	intPart;
-		psd_float 	floatPart;
-	} convertor;
-	union
-	{
-		psd_int 	intPart;
-		psd_float 	floatPart;
-	} convertor2;
-	
-	convertor.floatPart = x;
-	convertor2.floatPart = x;
-	convertor.intPart = 0x1FBCF800 + (convertor.intPart >> 1);
-	convertor2.intPart = 0x5f3759df - (convertor2.intPart >> 1);
-	
-	return 0.5f*(convertor.floatPart + (x * convertor2.floatPart));
-}
 
 void psd_gradient_color_get_table(psd_gradient_color * gradient_color, psd_argb_color * color_table, psd_int table_count, psd_bool reverse)
 {
@@ -366,7 +343,7 @@ psd_status psd_gradient_fill_linear(psd_bitmap * bitmap, psd_gradient_color * gr
 	
 	else
 	{
-		distance = (psd_int)psd_carm_sqrt((psd_float)((end_x - start_x) * (end_x - start_x) + (end_y - start_y) * (end_y - start_y)) + 0.5f);
+		distance = (psd_int)sqrtf((psd_float)((end_x - start_x) * (end_x - start_x) + (end_y - start_y) * (end_y - start_y)) + 0.5f);
 		table_count = distance * PSD_COLOR_SCALE;
 		color_table = (psd_argb_color *)psd_malloc(table_count * 4);
 		if(color_table == NULL)
@@ -508,7 +485,7 @@ psd_status psd_gradient_fill_radial(psd_bitmap * bitmap, psd_gradient_color * gr
 		dst_data = bitmap->image_data + i * width + (left + 1);
 		for(j = left + 1; j < center_x; j ++, dst_data ++)
 		{
-			distance = (psd_int)(psd_carm_sqrt((psd_float)(ii + (center_x - j) * (center_x - j))) * PSD_COLOR_SCALE + 0.5);
+			distance = (psd_int)(sqrtf((psd_float)(ii + (center_x - j) * (center_x - j))) * PSD_COLOR_SCALE + 0.5);
 			if(distance >= table_count)
 				cur_color = color_table[table_count - 1];
 			else
@@ -768,7 +745,7 @@ psd_status psd_gradient_fill_reflected(psd_bitmap * bitmap, psd_gradient_color *
 	
 	else
 	{
-		distance = (psd_int)psd_carm_sqrt((psd_float)((end_x - start_x) * (end_x - start_x) + (end_y - start_y) * (end_y - start_y)) + 0.5f);
+		distance = (psd_int)sqrtf((psd_float)((end_x - start_x) * (end_x - start_x) + (end_y - start_y) * (end_y - start_y)) + 0.5f);
 		table_count = distance * PSD_COLOR_SCALE;
 		color_table = (psd_argb_color *)psd_malloc(table_count * 4);
 		if(color_table == NULL)
@@ -862,7 +839,7 @@ psd_status psd_gradient_fill_diamond(psd_bitmap * bitmap, psd_gradient_color * g
 			ay = 1;
 			ax = (90 - angle) / 45.0f;
 		}
-		xy = psd_carm_sqrt(ax * ax + ay * ay);
+		xy = sqrtf(ax * ax + ay * ay);
 		angle_sin = psd_fixed_16_16_float(ax / xy);
 		angle_cos = psd_fixed_16_16_float(ay / xy);
 

@@ -31,15 +31,16 @@ void * psd_fopen(psd_char * file_name)
 	return (void *)fopen(file_name, "rb");
 }
 
-psd_int psd_fsize(void * file)
+psd_int psd_fsize(void* ptr)
 {
+	FILE* file = (FILE*)(ptr);
 	psd_ptr offset, size;
 
-	offset = ftell((FILE *)file);
-	fseek((FILE *)file, 0, SEEK_END);
+	offset = ftell(file);
+	fseek(file, 0, SEEK_END);
 	size = ftell(file);
-	fseek((FILE *)file, 0, SEEK_SET);
-	fseek((FILE *)file, offset, SEEK_CUR);
+	fseek(file, 0, SEEK_SET);
+	fseek(file, offset, SEEK_CUR);
 
 	return (psd_int)size;
 }

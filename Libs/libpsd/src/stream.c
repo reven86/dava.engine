@@ -268,7 +268,7 @@ psd_argb_color psd_stream_get_space_color(psd_context * context)
 	psd_argb_color color;
 
 	// Color: 2 bytes for space followed by 4 * 2 byte color component
-	color_space = psd_stream_get_short(context);
+	color_space = (psd_color_space)psd_stream_get_short(context);
 	for(i = 0; i < 4; i ++)
 		color_component[i] = psd_stream_get_short(context) >> 8;
 	if(psd_color_space_to_argb(&color, color_space, color_component) != psd_status_done)

@@ -52,7 +52,7 @@ static void psd_set_layer_stroke_default(psd_layer_effects_stroke * stroke)
 	stroke->fill_color = psd_color_red;
 
 	stroke->gradient_reverse = psd_false;
-	stroke->gradient_style = 0;
+	stroke->gradient_style = (psd_gradient_style)0;
 	stroke->gradient_align = psd_true;
 	stroke->gradient_angle = 90;
 	stroke->gradient_scale = 100;
@@ -65,7 +65,7 @@ psd_status psd_get_layer_stroke2(psd_context * context, psd_layer_effects_stroke
 {
 	psd_int length, number_items;
 	psd_uint rootkey, type, key;
-	psd_uchar keychar[256];
+	psd_char keychar[256];
 	
 	psd_set_layer_stroke_default(stroke);
 
@@ -92,7 +92,7 @@ psd_status psd_get_layer_stroke2(psd_context * context, psd_layer_effects_stroke
 		else
 		{
 			rootkey = 0;
-			psd_stream_get(context, keychar, length);
+			psd_stream_get(context, (psd_uchar*)keychar, length);
 			keychar[length] = 0;
 		}
 		// Type: OSType key
@@ -140,7 +140,7 @@ psd_status psd_get_layer_stroke2(psd_context * context, psd_layer_effects_stroke
 				else
 				{
 					key = 0;
-					psd_stream_get(context, keychar, length);
+					psd_stream_get(context, (psd_uchar*)keychar, length);
 					keychar[length] = 0;
 				}
 				switch(key)
@@ -178,7 +178,7 @@ psd_status psd_get_layer_stroke2(psd_context * context, psd_layer_effects_stroke
 				else
 				{
 					key = 0;
-					psd_stream_get(context, keychar, length);
+					psd_stream_get(context, (psd_uchar*)keychar, length);
 					keychar[length] = 0;
 				}
 				switch(key)
@@ -482,7 +482,7 @@ psd_status psd_layer_effects_blend_stroke(psd_context * context, psd_layer_recor
 				radius_y = height;
 				radius_x = (psd_int)(radius_y / PSD_TAN(angle) + 0.5);
 			}
-			radius_corner = (psd_int)(psd_carm_sqrt((psd_float)(radius_x * radius_x + radius_y * radius_y)) + 0.5);
+			radius_corner = (psd_int)(sqrtf((psd_float)(radius_x * radius_x + radius_y * radius_y)) + 0.5);
 
 			switch(stroke->gradient_style)
 			{
@@ -519,7 +519,7 @@ psd_status psd_layer_effects_blend_stroke(psd_context * context, psd_layer_recor
 		case psd_fill_pattern:
 			for(i = 0; i < context->pattern_count; i ++)
 			{
-				if(strcmp(context->patterns[i].unique_id, stroke->pattern_info.identifier) == 0)
+				if(strcmp((const psd_char*)context->patterns[i].unique_id, (const psd_char*)stroke->pattern_info.identifier) == 0)
 				{
 					psd_pattern_fill(&src_bmp, &context->patterns[i], stroke->pattern_scale, 
 						stroke->pattern_horz_phase + stroke->size, 

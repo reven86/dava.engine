@@ -162,7 +162,7 @@ psd_status psd_get_layer_effects2(psd_context * context, psd_layer_record * laye
     psd_layer_effects * data;
     psd_int length, number_items;
     psd_uint rootkey, type, key;
-    psd_uchar keychar[256];
+    psd_char keychar[256];
     
     layer->layer_info_type[layer->layer_info_count] = psd_layer_info_type_effects2;
     
@@ -204,7 +204,7 @@ psd_status psd_get_layer_effects2(psd_context * context, psd_layer_record * laye
         else
         {
             rootkey = 0;
-            psd_stream_get(context, keychar, length);
+            psd_stream_get(context, (psd_uchar*)(keychar), length);
             keychar[length] = 0;
         }
         // Type: OSType key

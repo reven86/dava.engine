@@ -41,7 +41,7 @@ static void psd_set_layer_gradient_overlay_default(psd_layer_effects_gradient_ov
 	gradient_overlay->blend_mode = psd_blend_mode_normal;
 	gradient_overlay->opacity = 255;
 	gradient_overlay->reverse = psd_false;
-	gradient_overlay->style = 0;
+	gradient_overlay->style = (psd_gradient_style)0;
 	gradient_overlay->align_width_layer = psd_true;
 	gradient_overlay->angle = 90;
 	gradient_overlay->scale = 100;
@@ -272,7 +272,7 @@ psd_status psd_layer_effects_blend_gradient_overlay(psd_context * context, psd_l
 		radius_y = height;
 		radius_x = (psd_int)(radius_y / PSD_TAN(angle) + 0.5);
 	}
-	radius_corner = (psd_int)(psd_carm_sqrt((psd_float)(radius_x * radius_x + radius_y * radius_y)) + 0.5);
+	radius_corner = (psd_int)(sqrtf((psd_float)(radius_x * radius_x + radius_y * radius_y)) + 0.5);
 
 	switch(gradient_overlay->style)
 	{

@@ -43,7 +43,11 @@ bool CreateOutputDirectoryForOutputPath(const char* out_path, size_t& out_path_l
     out_path_len = (out_path == nullptr) ? 0 : strlen(out_path);
     if ((out_path_len > 0) && !FileTool::CreateDir(out_path))
     {
-        printf("[IMAGE-MAGICK-HELPER ERROR]: Can't create directory: %s\n", out_path);
+        fprintf(stderr, "=========================== WARNING ===========================\n");
+        fprintf(stderr, "|\n");
+        fprintf(stderr, "| Can't create directory:\n| %s", out_path);
+        fprintf(stderr, "|\n");
+        fprintf(stderr, "===============================================================\n");
         return false;
     }
 
@@ -142,7 +146,7 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
     {
         return false;
     }
-    
+
     std::string out_image_base_path = FileTool::WithNewExtension(in_image_path, ".png");
     std::string out_image_basename = FileTool::GetBasename(out_image_base_path);
     std::string out_image_path = out_image_base_path;
@@ -150,15 +154,19 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
     {
         out_image_path = FileTool::ReplaceDirectory(out_image_path, out_path);
     }
-    
+
     psd_context* psd = nullptr;
     auto status = psd_image_load(&psd, (psd_char*)in_image_path);
     if ((psd == nullptr) || (status != psd_status_done))
     {
-        fprintf(stderr, "Unable to load PSD from file %s\n", in_image_path);
+        fprintf(stderr, "=========================== WARNING ===========================\n");
+        fprintf(stderr, "|\n");
+        fprintf(stderr, "| Unable to load PSD from file\n| %s\n| Result code = %d", in_image_path, static_cast<int>(status));
+        fprintf(stderr, "|\n");
+        fprintf(stderr, "===============================================================\n");
         return false;
     }
-    
+
     auto onExit = [psd](){
         psd_image_free(psd);
     };
@@ -206,7 +214,11 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
         auto data = reinterpret_cast<char*>(layer.image_data);
         if (WritePNGImage(layer.width, layer.height, data, out_image_path.c_str(), 4, 8) == false)
         {
-            fprintf(stderr, "Failed to write PNG for file %s, layer %d\n", in_image_path, lIndex);
+            fprintf(stderr, "=========================== WARNING ===========================\n");
+            fprintf(stderr, "|\n");
+            fprintf(stderr, "| Failed to write PNG for file\n| %s, layer %d to output\n| %s\n", in_image_path, lIndex, out_image_path.c_str());
+            fprintf(stderr, "|\n");
+            fprintf(stderr, "===============================================================\n");
             return false;
         }
     }

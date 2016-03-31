@@ -474,7 +474,7 @@ psd_status psd_get_image_resource(psd_context * context)
 								context->color_samplers.resource[i].vertical_position = psd_stream_get_int(context);
 								context->color_samplers.resource[i].horizontal_position = psd_stream_get_int(context);
 								// Color Space
-								context->color_samplers.resource[i].color_space = psd_stream_get_short(context);
+								context->color_samplers.resource[i].color_space = (psd_color_space)psd_stream_get_short(context);
 							}
 						}
 						context->fill_color_samplers = psd_true;
@@ -620,7 +620,7 @@ psd_status psd_get_image_resource(psd_context * context)
 					// (Photoshop 7.0) Print scale
 					case 1062:
 						// 2 bytes style (0 = centered, 1 = size to fit, 2 = user defined).
-						context->print_scale.style = psd_stream_get_short(context);
+						context->print_scale.style = (psd_print_style)psd_stream_get_short(context);
 						psd_assert(context->print_scale.style >= psd_print_centered &&
 							context->print_scale.style <= psd_print_user_defined);
 						// 4 bytes x location (floating point).

@@ -126,7 +126,7 @@ psd_status psd_get_layer_drop_shadow2(psd_context * context, psd_layer_effects_d
 {
 	psd_int length, number_items;
 	psd_uint rootkey, type, key;
-	psd_uchar keychar[256];
+	psd_char keychar[256];
 	
 	psd_set_layer_drop_shadow_default(drop_shadow);
 
@@ -153,7 +153,7 @@ psd_status psd_get_layer_drop_shadow2(psd_context * context, psd_layer_effects_d
 		else
 		{
 			rootkey = 0;
-			psd_stream_get(context, keychar, length);
+			psd_stream_get(context, (psd_uchar*)keychar, length);
 			keychar[length] = 0;
 		}
 		// Type: OSType key

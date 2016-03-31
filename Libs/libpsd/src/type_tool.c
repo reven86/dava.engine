@@ -75,15 +75,15 @@ psd_status psd_get_layer_type_tool(psd_context * context, psd_layer_record * lay
 
 		// Pascal string of font name
 		length = psd_stream_get_char(context);
-		psd_stream_get(context, data->face[i].font_name, length);
+		psd_stream_get(context, (psd_uchar*)data->face[i].font_name, length);
 
 		// Pascal string of font family name
 		length = psd_stream_get_char(context);
-		psd_stream_get(context, data->face[i].font_family_name, length);
+		psd_stream_get(context, (psd_uchar*)data->face[i].font_family_name, length);
 
 		// Pascal string of font style name
 		length = psd_stream_get_char(context);
-		psd_stream_get(context, data->face[i].font_style_name, length);
+		psd_stream_get(context, (psd_uchar*)data->face[i].font_style_name, length);
 
 		// Script value
 		data->face[i].script = psd_stream_get_short(context);

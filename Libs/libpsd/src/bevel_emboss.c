@@ -123,7 +123,7 @@ psd_status psd_get_layer_bevel_emboss(psd_context * context, psd_layer_effects_b
 	bevel_emboss->shadow_color = psd_stream_get_space_color(context);
 
 	// Bevel style
-	bevel_emboss->style = psd_stream_get_char(context);
+	bevel_emboss->style = (psd_bevel_style)psd_stream_get_char(context);
 
 	// Hightlight opacity as a percent
 	bevel_emboss->highlight_opacity = psd_stream_get_char(context);
@@ -138,7 +138,7 @@ psd_status psd_get_layer_bevel_emboss(psd_context * context, psd_layer_effects_b
 	bevel_emboss->use_global_light = psd_stream_get_bool(context);
 
 	// Up or down
-	bevel_emboss->direction = psd_stream_get_char(context);
+	bevel_emboss->direction = (psd_direction)psd_stream_get_char(context);
 
 	// The following are present in version 2 only
 	if(version == 2)
@@ -157,7 +157,7 @@ psd_status psd_get_layer_bevel_emboss2(psd_context * context, psd_layer_effects_
 {
 	psd_int length, number_items;
 	psd_uint rootkey, type, key;
-	psd_uchar keychar[256];
+	psd_char keychar[256];
 	
 	psd_set_layer_bevel_emboss_default(bevel_emboss);
 
@@ -184,7 +184,7 @@ psd_status psd_get_layer_bevel_emboss2(psd_context * context, psd_layer_effects_
 		else
 		{
 			rootkey = 0;
-			psd_stream_get(context, keychar, length);
+			psd_stream_get(context, (psd_uchar*)keychar, length);
 			keychar[length] = 0;
 		}
 		// Type: OSType key
@@ -332,7 +332,7 @@ psd_status psd_get_layer_bevel_emboss2(psd_context * context, psd_layer_effects_
 				else
 				{
 					key = 0;
-					psd_stream_get(context, keychar, length);
+					psd_stream_get(context, (psd_uchar*)keychar, length);
 					keychar[length] = 0;
 				}
 				switch(key)
@@ -419,7 +419,7 @@ psd_status psd_get_layer_bevel_emboss2(psd_context * context, psd_layer_effects_
 				else
 				{
 					key = 0;
-					psd_stream_get(context, keychar, length);
+					psd_stream_get(context, (psd_uchar*)keychar, length);
 					keychar[length] = 0;
 				}
 				switch(key)

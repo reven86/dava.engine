@@ -907,10 +907,14 @@ psd_status psd_get_layer_channel_image_data(psd_context * context, psd_layer_rec
 					count_data += 2;
 				}
 				
-				if(layer->channel_info[i].channel_id == -2)
+				if (layer->channel_info[i].channel_id == -2)
+				{
 					psd_assert(pixel_count == mask_pixels);
+				}
 				else
+				{
 					psd_assert(pixel_count == pixels);
+				}
 				break;
 
 			case 2:		// ZIP without prediction

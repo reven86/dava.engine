@@ -135,7 +135,7 @@ psd_status psd_get_layer_gradient_map(psd_context * context, psd_layer_record * 
 			data->roughness_factor = psd_stream_get_int(context);
 			
 			// Color model
-			color_model = psd_stream_get_short(context);
+			color_model = (psd_color_space)psd_stream_get_short(context);
 			// 4 * 2 Minimum color values
 			for(i = 0; i < 4; i ++)
 				color_component[i] = psd_stream_get_short(context) >> 8;
