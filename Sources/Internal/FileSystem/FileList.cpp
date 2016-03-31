@@ -122,7 +122,12 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             {
                 entry.isDirectory = (DT_DIR == namelist[n]->d_type);
             }
-            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+
+            if (entry.name != "." && entry.name != "..")
+            {
+                entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+            }
+
             if (entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
