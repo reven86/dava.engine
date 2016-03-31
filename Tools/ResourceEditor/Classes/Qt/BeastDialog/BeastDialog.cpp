@@ -40,7 +40,7 @@
 
 namespace
 {
-const FastName settingsDefaultPath("Internal/Beast/LightmapsDefaultDir");
+const DAVA::FastName settingsDefaultPath("Internal/Beast/LightmapsDefaultDir");
 }
 
 BeastDialog::BeastDialog(QWidget* parent)
@@ -67,9 +67,9 @@ BeastDialog::~BeastDialog()
 {
 }
 
-void BeastDialog::SetScene(SceneEditor2* _scene)
+void BeastDialog::SetScene(SceneEditor2* scene_)
 {
-    scene = _scene;
+    scene = scene_;
 }
 
 bool BeastDialog::Exec(QWidget* parent)
@@ -78,7 +78,7 @@ bool BeastDialog::Exec(QWidget* parent)
 
     ui->scenePath->setText(QDir::toNativeSeparators(GetDefaultPath()));
 
-    const String defaultPath = SettingsManager::Instance()->GetValue(settingsDefaultPath).AsString();
+    const DAVA::String defaultPath = SettingsManager::Instance()->GetValue(settingsDefaultPath).AsString();
     ui->output->setText(QDir::toNativeSeparators(QString("%1").arg(defaultPath.c_str())));
 
     show();
@@ -103,7 +103,7 @@ void BeastDialog::OnStart()
         return;
     }
 
-    SettingsManager::Instance()->SetValue(settingsDefaultPath, VariantType(QDir::toNativeSeparators(ui->output->text()).toStdString()));
+    SettingsManager::Instance()->SetValue(settingsDefaultPath, DAVA::VariantType(QDir::toNativeSeparators(ui->output->text()).toStdString()));
 
     result = true;
     loop->quit();

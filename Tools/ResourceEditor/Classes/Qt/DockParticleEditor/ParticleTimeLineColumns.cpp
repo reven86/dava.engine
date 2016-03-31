@@ -65,7 +65,7 @@ void ParticlesExtraInfoColumn::paintEvent(QPaintEvent*)
     QFontMetrics fontMetrics(timeLineWidget->nameFont);
     painter.setFont(timeLineWidget->nameFont);
 
-    int32 i = 0;
+    DAVA::int32 i = 0;
     for (ParticleTimeLineWidget::LINE_MAP::const_iterator iter = timeLineWidget->lines.begin();
          iter != timeLineWidget->lines.end(); ++iter, ++i)
     {
@@ -90,7 +90,7 @@ void ParticlesExtraInfoColumn::paintEvent(QPaintEvent*)
     painter.drawText(totalPoint, GetExtraInfoFooter());
 }
 
-QString ParticlesExtraInfoColumn::FormatFloat(float32 value)
+QString ParticlesExtraInfoColumn::FormatFloat(DAVA::float32 value)
 {
     QString strValue;
     if (fabs(value) < 10)
@@ -114,8 +114,7 @@ QString ParticlesExtraInfoColumn::FormatFloat(float32 value)
 
 ParticlesExtraInfoCumulativeColumn::ParticlesExtraInfoCumulativeColumn(const ParticleTimeLineWidget* timeLineWidget,
                                                                        QWidget* parent)
-    :
-    ParticlesExtraInfoColumn(timeLineWidget, parent)
+    : ParticlesExtraInfoColumn(timeLineWidget, parent)
 {
     CleanupCumulativeData();
 }
@@ -125,7 +124,7 @@ void ParticlesExtraInfoCumulativeColumn::OnLayersListChanged()
     CleanupCumulativeData();
 }
 
-void ParticlesExtraInfoCumulativeColumn::UpdateCumulativeData(ParticleLayer* layer, float32 value)
+void ParticlesExtraInfoCumulativeColumn::UpdateCumulativeData(DAVA::ParticleLayer* layer, DAVA::float32 value)
 {
     if (!layer)
     {
@@ -142,7 +141,7 @@ void ParticlesExtraInfoCumulativeColumn::UpdateCumulativeData(ParticleLayer* lay
     }
 }
 
-void ParticlesExtraInfoCumulativeColumn::UpdateCumulativeDataIfMaximum(ParticleLayer* layer, float32 value)
+void ParticlesExtraInfoCumulativeColumn::UpdateCumulativeDataIfMaximum(DAVA::ParticleLayer* layer, DAVA::float32 value)
 {
     if (!layer)
     {
@@ -179,14 +178,14 @@ void ParticlesCountColumn::OnBeforeGetExtraInfoLoop()
     this->totalParticlesCount = 0;
 }
 
-QString ParticlesCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesCountColumn::GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
     if (!line.layer)
     {
         return QString();
     }
 
-    int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
+    DAVA::int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
     this->totalParticlesCount += particlesNumber;
 
     return QString::number(particlesNumber);
@@ -215,7 +214,7 @@ void ParticlesAverageCountColumn::Reset()
     CleanupCumulativeData();
 }
 
-QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
     if (!line.layer)
     {
@@ -225,7 +224,7 @@ QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(ParticleEffectComp
     // Calculate the cumulative info.
     this->totalUpdatesCount++;
 
-    int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
+    DAVA::int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
     UpdateCumulativeData(line.layer, particlesNumber);
     this->totalParticlesCount += particlesNumber;
 
@@ -253,8 +252,7 @@ QString ParticlesAverageCountColumn::GetExtraInfoFooter()
 
 ParticlesMaxCountColumn::ParticlesMaxCountColumn(const ParticleTimeLineWidget* timeLineWidget,
                                                  QWidget* parent)
-    :
-    ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
+    : ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
 {
     Reset();
 }
@@ -277,7 +275,7 @@ void ParticlesMaxCountColumn::OnBeforeGetExtraInfoLoop()
     this->totalParticlesCountOnThisLoop = 0;
 }
 
-QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
     if (!line.layer)
     {
@@ -286,7 +284,7 @@ QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponen
 
     // Calculate the cumulative info.
 
-    int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
+    DAVA::int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
     UpdateCumulativeDataIfMaximum(line.layer, particlesNumber);
     totalParticlesCountOnThisLoop += particlesNumber;
 
@@ -326,14 +324,14 @@ void ParticlesAreaColumn::OnBeforeGetExtraInfoLoop()
     this->totalParticlesArea = 0;
 }
 
-QString ParticlesAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAreaColumn::GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
     if (!line.layer)
     {
         return QString();
     }
 
-    float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
+    DAVA::float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
     this->totalParticlesArea += area;
 
     return FormatFloat(area);
@@ -363,7 +361,7 @@ void ParticlesAverageAreaColumn::Reset()
     CleanupCumulativeData();
 }
 
-QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
     if (!line.layer)
     {
@@ -373,7 +371,7 @@ QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(ParticleEffectCompo
     // Calculate the cumulative info.
     this->totalUpdatesCount++;
 
-    float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
+    DAVA::float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
     UpdateCumulativeData(line.layer, area);
     this->totalParticlesArea += area;
 
@@ -425,7 +423,7 @@ void ParticlesMaxAreaColumn::OnBeforeGetExtraInfoLoop()
     totalParticlesAreaOnThisLoop = 0;
 }
 
-QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
     if (!line.layer)
     {
@@ -433,7 +431,7 @@ QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent
     }
 
     // Calculate the cumulative info.
-    float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
+    DAVA::float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
     UpdateCumulativeDataIfMaximum(line.layer, area);
     totalParticlesAreaOnThisLoop += area;
 

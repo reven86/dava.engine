@@ -137,16 +137,16 @@ ParticleTimeLineWidget::~ParticleTimeLineWidget()
 {
     updateTimer.stop();
 
-    for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+    for (DAVA::List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
          iter != infoColumns.end(); iter++)
     {
-        SafeDelete(*iter);
+        DAVA::SafeDelete(*iter);
     }
 
     infoColumns.clear();
 }
 
-void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer)
+void ParticleTimeLineWidget::HandleEmitterSelected(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer)
 {
     if (!emitter)
     {
@@ -159,16 +159,16 @@ void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEffectComponent* effe
     selectedLayer = layer;
     selectedEffect = effect;
 
-    float32 minTime = 0;
-    float32 maxTime = emitter->lifeTime;
+    DAVA::float32 minTime = 0;
+    DAVA::float32 maxTime = emitter->lifeTime;
 
     Init(minTime, maxTime);
     QColor colors[3] = { Qt::blue, Qt::darkGreen, Qt::red };
-    uint32 colorsCount = sizeof(colors) / sizeof(*colors);
+    DAVA::uint32 colorsCount = sizeof(colors) / sizeof(*colors);
 
     if (!layer)
     {
-        for (uint32 i = 0; i < emitter->layers.size(); ++i)
+        for (DAVA::uint32 i = 0; i < emitter->layers.size(); ++i)
         {
             AddLayerLine(i, minTime, maxTime, colors[i % colorsCount], emitter->layers[i]);
         }
@@ -177,7 +177,7 @@ void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEffectComponent* effe
     {
         // Add the particular layer only.
         int layerIndex = 0;
-        for (uint32 i = 0; i < emitter->layers.size(); i++)
+        for (DAVA::uint32 i = 0; i < emitter->layers.size(); i++)
         {
             if (emitter->layers[i] == layer)
             {
@@ -244,31 +244,31 @@ void ParticleTimeLineWidget::OnParticleEffectSelected(DAVA::ParticleEffectCompon
     selectedEmitter = NULL;
     selectedLayer = NULL;
 
-    float32 minTime = 0;
-    float32 maxTime = 0;
+    DAVA::float32 minTime = 0;
+    DAVA::float32 maxTime = 0;
     if (effect)
     {
-        int32 count = effect->GetEmittersCount();
-        for (int32 i = 0; i < count; ++i)
+        DAVA::int32 count = effect->GetEmittersCount();
+        for (DAVA::int32 i = 0; i < count; ++i)
         {
-            maxTime = Max(maxTime, effect->GetEmitter(i)->lifeTime);
+            maxTime = DAVA::Max(maxTime, effect->GetEmitter(i)->lifeTime);
         }
     }
     Init(minTime, maxTime);
     if (effect)
     {
         QColor colors[3] = { Qt::blue, Qt::darkGreen, Qt::red };
-        int32 count = effect->GetEmittersCount();
-        int32 iLines = 0;
-        for (int32 iEmitter = 0; iEmitter < count; ++iEmitter)
+        DAVA::int32 count = effect->GetEmittersCount();
+        DAVA::int32 iLines = 0;
+        for (DAVA::int32 iEmitter = 0; iEmitter < count; ++iEmitter)
         {
-            const Vector<ParticleLayer*>& layers = effect->GetEmitter(iEmitter)->layers;
-            for (uint32 iLayer = 0; iLayer < layers.size(); ++iLayer)
+            const DAVA::Vector<DAVA::ParticleLayer*>& layers = effect->GetEmitter(iEmitter)->layers;
+            for (DAVA::uint32 iLayer = 0; iLayer < layers.size(); ++iLayer)
             {
-                float32 startTime = Max(minTime, layers[iLayer]->startTime);
-                float32 endTime = Min(maxTime, layers[iLayer]->endTime);
-                float32 deltaTime = layers[iLayer]->deltaTime;
-                float32 loopEndTime = layers[iLayer]->loopEndTime;
+                DAVA::float32 startTime = DAVA::Max(minTime, layers[iLayer]->startTime);
+                DAVA::float32 endTime = DAVA::Min(maxTime, layers[iLayer]->endTime);
+                DAVA::float32 deltaTime = layers[iLayer]->deltaTime;
+                DAVA::float32 loopEndTime = layers[iLayer]->loopEndTime;
                 bool isLooped = layers[iLayer]->isLooped;
                 bool hasLoopVariation = (layers[iLayer]->loopVariation > 0) ||
                 (layers[iLayer]->deltaVariation > 0);
@@ -291,24 +291,24 @@ void ParticleTimeLineWidget::OnParticleEffectSelected(DAVA::ParticleEffectCompon
     }
 }
 
-void ParticleTimeLineWidget::Init(float32 minTime, float32 maxTime)
+void ParticleTimeLineWidget::Init(DAVA::float32 minTime, DAVA::float32 maxTime)
 {
     ScrollZoomWidget::Init(minTime, maxTime);
     lines.clear();
 }
 
-void ParticleTimeLineWidget::AddLayerLine(uint32 layerLineID, float32 minTime, float32 maxTime,
-                                          const QColor& layerColor, ParticleLayer* layer)
+void ParticleTimeLineWidget::AddLayerLine(DAVA::uint32 layerLineID, DAVA::float32 minTime, DAVA::float32 maxTime,
+                                          const QColor& layerColor, DAVA::ParticleLayer* layer)
 {
     if (!layer)
     {
         return;
     }
 
-    float32 startTime = Max(minTime, layer->startTime);
-    float32 endTime = Min(maxTime, layer->endTime);
-    float32 deltaTime = layer->deltaTime;
-    float32 loopEndTime = layer->loopEndTime;
+    DAVA::float32 startTime = DAVA::Max(minTime, layer->startTime);
+    DAVA::float32 endTime = DAVA::Min(maxTime, layer->endTime);
+    DAVA::float32 deltaTime = layer->deltaTime;
+    DAVA::float32 loopEndTime = layer->loopEndTime;
     bool isLooped = layer->isLooped;
     bool hasLoopVariation = (layer->loopVariation > 0) || (layer->deltaVariation > 0);
 
@@ -316,8 +316,8 @@ void ParticleTimeLineWidget::AddLayerLine(uint32 layerLineID, float32 minTime, f
             QString::fromStdString(layer->layerName), layer);
 }
 
-void ParticleTimeLineWidget::AddLine(uint32 lineId, float32 startTime, float32 endTime, float32 deltaTime, float32 loopEndTime,
-                                     bool isLooped, bool hasLoopVariation, const QColor& color, const QString& legend, ParticleLayer* layer)
+void ParticleTimeLineWidget::AddLine(DAVA::uint32 lineId, DAVA::float32 startTime, DAVA::float32 endTime, DAVA::float32 deltaTime, DAVA::float32 loopEndTime,
+                                     bool isLooped, bool hasLoopVariation, const QColor& color, const QString& legend, DAVA::ParticleLayer* layer)
 {
     LINE line;
     line.startTime = startTime;
@@ -382,7 +382,7 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent* e)
     painter.setPen(Qt::black);
     painter.drawRect(graphRect);
 
-    uint32 i = 0;
+    DAVA::uint32 i = 0;
     for (LINE_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter, ++i)
     {
         const LINE& line = iter->second;
@@ -466,12 +466,12 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent* e)
         // Draw additional lines if layer is looped
         if (line.isLooped)
         {
-            float32 loopEndTime = line.loopEndTime;
-            float32 deltaTime = line.deltaTime;
+            DAVA::float32 loopEndTime = line.loopEndTime;
+            DAVA::float32 deltaTime = line.deltaTime;
 
-            float32 durationTime = line.endTime - line.startTime;
-            float32 currentStartTime = line.endTime;
-            float32 currentEndTime;
+            DAVA::float32 durationTime = line.endTime - line.startTime;
+            DAVA::float32 currentStartTime = line.endTime;
+            DAVA::float32 currentEndTime;
 
             bool useDeltaTime = (line.deltaTime > 0.0f);
             bool useDurationTime = (durationTime > 0.0f);
@@ -507,7 +507,7 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent* e)
                 }
 
                 // We should not exceed loopEnd time
-                currentEndTime = Min(currentEndTime, loopEndTime);
+                currentEndTime = DAVA::Min(currentEndTime, loopEndTime);
 
                 GetLoopedLineRect(iter->first, startRect, endRect, currentStartTime, currentEndTime);
                 // We should start next line section from current End time
@@ -538,9 +538,9 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent* e)
     ScrollZoomWidget::paintEvent(e);
 }
 
-bool ParticleTimeLineWidget::GetLineRect(uint32 id, QRect& startRect, QRect& endRect) const
+bool ParticleTimeLineWidget::GetLineRect(DAVA::uint32 id, QRect& startRect, QRect& endRect) const
 {
-    uint32 i = 0;
+    DAVA::uint32 i = 0;
     QRect grapRect = GetGraphRect();
     for (LINE_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter, ++i)
     {
@@ -558,9 +558,9 @@ bool ParticleTimeLineWidget::GetLineRect(uint32 id, QRect& startRect, QRect& end
     return false;
 }
 
-bool ParticleTimeLineWidget::GetLoopedLineRect(uint32 id, QRect& startRect, QRect& endRect, float32 startTime, float32 endTime) const
+bool ParticleTimeLineWidget::GetLoopedLineRect(DAVA::uint32 id, QRect& startRect, QRect& endRect, DAVA::float32 startTime, DAVA::float32 endTime) const
 {
-    uint32 i = 0;
+    DAVA::uint32 i = 0;
     QRect grapRect = GetGraphRect();
     for (LINE_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter, ++i)
     {
@@ -586,9 +586,9 @@ QRect ParticleTimeLineWidget::GetGraphRect() const
         int width = metrics.width(iter->second.legend);
         width += LEFT_INDENT;
         width += metrics.width(" ");
-        legendWidth = Max(legendWidth, width);
+        legendWidth = DAVA::Max(legendWidth, width);
     }
-    legendWidth = Min(legendWidth, (width() - LEFT_INDENT * 2) / 6);
+    legendWidth = DAVA::Min(legendWidth, (width() - LEFT_INDENT * 2) / 6);
 
     QRect rect = QRect(QPoint(LEFT_INDENT + legendWidth, TOP_INDENT),
                        QSize(width() - LEFT_INDENT * 2 - legendWidth - RIGHT_INDENT,
@@ -608,7 +608,7 @@ void ParticleTimeLineWidget::UpdateLayersExtraInfoPosition()
     ShowLayersExtraInfoValues(true);
     QRect graphRect = GetGraphRect();
 
-    List<ParticlesExtraInfoColumn*>::iterator firstIter = infoColumns.begin();
+    DAVA::List<ParticlesExtraInfoColumn*>::iterator firstIter = infoColumns.begin();
     ParticlesExtraInfoColumn* firstColumn = (*firstIter);
 
     QRect extraInfoRect(graphRect.right() + PARTICLES_INFO_CONTROL_OFFSET, 0,
@@ -616,7 +616,7 @@ void ParticleTimeLineWidget::UpdateLayersExtraInfoPosition()
     firstColumn->setGeometry(extraInfoRect);
 
     firstIter++;
-    for (List<ParticlesExtraInfoColumn*>::iterator iter = firstIter;
+    for (DAVA::List<ParticlesExtraInfoColumn*>::iterator iter = firstIter;
          iter != infoColumns.end(); iter++)
     {
         int curRight = extraInfoRect.right();
@@ -629,7 +629,7 @@ void ParticleTimeLineWidget::UpdateLayersExtraInfoPosition()
 
 void ParticleTimeLineWidget::ShowLayersExtraInfoValues(bool isVisible)
 {
-    for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+    for (DAVA::List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
          iter != infoColumns.end(); iter++)
     {
         (*iter)->setVisible(isVisible);
@@ -639,7 +639,7 @@ void ParticleTimeLineWidget::ShowLayersExtraInfoValues(bool isVisible)
 void ParticleTimeLineWidget::UpdateLayersExtraInfoValues()
 {
     // Just invalidate and repaint the columns.
-    for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+    for (DAVA::List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
          iter != infoColumns.end(); iter++)
     {
         (*iter)->repaint();
@@ -649,7 +649,7 @@ void ParticleTimeLineWidget::UpdateLayersExtraInfoValues()
 void ParticleTimeLineWidget::ResetLayersExtraInfoValues()
 {
     // Just invalidate and repaint the columns.
-    for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+    for (DAVA::List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
          iter != infoColumns.end(); iter++)
     {
         (*iter)->Reset();
@@ -659,7 +659,7 @@ void ParticleTimeLineWidget::ResetLayersExtraInfoValues()
 void ParticleTimeLineWidget::NotifyLayersExtraInfoChanged()
 {
     // Just invalidate and repaint the columns.
-    for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+    for (DAVA::List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
          iter != infoColumns.end(); iter++)
     {
         (*iter)->OnLayersListChanged();
@@ -684,15 +684,15 @@ void ParticleTimeLineWidget::mouseMoveEvent(QMouseEvent* event)
         LINE& line = iter->second;
 
         QRect graphRect = GetGraphRect();
-        float32 value = (event->pos().x() - graphRect.left()) / (float32)graphRect.width() * (maxTime - minTime) + minTime;
-        value = Max(minTime, Min(maxTime, value));
+        DAVA::float32 value = (event->pos().x() - graphRect.left()) / static_cast<DAVA::float32>(graphRect.width()) * (maxTime - minTime) + minTime;
+        value = DAVA::Max(minTime, DAVA::Min(maxTime, value));
         if (selectedPoint.y() == 0) //start point selected
         {
-            line.startTime = Min(value, line.endTime);
+            line.startTime = DAVA::Min(value, line.endTime);
         }
         else
         {
-            line.endTime = Max(value, line.startTime);
+            line.endTime = DAVA::Max(value, line.startTime);
         }
         update();
         return;
@@ -703,13 +703,13 @@ void ParticleTimeLineWidget::mouseMoveEvent(QMouseEvent* event)
         if (iter == lines.end())
             return;
         LINE& line = iter->second;
-        int32 delta = event->pos().x() - selectedLineOrigin;
+        DAVA::int32 delta = event->pos().x() - selectedLineOrigin;
         selectedLineOrigin = event->pos().x();
 
         QRect graphRect = GetGraphRect();
 
-        float32 offset = delta / (float32)graphRect.width() * (maxTime - minTime);
-        offset = Max(generalMinTime - line.startTime, Min(generalMaxTime - line.endTime, offset));
+        DAVA::float32 offset = delta / static_cast<DAVA::float32>(graphRect.width()) * (maxTime - minTime);
+        offset = DAVA::Max(generalMinTime - line.startTime, DAVA::Min(generalMaxTime - line.endTime, offset));
         line.startTime += offset;
         line.endTime += offset;
         update();
@@ -724,7 +724,7 @@ void ParticleTimeLineWidget::mousePressEvent(QMouseEvent* event)
     selectedPoint = GetPoint(event->pos());
     if (selectedPoint.x() == -1) //try selecting line only if no point selected endpoint
     {
-        uint32 i = 0;
+        DAVA::uint32 i = 0;
         QRect grapRect = GetGraphRect();
 
         for (LINE_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter, ++i)
@@ -777,9 +777,9 @@ void ParticleTimeLineWidget::mouseDoubleClickEvent(QMouseEvent* event)
         if (line.hasLoopVariation)
             return;
 
-        float32 value = point.y() == 0 ? line.startTime : line.endTime;
-        float32 minValue = point.y() == 0 ? minTime : line.startTime;
-        float32 maxValue = point.y() == 0 ? line.endTime : maxTime;
+        DAVA::float32 value = point.y() == 0 ? line.startTime : line.endTime;
+        DAVA::float32 minValue = point.y() == 0 ? minTime : line.startTime;
+        DAVA::float32 maxValue = point.y() == 0 ? line.endTime : maxTime;
         SetPointValueDlg dlg(value, minValue, maxValue, this);
         if (dlg.exec())
         {
@@ -826,7 +826,7 @@ QPoint ParticleTimeLineWidget::GetPoint(const QPoint& pos) const
     return point;
 }
 
-float32 ParticleTimeLineWidget::SetPointValueDlg::GetValue() const
+DAVA::float32 ParticleTimeLineWidget::SetPointValueDlg::GetValue() const
 {
     return valueSpin->value();
 }
@@ -1006,7 +1006,7 @@ void ParticleTimeLineWidget::CleanupTimelines()
     UpdateLayersExtraInfoPosition();
 }
 
-ParticleTimeLineWidget::SetPointValueDlg::SetPointValueDlg(float32 value, float32 minValue, float32 maxValue, QWidget* parent)
+ParticleTimeLineWidget::SetPointValueDlg::SetPointValueDlg(DAVA::float32 value, DAVA::float32 minValue, DAVA::float32 maxValue, QWidget* parent)
     : QDialog(parent)
 {
     setWindowTitle("Set time");

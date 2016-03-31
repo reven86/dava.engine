@@ -44,7 +44,7 @@ HoodSystem::HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys)
     btVector3 worldMax(1000, 1000, 1000);
 
     collConfiguration = new btDefaultCollisionConfiguration();
-    collDispatcher = CreateObjectAligned<btCollisionDispatcher, 16>(collConfiguration);
+    collDispatcher = DAVA::CreateObjectAligned<btCollisionDispatcher, 16>(collConfiguration);
     collBroadphase = new btAxisSweep3(worldMin, worldMax);
     collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
@@ -80,7 +80,7 @@ HoodSystem::~HoodSystem()
     delete collWorld;
     delete collDebugDraw;
     delete collBroadphase;
-    DestroyObjectAligned(collDispatcher);
+    DAVA::DestroyObjectAligned(collDispatcher);
     delete collConfiguration;
 }
 
@@ -353,7 +353,7 @@ void HoodSystem::Draw()
             curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
 
             // zero pos point
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(DAVA::AABBox3(GetPosition(), curHood->objScale * .04f), DAVA::Color::White, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
             // debug draw axis collision word
             //collWorld->debugDrawWorld();

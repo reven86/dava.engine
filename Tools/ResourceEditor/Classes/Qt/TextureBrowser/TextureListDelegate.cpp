@@ -258,7 +258,7 @@ QString TextureListDelegate::CreateInfoString(const QModelIndex& index) const
             QSize textureDimension;
             if (curTexture->IsPinkPlaceholder())
             {
-                ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(curTextureDescriptor->GetSourceTexturePathname());
+                DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(curTextureDescriptor->GetSourceTexturePathname());
                 textureDimension = QSize(imgInfo.width, imgInfo.height);
             }
             else

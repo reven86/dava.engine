@@ -67,7 +67,7 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     : QTreeView(parent)
     , isInSync(false)
 {
-    Function<void()> fn(this, &SceneTree::UpdateTree);
+    DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
 
     CleanupParticleEditorSelectedItems();
@@ -261,7 +261,7 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 
 void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-    static const Vector<int32> idsForUpdate =
+    static const DAVA::Vector<DAVA::int32> idsForUpdate =
     { {
     CMDID_COMPONENT_ADD,
     CMDID_COMPONENT_REMOVE,
@@ -325,7 +325,7 @@ void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLay
         return;
     }
 
-    ParticleLayer* selectedLayer = SceneTreeItemParticleLayer::GetLayer(item);
+    DAVA::ParticleLayer* selectedLayer = SceneTreeItemParticleLayer::GetLayer(item);
     if (selectedLayer != layer)
     {
         return;
@@ -412,7 +412,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity* entity, int entityCustomFlag
         SceneSelectionSystem* selSystem = scene->selectionSystem;
         size_t selectionSize = selSystem->GetSelectionCount();
 
-        Camera* camera = GetCamera(entity);
+        DAVA::Camera* camera = GetCamera(entity);
 
         QMenu contextMenu;
         if (entityCustomFlags & SceneTreeModel::CF_Disabled)
@@ -594,7 +594,7 @@ void SceneTree::RemoveSelection()
                    << item.first->GetName().c_str()
                    << ": entity is locked!"
                    << PointerSerializer::FromPointer(item.first);
-                Logger::Warning("%s", ss.str().c_str());
+                DAVA::Logger::Warning("%s", ss.str().c_str());
             }
             else
             {
@@ -639,7 +639,7 @@ void SceneTree::EditModel()
             if (archive)
             {
                 DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-                if (FileSystem::Instance()->Exists(entityRefPath))
+                if (DAVA::FileSystem::Instance()->Exists(entityRefPath))
                 {
                     QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
                 }
@@ -678,7 +678,7 @@ void SceneTree::ReloadModel()
         if (QDialog::Accepted == dlg.exec())
         {
             const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
-            String wrongPathes;
+            DAVA::String wrongPathes;
             for (const auto& item : selection.GetContent())
             {
                 DAVA::Entity* entity = item.first;
@@ -686,10 +686,10 @@ void SceneTree::ReloadModel()
                 if (archive)
                 {
                     DAVA::FilePath pathToReload(archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-                    if (!FileSystem::Instance()->Exists(pathToReload))
+                    if (!DAVA::FileSystem::Instance()->Exists(pathToReload))
                     {
-                        wrongPathes += Format("\r\n%s : %s", entity->GetName().c_str(),
-                                              pathToReload.GetAbsolutePathname().c_str());
+                        wrongPathes += DAVA::Format("\r\n%s : %s", entity->GetName().c_str(),
+                                                    pathToReload.GetAbsolutePathname().c_str());
                     }
                 }
             }
@@ -715,8 +715,8 @@ void SceneTree::ReloadModelAs()
             DAVA::String ownerPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
             if (ownerPath.empty())
             {
-                FilePath p = sceneEditor->GetScenePath().GetDirectory();
-                if (FileSystem::Instance()->Exists(p) && sceneEditor->IsLoaded())
+                DAVA::FilePath p = sceneEditor->GetScenePath().GetDirectory();
+                if (DAVA::FileSystem::Instance()->Exists(p) && sceneEditor->IsLoaded())
                 {
                     ownerPath = p.GetAbsolutePathname();
                 }
@@ -745,7 +745,7 @@ void SceneTree::SaveEntityAs()
         if (!selection.IsEmpty())
         {
             DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
-            if (!FileSystem::Instance()->Exists(scenePath) || !sceneEditor->IsLoaded())
+            if (!DAVA::FileSystem::Instance()->Exists(scenePath) || !sceneEditor->IsLoaded())
             {
                 scenePath = ProjectManager::Instance()->GetDataSourcePath();
             }
@@ -1189,7 +1189,7 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
 
     forceAskFileName |= selectedEmitter->configPath.IsEmpty();
 
-    FilePath yamlPath = selectedEmitter->configPath;
+    DAVA::FilePath yamlPath = selectedEmitter->configPath;
     if (forceAskFileName)
     {
         QString particlesConfigPath = ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str();
@@ -1201,7 +1201,7 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
             return;
         }
 
-        yamlPath = FilePath(filePath.toStdString());
+        yamlPath = DAVA::FilePath(filePath.toStdString());
     }
 
     selectedLayer->innerEmitterPath = yamlPath;
@@ -1292,7 +1292,7 @@ void SceneTree::RemoveForce()
     treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
-void SceneTree::PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName)
+void SceneTree::PerformSaveEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName)
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
     if (nullptr == sceneEditor || nullptr == emitter)
@@ -1304,13 +1304,13 @@ void SceneTree::PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmit
     // does not have emitter path - treat this as "force ask".
     forceAskFileName |= (emitter->configPath.IsEmpty());
 
-    FilePath yamlPath = emitter->configPath;
+    DAVA::FilePath yamlPath = emitter->configPath;
     if (forceAskFileName)
     {
-        FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+        DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
         QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
 
-        FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+        DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
 
         QString emitterPathname = particlesPath + defaultName;
         QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()),
@@ -1321,9 +1321,9 @@ void SceneTree::PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmit
             return;
         }
 
-        yamlPath = FilePath(filePath.toStdString());
+        yamlPath = DAVA::FilePath(filePath.toStdString());
 
-        SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPath.GetDirectory()));
+        SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(yamlPath.GetDirectory()));
     }
 
     sceneEditor->Exec(Command2::Create<CommandSaveParticleEmitterToYaml>(effect, emitter, yamlPath));
@@ -1339,15 +1339,15 @@ void SceneTree::PerformSaveEffectEmitters(bool forceAskFileName)
     if (!sceneEditor)
         return;
     QModelIndex realIndex = filteringProxyModel->mapToSource(currentIndex());
-    Entity* entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(realIndex));
-    ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(realIndex));
+    DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
     if (!effect)
         return;
 
     QString effectName(entity->GetName().c_str());
-    for (int32 i = 0, sz = effect->GetEmittersCount(); i != sz; ++i)
+    for (DAVA::int32 i = 0, sz = effect->GetEmittersCount(); i != sz; ++i)
     {
-        ParticleEmitter* emitter = effect->GetEmitter(i);
+        DAVA::ParticleEmitter* emitter = effect->GetEmitter(i);
         QString defName = effectName + "_" + QString::number(i + 1) + "_" + QString(emitter->name.c_str()) + ".yaml";
         PerformSaveEmitter(effect, emitter, forceAskFileName, defName);
     }
@@ -1376,7 +1376,7 @@ void SceneTree::SetEntityNameAsFilter()
     if (selection.Size() != 1)
         return;
 
-    Entity* entity = selection.GetFirstEntity();
+    DAVA::Entity* entity = selection.GetFirstEntity();
     QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(entity->GetName().c_str());
 }
 
