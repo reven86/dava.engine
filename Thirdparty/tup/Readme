@@ -1,0 +1,6 @@
+1. Git checkout https://github.com/gittup/tup.git
+2. Apply tup.patch
+3. Install msys2
+4. Add mingw32 x86-64 and i686 into installed msys2
+5. Use prebuilded tup.exe from http://gittup.org/tup/win32/tup-latest.zip 
+   to build your local tup copy from msys2 console
