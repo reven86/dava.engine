@@ -214,7 +214,7 @@ UIEvent Replay::PlayEvent()
     ev.controlState = Read<int32>();
     if (!isPlayback)
         return ev;
-    ev.tapCount = Read<int32>();
+    ev.tapCount = Read<uint32>();
     if (!isPlayback)
         return ev;
     ev.device = Read<UIEvent::Device>();
