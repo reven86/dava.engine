@@ -255,7 +255,6 @@ static bool Create(const FilePath& archiveName,
 
     Vector<uint8> fileBuffer;
     Vector<uint8> compressedFileBuffer;
-    UnorderedSet<String> skippedFiles;
 
     auto packedFileTmp = archiveName.GetAbsolutePathname() + "_tmp_compressed_files.bin";
 
@@ -273,43 +272,39 @@ static bool Create(const FilePath& archiveName,
 
     pack.filesData.files.reserve(infos.size());
 
-    std::for_each(begin(infos), end(infos),
-                  [&](const ResourceArchive::FileInfo& fileInfo)
-                  {
-                      bool is_ok = CompressFileAndWriteToOutput(fileInfo, baseFolder, fileTable, fileBuffer, compressedFileBuffer, outTmpFile.get());
-                      if (!is_ok)
-                      {
-                          Logger::Info("can't pack file: %s, skip it\n", fileInfo.relativeFilePath);
-                          skippedFiles.insert(fileInfo.relativeFilePath);
-                      }
-                      else if (onPackOneFile != nullptr)
-                      {
-                          FileTableEntry& last = fileTable.back();
+    for (const ResourceArchive::FileInfo& fileInfo : infos)
+    {
+        bool is_ok = CompressFileAndWriteToOutput(fileInfo, baseFolder, fileTable, fileBuffer, compressedFileBuffer, outTmpFile.get());
+        if (!is_ok)
+        {
+            Logger::Info("can't pack file: %s, skip it\n", fileInfo.relativeFilePath);
+            return false;
+        }
+        else if (onPackOneFile != nullptr)
+        {
+            FileTableEntry& last = fileTable.back();
 
-                          ResourceArchive::FileInfo info;
+            ResourceArchive::FileInfo info;
 
-                          info.relativeFilePath = fileInfo.relativeFilePath;
-                          info.originalSize = last.original;
-                          info.compressedSize = last.compressed;
-                          info.compressionType = last.packType;
+            info.relativeFilePath = fileInfo.relativeFilePath;
+            info.originalSize = last.original;
+            info.compressedSize = last.compressed;
+            info.compressionType = last.packType;
 
-                          onPackOneFile(info);
-                      }
-                  });
+            onPackOneFile(info);
+        }
+    };
     outTmpFile->Flush();
 
     PackFile::HeaderBlock& headerBlock = pack.header;
     headerBlock.marker = FileMarker;
-    headerBlock.numFiles = static_cast<uint32>(infos.size() - skippedFiles.size());
+    headerBlock.numFiles = static_cast<uint32>(infos.size());
 
     StringStream ss;
     std::for_each(begin(infos), end(infos),
-                  [&skippedFiles, &ss](const ResourceArchive::FileInfo& fInfo)
+                  [&ss](const ResourceArchive::FileInfo& fInfo)
                   {
-                      if (skippedFiles.find(fInfo.relativeFilePath) == skippedFiles.end())
-                      {
-                          ss << fInfo.relativeFilePath << '\0';
-                      }
+                      ss << fInfo.relativeFilePath << '\0';
                   });
 
     String sortedNamesOriginal = std::move(ss.str());

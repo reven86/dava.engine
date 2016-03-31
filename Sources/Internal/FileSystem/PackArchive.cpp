@@ -206,7 +206,7 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
         uint32 readOk = file->Read(output.data(), fileEntry.original);
         if (readOk != fileEntry.original)
         {
-            Logger::Error("can't load file: %s course: can't read uncompressed content\n", relativeFilePath.c_str());
+            Logger::Error("can't load file: %s course: can't read uncompressed content", relativeFilePath.c_str());
             return false;
         }
     }
@@ -219,13 +219,13 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
         uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressed);
         if (readOk != fileEntry.compressed)
         {
-            Logger::Error("can't load file: %s course: can't read compressed content\n", relativeFilePath.c_str());
+            Logger::Error("can't load file: %s course: can't read compressed content", relativeFilePath.c_str());
             return false;
         }
 
         if (!LZ4Compressor().Decompress(packedBuf, output))
         {
-            Logger::Error("can't load file: %s  course: decompress error\n", relativeFilePath.c_str());
+            Logger::Error("can't load file: %s  course: decompress error", relativeFilePath.c_str());
             return false;
         }
     }
@@ -237,13 +237,13 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
         uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressed);
         if (readOk != fileEntry.compressed)
         {
-            Logger::Error("can't load file: %s course: can't read compressed content\n", relativeFilePath.c_str());
+            Logger::Error("can't load file: %s course: can't read compressed content", relativeFilePath.c_str());
             return false;
         }
 
         if (!ZipCompressor().Decompress(packedBuf, output))
         {
-            Logger::Error("can't load file: %s  course: decompress error\n", relativeFilePath.c_str());
+            Logger::Error("can't load file: %s  course: decompress error", relativeFilePath.c_str());
             return false;
         }
     }

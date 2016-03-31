@@ -76,10 +76,8 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         relative = relative.substr(6); // skip "~res:/"
 
         Vector<uint8> contentAndSize;
-        for (auto& ai : fileSystem->resourceArchiveList)
+        for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
         {
-            FileSystem::ResourceArchiveItem& item = ai;
-
             if (item.archive->LoadFile(relative, contentAndSize))
             {
                 return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
