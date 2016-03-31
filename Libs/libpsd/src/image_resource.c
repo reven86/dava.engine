@@ -39,6 +39,7 @@ static const psd_uchar ExifHeader[] = {0x45, 0x78, 0x69, 0x66, 0x00, 0x00};
 #include <libxml/parser.h>
 #endif
 
+#define DISABLE_SLICES 1
 
 extern psd_status psd_thumbnail_decode_jpeg(psd_argb_color ** dst_image, psd_int compress_len, psd_context * context);
 extern psd_status psd_thumbnail_decode_raw(psd_argb_color ** dst_image, psd_int image_len, psd_context * context);
@@ -480,9 +481,11 @@ psd_status psd_get_image_resource(psd_context * context)
 						break;
 						
 					// (Photoshop 6.0) Slices
+#                   if (!DISABLE_SLICES)
 					case 1050:
 						// Version ( = 6)
-						psd_assert(psd_stream_get_int(context) == 6);
+                        psd_assert(psd_stream_get_int(context) == 6);
+                        
 						// Bounding rectangle for all of the slices: top, left, bottom, right of all the slices
 						context->slices_resource.bounding_top = psd_stream_get_int(context);
 						context->slices_resource.bounding_left = psd_stream_get_int(context);
@@ -536,7 +539,7 @@ psd_status psd_get_image_resource(psd_context * context)
 						}
 						context->fill_slices_resource = psd_true;
 						break;
-
+#                   endif
 					// (Photoshop 6.0) URL List
 					case 1054:
 						// 4 byte count of URLs

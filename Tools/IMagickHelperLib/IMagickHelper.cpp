@@ -125,7 +125,15 @@ bool ConvertToPNG(const char* in_image_path, const char* out_path)
     abort();
     return false;
 }
-
+    
+template <typename F>
+struct AtExit
+{
+    AtExit(F f) : func(f) { }
+    ~AtExit() { func(); }
+    F func;
+};
+    
 bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path, CroppedData& out_cropped_data, bool skipCompositeLayer)
 {
     size_t out_path_len = 0;
@@ -146,9 +154,14 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
     auto status = psd_image_load(&psd, (psd_char*)in_image_path);
     if ((psd == nullptr) || (status != psd_status_done))
     {
-        printf("Unable to load PSD from file %s", in_image_path);
+        fprintf(stderr, "Unable to load PSD from file %s\n", in_image_path);
         return false;
     }
+    
+    auto onExit = [psd](){
+        psd_image_free(psd);
+    };
+    AtExit<decltype(onExit)> guard(onExit);
     
     out_cropped_data.Reset();
     out_cropped_data.layer_width = psd->width;
@@ -163,6 +176,20 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
         out_image_path = FileTool::ReplaceBasename(out_image_path, out_image_basename + "_" + c_buf);
         
         auto& layer = psd->layer_records[i];
+        
+        if (layer.width * layer.height == 0)
+        {
+            fprintf(stderr, "=========================== WARNING ===========================\n");
+            fprintf(stderr, "|\n");
+            fprintf(stderr, "| File contains empty layer\n| %s\n", in_image_path);
+            fprintf(stderr, "|\n");
+            fprintf(stderr, "===============================================================\n");
+            out_cropped_data.layers_count = 0;
+            delete [] out_cropped_data.layers;
+            out_cropped_data.layers = nullptr;
+            return false;
+        }
+        
         auto& outLayer = out_cropped_data.layers[i];
         outLayer.x = layer.left;
         outLayer.y = layer.top;
@@ -178,12 +205,11 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
         auto data = reinterpret_cast<char*>(layer.image_data);
         if (WritePNGImage(layer.width, layer.height, data, out_image_path.c_str(), 4, 8) == false)
         {
-            printf("Failed to write PNG for file %s, layer %d", in_image_path, int(i));
+            fprintf(stderr, "Failed to write PNG for file %s, layer %d\n", in_image_path, int(i));
             return false;
         }
     }
     
-    psd_image_free(psd);
     return true;
 }
 }

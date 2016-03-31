@@ -716,7 +716,7 @@ psd_blend_mode psd_stream_get_object_blend_mode(psd_context * context)
 	psd_blend_mode blend_mode = psd_blend_mode_normal;
 	psd_int length;
 	psd_uint tag;
-	psd_uchar keychar[256];
+	psd_char keychar[256];
 
 	length = psd_stream_get_int(context);
 	if(length == 0)

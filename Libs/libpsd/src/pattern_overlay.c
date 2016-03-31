@@ -49,7 +49,7 @@ psd_status psd_get_layer_pattern_overlay2(psd_context * context, psd_layer_effec
 {
 	psd_int length, number_items;
 	psd_uint rootkey, type, key;
-	psd_uchar keychar[256];
+	psd_char keychar[256];
 	
 	psd_set_layer_pattern_overlay_default(pattern_overlay);
 
