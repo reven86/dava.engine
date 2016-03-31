@@ -61,7 +61,6 @@ void ProcessElementHandler(GamepadDevice* device, GamepadDevice::eDavaGamepadEle
     newEvent.point.x = value;
     newEvent.phase = UIEvent::Phase::JOYSTICK;
     newEvent.device = UIEvent::Device::GAMEPAD;
-    newEvent.tapCount = 1;
 
     InputSystem::Instance()->ProcessInputEvent(&newEvent);
 }

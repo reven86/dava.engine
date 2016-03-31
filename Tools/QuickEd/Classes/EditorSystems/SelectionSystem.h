@@ -51,14 +51,17 @@ public:
     SelectionSystem(EditorSystemsManager* doc);
     ~SelectionSystem() override;
 
+    void ClearSelection();
+    void SelectAllControls();
+    void FocusNextChild();
+    void FocusPreviousChild();
+
 private:
     bool OnInput(DAVA::UIEvent* currentInput) override;
     void OnPackageNodeChanged(PackageNode* packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
-    void SelectAllControls();
-    void FocusNextChild();
-    void FocusPreviousChild();
+
     void FocusToChild(bool next);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
