@@ -57,6 +57,11 @@ void ControlContainer::SetSystemVisible(bool visible)
     systemVisible = visible;
 }
 
+bool ControlContainer::GetSystemVisible() const
+{
+    return systemVisible;
+}
+
 HUDContainer::HUDContainer(ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , node(node_)
@@ -77,23 +82,23 @@ void HUDContainer::AddChild(ControlContainer* container)
 void HUDContainer::InitFromGD(const UIGeometricData& gd)
 {
     bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
-    if (valid)
+    bool containerVisible = contolIsInValidState && visibleProperty->GetVisibleInEditor();
+    if (containerVisible)
     {
         PackageBaseNode* parent = node->GetParent();
-        while (valid && nullptr != parent)
+        while (containerVisible && nullptr != parent)
         {
             ControlNode* parentControlNode = dynamic_cast<ControlNode*>(parent);
             if (parentControlNode == nullptr)
             {
                 break;
             }
-            valid &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
+            containerVisible &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
             parent = parent->GetParent();
         }
     }
-    SetVisibilityFlag(valid);
-    if (valid)
+    SetVisibilityFlag(containerVisible);
+    if (containerVisible)
     {
         auto actualSize = gd.size * gd.scale;
         auto changedGD = gd;
@@ -111,13 +116,17 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
 
         for (auto child : childs)
         {
-            if (child->GetArea() != HUDAreaInfo::FRAME_AREA)
+            auto area = child->GetArea();
+            bool childVisible = child->GetSystemVisible() && changedGD.scale.x > 0.0f && changedGD.scale.y > 0.0f;
+            if (area != HUDAreaInfo::FRAME_AREA)
             {
-                bool visible = gd.scale.x > 0.0f && gd.scale.y > 0.0f && !controlIsMoveOnly;
-                child->SetVisibilityFlag(systemVisible && visible);
+                childVisible &= !controlIsMoveOnly;
             }
-
-            child->InitFromGD(changedGD);
+            child->SetVisibilityFlag(childVisible);
+            if (childVisible)
+            {
+                child->InitFromGD(changedGD);
+            }
         }
     }
 }
