@@ -10,8 +10,6 @@ include      ( GenerateExportHeader )
 set_property ( GLOBAL PROPERTY USE_FOLDERS ON )
 
 add_definitions ( 
-    -DSTATIC_MAGICK 
-    -D_MAGICKLIB_   
     -D_LIB 
     -D_CONSOLE
     -D__SECURE_SCL 
@@ -22,70 +20,35 @@ add_definitions (
 
 set ( LIBRARIES_DIR  "${CMAKE_CURRENT_LIST_DIR}/lib" )
 
-if( APPLE ) 
-    
-    set ( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++" )
-    set ( IMAGE_MAGICK_LIBRARIES_PATH "${LIBRARIES_DIR}/osx" )  
-    set ( IMAGE_MAGICK_INCLUDES_PATH "${CMAKE_CURRENT_LIST_DIR}/include_osx" )
+list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac/libpsd.a" )
 
-    file ( GLOB IMAGE_MAGICK_LIBRARIES_RELEASE  "${IMAGE_MAGICK_LIBRARIES_PATH}/*.a" )
-    file ( GLOB IMAGE_MAGICK_LIBRARIES_DEBUG    "${IMAGE_MAGICK_LIBRARIES_PATH}/*.a" )
-
-    list ( APPEND LIBRARIES libbz2.dylib ) 
-
+if( APPLE )
     find_package(ZLIB )
-    list (APPEND LIBRARIES          ${ZLIB_LIBRARY}     )
-
-    find_package(PNG)
-    list (APPEND LIBRARIES          ${PNG_LIBRARY}     )
-
+    list (APPEND LIBRARIES ${ZLIB_LIBRARY} )
 elseif( WIN32 )
-
-    set ( IMAGE_MAGICK_INCLUDES_PATH "${CMAKE_CURRENT_LIST_DIR}/include_win" )
-
-    if( X64_MODE )
-	    set ( IMAGE_MAGICK_LIBRARIES_PATH "${LIBRARIES_DIR}/win64" )  
-	else ()
-	    set ( IMAGE_MAGICK_LIBRARIES_PATH "${LIBRARIES_DIR}/win32" )  
-	endif ()
-
-    file ( GLOB IMAGE_MAGICK_LIBRARIES_RELEASE  "${IMAGE_MAGICK_LIBRARIES_PATH}/CORE_RL_*.lib" )
-    file ( GLOB IMAGE_MAGICK_LIBRARIES_DEBUG    "${IMAGE_MAGICK_LIBRARIES_PATH}/CORE_DB_*.lib" )
 
 endif  ()
 
 include_directories (.)
-include_directories ( ${IMAGE_MAGICK_INCLUDES_PATH} ) 
-include_directories ( ${DAVA_INCLUDE_DIR} ) 
+include_directories ( ${DAVA_INCLUDE_DIR} )
+include_directories ( ${DAVA_THIRD_PARTY_ROOT_PATH}/libpsd/include )
+include_directories ( ${DAVA_THIRD_PARTY_ROOT_PATH}/libpng/include/libpng )
 
 file ( GLOB LIB_SOURCES "*.h" "*.cpp" )
+file ( GLOB LIB_SOURCES_PNG "${DAVA_THIRD_PARTY_ROOT_PATH}/libpng/src/*.c" )
+
 generate_source_groups_project ()
 
-add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} )
+add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} ${LIB_SOURCES_PNG} )
 
-#generate_export_header( ${PROJECT_NAME} )
-#file( COPY  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_export.h DESTINATION  ${CMAKE_BINARY_DIR} )
- 
 set_property( TARGET ${PROJECT_NAME} PROPERTY FOLDER "libraries")
 
 if( APPLE )
 
-    ADD_CUSTOM_COMMAND(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMAND
-    install_name_tool -id  ./lib${PROJECT_NAME}.dylib #@executable_path/../Frameworks
-                           ${CMAKE_BINARY_DIR}/$<CONFIG>/lib${PROJECT_NAME}.dylib
-    )
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND install_name_tool -id "@rpath/libIMagickHelper.dylib" ${CMAKE_BINARY_DIR}/$<CONFIG>/lib${PROJECT_NAME}.dylib
+        COMMENT "Run install_name_tool")
 
 endif()
 
 target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
-
-foreach ( FILE ${IMAGE_MAGICK_LIBRARIES_DEBUG} ${LIBRARIES_DEBUG} )
-    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
-endforeach ()
-
-foreach ( FILE ${IMAGE_MAGICK_LIBRARIES_RELEASE} ${LIBRARIES_RELEASE} )
-    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
-endforeach ()
