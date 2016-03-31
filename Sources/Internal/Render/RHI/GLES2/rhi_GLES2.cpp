@@ -295,6 +295,8 @@ gles_check_GL_extensions()
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
+        memcpy(_GLES2_DeviceCaps.deviceDescription, renderer, strlen(renderer));
+
         if (strstr(renderer, "Mali"))
         {
             // drawing from memory is worst case scenario,

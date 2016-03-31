@@ -52,6 +52,10 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Platform/DeviceInfo.h"
+#endif
+
 namespace DAVA
 {
 const FastName Landscape::PARAM_TEXTURE_TILING("textureTiling");
@@ -89,8 +93,19 @@ Landscape::Landscape()
     zoomMaxPatchRadiusError = 1.6f;
     zoomMaxAbsoluteHeightError = 3.f;
 
-    useInstancing = rhi::DeviceCaps().isInstancingSupported;
+    useInstancing = rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported;
     useLodMorphing = useInstancing;
+
+#if defined(__DAVAENGINE_ANDROID__)
+    String version = DeviceInfo::GetVersion();
+    const char* dotChar = strchr(version.c_str(), '.');
+    int32 majorVersion = (dotChar && dotChar != version) ? atoi(dotChar - 1) : 0;
+
+    bool maliT600series = strstr(rhi::DeviceCaps().deviceDescription, "Mali-T6") != nullptr;
+
+    //Workaround for some mali drivers (Android 4.x + T6xx gpu): it does not support fetch from texture mips in vertex program
+    useLodMorphing &= (majorVersion != 4) || !maliT600series;
+#endif
 
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
@@ -338,7 +353,7 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, bool use
                 uint16 yy = y * step;
                 uint16 y1 = yy;
                 uint16 y2 = yy;
-                if (y & 0x1 && y != mipLastIndex)
+                if ((y & 0x1) && y != mipLastIndex)
                 {
                     y1 -= step;
                     y2 += step;
@@ -349,7 +364,7 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, bool use
                     uint16 xx = x * step;
                     uint16 x1 = xx;
                     uint16 x2 = xx;
-                    if (x & 0x1 && x != mipLastIndex)
+                    if ((x & 0x1) && x != mipLastIndex)
                     {
                         x1 -= step;
                         x2 += step;
