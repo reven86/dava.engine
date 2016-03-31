@@ -143,7 +143,7 @@ void StbTextEditBridge::Cut()
 
 void StbTextEditBridge::Paste(const WideString& str)
 {
-    stb_textedit_paste(this, stb_state, str.c_str(), str.length());
+    stb_textedit_paste(this, stb_state, str.c_str(), int(str.length()));
 }
 
 void StbTextEditBridge::Click(const Vector2& point)

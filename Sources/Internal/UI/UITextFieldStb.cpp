@@ -298,7 +298,7 @@ const Vector<float32>& TextFieldStbImpl::GetCharactersSizes()
 
 uint32 TextFieldStbImpl::GetLength()
 {
-    return control->GetText().length();
+    return uint32(control->GetText().length());
 }
 
 WideString::value_type TextFieldStbImpl::GetChar(uint32 i)

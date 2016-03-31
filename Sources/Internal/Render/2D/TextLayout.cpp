@@ -121,12 +121,12 @@ bool TextLayout::NextByWords(const float32 lineWidth)
     float32 targetWidth = std::floor(lineWidth);
     float32 currentWidth = 0;
     uint32 textLength = uint32(preparedText.length());
-    size_t lastPossibleBreak = 0;
+    uint32 lastPossibleBreak = 0;
 
     lineData.offset += lineData.length; // Move line cursor to next line
     lineData.length = 0;
 
-    for (size_t pos = lineData.offset; pos < textLength; ++pos)
+    for (uint32 pos = lineData.offset; pos < textLength; ++pos)
     {
         char16 ch = preparedText[pos];
         uint8 canBreak = breaks[pos];
@@ -172,8 +172,8 @@ bool TextLayout::NextBySymbols(const float32 lineWidth)
     DVASSERT(characterSizes.size() == preparedText.length());
     float32 targetWidth = std::floor(lineWidth);
     float32 currentLineDx = 0;
-    size_t totalSize = preparedText.length();
-    size_t pos = 0;
+    uint32 totalSize = uint32(preparedText.length());
+    uint32 pos = 0;
 
     lineData.offset += lineData.length; // Move line cursor to next line
     lineData.length = 0;

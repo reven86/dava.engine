@@ -699,7 +699,7 @@ void TextBlock::CalculateCacheParams()
 
         Line lineInfo;
         lineInfo.offset = 0;
-        lineInfo.length = visualText.size();
+        lineInfo.length = uint32(visualText.size());
         lineInfo.number = 0;
         lineInfo.xadvance = std::accumulate(charactersSizes.begin(), charactersSizes.end(), 0.f);
         lineInfo.visibleadvance = static_cast<float32>(textMetrics.width);
