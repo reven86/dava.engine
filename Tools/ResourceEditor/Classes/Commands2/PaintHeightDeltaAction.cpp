@@ -56,8 +56,8 @@ PaintHeightDeltaAction::~PaintHeightDeltaAction()
 
 void PaintHeightDeltaAction::Redo()
 {
-    uint32 hmSize = uint32(heightmap->Size());
-    DVASSERT(IsPowerOf2(hmSize));
+    DAVA::uint32 hmSize = DAVA::uint32(heightmap->Size());
+    DVASSERT(DAVA::IsPowerOf2(hmSize));
     DAVA::Image* heightmapImage = DAVA::Image::CreateFromData(hmSize, hmSize, DAVA::FORMAT_A16, (DAVA::uint8*)heightmap->Data());
 
     imageWidth = DAVA::Max(hmSize, imageWidth);
