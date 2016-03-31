@@ -120,12 +120,11 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
 {
     Handle handle = SamplerStateMetalPool::Alloc();
     SamplerStateMetal_t* state = SamplerStateMetalPool::Get(handle);
+    MTLSamplerDescriptor* s_desc = [MTLSamplerDescriptor new];
 
     state->fp_count = desc.fragmentSamplerCount;
     for (unsigned s = 0; s != desc.fragmentSamplerCount; ++s)
     {
-        MTLSamplerDescriptor* s_desc = [MTLSamplerDescriptor new];
-
         s_desc.sAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrU));
         s_desc.tAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrV));
         s_desc.rAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrW));
@@ -143,8 +142,6 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->vp_count = desc.vertexSamplerCount;
     for (unsigned s = 0; s != desc.vertexSamplerCount; ++s)
     {
-        MTLSamplerDescriptor* s_desc = [MTLSamplerDescriptor new];
-
         s_desc.sAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrU));
         s_desc.tAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrV));
         s_desc.rAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrW));
@@ -158,6 +155,8 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
 
         state->vp_uid[s] = [_Metal_Device newSamplerStateWithDescriptor:s_desc];
     }
+
+    [s_desc release];
 
     return handle;
 }

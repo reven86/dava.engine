@@ -223,19 +223,26 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
     Handle handle = InvalidHandle;
     MTLPixelFormat pf = (texDesc.isRenderTarget) ? /*MetalRenderableTextureFormat(texDesc.format)*/MTLPixelFormatBGRA8Unorm : MetalTextureFormat(texDesc.format);
 
-    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
+    //    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
+    MTLTextureDescriptor* desc = [MTLTextureDescriptor new];
 
     if (!desc)
     {
         Logger::Info("failed to create desc for tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
         return InvalidHandle;
     }
+    desc.width = texDesc.width;
+    desc.height = texDesc.height;
+    desc.pixelFormat = pf;
+    desc.arrayLength = 1;
     desc.textureType = (texDesc.type == TEXTURE_TYPE_CUBE) ? MTLTextureTypeCube : MTLTextureType2D;
     desc.mipmapLevelCount = texDesc.levelCount;
     desc.sampleCount = 1;
 
     id<MTLTexture> uid = [_Metal_Device newTextureWithDescriptor:desc];
     TextureMetal_t* tex = nullptr;
+
+    [desc release];
 
     if (uid != nil)
     {
@@ -251,7 +258,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
         tex->is_renderable = texDesc.isRenderTarget;
         tex->is_cubemap = texDesc.type == TEXTURE_TYPE_CUBE;
 
-        [tex->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+        //        [tex->uid setPurgeableState:MTLPurgeableStateNonVolatile];
 
         uint32 sliceCount = (texDesc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
 
@@ -300,8 +307,12 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
         if (texDesc.format == TEXTURE_FORMAT_D24S8)
         {
             MTLPixelFormat pf2 = MTLPixelFormatStencil8;
-            MTLTextureDescriptor* desc2 = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf2 width:texDesc.width height:texDesc.height mipmapped:NO];
+            //            MTLTextureDescriptor* desc2 = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf2 width:texDesc.width height:texDesc.height mipmapped:NO];
+            MTLTextureDescriptor* desc2 = [MTLTextureDescriptor new];
 
+            desc2.pixelFormat = pf2;
+            desc2.width = texDesc.width;
+            desc2.height = texDesc.height;
             desc2.textureType = MTLTextureType2D;
             desc2.mipmapLevelCount = 1;
             desc2.sampleCount = 1;
@@ -310,10 +321,12 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 
             if (uid2)
             {
-                [tex->uid2 setPurgeableState:MTLPurgeableStateNonVolatile];
+                //                [tex->uid2 setPurgeableState:MTLPurgeableStateNonVolatile];
                 tex->uid2 = uid2;
                 uid2 = nil;
             }
+
+            [desc2 release];
         }
 
         uid = nil;

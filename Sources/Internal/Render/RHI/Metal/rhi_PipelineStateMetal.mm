@@ -544,7 +544,6 @@ static Handle
 metal_PipelineState_Create(const PipelineState::Descriptor& desc)
 {
     Handle handle = PipelineStateMetalPool::Alloc();
-    ;
     PipelineStateMetal_t* ps = PipelineStateMetalPool::Get(handle);
     static std::vector<uint8> vprog_bin;
     static std::vector<uint8> fprog_bin;

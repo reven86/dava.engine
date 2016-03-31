@@ -133,12 +133,11 @@ metal_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
     Handle handle = DepthStencilStateMetalPool::Alloc();
     DepthStencilStateMetal_t* state = DepthStencilStateMetalPool::Get(handle);
     MTLDepthStencilDescriptor* ds_desc = [MTLDepthStencilDescriptor new];
+    MTLStencilDescriptor* front_desc = [MTLStencilDescriptor new];
+    MTLStencilDescriptor* back_desc = [MTLStencilDescriptor new];
 
     if (desc.stencilEnabled)
     {
-        MTLStencilDescriptor* front_desc = [MTLStencilDescriptor new];
-        MTLStencilDescriptor* back_desc = [MTLStencilDescriptor new];
-
         front_desc.readMask = desc.stencilFront.readMask;
         front_desc.writeMask = desc.stencilFront.writeMask;
         front_desc.stencilFailureOperation = _StencilOp(StencilOperation(desc.stencilFront.failOperation));
@@ -167,6 +166,10 @@ metal_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
     state->uid = [_Metal_Device newDepthStencilStateWithDescriptor:ds_desc];
     state->stencilEnabled = desc.stencilEnabled;
 
+    [front_desc release];
+    [back_desc release];
+    [ds_desc release];
+
     return handle;
 }
 
@@ -176,7 +179,9 @@ metal_DepthStencilState_Delete(Handle state)
     DepthStencilStateMetal_t* self = DepthStencilStateMetalPool::Get(state);
 
     if (self)
+    {
         self->uid = nil;
+    }
 
     DepthStencilStateMetalPool::Free(state);
 }

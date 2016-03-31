@@ -911,6 +911,8 @@ metal_Present(Handle syncObject)
         }
         [pass->buf commit];
 
+        pass->desc.colorAttachments[0].texture = nil;
+        pass->desc.depthAttachment.texture = nil;
         pass->desc = nullptr;
 
         [pass->blit_encoder endEncoding];
