@@ -34,27 +34,15 @@
 #include "Base/BaseObject.h"
 #include "Utils/MD5.h"
 #include "FileSystem/FilePath.h"
-#include "Render/Texture.h"
 
 namespace DAVA
 {
-enum TextureFileType
-{
-    TEXTURE_UNCOMPRESSED = 0,
-    TEXTURE_COMPRESSED,
-    TEXTURE_DESCRIPTOR,
-    TEXTURE_TYPE_COUNT,
-    NOT_SPECIFIED
-};
 
 class File;
 class TextureDescriptor
 {
     static const String DESCRIPTOR_EXTENSION;
     static const String DEFAULT_CUBEFACE_EXTENSION;
-
-    static const int32 DATE_BUFFER_SIZE = 20;
-    static const int32 LINE_SIZE = 256;
 
     enum eSignatures
     {
@@ -63,7 +51,7 @@ class TextureDescriptor
     };
 
 public:
-    static const int8 CURRENT_VERSION = 11;
+    static const int8 CURRENT_VERSION = 12;
 
     struct TextureDrawSettings : public InspBase
     {
@@ -115,7 +103,7 @@ public:
 
         int8 textureFlags;
         uint8 cubefaceFlags;
-        ImageFormat sourceFileFormat;
+        ImageFormat sourceFileFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
         String sourceFileExtension;
         String cubefaceExtensions[Texture::CUBE_FACE_COUNT];
 
@@ -134,20 +122,18 @@ public:
 
     struct Compression : public InspBase
     {
-        int32 format;
-        mutable uint32 sourceFileCrc;
-        int32 compressToWidth;
-        int32 compressToHeight;
-        mutable uint32 convertedFileCrc;
+        int32 format = PixelFormat::FORMAT_INVALID;
+        uint32 containerType = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+        mutable uint32 sourceFileCrc = 0;
+        int32 compressToWidth = 0;
+        int32 compressToHeight = 0;
+        mutable uint32 convertedFileCrc = 0;
 
-        Compression()
-        {
-            Clear();
-        }
         void Clear();
 
         INTROSPECTION(Compression,
                       MEMBER(format, InspDesc("format", GlobalEnumMap<PixelFormat>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+                      MEMBER(containerType, InspDesc("format", GlobalEnumMap<ImageFormat>::Instance()), I_EDIT | I_SAVE)
                       MEMBER(sourceFileCrc, "Source File CRC", I_SAVE)
                       MEMBER(compressToWidth, "compressToWidth", I_SAVE)
                       MEMBER(compressToHeight, "compressToHeight", I_SAVE)
@@ -175,7 +161,7 @@ public:
 
     void Save() const;
     void Save(const FilePath& filePathname) const;
-    void Export(const FilePath& filePathname) const;
+    void Export(const FilePath& filePathname, eGPUFamily forGPU) const;
 
     bool IsCompressedTextureActual(eGPUFamily forGPU) const;
     bool HasCompressionFor(eGPUFamily forGPU) const;
@@ -253,11 +239,15 @@ public:
     TextureDataSettings dataSettings;
     Compression compression[GPU_FAMILY_COUNT];
 
-    PixelFormat format : 8; // texture format
-    //Binary only
-    int8 exportedAsGpuFamily;
+    struct ExportedImageInfo
+    {
+        eGPUFamily gpu = eGPUFamily::GPU_INVALID;
+        ImageFormat imageContaier = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+        PixelFormat pixelFormat = PixelFormat::FORMAT_INVALID; // texture format
+    };
 
-    bool isCompressedFile : 1;
+    ExportedImageInfo exportedInfo;
+    bool isCompressedFile;
 
     static Array<ImageFormat, 5> sourceTextureTypes;
     static Array<ImageFormat, 2> compressedTextureTypes;
