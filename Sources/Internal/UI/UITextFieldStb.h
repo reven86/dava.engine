@@ -48,13 +48,13 @@ struct Rect;
 // so no hierarchy for internal UIStaticText, and call UpdateRect
 // every frame, and render directly in SyctemDraw. This helps
 // to find similar bugs in all implementations
-class TextFieldPlatformImpl : public StbTextEditBridge
+class TextFieldStbImpl : public StbTextEditBridge
 {
 public:
     friend class UITextField;
-    TextFieldPlatformImpl(UITextField* control);
-    ~TextFieldPlatformImpl();
-    void CopyDataFrom(TextFieldPlatformImpl* t);
+    TextFieldStbImpl(UITextField* control);
+    ~TextFieldStbImpl();
+    void CopyDataFrom(TextFieldStbImpl* t);
     void OpenKeyboard();
     void CloseKeyboard();
     void SetRenderToTexture(bool);

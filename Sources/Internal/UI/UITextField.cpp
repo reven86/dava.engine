@@ -43,6 +43,17 @@
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
+namespace DAVA
+{
+class TextFieldPlatformImpl : public TextFieldStbImpl
+{
+public:
+    TextFieldPlatformImpl(UITextField* control)
+        : TextFieldStbImpl(control)
+    {
+    }
+};
+}
 #endif
 
 namespace DAVA

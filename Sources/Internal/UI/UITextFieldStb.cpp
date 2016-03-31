@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "UITextFieldStb.h"
+
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
@@ -40,21 +41,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-
-TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* control)
+TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
     : staticText(new UIStaticText(Rect(Vector2::Zero, control->GetSize())))
     , control(control)
 {
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 }
 
-TextFieldPlatformImpl::~TextFieldPlatformImpl()
+TextFieldStbImpl::~TextFieldStbImpl()
 {
     SafeRelease(staticText);
     control = nullptr;
 }
 
-void TextFieldPlatformImpl::CopyDataFrom(TextFieldPlatformImpl* t)
+void TextFieldStbImpl::CopyDataFrom(TextFieldStbImpl* t)
 {
     CopyStbStateFrom(*t);
     staticText->CopyDataFrom(t->staticText);
@@ -62,29 +62,29 @@ void TextFieldPlatformImpl::CopyDataFrom(TextFieldPlatformImpl* t)
     showCursor = t->showCursor;
 }
 
-void TextFieldPlatformImpl::OpenKeyboard()
+void TextFieldStbImpl::OpenKeyboard()
 {
 }
 
-void TextFieldPlatformImpl::CloseKeyboard()
+void TextFieldStbImpl::CloseKeyboard()
 {
 }
 
-void TextFieldPlatformImpl::SetRenderToTexture(bool)
+void TextFieldStbImpl::SetRenderToTexture(bool)
 {
 }
 
-void TextFieldPlatformImpl::SetIsPassword(bool)
+void TextFieldStbImpl::SetIsPassword(bool)
 {
     needRedraw = true;
 }
 
-void TextFieldPlatformImpl::SetFontSize(float32)
+void TextFieldStbImpl::SetFontSize(float32)
 {
     // TODO: implement in staticText_->SetFontSize(float32);
 }
 
-void TextFieldPlatformImpl::SetText(const WideString& text)
+void TextFieldStbImpl::SetText(const WideString& text)
 {
     const WideString& prevText = control->GetText();
     if (control->GetDelegate() && prevText != text)
@@ -94,7 +94,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
     needRedraw = true;
 }
 
-void TextFieldPlatformImpl::UpdateRect(const Rect&)
+void TextFieldStbImpl::UpdateRect(const Rect&)
 {
     // see comment for TextFieldPlatformImpl class above
 
@@ -132,181 +132,181 @@ void TextFieldPlatformImpl::UpdateRect(const Rect&)
     needRedraw = false;
 }
 
-void TextFieldPlatformImpl::SetAutoCapitalizationType(int32)
+void TextFieldStbImpl::SetAutoCapitalizationType(int32)
 {
 }
 
-void TextFieldPlatformImpl::SetAutoCorrectionType(int32)
+void TextFieldStbImpl::SetAutoCorrectionType(int32)
 {
 }
 
-void TextFieldPlatformImpl::SetSpellCheckingType(int32)
+void TextFieldStbImpl::SetSpellCheckingType(int32)
 {
 }
 
-void TextFieldPlatformImpl::SetKeyboardAppearanceType(int32)
+void TextFieldStbImpl::SetKeyboardAppearanceType(int32)
 {
 }
 
-void TextFieldPlatformImpl::SetKeyboardType(int32)
+void TextFieldStbImpl::SetKeyboardType(int32)
 {
 }
 
-void TextFieldPlatformImpl::SetReturnKeyType(int32)
+void TextFieldStbImpl::SetReturnKeyType(int32)
 {
 }
 
-void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(int32)
+void TextFieldStbImpl::SetEnableReturnKeyAutomatically(int32)
 {
 }
 
-bool TextFieldPlatformImpl::IsRenderToTexture() const
+bool TextFieldStbImpl::IsRenderToTexture() const
 {
     return false;
 }
 
-uint32 TextFieldPlatformImpl::GetCursorPos() const
+uint32 TextFieldStbImpl::GetCursorPos() const
 {
     return GetCursor();
 }
 
-void TextFieldPlatformImpl::SetCursorPos(int32)
+void TextFieldStbImpl::SetCursorPos(int32)
 {
 }
 
-void TextFieldPlatformImpl::SetMaxLength(int32)
+void TextFieldStbImpl::SetMaxLength(int32)
 {
 }
 
-void TextFieldPlatformImpl::GetText(WideString&)
+void TextFieldStbImpl::GetText(WideString&)
 {
 }
 
-void TextFieldPlatformImpl::SetInputEnabled(bool, bool hierarchic /*= true*/)
+void TextFieldStbImpl::SetInputEnabled(bool, bool hierarchic /*= true*/)
 {
 }
 
-void TextFieldPlatformImpl::SetVisible(bool v)
+void TextFieldStbImpl::SetVisible(bool v)
 {
     staticText->SetVisibilityFlag(v);
 }
 
-void TextFieldPlatformImpl::SetFont(Font* f)
+void TextFieldStbImpl::SetFont(Font* f)
 {
     staticText->SetFont(f);
 }
 
-Font* TextFieldPlatformImpl::GetFont() const
+Font* TextFieldStbImpl::GetFont() const
 {
     return staticText->GetFont();
 }
 
-void TextFieldPlatformImpl::SetTextColor(const Color& c)
+void TextFieldStbImpl::SetTextColor(const Color& c)
 {
     staticText->SetTextColor(c);
 }
 
-void TextFieldPlatformImpl::SetShadowOffset(const Vector2& v)
+void TextFieldStbImpl::SetShadowOffset(const Vector2& v)
 {
     staticText->SetShadowOffset(v);
 }
 
-void TextFieldPlatformImpl::SetShadowColor(const Color& c)
+void TextFieldStbImpl::SetShadowColor(const Color& c)
 {
     staticText->SetShadowColor(c);
 }
 
-void TextFieldPlatformImpl::SetTextAlign(int32 align)
+void TextFieldStbImpl::SetTextAlign(int32 align)
 {
     staticText->SetTextAlign(align);
 }
 
-TextBlock::eUseRtlAlign TextFieldPlatformImpl::GetTextUseRtlAlign()
+TextBlock::eUseRtlAlign TextFieldStbImpl::GetTextUseRtlAlign()
 {
     return staticText->GetTextUseRtlAlign();
 }
 
-void TextFieldPlatformImpl::SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
+void TextFieldStbImpl::SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
 {
     staticText->SetTextUseRtlAlign(align);
 }
 
-void TextFieldPlatformImpl::SetSize(const Vector2 vector2)
+void TextFieldStbImpl::SetSize(const Vector2 vector2)
 {
     staticText->SetSize(vector2);
 }
 
-void TextFieldPlatformImpl::SetMultiline(bool is_multiline)
+void TextFieldStbImpl::SetMultiline(bool is_multiline)
 {
     staticText->SetMultiline(is_multiline);
 }
 
-Color TextFieldPlatformImpl::GetTextColor()
+Color TextFieldStbImpl::GetTextColor()
 {
     return staticText->GetTextColor();
 }
 
-DAVA::Vector2 TextFieldPlatformImpl::GetShadowOffset()
+DAVA::Vector2 TextFieldStbImpl::GetShadowOffset()
 {
     return staticText->GetShadowOffset();
 }
 
-Color TextFieldPlatformImpl::GetShadowColor()
+Color TextFieldStbImpl::GetShadowColor()
 {
     return staticText->GetShadowColor();
 }
 
-rhi::int32 TextFieldPlatformImpl::GetTextAlign()
+rhi::int32 TextFieldStbImpl::GetTextAlign()
 {
     return staticText->GetTextAlign();
 }
 
-void TextFieldPlatformImpl::SetRect(const Rect& rect)
+void TextFieldStbImpl::SetRect(const Rect& rect)
 {
     staticText->SetSize(rect.GetSize());
 }
 
-void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& d)
+void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
 {
     // see comment for TextFieldPlatformImpl class above
     staticText->SystemDraw(d);
 }
 
-void TextFieldPlatformImpl::InsertText(uint32 position, const WideString::value_type* str, uint32 length)
+void TextFieldStbImpl::InsertText(uint32 position, const WideString::value_type* str, uint32 length)
 {
     WideString t = control->GetText();
     t.insert(position, str, length);
     control->SetText(t);
 }
 
-void TextFieldPlatformImpl::DeleteText(uint32 position, uint32 length)
+void TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
 {
     WideString t = control->GetText();
     t.erase(position, length);
     control->SetText(t);
 }
 
-const Vector<TextBlock::Line>& TextFieldPlatformImpl::GetMultilineInfo()
+const Vector<TextBlock::Line>& TextFieldStbImpl::GetMultilineInfo()
 {
     return staticText->GetTextBlock()->GetMultilineInfo();
 }
 
-const Vector<float32>& TextFieldPlatformImpl::GetCharactersSizes()
+const Vector<float32>& TextFieldStbImpl::GetCharactersSizes()
 {
     return staticText->GetTextBlock()->GetCharactersSize();
 }
 
-uint32 TextFieldPlatformImpl::GetLength()
+uint32 TextFieldStbImpl::GetLength()
 {
     return control->GetText().length();
 }
 
-WideString::value_type TextFieldPlatformImpl::GetChar(uint32 i)
+WideString::value_type TextFieldStbImpl::GetChar(uint32 i)
 {
     return control->GetText()[i];
 }
 
-void TextFieldPlatformImpl::SendKey(uint32 codePoint)
+void TextFieldStbImpl::SendKey(uint32 codePoint)
 {
     if (codePoint == '\r')
     {
@@ -315,7 +315,7 @@ void TextFieldPlatformImpl::SendKey(uint32 codePoint)
     StbTextEditBridge::SendKey(codePoint);
 }
 
-void TextFieldPlatformImpl::UpdateSelection(uint32 start, uint32 end)
+void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 {
     selectionRects.clear();
     auto selStart = std::min(start, end);
@@ -364,7 +364,7 @@ void TextFieldPlatformImpl::UpdateSelection(uint32 start, uint32 end)
     }
 }
 
-void TextFieldPlatformImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
+void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
     const auto& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
     const auto& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
@@ -417,7 +417,7 @@ void TextFieldPlatformImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     cursorRect = r;
 }
 
-void TextFieldPlatformImpl::DrawSelection(const UIGeometricData& geometricData)
+void TextFieldStbImpl::DrawSelection(const UIGeometricData& geometricData)
 {
     for (const auto& r : selectionRects)
     {
@@ -425,7 +425,7 @@ void TextFieldPlatformImpl::DrawSelection(const UIGeometricData& geometricData)
     }
 }
 
-void TextFieldPlatformImpl::DrawCursor(const UIGeometricData& geometricData)
+void TextFieldStbImpl::DrawCursor(const UIGeometricData& geometricData)
 {
     if (showCursor)
     {
@@ -433,7 +433,7 @@ void TextFieldPlatformImpl::DrawCursor(const UIGeometricData& geometricData)
     }
 }
 
-void TextFieldPlatformImpl::Input(UIEvent* currentInput)
+void TextFieldStbImpl::Input(UIEvent* currentInput)
 {
     if (nullptr == control->GetDelegate())
     {
