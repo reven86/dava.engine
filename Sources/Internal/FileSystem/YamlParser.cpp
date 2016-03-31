@@ -30,7 +30,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "yaml/yaml.h"
 
@@ -40,7 +40,7 @@ bool YamlParser::Parse(const String& data)
 {
     YamlDataHolder dataHolder;
     dataHolder.fileSize = static_cast<uint32>(data.size());
-    dataHolder.data = (uint8*)data.c_str();
+    dataHolder.data = const_cast<uint8*>(reinterpret_cast<const uint8*>(data.c_str()));
     dataHolder.dataOffset = 0;
 
     return Parse(&dataHolder);
@@ -105,7 +105,7 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
 
         case YAML_SCALAR_EVENT:
         {
-            String scalarValue = (const char*)event.data.scalar.value;
+            String scalarValue = reinterpret_cast<const char*>(event.data.scalar.value);
 
             if (objectStack.empty())
             {
@@ -207,6 +207,10 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
             objectStack.pop();
         }
         break;
+
+        case YAML_NO_EVENT:
+        case YAML_STREAM_END_EVENT:
+        case YAML_STREAM_START_EVENT:
         default:
             break;
         };

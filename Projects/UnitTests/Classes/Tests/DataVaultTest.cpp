@@ -33,40 +33,38 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(DataVaultTest)
+DAVA_TESTCLASS (DataVaultTest)
 {
-  DAVA_TEST(TestFunction)
-  {
-  IDataStorage* storage = DataStorage::Create();
+    DAVA_TEST (TestFunction)
+    {
+        ScopedPtr<IDataStorage> storage(DataStorage::Create());
+        storage->Push();
+        storage->Clear();
+        storage->Push();
+        storage->SetStringValue("TestStringKey", "Test");
+        storage->Push();
 
-storage->Clear();
-storage->Push();
-storage->SetStringValue("TestStringKey", "Test");
-storage->Push();
-String ret = storage->GetStringValue("TestStringKey");
-#if defined(__DAVAENGINE_WIN32__)
-TEST_VERIFY("" == ret);
-#else
-TEST_VERIFY("Test" == ret);
-storage->RemoveEntry("TestStringKey");
-storage->Push();
-ret = storage->GetStringValue("TestStringKey");
-TEST_VERIFY("Test" != ret);
-
-int64 iret = storage->GetLongValue("TestIntKey");
-TEST_VERIFY(0 == iret);
-
-storage->SetLongValue("TestIntKey", 1);
-storage->Push();
-iret = storage->GetLongValue("TestIntKey");
-TEST_VERIFY(1 == iret);
-
-storage->Clear();
-iret = storage->GetLongValue("TestIntKey");
-TEST_VERIFY(0 == iret);
-
+#if !defined(__DAVAENGINE_STEAM__) && defined(__DAVAENGINE_WINDOWS__)
+        return;
 #endif
-SafeRelease(storage);
-}
-}
-;
+
+        String ret = storage->GetStringValue("TestStringKey");
+        TEST_VERIFY("Test" == ret);
+        storage->RemoveEntry("TestStringKey");
+        storage->Push();
+        ret = storage->GetStringValue("TestStringKey");
+        TEST_VERIFY("Test" != ret);
+
+        int64 iret = storage->GetLongValue("TestIntKey");
+        TEST_VERIFY(0 == iret);
+
+        storage->SetLongValue("TestIntKey", 1);
+        storage->Push();
+        iret = storage->GetLongValue("TestIntKey");
+        TEST_VERIFY(1 == iret);
+
+        storage->Clear();
+        iret = storage->GetLongValue("TestIntKey");
+        TEST_VERIFY(0 == iret);
+    }
+};

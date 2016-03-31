@@ -33,9 +33,9 @@
 
 QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(const DAVA::FastName& name_, DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata)
     : QtPropertyDataDavaVariant(name_, DAVA::VariantType())
+    , name(name_)
     , dynamicInfo(_dynamicInfo)
     , ddata(_ddata)
-    , name(name_)
     , inspFlags(0)
     , lastCommand(NULL)
 {
@@ -151,14 +151,12 @@ bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-void* QtPropertyDataInspDynamic::CreateLastCommand() const
+Command2::Pointer QtPropertyDataInspDynamic::CreateLastCommand() const
 {
-    Command2* command = NULL;
-
-    if (NULL != lastCommand)
+    if (nullptr != lastCommand)
     {
-        command = new InspDynamicModifyCommand(*lastCommand);
+        return Command2::Create<InspDynamicModifyCommand>(*lastCommand);
     }
 
-    return command;
+    return Command2::CreateEmptyCommand();
 }

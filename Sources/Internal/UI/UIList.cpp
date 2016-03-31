@@ -32,8 +32,6 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
-#include "FileSystem/YamlNode.h"
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 
 namespace DAVA
@@ -183,7 +181,7 @@ void UIList::ScrollToElement(int32 index)
 
 void UIList::SetOrientation(int32 _orientation)
 {
-    orientation = (UIList::eListOrientation)_orientation;
+    orientation = static_cast<UIList::eListOrientation>(_orientation);
 }
 
 float32 UIList::GetScrollPosition()
@@ -388,7 +386,7 @@ void UIList::Update(float32 timeElapsed)
         UIListCell* fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i > ind)
             {
@@ -439,7 +437,7 @@ void UIList::Update(float32 timeElapsed)
         fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i < ind)
             {
@@ -619,7 +617,7 @@ void UIList::OnSelectEvent(BaseObject* pCaller, void* pUserData, void* callerDat
 {
     if (delegate)
     {
-        delegate->OnCellSelected(this, (UIListCell*)pCaller);
+        delegate->OnCellSelected(this, static_cast<UIListCell*>(pCaller));
     }
 }
 
@@ -732,37 +730,10 @@ void UIList::SetBorderMoveModifer(float newValue)
     scroll->SetBorderMoveModifer(newValue);
 }
 
-void UIList::SystemWillAppear()
+void UIList::OnActive()
 {
-    UIControl::SystemWillAppear();
+    UIControl::OnActive();
     Refresh();
-}
-
-void UIList::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* orientNode = node->Get("orientation");
-    if (orientNode)
-    {
-        if (orientNode->AsString() == "ORIENTATION_VERTICAL")
-            orientation = ORIENTATION_VERTICAL;
-        else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
-            orientation = ORIENTATION_HORIZONTAL;
-        else
-        {
-            DVASSERT(0 && "Orientation constant is wrong");
-        }
-    }
-    // Load aggregator path
-    const YamlNode* aggregatorPathNode = node->Get("aggregatorPath");
-    if (aggregatorPathNode)
-    {
-        aggregatorPath = aggregatorPathNode->AsString();
-    }
-
-    // TODO
-    InitAfterYaml();
 }
 
 UIList* UIList::Clone()
@@ -775,7 +746,7 @@ UIList* UIList::Clone()
 void UIList::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIList* t = (UIList*)srcControl;
+    UIList* t = static_cast<UIList*>(srcControl);
     InitAfterYaml();
     aggregatorPath = t->aggregatorPath;
     orientation = t->orientation;
@@ -789,43 +760,6 @@ const FilePath& UIList::GetAggregatorPath()
 void UIList::SetAggregatorPath(const FilePath& aggregatorPath)
 {
     this->aggregatorPath = aggregatorPath;
-}
-
-YamlNode* UIList::SaveToYamlNode(UIYamlLoader* loader)
-{
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    //Temp variables
-    String stringValue;
-
-    //Orientation
-    eListOrientation orient = (eListOrientation)GetOrientation();
-    switch (orient)
-    {
-    case ORIENTATION_VERTICAL:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    case ORIENTATION_HORIZONTAL:
-        stringValue = "ORIENTATION_HORIZONTAL";
-        break;
-    default:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    }
-    node->Set("orientation", stringValue);
-
-    if (delegate)
-    {
-        // Set aggregator path from current List delegate
-        delegate->SaveToYaml(this, node);
-    }
-
-    // Save aggregator path only if it is not empty
-    if (!aggregatorPath.IsEmpty())
-    {
-        node->Set("aggregatorPath", aggregatorPath.GetFrameworkPath());
-    }
-
-    return node;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar* forScrollBar)

@@ -29,32 +29,33 @@
 
 #include "EventModel.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QMetaObject>
 #include <QMetaEnum>
+POP_QT_WARNING_SUPRESSOR
 
-
-EventModel::EventModel( QObject* parent )
-    : QStandardItemModel( parent )
+EventModel::EventModel(QObject* parent)
+    : QStandardItemModel(parent)
 {
-    build( *this );
+    build(*this);
 }
 
-void EventModel::build( QStandardItemModel& model )
+void EventModel::build(QStandardItemModel& model)
 {
     model.clear();
 
     const auto& mo = QEvent::staticMetaObject;
-    auto me = mo.enumerator( mo.indexOfEnumerator( "Type" ) );
+    auto me = mo.enumerator(mo.indexOfEnumerator("Type"));
 
-    for ( auto i = 0; i < me.keyCount(); i++ )
+    for (auto i = 0; i < me.keyCount(); i++)
     {
-        const auto value = me.value( i );
-        const QString text = me.key( i );
+        const auto value = me.value(i);
+        const QString text = me.key(i);
 
-        auto item = new QStandardItem( text );
-        item->setData( value, EVENT_TYPE );
-        item->setCheckable( true );
+        auto item = new QStandardItem(text);
+        item->setData(value, EVENT_TYPE);
+        item->setCheckable(true);
 
-        model.appendRow( item );
+        model.appendRow(item);
     }
 }

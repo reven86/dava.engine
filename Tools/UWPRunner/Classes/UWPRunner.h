@@ -34,8 +34,8 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
 #include "Network/NetCore.h"
-
 #include "UWPLogConsumer.h"
+#include "AppxBundleHelper.h"
 
 struct PackageOptions
 {

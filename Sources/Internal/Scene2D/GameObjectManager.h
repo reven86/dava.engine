@@ -176,7 +176,7 @@ inline GameObject* GameObjectManager::EnumerationGetNext(int32 groupId)
 
 inline int32 GameObjectManager::GetObjectsCount()
 {
-    return (int32)objects.size();
+    return static_cast<int32>(objects.size());
 }
 };
 #endif // __DAVAENGINE_GAME_OBJECT_MANAGER_H__

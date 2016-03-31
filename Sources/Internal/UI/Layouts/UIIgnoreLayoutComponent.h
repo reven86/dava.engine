@@ -38,7 +38,7 @@ class UIControl;
 class UIIgnoreLayoutComponent : public UIComponent
 {
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT)
 
     UIIgnoreLayoutComponent() = default;
     UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src) = default;
@@ -60,7 +60,7 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UIIgnoreLayoutComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

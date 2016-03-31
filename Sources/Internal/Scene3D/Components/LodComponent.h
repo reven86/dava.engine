@@ -56,7 +56,7 @@ public:
         RECURSIVE_UPDATE = 1 << 1
     };
 
-    struct LodDistance
+    struct LodDistance : public InspBase
     {
         float32 distance;
         float32 nearDistanceSq;
@@ -97,14 +97,12 @@ public:
         bool isDummy;
     };
 
-protected:
-    ~LodComponent(){};
-
 public:
     LodComponent();
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     static float32 GetDefaultDistance(int32 layer);
 
@@ -137,7 +135,7 @@ public:
     void SetLodLayerDistance(int32 layerNum, float32 distance);
 
     /**
-         \brief Sets lod layer thet would be forcely used in the whole scene.
+         \brief Sets lod layer that would be forcely used in the whole scene.
          \param[in] layer layer to set on the for the scene. Use -1 to disable forced lod layer.
 	 */
     void SetForceLodLayer(int32 layer);
@@ -161,7 +159,7 @@ public:
 
 int32 LodComponent::GetLodLayersCount() const
 {
-    return (int32)lodLayers.size();
+    return static_cast<int32>(lodLayers.size());
 }
 
 float32 LodComponent::GetLodLayerDistance(int32 layerNum) const

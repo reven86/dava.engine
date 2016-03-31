@@ -161,7 +161,7 @@ uint32 File::Write(const void* pointerToData, uint32 dataSize)
 #endif
 
     //! Do not change order fread return not bytes -- items
-    uint32 lSize = (uint32)fwrite(pointerToData, 1, dataSize, file);
+    uint32 lSize = static_cast<uint32>(fwrite(pointerToData, 1, dataSize, file));
 
 #if defined(__DAVAENGINE_ANDROID__)
     //for Android value returned by 'fwrite()' is incorrect in case of full disk, that's why we calculate 'lSize' using 'GetPos()'
@@ -177,7 +177,7 @@ uint32 File::Read(void* pointerToData, uint32 dataSize)
 {
     //! Do not change order (1, dataSize), cause fread return count of size(2nd param) items
     //! May be performance issues
-    return (uint32)fread(pointerToData, 1, dataSize, file);
+    return static_cast<uint32>(fread(pointerToData, 1, dataSize, file));
 }
 
 uint32 File::ReadString(char8* destinationBuffer, uint32 destinationBufferSize)
@@ -239,7 +239,7 @@ uint32 File::ReadLine(void* pointerToData, uint32 bufferSize)
 
     if (bufferSize > 0)
     {
-        uint8* inPtr = (uint8*)pointerToData;
+        uint8* inPtr = reinterpret_cast<uint8*>(pointerToData);
         while (!IsEof() && bufferSize > 1)
         {
             uint8 nextChar;
@@ -256,7 +256,7 @@ uint32 File::ReadLine(void* pointerToData, uint32 bufferSize)
         }
         *inPtr = 0;
         inPtr++;
-        ret = (uint32)(inPtr - (uint8*)pointerToData);
+        ret = static_cast<uint32>(inPtr - reinterpret_cast<uint8*>(pointerToData));
     }
 
     return ret;
@@ -368,13 +368,13 @@ bool File::WriteString(const String& strtowrite, bool shouldNullBeWritten)
 {
     const char* str = strtowrite.c_str();
     uint32 null = (shouldNullBeWritten) ? (1) : (0);
-    return (Write((void*)str, (uint32)(strtowrite.length() + null)) == strtowrite.length() + null);
+    return (Write(str, static_cast<uint32>(strtowrite.length() + null)) == strtowrite.length() + null);
 }
 
 bool File::WriteNonTerminatedString(const String& strtowrite)
 {
     const char* str = strtowrite.c_str();
-    return (Write((void*)str, (uint32)(strtowrite.length())) == strtowrite.length());
+    return (Write(str, static_cast<uint32>(strtowrite.length())) == strtowrite.length());
 }
 
 bool File::WriteLine(const String& string)
@@ -382,8 +382,8 @@ bool File::WriteLine(const String& string)
     uint32 written = 0;
     const char* str = string.c_str();
     const char* endLine = "\r\n";
-    uint32 endLength = (uint32)strlen(endLine);
-    uint32 strLength = (uint32)string.length();
+    uint32 endLength = static_cast<uint32>(strlen(endLine));
+    uint32 strLength = static_cast<uint32>(string.length());
 
     written += Write(str, strLength);
     written += Write(endLine, endLength);

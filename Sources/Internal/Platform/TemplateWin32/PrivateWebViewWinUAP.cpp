@@ -42,13 +42,14 @@
 #include "Render/Image/ImageConvert.h"
 
 #include "Utils/UTF8Utils.h"
+#include "Utils/Random.h"
 
 #include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 using namespace Windows::System;
 using namespace Windows::Foundation;
@@ -124,7 +125,7 @@ IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const 
                             }
                             catch (Platform::COMException^ e)
                             {
-                                Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)",
+                                Logger::Error("[WebView] failed to load file %s: %s (0x%08x)",
                                               RTStringToString(fileName).c_str(),
                                               RTStringToString(e->Message).c_str(),
                                               e->HResult);
@@ -476,8 +477,14 @@ void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
     }
     else if (WebViewProperties::NAVIGATE_OPEN_BUFFER == props.navigateTo)
     {
+        // Generate some unique content identifier for each request
+        // as WebViews' backend can remember content id and reuse UriResolver instance
+        // for another WebView control
+        uint32 generatedContentId = Random::Instance()->Rand();
+        Platform::String^ contentId = ref new Platform::String(StringToWString(Format("%u", generatedContentId)).c_str());
+
         UriResolver^ resolver = ref new UriResolver(props.urlOrHtml, props.basePath);
-        Uri^ uri = nativeWebView->BuildLocalStreamUri("DAVA", "/johny23");
+        Uri^ uri = nativeWebView->BuildLocalStreamUri(contentId, "/johny23");
         nativeWebView->NavigateToLocalStreamUri(uri, resolver);
     }
     // clang-format on

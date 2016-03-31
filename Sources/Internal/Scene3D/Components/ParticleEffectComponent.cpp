@@ -436,7 +436,7 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializat
 
 int32 ParticleEffectComponent::GetEmittersCount() const
 {
-    return (int32)emitterDatas.size();
+    return static_cast<int32>(emitterDatas.size());
 }
 
 int32 ParticleEffectComponent::GetEmitterId(const ParticleEmitter* emitter) const
@@ -453,7 +453,7 @@ int32 ParticleEffectComponent::GetEmitterId(const ParticleEmitter* emitter) cons
 
 ParticleEmitter* ParticleEffectComponent::GetEmitter(int32 id) const
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterDatas.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterDatas.size())));
     return emitterDatas[id].emitter.Get();
 }
 
@@ -470,31 +470,31 @@ void ParticleEffectComponent::RemoveEmitter(const ParticleEmitter* emitter)
 
 Vector3 ParticleEffectComponent::GetSpawnPosition(int32 id) const
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterDatas.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterDatas.size())));
     return emitterDatas[id].spawnPosition;
 }
 
 void ParticleEffectComponent::SetSpawnPosition(int32 id, const Vector3& position)
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterDatas.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterDatas.size())));
     emitterDatas[id].spawnPosition = position;
 }
 
 DAVA::FilePath ParticleEffectComponent::GetOriginalConfigPath(int32 id) const
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterDatas.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterDatas.size())));
     return emitterDatas[id].originalFilepath;
 }
 
 void ParticleEffectComponent::SetOriginalConfigPath(int32 id, const FilePath& filepath)
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterDatas.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterDatas.size())));
     emitterDatas[id].originalFilepath = filepath;
 }
 
 const ParticleEmitterData& ParticleEffectComponent::GetEmitterData(int32 id) const
 {
-    DVASSERT((id >= 0) && (id < (int32)emitterDatas.size()));
+    DVASSERT((id >= 0) && (id < static_cast<int32>(emitterDatas.size())));
     return emitterDatas[id];
 }
 

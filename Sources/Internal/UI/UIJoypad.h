@@ -61,9 +61,6 @@ public:
     void AddControl(UIControl* control) override;
     void RemoveControl(UIControl* control) override;
 
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
-
     void Input(UIEvent* currentInput) override; // Can be overrided for control additioanl functionality implementation
     void InputCancelled(UIEvent* currentInput) override; // Can be overrided for control additioanl functionality implementation
 

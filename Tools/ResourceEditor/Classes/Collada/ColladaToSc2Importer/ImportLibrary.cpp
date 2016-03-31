@@ -188,7 +188,7 @@ AnimationData* ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation* colladaAn
         animation->SetDuration(colladaAnimation->duration);
         if (nullptr != colladaAnimation->keys)
         {
-            for (int32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
+            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
             {
                 SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
                 animation->AddKey(key);
@@ -203,15 +203,8 @@ AnimationData* ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation* colladaAn
 
 Texture* ImportLibrary::GetTextureForPath(const FilePath& imagePath) const
 {
-    FilePath texturePath(imagePath);
-    auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
-    if (imageFormat == IMAGE_FORMAT_UNKNOWN)
-    {
-        texturePath = TextureDescriptor::GetDescriptorPathname(texturePath);
-    }
-    TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
-
-    return Texture::CreateFromFile(texturePath);
+    TextureDescriptorUtils::CreateOrUpdateDescriptor(imagePath);
+    return Texture::CreateFromFile(imagePath);
 }
 
 NMaterial* ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial* colladaMaterial, const bool isShadow)

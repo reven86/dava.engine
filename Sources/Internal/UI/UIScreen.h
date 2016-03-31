@@ -58,8 +58,8 @@ protected:
 public:
     UIScreen(const Rect& rect = Rect(0.0f,
                                      0.0f,
-                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy
+                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx),
+                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy)
                                      ));
 
     /**
@@ -82,12 +82,15 @@ public:
     virtual int32 GetGroupId();
     virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
 
-    virtual void SystemWillAppear();
-    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenSize);
+    virtual void SystemScreenSizeChanged(const Rect& newFullScreenSize);
 
 protected:
-    virtual void LoadResources(){};
-    virtual void UnloadResources(){};
+    virtual void LoadResources()
+    {
+    }
+    virtual void UnloadResources()
+    {
+    }
 
     /**
 	 \brief Fills borders thats appears in non proportional screen scaling.

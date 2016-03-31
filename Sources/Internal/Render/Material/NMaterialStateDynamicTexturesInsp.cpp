@@ -77,7 +77,8 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial*
     {
         // if fxName is not valid (e.g global material)
         // we just add all local textures
-        for (const auto& t : material->localTextures)
+        const MaterialConfig& config = material->GetCurrentConfig();
+        for (const auto& t : config.localTextures)
             ret.insert(t.first);
     }
 
@@ -87,7 +88,7 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial*
 
 InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void* object, int filter) const
 {
-    NMaterial* material = (NMaterial*)object;
+    NMaterial* material = static_cast<NMaterial*>(object);
     DVASSERT(material);
 
     Set<FastName>* data = new Set<FastName>();
@@ -123,7 +124,7 @@ Vector<FastName> NMaterialStateDynamicTexturesInsp::MembersList(const DynamicDat
 {
     Vector<FastName> ret;
 
-    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
+    Set<FastName>* textures = static_cast<Set<FastName>*>(ddata.data.get());
     DVASSERT(textures);
 
     auto it = textures->begin();
@@ -148,11 +149,11 @@ VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(const DynamicData&
 {
     VariantType ret;
 
-    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
-    ;
+    Set<FastName>* textures = static_cast<Set<FastName>*>(ddata.data.get());
+
     DVASSERT(textures);
 
-    NMaterial* material = (NMaterial*)ddata.object;
+    NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
     if (textures->count(textureName))
@@ -175,11 +176,11 @@ void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata,
 {
     VariantType ret;
 
-    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
+    Set<FastName>* textures = static_cast<Set<FastName>*>(ddata.data.get());
     ;
     DVASSERT(textures);
 
-    NMaterial* material = (NMaterial*)ddata.object;
+    NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
     if (textures->count(textureName))
@@ -223,7 +224,7 @@ int NMaterialStateDynamicTexturesInsp::MemberFlags(const DynamicData& ddata, con
 {
     int flags = 0;
 
-    NMaterial* material = (NMaterial*)ddata.object;
+    NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
     flags |= I_VIEW;

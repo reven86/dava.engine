@@ -28,11 +28,11 @@
 
 
 #include "Document.h"
-#include "EditorSystems/EditorSystemsManager.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "Model/YamlPackageSerializer.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
@@ -41,33 +41,31 @@ using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(PackageNode* _package, QObject* parent)
+Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
-    , package(SafeRetain(_package))
+    , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
-    , systemManager(_package)
+    , fileSystemWatcher(new QFileSystemWatcher(this))
 {
-    systemManager.SelectionChanged.Connect(this, &Document::OnSelectedControlNodesChanged);
-    systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
-    systemManager.RootControlPositionChanged.Connect(this, &Document::RootControlPositionChanged);
-    systemManager.PropertiesChanged.Connect(this, &Document::OnPropertiesChanged);
-
+    QString path = GetPackageAbsolutePath();
+    DVASSERT(QFile::exists(path));
+    if (!fileSystemWatcher->addPath(path))
+    {
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
+    }
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
+    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
+    connect(undoStack.get(), &QUndoStack::cleanChanged, this, &Document::OnCleanChanged);
 }
 
 Document::~Document()
 {
+    disconnect(undoStack.get(), &QUndoStack::cleanChanged, this, &Document::OnCleanChanged); //destructor of UndoStack send signal here
     for (auto& context : contexts)
     {
         delete context.second;
     }
-    SafeRelease(package);
-}
-
-EditorSystemsManager* Document::GetSystemManager()
-{
-    return &systemManager;
 }
 
 const FilePath& Document::GetPackageFilePath() const
@@ -80,22 +78,22 @@ QString Document::GetPackageAbsolutePath() const
     return QString::fromStdString(GetPackageFilePath().GetAbsolutePathname());
 }
 
-QUndoStack* Document::GetUndoStack()
+QUndoStack* Document::GetUndoStack() const
 {
-    return undoStack;
+    return undoStack.get();
 }
 
-PackageNode* Document::GetPackage()
+PackageNode* Document::GetPackage() const
 {
-    return package;
+    return package.Get();
 }
 
-QtModelPackageCommandExecutor* Document::GetCommandExecutor()
+QtModelPackageCommandExecutor* Document::GetCommandExecutor() const
 {
-    return commandExecutor;
+    return commandExecutor.get();
 }
 
-WidgetContext* Document::GetContext(QObject* requester) const
+WidgetContext* Document::GetContext(void* requester) const
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -105,17 +103,21 @@ WidgetContext* Document::GetContext(QObject* requester) const
     return nullptr;
 }
 
-void Document::Activate()
+void Document::Save()
 {
-    systemManager.Activate();
+    QString path = GetPackageAbsolutePath();
+    fileSystemWatcher->removePath(path);
+    YamlPackageSerializer serializer;
+    serializer.SerializePackage(package.Get());
+    serializer.WriteToFile(package->GetPath());
+    undoStack->setClean();
+    if (!fileSystemWatcher->addPath(path))
+    {
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
+    }
 }
 
-void Document::Deactivate()
-{
-    systemManager.Deactivate();
-}
-
-void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
+void Document::SetContext(void* requester, WidgetContext* widgetContext)
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -124,7 +126,7 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
         delete iter->second;
         contexts.erase(iter);
     }
-    contexts.insert(std::pair<QObject*, WidgetContext*>(requester, widgetContext));
+    contexts.emplace(requester, widgetContext);
 }
 
 void Document::RefreshLayout()
@@ -132,21 +134,14 @@ void Document::RefreshLayout()
     package->RefreshPackageStylesAndLayout(true);
 }
 
-void Document::SetScale(float scale)
+bool Document::CanSave() const
 {
-    DAVA::float32 realScale = scale;
-    systemManager.GetScalableControl()->SetScale(Vector2(realScale, realScale));
-    emit CanvasSizeChanged();
+    return canSave;
 }
 
-void Document::SetEmulationMode(bool arg)
+bool Document::IsDocumentExists() const
 {
-    systemManager.SetEmulationMode(arg);
-}
-
-void Document::SetPixelization(bool hasPixelization)
-{
-    Texture::SetPixelization(hasPixelization);
+    return fileExists;
 }
 
 void Document::RefreshAllControlProperties()
@@ -154,17 +149,24 @@ void Document::RefreshAllControlProperties()
     package->GetPackageControlsNode()->RefreshControlProperties();
 }
 
-void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void Document::SetCanSave(bool arg)
 {
-    systemManager.SelectionChanged.Emit(selected, deselected);
+    if (arg != canSave)
+    {
+        canSave = arg;
+        CanSaveChanged(arg);
+    }
 }
 
-void Document::OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void Document::OnFileChanged(const QString& path)
 {
-    SelectedNodesChanged(selected, deselected);
+    DVASSERT(path == GetPackageAbsolutePath());
+    fileExists = QFile::exists(GetPackageAbsolutePath());
+    SetCanSave(!fileExists || !undoStack->isClean());
+    emit FileChanged(this);
 }
 
-void Document::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
+void Document::OnCleanChanged(bool clean)
 {
-    commandExecutor->ChangeProperty(properties, hash);
+    SetCanSave(fileExists && !clean);
 }

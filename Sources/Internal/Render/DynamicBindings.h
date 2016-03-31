@@ -93,6 +93,8 @@ public:
 
         PARAM_SHADOW_COLOR,
 
+        PARAM_PROJECTION_FLIP, //1.0 regular, -1.0 if projection matrix is y-inverted (rendering to RT with lower left origin API)
+
         AUTOBIND_UNIFORMS_END,
 
         DYNAMIC_PARAMETERS_COUNT = AUTOBIND_UNIFORMS_END,
@@ -149,7 +151,7 @@ private:
 
 inline const Matrix4& DynamicBindings::GetDynamicParamMatrix(DynamicBindings::eUniformSemantic shaderSemantic)
 {
-    return *(Matrix4*)GetDynamicParam(shaderSemantic);
+    return *static_cast<const Matrix4*>(GetDynamicParam(shaderSemantic));
 }
 }
 #endif

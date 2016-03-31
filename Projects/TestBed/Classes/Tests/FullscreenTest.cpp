@@ -108,7 +108,7 @@ void FullscreenTest::LoadResources()
     pinningMousePosText = new UIStaticText(Rect(310, 70, 300, 20));
     pinningMousePosText->SetFont(font);
     pinningMousePosText->SetTextColor(Color(0.5f, 0.5f, .0f, 1.0f));
-    pinningMousePosText->SetVisible(false);
+    pinningMousePosText->SetVisibilityFlag(false);
     AddControl(pinningMousePosText);
 
     // Scale factor test
@@ -346,17 +346,17 @@ void FullscreenTest::UpdateMode()
     {
     case InputSystem::eMouseCaptureMode::OFF:
         pinningText->SetText(L"Mouse capture mode: OFF");
-        pinningMousePosText->SetVisible(false);
+        pinningMousePosText->SetVisibilityFlag(false);
         break;
 
     case InputSystem::eMouseCaptureMode::FRAME:
         pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
-        pinningMousePosText->SetVisible(true);
+        pinningMousePosText->SetVisibilityFlag(true);
         break;
 
     case InputSystem::eMouseCaptureMode::PINING:
         pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
-        pinningMousePosText->SetVisible(true);
+        pinningMousePosText->SetVisibilityFlag(true);
         break;
     }
 }

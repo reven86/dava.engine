@@ -26,9 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "DAVAClassRegistrator.h"
-
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
 #include "Core/ApplicationCore.h"
@@ -63,6 +61,10 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Job/JobManager.h"
+
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
@@ -99,14 +101,18 @@ namespace DAVA
 static ApplicationCore* core = nullptr;
 
 Core::Core()
-    : nativeView(nullptr)
 {
     globalFrameIndex = 1;
     isActive = false;
     firstRun = true;
-
     isConsoleMode = false;
     options = new KeyedArchive();
+    float32 defaultUserScale = 1.f;
+    if (nullptr != options)
+    {
+        defaultUserScale = options->GetFloat("userScreenScaleFactor", 1.0f);
+    }
+    screenMetrics.userScale = defaultUserScale;
 }
 
 Core::~Core()
@@ -216,7 +222,7 @@ void DisableFloatingPointExceptions()
 void Core::CreateSingletons()
 {
     new Logger();
-    
+
 #ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
     fpu_exceptions::EnableFloatingPointExceptions();
 #else
@@ -249,6 +255,8 @@ void Core::CreateSingletons()
          */
         Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
     }
+
+    DeviceInfo::InitializeScreenInfo();
 
     new LocalizationSystem();
 
@@ -285,11 +293,13 @@ void Core::CreateSingletons()
 
     new LocalNotificationController();
 
-    DeviceInfo::InitializeScreenInfo();
-
     RegisterDAVAClasses();
 
     new Net::NetCore();
+
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Init();
+#endif
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
@@ -300,7 +310,7 @@ void Core::CreateSingletons()
 void Core::CreateRenderer()
 {
     DVASSERT(options->IsKeyExists("renderer"));
-    rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
+    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
 
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
@@ -333,6 +343,9 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
+#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    Steam::Deinit();
+#endif
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -383,10 +396,10 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
     options = SafeRetain(archiveOfOptions);
     
 #if defined(__DAVAENGINE_WIN_UAP__)
-    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view
-    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT));
 #endif
 }
 
@@ -397,7 +410,7 @@ KeyedArchive* Core::GetOptions()
 
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
-    return (Core::eScreenOrientation)screenOrientation;
+    return screenOrientation;
 }
 
 Core::eScreenMode Core::GetScreenMode()
@@ -442,7 +455,7 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
     {
         int32 minDiffWidth = 0;
         int32 minDiffHeight = 0;
-        float32 requestedAspect = (requestedMode.height > 0 ? (float32)requestedMode.width / (float32)requestedMode.height : 1.0f);
+        float32 requestedAspect = (requestedMode.height > 0 ? float32(requestedMode.width) / float32(requestedMode.height) : 1.0f);
         float32 minDiffAspect = 0;
 
         for (List<DisplayMode>::iterator it = availableDisplayModes.begin(); it != availableDisplayModes.end(); ++it)
@@ -452,7 +465,7 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
             int32 diffWidth = abs(availableMode.width - requestedMode.width);
             int32 diffHeight = abs(availableMode.height - requestedMode.height);
 
-            float32 availableAspect = (availableMode.height > 0 ? (float32)availableMode.width / (float32)availableMode.height : 1.0f);
+            float32 availableAspect = (availableMode.height > 0 ? float32(availableMode.width) / float32(availableMode.height) : 1.0f);
             float32 diffAspect = fabsf(availableAspect - requestedAspect);
 
             //          if (diffWidth >= 0 && diffHeight >= 0)
@@ -516,13 +529,13 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
 
 DisplayMode Core::GetCurrentDisplayMode()
 {
-    return DisplayMode();
+    return DisplayMode(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
 void Core::Quit()
 {
+    Logger::FrameworkDebug("[Core::Quit] is not supported by platform implementation of core");
     exit(0);
-    Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
 }
 
 void Core::SetApplicationCore(ApplicationCore* _core)
@@ -661,15 +674,16 @@ void Core::SystemProcessFrame()
         core->BeginFrame();
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
 
-        //#endif
+//#endif
 
+#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
         // recalc frame inside begin / end frame
-        if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+        if (vsc->WasScreenSizeChanged())
         {
-            VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-            UIScreenManager::Instance()->ScreenSizeChanged();
-            UIControlSystem::Instance()->ScreenSizeChanged();
+            vsc->ScreenSizeChanged();
         }
+#endif
 
         float32 frameDelta = SystemTimer::Instance()->FrameDelta();
         SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
@@ -732,6 +746,13 @@ void Core::SystemProcessFrame()
     //profiler::Dump();
     profiler::DumpAverage();
     #endif
+
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
+    if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
+    {
+        ApplyWindowSize();
+    }
+#endif // defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 void Core::GoBackground(bool isLock)
@@ -832,17 +853,93 @@ bool Core::IsConsoleMode()
 
 void* Core::GetNativeView() const
 {
-    return nativeView;
+    return screenMetrics.nativeView;
 }
 
 void Core::SetNativeView(void* newNativeView)
 {
-    nativeView = newNativeView;
+    DVASSERT(nullptr != newNativeView);
+    if (screenMetrics.nativeView != newNativeView)
+    {
+        screenMetrics.nativeViewModified = true;
+        screenMetrics.nativeView = newNativeView;
+    }
 }
 
 void Core::EnableConsoleMode()
 {
     isConsoleMode = true;
+}
+
+void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY)
+{
+    DVASSERT(nullptr != nativeView);
+    DVASSERT(scaleX * scaleY);
+    DVASSERT(!screenMetrics.initialized);
+    screenMetrics.nativeView = nativeView;
+    screenMetrics.width = width;
+    screenMetrics.height = height;
+    screenMetrics.scaleX = scaleX;
+    screenMetrics.scaleY = scaleY;
+    screenMetrics.nativeViewModified = false;
+    screenMetrics.screenMetricsModified = false;
+    screenMetrics.initialized = true;
+
+    rendererParams.window = screenMetrics.nativeView;
+    rendererParams.width = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
+    rendererParams.height = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
+
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
+    virtSystem->SetPhysicalScreenSize(static_cast<int32>(rendererParams.width), static_cast<int32>(rendererParams.height));
+    virtSystem->EnableReloadResourceOnResize(true);
+}
+
+void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
+{
+    if ((width == 0.f) || (height == 0.f) || (scaleX == 0.f) || (scaleY == 0.f))
+    {
+        return;
+    }
+    bool equal = true;
+    equal &= FLOAT_EQUAL(width, screenMetrics.width);
+    equal &= FLOAT_EQUAL(height, screenMetrics.height);
+    equal &= FLOAT_EQUAL(scaleX, screenMetrics.scaleX);
+    equal &= FLOAT_EQUAL(scaleY, screenMetrics.scaleY);
+
+    if (!equal)
+    {
+        screenMetrics.width = width;
+        screenMetrics.height = height;
+        screenMetrics.scaleX = scaleX;
+        screenMetrics.scaleY = scaleY;
+        // if changedMetricsScreen == true, then on the next call SystemProcessFrame() update all sizes and systems, after set it false
+        screenMetrics.screenMetricsModified = true;
+    }
+}
+
+void Core::ApplyWindowSize()
+{
+    DVASSERT(Renderer::IsInitialized());
+    int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
+    int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
+
+    // render reset
+    rhi::ResetParam params;
+    params.width = physicalWidth;
+    params.height = physicalHeight;
+    screenMetrics.screenMetricsModified = false;
+    if (screenMetrics.nativeViewModified)
+    {
+        screenMetrics.nativeViewModified = false;
+        params.window = screenMetrics.nativeView;
+    }
+    Renderer::Reset(params);
+
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+    virtSystem->ScreenSizeChanged();
 }
 
 void Core::SetIsActive(bool _isActive)
@@ -867,19 +964,18 @@ void Core::SetIcon(int32 /*iconId*/){};
 
 float32 Core::GetScreenScaleMultiplier() const
 {
-    float32 ret = 1.0f;
-
-    if (options)
-    {
-        ret = options->GetFloat("userScreenScaleFactor", 1.0f);
-    }
-
-    return ret;
+    return screenMetrics.userScale;
 }
 
 void Core::SetScreenScaleMultiplier(float32 multiplier)
 {
-    options->SetFloat("userScreenScaleFactor", multiplier);
+    DVASSERT(multiplier > 0.f);
+    if (!FLOAT_EQUAL(screenMetrics.userScale, multiplier))
+    {
+        screenMetrics.userScale = multiplier;
+        screenMetrics.screenMetricsModified = true;
+        options->SetFloat("userScreenScaleFactor", multiplier);
+    }
 }
 
 float32 Core::GetScreenScaleFactor() const

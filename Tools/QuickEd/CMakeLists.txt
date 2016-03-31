@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.0) 
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
@@ -9,7 +9,7 @@ set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
-add_definitions       ( -D__DISABLE_NATIVE_WEBVIEW__ )
+add_definitions       ( -DDISABLE_NATIVE_WEBVIEW -DDISABLE_NATIVE_TEXTFIELD)
 
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
@@ -30,7 +30,6 @@ add_definitions       (
 -DQT_HAVE_SSE
 -DQT_HAVE_MMXEXT
 -DQT_HAVE_SSE2
--DQT_LARGEFILE_SUPPORT
 -DQT_THREAD_SUPPORT
 )
 
@@ -51,8 +50,14 @@ set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
-set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
+
+if ( X64_MODE )
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
+else ()
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+endif ()
 
 setup_main_executable()
+
+execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )

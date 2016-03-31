@@ -70,13 +70,12 @@ void Thread::Init()
     sigemptyset(&cancelThreadAction.sa_mask);
     cancelThreadAction.sa_flags = 0;
     cancelThreadAction.sa_handler = thread_exit_handler;
-    sigaction(SIGRTMIN, &cancelThreadAction, NULL);
+    sigaction(SIGRTMIN, &cancelThreadAction, nullptr);
 #endif
 }
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     Join();
 }
 
@@ -128,22 +127,33 @@ void* PthreadMain(void* param)
 void Thread::Start()
 {
     DVASSERT(STATE_CREATED == state);
-    Retain();
 
     pthread_attr_t attr{};
     pthread_attr_init(&attr);
     if (stackSize != 0)
         pthread_attr_setstacksize(&attr, stackSize);
 
-    pthread_create(&handle, &attr, PthreadMain, (void*)this);
-    state = STATE_RUNNING;
+    int err = pthread_create(&handle, &attr, PthreadMain, this);
+    if (0 == err)
+    {
+        isJoinable.Set(true);
+        state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    }
+    else
+    {
+        Memset(&handle, 0, sizeof(handle));
+        Logger::Error("Thread::Start failed to create thread: error=%d", err);
+    }
 
     pthread_attr_destroy(&attr);
 }
 
 void Thread::Join()
 {
-    pthread_join(handle, NULL);
+    if (isJoinable.CompareAndSwap(true, false))
+    {
+        pthread_join(handle, nullptr);
+    }
 }
 
 Thread::Id Thread::GetCurrentId()
@@ -155,11 +165,13 @@ Thread::Id Thread::GetCurrentId()
 
 bool BindToProcessorApple(pthread_t thread, unsigned proc_n)
 {
-    thread_affinity_policy_data_t policy = { int(proc_n) };
+    thread_affinity_policy_data_t policy_data = { int(proc_n) };
+    thread_policy_t policy = reinterpret_cast<thread_policy_t>(&policy_data);
     thread_port_t mach_thread = pthread_mach_thread_np(thread);
+
     auto res = thread_policy_set(mach_thread,
                                  THREAD_AFFINITY_POLICY,
-                                 (thread_policy_t)&policy, 1);
+                                 policy, 1);
     return res == KERN_SUCCESS;
 }
 

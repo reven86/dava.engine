@@ -50,12 +50,17 @@ UIPackage::~UIPackage()
     SafeRelease(controlPackageContext);
 }
 
-DAVA::int32 UIPackage::GetControlsCount() const
+int32 UIPackage::GetControlsCount() const
 {
-    return (int32)controls.size();
+    return static_cast<int32>(controls.size());
 }
 
 UIControl* UIPackage::GetControl(const String& name) const
+{
+    return GetControl(FastName(name));
+}
+
+UIControl* UIPackage::GetControl(const FastName& name) const
 {
     for (UIControl* control : controls)
     {

@@ -31,7 +31,6 @@
 #define __DAVAENGINE_PROTODRIVER_H__
 
 #include <Base/BaseTypes.h>
-#include <Concurrency/Atomic.h>
 #include <Concurrency/Mutex.h>
 #include <Concurrency/Spinlock.h>
 
@@ -65,6 +64,7 @@ private:
     struct Channel : public IChannel
     {
         Channel(uint32 id, ProtoDriver* driver);
+        ~Channel() override;
 
         bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) override;
         const Endpoint& RemoteEndpoint() const override;
@@ -141,8 +141,6 @@ private:
 
     ProtoDecoder proto;
     ProtoHeader header;
-
-    static Atomic<uint32> nextPacketId; // Global for all instances
 };
 
 //////////////////////////////////////////////////////////////////////////

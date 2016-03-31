@@ -344,8 +344,8 @@ public:
      */
     void Draw();
 
-    void SaveObject(KeyedArchive* archive);
-    void LoadObject(KeyedArchive* archive);
+    void SaveObject(KeyedArchive* archive) override;
+    void LoadObject(KeyedArchive* archive) override;
 
     /// Overwrites frustum data (not pointer) and other math data only, no SceneNode etc. stuff here.
     /// Added to support some math caching. Future versions of this library should provide a separate class
@@ -382,6 +382,8 @@ protected:
     Matrix4 viewProjMatrix;
     Matrix4 invViewMatrix;
     Matrix4 invViewProjMatrix;
+
+    float32 projectionFlip;
 
     uint32 flags;
 

@@ -30,7 +30,10 @@ import com.dava.framework.InputManagerCompat.InputDeviceListener;
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener, InputDeviceListener
 {
     public static boolean isPaused = true;
-    public static boolean isFocused = true;
+    // on start we will gain focus and know about it after onWindowFocusChanged
+    // if user disable lock screen focus stay in our window
+    public static boolean isFocused = false; // do not change
+    
     public static boolean isSurfaceReady = false;
 
     protected JNISurfaceView surfaceView = null;
@@ -290,6 +293,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.d(JNIConst.LOG_TAG, "[Activity::onStart] in");
     	super.onStart();
     	fmodDevice.start();
+    	
+    	if (isFocused)
+        {
+        	// we not lost focus, it can happen if 
+        	// user disable any lock screen in security settings
+        	// and turn off screen, then turn on screen, our window
+        	// steel has focus
+    		HideSplashScreenView();
+        }
 
         RunOnMainLoopThread(new Runnable() {
             public void run()
@@ -391,6 +403,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         handleSuspend();
+
+        DestroyKeyboardLayout();
+
         super.onPause();
 
         Log.d(JNIConst.LOG_TAG, "[Activity::onPause] out");
@@ -516,6 +531,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         if(hasFocus) {
             HideSplashScreenView();
     		HideNavigationBar(getWindow().getDecorView());
+            InitKeyboardLayout();
     	}
     	Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");
     }
@@ -557,6 +573,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 }
             });
         }
+    }
+
+    void DestroyKeyboardLayout() {
+        final WindowManager windowManager = getWindowManager();
+        JNITextField.DestroyKeyboardLayout(windowManager);
     }
     
     protected final List<Integer> supportedAxises = Arrays.asList(

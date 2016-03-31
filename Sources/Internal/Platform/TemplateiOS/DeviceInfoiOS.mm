@@ -194,10 +194,20 @@ String DeviceInfoPrivate::GetModel()
         if ([modelName hasPrefix:@"iPad4,9"])
             model = "iPad Mini 3 (China)";
 
+        if ([modelName hasPrefix:@"iPad5,1"])
+            model = "iPad Mini 4 WiFi";
+        if ([modelName hasPrefix:@"iPad5,2"])
+            model = "iPad Mini 4 Cellular";
+
         if ([modelName hasPrefix:@"iPad5,3"])
             model = "iPad 6 WiFi";
         if ([modelName hasPrefix:@"iPad5,4"])
             model = "iPad 6 Cellular";
+
+        if ([modelName hasPrefix:@"iPad6,7"])
+            model = "iPad Pro WiFi";
+        if ([modelName hasPrefix:@"iPad6,8"])
+            model = "iPad Pro Cellular";
 
         // iPod
         if ([modelName hasPrefix:@"iPod1,1"])
@@ -394,7 +404,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
     //TODO: remove this empty realization and implement detection of HID connection
-    return false;
+    return DeviceInfo::eHIDType::HID_TOUCH_TYPE == type;
 }
 
 bool DeviceInfoPrivate::IsTouchPresented()

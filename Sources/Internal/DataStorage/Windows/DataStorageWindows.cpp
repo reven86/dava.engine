@@ -33,7 +33,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_STEAM__)
 
 IDataStorage* DataStorage::Create()
 {
@@ -43,6 +43,9 @@ IDataStorage* DataStorage::Create()
 #endif
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+using namespace Windows::Storage;
+using namespace Windows::Foundation;
+
 DataStorageWin::DataStorageWin()
 {
     roamingSettings = ApplicationData::Current->RoamingSettings;

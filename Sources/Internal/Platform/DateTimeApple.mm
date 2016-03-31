@@ -50,7 +50,7 @@ DAVA::WideString DateTime::AsWString(const wchar_t* format) const
 
     GmTimeThreadSafe(&timeinfo, &timeWithTZ);
 
-    locale_t loc = newlocale(LC_ALL_MASK, locID.c_str(), NULL);
+    locale_t loc = newlocale(LC_ALL_MASK, locID.c_str(), 0);
     size_t size = wcsftime_l(buffer, 256, format, &timeinfo, loc);
     DVASSERT(size);
     DAVA::WideString str(buffer);
@@ -110,9 +110,9 @@ WideString DateTime::GetLocalizedTime() const
 
 int32 DateTime::GetLocalTimeZoneOffset()
 {
-    Timestamp t = time(NULL);
+    Timestamp t = time(nullptr);
     struct tm resultStruct = { 0 };
     DateTime::LocalTimeThreadSafe(&resultStruct, &t);
-    return (int32)resultStruct.tm_gmtoff;
+    return static_cast<int32>(resultStruct.tm_gmtoff);
 }
 }

@@ -31,7 +31,7 @@
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"
@@ -207,13 +207,13 @@ void SetToRHI(Handle hstate)
     {
         if (depthTestEnabled != GL_TRUE)
         {
-            glEnable(GL_DEPTH_TEST);
+            GL_CALL(glEnable(GL_DEPTH_TEST));
             depthTestEnabled = GL_TRUE;
         }
 
         if (depthFunc != state->depthFunc)
         {
-            glDepthFunc(state->depthFunc);
+            GL_CALL(glDepthFunc(state->depthFunc))
             depthFunc = state->depthFunc;
         }
     }
@@ -221,7 +221,7 @@ void SetToRHI(Handle hstate)
     {
         if (depthTestEnabled != GL_FALSE)
         {
-            glDisable(GL_DEPTH_TEST);
+            GL_CALL(glDisable(GL_DEPTH_TEST));
             depthTestEnabled = GL_FALSE;
         }
     }
@@ -236,32 +236,32 @@ void SetToRHI(Handle hstate)
     {
         if (stencilEnabled != GL_TRUE)
         {
-            glEnable(GL_STENCIL_TEST);
+            GL_CALL(glEnable(GL_STENCIL_TEST));
             stencilEnabled = GL_TRUE;
         }
 
         if (state->stencilSeparate)
         {
-            glStencilOpSeparate(GL_FRONT, state->stencilFront.failOp, state->stencilFront.depthFailOp, state->stencilFront.depthStencilPassOp);
-            glStencilFuncSeparate(GL_FRONT, state->stencilFront.func, state->stencilFront.refValue, state->stencilFront.readMask);
-            glStencilMaskSeparate(GL_FRONT, state->stencilFront.writeMask);
+            GL_CALL(glStencilOpSeparate(GL_FRONT, state->stencilFront.failOp, state->stencilFront.depthFailOp, state->stencilFront.depthStencilPassOp));
+            GL_CALL(glStencilFuncSeparate(GL_FRONT, state->stencilFront.func, state->stencilFront.refValue, state->stencilFront.readMask));
+            GL_CALL(glStencilMaskSeparate(GL_FRONT, state->stencilFront.writeMask));
 
-            glStencilOpSeparate(GL_BACK, state->stencilBack.failOp, state->stencilBack.depthFailOp, state->stencilBack.depthStencilPassOp);
-            glStencilFuncSeparate(GL_BACK, state->stencilBack.func, state->stencilBack.refValue, state->stencilBack.readMask);
-            glStencilMaskSeparate(GL_BACK, state->stencilBack.writeMask);
+            GL_CALL(glStencilOpSeparate(GL_BACK, state->stencilBack.failOp, state->stencilBack.depthFailOp, state->stencilBack.depthStencilPassOp));
+            GL_CALL(glStencilFuncSeparate(GL_BACK, state->stencilBack.func, state->stencilBack.refValue, state->stencilBack.readMask));
+            GL_CALL(glStencilMaskSeparate(GL_BACK, state->stencilBack.writeMask));
         }
         else
         {
-            glStencilOp(state->stencilFront.failOp, state->stencilFront.depthFailOp, state->stencilFront.depthStencilPassOp);
-            glStencilFunc(state->stencilFront.func, state->stencilFront.refValue, state->stencilFront.readMask);
-            glStencilMask(state->stencilFront.writeMask);
+            GL_CALL(glStencilOp(state->stencilFront.failOp, state->stencilFront.depthFailOp, state->stencilFront.depthStencilPassOp));
+            GL_CALL(glStencilFunc(state->stencilFront.func, state->stencilFront.refValue, state->stencilFront.readMask));
+            GL_CALL(glStencilMask(state->stencilFront.writeMask));
         }
     }
     else
     {
         if (stencilEnabled != GL_FALSE)
         {
-            glDisable(GL_STENCIL_TEST);
+            GL_CALL(glDisable(GL_STENCIL_TEST));
             stencilEnabled = GL_FALSE;
         }
     }

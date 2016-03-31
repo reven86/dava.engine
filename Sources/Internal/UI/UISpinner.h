@@ -135,9 +135,7 @@ public:
     void Input(UIEvent* currentInput) override;
     void Update(float32 timeElapsed) override;
 
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
     void LoadFromYamlNodeCompleted() override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
 
     SpinnerAdapter* GetAdater() const
     {
@@ -189,7 +187,7 @@ protected:
     void OnPreviousPressed(BaseObject* caller, void* param, void* callerData);
     void OnScrollAnimationEnd(BaseObject* caller, void* param, void* callerData);
 
-    virtual void OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, bool isSelectedChanged);
+    void OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, bool isSelectedChanged) override;
 
     void OnSelectWithSlide(bool isPrevious);
     void SetupInternalControls();

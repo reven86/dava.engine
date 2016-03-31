@@ -75,8 +75,8 @@ LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libzip_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := fribidi_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfribidi_android.a
+LOCAL_MODULE := icucommon_android
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libicucommon_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -102,6 +102,7 @@ DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
 
 # set exported includes
 DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
@@ -243,7 +244,7 @@ DV_LOCAL_STATIC_LIBRARIES += curl_android
 DV_LOCAL_STATIC_LIBRARIES += ssl_android
 DV_LOCAL_STATIC_LIBRARIES += crypto_android
 DV_LOCAL_STATIC_LIBRARIES += zip_android
-DV_LOCAL_STATIC_LIBRARIES += fribidi_android
+DV_LOCAL_STATIC_LIBRARIES += icucommon_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
 DV_LOCAL_STATIC_LIBRARIES += webp_android
@@ -306,6 +307,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
@@ -387,7 +389,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DataStorage/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Timer/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Logger/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)
 

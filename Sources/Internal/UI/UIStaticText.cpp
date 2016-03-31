@@ -30,10 +30,8 @@
 #include "Utils/Utils.h"
 #include "UI/UIStaticText.h"
 #include "Base/ObjectFactory.h"
-#include "UI/UIYamlLoader.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Animation/LinearAnimation.h"
@@ -96,7 +94,7 @@ UIStaticText* UIStaticText::Clone()
 void UIStaticText::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIStaticText* t = (UIStaticText*)srcControl;
+    UIStaticText* t = static_cast<UIStaticText*>(srcControl);
 
     SafeRelease(textBlock);
     textBlock = t->textBlock->Clone();
@@ -363,208 +361,6 @@ const UIControlBackground::UIMargins* UIStaticText::GetMargins() const
     return textBg->GetMargins();
 }
 
-void UIStaticText::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* fontNode = node->Get("font");
-    const YamlNode* textNode = node->Get("text");
-    const YamlNode* multilineNode = node->Get("multiline");
-    const YamlNode* multilineBySymbolNode = node->Get("multilineBySymbol");
-    const YamlNode* fittingNode = node->Get("fitting");
-    const YamlNode* textColorNode = node->Get("textcolor");
-    const YamlNode* shadowColorNode = node->Get("shadowcolor");
-    const YamlNode* shadowOffsetNode = node->Get("shadowoffset");
-    const YamlNode* textAlignNode = node->Get("textalign");
-    const YamlNode* textUseRtlAlignNode = node->Get("textUseRtlAlign");
-    const YamlNode* textColorInheritTypeNode = node->Get("textcolorInheritType");
-    const YamlNode* shadowColorInheritTypeNode = node->Get("shadowcolorInheritType");
-    const YamlNode* textMarginsNode = node->Get("textMargins");
-    const YamlNode* textPerPixelAccuracyTypeNode = node->Get("textperPixelAccuracyType");
-
-    if (fontNode)
-    {
-        const String& fontName = fontNode->AsString();
-        Font* font = loader->GetFontByName(fontName);
-        SetFont(font);
-    }
-
-    bool multiline = loader->GetBoolFromYamlNode(multilineNode, false);
-    bool multilineBySymbol = loader->GetBoolFromYamlNode(multilineBySymbolNode, false);
-    SetMultiline(multiline, multilineBySymbol);
-
-    if (fittingNode)
-    {
-        SetFittingOption(loader->GetFittingOptionFromYamlNode(fittingNode));
-    }
-
-    if (textColorNode)
-    {
-        SetTextColor(textColorNode->AsColor());
-    }
-
-    if (shadowColorNode)
-    {
-        SetShadowColor(shadowColorNode->AsColor());
-    }
-
-    if (shadowOffsetNode)
-    {
-        SetShadowOffset(shadowOffsetNode->AsVector2());
-    }
-
-    if (textAlignNode)
-    {
-        SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
-    }
-
-    if (textUseRtlAlignNode)
-    {
-        SetTextUseRtlAlign(textUseRtlAlignNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE);
-    }
-
-    if (textNode)
-    {
-        SetText(LocalizedString(textNode->AsWString()));
-    }
-
-    if (textColorInheritTypeNode)
-    {
-        GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(textColorInheritTypeNode));
-    }
-
-    if (shadowColorInheritTypeNode)
-    {
-        GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(shadowColorInheritTypeNode));
-    }
-
-    if (textMarginsNode)
-    {
-        UIControlBackground::UIMargins textMargins(textMarginsNode->AsVector4());
-        GetTextBackground()->SetMargins(&textMargins);
-        GetShadowBackground()->SetMargins(&textMargins);
-    }
-
-    if (textPerPixelAccuracyTypeNode)
-    {
-        GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(textPerPixelAccuracyTypeNode));
-        GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(textPerPixelAccuracyTypeNode));
-    }
-}
-
-YamlNode* UIStaticText::SaveToYamlNode(UIYamlLoader* loader)
-{
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    // UIStaticText has its own default value for Pixel Accuracy
-    node->RemoveNodeFromMap("perPixelAccuracy");
-
-    ScopedPtr<UIStaticText> baseControl(new UIStaticText());
-    //Font
-    //Get font name and put it here
-    node->Set("font", FontManager::Instance()->GetFontName(this->GetFont()));
-
-    //TextColor
-    const Color& textColor = GetTextColor();
-    if (baseControl->GetTextColor() != textColor)
-    {
-        node->Set("textcolor", VariantType(textColor));
-    }
-
-    // Base per pixel accuracy
-    int perPixelAccuracyType = GetBackground()->GetPerPixelAccuracyType();
-    if (baseControl->GetBackground()->GetPerPixelAccuracyType() != perPixelAccuracyType)
-    {
-        node->Set("perPixelAccuracy", loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
-    }
-
-    // ShadowColor
-    const Color& shadowColor = GetShadowColor();
-    if (baseControl->GetShadowColor() != shadowColor)
-    {
-        node->Set("shadowcolor", VariantType(shadowColor));
-    }
-
-    // Text Color Inherit Type.
-    int32 colorInheritType = (int32)GetTextBackground()->GetColorInheritType();
-    if (baseControl->GetTextBackground()->GetColorInheritType() != colorInheritType)
-    {
-        node->Set("textcolorInheritType", loader->GetColorInheritTypeNodeValue(colorInheritType));
-    }
-
-    // Shadow Color Inherit Type.
-    colorInheritType = (int32)GetShadowBackground()->GetColorInheritType();
-    if (baseControl->GetShadowBackground()->GetColorInheritType() != colorInheritType)
-    {
-        node->Set("shadowcolorInheritType", loader->GetColorInheritTypeNodeValue(colorInheritType));
-    }
-
-    // Text Per Pixel Accuracy Type - text and text shadow
-    int32 textPerPixelAccuracyType = (int32)GetTextBackground()->GetPerPixelAccuracyType();
-    if (baseControl->GetTextBackground()->GetPerPixelAccuracyType() != textPerPixelAccuracyType)
-    {
-        node->Set("textperPixelAccuracyType", loader->GetPerPixelAccuracyTypeNodeValue(textPerPixelAccuracyType));
-    }
-
-    // ShadowOffset
-    const Vector2& shadowOffset = GetShadowOffset();
-    if (baseControl->GetShadowOffset() != shadowOffset)
-    {
-        node->Set("shadowoffset", shadowOffset);
-    }
-
-    //Text
-    const WideString& text = GetText();
-    if (baseControl->GetText() != text)
-    {
-        node->Set("text", text);
-    }
-    //Multiline
-    if (baseControl->textBlock->GetMultiline() != this->textBlock->GetMultiline())
-    {
-        node->Set("multiline", this->textBlock->GetMultiline());
-    }
-    //multilineBySymbol
-    if (baseControl->textBlock->GetMultilineBySymbol() != this->textBlock->GetMultilineBySymbol())
-    {
-        node->Set("multilineBySymbol", this->textBlock->GetMultilineBySymbol());
-    }
-    //fitting - Array of strings
-    if (baseControl->textBlock->GetFittingOption() != this->textBlock->GetFittingOption())
-    {
-        node->SetNodeToMap("fitting", loader->GetFittingOptionNodeValue(textBlock->GetFittingOption()));
-    }
-
-    // Text Align
-    if (baseControl->GetTextAlign() != this->GetTextAlign())
-    {
-        node->SetNodeToMap("textalign", loader->GetAlignNodeValue(this->GetTextAlign()));
-    }
-
-    // Text use rtl align
-    if (baseControl->GetTextAlign() != this->GetTextAlign())
-    {
-        node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
-    }
-
-    // Draw type. Must be overriden for UITextControls.
-    if (baseControl->GetBackground()->GetDrawType() != this->GetBackground()->GetDrawType())
-    {
-        node->Set("drawType", loader->GetDrawTypeNodeValue(this->GetBackground()->GetDrawType()));
-    }
-
-    // No need to compare text margins with the base one -
-    // if they exist, they are always non-default.
-    const UIControlBackground::UIMargins* textMargins = GetTextBackground()->GetMargins();
-    if (textMargins)
-    {
-        VariantType textMarginsVariant(textMargins->AsVector4());
-        node->Set("textMargins", &textMarginsVariant);
-    }
-
-    return node;
-}
-
 Animation* UIStaticText::TextColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 0*/)
 {
     LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &textBg->color, finalColor, time, interpolationFunc);
@@ -657,8 +453,8 @@ int32 UIStaticText::GetTextColorInheritType() const
 
 void UIStaticText::SetTextColorInheritType(int32 type)
 {
-    GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)type);
-    GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)type);
+    GetTextBackground()->SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
+    GetShadowBackground()->SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
 }
 
 int32 UIStaticText::GetTextPerPixelAccuracyType() const
@@ -668,8 +464,8 @@ int32 UIStaticText::GetTextPerPixelAccuracyType() const
 
 void UIStaticText::SetTextPerPixelAccuracyType(int32 type)
 {
-    GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)type);
-    GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)type);
+    GetTextBackground()->SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
+    GetShadowBackground()->SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
 }
 
 int32 UIStaticText::GetMultilineType() const

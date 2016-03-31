@@ -31,7 +31,7 @@
 #define MAINWINDOW_H
 
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -45,6 +45,7 @@ class PreviewWidget;
 
 class LocalizationEditorDialog;
 class Document;
+class DocumentGroup;
 class SpritesPacker;
 class LoggerOutputObject;
 class Project;
@@ -54,48 +55,35 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
     Q_OBJECT
 
 public:
-    struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
+    ~MainWindow() override;
+    void AttachDocumentGroup(DocumentGroup* documentGroup);
 
-    void CreateUndoRedoActions(const QUndoGroup* undoGroup);
-    int CloseTab(int index);
-    void SetCurrentTab(int index);
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
-    int AddTab(Document* document, int index);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
-    bool isPixelized() const;
     QComboBox* GetComboBoxLanguage();
 
 protected:
     void closeEvent(QCloseEvent* event) override;
 
 signals:
-    void TabClosed(int tab);
     void CloseProject();
     void ActionExitTriggered();
     void RecentMenuTriggered(QAction*);
     void ActionOpenProjectTriggered(QString projectPath);
     void OpenPackageFile(QString path);
-    void SaveAllDocuments();
-    void SaveDocument(int index);
-    void CurrentTabChanged(int index);
-    void CloseRequested();
+    bool CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
-    void EmulationModeChanbed(bool emulationMode);
-    void PixelizationChanged(bool pixelization);
+    void EmulationModeChanged(bool emulationMode);
 
 public slots:
-    void OnProjectIsOpenChanged(bool arg);
-    void OnCountChanged(int count);
     void OnDocumentChanged(Document* document);
 
 private slots:
-    void OnCleanChanged(bool val);
-    void OnSaveDocument();
     void OnShowHelp();
 
     void OnOpenProject();
@@ -104,8 +92,7 @@ private slots:
 
     void OnBackgroundCustomColorClicked();
 
-    // Pixelization.
-    void OnPixelizationStateChanged();
+    void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
     void OnBiDiSupportChanged(int arg);
@@ -122,7 +109,6 @@ private:
     void InitMenu();
     void SetupViewMenu();
     void SetupBackgroundMenu();
-    void DisableActions();
     void UpdateProjectSettings(const QString& filename);
 
     // Save/restore positions of DockWidgets and main window geometry

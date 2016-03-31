@@ -192,11 +192,11 @@ public:
     virtual bool IsTextSupportsSoftwareRendering() const
     {
         return false;
-    };
+    }
     virtual bool IsTextSupportsHardwareRendering() const
     {
         return false;
-    };
+    }
 
     //This will allow to determine font type
     virtual eFontType GetFontType() const;

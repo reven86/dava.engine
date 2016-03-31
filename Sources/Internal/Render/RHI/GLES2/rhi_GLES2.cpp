@@ -35,7 +35,7 @@
     #include "../Common/dbg_StatSet.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"
@@ -70,9 +70,13 @@ GLenum _GLES2_LastSetTex0Target = GL_TEXTURE_2D;
 int _GLES2_LastActiveTexture = -1;
 bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
+bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
+volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
 DAVA::Mutex _GLES2_ScreenshotCallbackSync;
+
+DAVA::uint8 volatile pre_call_registers[64];
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC _GLES2_WindowDC = 0;
@@ -194,7 +198,7 @@ gles2_TextureFormatSupported(TextureFormat format)
 static void
 gles_check_GL_extensions()
 {
-    const char* ext = (const char*)glGetString(GL_EXTENSIONS);
+    const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
 
     if (!IsEmptyString(ext))
     {
@@ -227,18 +231,21 @@ gles_check_GL_extensions()
 #endif
 
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
+
+        _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
     }
 
     _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
 
-    const char* version = (const char*)glGetString(GL_VERSION);
+    const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
     {
-        int majorVersion = 2;
+        int majorVersion = 2, minorVersion = 0;
         const char* dotChar = strchr(version, '.');
-        if (dotChar && dotChar != version)
+        if (dotChar && dotChar != version && *(dotChar + 1))
         {
             majorVersion = atoi(dotChar - 1);
+            minorVersion = atoi(dotChar + 1);
         }
 
         if (strstr(version, "OpenGL ES"))
@@ -255,6 +262,13 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
 
+            if (majorVersion >= 3)
+            {
+                if ((majorVersion > 3) || (minorVersion >= 2))
+                    _GLES2_IsSeamlessCubmapSupported = true;
+            }
+
+
 #if defined(GL_R16F) && defined(GL_RG16F)
             RG16F_Supported = majorVersion >= 3;
 #endif
@@ -270,7 +284,7 @@ gles_check_GL_extensions()
         }
     }
 
-    const char* renderer = (const char*)glGetString(GL_RENDERER);
+    const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
         if (strstr(renderer, "Mali"))
@@ -278,6 +292,15 @@ gles_check_GL_extensions()
             // drawing from memory is worst case scenario,
             // unless running on some buggy piece of shit
             _GLES2_UseUserProvidedIndices = true;
+        }
+
+        if (strcmp(renderer, "NVIDIA Tegra") == 0)
+        {
+            //Without offensive language:
+            //it seems like some GL-functions in SHIELD driver implementation
+            //corrupt 'callee-saved' Neon registers (q4-q7).
+            //So, we just restore it after any GL-call.
+            _GLES2_ValidateNeonCalleeSavedRegisters = true;
         }
     }
 }
@@ -573,8 +596,8 @@ void gles2_Initialize(const InitParam& param)
         glDebugMessageCallback(&_OGLErrorCallback, 0);
 
 #endif
-
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        if (_GLES2_IsSeamlessCubmapSupported)
+            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -684,7 +707,8 @@ void gles2_Initialize(const InitParam& param)
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
 
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    if (_GLES2_IsSeamlessCubmapSupported)
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

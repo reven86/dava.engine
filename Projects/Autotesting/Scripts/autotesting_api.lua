@@ -1,7 +1,7 @@
 SMALL_TIMEOUT = 3.0
 BIG_TIMEOUT = 30.0 -- Big time out for waiting
 TIMEOUT = 10.0 -- DEFAULT TIMEOUT
-TIMECLICK = 0.5 -- time for simple action
+TIMECLICK = 0.2 -- time for simple action
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
@@ -197,6 +197,9 @@ function GetParameter(name, default)
 end
 
 function MakeScreenshot()
+    while autotestingSystem:GetIsScreenShotSaving() do
+        coroutine.yield()
+    end
     local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
     return name
@@ -392,7 +395,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(controlName, background)
     local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
-    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(controlName, background))
+    return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
 end
 
 function IsDisabled(controlName)
@@ -502,6 +505,31 @@ function WaitControl(name, time)
     return result
 end
 
+function WaitControls(controls, waitAll, waitTime)
+    waitTime = waitTime or TIMEOUT
+    if waitAll == nil then
+        waitAll = true
+    end
+    Log((waitAll and 'Wait all controls' or 'Wait one control form list'), "DEBUG")
+    local find_controls_lua = function(controls, waitAll)
+        local loadedControls = 0
+        for _, control in pairs(controls)do
+            if autotestingSystem:FindControl(control) or autotestingSystem:FindControlOnPopUp(control) then
+                if not waitAll then
+                   return true
+                end
+                loadedControls = loadedControls + 1
+            end
+        end
+        return table.getn(controls) == loadedControls
+    end
+    local result = WaitUntil(waitTime, find_controls_lua, controls, waitAll)
+    if not result then
+        Log((waitAll and 'One or more controls not found' or 'Nothing found'), "DEBUG")
+    end
+    return result
+end
+
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
     Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
@@ -550,6 +578,12 @@ function ClearField(field)
     SetText(field, "")
     ClickControl(field)
     KeyPress(2)
+end
+
+function FastSelectControl(control)
+    Log('Scrol to contorol '.. control .. 'through API')
+    autotestingSystem:ScrollToControl(control)
+    return ClickControl(control)
 end
 
 function SelectItemInList(listName, item)
@@ -696,12 +730,10 @@ end
 ----------------------------------------------------------------------------------------------------
 
 -- Touch down
-function TouchDownPosition(pos, touchId, tapCount)
-    local tapCount = tapCount or 1
+function TouchDownPosition(pos, touchId)
     local touchId = touchId or 1
     local position = Vector.Vector2(pos.x, pos.y)
-    autotestingSystem:TouchDown(position, touchId, tapCount)
-    Yield()
+    autotestingSystem:TouchDown(position, touchId)
 end
 
 function TouchDown(x, y, touchId)
@@ -715,11 +747,11 @@ function TouchUp(touchId)
     autotestingSystem:TouchUp(touchId)
 end
 
-function ClickPosition(position, waitTime, touchId, tapCount)
-    TouchDownPosition(position, touchId, tapCount)
+function ClickPosition(position, waitTime, touchId)
+    Wait(waitTime)
+    TouchDownPosition(position, touchId)
     Wait(waitTime)
     TouchUp(touchId)
-    Wait(waitTime)
 end
 
 function Click(x, y, waitTime, touchId)
@@ -755,7 +787,8 @@ function DoubleClick(name, waitTime, touchId)
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
     if IsReady(name) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId, 2)
+        ClickPosition(position, waitTime, touchId)
+        ClickPosition(position, waitTime, touchId)
         return true
     end
     return false

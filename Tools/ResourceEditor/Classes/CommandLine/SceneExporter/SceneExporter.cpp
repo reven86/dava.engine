@@ -302,10 +302,10 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog)
 {
     bool allDescriptorsWereExported = true;
 
-    DAVA::TexturesMap sceneTextures;
-    SceneHelper::EnumerateSceneTextures(scene, sceneTextures, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
+    SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
+    SceneHelper::EnumerateSceneTextures(scene, collector);
 
-    for (const auto& scTex : sceneTextures)
+    for (const auto& scTex : collector.GetTextures())
     {
         const DAVA::FilePath& path = scTex.first;
         if (path.GetType() == DAVA::FilePath::PATH_IN_MEMORY)
@@ -324,6 +324,11 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog)
 bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog)
 {
     TextureDescriptor* descriptor = TextureDescriptor::CreateFromFile(pathname);
+    SCOPE_EXIT
+    {
+        DAVA::SafeDelete(descriptor);
+    };
+
     if (!descriptor)
     {
         errorLog.insert(Format("Can't create descriptor for pathname %s", pathname.GetAbsolutePathname().c_str()));
@@ -337,8 +342,16 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String
     if (GPUFamilyDescriptor::IsGPUForDevice(gpu) && (descriptor->format == FORMAT_INVALID))
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
+        return false;
+    }
 
-        delete descriptor;
+    FilePath sourceFilePath = descriptor->GetSourceTexturePathname();
+    ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(sourceFilePath);
+    if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
+    {
+        errorLog.insert(Format("Can't export non-square texture %s into compression format %s",
+                               pathname.GetAbsolutePathname().c_str(),
+                               GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format)));
         return false;
     }
 
@@ -351,7 +364,6 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String
         descriptor->Export(sceneUtils.dataFolder + workingPathname);
     }
 
-    delete descriptor;
     return isExported;
 }
 

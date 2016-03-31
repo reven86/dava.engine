@@ -122,10 +122,25 @@ public:
     eInputHandledType GetInputHandledType()
     {
         return inputHandledType;
-    };
+    }
+
     void ResetInputHandledType()
     {
         inputHandledType = INPUT_NOT_HANDLED;
+    }
+
+    struct WheelDelta
+    {
+        float32 x;
+        float32 y;
+    };
+
+    struct Gesture
+    {
+        float32 magnification; // delta -1..1
+        float32 rotation; // delta angle in degrees -cw +ccw
+        float32 dx; // -1..1 (-1 left)
+        float32 dy; // -1..1 (-1 top)
     };
 
     union {
@@ -134,18 +149,8 @@ public:
         char32_t keyChar; // unicode utf32 char
         MouseButton mouseButton;
         GamepadDevice::eDavaGamepadElement element;
-        struct
-        {
-            float32 x;
-            float32 y;
-        } wheelDelta; // scroll delta in mouse wheel clicks (or lines)
-        struct
-        {
-            float32 magnification; // delta -1..1
-            float32 rotation; // delta angle in degrees -cw +ccw
-            float32 dx; // -1..1 (-1 left)
-            float32 dy; // -1..1 (-1 top)
-        } gesture; // pinch/rotate/swipe
+        WheelDelta wheelDelta; // scroll delta in mouse wheel clicks (or lines)
+        Gesture gesture; // pinch/rotate/swipe
     };
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
@@ -153,7 +158,7 @@ public:
     Phase phase = Phase::ERROR; // began, ended, moved. See Phase
     UIControl* touchLocker = nullptr; // control that handles this input
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
-    int32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
+    uint32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
     Device device = Device::UNKNOWN;
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };

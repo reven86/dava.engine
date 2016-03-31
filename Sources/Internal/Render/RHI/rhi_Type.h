@@ -50,7 +50,7 @@ using DAVA::Size2i;
 
 typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
-static const uint32 DefaultDepthBuffer = (uint32)(-2);
+static const uint32 DefaultDepthBuffer = static_cast<uint32>(-2);
 
 typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
 
@@ -241,8 +241,8 @@ public:
     static bool IsCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout);
     static bool MakeCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout);
 
-    void Save(DAVA::File* out) const;
-    void Load(DAVA::File* in);
+    bool Save(DAVA::File* out) const;
+    bool Load(DAVA::File* in);
 
     void Dump() const;
 
@@ -831,10 +831,10 @@ RenderPassConfig
 
     RenderPassConfig()
         : queryBuffer(InvalidHandle)
-        , priority(0)
-        , invertCulling(0)
         , PerfQueryIndex0(DAVA::InvalidIndex)
         , PerfQueryIndex1(DAVA::InvalidIndex)
+        , priority(0)
+        , invertCulling(0)
     {
     }
 };

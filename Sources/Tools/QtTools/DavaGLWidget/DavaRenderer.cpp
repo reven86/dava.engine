@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/RenderBase.h"
 
 #include "DavaRenderer.h"
@@ -62,13 +64,12 @@ DavaRenderer::DavaRenderer()
     DAVA::QtLayer::Instance()->OnResume();
 }
 
-DavaRenderer::~DavaRenderer()
-{
-    DAVA::QtLayer::Instance()->Release();
-}
-
 void DavaRenderer::paint()
 {
+    // HACK Qt send key event to widget with focus not globaly
+    // if user hold ALT(CTRL, SHIFT) and then clicked DavaWidget(focused)
+    // we miss key down event, so we have to check for SHIFT, ALT, CTRL
+    // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
     using namespace DAVA;
     Qt::KeyboardModifiers modifiers = qApp->keyboardModifiers();
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();

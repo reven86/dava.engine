@@ -44,7 +44,7 @@ class DeferredScreenMetricEvents
     static const int32 DEFERRED_INTERVAL_MSEC = 100;
 
 public:
-    using UpdateMetricCallback = std::function<void(bool isSizeUpdate, float32 width, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)>;
+    using UpdateMetricCallback = std::function<void(float32 width, float32 height, float32 scaleX, float32 scaleY)>;
 
     DeferredScreenMetricEvents(bool isPhoneApi, UpdateMetricCallback callback, int32 intervalMs = DEFERRED_INTERVAL_MSEC);
 
@@ -61,8 +61,6 @@ private:
     Windows::UI::Xaml::DispatcherTimer^ timer = nullptr;
     bool isPhoneApiDetected = false;
 
-    bool isSizeUpdate = false;
-    bool isScaleUpdate = false;
     float32 width = 0.0f;
     float32 height = 0.0f;
     float32 scaleX = 0.0f;
@@ -106,13 +104,22 @@ inline void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core:
     if (!isPhoneApiDetected)
     {
         lockUpdate = true;
+        Windows::UI::Xaml::Controls::SwapChainPanel^ sw = dynamic_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(Windows::UI::Xaml::Window::Current->Content);
+        DVASSERT(sw);
+        scaleX = sw->CompositionScaleX;
+        scaleY = sw->CompositionScaleY;
+        width = static_cast<float32>(sw->ActualWidth);
+        height = static_cast<float32>(sw->ActualHeight);
         timer->Start();
     }
 }
 
-inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^, Windows::UI::Xaml::SizeChangedEventArgs^ args)
+inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^ swapChain, Windows::UI::Xaml::SizeChangedEventArgs^ args)
 {
-    isSizeUpdate = true;
+    Windows::UI::Xaml::Controls::SwapChainPanel^ sw = dynamic_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(swapChain);
+    DVASSERT(sw);
+    scaleX = sw->CompositionScaleX;
+    scaleY = sw->CompositionScaleY;
     width = args->NewSize.Width;
     height = args->NewSize.Height;
     timer->Start();
@@ -120,7 +127,8 @@ inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Obje
 
 inline void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChain, Platform::Object^)
 {
-    isScaleUpdate = true;
+    width = static_cast<float32>(swapChain->ActualWidth);
+    height = static_cast<float32>(swapChain->ActualHeight);
     scaleX = swapChain->CompositionScaleX;
     scaleY = swapChain->CompositionScaleY;
     timer->Start();
@@ -129,22 +137,27 @@ inline void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Wi
 inline void DeferredScreenMetricEvents::DeferredTick()
 {
     Windows::Foundation::Rect windowRect = Windows::UI::Xaml::Window::Current->CoreWindow->Bounds;
+    float32 windowScale = static_cast<float32>(Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->RawPixelsPerViewPixel);
+    DVASSERT(windowScale);
     float32 w = windowRect.Width;
     float32 h = windowRect.Height;
+    float32 trueMinWidth = minWindowWidth / windowScale;
+    float32 trueMinHeight = minWindowHeight / windowScale;
+    DVASSERT(scaleX * scaleY);
 
-    bool trackMinSize = minWindowWidth > 0.0f && minWindowHeight > 0.0f;
-    if (!isPhoneApiDetected && trackMinSize && (w < minWindowWidth || h < minWindowHeight))
+    bool trackMinSize = trueMinWidth > 0.0f && trueMinHeight > 0.0f;
+    if (!isPhoneApiDetected && trackMinSize && (w < trueMinWidth || h < trueMinHeight))
     {
-        w = std::max(w, minWindowWidth);
-        h = std::max(h, minWindowHeight);
+        w = std::max(w, trueMinWidth);
+        h = std::max(h, trueMinHeight);
         Windows::Foundation::Size size(w, h);
         auto currentView = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView();
 
         bool success = currentView->TryResizeView(size);
         if (!success)
         {
-            size.Width = minWindowWidth;
-            size.Height = minWindowHeight;
+            size.Width = trueMinWidth;
+            size.Height = trueMinHeight;
             if (!currentView->TryResizeView(size))
             {
                 Logger::FrameworkDebug("[DeferredScreenMetricEvents::DeferredTick]: Unable to resize window to minimum size");
@@ -159,10 +172,7 @@ inline void DeferredScreenMetricEvents::DeferredTick()
     if (!lockUpdate)
     {
         timer->Stop();
-        updateCallback(isSizeUpdate, width, height, isScaleUpdate, scaleX, scaleY);
-        isSizeUpdate = false;
-        isScaleUpdate = false;
-        width = height = scaleX = scaleY = 0.0f;
+        updateCallback(width, height, scaleX, scaleY);
     }
 }
 

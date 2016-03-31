@@ -42,7 +42,7 @@ NameProperty::NameProperty(ControlNode* anControl, const NameProperty* sourcePro
 {
     if (sourceProperty)
     {
-        control->GetControl()->SetName(sourceProperty->GetValue().AsString());
+        control->GetControl()->SetName(FastName(sourceProperty->GetValue().AsString()));
 
         if (cloneType == CT_INHERIT && control->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
         {
@@ -103,7 +103,7 @@ void NameProperty::ApplyValue(const DAVA::VariantType& value)
 {
     if (value.GetType() == VariantType::TYPE_STRING)
     {
-        control->GetControl()->SetName(value.AsString());
+        control->GetControl()->SetName(FastName(value.AsString()));
     }
     else
     {

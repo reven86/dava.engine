@@ -107,7 +107,7 @@ void RulerController::RecalculateRulerSettings()
     int closestValueIndex = 0;
     float closestScaleDistance = std::numeric_limits<float>::max();
 
-    for (int i = 0; i < sizeof(ticksMap); i++)
+    for (int i = 0; i < sizeof(ticksMap) / sizeof(ticksMap[0]); i++)
     {
         float curScaleDistance = std::fabs(ticksMap[i].scaleLevel - screenScale);
         if (curScaleDistance < closestScaleDistance)

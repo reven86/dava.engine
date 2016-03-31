@@ -67,7 +67,7 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
     {
         for (ComponentPropertiesSection* section : sourceProperties->componentProperties)
         {
-            UIComponent::eType type = (UIComponent::eType)section->GetComponent()->GetType();
+            UIComponent::eType type = static_cast<UIComponent::eType>(section->GetComponent()->GetType());
             int32 index = section->GetComponentIndex();
             ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(node->GetControl(), type, index, section, cloneType));
             AddComponentPropertiesSection(newSection);
@@ -126,22 +126,25 @@ uint32 RootProperty::GetCount() const
 
 AbstractProperty* RootProperty::GetProperty(int index) const
 {
-    if (index < (int)baseProperties.size())
+    DVASSERT(index >= 0);
+
+    if (index < static_cast<int>(baseProperties.size()))
         return baseProperties[index];
     index -= baseProperties.size();
 
-    if (index < (int)controlProperties.size())
+    if (index < static_cast<int>(controlProperties.size()))
         return controlProperties[index];
     index -= controlProperties.size();
 
-    if (index < (int)componentProperties.size())
+    if (index < static_cast<int>(componentProperties.size()))
         return componentProperties[index];
     index -= componentProperties.size();
 
-    if (index < (int)backgroundProperties.size())
+    if (index < static_cast<int>(backgroundProperties.size()))
         return backgroundProperties[index];
     index -= backgroundProperties.size();
 
+    DVASSERT(index < internalControlProperties.size());
     return internalControlProperties[index];
 }
 
@@ -237,9 +240,8 @@ ComponentPropertiesSection* RootProperty::AddComponentPropertiesSection(DAVA::ui
             index++;
     }
 
-    ComponentPropertiesSection* section = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType)componentType, index, nullptr, CT_INHERIT);
+    ScopedPtr<ComponentPropertiesSection> section(new ComponentPropertiesSection(node->GetControl(), static_cast<UIComponent::eType>(componentType), index, nullptr, CT_INHERIT));
     AddComponentPropertiesSection(section);
-    section->Release();
     return section;
 }
 
@@ -328,7 +330,7 @@ const Vector<BackgroundPropertiesSection*>& RootProperty::GetBackgroundPropertie
 
 BackgroundPropertiesSection* RootProperty::GetBackgroundPropertiesSection(int num) const
 {
-    if (0 <= num && num < (int)backgroundProperties.size())
+    if (0 <= num && num < static_cast<int>(backgroundProperties.size()))
         return backgroundProperties[num];
     return nullptr;
 }
@@ -340,7 +342,7 @@ const DAVA::Vector<InternalControlPropertiesSection*>& RootProperty::GetInternal
 
 InternalControlPropertiesSection* RootProperty::GetInternalControlPropertiesSection(int num) const
 {
-    if (0 <= num && num < (int)internalControlProperties.size())
+    if (0 <= num && num < static_cast<int>(internalControlProperties.size()))
         return internalControlProperties[num];
     return nullptr;
 }
@@ -524,7 +526,7 @@ uint32 RootProperty::GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint
         i++;
     }
     DVASSERT(index == 0);
-    return (uint32)componentProperties.size();
+    return static_cast<uint32>(componentProperties.size());
 }
 
 void RootProperty::RefreshComponentIndices()

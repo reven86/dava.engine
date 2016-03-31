@@ -53,7 +53,7 @@ public:
     ControlNode* GetControl() const;
 
 protected:
-    virtual void ApplyValue(const DAVA::VariantType& value);
+    void ApplyValue(const DAVA::VariantType& value) override;
 
 private:
     ControlNode* node; // weak

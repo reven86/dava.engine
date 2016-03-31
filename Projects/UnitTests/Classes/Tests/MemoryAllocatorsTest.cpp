@@ -63,43 +63,43 @@ public:
     Quaternion orientation;
 };
 
-DAVA_TESTCLASS(MemoryAllocatorsTest)
+DAVA_TESTCLASS (MemoryAllocatorsTest)
 {
-  DAVA_TEST(PoolAllocatorTest)
-  {
-  // 32 bytes block, 64 elements
-  FixedSizePoolAllocator pool(32, 64);
+    DAVA_TEST (PoolAllocatorTest)
+    {
+        // 32 bytes block, 64 elements
+        FixedSizePoolAllocator pool(32, 64);
 
-uint8* pointers[128];
+        uint8* pointers[128];
 
-for (uint32 k = 0; k < 128; ++k)
-{
-    pointers[k] = (uint8*)pool.New();
-    //Logger::Debug("ptr: %p", pointers[k]);
-}
+        for (uint32 k = 0; k < 128; ++k)
+        {
+            pointers[k] = static_cast<uint8*>(pool.New());
+            //Logger::Debug("ptr: %p", pointers[k]);
+        }
 
-for (uint32 k = 1; k < 128; ++k)
-{
-    if (k != 64)
-        TEST_VERIFY(pointers[k] == pointers[k - 1] + 32);
-    //        if (k != 64)
-    //        if (pointers[k] != pointers[k - 1] + 32)
-    //            Logger::Debug("Allocator error");
-}
+        for (uint32 k = 1; k < 128; ++k)
+        {
+            if (k != 64)
+                TEST_VERIFY(pointers[k] == pointers[k - 1] + 32);
+            //        if (k != 64)
+            //        if (pointers[k] != pointers[k - 1] + 32)
+            //            Logger::Debug("Allocator error");
+        }
 
-for (uint32 k = 0; k < 128; ++k)
-{
-    pool.Delete(pointers[k]);
-}
-}
+        for (uint32 k = 0; k < 128; ++k)
+        {
+            pool.Delete(pointers[k]);
+        }
+    }
 
-DAVA_TEST(PoolAllocatorNewDeleteTest)
-{
-    ObjectWithNDOverload* object1 = new ObjectWithNDOverload;
-    SafeDelete(object1);
+    DAVA_TEST (PoolAllocatorNewDeleteTest)
+    {
+        ObjectWithNDOverload* object1 = new ObjectWithNDOverload;
+        SafeDelete(object1);
 
-    ObjectWithNDOverload* object2 = new ObjectWithNDOverload;
-    SafeDelete(object2);
-}
+        ObjectWithNDOverload* object2 = new ObjectWithNDOverload;
+        SafeDelete(object2);
+    }
 }
 ;

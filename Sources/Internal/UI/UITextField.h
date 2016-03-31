@@ -176,9 +176,8 @@ public:
 
     UITextField(const Rect& rect = Rect());
 
-    void WillAppear() override;
-    void DidAppear() override;
-    void WillDisappear() override;
+    void OnActive() override;
+    void OnInactive() override;
 
     void OnFocused() override;
     void OnFocusLost(UIControl* newFocus) override;
@@ -199,9 +198,6 @@ public:
     WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString& replacementString);
 
     void Input(UIEvent* currentInput) override;
-
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
 
     /**
      \brief Sets contol input processing ability.
@@ -361,8 +357,8 @@ public:
 
 protected:
     ~UITextField() override;
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void OnVisible() override;
+    void OnInvisible() override;
 
 private:
     void SetRenderToTexture(bool value);

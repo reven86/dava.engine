@@ -63,8 +63,6 @@ private:
     //scene controls
     Scene* editorScene = nullptr;
     RotationControllerSystem* rotationSystem = nullptr;
-    Camera* activeCamera = nullptr;
-    UI3DView* scene3dView = nullptr;
     FilePath currentScenePath;
     bool needSetCamera = false;
 };

@@ -48,8 +48,8 @@ protected:
     virtual ~UIScrollView();
 
 public:
-    virtual void AddControl(UIControl* control);
-    virtual void RemoveControl(UIControl* control);
+    void AddControl(UIControl* control) override;
+    void RemoveControl(UIControl* control) override;
 
     // Add the control directly to the Scroll View Container.
     void AddControlToContainer(UIControl* control);
@@ -73,10 +73,10 @@ public:
     void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
     UIScrollView* Clone() override;
-    virtual void CopyDataFrom(UIControl* srcControl);
+    void CopyDataFrom(UIControl* srcControl) override;
 
-    virtual void SetRect(const Rect& rect);
-    virtual void SetSize(const Vector2& newSize);
+    void SetRect(const Rect& rect) override;
+    void SetSize(const Vector2& newSize) override;
 
     void SetPadding(const Vector2& padding);
     const Vector2 GetPadding() const;
@@ -91,13 +91,13 @@ public:
     void SetScrollSpeed(float32 speedInSeconds);
 
     // UIScrollBarDelegate implementation.
-    virtual float32 VisibleAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 TotalAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 ViewPosition(UIScrollBar* forScrollBar);
-    virtual void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition);
+    float32 VisibleAreaSize(UIScrollBar* forScrollBar) override;
+    float32 TotalAreaSize(UIScrollBar* forScrollBar) override;
+    float32 ViewPosition(UIScrollBar* forScrollBar) override;
+    void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition) override;
     void OnScrollViewContainerSizeChanged();
 
-    virtual const String GetDelegateControlPath(const UIControl* rootControl) const;
+    const String GetDelegateControlPath(const UIControl* rootControl) const override;
 
     bool IsAutoUpdate() const;
     void SetAutoUpdate(bool auto_);
@@ -106,9 +106,7 @@ public:
     void SetCenterContent(bool center_);
 
 protected:
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    virtual void LoadFromYamlNodeCompleted();
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
+    void LoadFromYamlNodeCompleted() override;
 
     Vector2 GetMaxSize(UIControl* control, Vector2 currentMaxSize, Vector2 parentShift);
     void PushContentToBounds(UIControl* control);

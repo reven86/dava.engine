@@ -34,6 +34,9 @@
 
 #include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
+#include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/Utils/MessageHandler.h"
+#include <QtGlobal>
 
 void InitPVRTexTool()
 {
@@ -47,31 +50,36 @@ void InitPVRTexTool()
 
 int main(int argc, char* argv[])
 {
-    QApplication a(argc, argv);
-    a.setOrganizationName("DAVA");
-    a.setApplicationName("QuickEd");
-
-    Q_INIT_RESOURCE(QtToolsResources);
-
-    QApplication::setQuitOnLastWindowClosed(false);
-
+    DAVA::QtLayer qtLayer;
     DAVA::Core::Run(argc, argv);
-    auto qtLayer = new DAVA::QtLayer(); //will be deleted with DavaRenderer. Sorry about that.
-    QObject::connect(&a, &QApplication::applicationStateChanged, [qtLayer](Qt::ApplicationState state) {
-        state == Qt::ApplicationActive ? qtLayer->OnResume() : qtLayer->OnSuspend();
-    });
-    InitPVRTexTool();
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
-
-    // Editor Settings might be used by any singleton below during initialization, so
-    // initialize it before any other one.
-    new EditorSettings();
-
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
 
-    auto* editorCore = new EditorCore();
+    int returnCode = 0;
+    {
+        qInstallMessageHandler(DAVAMessageHandler);
 
-    editorCore->Start();
+        QApplication a(argc, argv);
+        a.setOrganizationName("DAVA");
+        a.setApplicationName("QuickEd");
 
-    return QApplication::exec();
+        Themes::InitFromQApplication();
+        Q_INIT_RESOURCE(QtToolsResources);
+
+        QObject::connect(&a, &QApplication::applicationStateChanged, [&qtLayer](Qt::ApplicationState state) {
+            state == Qt::ApplicationActive ? qtLayer.OnResume() : qtLayer.OnSuspend();
+        });
+        InitPVRTexTool();
+        {
+            // Editor Settings might be used by any singleton below during initialization, so
+            // initialize it before any other one.
+            EditorSettings editorSettings;
+
+            EditorCore editorCore;
+
+            editorCore.Start();
+            returnCode = a.exec();
+        }
+    }
+    return returnCode;
 }

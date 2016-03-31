@@ -43,9 +43,9 @@ public:
     DebugRenderSystem(Scene* scene);
     ~DebugRenderSystem();
 
-    virtual void Process(float32 timeElapsed);
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void Process(float32 timeElapsed) override;
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
     void SetCamera(Camera* camera);
 

@@ -2,7 +2,7 @@
 #compiller flags
 
 if( APPLE )
-    set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES} AdHoc" CACHE STRING
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo;AdHoc"  CACHE STRING
         "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
         FORCE)
      
@@ -17,6 +17,11 @@ if( APPLE )
                         CMAKE_EXE_LINKER_FLAGS_ADHOC 
                         CMAKE_SHARED_LINKER_FLAGS_ADHOC 
                         CMAKE_MODULE_LINKER_FLAGS_ADHOC  )
+else()
+    set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING
+        "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
+        FORCE )
+
 endif()
 
 if     ( ANDROID )
@@ -94,6 +99,8 @@ elseif ( WIN32 )
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
+    add_definitions ( -D_UNICODE )
+    add_definitions ( -DUNICODE )
 endif  ()
 
 if( NOT DISABLE_DEBUG )
@@ -113,9 +120,11 @@ if( WARNING_DISABLE)
 
 elseif( WARNINGS_AS_ERRORS )
 
+if ( MACOS )
+        set(LOCAL_DISABLED_WARNINGS "-Werror")
+endif ()
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
--Werror \
 -Wno-c++98-compat-pedantic \
 -Wno-newline-eof \
 -Wno-gnu-anonymous-struct \
@@ -136,7 +145,6 @@ elseif( WARNINGS_AS_ERRORS )
 -Wno-format-nonliteral \
 -Wno-cast-align \
 -Wno-conversion \
--Wno-unreachable-code \
 -Wno-zero-length-array \
 -Wno-switch-enum \
 -Wno-c99-extensions \
@@ -148,7 +156,6 @@ elseif( WARNINGS_AS_ERRORS )
 -Wno-unused-macros \
 -Wno-disabled-macro-expansion \
 -Wno-undef \
--Wno-non-virtual-dtor \
 -Wno-char-subscripts \
 -Wno-unneeded-internal-declaration \
 -Wno-unused-variable \
@@ -166,13 +173,9 @@ elseif( WARNINGS_AS_ERRORS )
 -Wno-sometimes-uninitialized \
 -Wno-delete-non-virtual-dtor \
 -Wno-header-hygiene \
--Wno-old-style-cast \
 -Wno-unknown-warning-option \
--Wno-unreachable-code-return \
--Wno-unreachable-code-break \
 -Wno-reserved-id-macro \
 -Wno-documentation-pedantic \
--Wno-inconsistent-missing-override \
 -Wno-unused-local-typedef \
 -Wno-nullable-to-nonnull-conversion \
 -Wno-super-class-method-mismatch \
@@ -181,29 +184,31 @@ elseif( WARNINGS_AS_ERRORS )
 
     if( ANDROID )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
--Wno-reserved-id-macro \
--Wno-unused-local-typedef \
--Wno-inconsistent-missing-override \
--Wno-unknown-pragmas")
+            -Wno-reserved-id-macro \
+            -Wno-unused-local-typedef \
+            -Wno-unknown-pragmas")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
--Wno-cstring-format-directive \
--Wno-duplicate-enum \
--Wno-infinite-recursion \
--Wno-objc-interface-ivars \
--Wno-direct-ivar-access \
--Wno-objc-missing-property-synthesis \
--Wno-over-aligned \
--Wno-unused-exception-parameter \
--Wno-idiomatic-parentheses \
--Wno-vla-extension \
--Wno-vla \
--Wno-overriding-method-mismatch \
--Wno-method-signatures \
--Wno-receiver-forward-class \
--Wno-semicolon-before-method-body \
--Wno-import-preprocessor-directive-pedantic" )
+            -Wno-padded \
+            -Wno-covered-switch-default \
+            -Wno-cstring-format-directive \
+            -Wno-duplicate-enum \
+            -Wno-infinite-recursion \
+            -Wno-objc-interface-ivars \
+            -Wno-direct-ivar-access \
+            -Wno-objc-missing-property-synthesis \
+            -Wno-over-aligned \
+            -Wno-unused-exception-parameter \
+            -Wno-idiomatic-parentheses \
+            -Wno-vla-extension \
+            -Wno-vla \
+            -Wno-overriding-method-mismatch \
+            -Wno-method-signatures \
+            -Wno-receiver-forward-class \
+            -Wno-semicolon-before-method-body \
+            -Wno-reserved-id-macro \
+            -Wno-import-preprocessor-directive-pedantic" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( WIN32 )
@@ -223,7 +228,12 @@ elseif ( IOS     )
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
 
-elseif ( WIN32)
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win" ) 
+elseif ( WIN32 )
+
+	if ( X64_MODE )
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
+	else ()
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
+	endif ()
     
 endif  ()

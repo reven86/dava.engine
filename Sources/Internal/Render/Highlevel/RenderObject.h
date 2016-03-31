@@ -61,7 +61,7 @@ public:
     - Mesh(Skinned)
  
  */
-const static uint16 INVALID_STATIC_OCCLUSION_INDEX = (uint16)(-1);
+const static uint16 INVALID_STATIC_OCCLUSION_INDEX = uint16(-1);
 
 class RenderBatch;
 class RenderObject : public AnimatedObject
@@ -172,7 +172,7 @@ public:
 
     inline eType GetType()
     {
-        return (eType)type;
+        return eType(type);
     }
 
     virtual RenderObject* Clone(RenderObject* newObject);
@@ -240,7 +240,7 @@ protected:
 
     //    Sphere bsphere;
 
-    struct IndexedRenderBatch
+    struct IndexedRenderBatch : public InspBase
     {
         IndexedRenderBatch()
             : renderBatch(0)
@@ -353,7 +353,7 @@ inline Matrix4* RenderObject::GetWorldTransformPtr() const
 
 inline uint32 RenderObject::GetRenderBatchCount() const
 {
-    return (uint32)renderBatchArray.size();
+    return uint32(renderBatchArray.size());
 }
 
 inline RenderBatch* RenderObject::GetRenderBatch(uint32 batchIndex) const
@@ -374,7 +374,7 @@ inline RenderBatch* RenderObject::GetRenderBatch(uint32 batchIndex, int32& _lodI
 
 inline uint32 RenderObject::GetActiveRenderBatchCount() const
 {
-    return (uint32)activeRenderBatchArray.size();
+    return uint32(activeRenderBatchArray.size());
 }
 
 inline RenderBatch* RenderObject::GetActiveRenderBatch(uint32 batchIndex) const

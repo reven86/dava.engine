@@ -75,8 +75,11 @@ public:
 
     static const DAVA::String SaveNormals;
     static const DAVA::String CopyConverted;
-    static const DAVA::String CopyCompression;
     static const DAVA::String SetCompression;
+    static const DAVA::String SetPreset;
+    static const DAVA::String SavePreset;
+    static const DAVA::String PresetOpt;
+    static const DAVA::String PresetsList;
 
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };

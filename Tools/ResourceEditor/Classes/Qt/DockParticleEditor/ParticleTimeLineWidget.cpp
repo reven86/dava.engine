@@ -42,20 +42,6 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
     ,
     selectedPoint(-1, -1)
     ,
-    selectedEffect(NULL)
-    ,
-    selectedEmitter(NULL)
-    ,
-    selectedLine(-1)
-    ,
-    emitterNode(NULL)
-    ,
-    effectNode(NULL)
-    ,
-    selectedLayer(NULL)
-    ,
-    activeScene(NULL)
-    ,
 #ifdef Q_OS_WIN
     nameFont("Courier", 8, QFont::Normal)
 #else
@@ -539,7 +525,7 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent* e)
         UpdateLayersExtraInfoPosition();
     }
 
-    ScrollZoomWidget::paintEvent(e, painter);
+    ScrollZoomWidget::paintEvent(e);
 }
 
 bool ParticleTimeLineWidget::GetLineRect(uint32 id, QRect& startRect, QRect& endRect) const
@@ -843,9 +829,9 @@ void ParticleTimeLineWidget::OnValueChanged(int lineId)
 
     if (activeScene)
     {
-        CommandUpdateParticleLayerTime* cmd = new CommandUpdateParticleLayerTime(iter->second.layer);
+        std::unique_ptr<CommandUpdateParticleLayerTime> cmd = Command2::Create<CommandUpdateParticleLayerTime>(iter->second.layer);
         cmd->Init(iter->second.startTime, iter->second.endTime);
-        activeScene->Exec(cmd);
+        activeScene->Exec(std::move(cmd));
         activeScene->MarkAsChanged();
     }
 

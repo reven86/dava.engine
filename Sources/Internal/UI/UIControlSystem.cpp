@@ -29,57 +29,29 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
 #include "Debug/Profiler.h"
 #include "Render/2D/TextBlock.h"
+#include "Platform/DPIHelper.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
 const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
-UIControlSystem::~UIControlSystem()
-{
-    SafeRelease(currentScreen);
-    SafeRelease(popupContainer);
-    SafeDelete(styleSheetSystem);
-    SafeDelete(layoutSystem);
-    SafeDelete(screenshoter);
-}
-
 UIControlSystem::UIControlSystem()
-    : layoutSystem(nullptr)
-    , clearColor(Color::Clear)
 {
-    screenLockCount = 0;
-    frameSkip = 0;
-    transitionType = 0;
-
-    nextScreenTransition = 0;
-    currentScreen = 0;
-    nextScreen = 0;
-    prevScreen = NULL;
-    removeCurrentScreen = false;
-    hovered = NULL;
-    focusedControl = NULL;
-
-    popupContainer = new UIControl(Rect(0, 0, 1, 1));
-    popupContainer->SetName("UIControlSystem_popupContainer");
-    popupContainer->SetInputEnabled(false);
-
-    exclusiveInputLocker = NULL;
-
-    lockInputCounter = 0;
-
     baseGeometricData.position = Vector2(0, 0);
     baseGeometricData.size = Vector2(0, 0);
     baseGeometricData.pivotPoint = Vector2(0, 0);
@@ -89,49 +61,73 @@ UIControlSystem::UIControlSystem()
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
     screenshoter = new UIScreenshoter();
+
+    popupContainer.Set(new UIControl(Rect(0, 0, 1, 1)));
+    popupContainer->SetName("UIControlSystem_popupContainer");
+    popupContainer->SetInputEnabled(false);
+    popupContainer->InvokeActive(UIControl::eViewState::VISIBLE);
+
+    // calculate default radius
+    if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
+    {
+        //half an inch
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4;
+        defaultDoubleClickRadiusSquared *= defaultDoubleClickRadiusSquared;
+    }
+    else
+    {
+        defaultDoubleClickRadiusSquared = 4; // default, if touch didn't detect, 4 - default pixels in windows desktop
+    }
+    doubleClickTime = defaultDoubleClickTime;
+    doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+}
+
+UIControlSystem::~UIControlSystem()
+{
+    popupContainer->InvokeInactive();
+    popupContainer = nullptr;
+
+    if (currentScreen.Valid())
+    {
+        currentScreen->InvokeInactive();
+        currentScreen = nullptr;
+    }
+
+    SafeDelete(styleSheetSystem);
+    SafeDelete(layoutSystem);
+    SafeDelete(screenshoter);
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
 {
     if (_nextScreen == currentScreen)
     {
-        if (nextScreen != 0)
+        if (nextScreen != nullptr)
         {
-            SafeRelease(nextScreenTransition);
-            SafeRelease(nextScreen);
+            nextScreenTransition = nullptr;
+            nextScreen = nullptr;
         }
         return;
     }
 
-    if (nextScreen)
+    if (nextScreen.Valid())
     {
         Logger::Warning("2 screen switches during one frame.");
     }
 
-    // 2 switches on one frame can cause memory leak
-    SafeRelease(nextScreenTransition);
-    SafeRelease(nextScreen);
+    nextScreenTransition = _transition;
+    nextScreen = _nextScreen;
 
-    nextScreenTransition = SafeRetain(_transition);
-
-    if (_nextScreen == 0)
+    if (nextScreen == nullptr)
     {
         removeCurrentScreen = true;
+        ProcessScreenLogic();
     }
-
-    nextScreen = SafeRetain(_nextScreen);
 }
 
-void UIControlSystem::ReplaceScreen(UIScreen* newMainControl)
+UIScreen* UIControlSystem::GetScreen() const
 {
-    prevScreen = currentScreen;
-    currentScreen = newMainControl;
-    NotifyListenersDidSwitch(currentScreen);
-}
-
-UIScreen* UIControlSystem::GetScreen()
-{
-    return currentScreen;
+    return currentScreen.Get();
 }
 
 void UIControlSystem::AddPopup(UIPopup* newPopup)
@@ -141,6 +137,11 @@ void UIControlSystem::AddPopup(UIPopup* newPopup)
     {
         popupsToRemove.erase(it);
         return;
+    }
+
+    if (newPopup->GetRect() != fullscreenRect)
+    {
+        newPopup->SystemScreenSizeChanged(fullscreenRect);
     }
 
     newPopup->LoadGroup();
@@ -176,14 +177,19 @@ void UIControlSystem::RemoveAllPopups()
     }
 }
 
-UIControl* UIControlSystem::GetPopupContainer()
+UIControl* UIControlSystem::GetPopupContainer() const
 {
-    return popupContainer;
+    return popupContainer.Get();
+}
+
+UIScreenTransition* UIControlSystem::GetScreenTransition() const
+{
+    return currentScreenTransition.Get();
 }
 
 void UIControlSystem::Reset()
 {
-    SetScreen(0);
+    SetScreen(nullptr);
 }
 
 void UIControlSystem::ProcessScreenLogic()
@@ -191,105 +197,94 @@ void UIControlSystem::ProcessScreenLogic()
     /*
 	 if next screen or we need to removecurrent screen
 	 */
-    if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
+    if (screenLockCount == 0 && (nextScreen.Valid() || removeCurrentScreen))
     {
-        UIScreen* nextScreenProcessed = 0;
-        UIScreenTransition* transitionProcessed = 0;
+        RefPtr<UIScreen> nextScreenProcessed;
+        RefPtr<UIScreenTransition> nextScreenTransitionProcessed;
 
         nextScreenProcessed = nextScreen;
-        transitionProcessed = nextScreenTransition;
-        nextScreen = 0; // functions called by this method can request another screen switch (for example, LoadResources)
-        nextScreenTransition = 0;
+        nextScreenTransitionProcessed = nextScreenTransition;
+        nextScreen = nullptr; // functions called by this method can request another screen switch (for example, LoadResources)
+        nextScreenTransition = nullptr;
 
         LockInput();
 
         CancelAllInputs();
 
-        NotifyListenersWillSwitch(nextScreenProcessed);
+        NotifyListenersWillSwitch(nextScreenProcessed.Get());
 
-        // If we have transition set
-        if (transitionProcessed)
+        if (nextScreenTransitionProcessed)
         {
+            if (nextScreenTransitionProcessed->GetRect() != fullscreenRect)
+            {
+                nextScreenTransitionProcessed->SystemScreenSizeChanged(fullscreenRect);
+            }
+
+            nextScreenTransitionProcessed->StartTransition();
+            nextScreenTransitionProcessed->SetSourceScreen(currentScreen.Get());
+        }
+        // if we have current screen we call events, unload resources for it group
+        if (currentScreen)
+        {
+            currentScreen->InvokeInactive();
+
+            RefPtr<UIScreen> prevScreen = currentScreen;
+            currentScreen = nullptr;
+
+            if ((nextScreenProcessed == nullptr) || (prevScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
+            {
+                prevScreen->UnloadGroup();
+            }
+        }
+        // if we have next screen we load new resources, if it equal to zero we just remove screen
+        if (nextScreenProcessed)
+        {
+            if (nextScreenProcessed->GetRect() != fullscreenRect)
+            {
+                nextScreenProcessed->SystemScreenSizeChanged(fullscreenRect);
+            }
+
+            nextScreenProcessed->LoadGroup();
+        }
+        currentScreen = nextScreenProcessed;
+        if (currentScreen)
+        {
+            currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
+        }
+
+        NotifyListenersDidSwitch(currentScreen.Get());
+
+        if (nextScreenTransitionProcessed)
+        {
+            nextScreenTransitionProcessed->SetDestinationScreen(currentScreen.Get());
+
             LockSwitch();
+            LockInput();
 
-            // check if we have not loading transition
-            if (!transitionProcessed->IsLoadingTransition())
-            {
-                // start transition and set currentScreen
-                transitionProcessed->StartTransition(currentScreen, nextScreenProcessed);
-                currentScreen = transitionProcessed;
-            }
-            else
-            {
-                // if we got loading transition
-                UILoadingTransition* loadingTransition = dynamic_cast<UILoadingTransition*>(transitionProcessed);
-                DVASSERT(loadingTransition);
-
-                // Firstly start transition
-                loadingTransition->StartTransition(currentScreen, nextScreenProcessed);
-
-                // Manage transfer to loading transition through InTransition of LoadingTransition
-                if (loadingTransition->GetInTransition())
-                {
-                    loadingTransition->GetInTransition()->StartTransition(currentScreen, loadingTransition);
-                    currentScreen = SafeRetain(loadingTransition->GetInTransition());
-                }
-                else
-                {
-                    if (currentScreen)
-                    {
-                        if (currentScreen->IsOnScreen())
-                            currentScreen->SystemWillBecomeInvisible();
-                        currentScreen->SystemWillDisappear();
-                        if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
-                        {
-                            currentScreen->UnloadGroup();
-                        }
-                        currentScreen->SystemDidDisappear();
-                    }
-                    // if we have next screen we load new resources, if it equal to zero we just remove screen
-                    loadingTransition->LoadGroup();
-                    loadingTransition->SystemWillAppear();
-                    currentScreen = loadingTransition;
-                    loadingTransition->SystemDidAppear();
-                    if (loadingTransition->IsOnScreen())
-                        loadingTransition->SystemWillBecomeVisible();
-                }
-            }
+            currentScreenTransition = nextScreenTransitionProcessed;
+            currentScreenTransition->InvokeActive(UIControl::eViewState::VISIBLE);
         }
-        else // if there is no transition do change immediatelly
-        {
-            // if we have current screen we call events, unload resources for it group
-            if (currentScreen)
-            {
-                if (currentScreen->IsOnScreen())
-                    currentScreen->SystemWillBecomeInvisible();
-                currentScreen->SystemWillDisappear();
-                if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
-                {
-                    currentScreen->UnloadGroup();
-                }
-                currentScreen->SystemDidDisappear();
-            }
-            // if we have next screen we load new resources, if it equal to zero we just remove screen
-            if (nextScreenProcessed)
-            {
-                nextScreenProcessed->LoadGroup();
-                nextScreenProcessed->SystemWillAppear();
-            }
-            currentScreen = nextScreenProcessed;
-            NotifyListenersDidSwitch(currentScreen);
-            if (nextScreenProcessed)
-            {
-                nextScreenProcessed->SystemDidAppear();
-                if (nextScreenProcessed->IsOnScreen())
-                    nextScreenProcessed->SystemWillBecomeVisible();
-            }
 
-            UnlockInput();
-        }
+        UnlockInput();
+
         frameSkip = FRAME_SKIP;
         removeCurrentScreen = false;
+    }
+    else
+    if (currentScreenTransition)
+    {
+        if (currentScreenTransition->IsComplete())
+        {
+            currentScreenTransition->InvokeInactive();
+
+            RefPtr<UIScreenTransition> prevScreenTransitionProcessed = currentScreenTransition;
+            currentScreenTransition = nullptr;
+
+            UnlockInput();
+            UnlockSwitch();
+
+            prevScreenTransitionProcessed->EndTransition();
+        }
     }
 
     /*
@@ -320,7 +315,11 @@ void UIControlSystem::Update()
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
-        if (currentScreen)
+        if (currentScreenTransition)
+        {
+            currentScreenTransition->SystemUpdate(timeElapsed);
+        }
+        else if (currentScreen)
         {
             currentScreen->SystemUpdate(timeElapsed);
         }
@@ -328,12 +327,12 @@ void UIControlSystem::Update()
         popupContainer->SystemUpdate(timeElapsed);
     }
 
-    SafeRelease(prevScreen);
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
 
 void UIControlSystem::Draw()
 {
+    resizePerFrame = 0;
     TIME_PROFILE("UIControlSystem::Draw");
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
@@ -342,16 +341,23 @@ void UIControlSystem::Draw()
 
     drawCounter = 0;
 
-    if (useClearPass)
+    const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+
+    if (descr.clearTarget)
     {
         rhi::Viewport viewport;
         viewport.x = viewport.y = 0U;
-        viewport.width = (uint32)Renderer::GetFramebufferWidth();
-        viewport.height = (uint32)Renderer::GetFramebufferHeight();
-        RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
+        viewport.width = descr.width == 0 ? static_cast<uint32>(Renderer::GetFramebufferWidth()) : descr.width;
+        viewport.height = descr.height == 0 ? static_cast<uint32>(Renderer::GetFramebufferHeight()) : descr.height;
+        const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
+        RenderHelper::CreateClearPass(descr.colorAttachment, descr.depthAttachment, descr.priority + PRIORITY_CLEAR, descr.clearColor, viewport);
     }
 
-    if (currentScreen)
+    if (currentScreenTransition)
+    {
+        currentScreenTransition->SystemDraw(baseGeometricData);
+    }
+    else if (currentScreen)
     {
         currentScreen->SystemDraw(baseGeometricData);
     }
@@ -371,7 +377,7 @@ void UIControlSystem::Draw()
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
-void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetControl)
+void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetControl)
 {
     for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
     {
@@ -409,6 +415,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     inputCounter = 0;
 
     newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
+    newEvent->tapCount = CalculatedTapCount(newEvent);
 
     if (Replay::IsPlayback())
     {
@@ -426,7 +433,6 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         {
             Replay::Instance()->RecordEvent(newEvent);
         }
-
         UIEvent* eventToHandle = nullptr;
 
         if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
@@ -482,7 +488,7 @@ void UIControlSystem::CancelInput(UIEvent* touch)
     {
         touch->touchLocker->SystemInputCancelled(touch);
     }
-    if (touch->touchLocker != currentScreen)
+    if (touch->touchLocker != currentScreen.Get())
     {
         currentScreen->SystemInputCancelled(touch);
     }
@@ -555,7 +561,7 @@ const Vector<UIEvent>& UIControlSystem::GetAllInputs()
     return touchEvents;
 }
 
-void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, int32 lockEventId)
+void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId)
 {
     SafeRelease(exclusiveInputLocker);
     if (locker != NULL)
@@ -577,9 +583,32 @@ UIControl* UIControlSystem::GetExclusiveInputLocker()
     return exclusiveInputLocker;
 }
 
-void UIControlSystem::ScreenSizeChanged()
+void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)
 {
-    popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    if (fullscreenRect == newFullscreenRect)
+    {
+        return;
+    }
+
+    resizePerFrame++;
+    if (resizePerFrame >= 5)
+    {
+        Logger::Error("Resizes per frame : %d", resizePerFrame);
+    }
+
+    fullscreenRect = newFullscreenRect;
+
+    if (currentScreenTransition.Valid())
+    {
+        currentScreenTransition->SystemScreenSizeChanged(fullscreenRect);
+    }
+
+    if (currentScreen.Valid())
+    {
+        currentScreen->SystemScreenSizeChanged(fullscreenRect);
+    }
+
+    popupContainer->SystemScreenSizeChanged(fullscreenRect);
 }
 
 void UIControlSystem::SetHoveredControl(UIControl* newHovered)
@@ -679,18 +708,60 @@ void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener* listener)
 
 void UIControlSystem::NotifyListenersWillSwitch(UIScreen* screen)
 {
+    // TODO do we need Copy?
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
-    for (uint32 i = 0; i < listenersCount; ++i)
-        screenSwitchListenersCopy[i]->OnScreenWillSwitch(screen);
+    for (auto& listener : screenSwitchListenersCopy)
+    {
+        listener->OnScreenWillSwitch(screen);
+    }
 }
 
 void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
 {
+    // TODO do we need Copy?
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
-    for (uint32 i = 0; i < listenersCount; ++i)
-        screenSwitchListenersCopy[i]->OnScreenDidSwitch(screen);
+    for (auto& listener : screenSwitchListenersCopy)
+    {
+        listener->OnScreenDidSwitch(screen);
+    }
+}
+
+int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
+{
+    int32 tapCount = 0;
+    // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
+    if (newEvent->phase == UIEvent::Phase::BEGAN)
+    {
+        DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
+        tapCount = 1;
+        // only if last event ended
+        if (lastClickData.lastClickEnded)
+        {
+            if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
+            {
+                // if point inside circle = (x0-x1)(x0-x1) + (y0-y1)(y0-y1) < r*r
+                float32 pointShift((lastClickData.physPoint.x - newEvent->physPoint.x) * (lastClickData.physPoint.x - newEvent->physPoint.x));
+                pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
+                if (static_cast<int32>(pointShift) < doubleClickRadiusSquared)
+                {
+                    tapCount = lastClickData.tapCount + 1;
+                }
+            }
+        }
+        lastClickData.touchId = newEvent->touchId;
+        lastClickData.timestamp = newEvent->timestamp;
+        lastClickData.physPoint = newEvent->physPoint;
+        lastClickData.tapCount = tapCount;
+        lastClickData.lastClickEnded = false;
+    }
+    else if (newEvent->phase == UIEvent::Phase::ENDED)
+    {
+        if (newEvent->touchId == lastClickData.touchId)
+        {
+            lastClickData.lastClickEnded = true;
+        }
+    }
+    return tapCount;
 }
 
 bool UIControlSystem::IsRtl() const
@@ -713,6 +784,11 @@ void UIControlSystem::SetBiDiSupportEnabled(bool support)
     TextBlock::SetBiDiSupportEnabled(support);
 }
 
+bool UIControlSystem::IsHostControl(const UIControl* control) const
+{
+    return (GetScreen() == control || GetPopupContainer() == control || GetScreenTransition() == control);
+}
+
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const
 {
     return layoutSystem;
@@ -728,13 +804,30 @@ UIScreenshoter* UIControlSystem::GetScreenshoter()
     return screenshoter;
 }
 
-void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
+void UIControlSystem::SetClearColor(const DAVA::Color& clearColor)
 {
-    clearColor = _clearColor;
+    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+    newDescr.clearColor = clearColor;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
 }
 
-void UIControlSystem::SetUseClearPass(bool use)
+void UIControlSystem::SetUseClearPass(bool useClearPass)
 {
-    useClearPass = use;
+    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+    newDescr.clearTarget = useClearPass;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
+}
+
+void UIControlSystem::SetDefaultTapCountSettings()
+{
+    doubleClickTime = defaultDoubleClickTime;
+    doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+}
+
+void UIControlSystem::SetTapCountSettings(float32 time, int32 radius)
+{
+    DVASSERT((time > 0.f) && (radius > 0));
+    doubleClickTime = time;
+    doubleClickRadiusSquared = radius * radius;
 }
 };

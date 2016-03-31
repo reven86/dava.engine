@@ -101,8 +101,8 @@ void SpritePackerHelper::EnumerateSpritesForParticleEmitter(ParticleEmitter* emi
         return;
     }
 
-    int32 layersCount = emitter->layers.size();
-    for (int il = 0; il < layersCount; ++il)
+    size_type layersCount = emitter->layers.size();
+    for (size_type il = 0; il < layersCount; ++il)
     {
         ParticleLayer* curLayer = emitter->layers[il];
         Sprite* sprite = curLayer->sprite;
