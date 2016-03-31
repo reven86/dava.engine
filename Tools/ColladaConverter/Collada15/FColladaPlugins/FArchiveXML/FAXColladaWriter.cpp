@@ -460,7 +460,7 @@ void AddNodeSid(xmlNode* node, fm::string& subId)
 {
     subId = AddNodeSid(node, subId.c_str());
 }
-#ifdef UNICODE
+#if (1)
 void AddNodeSid(xmlNode* node, fstring& subId)
 {
     fm::string _subId = TO_STRING(subId);

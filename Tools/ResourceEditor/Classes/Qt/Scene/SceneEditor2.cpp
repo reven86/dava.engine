@@ -38,6 +38,7 @@
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 // framework
 #include "Scene3D/Entity.h"
@@ -761,4 +762,59 @@ uint32 SceneEditor2::GetFramesCount() const
 void SceneEditor2::ResetFramesCount()
 {
     framesCount = 0;
+}
+
+void LookAtSelection(SceneEditor2* scene)
+{
+    if (scene != nullptr)
+    {
+        scene->cameraSystem->MoveToSelection();
+    }
+}
+
+void RemoveSelection(SceneEditor2* scene)
+{
+    if (scene != nullptr)
+    {
+        const EntityGroup& selection = scene->selectionSystem->GetSelection();
+
+        EntityGroup objectToRemove;
+        for (const auto& item : selection.GetContent())
+        {
+            if (item.first->GetLocked())
+            {
+                DAVA::StringStream ss;
+                ss << "Can not remove entity "
+                   << item.first->GetName().c_str()
+                   << ": entity is locked!"
+                   << PointerSerializer::FromPointer(item.first);
+                Logger::Warning("%s", ss.str().c_str());
+            }
+            else
+            {
+                objectToRemove.Add(item.first, item.second);
+            }
+        }
+
+        if (!objectToRemove.IsEmpty())
+        {
+            scene->structureSystem->Remove(objectToRemove);
+        }
+    }
+}
+
+void LockTransform(SceneEditor2* scene)
+{
+    if (scene != nullptr)
+    {
+        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), true);
+    }
+}
+
+void UnlockTransform(SceneEditor2* scene)
+{
+    if (scene != nullptr)
+    {
+        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), false);
+    }
 }
