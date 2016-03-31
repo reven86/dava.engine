@@ -72,8 +72,6 @@ public:
     // Whether the movie is being played?
     bool IsPlaying();
 
-    void Update(float32 timeElapsed) override;
-
 protected:
     // Platform-specific implementation of the Movie Control.
     MovieViewControl* movieViewControl;

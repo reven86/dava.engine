@@ -54,7 +54,7 @@ namespace DAVA
         : UIControl(rect)
         , movieViewControl(new MovieViewControl())
     {
-        movieViewControl->Initialize(rect);
+        movieViewControl->Initialize(Rect(0,0, rect.dx, rect.dy));
         AddControl(movieViewControl);
     }
 
@@ -144,15 +144,5 @@ namespace DAVA
         UIMovieView* uiMoviewView = new UIMovieView(GetRect());
         uiMoviewView->CopyDataFrom(this);
         return uiMoviewView;
-    }
-
-
-    void UIMovieView::Update(float32 timeElapsed)
-    {
-        UIControl::Update(timeElapsed);
-        if (movieViewControl)
-        {
-            movieViewControl->Update(timeElapsed);
-        }
     }
 } // namespace DAVA

@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "UI/IMovieViewControl.h"
 #include "UI/UIControl.h"
+#include "Render\PixelFormatDescriptor.h"
 
 namespace AV
 {
@@ -40,6 +41,8 @@ extern "C"
 #endif
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavutil/imgutils.h>
+#include <libavutil/rational.h>
 #include <libswscale/swscale.h>
 #ifdef __cplusplus
 };
@@ -51,6 +54,9 @@ namespace DAVA
     class MovieViewControl : public IMovieViewControl, public UIControl
     {
     public:
+
+        ~MovieViewControl() override;
+
         // IMovieViewControl Interface implementation
 
         // Initialize the control.
@@ -79,28 +85,35 @@ namespace DAVA
         void Update(float32 timeElapsed) override;
 
     private:
+        static bool isFFMGEGInited;
         bool isPlaying = false;
+        Texture * videoTexture = nullptr;
+        float32 framerate = 0.f;
+
+        uint32 textureWidth = 0;
+        uint32 textureHeight = 0;
+        const PixelFormat textureFormat = PixelFormat::FORMAT_RGBA8888;
+        uint32 textureBufferSize = 0;
+        char8* decodedFrameBuffer = nullptr;
+
 
         uint32_t len = 0;
         int32 index = 0;
-        int64_t in_channel_layout;
-        struct SwrContext *au_convert_ctx;
+        int64_t in_channel_layout = -1;
+        struct SwrContext *au_convert_ctx = nullptr;
 
-        AV::AVFormatContext	*pFormatCtx;
-        int32 i, videoindex;
-        AV::AVCodecContext	*pCodecCtx;
-        AV::AVCodec			*pCodec;
-        AV::AVFrame	*pFrame, *pFrameYUV;
-        uint8 *out_buffer;
-        AV::AVPacket *packet;
+        unsigned int videoindex = -1;
+        AV::AVFormatContext	*pFormatCtx = nullptr;       
+        AV::AVCodecContext	*pCodecCtx = nullptr;
+        AV::AVCodec			*pCodec = nullptr;
+        AV::AVFrame	*pFrame = nullptr;
+        AV::AVFrame	*pFrameYUV = nullptr;
+        uint8 *out_buffer = nullptr;
+        AV::AVPacket *packet = nullptr;
         int32 y_size;
-        int32 ret, got_picture;
-        struct AV::SwsContext *img_convert_ctx;
+        AV::SwsContext *img_convert_ctx = nullptr;
 
         char8 * filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
-        uint32 screen_w = 0, screen_h = 0;
-
-        FILE *fp_yuv;
     };
 }
 

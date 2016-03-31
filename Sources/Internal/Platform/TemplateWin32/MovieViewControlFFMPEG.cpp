@@ -28,26 +28,82 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MovieViewControlFFMPEG.h"
 
-#include "Render\PixelFormatDescriptor.h"
 namespace DAVA
 {
+    bool MovieViewControl::isFFMGEGInited = false;
+
+    MovieViewControl::~MovieViewControl()
+    {
+        Stop();
+        SafeDeleteArray(decodedFrameBuffer);
+
+        if (isFFMGEGInited)
+        {
+            if (pFrameYUV)
+            {
+                av_frame_free(&pFrameYUV);
+            }
+            if (pFrame)
+            {
+                av_frame_free(&pFrame);
+            }
+            if (pCodecCtx)
+            {
+                avcodec_close(pCodecCtx);
+            }
+            if (pFormatCtx)
+            {
+                avformat_close_input(&pFormatCtx);
+            }
+            if (img_convert_ctx)
+            {
+                sws_freeContext(img_convert_ctx);
+            }
+
+            isFFMGEGInited = false;
+        }
+
+    }
+
     // Initialize the control.
     void MovieViewControl::Initialize(const Rect& rect)
     {
-        AV::av_register_all();
-        AV::avformat_network_init();
+        SetRect(rect);
+        if (!isFFMGEGInited)
+        {
+            AV::av_register_all();
+            isFFMGEGInited = true;
+        }
+        
+        GetBackground()->SetBgDrawType(UIControlBackground::DRAW_SCALE_PROPORTIONAL);
+    }
+
+    // Position/visibility.
+    void MovieViewControl::SetRect(const Rect& rect)
+    {
+        UIControl::SetRect(rect);
+    }
+
+    void MovieViewControl::SetVisible(bool isVisible)
+    {
+        UIControl::SetVisibilityFlag(isVisible);
+    }
+
+    // Open the Movie.
+    void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
+    {
         pFormatCtx = AV::avformat_alloc_context();
 
-        if (AV::avformat_open_input(&pFormatCtx, filepath, NULL, NULL) != 0){
+        if (AV::avformat_open_input(&pFormatCtx, filepath, nullptr, nullptr) != 0){
             printf("Couldn't open input stream.\n");
             return;
         }
-        if (AV::avformat_find_stream_info(pFormatCtx, NULL)<0){
+        if (AV::avformat_find_stream_info(pFormatCtx, nullptr)<0){
             printf("Couldn't find stream information.\n");
             return;
         }
-        videoindex = -1;
-        for (i = 0; i<pFormatCtx->nb_streams; i++)
+
+        for (unsigned int i = 0; i<pFormatCtx->nb_streams; i++)
             if (pFormatCtx->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_VIDEO){
                 videoindex = i;
                 break;
@@ -57,76 +113,56 @@ namespace DAVA
             return;
         }
 
-
+        AV::AVRational avfps = pFormatCtx->streams[videoindex]->avg_frame_rate;
+        framerate = avfps.num / static_cast<float32>(avfps.den);
+        
         pCodecCtx = pFormatCtx->streams[videoindex]->codec;
         pCodec = AV::avcodec_find_decoder(pCodecCtx->codec_id);
-        if (pCodec == NULL){
+        if (pCodec == nullptr){
             printf("Codec not found.\n");
             return;
         }
-        if (AV::avcodec_open2(pCodecCtx, pCodec, NULL)<0){
+        if (AV::avcodec_open2(pCodecCtx, pCodec, nullptr)<0){
             printf("Could not open codec.\n");
             return;
         }
-
-
 
         AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_YUV420P;
 
         pFrame = AV::av_frame_alloc();
         pFrameYUV = AV::av_frame_alloc();
-        out_buffer = (uint8_t *)AV::av_malloc(AV::avpicture_get_size(avPixelFormat, pCodecCtx->width, pCodecCtx->height));
+        out_buffer = (uint8_t *)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, pCodecCtx->width, pCodecCtx->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
         AV::avpicture_fill((AV::AVPicture *)pFrameYUV, out_buffer, avPixelFormat, pCodecCtx->width, pCodecCtx->height);
-        packet = (AV::AVPacket *)AV::av_malloc(sizeof(AV::AVPacket));
-        //Output Info-----------------------------
-        printf("--------------- File Information ----------------\n");
-        AV::av_dump_format(pFormatCtx, 0, filepath, 0);
-        printf("-------------------------------------------------\n");
-        img_convert_ctx = AV::sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,
-            pCodecCtx->width, pCodecCtx->height, avPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+        packet = (AV::AVPacket *)AV::av_mallocz(sizeof(AV::AVPacket));
 
+        img_convert_ctx = AV::sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
-        screen_w = pCodecCtx->width;
-        screen_h = pCodecCtx->height;
-    }
-
-    // Position/visibility.
-    void MovieViewControl::SetRect(const Rect& rect)
-    {
-
-    }
-
-    void MovieViewControl::SetVisible(bool isVisible)
-    {
-
-    }
-
-    // Open the Movie.
-    void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
-    {
-
+        textureWidth = NextPowerOf2(pCodecCtx->width);
+        textureHeight = NextPowerOf2(pCodecCtx->height);
+        textureBufferSize = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(textureFormat);
+        decodedFrameBuffer = new char8[textureBufferSize];
     }
 
     // Start/stop the video playback.
     void MovieViewControl::Play()
     {
-
+        isPlaying = true;
     }
 
     void MovieViewControl::Stop()
     {
-
+        isPlaying = false;
     }
 
     // Pause/resume the playback.
     void MovieViewControl::Pause()
     {
-
+        isPlaying = false;
     }
 
     void MovieViewControl::Resume()
     {
-
+        isPlaying = true;
     }
 
     // Whether the movie is being played?
@@ -136,39 +172,46 @@ namespace DAVA
     }
 
 
-    void YUVToRGB(AV::AVFrame* yuvFrame, char8 * outRGBBuffer, uint32 bufferSize, uint32 width, uint32 height, uint32 bytesPerPixel)
+    void YUVToRGB(const AV::AVFrame* const yuvFrame, char8 * outRGBBuffer, const Vector2 & frameSize, const Vector2 & textureSize)
     {
-        for (int i = 0; i < height; i++) //Y
+        DVASSERT(textureSize.dx >= frameSize.dx && textureSize.dy >= frameSize.dy);
+
+        const uint32 bytesPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBytes(PixelFormat::FORMAT_RGBA8888);
+        
+        for (uint32 i = 0; i < textureSize.dy; i++) //Y
         {
-            uint8_t yShift = 0, uShift = 0, vShift = 0;
-            bool inBuffer = (i <= height);
+            uint32 yShift = 0;
+            uint32 uShift = 0;
+            uint32 vShift = 0;
+
+            // convert only significant bytes.
+            bool inBuffer = (i < frameSize.dy);
             if (inBuffer)
             {
-                yShift = 0;
-                uShift = 0;
-                vShift = 0;
+                yShift = yuvFrame->linesize[0] * i;
+                uShift = yuvFrame->linesize[1] * (i / 2);
+                vShift = yuvFrame->linesize[2] * (i / 2);
             }
 
-            for (int j = 0; j < width; j++) //X
+            for (uint32 j = 0; j < textureSize.dx; j++) //X
             {
-                const int32 index = (i * width + j) * bytesPerPixel;
+                const int32 index = (i * frameSize.dx + j) * bytesPerPixel;
 
-                if (inBuffer && j < width)
+                if (inBuffer && j < frameSize.dx)
                 {
-                    size_t yPos = yShift + j;
-                    const unsigned char Y = yuvFrame->data[0][yPos];
-                    size_t uPos = uShift + j / 2;
-                    const unsigned char U = yuvFrame->data[1][uPos];
-                    size_t vPos = vShift + j / 2;
-                    const unsigned char V = yuvFrame->data[2][vPos];
-
-                    outRGBBuffer[index]     = static_cast<char8>(Clamp(Y + 1.371f * (V - 128), 0.f, 255.f));
+                    const unsigned char Y = yuvFrame->data[0][yShift + j];
+                    const unsigned char U = yuvFrame->data[1][uShift + j / 2];
+                    const unsigned char V = yuvFrame->data[2][vShift + j / 2];
+                    
+                    // R G B A layout
+                    outRGBBuffer[index] = static_cast<char8>(Clamp(Y + 1.371f * (V - 128), 0.f, 255.f));
                     outRGBBuffer[index + 1] = static_cast<char8>(Clamp(Y - 0.698f * (V - 128) - 0.336f * (U - 128), 0.f, 255.f));
-                    outRGBBuffer[index + 2] = static_cast<char8>(Clamp(Y + 1.732f * (U - 128), 0.f, 255.f));
+                    outRGBBuffer[index + 2] = static_cast<char8>(Clamp(Y + 1.732f * (U - 128), 0.f, 255.f));                    
+                    outRGBBuffer[index + 3] = static_cast<char8>(255);
                 }
                 else
                 {
-                    memset(&outRGBBuffer[index], 0, bytesPerPixel * sizeof(unsigned char));
+                    memset(&outRGBBuffer[index], 0, bytesPerPixel * sizeof(char8));
                 }
             }
         }
@@ -177,74 +220,57 @@ namespace DAVA
     // UIControl update and draw implementation
     void MovieViewControl::Update(float32 timeElapsed)
     {
-
-        static float32 time = 0.f;
-
-        time += timeElapsed;
-        if (time < 0.40f)
+        if (!isPlaying)
             return;
 
-        const uint32 imageWidth = 1024;
-        const uint32 imageHeight = 768;
-        const PixelFormat textureFormat = PixelFormat::FORMAT_RGB888;
-        const uint32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(textureFormat);
-        const uint32 bufferSize = pixelSize * imageWidth * imageHeight;
-        char8* buffer = new char8[bufferSize];
-        Memset(buffer, 0xff, bufferSize);
-
-
-        Texture * videoTexture = nullptr;
-        if (AV::av_read_frame(pFormatCtx, packet) >= 0){
-
-            if (packet->stream_index == videoindex){
-                ret = AV::avcodec_decode_video2(pCodecCtx, pFrame, &got_picture, packet);
-                if (ret < 0){
-                    printf("Decode Error.\n");
-                    return;
-                }
-                if (got_picture){
-                    AV::sws_scale(img_convert_ctx, (const uint8* const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height,
-                        pFrameYUV->data, pFrameYUV->linesize);
-
-                    //int * rgba = convertYUV420_NV21toARGB8888((char*)pFrame->data, pCodecCtx->width, pCodecCtx->height);
-                    y_size = pCodecCtx->width*pCodecCtx->height;
-
-                    YUVToRGB(pFrameYUV, buffer, bufferSize, pCodecCtx->width, pCodecCtx->height, pixelSize);
-
-                    /*
-                    File * f = File::Create(FilePath("D:/Projects/Win10/1.yuv"), File::OPEN | File::WRITE | File::APPEND);
-                    f->Write(pFrameYUV->data[0], y_size);    //Y 
-                    f->Write(pFrameYUV->data[1], y_size/4);    //U 
-                    f->Write(pFrameYUV->data[2], y_size/4);    //V 
-                    f->Release();
-
-                    f = File::Create(FilePath("D:/Projects/Win10/2.yuv"), File::OPEN | File::WRITE | File::APPEND);
-                    f->Write(buffer, bufferSize);    //Y 
-                    f->Release();
-                    
-                    */
-                    videoTexture = Texture::CreateFromData(textureFormat, (uint8*)buffer, imageWidth, imageHeight, false);
-
-
-
-                }
-            }
-            AV::av_free_packet(packet);
-        }
-
-
-
-
-        
-        if (videoTexture)
+        do
         {
-            Sprite * videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, float32(imageWidth), float32(imageHeight));
-            videoSprite->ConvertToVirtualSize();
-            GetBackground()->SetSprite(videoSprite, 0);
-            SafeRelease(videoSprite);
-        }
-        SafeRelease(videoTexture);
+            if (AV::av_read_frame(pFormatCtx, packet) < 0)
+                break;
+        }while (packet->stream_index != videoindex);
 
-        SafeDeleteArray(buffer);
+
+        int32 got_picture;
+        int32 ret = AV::avcodec_decode_video2(pCodecCtx, pFrame, &got_picture, packet);               
+        if (ret < 0){
+            Logger::Error("Video Decode Error.\n");
+            return;
+        }
+
+        if (got_picture)
+        {
+            // limit fps        
+            static float32 timeAfterLastRender = 0.f;
+            timeAfterLastRender += timeElapsed;
+            Logger::Error("passed: %f", timeElapsed);
+
+            if (timeAfterLastRender < 1 / framerate)
+            {
+                return;
+            }
+            timeAfterLastRender = 0.f;
+
+            AV::sws_scale(img_convert_ctx, reinterpret_cast<const uint8* const*>(pFrame->data), pFrame->linesize, 0, pCodecCtx->height, pFrameYUV->data, pFrameYUV->linesize);
+
+            YUVToRGB(pFrameYUV, decodedFrameBuffer, Vector2(pCodecCtx->width, pCodecCtx->height), Vector2(textureWidth, textureHeight));
+
+            if (nullptr == videoTexture)
+            {
+                videoTexture = Texture::CreateFromData(textureFormat, reinterpret_cast<uint8*>(decodedFrameBuffer), textureWidth, textureHeight, false);
+                Sprite * videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, pCodecCtx->width, pCodecCtx->height, pCodecCtx->width, pCodecCtx->height);
+                auto back = GetBackground();
+                if (back)
+                {
+                    back->SetSprite(videoSprite, 0);
+                }
+                SafeRelease(videoSprite);
+            }
+            else
+            {
+                videoTexture->TexImage(0, textureWidth, textureHeight, reinterpret_cast<void *>(decodedFrameBuffer), textureBufferSize, Texture::INVALID_CUBEMAP_FACE);
+            }
+        }
+        AV::av_packet_unref(packet);
     }
+
 }
