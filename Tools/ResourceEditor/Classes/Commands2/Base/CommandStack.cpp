@@ -52,7 +52,7 @@ bool CommandStack::CanRedo() const
 void CommandStack::Clear()
 {
     nextCommandIndex = 0;
-    cleanCommandIndex = 0;
+    nextAfterCleanCommandIndex = 0;
     commandList.clear();
     CleanCheck();
 }
@@ -77,13 +77,11 @@ void CommandStack::RemoveCommands(DAVA::int32 commandId)
         {
             it = commandList.erase(it);
 
-            if (nextCommandIndex > 0)
+            nextCommandIndex = DAVA::Max(nextCommandIndex - 1, 0);
+
+            if (index < nextAfterCleanCommandIndex)
             {
-                nextCommandIndex--;
-            }
-            if (cleanCommandIndex > 0 && index < cleanCommandIndex)
-            {
-                cleanCommandIndex--;
+                nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, 0);
             }
         }
         else
@@ -190,23 +188,20 @@ void CommandStack::EndBatch()
 
 bool CommandStack::IsClean() const
 {
-    if (cleanCommandIndex == nextCommandIndex)
-        return true;
-
-    if (cleanCommandIndex < commandList.size())
+    if (nextAfterCleanCommandIndex == INVALID_CLEAN_INDEX)
     {
-        auto i = commandList.begin();
-        std::advance(i, cleanCommandIndex + 1);
+        return false;
+    }
 
-        auto e = commandList.begin();
-        std::advance(e, nextCommandIndex);
+    DAVA::int32 startCommandIndex = DAVA::Min(nextAfterCleanCommandIndex, nextCommandIndex);
+    DAVA::int32 endCommandIndex = DAVA::Max(nextAfterCleanCommandIndex, nextCommandIndex);
 
-        while (i != e)
-        {
-            if ((*i)->IsModifying())
-                return false;
-            ++i;
-        }
+    for (DAVA::int32 i = startCommandIndex; i < endCommandIndex; ++i)
+    {
+        Command2* command = GetCommandInternal(i);
+        DVASSERT(command != nullptr);
+        if (command->IsModifying())
+            return false;
     }
 
     return true;
@@ -216,11 +211,11 @@ void CommandStack::SetClean(bool clean)
 {
     if (clean)
     {
-        cleanCommandIndex = nextCommandIndex;
+        nextAfterCleanCommandIndex = nextCommandIndex;
     }
     else
     {
-        cleanCommandIndex = INVALID_CLEAN_INDEX;
+        nextAfterCleanCommandIndex = INVALID_CLEAN_INDEX;
     }
 
     CleanCheck();
@@ -228,7 +223,7 @@ void CommandStack::SetClean(bool clean)
 
 DAVA::int32 CommandStack::GetCleanIndex() const
 {
-    return cleanCommandIndex;
+    return nextAfterCleanCommandIndex;
 }
 
 DAVA::int32 CommandStack::GetNextIndex() const
@@ -301,7 +296,7 @@ void CommandStack::ClearRedoCommands()
 {
     if (CanRedo())
     {
-        if (nextCommandIndex < cleanCommandIndex)
+        if (nextCommandIndex < nextAfterCleanCommandIndex)
         {
             SetClean(false);
         }
@@ -321,15 +316,8 @@ void CommandStack::ClearLimitedCommands()
     {
         commandList.pop_front();
 
-        if (nextCommandIndex > 0)
-        {
-            nextCommandIndex--;
-        }
-
-        if (cleanCommandIndex > 0)
-        {
-            cleanCommandIndex--;
-        }
+        nextCommandIndex = DAVA::Max(nextCommandIndex - 1, 0);
+        nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, 0);
     }
 
     CleanCheck();

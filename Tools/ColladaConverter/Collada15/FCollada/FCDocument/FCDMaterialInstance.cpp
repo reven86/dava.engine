@@ -116,10 +116,10 @@ FCDObject* FCDMaterialInstance::GetGeometryTarget()
 
 const FCDMaterialInstanceBind* FCDMaterialInstance::FindBinding(const char* semantic)
 {
-    for (const FCDMaterialInstanceBind** it = (const FCDMaterialInstanceBind**)bindings.begin(); it != bindings.end(); ++it)
+    for (auto it : bindings)
     {
-        if (IsEquivalent((*it)->semantic, semantic))
-            return (*it);
+        if (IsEquivalent(it->semantic, semantic))
+            return it;
     }
     return NULL;
 }

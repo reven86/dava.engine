@@ -232,7 +232,7 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
 
         case YAML_SCALAR_EVENT:
         {
-            const uint8* str = reinterpret_cast<uint8*>(event.data.scalar.value);
+            const uint8* str = reinterpret_cast<const uint8*>(event.data.scalar.value);
             size_t size = static_cast<size_t>(event.data.scalar.length);
             if (isKey)
             {

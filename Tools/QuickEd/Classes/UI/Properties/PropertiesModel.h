@@ -47,7 +47,7 @@ class ControlNode;
 class StyleSheetNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
-class LazyUpdater;
+class ContinuousUpdater;
 
 class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
@@ -111,7 +111,7 @@ private:
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
     QSet<QPair<QPersistentModelIndex, QPersistentModelIndex>> changedIndexes;
-    LazyUpdater* lazyUpdater = nullptr;
+    ContinuousUpdater* continuousUpdater = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__
