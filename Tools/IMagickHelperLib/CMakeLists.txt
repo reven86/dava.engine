@@ -20,14 +20,19 @@ add_definitions (
 
 set ( LIBRARIES_DIR  "${CMAKE_CURRENT_LIST_DIR}/lib" )
 
-list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac/libpsd.a" )
-
 if( APPLE )
     find_package(ZLIB )
     list (APPEND LIBRARIES ${ZLIB_LIBRARY} )
+	list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac/libpsd.a" )
 elseif( WIN32 )
-
-endif  ()
+	if (X64_MODE)
+		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64/Release/libpsd.lib" )
+		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64/Release/z.lib" )
+	else()
+		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86/Release/libpsd.lib" )
+		list (APPEND LIBRARIES "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86/Release/zlib.lib" )
+	endif()
+endif()
 
 include_directories (.)
 include_directories ( ${DAVA_INCLUDE_DIR} )

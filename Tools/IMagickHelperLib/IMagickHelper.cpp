@@ -3,6 +3,7 @@
 #include <libpsd.h>
 #include <png.h>
 #include <cstdlib>
+#include <cstdint>
 
 using namespace std;
 
@@ -168,14 +169,14 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
     out_cropped_data.layer_height = psd->height;
     out_cropped_data.layers_count = psd->layer_count;
     out_cropped_data.layers = new IMagickHelper::Layer[psd->layer_count]();
-    
-    for (int i = 0, e = psd->layer_count; i < e; ++i)
+
+    for (int lIndex = 0, e = psd->layer_count; lIndex < e; ++lIndex)
     {
         char c_buf[32] = {};
-        sprintf(c_buf, "%d", static_cast<int>(i));
+        sprintf(c_buf, "%d", lIndex);
         out_image_path = FileTool::ReplaceBasename(out_image_path, out_image_basename + "_" + c_buf);
         
-        auto& layer = psd->layer_records[i];
+        auto& layer = psd->layer_records[lIndex];
         
         if (layer.width * layer.height == 0)
         {
@@ -190,7 +191,7 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
             return false;
         }
         
-        auto& outLayer = out_cropped_data.layers[i];
+        auto& outLayer = out_cropped_data.layers[lIndex];
         outLayer.x = layer.left;
         outLayer.y = layer.top;
         outLayer.dx = layer.width;
@@ -205,7 +206,7 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
         auto data = reinterpret_cast<char*>(layer.image_data);
         if (WritePNGImage(layer.width, layer.height, data, out_image_path.c_str(), 4, 8) == false)
         {
-            fprintf(stderr, "Failed to write PNG for file %s, layer %d\n", in_image_path, int(i));
+            fprintf(stderr, "Failed to write PNG for file %s, layer %d\n", in_image_path, lIndex);
             return false;
         }
     }
