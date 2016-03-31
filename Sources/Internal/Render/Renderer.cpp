@@ -79,6 +79,10 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
     DVASSERT(!ininialized);
 
+// CRAP: enforced DX9-backend for testing
+#if defined(__DAVAENGINE_WIN32__)
+    api = rhi::RHI_DX9;
+#endif
     api = _api;
 
     if (nullptr == params.FrameCommandExecutionSync)

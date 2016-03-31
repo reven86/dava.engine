@@ -74,10 +74,6 @@ void SetDispatchTable(const Dispatch& dispatch)
 
 void Initialize(Api api, const InitParam& param)
 {
-// CRAP: enforced DX9-backend for testing
-#if defined(__DAVAENGINE_WIN32__)
-    api = RHI_DX9;
-#endif
     switch (api)
     {
 #if defined(__DAVAENGINE_WIN32__)
