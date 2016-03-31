@@ -33,7 +33,7 @@ void * psd_fopen(psd_char * file_name)
 
 psd_int psd_fsize(void * file)
 {
-	psd_int offset, size;
+	psd_ptr offset, size;
 
 	offset = ftell((FILE *)file);
 	fseek((FILE *)file, 0, SEEK_END);
@@ -41,12 +41,12 @@ psd_int psd_fsize(void * file)
 	fseek((FILE *)file, 0, SEEK_SET);
 	fseek((FILE *)file, offset, SEEK_CUR);
 
-	return size;
+	return (psd_int)size;
 }
 
 psd_int psd_fread(psd_uchar * buffer, psd_int count, void * file)
 {
-	return fread(buffer, 1, count, (FILE *)file);
+	return (psd_int)fread(buffer, 1, count, (FILE *)file);
 }
 
 psd_int psd_fseek(void * file, psd_int length)

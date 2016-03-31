@@ -39,7 +39,7 @@ psd_status psd_get_layer_pattern_fill(psd_context * context, psd_layer_record * 
 	psd_uchar keychar[256];
 	
 	layer->layer_info_type[layer->layer_info_count] = psd_layer_info_type_pattern_fill;
-	layer->layer_type = psd_layer_info_type_pattern_fill;
+	layer->layer_type = (psd_layer_type)psd_layer_info_type_pattern_fill;
 
 	data = (psd_layer_pattern_fill *)psd_malloc(sizeof(psd_layer_pattern_fill));
 	if(data == NULL)

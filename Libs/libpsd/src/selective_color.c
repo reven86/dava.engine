@@ -186,7 +186,7 @@ static void psd_selective_color_proc(psd_ptr layer_info_data, psd_int * red, psd
 
 psd_bool psd_layer_blend_selective_color(psd_context * context, psd_layer_record * layer, psd_rect * dst_rect)
 {
-	psd_ptr layer_info_data;
+	psd_ptr layer_info_data = 0;
 	psd_layer_selective_color * data = NULL;
 	psd_int i;
 

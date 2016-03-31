@@ -514,7 +514,7 @@ psd_status psd_get_layer_bevel_emboss2(psd_context * context, psd_layer_effects_
 psd_status psd_layer_effects_blend_bevel_emboss(psd_context * context, psd_layer_record * layer, psd_layer_effects * data)
 {
 	psd_layer_effects_bevel_emboss * bevel_emboss = &data->bevel_emboss;
-	psd_int width, height, index;
+	psd_int width = 0, height = 0, index;
 	psd_int angle, altitude;
 	psd_int distance_x, distance_y;
 	psd_bitmap src_bmp, dst_bmp, shadow_bmp;

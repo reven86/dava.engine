@@ -191,7 +191,7 @@ static void psd_gradient_map_proc(psd_ptr layer_info_data, psd_int * red, psd_in
 
 psd_bool psd_layer_blend_gradient_map(psd_context * context, psd_layer_record * layer, psd_rect * dst_rect)
 {
-	psd_ptr layer_info_data;
+	psd_ptr layer_info_data = 0;
 	psd_layer_gradient_map * data = 0;
 	psd_int i, j, start_pos, end_pos, mid_pos;
 	psd_int start_red, start_green, start_blue, 

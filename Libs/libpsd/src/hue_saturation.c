@@ -139,7 +139,7 @@ static void psd_hue_saturation_proc(psd_ptr layer_info_data, psd_int * red, psd_
 
 psd_bool psd_layer_blend_hue_saturation(psd_context * context, psd_layer_record * layer, psd_rect * dst_rect)
 {
-	psd_ptr layer_info_data;
+	psd_ptr layer_info_data = 0;
 	psd_layer_hue_saturation * data = NULL;
 	psd_int i, j, increase, range_value[4];
 
