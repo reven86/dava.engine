@@ -48,9 +48,6 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     systemManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
     systemManager->PackageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
-    systemManager->SelectAllControls.Connect(this, &SelectionSystem::SelectAllControls);
-    systemManager->FocusNextChild.Connect(this, &SelectionSystem::FocusNextChild);
-    systemManager->FocusPreviousChild.Connect(this, &SelectionSystem::FocusPreviousChild);
 }
 
 SelectionSystem::~SelectionSystem() = default;
@@ -124,6 +121,11 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
         std::set_difference(selectionContainer.selectedNodes.begin(), selectionContainer.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
     }
     SetSelection(selected, deselected);
+}
+
+void SelectionSystem::ClearSelection()
+{
+    SetSelection(SelectedNodes(), selectionContainer.selectedNodes);
 }
 
 void SelectionSystem::SelectAllControls()
