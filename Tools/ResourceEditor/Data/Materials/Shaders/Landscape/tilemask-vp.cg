@@ -97,7 +97,7 @@ VPROG_BEGIN
 	float patchMorph = VP_IN_TEXCOORD6.y;
 	float basePixelOffset = VP_IN_TEXCOORD6.z;
 	
-	//Calculate 'zero-multiplier' that provide fetch zero-mip for vertecies at the edges whith climbs beyound height-texture. 
+	//Calculate 'zero-multiplier' that provide fetch zero-mip for vertecies at the edges with climbs beyound height-texture. 
 	float2 zeroLod = STEP(1.0, relativePosition);
 	float zeroLodMul = 1.0 - min(1.0, zeroLod.x + zeroLod.y);
 
