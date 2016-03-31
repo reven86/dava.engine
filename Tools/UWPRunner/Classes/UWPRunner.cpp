@@ -464,7 +464,7 @@ void UWPRunner::NetLogOutput(const String& logString)
     }
     else if (!options.useTeamCityTestOutput || !options.outputFile.empty())
     {
-        StringStream ss; 
+        StringStream ss;
         ss << "[" << logLevelStr << "] " << messageStr;
         if (message.back() != '\n' || message.back() != '\r')
         {

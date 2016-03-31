@@ -132,7 +132,7 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
 
     if (parser.IsFlagSet("--output"))
     {
-        out.outputFile = parser.GetParamForFlag("--output");;
+        out.outputFile = parser.GetParamForFlag("--output");
     }
 
     return out;
@@ -141,19 +141,19 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
 void ShowUsage()
 {
     String message =
-        "UWPRunner is a utility for installing, running and collection output "
-        "of universal windows applications.\n"
-        "UWPRunner may need administrative rights for configuring of IpOverUsb service\n"
-        "Usage: \n"
-        "    --package [path to appx package]\n"
-        "    --dependencies [path to package dependencies dir]\n"
-        "    --profile (local/phone) [target device for package]\n"
-        "    --arch [architecture of launching package, only for bundle]\n"
-        "    --tc_test [use teamcity test output]\n"
-        "    --install_only [only install package]\n"
-        "    --run_only [don't install, just run]\n"
-        "    --dava_app [application based on DAVA Framework, detects its abnormal termination]\n"
-        "    --output [path to output file for logs]\n";
+    "UWPRunner is a utility for installing, running and collection output "
+    "of universal windows applications.\n"
+    "UWPRunner may need administrative rights for configuring of IpOverUsb service\n"
+    "Usage: \n"
+    "    --package [path to appx package]\n"
+    "    --dependencies [path to package dependencies dir]\n"
+    "    --profile (local/phone) [target device for package]\n"
+    "    --arch [architecture of launching package, only for bundle]\n"
+    "    --tc_test [use teamcity test output]\n"
+    "    --install_only [only install package]\n"
+    "    --run_only [don't install, just run]\n"
+    "    --dava_app [application based on DAVA Framework, detects its abnormal termination]\n"
+    "    --output [path to output file for logs]\n";
 
     std::cout << message;
 }
