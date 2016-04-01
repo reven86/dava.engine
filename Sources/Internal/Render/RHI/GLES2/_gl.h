@@ -58,7 +58,9 @@
 
     #include "ios_gl.h"
 
-    #include "arm/arch.h"
+#if __arm__
+    #import <arm/arch.h>
+#endif
 
     #ifdef _ARM_ARCH_7
         #define __DAVAENGINE_ARM_7__
