@@ -9,7 +9,6 @@ import android.graphics.PixelFormat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
-import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -319,29 +318,24 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
+    	if(keyCode >= MAX_KEYS || event.isSystem()) // Ignore too big Android keycodes
     	{
     		return super.onKeyDown(keyCode, event);
     	}
     	
     	queueEvent(new KeyInputRunnable(keyCode, true));
-    	
-    	if (event.isSystem())
-    		return super.onKeyDown(keyCode, event);
-    	else
-    		return true;
+    	return true;
     }
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+    	if(keyCode >= MAX_KEYS || event.isSystem()) // Ignore too big keycodes
     	{
     		return super.onKeyUp(keyCode, event);
     	}
     	
     	queueEvent(new KeyInputRunnable(keyCode, false));
-    	
-    	return super.onKeyUp(keyCode, event);
+    	return true;
     }
     
     @Override
