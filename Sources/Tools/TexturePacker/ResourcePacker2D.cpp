@@ -37,17 +37,13 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
-
 #include "Render/GPUFamilyDescriptor.h"
-
-#include "IMagickHelper.h"
-
 #include "AssetCache/AssetCache.h"
 #include "Platform/Process.h"
 
 namespace DAVA
 {
-const String ResourcePacker2D::VERSION = "0.0.2";
+const String ResourcePacker2D::VERSION = "0.0.3";
 
 enum AssetClientCode : int
 {
@@ -275,104 +271,6 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
     return isChanged;
 }
 
-DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName)
-{
-    DVASSERT(processDirectoryPath.IsDirectoryPathname());
-
-    uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
-
-    bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
-    bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
-
-    FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
-    psdNameWithoutExtension.TruncateExtension();
-
-    IMagickHelper::CroppedData cropped_data;
-    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), cropped_data, true);
-
-    if (cropped_data.layers_count == 0)
-    {
-        AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
-        return nullptr;
-    }
-
-    //Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
-
-    int width = cropped_data.layer_width;
-    int height = cropped_data.layer_height;
-
-    DefinitionFile* defFile = new DefinitionFile;
-    defFile->filename = psdNameWithoutExtension + ".txt";
-
-    defFile->spriteWidth = width;
-    defFile->spriteHeight = height;
-    defFile->frameCount = cropped_data.layers_count;
-    defFile->frameRects = new Rect2i[defFile->frameCount];
-
-    for (uint32 k = 0; k < defFile->frameCount; ++k)
-    {
-        //save layer names
-        String layerName;
-
-        if (useLayerNames)
-        {
-            layerName.assign(cropped_data.layers[k].name);
-            if (layerName.empty())
-            {
-                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k);
-            }
-            // Check if layer name is unique
-            Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
-            if (it != defFile->frameNames.end())
-            {
-                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k, layerName.c_str());
-            }
-        }
-        else
-        {
-            layerName.assign("frame");
-            layerName.append(std::to_string(k));
-        }
-
-        defFile->frameNames.push_back(layerName);
-
-        //save layer rects
-        if (!withAlpha)
-        {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
-
-            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
-            if ((defFile->frameRects[k].dx > iMaxTextureSize) || (defFile->frameRects[k].dy > iMaxTextureSize))
-            {
-                Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k, maxTextureSize, defFile->frameRects[k].dx, defFile->frameRects[k].dy, width, height);
-
-                defFile->frameRects[k].dx = width;
-                defFile->frameRects[k].dy = height;
-            }
-            else
-            {
-                if (defFile->frameRects[k].dx > width)
-                {
-                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dx, width);
-                    defFile->frameRects[k].dx = width;
-                }
-
-                if (defFile->frameRects[k].dy > height)
-                {
-                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dy, height);
-                    defFile->frameRects[k].dy = height;
-                }
-            }
-        }
-        else
-        {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, width, height);
-        }
-    }
-
-    return defFile;
-}
-
 Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
 {
     Vector<String> tokens;
@@ -476,8 +374,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
             bool needRepack = (false == GetFilesFromCache(cacheKey, inputPath, outputPath));
             if (needRepack)
             {
-                List<DefinitionFile*> definitionFileList;
-
                 // read textures margins settings
                 bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
                 uint32 marginInPixels = useTwoSideMargin ? 0 : 1;
@@ -490,48 +386,45 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                 else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
                     marginInPixels = 4;
 
+                uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+                bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
+                bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
+
                 if (clearOutputDirectory)
                 {
                     FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
                 }
 
-                for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
+                Vector<DefinitionFile::Ponter> definitionFileList;
+                definitionFileList.reserve(fileList->GetCount());
+                for (DAVA::int32 fi = 0; fi < fileList->GetCount() && running; ++fi)
                 {
-                    if (!fileList->IsDirectory(fi))
+                    if (fileList->IsDirectory(fi))
+                        continue;
+
+                    definitionFileList.emplace_back(new DefinitionFile());
+
+                    DefinitionFile::Ponter defFile = definitionFileList.back();
+                    bool shouldAcceptFile = false;
+
+                    FilePath fullname = fileList->GetPathname(fi);
+                    if (fullname.IsEqualToExtension(".psd"))
                     {
-                        FilePath fullname = fileList->GetPathname(fi);
-                        Logger::FrameworkDebug("extracting %s", fullname.GetFilename().c_str());
+                        shouldAcceptFile = defFile->LoadPSD(fullname, processDir, maxTextureSize, withAlpha, useLayerNames);
+                    }
+                    else if (isLightmapsPacking && fullname.IsEqualToExtension(".png"))
+                    {
+                        shouldAcceptFile = true;
+                        defFile->LoadPNG(fullname, processDir);
+                    }
+                    else if (fullname.IsEqualToExtension(".pngdef"))
+                    {
+                        shouldAcceptFile = defFile->LoadPNGDef(fullname, processDir);
+                    }
 
-                        if (fullname.IsEqualToExtension(".psd"))
-                        {
-                            //TODO: check if we need filename or pathname
-                            DefinitionFile* defFile = ProcessPSD(processDir, fullname, fullname.GetFilename());
-                            if (!defFile)
-                            {
-                                // An error occured while converting this PSD file - cancel converting in this directory.
-                                break;
-                            }
-
-                            definitionFileList.push_back(defFile);
-                        }
-                        else if (isLightmapsPacking && fullname.IsEqualToExtension(".png"))
-                        {
-                            DefinitionFile* defFile = new DefinitionFile();
-                            defFile->LoadPNG(fullname, processDir);
-                            definitionFileList.push_back(defFile);
-                        }
-                        else if (fullname.IsEqualToExtension(".pngdef"))
-                        {
-                            DefinitionFile* defFile = new DefinitionFile();
-                            if (defFile->LoadPNGDef(fullname, processDir))
-                            {
-                                definitionFileList.push_back(defFile);
-                            }
-                            else
-                            {
-                                SafeDelete(defFile);
-                            }
-                        }
+                    if (shouldAcceptFile == false)
+                    {
+                        definitionFileList.pop_back();
                     }
                 }
 
@@ -587,8 +480,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                 const char* result = definitionFileList.empty() ? "[unchanged]" : "[REPACKED]";
                 Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(),
                              static_cast<float64>(packTime) / 1000.0, result);
-
-                for_each(definitionFileList.begin(), definitionFileList.end(), SafeDelete<DefinitionFile>);
 
                 AddFilesToCache(cacheKey, inputPath, outputPath);
             }

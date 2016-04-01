@@ -27,51 +27,48 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_DEFINITION_FILE_H__
-#define __DAVAENGINE_DEFINITION_FILE_H__
-
-#include "Base/RefPtr.h"
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "Math/Math2D.h"
+#include "Render/Image/LibPSDHelper.h"
+#include "Render/Image/Image.h"
+#include "FileSystem/File.h"
+#include "webp/decode.h"
+#include "webp/encode.h"
 
 namespace DAVA
 {
-class DefinitionFile : public BaseObject
+LibPSDHelper::LibPSDHelper()
 {
-public:
-    using Ponter = DAVA::RefPtr<DefinitionFile>;
-    using Collection = Vector<Ponter>;
+    name.assign("PSD");
+    supportedExtensions.emplace_back(".psd");
+    supportedFormats = { { FORMAT_RGBA8888 } };
+}
 
-public:
-    DefinitionFile() = default;
-    DefinitionFile(const DefinitionFile&) = delete;
-    DefinitionFile& operator=(const DefinitionFile&) = delete;
-    DefinitionFile(DefinitionFile&&) = delete;
-    ~DefinitionFile();
+bool LibPSDHelper::CanProcessFile(File* infile) const
+{
+    return GetImageInfo(infile).dataSize != 0;
+}
 
-    bool Load(const FilePath& filename);
-    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
+eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+{
+    Logger::Error("[LibPSDHelper::WriteFileAsCubeMap] Reading PSD not implemented");
+    return eErrorCode::ERROR_READ_FAIL;
+}
 
-    void ClearPackedFrames();
-    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
-    bool LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath,
-                 DAVA::uint32 maxTextureSize, bool withAlpha, bool useLayerNames);
+eErrorCode LibPSDHelper::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+{
+    Logger::Error("[LibPSDHelper::WriteFileAsCubeMap] PSD writing is not supported");
+    return eErrorCode::ERROR_WRITE_FAIL;
+}
 
-    Size2i GetFrameSize(uint32 frame) const;
-    int GetFrameWidth(uint32 frame) const;
-    int GetFrameHeight(uint32 frame) const;
+eErrorCode LibPSDHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+{
+    Logger::Error("[LibPSDHelper::WriteFileAsCubeMap] PSD writing is not supported");
+    return eErrorCode::ERROR_WRITE_FAIL;
+}
 
-public:
-    FilePath filename;
-    Vector<String> pathsInfo;
-    Vector<String> frameNames;
-    Vector<Rect2i> frameRects;
-    uint32 frameCount = 0;
-    int spriteWidth = 0;
-    int spriteHeight = 0;
+DAVA::ImageInfo LibPSDHelper::GetImageInfo(File* infile) const
+{
+    ImageInfo info;
+
+    return info;
+}
 };
-};
-
-
-#endif // __DAVAENGINE_DEFINITION_FILE_H__

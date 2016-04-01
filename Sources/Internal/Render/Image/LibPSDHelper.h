@@ -27,51 +27,40 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_DEFINITION_FILE_H__
-#define __DAVAENGINE_DEFINITION_FILE_H__
+#ifndef __DAVAENGINE_PSD_HELPER_H__
+#define __DAVAENGINE_PSD_HELPER_H__
 
-#include "Base/RefPtr.h"
+#include "Render/Image/ImageFormatInterface.h"
+
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
-#include "Math/Math2D.h"
 
 namespace DAVA
 {
-class DefinitionFile : public BaseObject
+class LibPSDHelper : public ImageFormatInterface
 {
 public:
-    using Ponter = DAVA::RefPtr<DefinitionFile>;
-    using Collection = Vector<Ponter>;
+    LibPSDHelper();
 
-public:
-    DefinitionFile() = default;
-    DefinitionFile(const DefinitionFile&) = delete;
-    DefinitionFile& operator=(const DefinitionFile&) = delete;
-    DefinitionFile(DefinitionFile&&) = delete;
-    ~DefinitionFile();
+    ImageFormat GetImageFormat() const override;
 
-    bool Load(const FilePath& filename);
-    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
+    bool CanProcessFile(File* file) const override;
 
-    void ClearPackedFrames();
-    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
-    bool LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath,
-                 DAVA::uint32 maxTextureSize, bool withAlpha, bool useLayerNames);
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap = 0) const override;
 
-    Size2i GetFrameSize(uint32 frame) const;
-    int GetFrameWidth(uint32 frame) const;
-    int GetFrameHeight(uint32 frame) const;
+    //only RGBA8888 or RGB888
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-public:
-    FilePath filename;
-    Vector<String> pathsInfo;
-    Vector<String> frameNames;
-    Vector<Rect2i> frameRects;
-    uint32 frameCount = 0;
-    int spriteWidth = 0;
-    int spriteHeight = 0;
-};
+    //only RGBA8888 or RGB888
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+
+    ImageInfo GetImageInfo(File* infile) const override;
 };
 
+inline ImageFormat LibPSDHelper::GetImageFormat() const
+{
+    return IMAGE_FORMAT_PSD;
+}
+};
 
-#endif // __DAVAENGINE_DEFINITION_FILE_H__
+#endif // __DAVAENGINE_PSD_HELPER_H__

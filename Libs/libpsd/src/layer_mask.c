@@ -495,6 +495,11 @@ static psd_status psd_get_layer_info(psd_context * context)
 		// LAYER BLENDING RANGES DATA
 		// Length of layer blending ranges data
 		size = psd_stream_get_int(context);
+		if (size == 0)
+		{
+			psd_layer_free(layer);
+			return psd_status_invalid_blending_channels;
+		}
 
 		// Composite gray blend source. Contains 2 black values followed by 2
 		// white values. Present but irrelevant for Lab & Grayscale.
@@ -510,12 +515,12 @@ static psd_status psd_get_layer_info(psd_context * context)
 			psd_layer_free(layer);
 			return psd_status_invalid_blending_channels;
 		}
-		
+
 		layer->layer_blending_ranges.channel_black_src = (psd_ushort *)psd_malloc(layer->layer_blending_ranges.number_of_blending_channels * 2);
 		layer->layer_blending_ranges.channel_white_src = (psd_ushort *)psd_malloc(layer->layer_blending_ranges.number_of_blending_channels * 2);
 		layer->layer_blending_ranges.channel_black_dst = (psd_ushort *)psd_malloc(layer->layer_blending_ranges.number_of_blending_channels * 2);
 		layer->layer_blending_ranges.channel_white_dst = (psd_ushort *)psd_malloc(layer->layer_blending_ranges.number_of_blending_channels * 2);
-		if(layer->layer_blending_ranges.channel_black_src == NULL || 
+		if (layer->layer_blending_ranges.channel_black_src == NULL ||
 			layer->layer_blending_ranges.channel_white_src == NULL ||
 			layer->layer_blending_ranges.channel_black_dst == NULL ||
 			layer->layer_blending_ranges.channel_white_dst == NULL)
@@ -523,8 +528,8 @@ static psd_status psd_get_layer_info(psd_context * context)
 			psd_layer_free(layer);
 			return psd_status_malloc_failed;
 		}
-		
-		for(j = 0; j < layer->layer_blending_ranges.number_of_blending_channels; j ++)
+
+		for (j = 0; j < layer->layer_blending_ranges.number_of_blending_channels; j++)
 		{
 			// channel source range
 			layer->layer_blending_ranges.channel_black_src[j] = psd_stream_get_short(context);
