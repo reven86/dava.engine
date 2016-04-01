@@ -108,37 +108,11 @@ DAVA_DEPRECATED(void ConvertV10orLessToV11(TextureDescriptor& descriptor))
 
 DAVA_DEPRECATED(void FillImageContainerFromFormat(TextureDescriptor& descriptor))
 {
-    static const Map<PixelFormat, ImageFormat> imageContainersMapping =
-    {
-        { PixelFormat::FORMAT_INVALID, ImageFormat::IMAGE_FORMAT_UNKNOWN },
-
-        { PixelFormat::FORMAT_RGBA8888, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_RGBA5551, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_RGBA4444, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_RGB888, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_RGB565, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_A8, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_A16, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_PVR4, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_PVR2, ImageFormat::IMAGE_FORMAT_PVR },
-        { PixelFormat::FORMAT_ETC1, ImageFormat::IMAGE_FORMAT_PVR },
-
-        { PixelFormat::FORMAT_DXT1, ImageFormat::IMAGE_FORMAT_DDS },
-        { PixelFormat::FORMAT_DXT1A, ImageFormat::IMAGE_FORMAT_DDS },
-        { PixelFormat::FORMAT_DXT3, ImageFormat::IMAGE_FORMAT_DDS },
-        { PixelFormat::FORMAT_DXT5, ImageFormat::IMAGE_FORMAT_DDS },
-        { PixelFormat::FORMAT_DXT5NM, ImageFormat::IMAGE_FORMAT_DDS },
-        { PixelFormat::FORMAT_ATC_RGB, ImageFormat::IMAGE_FORMAT_DDS },
-        { PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA, ImageFormat::IMAGE_FORMAT_DDS },
-        { PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, ImageFormat::IMAGE_FORMAT_DDS }
-    };
-
     if (descriptor.IsCompressedFile())
     {
         if (GPUFamilyDescriptor::IsGPUForDevice(descriptor.gpu))
         {
-            DVASSERT(imageContainersMapping.count(descriptor.format) == 1);
-            descriptor.containerType = static_cast<ImageFormat>(imageContainersMapping.at(descriptor.format));
+            descriptor.containerType = GPUFamilyDescriptor::GetCompressedFileFormat(descriptor.gpu, descriptor.format);
         }
         else
         {
@@ -147,14 +121,13 @@ DAVA_DEPRECATED(void FillImageContainerFromFormat(TextureDescriptor& descriptor)
     }
     else
     {
-        for (auto &compression : descriptor.compression)
+        for (uint8 gpu = 0; gpu < eGPUFamily::GPU_FAMILY_COUNT; ++gpu)
         {
-            DVASSERT(imageContainersMapping.count(static_cast<PixelFormat>(compression.format)) == 1);
-            compression.containerType = imageContainersMapping.at(static_cast<PixelFormat>(compression.format));
+            descriptor.compression[gpu].containerType = GPUFamilyDescriptor::GetCompressedFileFormat(static_cast<eGPUFamily>(gpu), static_cast<PixelFormat>(descriptor.compression[gpu].format));
         }
 
-        DVASSERT(imageContainersMapping.count(descriptor.format) == 1);
-        descriptor.containerType = static_cast<ImageFormat>(imageContainersMapping.at(descriptor.format));
+        descriptor.compression[eGPUFamily::GPU_ORIGIN].containerType = descriptor.dataSettings.sourceFileFormat;
+        descriptor.containerType = descriptor.dataSettings.sourceFileFormat;
     }
 }
 
@@ -931,11 +904,6 @@ ImageFormat TextureDescriptor::GetImageFormatForGPU(const eGPUFamily gpuFamily) 
     if (IsCompressedFile())
     {
         return containerType;
-    }
-
-    if (gpuFamily == GPU_ORIGIN)
-    {   //legacy
-        return dataSettings.sourceFileFormat;
     }
 
     return static_cast<ImageFormat>(compression[gpuFamily].containerType);

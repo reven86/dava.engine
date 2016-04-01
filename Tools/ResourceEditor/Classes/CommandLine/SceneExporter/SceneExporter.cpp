@@ -206,7 +206,7 @@ void SceneExporter::ExportScene(Scene* scene, const FilePath& fileName, Set<Stri
     }
 
     uint64 exportTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-    Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tVegetation time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tErrors occured: %d",
+    Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tErrors occured: %d",
                  fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, saveTime, moveTime, !sceneWasExportedCorrectly);
 
     return;
@@ -311,43 +311,72 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog)
     return allDescriptorsWereExported;
 }
 
+namespace TextureDescriptorValidator
+{
+bool IsFormatSelectedForGPU(const DAVA::TextureDescriptor& descriptor, DAVA::eGPUFamily gpu)
+{
+    if (descriptor.compression[gpu].format == DAVA::FORMAT_INVALID)
+    {
+        Logger::Error("Not selected export format for pathname %s for %s", descriptor.pathname.GetStringValue().c_str(), GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
+        return false;
+    }
+    return true;
+}
+
+bool IsImageValidForFormat(const DAVA::ImageInfo& info, const DAVA::PixelFormat format, const DAVA::FilePath& pathname)
+{
+    if (info.width != info.height && (format == DAVA::FORMAT_PVR2 || format == DAVA::FORMAT_PVR4))
+    {
+        Logger::Error("Can't export non-square texture %s into compression format %s",
+            pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<PixelFormat>::Instance()->ToString(format));
+
+        return false;
+    }
+
+    return true;
+};
+
+}
+
+
 bool SceneExporter::ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog)
 {
     std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(pathname));
     if (!descriptor)
     {
-        errorLog.insert(Format("Can't create descriptor for pathname %s", pathname.GetAbsolutePathname().c_str()));
-        return false;
-    }
-
-    if (GPUFamilyDescriptor::IsGPUForDevice(exportForGPU) && (descriptor->GetPixelFormatForGPU(exportForGPU) == FORMAT_INVALID))
-    {
-        errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
+        Logger::Error("Can't create descriptor for pathname %s", pathname.GetStringValue().c_str());
         return false;
     }
 
     FilePath sourceFilePath = descriptor->GetSourceTexturePathname();
     ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(sourceFilePath);
-    if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
-    {
-        errorLog.insert(Format("Can't export non-square texture %s into compression format %s",
-                               pathname.GetAbsolutePathname().c_str(),
-                               GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format)));
-        return false;
-    }
-
     String workingPathname = descriptor->pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
     sceneUtils.PrepareFolderForCopyFile(workingPathname, errorLog);
 
-    bool isExported = ExportTexture(descriptor.get(), errorLog);
-    if (isExported)
+    bool isExported = false;
+    if (exportForAllGPUs)
     {
-        if (exportForAllGPUs)
+        bool textureIsCorrectForAllGPU = true;
+        for (uint8 gpu = 0; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)
         {
+            if (    !TextureDescriptorValidator::IsFormatSelectedForGPU(*descriptor, static_cast<eGPUFamily>(gpu))  
+                || !TextureDescriptorValidator::IsImageValidForFormat(imgInfo, static_cast<DAVA::PixelFormat>(descriptor->compression[gpu].format), pathname))
+            {
+                textureIsCorrectForAllGPU = false;
+            }
+        }
+        if (textureIsCorrectForAllGPU)
+        {
+            isExported = ExportTexture(descriptor.get(), errorLog);
             sceneUtils.CopyFile(pathname, errorLog);
         }
-        else
+    }
+    else
+    {
+        if (TextureDescriptorValidator::IsFormatSelectedForGPU(*descriptor, exportForGPU)
+            && TextureDescriptorValidator::IsImageValidForFormat(imgInfo, static_cast<DAVA::PixelFormat>(descriptor->compression[exportForGPU].format), pathname))
         {
+            isExported = ExportTexture(descriptor.get(), errorLog);
             descriptor->Export(sceneUtils.dataFolder + workingPathname, exportForGPU);
         }
     }

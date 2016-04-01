@@ -725,12 +725,20 @@ void TextureBrowser::textureBgMaskPressed(bool checked)
 
 void TextureBrowser::texturePropertyChanged(int type)
 {
+    DVASSERT(ui->textureProperties->getTextureDescriptor() == curDescriptor);
+
     // settings that need texture to reconvert
     if (type == TextureProperties::PROP_FORMAT ||
         type == TextureProperties::PROP_MIPMAP ||
         type == TextureProperties::PROP_NORMALMAP ||
         type == TextureProperties::PROP_SIZE)
     {
+        if (type == TextureProperties::PROP_FORMAT)
+        {   // add ImageFormat by pixel format
+            PixelFormat format = static_cast<PixelFormat>(curDescriptor->compression[curTextureView].format);
+            curDescriptor->compression[curTextureView].containerType = GPUFamilyDescriptor::GetCompressedFileFormat(curTextureView, format);
+        }
+
         // set current Texture view and force texture conversion
         // new texture will be applied to scene after conversion (by signal)
         setTextureView(curTextureView, getConvertMode(CONVERT_FORCE));

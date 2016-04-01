@@ -196,6 +196,9 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
         desc.dataSettings.sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(targetFormat)[0];
         desc.pathname = dirPath + Format("mip%d%s", i, desc.dataSettings.sourceFileExtension.c_str());
 
+        desc.compression[eGPUFamily::GPU_ORIGIN].format = PixelFormat::FORMAT_RGBA8888;
+        desc.compression[eGPUFamily::GPU_ORIGIN].containerType = targetFormat;
+
         ImageSystem::Instance()->Save(desc.pathname, images[i]);
         FilePath convertedImgPath = ConvertToPvr(desc, gpuFamily, quality, false);
 

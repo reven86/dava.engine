@@ -567,7 +567,7 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(eGPUFamily f
                     || keys.imageFormat == ImageFormat::IMAGE_FORMAT_PNG
                     )
                 {
-                    keys.toConvertOrigin = ImageConvert::CanConvertFromTo(PixelFormat::FORMAT_RGBA8888, keys.pixelFormat);
+                    keys.toConvertOrigin = (keys.pixelFormat == PixelFormat::FORMAT_RGBA8888) ? true: ImageConvert::CanConvertFromTo(PixelFormat::FORMAT_RGBA8888, keys.pixelFormat);
                     if (!keys.toConvertOrigin)
                     {
                         AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat)));

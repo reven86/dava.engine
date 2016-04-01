@@ -79,6 +79,8 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
         return false;
     }
 
+    ImageInfo info = ImageSystem::Instance()->GetImageInfo(texturePath);
+
     FilePath descriptorPath = TextureDescriptor::GetDescriptorPathname(texturePath);
 
     std::unique_ptr<TextureDescriptor> descriptor;
@@ -90,6 +92,10 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
         descriptor->pathname = descriptorPath;
         descriptor->dataSettings.sourceFileFormat = sourceFormat;
         descriptor->dataSettings.sourceFileExtension = sourceExtension;
+        
+        descriptor->compression[eGPUFamily::GPU_ORIGIN].containerType = sourceFormat;
+        descriptor->compression[eGPUFamily::GPU_ORIGIN].format = info.format;
+
         descriptorChanged = true;
     }
     else
@@ -101,6 +107,10 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
         {
             descriptor->dataSettings.sourceFileFormat = sourceFormat;
             descriptor->dataSettings.sourceFileExtension = sourceExtension;
+
+            descriptor->compression[eGPUFamily::GPU_ORIGIN].containerType = sourceFormat;
+            descriptor->compression[eGPUFamily::GPU_ORIGIN].format = info.format;
+
             descriptorChanged = true;
         }
     }
