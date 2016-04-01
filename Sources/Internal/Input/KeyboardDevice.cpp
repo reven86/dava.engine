@@ -29,6 +29,10 @@
 
 #include "KeyboardDevice.h"
 
+#include "UI/UIEvent.h"
+#include "UI/UIControlSystem.h"
+#include "Platform/SystemTimer.h"
+
 #include <algorithm>
 
 namespace DAVA
@@ -434,6 +438,24 @@ void KeyboardDevice::PrepareKeyTranslator()
 void KeyboardDevice::ClearAllKeys()
 {
     currentFrameKeyStatus.reset();
+
+    UIControlSystem* uiControlSys = UIControlSystem::Instance();
+    if (uiControlSys != nullptr)
+    {
+        UIEvent e;
+        e.phase = UIEvent::Phase::KEY_UP;
+        e.device = UIEvent::Device::KEYBOARD;
+        e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        for (uint32 key = static_cast<uint32>(Key::ESCAPE); key < static_cast<uint32>(Key::TOTAL_KEYS_COUNT); key += 1)
+        {
+            if (realKeyStatus[key])
+            {
+                e.key = static_cast<Key>(key);
+                uiControlSys->OnInput(&e);
+            }
+        }
+    }
+
     realKeyStatus.reset();
 }
-};
+} // end namespace DAVA
