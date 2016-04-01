@@ -81,6 +81,7 @@ Landscape::Landscape()
     type = TYPE_LANDSCAPE;
 
     heightmap = new Heightmap();
+    frustum = new Frustum();
 
     normalFov = 70.f;
     zoomFov = 6.5f;
@@ -117,6 +118,7 @@ Landscape::~Landscape()
     ReleaseGeometryData();
 
     SafeRelease(heightmap);
+    SafeRelease(frustum);
 
     SafeRelease(landscapeMaterial);
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
@@ -1273,7 +1275,6 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Ve
 void Landscape::BindDynamicParameters(Camera* camera)
 {
     RenderObject::BindDynamicParameters(camera);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 
     if (heightmap)
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_TEXTURE_SIZE, &heightmapSizef, (pointer_size)heightmap->Size());
@@ -1295,8 +1296,9 @@ void Landscape::PrepareToRender(Camera* camera)
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
     {
         camera = GetRenderSystem()->GetMainCamera();
-        frustum = camera->GetFrustum();
         cameraPos = camera->GetPosition();
+
+        frustum->Build((*worldTransform) * camera->GetViewProjMatrix());
 
         float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) / (normalFov - zoomFov), 0.f, 1.f);
         maxHeightError = zoomMaxHeightError + (normalMaxHeightError - zoomMaxHeightError) * fovLerp;
