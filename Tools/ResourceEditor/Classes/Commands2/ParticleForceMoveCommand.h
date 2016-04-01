@@ -30,7 +30,7 @@
 #ifndef __PARTICLE_FORCE_MOVE_COMMAND_H__
 #define __PARTICLE_FORCE_MOVE_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleForce.h"
 

@@ -108,6 +108,7 @@ public slots:
     void OnRecentProjectsTriggered(QAction* recentAction);
     void ExportMenuTriggered(QAction* exportAsAction);
     void OnImportSpeedTreeXML();
+    void RemoveSelection();
 
     void OnUndo();
     void OnRedo();
@@ -297,7 +298,6 @@ private:
 
     // Landscape editor specific
     // TODO: remove later -->
-    bool IsTilemaskModificationCommand(const Command2* cmd);
     bool LoadAppropriateTextureFormat();
     bool IsSavingAllowed();
     // <--

@@ -26,16 +26,16 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_GLES2.h"
-    #include "rhi_ProgGLES2.h"
+#include "../Common/rhi_Pool.h"
+#include "rhi_GLES2.h"
+#include "rhi_ProgGLES2.h"
 
-    #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../Common/dbg_StatSet.h"
+#include "../Common/rhi_Private.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 
 using DAVA::Logger;
     #include "Concurrency/Thread.h"
@@ -43,11 +43,12 @@ using DAVA::Logger;
     #include "Concurrency/ConditionVariable.h"
     #include "Concurrency/LockGuard.h"
     #include "Concurrency/AutoResetEvent.h"
+    #include "Concurrency/ManualResetEvent.h"
     #include "Debug/Profiler.h"
 
-    #include "_gl.h"
+#include "_gl.h"
 
-    #define RHI_GLES2__USE_CMDBUF_PACKING 1
+#define RHI_GLES2__USE_CMDBUF_PACKING 1
 
 namespace rhi
 {
@@ -374,11 +375,11 @@ static bool _GLES2_RenderThreadExitPending = false;
 static DAVA::Spinlock _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
-static DAVA::Mutex _GLES2_RenderThreadSuspendSync;
+static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync(true, 0);
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
 
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
-static unsigned _GLES2_RenderThreadFrameCount = 0;
+static uint32 _GLES2_RenderThreadFrameCount = 0;
 
 struct
 FrameGLES2
@@ -1112,23 +1113,20 @@ void CommandBufferGLES2_t::Execute()
 //unsigned    sttx_cnt=0;
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
-    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
-    {
-        const CommandGLES2* cmd = reinterpret_cast<const CommandGLES2*>(c);
+    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)     
 #else
     for (std::vector<uint64>::const_iterator c = _cmd.begin(), c_end = _cmd.end(); c != c_end; ++c)
+#endif
     {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+        const CommandGLES2* cmd = reinterpret_cast<const CommandGLES2*>(c);
+        switch (cmd->type)
+#else
         const uint64 cmd = *c;
         std::vector<uint64>::const_iterator arg = c + 1;
 
         if (cmd == EndCmd)
             break;
-#endif
-//++cmd_cnt;
-        
-#if RHI_GLES2__USE_CMDBUF_PACKING
-        switch (cmd->type)
-#else
         switch (cmd)
 #endif
         {
@@ -1429,9 +1427,9 @@ void CommandBufferGLES2_t::Execute()
             c += 1;
             #endif
 
-                #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+            #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
             GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, (mode == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL));
-                #endif
+            #endif
         }
         break;
 
@@ -1717,9 +1715,9 @@ void CommandBufferGLES2_t::Execute()
             #elif defined(__DAVAENGINE_ANDROID__)
             GL_CALL(glDrawArraysInstanced_EXT(mode, 0, v_cnt, instCount));
             #elif defined(__DAVAENGINE_MACOS__)
-        GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
+            GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
             #else
-        GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
             #endif
             StatSet::IncStat(stat_DP, 1);
             switch (mode)
@@ -1806,14 +1804,9 @@ void CommandBufferGLES2_t::Execute()
             DVASSERT(baseInst == 0) // it's not supported in GLES
             GL_CALL(glDrawElementsInstanced_EXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_MACOS__)
-        //            DVASSERT(baseInst == 0)
-        //            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
             GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(uint64(i_off)), instCount, baseInst));
             #else
-        //            if( baseInst )
-        GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
-//            else
-//                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
             #endif
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
@@ -2130,12 +2123,12 @@ gles2_Present(Handle sync)
             _GLES2_FramePreparedEvent.Signal();
         }
 
-        unsigned frame_cnt = 0;
+        uint32 frame_cnt = 0;
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
             _GLES2_FrameSync.Lock();
-            frame_cnt = _GLES2_Frame.size();
+            frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
             _GLES2_FrameSync.Unlock();
 
             if (frame_cnt >= _GLES2_RenderThreadFrameCount)
@@ -2182,7 +2175,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
         {
-            DAVA::LockGuard<DAVA::Mutex> suspendGuard(_GLES2_RenderThreadSuspendSync);
+            _GLES2_RenderThreadSuspendSync.Wait();
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
@@ -2292,18 +2285,23 @@ void UninitializeRenderThreadGLES2()
 void SuspendGLES2()
 {
     _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_FramePreparedEvent.Signal();
+    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from ExecGL
     _GLES2_FrameDoneEvent.Wait();
+    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from Present
+    _GLES2_FrameDoneEvent.Wait();
+    _GLES2_RenderThreadSuspendSync.Reset();
+    _GLES2_FramePreparedEvent.Signal(); //avoid stall
     GL_CALL(glFinish());
-    Logger::Info("Render GLES Suspended");
+    Logger::Error("Render GLES Suspended");
 }
 
 //------------------------------------------------------------------------------
 
 void ResumeGLES2()
 {
+    _GLES2_RenderThreadSuspendSync.Signal();
     _GLES2_RenderThreadSuspended.Set(false);
-    Logger::Info("Render GLES Resumed");
+    Logger::Error("Render GLES Resumed");
 }
 
 //------------------------------------------------------------------------------

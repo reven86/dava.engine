@@ -42,6 +42,7 @@ public:
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
     void SetSystemVisible(bool visible);
+    bool GetSystemVisible() const;
 
 protected:
     ~ControlContainer() = default;
@@ -65,14 +66,8 @@ private:
     DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
 };
 
-template <typename T>
-T* CreateContainerWithBorders();
-
 class FrameControl : public ControlContainer
 {
-    template <typename T>
-    friend T* CreateContainerWithBorders();
-
 public:
     enum
     {
@@ -82,13 +77,12 @@ public:
         BORDER_RIGHT,
         BORDERS_COUNT
     };
-    void Init();
+    explicit FrameControl();
+    static DAVA::UIControl* CreateFrameBorderControl(DAVA::uint32 border);
 
 protected:
-    explicit FrameControl();
     ~FrameControl() = default;
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
-    DAVA::Rect CreateFrameBorderRect(DAVA::uint32 border, const DAVA::Rect& frameRect) const;
 };
 
 class FrameRectControl : public ControlContainer
@@ -122,31 +116,8 @@ private:
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
 };
 
-class SelectionRect : public FrameControl
-{
-    template <typename T>
-    friend T* CreateContainerWithBorders();
-    SelectionRect();
-    ~SelectionRect() = default;
-    void Draw(const DAVA::UIGeometricData& geometricData) override;
-};
+extern void SetupHUDMagnetLineControl(DAVA::UIControl* control);
 
-class MagnetLineControl : public DAVA::UIControl
-{
-public:
-    MagnetLineControl(const DAVA::Rect& rect);
-
-private:
-    ~MagnetLineControl() = default;
-};
-
-template <typename T>
-T* CreateContainerWithBorders()
-{
-    static_assert(std::is_base_of<FrameControl, T>::value, "works only for classes, based on FrameControl");
-    T* t = new T;
-    t->Init();
-    return t;
-}
+extern void SetupHUDMagnetRectControl(DAVA::UIControl* control);
 
 #endif //_QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_

@@ -64,7 +64,7 @@ void FULogFile::Flush()
     file->Flush();
 }
 
-#ifdef UNICODE
+#if (1)
 void FULogFile::WriteLine(const char* filename, uint32 linenum, const fchar* message, ...)
 {
     WriteLine("[%s:%d]", filename, (unsigned int)linenum);

@@ -37,46 +37,44 @@
 
 namespace DAVA
 {
-
-
 DefinitionFile::DefinitionFile()
-:	frameCount(0)
-,	spriteWidth(0)
-,	spriteHeight(0)
-,	frameRects(0)
+    : frameCount(0)
+    , spriteWidth(0)
+    , spriteHeight(0)
+    , frameRects(0)
 {
 }
 
 DefinitionFile::~DefinitionFile()
 {
-	SafeDeleteArray(frameRects);
+    SafeDeleteArray(frameRects);
 }
 
-void DefinitionFile::LoadPNG(const FilePath & _filename, const FilePath & pathToProcess)
+void DefinitionFile::LoadPNG(const FilePath& _filename, const FilePath& pathToProcess)
 {
     DVASSERT(pathToProcess.IsDirectoryPathname());
-	
+
     String nameWithoutExt = _filename.GetBasename();
     FilePath corespondingPngImage = FilePath::CreateWithNewExtension(_filename, ".png");
 
-	filename = pathToProcess + (nameWithoutExt + String(".txt"));
-	frameCount = 1;
+    filename = pathToProcess + (nameWithoutExt + String(".txt"));
+    frameCount = 1;
 
-	PngImageExt image;
-	image.Read(corespondingPngImage);
-	spriteWidth = image.GetWidth();
-	spriteHeight = image.GetHeight();
+    PngImageExt image;
+    image.Read(corespondingPngImage);
+    spriteWidth = image.GetWidth();
+    spriteHeight = image.GetHeight();
 
-	frameRects = new Rect2i[1];
-	frameRects[0].x = 0;
-	frameRects[0].y = 0;
-	frameRects[0].dx = spriteWidth;
-	frameRects[0].dy = spriteHeight;
-    
+    frameRects = new Rect2i[1];
+    frameRects[0].x = 0;
+    frameRects[0].y = 0;
+    frameRects[0].dx = spriteWidth;
+    frameRects[0].dy = spriteHeight;
+
     frameNames.resize(frameCount);
 
-	FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, 0);
-	FileSystem::Instance()->CopyFile(_filename, fileWrite);
+    FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, 0);
+    FileSystem::Instance()->CopyFile(_filename, fileWrite);
 }
 
 bool DefinitionFile::LoadPNGDef(const FilePath& _filename, const FilePath& pathToProcess)
@@ -84,108 +82,102 @@ bool DefinitionFile::LoadPNGDef(const FilePath& _filename, const FilePath& pathT
     DVASSERT(pathToProcess.IsDirectoryPathname());
 
     Logger::FrameworkDebug("* Load PNG Definition: %s", _filename.GetAbsolutePathname().c_str());
-	
-	FILE * fp = fopen(_filename.GetAbsolutePathname().c_str(), "rt");
-	fscanf(fp, "%d", &frameCount);
 
-	String nameWithoutExt = _filename.GetBasename();
-	FilePath corespondingPngImage = _filename.GetDirectory() +  (nameWithoutExt + String(".png"));
+    FILE* fp = fopen(_filename.GetAbsolutePathname().c_str(), "rt");
+    fscanf(fp, "%d", &frameCount);
 
-	filename = pathToProcess + (nameWithoutExt + String(".txt"));
-	
-	PngImageExt image;
-	image.Read(corespondingPngImage);
-	spriteWidth = image.GetWidth() / frameCount;
-	spriteHeight = image.GetHeight();
-	
-	Logger::FrameworkDebug("* frameCount: %d spriteWidth: %d spriteHeight: %d", frameCount, spriteWidth, spriteHeight);
+    String nameWithoutExt = _filename.GetBasename();
+    FilePath corespondingPngImage = _filename.GetDirectory() + (nameWithoutExt + String(".png"));
 
-	frameRects = new Rect2i[frameCount];
+    filename = pathToProcess + (nameWithoutExt + String(".txt"));
+
+    PngImageExt image;
+    image.Read(corespondingPngImage);
+    spriteWidth = image.GetWidth() / frameCount;
+    spriteHeight = image.GetHeight();
+
+    Logger::FrameworkDebug("* frameCount: %d spriteWidth: %d spriteHeight: %d", frameCount, spriteWidth, spriteHeight);
+
+    frameRects = new Rect2i[frameCount];
     frameNames.resize(frameCount);
-	for (int k = 0; k < frameCount; ++k)
-	{
-		PngImageExt frameX;
-		frameX.Create(spriteWidth, spriteHeight);
-		frameX.DrawImage(0, 0, &image, Rect2i(k * spriteWidth, 0, spriteWidth, spriteHeight));
-		
-		
-		Rect2i reducedRect;
-		frameX.FindNonOpaqueRect(reducedRect);
-		Logger::FrameworkDebug("%s - reduced_rect(%d %d %d %d)", nameWithoutExt.c_str(), reducedRect.x, reducedRect.y, reducedRect.dx, reducedRect.dy);
-		
-		PngImageExt frameX2;
-		frameX2.Create(reducedRect.dx, reducedRect.dy);
-		frameX2.DrawImage(0, 0, &frameX, reducedRect);
-		
-		FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, k);
-		frameX2.Write(fileWrite);		
-	
-		frameRects[k].x = reducedRect.x;
-		frameRects[k].y = reducedRect.y;
-		frameRects[k].dx = reducedRect.dx;
-		frameRects[k].dy = reducedRect.dy;
-	}
-	
+    for (uint32 k = 0; k < frameCount; ++k)
+    {
+        PngImageExt frameX;
+        frameX.Create(spriteWidth, spriteHeight);
+        frameX.DrawImage(0, 0, &image, Rect2i(k * spriteWidth, 0, spriteWidth, spriteHeight));
 
-	fclose(fp);
-	return true;
+        Rect2i reducedRect;
+        frameX.FindNonOpaqueRect(reducedRect);
+        Logger::FrameworkDebug("%s - reduced_rect(%d %d %d %d)", nameWithoutExt.c_str(), reducedRect.x, reducedRect.y, reducedRect.dx, reducedRect.dy);
+
+        PngImageExt frameX2;
+        frameX2.Create(reducedRect.dx, reducedRect.dy);
+        frameX2.DrawImage(0, 0, &frameX, reducedRect);
+
+        FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, k);
+        frameX2.Write(fileWrite);
+
+        frameRects[k].x = reducedRect.x;
+        frameRects[k].y = reducedRect.y;
+        frameRects[k].dx = reducedRect.dx;
+        frameRects[k].dy = reducedRect.dy;
+    }
+
+    fclose(fp);
+    return true;
 }
 
 bool DefinitionFile::Load(const FilePath& _filename)
 {
-	filename = _filename;
-	FILE * fp = fopen(filename.GetAbsolutePathname().c_str(), "rt");
-	if (!fp)
-	{
-		Logger::Error("*** ERROR: Can't open definition file: %s",filename.GetAbsolutePathname().c_str());
-		return false;
-	}
-	fscanf(fp, "%d %d", &spriteWidth, &spriteHeight);
-	fscanf(fp, "%d", &frameCount);
-	
-	frameRects = new Rect2i[frameCount];
-	
-	for (int i = 0; i < frameCount; ++i)
-	{
-        char frameName[128];
-		fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
-		Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
-        frameNames[i] = String(frameName);
-	}
-	
-	while(1)
-	{
-		char tmpString[512];
-		fgets(tmpString, sizeof(tmpString), fp);
-		pathsInfo.push_back(tmpString);
-		printf("str: %s\n", tmpString);
-		if (feof(fp))break;
-	}
-	
-	
-	fclose(fp);
-	Logger::FrameworkDebug("Loaded definition: %s frames: %d",filename.GetAbsolutePathname().c_str(), frameCount);
-	
-	return true;
+    filename = _filename;
+    FILE* fp = fopen(filename.GetAbsolutePathname().c_str(), "rt");
+    if (!fp)
+    {
+        Logger::Error("*** ERROR: Can't open definition file: %s", filename.GetAbsolutePathname().c_str());
+        return false;
+    }
+    fscanf(fp, "%d %d", &spriteWidth, &spriteHeight);
+    fscanf(fp, "%d", &frameCount);
+
+    frameRects = new Rect2i[frameCount];
+
+    for (uint32 i = 0; i < frameCount; ++i)
+        for (int i = 0; i < frameCount; ++i)
+        {
+            char frameName[128];
+            fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
+            Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
+            frameNames[i] = String(frameName);
+        }
+
+    while (1)
+    {
+        char tmpString[512];
+        fgets(tmpString, sizeof(tmpString), fp);
+        pathsInfo.push_back(tmpString);
+        printf("str: %s\n", tmpString);
+        if (feof(fp))
+            break;
+    }
+
+    fclose(fp);
+    Logger::FrameworkDebug("Loaded definition: %s frames: %d", filename.GetAbsolutePathname().c_str(), frameCount);
+
+    return true;
 }
 
-
-DAVA::Size2i DefinitionFile::GetFrameSize(int frame) const
+DAVA::Size2i DefinitionFile::GetFrameSize(uint32 frame) const
 {
-	return Size2i(frameRects[frame].dx, frameRects[frame].dy);
+    return Size2i(frameRects[frame].dx, frameRects[frame].dy);
 }
 
-
-int DefinitionFile::GetFrameWidth(int frame) const
+int DefinitionFile::GetFrameWidth(uint32 frame) const
 {
-	return frameRects[frame].dx;
+    return frameRects[frame].dx;
 }
 
-int DefinitionFile::GetFrameHeight(int frame) const
+int DefinitionFile::GetFrameHeight(uint32 frame) const
 {
-	return frameRects[frame].dy;
+    return frameRects[frame].dy;
 }
-
-
 };
-

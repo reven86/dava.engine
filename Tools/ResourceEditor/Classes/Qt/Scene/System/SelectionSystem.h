@@ -32,7 +32,8 @@
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
-#include "Commands2/Command2.h"
+
+#include "Commands2/Base/Command2.h"
 #include "SystemDelegates.h"
 
 // framework
@@ -110,11 +111,14 @@ public:
 
     void Input(DAVA::UIEvent* event) override;
 
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+
     void Activate() override;
     void Deactivate() override;
 
-    bool IsEntitySelected(DAVA::Entity* entity);
-    bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
+    void EnableSystem(bool enabled);
+    bool IsSystemEnabled() const;
 
     void Draw();
     void CancelSelection();
@@ -124,6 +128,7 @@ public:
 
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
+
     DAVA::AABBox3 GetTransformedBoundingBox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
 
     void UpdateHoodPos() const;
@@ -159,6 +164,7 @@ private:
     EntityGroup recentlySelectedEntities;
     EntityGroup lastGroupSelection;
     EntityGroup objectsToSelect;
+    DAVA::List<DAVA::Entity*> entitiesForSelection;
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
@@ -170,6 +176,7 @@ private:
     bool invalidSelectionBoxes = false;
     bool selectionHasChanges = false;
     bool selecting = false;
+    bool systemIsEnabled = false;
 };
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()

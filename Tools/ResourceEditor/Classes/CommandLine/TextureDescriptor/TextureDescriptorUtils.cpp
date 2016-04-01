@@ -218,6 +218,20 @@ void SetCompressionParams(const FilePath& descriptorPath, const DAVA::Map<DAVA::
 
         if (force || (descriptor->compression[gpu].format == FORMAT_INVALID))
         {
+            PixelFormat dstFormat = static_cast<PixelFormat>(compressionParam.second.format);
+            if (dstFormat == FORMAT_PVR2 || dstFormat == FORMAT_PVR4)
+            {
+                DAVA::FilePath path = descriptor->GetSourceTexturePathname();
+                ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(descriptor->GetSourceTexturePathname());
+                if (imgInfo.width != imgInfo.height)
+                {
+                    DAVA::Logger::Error("Can't set %s compression for non-squared texture %s",
+                                        GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat),
+                                        path.GetAbsolutePathname().c_str());
+                    continue;
+                }
+            }
+
             descriptor->compression[gpu] = compressionParam.second;
 
             if (convertionEnabled)
@@ -245,6 +259,40 @@ void SetPreset(const FilePath& descriptorPath, const FilePath& presetPath, bool 
     if (preset)
     {
         Internal::SetPreset(descriptorPath, preset, toConvert, quality);
+    }
+}
+
+void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vector<DAVA::FilePath>& presets)
+{
+    if (descriptors.size() != presets.size())
+    {
+        Logger::Error("Descriptors size differs from presets size");
+        return;
+    }
+
+    size_t count = descriptors.size();
+    for (size_t i = 0; i < count; ++i)
+    {
+        std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptors[i]));
+        if (!descriptor)
+        {
+            Logger::Error("Cannot create descriptor from file %s", descriptors[i].GetStringValue().c_str());
+            continue;
+        }
+
+        ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive());
+        if (descriptor->SerializeToPreset(presetArchive) == false)
+        {
+            Logger::Error("Can't create preset from descriptor");
+            continue;
+        }
+
+        FileSystem::Instance()->CreateDirectory(presets[i].GetDirectory(), true);
+        if (Preset::SaveArchive(presetArchive, presets[i]) == false)
+        {
+            Logger::Error("Can't save preset as %s", presets[i].GetStringValue().c_str());
+            continue;
+        }
     }
 }
 

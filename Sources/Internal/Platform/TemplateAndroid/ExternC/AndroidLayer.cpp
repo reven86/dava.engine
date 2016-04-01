@@ -48,7 +48,6 @@
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
-#include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -114,7 +113,6 @@ jfieldID gInputEventTidField;
 jfieldID gInputEventXField;
 jfieldID gInputEventYField;
 jfieldID gInputEventTimeField;
-jfieldID gInputEventTapCountField;
 
 AndroidDelegate* androidDelegate = nullptr;
 ANativeWindow* nativeWindow = nullptr;
@@ -226,7 +224,6 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventYField = env->GetFieldID(*gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
-    gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
 
     DAVA::Logger::Info("finish OnCreateApplication");
 }
@@ -365,8 +362,8 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
                                                            gInputEventXField);
     event.point.y = event.physPoint.y = env->GetFloatField(input,
                                                            gInputEventYField);
-    event.tapCount = env->GetIntField(input, gInputEventTapCountField);
-    event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
+    // timestamp in seconds, JNIEnv retern in milliseconds
+    event.timestamp = env->GetDoubleField(input, gInputEventTimeField) / 1000.0;
     event.phase = GetPhase(action, source);
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)

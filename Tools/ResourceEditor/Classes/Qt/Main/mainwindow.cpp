@@ -244,11 +244,7 @@ bool QtMainWindow::SaveScene(SceneEditor2* scene)
     }
     else
     {
-        // SZ: df-2128
-        // This check was removed until all editor actions will be done through commands
-        // because it's not possible to save scene if some thing changes without command
-        //
-        //if(scene->IsChanged())
+        if (scene->IsChanged())
         {
             SaveAllSceneEmitters(scene);
             SceneFileV2::eError ret = scene->SaveScene(scenePath);
@@ -827,7 +823,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionEditor_2D_Camera, SIGNAL(triggered()), this, SLOT(On2DCameraDialog()));
     QObject::connect(ui->actionEditor_Sprite, SIGNAL(triggered()), this, SLOT(On2DSpriteDialog()));
     QObject::connect(ui->actionAddNewEntity, SIGNAL(triggered()), this, SLOT(OnAddEntityFromSceneTree()));
-    QObject::connect(ui->actionRemoveEntity, SIGNAL(triggered()), ui->sceneTree, SLOT(RemoveSelection()));
+    QObject::connect(ui->actionRemoveEntity, SIGNAL(triggered()), this, SLOT(RemoveSelection()));
     QObject::connect(ui->actionExpandSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(expandAll()));
     QObject::connect(ui->actionCollapseSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(CollapseAll()));
     QObject::connect(ui->actionAddLandscape, SIGNAL(triggered()), this, SLOT(OnAddLandscape()));
@@ -918,8 +914,8 @@ void QtMainWindow::SetupShortCuts()
     connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
 
     // delete
-    connect(new QShortcut(QKeySequence(Qt::Key_Delete), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Delete), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
 
     // scene tree collapse/expand
     connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
@@ -1108,13 +1104,14 @@ void QtMainWindow::UpdateModificationActionsState()
 
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
 {
-    int commandId = command->GetId();
-    if (CMDID_ENABLE_WAYEDIT == commandId)
+    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
+        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
         SetActionCheckedSilently(ui->actionWayEditor, redo);
     }
-    else if (CMDID_DISABLE_WAYEDIT == commandId)
+    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
     {
+        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
         SetActionCheckedSilently(ui->actionWayEditor, !redo);
     }
 }
@@ -1126,10 +1123,32 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const Command2* com
         LoadUndoRedoState(scene);
         UpdateModificationActionsState();
 
-        Entity* entity = command->GetEntity();
-        if (entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+        auto UpdateCameraState = [this, scene](const Entity* entity)
         {
-            SetActionCheckedSilently(ui->actionSnapCameraToLandscape, scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+            if (entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+            {
+                SetActionCheckedSilently(ui->actionSnapCameraToLandscape, scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+                return true;
+            }
+            return false;
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2* cmd = batch->GetCommand(i);
+                if (UpdateCameraState(cmd->GetEntity()))
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            UpdateCameraState(command->GetEntity());
         }
 
         UpdateWayEditor(command, redo);
@@ -1332,10 +1351,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
 void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
 {
     SceneEditor2* scene = GetCurrentScene();
-    if (!scene)
-        return;
-
-    if (!SaveTilemask(false))
+    if (scene == nullptr || !SaveTilemask(false))
     {
         return;
     }
@@ -1343,12 +1359,11 @@ void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
     WaitStart("Export", "Please wait...");
 
     eGPUFamily gpuFamily = (eGPUFamily)exportAsAction->data().toInt();
-    if (!scene->Export(gpuFamily))
-    {
-        QMessageBox::warning(this, "Export error", "An error occurred while exporting the scene. See log for more info.", QMessageBox::Ok);
-    }
+    scene->Export(gpuFamily); // errors will be displayed by logger output
 
     WaitStop();
+
+    OnReloadTextures(); // need reload textures because they may be re-compressed
 }
 
 void QtMainWindow::OnImportSpeedTreeXML()
@@ -1593,23 +1608,13 @@ void QtMainWindow::OnResetTransform()
 
 void QtMainWindow::OnLockTransform()
 {
-    SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
-    {
-        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), true);
-    }
-
+    LockTransform(GetCurrentScene());
     UpdateModificationActionsState();
 }
 
 void QtMainWindow::OnUnlockTransform()
 {
-    SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
-    {
-        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), false);
-    }
-
+    UnlockTransform(GetCurrentScene());
     UpdateModificationActionsState();
 }
 
@@ -1706,31 +1711,29 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
-    Entity* entityToProcess = new Entity();
-    entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
-    entityToProcess->SetLocked(true);
-
-    Landscape* newLandscape = new Landscape();
-
-    RenderComponent* component = new RenderComponent();
-    component->SetRenderObject(newLandscape);
-    newLandscape->Release();
-    entityToProcess->AddComponent(component);
-
-    AABBox3 bboxForLandscape;
-    float32 defaultLandscapeSize = 600.0f;
-    float32 defaultLandscapeHeight = 50.0f;
-
-    bboxForLandscape.AddPoint(Vector3(-defaultLandscapeSize / 2.f, -defaultLandscapeSize / 2.f, 0.f));
-    bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize / 2.f, defaultLandscapeSize / 2.f, defaultLandscapeHeight));
-    newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
-
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(entityToProcess, sceneEditor));
+        ScopedPtr<Entity> entityToProcess(new Entity());
+        entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
+        entityToProcess->SetLocked(true);
+
+        ScopedPtr<Landscape> newLandscape(new Landscape());
+
+        RenderComponent* component = new RenderComponent();
+        component->SetRenderObject(newLandscape);
+        entityToProcess->AddComponent(component);
+
+        AABBox3 bboxForLandscape;
+        float32 defaultLandscapeSize = 600.0f;
+        float32 defaultLandscapeHeight = 50.0f;
+
+        bboxForLandscape.AddPoint(Vector3(-defaultLandscapeSize / 2.f, -defaultLandscapeSize / 2.f, 0.f));
+        bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize / 2.f, defaultLandscapeSize / 2.f, defaultLandscapeHeight));
+        newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
+
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(entityToProcess, sceneEditor));
     }
-    SafeRelease(entityToProcess);
 }
 
 void QtMainWindow::OnAddVegetation()
@@ -1738,113 +1741,105 @@ void QtMainWindow::OnAddVegetation()
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        DAVA::VegetationRenderObject* vro = new DAVA::VegetationRenderObject();
+        ScopedPtr<VegetationRenderObject> vro(new DAVA::VegetationRenderObject());
         RenderComponent* rc = new RenderComponent();
         rc->SetRenderObject(vro);
-        SafeRelease(vro);
 
-        Entity* vegetationNode = new Entity();
+        ScopedPtr<Entity> vegetationNode(new Entity());
         vegetationNode->AddComponent(rc);
         vegetationNode->SetName(ResourceEditor::VEGETATION_NODE_NAME);
         vegetationNode->SetLocked(true);
 
-        sceneEditor->Exec(new EntityAddCommand(vegetationNode, sceneEditor));
-
-        SafeRelease(vegetationNode);
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(vegetationNode, sceneEditor));
     }
 }
 
 void QtMainWindow::OnLightDialog()
 {
-    Entity* sceneNode = new Entity();
-    sceneNode->AddComponent(new LightComponent(ScopedPtr<Light>(new Light)));
-    sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        ScopedPtr<Entity> sceneNode(new Entity());
+        sceneNode->AddComponent(new LightComponent(ScopedPtr<Light>(new Light)));
+        sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
-    SafeRelease(sceneNode);
 }
 
 void QtMainWindow::OnCameraDialog()
 {
-    Entity* sceneNode = new Entity();
-    Camera* camera = new Camera();
-
-    camera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
-    camera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
-    camera->SetTarget(DAVA::Vector3(1.0f, 0.0f, 0.0f));
-    camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
-    camera->SetAspect(1.0f);
-    camera->RebuildCameraFromValues();
-
-    sceneNode->AddComponent(new CameraComponent(camera));
-    sceneNode->AddComponent(new WASDControllerComponent());
-    sceneNode->AddComponent(new RotationControllerComponent());
-
-    sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        ScopedPtr<Entity> sceneNode(new Entity());
+        ScopedPtr<Camera> camera(new Camera());
+
+        camera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
+        camera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
+        camera->SetTarget(DAVA::Vector3(1.0f, 0.0f, 0.0f));
+        camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
+        camera->SetAspect(1.0f);
+        camera->RebuildCameraFromValues();
+
+        sceneNode->AddComponent(new CameraComponent(camera));
+        sceneNode->AddComponent(new WASDControllerComponent());
+        sceneNode->AddComponent(new RotationControllerComponent());
+
+        sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
+
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
-    SafeRelease(sceneNode);
-    SafeRelease(camera);
 }
 
 void QtMainWindow::OnUserNodeDialog()
 {
-    Entity* sceneNode = new Entity();
-    sceneNode->AddComponent(new UserComponent());
-    sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        ScopedPtr<Entity> sceneNode(new Entity());
+        sceneNode->AddComponent(new UserComponent());
+        sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
-    SafeRelease(sceneNode);
 }
 
 void QtMainWindow::OnParticleEffectDialog()
 {
-    Entity* sceneNode = new Entity();
-    sceneNode->AddComponent(new ParticleEffectComponent());
-    sceneNode->AddComponent(new LodComponent());
-    sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        ScopedPtr<Entity> sceneNode(new Entity());
+        sceneNode->AddComponent(new ParticleEffectComponent());
+        sceneNode->AddComponent(new LodComponent());
+        sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
-    SafeRelease(sceneNode);
 }
 
 void QtMainWindow::On2DCameraDialog()
 {
-    Entity* sceneNode = new Entity();
-    Camera* camera = new Camera();
-
-    float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
-    float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
-    float32 aspect = w / h;
-    camera->SetupOrtho(w, aspect, 1, 1000);
-    camera->SetPosition(Vector3(0, 0, -10000));
-    camera->SetZFar(10000);
-    camera->SetTarget(Vector3(0, 0, 0));
-    camera->SetUp(Vector3(0, -1, 0));
-    camera->RebuildCameraFromValues();
-
-    sceneNode->AddComponent(new CameraComponent(camera));
-    sceneNode->SetName("Camera 2D");
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        ScopedPtr<Entity> sceneNode(new Entity());
+        ScopedPtr<Camera> camera(new Camera());
+
+        float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
+        float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
+        float32 aspect = w / h;
+        camera->SetupOrtho(w, aspect, 1, 1000);
+        camera->SetPosition(Vector3(0, 0, -10000));
+        camera->SetZFar(10000);
+        camera->SetTarget(Vector3(0, 0, 0));
+        camera->SetUp(Vector3(0, -1, 0));
+        camera->RebuildCameraFromValues();
+
+        sceneNode->AddComponent(new CameraComponent(camera));
+        sceneNode->SetName("Camera 2D");
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
-    SafeRelease(sceneNode);
-    SafeRelease(camera);
 }
+
 void QtMainWindow::On2DSpriteDialog()
 {
     FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
@@ -1871,7 +1866,7 @@ void QtMainWindow::On2DSpriteDialog()
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        sceneEditor->Exec(Command2::Create<EntityAddCommand>(sceneNode, sceneEditor));
     }
     SafeRelease(sceneNode);
     SafeRelease(spriteObject);
@@ -2240,7 +2235,7 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
         return;
 
     const DAVA::FilePath path = outputPath.toStdString();
-    scene->Exec(new BeastAction(scene, path, mode, beastWaitDialog));
+    scene->Exec(Command2::Create<BeastAction>(scene, path, mode, beastWaitDialog));
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {
@@ -2328,7 +2323,7 @@ void QtMainWindow::OnCustomColorsEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new EnableCustomColorsCommand(sceneEditor, true));
+            sceneEditor->Exec(Command2::Create<EnableCustomColorsCommand>(sceneEditor, true));
         }
         else
         {
@@ -2348,7 +2343,7 @@ void QtMainWindow::OnCustomColorsEditor()
         }
     }
 
-    sceneEditor->Exec(new DisableCustomColorsCommand(sceneEditor, true));
+    sceneEditor->Exec(Command2::Create<DisableCustomColorsCommand>(sceneEditor, true));
     ui->actionCustomColorsEditor->setChecked(false);
 }
 
@@ -2394,7 +2389,7 @@ void QtMainWindow::OnHeightmapEditor()
 
     if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(new DisableHeightmapEditorCommand(sceneEditor));
+        sceneEditor->Exec(Command2::Create<DisableHeightmapEditorCommand>(sceneEditor));
     }
     else
     {
@@ -2407,7 +2402,7 @@ void QtMainWindow::OnHeightmapEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new EnableHeightmapEditorCommand(sceneEditor));
+            sceneEditor->Exec(Command2::Create<EnableHeightmapEditorCommand>(sceneEditor));
         }
         else
         {
@@ -2426,7 +2421,7 @@ void QtMainWindow::OnRulerTool()
 
     if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(new DisableRulerToolCommand(sceneEditor));
+        sceneEditor->Exec(Command2::Create<DisableRulerToolCommand>(sceneEditor));
     }
     else
     {
@@ -2439,7 +2434,7 @@ void QtMainWindow::OnRulerTool()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new EnableRulerToolCommand(sceneEditor));
+            sceneEditor->Exec(Command2::Create<EnableRulerToolCommand>(sceneEditor));
         }
         else
         {
@@ -2458,7 +2453,7 @@ void QtMainWindow::OnTilemaskEditor()
 
     if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(new DisableTilemaskEditorCommand(sceneEditor));
+        sceneEditor->Exec(Command2::Create<DisableTilemaskEditorCommand>(sceneEditor));
     }
     else
     {
@@ -2471,7 +2466,7 @@ void QtMainWindow::OnTilemaskEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new EnableTilemaskEditorCommand(sceneEditor));
+            sceneEditor->Exec(Command2::Create<EnableTilemaskEditorCommand>(sceneEditor));
         }
         else
         {
@@ -2510,7 +2505,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
     if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
     {
-        sceneEditor->Exec(new DisableNotPassableCommand(sceneEditor));
+        sceneEditor->Exec(Command2::Create<DisableNotPassableCommand>(sceneEditor));
     }
     else
     {
@@ -2523,7 +2518,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new EnableNotPassableCommand(sceneEditor));
+            sceneEditor->Exec(Command2::Create<EnableNotPassableCommand>(sceneEditor));
         }
         else
         {
@@ -2551,7 +2546,10 @@ void QtMainWindow::OnWayEditor()
         return;
     }
 
+    auto isLocked = sceneEditor->selectionSystem->IsLocked();
+    sceneEditor->selectionSystem->SetLocked(true);
     sceneEditor->pathSystem->EnablePathEdit(toEnable);
+    sceneEditor->selectionSystem->SetLocked(isLocked);
 }
 
 void QtMainWindow::OnBuildStaticOcclusion()
@@ -2828,12 +2826,10 @@ void QtMainWindow::OnEmptyEntity()
     if (!scene)
         return;
 
-    Entity* newEntity = new Entity();
+    ScopedPtr<Entity> newEntity(new Entity());
     newEntity->SetName(ResourceEditor::ENTITY_NAME);
 
-    scene->Exec(new EntityAddCommand(newEntity, scene));
-
-    newEntity->Release();
+    scene->Exec(Command2::Create<EntityAddCommand>(newEntity, scene));
 }
 
 void QtMainWindow::OnAddWindEntity()
@@ -2842,18 +2838,15 @@ void QtMainWindow::OnAddWindEntity()
     if (!scene)
         return;
 
-    Entity* windEntity = new Entity();
+    ScopedPtr<Entity> windEntity(new Entity());
     windEntity->SetName(ResourceEditor::WIND_NODE_NAME);
 
     Matrix4 ltMx = Matrix4::MakeTranslation(Vector3(0.f, 0.f, 20.f));
     GetTransformComponent(windEntity)->SetLocalTransform(&ltMx);
 
-    WindComponent* wind = new WindComponent();
-    windEntity->AddComponent(wind);
+    windEntity->AddComponent(new WindComponent());
 
-    scene->Exec(new EntityAddCommand(windEntity, scene));
-
-    windEntity->Release();
+    scene->Exec(Command2::Create<EntityAddCommand>(windEntity, scene));
 }
 
 void QtMainWindow::OnAddPathEntity()
@@ -2862,14 +2855,12 @@ void QtMainWindow::OnAddPathEntity()
     if (!scene)
         return;
 
-    Entity* pathEntity = new Entity();
+    ScopedPtr<Entity> pathEntity(new Entity());
     pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
     DAVA::PathComponent* pc = scene->pathSystem->CreatePathComponent();
 
     pathEntity->AddComponent(pc);
-    scene->Exec(new EntityAddCommand(pathEntity, scene));
-
-    pathEntity->Release();
+    scene->Exec(Command2::Create<EntityAddCommand>(pathEntity, scene));
 }
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
@@ -2890,28 +2881,6 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
     return (GetGPUFormat() == GPU_ORIGIN);
 }
 
-bool QtMainWindow::IsTilemaskModificationCommand(const Command2* cmd)
-{
-    if (cmd->GetId() == CMDID_TILEMASK_MODIFY)
-    {
-        return true;
-    }
-
-    if (cmd->GetId() == CMDID_BATCH)
-    {
-        CommandBatch* batch = (CommandBatch*)cmd;
-        for (int32 i = 0; i < batch->Size(); ++i)
-        {
-            if (IsTilemaskModificationCommand(batch->GetCommand(i)))
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 {
     SceneTabWidget* sceneWidget = GetSceneWidget();
@@ -2930,10 +2899,10 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
         if (nullptr != tabEditor)
         {
             const CommandStack* cmdStack = tabEditor->GetCommandStack();
-            for (size_t j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
+            for (DAVA::int32 j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
             {
                 const Command2* cmd = cmdStack->GetCommand(j);
-                if (IsTilemaskModificationCommand(cmd))
+                if (cmd->MatchCommandID(CMDID_TILEMASK_MODIFY))
                 {
                     // ask user about saving tilemask changes
                     sceneWidget->SetCurrentTab(i);
@@ -2996,7 +2965,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
             // clear all tilemask commands in commandStack because they will be
             // invalid after tilemask reloading
-            tabEditor->ClearCommands(CMDID_TILEMASK_MODIFY);
+            tabEditor->RemoveCommands(CMDID_TILEMASK_MODIFY);
         }
     }
 
@@ -3213,4 +3182,9 @@ void QtMainWindow::RestartParticleEffects()
         DVASSERT(scene);
         scene->particlesSystem->RestartParticleEffects();
     }
+}
+
+void QtMainWindow::RemoveSelection()
+{
+    ::RemoveSelection(GetCurrentScene());
 }
