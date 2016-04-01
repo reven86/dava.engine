@@ -79,12 +79,12 @@ landscape:
   - 
    quality: "MEDIUM"
    morphing: true
-   normalMaxHeightError: 0.01
-   normalMaxPatchRadiusError: 0.4
-   normalMaxAbsoluteHeightError: 2.0
-   zoomMaxHeightError: 0.02
-   zoomMaxPatchRadiusError: 0.8
-   zoomMaxAbsoluteHeightError: 2.0
+   normalMaxHeightError: 0.015
+   normalMaxPatchRadiusError: 0.5
+   normalMaxAbsoluteHeightError: 2.5
+   zoomMaxHeightError: 0.025
+   zoomMaxPatchRadiusError: 1.6
+   zoomMaxAbsoluteHeightError: 2.5
   -
    quality: "HIGH"
    morphing: true
