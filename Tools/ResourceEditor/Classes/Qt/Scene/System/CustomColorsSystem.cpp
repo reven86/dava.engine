@@ -100,7 +100,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     if (!toolImageTexture)
     {
-        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.tex");
+        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.png");
     }
 
     enabled = true;

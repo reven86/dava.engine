@@ -437,7 +437,7 @@ bool CopyCompressedTexure(const Vector<eGPUFamily> gpus, SceneUtils& sceneUtils,
         if (GPUFamilyDescriptor::IsGPUForDevice(gpu))
         {
             FilePath compressedTexureName = descriptor->CreatePathnameForGPU(gpu);
-            result &= sceneUtils.CopyFile(compressedTexureName, errorLog);
+            result = result && sceneUtils.CopyFile(compressedTexureName, errorLog);
         }
         else
         {
@@ -449,12 +449,12 @@ bool CopyCompressedTexure(const Vector<eGPUFamily> gpus, SceneUtils& sceneUtils,
                 {
                     if (faceName.IsEmpty())
                         continue;
-                    result &= sceneUtils.CopyFile(faceName, errorLog);
+                    result = result && sceneUtils.CopyFile(faceName, errorLog);
                 }
             }
             else
             {
-                result &= sceneUtils.CopyFile(descriptor->GetSourceTexturePathname(), errorLog);
+                result = result && sceneUtils.CopyFile(descriptor->GetSourceTexturePathname(), errorLog);
             }
         }
     }
