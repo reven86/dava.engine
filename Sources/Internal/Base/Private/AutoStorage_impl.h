@@ -114,8 +114,6 @@ template <size_t Count>
 template <typename T>
 const T& AutoStorage<Count>::GetSimple() const
 {
-    using U = std::remove_cv<T>::type;
-
     assert(StorageType::Empty != type);
     assert(StorageType::Simple == type);
 
@@ -129,7 +127,7 @@ const T& AutoStorage<Count>::GetShared() const
     assert(StorageType::Empty != type);
     assert(StorageType::Shared == type);
 
-    return *(static_cast<T*>(SharedPtr()->get()));
+    return *(static_cast<const T*>(SharedPtr()->get()));
 }
 
 template <size_t Count>
