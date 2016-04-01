@@ -2317,12 +2317,12 @@ void TiledMultilayerData::GenerateTileData()
         size_t nextV = (y * 2 + 1) * xLinesCount;
         for (size_t x = 0, szx = xLinesCount / 2; x < szx; ++x)
         {
-            indices[indexId++] = baseV + x * 2;
-            indices[indexId++] = baseV + x * 2 + 1;
-            indices[indexId++] = nextV + x * 2;
-            indices[indexId++] = baseV + x * 2 + 1;
-            indices[indexId++] = nextV + x * 2 + 1;
-            indices[indexId++] = nextV + x * 2;
+            indices[indexId++] = static_cast<uint16>(baseV + x * 2);
+            indices[indexId++] = static_cast<uint16>(baseV + x * 2 + 1);
+            indices[indexId++] = static_cast<uint16>(nextV + x * 2);
+            indices[indexId++] = static_cast<uint16>(baseV + x * 2 + 1);
+            indices[indexId++] = static_cast<uint16>(nextV + x * 2 + 1);
+            indices[indexId++] = static_cast<uint16>(nextV + x * 2);
         }
     }
 }
