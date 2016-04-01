@@ -119,7 +119,7 @@ public:
     Vector2 GetContainerScrollPosition(UIControl* control);
     Vector2 GetMaxContainerOffsetSize(UIControl* control);
 
-    void TouchDown(const Vector2& point, int32 touchId, uint32 tapCount);
+    void TouchDown(const Vector2& point, int32 touchId);
     void TouchMove(const Vector2& point, int32 touchId);
     void TouchUp(int32 touchId);
 
