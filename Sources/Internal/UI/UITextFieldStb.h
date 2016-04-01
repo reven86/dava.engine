@@ -110,8 +110,8 @@ private:
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
 
-    UIStaticText* staticText = nullptr;
-    UITextField* control = nullptr;
+    UIStaticText* staticText = nullptr; // Control for displaying text
+    UITextField* control = nullptr; // Weak link to parent text field
     float32 cursorTime = 0.0f;
     bool needRedraw = true;
     bool showCursor = true;
