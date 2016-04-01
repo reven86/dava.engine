@@ -230,7 +230,7 @@ type_printer* get_type_printer(const DAVA::Type* type)
         {
             for (size_t i = 0; i < printers.size(); ++i)
             {
-                if (printers[i].type == type)
+                if (printers[i].type == type || printers[i].type == type->Decay())
                 {
                     ret = &printers[i];
                     break;
@@ -249,7 +249,7 @@ void print_name_value(const char* name, const char* value, int level)
     int n = 0;
     for (int i = 0; i < level; ++i)
     {
-        n += sprintf(buf, "  ");
+        n += sprintf(buf + n, "  ");
     }
 
     if (nullptr != name)
@@ -269,7 +269,7 @@ void print_name_value(const char* name, const char* value, int level)
         n += sprintf(buf + n, "%s", value);
     }
 
-    sprintf(buf + n, "\n");
+    //sprintf(buf + n, "\n");
     Logger::Info("%s", buf);
 }
 
