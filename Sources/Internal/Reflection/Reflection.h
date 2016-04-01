@@ -1,0 +1,74 @@
+#pragma once
+#define DAVA_REFLECTION__H
+
+#include <cassert>
+#include <vector>
+
+#include "Base/Any.h"
+#include "ReflectedObject.h"
+#include "ReflectionVirt.h"
+
+#define DAVA_DECLARE_VIRTUAL_REFLECTION(T)                                          \
+    const DAVA::ReflectionDB* GetVirtualReflectionDB() const override               \
+    {                                                                               \
+        return DAVA::ReflectionDB::GetGlobalDB<T>();                                \
+    }
+
+namespace DAVA
+{
+namespace Ref
+{
+using ParamsList = std::vector<const Type*>;
+}
+
+class ValueWrapper;
+class CtorWrapper;
+class DtorWrapper;
+class MethodWrapper;
+class StructureWrapper;
+
+class Reflection final
+{
+public:
+    Reflection() = default;
+    Reflection(const ReflectedObject& obj, const ValueWrapper* vw_, const ReflectionDB* db_)
+        : that(obj)
+        , vw(vw_)
+        , db(db_)
+    {
+    }
+
+    bool IsValid() const;
+    bool IsReadonly() const;
+
+    Any GetValue() const;
+    bool SetValue(const Any&) const;
+
+    const Type* GetValueType() const;
+    ReflectedObject GetValueObject() const;
+
+    const CtorWrapper* GetCtor() const;
+    const CtorWrapper* GetCtor(const Ref::ParamsList& params) const;
+    std::vector<const CtorWrapper*> GetCtors() const;
+
+    const DtorWrapper* GetDtor() const;
+
+    const MethodWrapper* GetMethod(const char* name);
+    const MethodWrapper* GetMethod(const char* name, const Ref::ParamsList& params);
+    std::vector<const MethodWrapper*> GetMethods() const;
+
+    const StructureWrapper* GetStructure() const;
+
+    template <typename T>
+    static Reflection Reflect(T* object);
+
+private:
+    ReflectedObject that;
+
+    const ValueWrapper* vw = nullptr;
+    const ReflectionDB* db = nullptr;
+};
+
+} // namespace DAVA
+    
+#include "Private/ReflectionImpl.h"
