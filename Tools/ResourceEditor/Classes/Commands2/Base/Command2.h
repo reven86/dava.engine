@@ -38,7 +38,7 @@
 #include "Commands2/CommandID.h"
 #include "Commands2/Base/CommandNotify.h"
 
-class Command2 : public CommandNotifyProvider, public DAVA::ICommand
+class Command2 : public DAVA::ICommand
 {
 public:
     using Pointer = std::unique_ptr<Command2>;

@@ -41,10 +41,12 @@
 #include "CommandLine/CommandLineManager.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
+#include "Commands2/NGTCommand.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
 #include "NgtTools/Application/NGTApplication.h"
+#include "NgtTools/Common/GlobalContext.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -60,6 +62,9 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
+#include <core_command_system/i_command_manager.hpp>
+#include <core_command_system/i_history_panel.h>
+
 void UnpackHelpDoc();
 void FixOSXFonts();
 
@@ -74,6 +79,29 @@ public:
     {
     }
 
+    void Run()
+    {
+        IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
+        if (historyPanel)
+        {
+            historyPanel->setClearButtonVisible(false);
+            historyPanel->setMakeMacroButtonVisible(false);
+        }
+
+        // create and init UI
+        ResourceEditorLauncher launcher;
+        mainWindow = new QtMainWindow(GetComponentContext());
+
+        mainWindow->EnableGlobalTimeout(true);
+        DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
+
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
+        StartApplication(mainWindow);
+
+        DAVA::SafeRelease(mainWindow);
+        ControlsFactory::ReleaseFonts();
+    }
+
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override
     {
@@ -85,17 +113,33 @@ protected:
         names.push_back(L"plg_editor_interaction");
         names.push_back(L"plg_qt_app");
         names.push_back(L"plg_qt_common");
+        names.push_back(L"plg_history_ui");
     }
 
     void OnPostLoadPugins() override
     {
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("Resource Editor");
+
+        commandManager = NGTLayer::queryInterface<ICommandManager>();
+        commandManager->SetHistorySerializationEnabled(false);
+        commandManager->registerCommand(&ngtCommand);
     }
+
+    void OnPreUnloadPlugins() override
+    {
+        commandManager->deregisterCommand(ngtCommand.getId());
+    }
+
+private:
+    ICommandManager* commandManager = nullptr;
+    NGTCommand ngtCommand;
+    QtMainWindow* mainWindow = nullptr;
 };
 
 int main(int argc, char* argv[])
 {
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_DELAY_FREE_MEM_DF);
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
 #elif defined(__DAVAENGINE_WIN32__)
@@ -208,20 +252,9 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
 
-    // create and init UI
-    ResourceEditorLauncher launcher;
-    QtMainWindow mainWindow(a.GetComponentContext());
-
-    mainWindow.EnableGlobalTimeout(true);
-    DavaGLWidget* glWidget = mainWindow.GetSceneWidget()->GetDavaWidget();
-
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
     DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
-    // start app
-    a.StartApplication(&mainWindow);
-
-    ControlsFactory::ReleaseFonts();
+    a.Run();
 }
 
 void UnpackHelpDoc()

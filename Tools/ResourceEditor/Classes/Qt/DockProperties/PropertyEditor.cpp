@@ -739,6 +739,11 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const EntityGrou
 
 void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
+    if (command == nullptr)
+    {
+        return;
+    }
+
     static const DAVA::Vector<DAVA::int32> idsForUpdate =
     { {
     CMDID_COMPONENT_ADD,

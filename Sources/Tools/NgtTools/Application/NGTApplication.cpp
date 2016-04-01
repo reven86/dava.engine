@@ -61,6 +61,7 @@ BaseApplication::BaseApplication(int argc, char** argv)
 
 BaseApplication::~BaseApplication()
 {
+    OnPreUnloadPlugins();
     NGTLayer::SetGlobalContext(nullptr);
 }
 
@@ -103,6 +104,7 @@ int BaseApplication::StartApplication(QMainWindow* appMainWindow)
     window->show();
     app->addWindow(*window);
     int result = app->startApplication();
+    app->removeWindow(*window);
     window->releaseWindow();
 
     return result;

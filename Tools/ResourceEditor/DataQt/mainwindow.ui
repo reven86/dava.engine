@@ -615,7 +615,10 @@
     <string>Scene Tree</string>
    </property>
    <property name="layoutTags" stdset="0">
-    <string notr="true">default</string>
+    <stringlist>
+     <string>history</string>
+     <string>default</string>
+    </stringlist>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>

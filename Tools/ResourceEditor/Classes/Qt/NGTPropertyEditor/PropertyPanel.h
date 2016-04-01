@@ -56,7 +56,7 @@ public:
     ~PropertyPanel();
 
     void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
-    void Finalize();
+    void Finalize(IUIApplication& uiApplication);
 
     ObjectHandle GetPropertyTree() const;
     void SetPropertyTree(const ObjectHandle& dummyTree);

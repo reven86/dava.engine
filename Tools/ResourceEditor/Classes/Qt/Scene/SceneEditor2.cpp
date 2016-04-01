@@ -173,8 +173,6 @@ SceneEditor2::~SceneEditor2()
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
-
-    SafeRelease(commandStack);
 }
 
 DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
@@ -188,7 +186,6 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         }
         curScenePath = path;
         isLoaded = true;
-        commandStack->SetClean(true);
     }
 
     SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
@@ -344,6 +341,11 @@ void SceneEditor2::EndBatch()
     commandStack->EndBatch();
 }
 
+void SceneEditor2::ActivateCommandStack()
+{
+    commandStack->Activate();
+}
+
 void SceneEditor2::Exec(Command2::Pointer&& command)
 {
     if (command)
@@ -364,7 +366,7 @@ void SceneEditor2::ClearAllCommands()
 
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
-    return commandStack;
+    return commandStack.get();
 }
 
 bool SceneEditor2::IsLoaded() const
@@ -443,7 +445,10 @@ void SceneEditor2::Draw()
 
 void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
 {
-    DVASSERT(command != nullptr);
+    if (command == nullptr)
+    {
+        return;
+    }
 
     if (collisionSystem)
     {
@@ -502,6 +507,11 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
     {
         SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
     }
+}
+
+void SceneEditor2::EditorCommandNotify::UndoRedoStateChanged()
+{
+    SceneSignals::Instance()->EmitUndoRedoStateChanged(editor);
 }
 
 const DAVA::RenderStats& SceneEditor2::GetRenderStats() const

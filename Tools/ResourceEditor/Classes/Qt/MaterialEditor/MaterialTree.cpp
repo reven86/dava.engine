@@ -226,6 +226,11 @@ void MaterialTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row
 
 void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
+    if (command == nullptr)
+    {
+        return;
+    }
+
     if (QtMainWindow::Instance()->GetCurrentScene() == scene)
     {
         if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))

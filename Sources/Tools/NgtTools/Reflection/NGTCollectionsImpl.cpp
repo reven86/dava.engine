@@ -278,9 +278,14 @@ const TypeId& NGTCollection::containerType() const
     return containerId;
 }
 
-void* NGTCollection::containerData() const
+const void* NGTCollection::container() const
 {
     return nullptr;
+}
+
+int NGTCollection::flags() const
+{
+    return NON_UNIQUE_KEYS | WRITABLE;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -510,19 +515,14 @@ const TypeId& NGTKeyedArchiveImpl::containerType() const
     return containerTypeId;
 }
 
-void* NGTKeyedArchiveImpl::containerData() const
+const void* NGTKeyedArchiveImpl::container() const
 {
     return nullptr;
 }
 
-bool NGTKeyedArchiveImpl::isMapping() const
+int NGTKeyedArchiveImpl::flags() const
 {
-    return true;
-}
-
-bool NGTKeyedArchiveImpl::canResize() const
-{
-    return false;
+    return WRITABLE | MAPPING | RESIZABLE | ORDERED;
 }
 
 } // namesapce NGTLayer

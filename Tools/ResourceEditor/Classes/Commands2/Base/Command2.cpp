@@ -40,13 +40,11 @@ Command2::~Command2() = default;
 void Command2::UndoInternalCommand(Command2* command)
 {
     command->Undo();
-    EmitNotify(command, false);
 }
 
 void Command2::RedoInternalCommand(Command2* command)
 {
     command->Redo();
-    EmitNotify(command, true);
 }
 
 bool Command2::MatchCommandID(DAVA::int32 commandID) const

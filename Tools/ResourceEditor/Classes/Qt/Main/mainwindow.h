@@ -247,6 +247,7 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
+    void SceneUndoRedoStateChanged(SceneEditor2* scene);
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
@@ -285,7 +286,6 @@ private:
     void UpdateWayEditor(const Command2* command, bool redo);
 
     void LoadViewState(SceneEditor2* scene);
-    void LoadUndoRedoState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);
     void LoadEditorLightState(SceneEditor2* scene);
     void LoadGPUFormat();

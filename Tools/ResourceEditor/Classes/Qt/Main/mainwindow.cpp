@@ -194,7 +194,10 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
 
 QtMainWindow::~QtMainWindow()
 {
-    propertyPanel.Finalize();
+    IUIApplication* uiApplication = ngtContext.queryInterface<IUIApplication>();
+    DVASSERT(uiApplication != nullptr);
+    propertyPanel.Finalize(*uiApplication);
+
     const auto& logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
 
@@ -638,6 +641,12 @@ void QtMainWindow::SetupStatusBar()
     QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), ui->statusBar, SLOT(StructureChanged(SceneEditor2*, DAVA::Entity*)));
 
+    Qt::ConnectionType connectionType = Qt::DirectConnection;
+#if defined(NGTBUG_WORKAROUND)
+    connectionType = Qt::QueuedConnection;
+#endif
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::UndoRedoStateChanged, this, &QtMainWindow::SceneUndoRedoStateChanged, connectionType);
+
     QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
 
     auto CreateStatusBarButton = [](QAction* action, QStatusBar* statusBar)
@@ -939,10 +948,10 @@ void QtMainWindow::ProjectClosed()
 
 void QtMainWindow::SceneActivated(SceneEditor2* scene)
 {
+    scene->ActivateCommandStack();
     EnableSceneActions(true);
 
     LoadViewState(scene);
-    LoadUndoRedoState(scene);
     LoadModificationState(scene);
     LoadEditorLightState(scene);
     LoadLandscapeEditorState(scene);
@@ -995,9 +1004,6 @@ void QtMainWindow::EnableProjectActions(bool enable)
 
 void QtMainWindow::EnableSceneActions(bool enable)
 {
-    ui->actionUndo->setEnabled(enable);
-    ui->actionRedo->setEnabled(enable);
-
     ui->dockLODEditor->setEnabled(enable);
     ui->dockProperties->setEnabled(enable);
     ui->dockSceneTree->setEnabled(enable);
@@ -1112,7 +1118,6 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const Command2* com
 {
     if (scene == GetCurrentScene())
     {
-        LoadUndoRedoState(scene);
         UpdateModificationActionsState();
 
         auto UpdateCameraState = [this, scene](const DAVA::Entity* entity)
@@ -1962,7 +1967,7 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
     }
 }
 
-void QtMainWindow::LoadUndoRedoState(SceneEditor2* scene)
+void QtMainWindow::SceneUndoRedoStateChanged(SceneEditor2* scene)
 {
     if (nullptr != scene)
     {
@@ -2225,7 +2230,6 @@ void QtMainWindow::OnBeastAndSave()
     SaveScene(scene);
 
     scene->ClearAllCommands();
-    LoadUndoRedoState(scene);
 }
 
 void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode)
@@ -2901,32 +2905,29 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
         if (nullptr != tabEditor)
         {
             const CommandStack* cmdStack = tabEditor->GetCommandStack();
-            for (DAVA::int32 j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
+            if (cmdStack->IsUncleanCommandExists(CMDID_TILEMASK_MODIFY))
             {
-                const Command2* cmd = cmdStack->GetCommand(j);
-                if (cmd->MatchCommandID(CMDID_TILEMASK_MODIFY))
+                // ask user about saving tilemask changes
+                sceneWidget->SetCurrentTab(i);
+
+                if (needQuestion)
                 {
-                    // ask user about saving tilemask changes
-                    sceneWidget->SetCurrentTab(i);
+                    QString message = tabEditor->GetScenePath().GetFilename().c_str();
+                    message += " has unsaved tilemask changes.\nDo you want to save?";
 
-                    if (needQuestion)
+                    // if more than one scene to precess
+                    if ((lastTab - firstTab) > 1)
                     {
-                        QString message = tabEditor->GetScenePath().GetFilename().c_str();
-                        message += " has unsaved tilemask changes.\nDo you want to save?";
-
-                        // if more than one scene to precess
-                        if ((lastTab - firstTab) > 1)
-                        {
-                            answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | QMessageBox::YesToAll | QMessageBox::NoToAll, QMessageBox::Cancel);
-                        }
-                        else
-                        {
-                            answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
-                        }
+                        answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | QMessageBox::YesToAll | QMessageBox::NoToAll, QMessageBox::Cancel);
                     }
-
-                    switch (answer)
+                    else
                     {
+                        answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
+                    }
+                }
+
+                switch (answer)
+                {
                     case QMessageBox::YesAll:
                         needQuestion = false;
                     case QMessageBox::Yes:
@@ -2954,10 +2955,6 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
                         // cancel save process
                         return false;
                     }
-                    break;
-                    }
-
-                    // finish for cycle going through commands
                     break;
                 }
             }

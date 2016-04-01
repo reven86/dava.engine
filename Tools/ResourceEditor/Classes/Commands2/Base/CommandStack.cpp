@@ -29,125 +29,275 @@
 
 #include "Commands2/Base/CommandStack.h"
 #include "Commands2/Base/CommandAction.h"
+#include "Commands2/NGTCommand.h"
+
+#include "NgtTools/Common/GlobalContext.h"
+
+#include <core_data_model/variant_list.hpp>
+#include <core_data_model/i_value_change_notifier.hpp>
+#include <core_command_system/command_instance.hpp>
+#include <core_command_system/i_env_system.hpp>
+#include <core_reflection/reflected_object.hpp>
+
+namespace CommandStackLocal
+{
+class CommandIdsAccumulator
+{
+public:
+    CommandIdsAccumulator(DAVA::UnorderedSet<DAVA::int32>& commandIds_)
+        : commandIds(commandIds_)
+    {
+    }
+
+    void operator()(const CommandInstancePtr& instance)
+    {
+        Command2* cmd = instance->getArguments().getBase<Command2>();
+        if (cmd != nullptr)
+        {
+            this->operator()(cmd);
+        }
+    }
+
+    void operator()(const Command2* command)
+    {
+        DAVA::int32 commandId = command->GetId();
+        if (commandId == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            for (int i = 0; i < batch->Size(); ++i)
+            {
+                this->operator()(batch->GetCommand(i));
+            }
+        }
+        else
+        {
+            commandIds.insert(commandId);
+        }
+    }
+
+private:
+    DAVA::UnorderedSet<DAVA::int32>& commandIds;
+};
+}
+
+class CommandStack::ActiveCommandStack : public DAVA::StaticSingleton<ActiveCommandStack>
+{
+public:
+    ActiveCommandStack()
+    {
+        envManager = NGTLayer::queryInterface<IEnvManager>();
+        DVASSERT(envManager);
+    }
+
+    void CommandStackCreated(CommandStack* commandStack)
+    {
+        DVASSERT(commandStack != nullptr);
+        commandStack->enviromentID = envManager->addEnv("");
+    }
+
+    void CommandStackDeleted(CommandStack* commandStack)
+    {
+        DVASSERT(commandStack != nullptr);
+        if (activeStack == commandStack)
+        {
+            activeStack->DisableConnections();
+            activeStack = nullptr;
+        }
+        envManager->removeEnv(commandStack->enviromentID);
+    }
+
+    bool IsActive(const CommandStack* commandStack)
+    {
+        return activeStack == commandStack;
+    }
+
+    void SetActive(CommandStack* commandStack)
+    {
+        DVASSERT(activationStack.empty());
+        DVASSERT(commandStack != nullptr);
+        if (activeStack != nullptr)
+        {
+            activeStack->DisableConnections();
+        }
+
+        SetActiveImpl(commandStack);
+        activeStack->EnableConections();
+    }
+
+    void PushCommandStack(CommandStack* commandStack)
+    {
+        DVASSERT(commandStack != nullptr);
+
+        bool sameStacks = activeStack == commandStack;
+        if (activeStack != nullptr && sameStacks == false)
+        {
+            activeStack->DisableConnections();
+        }
+
+        activationStack.push(activeStack);
+        SetActiveImpl(commandStack);
+
+        if (sameStacks == false)
+        {
+            activeStack->EnableConections();
+        }
+    }
+
+    void PopCommandStack()
+    {
+        DVASSERT(activeStack);
+        DVASSERT(!activationStack.empty());
+        CommandStack* cmdStack = activationStack.top();
+        activationStack.pop();
+        bool sameStacks = cmdStack == activeStack;
+        if (sameStacks == false)
+        {
+            activeStack->DisableConnections();
+        }
+
+        SetActiveImpl(cmdStack);
+
+        if (activeStack != nullptr && sameStacks == false)
+        {
+            activeStack->EnableConections();
+        }
+    }
+
+private:
+    void SetActiveImpl(CommandStack* cmdStack)
+    {
+        activeStack = cmdStack;
+        if (activeStack)
+        {
+            envManager->selectEnv(activeStack->enviromentID);
+        }
+    }
+
+private:
+    CommandStack* activeStack = nullptr;
+    DAVA::Stack<CommandStack*> activationStack;
+    IEnvManager* envManager = nullptr;
+};
+
+class CommandStack::ActiveStackGuard
+{
+public:
+    ActiveStackGuard(const CommandStack* commandStack)
+    {
+        CommandStack::ActiveCommandStack::Instance()->PushCommandStack(const_cast<CommandStack*>(commandStack));
+    }
+
+    ~ActiveStackGuard()
+    {
+        CommandStack::ActiveCommandStack::Instance()->PopCommandStack();
+    }
+};
 
 CommandStack::CommandStack()
 {
+    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    DVASSERT(commandManager != nullptr);
+
+    ActiveCommandStack::Instance()->CommandStackCreated(this);
+
+    IValueChangeNotifier& indexNotifyer = commandManager->currentIndex();
+    indexDestroyed = indexNotifyer.signalDestructing.connect(std::bind(&CommandStack::HistoryIndexDestroyed, this));
+    indexChanged = indexNotifyer.signalPostDataChanged.connect(std::bind(&CommandStack::HistoryIndexChanged, this));
 }
 
 CommandStack::~CommandStack()
 {
-    Clear();
+    DisconnectEvents();
+    ActiveCommandStack::Instance()->CommandStackDeleted(this);
 }
 
 bool CommandStack::CanUndo() const
 {
-    return (!commandList.empty() && nextCommandIndex > 0);
+    ActiveStackGuard guard(this);
+    return commandManager->canUndo();
 }
 
 bool CommandStack::CanRedo() const
 {
-    return (nextCommandIndex < static_cast<DAVA::int32>(commandList.size()));
+    ActiveStackGuard guard(this);
+    return commandManager->canRedo();
 }
 
 void CommandStack::Clear()
 {
-    nextCommandIndex = 0;
-    nextAfterCleanCommandIndex = 0;
-    commandList.clear();
+    ActiveStackGuard guard(this);
+    commandManager->removeCommands([](const CommandInstancePtr&) { return true; });
     CleanCheck();
 }
 
 void CommandStack::RemoveCommands(DAVA::int32 commandId)
 {
-    DAVA::int32 index = 0;
-    for (auto it = commandList.begin(), endIt = commandList.end(); it != endIt;)
-    {
-        Command2* command = (*it).get();
-        DVASSERT(command != nullptr);
+    ActiveStackGuard guard(this);
+    commandManager->removeCommands([&commandId](const CommandInstancePtr& instance)
+                                   {
+                                       Command2* cmd = instance->getArguments().getBase<Command2>();
+                                       if (cmd->GetId() == CMDID_BATCH)
+                                       {
+                                           CommandBatch* batch = static_cast<CommandBatch*>(cmd);
 
-        bool shouldRemoveCommand = (command->GetId() == commandId);
-        if (!shouldRemoveCommand && (command->GetId() == CMDID_BATCH))
-        {
-            CommandBatch* batch = static_cast<CommandBatch*>(command);
-            batch->RemoveCommands(commandId);
-            shouldRemoveCommand = batch->Empty();
-        }
+                                           batch->RemoveCommands(commandId);
+                                           return batch->Size() == 0;
+                                       }
 
-        if (shouldRemoveCommand)
-        {
-            it = commandList.erase(it);
-
-            nextCommandIndex = DAVA::Max(nextCommandIndex - 1, 0);
-
-            if (index < nextAfterCleanCommandIndex)
-            {
-                nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, 0);
-            }
-        }
-        else
-        {
-            ++index;
-            ++it;
-        }
-    }
-
+                                       return cmd->GetId() == commandId;
+                                   });
     CleanCheck();
+}
+
+void CommandStack::Activate()
+{
+    ActiveCommandStack::Instance()->SetActive(this);
+    EmitUndoRedoStateChanged();
 }
 
 void CommandStack::Undo()
 {
+    ActiveStackGuard guard(this);
     if (CanUndo())
     {
-        nextCommandIndex--;
-        Command2* commandToUndo = GetCommandInternal(nextCommandIndex);
-
-        if (nullptr != commandToUndo)
-        {
-            commandToUndo->Undo();
-            EmitNotify(commandToUndo, false);
-        }
+        commandManager->undo();
     }
-
-    CleanCheck();
 }
 
 void CommandStack::Redo()
 {
+    ActiveStackGuard guard(this);
     if (CanRedo())
     {
-        Command2* commandToRedo = GetCommandInternal(nextCommandIndex);
-        nextCommandIndex++;
-
-        if (nullptr != commandToRedo)
-        {
-            commandToRedo->Redo();
-            EmitNotify(commandToRedo, true);
-        }
+        commandManager->redo();
     }
-
-    CleanCheck();
 }
 
 void CommandStack::Exec(Command2::Pointer&& command)
 {
-    DVASSERT(command);
-
-    if (command->CanUndo())
+    if (CanRedo())
     {
-        if (curBatchCommand != nullptr)
+        SetClean(false);
+    }
+
+    ActiveStackGuard guard(this);
+    if (command != nullptr)
+    {
+        uncleanCommandIds.insert(command->GetId());
+        if (command->CanUndo() && curBatchCommand != nullptr)
         {
             curBatchCommand->AddAndExec(std::move(command));
         }
         else
         {
-            ExecInternal(std::move(command), true);
+            commandManager->queueCommand(getClassIdentifier<NGTCommand>(), ObjectHandle(std::move(command)));
         }
     }
-    else
-    {
-        command->Redo();
-        EmitNotify(command.get(), true);
-    }
+}
+
+bool CommandStack::IsUncleanCommandExists(DAVA::int32 commandId) const
+{
+    return uncleanCommandIds.count(commandId) > 0;
 }
 
 void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
@@ -155,7 +305,6 @@ void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCou
     if (nestedBatchesCounter++ == 0)
     {
         curBatchCommand.reset(new CommandBatch(text, commandsCount));
-        curBatchCommand->SetNotify(this);
     }
     else
     {
@@ -165,7 +314,8 @@ void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCou
 
 void CommandStack::EndBatch()
 {
-    if (curBatchCommand)
+    ActiveStackGuard guard(this);
+    if (curBatchCommand != nullptr)
     {
         --nestedBatchesCounter;
         DVASSERT(nestedBatchesCounter >= 0);
@@ -173,34 +323,44 @@ void CommandStack::EndBatch()
         if (nestedBatchesCounter > 0)
             return;
 
-        if (curBatchCommand->Empty())
+        if (curBatchCommand->Size() > 0)
         {
-            curBatchCommand.reset();
+            // As Command2 hierarchy don't have NGT reflection, we have to cast manually
+            // to be sure that ObjectHandle will get correct <typename T>
+            Command2* batchCommand = curBatchCommand.release();
+            commandManager->queueCommand(getClassIdentifier<NGTCommand>(), ObjectHandle(Command2::Pointer(batchCommand)));
         }
         else
         {
-            // all command were already executed in batch
-            // so just add them to stack without calling redo
-            ExecInternal(std::move(curBatchCommand), false);
+            curBatchCommand.reset();
         }
     }
 }
 
 bool CommandStack::IsClean() const
 {
-    if (nextAfterCleanCommandIndex == INVALID_CLEAN_INDEX)
+    if (nextAfterCleanCommandIndex == nextCommandIndex)
+    {
+        return true;
+    }
+
+    if (nextAfterCleanCommandIndex == EMPTY_INDEX)
     {
         return false;
     }
 
-    DAVA::int32 startCommandIndex = DAVA::Min(nextAfterCleanCommandIndex, nextCommandIndex);
-    DAVA::int32 endCommandIndex = DAVA::Max(nextAfterCleanCommandIndex, nextCommandIndex);
+    ActiveStackGuard guard(this);
+    DAVA::int32 nextCommand = DAVA::Max(nextCommandIndex, 0);
+    DAVA::int32 startCommandIndex = DAVA::Min(nextAfterCleanCommandIndex, nextCommand);
+    DAVA::int32 endCommandIndex = DAVA::Max(nextAfterCleanCommandIndex, nextCommand);
 
+    const VariantList& history = commandManager->getHistory();
+    DVASSERT(endCommandIndex < static_cast<DAVA::int32>(history.size()));
     for (DAVA::int32 i = startCommandIndex; i < endCommandIndex; ++i)
     {
-        Command2* command = GetCommandInternal(i);
-        DVASSERT(command != nullptr);
-        if (command->IsModifying())
+        CommandInstancePtr instance = history[i].value<CommandInstancePtr>();
+        Command2* cmd = instance->getArguments().getBase<Command2>();
+        if (cmd == nullptr || cmd->IsModifying())
             return false;
     }
 
@@ -215,109 +375,18 @@ void CommandStack::SetClean(bool clean)
     }
     else
     {
-        nextAfterCleanCommandIndex = INVALID_CLEAN_INDEX;
+        nextAfterCleanCommandIndex = EMPTY_INDEX;
     }
 
-    CleanCheck();
-}
-
-DAVA::int32 CommandStack::GetCleanIndex() const
-{
-    return nextAfterCleanCommandIndex;
-}
-
-DAVA::int32 CommandStack::GetNextIndex() const
-{
-    return nextCommandIndex;
-}
-
-DAVA::int32 CommandStack::GetUndoLimit() const
-{
-    return commandListLimit;
-}
-
-void CommandStack::SetUndoLimit(DAVA::int32 limit)
-{
-    commandListLimit = limit;
-}
-
-DAVA::uint32 CommandStack::GetCount() const
-{
-    return static_cast<DAVA::uint32>(commandList.size());
-}
-
-const Command2* CommandStack::GetCommand(DAVA::int32 index) const
-{
-    return GetCommandInternal(index);
-}
-
-Command2* CommandStack::GetCommandInternal(DAVA::int32 index) const
-{
-    if (index < static_cast<DAVA::int32>(commandList.size()))
+    ActiveStackGuard guard(this);
+    uncleanCommandIds.clear();
+    const VariantList& history = commandManager->getHistory();
+    CommandStackLocal::CommandIdsAccumulator functor(uncleanCommandIds);
+    DAVA::int32 historySize = static_cast<DAVA::int32>(history.size());
+    DVASSERT(nextAfterCleanCommandIndex < historySize);
+    for (int i = nextAfterCleanCommandIndex + 1; i < historySize; ++i)
     {
-        CommandsContainer::const_iterator i = commandList.begin();
-        std::advance(i, index);
-
-        if (i != commandList.end())
-        {
-            return (*i).get();
-        }
-    }
-    else
-    {
-        DAVA::Logger::Error("In %s requested wrong index %d from %d", __FUNCTION__, index, commandList.size());
-    }
-
-    return nullptr;
-}
-
-void CommandStack::ExecInternal(Command2::Pointer&& command, bool runCommand)
-{
-    ClearRedoCommands();
-
-    Command2* actualCommand = command.get();
-
-    commandList.emplace_back(std::move(command));
-    nextCommandIndex++;
-
-    if (runCommand)
-    {
-        actualCommand->SetNotify(this);
-        actualCommand->Redo();
-    }
-
-    EmitNotify(actualCommand, true);
-    ClearLimitedCommands();
-
-    CleanCheck();
-}
-
-void CommandStack::ClearRedoCommands()
-{
-    if (CanRedo())
-    {
-        if (nextCommandIndex < nextAfterCleanCommandIndex)
-        {
-            SetClean(false);
-        }
-
-        CommandsContainer::iterator i = commandList.begin();
-        std::advance(i, nextCommandIndex);
-        while (i != commandList.end())
-        {
-            i = commandList.erase(i);
-        }
-    }
-}
-
-void CommandStack::ClearLimitedCommands()
-{
-    while ((commandListLimit > 0) && (static_cast<DAVA::int32>(commandList.size()) > commandListLimit))
-    {
-        commandList.pop_front();
-
-        nextCommandIndex = DAVA::Max(nextCommandIndex - 1, 0);
-        nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, 0);
+        functor(history[i].value<CommandInstancePtr>());
     }
 
     CleanCheck();
@@ -332,12 +401,41 @@ void CommandStack::CleanCheck()
     }
 }
 
-void CommandStack::CommandExecuted(const Command2* command, bool redo)
+void CommandStack::commandExecuted(const CommandInstance& commandInstance, bool isRedoDirection)
 {
-    EmitNotify(command, redo);
+    Command2* cmd = commandInstance.getArguments().getBase<Command2>();
+    if (cmd != nullptr)
+    {
+        EmitNotify(cmd, isRedoDirection);
+    }
 }
 
-void CommandStack::Notify(const Command2* command, bool redo)
+void CommandStack::HistoryIndexChanged()
 {
-    CommandExecuted(command, redo);
+    nextCommandIndex = commandManager->currentIndex().variantValue().value<DAVA::int32>();
+    CleanCheck();
+    EmitUndoRedoStateChanged();
+}
+
+void CommandStack::HistoryIndexDestroyed()
+{
+    DisconnectEvents();
+}
+
+void CommandStack::DisconnectEvents()
+{
+    indexChanged.disconnect();
+    indexDestroyed.disconnect();
+}
+
+void CommandStack::EnableConections()
+{
+    commandManager->registerCommandStatusListener(this);
+    indexChanged.enable();
+}
+
+void CommandStack::DisableConnections()
+{
+    commandManager->deregisterCommandStatusListener(this);
+    indexChanged.disable();
 }

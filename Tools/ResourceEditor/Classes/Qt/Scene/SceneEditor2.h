@@ -142,6 +142,7 @@ public:
     void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
 
+    void ActivateCommandStack();
     void Exec(Command2::Pointer&& command);
     void RemoveCommands(DAVA::int32 commandId);
 
@@ -200,7 +201,7 @@ protected:
     bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack* commandStack = nullptr;
+    std::unique_ptr<CommandStack> commandStack;
     DAVA::RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
@@ -229,6 +230,7 @@ private:
         EditorCommandNotify(SceneEditor2* _editor);
         void Notify(const Command2* command, bool redo) override;
         void CleanChanged(bool clean) override;
+        void UndoRedoStateChanged() override;
 
     private:
         SceneEditor2* editor = nullptr;
