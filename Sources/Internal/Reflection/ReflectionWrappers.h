@@ -22,6 +22,8 @@ using FieldsList = std::vector<Field>;
 class ValueWrapper
 {
 public:
+    virtual ~ValueWrapper() = default;
+
     virtual bool IsReadonly() const = 0;
     virtual const Type* GetType() const = 0;
 
@@ -34,6 +36,8 @@ public:
 class StructureWrapper
 {
 public:
+    virtual ~StructureWrapper() = default;
+
     virtual bool IsDynamic() const = 0;
 
     virtual bool CanAdd() const = 0;
@@ -51,6 +55,8 @@ public:
 class CtorWrapper
 {
 public:
+    virtual ~CtorWrapper() = default;
+
     virtual const Ref::ParamsList& GetParamsList() const = 0;
 
     virtual Any Create() const = 0;
@@ -62,6 +68,8 @@ public:
 class DtorWrapper
 {
 public:
+    virtual ~DtorWrapper() = default;
+
     virtual void Destroy(Any&& value) const = 0;
     virtual void Destroy(ReflectedObject&& object) const = 0;
 };
@@ -69,6 +77,7 @@ public:
 class MethodWrapper
 {
 public:
+    virtual ~MethodWrapper() = default;
 };
 
 } // namespace DAVA
