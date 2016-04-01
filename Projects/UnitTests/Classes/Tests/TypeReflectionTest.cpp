@@ -332,7 +332,7 @@ void dumpref(const std::string& name, const DAVA::Reflection& ref, int level)
 
 DAVA_TESTCLASS (TypeReflection)
 {
-    DAVA_TEST (ResTestFunction)
+    DAVA_TEST (DumpTest)
     {
         DAVA_TYPE_REGISTER(TestBaseClass);
 
@@ -340,12 +340,18 @@ DAVA_TESTCLASS (TypeReflection)
         Reflection t_ref = Reflection::Reflect(&t);
 
         dumpref("t", t_ref, 0);
+    }
 
+    DAVA_TEST (CtorDtorTest)
+    {
         const ReflectionDB* db = Type::Instance<TestBaseClass>()->GetReflectionDB();
-        auto ctor = db->ctorWrappers[0].get();
-        auto dtor = db->dtorWrapper.get();
+        if (nullptr != db)
+        {
+            auto ctor = db->ctorWrappers[0].get();
+            auto dtor = db->dtorWrapper.get();
 
-        Any a = ctor->Create();
-        dtor->Destroy(std::move(a));
+            Any a = ctor->Create();
+            dtor->Destroy(std::move(a));
+        }
     }
 };
