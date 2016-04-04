@@ -30,7 +30,10 @@
 #include "Render/Image/LibPSDHelper.h"
 #include "Render/Image/Image.h"
 #include "FileSystem/File.h"
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 #include "libpsd/libpsd.h"
+#endif
 
 namespace DAVA
 {
@@ -48,6 +51,7 @@ bool LibPSDHelper::CanProcessFile(File* infile) const
 
 eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
 {
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     auto fileName = infile->GetFilename().GetAbsolutePathname();
     psd_context* psd = nullptr;
     auto status = psd_image_load(&psd, const_cast<psd_char*>(fileName.c_str()));
@@ -87,6 +91,10 @@ eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 
     }
 
     return eErrorCode::SUCCESS;
+#else
+    Logger::Error("[LibPSDHelper::ReadFile] PSD reading is disabled for this platform");
+    return eErrorCode::ERROR_READ_FAIL;
+#endif
 }
 
 eErrorCode LibPSDHelper::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
