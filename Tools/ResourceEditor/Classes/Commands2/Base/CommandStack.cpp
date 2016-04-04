@@ -401,12 +401,12 @@ void CommandStack::CleanCheck()
     }
 }
 
-void CommandStack::commandExecuted(const CommandInstance& commandInstance, bool isRedoDirection)
+void CommandStack::commandExecuted(const CommandInstance& commandInstance, CommandOperation operation)
 {
     Command2* cmd = commandInstance.getArguments().getBase<Command2>();
     if (cmd != nullptr)
     {
-        EmitNotify(cmd, isRedoDirection);
+        EmitNotify(cmd, operation != CommandOperation::UNDO);
     }
 }
 

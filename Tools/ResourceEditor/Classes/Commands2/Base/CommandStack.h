@@ -64,7 +64,7 @@ public:
     void SetClean(bool clean);
 
 private:
-    void commandExecuted(const CommandInstance& commandInstance, bool isRedoDirection) override;
+    void commandExecuted(const CommandInstance& commandInstance, CommandOperation operation) override;
     void CleanCheck();
 
     void HistoryIndexChanged();
