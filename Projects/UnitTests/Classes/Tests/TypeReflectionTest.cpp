@@ -205,17 +205,17 @@ DAVA_TYPE_INITIALIZER(TestBaseClass)
 struct type_printer
 {
     const DAVA::Type* type;
-    void (*print)(char* buf, const DAVA::Any& any);
+    void (*print)(char* buf, size_t bufsz, const DAVA::Any& any);
 };
 
 type_printer* get_type_printer(const DAVA::Type* type)
 {
-    static type_printer pointer_printer = { DAVA::Type::Instance<void*>(), [](char* buf, const DAVA::Any& any) { sprintf(buf, "0x%p", any.Get<void*>()); } };
+    static type_printer pointer_printer = { DAVA::Type::Instance<void*>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { sprintf(buf, "0x%p", any.Get<void*>()); } };
 
     static std::vector<type_printer> printers = {
-        { DAVA::Type::Instance<int>(), [](char* buf, const DAVA::Any& any) { sprintf(buf, "%d", any.Get<int>()); } },
-        { DAVA::Type::Instance<size_t>(), [](char* buf, const DAVA::Any& any) { sprintf(buf, "%lu", any.Get<size_t>()); } },
-        { DAVA::Type::Instance<std::string>(), [](char* buf, const DAVA::Any& any) { sprintf(buf, "%s", any.Get<std::string>().c_str()); } }
+        { DAVA::Type::Instance<int>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%d", any.Get<int>()); } },
+        { DAVA::Type::Instance<size_t>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%llu", any.Get<size_t>()); } },
+        { DAVA::Type::Instance<std::string>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%s", any.Get<std::string>().c_str()); } }
     };
 
     type_printer* ret = nullptr;
@@ -249,24 +249,24 @@ void print_name_value(const char* name, const char* value, int level)
     int n = 0;
     for (int i = 0; i < level; ++i)
     {
-        n += sprintf(buf + n, "  ");
+        n += Snprintf(buf + n, sizeof(buf) - n, "  ");
     }
 
     if (nullptr != name)
     {
-        n += sprintf(buf + n, "%s", name);
+        n += Snprintf(buf + n, sizeof(buf) - n, "%s", name);
     }
 
     for (int i = n; i < 40; ++i)
     {
-        n += sprintf(buf + n, " ");
+        n += Snprintf(buf + n, sizeof(buf) - n, " ");
     }
 
-    n += sprintf(buf + n, " : ");
+    n += Snprintf(buf + n, sizeof(buf) - n, " : ");
 
     if (nullptr != value)
     {
-        n += sprintf(buf + n, "%s", value);
+        n += Snprintf(buf + n, sizeof(buf) - n, "%s", value);
     }
 
     //sprintf(buf + n, "\n");
@@ -283,7 +283,7 @@ const char* anytostr(const DAVA::Any& any)
 
     if (nullptr != printer)
     {
-        printer->print(buf, any);
+        printer->print(buf, sizeof(buf), any);
     }
     else
     {
