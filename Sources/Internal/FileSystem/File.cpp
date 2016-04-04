@@ -72,8 +72,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 
     if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
     {
-        String relative = filename.GetAbsolutePathname();
-        relative = relative.substr(6); // skip "~res:/"
+        String relative = filename.GetRelativePathname("~res:/");
 
         Vector<uint8> contentAndSize;
         for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
@@ -113,6 +112,10 @@ static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, con
         Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't open file in the archive: %s", path.c_str());
         return nullptr;
     }
+    SCOPE_EXIT
+    {
+        zip_fclose(file);
+    };
 
     DVASSERT(stat.size >= 0);
 
@@ -121,10 +124,9 @@ static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, con
     if (zip_fread(file, &data[0], stat.size) != stat.size)
     {
         Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Error reading file: %s", path.c_str());
-        zip_fclose(file);
+
         return nullptr;
     }
-    zip_fclose(file);
 
     return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
 }
