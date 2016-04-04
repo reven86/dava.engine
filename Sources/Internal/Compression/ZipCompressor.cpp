@@ -30,8 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileSystem/File.h"
 #include "Logger/Logger.h"
 
-#include <cstring> // need on android for std::memset
-
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -55,17 +53,18 @@ bool ZipCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
     {
         out.resize(destMaxLength);
     }
-    int32 result = compress(out.data(), &destMaxLength, in.data(), static_cast<uLong>(in.size()));
+    uLong resultLength = destMaxLength;
+    int32 result = compress(out.data(), &resultLength, in.data(), static_cast<uLong>(in.size()));
     if (result != Z_OK)
     {
         Logger::Error("can't compress rfc1951 buffer");
         return false;
     }
-    out.resize(destMaxLength);
+    out.resize(resultLength);
     return true;
 }
 
-bool ZipCompressor::Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const
+bool ZipCompressor::Decompress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
     if (in.size() > static_cast<uint32>(std::numeric_limits<int32>::max()))
     {
@@ -87,7 +86,7 @@ class ZipPrivateData
 {
 public:
     mz_zip_archive archive;
-    String fileName;
+    FilePath fileName;
     ScopedPtr<File> file{ nullptr };
 };
 
@@ -96,7 +95,7 @@ static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size
     File* file = static_cast<File*>(pOpaque);
     if (!file)
     {
-        DVASSERT(false && "can't happen");
+        DVASSERT(false && "pOpaque not point to DAVA::File*");
         Logger::Error("nullptr zip archive File object");
         return 0;
     }
@@ -109,6 +108,7 @@ static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size
     uint32 result = file->Read(pBuf, static_cast<uint32>(n));
     if (result != n)
     {
+        DVASSERT(false && "can't read bytes from zip archive");
         Logger::Error("can't read bytes from zip archive");
     }
 
@@ -119,13 +119,13 @@ ZipFile::ZipFile(const FilePath& fileName)
 {
     zipData.reset(new ZipPrivateData());
 
-    std::memset(&zipData->archive, 0, sizeof(zipData->archive));
+    Memset(&zipData->archive, 0, sizeof(zipData->archive));
 
     zipData->file.reset(File::Create(fileName, File::OPEN | File::READ));
 
     if (!zipData->file)
     {
-        throw std::runtime_error("can't open archive file: " + fileName.GetAbsolutePathname());
+        throw std::runtime_error("can't open archive file: " + fileName.GetStringValue());
     }
 
     uint32 fileSize = zipData->file->GetSize();
@@ -136,17 +136,13 @@ ZipFile::ZipFile(const FilePath& fileName)
 
     if (mz_zip_reader_init(&zipData->archive, fileSize, 0) == 0)
     {
-        throw std::runtime_error("can't init zip from file: " + fileName.GetAbsolutePathname());
+        throw std::runtime_error("can't init zip from file: " + fileName.GetStringValue());
     }
 
-    String fName = fileName.GetAbsolutePathname();
-    zipData->fileName = fName;
+    zipData->fileName = fileName;
 }
 
-ZipFile::~ZipFile()
-{
-    zipData.reset();
-}
+ZipFile::~ZipFile() = default;
 
 uint32 ZipFile::GetNumFiles() const
 {
@@ -175,7 +171,7 @@ bool ZipFile::LoadFile(const String& fileName, Vector<uint8>& fileContent) const
     int32 fileIndex = mz_zip_reader_locate_file(&zipData->archive, fileName.c_str(), nullptr, 0);
     if (fileIndex < 0)
     {
-        Logger::Error("file: %s not found in archive: %s!", fileName.c_str(), zipData->fileName.c_str());
+        Logger::Error("file: %s not found in archive: %s!", fileName.c_str(), fileName.c_str());
         return false;
     }
 

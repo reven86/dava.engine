@@ -30,7 +30,7 @@ THIS
 
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/ZipArchive.h"
-#include "FileSystem/DavaArchive.h"
+#include "FileSystem/PackArchive.h"
 #include "FileSystem/File.h"
 
 #include <fstream>
@@ -66,9 +66,9 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
 
     f.reset();
 
-    if (dava_pack_private::PackFileMarker == firstBytes)
+    if (PackFormat::FileMarker == firstBytes)
     {
-        impl.reset(new DavaArchive(fileName));
+        impl.reset(new PackArchive(fileName));
     }
     else
     {
@@ -76,34 +76,35 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
     }
 }
 
-ResourceArchive::~ResourceArchive()
+ResourceArchive::~ResourceArchive() = default;
+
+ResourceArchive::FileInfo::FileInfo(const char8* relativePath_, uint32 originalSize_, uint32 compressedSize_, Compressor::Type compressionType_)
+    : relativeFilePath(relativePath_)
+    , originalSize(originalSize_)
+    , compressedSize(compressedSize_)
+    , compressionType(compressionType_)
 {
-    impl.reset();
 }
 
 const Vector<ResourceArchive::FileInfo>& ResourceArchive::GetFilesInfo() const
 {
-    DVASSERT(impl != nullptr);
     return impl->GetFilesInfo();
 }
 
-bool ResourceArchive::HasFile(const String& fileName) const
+bool ResourceArchive::HasFile(const String& relativeFilePath) const
 {
-    DVASSERT(impl != nullptr);
-    return impl->HasFile(fileName);
+    return impl->HasFile(relativeFilePath);
 }
 
-const ResourceArchive::FileInfo* ResourceArchive::GetFileInfo(const String& fileName) const
+const ResourceArchive::FileInfo* ResourceArchive::GetFileInfo(const String& relativeFilePath) const
 {
-    DVASSERT(impl != nullptr);
-    return impl->GetFileInfo(fileName);
+    return impl->GetFileInfo(relativeFilePath);
 }
 
-bool ResourceArchive::LoadFile(const String& fileName,
+bool ResourceArchive::LoadFile(const String& relativeFilePath,
                                Vector<uint8>& output) const
 {
-    DVASSERT(impl != nullptr);
-    return impl->LoadFile(fileName, output);
+    return impl->LoadFile(relativeFilePath, output);
 }
 
 } // end namespace DAVA

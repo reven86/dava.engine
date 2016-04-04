@@ -32,17 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-Compressor::~Compressor()
-{
-}
-
 ZipArchive::ZipArchive(const FilePath& fileName)
     : zipFile(fileName)
 {
     // Get and print information about each file in the archive.
     uint32 count = zipFile.GetNumFiles();
-    fileNames.clear();
-    fileInfos.clear();
+
     fileNames.reserve(count);
     fileInfos.reserve(count);
     for (uint32 i = 0u; i < count; i++)
@@ -61,7 +56,7 @@ ZipArchive::ZipArchive(const FilePath& fileName)
         {
             fileNames.push_back(name);
             ResourceArchive::FileInfo info;
-            info.fileName = fileNames.back().c_str();
+            info.relativeFilePath = fileNames.back().c_str();
             info.compressionType = Compressor::Type::RFC1951;
             info.compressedSize = compressedSize;
             info.originalSize = origSize;
@@ -71,12 +66,8 @@ ZipArchive::ZipArchive(const FilePath& fileName)
 
     std::stable_sort(begin(fileInfos), end(fileInfos), [](const ResourceArchive::FileInfo& left, const ResourceArchive::FileInfo& right)
                      {
-                         return std::strcmp(left.fileName, right.fileName) < 0;
+                         return std::strcmp(left.relativeFilePath, right.relativeFilePath) < 0;
                      });
-}
-
-ZipArchive::~ZipArchive()
-{
 }
 
 const Vector<ResourceArchive::FileInfo>& ZipArchive::GetFilesInfo() const
@@ -84,11 +75,11 @@ const Vector<ResourceArchive::FileInfo>& ZipArchive::GetFilesInfo() const
     return fileInfos;
 }
 
-const ResourceArchive::FileInfo* ZipArchive::GetFileInfo(const String& fileName) const
+const ResourceArchive::FileInfo* ZipArchive::GetFileInfo(const String& relativeFilePath) const
 {
-    auto it = std::lower_bound(begin(fileInfos), end(fileInfos), fileName, [](const ResourceArchive::FileInfo& left, const String& fileNameParam)
+    auto it = std::lower_bound(begin(fileInfos), end(fileInfos), relativeFilePath, [](const ResourceArchive::FileInfo& left, const String& fileNameParam)
                                {
-                                   return left.fileName < fileNameParam;
+                                   return left.relativeFilePath < fileNameParam;
                                });
 
     if (it != end(fileInfos))
@@ -98,21 +89,21 @@ const ResourceArchive::FileInfo* ZipArchive::GetFileInfo(const String& fileName)
     return nullptr;
 }
 
-bool ZipArchive::HasFile(const String& fileName) const
+bool ZipArchive::HasFile(const String& relativeFilePath) const
 {
-    return GetFileInfo(fileName) != nullptr;
+    return GetFileInfo(relativeFilePath) != nullptr;
 }
 
-bool ZipArchive::LoadFile(const String& fileName, Vector<uint8>& output) const
+bool ZipArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output) const
 {
-    const ResourceArchive::FileInfo* info = GetFileInfo(fileName);
-    if (info)
+    const ResourceArchive::FileInfo* info = GetFileInfo(relativeFilePath);
+    if (info != nullptr)
     {
         output.resize(info->originalSize);
 
-        if (!zipFile.LoadFile(fileName, output))
+        if (!zipFile.LoadFile(relativeFilePath, output))
         {
-            Logger::Error("can't extract file: %s into memory", fileName.c_str());
+            Logger::Error("can't extract file: %s into memory", relativeFilePath.c_str());
             return false;
         }
         return true;

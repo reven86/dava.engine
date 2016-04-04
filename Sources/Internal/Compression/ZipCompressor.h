@@ -42,19 +42,19 @@ class ZipCompressor : public Compressor
 public:
     bool Compress(const Vector<uint8>& in, Vector<uint8>& out) const override;
     // you should resize output to correct size before call this method
-    bool Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const override;
+    bool Decompress(const Vector<uint8>& in, Vector<uint8>& out) const override;
 };
 
-class ZipFile
+class ZipFile final
 {
 public:
-    ZipFile(const FilePath& file);
+    ZipFile(const FilePath& path);
     ~ZipFile();
 
     uint32 GetNumFiles() const;
-    bool GetFileInfo(uint32 fileIndex, String& fileName, uint32& fileOriginalSize, uint32& fileCompressedSize, bool& isDirectory) const;
+    bool GetFileInfo(uint32 fileIndex, String& relativeFilePath, uint32& fileOriginalSize, uint32& fileCompressedSize, bool& isDirectory) const;
 
-    bool LoadFile(const String& fileName, Vector<uint8>& fileContent) const;
+    bool LoadFile(const String& relativeFilePath, Vector<uint8>& fileContent) const;
 
 private:
     std::unique_ptr<ZipPrivateData> zipData;

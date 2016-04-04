@@ -25,8 +25,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#ifndef DAVAENGINE_COMPRESSOR_H
-#define DAVAENGINE_COMPRESSOR_H
+#ifndef DAVAENGINE_FILE_SYSTEM_COMPRESSOR_H
+#define DAVAENGINE_FILE_SYSTEM_COMPRESSOR_H
 
 #include "Base/BaseTypes.h"
 
@@ -47,9 +47,9 @@ public:
 
     virtual bool Compress(const Vector<uint8>& in, Vector<uint8>& out) const = 0;
     // you should resize output to correct size before call this method
-    virtual bool Uncompress(const Vector<uint8>& in, Vector<uint8>& out) const = 0;
+    virtual bool Decompress(const Vector<uint8>& in, Vector<uint8>& out) const = 0;
 };
 
 } // end namespace DAVA
 
-#endif // DAVAENGINE_COMPRESSOR_H
+#endif // DAVAENGINE_FILE_SYSTEM_COMPRESSOR_H

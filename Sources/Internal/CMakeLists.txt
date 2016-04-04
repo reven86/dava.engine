@@ -56,7 +56,7 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libzip_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfribidi_android.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libicucommon_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"

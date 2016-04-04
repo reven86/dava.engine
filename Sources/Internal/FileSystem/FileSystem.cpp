@@ -478,7 +478,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
             break;
         default:
             /* Should never be reached. */
-            Logger::Error("Unexpected error in _stat.");
+            Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
         }
     }
 
@@ -777,14 +777,24 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
     return bytes;
 };
 
-void FileSystem::Mount(const String& archiveName, const String& attachPath)
+void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
     DVASSERT(!attachPath.empty());
 
     ResourceArchiveItem item;
     item.attachPath = attachPath;
     item.archive.reset(new ResourceArchive(archiveName));
+    item.archiveFilePath = archiveName;
+
     resourceArchiveList.push_back(std::move(item));
+}
+
+void FileSystem::Unmount(const FilePath& arhiveName)
+{
+    resourceArchiveList.remove_if([arhiveName](const ResourceArchiveItem& item) -> bool
+                                  {
+                                      return item.archiveFilePath == arhiveName;
+                                  });
 }
 
 int32 FileSystem::Spawn(const String& command)

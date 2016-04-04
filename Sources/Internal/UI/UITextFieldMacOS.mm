@@ -1415,7 +1415,7 @@ doCommandBySelector:(SEL)commandSelector
 
     if ([*partialStringPtr length] >= maxLength)
     {
-        int spaceLeft = maxLength - [origString length] - 1;
+        int spaceLeft = maxLength - [origString length];
         // we can crop part of string only if user try to add to end
         if (spaceLeft > 0 && origSelRange.location == [origString length])
         {

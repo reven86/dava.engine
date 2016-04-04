@@ -231,8 +231,17 @@ public:
 	
 		\param[in] archiveName pathname or local filename of archive we want to attach
 		\param[in] attachPath path we attach our archive 
+
+        can throw std::runtime_exception in case of error
 	*/
-    virtual void Mount(const String& archiveName, const String& attachPath);
+    virtual void Mount(const FilePath& archiveName, const String& attachPath);
+
+    /**
+    \brief Function to detach ResourceArchive from filesystem
+
+    \param[in] archiveName pathname or local filename of archive we want to attach
+    */
+    virtual void Unmount(const FilePath& arhiveName);
 
     /**
 	 \brief Invokes the command processor to execute a command
@@ -284,11 +293,13 @@ private:
         ResourceArchiveItem(ResourceArchiveItem&& other)
             : archive(std::move(other.archive))
             , attachPath(std::move(other.attachPath))
+            , archiveFilePath(std::move(other.archiveFilePath))
         {
         }
 
         std::unique_ptr<ResourceArchive> archive;
         String attachPath;
+        FilePath archiveFilePath;
     };
 
     List<ResourceArchiveItem> resourceArchiveList;
