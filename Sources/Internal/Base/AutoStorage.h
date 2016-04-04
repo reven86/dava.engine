@@ -60,13 +60,13 @@ public:
     bool operator!=(const AutoStorage&) const = delete;
 
     template <typename T>
-    static bool TypeIsSimple()
+    struct IsSimpleType
     {
-        return (sizeof(T) <= sizeof(StorageType))
+        static const bool value = (sizeof(T) <= sizeof(StorageType))
         && std::is_trivially_destructible<T>::value
         && std::is_trivially_copy_constructible<T>::value
         && std::is_trivially_copy_assignable<T>::value;
-    }
+    };
 
 private:
     enum class StorageType
@@ -79,13 +79,22 @@ private:
     StorageT storage;
     StorageType type = StorageType::Empty;
 
+    SharedT* SharedPtr() const;
+
     void DoCopy(const AutoStorage& value);
     void DoMove(AutoStorage&& value);
 
-    inline SharedT* SharedPtr() const
-    {
-        return reinterpret_cast<SharedT*>(const_cast<void**>(storage.data()));
-    }
+    template <typename T>
+    void SetAutoImpl(T&& value, std::true_type);
+
+    template <typename T>
+    void SetAutoImpl(T&& value, std::false_type);
+
+    template <typename T>
+    const T& GetAutoImpl(std::true_type) const;
+
+    template <typename T>
+    const T& GetAutoImpl(std::false_type) const;
 };
 
 } // namespace DAVA

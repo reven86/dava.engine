@@ -347,8 +347,8 @@ DAVA_TESTCLASS (TypeReflection)
         const ReflectionDB* db = Type::Instance<TestBaseClass>()->GetReflectionDB();
         if (nullptr != db)
         {
-            auto ctor = db->ctorWrappers[0].get();
-            auto dtor = db->dtorWrapper.get();
+            auto ctor = db->GetCtor();
+            auto dtor = db->GetDtor();
 
             Any a = ctor->Create();
             dtor->Destroy(std::move(a));

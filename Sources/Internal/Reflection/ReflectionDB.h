@@ -21,6 +21,11 @@ public:
     std::vector<std::unique_ptr<CtorWrapper>> ctorWrappers;
     std::unordered_multimap<std::string, std::unique_ptr<MethodWrapper>> methodWrappers;
 
+    const DtorWrapper* GetDtor() const;
+    const CtorWrapper* GetCtor() const;
+    const CtorWrapper* GetCtor(const Ref::ParamsList& params) const;
+    std::vector<const CtorWrapper*> GetCtors() const;
+
     template <typename T>
     static ReflectionDB* CreateDB();
 
@@ -33,8 +38,6 @@ public:
 protected:
     template <typename T>
     static ReflectionDB* EditGlobalDB();
-
-    static std::set<std::unique_ptr<ReflectionDB>> allDBs;
 };
 
 } // namespace DAVA

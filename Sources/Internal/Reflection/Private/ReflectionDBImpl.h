@@ -11,6 +11,8 @@ namespace DAVA
 template <typename T>
 ReflectionDB* ReflectionDB::CreateDB()
 {
+    static std::set<std::unique_ptr<ReflectionDB>> allDBs;
+
     ReflectionDB* db = allDBs.emplace(new ReflectionDB()).first->get();
     return db;
 }

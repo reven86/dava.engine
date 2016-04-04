@@ -50,7 +50,22 @@ inline ReflectedObject Reflection::GetValueObject() const
 
 inline const DtorWrapper* Reflection::GetDtor() const
 {
-    return db->dtorWrapper.get();
+    return db->GetDtor();
+}
+
+inline const CtorWrapper* Reflection::GetCtor() const
+{
+    return db->GetCtor();
+}
+
+inline const CtorWrapper* Reflection::GetCtor(const Ref::ParamsList& params) const
+{
+    return db->GetCtor(params);
+}
+
+inline std::vector<const CtorWrapper*> Reflection::GetCtors() const
+{
+    return db->GetCtors();
 }
 
 inline const StructureWrapper* Reflection::GetStructure() const

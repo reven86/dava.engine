@@ -68,7 +68,7 @@ void AutoStorage<Count>::SetSimple(T&& value)
 {
     using U = StorableType<T>;
 
-    assert(TypeIsSimple<U>());
+    static_assert(IsSimpleType<U>::value, "Type should be simple");
 
     if (!IsEmpty())
     {
@@ -76,7 +76,7 @@ void AutoStorage<Count>::SetSimple(T&& value)
     }
 
     type = StorageType::Simple;
-    new (storage.data()) U(value);
+    new (storage.data()) U(std::forward<T>(value));
 }
 
 template <size_t Count>
@@ -100,23 +100,15 @@ void AutoStorage<Count>::SetAuto(T&& value)
 {
     using U = StorableType<T>;
 
-    if (TypeIsSimple<U>())
-    {
-        SetSimple(std::forward<T>(value));
-    }
-    else
-    {
-        SetShared(std::forward<T>(value));
-    }
+    auto tp = std::integral_constant<bool, IsSimpleType<U>::value>();
+    SetAutoImpl(std::forward<T>(value), tp);
 }
 
 template <size_t Count>
 template <typename T>
 const T& AutoStorage<Count>::GetSimple() const
 {
-    assert(StorageType::Empty != type);
     assert(StorageType::Simple == type);
-
     return *(reinterpret_cast<const T*>(const_cast<void* const*>(storage.data())));
 }
 
@@ -124,9 +116,7 @@ template <size_t Count>
 template <typename T>
 const T& AutoStorage<Count>::GetShared() const
 {
-    assert(StorageType::Empty != type);
     assert(StorageType::Shared == type);
-
     return *(static_cast<const T*>(SharedPtr()->get()));
 }
 
@@ -136,7 +126,8 @@ const T& AutoStorage<Count>::GetAuto() const
 {
     assert(StorageType::Empty != type);
 
-    return (StorageType::Simple == type) ? GetSimple<T>() : GetShared<T>();
+    auto tp = std::integral_constant<bool, IsSimpleType<T>::value>();
+    return GetAutoImpl<T>(tp);
 }
 
 template <size_t Count>
@@ -178,6 +169,12 @@ AutoStorage<Count>& AutoStorage<Count>::operator=(AutoStorage&& value)
 }
 
 template <size_t Count>
+inline typename AutoStorage<Count>::SharedT* AutoStorage<Count>::SharedPtr() const
+{
+    return reinterpret_cast<SharedT*>(const_cast<void**>(storage.data()));
+}
+
+template <size_t Count>
 inline void AutoStorage<Count>::DoCopy(const AutoStorage& value)
 {
     type = value.type;
@@ -198,6 +195,34 @@ inline void AutoStorage<Count>::DoMove(AutoStorage&& value)
     type = value.type;
     storage = std::move(value.storage);
     value.type = StorageType::Empty;
+}
+
+template <size_t Count>
+template <typename T>
+inline void AutoStorage<Count>::SetAutoImpl(T&& value, std::true_type)
+{
+    SetSimple(std::forward<T>(value));
+}
+
+template <size_t Count>
+template <typename T>
+inline void AutoStorage<Count>::SetAutoImpl(T&& value, std::false_type)
+{
+    SetShared(std::forward<T>(value));
+}
+
+template <size_t Count>
+template <typename T>
+inline const T& AutoStorage<Count>::GetAutoImpl(std::true_type) const
+{
+    return GetSimple<T>();
+}
+
+template <size_t Count>
+template <typename T>
+inline const T& AutoStorage<Count>::GetAutoImpl(std::false_type) const
+{
+    return GetShared<T>();
 }
 
 } // namespace DAVA

@@ -3,18 +3,54 @@
 
 namespace DAVA
 {
-std::set<std::unique_ptr<ReflectionDB>> ReflectionDB::allDBs;
-
-/*
-const ReflectionDB * ReflectionDB::GetGlobalDB(const Type * type)
+const CtorWrapper* ReflectionDB::GetCtor() const
 {
-    return EditGlobalDB(type);
+    const CtorWrapper* ret = nullptr;
+
+    for (auto& it : ctorWrappers)
+    {
+        if (it->GetParamsList().size() == 0)
+        {
+            ret = it.get();
+            break;
+        }
+    }
+
+    return ret;
 }
 
-ReflectionDB * ReflectionDB::EditGlobalDB(const Type * type)
+const CtorWrapper* ReflectionDB::GetCtor(const Ref::ParamsList& params) const
 {
-    return type->reflectionDb;
+    const CtorWrapper* ret = nullptr;
+
+    for (auto& it : ctorWrappers)
+    {
+        if (it->GetParamsList() == params)
+        {
+            ret = it.get();
+            break;
+        }
+    }
+
+    return ret;
 }
-*/
+
+std::vector<const CtorWrapper*> ReflectionDB::GetCtors() const
+{
+    std::vector<const CtorWrapper*> ret;
+
+    ret.reserve(ctorWrappers.size());
+    for (auto& it : ctorWrappers)
+    {
+        ret.push_back(it.get());
+    }
+
+    return ret;
+}
+
+const DtorWrapper* ReflectionDB::GetDtor() const
+{
+    return dtorWrapper.get();
+}
 
 } // namespace DAVA

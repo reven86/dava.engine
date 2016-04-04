@@ -60,30 +60,32 @@ const Type* GetDerefType(std::true_type)
 } // namespace TypeDetails
 
 template <typename T>
+Type Type::TypeDB<T>::type = { std::common_type<T>() };
+
+template <typename T>
+Type::Type(std::common_type<T>)
+{
+    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_const_t<T>>>;
+    static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
+
+    name = typeid(T).name();
+    size = sizeof(T);
+
+    isConst = std::is_const<T>::value;
+    isPointer = std::is_pointer<T>::value;
+    isReference = std::is_reference<T>::value;
+
+    auto cond = std::integral_constant<bool, needDeref>();
+    derefType = TypeDetails::GetDerefType<DerefT>(cond);
+
+    // try to run TypeInitializer if T has this function
+    TypeDetails::TypeInitializerRunner<T>::Run();
+}
+
+template <typename T>
 const Type* Type::Instance()
 {
-    static Type type;
-
-    if (nullptr == type.name)
-    {
-        using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_const_t<T>>>;
-        static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
-
-        type.name = typeid(T).name();
-        type.size = sizeof(T);
-
-        type.isConst = std::is_const<T>::value;
-        type.isPointer = std::is_pointer<T>::value;
-        type.isReference = std::is_reference<T>::value;
-
-        auto cond = std::integral_constant<bool, needDeref>();
-        type.derefType = TypeDetails::GetDerefType<DerefT>(cond);
-
-        // try to run TypeInitializer if T has this function
-        TypeDetails::TypeInitializerRunner<T>::Run();
-    }
-
-    return &type;
+    return &TypeDB<T>::type;
 }
 
 } // namespace DAVA
