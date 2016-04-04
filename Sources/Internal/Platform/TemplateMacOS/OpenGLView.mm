@@ -229,18 +229,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
             event.wheelDelta.y = rawScrollDeltaY * rawScrollCoefficient;
         }
     }
-    else
-    {
-        @try
-        {
-            event.tapCount = [curEvent clickCount];
-        }
-        @catch (NSException* exception)
-        {
-            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
-            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
-        }
-    }
 }
 
 - (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches

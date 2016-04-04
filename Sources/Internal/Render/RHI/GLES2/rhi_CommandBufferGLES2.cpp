@@ -379,7 +379,7 @@ static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync(true, 0);
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
 
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
-static unsigned _GLES2_RenderThreadFrameCount = 0;
+static uint32 _GLES2_RenderThreadFrameCount = 0;
 
 struct
 FrameGLES2
@@ -2123,12 +2123,12 @@ gles2_Present(Handle sync)
             _GLES2_FramePreparedEvent.Signal();
         }
 
-        unsigned frame_cnt = 0;
+        uint32 frame_cnt = 0;
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
             _GLES2_FrameSync.Lock();
-            frame_cnt = _GLES2_Frame.size();
+            frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
             _GLES2_FrameSync.Unlock();
 
             if (frame_cnt >= _GLES2_RenderThreadFrameCount)
@@ -2292,7 +2292,7 @@ void SuspendGLES2()
     _GLES2_RenderThreadSuspendSync.Reset();
     _GLES2_FramePreparedEvent.Signal(); //avoid stall
     GL_CALL(glFinish());
-    Logger::Info("Render GLES Suspended");
+    Logger::Error("Render GLES Suspended");
 }
 
 //------------------------------------------------------------------------------
@@ -2301,7 +2301,7 @@ void ResumeGLES2()
 {
     _GLES2_RenderThreadSuspendSync.Signal();
     _GLES2_RenderThreadSuspended.Set(false);
-    Logger::Info("Render GLES Resumed");
+    Logger::Error("Render GLES Resumed");
 }
 
 //------------------------------------------------------------------------------
