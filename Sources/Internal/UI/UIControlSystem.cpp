@@ -496,8 +496,10 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
                     UIControl* focusedControl = focusSystem->GetFocusedControl();
                     if (focusedControl != nullptr)
                     {
+                        static const float32 draggingThresholdSq = 20.0f * 20.0f;
                         bool focusWasntChanged = focusedControl == focusedControlWhenTouchBegan;
-                        bool touchWasntDragged = positionOfTouchWhenTouchBegan == eventToHandle->point;
+
+                        bool touchWasntDragged = (positionOfTouchWhenTouchBegan - eventToHandle->point).SquareLength() < draggingThresholdSq;
                         bool touchOutsideControl = !focusedControl->IsPointInside(eventToHandle->point);
                         if (focusWasntChanged && touchWasntDragged && touchOutsideControl)
                         {
