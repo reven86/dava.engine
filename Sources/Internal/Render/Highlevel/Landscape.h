@@ -150,6 +150,13 @@ public:
     bool IsUseInstancing() const;
 
 protected:
+    enum RenderMode
+    {
+        RENDERMODE_NO_INSTANCING,
+        RENDERMODE_INSTANCING,
+        RENDERMODE_INSTANCING_MORPHING,
+    };
+
     Vector3 GetPoint(uint32 x, uint32 y, uint16 height) const;
     void GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3& tangentOut) const;
 
@@ -207,8 +214,7 @@ protected:
     bool debugDrawMetrics = false;
     bool debugDrawMorphing = false;
 
-    bool useInstancing = false;
-    bool useLodMorphing = false;
+    RenderMode renderMode;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Subdivision
@@ -293,7 +299,7 @@ protected:
     int16 AllocateParcelVertexBuffer(uint32 x, uint32 y, uint32 size);
 
     void DrawLandscapeNoInstancing();
-    void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2);
+    void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 yNegSizePow2, uint32 xPosSizePow2, uint32 yPosSizePow2);
 
     void FlushQueue();
     void ClearQueue();
@@ -353,8 +359,8 @@ protected:
 
     void AllocateGeometryDataInstancing();
 
-    static Texture* CreateHeightTexture(Heightmap* heightmap, bool useMorphing);
-    static Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, bool useMorphing);
+    static Texture* CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode);
+    static Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, RenderMode renderMode);
 
     Texture* CreateTangentTexture();
     Vector<Image*> CreateTangentBasisTextureData();

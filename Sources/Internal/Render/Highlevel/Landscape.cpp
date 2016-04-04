@@ -94,8 +94,7 @@ Landscape::Landscape()
     zoomMaxPatchRadiusError = 1.6f;
     zoomMaxAbsoluteHeightError = 3.f;
 
-    useInstancing = rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported;
-    useLodMorphing = useInstancing;
+    renderMode = (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_NO_INSTANCING;
 
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
@@ -286,7 +285,7 @@ void Landscape::AllocateGeometryData()
     uint32 heightmapSize = heightmap->Size();
     uint32 maxLevels = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
     subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
-    minSubdivLevelSize = useInstancing ? 0 : heightmapSize / RENDER_PARCEL_SIZE_QUADS;
+    minSubdivLevelSize = (renderMode == RENDERMODE_NO_INSTANCING) ? heightmapSize / RENDER_PARCEL_SIZE_QUADS : 0;
     heightmapSizePow2 = uint32(HighestBitIndex(heightmapSize));
     heightmapSizef = float32(heightmapSize);
 
@@ -303,7 +302,7 @@ void Landscape::AllocateGeometryData()
     subdivPatchArray.resize(subdivPatchCount);
     patchQuadArray.resize(subdivPatchCount);
 
-    useInstancing ? AllocateGeometryDataInstancing() : AllocateGeometryDataNoInstancing();
+    (renderMode == RENDERMODE_NO_INSTANCING) ? AllocateGeometryDataNoInstancing() : AllocateGeometryDataInstancing();
 }
 
 void Landscape::RebuildLandscape()
@@ -328,19 +327,21 @@ void Landscape::RebuildLandscape()
 
 void Landscape::PrepareMaterial(NMaterial* material)
 {
-    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, useInstancing ? 1 : 0);
-    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, useLodMorphing ? 1 : 0);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR, isRequireTangentBasis ? 1 : 0);
 }
 
-Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, bool useMorphing)
+Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode)
 {
-    Vector<Image*> textureData = CreateHeightTextureData(heightmap, useMorphing);
+    DVASSERT(renderMode != RENDERMODE_NO_INSTANCING);
+
+    Vector<Image*> textureData = CreateHeightTextureData(heightmap, renderMode);
 
     Texture* tx = Texture::CreateFromData(textureData);
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, useMorphing ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
+    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
 
     for (Image* img : textureData)
         img->Release();
@@ -348,13 +349,14 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, bool useMorphing)
     return tx;
 }
 
-Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, bool useMorphing)
+Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMode renderMode)
 {
     const uint32 hmSize = heightmap->Size();
     DVASSERT(IsPowerOf2(heightmap->Size()));
+    DVASSERT(renderMode != RENDERMODE_NO_INSTANCING);
 
     Vector<Image*> dataOut;
-    if (useMorphing)
+    if (renderMode == RENDERMODE_INSTANCING_MORPHING)
     {
         dataOut.reserve(HighestBitIndex(hmSize));
 
@@ -743,7 +745,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     else
     {
         float32 morphAmount = 1.f;
-        if (useLodMorphing)
+        if (renderMode == RENDERMODE_INSTANCING_MORPHING)
         {
             float32 rError0Rel = Max(rError0, maxPatchRadiusError) / maxPatchRadiusError;
             float32 rErrorRel = Min(rError, maxPatchRadiusError) / maxPatchRadiusError;
@@ -809,66 +811,59 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
     }
     else
     {
-        if (useInstancing && useLodMorphing)
+        uint32 nearLevel[4];
+        Vector4 nearLevelf, nearMorph;
+        const float32 morph = subdivPatchInfo->subdivMorph;
+
+        SubdivisionPatchInfo* nearPatch[4] = {
+            GetSubdivPatch(level, x - 1, y),
+            GetSubdivPatch(level, x, y - 1),
+            GetSubdivPatch(level, x + 1, y),
+            GetSubdivPatch(level, x, y + 1)
+        };
+
+        for (int32 i = 0; i < 4; ++i)
         {
-            const float32 levelf = float32(level);
-            const float32 morph = subdivPatchInfo->subdivMorph;
-            Vector4 nearLevel, nearMorph;
+            SubdivisionPatchInfo* patch = nearPatch[i];
+            bool patchTerminated = (patch && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED);
 
-            SubdivisionPatchInfo* nearPatch[4] = {
-                GetSubdivPatch(level, x - 1, y),
-                GetSubdivPatch(level, x, y - 1),
-                GetSubdivPatch(level, x + 1, y),
-                GetSubdivPatch(level, x, y + 1)
-            };
-
-            for (int32 i = 0; i < 4; ++i)
+            switch (renderMode)
             {
-                SubdivisionPatchInfo* patch = nearPatch[i];
-                if (patch && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
+            case RENDERMODE_INSTANCING_MORPHING:
+            {
+                if (patchTerminated)
                 {
                     nearMorph.data[i] = (patch->lastSubdivLevel < level) ? patch->subdivMorph : Min(patch->subdivMorph, morph);
-                    nearLevel.data[i] = float32(patch->lastSubdivLevel);
                 }
                 else
                 {
                     nearMorph.data[i] = morph;
-                    nearLevel.data[i] = levelf;
                 }
+            } //there's no need break, it's ok
+            case RENDERMODE_INSTANCING:
+            {
+                nearLevelf.data[i] = patchTerminated ? float32(patch->lastSubdivLevel) : float32(level);
             }
-
-            DrawPatchInstancing(level, x, y, nearLevel, morph, nearMorph);
+            break;
+            case RENDERMODE_NO_INSTANCING:
+            {
+                nearLevel[i] = patchTerminated ? patch->lastSubdivLevel : level;
+            }
+            break;
+            }
         }
-        else if (useInstancing)
+
+        switch (renderMode)
         {
-            const float32 levelf = float32(level);
-            Vector4 nearLevel;
-
-            SubdivisionPatchInfo* xNeg = GetSubdivPatch(level, x - 1, y);
-            SubdivisionPatchInfo* yNeg = GetSubdivPatch(level, x, y - 1);
-            SubdivisionPatchInfo* xPos = GetSubdivPatch(level, x + 1, y);
-            SubdivisionPatchInfo* yPos = GetSubdivPatch(level, x, y + 1);
-
-            nearLevel.x = (xNeg && xNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(xNeg->lastSubdivLevel) : levelf;
-            nearLevel.y = (yNeg && yNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(yNeg->lastSubdivLevel) : levelf;
-            nearLevel.z = (xPos && xPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(xPos->lastSubdivLevel) : levelf;
-            nearLevel.w = (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? float32(yPos->lastSubdivLevel) : levelf;
-
-            DrawPatchInstancing(level, x, y, nearLevel);
-        }
-        else
-        {
-            SubdivisionPatchInfo* xNeg = GetSubdivPatch(level, x - 1, y);
-            SubdivisionPatchInfo* xPos = GetSubdivPatch(level, x + 1, y);
-            SubdivisionPatchInfo* yNeg = GetSubdivPatch(level, x, y - 1);
-            SubdivisionPatchInfo* yPos = GetSubdivPatch(level, x, y + 1);
-
-            uint32 xNegSizePow2 = (xNeg && xNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? xNeg->lastSubdivLevel : level;
-            uint32 xPosSizePow2 = (xPos && xPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? xPos->lastSubdivLevel : level;
-            uint32 yNegSizePow2 = (yNeg && yNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? yNeg->lastSubdivLevel : level;
-            uint32 yPosSizePow2 = (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED) ? yPos->lastSubdivLevel : level;
-
-            DrawPatchNoInstancing(level, x, y, xNegSizePow2, xPosSizePow2, yNegSizePow2, yPosSizePow2);
+        case RENDERMODE_INSTANCING_MORPHING:
+            DrawPatchInstancing(level, x, y, nearLevelf, morph, nearMorph);
+            break;
+        case RENDERMODE_INSTANCING:
+            DrawPatchInstancing(level, x, y, nearLevelf);
+            break;
+        case RENDERMODE_NO_INSTANCING:
+            DrawPatchNoInstancing(level, x, y, nearLevel[0], nearLevel[1], nearLevel[2], nearLevel[3]);
+            break;
         }
     }
 }
@@ -992,7 +987,7 @@ void Landscape::DrawLandscapeNoInstancing()
     FlushQueue();
 }
 
-void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2)
+void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSizePow2, uint32 yNegSizePow2, uint32 xPosSizePow2, uint32 yPosSizePow2)
 {
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
 
@@ -1132,7 +1127,7 @@ void Landscape::ClearQueue()
 
 void Landscape::AllocateGeometryDataInstancing()
 {
-    heightTexture = CreateHeightTexture(heightmap, useLodMorphing);
+    heightTexture = CreateHeightTexture(heightmap, renderMode);
     landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
     if (isRequireTangentBasis)
@@ -1205,7 +1200,7 @@ void Landscape::AllocateGeometryDataInstancing()
 
     /////////////////////////////////////////////////////////////////
 
-    instanceDataSize = useLodMorphing ? INSTANCE_DATA_SIZE_MORPHING : INSTANCE_DATA_SIZE;
+    instanceDataSize = (renderMode == RENDERMODE_INSTANCING) ? INSTANCE_DATA_SIZE : INSTANCE_DATA_SIZE_MORPHING;
 
     rhi::VertexBuffer::Descriptor vdesc;
     vdesc.size = VERTICES_COUNT * sizeof(VertexInstancing);
@@ -1244,7 +1239,7 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3); //patch position + scale
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4); //near patch lodOffset
-    if (useLodMorphing)
+    if (renderMode == RENDERMODE_INSTANCING_MORPHING)
     {
         vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4); //near patch morph
         vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 3); //patch lod + morph + pixelMappingOffset
@@ -1330,7 +1325,7 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Ve
                                                levelf - nearLevel.z,
                                                levelf - nearLevel.w);
 
-    if (useLodMorphing)
+    if (renderMode == RENDERMODE_INSTANCING_MORPHING)
     {
         int32 baseLod = subdivLevelCount - level - 1;
 
@@ -1384,10 +1379,17 @@ void Landscape::PrepareToRender(Camera* camera)
         SubdividePatch(0, 0, 0, 0x3f, maxHeightError, maxPatchRadiusError);
     }
 
-    if (useInstancing)
+    switch (renderMode)
+    {
+    case RENDERMODE_INSTANCING:
+    case RENDERMODE_INSTANCING_MORPHING:
         DrawLandscapeInstancing();
-    else
+        break;
+    case RENDERMODE_NO_INSTANCING:
         DrawLandscapeNoInstancing();
+    default:
+        break;
+    }
 }
 
 bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const
@@ -1693,35 +1695,38 @@ bool Landscape::IsDrawWired() const
 
 void Landscape::SetUseInstancing(bool isUse)
 {
-    bool newValue = isUse && rhi::DeviceCaps().isInstancingSupported;
-    if (useInstancing != newValue)
+    RenderMode newRenderMode = (isUse && rhi::DeviceCaps().isInstancingSupported) ? RENDERMODE_INSTANCING : RENDERMODE_NO_INSTANCING;
+    if (renderMode != newRenderMode)
     {
-        useInstancing = newValue;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, useInstancing ? 1 : 0);
+        renderMode = newRenderMode;
+        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_INSTANCING) ? 1 : 0);
+        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, 0);
         RebuildLandscape();
 
-        Logger::FrameworkDebug("Landscape uses instancing: %s", useInstancing ? "true" : "false");
+        Logger::FrameworkDebug("Landscape uses instancing: %s", (renderMode == RENDERMODE_INSTANCING) ? "true" : "false");
     }
 }
 
 bool Landscape::IsUseInstancing() const
 {
-    return useInstancing;
+    return (renderMode == RENDERMODE_INSTANCING || renderMode == RENDERMODE_INSTANCING_MORPHING);
 }
 
 void Landscape::SetUseMorphing(bool useMorph)
 {
-    if (useLodMorphing != useMorph)
+    RenderMode newRenderMode = useMorph ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
+    newRenderMode = rhi::DeviceCaps().isInstancingSupported ? newRenderMode : RENDERMODE_NO_INSTANCING;
+    if (renderMode != newRenderMode)
     {
-        useLodMorphing = useMorph;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, useLodMorphing ? 1 : 0);
+        renderMode = newRenderMode;
+        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
         RebuildLandscape();
     }
 }
 
 bool Landscape::IsUseMorphing() const
 {
-    return useLodMorphing;
+    return (renderMode == RENDERMODE_INSTANCING_MORPHING);
 }
 
 void Landscape::SetDrawMorphing(bool drawMorph)
@@ -1744,9 +1749,12 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 
     UpdatePatchInfo(0, 0, 0, rect);
 
-    if (useInstancing)
+    switch (renderMode)
     {
-        Vector<Image*> heightTextureData = CreateHeightTextureData(fromHeightmap, useLodMorphing);
+    case RENDERMODE_INSTANCING:
+    case RENDERMODE_INSTANCING_MORPHING:
+    {
+        Vector<Image*> heightTextureData = CreateHeightTextureData(fromHeightmap, renderMode);
 
         for (Image* img : heightTextureData)
         {
@@ -1766,10 +1774,14 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
             tangentTextureData.clear();
         }
     }
-    else
+    break;
+    case RENDERMODE_NO_INSTANCING:
     {
-        //update vertex buffers
         DVASSERT(false && "TODO: Landscape::UpdatePart() for non-instancing render");
+    }
+    break;
+    default:
+        break;
     }
 }
 }

@@ -67,7 +67,7 @@ void LandscapeSystem::AddEntity(Entity* entity)
             landscapeObject->zoomMaxPatchRadiusError = quality->zoomMaxPatchRadiusError;
             landscapeObject->zoomMaxAbsoluteHeightError = quality->zoomMaxAbsoluteHeightError;
 
-            if (landscapeObject->useLodMorphing != quality->morphing)
+            if (quality->morphing && landscapeObject->renderMode != Landscape::RENDERMODE_INSTANCING_MORPHING)
             {
                 landscapeObject->SetUseMorphing(quality->morphing);
             }
