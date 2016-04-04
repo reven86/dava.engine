@@ -62,7 +62,7 @@ public:
     template <typename T>
     struct IsSimpleType
     {
-        static const bool value = (sizeof(T) <= sizeof(StorageType))
+        static const bool value = (sizeof(T) <= sizeof(StorageT))
         && std::is_trivially_destructible<T>::value
         && std::is_trivially_copy_constructible<T>::value
         && std::is_trivially_copy_assignable<T>::value;
