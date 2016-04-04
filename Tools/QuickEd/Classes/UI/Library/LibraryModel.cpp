@@ -86,6 +86,10 @@ LibraryModel::LibraryModel(QObject* parent)
                 defaultControls.push_back(ControlNode::CreateFromControlWithChildren(control));
             else
                 defaultControls.push_back(ControlNode::CreateFromControl(control));
+
+            auto prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("Size");
+
+            prop->SetValue(VariantType(Vector2(32.0f, 32.0f)));
         }
         else
         {
