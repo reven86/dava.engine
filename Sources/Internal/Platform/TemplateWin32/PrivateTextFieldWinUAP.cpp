@@ -633,6 +633,8 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
+    core->XamlApplication()->CaptureTextBox(nativeControl);
+
     SetNativeCaretPosition(GetNativeText()->Length());
 
     Windows::Foundation::Rect nativeKeyboardRect = InputPane::GetForCurrentView()->OccludedRect;
@@ -674,13 +676,6 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    // prevent lose focus on pointer up event
-    if (uiTextField != nullptr && UIControlSystem::Instance()->GetFocusedControl() == uiTextField && uiTextField->IsEditing())
-    {
-        nativeControl->Focus(FocusState::Programmatic);
-        return;
-    }
-
     if (!IsMultiline())
     {
         waitRenderToTextureComplete = true;
