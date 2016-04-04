@@ -204,6 +204,7 @@ protected:
 
     uint32 heightmapSizePow2 = 0;
     float32 heightmapSizef = 0.f;
+    pointer_size hmSizeParamSemantic = 1;
 
     uint32 drawIndices = 0;
 
@@ -249,7 +250,7 @@ protected:
 
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect);
-    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 hError0, float32 rError0);
+    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0);
     void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 lastSubdivMorph);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
@@ -337,10 +338,10 @@ protected:
     {
         Vector2 patchOffset;
         float32 patchScale;
-        Vector4 nearPatchLodOffset; // per edge: left, right, bottom, top
+        Vector4 neighbourPatchLodOffset; // per edge: left, right, bottom, top
 
         //Members for morphing case
-        Vector4 nearPatchMorph;
+        Vector4 neighbourPatchMorph;
         float32 patchLod;
         float32 patchMorph;
         float32 centerPixelOffset;
@@ -365,7 +366,7 @@ protected:
     Vector<Image*> CreateTangentBasisTextureData();
 
     void DrawLandscapeInstancing();
-    void DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& nearLevel, float32 patchMorph = 0.f, const Vector4& nearMorph = Vector4());
+    void DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& neighborLevel, float32 patchMorph = 0.f, const Vector4& neighborMorph = Vector4());
 
     Texture* heightTexture = nullptr;
     Texture* tangentTexture = nullptr;
@@ -405,6 +406,16 @@ public:
 inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
 {
     return x + y * RENDER_PARCEL_SIZE_VERTICES;
+}
+
+DAVA_FORCEINLINE Landscape::SubdivisionPatchInfo* Landscape::GetSubdivPatch(uint32 level, uint32 x, uint32 y)
+{
+    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
+
+    if (x < levelInfo.size && y < levelInfo.size)
+        return &subdivPatchArray[levelInfo.offset + (y << level) + x];
+    else
+        return 0;
 }
 };
 

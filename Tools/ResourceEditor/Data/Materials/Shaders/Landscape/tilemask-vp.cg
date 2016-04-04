@@ -9,9 +9,9 @@
 			VPROG_IN_TEXCOORD2(2) //edgeVertexIndex + edgeMaskNull
 		VPROG_IN_STREAM_INSTANCE
 			VPROG_IN_TEXCOORD3(3) //patch position + scale
-			VPROG_IN_TEXCOORD4(4) //near patch lodOffset
+			VPROG_IN_TEXCOORD4(4) //neighbour patch lodOffset
 		#if LANDSCAPE_LOD_MORPHING
-			VPROG_IN_TEXCOORD5(4) //near patch morph
+			VPROG_IN_TEXCOORD5(4) //neighbour patch morph
 			VPROG_IN_TEXCOORD6(3) //patch lod + morph + pixelMappingOffset
 		#endif
 	VPROG_IN_END
@@ -104,10 +104,10 @@ VPROG_BEGIN
 	float edgeVertexIndex = VP_IN_TEXCOORD2.x;
 	
     float3 patchOffsetScale = VP_IN_TEXCOORD3.xyz;
-	float4 nearPatchLodOffset = VP_IN_TEXCOORD4;
+	float4 neighbourPatchLodOffset = VP_IN_TEXCOORD4;
 	
 	//Calculate vertecies offset for fusing neighboring patches
-	float lodOffset = dot(edgeMask, nearPatchLodOffset);
+	float lodOffset = dot(edgeMask, neighbourPatchLodOffset);
     float edgeShiftAmount = pow(2.0, lodOffset);
 	in_pos += edgeShiftDirection * fmod(edgeVertexIndex, edgeShiftAmount);
 	
@@ -116,7 +116,7 @@ VPROG_BEGIN
 #if LANDSCAPE_LOD_MORPHING
 	
 	float edgeMaskNull = VP_IN_TEXCOORD2.y; //if all components of edgeMask is zero - this value is 0.0, othewise - 1.0. Used for a little optimization.
-	float4 nearPatchMorph = VP_IN_TEXCOORD5;
+	float4 neighbourPatchMorph = VP_IN_TEXCOORD5;
 	
 	float baseLod = VP_IN_TEXCOORD6.x;
 	float patchMorph = VP_IN_TEXCOORD6.y;
@@ -132,7 +132,7 @@ VPROG_BEGIN
 	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod);
 	
 	//Calculate morphed height. 
-	float morphAmount = dot(edgeMask, nearPatchMorph) + patchMorph * edgeMaskNull;
+	float morphAmount = dot(edgeMask, neighbourPatchMorph) + patchMorph * edgeMaskNull;
 	// float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895)); // 'accurate' height
 	// float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895)); // 'averaged' height
 	// float height = lerp(h1, h0, morphAmount);
