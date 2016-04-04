@@ -97,6 +97,8 @@ Landscape::Landscape()
     useInstancing = rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported;
     useLodMorphing = useInstancing;
 
+    isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
+
 #if defined(__DAVAENGINE_ANDROID__)
     String version = DeviceInfo::GetVersion();
     const char* dotChar = strchr(version.c_str(), '.');
@@ -329,6 +331,7 @@ void Landscape::PrepareMaterial(NMaterial* material)
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, useInstancing ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, useLodMorphing ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR, isRequireTangentBasis ? 1 : 0);
 }
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, bool useMorphing)
@@ -439,16 +442,19 @@ Vector<Image*> Landscape::CreateTangentBasisTextureData()
         uint8* normalTangntDataPtr = reinterpret_cast<uint8*>(normalTangntData);
 
         Vector3 normal, tangent;
-        for (uint32 x = 0; x < hmSize; ++x)
+        for (uint32 y = 0; y < hmSize; ++y)
         {
-            for (uint32 y = 0; y < hmSize; ++y)
+            for (uint32 x = 0; x < hmSize; ++x)
             {
                 GetTangentBasis(x, y, normal, tangent);
 
+                normal = normal * 0.5f + 0.5f;
+                tangent = tangent * 0.5 + 0.5f;
+
                 *normalTangntDataPtr++ = uint8(normal.x * 255.f);
                 *normalTangntDataPtr++ = uint8(normal.y * 255.f);
-                *normalTangntDataPtr++ = uint8(tangent.x * 255.f);
                 *normalTangntDataPtr++ = uint8(tangent.y * 255.f);
+                *normalTangntDataPtr++ = uint8(tangent.z * 255.f);
             }
         }
 
@@ -475,15 +481,15 @@ void Landscape::GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3&
 
     Vector3 position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
 
-    uint32 xx = Min(x + 1, hmSize);
-    uint32 yy = Min(y + 1, hmSize);
-    Vector3 right = GetPoint(xx, y, heightmap->GetHeight(xx, y));
-    Vector3 bottom = GetPoint(x, yy, heightmap->GetHeight(x, yy));
+    uint32 xx = Min(x + 1, hmSize - 1);
+    uint32 yy = Min(y + 1, hmSize - 1);
+    Vector3 right = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
+    Vector3 bottom = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
 
     xx = (x == 0) ? 0 : x - 1;
     yy = (y == 0) ? 0 : y - 1;
-    Vector3 left = GetPoint(xx, y, heightmap->GetHeight(xx, y));
-    Vector3 top = GetPoint(x, yy, heightmap->GetHeight(x, yy));
+    Vector3 left = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
+    Vector3 top = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
 
     Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
     Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
@@ -491,9 +497,8 @@ void Landscape::GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3&
     Vector3 normal3 = (left != position && top != position) ? CrossProduct(left - position, top - position) : Vector3(0, 0, 0);
 
     Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
-    normalAverage.Normalize();
 
-    normalOut = normalAverage;
+    normalOut = Normalize(normalAverage);
     tangentOut = Normalize(right - position);
 
     /*
@@ -873,8 +878,6 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
 void Landscape::AllocateGeometryDataNoInstancing()
 {
-    isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
-
     rhi::VertexLayout vLayout;
     vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);

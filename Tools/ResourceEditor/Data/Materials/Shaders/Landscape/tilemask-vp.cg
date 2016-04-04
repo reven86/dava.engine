@@ -21,6 +21,10 @@
 	VPROG_IN_BEGIN
 		VPROG_IN_POSITION
 		VPROG_IN_TEXCOORD
+	#if LANDSCAPE_SPECULAR
+		VPROG_IN_NORMAL
+		VPROG_IN_TANGENT
+	#endif
 	VPROG_IN_END
 	
 #endif
@@ -33,6 +37,12 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD1(texCoordTiled,2)
     #endif
 
+	#if LANDSCAPE_SPECULAR
+        VPROG_OUT_TEXCOORD2(varHalfVec,3)
+        VPROG_OUT_TEXCOORD3(varToLightVec,3)        
+        VPROG_OUT_TEXCOORD4(varToCameraVec,3) 
+	#endif
+	
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
     #endif
@@ -56,15 +66,30 @@ property float4x4 worldViewProjMatrix          : dynamic,a : ;
 #if LANDSCAPE_USE_INSTANCING
 	property float3 boundingBoxSize 		   : dynamic,a : ;
     property float textureSize                 : dynamic,a : ;
+	
+#if LANDSCAPE_SPECULAR
+	DECL_VP_SAMPLER2D(tangentSpace)	
+#endif
+
 #endif
 
 #if VERTEX_FOG
 property float4x4 worldMatrix                  : dynamic,a : ;
-property float4x4 worldViewMatrix              : dynamic,a : ;
 property float3   cameraPosition               : dynamic,a : ;
 #endif
-#if VERTEX_FOG && FOG_ATMOSPHERE
+#if VERTEX_FOG || LANDSCAPE_SPECULAR
+property float4x4 worldViewMatrix              : dynamic,a : ;
+#endif
+#if (VERTEX_FOG && FOG_ATMOSPHERE) || LANDSCAPE_SPECULAR
 property float4   lightPosition0               : dynamic,a : ;
+#endif
+
+#if LANDSCAPE_SPECULAR
+	property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
+	
+	property float inSpecularity               : static,instance : def_value=1.0;
+	property float inGlossiness                : static,instance : def_value=0.5;
+	property float3 metalFresnelReflectance    : static,instance : def_value=0.5,0.5,0.5;
 #endif
 
 #include "vp-fog-props.cgh"
@@ -132,6 +157,17 @@ VPROG_BEGIN
     VP_OUT_POSITION = mul( float4(vx_position.x, vx_position.y, vx_position.z, 1.0), worldViewProjMatrix );
     VP_OUT(texCoord) = float2(relativePosition.x, 1.0 - relativePosition.y);
 	 
+#if LANDSCAPE_SPECULAR
+	float4 tangentBasisSample = VP_TEXTURE2D(tangentSpace, relativePosition + 0.5 / textureSize, 0.0) * 2.0 - 1.0;
+	float3 inNormal;
+	float3 inTangent;
+	inNormal.xy = tangentBasisSample.rg;
+	inNormal.z = sqrt(1.0 - inNormal.x * inNormal.x - inNormal.y * inNormal.y);
+	inTangent.yz = tangentBasisSample.ba;
+	inTangent.x = sqrt(1.0 - inTangent.y * inTangent.y - inTangent.z * inTangent.z);
+	
+#endif
+	
 #else
 	
 	float3 vx_position = VP_IN_POSITION.xyz;
@@ -139,6 +175,45 @@ VPROG_BEGIN
     VP_OUT_POSITION = mul( float4(vx_position.x, vx_position.y, vx_position.z, 1.0), worldViewProjMatrix );
 	VP_OUT(texCoord) = VP_IN_TEXCOORD;
 	
+#if LANDSCAPE_SPECULAR
+	float3 inNormal = VP_IN_NORMAL;
+	float3 inTangent = VP_IN_TANGENT;
+#endif
+	
+#endif
+	
+#if LANDSCAPE_SPECULAR
+
+	float3 n = mul(float4(inNormal, 0.0), worldViewInvTransposeMatrix).xyz;
+	float3 t = mul(float4(inTangent, 0.0), worldViewInvTransposeMatrix).xyz;
+	float3 b = cross(n, t);
+	
+	float3 eyeCoordsPosition = mul( float4(vx_position.x, vx_position.y, vx_position.z, 1.0), worldViewMatrix ).xyz;
+	float3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+	toLightDir = normalize(toLightDir);
+
+	float3 v;
+    v.x = dot (toLightDir, t);
+    v.y = dot (toLightDir, b);
+    v.z = dot (toLightDir, n);
+	
+	VP_OUT(varToLightVec) = normalize(v);
+	
+	float3 toCameraDir = -eyeCoordsPosition;
+    v.x = dot (toCameraDir, t);
+    v.y = dot (toCameraDir, b);
+    v.z = dot (toCameraDir, n);
+	
+	VP_OUT(varToCameraVec) = normalize(v);
+	
+	float3 halfVector = normalize(normalize(toCameraDir) + normalize(toLightDir));
+    v.x = dot (halfVector, t);
+    v.y = dot (halfVector, b);
+    v.z = dot (halfVector, n);
+        
+    // No need to normalize, t,b,n and halfVector are normal vectors.
+    VP_OUT(varHalfVec) = v;
+
 #endif
 	
 #if TILEMASK
