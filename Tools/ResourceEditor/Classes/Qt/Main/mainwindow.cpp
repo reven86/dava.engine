@@ -2928,34 +2928,34 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
                 switch (answer)
                 {
-                    case QMessageBox::YesAll:
-                        needQuestion = false;
-                    case QMessageBox::Yes:
-                    {
-                        // turn off editor
-                        tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                case QMessageBox::YesAll:
+                    needQuestion = false;
+                case QMessageBox::Yes:
+                {
+                    // turn off editor
+                    tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
-                        // save
-                        tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
-                    }
-                    break;
+                    // save
+                    tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
+                }
+                break;
 
-                    case QMessageBox::NoAll:
-                        needQuestion = false;
-                    case QMessageBox::No:
-                    {
-                        // turn off editor
-                        tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-                    }
-                    break;
+                case QMessageBox::NoAll:
+                    needQuestion = false;
+                case QMessageBox::No:
+                {
+                    // turn off editor
+                    tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                }
+                break;
 
-                    case QMessageBox::Cancel:
-                    default:
-                    {
-                        // cancel save process
-                        return false;
-                    }
-                    break;
+                case QMessageBox::Cancel:
+                default:
+                {
+                    // cancel save process
+                    return false;
+                }
+                break;
                 }
             }
 
