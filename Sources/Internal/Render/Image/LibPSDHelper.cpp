@@ -30,8 +30,7 @@
 #include "Render/Image/LibPSDHelper.h"
 #include "Render/Image/Image.h"
 #include "FileSystem/File.h"
-#include "webp/decode.h"
-#include "webp/encode.h"
+#include "libpsd/libpsd.h"
 
 namespace DAVA
 {
@@ -49,8 +48,45 @@ bool LibPSDHelper::CanProcessFile(File* infile) const
 
 eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
 {
-    Logger::Error("[LibPSDHelper::ReadFile] Reading PSD not implemented");
-    return eErrorCode::ERROR_READ_FAIL;
+    auto fileName = infile->GetFilename().GetAbsolutePathname();
+    psd_context* psd = nullptr;
+    auto status = psd_image_load(&psd, const_cast<psd_char*>(fileName.c_str()));
+    if ((psd == nullptr) || (status != psd_status_done))
+    {
+        DAVA::Logger::Error("============================ ERROR ============================");
+        DAVA::Logger::Error("| Unable to load PSD from file (result code = %d):", static_cast<int>(status));
+        DAVA::Logger::Error("| %s", fileName.c_str());
+        DAVA::Logger::Error("| Try to re-save this file by using `Save as...` in Photoshop");
+        DAVA::Logger::Error("===============================================================");
+        return eErrorCode::ERROR_READ_FAIL;
+    }
+
+    SCOPE_EXIT
+    {
+        psd_image_free(psd);
+    };
+
+    imageSet.reserve(psd->layer_count);
+    for (psd_short l = 0; l < psd->layer_count; ++l)
+    {
+        auto& layer = psd->layer_records[l];
+
+        // swap R and B channels
+        DAVA::uint32* p = reinterpret_cast<DAVA::uint32*>(layer.image_data);
+        for (psd_int i = 0, e = layer.width * layer.height; i < e; ++i)
+        {
+            p[i] = (p[i] & 0xff00ff00) | (p[i] & 0x000000ff) << 16 | (p[i] & 0xff0000) >> 16;
+        }
+        ScopedPtr<Image> layerImage(Image::CreateFromData(layer.width, layer.height, DAVA::PixelFormat::FORMAT_RGBA8888,
+                                                          reinterpret_cast<DAVA::uint8*>(layer.image_data)));
+
+        Vector<uint8> emptyData(psd->width * psd->height * PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::PixelFormat::FORMAT_RGBA8888) / 8, 0);
+        Image* resultImage = Image::CreateFromData(psd->width, psd->height, DAVA::PixelFormat::FORMAT_RGBA8888, emptyData.data());
+        resultImage->InsertImage(layerImage, layer.left, layer.top);
+        imageSet.push_back(resultImage);
+    }
+
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibPSDHelper::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
