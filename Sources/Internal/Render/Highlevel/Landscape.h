@@ -123,7 +123,6 @@ public:
 
     bool PlacePoint(const Vector3& point, Vector3& result, Vector3* normal = 0) const;
     bool GetHeightAtPoint(const Vector3& point, float&) const;
-    Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
 
     Heightmap* GetHeightmap();
     virtual void SetHeightmap(Heightmap* height);
@@ -151,6 +150,9 @@ public:
     bool IsUseInstancing() const;
 
 protected:
+    Vector3 GetPoint(uint32 x, uint32 y, uint16 height) const;
+    void GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3& tangentOut) const;
+
     void AllocateGeometryData();
     void ReleaseGeometryData();
 
@@ -354,10 +356,14 @@ protected:
     static Texture* CreateHeightTexture(Heightmap* heightmap, bool useMorphing);
     static Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, bool useMorphing);
 
+    Texture* CreateTangentTexture();
+    Vector<Image*> CreateTangentBasisTextureData();
+
     void DrawLandscapeInstancing();
     void DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& nearLevel, float32 patchMorph = 0.f, const Vector4& nearMorph = Vector4());
 
     Texture* heightTexture = nullptr;
+    Texture* tangentTexture = nullptr;
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;

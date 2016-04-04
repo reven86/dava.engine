@@ -92,6 +92,7 @@ const FastName NMaterialTextureName::TEXTURE_LIGHTMAP("lightmap");
 const FastName NMaterialTextureName::TEXTURE_DECAL("decal");
 const FastName NMaterialTextureName::TEXTURE_CUBEMAP("cubemap");
 const FastName NMaterialTextureName::TEXTURE_HEIGHTMAP("heightmap");
+const FastName NMaterialTextureName::TEXTURE_TANGENTSPACE("tangentSpace");
 const FastName NMaterialTextureName::TEXTURE_DECALMASK("decalmask");
 const FastName NMaterialTextureName::TEXTURE_DECALTEXTURE("decaltexture");
 
@@ -226,6 +227,7 @@ bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
 Vector<FastName> RUNTIME_ONLY_TEXTURES =
 {
   NMaterialTextureName::TEXTURE_HEIGHTMAP,
+  NMaterialTextureName::TEXTURE_TANGENTSPACE,
 };
 
 bool NMaterialTextureName::IsRuntimeTexture(const FastName& texture)

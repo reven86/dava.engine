@@ -201,6 +201,20 @@ void Landscape::ReleaseGeometryData()
         SafeDelete(buffer);
     }
     usedInstanceDataBuffers.clear();
+
+    if (landscapeMaterial)
+    {
+        if (landscapeMaterial->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
+        {
+            landscapeMaterial->RemoveTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP);
+            heightTexture = nullptr;
+        }
+        if (landscapeMaterial->HasLocalTexture(NMaterialTextureName::TEXTURE_TANGENTSPACE))
+        {
+            landscapeMaterial->RemoveTexture(NMaterialTextureName::TEXTURE_TANGENTSPACE);
+            tangentTexture = nullptr;
+        }
+    }
 }
 
 void Landscape::BuildLandscapeFromHeightmapImage(const FilePath& heightmapPathname, const AABBox3& _box)
@@ -400,13 +414,106 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, bool use
     return dataOut;
 }
 
-Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
+Texture* Landscape::CreateTangentTexture()
+{
+    Vector<Image*> textureData = CreateTangentBasisTextureData();
+
+    Texture* tx = Texture::CreateFromData(textureData);
+    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
+
+    for (Image* img : textureData)
+        img->Release();
+
+    return tx;
+}
+
+Vector<Image*> Landscape::CreateTangentBasisTextureData()
+{
+    const uint32 hmSize = heightmap->Size();
+    DVASSERT(IsPowerOf2(heightmap->Size()));
+
+    Vector<Image*> dataOut;
+    {
+        uint32* normalTangntData = new uint32[hmSize * hmSize]; //RGBA8888
+        uint8* normalTangntDataPtr = reinterpret_cast<uint8*>(normalTangntData);
+
+        Vector3 normal, tangent;
+        for (uint32 x = 0; x < hmSize; ++x)
+        {
+            for (uint32 y = 0; y < hmSize; ++y)
+            {
+                GetTangentBasis(x, y, normal, tangent);
+
+                *normalTangntDataPtr++ = uint8(normal.x * 255.f);
+                *normalTangntDataPtr++ = uint8(normal.y * 255.f);
+                *normalTangntDataPtr++ = uint8(tangent.x * 255.f);
+                *normalTangntDataPtr++ = uint8(tangent.y * 255.f);
+            }
+        }
+
+        Image* basisImage = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA8888, reinterpret_cast<uint8*>(normalTangntData));
+        dataOut.push_back(basisImage);
+    }
+
+    return dataOut;
+}
+
+Vector3 Landscape::GetPoint(uint32 x, uint32 y, uint16 height) const
 {
     Vector3 res;
     res.x = (bbox.min.x + x / heightmapSizef * (bbox.max.x - bbox.min.x));
     res.y = (bbox.min.y + y / heightmapSizef * (bbox.max.y - bbox.min.y));
     res.z = (bbox.min.z + height / float32(Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
     return res;
+}
+
+void Landscape::GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3& tangentOut) const
+{
+    DVASSERT(heightmap);
+    const uint32 hmSize = heightmap->Size();
+
+    Vector3 position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
+
+    uint32 xx = Min(x + 1, hmSize);
+    uint32 yy = Min(y + 1, hmSize);
+    Vector3 right = GetPoint(xx, y, heightmap->GetHeight(xx, y));
+    Vector3 bottom = GetPoint(x, yy, heightmap->GetHeight(x, yy));
+
+    xx = (x == 0) ? 0 : x - 1;
+    yy = (y == 0) ? 0 : y - 1;
+    Vector3 left = GetPoint(xx, y, heightmap->GetHeight(xx, y));
+    Vector3 top = GetPoint(x, yy, heightmap->GetHeight(x, yy));
+
+    Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
+    Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
+    Vector3 normal2 = (bottom != position && left != position) ? CrossProduct(bottom - position, left - position) : Vector3(0, 0, 0);
+    Vector3 normal3 = (left != position && top != position) ? CrossProduct(left - position, top - position) : Vector3(0, 0, 0);
+
+    Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
+    normalAverage.Normalize();
+
+    normalOut = normalAverage;
+    tangentOut = Normalize(right - position);
+
+    /*
+     VS: Algorithm
+     // # P.xy store the position for which we want to calculate the normals
+     // # height() here is a function that return the height at a point in the terrain
+     
+     // read neighbor heights using an arbitrary small offset
+     vec3 off = vec3(1.0, 1.0, 0.0);
+     float hL = height(P.xy - off.xz);
+     float hR = height(P.xy + off.xz);
+     float hD = height(P.xy - off.zy);
+     float hU = height(P.xy + off.zy);
+     
+     // deduce terrain normal
+     N.x = hL - hR;
+     N.y = hD - hU;
+     N.z = 2.0;
+     N = normalize(N);
+     */
 }
 
 bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
@@ -835,51 +942,12 @@ int16 Landscape::AllocateParcelVertexBuffer(uint32 quadX, uint32 quadY, uint32 q
             VertexNoInstancing* vertex = reinterpret_cast<VertexNoInstancing*>(&landscapeVertices[index * vertexSize]);
             vertex->position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
 
-            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size()), 1.0f - (float32)(y) / (float32)(heightmap->Size()));
+            Vector2 texCoord = Vector2(x / heightmapSizef, 1.0f - y / heightmapSizef);
             vertex->texCoord = texCoord;
 
             if (isRequireTangentBasis)
             {
-                //VI: calculate normal for the point.
-                uint32 xx = x + 1;
-                uint32 yy = y + 1;
-                Vector3 right = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
-                Vector3 bottom = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
-
-                xx = Min(x, x - 1);
-                yy = Min(y, y - 1);
-                Vector3 left = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
-                Vector3 top = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
-
-                Vector3 position = vertex->position;
-                Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
-                Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
-                Vector3 normal2 = (bottom != position && left != position) ? CrossProduct(bottom - position, left - position) : Vector3(0, 0, 0);
-                Vector3 normal3 = (left != position && top != position) ? CrossProduct(left - position, top - position) : Vector3(0, 0, 0);
-
-                Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
-                normalAverage.Normalize();
-                vertex->normal = normalAverage;
-                vertex->tangent = Normalize(right - position);
-
-                /*
-                VS: Algorithm
-                // # P.xy store the position for which we want to calculate the normals
-                // # height() here is a function that return the height at a point in the terrain
-
-                // read neighbor heights using an arbitrary small offset
-                vec3 off = vec3(1.0, 1.0, 0.0);
-                float hL = height(P.xy - off.xz);
-                float hR = height(P.xy + off.xz);
-                float hD = height(P.xy - off.zy);
-                float hU = height(P.xy + off.zy);
-
-                // deduce terrain normal
-                N.x = hL - hR;
-                N.y = hD - hU;
-                N.z = 2.0;
-                N = normalize(N);
-                */
+                GetTangentBasis(x, y, vertex->normal, vertex->tangent);
             }
 
             index++;
@@ -924,7 +992,6 @@ void Landscape::DrawLandscapeNoInstancing()
 void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2)
 {
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (yy << level) + xx];
 
     int32 dividerPow2 = level - quadsInWidthPow2;
     DVASSERT(dividerPow2 >= 0);
@@ -1063,10 +1130,13 @@ void Landscape::ClearQueue()
 void Landscape::AllocateGeometryDataInstancing()
 {
     heightTexture = CreateHeightTexture(heightmap, useLodMorphing);
-    if (landscapeMaterial->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
-        landscapeMaterial->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
-    else
-        landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
+    landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
+
+    if (isRequireTangentBasis)
+    {
+        tangentTexture = CreateTangentTexture();
+        landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_TANGENTSPACE, tangentTexture);
+    }
 
     /////////////////////////////////////////////////////////////////
 
@@ -1668,20 +1738,30 @@ bool Landscape::IsDrawMorphing() const
 void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 {
     DVASSERT(heightmap->Size() == fromHeightmap->Size());
-    DVASSERT(!isRequireTangentBasis && "TODO: Landscape::UpdatePart() for HIGH Quality");
 
     UpdatePatchInfo(0, 0, 0, rect);
 
     if (useInstancing)
     {
-        Vector<Image*> textureData = CreateHeightTextureData(fromHeightmap, useLodMorphing);
+        Vector<Image*> heightTextureData = CreateHeightTextureData(fromHeightmap, useLodMorphing);
 
-        for (Image* img : textureData)
+        for (Image* img : heightTextureData)
         {
             heightTexture->TexImage(img->mipmapLevel, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
             img->Release();
         }
-        textureData.clear();
+        heightTextureData.clear();
+
+        if (isRequireTangentBasis)
+        {
+            Vector<Image*> tangentTextureData = CreateTangentBasisTextureData();
+            for (Image* img : tangentTextureData)
+            {
+                tangentTexture->TexImage(img->mipmapLevel, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
+                img->Release();
+            }
+            tangentTextureData.clear();
+        }
     }
     else
     {
