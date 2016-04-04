@@ -214,7 +214,7 @@ type_printer* get_type_printer(const DAVA::Type* type)
 
     static std::vector<type_printer> printers = {
         { DAVA::Type::Instance<int>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%d", any.Get<int>()); } },
-        { DAVA::Type::Instance<size_t>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%llu", any.Get<size_t>()); } },
+        { DAVA::Type::Instance<size_t>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%llu", static_cast<uint64_t>(any.Get<size_t>())); } },
         { DAVA::Type::Instance<std::string>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%s", any.Get<std::string>().c_str()); } }
     };
 
