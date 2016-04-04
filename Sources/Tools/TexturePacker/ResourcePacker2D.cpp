@@ -44,6 +44,7 @@
 namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.3";
+const String ResourcePacker2D::INTERNAL_LIBPSD_VERSION = "0.0.1";
 
 enum AssetClientCode : int
 {
@@ -344,6 +345,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     String mergedParams = mergedFlags;
     mergedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
     mergedParams += String("PackerVersion = ") + VERSION;
+    mergedParams += String("LIBPSDVersion = ") + INTERNAL_LIBPSD_VERSION;
     for (const auto& algorithm : packAlgorithms)
     {
         mergedParams += String("PackerAlgorithm = ") + GlobalEnumMap<DAVA::PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));

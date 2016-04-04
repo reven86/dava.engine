@@ -47,6 +47,7 @@ class YamlNode;
 class ResourcePacker2D
 {
     static const String VERSION;
+    static const String INTERNAL_LIBPSD_VERSION;
 
 public:
     void InitFolders(const FilePath& inputPath, const FilePath& outputPath);

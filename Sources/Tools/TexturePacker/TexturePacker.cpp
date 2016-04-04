@@ -305,8 +305,11 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
 
     FilePath defFilePath = outputPath + fileName;
     FILE* fp = fopen(defFilePath.GetAbsolutePathname().c_str(), "wt");
-    if (!fp)
+    if (fp == nullptr)
+    {
+        AddError(Format("Unable to open file for writing: %s", defFilePath.GetAbsolutePathname().c_str()));
         return false;
+    }
 
     String textureExtension = TextureDescriptor::GetDescriptorExtension();
 

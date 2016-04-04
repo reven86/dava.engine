@@ -49,13 +49,13 @@ bool LibPSDHelper::CanProcessFile(File* infile) const
 
 eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
 {
-    Logger::Error("[LibPSDHelper::WriteFileAsCubeMap] Reading PSD not implemented");
+    Logger::Error("[LibPSDHelper::ReadFile] Reading PSD not implemented");
     return eErrorCode::ERROR_READ_FAIL;
 }
 
 eErrorCode LibPSDHelper::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
-    Logger::Error("[LibPSDHelper::WriteFileAsCubeMap] PSD writing is not supported");
+    Logger::Error("[LibPSDHelper::WriteFile] PSD writing is not supported");
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 

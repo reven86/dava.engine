@@ -196,7 +196,7 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         DAVA::Logger::Error("============================ ERROR ============================");
         DAVA::Logger::Error("| Unable to load PSD from file (result code = %d):", static_cast<int>(status));
         DAVA::Logger::Error("| %s", psdName);
-        DAVA::Logger::Error("| Try to use Save as in Photoshop to re-save file");
+        DAVA::Logger::Error("| Try to re-save this file by using `Save as...` in Photoshop");
         DAVA::Logger::Error("===============================================================");
         return false;
     }
@@ -263,10 +263,10 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         frameNames[lIndex] = layerName;
         pathsInfo[lIndex] = useLayerNames || layerName.empty() ? layerName : DAVA::String("frame") + std::to_string(lIndex);
 
-        uint32_t* p = reinterpret_cast<uint32_t*>(layer.image_data);
-        for (int i = 0, e = layer.width * layer.height; i < e; ++i)
+        DAVA::uint32* p = reinterpret_cast<DAVA::uint32*>(layer.image_data);
+        for (psd_int i = 0, e = layer.width * layer.height; i < e; ++i)
         {
-            p[i] = (p[i] & 0x000000ff) << 16 | (p[i] & 0x0000ff00) | (p[i] & 0xff0000) >> 16 | (p[i] & 0xff000000);
+            p[i] = (p[i] & 0xff00ff00) | (p[i] & 0x000000ff) << 16 | (p[i] & 0xff0000) >> 16;
         }
 
         auto data = reinterpret_cast<char*>(layer.image_data);
