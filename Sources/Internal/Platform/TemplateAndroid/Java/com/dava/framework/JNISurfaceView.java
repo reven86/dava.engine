@@ -22,7 +22,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 {
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
 
-	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
+	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
@@ -272,7 +272,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			}
 			else if(allEvents.size() != 0) 
 			{
-				nativeOnInput(action, source, groupSize, allEvents, allEvents);
+				nativeOnInput(action, source, groupSize, allEvents);
 			}
 		}
     }
@@ -318,23 +318,33 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS || event.isSystem()) // Ignore too big Android keycodes
+    	if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
     	{
     		return super.onKeyDown(keyCode, event);
     	}
     	
     	queueEvent(new KeyInputRunnable(keyCode, true));
+    	
+    	if (event.isSystem())
+    	{
+    		return super.onKeyDown(keyCode, event);	
+    	}
     	return true;
     }
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS || event.isSystem()) // Ignore too big keycodes
+    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
     	{
     		return super.onKeyUp(keyCode, event);
     	}
     	
     	queueEvent(new KeyInputRunnable(keyCode, false));
+    	
+    	if (event.isSystem())
+    	{
+    		return super.onKeyUp(keyCode, event);	
+    	}
     	return true;
     }
     
