@@ -48,54 +48,19 @@ class SceneTree
 
 public:
     explicit SceneTree(QWidget* parent = 0);
-    ~SceneTree() = default;
 
-public slots:
+protected:
+    void dropEvent(QDropEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+
+private slots:
     void ShowContextMenu(const QPoint& pos);
     void SetFilter(const QString& filter);
 
-    void LookAtSelection();
-    void RemoveSelection();
-
     void CollapseSwitch();
-
-    void SetEntityNameAsFilter();
-
-    // Particle Emitter handlers.
-    void AddEmitter();
-    void SaveEffectEmitters();
-    void SaveEffectEmittersAs();
-    void StartEffect();
-    void StopEffect();
-    void RestartEffect();
-
-    void AddLayer();
-    void RemoveEmitter();
-    void LoadEmitterFromYaml();
-    void SaveEmitterToYaml();
-    void SaveEmitterToYamlAs();
-
-    void LoadInnerEmitterFromYaml();
-    void SaveInnerEmitterToYaml();
-    void SaveInnerEmitterToYamlAs();
-    void PerformSaveInnerEmitter(bool forceAskFileName);
-
-    void CloneLayer();
-    void RemoveLayer();
-    void AddForce();
-    void RemoveForce();
-
-    void EditModel();
-    void ReloadModel();
-    void ReloadModelAs();
-    void SaveEntityAs();
-
     void CollapseAll();
 
-    void SetCurrentCamera();
-    void SetCustomDrawCamera();
-
-private slots:
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
@@ -114,30 +79,6 @@ private slots:
     void SyncSelectionFromTree();
 
 private:
-    void ShowContextMenuEntity(DAVA::Entity* entity, int entityCustomFlags, const QPoint& pos);
-
-    void ShowContextMenuEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, const QPoint& pos);
-    void ShowContextMenuLayer(DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, const QPoint& pos);
-    void ShowContextMenuForce(DAVA::ParticleLayer* layer, DAVA::ParticleForce* force, const QPoint& pos);
-    void ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* parentLayer, const QPoint& pos);
-    // Helpers for Particles.
-    // Get the default path to Particles Config.
-    QString GetParticlesConfigPath();
-
-    // Perform save for selected Emitters.
-    void PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName);
-
-    void PerformSaveEffectEmitters(bool forceAskFileName);
-
-    // Cleanup the selected Particle Editor items.
-    void CleanupParticleEditorSelectedItems();
-
-    void AddCameraActions(QMenu& menu);
-
-    void dropEvent(QDropEvent* event);
-    void dragMoveEvent(QDragMoveEvent* event);
-    void dragEnterEvent(QDragEnterEvent* event);
-
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
 
     void EmitParticleSignals(const QItemSelection& selected);
@@ -149,10 +90,12 @@ private:
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
-    ParticleEffectComponent* selectedEffect;
-    ParticleEmitter* selectedEmitter;
-    ParticleLayer* selectedLayer;
-    ParticleForce* selectedForce;
+    class BaseContextMenu;
+    class EntityContextMenu;
+    class ParticleLayerContextMenu;
+    class ParticleForceContextMenu;
+    class ParticleEmitterContextMenu;
+    class ParticleInnerEmitterContextMenu;
 
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;

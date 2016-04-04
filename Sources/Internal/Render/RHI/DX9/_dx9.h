@@ -61,4 +61,6 @@ extern IDirect3DSurface9* _D3D9_DepthBuf;
 extern InitParam _DX9_InitParam;
 extern D3DPRESENT_PARAMETERS _DX9_PresentParam;
 
+extern bool _DX9_ResetPending;
+
 } // namespace rhi

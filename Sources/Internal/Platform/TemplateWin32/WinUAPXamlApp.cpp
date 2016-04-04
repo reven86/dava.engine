@@ -46,6 +46,7 @@
 
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
 
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
@@ -369,6 +370,8 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 void WinUAPXamlApp::OnSuspending(::Platform::Object ^ sender, Windows::ApplicationModel::SuspendingEventArgs ^ args)
 {
     core->RunOnMainThreadBlocked([]() {
+        // unpress all pressed keys
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         Core::Instance()->GetApplicationCore()->OnSuspend();
         rhi::SuspendRendering();
     });
