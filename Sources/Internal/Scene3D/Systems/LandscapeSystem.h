@@ -49,6 +49,8 @@ public:
     void RemoveEntity(Entity* entity) override;
     void Process(float32 timeElapsed) override;
 
+    Vector<Landscape*> GetLandscapeObjects();
+
 protected:
     void DrawPatchMetrics(Landscape* landscape, uint32 subdivLevel, uint32 x, uint32 y);
 

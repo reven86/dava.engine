@@ -104,6 +104,14 @@ void LandscapeSystem::Process(float32 timeElapsed)
     }
 }
 
+Vector<Landscape*> LandscapeSystem::GetLandscapeObjects()
+{
+    Vector<Landscape*> landscapes(landscapeEntities.size());
+    std::transform(landscapeEntities.begin(), landscapeEntities.end(), landscapes.begin(), [](Entity* e) { return GetLandscape(e); });
+
+    return landscapes;
+}
+
 void LandscapeSystem::DrawPatchMetrics(Landscape* landscape, uint32 level, uint32 x, uint32 y)
 {
     Landscape::SubdivisionLevelInfo& levelInfo = landscape->subdivLevelInfoArray[level];

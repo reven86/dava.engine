@@ -371,7 +371,7 @@ struct PackRGBA4444
 {
     inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint16* output)
     {
-        *output = (a << 12) | (r << 8) | (g << 4) | b;
+        *output = ((b >> 4) << 12) | ((g >> 4) << 8) | ((r >> 4) << 4) | (a >> 4);
     }
 };
 
@@ -776,11 +776,6 @@ public:
         else if ((inFormat == FORMAT_RGBA4444) && (outFormat == FORMAT_RGBA8888))
         {
             ConvertDownscaleTwiceBillinear<uint16, uint32, UnpackRGBA4444, PackRGBA8888> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_RGBA4444) && (outFormat == FORMAT_RGBA4444))
-        {
-            ConvertDownscaleTwiceBillinear<uint16, uint16, UnpackRGBA4444, PackRGBA4444> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else if ((inFormat == FORMAT_A8) && (outFormat == FORMAT_A8))

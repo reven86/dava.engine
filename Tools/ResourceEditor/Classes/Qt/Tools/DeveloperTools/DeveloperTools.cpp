@@ -37,6 +37,7 @@
 #include "QtTools/SpyWidget/SpySearch/SpySearch.h"
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
 
 #include <QInputDialog>
 
@@ -221,15 +222,9 @@ void DeveloperTools::OnToggleLandscapeInstancing()
 {
     SceneEditor2* currentScene = QtMainWindow::Instance()->GetCurrentScene();
 
-    Landscape* landscapeObject = nullptr;
-    Vector<Entity*> children;
-    currentScene->GetChildEntitiesWithComponent(children, DAVA::Component::RENDER_COMPONENT);
-    for (Entity* e : children)
+    for (Landscape* l : currentScene->landscapeSystem->GetLandscapeObjects())
     {
-        landscapeObject = GetLandscape(e);
-        if (landscapeObject)
-        {
-            landscapeObject->SetUseInstancing(!landscapeObject->IsUseInstancing());
-        }
+        l->SetUseInstancing(!l->IsUseInstancing());
+        Logger::FrameworkDebug("Landscape uses instancing: %s", l->IsUseInstancing() ? "true" : "false");
     }
 }

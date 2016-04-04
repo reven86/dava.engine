@@ -1702,8 +1702,6 @@ void Landscape::SetUseInstancing(bool isUse)
         landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_INSTANCING) ? 1 : 0);
         landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, 0);
         RebuildLandscape();
-
-        Logger::FrameworkDebug("Landscape uses instancing: %s", (renderMode == RENDERMODE_INSTANCING) ? "true" : "false");
     }
 }
 
@@ -1719,6 +1717,7 @@ void Landscape::SetUseMorphing(bool useMorph)
     if (renderMode != newRenderMode)
     {
         renderMode = newRenderMode;
+        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, 1);
         landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
         RebuildLandscape();
     }
