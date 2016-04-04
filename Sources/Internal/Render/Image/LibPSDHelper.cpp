@@ -41,7 +41,7 @@ LibPSDHelper::LibPSDHelper()
 {
     name.assign("PSD");
     supportedExtensions.emplace_back(".psd");
-    supportedFormats = { { FORMAT_RGBA8888 } };
+    supportedFormats = { FORMAT_RGBA8888 };
 }
 
 bool LibPSDHelper::CanProcessFile(File* infile) const
