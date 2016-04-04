@@ -283,8 +283,8 @@ void Landscape::AllocateGeometryData()
     }
 
     uint32 heightmapSize = heightmap->Size();
-    uint32 maxLevels = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
-    subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
+    subdivLevelCount = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
+    subdivLevelInfoArray.resize(subdivLevelCount);
     minSubdivLevelSize = (renderMode == RENDERMODE_NO_INSTANCING) ? heightmapSize / RENDER_PARCEL_SIZE_QUADS : 0;
     heightmapSizePow2 = uint32(HighestBitIndex(heightmapSize));
     heightmapSizef = float32(heightmapSize);

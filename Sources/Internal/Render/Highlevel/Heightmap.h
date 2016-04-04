@@ -53,27 +53,27 @@ public:
     virtual void Save(const FilePath& filePathname);
     virtual bool Load(const FilePath& filePathname);
 
-    inline uint16 GetHeight(uint16 x, uint16 y) const;
-    inline uint16 GetHeightClamp(uint16 x, uint16 y) const;
+    uint16 GetHeight(uint16 x, uint16 y) const;
+    uint16 GetHeightClamp(uint16 x, uint16 y) const;
 
-    inline int32 Size() const;
-    inline uint16* Data();
+    int32 Size() const;
+    uint16* Data();
 
-    inline int32 GetTileSize() const;
-    inline void SetTileSize(int32 newSize);
+    int32 GetTileSize() const;
+    void SetTileSize(int32 newSize);
 
     Heightmap* Clone(Heightmap* clonedHeightmap);
 
-    inline static const String& FileExtension();
+    static const String& FileExtension();
 
 protected:
-    bool ReallocateData(int32 newSize);
+    void ReallocateData(int32 newSize);
 
     DAVA_DEPRECATED(void LoadNotPow2(File* file, int32 readMapSize, int32 readTileSize));
 
     uint16* data = nullptr;
     int32 size = 0;
-    int32 tileSize = 0;
+    int32 tileSize = 16;
 
     static String FILE_EXTENSION;
 

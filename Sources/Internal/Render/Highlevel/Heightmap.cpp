@@ -44,9 +44,6 @@ Heightmap::Heightmap(int32 size)
     {
         ReallocateData(size);
     }
-
-    //TODO: remove it. Used only for test
-    SetTileSize(17);
 }
 
 Heightmap::~Heightmap()
@@ -115,19 +112,15 @@ void Heightmap::SaveToImage(const FilePath& filename)
     SafeRelease(image);
 }
 
-bool Heightmap::ReallocateData(int32 newSize)
+void Heightmap::ReallocateData(int32 newSize)
 {
-    if (size == newSize)
+    if (size != newSize)
     {
-        return (size != 0);
+        SafeDeleteArray(data);
+
+        size = newSize;
+        data = new uint16[size * size];
     }
-
-    SafeDeleteArray(data);
-
-    size = newSize;
-    data = new uint16[size * size];
-
-    return (nullptr != data);
 }
 
 void Heightmap::Save(const FilePath& filePathname)
@@ -259,15 +252,13 @@ void Heightmap::LoadNotPow2(File* file, int32 readMapSize, int32 readTileSize)
 Heightmap* Heightmap::Clone(DAVA::Heightmap* clonedHeightmap)
 {
     Heightmap* createdHeightmap = (clonedHeightmap == nullptr) ? new Heightmap() : clonedHeightmap;
-
-    if (!createdHeightmap->ReallocateData(size))
+    if (size)
     {
-        SafeRelease(createdHeightmap);
-        return nullptr;
-    }
+        createdHeightmap->ReallocateData(size);
 
-    memmove(createdHeightmap->data, data, size * size * sizeof(uint16));
-    createdHeightmap->SetTileSize(tileSize); // TODO: is it true?
+        memcpy(createdHeightmap->data, data, size * size * sizeof(uint16));
+        createdHeightmap->SetTileSize(tileSize); // TODO: is it true?
+    }
 
     return createdHeightmap;
 }

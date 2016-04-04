@@ -64,7 +64,6 @@ public:
 
     static const int32 PATCH_SIZE_VERTICES = 9;
     static const int32 PATCH_SIZE_QUADS = (PATCH_SIZE_VERTICES - 1);
-    static const int32 MAX_LANDSCAPE_SUBDIV_LEVELS = 9;
 
     static const int32 RENDER_PARCEL_SIZE_VERTICES = 129;
     static const int32 RENDER_PARCEL_SIZE_QUADS = (RENDER_PARCEL_SIZE_VERTICES - 1);
@@ -258,7 +257,7 @@ protected:
     uint32 subdivLevelCount = 0;
     uint32 subdivPatchCount = 0;
 
-    SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
+    Vector<SubdivisionLevelInfo> subdivLevelInfoArray;
     Vector<PatchQuadInfo> patchQuadArray;
     Vector<SubdivisionPatchInfo> subdivPatchArray;
     uint32 subdivPatchesDrawCount = 0;
