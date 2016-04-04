@@ -53,7 +53,6 @@ protected:
     DAVA::RenderObject* renderObject;
     DAVA::RenderBatch* renderBatch;
 
-    DAVA::uint32 renderBatchIndex;
     DAVA::int32 lodIndex;
     DAVA::int32 switchIndex;
 };
