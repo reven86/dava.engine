@@ -1129,7 +1129,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
     RenderObject::BindDynamicParameters(camera);
 
     if (heightmap)
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_TEXTURE_SIZE, &heightmapSizef, pointer_size(&heightmapSizef));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LANDSCAPE_HEIGHTMAP_TEXTURE_SIZE, &heightmapSizef, pointer_size(&heightmapSizef));
 }
 
 void Landscape::PrepareToRender(Camera* camera)

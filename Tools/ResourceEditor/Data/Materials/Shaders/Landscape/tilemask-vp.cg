@@ -65,7 +65,7 @@ property float4x4 worldViewProjMatrix          : dynamic,a : ;
 
 #if LANDSCAPE_USE_INSTANCING
 	property float3 boundingBoxSize 		   : dynamic,a : ;
-    property float textureSize                 : dynamic,a : ;
+    property float heightmapTextureSize        : dynamic,a : ;
 	
 #if LANDSCAPE_SPECULAR
 	DECL_VP_SAMPLER2D(tangentSpace)	
@@ -147,7 +147,7 @@ VPROG_BEGIN
 
 #else
 	
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + 0.5 / textureSize, 0.0);
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + 0.5 / heightmapTextureSize, 0.0);
 	float height = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
 	
 #endif
@@ -158,7 +158,7 @@ VPROG_BEGIN
     VP_OUT(texCoord) = float2(relativePosition.x, 1.0 - relativePosition.y);
 	 
 #if LANDSCAPE_SPECULAR
-	float4 tangentBasisSample = VP_TEXTURE2D(tangentSpace, relativePosition + 0.5 / textureSize, 0.0) * 2.0 - 1.0;
+	float4 tangentBasisSample = VP_TEXTURE2D(tangentSpace, relativePosition + 0.5 / heightmapTextureSize, 0.0) * 2.0 - 1.0;
 	float3 inNormal;
 	float3 inTangent;
 	inNormal.xy = tangentBasisSample.rg;
