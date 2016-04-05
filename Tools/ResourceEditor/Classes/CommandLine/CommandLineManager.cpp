@@ -36,6 +36,7 @@
 #include "CommandLine/Dump/DumpTool.h"
 #include "CommandLine/Beast/BeastCommandLineTool.h"
 #include "CommandLine/TextureDescriptor/TextureDescriptorTool.h"
+#include "CommandLine/Version/VersionTool.h"
 
 #include "Main/QtUtils.h"
 
@@ -59,6 +60,7 @@ void CommandLineManager::CreateTools()
 #if defined(__DAVAENGINE_BEAST__)
     commandLineTools.emplace_back(new BeastCommandLineTool());
 #endif //#if defined (__DAVAENGINE_BEAST__)
+    commandLineTools.emplace_back(new VersionTool());
 }
 
 void CommandLineManager::ParseCommandLine(int argc, char* argv[])
