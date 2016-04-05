@@ -87,6 +87,22 @@ DAVA_TESTCLASS (SmartDlcTest)
             TEST_VERIFY(packState.name == packName);
             TEST_VERIFY(packState.priority == 0.5f);
             TEST_VERIFY(packState.state == SmartDlc::PackState::NotRequested);
+
+            sdlc.DisableProcessing();
+
+            const SmartDlc::PackState& requestedState = sdlc.RequestPack(packName);
+
+            TEST_VERIFY(requestedState.state == SmartDlc::PackState::Queued);
+
+            auto& nextState = sdlc.RequestPack(packName, 0.1f);
+            TEST_VERIFY(nextState.state == SmartDlc::PackState::Downloading);
+
+            while (nextState.state == SmartDlc::PackState::Downloading)
+            {
+                // wait
+            }
+
+            sdlc.EnableProcessing();
         }
         catch (std::exception& ex)
         {
