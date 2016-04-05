@@ -529,12 +529,17 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 #if defined(__DAVAENGINE_RENDERSTATS__)
     ++Renderer::GetRenderStats().batches2d;
 #endif
-
-    if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES) || (batchDesc.texCoordCount != currentTexcoordStreamCount))
+    uint32 trimmedTexCoordCount = Max(batchDesc.texCoordCount, 1u); //for zero texCoordCount count we just use 1 empty texcoord stream for batching optimization
+    if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES) || (trimmedTexCoordCount != currentTexcoordStreamCount))
     {
-        // Buffer overflow. Switch to next VBO.
+        // Buffer overflow or format changed. Switch to next VBO.
         Flush();
-        currentTexcoordStreamCount = batchDesc.texCoordCount;
+        currentTexcoordStreamCount = trimmedTexCoordCount;
+
+        //prevent falling if still set to zero
+        if (currentTexcoordStreamCount == 0)
+            currentTexcoordStreamCount = 1;
+
         // TODO: Make draw for big buffers (bigger than buffers in pool)
         // Draw immediately if batch is too big to buffer
         if (batchDesc.vertexCount > MAX_VERTICES || batchDesc.indexCount > MAX_INDECES)
@@ -611,7 +616,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     // Prepare texture coordinates ptr (batchDesc.texCoordPointer or zero vector)
     const float32* texPtr = batchDesc.texCoordPointer[0];
     uint32 texStride = batchDesc.texCoordStride;
-    if (texPtr == nullptr)
+    if ((texPtr == nullptr) || (batchDesc.texCoordCount == 0)) //for zero texCoordCount count we just use 1 empty texcoord stream for batching optimization
     {
         static float32 TEX_ZERO[2] = { 0.f, 0.f };
         texPtr = TEX_ZERO;
