@@ -662,6 +662,10 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             {
                 uiTextField->SetFocused();
             }
+            if (!uiTextField->IsEditing())
+            {
+                uiTextField->StartEdit();
+            }
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
             // If keyboard rect is not empty so manually notify delegate about keyboard size and position
