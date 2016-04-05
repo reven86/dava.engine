@@ -100,7 +100,7 @@ public:
     void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
     void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
     void UnfocusUIElement();
-    bool CaptureTextBox(Windows::UI::Xaml::Controls::Control^ text);
+    void CaptureTextBox(Windows::UI::Xaml::Controls::Control^ text);
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;

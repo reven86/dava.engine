@@ -293,14 +293,12 @@ void WinUAPXamlApp::UnfocusUIElement()
     controlThatTakesFocus->Focus(FocusState::Pointer);
 }
 
-bool WinUAPXamlApp::CaptureTextBox(Windows::UI::Xaml::Controls::Control ^ control)
+void WinUAPXamlApp::CaptureTextBox(Windows::UI::Xaml::Controls::Control ^ control)
 {
     if (pressedEventArgs && control->CapturePointer(pressedEventArgs->Pointer))
     {
         OnSwapChainPanelPointerReleased(this, pressedEventArgs); // send pointer release event because we will'not receive this event after capturing
     }
-
-    return true;
 }
 
 void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
