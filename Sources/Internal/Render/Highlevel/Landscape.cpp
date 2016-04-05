@@ -718,6 +718,25 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
 
     ////////////////////////////////////////////////////////////////////////////////////
 
+    //Metrics errors we calculate as projection on screen
+    //
+    //                     /              |
+    //                  /                 ^ - error in world-space
+    //               /                    |
+    //            /                       |
+    //         /|                         |
+    //      /   ^ - error in screen-space |
+    //   /      |                         |
+    //  0---------------------------------D-------- frustum axis
+    //          ^                         ^
+    //      near plane            error position plane
+    // plane size 1.0 a-priory   plane size let it be 'H'
+    //
+    // H = D * tg(fov/2), were D - is distance to error position
+    // To find error size on near plane we need just error size divide by 'H'
+    // So, screen space error = error / (D * tg(fov/2))
+    // tg(fov/2) calculating one per-frame, see 'tanFovY' in PrepareToRender()
+
     float32 distance = Distance(cameraPos, patch->positionOfMaxError);
     float32 heightError = Abs(patch->maxError) / (distance * tanFovY);
 
@@ -1370,6 +1389,7 @@ void Landscape::PrepareToRender(Camera* camera)
         maxAbsoluteHeightError = zoomMaxAbsoluteHeightError + (normalMaxAbsoluteHeightError - zoomMaxAbsoluteHeightError) * fovLerp;
 
         tanFovY = tanf(camera->GetFOV() * PI / 360.f) / camera->GetAspect();
+        //used for calculate metrics projection on screen. Projection calculate as '1.0 / (distance * tan(fov / 2))'. See errors calculation in SubdividePatch()
 
         subdivPatchesDrawCount = 0;
         SubdividePatch(0, 0, 0, 0x3f, maxHeightError, maxPatchRadiusError);
