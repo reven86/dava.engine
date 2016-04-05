@@ -100,14 +100,17 @@ Landscape::Landscape()
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
 #if defined(__DAVAENGINE_ANDROID__)
-    String version = DeviceInfo::GetVersion();
-    const char* dotChar = strchr(version.c_str(), '.');
-    int32 majorVersion = (dotChar && dotChar != version.c_str()) ? atoi(dotChar - 1) : 0;
+    if (renderMode == RENDERMODE_INSTANCING_MORPHING)
+    {
+        String version = DeviceInfo::GetVersion();
+        const char* dotChar = strchr(version.c_str(), '.');
+        int32 majorVersion = (dotChar && dotChar != version.c_str()) ? atoi(dotChar - 1) : 0;
 
-    bool maliT600series = strstr(rhi::DeviceCaps().deviceDescription, "Mali-T6") != nullptr;
+        bool maliT600series = strstr(rhi::DeviceCaps().deviceDescription, "Mali-T6") != nullptr;
 
-    //Workaround for some mali drivers (Android 4.x + T6xx gpu): it does not support fetch from texture mips in vertex program
-    useLodMorphing &= (majorVersion != 4) || !maliT600series;
+        //Workaround for some mali drivers (Android 4.x + T6xx gpu): it does not support fetch from texture mips in vertex program
+        renderMode = (majorVersion == 4 && maliT600series) ? RENDERMODE_INSTANCING : RENDERMODE_INSTANCING_MORPHING;
+    }
 #endif
 
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
