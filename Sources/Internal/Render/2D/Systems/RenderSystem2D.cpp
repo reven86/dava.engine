@@ -51,6 +51,7 @@ const float32 SEGMENT_LENGTH = 15.0f;
 
 const FastName RenderSystem2D::RENDER_PASS_NAME("2d");
 const FastName RenderSystem2D::FLAG_COLOR_OP("COLOR_OP");
+const FastName RenderSystem2D::FLAG_GRADIENT_MODE = FastName("GRADIENT_MODE");
 
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
@@ -104,21 +105,27 @@ void RenderSystem2D::Init()
     {
         DEFAULT_COMPOSIT_MATERIAL[i] = new NMaterial();
         DEFAULT_COMPOSIT_MATERIAL[i]->SetFXName(FastName("~res:/Materials/2d.Composit.material"));
-        DEFAULT_COMPOSIT_MATERIAL[i]->AddFlag(NMaterialFlagName::FLAG_GRADIENT_MODE, i);
+        DEFAULT_COMPOSIT_MATERIAL[i]->AddFlag(FLAG_GRADIENT_MODE, i);
         DEFAULT_COMPOSIT_MATERIAL[i]->PreBuildMaterial(RENDER_PASS_NAME);
     }
+
+    rhi::VertexLayout noTextureLayout;
+    noTextureLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    noTextureLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
+    vertexLayouts2d[0] = rhi::VertexLayout::UniqueId(noTextureLayout);
+    VBO_STRIDE[0] = 3 * sizeof(float32) + 4;
 
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
     layout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
-    vertexLayouts2d[0] = rhi::VertexLayout::UniqueId(layout);
-    VBO_STRIDE[0] = 3 * sizeof(float32) + 2 * sizeof(float32) + 4; //position, uv, color
-    for (uint32 i = 1; i < MAX_TEXTURE_STREAMS_COUNT; ++i)
+    vertexLayouts2d[1] = rhi::VertexLayout::UniqueId(layout);
+    VBO_STRIDE[1] = 3 * sizeof(float32) + 2 * sizeof(float32) + 4; //position, uv, color
+    for (uint32 i = 2; i <= MAX_TEXTURE_STREAMS_COUNT; ++i)
     {
-        layout.AddElement(rhi::VS_TEXCOORD, i, rhi::VDT_FLOAT, 2);
+        layout.AddElement(rhi::VS_TEXCOORD, i - 1, rhi::VDT_FLOAT, 2);
         vertexLayouts2d[i] = rhi::VertexLayout::UniqueId(layout);
-        VBO_STRIDE[i] = 3 * sizeof(float32) + 2 * sizeof(float32) * (i + 1) + 4;
+        VBO_STRIDE[i] = 3 * sizeof(float32) + 2 * sizeof(float32) * i + 4;
     }
 
     currentVertexBuffer = nullptr;
@@ -127,7 +134,7 @@ void RenderSystem2D::Init()
     currentPacket.primitiveCount = 0;
     currentPacket.vertexStreamCount = 1;
     currentPacket.options = 0;
-    currentPacket.vertexLayoutUID = vertexLayouts2d[0];
+    currentPacket.vertexLayoutUID = vertexLayouts2d[1];
 
     vertexIndex = 0;
     indexIndex = 0;
@@ -554,7 +561,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             DVASSERT(currentVertexBuffer == nullptr && currentIndexBuffer == nullptr);
             if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
             {
-                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount - 1], batchDesc.vertexCount);
+                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount], batchDesc.vertexCount);
                 DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(batchDesc.indexCount);
                 DVASSERT(vertexBuffer.allocatedVertices == batchDesc.vertexCount);
                 DVASSERT(indexBuffer.allocatedindices == batchDesc.indexCount);
@@ -566,7 +573,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
                 currentPacket.vertexCount = vertexBuffer.allocatedVertices;
                 currentPacket.baseVertex = vertexBuffer.baseVertex;
                 currentPacket.indexBuffer = indexBuffer.buffer;
-                currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount - 1];
+                currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount];
                 currentIndexBase = indexBuffer.baseIndex;
             }
             // End create vertex and index buffers
@@ -576,7 +583,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     // Begin create vertex and index buffers
     if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
     {
-        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount - 1], MAX_VERTICES);
+        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount], MAX_VERTICES);
         DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(MAX_INDECES);
         DVASSERT(vertexBuffer.allocatedVertices == MAX_VERTICES);
         DVASSERT(indexBuffer.allocatedindices == MAX_INDECES);
@@ -588,7 +595,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentPacket.vertexCount = vertexBuffer.allocatedVertices;
         currentPacket.baseVertex = vertexBuffer.baseVertex;
         currentPacket.indexBuffer = indexBuffer.buffer;
-        currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount - 1];
+        currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount];
         currentIndexBase = indexBuffer.baseIndex;
     }
     // End create vertex and index buffers
@@ -633,10 +640,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         Vector2 uv_ext[MAX_TEXTURE_STREAMS_COUNT - 1];
     };
 
-    uint32 ii = indexIndex;
     for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount - 1] * (vertexIndex + i));
+        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount] * (vertexIndex + i));
         v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
         v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
         //TODO: rethink do we still require z in rhi?
@@ -651,12 +657,13 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
         {
             DVASSERT(batchDesc.texCoordPointer[texStream] != nullptr);
-            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount - 1] * (vertexIndex + i));
+            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount] * (vertexIndex + i));
             v.uv_ext[texStream - 1].x = batchDesc.texCoordPointer[texStream][i * 2];
             v.uv_ext[texStream - 1].y = batchDesc.texCoordPointer[texStream][i * 2 + 1];
         }
     }
 
+    uint32 ii = indexIndex;
     for (uint32 i = 0; i < batchDesc.indexCount; ++i)
     {
         currentIndexBuffer[ii++] = vertexIndex + batchDesc.indexPointer[i];

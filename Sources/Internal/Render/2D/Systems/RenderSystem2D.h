@@ -182,6 +182,7 @@ public:
 
     static const FastName RENDER_PASS_NAME;
     static const FastName FLAG_COLOR_OP;
+    static const FastName FLAG_GRADIENT_MODE;
 
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
@@ -403,8 +404,8 @@ private:
     bool lastUsedCustomWorldMatrix = false;
     uint32 lastCustomMatrixSematic = 0;
 
-    uint32 VBO_STRIDE[MAX_TEXTURE_STREAMS_COUNT];
-    uint32 vertexLayouts2d[MAX_TEXTURE_STREAMS_COUNT];
+    uint32 VBO_STRIDE[MAX_TEXTURE_STREAMS_COUNT + 1];
+    uint32 vertexLayouts2d[MAX_TEXTURE_STREAMS_COUNT + 1];
 
     // Batching errors handling
     enum ErrorFlag
