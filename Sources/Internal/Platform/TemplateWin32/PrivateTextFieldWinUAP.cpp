@@ -680,6 +680,20 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
+    if (uiTextField != nullptr && UIControlSystem::Instance()->GetFocusedControl() == uiTextField && uiTextField->IsEditing() && 
+        uiTextField->GetStopEditPolicy() == UITextField::STOP_EDIT_WHEN_FOCUS_LOST) // don't lose system focus if ui wants to stay in focus
+    {
+        if (nativeText != nullptr)
+        {
+            nativeText->Focus(FocusState::Programmatic);
+        }
+        else if (nativePassword != nullptr)
+        {
+            nativePassword->Focus(FocusState::Programmatic);
+        }
+        return;
+    }
+
     if (!IsMultiline())
     {
         waitRenderToTextureComplete = true;
