@@ -56,6 +56,8 @@ public:
     uint16 GetHeight(uint16 x, uint16 y) const;
     uint16 GetHeightClamp(uint16 x, uint16 y) const;
 
+    Vector3 GetPoint(uint16 x, uint16 y, const AABBox3& bbox) const;
+
     int32 Size() const;
     uint16* Data();
 
@@ -93,6 +95,15 @@ inline uint16 Heightmap::GetHeight(uint16 x, uint16 y) const
 {
     DVASSERT(x < size && y < size);
     return data[x + y * size];
+}
+
+inline Vector3 Heightmap::GetPoint(uint16 x, uint16 y, const AABBox3& bbox) const
+{
+    Vector3 res;
+    res.x = (bbox.min.x + x / float32(size) * (bbox.max.x - bbox.min.x));
+    res.y = (bbox.min.y + y / float32(size) * (bbox.max.y - bbox.min.y));
+    res.z = (bbox.min.z + GetHeightClamp(x, y) / float32(Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
+    return res;
 }
 
 inline uint16* Heightmap::Data()

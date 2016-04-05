@@ -75,6 +75,9 @@ const FastName Landscape::LANDSCAPE_QUALITY_VALUE_HIGH("HIGH");
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
 const uint32 LANDSCAPE_MATERIAL_SORTING_KEY = 10;
 
+static const uint32 PATCH_SIZE_VERTICES = 9;
+static const uint32 PATCH_SIZE_QUADS = (PATCH_SIZE_VERTICES - 1);
+
 Landscape::Landscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -82,18 +85,7 @@ Landscape::Landscape()
     type = TYPE_LANDSCAPE;
 
     heightmap = new Heightmap();
-    frustum = new Frustum();
-
-    normalFov = 70.f;
-    zoomFov = 6.5f;
-
-    normalMaxHeightError = 0.02f;
-    normalMaxPatchRadiusError = 0.8f;
-    normalMaxAbsoluteHeightError = 3.f;
-
-    zoomMaxHeightError = 0.04f;
-    zoomMaxPatchRadiusError = 1.6f;
-    zoomMaxAbsoluteHeightError = 3.f;
+    subdivision = new LandscapeSubdivision();
 
     renderMode = (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_NO_INSTANCING;
 
@@ -125,7 +117,7 @@ Landscape::~Landscape()
     ReleaseGeometryData();
 
     SafeRelease(heightmap);
-    SafeRelease(frustum);
+    SafeDelete(subdivision);
 
     SafeRelease(landscapeMaterial);
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
@@ -163,12 +155,6 @@ void Landscape::ReleaseGeometryData()
     for (auto& restoreData : bufferRestoreData)
         SafeDeleteArray(restoreData.data);
     bufferRestoreData.clear();
-
-    subdivPatchArray.clear();
-    patchQuadArray.clear();
-
-    subdivLevelCount = 0;
-    subdivPatchCount = 0;
 
     ////Non-instanced data
     for (rhi::HVertexBuffer handle : vertexBuffers)
@@ -286,31 +272,17 @@ void Landscape::AllocateGeometryData()
 
     if (!heightmap->Size())
     {
-        subdivLevelCount = 0;
         return;
     }
 
     uint32 heightmapSize = heightmap->Size();
-    subdivLevelCount = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
-    subdivLevelInfoArray.resize(subdivLevelCount);
-    minSubdivLevelSize = (renderMode == RENDERMODE_NO_INSTANCING) ? heightmapSize / RENDER_PARCEL_SIZE_QUADS : 0;
+    uint32 minSubdivLevelSize = (renderMode == RENDERMODE_NO_INSTANCING) ? heightmapSize / RENDER_PARCEL_SIZE_QUADS : 0;
+    uint32 minSubdivLevel = uint32(HighestBitIndex(minSubdivLevelSize));
+
     heightmapSizePow2 = uint32(HighestBitIndex(heightmapSize));
     heightmapSizef = float32(heightmapSize);
-    hmSizeParamSemantic++;
-    hmSizeParamSemantic &= 0xf;
 
-    subdivPatchCount = 0;
-    uint32 size = 1;
-    for (uint32 k = 0; k < subdivLevelCount; ++k)
-    {
-        subdivLevelInfoArray[k].offset = subdivPatchCount;
-        subdivLevelInfoArray[k].size = size;
-        subdivPatchCount += size * size;
-        size *= 2;
-    }
-
-    subdivPatchArray.resize(subdivPatchCount);
-    patchQuadArray.resize(subdivPatchCount);
+    subdivision->BuildSubdivision(heightmap, bbox, PATCH_SIZE_QUADS, minSubdivLevel, (renderMode == RENDERMODE_INSTANCING_MORPHING));
 
     (renderMode == RENDERMODE_NO_INSTANCING) ? AllocateGeometryDataNoInstancing() : AllocateGeometryDataInstancing();
 }
@@ -331,8 +303,6 @@ void Landscape::RebuildLandscape()
 
     ReleaseGeometryData();
     AllocateGeometryData();
-
-    UpdatePatchInfo(0, 0, 0, Rect2i(0, 0, -1, -1));
 }
 
 void Landscape::PrepareMaterial(NMaterial* material)
@@ -485,31 +455,22 @@ Vector<Image*> Landscape::CreateTangentBasisTextureData()
     return dataOut;
 }
 
-Vector3 Landscape::GetPoint(uint32 x, uint32 y, uint16 height) const
-{
-    Vector3 res;
-    res.x = (bbox.min.x + x / heightmapSizef * (bbox.max.x - bbox.min.x));
-    res.y = (bbox.min.y + y / heightmapSizef * (bbox.max.y - bbox.min.y));
-    res.z = (bbox.min.z + height / float32(Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
-    return res;
-}
-
 void Landscape::GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3& tangentOut) const
 {
     DVASSERT(heightmap);
     const uint32 hmSize = heightmap->Size();
 
-    Vector3 position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
+    Vector3 position = heightmap->GetPoint(x, y, bbox);
 
     uint32 xx = Min(x + 1, hmSize - 1);
     uint32 yy = Min(y + 1, hmSize - 1);
-    Vector3 right = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
-    Vector3 bottom = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
+    Vector3 right = heightmap->GetPoint(xx, y, bbox);
+    Vector3 bottom = heightmap->GetPoint(x, yy, bbox);
 
     xx = (x == 0) ? 0 : x - 1;
     yy = (y == 0) ? 0 : y - 1;
-    Vector3 left = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
-    Vector3 top = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
+    Vector3 left = heightmap->GetPoint(xx, y, bbox);
+    Vector3 top = heightmap->GetPoint(x, yy, bbox);
 
     Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
     Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
@@ -602,225 +563,17 @@ bool Landscape::PlacePoint(const Vector3& worldPoint, Vector3& result, Vector3* 
     return true;
 };
 
-void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect)
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    if (level >= subdivLevelCount)
-        return;
-
-    int32 hmSize = heightmap->Size();
-    uint32 patchSize = hmSize >> level;
-
-    uint32 xx = x * patchSize;
-    uint32 yy = y * patchSize;
-
-    if (updateRect.dx >= 0 && updateRect.dy >= 0 && !Rect2i(xx, yy, patchSize, patchSize).RectIntersects(updateRect))
-        return;
-
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (y << level) + x];
-
-    patch->maxError = 0.f;
-    patch->positionOfMaxError = Vector3();
-    patch->bbox = AABBox3();
-
-    uint32 step = patchSize / PATCH_SIZE_QUADS;
-    DVASSERT(step);
-
-    for (uint32 y0 = yy; y0 < yy + patchSize; y0 += step)
-    {
-        for (uint32 x0 = xx; x0 < xx + patchSize; x0 += step)
-        {
-            uint32 x_ = x0 + (step >> 1);
-            uint32 y_ = y0 + (step >> 1);
-            uint32 x1 = x0 + step;
-            uint32 y1 = y0 + step;
-
-            //Patch corners points
-            Vector3 p00 = GetPoint(x0, y0, heightmap->GetHeight(x0, y0));
-            Vector3 p01 = GetPoint(x0, y1, heightmap->GetHeightClamp(x0, y1));
-            Vector3 p10 = GetPoint(x1, y0, heightmap->GetHeightClamp(x1, y0));
-            Vector3 p11 = GetPoint(x1, y1, heightmap->GetHeightClamp(x1, y1));
-
-            //Add to bbox only corners points
-            patch->bbox.AddPoint(p00);
-            patch->bbox.AddPoint(p01);
-            patch->bbox.AddPoint(p10);
-            patch->bbox.AddPoint(p11);
-
-            if (level < (subdivLevelCount - 1))
-            {
-                //Calculating max absolute height error between neighbour lods.
-                //Choosing from five averaged heights per quad: four on middle of edges and one on diagonal
-                // +---*---+
-                // | \     |
-                // |  \    |
-                // *   *   *
-                // |    \  |
-                // |     \ |
-                // +---*---+
-
-                //Accurate height values from next subdivide level (more detailed LOD)
-                Vector3 p0[5] = {
-                    GetPoint(x_, y0, heightmap->GetHeight(x_, y0)),
-                    GetPoint(x0, y_, heightmap->GetHeight(x0, y_)),
-                    GetPoint(x_, y_, heightmap->GetHeight(x_, y_)),
-                    GetPoint(x1, y_, heightmap->GetHeightClamp(x1, y_)),
-                    GetPoint(x_, y1, heightmap->GetHeightClamp(x_, y1)),
-                };
-                //Averaged height values from current level (less detailed LOD)
-                float32 h1[5] = {
-                    (p00.z + p10.z) / 2.f,
-                    (p00.z + p01.z) / 2.f,
-                    (p00.z + p11.z) / 2.f,
-                    (p10.z + p11.z) / 2.f,
-                    (p01.z + p11.z) / 2.f,
-                };
-
-                //Calculate max error for quad
-                for (int32 i = 0; i < 5; ++i)
-                {
-                    float32 error = p0[i].z - h1[i];
-                    if (Abs(patch->maxError) < Abs(error))
-                    {
-                        patch->maxError = error;
-                        patch->positionOfMaxError = p0[i];
-                    }
-                }
-            }
-        }
-    }
-
-    patch->radius = Distance(patch->bbox.GetCenter(), patch->bbox.max);
-
-    uint32 x2 = x << 1;
-    uint32 y2 = y << 1;
-
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1, updateRect);
-}
-
-void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0)
-{
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    uint32 offset = levelInfo.offset + (y << level) + x;
-    PatchQuadInfo* patch = &patchQuadArray[offset];
-    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[offset];
-
-    // Calculate patch bounding box
-    Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE;
-
-    if (clippingFlags)
-        frustumRes = frustum->Classify(patch->bbox, clippingFlags, subdivPatchInfo->startClipPlane);
-
-    if (frustumRes == Frustum::EFR_OUTSIDE)
-    {
-        subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::CLIPPED;
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////
-
-    //Metrics errors we calculate as projection on screen
-    //
-    //                     /              |
-    //                  /                 ^ - error in world-space
-    //               /                    |
-    //            /                       |
-    //         /|                         |
-    //      /   ^ - error in screen-space |
-    //   /      |                         |
-    //  0---------------------------------D-------- frustum axis
-    //          ^                         ^
-    //      near plane            error position plane
-    // plane size 1.0 a-priory   plane size let it be 'H'
-    //
-    // H = D * tg(fov/2), were D - is distance to error position
-    // To find error size on near plane we need just error size divide by 'H'
-    // So, screen space error = error / (D * tg(fov/2))
-    // tg(fov/2) calculating one per-frame, see 'tanFovY' in PrepareToRender()
-
-    float32 distance = Distance(cameraPos, patch->positionOfMaxError);
-    float32 heightError = Abs(patch->maxError) / (distance * tanFovY);
-
-    Vector3 patchOrigin = patch->bbox.GetCenter();
-    float32 patchDistance = Distance(cameraPos, patchOrigin);
-    float32 radiusError = patch->radius / (patchDistance * tanFovY);
-
-    if ((level < subdivLevelCount - 1) && ((maxPatchRadiusError <= radiusError) || (maxHeightError <= heightError) || (maxAbsoluteHeightError < Abs(patch->maxError)) || (minSubdivLevelSize > levelInfo.size) || forceMaxSubdiv))
-    {
-        subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
-        subdivPatchInfo->lastSubdivLevel = level;
-
-        uint32 x2 = x << 1;
-        uint32 y2 = y << 1;
-
-        SubdividePatch(level + 1, x2 + 0, y2 + 0, clippingFlags, heightError, radiusError);
-        SubdividePatch(level + 1, x2 + 1, y2 + 0, clippingFlags, heightError, radiusError);
-        SubdividePatch(level + 1, x2 + 0, y2 + 1, clippingFlags, heightError, radiusError);
-        SubdividePatch(level + 1, x2 + 1, y2 + 1, clippingFlags, heightError, radiusError);
-    }
-    else
-    {
-        float32 morphAmount = 1.f;
-        if (renderMode == RENDERMODE_INSTANCING_MORPHING)
-        {
-            float32 radiusError0Rel = Max(radiusError0, maxPatchRadiusError) / maxPatchRadiusError;
-            float32 radiusErrorRel = Min(radiusError, maxPatchRadiusError) / maxPatchRadiusError;
-
-            float32 heightError0Rel = Max(heightError0, maxHeightError) / maxHeightError;
-            float32 heightErrorRel = Min(heightError, maxHeightError) / maxHeightError;
-
-            float32 error0Delta = Max(radiusError0Rel, heightError0Rel) - 1.f;
-            float32 errorDelta = 1.f - Max(radiusErrorRel, heightErrorRel);
-            morphAmount = 1.f - errorDelta / (error0Delta + errorDelta);
-        }
-
-        TerminateSubdivision(level, x, y, level, morphAmount);
-        subdivPatchesDrawCount++;
-    }
-}
-
-void Landscape::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 morph)
-{
-    if (level == subdivLevelCount)
-    {
-        return;
-    }
-
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + (y << level) + x];
-
-    subdivPatchInfo->subdivMorph = morph;
-    subdivPatchInfo->lastSubdivLevel = lastSubdivLevel;
-    subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
-
-    uint32 x2 = x << 1;
-    uint32 y2 = y << 1;
-
-    TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdivLevel, morph);
-    TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdivLevel, morph);
-    TerminateSubdivision(level + 1, x2 + 0, y2 + 1, lastSubdivLevel, morph);
-    TerminateSubdivision(level + 1, x2 + 1, y2 + 1, lastSubdivLevel, morph);
-}
-
 void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 {
-    DVASSERT(level < subdivLevelCount);
+    DVASSERT(level < subdivision->GetLevelCount());
 
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
+    const LandscapeSubdivision::SubdivisionPatchInfo& subdivPatchInfo = subdivision->GetPatchInfo(level, x, y);
 
-    // TODO: optimize all offset calculations in all places
-    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + (y << level) + x];
-
-    uint32 state = subdivPatchInfo->subdivisionState;
-    if (state == SubdivisionPatchInfo::CLIPPED)
+    uint32 state = subdivPatchInfo.subdivisionState;
+    if (state == LandscapeSubdivision::SubdivisionPatchInfo::CLIPPED)
         return;
 
-    if (state == SubdivisionPatchInfo::SUBDIVIDED)
+    if (state == LandscapeSubdivision::SubdivisionPatchInfo::SUBDIVIDED)
     {
         uint32 x2 = x << 1;
         uint32 y2 = y << 1;
@@ -834,9 +587,9 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
     {
         uint32 neighbourLevel[4];
         Vector4 neighbourLevelf, neighbourMorph;
-        const float32 morph = subdivPatchInfo->subdivMorph;
+        const float32 morph = subdivPatchInfo.subdivMorph;
 
-        SubdivisionPatchInfo* neighbourPatch[4] = {
+        const LandscapeSubdivision::SubdivisionPatchInfo* neighbourPatch[4] = {
             GetSubdivPatch(level, x - 1, y),
             GetSubdivPatch(level, x, y - 1),
             GetSubdivPatch(level, x + 1, y),
@@ -845,8 +598,8 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
         for (int32 i = 0; i < 4; ++i)
         {
-            SubdivisionPatchInfo* patch = neighbourPatch[i];
-            bool patchTerminated = (patch && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED);
+            const LandscapeSubdivision::SubdivisionPatchInfo* patch = neighbourPatch[i];
+            bool patchTerminated = (patch && patch->subdivisionState == LandscapeSubdivision::SubdivisionPatchInfo::TERMINATED);
 
             switch (renderMode)
             {
@@ -860,8 +613,8 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
                 {
                     neighbourMorph.data[i] = morph;
                 }
-            } //there's no need break, it's ok
                 DAVA_SWITCH_CASE_FALLTHROUGH
+            } //there's no need break, it's ok
             case RENDERMODE_INSTANCING:
             {
                 neighbourLevelf.data[i] = patchTerminated ? float32(patch->lastSubdivLevel) : float32(level);
@@ -964,7 +717,7 @@ int16 Landscape::AllocateParcelVertexBuffer(uint32 quadX, uint32 quadY, uint32 q
         for (uint32 x = quadX; x < quadX + quadSize + 1; ++x)
         {
             VertexNoInstancing* vertex = reinterpret_cast<VertexNoInstancing*>(&landscapeVertices[index * vertexSize]);
-            vertex->position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
+            vertex->position = heightmap->GetPoint(x, y, bbox);
 
             Vector2 texCoord = Vector2(x / heightmapSizef, 1.0f - y / heightmapSizef);
             vertex->texCoord = texCoord;
@@ -1015,7 +768,7 @@ void Landscape::DrawLandscapeNoInstancing()
 
 void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSizePow2, uint32 yNegSizePow2, uint32 xPosSizePow2, uint32 yPosSizePow2)
 {
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
+    const LandscapeSubdivision::SubdivisionLevelInfo& levelInfo = subdivision->GetLevelInfo(level);
 
     int32 dividerPow2 = level - quadsInWidthPow2;
     DVASSERT(dividerPow2 >= 0);
@@ -1297,13 +1050,14 @@ void Landscape::DrawLandscapeInstancing()
         }
     }
 
-    if (subdivPatchesDrawCount)
+    uint32 patchesToRender = subdivision->GetTerminatedPatchesCount();
+    if (patchesToRender)
     {
         InstanceDataBuffer* instanceDataBuffer = nullptr;
         if (freeInstanceDataBuffers.size())
         {
             instanceDataBuffer = freeInstanceDataBuffers.back();
-            if (instanceDataBuffer->bufferSize < subdivPatchesDrawCount * instanceDataSize)
+            if (instanceDataBuffer->bufferSize < patchesToRender * instanceDataSize)
             {
                 rhi::DeleteVertexBuffer(instanceDataBuffer->buffer);
                 SafeDelete(instanceDataBuffer);
@@ -1313,7 +1067,7 @@ void Landscape::DrawLandscapeInstancing()
 
         if (!instanceDataBuffer)
         {
-            instanceDataMaxCount = Max(instanceDataMaxCount, subdivPatchesDrawCount);
+            instanceDataMaxCount = Max(instanceDataMaxCount, patchesToRender);
 
             rhi::VertexBuffer::Descriptor instanceBufferDesc;
             instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
@@ -1327,10 +1081,10 @@ void Landscape::DrawLandscapeInstancing()
         instanceDataBuffer->syncObject = rhi::GetCurrentFrameSyncObject();
 
         renderBatchArray[0].renderBatch->instanceBuffer = instanceDataBuffer->buffer;
-        renderBatchArray[0].renderBatch->instanceCount = subdivPatchesDrawCount;
+        renderBatchArray[0].renderBatch->instanceCount = patchesToRender;
         activeRenderBatchArray.push_back(renderBatchArray[0].renderBatch);
 
-        instanceDataPtr = static_cast<uint8*>(rhi::MapVertexBuffer(instanceDataBuffer->buffer, 0, subdivPatchesDrawCount * instanceDataSize));
+        instanceDataPtr = static_cast<uint8*>(rhi::MapVertexBuffer(instanceDataBuffer->buffer, 0, patchesToRender * instanceDataSize));
 
         AddPatchToRender(0, 0, 0);
 
@@ -1343,7 +1097,7 @@ void Landscape::DrawLandscapeInstancing()
 
 void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& neighbourLevel, float32 patchMorph /*= 0.f*/, const Vector4& neighbourMorph /*= Vector4()*/)
 {
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
+    const LandscapeSubdivision::SubdivisionLevelInfo& levelInfo = subdivision->GetLevelInfo(level);
 
     float32 levelf = float32(level);
     InstanceData* instanceData = reinterpret_cast<InstanceData*>(instanceDataPtr);
@@ -1357,7 +1111,7 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Ve
 
     if (renderMode == RENDERMODE_INSTANCING_MORPHING)
     {
-        int32 baseLod = subdivLevelCount - level - 1;
+        int32 baseLod = subdivision->GetLevelCount() - level - 1;
 
         instanceData->neighbourPatchMorph = neighbourMorph;
         instanceData->patchLod = float32(baseLod);
@@ -1375,7 +1129,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
     RenderObject::BindDynamicParameters(camera);
 
     if (heightmap)
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_TEXTURE_SIZE, &heightmapSizef, (pointer_size(this) & (~pointer_size(0xf))) | hmSizeParamSemantic);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_TEXTURE_SIZE, &heightmapSizef, pointer_size(&heightmapSizef));
 }
 
 void Landscape::PrepareToRender(Camera* camera)
@@ -1386,28 +1140,14 @@ void Landscape::PrepareToRender(Camera* camera)
 
     TIME_PROFILE("Landscape.PrepareToRender");
 
-    if (!subdivLevelCount || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
+    if (!subdivision->GetLevelCount() || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
     {
         return;
     }
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
     {
-        camera = GetRenderSystem()->GetMainCamera();
-        cameraPos = camera->GetPosition();
-
-        frustum->Build((*worldTransform) * camera->GetViewProjMatrix());
-
-        float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) / (normalFov - zoomFov), 0.f, 1.f);
-        maxHeightError = zoomMaxHeightError + (normalMaxHeightError - zoomMaxHeightError) * fovLerp;
-        maxPatchRadiusError = zoomMaxPatchRadiusError + (normalMaxPatchRadiusError - zoomMaxPatchRadiusError) * fovLerp;
-        maxAbsoluteHeightError = zoomMaxAbsoluteHeightError + (normalMaxAbsoluteHeightError - zoomMaxAbsoluteHeightError) * fovLerp;
-
-        tanFovY = tanf(camera->GetFOV() * PI / 360.f) / camera->GetAspect();
-        //used for calculate metrics projection on screen. Projection calculate as '1.0 / (distance * tan(fov / 2))'. See errors calculation in SubdividePatch()
-
-        subdivPatchesDrawCount = 0;
-        SubdividePatch(0, 0, 0, 0x3f, maxHeightError, maxPatchRadiusError);
+        subdivision->PrepareSubdivision(GetRenderSystem()->GetMainCamera(), worldTransform);
     }
 
     switch (renderMode)
@@ -1440,7 +1180,7 @@ bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int3
         for (uint32 x = 0; x < gridWidth; ++x)
         {
             float32 nx = static_cast<float32>(x) / static_cast<float32>(gridWidth - 1);
-            vertices[index].position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
+            vertices[index].position = heightmap->GetPoint(x, y, bbox);
             vertices[index].texCoord = Vector2(nx, ny);
             index++;
         }
@@ -1699,7 +1439,7 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
 
 void Landscape::SetForceMaxSubdiv(bool force)
 {
-    forceMaxSubdiv = force;
+    subdivision->SetForceMaxSubdivision(force);
 }
 
 void Landscape::SetUpdatable(bool isUpdatable)
@@ -1775,20 +1515,18 @@ bool Landscape::IsDrawMorphing() const
     return debugDrawMorphing;
 }
 
-void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
+void Landscape::UpdatePart(const Rect2i& rect)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    DVASSERT(heightmap->Size() == fromHeightmap->Size());
-
-    UpdatePatchInfo(0, 0, 0, rect);
+    subdivision->UpdatePatchInfo(rect);
 
     switch (renderMode)
     {
     case RENDERMODE_INSTANCING:
     case RENDERMODE_INSTANCING_MORPHING:
     {
-        Vector<Image*> heightTextureData = CreateHeightTextureData(fromHeightmap, renderMode);
+        Vector<Image*> heightTextureData = CreateHeightTextureData(heightmap, renderMode);
 
         for (Image* img : heightTextureData)
         {

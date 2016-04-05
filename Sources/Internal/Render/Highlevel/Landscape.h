@@ -37,14 +37,13 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "FileSystem/FilePath.h"
 #include "MemoryManager/MemoryProfiler.h"
+#include "Render/Highlevel/LandscapeSubdivision.h"
 
 namespace DAVA
 {
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
     This class is base of the landscape code on all platforms
-    Landscape node is always axial aligned for simplicity of frustum culling calculations
-    Keep in mind that landscape orientation cannot be changed using localTransform and worldTransform matrices. 
  */
 
 class LandscapeSystem;
@@ -52,7 +51,7 @@ class FoliageSystem;
 class NMaterial;
 class SerializationContext;
 class Heightmap;
-class Frustum;
+class LandscapeSubdivision;
 
 class Landscape : public RenderObject
 {
@@ -61,9 +60,6 @@ class Landscape : public RenderObject
 public:
     Landscape();
     virtual ~Landscape();
-
-    static const int32 PATCH_SIZE_VERTICES = 9;
-    static const int32 PATCH_SIZE_QUADS = (PATCH_SIZE_VERTICES - 1);
 
     static const int32 RENDER_PARCEL_SIZE_VERTICES = 129;
     static const int32 RENDER_PARCEL_SIZE_QUADS = (RENDER_PARCEL_SIZE_VERTICES - 1);
@@ -139,7 +135,7 @@ public:
     void BindDynamicParameters(Camera* camera) override;
     void PrepareToRender(Camera* camera) override;
 
-    void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
+    void UpdatePart(const Rect2i& rect);
     void SetUpdatable(bool isUpdatable);
     bool IsUpdatable() const;
 
@@ -147,6 +143,8 @@ public:
 
     void SetUseInstancing(bool useInstancing);
     bool IsUseInstancing() const;
+
+    LandscapeSubdivision* GetSubdivision();
 
 protected:
     enum RenderMode
@@ -156,8 +154,7 @@ protected:
         RENDERMODE_INSTANCING_MORPHING,
     };
 
-    Vector3 GetPoint(uint32 x, uint32 y, uint16 height) const;
-    void GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3& tangentOut) const;
+    void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
     void AllocateGeometryData();
     void ReleaseGeometryData();
@@ -179,6 +176,10 @@ protected:
     void SetUseMorphing(bool useMorph);
     bool IsUseMorphing() const;
 
+    const LandscapeSubdivision::SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y) const;
+
+    void GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3& tangentOut) const;
+
     struct RestoreBufferData
     {
         enum eBufferType
@@ -195,92 +196,24 @@ protected:
 
     Vector<RestoreBufferData> bufferRestoreData;
 
-    FilePath heightmapPath;
+    RenderMode renderMode;
 
-    Frustum* frustum = nullptr;
+    FilePath heightmapPath;
     Heightmap* heightmap = nullptr;
+    LandscapeSubdivision* subdivision = nullptr;
+
     NMaterial* landscapeMaterial = nullptr;
     FoliageSystem* foliageSystem = nullptr;
 
     uint32 heightmapSizePow2 = 0;
     float32 heightmapSizef = 0.f;
-    uint8 hmSizeParamSemantic = 0;
 
     uint32 drawIndices = 0;
 
-    bool forceMaxSubdiv = false;
     bool updatable = false;
 
     bool debugDrawMetrics = false;
     bool debugDrawMorphing = false;
-
-    RenderMode renderMode;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //Subdivision
-
-    struct PatchQuadInfo
-    {
-        AABBox3 bbox;
-        Vector3 positionOfMaxError;
-        float32 maxError;
-        float32 radius;
-    };
-
-    struct SubdivisionPatchInfo
-    {
-        enum
-        {
-            CLIPPED = 1,
-            SUBDIVIDED = 2,
-            TERMINATED = 3,
-        };
-
-        uint32 lastSubdivLevel = 0;
-        float32 subdivMorph = 0.f;
-        uint8 subdivisionState = CLIPPED;
-        uint8 startClipPlane = 0;
-    };
-
-    struct SubdivisionLevelInfo
-    {
-        uint32 offset;
-        uint32 size;
-    };
-
-    SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
-    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect);
-    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0);
-    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 lastSubdivMorph);
-    void AddPatchToRender(uint32 level, uint32 x, uint32 y);
-
-    uint32 minSubdivLevelSize = 0;
-    uint32 subdivLevelCount = 0;
-    uint32 subdivPatchCount = 0;
-
-    Vector<SubdivisionLevelInfo> subdivLevelInfoArray;
-    Vector<PatchQuadInfo> patchQuadArray;
-    Vector<SubdivisionPatchInfo> subdivPatchArray;
-    uint32 subdivPatchesDrawCount = 0;
-
-    //////Metrics
-    Vector3 cameraPos;
-    float32 tanFovY;
-
-    float32 normalFov;
-    float32 zoomFov;
-
-    float32 normalMaxHeightError;
-    float32 normalMaxPatchRadiusError;
-    float32 normalMaxAbsoluteHeightError;
-
-    float32 zoomMaxHeightError;
-    float32 zoomMaxPatchRadiusError;
-    float32 zoomMaxAbsoluteHeightError;
-
-    float32 maxHeightError;
-    float32 maxPatchRadiusError;
-    float32 maxAbsoluteHeightError;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Non-instancing render
@@ -393,12 +326,7 @@ public:
                          PROPERTY("isDrawWired", "isDrawWired", IsDrawWired, SetDrawWired, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawMorphing", "debugDrawMorphing", IsDrawMorphing, SetDrawMorphing, I_VIEW | I_EDIT)
                          MEMBER(debugDrawMetrics, "debugDrawMetrics", I_VIEW | I_EDIT)
-                         MEMBER(normalMaxHeightError, "normalMaxHeightError", I_VIEW | I_EDIT)
-                         MEMBER(normalMaxPatchRadiusError, "normalMaxPatchRadiusError", I_VIEW | I_EDIT)
-                         MEMBER(normalMaxAbsoluteHeightError, "normalMaxAbsoluteHeightError", I_VIEW | I_EDIT)
-                         MEMBER(zoomMaxHeightError, "zoomMaxHeightError", I_VIEW | I_EDIT)
-                         MEMBER(zoomMaxPatchRadiusError, "zoomMPatchRadiusError", I_VIEW | I_EDIT)
-                         MEMBER(zoomMaxAbsoluteHeightError, "zoomMAbsoluteHeightError", I_VIEW | I_EDIT)
+                         MEMBER(subdivision, "subdivision", I_VIEW | I_EDIT)
                          );
 };
 
@@ -408,12 +336,17 @@ inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
     return x + y * RENDER_PARCEL_SIZE_VERTICES;
 }
 
-DAVA_FORCEINLINE Landscape::SubdivisionPatchInfo* Landscape::GetSubdivPatch(uint32 level, uint32 x, uint32 y)
+inline LandscapeSubdivision* Landscape::GetSubdivision()
 {
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
+    return subdivision;
+}
+
+DAVA_FORCEINLINE const LandscapeSubdivision::SubdivisionPatchInfo* Landscape::GetSubdivPatch(uint32 level, uint32 x, uint32 y) const
+{
+    const LandscapeSubdivision::SubdivisionLevelInfo& levelInfo = subdivision->GetLevelInfo(level);
 
     if (x < levelInfo.size && y < levelInfo.size)
-        return &subdivPatchArray[levelInfo.offset + (y << level) + x];
+        return &subdivision->GetPatchInfo(level, x, y);
     else
         return 0;
 }
