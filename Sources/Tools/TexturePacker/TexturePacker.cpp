@@ -579,7 +579,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
             if (keys.imageFormat == IMAGE_FORMAT_PVR || keys.imageFormat == IMAGE_FORMAT_DDS)
             {
                 AddError(Format("Compression format is not specified for '%s' token",
-                                ImageSystem::Instance()->GetImageFormatInterface(keys.imageFormat)->GetFormatName().c_str()));
+                                ImageSystem::GetImageFormatInterface(keys.imageFormat)->GetFormatName().c_str()));
                 keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
             }
         }

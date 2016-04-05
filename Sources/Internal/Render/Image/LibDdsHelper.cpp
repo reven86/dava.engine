@@ -99,13 +99,13 @@ eErrorCode LibDdsHelper::WriteFileInternal(const FilePath& outFileName, const Ve
         file.reset();
 
         bool err = false;
-        if (!FileSystem::Instance()->DeleteFile(outFileName))
+        if (FileSystem::Instance()->Exists(outFileName) && !FileSystem::Instance()->DeleteFile(outFileName))
         {
             Logger::Error("[LibDdsHelper::WriteFile] Can't delete previous dds file %s", outFileName.GetStringValue().c_str());
             err = true;
         }
 
-        if (err = false && !FileSystem::Instance()->MoveFile(tmpFileName, outFileName, true))
+        if (err == false && !FileSystem::Instance()->MoveFile(tmpFileName, outFileName, true))
         {
             Logger::Error("[LibDdsHelper::WriteFile] Temporary dds file %s renaming failed", tmpFileName.GetStringValue().c_str());
             err = true;
@@ -113,7 +113,7 @@ eErrorCode LibDdsHelper::WriteFileInternal(const FilePath& outFileName, const Ve
 
         if (err == true)
         {
-            if (!FileSystem::Instance()->DeleteFile(tmpFileName))
+            if (FileSystem::Instance()->Exists(tmpFileName) && !FileSystem::Instance()->DeleteFile(tmpFileName))
             {
                 Logger::Error("[LibDdsHelper::WriteFile] Can't delete temporary dds file %s", tmpFileName.GetStringValue().c_str());
             }
