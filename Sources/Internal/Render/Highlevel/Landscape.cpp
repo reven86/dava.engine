@@ -693,12 +693,6 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& 
 
 void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0)
 {
-    if (level == subdivLevelCount)
-    {
-        DVASSERT(false);
-        return;
-    }
-
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     uint32 offset = levelInfo.offset + (y << level) + x;
     PatchQuadInfo* patch = &patchQuadArray[offset];
