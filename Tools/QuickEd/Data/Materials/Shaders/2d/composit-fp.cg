@@ -42,7 +42,7 @@ FPROG_BEGIN
 	#if GRADIENT_MODE == GRADIENT_MULTIPLY
 		float4 detailImpact = float4(detailColor.rgb * gradientColor.rgb, maskColor);
 	#elif GRADIENT_MODE == GRADIENT_BLEND
-		float4 detailImpact = float4(mix(detailColor.rgb, gradientColor.rgb, gradientColor.a), maskColor);
+		float4 detailImpact = float4(lerp(detailColor.rgb, gradientColor.rgb, gradientColor.a), maskColor);
 	#elif GRADIENT_MODE == GRADIENT_ADD
 		float4 detailImpact = float4(detailColor.rgb + gradientColor.rgb, maskColor);
 	#elif GRADIENT_MODE == GRADIENT_SCREEN
@@ -50,11 +50,11 @@ FPROG_BEGIN
 	#elif GRADIENT_MODE == GRADIENT_OVERLAY
 		float3 overlayLow = 2.0 * detailColor.rgb * gradientColor.rgb;
 		float3 overlayHi = float3(1.0, 1.0, 1.0) - 2.0* (float3(1.0, 1.0, 1.0)-detailColor.rgb) * (float3(1.0, 1.0, 1.0) - gradientColor.rgb);
-		float3 detailImpactColor = mix(overlayLow, overlayHi, step(0.5, detailColor.rgb));
+		float3 detailImpactColor = lerp(overlayLow, overlayHi, step(0.5, detailColor.rgb));
 		float4 detailImpact = float4(detailImpactColor, maskColor);
 	#endif
 	
-	float4 resColor = mix(detailImpact, contourColor.rgba, contourColor.a);
+	float4 resColor = lerp(detailImpact, contourColor.rgba, contourColor.a);
 
     resColor = resColor * in_color;
 
