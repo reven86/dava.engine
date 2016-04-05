@@ -144,8 +144,8 @@ private:
 
     AABBox3 bbox;
 
-    bool calculateMorph;
-    bool forceMaxSubdiv;
+    bool calculateMorph = true;
+    bool forceMaxSubdiv = false;
 
     friend class LandscapeSystem;
 

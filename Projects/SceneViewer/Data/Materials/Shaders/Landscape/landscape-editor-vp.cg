@@ -104,7 +104,7 @@ VPROG_BEGIN
 	//Calculate fetch parameters
 	float sampleLod = (baseLod + lodOffset) * zeroLodMul;
 	float samplePixelOffset = basePixelOffset * edgeShiftAmount * zeroLodMul; //mul by 'edgeShiftAmount' give 0.5 / ( 2 ^ ( baseLod + lodOffset ) )
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod);
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, float2(relativePosition + samplePixelOffset), sampleLod);
 	
 	//Calculate morphed height. 
 	float morphAmount = dot(edgeMask, nearPatchMorph) + patchMorph * edgeMaskNull;
@@ -122,7 +122,7 @@ VPROG_BEGIN
 
 #else
 	
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + 0.5 / heightmapTextureSize, 0.0);
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, float2(relativePosition + 0.5 / heightmapTextureSize), 0.0);
 	float height = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
 	
 #endif
