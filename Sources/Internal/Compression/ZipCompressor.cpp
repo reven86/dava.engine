@@ -66,7 +66,7 @@ bool ZipCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) const
 
 bool ZipCompressor::Decompress(const Vector<uint8>& in, Vector<uint8>& out) const
 {
-    if (in.size() > static_cast<uint32>(std::numeric_limits<int32>::max()))
+    if (in.size() > static_cast<uint32>(std::numeric_limits<uLong>::max()))
     {
         Logger::Error("too big input buffer for uncompress rfc1951");
         return false;
@@ -86,7 +86,6 @@ class ZipPrivateData
 {
 public:
     mz_zip_archive archive;
-    FilePath fileName;
     ScopedPtr<File> file{ nullptr };
 };
 
@@ -138,8 +137,6 @@ ZipFile::ZipFile(const FilePath& fileName)
     {
         throw std::runtime_error("can't init zip from file: " + fileName.GetStringValue());
     }
-
-    zipData->fileName = fileName;
 }
 
 ZipFile::~ZipFile() = default;
