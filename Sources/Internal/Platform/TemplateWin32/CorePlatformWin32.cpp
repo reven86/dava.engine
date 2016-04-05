@@ -165,8 +165,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     }
 
     // create window
-    HWND hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
-                                realWidth, realHeight, NULL, NULL, hInstance, NULL);
+    hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
+                           realWidth, realHeight, NULL, NULL, hInstance, NULL);
 
     SetMenu(hWindow, NULL);
 
@@ -276,6 +276,29 @@ void CoreWin32Platform::LoadWindowMinimumSizeSettings()
     {
         SetWindowMinimumSize(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
     }
+}
+
+void CoreWin32Platform::ClearMouseButtons()
+{
+    UIEvent e;
+
+    e.phase = UIEvent::Phase::ENDED;
+    e.device = UIEvent::Device::MOUSE;
+    e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.f);
+
+    for (uint32 mouseButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
+         mouseButton < static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+         mouseButton += 1)
+    {
+        if (mouseButtonState[mouseButton])
+        {
+            e.mouseButton = static_cast<UIEvent::MouseButton>(mouseButton);
+
+            UIControlSystem::Instance()->OnInput(&e);
+        }
+    }
+
+    mouseButtonState.reset();
 }
 
 void CoreWin32Platform::Run()
@@ -519,6 +542,9 @@ void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton 
 {
     bool isButtonDown = phase == UIEvent::Phase::BEGAN;
     unsigned buttonIndex = static_cast<unsigned>(button) - 1;
+
+    bool isAnyButtonDownBefore = mouseButtonState.any();
+
     mouseButtonState[buttonIndex] = isButtonDown;
 
     UIEvent e;
@@ -529,6 +555,17 @@ void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton 
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     UIControlSystem::Instance()->OnInput(&e);
+
+    bool isAnyButtonDownAfter = mouseButtonState.any();
+
+    if (isAnyButtonDownBefore && !isAnyButtonDownAfter)
+    {
+        ReleaseCapture();
+    }
+    else if (!isAnyButtonDownBefore && isAnyButtonDownAfter)
+    {
+        SetCapture(hWindow);
+    }
 }
 
 void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure)
@@ -612,14 +649,9 @@ bool CoreWin32Platform::ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM w
     int xPos = GET_X_LPARAM(lPampam);
     int yPos = GET_Y_LPARAM(lPampam);
 
-    if (!IsCursorPointInside(hWnd, xPos, yPos))
-    {
-        return false;
-    }
-
     UIEvent::MouseButton button = UIEvent::MouseButton::NONE;
     UIEvent::MouseButton extButton = UIEvent::MouseButton::NONE;
-    UIEvent::Phase phase;
+    UIEvent::Phase phase = UIEvent::Phase::ERROR;
 
     if (message == WM_LBUTTONDOWN)
     {
@@ -776,11 +808,13 @@ bool CoreWin32Platform::ProcessMouseInputEvent(HWND hWnd, UINT message, WPARAM w
     {
         return ProcessMouseClickEvent(hWnd, message, wParam, lParam);
     }
-    else if (IsMouseMoveEvent(message))
+
+    if (IsMouseMoveEvent(message))
     {
         return ProcessMouseMoveEvent(hWnd, message, wParam, lParam);
     }
-    else if (IsMouseWheelEvent(message))
+
+    if (IsMouseWheelEvent(message))
     {
         return ProcessMouseWheelEvent(hWnd, message, wParam, lParam);
     }
@@ -954,6 +988,9 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             if (appCore)
             {
                 MouseCapture::SetApplicationFocus(false);
+                // unpress all pressed buttons
+                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+                core->ClearMouseButtons();
                 appCore->OnSuspend();
             }
             else

@@ -33,33 +33,39 @@
 
 #endif
 
+
 namespace IMagickHelper
 {
-struct IMAGICKHELPER_EXPORT Layer
-{
-    static const unsigned int MAX_NAME_SIZE = 256;
-    int x = 0;
-    int y = 0;
-    int dx = 0;
-    int dy = 0;
-    char name[MAX_NAME_SIZE];
+    struct Layer
+    {
+		static const int NAME_SIZE = 255;
 
-    Layer();
-    Layer(int _x, int _y, int _dx, int _dy, const char* _name);
-};
+        int x, y;
+        int dx, dy;
 
-struct IMAGICKHELPER_EXPORT CroppedData
-{
-    void Reset();
+		char name[NAME_SIZE];
 
-    int layer_width = 0;
-    int layer_height = 0;
-    unsigned layers_count = 0;
-    Layer* layers = nullptr;
-};
+        Layer();
+        Layer( int _x, int _y, int _dx, int _dy );
+    };
+  
+    struct IMAGICKHELPER_EXPORT CroppedData
+    {
+        int layer_width ;
+        int layer_height;
 
-IMAGICKHELPER_EXPORT bool ConvertToPNG(const char* in_image_path, const char* out_path);
-IMAGICKHELPER_EXPORT bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path, CroppedData& out_cropped_data, bool skip_first_layer = false);
+        Layer *layers_array;
+
+        unsigned layers_array_size;
+        
+        void Reset();
+
+        CroppedData() ;
+        ~CroppedData();
+    };
+
+    IMAGICKHELPER_EXPORT bool ConvertToPNG ( const char *in_image_path, const char *out_path );
+    IMAGICKHELPER_EXPORT bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_path, CroppedData *out_cropped_data, bool skip_first_layer = false );
 }
 
 

@@ -58,12 +58,6 @@
 
     #include "ios_gl.h"
 
-    #include "arm/arch.h"
-
-    #ifdef _ARM_ARCH_7
-        #define __DAVAENGINE_ARM_7__
-    #endif
-
 #elif defined(__DAVAENGINE_ANDROID__)
 
 	#include <GLES2/gl2.h>
