@@ -78,7 +78,7 @@ DAVA_TESTCLASS (ArchiveTest)
 
                     TEST_VERIFY(archive.LoadFile(info.relativeFilePath, fileContentFromArchive));
 
-                    String fileOnHDD = baseDir.GetAbsolutePathname() + info.relativeFilePath;
+                    FilePath fileOnHDD = baseDir + info.relativeFilePath;
 
                     ScopedPtr<File> file(File::Create(fileOnHDD, File::OPEN | File::READ));
                     TEST_VERIFY(file);
