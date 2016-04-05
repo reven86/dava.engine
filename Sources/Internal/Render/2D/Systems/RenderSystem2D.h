@@ -190,7 +190,7 @@ public:
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
     static NMaterial* DEFAULT_2D_FILL_ALPHA_MATERIAL;
-    static NMaterial* DEFAULT_COMPOSIT_MATERIAL;
+    static NMaterial* DEFAULT_COMPOSIT_MATERIAL[GRADIENT_BLEND_MODE_COUNT];
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
@@ -201,7 +201,7 @@ public:
     void DrawStretched(Sprite* sprite, Sprite::DrawState* drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
     void DrawTiled(Sprite* sprite, Sprite::DrawState* drawState, const Vector2& streatchCap, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color);
     void DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
-                             Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, float32 grayscale);
+                             Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, const Color& color);
 
     void SetViewMatrix(const Matrix4& viewMatrix);
 

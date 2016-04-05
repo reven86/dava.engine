@@ -377,6 +377,14 @@ ENUM_DECLARE(UIWebView::eDataDetectorType)
     ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_CALENDAR_EVENTS, "CalendarEvents");
 };
 
+ENUM_DECLARE(eGradientBlendMode)
+{
+    ENUM_ADD_DESCR(GRADIENT_MULTIPLY, "Multiply");
+    ENUM_ADD_DESCR(GRADIENT_BLEND, "Alpha blend");
+    ENUM_ADD_DESCR(GRADIENT_ADD, "Additive");
+    ENUM_ADD_DESCR(GRADIENT_SCREEN, "Screen");
+    ENUM_ADD_DESCR(GRADIENT_OVERLAY, "Overlay");
+};
 /*
 void f()
 {

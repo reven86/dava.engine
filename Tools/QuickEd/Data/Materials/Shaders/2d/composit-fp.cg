@@ -1,13 +1,15 @@
 #include "blending.cgh"
 
-#define COLOR_MUL 0
-#define COLOR_ADD 1
-#define ALPHA_MUL 2
-#define ALPHA_ADD 3
+#define GRADIENT_MULTIPLY 0
+#define GRADIENT_BLEND    1
+#define GRADIENT_ADD 	  2
+#define GRADIENT_SCREEN   3
+#define GRADIENT_OVERLAY  4
 
-#ifndef COLOR_OP
-#define COLOR_OP COLOR_MUL
+#ifndef GRADIENT_MODE
+#define GRADIENT_MODE GRADIENT_MULTIPLY
 #endif
+
 
 FPROG_IN_BEGIN
     FPROG_IN_TEXCOORD0(uvMask,2)
@@ -37,21 +39,25 @@ FPROG_BEGIN
 	float4 gradientColor = FP_TEXTURE2D(gradient, FP_IN(uvGradient));
 	float4 contourColor = FP_TEXTURE2D(contour, FP_IN(uvContour));
     
-    
-	float4 detailImpact = float4(detailColor.rgb * gradientColor.rgb, maskColor);
+	#if GRADIENT_MODE == GRADIENT_MULTIPLY
+		float4 detailImpact = float4(detailColor.rgb * gradientColor.rgb, maskColor);
+	#elif GRADIENT_MODE == GRADIENT_BLEND
+		float4 detailImpact = float4(mix(detailColor.rgb, gradientColor.rgb, gradientColor.a), maskColor);
+	#elif GRADIENT_MODE == GRADIENT_ADD
+		float4 detailImpact = float4(detailColor.rgb + gradientColor.rgb, maskColor);
+	#elif GRADIENT_MODE == GRADIENT_SCREEN
+		float4 detailImpact = float4(float3(1.0, 1.0, 1.0) - (float3(1.0, 1.0, 1.0)-detailColor.rgb) * (float3(1.0, 1.0, 1.0) - gradientColor.rgb), maskColor);
+	#elif GRADIENT_MODE == GRADIENT_OVERLAY
+		float3 overlayLow = 2.0 * detailColor.rgb * gradientColor.rgb;
+		float3 overlayHi = float3(1.0, 1.0, 1.0) - 2.0* (float3(1.0, 1.0, 1.0)-detailColor.rgb) * (float3(1.0, 1.0, 1.0) - gradientColor.rgb);
+		float3 detailImpactColor = mix(overlayLow, overlayHi, step(0.5, detailColor.rgb));
+		float4 detailImpact = float4(detailImpactColor, maskColor);
+	#endif
+	
 	float4 resColor = mix(detailImpact, contourColor.rgba, contourColor.a);
 
-
-#if (COLOR_OP == COLOR_MUL)
     resColor = resColor * in_color;
-#elif (COLOR_OP == COLOR_ADD)
-    resColor = resColor + in_color;
-#elif (COLOR_OP == ALPHA_MUL)
-    resColor.a = resColor.a * in_color.a;
-#elif (COLOR_OP == ALPHA_ADD)
-    resColor.a = resColor.a + in_color.a;
-#endif
 
-    FP_OUT_COLOR = resColor; //float4(FP_IN(uvDetail)*10, 1, 1);//float4(1, 0, 1, 1);//
+    FP_OUT_COLOR = resColor; 
 
 FPROG_END

@@ -196,6 +196,8 @@ public:
 
     static const FastName FLAG_ALPHATESTVALUE;
 
+    static const FastName FLAG_GRADIENT_MODE;
+
     //Illumination params
     static const FastName FLAG_ILLUMINATION_USED;
     static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;

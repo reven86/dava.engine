@@ -59,7 +59,7 @@ NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL = nullptr;
-NMaterial* RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL[] = { nullptr };
 
 RenderSystem2D::RenderSystem2D()
 {
@@ -100,9 +100,13 @@ void RenderSystem2D::Init()
     DEFAULT_2D_FILL_ALPHA_MATERIAL->SetFXName(FastName("~res:/Materials/2d.AlphaFill.material"));
     DEFAULT_2D_FILL_ALPHA_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
-    DEFAULT_COMPOSIT_MATERIAL = new NMaterial();
-    DEFAULT_COMPOSIT_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Composit.material"));
-    DEFAULT_COMPOSIT_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+    for (int32 i = 0; i < GRADIENT_BLEND_MODE_COUNT; i++)
+    {
+        DEFAULT_COMPOSIT_MATERIAL[i] = new NMaterial();
+        DEFAULT_COMPOSIT_MATERIAL[i]->SetFXName(FastName("~res:/Materials/2d.Composit.material"));
+        DEFAULT_COMPOSIT_MATERIAL[i]->AddFlag(NMaterialFlagName::FLAG_GRADIENT_MODE, i);
+        DEFAULT_COMPOSIT_MATERIAL[i]->PreBuildMaterial(RENDER_PASS_NAME);
+    }
 
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
@@ -1308,7 +1312,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
 }
 
 void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
-                                         Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, float32 grayscale)
+                                         Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, const Color& color)
 {
     if (!contour || !mask || !detail || !gradient)
         return;
@@ -1410,7 +1414,7 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
     if (td.transformedVertices.size() != 0)
     {
         BatchDescriptor batch;
-        batch.singleColor = Color::White; //IF U SEE THIS COMMENT IN REVIEW, THIS MEANS I'VE FORGOT OT THINK ABOUT ALL THIS COLOR STUFF
+        batch.singleColor = color;
         batch.material = state->GetMaterial();
         batch.textureSetHandle = td.textureSet;
         batch.samplerStateHandle = td.samplerState;
