@@ -42,6 +42,7 @@ public:
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
     void SetSystemVisible(bool visible);
+    bool GetSystemVisible() const;
 
 protected:
     ~ControlContainer() = default;
