@@ -25,8 +25,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#ifndef DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H
-#define DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H
+
+#pragma once
 
 #include "FileSystem/Private/ResourceArchivePrivate.h"
 #include "FileSystem/Private/PackFormatSpec.h"
@@ -51,5 +51,3 @@ private:
 };
 
 } // end namespace DAVA
-
-#endif // DAVAENGINE_FILE_SYSTEM_DAVA_ARCHIVE_H

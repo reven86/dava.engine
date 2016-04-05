@@ -26,8 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H
-#define DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H
+#pragma once
 
 #include "FileSystem/Private/ResourceArchivePrivate.h"
 #include "Compression/ZipCompressor.h"
@@ -51,5 +50,3 @@ private:
 };
 
 } // end namespace DAVA
-
-#endif // DAVAENGINE_FILE_SYSTEM_ZIP_ARCHIVE_H

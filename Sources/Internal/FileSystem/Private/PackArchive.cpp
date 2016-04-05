@@ -26,7 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "FileSystem/PackArchive.h"
+#include "FileSystem/Private/PackArchive.h"
 #include "Compression/ZipCompressor.h"
 #include "Compression/LZ4Compressor.h"
 #include "FileSystem/FileSystem.h"

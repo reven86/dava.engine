@@ -26,8 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAENGINE_FILE_SYSTEM_PACK_FORMAT_SPEC_H
-#define DAVAENGINE_FILE_SYSTEM_PACK_FORMAT_SPEC_H
+#pragma once
 
 namespace DAVA
 {
@@ -81,5 +80,3 @@ static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed, some
 } // end of PackFormat namespace
 
 } // end of DAVA namespace
-
-#endif // DAVAENGINE_FILE_SYSTEM_PACK_FORMAT_SPEC_H
