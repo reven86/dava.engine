@@ -99,7 +99,7 @@ enum TgaHeaderSpec
 
 uint16 LowEndianToUint16(const uint8* p)
 {
-    return (uint16)(p[0] | ((uint16)(p[1]) << 8));
+    return uint16(p[0] | (uint16(p[1]) << 8));
 }
 
 void Uint16ToLowEndian(const uint16 u16, uint8* p)

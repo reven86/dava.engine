@@ -70,7 +70,7 @@ void ResourceArchive::FinishResource()
 {
     saveResourceCounter = 0;
 
-    for (int32 res = 0; res < (int32)fileArray.size(); ++res)
+    for (auto res = 0UL; res < fileArray.size(); ++res)
     {
         const FilePath& fileName = fileArray[res];
 
@@ -106,7 +106,7 @@ int32 ResourceArchive::SaveProgress(int32* resourcePackedSize, int32* resourceRe
         header.signature[3] = '0';
 
         header.version = 100;
-        header.fileCount = (uint32)fileArray.size();
+        header.fileCount = static_cast<uint32>(fileArray.size());
         header.flags |= (withPaths) ? (EHF_WITHPATHS) : (0);
 
         if (sizeof(Header) != archiveFile->Write(&header, sizeof(Header)))
@@ -134,7 +134,7 @@ int32 ResourceArchive::SaveProgress(int32* resourcePackedSize, int32* resourceRe
         return -1;
     }
 
-    if (saveResourceCounter < (int32)fileArray.size())
+    if (saveResourceCounter < static_cast<int32>(fileArray.size()))
     {
         if (!PackResource(fileArray[saveResourceCounter], resourcePackedSize, resourceRealSize))
         {
@@ -146,7 +146,7 @@ int32 ResourceArchive::SaveProgress(int32* resourcePackedSize, int32* resourceRe
         saveResourceCounter++;
     }
 
-    if (saveResourceCounter == (int32)fileArray.size())
+    if (saveResourceCounter == static_cast<int32>(fileArray.size()))
     {
         if (!WriteDictionary())
         {
@@ -302,7 +302,7 @@ bool ResourceArchive::PackResource(const FilePath& resourceToPack, int32* resour
     File* packFile = File::Create(resourceToPack, File::OPEN | File::READ);
     if (packFile)
     {
-        int32 packFileSize = (int32)packFile->GetSize();
+        int32 packFileSize = static_cast<int32>(packFile->GetSize());
         dictNode.fileSize = packFileSize;
 
         *resourcePackedSize = 0;
@@ -310,12 +310,12 @@ bool ResourceArchive::PackResource(const FilePath& resourceToPack, int32* resour
 
         uint8* data = new uint8[packFileSize];
 
-        if (packFileSize != (int32)packFile->Read(data, packFileSize))
+        if (packFileSize != static_cast<int32>(packFile->Read(data, packFileSize)))
             return false;
 
         dictNode.packedFileSize = packFileSize;
         *resourcePackedSize = packFileSize;
-        if (packFileSize != (int32)archiveFile->Write(data, packFileSize))
+        if (packFileSize != static_cast<int32>(archiveFile->Write(data, packFileSize)))
             return false;
 
         //printf("data:");
@@ -353,7 +353,7 @@ int32 ResourceArchive::LoadResource(const uint32 resourceIndex, void* data)
     if (data == 0)
         return nodeArray[resourceIndex].fileSize;
 
-    if (!UnpackResource(resourceIndex, (uint8*)data))
+    if (!UnpackResource(resourceIndex, static_cast<uint8*>(data)))
         return -1;
     else
         return nodeArray[resourceIndex].fileSize;

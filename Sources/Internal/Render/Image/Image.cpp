@@ -145,7 +145,7 @@ void Image::MakePink(bool checkers)
     uint32 gray = (checkers) ? 0xffffff00 : 0xffff00ff;
     bool pinkOrGray = false;
 
-    uint32* writeData = (uint32*)data;
+    uint32* writeData = reinterpret_cast<uint32*>(data);
     for (uint32 w = 0; w < width; ++w)
     {
         pinkOrGray = !pinkOrGray;
@@ -238,8 +238,8 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
         newData = new uint8[newDataSize];
         Memset(newData, 0, newDataSize);
 
-        float32 kx = (float32)width / (float32)newWidth;
-        float32 ky = (float32)height / (float32)newHeight;
+        float32 kx = float32(width) / float32(newWidth);
+        float32 ky = float32(height) / float32(newHeight);
 
         float32 xx = 0, yy = 0;
         uint32 offset = 0;
@@ -249,8 +249,8 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
         {
             for (uint32 x = 0; x < newWidth; ++x)
             {
-                posX = (uint32)(xx + 0.5f);
-                posY = (uint32)(yy + 0.5f);
+                posX = uint32(xx + 0.5f);
+                posY = uint32(yy + 0.5f);
                 if (posX >= width)
                     posX = width - 1;
 
@@ -304,10 +304,10 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 
             indexOnLine = i - currentLine * newWidth * formatSize;
 
-            if (currentLine < (uint32)height)
+            if (currentLine < uint32(height))
             {
                 // within height of old image
-                if (indexOnLine < (uint32)(width * formatSize))
+                if (indexOnLine < uint32(width * formatSize))
                 {
                     // we have data in old image for new image
                     indexInOldData = currentLine * width * formatSize + indexOnLine;
@@ -370,7 +370,7 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 
 Image* Image::CopyImageRegion(const Image* imageToCopy, const Rect& rect)
 {
-    return CopyImageRegion(imageToCopy, (uint32)rect.dx, (uint32)rect.dy, (uint32)rect.x, (uint32)rect.y);
+    return CopyImageRegion(imageToCopy, uint32(rect.dx), uint32(rect.dy), uint32(rect.x), uint32(rect.y));
 }
 
 void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
@@ -390,8 +390,8 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
         return;
     }
 
-    uint32 insertWidth = (srcWidth == (uint32)-1) ? image->GetWidth() : srcWidth;
-    uint32 insertHeight = (srcHeight == (uint32)-1) ? image->GetHeight() : srcHeight;
+    uint32 insertWidth = (srcWidth == uint32(-1)) ? image->GetWidth() : srcWidth;
+    uint32 insertHeight = (srcHeight == uint32(-1)) ? image->GetHeight() : srcHeight;
 
     if (srcX + insertWidth > image->GetWidth())
     {
@@ -427,8 +427,7 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 
 void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& srcRect)
 {
-    InsertImage(image, (uint32)dstPos.x, (uint32)dstPos.y,
-                (uint32)srcRect.x, (uint32)srcRect.y, (uint32)srcRect.dx, (uint32)srcRect.dy);
+    InsertImage(image, uint32(dstPos.x), uint32(dstPos.y), uint32(srcRect.x), uint32(srcRect.y), uint32(srcRect.dx), uint32(srcRect.dy));
 }
 
 bool Image::Save(const FilePath& path) const
@@ -444,22 +443,22 @@ void Image::FlipHorizontal()
     switch (format)
     {
     case FORMAT_A8:
-        FlipHorizontal((uint8*)data, width, height);
+        FlipHorizontal(reinterpret_cast<uint8*>(data), width, height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        FlipHorizontal((uint16*)data, width, height);
+        FlipHorizontal(reinterpret_cast<uint16*>(data), width, height);
         break;
 
     case FORMAT_RGBA8888:
-        FlipHorizontal((uint32*)data, width, height);
+        FlipHorizontal(reinterpret_cast<uint32*>(data), width, height);
         break;
 
     case FORMAT_RGB888:
-        FlipHorizontal((RGB888*)data, width, height);
+        FlipHorizontal(reinterpret_cast<RGB888*>(data), width, height);
         break;
 
     default:
@@ -475,22 +474,22 @@ void Image::FlipVertical()
     switch (format)
     {
     case FORMAT_A8:
-        FlipVertical((uint8*)data, width, height);
+        FlipVertical(reinterpret_cast<uint8*>(data), width, height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        FlipVertical((uint16*)data, width, height);
+        FlipVertical(reinterpret_cast<uint16*>(data), width, height);
         break;
 
     case FORMAT_RGBA8888:
-        FlipVertical((uint32*)data, width, height);
+        FlipVertical(reinterpret_cast<uint32*>(data), width, height);
         break;
 
     case FORMAT_RGB888:
-        FlipVertical((RGB888*)data, width, height);
+        FlipVertical(reinterpret_cast<RGB888*>(data), width, height);
         break;
 
     default:
@@ -536,22 +535,22 @@ void Image::Rotate90Right()
     switch (format)
     {
     case FORMAT_A8:
-        Rotate90Right((uint8*)data, (uint8*)newData, height);
+        Rotate90Right(reinterpret_cast<uint8*>(data), reinterpret_cast<uint8*>(newData), height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        Rotate90Right((uint16*)data, (uint16*)newData, height);
+        Rotate90Right(reinterpret_cast<uint16*>(data), reinterpret_cast<uint16*>(newData), height);
         break;
 
     case FORMAT_RGBA8888:
-        Rotate90Right((uint32*)data, (uint32*)newData, height);
+        Rotate90Right(reinterpret_cast<uint32*>(data), reinterpret_cast<uint32*>(newData), height);
         break;
 
     case FORMAT_RGB888:
-        Rotate90Right((RGB888*)data, (RGB888*)newData, height);
+        Rotate90Right(reinterpret_cast<RGB888*>(data), reinterpret_cast<RGB888*>(newData), height);
         break;
 
     default:
@@ -573,22 +572,22 @@ void Image::Rotate90Left()
     switch (format)
     {
     case FORMAT_A8:
-        Rotate90Left((uint8*)data, (uint8*)newData, height);
+        Rotate90Left(reinterpret_cast<uint8*>(data), reinterpret_cast<uint8*>(newData), height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        Rotate90Left((uint16*)data, (uint16*)newData, height);
+        Rotate90Left(reinterpret_cast<uint16*>(data), reinterpret_cast<uint16*>(newData), height);
         break;
 
     case FORMAT_RGBA8888:
-        Rotate90Left((uint32*)data, (uint32*)newData, height);
+        Rotate90Left(reinterpret_cast<uint32*>(data), reinterpret_cast<uint32*>(newData), height);
         break;
 
     case FORMAT_RGB888:
-        Rotate90Left((RGB888*)data, (RGB888*)newData, height);
+        Rotate90Left(reinterpret_cast<RGB888*>(data), reinterpret_cast<RGB888*>(newData), height);
         break;
 
     default:

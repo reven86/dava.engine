@@ -72,7 +72,7 @@ extern void FrameworkMain(int argc, char* argv[]);
 
     // Just as a diagnostic, report the renderer ID that this pixel format binds to.  CGLRenderers.h contains a list of known renderers and their corresponding RendererID codes.
     [pixelFormat getValues:&rendererID forAttribute:NSOpenGLPFARendererID forVirtualScreen:0];
-    NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", (unsigned)rendererID);
+    NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", static_cast<unsigned>(rendererID));
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     trackingArea = nil;
@@ -227,18 +227,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
             // simple mouse - sends float values from 0.1 for one wheel tick
             event.wheelDelta.x = rawScrollDeltaX * rawScrollCoefficient;
             event.wheelDelta.y = rawScrollDeltaY * rawScrollCoefficient;
-        }
-    }
-    else
-    {
-        @try
-        {
-            event.tapCount = [curEvent clickCount];
-        }
-        @catch (NSException* exception)
-        {
-            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
-            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
         }
     }
 }

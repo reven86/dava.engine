@@ -30,7 +30,7 @@
 #ifndef __BEAST_ACTION_H__
 #define __BEAST_ACTION_H__
 
-#include "CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
 #include "Beast/BeastProxy.h"
 
 #if defined(__DAVAENGINE_BEAST__)
@@ -55,15 +55,13 @@ private:
     void PackLightmaps();
     DAVA::FilePath GetLightmapDirectoryPath();
 
-    BeastManager* beastManager;
-    QtWaitDialog* waitDialog;
-
-    SceneEditor2* workingScene;
+private:
+    BeastManager* beastManager = nullptr;
+    QtWaitDialog* waitDialog = nullptr;
+    SceneEditor2* workingScene = nullptr;
     DAVA::FilePath outputPath;
-
-    DAVA::uint64 startTime;
-
-    BeastProxy::eBeastMode beastMode;
+    DAVA::uint64 startTime = 0;
+    BeastProxy::eBeastMode beastMode = BeastProxy::eBeastMode::MODE_LIGHTMAPS;
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

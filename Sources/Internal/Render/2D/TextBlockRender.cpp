@@ -60,10 +60,10 @@ void TextBlockRender::DrawText()
         int32 stringSize = 0;
         int32 blockWidth = 0;
         int32 fontHeight = textBlock->font->GetFontHeight() + textBlock->font->GetVerticalSpacing();
-        int32 stringsCnt = (int32)textBlock->multilineStrings.size();
+        int32 stringsCnt = int32(textBlock->multilineStrings.size());
         for (int32 line = 0; line < stringsCnt; ++line)
         {
-            if (line == (int32)textBlock->multilineStrings.size() - 1)
+            if (line == int32(textBlock->multilineStrings.size()) - 1)
             {
                 textBlock->cacheUseJustify = false;
             }
@@ -71,7 +71,7 @@ void TextBlockRender::DrawText()
             int32 align = textBlock->GetVisualAlign();
             if (align & ALIGN_RIGHT)
             {
-                xOffset = (int32)(textBlock->cacheTextSize.dx - textBlock->stringSizes[line] + textBlock->cacheSpriteOffset.x);
+                xOffset = int32(textBlock->cacheTextSize.dx - textBlock->stringSizes[line] + textBlock->cacheSpriteOffset.x);
                 if (xOffset < 0)
                 {
                     xOffset = 0;
@@ -79,7 +79,7 @@ void TextBlockRender::DrawText()
             }
             else if (align & ALIGN_HCENTER)
             {
-                xOffset = (int32)(textBlock->cacheTextSize.dx - textBlock->stringSizes[line] + textBlock->cacheSpriteOffset.x) / 2;
+                xOffset = int32(textBlock->cacheTextSize.dx - textBlock->stringSizes[line] + textBlock->cacheSpriteOffset.x) / 2;
                 if (xOffset < 0)
                 {
                     xOffset = 0;

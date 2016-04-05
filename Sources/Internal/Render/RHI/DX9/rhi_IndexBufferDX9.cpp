@@ -31,7 +31,7 @@
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_dx9.h"
@@ -298,6 +298,7 @@ void ReleaseAll()
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
         b->Destroy(true);
+        b->MarkNeedRestore();
     }
 }
 

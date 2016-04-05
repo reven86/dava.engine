@@ -33,7 +33,7 @@
 
     #include "Debug/DVAssert.h"
     #include "Debug/Profiler.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"
@@ -112,7 +112,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
     if (is_depth)
     {
-        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), (uint64)(uid) } };
+        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), reinterpret_cast<uint64>(uid) } };
 
         ExecGL(&cmd1, 1);
 
@@ -168,7 +168,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     }
     else
     {
-        GLCommand cmd1 = { GLCommand::GEN_TEXTURES, { 1, (uint64)(uid) } };
+        GLCommand cmd1 = { GLCommand::GEN_TEXTURES, { 1, reinterpret_cast<uint64>(uid) } };
 
         ExecGL(&cmd1, 1, force_immediate);
 
@@ -228,7 +228,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                             cmd->arg[6] = uint64(fmt);
                             cmd->arg[7] = type;
                             cmd->arg[8] = uint64(data_sz);
-                            cmd->arg[9] = (uint64)(data);
+                            cmd->arg[9] = reinterpret_cast<uint64>(data);
                             cmd->arg[10] = compressed;
 
                             if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
@@ -324,7 +324,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 void TextureGLES2_t::Destroy(bool force_immediate)
 {
     GLCommand cmd[16];
-    unsigned cmd_cnt = 1;
+    size_t cmd_cnt = 1;
 
     if (isRenderTarget)
     {
@@ -364,7 +364,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[1] = uint64(&(uid));
     }
 
-    ExecGL(cmd, cmd_cnt, force_immediate);
+    ExecGL(cmd, static_cast<uint32>(cmd_cnt), force_immediate);
 
     fbo.clear();
 
@@ -551,7 +551,7 @@ gles2_Texture_Unmap(Handle tex)
     {
       { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } },
       { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
-      { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed } },
+      { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), reinterpret_cast<uint64>(self->mappedData), compressed } },
       { GLCommand::RESTORE_TEXTURE0, {} }
     };
 
@@ -619,7 +619,7 @@ void gles2_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
         {
           { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } },
           { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
-          { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed } },
+          { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), reinterpret_cast<uint64>(data), compressed } },
           { GLCommand::RESTORE_TEXTURE0, {} }
         };
 

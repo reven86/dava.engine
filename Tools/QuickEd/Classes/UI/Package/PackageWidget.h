@@ -57,6 +57,7 @@ public:
     explicit PackageWidget(QWidget* parent = 0);
     ~PackageWidget();
 
+    PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList;
 
 signals:
@@ -81,8 +82,8 @@ private slots:
     void OnMoveDown();
     void OnMoveLeft();
     void OnMoveRight();
-    void OnBeforeNodesMoved(const SelectedNodes& nodes);
-    void OnNodesMoved(const SelectedNodes& nodes);
+    void OnBeforeProcessNodes(const SelectedNodes& nodes);
+    void OnAfterProcessNodes(const SelectedNodes& nodes);
     void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex& previous);
 
 private:
@@ -126,7 +127,7 @@ private:
 
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
-    QStack<QPersistentModelIndex> currentIndexes;
+    std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
 };
 

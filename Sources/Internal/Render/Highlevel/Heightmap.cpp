@@ -72,7 +72,7 @@ bool Heightmap::BuildFromImage(const DAVA::Image* image)
     if (FORMAT_A16 == heightImage->format)
     {
         uint16* dstData = data;
-        uint16* srcData = (uint16*)heightImage->data;
+        uint16* srcData = reinterpret_cast<uint16*>(heightImage->data);
         for (int32 i = size * size - 1; i >= 0; --i)
         {
             uint16 packed = *srcData++;

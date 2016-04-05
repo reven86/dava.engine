@@ -59,7 +59,7 @@ char jpegLastErrorMsg[JMSG_LENGTH_MAX];
 void jpegErrorExit(j_common_ptr cinfo)
 {
     // cinfo->err actually points to a jpegErrorManager struct
-    jpegErrorManager* myerr = (jpegErrorManager*)cinfo->err;
+    jpegErrorManager* myerr = reinterpret_cast<jpegErrorManager*>(cinfo->err);
     // note : *(cinfo->err) is now equivalent to myerr->pub
 
     // output_message is a method to print an error message
@@ -130,7 +130,17 @@ eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
     jpeg_create_decompress(&cinfo);
+    
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header(&cinfo, TRUE);
     jpeg_start_decompress(&cinfo);
@@ -247,7 +257,18 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath& fileName, const Vector<Image
         SafeRelease(convertedImage);
         return eErrorCode::ERROR_WRITE_FAIL;
     }
+    
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
     jpeg_create_compress(&cinfo);
+    
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
     jpeg_stdio_dest(&cinfo, outfile);
 
     // Setting the parameters of the output file here
@@ -306,8 +327,18 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
         infile->Seek(0, File::SEEK_FROM_START);
         return ImageInfo();
     }
+    
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
     jpeg_create_decompress(&cinfo);
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header(&cinfo, TRUE);
     infile->Seek(0, File::SEEK_FROM_START);

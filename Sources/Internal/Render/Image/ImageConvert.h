@@ -217,7 +217,7 @@ struct ConvertA16toA8
     inline void operator()(const uint16* input, uint8* output)
     {
         uint16 pixel = *input;
-        *output = (uint8)pixel;
+        *output = uint8(pixel);
     }
 };
 
@@ -321,8 +321,8 @@ struct ConvertABGR4444toRGBA4444
 {
     inline void operator()(const uint16* input, uint16* output)
     {
-        const uint8* in = (const uint8*)input;
-        uint8* out = (uint8*)output;
+        const uint8* in = reinterpret_cast<const uint8*>(input);
+        uint8* out = reinterpret_cast<uint8*>(output);
 
         //aaaa bbbb gggg rrrr --> rrrr gggg bbbb aaaa
         uint8 ab = in[0];
@@ -586,7 +586,7 @@ struct PackNormalizedRGBA8888
         v += Vector3(.5f, .5f, .5f);
 
         PackRGBA8888 packFunc;
-        packFunc((uint32)(0xFF * v.x), (uint32)(0xFF * v.y), (uint32)(0xFF * v.z), a, output);
+        packFunc(uint32(0xFF * v.x), uint32(0xFF * v.y), uint32(0xFF * v.z), a, output);
     }
 };
 

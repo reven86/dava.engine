@@ -155,7 +155,7 @@ bool Collisions::Is2DPolygonIntersects2DPolygon(const Polygon2& poly1,
                 float fpntY = poly1.points[pnt].y;
                 float fiY = poly2.points[i].y;
                 float fjY = poly2.points[j].y;
-                float t = (float)(fpntY - fiY) / (float)(fjY - fiY);
+                float t = (fpntY - fiY) / (fjY - fiY);
                 if (poly2.points[i].x + t * (poly2.points[j].x - poly2.points[i].x) >= poly1.points[pnt].x)
                 {
                     count++;

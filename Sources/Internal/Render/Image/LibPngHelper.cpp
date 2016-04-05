@@ -169,12 +169,12 @@ eErrorCode LibPngHelper::WriteFile(const FilePath& fileName, const Vector<Image*
         bytes_for_color = 2;
     }
 
-    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    png_bytep* row_pointers = static_cast<png_bytep*>(malloc(sizeof(png_bytep) * height));
 
     for (int y = 0; y < height; y++)
     {
         // row_pointers[y] = (png_byte*) &data[y * width * 4];
-        row_pointers[y] = (png_byte*)&imageData[y * width * bytes_for_color];
+        row_pointers[y] = reinterpret_cast<png_byte*>(&imageData[y * width * bytes_for_color]);
     }
 
     // create file
@@ -294,9 +294,9 @@ DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) 
         return ImageInfo();
     }
 
-    char sig[8];
+    uint8 sig[8];
     infile->Read(sig, 8);
-    if (!png_check_sig((unsigned char*)sig, 8))
+    if (!png_check_sig(sig, 8))
     {
         return ImageInfo();
     }
@@ -310,7 +310,7 @@ DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        png_destroy_read_struct(&png_ptr, (png_infopp) nullptr, (png_infopp) nullptr);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         return ImageInfo();
     }
 
@@ -433,10 +433,10 @@ eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat tar
 {
     DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
 
-    char sig[8];
+    uint8 sig[8];
     infile->Read(sig, 8);
 
-    if (!png_check_sig((unsigned char*)sig, 8))
+    if (!png_check_sig(sig, 8))
     {
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -452,7 +452,7 @@ eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat tar
     info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        png_destroy_read_struct(&png_ptr, (png_infopp) nullptr, (png_infopp) nullptr);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         return eErrorCode::ERROR_READ_FAIL; // out of memory
     }
 
@@ -532,7 +532,7 @@ eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat tar
     image->data = new uint8[image->dataSize];
 
     png_bytepp row_pointers = nullptr;
-    row_pointers = (png_bytepp)malloc(height * sizeof(png_bytep));
+    row_pointers = static_cast<png_bytepp>(malloc(height * sizeof(png_bytep)));
     if (nullptr == row_pointers)
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);

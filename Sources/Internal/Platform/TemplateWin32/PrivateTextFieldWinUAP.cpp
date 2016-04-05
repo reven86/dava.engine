@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "Math/Color.h"
 

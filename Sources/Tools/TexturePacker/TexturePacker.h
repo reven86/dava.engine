@@ -31,38 +31,37 @@
 #define __DAVAENGINE_TEXTURE_PACKER_H__
 
 #include "Base/BaseTypes.h"
+#include "Functional/Function.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 #include "Math/Math2D.h"
 #include "TextureCompression/TextureConverter.h"
-#include "TexturePacker/TextureAtlas.h"
+#include "TexturePacker/Spritesheet.h"
 
 namespace DAVA
 {
-
 class DefinitionFile;
 class PngImageExt;
 class FilePath;
 
-struct SizeSortItem
+struct SpriteItem
 {
-	int					imageSize;
-	DefinitionFile *	defFile;
-	int					frameIndex;
+    uint32 spriteWeight = 0;
+    DefinitionFile* defFile = nullptr;
+    uint32 frameIndex = 0;
 };
-    
-class TexturePacker 
+
+class TexturePacker
 {
 public:
+    static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
+    static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
+    static const uint32 DEFAULT_MARGIN = 1;
 
-	static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
-	static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
-	static const uint32 DEFAULT_MARGIN = 1;
-
-	struct FilterItem
-	{
-		int8 minFilter;
-		int8 magFilter;
+    struct FilterItem
+    {
+        int8 minFilter;
+        int8 magFilter;
         int8 mipFilter;
 
         FilterItem(int8 minF, int8 magF, int8 mipF)
@@ -74,7 +73,7 @@ public:
     };
 
 public:
-	TexturePacker();
+    TexturePacker();
 
     // pack textures to single texture
     void PackToTextures(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU);
@@ -83,28 +82,24 @@ public:
     // pack one sprite and use several textures if more than one needed
     void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& remainingList, eGPUFamily forGPU);
 
-    TextureAtlasPtr TryToPack(const Rect2i& textureRect);
-    bool WriteDefinition(const TextureAtlasPtr& atlas, const FilePath& outputPath, const String& textureName, DefinitionFile* defFile);
-    bool WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedAtlases, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile);
-
-    float TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas, Vector<SizeSortItem>& tempSortVector);
-
-	void UseOnlySquareTextures();
-
-	void SetMaxTextureSize(uint32 maxTextureSize);
-	
+    void SetUseOnlySquareTextures();
+    void SetMaxTextureSize(uint32 maxTextureSize);
     void SetConvertQuality(TextureConverter::eConvertQuality quality);
+    void SetAlgorithms(const Vector<PackingAlgorithm>& algorithms);
 
-	// set visible 1 pixel border for each texture
-	void SetTwoSideMargin(bool val=true) { useTwoSideMargin = val; }
+    // set visible 1 pixel border for each texture
+    void SetTwoSideMargin(bool val = true)
+    {
+        useTwoSideMargin = val;
+    }
+    void SetTexturesMargin(uint32 margin)
+    {
+        texturesMargin = margin;
+    }
 
-	// set space in pixels between two neighboring textures. value is omitted if two-side margin is set
-	void SetTexturesMargin(uint32 margin) { texturesMargin = margin; }
+    const Set<String>& GetErrors() const;
 
-	const Set<String>& GetErrors() const;
-	
 private:
-
     struct ImageExportKeys
     {
         eGPUFamily forGPU = GPU_ORIGIN;
@@ -114,36 +109,42 @@ private:
         bool toConvertOrigin = false;
         bool toComressForGPU = false;
     };
-    
+
     ImageExportKeys GetExportKeys(eGPUFamily forGPU);
     void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
 
     rhi::TextureAddrMode GetDescriptorWrapMode();
     FilterItem GetDescriptorFilter(bool generateMipMaps = false);
 
-    bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
-    
-	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
-    void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const ImageCell& drawRect, const Rect2i& frameRect);
+    bool CheckFrameSize(const Size2i& spriteSize, const Size2i& frameSize);
 
-    Vector<SizeSortItem> sortVector;
+    Vector<SpriteItem> PrepareSpritesVector(const List<DefinitionFile*>& defList);
+    Vector<std::unique_ptr<SpritesheetLayout>> PackSprites(Vector<SpriteItem>& spritesToPack, const ImageExportKeys& imageExportKeys);
+    void SaveResultSheets(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const ImageExportKeys& imageExportKeys);
+
+    int32 TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem>& tempSortVector, bool fullPackOnly);
+
+    bool WriteDefinition(const std::unique_ptr<SpritesheetLayout>& sheet, const FilePath& outputPath, const String& textureName, DefinitionFile* defFile);
+    bool WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedAtlases, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile);
+    void WriteDefinitionString(FILE* fp, const Rect2i& writeRect, const Rect2i& originRect, int textureIndex, const String& frameName);
+
+    void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const SpriteBoundsRect& drawRect, const Rect2i& frameRect);
+
     uint32 maxTextureSize;
 
     bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
-	
+
     TextureConverter::eConvertQuality quality;
 
-	bool useTwoSideMargin;
-	uint32 texturesMargin;
-    
-	Set<String> errors;
-	void AddError(const String& errorMsg);
+    bool useTwoSideMargin;
+    uint32 texturesMargin;
+    Vector<PackingAlgorithm> packAlgorithms;
 
+    Set<String> errors;
+    void AddError(const String& errorMsg);
 };
-
 };
 
 
 #endif // __DAVAENGINE_TEXTURE_PACKER_H__
-

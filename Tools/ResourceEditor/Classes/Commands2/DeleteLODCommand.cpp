@@ -53,9 +53,9 @@ DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex
     DAVA::int32 count = (DAVA::int32)ro->GetRenderBatchCount();
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
-        DAVA::int32 lodIndex = 0, switchIndex = 0;
-        ro->GetRenderBatch(i, lodIndex, switchIndex);
-        if (lodIndex == deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
+        DAVA::int32 batchLodIndex = 0, batchSwitchIndex = 0;
+        ro->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
+        if (batchLodIndex == deletedLodIndex && (requestedSwitchIndex == batchSwitchIndex || requestedSwitchIndex == -1))
         {
             DeleteRenderBatchCommand* command = new DeleteRenderBatchCommand(entity, ro, i);
             deletedBatches.push_back(command);
@@ -148,7 +148,7 @@ void DeleteLODCommand::Undo()
         UndoInternalCommand(deletedBatches[i]);
     }
 
-    //restore lodlayers and disatnces
+    //restore lodlayers and distances
     lodComponent->lodLayersArray = savedDistances;
 }
 

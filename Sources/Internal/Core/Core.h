@@ -262,16 +262,23 @@ public:
 
     void EnableConsoleMode();
 
+    // InitWindowSize, WindowSizeChanged deprecated methods
+    void InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
+
     rhi::InitParam rendererParams;
 
 protected:
-    int32 screenOrientation;
+    eScreenOrientation screenOrientation;
 
     void SetCommandLine(int argc, char* argv[]);
     void SetCommandLine(Vector<String>&& args);
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
+    // ApplyWindowSize deprecated method
+    void ApplyWindowSize();
+
     KeyedArchive* options;
 
     bool isActive;
@@ -282,7 +289,20 @@ private:
 
     Vector<String> commandLine;
     bool isConsoleMode;
-    void* nativeView;
+
+    struct ScreenMetrics
+    {
+        void* nativeView = nullptr;
+        float32 width = 0.f;
+        float32 height = 0.f;
+        float32 userScale = 0.f;
+        float32 scaleX = 0.f;
+        float32 scaleY = 0.f;
+        bool nativeViewModified = false;
+        bool screenMetricsModified = false;
+        bool initialized = false;
+    };
+    ScreenMetrics screenMetrics;
 };
 
 inline bool Core::IsActive()

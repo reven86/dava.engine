@@ -224,7 +224,7 @@ void Sprite::InitFromFile(File* file)
     int32 width, height;
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d %d", &width, &height);
-    size = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)width, (float32)height), resourceSizeIndex);
+    size = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2(float32(width), float32(height)), resourceSizeIndex);
 
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d", &frameCount);
@@ -248,10 +248,10 @@ void Sprite::InitFromFile(File* file)
         sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
         frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
 
-        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect((float32)xOff, (float32)yOff, (float32)dx, (float32)dy), resourceSizeIndex);
+        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect(float32(xOff), float32(yOff), float32(dx), float32(dy)), resourceSizeIndex);
 
-        rectsAndOffsets[i][0] = (float32)x;
-        rectsAndOffsets[i][1] = (float32)y;
+        rectsAndOffsets[i][0] = float32(x);
+        rectsAndOffsets[i][1] = float32(y);
         rectsAndOffsets[i][2] = rect.dx;
         rectsAndOffsets[i][3] = rect.dy;
         rectsAndOffsets[i][4] = rect.x;
@@ -285,14 +285,14 @@ void Sprite::InitFromFile(File* file)
         dx += x;
         dy += y;
 
-        texCoords[i][0] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][1] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][2] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][3] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][4] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][5] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][6] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][7] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][0] = (x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][1] = (y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][2] = (dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][3] = (y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][4] = (x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][5] = (dy - yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][6] = (dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][7] = (dy - yof) / textures[frameTextureIndex[i]]->height;
     }
     defaultPivotPoint.x = 0;
     defaultPivotPoint.y = 0;
@@ -341,7 +341,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     Sprite* sprite = nullptr;
     if (texture)
     {
-        Vector2 sprSize((float32)width, (float32)height);
+        Vector2 sprSize((float32(width)), (float32(height)));
         if (inVirtualSpace)
         {
             sprSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(sprSize);
@@ -428,7 +428,7 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
 {
     Clear();
 
-    Vector2 offset((float32)xOffset, (float32)yOffset);
+    Vector2 offset((float32(xOffset)), (float32(yOffset)));
     size = Vector2(sprWidth, sprHeight);
     if (!contentScaleIncluded)
     {
@@ -472,8 +472,8 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
         float32 x, y, dx, dy, xOff, yOff;
         x = offset.x;
         y = offset.y;
-        dx = (targetWidth == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x) : (float32)targetWidth;
-        dy = (targetHeight == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y) : (float32)targetHeight;
+        dx = (targetWidth == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x) : float32(targetWidth);
+        dy = (targetHeight == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y) : float32(targetHeight);
         xOff = 0;
         yOff = 0;
 
@@ -696,7 +696,7 @@ void Sprite::PrepareForNewSize()
 
     String pathname = relativePathname.GetAbsolutePathname();
 
-    int pos = (int)pathname.find(VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()));
+    int32 pos = int32(pathname.find(VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex())));
     String scaledName = pathname.substr(0, pos) + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()).length());
 
     Logger::FrameworkDebug("Seraching for file: %s", scaledName.c_str());

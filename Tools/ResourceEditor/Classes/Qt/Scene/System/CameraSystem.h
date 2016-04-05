@@ -34,7 +34,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "UI/UIEvent.h"
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Base/Introspection.h"
 
 class SceneCameraSystem : public DAVA::SceneSystem
@@ -75,20 +75,22 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
 
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+
     bool SnapEditorCameraToLandscape(bool snap);
     bool IsEditorCameraSnappedToLandscape() const;
 
     void MoveToSelection();
     void MoveToStep(int ofs);
 
+    void EnableSystem();
+
 protected:
     void OnKeyboardInput(DAVA::UIEvent* event);
 
     void Draw();
     void ProcessCommand(const Command2* command, bool redo);
-
-    void AddEntity(DAVA::Entity* entity) override;
-    void RemoveEntity(DAVA::Entity* entity) override;
 
     void CreateDebugCameras();
     void RecalcCameraAspect();
@@ -98,7 +100,6 @@ protected:
     DAVA::Entity* GetEntityWithEditorCamera() const;
 
     DAVA::Rect viewportRect;
-    bool debugCamerasCreated;
 
     DAVA::Camera* curSceneCamera;
 
@@ -107,7 +108,7 @@ protected:
     DAVA::Vector3 newPos;
     DAVA::Vector3 newTar;
 
-    DAVA::Set<DAVA::Entity*> sceneCameras;
+    DAVA::Vector<DAVA::Entity*> sceneCameras;
 
     DAVA::float32 distanceToCamera;
 

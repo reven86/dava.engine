@@ -50,11 +50,6 @@
 
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
-    , davaUIScreenID(0)
-    , dava3DViewMargin(3)
-    , previewDialog(NULL)
-    , newSceneCounter(0)
-    , curScene(NULL)
 {
     this->setMouseTracking(true);
 
@@ -129,6 +124,10 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
 SceneTabWidget::~SceneTabWidget()
 {
+    if (previewDialog != nullptr)
+    {
+        previewDialog->RemoveFromParent();
+    }
     SafeRelease(previewDialog);
 
     ReleaseDAVAUI();
@@ -205,6 +204,7 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
             QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
         }
     }
+    scene->EnableEditorSystems();
 
     SetTabScene(tabIndex, scene);
     SetCurrentTab(tabIndex);

@@ -18,7 +18,7 @@ RuntimeTextures::eDynamicTextureSemantic RuntimeTextures::GetDynamicTextureSeman
 {
     for (int32 k = 0; k < DYNAMIC_TEXTURES_COUNT; ++k)
         if (name == DYNAMIC_TEXTURE_NAMES[k])
-            return (eDynamicTextureSemantic)k;
+            return eDynamicTextureSemantic(k);
     return TEXTURE_STATIC;
 }
 

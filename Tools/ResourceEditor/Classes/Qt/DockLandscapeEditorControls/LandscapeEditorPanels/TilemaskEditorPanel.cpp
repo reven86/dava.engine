@@ -596,18 +596,20 @@ void TilemaskEditorPanel::OnTileColorChanged(int32 tileNumber, Color color)
 
 void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-    if (scene != GetActiveScene() || !GetEditorEnabled() || command->GetId() != CMDID_SET_TILE_COLOR)
+    SceneEditor2* sceneEditor = GetActiveScene();
+    if (scene != sceneEditor || !GetEditorEnabled())
     {
         return;
     }
 
-    SceneEditor2* sceneEditor = GetActiveScene();
-    int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
-
-    for (int32 i = 0; i < count; ++i)
+    if (command->MatchCommandID(CMDID_SET_TILE_COLOR))
     {
-        Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
-        tileTexturePreviewWidget->UpdateColor(i, color);
+        uint32 count = sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
+        for (uint32 i = 0; i < count; ++i)
+        {
+            Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
+            tileTexturePreviewWidget->UpdateColor(i, color);
+        }
     }
 }
 

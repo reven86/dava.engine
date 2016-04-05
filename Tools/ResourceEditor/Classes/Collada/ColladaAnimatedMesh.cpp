@@ -42,16 +42,16 @@ ColladaAnimatedMesh::ColladaAnimatedMesh(FCDController* animationController)
     if (isSkin)
     {
         FCDSkinController* skinController = animationController->GetSkinController();
-        int jointCount = skinController->GetJointCount();
+        size_t jointCount = skinController->GetJointCount();
         FCDSkinControllerJoint* origJoints = skinController->GetJoints();
 
         joints.resize(jointCount);
-        for (int j = 0; j < jointCount; ++j)
+        for (size_t j = 0; j < jointCount; ++j)
         {
             joints[j].joint = &origJoints[j];
             joints[j].parentJoint = 0;
             joints[j].node = 0;
-            joints[j].index = j;
+            joints[j].index = static_cast<int32>(j);
             joints[j].parentIndex = -1;
 
             FMMatrix44 bindPoseInverse = joints[j].joint->GetBindPoseInverse();

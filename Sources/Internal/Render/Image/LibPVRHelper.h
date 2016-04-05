@@ -166,7 +166,7 @@ public:
 protected:
     static PVRFile* ReadFile(const FilePath& filePathname, bool readMetaData = false, bool readData = false);
     static PVRFile* ReadFile(File* file, bool readMetaData = false, bool readData = false);
-    static bool LoadImages(const PVRFile* pvrFile, Vector<Image*>& imageSet, int32 fromMipMap);
+    static bool LoadImages(File* infile, Vector<Image*>& imageSet, int32 fromMipMap);
 
     static bool WriteFile(const PVRFile* pvrFile, File* outFile);
 
