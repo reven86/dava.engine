@@ -204,7 +204,7 @@ protected:
 
     uint32 heightmapSizePow2 = 0;
     float32 heightmapSizef = 0.f;
-    pointer_size hmSizeParamSemantic = 1;
+    uint8 hmSizeParamSemantic = 0;
 
     uint32 drawIndices = 0;
 

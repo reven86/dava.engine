@@ -293,6 +293,7 @@ void Landscape::AllocateGeometryData()
     heightmapSizePow2 = uint32(HighestBitIndex(heightmapSize));
     heightmapSizef = float32(heightmapSize);
     hmSizeParamSemantic++;
+    hmSizeParamSemantic &= 0xf;
 
     subdivPatchCount = 0;
     uint32 size = 1;
@@ -1340,7 +1341,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
     RenderObject::BindDynamicParameters(camera);
 
     if (heightmap)
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_TEXTURE_SIZE, &heightmapSizef, hmSizeParamSemantic);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_TEXTURE_SIZE, &heightmapSizef, (pointer_size(this) & (~pointer_size(0xf))) | hmSizeParamSemantic);
 }
 
 void Landscape::PrepareToRender(Camera* camera)
