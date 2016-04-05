@@ -506,6 +506,10 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
             {
                 DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
             }
+            if (!textField->IsEditing())
+            {
+                textField->StartEdit();
+            }
         }
     }
 }
