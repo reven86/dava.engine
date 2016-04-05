@@ -35,53 +35,60 @@ class SmartDlcImpl;
 class SmartDlc final
 {
 public:
-    using PackID = String;
+    using PackName = String;
 
     struct PackState
     {
-        enum Status
+        enum Status : uint32
         {
-            NotExists, // не существует в списке файлов
-            Exists, // существует в списке файлов, но не загружен на FS
+            NotRequested, // существует в списке файлов, но не загружен на FS
             Queued, // существует в списке файлов, поставлен в очередь на загрузку
             Downloading, // существует в списке файлов, загружается на FS
-            Ready // существует на FS и готов к использованию
+            Mounted // существует на FS и готов к использованию
         };
 
-        PackID name = "";
-        Status state = NotExists;
-        float priority = 0.5f; // текущий приоритет закачки
-        float progress = 0.0f; // download progress - from 0.0 to 1.0
+        PackState(const PackName& name, Status state, float priority, float progress);
+        PackState() = delete;
+        PackState(const PackState&) = delete;
+        PackState& operator=(const PackState&) = delete;
+
+        PackName name; // уникальное имя пака
+        Status state; // NotRequested default;
+        float priority; // текущий приоритет закачки
+        float downloadProgress; // from 0.0 to 1.0
     };
 
+    // 1. открываю SQlite базу вычитываю всю инфу по пакам (в случае ошибки - исключение, продолжать загружать игру не возможно)
+    // 2. подключаю все паки которые находятся по пути localPacksDir (в случае ошибки, исключение, кто-то поудалял внутреннии ресурсы игры)
+    // 3. сохраняю url на сервер для докачки новых паков (не трачу время на его проверку, если сервер лежит например или не доступен)
     SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl);
     ~SmartDlc();
 
     // контроль фоновых загрузок (обработка запросов)
-    bool IsStarted();
-    void Start(); // TODO Restart()? Continue()?
-    void Stop();
+    // если обработка запросов не включена, то запросы всех паков переключаются в Queued состояние
+    bool IsProcessingEnabled() const;
+    void EnableProcessing();
+    void DisableProcessing();
 
-    // получение имени пока по запросу или по имени файла
-    PackID FindPack(const FilePath& file);
+    // получение имени пака по относительному имени файла внтутри пака (если файл не принадлежит ни одному паку исключение)
+    const PackName& FindPack(const FilePath& relativePathInPack) const;
 
-    // получение статуса файла, пака, запроса
-    const PackState& GetPackState(PackID packID);
-
-    // получение паков, находящихся в очереди
-    void GetRequestedPacks(Vector<PackState>& out) const;
+    // получение статуса пака (исключение если неверный айдишник пака?)
+    const PackState& GetPackState(const PackName& packID) const;
 
     // запрос пака или файла (запрос файла на самом деле
     // сделает запрос пака в котором этот файл находится)
-    const PackState& RequestFile(const FilePath& file, float priority = 0.5f);
-    const PackState& RequestPack(const String& packName, float priority = 0.5f);
+    const PackState& RequestPack(const PackName& packID, float priority = 0.5f);
+
+    // получение паков, находящихся в очереди
+    Vector<PackState> GetRequestedPacks() const;
 
     // возможность освободить место на устройстве пользователя
     // удалив скаченный пак
-    void DeletePack(PackID pid);
+    void DeletePack(const PackName& packID);
 
     // отслеживание статуса запросов
-    Signal<const String, const PackState&> onPackStateChanged;
+    Signal<const PackName&, const PackState&> onPackStateChanged;
 
 private:
     std::unique_ptr<SmartDlcImpl> impl;
