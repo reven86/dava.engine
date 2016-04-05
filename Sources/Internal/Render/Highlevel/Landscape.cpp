@@ -848,9 +848,9 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
                 {
                     neighbourMorph.data[i] = morph;
                 }
-            }
-                DAVA_SWITCH_CASE_FALLTHROUGH //there's no need break, it's ok
-                case RENDERMODE_INSTANCING:
+            } //there's no need break, it's ok
+                DAVA_SWITCH_CASE_FALLTHROUGH
+            case RENDERMODE_INSTANCING:
             {
                 neighbourLevelf.data[i] = patchTerminated ? float32(patch->lastSubdivLevel) : float32(level);
             }
