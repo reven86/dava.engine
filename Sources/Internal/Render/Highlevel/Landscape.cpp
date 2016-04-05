@@ -120,6 +120,8 @@ Landscape::Landscape()
 
 Landscape::~Landscape()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     ReleaseGeometryData();
 
     SafeRelease(heightmap);
@@ -280,6 +282,8 @@ bool Landscape::BuildHeightmap()
 
 void Landscape::AllocateGeometryData()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (!heightmap->Size())
     {
         subdivLevelCount = 0;
@@ -341,6 +345,8 @@ void Landscape::PrepareMaterial(NMaterial* material)
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(renderMode != RENDERMODE_NO_INSTANCING);
 
     Vector<Image*> textureData = CreateHeightTextureData(heightmap, renderMode);
@@ -357,6 +363,8 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderM
 
 Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMode renderMode)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     const uint32 hmSize = heightmap->Size();
     DVASSERT(IsPowerOf2(heightmap->Size()));
     DVASSERT(renderMode != RENDERMODE_NO_INSTANCING);
@@ -427,6 +435,8 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMo
 
 Texture* Landscape::CreateTangentTexture()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Vector<Image*> textureData = CreateTangentBasisTextureData();
 
     Texture* tx = Texture::CreateFromData(textureData);
@@ -441,6 +451,8 @@ Texture* Landscape::CreateTangentTexture()
 
 Vector<Image*> Landscape::CreateTangentBasisTextureData()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     const uint32 hmSize = heightmap->Size();
     DVASSERT(IsPowerOf2(heightmap->Size()));
 
@@ -883,6 +895,8 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
 void Landscape::AllocateGeometryDataNoInstancing()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     rhi::VertexLayout vLayout;
     vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
@@ -919,6 +933,8 @@ void Landscape::AllocateGeometryDataNoInstancing()
 
 void Landscape::AllocateRenderBatch()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     ScopedPtr<RenderBatch> batch(new RenderBatch());
     AddRenderBatch(batch);
 
@@ -1098,6 +1114,8 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
 
 void Landscape::FlushQueue()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (queueIndexCount == 0)
         return;
 
@@ -1137,6 +1155,8 @@ void Landscape::ClearQueue()
 
 void Landscape::AllocateGeometryDataInstancing()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     heightTexture = CreateHeightTexture(heightmap, renderMode);
     landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
@@ -1669,6 +1689,8 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 
 void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (indices.size() < newSize)
     {
         indices.resize(2 * newSize);
@@ -1755,6 +1777,8 @@ bool Landscape::IsDrawMorphing() const
 
 void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(heightmap->Size() == fromHeightmap->Size());
 
     UpdatePatchInfo(0, 0, 0, rect);
