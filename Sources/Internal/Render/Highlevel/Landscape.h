@@ -338,7 +338,6 @@ inline LandscapeSubdivision* Landscape::GetSubdivision()
 {
     return subdivision;
 }
-
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__
