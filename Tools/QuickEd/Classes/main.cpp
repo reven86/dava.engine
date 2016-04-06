@@ -55,7 +55,10 @@ int main(int argc, char* argv[])
     DAVA::Core::Run(argc, argv);
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
-    PreferencesStorage preferencesStorage(DAVA::FilePath("testFile.archive"), DAVA::FilePath("testFile.archive"));
+    const char* settingsPath = "QuickEdSettings.archive";
+    DAVA::FilePath defaultPreferencesPath(DAVA::String("~res:/") + settingsPath);
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage preferencesStorage(defaultPreferencesPath, localPrefrencesPath);
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
