@@ -256,20 +256,50 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Warning("============================ Warning ============================");
             Logger::Warning("| File contains layer `%s` with opacity less than 100%% (%.0f)", layerName.c_str(), 100.0f * static_cast<float>(layer.opacity) / 255.0f);
             Logger::Warning("| %s", psdName);
-            Logger::Warning("===============================================================");
+            Logger::Warning("=================================================================");
         }
 
         frameNames[lIndex] = layerName;
         pathsInfo[lIndex] = useLayerNames || layerName.empty() ? layerName : String("frame") + std::to_string(lIndex);
 
-        uint32* p = reinterpret_cast<uint32*>(layer.image_data);
+        uint32* sourceData = reinterpret_cast<uint32*>(layer.image_data);
         for (psd_int i = 0, e = layer.width * layer.height; i < e; ++i)
         {
-            p[i] = (p[i] & 0xff00ff00) | (p[i] & 0x000000ff) << 16 | (p[i] & 0xff0000) >> 16;
+            sourceData[i] = (sourceData[i] & 0xff00ff00) | (sourceData[i] & 0x000000ff) << 16 | (sourceData[i] & 0xff0000) >> 16;
         }
 
-        auto data = reinterpret_cast<char*>(layer.image_data);
-        if (DefinitionFileLocal::WritePNGImage(layer.width, layer.height, data, outImageBasePath.GetAbsolutePathname().c_str(), 4, 8) == false)
+        bool shouldManuallyReleaseData = false;
+        auto imageData = reinterpret_cast<char*>(layer.image_data);
+        int imageWidth = layer.width;
+        int imageHeight = layer.height;
+
+        if ((layer.left < 0) || (layer.right > 0) || (layer.width > psd->width) || (layer.height > psd->height))
+        {
+            int xOffset = Max(0, -layer.left);
+            int yOffset = Max(0, -layer.top);
+            imageWidth = Min(layer.width - xOffset, psd->width);
+            imageHeight = Min(layer.height - yOffset, psd->height);
+
+            Logger::Warning("============================ Warning ============================");
+            Logger::Warning("| File contains layer `%s` which is larger than canvas", layerName.c_str());
+            Logger::Warning("| %s", psdName);
+            Logger::Warning("=================================================================");
+
+            size_type rowSize = 4 * imageWidth;
+
+            uint32* croppedData = reinterpret_cast<uint32*>(calloc(imageWidth * imageHeight, 4));
+            for (int y = 0; y < imageHeight; ++y)
+            {
+                auto src = sourceData + xOffset + (yOffset + y) * layer.width;
+                auto dst = croppedData + y * imageWidth;
+                memcpy(dst, src, rowSize);
+                DVASSERT(memcmp(src, dst, rowSize) == 0);
+            }
+            imageData = reinterpret_cast<char*>(croppedData);
+            shouldManuallyReleaseData = true;
+        }
+
+        if (DefinitionFileLocal::WritePNGImage(imageWidth, imageHeight, imageData, outImageBasePath.GetAbsolutePathname().c_str(), 4, 8) == false)
         {
             Logger::Error("============================ ERROR ============================");
             Logger::Error("| Failed to write PNG to file:");
@@ -278,6 +308,11 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Error("| %s", psdName);
             Logger::Error("===============================================================");
             return false;
+        }
+
+        if (shouldManuallyReleaseData)
+        {
+            free(imageData);
         }
 
         frameRects[lIndex] = Rect2i(layer.left, layer.top, layer.width, layer.height);
