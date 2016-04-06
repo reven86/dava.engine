@@ -387,8 +387,6 @@ bool WritePNGImage(int width, int height, char* imageData, const char* outName, 
     png_write_end(png_ptr, info_ptr);
     png_destroy_info_struct(png_ptr, &info_ptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
-
-    fclose(fp);
     return true;
 }
 }
