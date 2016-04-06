@@ -50,7 +50,7 @@
 
 #include "UI/UIControl.h"
 
-#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
 #include <chrono>
@@ -60,17 +60,19 @@ using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , lazyUpdater(new LazyUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties)))
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 500))
 {
 }
 
 PropertiesModel::~PropertiesModel()
 {
     CleanUp();
+    continuousUpdater->Stop();
 }
 
 void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
+    continuousUpdater->Stop();
     beginResetModel();
     CleanUp();
     commandExecutor = commandExecutor_;
@@ -325,7 +327,7 @@ void PropertiesModel::PropertyChanged(AbstractProperty* property)
     QPersistentModelIndex nameIndex = indexByProperty(property, 0);
     QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    lazyUpdater->Update();
+    continuousUpdater->Update();
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index)

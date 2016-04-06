@@ -222,7 +222,7 @@ void DisableFloatingPointExceptions()
 void Core::CreateSingletons()
 {
     new Logger();
-    
+
 #ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
     fpu_exceptions::EnableFloatingPointExceptions();
 #else
@@ -255,6 +255,8 @@ void Core::CreateSingletons()
          */
         Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
     }
+
+    DeviceInfo::InitializeScreenInfo();
 
     new LocalizationSystem();
 
@@ -290,8 +292,6 @@ void Core::CreateSingletons()
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
     new LocalNotificationController();
-
-    DeviceInfo::InitializeScreenInfo();
 
     RegisterDAVAClasses();
 
@@ -897,15 +897,17 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
 
 void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    DVASSERT(scaleX * scaleY);
-    bool doChange = false;
-    doChange |= FLOAT_EQUAL(width, screenMetrics.width);
-    doChange |= FLOAT_EQUAL(width, screenMetrics.width);
-    doChange |= FLOAT_EQUAL(height, screenMetrics.height);
-    doChange |= FLOAT_EQUAL(scaleX, screenMetrics.scaleX);
-    doChange |= FLOAT_EQUAL(scaleY, screenMetrics.scaleY);
+    if ((width == 0.f) || (height == 0.f) || (scaleX == 0.f) || (scaleY == 0.f))
+    {
+        return;
+    }
+    bool equal = true;
+    equal &= FLOAT_EQUAL(width, screenMetrics.width);
+    equal &= FLOAT_EQUAL(height, screenMetrics.height);
+    equal &= FLOAT_EQUAL(scaleX, screenMetrics.scaleX);
+    equal &= FLOAT_EQUAL(scaleY, screenMetrics.scaleY);
 
-    if (doChange)
+    if (!equal)
     {
         screenMetrics.width = width;
         screenMetrics.height = height;

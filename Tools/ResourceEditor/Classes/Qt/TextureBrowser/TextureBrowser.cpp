@@ -82,9 +82,11 @@ TextureBrowser::TextureBrowser(QWidget* parent)
     textureListSortModes["Name"] = TextureListModel::SortByName;
 
     // global scene manager signals
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    SceneSignals* sceneSignals = SceneSignals::Instance();
+    QObject::connect(sceneSignals, &SceneSignals::Activated, this, &TextureBrowser::sceneActivated);
+    QObject::connect(sceneSignals, &SceneSignals::Deactivated, this, &TextureBrowser::sceneDeactivated);
+    QObject::connect(sceneSignals, &SceneSignals::SelectionChanged, this, &TextureBrowser::sceneSelectionChanged);
+    QObject::connect(sceneSignals, &SceneSignals::CommandExecuted, this, &TextureBrowser::OnCommandExecuted);
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
@@ -1016,7 +1018,7 @@ void TextureBrowser::convertStatusQueue(int curJob, int jobCount)
     }
 }
 
-void TextureBrowser::setScene(DAVA::Scene* scene)
+void TextureBrowser::setScene(SceneEditor2* scene)
 {
     if (scene != curScene)
     {
@@ -1024,11 +1026,27 @@ void TextureBrowser::setScene(DAVA::Scene* scene)
         curScene = DAVA::SafeRetain(scene);
     }
 
+    DAVA::TextureDescriptor* selectedDescriptor = curDescriptor;
     // reset current texture
     setTexture(nullptr, nullptr);
 
     // set new scene
     textureListModel->setScene(curScene);
+
+    if (selectedDescriptor != nullptr)
+    {
+        DAVA::Texture* texture = textureListModel->getTexture(selectedDescriptor);
+        if (texture != nullptr)
+        {
+            setTexture(texture, selectedDescriptor);
+
+            QModelIndex index = textureListModel->getIndex(selectedDescriptor);
+            if (index.isValid())
+            {
+                ui->listViewTextures->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+            }
+        }
+    }
 }
 
 void TextureBrowser::sceneActivated(SceneEditor2* scene)
@@ -1060,6 +1078,20 @@ void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const EntityGrou
     if (!isHidden())
     {
         textureListModel->setHighlight(selected);
+    }
+}
+
+void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+{
+    if (curScene != scene || command == nullptr)
+    {
+        return;
+    }
+
+    static DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
+    if (command->MatchCommandIDs(commandIds))
+    {
+        Update();
     }
 }
 

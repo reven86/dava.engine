@@ -36,6 +36,7 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 
 set_project_files_properties( "${CPP_FILES}" )
 generate_source_groups_project ()
+generated_unity_sources        ( CPP_FILES )
 
 add_library                 ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
