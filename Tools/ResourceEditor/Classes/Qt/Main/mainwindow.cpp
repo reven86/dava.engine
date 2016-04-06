@@ -244,11 +244,7 @@ bool QtMainWindow::SaveScene(SceneEditor2* scene)
     }
     else
     {
-        // SZ: df-2128
-        // This check was removed until all editor actions will be done through commands
-        // because it's not possible to save scene if some thing changes without command
-        //
-        //if(scene->IsChanged())
+        if (scene->IsChanged())
         {
             SaveAllSceneEmitters(scene);
             DAVA::SceneFileV2::eError ret = scene->SaveScene(scenePath);
@@ -827,7 +823,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionEditor_2D_Camera, SIGNAL(triggered()), this, SLOT(On2DCameraDialog()));
     QObject::connect(ui->actionEditor_Sprite, SIGNAL(triggered()), this, SLOT(On2DSpriteDialog()));
     QObject::connect(ui->actionAddNewEntity, SIGNAL(triggered()), this, SLOT(OnAddEntityFromSceneTree()));
-    QObject::connect(ui->actionRemoveEntity, SIGNAL(triggered()), ui->sceneTree, SLOT(RemoveSelection()));
+    QObject::connect(ui->actionRemoveEntity, SIGNAL(triggered()), this, SLOT(RemoveSelection()));
     QObject::connect(ui->actionExpandSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(expandAll()));
     QObject::connect(ui->actionCollapseSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(CollapseAll()));
     QObject::connect(ui->actionAddLandscape, SIGNAL(triggered()), this, SLOT(OnAddLandscape()));
@@ -918,8 +914,8 @@ void QtMainWindow::SetupShortCuts()
     connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
 
     // delete
-    connect(new QShortcut(QKeySequence(Qt::Key_Delete), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Delete), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
 
     // scene tree collapse/expand
     connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
@@ -1612,23 +1608,13 @@ void QtMainWindow::OnResetTransform()
 
 void QtMainWindow::OnLockTransform()
 {
-    SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
-    {
-        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), true);
-    }
-
+    LockTransform(GetCurrentScene());
     UpdateModificationActionsState();
 }
 
 void QtMainWindow::OnUnlockTransform()
 {
-    SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
-    {
-        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), false);
-    }
-
+    UnlockTransform(GetCurrentScene());
     UpdateModificationActionsState();
 }
 
@@ -3196,4 +3182,9 @@ void QtMainWindow::RestartParticleEffects()
         DVASSERT(scene);
         scene->particlesSystem->RestartParticleEffects();
     }
+}
+
+void QtMainWindow::RemoveSelection()
+{
+    ::RemoveSelection(GetCurrentScene());
 }
