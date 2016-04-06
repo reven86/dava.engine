@@ -32,6 +32,7 @@
 
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
+#include "Base/BaseMath.h"
 
 namespace DAVA
 {

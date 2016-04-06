@@ -29,6 +29,7 @@
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/LandscapeSubdivision.h"
 #include "Render/Highlevel/Frustum.h"
+#include "Render/Highlevel/Camera.h"
 
 namespace DAVA
 {

@@ -38,6 +38,7 @@ namespace DAVA
 {
 class Frustum;
 class Heightmap;
+class Camera;
 
 class LandscapeSubdivision : public InspBase
 {

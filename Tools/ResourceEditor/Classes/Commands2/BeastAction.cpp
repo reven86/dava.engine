@@ -28,6 +28,7 @@
 
 
 #include "BeastAction.h"
+#include "SceneParser.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Beast/BeastProxy.h"
