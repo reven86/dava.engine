@@ -70,6 +70,9 @@ public:
     void EnableProcessing();
     void DisableProcessing();
 
+    // обновление состояния, всех паков, и т.д. должно вызываться каждый кадр
+    void Update();
+
     // получение имени пака по относительному имени файла внтутри пака (если файл не принадлежит ни одному паку исключение)
     const PackName& FindPack(const FilePath& relativePathInPack) const;
 
@@ -81,7 +84,7 @@ public:
     const PackState& RequestPack(const PackName& packID, float priority = 0.5f);
 
     // получение паков, находящихся в очереди
-    Vector<PackState> GetRequestedPacks() const;
+    Vector<PackState*> GetRequestedPacks() const;
 
     // возможность освободить место на устройстве пользователя
     // удалив скаченный пак

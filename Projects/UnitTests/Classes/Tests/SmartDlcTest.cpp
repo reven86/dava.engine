@@ -73,7 +73,7 @@ DAVA_TESTCLASS (SmartDlcTest)
         {
             packName = sdlc.FindPack(fileInPack);
         }
-        catch (std::exception& ex)
+        catch (std::exception&)
         {
             TEST_VERIFY(false && "should find file in pack");
         }
@@ -94,22 +94,35 @@ DAVA_TESTCLASS (SmartDlcTest)
 
             TEST_VERIFY(requestedState.state == SmartDlc::PackState::Queued);
 
+            sdlc.EnableProcessing();
+
             auto& nextState = sdlc.RequestPack(packName, 0.1f);
             TEST_VERIFY(nextState.state == SmartDlc::PackState::Downloading);
 
             while (nextState.state == SmartDlc::PackState::Downloading)
             {
                 // wait
+                Thread::Sleep(500);
+                Logger::Info("download progress: %d", static_cast<int32>(nextState.downloadProgress * 100));
             }
 
-            sdlc.EnableProcessing();
+            TEST_VERIFY(nextState.state == SmartDlc::PackState::Mounted);
+
+            ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
+            TEST_VERIFY(file);
+            if (file)
+            {
+                TEST_VERIFY(file->GetSize() == 100500);
+                String fileContent(file->GetSize(), '\0');
+                file->Read(&fileContent[0], static_cast<uint32>(fileContent.size()));
+
+                TEST_VERIFY(fileContent == "content of the file");
+            }
         }
-        catch (std::exception& ex)
+        catch (std::exception&)
         {
             TEST_VERIFY(false);
         }
 
-        // TODO implement other downloading staff
-        TEST_VERIFY(false);
     }
 };
