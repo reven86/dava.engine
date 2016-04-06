@@ -116,4 +116,6 @@ public:
     REGISTER_PREFERENCES
 };
 
+REGISTER_PREFERENCES_ON_START(EditorTransformSystem)
+
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

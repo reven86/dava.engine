@@ -38,14 +38,19 @@ class InspBase;
 class PreferencesRegistrator
 {
 public:
+    PreferencesRegistrator(const DAVA::InspInfo* inspInfo);
     PreferencesRegistrator(DAVA::InspBase* inspBase);
     ~PreferencesRegistrator();
 
 private:
+    const DAVA::InspInfo* trackedIntrospectionInfo = nullptr;
     DAVA::InspBase* trackedIntrospection = nullptr;
 };
 
 #define REGISTER_PREFERENCES \
             PreferencesRegistrator preferencesRegistrator = PreferencesRegistrator(static_cast<DAVA::InspBase*>(this));
+
+#define REGISTER_PREFERENCES_ON_START(class) \
+            PreferencesRegistrator preferencesRegistrator(class ::TypeInfo());
 
 #endif //PREFERENCES_REGISTRATOR

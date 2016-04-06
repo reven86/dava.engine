@@ -32,6 +32,12 @@
 #include "PreferencesRegistrator.h"
 #include "PreferencesStorage.h"
 
+PreferencesRegistrator::PreferencesRegistrator(const DAVA::InspInfo* inspInfo)
+    : trackedIntrospectionInfo(inspInfo)
+{
+    PreferencesStorage::RegisterType(trackedIntrospectionInfo);
+}
+
 PreferencesRegistrator::PreferencesRegistrator(DAVA::InspBase* inspBase)
     : trackedIntrospection(inspBase)
 {
@@ -40,5 +46,12 @@ PreferencesRegistrator::PreferencesRegistrator(DAVA::InspBase* inspBase)
 
 PreferencesRegistrator::~PreferencesRegistrator()
 {
-    PreferencesStorage::UnregisterPreferences(trackedIntrospection);
+    if (nullptr != trackedIntrospection)
+    {
+        PreferencesStorage::UnregisterPreferences(trackedIntrospection);
+    }
+    if (nullptr != trackedIntrospectionInfo)
+    {
+        PreferencesStorage::UnregisterType(trackedIntrospectionInfo);
+    }
 }

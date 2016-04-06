@@ -36,6 +36,7 @@ PreferencesStorage* PreferencesStorage::self = nullptr;
 PreferencesStorage::PreferencesStorage(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage_)
     : localStorage(localStorage_)
     , editorPreferences(new DAVA::KeyedArchive())
+    , preferencesToSave(new DAVA::KeyedArchive())
 {
     DVASSERT(nullptr == self);
     self = this;
@@ -57,7 +58,7 @@ PreferencesStorage::PreferencesStorage(const DAVA::FilePath& defaultStorage, con
 
 PreferencesStorage::~PreferencesStorage()
 {
-    if (!editorPreferences->Save(localStorage))
+    if (!preferencesToSave->Save(localStorage))
     {
         DAVA::Logger::Error("can not save editor preferences!");
     }
@@ -138,6 +139,7 @@ void PreferencesStorage::UnregisterPreferencesImpl(const DAVA::InspBase* inspBas
     }
     DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
     editorPreferences->SetArchive(key, archive);
+    preferencesToSave->SetArchive(key, archive);
 }
 
 DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo) const

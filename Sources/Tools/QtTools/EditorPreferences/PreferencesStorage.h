@@ -44,6 +44,8 @@ public:
     PreferencesStorage(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
     ~PreferencesStorage();
 
+    static void RegisterType(const DAVA::InspInfo* inspInfo);
+    static void UnregisterType(const DAVA::InspInfo* inspInfo);
     static void RegisterPreferences(DAVA::InspBase* inspBase);
     static void UnregisterPreferences(const DAVA::InspBase* inspBase);
 
@@ -56,6 +58,7 @@ private:
     static PreferencesStorage* self;
     DAVA::FilePath localStorage;
     DAVA::ScopedPtr<DAVA::KeyedArchive> editorPreferences;
+    DAVA::ScopedPtr<DAVA::KeyedArchive> preferencesToSave;
 };
 
 #endif //PREFERENCES_STORAGE
