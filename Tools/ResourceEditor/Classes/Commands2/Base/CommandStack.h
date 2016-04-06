@@ -89,7 +89,7 @@ private:
     DAVA::uint32 nestedBatchesCounter = 0;
     DAVA::int32 commandListLimit = 0;
     DAVA::int32 nextCommandIndex = 0;
-    DAVA::int32 cleanCommandIndex = 0;
+    DAVA::int32 nextAfterCleanCommandIndex = 0;
     bool lastCheckCleanState = true;
 };
 

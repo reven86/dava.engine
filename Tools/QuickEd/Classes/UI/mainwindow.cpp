@@ -95,6 +95,7 @@ MainWindow::MainWindow(QWidget* parent)
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+    connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
     RestoreMainWindowState();
 
