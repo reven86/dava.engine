@@ -27,6 +27,16 @@ endif()
 
 configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
+# This definitions should be before "find_package( DavaFramework REQUIRED )"
+# to force defines into DavaFramework project
+
+add_definitions       (
+-DDISABLE_NATIVE_WEBVIEW
+-DDISABLE_NATIVE_TEXTFIELD
+)
+
+# Ngt tool sshould be found before DavaFramework to force specific for NGT defines 
+# into DavaFramework project
 find_package( NgtTools REQUIRED )
 find_package( QT5 REQUIRED)
 find_package( DavaFramework REQUIRED )
@@ -70,8 +80,6 @@ add_definitions       (
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
 -DDAVA_FMOD
--DDISABLE_NATIVE_WEBVIEW
--DDISABLE_NATIVE_TEXTFIELD
 )
 
 if (NOT PUBLIC_BUILD)
