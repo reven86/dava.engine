@@ -28,7 +28,6 @@
 
 
 #include "BeastAction.h"
-#include "SceneParser.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Beast/BeastProxy.h"
@@ -41,6 +40,8 @@
 using namespace DAVA;
 
 #if defined(__DAVAENGINE_BEAST__)
+
+#include "SceneParser.h"
 
 //Beast
 BeastAction::BeastAction(SceneEditor2* scene, const DAVA::FilePath& _outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog)
