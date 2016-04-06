@@ -38,16 +38,12 @@
 #include "FileSystem/FileSystem.h"
 #include "FramePathHelper.h"
 
-namespace DefinitionFileLocal
-{
-bool CreateOutputDirectoryForOutputPath(const DAVA::FilePath& out_path);
-bool WritePNGImage(int width, int height, char* imageData, const char* outName, int channels, int bit_depth);
-}
-
 namespace DAVA
 {
-DefinitionFile::~DefinitionFile()
+namespace DefinitionFileLocal
 {
+bool CreateOutputDirectoryForOutputPath(const FilePath& out_path);
+bool WritePNGImage(int width, int height, char* imageData, const char* outName, int channels, int bit_depth);
 }
 
 void DefinitionFile::LoadPNG(const FilePath& _filename, const FilePath& pathToProcess)
@@ -65,13 +61,12 @@ void DefinitionFile::LoadPNG(const FilePath& _filename, const FilePath& pathToPr
     spriteWidth = image.GetWidth();
     spriteHeight = image.GetHeight();
 
+    frameNames.resize(frameCount);
     frameRects.resize(frameCount);
     frameRects[0].x = 0;
     frameRects[0].y = 0;
     frameRects[0].dx = spriteWidth;
     frameRects[0].dy = spriteHeight;
-
-    frameNames.resize(frameCount);
 
     FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, 0);
     FileSystem::Instance()->CopyFile(_filename, fileWrite);
@@ -140,6 +135,7 @@ bool DefinitionFile::Load(const FilePath& _filename)
     fscanf(fp, "%d", &frameCount);
 
     frameRects.resize(frameCount);
+    frameNames.resize(frameCount);
     for (uint32 i = 0; i < frameCount; ++i)
     {
         char frameName[128];
@@ -164,7 +160,7 @@ bool DefinitionFile::Load(const FilePath& _filename)
     return true;
 }
 
-DAVA::Size2i DefinitionFile::GetFrameSize(uint32 frame) const
+Size2i DefinitionFile::GetFrameSize(uint32 frame) const
 {
     return Size2i(frameRects[frame].dx, frameRects[frame].dy);
 }
@@ -179,10 +175,14 @@ int DefinitionFile::GetFrameHeight(uint32 frame) const
     return frameRects[frame].dy;
 }
 
-bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath, DAVA::uint32 maxTextureSize, bool withAlpha, bool useLayerNames)
+bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath, uint32 maxTextureSize, bool withAlpha, bool useLayerNames)
 {
-    if (DefinitionFileLocal::CreateOutputDirectoryForOutputPath(processDirectoryPath) == false)
+    if (FileSystem::Instance()->CreateDirectory(processDirectoryPath) == FileSystem::DIRECTORY_CANT_CREATE)
     {
+        Logger::Error("============================ ERROR ============================");
+        Logger::Error("| Can't create output directory: ");
+        Logger::Error("| %s", processDirectoryPath.GetAbsolutePathname().c_str());
+        Logger::Error("===============================================================");
         return false;
     }
 
@@ -193,11 +193,11 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
     auto status = psd_image_load(&psd, const_cast<psd_char*>(psdName));
     if ((psd == nullptr) || (status != psd_status_done))
     {
-        DAVA::Logger::Error("============================ ERROR ============================");
-        DAVA::Logger::Error("| Unable to load PSD from file (result code = %d):", static_cast<int>(status));
-        DAVA::Logger::Error("| %s", psdName);
-        DAVA::Logger::Error("| Try to re-save this file by using `Save as...` in Photoshop");
-        DAVA::Logger::Error("===============================================================");
+        Logger::Error("============================ ERROR ============================");
+        Logger::Error("| Unable to load PSD from file (result code = %d):", static_cast<int>(status));
+        Logger::Error("| %s", psdName);
+        Logger::Error("| Try to re-save this file by using `Save as...` in Photoshop");
+        Logger::Error("===============================================================");
         return false;
     }
 
@@ -220,17 +220,17 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
     spriteHeight = psd->height;
 
     outImageBasePath.ReplaceDirectory(processDirectoryPath);
-    for (DAVA::uint32 lIndex = 0; lIndex < frameCount; ++lIndex)
+    for (uint32 lIndex = 0; lIndex < frameCount; ++lIndex)
     {
         auto& layer = psd->layer_records[lIndex];
-        auto layerName = DAVA::String(reinterpret_cast<const char*>(layer.layer_name));
+        auto layerName = String(reinterpret_cast<const char*>(layer.layer_name));
 
         if (layer.width * layer.height == 0)
         {
-            DAVA::Logger::Error("============================ ERROR ============================");
-            DAVA::Logger::Error("| File contains empty layer %d (%s)", lIndex, layerName.c_str());
-            DAVA::Logger::Error("| %s", psdName);
-            DAVA::Logger::Error("===============================================================");
+            Logger::Error("============================ ERROR ============================");
+            Logger::Error("| File contains empty layer %d (%s)", lIndex, layerName.c_str());
+            Logger::Error("| %s", psdName);
+            Logger::Error("===============================================================");
             return false;
         }
 
@@ -238,32 +238,32 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
 
         if (layerName.empty())
         {
-            // DAVA::Logger::Warning("=========================== WARNING ===========================");
-            // DAVA::Logger::Warning("| PSD file: %s", psdName);
-            // DAVA::Logger::Warning("| Contains layer without a name: %u", static_cast<DAVA::int32>(lIndex));
-            // DAVA::Logger::Warning("===============================================================");
+            // Logger::Warning("=========================== WARNING ===========================");
+            // Logger::Warning("| PSD file: %s", psdName);
+            // Logger::Warning("| Contains layer without a name: %u", static_cast<int32>(lIndex));
+            // Logger::Warning("===============================================================");
         }
         else if (std::find(frameNames.begin(), frameNames.end(), layerName) != frameNames.end())
         {
-            // DAVA::Logger::Warning("=========================== WARNING ===========================");
-            // DAVA::Logger::Warning("| PSD file:");
-            // DAVA::Logger::Warning("| %s", psdName);
-            // DAVA::Logger::Warning("| Contains two or more layers with the same name: %s", layerName.c_str());
-            // DAVA::Logger::Warning("===============================================================");
+            // Logger::Warning("=========================== WARNING ===========================");
+            // Logger::Warning("| PSD file:");
+            // Logger::Warning("| %s", psdName);
+            // Logger::Warning("| Contains two or more layers with the same name: %s", layerName.c_str());
+            // Logger::Warning("===============================================================");
         }
 
         if (layer.opacity < 255)
         {
-            DAVA::Logger::Warning("============================ Warning ============================");
-            DAVA::Logger::Warning("| File contains layer `%s` with opacity less than 100%% (%.0f)", layerName.c_str(), 100.0f * static_cast<float>(layer.opacity) / 255.0f);
-            DAVA::Logger::Warning("| %s", psdName);
-            DAVA::Logger::Warning("===============================================================");
+            Logger::Warning("============================ Warning ============================");
+            Logger::Warning("| File contains layer `%s` with opacity less than 100%% (%.0f)", layerName.c_str(), 100.0f * static_cast<float>(layer.opacity) / 255.0f);
+            Logger::Warning("| %s", psdName);
+            Logger::Warning("===============================================================");
         }
 
         frameNames[lIndex] = layerName;
-        pathsInfo[lIndex] = useLayerNames || layerName.empty() ? layerName : DAVA::String("frame") + std::to_string(lIndex);
+        pathsInfo[lIndex] = useLayerNames || layerName.empty() ? layerName : String("frame") + std::to_string(lIndex);
 
-        DAVA::uint32* p = reinterpret_cast<DAVA::uint32*>(layer.image_data);
+        uint32* p = reinterpret_cast<uint32*>(layer.image_data);
         for (psd_int i = 0, e = layer.width * layer.height; i < e; ++i)
         {
             p[i] = (p[i] & 0xff00ff00) | (p[i] & 0x000000ff) << 16 | (p[i] & 0xff0000) >> 16;
@@ -272,12 +272,12 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         auto data = reinterpret_cast<char*>(layer.image_data);
         if (DefinitionFileLocal::WritePNGImage(layer.width, layer.height, data, outImageBasePath.GetAbsolutePathname().c_str(), 4, 8) == false)
         {
-            DAVA::Logger::Error("============================ ERROR ============================");
-            DAVA::Logger::Error("| Failed to write PNG to file:");
-            DAVA::Logger::Error("| %s", outImageBasePath.GetAbsolutePathname().c_str());
-            DAVA::Logger::Error("| Input file (layer %u):", static_cast<int32>(lIndex));
-            DAVA::Logger::Error("| %s", psdName);
-            DAVA::Logger::Error("===============================================================");
+            Logger::Error("============================ ERROR ============================");
+            Logger::Error("| Failed to write PNG to file:");
+            Logger::Error("| %s", outImageBasePath.GetAbsolutePathname().c_str());
+            Logger::Error("| Input file (layer %u):", static_cast<int32>(lIndex));
+            Logger::Error("| %s", psdName);
+            Logger::Error("===============================================================");
             return false;
         }
 
@@ -288,9 +288,9 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
             if ((frameRects[lIndex].dx > iMaxTextureSize) || (frameRects[lIndex].dy > iMaxTextureSize))
             {
-                DAVA::Logger::Warning("Frame of %s layer %d is bigger than maxTextureSize (%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d)",
-                                      psdName, lIndex, maxTextureSize, frameRects[lIndex].dx, frameRects[lIndex].dy, spriteWidth, spriteHeight);
-                DAVA::Logger::Warning("Bewarned!!! Results not guaranteed!!!");
+                Logger::Warning("Frame of %s layer %d is bigger than maxTextureSize (%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d)",
+                                psdName, lIndex, maxTextureSize, frameRects[lIndex].dx, frameRects[lIndex].dy, spriteWidth, spriteHeight);
+                Logger::Warning("Bewarned!!! Results not guaranteed!!!");
                 frameRects[lIndex].dx = spriteWidth;
                 frameRects[lIndex].dy = spriteHeight;
             }
@@ -305,8 +305,8 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
 
                 if (frameRects[lIndex].dy > spriteHeight)
                 {
-                    DAVA::Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d", psdName, lIndex, frameRects[lIndex].dy, spriteHeight);
-                    DAVA::Logger::Warning("Layer height will be reduced to the sprite value");
+                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d", psdName, lIndex, frameRects[lIndex].dy, spriteHeight);
+                    Logger::Warning("Layer height will be reduced to the sprite value");
                     frameRects[lIndex].dy = spriteHeight;
                 }
             }
@@ -315,30 +315,19 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
 
     return true;
 }
-}
 
 namespace DefinitionFileLocal
 {
-bool CreateOutputDirectoryForOutputPath(const DAVA::FilePath& out_path)
-{
-    if (DAVA::FileSystem::Instance()->CreateDirectory(out_path) == DAVA::FileSystem::DIRECTORY_CANT_CREATE)
-    {
-        DAVA::Logger::Error("============================ ERROR ============================");
-        DAVA::Logger::Error("| Can't create directory: ");
-        DAVA::Logger::Error("| %s", out_path.GetAbsolutePathname().c_str());
-        DAVA::Logger::Error("===============================================================");
-        return false;
-    }
-    return true;
-}
-
 bool WritePNGImage(int width, int height, char* imageData, const char* outName, int channels, int bit_depth)
 {
     FILE* fp = fopen(outName, "wb");
     if (fp == nullptr)
-    {
         return false;
-    }
+
+    SCOPE_EXIT
+    {
+        fclose(fp);
+    };
 
     png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
@@ -394,12 +383,13 @@ bool WritePNGImage(int width, int height, char* imageData, const char* outName, 
                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
     for (int y = 0; y < height; ++y)
-        png_write_row(png_ptr, (png_bytep)(&imageData[y * rowSize]));
+        png_write_row(png_ptr, reinterpret_cast<png_bytep>(&imageData[y * rowSize]));
     png_write_end(png_ptr, info_ptr);
     png_destroy_info_struct(png_ptr, &info_ptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
     fclose(fp);
     return true;
+}
 }
 }

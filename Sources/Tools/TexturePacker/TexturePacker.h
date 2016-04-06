@@ -47,7 +47,7 @@ class FilePath;
 
 struct SpriteItem
 {
-    DefinitionFile::Ponter defFile;
+    DefinitionFile::Pointer defFile;
     uint32 spriteWeight = 0;
     uint32 frameIndex = 0;
 };

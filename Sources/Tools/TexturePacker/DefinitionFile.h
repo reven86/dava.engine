@@ -40,15 +40,14 @@ namespace DAVA
 class DefinitionFile : public BaseObject
 {
 public:
-    using Ponter = DAVA::RefPtr<DefinitionFile>;
-    using Collection = Vector<Ponter>;
+    using Pointer = DAVA::RefPtr<DefinitionFile>;
+    using Collection = Vector<Pointer>;
 
 public:
     DefinitionFile() = default;
     DefinitionFile(const DefinitionFile&) = delete;
     DefinitionFile& operator=(const DefinitionFile&) = delete;
     DefinitionFile(DefinitionFile&&) = delete;
-    ~DefinitionFile();
 
     bool Load(const FilePath& filename);
     bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
@@ -68,8 +67,8 @@ public:
     Vector<String> frameNames;
     Vector<Rect2i> frameRects;
     uint32 frameCount = 0;
-    int spriteWidth = 0;
-    int spriteHeight = 0;
+    uint32 spriteWidth = 0;
+    uint32 spriteHeight = 0;
 };
 };
 

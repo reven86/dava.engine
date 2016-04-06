@@ -348,7 +348,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     mergedParams += String("LIBPSDVersion = ") + INTERNAL_LIBPSD_VERSION;
     for (const auto& algorithm : packAlgorithms)
     {
-        mergedParams += String("PackerAlgorithm = ") + GlobalEnumMap<DAVA::PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));
+        mergedParams += String("PackerAlgorithm = ") + GlobalEnumMap<PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));
     }
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
@@ -397,16 +397,16 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
                 }
 
-                Vector<DefinitionFile::Ponter> definitionFileList;
+                DefinitionFile::Collection definitionFileList;
                 definitionFileList.reserve(fileList->GetCount());
-                for (DAVA::int32 fi = 0; fi < fileList->GetCount() && running; ++fi)
+                for (int32 fi = 0; fi < fileList->GetCount() && running; ++fi)
                 {
                     if (fileList->IsDirectory(fi))
                         continue;
 
                     definitionFileList.emplace_back(new DefinitionFile());
 
-                    DefinitionFile::Ponter defFile = definitionFileList.back();
+                    DefinitionFile::Pointer& defFile = definitionFileList.back();
                     bool shouldAcceptFile = false;
 
                     FilePath fullname = fileList->GetPathname(fi);
@@ -734,7 +734,7 @@ void ResourcePacker2D::AddError(const String& errorMsg)
     errors.insert(errorMsg);
 }
 
-void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath& path, const String& ip, const String& port, const String& timeout)
+void ResourcePacker2D::SetCacheClientTool(const FilePath& path, const String& ip, const String& port, const String& timeout)
 {
     cacheClientTool = path;
     cacheClientIp = ip;

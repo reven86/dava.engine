@@ -105,7 +105,7 @@ DAVA::int32 TexturePacker::TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem
 
     for (uint32 i = 0; i < tempSortVector.size();)
     {
-        const auto& defFile = tempSortVector[i].defFile;
+        const DefinitionFile::Pointer& defFile = tempSortVector[i].defFile;
         uint32 frame = tempSortVector[i].frameIndex;
         if (sheet->AddSprite(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
         {
@@ -128,7 +128,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const Def
 {
     Logger::FrameworkDebug("Packing to separate textures");
 
-    for (const auto& defFile : defsList)
+    for (const DefinitionFile::Pointer& defFile : defsList)
     {
         PackToMultipleTextures(outputPath, defFile->filename.GetBasename().c_str(), { defFile }, forGPU);
     }
@@ -152,7 +152,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const cha
 Vector<SpriteItem> TexturePacker::PrepareSpritesVector(const DefinitionFile::Collection& defList)
 {
     Vector<SpriteItem> spritesToPack;
-    for (const auto& defFile : defList)
+    for (const DefinitionFile::Pointer& defFile : defList)
     {
         for (uint32 frame = 0; frame < defFile->frameCount; ++frame)
         {
@@ -245,7 +245,7 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
         finalImages[i].Create(resultSheets[i]->GetRect().dx, resultSheets[i]->GetRect().dy);
     }
 
-    for (const auto& defFile : defList)
+    for (const DefinitionFile::Pointer& defFile : defList)
     {
         for (uint32 frame = 0; frame < defFile->frameCount; ++frame)
         {
@@ -285,7 +285,7 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
         ExportImage(finalImages[imageNum], imageExportKeys, textureName);
     }
 
-    for (const auto& defFile : defList)
+    for (const DefinitionFile::Pointer& defFile : defList)
     {
         String fileName = defFile->filename.GetFilename();
         FilePath textureName = outputPath + "texture";
