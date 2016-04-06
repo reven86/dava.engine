@@ -102,6 +102,10 @@ void PreferencesStorage::RegisterPreferencesImpl(DAVA::InspBase* inspBase)
     for (int i = 0, count = info->MembersCount(); i < count; ++i)
     {
         const DAVA::InspMember* member = info->Member(i);
+        if ((member->Flags() & DAVA::I_PREFERENCE) != DAVA::I_PREFERENCE)
+        {
+            continue;
+        }
         DAVA::String name(member->Name().c_str());
         if (!archive->IsKeyExists(name))
         {
@@ -125,6 +129,10 @@ void PreferencesStorage::UnregisterPreferencesImpl(const DAVA::InspBase* inspBas
     for (int i = 0, count = info->MembersCount(); i < count; ++i)
     {
         const DAVA::InspMember* member = info->Member(i);
+        if ((member->Flags() & DAVA::I_PREFERENCE) != DAVA::I_PREFERENCE)
+        {
+            continue;
+        }
         DAVA::String name(member->Name().c_str());
         archive->SetVariant(name, member->Value(const_cast<void*>(static_cast<const void*>(inspBase)))); //SUDDENLY! current version not support Value by const pointer
     }
