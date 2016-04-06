@@ -29,8 +29,8 @@ THIS
 =====================================================================================*/
 
 #include "FileSystem/ResourceArchive.h"
-#include "FileSystem/ZipArchive.h"
-#include "FileSystem/PackArchive.h"
+#include "FileSystem/Private/ZipArchive.h"
+#include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/File.h"
 
 #include <fstream>

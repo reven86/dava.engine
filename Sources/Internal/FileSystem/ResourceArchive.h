@@ -26,10 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_H
-#define DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_H
+#pragma once
 
-#include "Base/BaseObject.h"
 #include "Compression/Compressor.h"
 
 namespace DAVA
@@ -64,5 +62,3 @@ private:
     std::unique_ptr<ResourceArchiveImpl> impl;
 };
 } // end namespace DAVA
-
-#endif // DAVAENGINE_FILE_SYSTEM_RESOURCE_ARCHIVE_H
