@@ -17,7 +17,7 @@ public:
     using SaveOP = void (*)(const Storage&, void* dst);
 
     template <typename T>
-    using DisableAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
+    using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
 
     struct AnyOP
     {
@@ -41,7 +41,7 @@ public:
     Any(const Any&) = default;
 
     template <typename T>
-    Any(T&& value, DisableAny<T> = true);
+    Any(T&& value, NotAny<T> = true);
 
     void Swap(Any&);
 
@@ -60,7 +60,7 @@ public:
     const T& Get(const T& defaultValue) const;
 
     template <typename T>
-    void Set(T&& value, DisableAny<T> = true);
+    void Set(T&& value, NotAny<T> = true);
 
     template <typename T>
     bool CanCast() const;
