@@ -71,26 +71,25 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
     image->height = height;
     image->format = format;
 
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     if (formatSize ||
         (format >= FORMAT_DXT1 && format <= FORMAT_DXT1A) ||
         (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
     {
         //workaround, because formatSize is not designed for formats with 4 bits per pixel
-        image->dataSize = width * height * formatSize / 8;
+        image->dataSize = width * height * formatSize;
 
         if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
             (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
         {
-            uint32 dSize = (formatSize / 8) == 0 ? (width * height) / 2 : width * height;
+            uint32 dSize = (formatSize == 0) ? (width * height) / 2 : width * height;
             if (width < 4 || height < 4) // size lower than  block's size
             {
                 uint32 minvalue = width < height ? width : height;
                 uint32 maxvalue = width > height ? width : height;
                 minvalue = minvalue < 4 ? 4 : minvalue;
                 maxvalue = maxvalue < 4 ? 4 : maxvalue;
-                dSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format) * minvalue * maxvalue;
-                dSize /= 8;
+                dSize = formatSize * minvalue * maxvalue;
             }
             image->dataSize = dSize;
         }

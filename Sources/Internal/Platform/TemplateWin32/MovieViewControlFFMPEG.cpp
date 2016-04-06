@@ -35,21 +35,20 @@ namespace DAVA
     MovieViewControl::~MovieViewControl()
     {
         Stop();
-        SafeDeleteArray(decodedFrameBuffer);
 
         if (isFFMGEGInited)
         {
-            if (pFrameYUV)
+            if (yuvDecodedScaledFrame)
             {
-                av_frame_free(&pFrameYUV);
+                av_frame_free(&yuvDecodedScaledFrame);
             }
-            if (pFrame)
+            if (decodedFrame)
             {
-                av_frame_free(&pFrame);
+                av_frame_free(&decodedFrame);
             }
-            if (pCodecCtx)
+            if (codecContext)
             {
-                avcodec_close(pCodecCtx);
+                avcodec_close(codecContext);
             }
             if (pFormatCtx)
             {
@@ -59,6 +58,13 @@ namespace DAVA
             {
                 sws_freeContext(img_convert_ctx);
             }
+
+            if (packet)
+            {
+                av_packet_unref(packet);
+            }
+
+            SafeDeleteArray(rgbTextureBuffer);
 
             isFFMGEGInited = false;
         }
@@ -95,11 +101,11 @@ namespace DAVA
         pFormatCtx = AV::avformat_alloc_context();
 
         if (AV::avformat_open_input(&pFormatCtx, filepath, nullptr, nullptr) != 0){
-            printf("Couldn't open input stream.\n");
+            Logger::Error("Couldn't open input stream.\n");
             return;
         }
         if (AV::avformat_find_stream_info(pFormatCtx, nullptr)<0){
-            printf("Couldn't find stream information.\n");
+            Logger::Error("Couldn't find stream information.\n");
             return;
         }
 
@@ -109,38 +115,48 @@ namespace DAVA
                 break;
             }
         if (videoindex == -1){
-            printf("Didn't find a video stream.\n");
+            Logger::Error("Didn't find a video stream.\n");
             return;
         }
 
         AV::AVRational avfps = pFormatCtx->streams[videoindex]->avg_frame_rate;
-        framerate = avfps.num / static_cast<float32>(avfps.den);
+        videoFramerate = avfps.num / static_cast<float32>(avfps.den);
         
-        pCodecCtx = pFormatCtx->streams[videoindex]->codec;
-        pCodec = AV::avcodec_find_decoder(pCodecCtx->codec_id);
+        codecContext = pFormatCtx->streams[videoindex]->codec;
+        pCodec = AV::avcodec_find_decoder(codecContext->codec_id);
         if (pCodec == nullptr){
-            printf("Codec not found.\n");
+            Logger::Error("Codec not found.\n");
             return;
         }
-        if (AV::avcodec_open2(pCodecCtx, pCodec, nullptr)<0){
-            printf("Could not open codec.\n");
+        if (AV::avcodec_open2(codecContext, pCodec, nullptr)<0){
+            Logger::Error("Could not open codec.\n");
             return;
         }
 
-        AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_YUV420P;
+        AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_RGBA;
 
-        pFrame = AV::av_frame_alloc();
-        pFrameYUV = AV::av_frame_alloc();
-        out_buffer = (uint8_t *)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, pCodecCtx->width, pCodecCtx->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
-        AV::avpicture_fill((AV::AVPicture *)pFrameYUV, out_buffer, avPixelFormat, pCodecCtx->width, pCodecCtx->height);
+        decodedFrame = AV::av_frame_alloc();
+        yuvDecodedScaledFrame = AV::av_frame_alloc();
+        out_buffer = (uint8_t *)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, codecContext->width, codecContext->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
+        AV::avpicture_fill((AV::AVPicture *)yuvDecodedScaledFrame, out_buffer, avPixelFormat, codecContext->width, codecContext->height);
         packet = (AV::AVPacket *)AV::av_mallocz(sizeof(AV::AVPacket));
 
-        img_convert_ctx = AV::sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
+        img_convert_ctx = AV::sws_getContext(codecContext->width, codecContext->height, codecContext->pix_fmt, codecContext->width, codecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
-        textureWidth = NextPowerOf2(pCodecCtx->width);
-        textureHeight = NextPowerOf2(pCodecCtx->height);
+        textureWidth = NextPowerOf2(codecContext->width);
+        textureHeight = NextPowerOf2(codecContext->height);
         textureBufferSize = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(textureFormat);
-        decodedFrameBuffer = new char8[textureBufferSize];
+        frameHeight = codecContext->height;
+        frameWidth = codecContext->width;
+
+        // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
+        rgbTextureBuffer = new uint8[textureBufferSize];
+        rgbTextureBufferHolder[0] = rgbTextureBuffer;
+        // we fill codecContext->width x codecContext->height area, it is smaller than texture size. So fill all the texture by empty color once.
+        // we suppose that next time we will fill same part of the texture.
+        Memset(rgbTextureBuffer, emptyPixelColor, textureBufferSize);
+
+        Renderer::SetDesiredFPS(60);
     }
 
     // Start/stop the video playback.
@@ -172,47 +188,57 @@ namespace DAVA
     }
 
 
-    void YUVToRGB(const AV::AVFrame* const yuvFrame, char8 * outRGBBuffer, const Vector2 & frameSize, const Vector2 & textureSize)
+    void MovieViewControl::UpdateVideo(AV::AVPacket * packet, float32 timeElapsed)
     {
-        DVASSERT(textureSize.dx >= frameSize.dx && textureSize.dy >= frameSize.dy);
 
-        const uint32 bytesPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBytes(PixelFormat::FORMAT_RGBA8888);
-        
-        for (uint32 i = 0; i < textureSize.dy; i++) //Y
+
+        int32 got_picture;
+        int32 ret = AV::avcodec_decode_video2(codecContext, decodedFrame, &got_picture, packet);
+        SCOPE_EXIT
         {
-            uint32 yShift = 0;
-            uint32 uShift = 0;
-            uint32 vShift = 0;
+            AV::av_packet_unref(packet);
+        };
 
-            // convert only significant bytes.
-            bool inBuffer = (i < frameSize.dy);
-            if (inBuffer)
+        if (ret < 0){
+            Logger::Error("Video Decode Error.\n");
+            return;
+        }
+
+        if (got_picture)
+        {
+
             {
-                yShift = yuvFrame->linesize[0] * i;
-                uShift = yuvFrame->linesize[1] * (i / 2);
-                vShift = yuvFrame->linesize[2] * (i / 2);
+                // limit lower fps
+
+                const float32 maxSkippedTime = 1.f;
+                static float32 timeAfterLastRender = 0.f;
+                timeAfterLastRender += timeElapsed;
+                if (timeAfterLastRender >= 1 / videoFramerate && timeAfterLastRender < maxSkippedTime)
+                {
+                    return;
+                }
+                timeAfterLastRender = 0.f;
             }
 
-            for (uint32 j = 0; j < textureSize.dx; j++) //X
-            {
-                const int32 index = (i * frameSize.dx + j) * bytesPerPixel;
+            // rgbTextureBufferHolder is a pointer to pointer to uint8. Used to obtain data directly to our rgbTextureBuffer
+            const uint32 scaledHeight = AV::sws_scale(img_convert_ctx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, yuvDecodedScaledFrame->linesize);
 
-                if (inBuffer && j < frameSize.dx)
+            if (nullptr == videoTexture)
+            {
+                // rgbTextureBuffer is a rgbTextureBufferHolder[0]
+                videoTexture = Texture::CreateFromData(textureFormat, rgbTextureBuffer, textureWidth, textureHeight, false);
+                Sprite * videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, static_cast<int32>(frameWidth), static_cast<int32>(frameHeight), static_cast<float32>(frameWidth), static_cast<float32>(frameHeight));
+                auto back = GetBackground();
+                if (back)
                 {
-                    const unsigned char Y = yuvFrame->data[0][yShift + j];
-                    const unsigned char U = yuvFrame->data[1][uShift + j / 2];
-                    const unsigned char V = yuvFrame->data[2][vShift + j / 2];
-                    
-                    // R G B A layout
-                    outRGBBuffer[index] = static_cast<char8>(Clamp(Y + 1.371f * (V - 128), 0.f, 255.f));
-                    outRGBBuffer[index + 1] = static_cast<char8>(Clamp(Y - 0.698f * (V - 128) - 0.336f * (U - 128), 0.f, 255.f));
-                    outRGBBuffer[index + 2] = static_cast<char8>(Clamp(Y + 1.732f * (U - 128), 0.f, 255.f));                    
-                    outRGBBuffer[index + 3] = static_cast<char8>(255);
+                    back->SetSprite(videoSprite, 0);
                 }
-                else
-                {
-                    memset(&outRGBBuffer[index], 0, bytesPerPixel * sizeof(char8));
-                }
+                SafeRelease(videoSprite);
+            }
+            else
+            {
+                // rgbTextureBuffer is a rgbTextureBufferHolder[0]
+                videoTexture->TexImage(0, textureWidth, textureHeight, rgbTextureBuffer, textureBufferSize, Texture::INVALID_CUBEMAP_FACE);
             }
         }
     }
@@ -223,54 +249,26 @@ namespace DAVA
         if (!isPlaying)
             return;
 
-        do
         {
-            if (AV::av_read_frame(pFormatCtx, packet) < 0)
-                break;
-        }while (packet->stream_index != videoindex);
-
-
-        int32 got_picture;
-        int32 ret = AV::avcodec_decode_video2(pCodecCtx, pFrame, &got_picture, packet);               
-        if (ret < 0){
-            Logger::Error("Video Decode Error.\n");
-            return;
-        }
-
-        if (got_picture)
-        {
-            // limit fps        
+            // limit higher fps        
             static float32 timeAfterLastRender = 0.f;
             timeAfterLastRender += timeElapsed;
-            Logger::Error("passed: %f", timeElapsed);
-
-            if (timeAfterLastRender < 1 / framerate)
+            if (timeAfterLastRender < 1 / videoFramerate)
             {
                 return;
             }
             timeAfterLastRender = 0.f;
-
-            AV::sws_scale(img_convert_ctx, reinterpret_cast<const uint8* const*>(pFrame->data), pFrame->linesize, 0, pCodecCtx->height, pFrameYUV->data, pFrameYUV->linesize);
-
-            YUVToRGB(pFrameYUV, decodedFrameBuffer, Vector2(pCodecCtx->width, pCodecCtx->height), Vector2(textureWidth, textureHeight));
-
-            if (nullptr == videoTexture)
-            {
-                videoTexture = Texture::CreateFromData(textureFormat, reinterpret_cast<uint8*>(decodedFrameBuffer), textureWidth, textureHeight, false);
-                Sprite * videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, pCodecCtx->width, pCodecCtx->height, pCodecCtx->width, pCodecCtx->height);
-                auto back = GetBackground();
-                if (back)
-                {
-                    back->SetSprite(videoSprite, 0);
-                }
-                SafeRelease(videoSprite);
-            }
-            else
-            {
-                videoTexture->TexImage(0, textureWidth, textureHeight, reinterpret_cast<void *>(decodedFrameBuffer), textureBufferSize, Texture::INVALID_CUBEMAP_FACE);
-            }
         }
-        AV::av_packet_unref(packet);
+
+        do
+        {
+            if (AV::av_read_frame(pFormatCtx, packet) < 0)
+            {
+               break;
+            }
+        } while (packet->stream_index != videoindex);
+
+        UpdateVideo(packet, timeElapsed);
     }
 
 }

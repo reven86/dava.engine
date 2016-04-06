@@ -85,33 +85,39 @@ namespace DAVA
         void Update(float32 timeElapsed) override;
 
     private:
+
+        void UpdateVideo(AV::AVPacket * packet, float32 timeElapsed);
+
+        const uint8 emptyPixelColor = 255;
         static bool isFFMGEGInited;
         bool isPlaying = false;
         Texture * videoTexture = nullptr;
-        float32 framerate = 0.f;
+        float32 videoFramerate = 0.f;
 
         uint32 textureWidth = 0;
         uint32 textureHeight = 0;
+        uint32 frameHeight = 0;
+        uint32 frameWidth = 0;
         const PixelFormat textureFormat = PixelFormat::FORMAT_RGBA8888;
         uint32 textureBufferSize = 0;
-        char8* decodedFrameBuffer = nullptr;
-
+        uint8 * rgbTextureBufferHolder[1];
+        uint8 * rgbTextureBuffer = nullptr;
 
         uint32_t len = 0;
         int32 index = 0;
         int64_t in_channel_layout = -1;
-        struct SwrContext *au_convert_ctx = nullptr;
+        struct SwrContext * au_convert_ctx = nullptr;
 
         unsigned int videoindex = -1;
-        AV::AVFormatContext	*pFormatCtx = nullptr;       
-        AV::AVCodecContext	*pCodecCtx = nullptr;
-        AV::AVCodec			*pCodec = nullptr;
-        AV::AVFrame	*pFrame = nullptr;
-        AV::AVFrame	*pFrameYUV = nullptr;
-        uint8 *out_buffer = nullptr;
-        AV::AVPacket *packet = nullptr;
+        AV::AVFormatContext * pFormatCtx = nullptr;
+        AV::AVCodecContext * codecContext = nullptr;
+        AV::AVCodec * pCodec = nullptr;
+        AV::AVFrame * decodedFrame = nullptr;
+        AV::AVFrame * yuvDecodedScaledFrame = nullptr;
+        uint8 * out_buffer = nullptr;
+        AV::AVPacket * packet = nullptr;
         int32 y_size;
-        AV::SwsContext *img_convert_ctx = nullptr;
+        AV::SwsContext * img_convert_ctx = nullptr;
 
         char8 * filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
     };

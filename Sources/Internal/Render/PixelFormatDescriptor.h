@@ -69,6 +69,23 @@ public:
     bool isHardwareSupported;
 };
 
+
+inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat formatID)
+{
+    return GetPixelFormatDescriptor(formatID).pixelSize;
+}
+
+inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat formatID)
+{
+    int32 bits = GetPixelFormatSizeInBits(formatID);
+    if (bits < 8)
+    { // To detect wrong situations
+        Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
+    }
+
+    return bits / 8;
+}
+
 #endif //#if defined (__DAVAENGINE_OPENGL__)
 };
 #endif // __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
