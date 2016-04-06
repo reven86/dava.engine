@@ -65,12 +65,12 @@ inline void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* row, STB_TEXTEDIT_STRING* str
 
 inline int STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* str, int pos, STB_TEXTEDIT_CHARTYPE* newtext, int num)
 {
-    return str->InsertText(DAVA::uint32(pos), newtext, DAVA::uint32(num)) ? 1 : 0;
+    return int(str->InsertText(DAVA::uint32(pos), newtext, DAVA::uint32(num)));
 }
 
 inline int STB_TEXTEDIT_DELETECHARS(STB_TEXTEDIT_STRING* str, int pos, int num)
 {
-    return str->DeleteText(DAVA::uint32(pos), DAVA::uint32(num)) ? 1 : 0;
+    return int(str->DeleteText(DAVA::uint32(pos), DAVA::uint32(num)));
 }
 
 inline int STB_TEXTEDIT_STRINGLEN(STB_TEXTEDIT_STRING* str)
@@ -179,6 +179,11 @@ uint32 StbTextEditBridge::GetSelectionEnd() const
 uint32 StbTextEditBridge::GetCursor() const
 {
     return static_cast<uint32>(stb_state->cursor);
+}
+
+void StbTextEditBridge::SetCursor(uint32 position) const
+{
+    stb_state->cursor = int(position);
 }
 
 bool StbTextEditBridge::IsInsertMode() const

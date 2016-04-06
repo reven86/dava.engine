@@ -165,6 +165,22 @@ bool UITextField::IsLostFocusAllowed(UIControl* newFocus)
     return true;
 }
 
+void UITextField::SetSelectionColor(const Color& selectionColor)
+{
+#if defined(DAVA_TEXTFIELD_USE_STB)
+    textFieldImpl->SetSelectionColor(selectionColor);
+#endif
+}
+
+const Color& UITextField::GetSelectionColor() const
+{
+#if defined(DAVA_TEXTFIELD_USE_STB)
+    return textFieldImpl->GetSelectionColor();
+#else
+    return Color::Transparent;
+#endif
+}
+
 void UITextField::ReleaseFocus()
 {
     if (this == UIControlSystem::Instance()->GetFocusedControl())
@@ -578,21 +594,6 @@ void UITextField::SetFontByPresetName(const String& presetName)
     {
         SetFontSize(static_cast<float32>(font->GetFontHeight()));
     }
-}
-
-void UITextField::Draw(const UIGeometricData& geometricData)
-{
-    // #if defined(DAVA_TEXTFIELD_USE_STB)
-    //     textFieldImpl->DrawSelection(geometricData);
-    // #endif
-    UIControl::Draw(geometricData);
-}
-
-void UITextField::DrawAfterChilds(const UIGeometricData& geometricData)
-{
-    // #if defined(DAVA_TEXTFIELD_USE_STB)
-    //     textFieldImpl->DrawCursor(geometricData);
-    // #endif
 }
 
 void UITextField::SystemDraw(const UIGeometricData& geometricData)

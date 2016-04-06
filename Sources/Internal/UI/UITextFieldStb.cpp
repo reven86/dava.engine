@@ -65,6 +65,8 @@ void TextFieldStbImpl::CopyDataFrom(TextFieldStbImpl* t)
 
 void TextFieldStbImpl::OpenKeyboard()
 {
+    // On focus text field
+    //SetCursorPos(GetLength());
 }
 
 void TextFieldStbImpl::CloseKeyboard()
@@ -92,6 +94,7 @@ void TextFieldStbImpl::SetText(const WideString& text)
     {
         control->GetDelegate()->TextFieldOnTextChanged(control, text, prevText);
     }
+    //SetCursorPos(text.length());
     needRedraw = true;
 }
 
@@ -179,8 +182,9 @@ uint32 TextFieldStbImpl::GetCursorPos() const
     return GetCursor();
 }
 
-void TextFieldStbImpl::SetCursorPos(int32)
+void TextFieldStbImpl::SetCursorPos(int32 position)
 {
+    SetCursor(position);
 }
 
 void TextFieldStbImpl::SetMaxLength(int32 _maxLength)
@@ -278,14 +282,9 @@ void TextFieldStbImpl::SetRect(const Rect& rect)
 
 void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
 {
-    //WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
     Rect clipRect = d.GetUnrotatedRect();
-    //     clipRect.x -= 1;
-    //     clipRect.y -= 1;
-    //     clipRect.dx += 2;
-    //     clipRect.dy += 2;
     RenderSystem2D::Instance()->PushClip();
-    RenderSystem2D::Instance()->IntersectClipRect(clipRect); //anyway it doesn't work with rotation
+    RenderSystem2D::Instance()->IntersectClipRect(clipRect);
 
     auto& offset = d.GetUnrotatedRect().GetPosition();
 
@@ -301,22 +300,36 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
 
     if (showCursor)
     {
-        //         if (cursorRect.dx > 1.f)
-        {
-            RenderSystem2D::Instance()->DrawRect(cursorRect + offset, cursorColor);
-        }
-        //         else
-        //         {
-        //             auto p1 = Vector2(cursorRect.x, cursorRect.y) + offset;
-        //             auto p2 = Vector2(cursorRect.x, cursorRect.y + cursorRect.dy) + offset;
-        //             RenderSystem2D::Instance()->DrawLine(p1, p2, cursorColor);
-        //         }
+        RenderSystem2D::Instance()->FillRect(cursorRect + offset, staticText->GetTextColor());
     }
 
     RenderSystem2D::Instance()->PopClip();
+
+    //     Rect r;
+    //     r.x = 0;
+    //     r.y = 0;
+    //     r.dx = 3;
+    //     r.dy = 3;
+    //     RenderSystem2D::Instance()->FillRect(r, Color(1, 0, 1, 1));
+    //
+    //     r.x = 1;
+    //     r.y = 1;
+    //     r.dx = 3;
+    //     r.dy = 3;
+    //     RenderSystem2D::Instance()->DrawRect(r, Color(0, 1, 1, 0.5));
 }
 
-bool TextFieldStbImpl::InsertText(uint32 position, const WideString::value_type* str, uint32 length)
+void TextFieldStbImpl::SetSelectionColor(const Color& _selectionColor)
+{
+    selectionColor = _selectionColor;
+}
+
+const Color& TextFieldStbImpl::GetSelectionColor() const
+{
+    return selectionColor;
+}
+
+uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_type* str, uint32 length)
 {
     auto insertText = WideString(str, length);
     const auto& delegate = control->GetDelegate();
@@ -327,13 +340,24 @@ bool TextFieldStbImpl::InsertText(uint32 position, const WideString::value_type*
     }
     if (apply)
     {
-        auto t = control->GetAppliedChanges(position, 0, insertText);
-        control->SetText(t);
+        auto text = control->GetText();
+        if (control->GetMaxLength() > 0)
+        {
+            int32 outOfBounds = int32(text.length()) - control->GetMaxLength() + length;
+            if (outOfBounds < 0)
+                outOfBounds = 0;
+            if (outOfBounds > length)
+                outOfBounds = length;
+            length -= outOfBounds;
+        }
+        text.insert(position, str, length);
+        control->SetText(text);
+        return length;
     }
-    return apply;
+    return 0;
 }
 
-bool TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
+uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
 {
     const auto& delegate = control->GetDelegate();
     bool apply = true;
@@ -343,10 +367,12 @@ bool TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
     }
     if (apply)
     {
-        auto t = control->GetAppliedChanges(position, length, WideString());
-        control->SetText(t);
+        auto text = control->GetText();
+        text.erase(position, length);
+        control->SetText(text);
+        return length;
     }
-    return apply;
+    return 0;
 }
 
 const Vector<TextBlock::Line>& TextFieldStbImpl::GetMultilineInfo()
@@ -438,7 +464,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     r.x = staticTextOffset.x;
     r.y = staticTextOffset.y;
     r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
-    r.dx = 0.f;
+    r.dx = 1.f;
 
     if (!linesInfo.empty())
     {
@@ -457,10 +483,12 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
             }
             r.x += line.xoffset;
 
+#if 0 // Set cursor width like current replacing character
             if (insertMode != 0)
             {
                 r.dx = charsSizes[cursorPos];
             }
+#endif
         }
         else
         {
@@ -471,9 +499,9 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
             r.x += line.xoffset;
         }
 
-        if (r.x > control->GetSize().x)
+        if (r.x + 1.f > control->GetSize().x)
         {
-            r.dx = 0.0f;
+            r.dx = 1.0f;
             r.x = control->GetSize().x - r.dx;
         }
         else if (r.x + r.dx > control->GetSize().x)
@@ -504,10 +532,6 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     }
 
     cursorRect = r;
-    //     cursorRect.x = ceilf(cursorRect.x);
-    //     cursorRect.y = ceilf(cursorRect.y);
-    //     cursorRect.dx = ceilf(cursorRect.dx);
-    //     cursorRect.dy = ceilf(cursorRect.dy);
 }
 
 void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
@@ -527,6 +551,11 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
         else if (visibleRect.x > controlSize.dx - checkDelta)
         {
             staticTextOffset.x = std::max(controlSize.dx - textSize.dx, staticTextOffset.x - delta);
+        }
+        else if (staticTextOffset.x + textSize.dx < controlSize.dx)
+        {
+            staticTextOffset.x = std::min(0.f, controlSize.x - textSize.dx);
+            ;
         }
     }
     else

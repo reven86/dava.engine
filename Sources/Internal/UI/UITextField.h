@@ -232,6 +232,9 @@ public:
 
     bool IsLostFocusAllowed(UIControl* newFocus) override;
 
+    void SetSelectionColor(const Color& selectionColor);
+    const Color& GetSelectionColor() const;
+
     /**
      \brief Sets the font of the control text.
      \param[in] font font used for text draw of the states.
@@ -351,8 +354,6 @@ public:
 
     void SetFontByPresetName(const String& presetName);
 
-    void Draw(const UIGeometricData& geometricData) override;
-    void DrawAfterChilds(const UIGeometricData& geometricData) override;
     void SystemDraw(const UIGeometricData& geometricData) override;
 
     WideString GetVisibleText() const;
@@ -396,6 +397,7 @@ public:
                          PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("selectioncolor", "Selection color", GetSelectionColor, SetSelectionColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)

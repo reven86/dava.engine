@@ -59,7 +59,7 @@ public:
     virtual ~StbTextEditBridge();
 
     /**
-     * \brief Copy class data to currect instanse
+     * \brief Copy class data to correct instance
      * \param[in] c object to copy data
      */
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
@@ -83,67 +83,69 @@ public:
 
     /**
      * \brief Send mouse click to STB text edit
-     * \param[in] point mouse point (x,y) in control's local cordinates
+     * \param[in] point mouse point (x,y) in control's local coordinates
      */
     virtual void Click(const Vector2& point);
 
     /**
      * \brief Send mouse drag event to STB text edit
-     * \param[in] point mouse point (x,y) in control's local cordinates
+     * \param[in] point mouse point (x,y) in control's local coordinates
      */
     virtual void Drag(const Vector2& point);
 
     /**
-     * \brief Returs character index of selection start
+     * \brief Returns character index of selection start
      * \return character index
      */
     uint32 GetSelectionStart() const;
 
     /**
-     * \brief Returs character index of selection end
+     * \brief Returns character index of selection end
      * \return character index
      */
     uint32 GetSelectionEnd() const;
 
     /**
-     * \brief Returs character index of cursor position. 
+     * \brief Returns character index of cursor position. 
      *        Cursor equal 0 - cursor before first symbol, 
-     *        cursor equal text length - cursro after last symbol
+     *        cursor equal text length - cursor after last symbol
      * \return character index
      */
     uint32 GetCursor() const;
 
+    void SetCursor(uint32 position) const;
+
     /**
      * \brief Return inserting mode flag
-     * \return if True that insertiog mode is enabled
+     * \return if True that inserting mode is enabled
      */
     bool IsInsertMode() const;
 
     /**
-     * \brief Service fuction for insert text in data structure
-     * \param[in] position poisiton of inserting
+     * \brief Service function for insert text in data structure
+     * \param[in] position position of inserting
      * \param[in] str string to inserting
      * \param[in] length string length
-     * \return true if operation complete
+     * \return count of inserted characters
      */
-    virtual bool InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
+    virtual uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
 
     /**
      * \brief Service function for delete text from data structure
-     * \param[in] position positon of deleting
+     * \param[in] position position of deleting
      * \param[in] length deleting substring length
-     * \return true if operation complete
+     * \return count of deleted characters
      */
-    virtual bool DeleteText(uint32 position, uint32 length) = 0;
+    virtual uint32 DeleteText(uint32 position, uint32 length) = 0;
 
     /**
      * \brief Service function for getting information about lines in text
-     * \return vector of lines infromation
+     * \return vector of lines information
      */
     virtual const Vector<TextBlock::Line>& GetMultilineInfo() = 0;
 
     /**
-     * \brief Service function for getting infromation of cahracters sizes
+     * \brief Service function for getting information of characters sizes
      * \return vector of characters sizes
      */
     virtual const Vector<float32>& GetCharactersSizes() = 0;

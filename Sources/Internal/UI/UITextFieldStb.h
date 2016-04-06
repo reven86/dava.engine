@@ -93,11 +93,14 @@ public:
     void SetRect(const Rect& rect);
     void SystemDraw(const UIGeometricData& d);
 
+    void SetSelectionColor(const Color& selectionColor);
+    const Color& GetSelectionColor() const;
+
     void Input(UIEvent* currentInput);
 
     // StbTextEditBridge
-    bool InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
-    bool DeleteText(uint32 position, uint32 length) override;
+    uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
+    uint32 DeleteText(uint32 position, uint32 length) override;
     const Vector<TextBlock::Line>& GetMultilineInfo() override;
     const Vector<float32>& GetCharactersSizes() override;
     uint32 GetLength() override;
@@ -115,7 +118,6 @@ private:
     bool needRedraw = true;
     bool showCursor = true;
     Color selectionColor = Color(0.f, 0.f, 0.7f, 0.7f);
-    Color cursorColor = Color::White;
     Vector<Rect> selectionRects;
     Rect cursorRect;
     Vector2 staticTextOffset;
