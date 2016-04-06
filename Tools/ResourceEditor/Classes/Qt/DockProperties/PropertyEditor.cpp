@@ -73,7 +73,7 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
-#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSignals /*= true*/)
@@ -1000,6 +1000,12 @@ void PropertyEditor::DeleteRenderBatch()
                 DVASSERT(ro);
 
                 DAVA::uint32 count = ro->GetRenderBatchCount();
+                if (count == 1)
+                {
+                    // We don't allow to delete last render batch.
+                    return;
+                }
+
                 for (DAVA::uint32 i = 0; i < count; ++i)
                 {
                     DAVA::RenderBatch* b = ro->GetRenderBatch(i);

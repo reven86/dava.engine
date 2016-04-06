@@ -30,6 +30,18 @@
 #include "TexturePacker/TexturePacker.h"
 #include "Base/BaseTypes.h"
 
+#include "Base/GlobalEnum.h"
+
+ENUM_DECLARE(DAVA::PackingAlgorithm)
+{
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::PackingAlgorithm::ALG_BASIC), "ALG_BASIC");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::PackingAlgorithm::ALG_MAXRECTS_BOTTOM_LEFT), "ALG_MAXRECTS_BOTTOM_LEFT");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::PackingAlgorithm::ALG_MAXRECTS_BEST_AREA_FIT), "ALG_MAXRECTS_BEST_AREA_FIT");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::PackingAlgorithm::ALG_MAXRECTS_BEST_SHORT_SIDE_FIT), "ALG_MAXRECTS_BEST_SHORT_SIDE_FIT");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::PackingAlgorithm::ALG_MAXRECTS_BEST_LONG_SIDE_FIT), "ALG_MAXRECTS_BEST_LONG_SIDE_FIT");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::PackingAlgorithm::ALG_MAXRRECT_BEST_CONTACT_POINT), "ALG_MAXRRECT_BEST_CONTACT_POINT");
+};
+
 namespace DAVA
 {
 class BasicSpritesheetLayout : public SpritesheetLayout
