@@ -129,7 +129,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
             fn(material);
         }
 
-        QtMainWindow::Instance()->GetUI()->sceneTree->LookAtSelection();
+        LookAtSelection(curScene);
     }
 }
 

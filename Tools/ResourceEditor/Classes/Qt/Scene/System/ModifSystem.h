@@ -51,7 +51,6 @@ class EntityModificationSystem : public DAVA::SceneSystem, public SceneSelection
 
 public:
     EntityModificationSystem(DAVA::Scene* scene, SceneCollisionSystem* colSys, SceneCameraSystem* camSys, HoodSystem* hoodSys);
-    ~EntityModificationSystem();
 
     ST_Axis GetModifAxis() const;
     void SetModifAxis(ST_Axis axis);

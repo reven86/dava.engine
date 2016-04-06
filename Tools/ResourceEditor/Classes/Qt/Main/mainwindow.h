@@ -108,6 +108,7 @@ public slots:
     void OnRecentProjectsTriggered(QAction* recentAction);
     void ExportMenuTriggered(QAction* exportAsAction);
     void OnImportSpeedTreeXML();
+    void RemoveSelection();
 
     void OnUndo();
     void OnRedo();

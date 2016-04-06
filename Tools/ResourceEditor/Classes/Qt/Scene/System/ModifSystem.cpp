@@ -55,8 +55,6 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene* scene, SceneColl
     SetModifAxis(ST_AXIS_Z);
 }
 
-EntityModificationSystem::~EntityModificationSystem() = default;
-
 void EntityModificationSystem::SetModifAxis(ST_Axis axis)
 {
     if (axis != ST_AXIS_NONE)
