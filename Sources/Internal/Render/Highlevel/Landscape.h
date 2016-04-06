@@ -176,8 +176,6 @@ protected:
     void SetUseMorphing(bool useMorph);
     bool IsUseMorphing() const;
 
-    const LandscapeSubdivision::SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y) const;
-
     void GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3& tangentOut) const;
 
     struct RestoreBufferData
@@ -341,15 +339,6 @@ inline LandscapeSubdivision* Landscape::GetSubdivision()
     return subdivision;
 }
 
-DAVA_FORCEINLINE const LandscapeSubdivision::SubdivisionPatchInfo* Landscape::GetSubdivPatch(uint32 level, uint32 x, uint32 y) const
-{
-    const LandscapeSubdivision::SubdivisionLevelInfo& levelInfo = subdivision->GetLevelInfo(level);
-
-    if (x < levelInfo.size && y < levelInfo.size)
-        return &subdivision->GetPatchInfo(level, x, y);
-    else
-        return 0;
-}
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__

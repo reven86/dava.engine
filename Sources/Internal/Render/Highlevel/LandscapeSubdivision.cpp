@@ -46,6 +46,8 @@ LandscapeSubdivision::~LandscapeSubdivision()
 
 void LandscapeSubdivision::PrepareSubdivision(Camera* camera, const Matrix4* worldTransform)
 {
+    ++updateID;
+
     cameraPos = camera->GetPosition();
 
     frustum->Build((*worldTransform) * camera->GetViewProjMatrix());
@@ -218,7 +220,6 @@ void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint
     if ((level < subdivLevelCount - 1) && ((maxPatchRadiusError <= radiusError) || (maxHeightError <= heightError) || (maxAbsoluteHeightError < Abs(patch->maxError)) || (minSubdivLevel > level) || forceMaxSubdiv))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
-        subdivPatchInfo->lastSubdivLevel = level;
 
         uint32 x2 = x << 1;
         uint32 y2 = y << 1;
@@ -230,7 +231,6 @@ void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint
     }
     else
     {
-        float32 morphAmount = 1.f;
         if (calculateMorph)
         {
             float32 radiusError0Rel = Max(radiusError0, maxPatchRadiusError) / maxPatchRadiusError;
@@ -241,33 +241,48 @@ void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint
 
             float32 error0Delta = Max(radiusError0Rel, heightError0Rel) - 1.f;
             float32 errorDelta = 1.f - Max(radiusErrorRel, heightErrorRel);
-            morphAmount = 1.f - errorDelta / (error0Delta + errorDelta);
+
+            subdivPatchInfo->subdivMorph = 1.f - errorDelta / (error0Delta + errorDelta);
         }
 
-        TerminateSubdivision(level, x, y, level, morphAmount);
+        subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
+        subdivPatchInfo->lastUpdateID = updateID;
+
         terminatedPatchesCount++;
     }
 }
 
-void LandscapeSubdivision::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 morph)
+const LandscapeSubdivision::SubdivisionPatchInfo* LandscapeSubdivision::GetTerminatedPatchInfo(uint32 level, uint32 x, uint32 y, uint32& patchLevel) const
 {
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + (y << level) + x];
-
-    subdivPatchInfo->subdivMorph = morph;
-    subdivPatchInfo->lastSubdivLevel = lastSubdivLevel;
-    subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
-
-    if (level < subdivLevelCount - 1)
+    uint32 levelSize = 1 << level;
+    do
     {
-        uint32 x2 = x * 2;
-        uint32 y2 = y * 2;
+        if (x >= levelSize || y >= levelSize)
+        {
+            return nullptr;
+        }
 
-        TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdivLevel, morph);
-        TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdivLevel, morph);
-        TerminateSubdivision(level + 1, x2 + 0, y2 + 1, lastSubdivLevel, morph);
-        TerminateSubdivision(level + 1, x2 + 1, y2 + 1, lastSubdivLevel, morph);
-    }
+        const LandscapeSubdivision::SubdivisionPatchInfo& patchInfo = GetPatchInfo(level, x, y);
+        if (patchInfo.lastUpdateID == updateID)
+        {
+            if (patchInfo.subdivisionState == SubdivisionPatchInfo::TERMINATED)
+            {
+                patchLevel = level;
+                return &patchInfo;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+
+        --level;
+        levelSize /= 2;
+        x /= 2;
+        y /= 2;
+    } while (level != uint32(-1));
+
+    return nullptr;
 }
 
 void LandscapeSubdivision::BuildSubdivision(Heightmap* _heightmap, const AABBox3& _bbox, uint32 _patchSizeQuads, uint32 minSubdivideLevel, bool _calculateMorph)

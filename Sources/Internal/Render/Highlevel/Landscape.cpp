@@ -585,60 +585,38 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
     }
     else
     {
-        uint32 neighbourLevel[4];
-        Vector4 neighbourLevelf, neighbourMorph;
-        const float32 morph = subdivPatchInfo.subdivMorph;
-
-        const LandscapeSubdivision::SubdivisionPatchInfo* neighbourPatch[4] = {
-            GetSubdivPatch(level, x - 1, y),
-            GetSubdivPatch(level, x, y - 1),
-            GetSubdivPatch(level, x + 1, y),
-            GetSubdivPatch(level, x, y + 1)
-        };
-
-        for (int32 i = 0; i < 4; ++i)
-        {
-            const LandscapeSubdivision::SubdivisionPatchInfo* patch = neighbourPatch[i];
-            bool patchTerminated = (patch && patch->subdivisionState == LandscapeSubdivision::SubdivisionPatchInfo::TERMINATED);
-
-            switch (renderMode)
-            {
-            case RENDERMODE_INSTANCING_MORPHING:
-            {
-                if (patchTerminated)
-                {
-                    neighbourMorph.data[i] = (patch->lastSubdivLevel < level) ? patch->subdivMorph : Min(patch->subdivMorph, morph);
-                }
-                else
-                {
-                    neighbourMorph.data[i] = morph;
-                }
-                DAVA_SWITCH_CASE_FALLTHROUGH;
-            } //there's no need break, it's ok
-            case RENDERMODE_INSTANCING:
-            {
-                neighbourLevelf.data[i] = patchTerminated ? float32(patch->lastSubdivLevel) : float32(level);
-            }
-            break;
-            case RENDERMODE_NO_INSTANCING:
-            {
-                neighbourLevel[i] = patchTerminated ? patch->lastSubdivLevel : level;
-            }
-            break;
-            }
-        }
+        uint32 xNegLevel = level, yNegLevel = level, xPosLevel = level, yPosLevel = level;
+        const LandscapeSubdivision::SubdivisionPatchInfo* xNeg = subdivision->GetTerminatedPatchInfo(level, x - 1, y, xNegLevel);
+        const LandscapeSubdivision::SubdivisionPatchInfo* yNeg = subdivision->GetTerminatedPatchInfo(level, x, y - 1, yNegLevel);
+        const LandscapeSubdivision::SubdivisionPatchInfo* xPos = subdivision->GetTerminatedPatchInfo(level, x + 1, y, xPosLevel);
+        const LandscapeSubdivision::SubdivisionPatchInfo* yPos = subdivision->GetTerminatedPatchInfo(level, x, y + 1, yPosLevel);
 
         switch (renderMode)
         {
         case RENDERMODE_INSTANCING_MORPHING:
+        {
+            const float32 morph = subdivPatchInfo.subdivMorph;
+            float32 xNegMorph = xNeg ? ((xNegLevel < level) ? xNeg->subdivMorph : Min(xNeg->subdivMorph, morph)) : morph;
+            float32 yNegMorph = yNeg ? ((yNegLevel < level) ? yNeg->subdivMorph : Min(yNeg->subdivMorph, morph)) : morph;
+            float32 xPosMorph = xPos ? ((xPosLevel < level) ? xPos->subdivMorph : Min(xPos->subdivMorph, morph)) : morph;
+            float32 yPosMorph = yPos ? ((yPosLevel < level) ? yPos->subdivMorph : Min(yPos->subdivMorph, morph)) : morph;
+
+            Vector4 neighbourLevelf = Vector4(float32(xNegLevel), float32(yNegLevel), float32(xPosLevel), float32(yPosLevel));
+            Vector4 neighbourMorph = Vector4(xNegMorph, yNegMorph, xPosMorph, yPosMorph);
             DrawPatchInstancing(level, x, y, neighbourLevelf, morph, neighbourMorph);
-            break;
+        }
+        break;
         case RENDERMODE_INSTANCING:
+        {
+            Vector4 neighbourLevelf = Vector4(float32(xNegLevel), float32(yNegLevel), float32(xPosLevel), float32(yPosLevel));
             DrawPatchInstancing(level, x, y, neighbourLevelf);
-            break;
+        }
+        break;
         case RENDERMODE_NO_INSTANCING:
-            DrawPatchNoInstancing(level, x, y, neighbourLevel[0], neighbourLevel[1], neighbourLevel[2], neighbourLevel[3]);
-            break;
+        {
+            DrawPatchNoInstancing(level, x, y, xNegLevel, yNegLevel, xPosLevel, yPosLevel);
+        }
+        break;
         }
     }
 }

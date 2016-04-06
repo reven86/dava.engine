@@ -57,7 +57,7 @@ public:
             TERMINATED = 3,
         };
 
-        uint32 lastSubdivLevel = 0;
+        uint32 lastUpdateID = 0;
         float32 subdivMorph = 0.f;
         uint8 subdivisionState = CLIPPED;
         uint8 startClipPlane = 0;
@@ -97,6 +97,7 @@ public:
 
     const SubdivisionLevelInfo& GetLevelInfo(uint32 level) const;
     const SubdivisionPatchInfo& GetPatchInfo(uint32 level, uint32 x, uint32 y) const;
+    const SubdivisionPatchInfo* GetTerminatedPatchInfo(uint32 level, uint32 x, uint32 y, uint32& patchLevel) const;
     SubdivisionMetrics& GetMetrics();
 
     uint32 GetLevelCount() const;
@@ -117,7 +118,6 @@ private:
 
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect);
     void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0);
-    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 lastSubdivMorph);
 
     const PatchQuadInfo& GetPatchQuadInfo(uint32 level, uint32 x, uint32 y) const;
 
@@ -130,6 +130,7 @@ private:
     uint32 subdivLevelCount = 0;
     uint32 subdivPatchCount = 0;
     uint32 patchSizeQuads = 8;
+    uint32 updateID = 0;
 
     SubdivisionMetrics metrics;
 
