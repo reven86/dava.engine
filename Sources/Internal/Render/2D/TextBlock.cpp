@@ -1034,4 +1034,16 @@ TextBlock* TextBlock::Clone()
 
     return block;
 }
+
+DAVA::float32 TextBlock::GetFontSize()
+{
+    return originalFontSize;
+}
+
+void TextBlock::SetFontSize(float32 newSize)
+{
+    originalFontSize = newSize;
+    renderSize = originalFontSize;
+    NeedPrepare();
+}
 };

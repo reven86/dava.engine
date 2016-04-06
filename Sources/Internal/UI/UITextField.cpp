@@ -582,15 +582,17 @@ void UITextField::SetFontByPresetName(const String& presetName)
 
 void UITextField::Draw(const UIGeometricData& geometricData)
 {
-#if defined(DAVA_TEXTFIELD_USE_STB)
-    textFieldImpl->DrawSelection(geometricData);
-#endif
-
+    // #if defined(DAVA_TEXTFIELD_USE_STB)
+    //     textFieldImpl->DrawSelection(geometricData);
+    // #endif
     UIControl::Draw(geometricData);
+}
 
-#if defined(DAVA_TEXTFIELD_USE_STB)
-    textFieldImpl->DrawCursor(geometricData);
-#endif
+void UITextField::DrawAfterChilds(const UIGeometricData& geometricData)
+{
+    // #if defined(DAVA_TEXTFIELD_USE_STB)
+    //     textFieldImpl->DrawCursor(geometricData);
+    // #endif
 }
 
 void UITextField::SystemDraw(const UIGeometricData& geometricData)

@@ -83,6 +83,7 @@ public:
     void SetTextWithoutRect(const WideString& text);
 
     void SetFont(Font* font);
+    void SetFontSize(float32 newSize);
     void SetTextColor(const Color& color);
 
     void SetShadowColor(const Color& color);
@@ -123,10 +124,8 @@ public:
     const WideString& GetText() const;
     const Vector<WideString>& GetMultilineStrings() const;
 
-    Font* GetFont() const
-    {
-        return textBlock->GetFont();
-    }
+    Font* GetFont() const;
+    float32 GetFontSize() const;
 
     virtual UIStaticText* Clone() override;
     virtual void CopyDataFrom(UIControl* srcControl) override;

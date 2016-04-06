@@ -65,14 +65,12 @@ inline void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* row, STB_TEXTEDIT_STRING* str
 
 inline int STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* str, int pos, STB_TEXTEDIT_CHARTYPE* newtext, int num)
 {
-    str->InsertText(DAVA::uint32(pos), newtext, DAVA::uint32(num));
-    return 1;
+    return str->InsertText(DAVA::uint32(pos), newtext, DAVA::uint32(num)) ? 1 : 0;
 }
 
 inline int STB_TEXTEDIT_DELETECHARS(STB_TEXTEDIT_STRING* str, int pos, int num)
 {
-    str->DeleteText(DAVA::uint32(pos), DAVA::uint32(num));
-    return 1;
+    return str->DeleteText(DAVA::uint32(pos), DAVA::uint32(num)) ? 1 : 0;
 }
 
 inline int STB_TEXTEDIT_STRINGLEN(STB_TEXTEDIT_STRING* str)
@@ -83,8 +81,11 @@ inline int STB_TEXTEDIT_STRINGLEN(STB_TEXTEDIT_STRING* str)
 inline float STB_TEXTEDIT_GETWIDTH(STB_TEXTEDIT_STRING* str, int n, int i)
 {
     auto charsSizes = str->GetCharactersSizes();
-    DVASSERT(DAVA::uint32(charsSizes.size()) > DAVA::uint32(n + i));
-    return charsSizes[n + i];
+    if (DAVA::uint32(charsSizes.size()) > DAVA::uint32(n + i))
+    {
+        return charsSizes[n + i];
+    }
+    return 0.f;
 }
 
 inline int STB_TEXTEDIT_KEYTOTEXT(int key)

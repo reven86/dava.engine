@@ -94,12 +94,10 @@ public:
     void SystemDraw(const UIGeometricData& d);
 
     void Input(UIEvent* currentInput);
-    void DrawSelection(const UIGeometricData& geometricData);
-    void DrawCursor(const UIGeometricData& geometricData);
 
     // StbTextEditBridge
-    void InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
-    void DeleteText(uint32 position, uint32 length) override;
+    bool InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
+    bool DeleteText(uint32 position, uint32 length) override;
     const Vector<TextBlock::Line>& GetMultilineInfo() override;
     const Vector<float32>& GetCharactersSizes() override;
     uint32 GetLength() override;
@@ -113,12 +111,15 @@ private:
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
     float32 cursorTime = 0.0f;
+    int32 maxLength;
     bool needRedraw = true;
     bool showCursor = true;
     Color selectionColor = Color(0.f, 0.f, 0.7f, 0.7f);
     Color cursorColor = Color::White;
     Vector<Rect> selectionRects;
     Rect cursorRect;
+    Vector2 staticTextOffset;
+    void UpdateOffset(const Rect& visibleRect);
 };
 
 } // end namespace DAVA

@@ -625,5 +625,21 @@ void UIStaticText::RecalculateDebugColoring()
         }
     }
 }
+
 #endif
+
+DAVA::Font* UIStaticText::GetFont() const
+{
+    return textBlock->GetFont();
+}
+
+DAVA::float32 UIStaticText::GetFontSize() const
+{
+    return textBlock->GetFontSize();
+}
+
+void UIStaticText::SetFontSize(float32 newSize)
+{
+    textBlock->SetFontSize(newSize);
+}
 };

@@ -124,15 +124,17 @@ public:
      * \param[in] position poisiton of inserting
      * \param[in] str string to inserting
      * \param[in] length string length
+     * \return true if operation complete
      */
-    virtual void InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
+    virtual bool InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
 
     /**
      * \brief Service function for delete text from data structure
      * \param[in] position positon of deleting
      * \param[in] length deleting substring length
+     * \return true if operation complete
      */
-    virtual void DeleteText(uint32 position, uint32 length) = 0;
+    virtual bool DeleteText(uint32 position, uint32 length) = 0;
 
     /**
      * \brief Service function for getting information about lines in text

@@ -96,6 +96,7 @@ public:
     static TextBlock* Create(const Vector2& size);
 
     virtual void SetFont(Font* font);
+    virtual void SetFontSize(float32 newSize);
     virtual void SetScale(const Vector2& scale);
     virtual void SetRectSize(const Vector2& size);
     virtual void SetPosition(const Vector2& position);
@@ -116,6 +117,7 @@ public:
     Vector2 GetPreferredSizeForWidth(float32 width);
 
     virtual Font* GetFont();
+    virtual float32 GetFontSize();
     virtual const WideString& GetText();
     virtual const WideString& GetVisualText();
     virtual const Vector<WideString>& GetMultilineStrings();
@@ -243,6 +245,8 @@ private:
 
     float angle;
     Vector2 pivot;
+
+public:
 };
 
 inline void TextBlock::CalculateCacheParamsIfNeed()
