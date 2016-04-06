@@ -89,9 +89,8 @@ protected:
         ReflectedObject (*castOP)(const ReflectedObject& obj);
     };
 
-    class ClassField
+    struct ClassField
     {
-    public:
         ClassField() = default;
         ClassField(const ClassField&) = delete;
 
