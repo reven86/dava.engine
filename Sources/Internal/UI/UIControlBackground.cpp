@@ -90,6 +90,11 @@ UIControlBackground::~UIControlBackground()
     SafeRelease(material);
     SafeDelete(margins);
     ReleaseDrawData();
+
+    SafeRelease(mask);
+    SafeRelease(detail);
+    SafeRelease(gradient);
+    SafeRelease(contour);
 }
 
 bool UIControlBackground::IsEqualTo(const UIControlBackground* back) const
@@ -523,6 +528,7 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
     case DRAW_TILED_MULTILAYER:
         drawState.SetMaterial(RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL[gradientMode]);
         RenderSystem2D::Instance()->DrawTiledMultylayer(mask, detail, gradient, contour, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledMultulayerData, drawColor);
+        break;
     default:
         break;
     }
@@ -542,6 +548,7 @@ void UIControlBackground::ReleaseDrawData()
 {
     SafeDelete(tiledData);
     SafeDelete(stretchData);
+    SafeDelete(tiledMultulayerData);
 }
 
 void UIControlBackground::SetLeftRightStretchCap(float32 _leftStretchCap)

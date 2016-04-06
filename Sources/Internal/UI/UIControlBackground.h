@@ -358,28 +358,28 @@ protected:
 public:
     // for introspection
 
-    inline int GetBgDrawType() const;
-    inline void SetBgDrawType(int type);
-    inline FilePath GetBgSpritePath() const;
-    inline void SetBgSpriteFromPath(const FilePath& path);
+    int32 GetBgDrawType() const;
+    void SetBgDrawType(int type);
+    FilePath GetBgSpritePath() const;
+    void SetBgSpriteFromPath(const FilePath& path);
     inline int32 GetBgColorInherit() const;
-    inline void SetBgColorInherit(int32 type);
-    inline int32 GetBgPerPixelAccuracy() const;
-    inline void SetBgPerPixelAccuracy(int32 type);
+    void SetBgColorInherit(int32 type);
+    int32 GetBgPerPixelAccuracy() const;
+    void SetBgPerPixelAccuracy(int32 type);
     Vector4 GetMarginsAsVector4() const;
     void SetMarginsAsVector4(const Vector4& margins);
 
-    inline FilePath GetMaskSpritePath() const;
-    inline void SetMaskSpriteFromPath(const FilePath& path);
-    inline FilePath GetDetailSpritePath() const;
-    inline void SetDetailSpriteFromPath(const FilePath& path);
-    inline FilePath GetGradientSpritePath() const;
-    inline void SetGradientSpriteFromPath(const FilePath& path);
-    inline FilePath GetContourSpritePath() const;
-    inline void SetContourSpriteFromPath(const FilePath& path);
+    FilePath GetMaskSpritePath() const;
+    void SetMaskSpriteFromPath(const FilePath& path);
+    FilePath GetDetailSpritePath() const;
+    void SetDetailSpriteFromPath(const FilePath& path);
+    FilePath GetGradientSpritePath() const;
+    void SetGradientSpriteFromPath(const FilePath& path);
+    FilePath GetContourSpritePath() const;
+    void SetContourSpriteFromPath(const FilePath& path);
 
-    inline int32 GetGradientBlendMode() const;
-    inline void SetGradientBlendMode(int32 mode);
+    int32 GetGradientBlendMode() const;
+    void SetGradientBlendMode(int32 mode);
 
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
@@ -438,17 +438,17 @@ inline Vector4 UIControlBackground::UIMargins::AsVector4() const
     return Vector4(left, top, right, bottom);
 }
 
-int UIControlBackground::GetBgDrawType() const
+inline int32 UIControlBackground::GetBgDrawType() const
 {
     return GetDrawType();
 }
 
-void UIControlBackground::SetBgDrawType(int type)
+inline void UIControlBackground::SetBgDrawType(int type)
 { // TODO: FIXME: type
     SetDrawType(static_cast<UIControlBackground::eDrawType>(type));
 }
 
-FilePath UIControlBackground::GetBgSpritePath() const
+inline FilePath UIControlBackground::GetBgSpritePath() const
 {
     if (GetSprite() == NULL)
         return "";
@@ -458,7 +458,7 @@ FilePath UIControlBackground::GetBgSpritePath() const
         return Sprite::GetPathString(GetSprite());
 }
 
-void UIControlBackground::SetBgSpriteFromPath(const FilePath& path)
+inline void UIControlBackground::SetBgSpriteFromPath(const FilePath& path)
 {
     if (path == "")
         SetSprite(NULL, 0);
@@ -466,56 +466,56 @@ void UIControlBackground::SetBgSpriteFromPath(const FilePath& path)
         SetSprite(path, GetFrame());
 }
 
-FilePath UIControlBackground::GetMaskSpritePath() const
+inline FilePath UIControlBackground::GetMaskSpritePath() const
 {
     Sprite* sprite = mask;
     if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
         return Sprite::GetPathString(sprite);
     return "";
 }
-void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
+inline void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
 {
     Sprite* tmp = mask;
     if (path != "")
         mask = Sprite::Create(path);
     SafeRelease(tmp);
 }
-FilePath UIControlBackground::GetDetailSpritePath() const
+inline FilePath UIControlBackground::GetDetailSpritePath() const
 {
     Sprite* sprite = detail;
     if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
         return Sprite::GetPathString(sprite);
     return "";
 }
-void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
+inline void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
 {
     Sprite* tmp = detail;
     if (path != "")
         detail = Sprite::Create(path);
     SafeRelease(tmp);
 }
-FilePath UIControlBackground::GetGradientSpritePath() const
+inline FilePath UIControlBackground::GetGradientSpritePath() const
 {
     Sprite* sprite = gradient;
     if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
         return Sprite::GetPathString(sprite);
     return "";
 }
-void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
+inline void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
 {
     Sprite* tmp = gradient;
     if (path != "")
         gradient = Sprite::Create(path);
     SafeRelease(tmp);
 }
-FilePath UIControlBackground::GetContourSpritePath() const
+inline FilePath UIControlBackground::GetContourSpritePath() const
 {
     Sprite* sprite = contour;
     if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
         return Sprite::GetPathString(sprite);
     return "";
 }
-void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
+inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
 {
     Sprite* tmp = contour;
     if (path != "")
@@ -523,7 +523,7 @@ void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
     SafeRelease(tmp);
 }
 
-int32 UIControlBackground::GetGradientBlendMode() const
+inline int32 UIControlBackground::GetGradientBlendMode() const
 {
     return static_cast<int32>(gradientMode);
 }
@@ -532,22 +532,22 @@ inline void UIControlBackground::SetGradientBlendMode(int32 mode)
     gradientMode = eGradientBlendMode(mode);
 }
 
-int32 UIControlBackground::GetBgColorInherit() const
+inline int32 UIControlBackground::GetBgColorInherit() const
 {
     return GetColorInheritType();
 }
 
-void UIControlBackground::SetBgColorInherit(int32 type)
+inline void UIControlBackground::SetBgColorInherit(int32 type)
 {
     SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
 }
 
-int32 UIControlBackground::GetBgPerPixelAccuracy() const
+inline int32 UIControlBackground::GetBgPerPixelAccuracy() const
 {
     return GetPerPixelAccuracyType();
 }
 
-void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
+inline void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
 {
     SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
 }

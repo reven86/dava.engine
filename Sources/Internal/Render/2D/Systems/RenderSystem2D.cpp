@@ -543,10 +543,6 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         Flush();
         currentTexcoordStreamCount = trimmedTexCoordCount;
 
-        //prevent falling if still set to zero
-        if (currentTexcoordStreamCount == 0)
-            currentTexcoordStreamCount = 1;
-
         // TODO: Make draw for big buffers (bigger than buffers in pool)
         // Draw immediately if batch is too big to buffer
         if (batchDesc.vertexCount > MAX_VERTICES || batchDesc.indexCount > MAX_INDECES)
@@ -561,7 +557,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             DVASSERT(currentVertexBuffer == nullptr && currentIndexBuffer == nullptr);
             if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
             {
-                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount], batchDesc.vertexCount);
+                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), batchDesc.vertexCount);
                 DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(batchDesc.indexCount);
                 DVASSERT(vertexBuffer.allocatedVertices == batchDesc.vertexCount);
                 DVASSERT(indexBuffer.allocatedindices == batchDesc.indexCount);
@@ -573,7 +569,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
                 currentPacket.vertexCount = vertexBuffer.allocatedVertices;
                 currentPacket.baseVertex = vertexBuffer.baseVertex;
                 currentPacket.indexBuffer = indexBuffer.buffer;
-                currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount];
+                currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
                 currentIndexBase = indexBuffer.baseIndex;
             }
             // End create vertex and index buffers
@@ -583,7 +579,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     // Begin create vertex and index buffers
     if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
     {
-        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE[currentTexcoordStreamCount], MAX_VERTICES);
+        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), MAX_VERTICES);
         DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(MAX_INDECES);
         DVASSERT(vertexBuffer.allocatedVertices == MAX_VERTICES);
         DVASSERT(indexBuffer.allocatedindices == MAX_INDECES);
@@ -595,7 +591,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentPacket.vertexCount = vertexBuffer.allocatedVertices;
         currentPacket.baseVertex = vertexBuffer.baseVertex;
         currentPacket.indexBuffer = indexBuffer.buffer;
-        currentPacket.vertexLayoutUID = vertexLayouts2d[currentTexcoordStreamCount];
+        currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
         currentIndexBase = indexBuffer.baseIndex;
     }
     // End create vertex and index buffers
@@ -640,9 +636,10 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         Vector2 uv_ext[MAX_TEXTURE_STREAMS_COUNT - 1];
     };
 
+    uint32 vertexStride = GetVBOStride(currentTexcoordStreamCount);
     for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount] * (vertexIndex + i));
+        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
         v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
         v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
         //TODO: rethink do we still require z in rhi?
@@ -657,7 +654,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
         {
             DVASSERT(batchDesc.texCoordPointer[texStream] != nullptr);
-            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, VBO_STRIDE[currentTexcoordStreamCount] * (vertexIndex + i));
+            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
             v.uv_ext[texStream - 1].x = batchDesc.texCoordPointer[texStream][i * 2];
             v.uv_ext[texStream - 1].y = batchDesc.texCoordPointer[texStream][i * 2 + 1];
         }
@@ -1343,8 +1340,6 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
     Vector2 stretchCap(Min(size.x, contour->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH)),
                        Min(size.y, contour->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT)));
 
-    //UniqueHandle textureHandle = contour->GetTextureHandle(frame);
-
     stretchCap.x = Min(stretchCap.x * 0.5f, stretchCapVector.x);
     stretchCap.y = Min(stretchCap.y * 0.5f, stretchCapVector.y);
 
@@ -1388,19 +1383,19 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
         td.contour = contour;
 
         rhi::TextureSetDescriptor textureSetDescriptor;
-        rhi::SamplerState::Descriptor samplerStateSetDescriptor;
         textureSetDescriptor.fragmentTextureCount = 4;
-        samplerStateSetDescriptor.fragmentSamplerCount = 4;
         textureSetDescriptor.fragmentTexture[0] = mask->GetTexture(0)->handle;
-        samplerStateSetDescriptor.fragmentSampler[0] = mask->GetTexture(0)->samplerState;
         textureSetDescriptor.fragmentTexture[1] = detail->GetTexture(0)->handle;
-        samplerStateSetDescriptor.fragmentSampler[1] = detail->GetTexture(0)->samplerState;
         textureSetDescriptor.fragmentTexture[2] = gradient->GetTexture(0)->handle;
-        samplerStateSetDescriptor.fragmentSampler[2] = gradient->GetTexture(0)->samplerState;
         textureSetDescriptor.fragmentTexture[3] = contour->GetTexture(0)->handle;
-        samplerStateSetDescriptor.fragmentSampler[3] = contour->GetTexture(0)->samplerState;
-
         rhi::HTextureSet textureSet = rhi::AcquireTextureSet(textureSetDescriptor);
+
+        rhi::SamplerState::Descriptor samplerStateSetDescriptor;
+        samplerStateSetDescriptor.fragmentSamplerCount = 4;
+        samplerStateSetDescriptor.fragmentSampler[0] = mask->GetTexture(0)->samplerState;
+        samplerStateSetDescriptor.fragmentSampler[1] = detail->GetTexture(0)->samplerState;
+        samplerStateSetDescriptor.fragmentSampler[2] = gradient->GetTexture(0)->samplerState;
+        samplerStateSetDescriptor.fragmentSampler[3] = contour->GetTexture(0)->samplerState;
         rhi::HSamplerState samplerState = rhi::AcquireSamplerState(samplerStateSetDescriptor);
 
         rhi::ReleaseTextureSet(td.textureSet);
@@ -1420,8 +1415,8 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
         td.GenerateTransformData();
     }
 
-    spriteVertexCount = (int32)td.transformedVertices.size();
-    spriteIndexCount = (int32)td.indices.size();
+    spriteVertexCount = static_cast<int32>(td.transformedVertices.size());
+    spriteIndexCount = static_cast<int32>(td.indices.size());
 
     if (td.transformedVertices.size() != 0)
     {
@@ -2261,7 +2256,6 @@ TiledMultilayerData::SingleStretchData TiledMultilayerData::GenerateStretchData(
     if ((sprite->GetRectOffsetValueForFrame(0, Sprite::X_OFFSET_TO_ACTIVE) != 0) || (sprite->GetRectOffsetValueForFrame(0, Sprite::Y_OFFSET_TO_ACTIVE) != 0))
     {
         Logger::Error("wrong sprite %s", Sprite::GetPathString(sprite).c_str());
-        ;
         Logger::Error("texture for sprite atlas for tiled multi-layered should be packed with --disableCropAlpha flag");
     }
     SingleStretchData res;

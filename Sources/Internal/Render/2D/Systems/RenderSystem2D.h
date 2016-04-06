@@ -365,6 +365,9 @@ private:
     float32 AlignToX(float32 value);
     float32 AlignToY(float32 value);
 
+    uint32 GetVertexLayoutId(uint32 texCoordStreamCount);
+    uint32 GetVBOStride(uint32 texCoordStreamCount);
+
 private:
     Matrix4 currentVirtualToPhysicalMatrix;
     Vector2 currentPhysicalToVirtualScale;
@@ -429,6 +432,15 @@ private:
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
 {
     highlightControlsVerticesLimit = verticesCount;
+}
+
+inline uint32 RenderSystem2D::GetVertexLayoutId(uint32 texCoordStreamCount)
+{
+    return vertexLayouts2d[texCoordStreamCount];
+}
+inline uint32 RenderSystem2D::GetVBOStride(uint32 texCoordStreamCount)
+{
+    return VBO_STRIDE[texCoordStreamCount];
 }
 
 } // ns
