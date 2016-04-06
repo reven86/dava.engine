@@ -96,12 +96,36 @@ struct ReflectionRegistrator
         return *this;
     }
 
+    template <typename GetT>
+    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)() const, std::nullptr_t)
+    {
+        using SetT = typename std::remove_reference<GetT>::type;
+        using GetterT = GetT (C::*)();
+        auto valueWrapper = std::make_unique<ValueWrapperClassFn<GetT, SetT, C>>(reinterpret_cast<GetterT>(getter), nullptr);
+        childrenWrapper->AddFieldFn<GetT>(name, std::move(valueWrapper));
+        return *this;
+    }
+
     template <typename GetT, typename SetT>
     ReflectionRegistrator& Field(const char* name, GetT (C::*getter)(), void (C::*setter)(SetT))
     {
         auto valueWrapper = std::make_unique<ValueWrapperClassFn<GetT, SetT, C>>(getter, setter);
         childrenWrapper->AddFieldFn<GetT>(name, std::move(valueWrapper));
         return *this;
+    }
+
+    template <typename GetT, typename SetT>
+    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)() const, void (C::*setter)(SetT))
+    {
+        using GetterT = GetT (C::*)();
+        auto valueWrapper = std::make_unique<ValueWrapperClassFn<GetT, SetT, C>>(reinterpret_cast<GetterT>(getter), setter);
+        childrenWrapper->AddFieldFn<GetT>(name, std::move(valueWrapper));
+        return *this;
+    }
+
+    template <typename T>
+    ReflectionRegistrator& operator[](T&& meta)
+    {
     }
 
     void End()

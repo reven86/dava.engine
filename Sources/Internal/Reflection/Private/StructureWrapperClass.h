@@ -52,7 +52,7 @@ public:
         field.name = fieldName;
         field.vw = std::move(vw);
         field.db = ReflectionDB::GetGlobalDB<T>();
-        fields.emplace_back(std::move(field));
+        fields.push_back(std::move(field));
     }
 
     template <typename T>
@@ -62,7 +62,7 @@ public:
         field.name = fieldName;
         field.vw = std::move(vw);
         field.db = FieldFnDBGetter<T>::Get();
-        fields.emplace_back(std::move(field));
+        fields.push_back(std::move(field));
     }
 
     template <typename C, typename B>
@@ -89,8 +89,19 @@ protected:
         ReflectedObject (*castOP)(const ReflectedObject& obj);
     };
 
-    struct ClassField
+    class ClassField
     {
+    public:
+        ClassField() = default;
+        ClassField(const ClassField&) = delete;
+
+        ClassField(ClassField&& cf)
+            : name(std::move(cf.name))
+            , vw(std::move(cf.vw))
+            , db(cf.db)
+        {
+        }
+
         std::string name;
         std::unique_ptr<ValueWrapper> vw;
         const ReflectionDB* db;

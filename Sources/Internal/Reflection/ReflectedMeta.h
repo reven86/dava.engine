@@ -32,7 +32,13 @@ public:
     }
 
 protected:
-    std::map<const Type*, void*> metaContainer;
+};
+
+class ReflectedMetaHolder
+{
+public:
+protected:
+    //std::unordered_multimap<const Type*, > metaContainer;
 };
 
 } // namespace DAVA

@@ -39,11 +39,13 @@ public:
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
     {
+        using UnrefSetT = typename std::remove_reference<SetT>::type;
+
         bool ret = false;
 
         if (nullptr != setter)
         {
-            const SetT& v = value.Get<SetT>();
+            const SetT& v = value.Get<UnrefSetT>();
             (*setter)(v);
 
             ret = true;

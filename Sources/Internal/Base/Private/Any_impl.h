@@ -43,7 +43,7 @@ std::pair<const Type*, Any::AnyOP> DefaultOP()
 };
 
 template <typename T>
-Any::Any(T&& value, DisableAny<T>)
+Any::Any(T&& value, NotAny<T>)
 {
     Set(std::forward<T>(value));
 }
@@ -79,7 +79,7 @@ inline T Any::Cast() const
 }
 
 template <typename T>
-void Any::Set(T&& value, DisableAny<T>)
+void Any::Set(T&& value, NotAny<T>)
 {
     using U = Storage::StorableType<T>;
 

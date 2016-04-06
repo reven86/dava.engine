@@ -21,7 +21,7 @@ public:
     template <typename T>
     using StorableType = typename std::decay<T>::type;
 
-    AutoStorage();
+    AutoStorage() = default;
     ~AutoStorage();
 
     AutoStorage(AutoStorage&&);

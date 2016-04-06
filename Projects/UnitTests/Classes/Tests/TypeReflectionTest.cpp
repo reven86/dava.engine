@@ -63,6 +63,13 @@ class TestBaseClass : public BaseBase
     DAVA_DECLARE_VIRTUAL_REFLECTION(TestBaseClass)
 
 public:
+    enum TestEnum
+    {
+        One,
+        Two,
+        Three
+    };
+
     TestBaseClass();
     TestBaseClass(int baseInt_, int s_a, int s_b);
 
@@ -99,6 +106,12 @@ public:
     {
         return baseInt;
     }
+
+    int GetIntFnConst() const
+    {
+        return baseInt;
+    }
+
     SimpleStruct GetCustomFn()
     {
         return staticCustom;
@@ -115,9 +128,28 @@ public:
     {
         return staticCustom;
     }
+
     const SimpleStruct* GetCustomPtrConstFn()
     {
         return &staticCustom;
+    }
+
+    TestEnum GetEnum()
+    {
+        return One;
+    }
+
+    int GetEnumAsInt()
+    {
+        return Two;
+    }
+
+    void SetEnum(TestEnum e)
+    {
+    }
+
+    void SetEnumRef(const TestEnum& e)
+    {
     }
 
 protected:
@@ -189,11 +221,14 @@ DAVA_TYPE_INITIALIZER(TestBaseClass)
     .Field("GetStaticCustomRefConstFn", &TestBaseClass::GetStaticCustomRefConstFn, nullptr)
     .Field("GetStaticCustomPtrConstFn", &TestBaseClass::GetStaticCustomPtrConstFn, nullptr)
     .Field("GetIntFn", &TestBaseClass::GetIntFn, nullptr)
+    .Field("GetIntFnConst", &TestBaseClass::GetIntFnConst, nullptr)
     .Field("GetCustomFn", &TestBaseClass::GetCustomFn, nullptr)
     .Field("GetCustomRefFn", &TestBaseClass::GetCustomRefFn, nullptr)
     .Field("GetCustomPtrFn", &TestBaseClass::GetCustomPtrFn, nullptr)
     .Field("GetCustomRefConstFn", &TestBaseClass::GetCustomRefConstFn, nullptr)
     .Field("GetCustomPtrConstFn", &TestBaseClass::GetCustomPtrConstFn, nullptr)
+    .Field("GetEnum", &TestBaseClass::GetEnum, &TestBaseClass::SetEnum)
+    .Field("GetGetEnumAsInt", &TestBaseClass::GetEnumAsInt, &TestBaseClass::SetEnumRef)
     .End();
 
     ReflectionRegistrator<SimpleStruct>::Begin()
