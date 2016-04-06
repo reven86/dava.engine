@@ -42,7 +42,6 @@ namespace DAVA
 {
 namespace DefinitionFileLocal
 {
-bool CreateOutputDirectoryForOutputPath(const FilePath& out_path);
 bool WritePNGImage(int width, int height, char* imageData, const char* outName, int channels, int bit_depth);
 }
 
