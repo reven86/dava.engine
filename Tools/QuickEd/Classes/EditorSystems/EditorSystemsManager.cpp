@@ -42,6 +42,8 @@
 
 using namespace DAVA;
 
+const Vector2 minimumSize = Vector2(16.0f, 16.0f);
+
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
 class EditorSystemsManager::RootControl : public UIControl

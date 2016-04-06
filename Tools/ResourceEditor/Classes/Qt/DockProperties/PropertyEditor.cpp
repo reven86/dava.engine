@@ -1006,6 +1006,12 @@ void PropertyEditor::DeleteRenderBatch()
                 DVASSERT(ro);
 
                 DAVA::uint32 count = ro->GetRenderBatchCount();
+                if (count == 1)
+                {
+                    // We don't allow to delete last render batch.
+                    return;
+                }
+
                 for (DAVA::uint32 i = 0; i < count; ++i)
                 {
                     DAVA::RenderBatch* b = ro->GetRenderBatch(i);
