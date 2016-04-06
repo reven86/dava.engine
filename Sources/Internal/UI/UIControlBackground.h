@@ -362,7 +362,7 @@ public:
     void SetBgDrawType(int type);
     FilePath GetBgSpritePath() const;
     void SetBgSpriteFromPath(const FilePath& path);
-    inline int32 GetBgColorInherit() const;
+    int32 GetBgColorInherit() const;
     void SetBgColorInherit(int32 type);
     int32 GetBgPerPixelAccuracy() const;
     void SetBgPerPixelAccuracy(int32 type);
