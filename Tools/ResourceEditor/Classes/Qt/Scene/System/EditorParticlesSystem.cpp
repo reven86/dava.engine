@@ -64,7 +64,7 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(worldBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
-void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner)
+void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner, bool selected)
 {
     DVASSERT((emitter != nullptr) && (owner != nullptr));
 
@@ -79,41 +79,45 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
     DAVA::float32 radius = (boundingBox.max - boundingBox.min).Length() / 3;
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, radius, DAVA::Color(1.0f, 1.0f, 1.0f, 0.5f), RenderHelper::DRAW_SOLID_DEPTH);
 
-    DrawVectorArrow(emitter, center);
-
-    switch (emitter->GetEmitter()->emitterType)
+    if (selected)
     {
-    case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
-    case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
-    {
-        DrawSizeCircle(owner, emitter);
-        break;
-    }
-    case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
-    {
-        DrawSizeCircleShockWave(owner, emitter);
-        break;
-    }
+        DrawVectorArrow(emitter, center);
 
-    case DAVA::ParticleEmitter::EMITTER_RECT:
-    {
-        DrawSizeBox(owner, emitter);
-        break;
-    }
+        switch (emitter->GetEmitter()->emitterType)
+        {
+        case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
+        case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
+        {
+            DrawSizeCircle(owner, emitter);
+            break;
+        }
+        case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
+        {
+            DrawSizeCircleShockWave(owner, emitter);
+            break;
+        }
 
-    default:
-        break;
-    }
-}
+        case DAVA::ParticleEmitter::EMITTER_RECT:
+        {
+            DrawSizeBox(owner, emitter);
+            break;
+        }
 
-void EditorParticlesSystem::SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter)
-{
-    selectedEffectEntity = effectEntity;
-    selectedEmitter = emitter;
+        default:
+            break;
+        }
+    }
 }
 
 void EditorParticlesSystem::Draw()
 {
+    const auto& selection = static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection();
+    DAVA::Set<ParticleEmitterInstance*> selectedEmitterInstances;
+    for (auto instance : selection.ObjectsOfType<DAVA::ParticleEmitterInstance>())
+    {
+        selectedEmitterInstances.insert(instance);
+    }
+
     for (auto entity : entities)
     {
         auto effect = static_cast<ParticleEffectComponent*>(entity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
@@ -121,7 +125,8 @@ void EditorParticlesSystem::Draw()
         {
             for (DAVA::uint32 i = 0, e = effect->GetEmittersCount(); i < e; ++i)
             {
-                DrawEmitter(effect->GetEmitterInstance(i), entity);
+                auto instance = effect->GetEmitterInstance(i);
+                DrawEmitter(instance, entity, selectedEmitterInstances.count(instance) > 0);
             }
             DrawDebugInfoForEffect(entity);
         }

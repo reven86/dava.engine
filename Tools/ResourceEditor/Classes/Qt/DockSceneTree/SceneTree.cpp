@@ -1326,7 +1326,6 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                 }
                 break;
                 case SceneTreeItem::EIT_Emitter:
-                    curScene->particlesSystem->SetEmitterSelected(((SceneTreeItemParticleEmitter*)item)->effect->GetEntity(), ((SceneTreeItemParticleEmitter*)item)->emitterInstance);
                     emitterSelected = true;
                 case SceneTreeItem::EIT_InnerEmitter:
                     SceneSignals::Instance()->EmitEmitterSelected(curScene, ((SceneTreeItemParticleEmitter*)item)->effect, ((SceneTreeItemParticleEmitter*)item)->emitterInstance);
@@ -1364,13 +1363,6 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                 }
             }
         }
-    }
-
-    if (!emitterSelected)
-        curScene->particlesSystem->SetEmitterSelected(nullptr, nullptr);
-    if (!isParticleElements)
-    {
-        SceneSignals::Instance()->EmitEmitterSelected(nullptr, nullptr, nullptr);
     }
 }
 

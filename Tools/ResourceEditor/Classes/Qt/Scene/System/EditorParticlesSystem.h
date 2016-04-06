@@ -42,7 +42,6 @@ class EditorParticlesSystem : public DAVA::SceneSystem
 public:
     EditorParticlesSystem(DAVA::Scene* scene);
 
-    void SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
     void RestartParticleEffects();
 
 private:
@@ -54,16 +53,15 @@ private:
     void ProcessCommand(const Command2* command, bool redo);
 
     void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
-    void DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner);
+    void DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner, bool selected);
 
     void DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
     void DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
     void DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
     void DrawVectorArrow(DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center);
 
+private:
     DAVA::Vector<DAVA::Entity*> entities;
-    DAVA::Entity* selectedEffectEntity = nullptr;
-    DAVA::ParticleEmitterInstance* selectedEmitter = nullptr;
 };
 
 
