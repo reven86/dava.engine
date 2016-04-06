@@ -250,11 +250,6 @@ void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint
 
 void LandscapeSubdivision::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 morph)
 {
-    if (level == subdivLevelCount)
-    {
-        return;
-    }
-
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + (y << level) + x];
 
@@ -262,13 +257,16 @@ void LandscapeSubdivision::TerminateSubdivision(uint32 level, uint32 x, uint32 y
     subdivPatchInfo->lastSubdivLevel = lastSubdivLevel;
     subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
 
-    uint32 x2 = x << 1;
-    uint32 y2 = y << 1;
+    if (level < subdivLevelCount - 1)
+    {
+        uint32 x2 = x * 2;
+        uint32 y2 = y * 2;
 
-    TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdivLevel, morph);
-    TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdivLevel, morph);
-    TerminateSubdivision(level + 1, x2 + 0, y2 + 1, lastSubdivLevel, morph);
-    TerminateSubdivision(level + 1, x2 + 1, y2 + 1, lastSubdivLevel, morph);
+        TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdivLevel, morph);
+        TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdivLevel, morph);
+        TerminateSubdivision(level + 1, x2 + 0, y2 + 1, lastSubdivLevel, morph);
+        TerminateSubdivision(level + 1, x2 + 1, y2 + 1, lastSubdivLevel, morph);
+    }
 }
 
 void LandscapeSubdivision::BuildSubdivision(Heightmap* _heightmap, const AABBox3& _bbox, uint32 _patchSizeQuads, uint32 minSubdivideLevel, bool _calculateMorph)
