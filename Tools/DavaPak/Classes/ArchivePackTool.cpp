@@ -26,7 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "ArchivePackTool.h"
+
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
 #include "FileSystem/FileSystem.h"
@@ -34,6 +34,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Utils/Utils.h"
 #include "Utils/MD5.h"
 #include "Functional/Function.h"
+#include "Archiver/Archiver.h"
+
+#include "ArchivePackTool.h"
 #include "Utils.h"
 
 using namespace DAVA;
@@ -48,7 +51,7 @@ void OnOneFilePacked(const ResourceArchive::FileInfo& info)
     String time = WStringToString(dateTime.GetLocalizedTime());
     Logger::Info("%s | %s %s | Packed %s, orig size %d, compressed size %d, compression: %s",
                  deviceName, date, time,
-                 info.fileName, info.originalSize, info.compressedSize,
+                 info.relativeFilePath, info.originalSize, info.compressedSize,
                  ResourceArchiveToolUtils::ToString(info.compressionType).c_str());
 }
 
@@ -264,7 +267,7 @@ void ArchivePackTool::ProcessInternal()
         Logger::Instance()->SetLogPathname(logFilePath);
     }
 
-    if (ResourceArchive::CreatePack(packFilePath.GetAbsolutePathname(), files, ArchivePackToolDetail::OnOneFilePacked))
+    if (Archiver::CreatePack(packFilePath.GetAbsolutePathname(), files, ArchivePackToolDetail::OnOneFilePacked))
     {
         Logger::Info("Packing done");
 
