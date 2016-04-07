@@ -179,7 +179,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
 
-    if (MouseCapture::GetMouseCaptureModeNative() == DAVA::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];

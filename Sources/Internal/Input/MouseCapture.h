@@ -50,8 +50,8 @@ public:
 
 private:
     void OnFocused(const bool isFocused);
-    std::unique_ptr<MouseCaptureContext> context = nullptr;
-    std::unique_ptr<MouseCapturePrivate> privateImpl = nullptr;
+    std::unique_ptr<MouseCaptureContext> context;
+    std::unique_ptr<MouseCapturePrivate> privateImpl;
 
     MouseCapture(MouseCapture&) = delete;
     MouseCapture& operator=(MouseCapture const&) = delete;

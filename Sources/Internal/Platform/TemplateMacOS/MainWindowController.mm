@@ -417,13 +417,11 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)windowDidBecomeKey:(NSNotification*)notification
 {
-    MouseCapture::SetApplicationFocus(true);
     Core::Instance()->FocusReceived();
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification
 {
-    MouseCapture::SetApplicationFocus(false);
     Core::Instance()->FocusLost();
     InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
