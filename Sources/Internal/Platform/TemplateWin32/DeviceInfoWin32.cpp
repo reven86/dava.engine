@@ -151,8 +151,6 @@ String DeviceInfoPrivate::GetRegion()
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    return "Not yet implemented";
-
     /*don't remove that code please. it is needed for the nex task*/
     TIME_ZONE_INFORMATION timeZoneInformation;
     DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
@@ -170,8 +168,17 @@ String DeviceInfoPrivate::GetTimeZone()
         break;
     }
 
-    String timeZone = WStringToString(name);
-    return timeZone;
+    FastName timeZone(WStringToString(name));
+
+    auto iter = TimeZoneHelper::namesMap.find(timeZone);
+    if (iter == TimeZoneHelper::namesMap.end())
+    {
+        DVASSERT_MSG("No &s timezone found! Check time zones map", timeZone.c_str());
+        return String("");
+    }
+
+    String timeZonename(iter->second.c_str());
+    return timeZonename;
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
