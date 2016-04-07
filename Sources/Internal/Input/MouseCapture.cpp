@@ -164,7 +164,7 @@ void MouseCapture::SetMode(const eMouseCaptureMode& newMode)
 
 const eMouseCaptureMode& MouseCapture::GetMode()
 {
-    return InputSystem::eMouseCaptureMode::OFF;
+    return eMouseCaptureMode::OFF;
 }
 
 void MouseCapture::OnFocused(const bool isFocused)
