@@ -114,7 +114,7 @@ void HeightDeltaTool::OnRun()
     SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     if (scene != NULL)
     {
-        Landscape* landscapeRO = FindLandscape(scene);
+        DAVA::Landscape* landscapeRO = FindLandscape(scene);
         if (landscapeRO != NULL)
         {
             const DAVA::AABBox3& bbox = landscapeRO->GetBoundingBox();
@@ -124,7 +124,7 @@ void HeightDeltaTool::OnRun()
             {
                 const double unitSize = (bbox.max.x - bbox.min.x) / heightmap->Size();
 
-                auto inputPathname = FilePath(inPath.toStdString());
+                auto inputPathname = DAVA::FilePath(inPath.toStdString());
                 auto imInterface = DAVA::ImageSystem::GetImageFormatInterface(inputPathname);
                 DVASSERT(imInterface);
                 auto imageInfo = imInterface->GetImageInfo(inputPathname);
