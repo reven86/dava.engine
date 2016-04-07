@@ -93,7 +93,7 @@ void FMODSoundBrowser::UpdateEventTree()
 {
 #ifdef DAVA_FMOD
     DAVA::Vector<DAVA::String> names;
-    SoundSystem::Instance()->GetAllEventsNames(names);
+    DAVA::SoundSystem::Instance()->GetAllEventsNames(names);
 
     FillEventsTree(names);
 #endif //DAVA_FMOD

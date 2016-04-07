@@ -32,20 +32,18 @@
 
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
-using namespace DAVA;
-
 class SceneSaver
 {
 public:
     SceneSaver();
     virtual ~SceneSaver();
 
-    void SetInFolder(const FilePath& folderPathname);
-    void SetOutFolder(const FilePath& folderPathname);
+    void SetInFolder(const DAVA::FilePath& folderPathname);
+    void SetOutFolder(const DAVA::FilePath& folderPathname);
 
-    void SaveFile(const String& fileName, Set<String>& errorLog);
-    void ResaveFile(const String& fileName, Set<String>& errorLog);
-    void SaveScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
+    void SaveFile(const DAVA::String& fileName, DAVA::Set<DAVA::String>& errorLog);
+    void ResaveFile(const DAVA::String& fileName, DAVA::Set<DAVA::String>& errorLog);
+    void SaveScene(DAVA::Scene* scene, const DAVA::FilePath& fileName, DAVA::Set<DAVA::String>& errorLog);
 
     void EnableCopyConverted(bool enabled);
 
@@ -54,20 +52,20 @@ public:
 private:
     void ReleaseTextures();
 
-    void CopyTextures(Scene* scene);
-    void CopyTexture(const FilePath& texturePathname);
+    void CopyTextures(DAVA::Scene* scene);
+    void CopyTexture(const DAVA::FilePath& texturePathname);
 
-    void CopyReferencedObject(Entity* node);
-    void CopyEffects(Entity* node);
-    void CopyAllParticlesEmitters(const ParticleEmitterData& emitterData);
-    void CopyEmitterByPath(const FilePath& emitterConfigPath);
-    void CopyEmitter(ParticleEmitter* emitter);
-    Set<FilePath> EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const;
+    void CopyReferencedObject(DAVA::Entity* node);
+    void CopyEffects(DAVA::Entity* node);
+    void CopyAllParticlesEmitters(const DAVA::ParticleEmitterData& emitterData);
+    void CopyEmitterByPath(const DAVA::FilePath& emitterConfigPath);
+    void CopyEmitter(DAVA::ParticleEmitter* emitter);
+    DAVA::Set<DAVA::FilePath> EnumAlternativeEmittersFilepaths(const DAVA::FilePath& originalFilepath) const;
 
-    void CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder, Set<String>& errorLog);
+    void CopyCustomColorTexture(DAVA::Scene* scene, const DAVA::FilePath& sceneFolder, DAVA::Set<DAVA::String>& errorLog);
 
     SceneUtils sceneUtils;
-    TexturesMap texturesForSave;
+    DAVA::TexturesMap texturesForSave;
     DAVA::Set<DAVA::FilePath> effectFolders;
     bool copyConverted = false;
 };

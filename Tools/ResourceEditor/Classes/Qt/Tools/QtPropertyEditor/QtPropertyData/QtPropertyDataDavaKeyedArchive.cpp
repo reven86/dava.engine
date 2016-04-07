@@ -340,7 +340,7 @@ KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive* _arch, int de
     grLayout->addWidget(new QLabel("Value type:", this), ++row, 0, 1, 1);
     grLayout->addWidget(valueWidget, row, 1, 1, 2);
 
-    const Vector<String>& presetValues = EditorConfig::Instance()->GetProjectPropertyNames();
+    const DAVA::Vector<DAVA::String>& presetValues = EditorConfig::Instance()->GetProjectPropertyNames();
     if (presetValues.size() > 0)
     {
         presetWidget = new QComboBox(this);

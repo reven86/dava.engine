@@ -116,10 +116,10 @@ void WayEditSystem::DidRemoved(DAVA::Entity* removedPoint)
     // get points aimed by removed point, remove edges
     DAVA::List<DAVA::Entity*> breachPoints;
     DAVA::Entity* dest;
-    uint32 count = removedPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-    for (uint32 i = 0; i < count; ++i)
+    DAVA::uint32 count = removedPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        edge = static_cast<EdgeComponent*>(removedPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
+        edge = static_cast<DAVA::EdgeComponent*>(removedPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
         DVASSERT(edge);
 
         dest = edge->GetNextEntity();
@@ -181,10 +181,10 @@ bool WayEditSystem::IsAccessible(DAVA::Entity* startPoint,
     if (startPoint == breachPoint)
         return true;
 
-    uint32 count = startPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-    for (uint32 i = 0; i < count; ++i)
+    DAVA::uint32 count = startPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        DAVA::EdgeComponent* edge = static_cast<EdgeComponent*>(startPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
+        DAVA::EdgeComponent* edge = static_cast<DAVA::EdgeComponent*>(startPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
         DVASSERT(edge);
 
         if (edge == excludingEdge)
@@ -239,7 +239,7 @@ void WayEditSystem::ProcessSelection(const EntityGroup& selection)
 
         for (const auto& item : currentSelection.GetContent())
         {
-            Entity* entity = item.first;
+            DAVA::Entity* entity = item.first;
             if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
                 selectedWaypoints.Add(entity, selectionSystem->GetUntransformedBoundingBox(entity));
@@ -289,7 +289,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                 return;
             }
 
-            Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
+            DAVA::Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
             if (currentWayParent == nullptr)
             {
                 // we need to have entity with path component
@@ -315,7 +315,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                         }
                     }
 
-                    Entity* newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
+                    DAVA::Entity* newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
 
                     sceneEditor->selectionSystem->SetLocked(true);
                     sceneEditor->BeginBatch("Add Waypoint");
@@ -333,7 +333,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
             }
             else if ((selectedWaypoints.Size() == 1) && (cloneJustDone == false))
             {
-                Entity* nextWaypoint = selectedWaypoints.GetFirstEntity();
+                DAVA::Entity* nextWaypoint = selectedWaypoints.GetFirstEntity();
                 EntityGroup entitiesToAddEdge;
                 EntityGroup entitiesToRemoveEdge;
                 DefineAddOrRemoveEdges(prevSelectedWaypoints, nextWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
@@ -366,7 +366,7 @@ void WayEditSystem::DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::E
 {
     for (const auto& item : srcPoints.GetContent())
     {
-        Entity* srcPoint = item.first;
+        DAVA::Entity* srcPoint = item.first;
         if (dstPoint->GetParent() != srcPoint->GetParent())
         {
             //we don't allow connect different pathes
@@ -400,7 +400,7 @@ void WayEditSystem::RemoveEdges(const EntityGroup& group, DAVA::Entity* nextEnti
 {
     for (const auto& item : group.GetContent())
     {
-        EdgeComponent* edgeToNextEntity = FindEdgeComponent(item.first, nextEntity);
+        DAVA::EdgeComponent* edgeToNextEntity = FindEdgeComponent(item.first, nextEntity);
         DVASSERT(edgeToNextEntity);
         RemoveEdge(item.first, edgeToNextEntity);
     }
@@ -413,7 +413,7 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 
 
     DAVA::Entity* waypoint = new DAVA::Entity();
 
-    const int32 childrenCount = parent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT);
+    const DAVA::int32 childrenCount = parent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT);
     waypoint->SetName(DAVA::FastName(DAVA::Format("Waypoint_%d", childrenCount)));
 
     DAVA::WaypointComponent* wc = new DAVA::WaypointComponent();
@@ -453,8 +453,8 @@ void WayEditSystem::Draw()
 {
     const EntityGroup& selectionGroup = (currentSelection.IsEmpty()) ? selectedWaypoints : currentSelection;
 
-    const uint32 count = waypointEntities.size();
-    for (uint32 i = 0; i < count; ++i)
+    const DAVA::uint32 count = waypointEntities.size();
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
         DAVA::Entity* e = waypointEntities[i];
         DAVA::Entity* path = e->GetParent();
@@ -468,9 +468,9 @@ void WayEditSystem::Draw()
         DAVA::WaypointComponent* wpComponent = GetWaypointComponent(e);
         DVASSERT(wpComponent);
 
-        float32 redValue = 0.0f;
-        float32 greenValue = 0.0f;
-        float32 blueValue = wpComponent->IsStarting() ? 1.0f : 0.0f;
+        DAVA::float32 redValue = 0.0f;
+        DAVA::float32 greenValue = 0.0f;
+        DAVA::float32 blueValue = wpComponent->IsStarting() ? 1.0f : 0.0f;
 
         if (e == underCursorPathEntity)
         {
@@ -486,9 +486,9 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
 
-        AABBox3 localBox = selectionSystem->GetUntransformedBoundingBox(e);
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+        DAVA::AABBox3 localBox = selectionSystem->GetUntransformedBoundingBox(e);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
     }
 }
 
