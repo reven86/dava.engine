@@ -90,11 +90,11 @@ SceneEditor2::SceneEditor2()
     hoodSystem = new HoodSystem(this, cameraSystem);
     AddSystem(hoodSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-    selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
-    AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
-
     modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
     AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+
+    selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
+    AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
     AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
