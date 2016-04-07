@@ -248,7 +248,7 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Warning("=================================================================");
         }
 
-        frameNames[lIndex] = layerName;
+        frameNames[lIndex] = useLayerNames && !layerName.empty() ? layerName : DAVA::Format("frame%d", lIndex);
 
         uint32* sourceData = reinterpret_cast<uint32*>(layer.image_data);
         for (psd_int i = 0, e = layer.width * layer.height; i < e; ++i)
