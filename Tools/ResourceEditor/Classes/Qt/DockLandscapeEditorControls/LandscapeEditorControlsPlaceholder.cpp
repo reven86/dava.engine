@@ -65,10 +65,10 @@ void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
 
 LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
 {
-    SafeDelete(customColorsPanel);
-    SafeDelete(rulerToolPanel);
-    SafeDelete(tilemaskEditorPanel);
-    SafeDelete(heightmapEditorPanel);
+    DAVA::SafeDelete(customColorsPanel);
+    DAVA::SafeDelete(rulerToolPanel);
+    DAVA::SafeDelete(tilemaskEditorPanel);
+    DAVA::SafeDelete(heightmapEditorPanel);
 }
 
 void LandscapeEditorControlsPlaceholder::InitUI()
@@ -147,7 +147,7 @@ void LandscapeEditorControlsPlaceholder::UpdatePanels()
 {
     RemovePanel();
 
-    int32 tools = activeScene->GetEnabledTools();
+    DAVA::int32 tools = activeScene->GetEnabledTools();
     if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
     {
         SetPanel(customColorsPanel);

@@ -31,7 +31,6 @@
 #define __LIGHTMAPS_PACKER_H__
 
 #include "DAVAEngine.h"
-using namespace DAVA;
 
 #include "LightmapAtlasingData.h"
 #include "SpriteResourcesPacker.h"
@@ -43,12 +42,12 @@ public:
 
     void CreateDescriptors();
     void ParseSpriteDescriptors();
-    Vector<LightmapAtlasingData>* GetAtlasingData();
+    DAVA::Vector<LightmapAtlasingData>* GetAtlasingData();
 
 private:
-    Vector<LightmapAtlasingData> atlasingData;
+    DAVA::Vector<LightmapAtlasingData> atlasingData;
 
-    Vector2 GetTextureSize(const FilePath& filePath);
+    DAVA::Vector2 GetTextureSize(const DAVA::FilePath& filePath);
 };
 
 #endif //__LIGHTMAPS_PACKER_H__
