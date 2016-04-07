@@ -42,6 +42,8 @@ class MouseCapture final
 {
 public:
     MouseCapture();
+    ~MouseCapture() = default;
+
     void SetMode(const eMouseCaptureMode newMode);
     eMouseCaptureMode GetMode() const;
 
