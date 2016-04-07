@@ -187,6 +187,7 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
 
     auto psdNameString = fullname.GetAbsolutePathname();
     const char* psdName = psdNameString.c_str();
+    Logger::Info("%s", psdName);
 
     psd_context* psd = nullptr;
     auto status = psd_image_load(&psd, const_cast<psd_char*>(psdName));
@@ -200,8 +201,13 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         return false;
     }
 
+    void* croppedImageData = nullptr;
     SCOPE_EXIT
     {
+        if (croppedImageData != nullptr)
+        {
+            free(croppedImageData);
+        }
         psd_image_free(psd);
     };
 
@@ -268,35 +274,44 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             sourceData[i] = (sourceData[i] & 0xff00ff00) | (sourceData[i] & 0x000000ff) << 16 | (sourceData[i] & 0xff0000) >> 16;
         }
 
-        bool shouldManuallyReleaseData = false;
         auto imageData = reinterpret_cast<char*>(layer.image_data);
         int imageWidth = layer.width;
         int imageHeight = layer.height;
 
-        if ((layer.left < 0) || (layer.right > 0) || (layer.width > psd->width) || (layer.height > psd->height))
+        if ((layer.left < 0) || (layer.top < 0) || (layer.right > psd->width) || (layer.bottom > psd->height))
         {
-            int xOffset = Max(0, -layer.left);
-            int yOffset = Max(0, -layer.top);
-            imageWidth = Min(layer.width - xOffset, psd->width);
-            imageHeight = Min(layer.height - yOffset, psd->height);
-
             Logger::Warning("============================ Warning ============================");
-            Logger::Warning("| File contains layer `%s` which is larger than canvas", layerName.c_str());
+            Logger::Warning("| File contains layer `%s` which does not fit canvas", layerName.c_str());
             Logger::Warning("| %s", psdName);
+            Logger::Warning("| Layer: (%d, %d, %d, %d), canvas: (%d, %d)", layer.left, layer.top, layer.width, layer.height, psd->width, psd->height);
             Logger::Warning("=================================================================");
 
-            size_type rowSize = 4 * imageWidth;
+            int xOffset = Max(0, -layer.left);
+            int yOffset = Max(0, -layer.top);
+            imageWidth = Min(layer.width, psd->width - Max(0, layer.left));
+            imageHeight = Min(layer.height, psd->height - Max(0, layer.top));
 
-            uint32* croppedData = reinterpret_cast<uint32*>(calloc(imageWidth * imageHeight, 4));
+            if ((xOffset >= imageWidth) || (yOffset >= imageHeight))
+            {
+                Logger::Error("============================ ERROR ============================");
+                Logger::Error("| File contains completely hidden layer %d (%s)", lIndex, layerName.c_str());
+                Logger::Error("| %s", psdName);
+                Logger::Error("===============================================================");
+                return false;
+            }
+
+            croppedImageData = calloc(imageWidth * imageHeight, 4);
+            imageData = reinterpret_cast<char*>(croppedImageData);
+
+            size_type rowSize = 4 * imageWidth;
+            uint32* croppedRGBA = reinterpret_cast<uint32*>(croppedImageData);
             for (int y = 0; y < imageHeight; ++y)
             {
                 auto src = sourceData + xOffset + (yOffset + y) * layer.width;
-                auto dst = croppedData + y * imageWidth;
+                auto dst = croppedRGBA + y * imageWidth;
                 memcpy(dst, src, rowSize);
                 DVASSERT(memcmp(src, dst, rowSize) == 0);
             }
-            imageData = reinterpret_cast<char*>(croppedData);
-            shouldManuallyReleaseData = true;
         }
 
         if (DefinitionFileLocal::WritePNGImage(imageWidth, imageHeight, imageData, outImageBasePath.GetAbsolutePathname().c_str(), 4, 8) == false)
@@ -310,40 +325,13 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             return false;
         }
 
-        if (shouldManuallyReleaseData)
-        {
-            free(imageData);
-        }
-
-        frameRects[lIndex] = Rect2i(layer.left, layer.top, layer.width, layer.height);
-
         if (withAlpha)
         {
-            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
-            if ((frameRects[lIndex].dx > iMaxTextureSize) || (frameRects[lIndex].dy > iMaxTextureSize))
-            {
-                Logger::Warning("Frame of %s layer %d is bigger than maxTextureSize (%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d)",
-                                psdName, lIndex, maxTextureSize, frameRects[lIndex].dx, frameRects[lIndex].dy, spriteWidth, spriteHeight);
-                Logger::Warning("Bewarned!!! Results not guaranteed!!!");
-                frameRects[lIndex].dx = spriteWidth;
-                frameRects[lIndex].dy = spriteHeight;
-            }
-            else
-            {
-                if (frameRects[lIndex].dx > spriteWidth)
-                {
-                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d", psdName, lIndex, frameRects[lIndex].dx, spriteWidth);
-                    Logger::Warning("Layer width will be reduced to the sprite value");
-                    frameRects[lIndex].dx = spriteWidth;
-                }
-
-                if (frameRects[lIndex].dy > spriteHeight)
-                {
-                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d", psdName, lIndex, frameRects[lIndex].dy, spriteHeight);
-                    Logger::Warning("Layer height will be reduced to the sprite value");
-                    frameRects[lIndex].dy = spriteHeight;
-                }
-            }
+            frameRects[lIndex] = Rect2i(0, 0, psd->width, psd->height);
+        }
+        else
+        {
+            frameRects[lIndex] = Rect2i(Max(0, layer.left), Max(0, layer.top), imageWidth, imageHeight);
         }
     }
 
