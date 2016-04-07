@@ -66,7 +66,7 @@ void TextureCache::getThumbnail(const DAVA::TextureDescriptor* descriptor, QObje
     if (descriptor->pathname.IsEmpty())
         return;
 
-    const DAVA::FilePath key = TextureDescriptor::GetDescriptorPathname(descriptor->GetSourceTexturePathname());
+    const DAVA::FilePath key = DAVA::TextureDescriptor::GetDescriptorPathname(descriptor->GetSourceTexturePathname());
     CacheMap::const_iterator i = cacheThumbnail.find(key);
     if (i != cacheThumbnail.end())
     {

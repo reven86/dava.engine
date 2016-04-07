@@ -136,7 +136,7 @@ private:
                                  DAVA::KeyedArchive* propertiesArchive) const;
 
     void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
-                                             DAVA::SerializationContext* context, uint32 options);
+                                             DAVA::SerializationContext* context, DAVA::uint32 options);
     void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
     void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
     void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
@@ -144,8 +144,8 @@ private:
 
     QtPropertyData* AddSection(const DAVA::FastName& sectionName);
 
-    void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
-    bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
+    void AddMaterialFlagIfNeed(DAVA::NMaterial* material, const DAVA::FastName& flagName);
+    bool HasMaterialProperty(DAVA::NMaterial* material, const DAVA::FastName& paramName);
 
     void UpdateTabs();
 
