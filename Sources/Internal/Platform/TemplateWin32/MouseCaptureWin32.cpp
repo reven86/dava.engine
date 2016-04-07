@@ -70,13 +70,13 @@ bool MouseCapturePrivate::SetSystemCursorVisibility(bool show)
 
 void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
 {
-    switch (mode)
+    switch (newMode)
     {
     case eMouseCaptureMode::OFF:
     case eMouseCaptureMode::PINING:
     {
-        SetSystemCursorVisibility(mode != eMouseCaptureMode::PINING);
-        if (mode == eMouseCaptureMode::PINING)
+        SetSystemCursorVisibility(newMode != eMouseCaptureMode::PINING);
+        if (newMode == eMouseCaptureMode::PINING)
         {
             POINT p;
             GetCursorPos(&p);
