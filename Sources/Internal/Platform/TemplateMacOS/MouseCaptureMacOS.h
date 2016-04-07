@@ -41,7 +41,7 @@ class MouseCapturePrivate
 {
 public:
     void SetNativePining(const eMouseCaptureMode& newMode);
-    void SetCursorPosition();
+    void SetCursorInCenter();
 
 private:
     bool cursorVisible = true;

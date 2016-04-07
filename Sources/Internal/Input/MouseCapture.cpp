@@ -131,7 +131,7 @@ bool MouseCapture::SkipEvents(const UIEvent* const event)
     context->focusChenged = false;
     if (eMouseCaptureMode::PINING == context->mode && context->focused && !context->deferredCapture)
     {
-        privateImpl->SetCursorPosition();
+        privateImpl->SetCursorInCenter();
     }
     if (!context->deferredCapture && context->focused)
     {
