@@ -59,6 +59,11 @@ public:
         SmartDlc::PackState* packState = &packs[index];
         queue.push_back(packState);
         std::stable_sort(begin(queue), end(queue), PackCompare);
+
+        if (!IsDownloading())
+        {
+            StartNextPackDownloading();
+        }
     }
     void UpdateQueuePriority(const String& packName, float priority)
     {
@@ -76,6 +81,26 @@ public:
         // TODO
         if (currentDownload != nullptr)
         {
+            DownloadManager* dm = DownloadManager::Instance();
+            DownloadStatus status = DownloadStatus::DL_UNKNOWN;
+            dm->GetStatus(downloadHandler, status);
+            uint64 progress = 0;
+            switch (status)
+            {
+            case DL_IN_PROGRESS:
+                if (dm->GetProgress(downloadHandler, progress))
+                {
+                    uint64 total = 0;
+                    if (dm->GetTotal(downloadHandler, total))
+                    {
+                        currentDownload->downloadProgress = static_cast<float>(progress) / total;
+                    }
+                }
+                break;
+            case DL_FINISHED:
+                // TODO implement it
+                break;
+            }
         }
     }
     bool IsDownloading() const
@@ -89,8 +114,13 @@ public:
             currentDownload = queue.front();
             queue.erase(std::remove(begin(queue), end(queue), currentDownload));
 
-            // TODO start downloading
+            // start downloading
             auto fullUrl = remotePacksUrl + currentDownload->name;
+
+            FilePath archivePath = packsDB + currentDownload->name;
+
+            DownloadManager* dm = DownloadManager::Instance();
+            downloadHandler = dm->Download(fullUrl, archivePath);
         }
     }
     void MountDownloadedPacks()
@@ -98,7 +128,12 @@ public:
         FileSystem* fs = FileSystem::Instance();
         for (auto& pack : packs)
         {
-            // TODO mount pack
+            // mount pack
+            if (pack.state == SmartDlc::PackState::Mounted)
+            {
+                FilePath archiveName = localPacksDir + pack.name;
+                fs->Mount(archiveName, "Data");
+            }
         }
     }
 
@@ -112,6 +147,7 @@ public:
     Vector<SmartDlc::PackState*> queue;
     SmartDlc::PackState* currentDownload = nullptr;
     std::unique_ptr<PacksDB> packDB;
+    uint32 downloadHandler = 0;
 };
 
 SmartDlc::SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl)
@@ -121,7 +157,7 @@ SmartDlc::SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const
     impl->localPacksDir = localPacksDir;
     impl->remotePacksUrl = remotePacksUrl;
 
-    // TODO open DB and load packs state then mount all archives to FileSystem
+    // open DB and load packs state then mount all archives to FileSystem
     impl->packDB.reset(new PacksDB(packsDB));
     impl->packDB->GetAllPacksState(impl->packs);
     impl->MountDownloadedPacks();
@@ -146,7 +182,7 @@ void SmartDlc::DisableProcessing()
 
 void SmartDlc::Update()
 {
-    // TODO first check if something downloading
+    // first check if something downloading
     if (impl->isProcessingEnabled)
     {
         impl->UpdateCurrentDownload();
@@ -160,8 +196,7 @@ void SmartDlc::Update()
 
 const SmartDlc::PackName& SmartDlc::FindPack(const FilePath& relativePathInPack) const
 {
-    // TODO execute sqlite query
-    throw std::runtime_error("not implemented");
+    return impl->packDB->FindPack(relativePathInPack);
 }
 
 const SmartDlc::PackState& SmartDlc::GetPackState(const PackName& packID) const
@@ -195,12 +230,20 @@ Vector<SmartDlc::PackState*> SmartDlc::GetRequestedPacks() const
 
 void SmartDlc::DeletePack(const SmartDlc::PackName& packID)
 {
-    auto& state = GetPackState(packID);
+    auto& state = impl->GetPackState(packID);
     if (state.state == SmartDlc::PackState::Mounted)
     {
-        // TODO Unmount archive
-        // delete archive on file system
-        // update DataBase about this pack
+        // first modify DB
+        state.state = SmartDlc::PackState::NotRequested;
+        state.priority = 0.5f;
+        state.downloadProgress = 0.f;
+
+        impl->packDB->UpdatePackState(state);
+
+        // now remove archive from filesystem
+        FileSystem* fs = FileSystem::Instance();
+        FilePath archivePath = impl->packsDB + packID;
+        fs->Unmount(archivePath);
     }
 }
 } // end namespace DAVA

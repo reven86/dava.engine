@@ -84,7 +84,7 @@ PacksDB::PacksDB(const FilePath& filePath)
 
 const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
 {
-    String result;
+    static String result;
     String relativePath = relativeFilePath.GetRelativePathname("~res:/");
     data->db << "SELECT pack_name FROM files WHERE path=?;"
              << relativePath
