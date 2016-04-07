@@ -70,6 +70,10 @@ MouseCapture::MouseCapture()
     privateImpl = std::make_unique<MouseCapturePrivate>();
 }
 
+MouseCapture::~MouseCapture()
+{
+}
+
 void MouseCapture::SetMode(const eMouseCaptureMode newMode)
 {
     if (context->mode != newMode)
@@ -168,6 +172,10 @@ class MouseCapturePrivate
 };
 
 MouseCapture::MouseCapture()
+{
+}
+
+MouseCapture::~MouseCapture()
 {
 }
 
