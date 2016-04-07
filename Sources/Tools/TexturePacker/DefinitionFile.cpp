@@ -143,16 +143,6 @@ bool DefinitionFile::Load(const FilePath& _filename)
         frameNames[i] = String(frameName);
     }
 
-    while (1)
-    {
-        char tmpString[512];
-        fgets(tmpString, sizeof(tmpString), fp);
-        pathsInfo.push_back(tmpString);
-        printf("str: %s\n", tmpString);
-        if (feof(fp))
-            break;
-    }
-
     fclose(fp);
     Logger::FrameworkDebug("Loaded definition: %s frames: %d", filename.GetAbsolutePathname().c_str(), frameCount);
 
@@ -214,7 +204,6 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
     frameCount = psd->layer_count;
     frameRects.resize(frameCount);
     frameNames.resize(frameCount);
-    pathsInfo.resize(frameCount);
     spriteWidth = psd->width;
     spriteHeight = psd->height;
 
@@ -260,7 +249,6 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         }
 
         frameNames[lIndex] = layerName;
-        pathsInfo[lIndex] = useLayerNames || layerName.empty() ? layerName : String("frame") + std::to_string(lIndex);
 
         uint32* sourceData = reinterpret_cast<uint32*>(layer.image_data);
         for (psd_int i = 0, e = layer.width * layer.height; i < e; ++i)

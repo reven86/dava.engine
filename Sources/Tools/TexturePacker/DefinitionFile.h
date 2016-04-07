@@ -63,7 +63,6 @@ public:
 
 public:
     FilePath filename;
-    Vector<String> pathsInfo;
     Vector<String> frameNames;
     Vector<Rect2i> frameRects;
     uint32 frameCount = 0;

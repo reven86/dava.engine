@@ -387,11 +387,6 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
         }
     }
 
-    for (const auto& line : defFile.pathsInfo)
-    {
-        fprintf(fp, "%s", line.c_str());
-    }
-
     fclose(fp);
     return true;
 }
