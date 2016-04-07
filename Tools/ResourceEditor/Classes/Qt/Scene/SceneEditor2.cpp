@@ -788,7 +788,7 @@ void RemoveSelection(SceneEditor2* scene)
                    << item.first->GetName().c_str()
                    << ": entity is locked!"
                    << PointerSerializer::FromPointer(item.first);
-                Logger::Warning("%s", ss.str().c_str());
+                DAVA::Logger::Warning("%s", ss.str().c_str());
             }
             else
             {
