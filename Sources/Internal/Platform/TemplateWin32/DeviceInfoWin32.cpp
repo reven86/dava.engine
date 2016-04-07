@@ -39,6 +39,7 @@
 #include "Base/GlobalEnum.h"
 #include "winsock2.h"
 #include "Iphlpapi.h"
+#include "TimeZones.h"
 
 #include <VersionHelpers.h>
 
