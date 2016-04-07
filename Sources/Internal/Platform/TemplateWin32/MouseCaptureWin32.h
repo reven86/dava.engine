@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __FRAMEWORK__MOUSECAPTUREWIN32__
-#define __FRAMEWORK__MOUSECAPTUREWIN32__
+#ifndef __FRAMEWORK__MOUSECAPTUREWIN32_H__
+#define __FRAMEWORK__MOUSECAPTUREWIN32_H__
 
 #include "Base/Platform.h"
 
@@ -41,7 +41,7 @@ class MouseCapturePrivate
 {
 public:
     void SetNativePining(const eMouseCaptureMode& newMode);
-    void SetCursorPosition();
+    void SetCursorInCenter();
 
 private:
     bool SetSystemCursorVisibility(bool show);
@@ -54,4 +54,4 @@ private:
 
 #endif //  __DAVAENGINE_WIN32__
 
-#endif //  __FRAMEWORK__MOUSECAPTUREWIN32__
+#endif //  __FRAMEWORK__MOUSECAPTUREWIN32_H__

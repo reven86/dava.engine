@@ -49,7 +49,7 @@ struct MouseCaptureContext
     eMouseCaptureMode mode = eMouseCaptureMode::OFF;
     eMouseCaptureMode nativeMode = eMouseCaptureMode::OFF;
     bool focused = false;
-    bool focusChenged = false;
+    bool focusChanged = false;
     bool firstEntered = true;
     bool deferredCapture = false;
 };
@@ -83,7 +83,7 @@ void MouseCapture::SetMode(const eMouseCaptureMode& newMode)
 
         if (eMouseCaptureMode::PINING == context->mode)
         {
-            if (context->focused && !context->focusChenged)
+            if (context->focused && !context->focusChanged)
             {
                 SetNativePining(context->mode, context->nativeMode, privateImpl);
             }
@@ -104,11 +104,11 @@ void MouseCapture::OnFocused(const bool isFocused)
 {
     if (context->focused != isFocused)
     {
-        context->focusChenged = true;
+        context->focusChanged = true;
         if (context->firstEntered)
         {
             context->firstEntered = false;
-            context->focusChenged = false;
+            context->focusChanged = false;
         }
 
         context->focused = isFocused;
@@ -128,7 +128,7 @@ void MouseCapture::OnFocused(const bool isFocused)
 
 bool MouseCapture::SkipEvents(const UIEvent* const event)
 {
-    context->focusChenged = false;
+    context->focusChanged = false;
     if (eMouseCaptureMode::PINING == context->mode && context->focused && !context->deferredCapture)
     {
         privateImpl->SetCursorInCenter();
@@ -179,10 +179,3 @@ bool MouseCapture::SkipEvents(UIEvent* event)
 } //namespace DAVA
 
 #endif // defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
-
-// DAVA::eMouseCaptureMode DAVA::MouseCapture::mode = DAVA::eMouseCaptureMode::OFF;
-// DAVA::eMouseCaptureMode DAVA::MouseCapture::nativeMode = DAVA::eMouseCaptureMode::OFF;
-// bool DAVA::MouseCapture::focused = false;
-// bool DAVA::MouseCapture::focusChenged = false;
-// bool DAVA::MouseCapture::firstEntered = true;
-// bool DAVA::MouseCapture::deferredCapture = false;

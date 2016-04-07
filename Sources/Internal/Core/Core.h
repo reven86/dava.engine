@@ -166,7 +166,7 @@ public:
     virtual DisplayMode FindBestMode(const DisplayMode& requestedMode);
 
     /**
-		\brief Current size nativeView. Now is only for Win32, WinUAP, MacOS.
+		\brief Get current size nativeView(it's virtual size, not physical!). Now is only for Win32, WinUAP, MacOS.
 	*/
     Vector2 GetWindowSize();
 

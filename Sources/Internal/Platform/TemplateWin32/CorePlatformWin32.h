@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_PLATFORM_WIN32__
-#define __DAVAENGINE_CORE_PLATFORM_WIN32__
+#ifndef __DAVAENGINE_CORE_PLATFORM_WIN32_H__
+#define __DAVAENGINE_CORE_PLATFORM_WIN32_H__
 
 #include "Base/Platform.h"
 
@@ -99,4 +99,4 @@ private:
 
 } // end namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_PLATFORM_WIN32__
+#endif // __DAVAENGINE_CORE_PLATFORM_WIN32_H__

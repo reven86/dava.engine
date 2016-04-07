@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __FRAMEWORK__MOUSECAPTURE__
-#define __FRAMEWORK__MOUSECAPTURE__
+#ifndef __FRAMEWORK__MOUSECAPTURE_H__
+#define __FRAMEWORK__MOUSECAPTURE_H__
 
 #include <memory>
 
@@ -59,4 +59,4 @@ private:
 
 } //  namespace DAVA
 
-#endif //  __FRAMEWORK__MOUSECAPTURE__
+#endif //  __FRAMEWORK__MOUSECAPTURE_H__

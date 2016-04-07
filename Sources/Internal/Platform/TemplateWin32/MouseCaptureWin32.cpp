@@ -35,7 +35,7 @@
 
 namespace DAVA
 {
-void MouseCapturePrivate::SetCursorPosition()
+void MouseCapturePrivate::SetCursorInCenter()
 {
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
     RECT wndRect;
@@ -83,7 +83,7 @@ void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
             lastCursorPosition.x = p.x;
             lastCursorPosition.y = p.y;
 
-            SetCursorPosition();
+            SetCursorInCenter();
         }
         else
         {

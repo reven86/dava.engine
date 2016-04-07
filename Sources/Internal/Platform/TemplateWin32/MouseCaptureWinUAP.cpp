@@ -60,7 +60,7 @@ void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
     }
 }
 
-void MouseCapturePrivate::SetCursorPosition()
+void MouseCapturePrivate::SetCursorInCenter()
 {
 }
 
