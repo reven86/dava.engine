@@ -158,6 +158,15 @@ bool MouseCapture::SkipEvents(const UIEvent* const event)
 
 namespace DAVA
 {
+
+struct MouseCaptureContext
+{
+};
+
+class MouseCapturePrivate
+{
+};
+
 MouseCapture::MouseCapture()
 {
 }
