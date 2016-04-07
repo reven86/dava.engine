@@ -187,7 +187,6 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
 
     auto psdNameString = fullname.GetAbsolutePathname();
     const char* psdName = psdNameString.c_str();
-    Logger::Info("%s", psdName);
 
     psd_context* psd = nullptr;
     auto status = psd_image_load(&psd, const_cast<psd_char*>(psdName));
