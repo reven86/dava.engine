@@ -158,36 +158,22 @@ bool MouseCapture::SkipEvents(const UIEvent* const event)
 
 namespace DAVA
 {
-void MouseCapture::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
+void MouseCapture::SetMode(const eMouseCaptureMode& newMode)
 {
 }
 
-InputSystem::eMouseCaptureMode MouseCapture::GetMouseCaptureMode()
-{
-    return InputSystem::eMouseCaptureMode::OFF;
-}
-
-InputSystem::eMouseCaptureMode MouseCapture::GetMouseCaptureModeNative()
+const eMouseCaptureMode& MouseCapture::GetMode()
 {
     return InputSystem::eMouseCaptureMode::OFF;
 }
 
-void MouseCapture::SetApplicationFocus(bool isFocused)
+void MouseCapture::OnFocused(const bool isFocused)
 {
 }
 
 bool MouseCapture::SkipEvents(UIEvent* event)
 {
     return false;
-}
-
-void MouseCapture::SetNativePining(InputSystem::eMouseCaptureMode newativeMode)
-{
-}
-
-MouseCapturePrivate* MouseCapture::GetPrivateImpl()
-{
-    return nullptr;
 }
 
 } //namespace DAVA
