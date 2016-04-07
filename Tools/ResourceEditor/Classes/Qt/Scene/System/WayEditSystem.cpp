@@ -43,15 +43,10 @@
 
 WayEditSystem::WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* _selectionSystem, SceneCollisionSystem* _collisionSystem)
     : DAVA::SceneSystem(scene)
+    , sceneEditor(static_cast<SceneEditor2*>(scene))
     , selectionSystem(_selectionSystem)
     , collisionSystem(_collisionSystem)
 {
-    sceneEditor = static_cast<SceneEditor2*>(GetScene());
-}
-
-WayEditSystem::~WayEditSystem()
-{
-    waypointEntities.clear();
 }
 
 void WayEditSystem::AddEntity(DAVA::Entity* newWaypoint)
@@ -60,32 +55,41 @@ void WayEditSystem::AddEntity(DAVA::Entity* newWaypoint)
 
     if (newWaypoint->GetNotRemovable())
     {
-        mapStartPoints[newWaypoint->GetParent()] = newWaypoint;
+        auto parent = newWaypoint->GetParent();
+
+        // allow only one start point
+        DVASSERT(mapStartPoints.count(parent) == 0);
+
+        mapStartPoints[parent] = newWaypoint;
     }
 }
+
 void WayEditSystem::RemoveEntity(DAVA::Entity* removedPoint)
 {
     DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
 
-    if (removedPoint->GetNotRemovable()) // is a start point, remove it from the map of start points
+    if (removedPoint->GetNotRemovable() == false)
+        return;
+
+    for (auto iter = mapStartPoints.begin(); iter != mapStartPoints.end(); ++iter)
     {
-        for (auto iter = mapStartPoints.begin(); iter != mapStartPoints.end(); ++iter)
+        if (iter->second == removedPoint)
         {
-            if (iter->second == removedPoint)
-            {
-                mapStartPoints.erase(iter);
-                break;
-            }
+            mapStartPoints.erase(iter);
+            return;
         }
     }
+
+    DVASSERT_MSG(0, "Invalid (not tracked) starting waypoint removed");
 }
 
 void WayEditSystem::WillRemove(DAVA::Entity* removedPoint)
 {
     if (IsWayEditEnabled() && GetWaypointComponent(removedPoint))
     {
-        startPointForRemove = mapStartPoints[removedPoint->GetParent()];
-        DVASSERT(startPointForRemove);
+        auto i = mapStartPoints.find(removedPoint->GetParent());
+        DVASSERT(i != mapStartPoints.end())
+        startPointForRemove = i->second;
     }
 }
 
@@ -523,6 +527,12 @@ void WayEditSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEnt
     {
         DAVA::EdgeComponent* edge = new DAVA::EdgeComponent();
         edge->SetNextEntity(newEntity);
+
+        if (newEntity->GetNotRemovable())
+        {
+            // prevent creating second "start" point
+            newEntity->SetNotRemovable(false);
+        }
 
         sceneEditor->Exec(Command2::Create<AddComponentCommand>(originalEntity, edge));
     }
