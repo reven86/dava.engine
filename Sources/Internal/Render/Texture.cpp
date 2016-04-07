@@ -301,6 +301,11 @@ Texture* Texture::CreateTextFromData(PixelFormat format, uint8* data, uint32 wid
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    if (width < Texture::MINIMAL_WIDTH || height < Texture::MINIMAL_HEIGHT)
+    {
+        return nullptr;
+    }
+
     Texture* tx = CreateFromData(format, data, width, height, generateMipMaps);
 
     if (!addInfo)
@@ -326,6 +331,11 @@ Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    if (_width < Texture::MINIMAL_WIDTH || _height < Texture::MINIMAL_HEIGHT)
+    {
+        return nullptr;
+    }
+
     Image* image = Image::CreateFromData(_width, _height, _format, _data);
     if (nullptr == image)
         return nullptr;
@@ -347,6 +357,11 @@ Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32
 Texture* Texture::CreateFromData(Image* image, bool generateMipMaps)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    if (image->width < Texture::MINIMAL_WIDTH || image->height < Texture::MINIMAL_HEIGHT)
+    {
+        return nullptr;
+    }
 
     Texture* texture = new Texture();
     texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
