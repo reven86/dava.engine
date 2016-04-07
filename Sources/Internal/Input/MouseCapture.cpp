@@ -95,7 +95,7 @@ void MouseCapture::SetMode(const eMouseCaptureMode& newMode)
     }
 }
 
-const eMouseCaptureMode& MouseCapture::GetMode() const
+eMouseCaptureMode MouseCapture::GetMode() const
 {
     return context->mode;
 }
@@ -158,12 +158,17 @@ bool MouseCapture::SkipEvents(const UIEvent* const event)
 
 namespace DAVA
 {
+MouseCapture::MouseCapture()
+{
+}
+
 void MouseCapture::SetMode(const eMouseCaptureMode& newMode)
 {
 }
 
 const eMouseCaptureMode& MouseCapture::GetMode() const
 {
+    eMouseCaptureMode res;
     return eMouseCaptureMode::OFF;
 }
 

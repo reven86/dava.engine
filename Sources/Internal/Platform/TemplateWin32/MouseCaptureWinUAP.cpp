@@ -39,7 +39,7 @@ using namespace ::Windows::UI::Xaml::Controls;
 
 namespace DAVA
 {
-void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
+void MouseCapturePrivate::SetNativePining(eMouseCaptureMode newMode)
 {
     SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
     DVASSERT(swapchain);

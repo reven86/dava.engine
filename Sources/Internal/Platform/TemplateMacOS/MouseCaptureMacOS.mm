@@ -38,7 +38,7 @@
 
 namespace DAVA
 {
-void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
+void MouseCapturePrivate::SetNativePining(eMouseCaptureMode newMode)
 {
     switch (newMode)
     {

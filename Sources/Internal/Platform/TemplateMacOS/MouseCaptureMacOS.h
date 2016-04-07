@@ -40,7 +40,7 @@ enum class eMouseCaptureMode;
 class MouseCapturePrivate
 {
 public:
-    void SetNativePining(const eMouseCaptureMode& newMode);
+    void SetNativePining(eMouseCaptureMode newMode);
     void SetCursorInCenter();
 
 private:

@@ -42,8 +42,8 @@ class MouseCapture final
 {
 public:
     MouseCapture();
-    void SetMode(const eMouseCaptureMode& newMode);
-    const eMouseCaptureMode& GetMode() const;
+    void SetMode(const eMouseCaptureMode newMode);
+    eMouseCaptureMode GetMode() const;
 
     // Deprecated, only for UIControlSystem internal using
     bool SkipEvents(const UIEvent* const event);
