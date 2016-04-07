@@ -65,13 +65,13 @@ public:
         fields.push_back(std::move(field));
     }
 
-    template <typename C, typename B>
-    void AddBase(const ReflectionDB* baseDb)
+    template <typename B, typename C>
+    void AddBase()
     {
         static_assert(std::is_base_of<B, C>::value, "C should be derived from B");
 
         BaseClass base;
-        base.db = baseDb;
+        base.db = ReflectionDB::GetGlobalDB<B>();
         base.castOP = [](const ReflectedObject& obj) -> ReflectedObject
         {
             C* classPtr = obj.GetPtr<C>();

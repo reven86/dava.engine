@@ -40,7 +40,10 @@ public:
         if (!derefObj.IsValid())
             return Ref::Field();
 
-        return ptrDB->structureWrapper->GetField(object.GetDerefObject(), key);
+        T* ptr = derefObj.GetPtr<T>();
+
+        const ReflectionDB* db = ReflectionDB::GetGlobalDB(ptr);
+        return db->structureWrapper->GetField(derefObj, key);
     }
 
     Ref::FieldsList GetFields(const ReflectedObject& object) const override
@@ -50,7 +53,10 @@ public:
         if (!derefObj.IsValid())
             return Ref::FieldsList();
 
-        return ptrDB->structureWrapper->GetFields(object.GetDerefObject());
+        T* ptr = derefObj.GetPtr<T>();
+
+        const ReflectionDB* db = ReflectionDB::GetGlobalDB(ptr);
+        return db->structureWrapper->GetFields(derefObj);
     }
 
     bool AddField(const ReflectedObject& object, const Any& key, const Any& value) const override

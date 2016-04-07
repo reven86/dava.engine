@@ -4,9 +4,10 @@
 #include "ReflectionVirt.h"
 #include "ReflectionWrappers.h"
 
-#include <set>
 #include <memory>
 #include <cassert>
+#include <vector>
+#include <unordered_map>
 
 namespace DAVA
 {
@@ -27,9 +28,6 @@ public:
     std::vector<const CtorWrapper*> GetCtors() const;
 
     template <typename T>
-    static ReflectionDB* CreateDB();
-
-    template <typename T>
     static const ReflectionDB* GetGlobalDB();
 
     template <typename T>
@@ -38,6 +36,9 @@ public:
 protected:
     template <typename T>
     static ReflectionDB* EditGlobalDB();
+
+    template <typename B, typename D>
+    static void RegisterBaseClass();
 };
 
 } // namespace DAVA

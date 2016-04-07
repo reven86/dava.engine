@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <memory>
 #include <typeindex>
 
@@ -40,6 +41,7 @@ public:
     bool IsConst() const;
     bool IsPointer() const;
     bool IsReference() const;
+    bool IsDerivedFrom(const Type*) const;
 
     const Type* Decay() const;
     const Type* Deref() const;
@@ -71,6 +73,7 @@ protected:
     const Type* derefType = nullptr;
     const Type* decayType = nullptr;
     mutable ReflectionDB* reflectionDb = nullptr;
+    mutable std::unordered_set<const Type*> baseTypes;
 
     static std::unordered_map<std::string, const Type*> nameToTypeMap;
 };
@@ -94,6 +97,10 @@ inline bool Type::IsPointer() const
 inline bool Type::IsReference() const
 {
     return isReference;
+}
+inline bool Type::IsDerivedFrom(const Type* type) const
+{
+    return (baseTypes.count(type) > 0);
 }
 inline const Type* Type::Decay() const
 {

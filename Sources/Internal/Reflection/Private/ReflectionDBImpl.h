@@ -9,15 +9,6 @@
 namespace DAVA
 {
 template <typename T>
-ReflectionDB* ReflectionDB::CreateDB()
-{
-    static std::set<std::unique_ptr<ReflectionDB>> allDBs;
-
-    ReflectionDB* db = allDBs.emplace(new ReflectionDB()).first->get();
-    return db;
-}
-
-template <typename T>
 const ReflectionDB* ReflectionDB::GetGlobalDB()
 {
     return ReflectionDB::EditGlobalDB<T>();
@@ -43,18 +34,27 @@ inline const ReflectionDB* ReflectionDB::GetGlobalDB(T* object)
 template <typename T>
 ReflectionDB* ReflectionDB::EditGlobalDB()
 {
+    static std::set<std::unique_ptr<ReflectionDB>> allDBs;
+
     using DecayT = typename std::decay<T>::type;
     const Type* type = Type::Instance<DecayT>();
 
     if (nullptr == type->reflectionDb)
     {
-        ReflectionDB* db = ReflectionDB::CreateDB<DecayT>();
+        ReflectionDB* db = allDBs.emplace(new ReflectionDB()).first->get();
         db->structureWrapper = std::make_unique<StructureWrapperDefault<DecayT>>();
 
         type->reflectionDb = db;
     }
 
     return type->reflectionDb;
+}
+
+template <typename B, typename D>
+static void ReflectionDB::RegisterBaseClass()
+{
+    static_assert(std::is_base_of<B, D>::value, "D should be derived from B");
+    Type::Instance<D>()->baseTypes.insert(Type::Instance<B>());
 }
 
 } // namespace DAVA

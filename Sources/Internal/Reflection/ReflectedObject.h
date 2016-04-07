@@ -72,7 +72,9 @@ public:
     template <typename T>
     T* GetPtr() const
     {
-        assert(Type::Instance<T*>() == type);
+        const Type* reqType = Type::Instance<T*>();
+
+        assert(reqType == type || reqType->IsDerivedFrom(type));
         return static_cast<T*>(ptr);
     }
 

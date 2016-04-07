@@ -14,7 +14,7 @@ inline Reflection Reflection::Reflect(T* object)
 {
     static ValueWrapperDefault<T> vw;
 
-    const ReflectionDB* db = ReflectionDB::GetGlobalDB<T>();
+    const ReflectionDB* db = ReflectionDB::GetGlobalDB(object);
     return Reflection(ReflectedObject(object), &vw, db);
 }
 

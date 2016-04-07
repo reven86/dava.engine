@@ -24,16 +24,16 @@ struct ReflectionRegistrator
     template <typename B>
     ReflectionRegistrator& Base()
     {
-        auto ref = ReflectionDB::GetGlobalDB<B>();
-        childrenWrapper->AddBase<C, B>(ref);
+        ReflectionDB::RegisterBaseClass<B, C>();
+        childrenWrapper->AddBase<B, C>();
         return *this;
     }
 
     template <typename B, typename B1, typename... Args>
     ReflectionRegistrator& Base()
     {
-        auto ref = ReflectionDB::GetGlobalDB<B>();
-        childrenWrapper->AddBase<C, B>(ref);
+        ReflectionDB::RegisterBaseClass<B, C>();
+        childrenWrapper->AddBase<C, B>();
         return Base<B1, Args...>();
     }
 
@@ -138,6 +138,8 @@ struct ReflectionRegistrator
 
 protected:
     ReflectionRegistrator() = default;
+
+    const Type* thisType = Type::Instance<C>();
     std::unique_ptr<StructureWrapperClass> childrenWrapper = std::make_unique<StructureWrapperClass>();
 };
 
