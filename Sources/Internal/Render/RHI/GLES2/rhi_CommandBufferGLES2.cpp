@@ -378,7 +378,7 @@ static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync(true, 0);
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
     
-static bool _GLES2_RenderThreadSuspendSyncReached = false;
+static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
 
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
 static uint32 _GLES2_RenderThreadFrameCount = 0;
