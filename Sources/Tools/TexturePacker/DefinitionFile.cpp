@@ -284,12 +284,17 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
 
             int xOffset = Max(0, -imageLeft);
             int yOffset = Max(0, -imageTop);
-            imageWidth = Min(imageWidth, psd->width - Max(0, imageLeft));
-            imageHeight = Min(imageHeight, psd->height - Max(0, imageTop));
-            imageLeft = Max(0, imageLeft);
-            imageTop = Max(0, imageTop);
 
-            if ((xOffset >= imageWidth) || (yOffset >= imageHeight))
+            Rect2i layerRect(imageLeft, imageTop, imageWidth, imageHeight);
+            Rect2i psdRect(0, 0, psd->width, psd->height);
+            Rect2i intersectedRect = psdRect.Intersection(layerRect);
+
+            imageLeft = intersectedRect.x;
+            imageTop = intersectedRect.y;
+            imageWidth = intersectedRect.dx;
+            imageHeight = intersectedRect.dy;
+
+            if (intersectedRect.dx * intersectedRect.dy <= 0)
             {
                 Logger::Error("============================ ERROR ============================");
                 Logger::Error("| File contains completely hidden layer %d (%s)", lIndex, layerName.c_str());
