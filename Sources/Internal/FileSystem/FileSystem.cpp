@@ -70,15 +70,9 @@ FileSystem::FileSystem()
 
 FileSystem::~FileSystem()
 {
-    for (List<ResourceArchiveItem>::iterator ai = resourceArchiveList.begin();
-         ai != resourceArchiveList.end(); ++ai)
-    {
-        ResourceArchiveItem& item = *ai;
-        SafeRelease(item.archive);
-    }
     resourceArchiveList.clear();
 
-    // All locked files should be explicitely unlocked before closing the app.
+    // All locked files should be explicitly unlocked before closing the app.
     DVASSERT(lockedFileHandles.empty());
 }
 
@@ -363,12 +357,7 @@ File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint
         frameworkPath.GetAbsolutePathname().c_str()[0] != '/')
     {
 #ifdef USE_LOCAL_RESOURCES
-        File* res = File::CreateFromSystemPath(frameworkPath, attributes);
-        if (!res)
-            res = ZipFile::CreateFromZip(frameworkPath, attributes);
-        return res;
-#else
-        return ZipFile::CreateFromAPK(frameworkPath, attributes);
+        return File::CreateFromSystemPath(frameworkPath, attributes);
 #endif
     }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
@@ -404,7 +393,9 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #if defined(__DAVAENGINE_WINDOWS__)
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
-    currentExecuteDirectory = FilePath::FromNativeString(tempDir.data()).GetDirectory();
+    const wchar_t* data = tempDir.data();
+    FilePath path = FilePath::FromNativeString(data);
+    currentExecuteDirectory = path.GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     Array<char, PATH_MAX> tempDir;
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
@@ -436,6 +427,29 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 
 bool FileSystem::IsFile(const FilePath& pathToCheck) const
 {
+    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES ||
+        pathToCheck.GetType() == FilePath::PATH_IN_FILESYSTEM)
+    {
+        const String& str = pathToCheck.GetStringValue();
+        auto start = str.find("~res:/");
+        String relative;
+        if (start == 0)
+        {
+            relative = str.substr(6);
+        }
+
+        if (!relative.empty())
+        {
+            for (auto& archive : resourceArchiveList)
+            {
+                if (archive.archive->HasFile(relative))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
 #if defined(__DAVAENGINE_ANDROID__)
     const String& path = pathToCheck.GetAbsolutePathname();
     if (IsAPKPath(path))
@@ -443,11 +457,29 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         return (fileSet.find(path) != fileSet.end());
     }
 #endif
-    FileAPI::Stat s;
-    FilePath::NativeStringType pathStr = pathToCheck.GetNativeAbsolutePathname();
-    if (FileAPI::FileStat(pathStr.c_str(), &s) == 0)
+
+    struct stat s;
+
+    const String& cs = pathToCheck.GetAbsolutePathname();
+    int result = stat(cs.c_str(), &s);
+    if (result == 0)
     {
         return (0 != (s.st_mode & S_IFREG));
+    }
+    else
+    {
+        switch (errno)
+        {
+        case ENOENT:
+            // file not found
+            break;
+        case EINVAL:
+            Logger::Error("Invalid parameter to stat.");
+            break;
+        default:
+            /* Should never be reached. */
+            Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
+        }
     }
 
     return false;
@@ -701,7 +733,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 String FileSystem::ReadFileContents(const FilePath& pathname)
 {
     String fileContents;
-    RefPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
     if (!fp)
     {
         Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
@@ -745,20 +777,24 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
     return bytes;
 };
 
-void FileSystem::AttachArchive(const String& archiveName, const String& attachPath)
+void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
-    ResourceArchive* resourceArchive = new ResourceArchive();
+    DVASSERT(!attachPath.empty());
 
-    if (!resourceArchive->Open(archiveName))
-    {
-        SafeRelease(resourceArchive);
-        resourceArchive = NULL;
-        return;
-    }
     ResourceArchiveItem item;
     item.attachPath = attachPath;
-    item.archive = resourceArchive;
-    resourceArchiveList.push_back(item);
+    item.archive.reset(new ResourceArchive(archiveName));
+    item.archiveFilePath = archiveName;
+
+    resourceArchiveList.push_back(std::move(item));
+}
+
+void FileSystem::Unmount(const FilePath& arhiveName)
+{
+    resourceArchiveList.remove_if([arhiveName](const ResourceArchiveItem& item) -> bool
+                                  {
+                                      return item.archiveFilePath == arhiveName;
+                                  });
 }
 
 int32 FileSystem::Spawn(const String& command)
@@ -815,7 +851,7 @@ bool FileSystem::IsAPKPath(const String& path) const
 void FileSystem::Init()
 {
 #ifdef USE_LOCAL_RESOURCES
-    YamlParser* parser = YamlParser::Create("~zip:/fileSystem.yaml");
+    YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #else
     YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #endif

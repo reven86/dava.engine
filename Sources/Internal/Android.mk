@@ -223,6 +223,7 @@ DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := fmodex-prebuild
+DV_LOCAL_STATIC_LIBRARIES += liblz4
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -308,6 +309,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Compression/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
@@ -398,6 +400,7 @@ include $(BUILD_STATIC_LIBRARY)
 # include modules
 $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
+$(call import-add-path,$(DAVA_ROOT)/../External/lz4)
 $(call import-add-path,$(DAVA_ROOT))
 
 ifeq ($(DAVA_PROFILE), true)
@@ -407,4 +410,5 @@ $(call import-module,android-ndk-profiler)
 endif
 endif
 
+$(call import-module,lz4)
 $(call import-module,android/cpufeatures)

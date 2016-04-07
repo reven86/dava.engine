@@ -131,6 +131,12 @@ void FilePath::InitializeBundleName()
         AddResourcesFolder(workingDirectory);
     }
 
+    FilePath dataDirPath(workingDirectory + "Data/");
+    if (FileSystem::Instance()->Exists(dataDirPath))
+    {
+        AddResourcesFolder(dataDirPath);
+    }
+
 #if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION)
     String additionalResourcePath;
 
@@ -172,12 +178,13 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(localResourcesPath));
+    SetBundleName(FilePath("/mnt/sdcard/DavaProject/Data/"));
+
     FilePath zipDataPath;
     zipDataPath.pathType = PATH_IN_RESOURCES;
     resourceFolders.push_back(zipDataPath);
 #else
-    SetBundleName(FilePath());
+    SetBundleName(FilePath("Data/"));
 #endif
 }
 
@@ -394,7 +401,8 @@ FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
 
 FilePath FilePath::FromNativeString(const NativeStringType& path)
 {
-    return FilePath(UTF8Utils::EncodeToUTF8(path));
+    String name = UTF8Utils::EncodeToUTF8(path);
+    return FilePath(name);
 }
 
 #else
@@ -413,10 +421,10 @@ FilePath FilePath::FromNativeString(const NativeStringType& path)
 
 String FilePath::ResolveResourcesPath() const
 {
-    String::size_type find = absolutePathname.find("~res:");
+    String::size_type find = absolutePathname.find("~res:/");
     if (find != String::npos)
     {
-        String relativePathname = "Data" + absolutePathname.substr(5);
+        String relativePathname = absolutePathname.substr(6);
         FilePath path;
 
         if (resourceFolders.size() == 1) // optimization to avoid call path.Exists()
@@ -781,8 +789,10 @@ String FilePath::NormalizePathname(const String& pathname)
     }
 
     //process last /
-    if (('/' == path[path.length() - 1]) && (path.length() != 1))
+    if (('/' == path.back()) && (!result.empty()))
+    {
         result += String("/");
+    }
 
     return result;
 }

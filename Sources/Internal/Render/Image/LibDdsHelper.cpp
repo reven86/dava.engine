@@ -1203,7 +1203,7 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
     outputOptions.setFileName(fileName.GetAbsolutePathname().c_str());
 
-    Compressor compressor;
+    nvtt::Compressor compressor;
     bool ret = compressor.process(inputOptions, compressionOptions, outputOptions);
     if (ret)
     {

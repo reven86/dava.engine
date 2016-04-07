@@ -39,6 +39,8 @@ set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGET
 
 set ( IGNORED_RHI_FOLDER "" )
 
+set(ADD_LZ4_SRC ${DAVA_ROOT_DIR}/Sources/External/lz4/lz4.c ${DAVA_ROOT_DIR}/Sources/External/lz4/lz4hc.c )
+
 if( ANDROID )
     find_package( ZLIB )
 
@@ -232,6 +234,7 @@ generate_source_groups_project ()
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
+                                                        "Compression/ZipCompressor.cpp"
                                                    IGNORE_LIST_APPLE  
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
@@ -260,7 +263,7 @@ include_directories      ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set                      ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
 
 add_definitions          ( ${FRAMEWORK_DEFINITIONS} )
-add_library              ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
+add_library              ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} ${ADD_LZ4_SRC})
 
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )
