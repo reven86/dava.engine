@@ -162,7 +162,7 @@ void MouseCapture::SetMode(const eMouseCaptureMode& newMode)
 {
 }
 
-const eMouseCaptureMode& MouseCapture::GetMode()
+const eMouseCaptureMode& MouseCapture::GetMode() const
 {
     return eMouseCaptureMode::OFF;
 }
@@ -171,7 +171,7 @@ void MouseCapture::OnFocused(const bool isFocused)
 {
 }
 
-bool MouseCapture::SkipEvents(UIEvent* event)
+bool MouseCapture::SkipEvents(const UIEvent* const event)
 {
     return false;
 }
