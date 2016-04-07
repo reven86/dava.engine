@@ -377,7 +377,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
 
-    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, backingScale, backingScale);
+    float32& scale = DeviceInfo::GetScreenInfo().scale;
+    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scale, scale);
 }
 
 - (void)setMinimumWindowSize:(float32)width height:(float32)height
