@@ -240,12 +240,14 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
     // second set texture view to appropriate state
     if (NULL != curTexture && NULL != curDescriptor)
     {
-        bool needConvert = true;
-
-        // set empty image to converted image view. it will be visible until
-        // conversion done (signal by textureConvertor).
-        ui->textureAreaConverted->setImage(QImage());
-        ui->textureAreaConverted->waitbarShow(true);
+        bool needConvert = (convertMode != eTextureConvertMode::CONVERT_NOT_REQUESTED);
+        if (needConvert)
+        {
+            // set empty image to converted image view. it will be visible until
+            // conversion done (signal by textureConvertor).
+            ui->textureAreaConverted->setImage(QImage());
+            ui->textureAreaConverted->waitbarShow(true);
+        }
 
         // set current tab
         ui->viewTabBar->setCurrentIndex(curTextureView);

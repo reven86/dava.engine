@@ -98,6 +98,12 @@ bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
         return false;
     }
 
+    if (imageSet[0]->width < Texture::MINIMAL_WIDTH || imageSet[0]->height < Texture::MINIMAL_HEIGHT)
+    {
+        Logger::Error("[TextureValidator] Loaded images size is too small. Minimal size for texture is 8x8");
+        return false;
+    }
+
     bool isSizeCorrect = Validator::AreImagesSquare(imageSet);
     if (!isSizeCorrect)
     {

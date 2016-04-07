@@ -125,7 +125,7 @@ void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
     int level = 0;
 
     MipMapSizesReset();
-    while (baseWidth > 1 && baseHeight > 1)
+    while (static_cast<DAVA::uint32>(baseWidth) >= DAVA::Texture::MINIMAL_WIDTH && static_cast<DAVA::uint32>(baseHeight) >= DAVA::Texture::MINIMAL_HEIGHT)
     {
         QSize size(baseWidth, baseHeight);
         QString shownKey;
