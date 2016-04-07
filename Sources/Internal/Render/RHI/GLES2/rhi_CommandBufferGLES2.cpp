@@ -377,6 +377,8 @@ static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
 static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync(true, 0);
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
+    
+static bool _GLES2_RenderThreadSuspendSyncReached = false;
 
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
 static uint32 _GLES2_RenderThreadFrameCount = 0;
@@ -2175,7 +2177,13 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
         {
-            _GLES2_RenderThreadSuspendSync.Wait();
+            if (_GLES2_RenderThreadSuspended.Get())
+            {
+                GL_CALL(glFinish());
+                _GLES2_RenderThreadSuspendSyncReached = true;
+                _GLES2_RenderThreadSuspendSync.Wait();
+            }
+            
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
@@ -2284,14 +2292,14 @@ void UninitializeRenderThreadGLES2()
 
 void SuspendGLES2()
 {
-    _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from ExecGL
-    _GLES2_FrameDoneEvent.Wait();
-    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from Present
-    _GLES2_FrameDoneEvent.Wait();
     _GLES2_RenderThreadSuspendSync.Reset();
-    _GLES2_FramePreparedEvent.Signal(); //avoid stall
-    GL_CALL(glFinish());
+    _GLES2_RenderThreadSuspended.Set(true);
+    while (!_GLES2_RenderThreadSuspendSyncReached)
+    {
+        _GLES2_FramePreparedEvent.Signal(); //avoid stall
+    }
+    _GLES2_RenderThreadSuspendSyncReached = false;
+    
     Logger::Error("Render GLES Suspended");
 }
 
@@ -2299,9 +2307,9 @@ void SuspendGLES2()
 
 void ResumeGLES2()
 {
-    _GLES2_RenderThreadSuspendSync.Signal();
-    _GLES2_RenderThreadSuspended.Set(false);
     Logger::Error("Render GLES Resumed");
+    _GLES2_RenderThreadSuspended.Set(false);
+    _GLES2_RenderThreadSuspendSync.Signal();
 }
 
 //------------------------------------------------------------------------------
