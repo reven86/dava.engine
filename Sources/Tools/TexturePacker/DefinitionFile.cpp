@@ -174,7 +174,7 @@ int DefinitionFile::GetFrameHeight(uint32 frame) const
     return frameRects[frame].dy;
 }
 
-bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath, uint32 maxTextureSize, bool withAlpha, bool useLayerNames)
+bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath, uint32 maxTextureSize, bool retainEmptyPixesl, bool useLayerNames)
 {
     if (FileSystem::Instance()->CreateDirectory(processDirectoryPath) == FileSystem::DIRECTORY_CANT_CREATE)
     {
@@ -201,13 +201,8 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         return false;
     }
 
-    void* croppedImageData = nullptr;
     SCOPE_EXIT
     {
-        if (croppedImageData != nullptr)
-        {
-            free(croppedImageData);
-        }
         psd_image_free(psd);
     };
 
@@ -274,7 +269,9 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             sourceData[i] = (sourceData[i] & 0xff00ff00) | (sourceData[i] & 0x000000ff) << 16 | (sourceData[i] & 0xff0000) >> 16;
         }
 
-        auto imageData = reinterpret_cast<char*>(layer.image_data);
+        auto dataToSave = reinterpret_cast<char*>(layer.image_data);
+        int imageLeft = layer.left;
+        int imageTop = layer.top;
         int imageWidth = layer.width;
         int imageHeight = layer.height;
 
@@ -286,10 +283,12 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Warning("| Layer: (%d, %d, %d, %d), canvas: (%d, %d)", layer.left, layer.top, layer.width, layer.height, psd->width, psd->height);
             Logger::Warning("=================================================================");
 
-            int xOffset = Max(0, -layer.left);
-            int yOffset = Max(0, -layer.top);
-            imageWidth = Min(layer.width, psd->width - Max(0, layer.left));
-            imageHeight = Min(layer.height, psd->height - Max(0, layer.top));
+            int xOffset = Max(0, -imageLeft);
+            int yOffset = Max(0, -imageTop);
+            imageWidth = Min(imageWidth, psd->width - Max(0, imageLeft));
+            imageHeight = Min(imageHeight, psd->height - Max(0, imageTop));
+            imageLeft = Max(0, imageLeft);
+            imageTop = Max(0, imageTop);
 
             if ((xOffset >= imageWidth) || (yOffset >= imageHeight))
             {
@@ -300,11 +299,10 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
                 return false;
             }
 
-            croppedImageData = calloc(imageWidth * imageHeight, 4);
-            imageData = reinterpret_cast<char*>(croppedImageData);
+            dataToSave = reinterpret_cast<char*>(calloc(imageWidth * imageHeight, 4));
 
             size_type rowSize = 4 * imageWidth;
-            uint32* croppedRGBA = reinterpret_cast<uint32*>(croppedImageData);
+            uint32* croppedRGBA = reinterpret_cast<uint32*>(dataToSave);
             for (int y = 0; y < imageHeight; ++y)
             {
                 auto src = sourceData + xOffset + (yOffset + y) * layer.width;
@@ -314,7 +312,41 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             }
         }
 
-        if (DefinitionFileLocal::WritePNGImage(imageWidth, imageHeight, imageData, outImageBasePath.GetAbsolutePathname().c_str(), 4, 8) == false)
+        if (retainEmptyPixesl)
+        {
+            if ((imageLeft > 0) || (imageTop > 0) || (imageLeft + imageWidth < psd->width) || (imageTop + imageHeight < psd->height))
+            {
+                auto wholeImageData = calloc(psd->width * psd->height, 4);
+                uint32* srcRGBA = reinterpret_cast<uint32*>(dataToSave);
+                uint32* dstRGBA = reinterpret_cast<uint32*>(wholeImageData);
+                size_type rowSize = 4 * imageWidth;
+                for (int y = 0; y < imageHeight; ++y)
+                {
+                    auto src = srcRGBA + y * imageWidth;
+                    auto dst = dstRGBA + imageLeft + (y + imageTop) * psd->width;
+                    memcpy(dst, src, rowSize);
+                    DVASSERT(memcmp(src, dst, rowSize) == 0);
+                }
+                if (dataToSave != reinterpret_cast<char*>(layer.image_data))
+                {
+                    free(dataToSave);
+                }
+                dataToSave = reinterpret_cast<char*>(wholeImageData);
+            }
+            imageLeft = 0;
+            imageTop = 0;
+            imageWidth = psd->width;
+            imageHeight = psd->height;
+        }
+        frameRects[lIndex] = Rect2i(imageLeft, imageTop, imageWidth, imageHeight);
+
+        bool writeSucceed = DefinitionFileLocal::WritePNGImage(imageWidth, imageHeight, dataToSave, outImageBasePath.GetAbsolutePathname().c_str(), 4, 8);
+        if (dataToSave != reinterpret_cast<char*>(layer.image_data))
+        {
+            free(dataToSave);
+        }
+
+        if (writeSucceed == false)
         {
             Logger::Error("============================ ERROR ============================");
             Logger::Error("| Failed to write PNG to file:");
@@ -323,15 +355,6 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Error("| %s", psdName);
             Logger::Error("===============================================================");
             return false;
-        }
-
-        if (withAlpha)
-        {
-            frameRects[lIndex] = Rect2i(0, 0, psd->width, psd->height);
-        }
-        else
-        {
-            frameRects[lIndex] = Rect2i(Max(0, layer.left), Max(0, layer.top), imageWidth, imageHeight);
         }
     }
 

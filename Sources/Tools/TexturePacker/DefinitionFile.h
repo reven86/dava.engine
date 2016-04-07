@@ -55,7 +55,7 @@ public:
     void ClearPackedFrames();
     void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
     bool LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath,
-                 DAVA::uint32 maxTextureSize, bool withAlpha, bool useLayerNames);
+                 DAVA::uint32 maxTextureSize, bool retainEmptyPixesl, bool useLayerNames);
 
     Size2i GetFrameSize(uint32 frame) const;
     int GetFrameWidth(uint32 frame) const;
