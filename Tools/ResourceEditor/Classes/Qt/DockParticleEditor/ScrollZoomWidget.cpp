@@ -39,13 +39,12 @@
 #include <Base/Introspection.h>
 
 ScrollZoomWidget::ScrollZoomWidget(QWidget* parent)
-    :
-    QWidget(parent)
+    : QWidget(parent)
 {
-    minValue = std::numeric_limits<float32>::infinity();
-    maxValue = -std::numeric_limits<float32>::infinity();
-    minValueLimit = -std::numeric_limits<float32>::infinity();
-    maxValueLimit = std::numeric_limits<float32>::infinity();
+    minValue = std::numeric_limits<DAVA::float32>::infinity();
+    maxValue = -std::numeric_limits<DAVA::float32>::infinity();
+    minValueLimit = -std::numeric_limits<DAVA::float32>::infinity();
+    maxValueLimit = std::numeric_limits<DAVA::float32>::infinity();
     minTime = 0.0;
     maxTime = 1;
     generalMinTime = minTime;
@@ -90,7 +89,7 @@ ScrollZoomWidget::~ScrollZoomWidget()
     delete zoomSlider;
 }
 
-void ScrollZoomWidget::Init(float32 minT, float32 maxT)
+void ScrollZoomWidget::Init(DAVA::float32 minT, DAVA::float32 maxT)
 {
     this->minTime = minT;
     this->maxTime = maxT;
@@ -105,7 +104,7 @@ void ScrollZoomWidget::Init(float32 minT, float32 maxT)
     UpdateZoomSlider();
 }
 
-QString ScrollZoomWidget::float2QString(float32 value) const
+QString ScrollZoomWidget::float2QString(DAVA::float32 value) const
 {
     QString strValue;
     if (fabs(value) < 10)
@@ -220,12 +219,12 @@ void ScrollZoomWidget::mouseReleaseEvent(QMouseEvent* e)
     mouseStartPos.setX(0);
 }
 
-float32 ScrollZoomWidget::GetMinBoundary()
+DAVA::float32 ScrollZoomWidget::GetMinBoundary()
 {
     return minTime;
 }
 
-float32 ScrollZoomWidget::GetMaxBoundary()
+DAVA::float32 ScrollZoomWidget::GetMaxBoundary()
 {
     return maxTime;
 }
@@ -299,13 +298,13 @@ void ScrollZoomWidget::UpdateScrollBarSlider()
     this->horizontalScrollBar->setSliderPosition(ceil(minTime * 100));
 }
 
-int32 ScrollZoomWidget::GetIntValue(float32 value) const
+DAVA::int32 ScrollZoomWidget::GetIntValue(DAVA::float32 value) const
 {
-    float32 sign = (value < 0) ? -1.f : 1.f;
-    return (int32)(value + 0.5f * sign);
+    DAVA::float32 sign = (value < 0) ? -1.f : 1.f;
+    return static_cast<DAVA::int32>(value + 0.5f * sign);
 }
 
-void ScrollZoomWidget::PerformZoom(float newScale, bool moveSlider)
+void ScrollZoomWidget::PerformZoom(DAVA::float32 newScale, bool moveSlider)
 {
     float currentInterval = maxTime - minTime;
 
@@ -341,7 +340,7 @@ void ScrollZoomWidget::PerformZoom(float newScale, bool moveSlider)
     }
 }
 
-void ScrollZoomWidget::PerformOffset(float value, bool moveScroll)
+void ScrollZoomWidget::PerformOffset(DAVA::float32 value, bool moveScroll)
 {
     //!
     /*
@@ -350,18 +349,18 @@ void ScrollZoomWidget::PerformOffset(float value, bool moveScroll)
 		return;
 	}*/
 
-    //calculate new values of boundaries (in seconds) from given parametr(in pixels)
-    float pixelsPerTime = GetGraphRect().width() / (maxTime - minTime);
-    float offsetFactor = value / pixelsPerTime;
+    //calculate new values of boundaries (in seconds) from given parameter(in pixels)
+    DAVA::float32 pixelsPerTime = GetGraphRect().width() / (maxTime - minTime);
+    DAVA::float32 offsetFactor = value / pixelsPerTime;
 
-    float newMinTime = minTime + offsetFactor;
+    DAVA::float32 newMinTime = minTime + offsetFactor;
 
     if (newMinTime < generalMinTime)
     {
         offsetFactor = (minTime - generalMinTime) * (-1.0f);
     }
 
-    float newMaxTime = maxTime + offsetFactor;
+    DAVA::float32 newMaxTime = maxTime + offsetFactor;
     if (newMaxTime > generalMaxTime)
     {
         offsetFactor = generalMaxTime - maxTime;

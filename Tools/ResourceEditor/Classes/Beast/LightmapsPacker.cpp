@@ -37,15 +37,15 @@ LightmapsPacker::LightmapsPacker()
 
 void LightmapsPacker::ParseSpriteDescriptors()
 {
-    FileList* fileList = new FileList(outputDir);
+    DAVA::FileList* fileList = new DAVA::FileList(outputDir);
 
-    char8 buf[512];
-    uint32 readSize;
+    DAVA::char8 buf[512];
+    DAVA::uint32 readSize;
 
-    int32 itemsCount = fileList->GetCount();
-    for (int32 i = 0; i < itemsCount; ++i)
+    DAVA::int32 itemsCount = fileList->GetCount();
+    for (DAVA::int32 i = 0; i < itemsCount; ++i)
     {
-        const FilePath& filePath = fileList->GetPathname(i);
+        const DAVA::FilePath& filePath = fileList->GetPathname(i);
         if (fileList->IsDirectory(i) || !filePath.IsEqualToExtension(".txt"))
         {
             continue;
@@ -55,12 +55,12 @@ void LightmapsPacker::ParseSpriteDescriptors()
 
         data.meshInstanceName = filePath.GetBasename();
 
-        File* file = File::Create(filePath, File::OPEN | File::READ);
+        DAVA::File* file = DAVA::File::Create(filePath, DAVA::File::OPEN | DAVA::File::READ);
 
         file->ReadLine(buf, sizeof(buf)); //textures count
 
         readSize = file->ReadLine(buf, sizeof(buf)); //texture name
-        FilePath originalTextureName = outputDir + String(buf, readSize);
+        DAVA::FilePath originalTextureName = outputDir + DAVA::String(buf, readSize);
         data.textureName = originalTextureName;
 
         file->ReadLine(buf, sizeof(buf)); //image size
@@ -68,34 +68,34 @@ void LightmapsPacker::ParseSpriteDescriptors()
         file->ReadLine(buf, sizeof(buf)); //frames count
 
         file->ReadLine(buf, sizeof(buf)); //frame rect
-        int32 x, y, dx, dy, unused0, unused1, unused2;
+        DAVA::int32 x, y, dx, dy, unused0, unused1, unused2;
         sscanf(buf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &unused0, &unused1, &unused2);
 
-        Vector2 textureSize = GetTextureSize(originalTextureName);
-        data.uvOffset = Vector2((float32)x / textureSize.x, (float32)y / textureSize.y);
-        data.uvScale = Vector2((float32)dx / textureSize.x, (float32)dy / textureSize.y);
+        DAVA::Vector2 textureSize = GetTextureSize(originalTextureName);
+        data.uvOffset = DAVA::Vector2(static_cast<DAVA::float32>(x) / textureSize.x, static_cast<DAVA::float32>(y) / textureSize.y);
+        data.uvScale = DAVA::Vector2(static_cast<DAVA::float32>(dx) / textureSize.x, static_cast<DAVA::float32>(dy) / textureSize.y);
 
         file->Release();
 
         atlasingData.push_back(data);
 
-        FileSystem::Instance()->DeleteFile(filePath);
+        DAVA::FileSystem::Instance()->DeleteFile(filePath);
     }
 
     fileList->Release();
 }
 
-Vector2 LightmapsPacker::GetTextureSize(const FilePath& filePath)
+DAVA::Vector2 LightmapsPacker::GetTextureSize(const DAVA::FilePath& filePath)
 {
-    Vector2 ret;
+    DAVA::Vector2 ret;
 
-    FilePath sourceTexturePathname = FilePath::CreateWithNewExtension(filePath, TextureDescriptor::GetLightmapTextureExtension());
+    DAVA::FilePath sourceTexturePathname = DAVA::FilePath::CreateWithNewExtension(filePath, DAVA::TextureDescriptor::GetLightmapTextureExtension());
 
-    Image* image = CreateTopLevelImage(sourceTexturePathname);
+    DAVA::Image* image = CreateTopLevelImage(sourceTexturePathname);
     if (image)
     {
-        ret.x = (float32)image->GetWidth();
-        ret.y = (float32)image->GetHeight();
+        ret.x = static_cast<DAVA::float32>(image->GetWidth());
+        ret.y = static_cast<DAVA::float32>(image->GetHeight());
 
         SafeRelease(image);
     }
@@ -103,26 +103,26 @@ Vector2 LightmapsPacker::GetTextureSize(const FilePath& filePath)
     return ret;
 }
 
-Vector<LightmapAtlasingData>* LightmapsPacker::GetAtlasingData()
+DAVA::Vector<LightmapAtlasingData>* LightmapsPacker::GetAtlasingData()
 {
     return &atlasingData;
 }
 
 void LightmapsPacker::CreateDescriptors()
 {
-    FileList* fileList = new FileList(outputDir);
+    DAVA::FileList* fileList = new DAVA::FileList(outputDir);
 
-    int32 itemsCount = fileList->GetCount();
-    for (int32 i = 0; i < itemsCount; ++i)
+    DAVA::int32 itemsCount = fileList->GetCount();
+    for (DAVA::int32 i = 0; i < itemsCount; ++i)
     {
-        const FilePath& filePath = fileList->GetPathname(i);
+        const DAVA::FilePath& filePath = fileList->GetPathname(i);
         if (fileList->IsDirectory(i) || !filePath.IsEqualToExtension(".png"))
         {
             continue;
         }
 
-        TextureDescriptor* descriptor = new TextureDescriptor();
-        descriptor->Save(TextureDescriptor::GetDescriptorPathname(filePath));
+        DAVA::TextureDescriptor* descriptor = new DAVA::TextureDescriptor();
+        descriptor->Save(DAVA::TextureDescriptor::GetDescriptorPathname(filePath));
         delete descriptor;
     }
 
