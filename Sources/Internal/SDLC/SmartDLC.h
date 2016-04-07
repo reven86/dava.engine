@@ -25,6 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#pragma once
 
 #include <Functional/Signal.h>
 
@@ -41,10 +42,10 @@ public:
     {
         enum Status : uint32
         {
-            NotRequested, // существует в списке файлов, но не загружен на FS
-            Queued, // существует в списке файлов, поставлен в очередь на загрузку
-            Downloading, // существует в списке файлов, загружается на FS
-            Mounted // существует на FS и готов к использованию
+            NotRequested = 0, // не загружен на FS
+            Queued = 1, // поставлен в очередь на загрузку
+            Downloading = 2, // загружается на FS
+            Mounted = 3 // существует на FS и готов к использованию
         };
 
         PackState(const PackName& name, Status state, float priority, float progress);

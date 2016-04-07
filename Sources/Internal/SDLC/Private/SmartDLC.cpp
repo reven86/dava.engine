@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "SDLC/SmartDLC.h"
+#include "SDLC/Private/PacksDB.h"
 
 namespace DAVA
 {
@@ -92,6 +93,14 @@ public:
             auto fullUrl = remotePacksUrl + currentDownload->name;
         }
     }
+    void MountDownloadedPacks()
+    {
+        FileSystem* fs = FileSystem::Instance();
+        for (auto& pack : packs)
+        {
+            // TODO mount pack
+        }
+    }
 
     FilePath packsDB;
     FilePath localPacksDir;
@@ -102,6 +111,7 @@ public:
     Vector<SmartDlc::PackState> packs;
     Vector<SmartDlc::PackState*> queue;
     SmartDlc::PackState* currentDownload = nullptr;
+    std::unique_ptr<PacksDB> packDB;
 };
 
 SmartDlc::SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl)
@@ -112,6 +122,9 @@ SmartDlc::SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const
     impl->remotePacksUrl = remotePacksUrl;
 
     // TODO open DB and load packs state then mount all archives to FileSystem
+    impl->packDB.reset(new PacksDB(packsDB));
+    impl->packDB->GetAllPacksState(impl->packs);
+    impl->MountDownloadedPacks();
 }
 
 SmartDlc::~SmartDlc() = default;
@@ -190,4 +203,4 @@ void SmartDlc::DeletePack(const SmartDlc::PackName& packID)
         // update DataBase about this pack
     }
 }
-}
+} // end namespace DAVA
