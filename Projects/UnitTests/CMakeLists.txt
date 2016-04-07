@@ -14,7 +14,7 @@ set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}
 include      ( CMake-common )
 
 find_package( Steam REQUIRED )
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS Sound )
 
 include_directories   ( "Classes" )
 

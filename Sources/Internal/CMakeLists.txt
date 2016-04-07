@@ -25,11 +25,6 @@ if( DAVA_DISABLE_AUTOTESTS  )
     list( APPEND FRAMEWORK_DEFINITIONS -DDISABLE_AUTOTESTS )
 endif()
 
-if( NOT DISABLE_SOUNDS )
-    list( APPEND FRAMEWORK_DEFINITIONS -DDAVA_FMOD )
-
-endif()
-
 if( DAVA_USE_RENDERSTATS )
     list( APPEND FRAMEWORK_DEFINITIONS -D__DAVAENGINE_RENDERSTATS__ )
 endif()
@@ -56,8 +51,6 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libzip_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libicucommon_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
@@ -251,6 +244,20 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "TemplateiOS"
                                                         "UI/UITextFieldiPhone.mm"
                                                    )
+
+
+
+load_property( PROPERTY_LIST 
+        DEFINITIONS
+        DEFINITIONS_${DAVA_PLATFORM_CURENT} 
+        )
+if( DEFINITIONS )
+    add_definitions( ${DEFINITIONS} )
+endif()
+
+if( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+    add_definitions( ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} )
+endif()
 
 include_directories      (.)
 include_directories      ( ${DAVA_INCLUDE_DIR} )

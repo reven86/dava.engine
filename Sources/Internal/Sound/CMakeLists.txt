@@ -1,27 +1,38 @@
 
-set( INCLUDES_DIR  ${INCLUDES_DIR} "${PROJECT_SOURCE_DIR}/../../Libs/include/fmod" PARENT_SCOPE )
+set( NAME_MODULE Sound )
 
-if( DISABLE_SOUNDS )
+set( MODULE_TYPE INLINE )#INLINE STATIC DINAMIC 
 
-	define_source_files ( 
-	EXTRA_H_FILES   ${CMAKE_CURRENT_LIST_DIR}/SoundEvent.h ${CMAKE_CURRENT_LIST_DIR}/SoundSystem.h  
-	EXTRA_CPP_FILES ${CMAKE_CURRENT_LIST_DIR}/SoundSystemEmpty.cpp
-	GLOB_CPP_PATTERNS null  
-	GLOB_H_PATTERNS   null
-	PARENT_SCOPE )
-	
-else()
+set( HPP_FILES                   *.h *.hpp           )
+set( CPP_FILES                   *.cpp               )
 
-	if( IOS )
-	    set( ADDED_CPP_PATTERNS  iOS/*.mm ) 	
-	    set( ADDED_H_PATTERNS    *.hpp iOS/*.h  )
-	    set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR} "${PROJECT_SOURCE_DIR}/Sound/iOS" PARENT_SCOPE )    
-	endif()
+set( HPP_FILES_IOS               iOS/*.h             )
+set( CPP_FILES_IOS               iOS/*.mm  iOS/*.cpp )
 
-	define_source_files (
-	GLOB_CPP_PATTERNS *.cpp ${ADDED_CPP_PATTERNS}
-	GLOB_H_PATTERNS   *.h   ${ADDED_H_PATTERNS}
-        GLOB_ERASE_FILES  SoundSystemEmpty.cpp
-	PARENT_SCOPE )
+set( ERASE_FILES_IOS             SoundSystemEmpty.cpp )
 
-endif()
+set( DEFINITIONS                 -DDAVA_FMOD         )
+
+set( ADD_INCLUDES_DIR            ${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include ${DAVA_ENGINE_DIR} )
+
+set( STATIC_LIBRARIES_IOS        ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent_iphoneos.a 
+	                             ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex_iphoneos.a )
+
+set( DINAMIC_LIBRARIES_ANDROID   libfmodevent.so libfmodex.so           )
+
+set( DINAMIC_LIBRARIES_WINDOWS   ${DAVA_TOOLS_BIN_DIR}/fmodex.dll 
+	                             ${DAVA_TOOLS_BIN_DIR}/fmod_event.dll   )
+
+set( DINAMIC_LIBRARIES_MACOS     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.dylib
+	                             ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.dylib  )
+
+setup_main_module()
+
+
+
+
+
+
+
+
+

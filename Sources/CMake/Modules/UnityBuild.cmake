@@ -162,7 +162,7 @@ macro( generated_unity_sources SOURCE_FILES )
                 
                 list( APPEND ${PTYPE}_PACK_LIST ${${PTYPE}_NAME} )
                 file( WRITE ${${PTYPE}_NAME} ${HEADERS_LIST})
-                message( "generated pack     - ${${PTYPE}_NAME}")
+                #message( "generated pack     - ${${PTYPE}_NAME}")
             endforeach()
 
             math( EXPR PACK_IDX "${PACK_IDX} + ${${PTYPE}_PACK_SIZE}" )

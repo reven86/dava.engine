@@ -31,6 +31,7 @@ include ( PlatformSettings     )
 include ( MergeStaticLibrarees )
 include ( FileTreeCheck        )
 include ( DavaTemplate         )
+include ( DavaTemplateModules  )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
@@ -545,8 +546,35 @@ endfunction()
 function (append_property KEY_PROP  VALUE)
     GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
     LIST(APPEND PROP_LIST_VALUE ${VALUE} )
+    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
     SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
 endfunction()
+
+
+macro( load_property  )
+    cmake_parse_arguments (ARG "" "" "PROPERTY_LIST" ${ARGN})
+    foreach( PROPERTY ${ARG_PROPERTY_LIST} )
+        GET_PROPERTY( VALUE GLOBAL PROPERTY  ${PROPERTY} )
+        if( VALUE )
+            set( ${PROPERTY} ${VALUE} )
+            message( "load prop ${PROPERTY} -> ${VALUE}" )
+        endif()
+    endforeach()
+endmacro()
+
+macro( save_property  )
+    cmake_parse_arguments (ARG "" "" "PROPERTY_LIST" ${ARGN})
+
+    foreach( PROPERTY ${ARG_PROPERTY_LIST} )
+        if( ${PROPERTY} )
+            append_property( ${PROPERTY}  "${${PROPERTY}}" )  
+            #message( "append_property - ${PROPERTY} ${${PROPERTY}}") 
+        endif()
+    endforeach()
+
+endmacro()
+
+
 
 
 
