@@ -628,7 +628,7 @@ bool IsMouseInputEvent(UINT message)
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
 {
-    if (MouseCapture::GetMouseCaptureModeNative() == eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseCaptureMode() == eMouseCaptureMode::PINING)
     {
         return true;
     }
@@ -750,7 +750,7 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
         bool isMove = xPos || yPos;
         bool isInside = false;
 
-        if (MouseCapture::GetMouseCaptureModeNative() == eMouseCaptureMode::PINING)
+        if (InputSystem::Instance()->GetMouseCaptureMode() == eMouseCaptureMode::PINING)
         {
             isInside = true;
         }
@@ -987,7 +987,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
             if (appCore)
             {
-                MouseCapture::SetApplicationFocus(false);
                 // unpress all pressed buttons
                 InputSystem::Instance()->GetKeyboard().ClearAllKeys();
                 core->ClearMouseButtons();
@@ -1003,7 +1002,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             Logger::FrameworkDebug("[PlatformWin32] activate application");
             if (appCore)
             {
-                MouseCapture::SetApplicationFocus(true);
                 appCore->OnResume();
             }
             else
