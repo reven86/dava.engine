@@ -68,15 +68,15 @@ bool MouseCapturePrivate::SetSystemCursorVisibility(bool show)
     return true;
 }
 
-void MouseCapturePrivate::SetNativePining(DAVA::InputSystem::eMouseCaptureMode mode)
+void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
 {
     switch (mode)
     {
-    case InputSystem::eMouseCaptureMode::OFF:
-    case InputSystem::eMouseCaptureMode::PINING:
+    case eMouseCaptureMode::OFF:
+    case eMouseCaptureMode::PINING:
     {
-        SetSystemCursorVisibility(mode != InputSystem::eMouseCaptureMode::PINING);
-        if (mode == InputSystem::eMouseCaptureMode::PINING)
+        SetSystemCursorVisibility(mode != eMouseCaptureMode::PINING);
+        if (mode == eMouseCaptureMode::PINING)
         {
             POINT p;
             GetCursorPos(&p);
@@ -91,7 +91,7 @@ void MouseCapturePrivate::SetNativePining(DAVA::InputSystem::eMouseCaptureMode m
         }
         break;
     }
-    case InputSystem::eMouseCaptureMode::FRAME:
+    case eMouseCaptureMode::FRAME:
         Logger::Error("Unsupported cursor capture mode");
         break;
     default:

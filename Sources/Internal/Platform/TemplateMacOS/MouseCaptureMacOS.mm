@@ -30,27 +30,28 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#include "MouseCaptureMacOS.h"
+#include <Cocoa/Cocoa.h>
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
-#include <Cocoa/Cocoa.h>
+#include "Input/InputSystem.h"
+#include "MouseCaptureMacOS.h"
 
 namespace DAVA
 {
-void MouseCapturePrivate::SetNativePining(InputSystem::eMouseCaptureMode newMode)
+void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
 {
     switch (newMode)
     {
-    case InputSystem::eMouseCaptureMode::OFF:
+    case eMouseCaptureMode::OFF:
         OSXShowCursor();
         CGAssociateMouseAndMouseCursorPosition(true);
         break;
-    case InputSystem::eMouseCaptureMode::PINING:
+    case eMouseCaptureMode::PINING:
         OSXHideCursor();
         MovePointerToWindowCenter();
         CGAssociateMouseAndMouseCursorPosition(false);
         break;
-    case InputSystem::eMouseCaptureMode::FRAME:
+    case eMouseCaptureMode::FRAME:
     // Unsupported yet
     default:
         DVASSERT_MSG(false, "Unsupported cursor capture mode");

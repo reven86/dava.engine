@@ -786,6 +786,8 @@ void Core::FocusLost()
     {
         core->OnFocusLost();
     }
+    focused = false;
+    focusChanged.Emit(focused);
 }
 
 void Core::FocusReceived()
@@ -794,6 +796,8 @@ void Core::FocusReceived()
     {
         core->OnFocusReceived();
     }
+    focused = true;
+    focusChanged.Emit(focused);
 }
 
 uint32 Core::GetGlobalFrameIndex()

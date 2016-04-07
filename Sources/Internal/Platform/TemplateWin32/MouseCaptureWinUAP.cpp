@@ -39,12 +39,12 @@ using namespace ::Windows::UI::Xaml::Controls;
 
 namespace DAVA
 {
-void MouseCapturePrivate::SetNativePining(DAVA::InputSystem::eMouseCaptureMode newMode)
+void MouseCapturePrivate::SetNativePining(const eMouseCaptureMode& newMode)
 {
     SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
     DVASSERT(swapchain);
 
-    if (DAVA::InputSystem::eMouseCaptureMode::PINING == newMode)
+    if (eMouseCaptureMode::PINING == newMode)
     {
         swapchain->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([]()
                                                                                                   {

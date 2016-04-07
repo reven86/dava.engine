@@ -39,84 +39,101 @@
 #endif
 
 #include "Core/Core.h"
+#include "Input/InputSystem.h"
+#include "Input/MouseCapture.h"
 
 namespace DAVA
 {
-MouseCapturePrivate* MouseCapture::GetPrivateImpl()
+struct MouseCaptureContext
 {
-    static MouseCapturePrivate privateImpl;
-    return &privateImpl;
+    eMouseCaptureMode mode = eMouseCaptureMode::OFF;
+    eMouseCaptureMode nativeMode = eMouseCaptureMode::OFF;
+    bool focused = false;
+    bool focusChenged = false;
+    bool firstEntered = true;
+    bool deferredCapture = false;
+};
+
+void SetNativePining(const eMouseCaptureMode& newNativeMode, eMouseCaptureMode& nativeMode, const std::unique_ptr<MouseCapturePrivate>& privateImpl)
+{
+    if (newNativeMode != nativeMode)
+    {
+        nativeMode = newNativeMode;
+        privateImpl->SetNativePining(nativeMode);
+    }
 }
 
-void MouseCapture::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
+MouseCapture::MouseCapture()
 {
-    if (mode != newMode)
+    Core::Instance()->focusChanged.Connect(this, &MouseCapture::OnFocused);
+    context = std::make_unique<MouseCaptureContext>();
+    privateImpl = std::make_unique<MouseCapturePrivate>();
+}
+
+void MouseCapture::SetMode(const eMouseCaptureMode& newMode)
+{
+    if (context->mode != newMode)
     {
-        mode = newMode;
-        if (InputSystem::eMouseCaptureMode::OFF == mode)
+        context->mode = newMode;
+        if (eMouseCaptureMode::OFF == context->mode)
         {
-            SetNativePining(mode);
-            deferredCapture = false;
+            SetNativePining(context->mode, context->nativeMode, privateImpl);
+            context->deferredCapture = false;
         }
 
-        if (InputSystem::eMouseCaptureMode::PINING == mode)
+        if (eMouseCaptureMode::PINING == context->mode)
         {
-            if (focused && !focusChenged)
+            if (context->focused && !context->focusChenged)
             {
-                SetNativePining(mode);
+                SetNativePining(context->mode, context->nativeMode, privateImpl);
             }
             else
             {
-                deferredCapture = true;
+                context->deferredCapture = true;
             }
         }
     }
 }
 
-InputSystem::eMouseCaptureMode MouseCapture::GetMouseCaptureMode()
+const eMouseCaptureMode& MouseCapture::GetMode() const
 {
-    return mode;
+    return context->mode;
 }
 
-InputSystem::eMouseCaptureMode MouseCapture::GetMouseCaptureModeNative()
+void MouseCapture::OnFocused(const bool isFocused)
 {
-    return nativeMode;
-}
-
-void MouseCapture::SetApplicationFocus(bool isFocused)
-{
-    if (focused != isFocused)
+    if (context->focused != isFocused)
     {
-        focusChenged = true;
-        if (firstEntered)
+        context->focusChenged = true;
+        if (context->firstEntered)
         {
-            firstEntered = false;
-            focusChenged = false;
+            context->firstEntered = false;
+            context->focusChenged = false;
         }
 
-        focused = isFocused;
-        if (InputSystem::eMouseCaptureMode::PINING == mode)
+        context->focused = isFocused;
+        if (eMouseCaptureMode::PINING == context->mode)
         {
-            if (focused)
+            if (context->focused)
             {
-                deferredCapture = true;
+                context->deferredCapture = true;
             }
             else
             {
-                SetNativePining(InputSystem::eMouseCaptureMode::OFF);
+                SetNativePining(eMouseCaptureMode::OFF, context->nativeMode, privateImpl);
             }
         }
     }
 }
 
-bool MouseCapture::SkipEvents(UIEvent* event)
+bool MouseCapture::SkipEvents(const UIEvent* const event)
 {
-    focusChenged = false;
-    if (InputSystem::eMouseCaptureMode::PINING == mode && focused && !deferredCapture)
+    context->focusChenged = false;
+    if (eMouseCaptureMode::PINING == context->mode && context->focused && !context->deferredCapture)
     {
-        GetPrivateImpl()->SetCursorPosition();
+        privateImpl->SetCursorPosition();
     }
-    if (!deferredCapture && focused)
+    if (!context->deferredCapture && context->focused)
     {
         return false;
     }
@@ -128,20 +145,11 @@ bool MouseCapture::SkipEvents(UIEvent* event)
         inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
         if (inRect)
         {
-            deferredCapture = false;
-            SetNativePining(InputSystem::eMouseCaptureMode::PINING);
+            context->deferredCapture = false;
+            SetNativePining(eMouseCaptureMode::PINING, context->nativeMode, privateImpl);
         }
     }
     return true;
-}
-
-void MouseCapture::SetNativePining(InputSystem::eMouseCaptureMode newNativeMode)
-{
-    if (newNativeMode != nativeMode)
-    {
-        nativeMode = newNativeMode;
-        GetPrivateImpl()->SetNativePining(nativeMode);
-    }
 }
 
 } // namespace DAVA
@@ -186,9 +194,9 @@ MouseCapturePrivate* MouseCapture::GetPrivateImpl()
 
 #endif // defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 
-DAVA::InputSystem::eMouseCaptureMode DAVA::MouseCapture::mode = DAVA::InputSystem::eMouseCaptureMode::OFF;
-DAVA::InputSystem::eMouseCaptureMode DAVA::MouseCapture::nativeMode = DAVA::InputSystem::eMouseCaptureMode::OFF;
-bool DAVA::MouseCapture::focused = false;
-bool DAVA::MouseCapture::focusChenged = false;
-bool DAVA::MouseCapture::firstEntered = true;
-bool DAVA::MouseCapture::deferredCapture = false;
+// DAVA::eMouseCaptureMode DAVA::MouseCapture::mode = DAVA::eMouseCaptureMode::OFF;
+// DAVA::eMouseCaptureMode DAVA::MouseCapture::nativeMode = DAVA::eMouseCaptureMode::OFF;
+// bool DAVA::MouseCapture::focused = false;
+// bool DAVA::MouseCapture::focusChenged = false;
+// bool DAVA::MouseCapture::firstEntered = true;
+// bool DAVA::MouseCapture::deferredCapture = false;

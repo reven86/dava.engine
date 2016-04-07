@@ -309,11 +309,11 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     switch (btn->GetTag())
     {
     case 0:
-        InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::FRAME);
+        InputSystem::Instance()->SetMouseCaptureMode(eMouseCaptureMode::FRAME);
         break;
 
     case 1:
-        InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
+        InputSystem::Instance()->SetMouseCaptureMode(eMouseCaptureMode::PINING);
         break;
 
     default:
@@ -341,20 +341,20 @@ void FullscreenTest::UpdateMode()
         break;
     }
 
-    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
+    eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
     switch (captureMode)
     {
-    case InputSystem::eMouseCaptureMode::OFF:
+    case eMouseCaptureMode::OFF:
         pinningText->SetText(L"Mouse capture mode: OFF");
         pinningMousePosText->SetVisibilityFlag(false);
         break;
 
-    case InputSystem::eMouseCaptureMode::FRAME:
+    case eMouseCaptureMode::FRAME:
         pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
         pinningMousePosText->SetVisibilityFlag(true);
         break;
 
-    case InputSystem::eMouseCaptureMode::PINING:
+    case eMouseCaptureMode::PINING:
         pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
         pinningMousePosText->SetVisibilityFlag(true);
         break;
@@ -363,12 +363,12 @@ void FullscreenTest::UpdateMode()
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
-    if ((InputSystem::Instance()->GetMouseCaptureMode() != InputSystem::eMouseCaptureMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
+    if ((InputSystem::Instance()->GetMouseCaptureMode() != eMouseCaptureMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
     {
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
+            InputSystem::Instance()->SetMouseCaptureMode(eMouseCaptureMode::OFF);
             break;
 
         case UIEvent::Phase::MOVE:

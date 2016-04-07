@@ -343,7 +343,6 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             else
             {
                 Core::Instance()->FocusReceived();
-                MouseCapture::SetApplicationFocus(true);
             }
             break;
         case CoreWindowActivationState::Deactivated:
@@ -354,7 +353,6 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             else
             {
                 Core::Instance()->FocusLost();
-                MouseCapture::SetApplicationFocus(false);
             }
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
             break;
@@ -533,7 +531,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             core->RunOnMainThread(fn);
         }
 
-        if (MouseCapture::GetMouseCaptureModeNative() != InputSystem::eMouseCaptureMode::PINING)
+        if (InputSystem::Instance()->GetMouseCaptureMode() != eMouseCaptureMode::PINING)
         {
             if (mouseButtonsState.none())
             {
@@ -713,7 +711,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
         float32 dy = static_cast<float32>(args->MouseDelta.Y);
 
         // win10 send dx == 0 and dy == 0 if mouse buttons change state only if one button already pressed
-        if (MouseCapture::GetMouseCaptureModeNative() == InputSystem::eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
+        if (InputSystem::Instance()->GetMouseCaptureMode() == eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
         {
             if (mouseButtonsState.none())
             {

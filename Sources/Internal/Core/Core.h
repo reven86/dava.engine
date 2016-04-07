@@ -37,6 +37,7 @@
 #include "Core/DisplayMode.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Functional/Signal.h"
 
 /**
 	\defgroup core Core
@@ -267,6 +268,7 @@ public:
     void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
 
     rhi::InitParam rendererParams;
+    Signal<const bool> focusChanged;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -302,6 +304,7 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
+    bool focused = false;
 };
 
 inline bool Core::IsActive()

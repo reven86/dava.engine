@@ -29,32 +29,32 @@
 #ifndef __FRAMEWORK__MOUSECAPTURE__
 #define __FRAMEWORK__MOUSECAPTURE__
 
-#include "Input/InputSystem.h"
+#include <memory>
 
 namespace DAVA
 {
+enum class eMouseCaptureMode;
+class UIEvent;
+struct MouseCaptureContext;
 class MouseCapturePrivate;
 
-class MouseCapture
+class MouseCapture final
 {
 public:
-    static void SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode);
-    static InputSystem::eMouseCaptureMode GetMouseCaptureMode();
-    static InputSystem::eMouseCaptureMode GetMouseCaptureModeNative();
-    static void SetApplicationFocus(bool isFocused);
+    MouseCapture();
+    void SetMode(const eMouseCaptureMode& newMode);
+    const eMouseCaptureMode& GetMode() const;
 
-    static bool SkipEvents(UIEvent* event);
+    // Deprecated, only for UIControlSystem internal using
+    bool SkipEvents(const UIEvent* const event);
 
 private:
-    static void SetNativePining(InputSystem::eMouseCaptureMode newativeMode);
-    static MouseCapturePrivate* GetPrivateImpl();
+    void OnFocused(const bool isFocused);
+    std::unique_ptr<MouseCaptureContext> context = nullptr;
+    std::unique_ptr<MouseCapturePrivate> privateImpl = nullptr;
 
-    static InputSystem::eMouseCaptureMode mode;
-    static InputSystem::eMouseCaptureMode nativeMode;
-    static bool focused;
-    static bool focusChenged;
-    static bool firstEntered;
-    static bool deferredCapture;
+    MouseCapture(MouseCapture&) = delete;
+    MouseCapture& operator=(MouseCapture const&) = delete;
 };
 
 } //  namespace DAVA

@@ -45,7 +45,7 @@
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
-#include "Input/MouseCapture.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -428,7 +428,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         return;
     }
 
-    if (MouseCapture::SkipEvents(newEvent))
+    if (InputSystem::Instance()->SkipInputEvents(newEvent))
         return;
 
     if (frameSkip <= 0)

@@ -44,6 +44,14 @@ namespace DAVA
 {
 class KeyboardDevice;
 class GamepadDevice;
+class MouseCapture;
+
+enum class eMouseCaptureMode
+{
+    OFF = 0, //!< Disable any capturing (send absolute xy)
+    FRAME, //!< Capture system cursor into window rect (send absolute xy)
+    PINING //!<< Capture system cursor on current position (send xy move delta)
+};
 
 class InputSystem : public Singleton<InputSystem>
 {
@@ -53,13 +61,6 @@ public:
         INPUT_DEVICE_TOUCH = 1,
         INPUT_DEVICE_KEYBOARD = 1 << 1,
         INPUT_DEVICE_JOYSTICK = 1 << 2
-    };
-
-    enum class eMouseCaptureMode
-    {
-        OFF = 0, //!< Disable any capturing (send absolute xy)
-        FRAME, //!< Capture system cursor into window rect (send absolute xy)
-        PINING //!<< Capture system cursor on current position (send xy move delta)
     };
 
     friend void Core::CreateSingletons();
@@ -87,12 +88,16 @@ public:
     eMouseCaptureMode GetMouseCaptureMode();
     bool SetMouseCaptureMode(eMouseCaptureMode mode);
 
+    // Deprecated, only for UIControlSystem internal using
+    bool SkipInputEvents(UIEvent* event);
+
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;
 
 protected:
     KeyboardDevice* keyboard;
     GamepadDevice* gamepad;
+    MouseCapture* mouseCapture = nullptr;
 
     Vector<InputCallback> callbacks;
     bool pinCursor;

@@ -628,7 +628,7 @@ bool IsMouseInputEvent(UINT message)
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
 {
-    if (MouseCapture::GetMouseCaptureModeNative() == InputSystem::eMouseCaptureMode::PINING)
+    if (MouseCapture::GetMouseCaptureModeNative() == eMouseCaptureMode::PINING)
     {
         return true;
     }
@@ -750,7 +750,7 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
         bool isMove = xPos || yPos;
         bool isInside = false;
 
-        if (MouseCapture::GetMouseCaptureModeNative() == InputSystem::eMouseCaptureMode::PINING)
+        if (MouseCapture::GetMouseCaptureModeNative() == eMouseCaptureMode::PINING)
         {
             isInside = true;
         }

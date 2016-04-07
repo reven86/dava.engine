@@ -33,14 +33,14 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Input/MouseCapture.h"
-
 namespace DAVA
 {
+enum class eMouseCaptureMode;
+
 class MouseCapturePrivate
 {
 public:
-    void SetNativePining(InputSystem::eMouseCaptureMode newMode);
+    void SetNativePining(const eMouseCaptureMode& newMode);
     void SetCursorPosition();
 
 private:

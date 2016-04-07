@@ -183,7 +183,7 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
+    eMouseCaptureMode mouseCaptureMode = eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
