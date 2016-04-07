@@ -53,7 +53,7 @@ dava.init = function()
 
         -- edit commands for win32
         if dava.platform == "win32" then
-            dava.im.cmd_cat = "type"
+            dava.im.cmd_cat = "type 2> nul"
             dava.im.cmd_fwzip = fwpath .. "../7z"
 
             -- make slashes in commands win compatible
@@ -64,6 +64,7 @@ dava.init = function()
             end
         end
 
+        -- mark initialized
         dava.initialized = true
     end
 end
@@ -202,7 +203,7 @@ dava.create_lists = function()
                 part_files[j] = affected_files[i + j]
             end
 
-            tup.rule(part_files, "^ Gen " .. affected_pack .. i .. "^ " .. dava.im.cmd_fwdep .. " \"" .. dava.current_dir .. "\" %\"f > %o", { part_output, pack_group })
+            tup.rule(part_files, "^ Gen " .. affected_pack .. i .. "^ " .. dava.im.cmd_fwdep .. " echo -p \"" .. dava.current_dir .. "\" %\"f > %o", { part_output, pack_group })
             i = i + files_to_process
         end
 	end
@@ -217,17 +218,26 @@ dava.create_packs = function()
 
 	    local pack_in_group = dava.project_dir .. "/<"  .. pack_name .. ">"
         local pack_in_mask = dava.im.packlist_output_dir .. "/" .. pack_name .. "_*"
+        local empty_pack = dava.im.packlist_output_dir .. "/" .. pack_name .. "_empty." .. dava.im.packlist_ext
 
         if dava.platform == "win32" then
             pack_in_mask = pack_in_mask:gsub("/", "\\")
+            empty_pack = empty_pack:gsub("/", "\\")
         end
 
+        -- generate emply lists for each pack
+        -- this will allow cat/type command not fail
+        -- if no lists were generated for pack 
+        tup.rule("^ Touching " .. pack_name .. "^ " .. dava.im.cmd_fwdep .. " echo > %o", { empty_pack })
+
+        -- merge final pack list 
 	    tup.frule{
-	        inputs = { pack_in_group },
+	        inputs = { pack_in_mask, pack_in_group, empty_pack },
 	        command = "^ Gen big " .. pack_name .. " list^ " .. dava.im.cmd_cat .." " .. pack_in_mask .. " > %o",
 	        outputs = { pack_merged_list_output }
 	    }
 
+        -- archivate
 	    if pack_name ~= dava.im.packlist_default then
 	        tup.rule(pack_merged_list_output, "^ Pack " .. pack_name .. "^ " .. dava.im.cmd_fwzip .. " a -bd -bso0 -- %o @%f", pack_output)
 	    end
