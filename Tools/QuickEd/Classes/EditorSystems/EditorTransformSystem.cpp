@@ -42,6 +42,8 @@
 using namespace DAVA;
 using namespace std::chrono;
 
+REGISTER_PREFERENCES_ON_START(EditorTransformSystem, PREFERENCES_DEFAULT("minimumSize", DAVA::Vector2(16.0f, 16.0f)))
+
 const EditorTransformSystem::CornersDirections EditorTransformSystem::cornersDirections =
 { {
 { { NEGATIVE_DIRECTION, NEGATIVE_DIRECTION } }, // TOP_LEFT_AREA
@@ -106,6 +108,8 @@ struct MagnetLine
 
 const float32 TRANSFORM_EPSILON = 0.0005f;
 } //namespace
+
+#include "Base/Introspection.h"
 
 EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)

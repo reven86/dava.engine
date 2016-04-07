@@ -31,65 +31,125 @@
 #include "PreferencesStorage.h"
 #include <locale>
 
-PreferencesStorage* PreferencesStorage::self = nullptr;
-
-PreferencesStorage::PreferencesStorage(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage_)
-    : localStorage(localStorage_)
-    , editorPreferences(new DAVA::KeyedArchive())
-    , preferencesToSave(new DAVA::KeyedArchive())
+struct PreferencesStorage::ClassInfo
 {
-    DVASSERT(nullptr == self);
-    self = this;
-    if (defaultStorage.Exists())
+    ClassInfo(const DAVA::InspInfo* inspInfo_, const PreferencesRegistrator::DefaultValuesList& defaultValues_)
+        : inspInfo(inspInfo_)
+        , defaultValues(defaultValues_)
     {
-        if (!editorPreferences->Load(defaultStorage))
-        {
-            DVASSERT(false && "failed to load editor preferences from default storage");
-        }
     }
-    if (localStorage.Exists())
-    {
-        if (!editorPreferences->Load(localStorage))
-        {
-            DVASSERT(false && "faild to load editor preferences from local storage");
-        }
-    }
+    const DAVA::InspInfo* inspInfo;
+    PreferencesRegistrator::DefaultValuesList defaultValues;
+};
+
+PreferencesStorageWrapper::PreferencesStorageWrapper()
+{
+    PreferencesStorage::Instance();
 }
 
-PreferencesStorage::~PreferencesStorage()
+PreferencesStorageWrapper::~PreferencesStorageWrapper()
 {
-    if (!preferencesToSave->Save(localStorage))
+    PreferencesStorage* storage = PreferencesStorage::Instance();
+    if (!storage->editorPreferences->Save(storage->localStorage))
     {
         DAVA::Logger::Error("can not save editor preferences!");
     }
-    self = nullptr;
+}
+
+PreferencesStorage::PreferencesStorage()
+    : editorPreferences(new DAVA::KeyedArchive())
+{
+}
+
+void PreferencesStorage::RegisterType(const DAVA::InspInfo* inspInfo, const PreferencesRegistrator::DefaultValuesList& defaultValues)
+{
+    PreferencesStorage* self = Instance();
+    self->registeredInsp.insert(std::make_unique<ClassInfo>(inspInfo, defaultValues)); //storing pointer to static memory
 }
 
 void PreferencesStorage::RegisterPreferences(DAVA::InspBase* inspBase)
 {
-    DVASSERT(nullptr != inspBase);
-    if (self == nullptr)
-    {
-        DVASSERT(false && "can not register preferences without PreferencesStorage!");
-        return;
-    }
+    PreferencesStorage* self = Instance();
     self->RegisterPreferencesImpl(inspBase);
 }
 
 void PreferencesStorage::UnregisterPreferences(const DAVA::InspBase* inspBase)
 {
-    if (self == nullptr)
-    {
-        DVASSERT(false && "can not unregister preferences without PreferencesStorage!");
-        return;
-    }
+    PreferencesStorage* self = Instance();
     self->UnregisterPreferencesImpl(inspBase);
+}
+
+void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage)
+{
+    PreferencesStorage* self = Instance();
+    self->SetupStoragePathImpl(defaultStorage, localStorage);
+}
+
+void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage_)
+{
+    localStorage = localStorage_;
+    DAVA::ScopedPtr<DAVA::KeyedArchive> loadedPreferences(new DAVA::KeyedArchive);
+
+    if (defaultStorage.Exists())
+    {
+        if (!loadedPreferences->Load(defaultStorage))
+        {
+            DVASSERT(false && "failed to load editor preferences from default storage");
+        }
+    }
+
+    if (localStorage.Exists())
+    {
+        if (!loadedPreferences->Load(localStorage))
+        {
+            DVASSERT(false && "faild to load editor preferences from local storage");
+        }
+    }
+    //all preferences must be registered on app start
+    for (const auto& classInfo : registeredInsp) //create new settings archive
+    {
+        const PreferencesRegistrator::DefaultValuesList& defaultValues = classInfo->defaultValues;
+        const DAVA::InspInfo* inspInfo = classInfo->inspInfo;
+        DAVA::String key = GenerateKey(inspInfo);
+        DAVA::KeyedArchive* loadedData = loadedPreferences->GetArchive(key);
+        DAVA::ScopedPtr<DAVA::KeyedArchive> classInfoArchive(new DAVA::KeyedArchive);
+        for (int i = 0, count = inspInfo->MembersCount(); i < count; ++i)
+        {
+            const DAVA::InspMember* member = inspInfo->Member(i);
+            const DAVA::String name(member->Name().c_str());
+            DAVA::VariantType value;
+            if (nullptr != loadedData)
+            {
+                DAVA::VariantType* loadedValue = loadedData->GetVariant(name);
+                if (nullptr != loadedValue)
+                {
+                    value = *loadedValue;
+                }
+            }
+            if (value.type == DAVA::VariantType::TYPE_NONE)
+            {
+                auto iter = defaultValues.find(name);
+                if (iter != defaultValues.end())
+                {
+                    value = iter->second;
+                }
+            }
+            DVASSERT(value.type != DAVA::VariantType::TYPE_NONE);
+            classInfoArchive->SetVariant(name, value);
+        }
+        if (classInfoArchive->Count() != 0)
+        {
+            editorPreferences->SetArchive(key, classInfoArchive);
+        }
+    }
 }
 
 void PreferencesStorage::RegisterPreferencesImpl(DAVA::InspBase* inspBase)
 {
     DVASSERT(nullptr != inspBase);
+
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
+
     DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
     if (!editorPreferences->IsKeyExists(key))
     {
@@ -113,7 +173,8 @@ void PreferencesStorage::RegisterPreferencesImpl(DAVA::InspBase* inspBase)
             continue;
         }
         DAVA::VariantType* value = archive->GetVariant(name);
-        if (value != nullptr)
+        DAVA::VariantType val = member->Value(inspBase);
+        if (value != nullptr && value->GetType() != DAVA::VariantType::TYPE_NONE)
         {
             member->SetValue(inspBase, *value);
         }
@@ -135,14 +196,15 @@ void PreferencesStorage::UnregisterPreferencesImpl(const DAVA::InspBase* inspBas
             continue;
         }
         DAVA::String name(member->Name().c_str());
-        archive->SetVariant(name, member->Value(const_cast<void*>(static_cast<const void*>(inspBase)))); //SUDDENLY! current version not support Value by const pointer
+        DAVA::VariantType value = member->Value(const_cast<void*>(static_cast<const void*>(inspBase))); //SUDDENLY! current version not support Value by const pointer
+        archive->SetVariant(name, value);
     }
+
     DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
     editorPreferences->SetArchive(key, archive);
-    preferencesToSave->SetArchive(key, archive);
 }
 
-DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo) const
+DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo)
 {
     DVASSERT(nullptr != inspInfo);
 

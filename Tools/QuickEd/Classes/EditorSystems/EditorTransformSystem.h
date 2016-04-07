@@ -45,7 +45,7 @@ class UIGeometricData;
 class UIControl;
 }
 
-class EditorTransformSystem : public BaseEditorSystem, DAVA::InspBase
+class EditorTransformSystem : DAVA::InspBase, public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
@@ -107,15 +107,15 @@ private:
     AbstractProperty* angleProperty = nullptr;
     AbstractProperty* pivotProperty = nullptr;
 
-    DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
+    DAVA::Vector2 minimumSize;
 
 public:
     INTROSPECTION(EditorTransformSystem,
                   MEMBER(minimumSize, "minimumSize", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_PREFERENCE)
                   )
+
+private:
     REGISTER_PREFERENCES
 };
-
-REGISTER_PREFERENCES_ON_START(EditorTransformSystem)
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

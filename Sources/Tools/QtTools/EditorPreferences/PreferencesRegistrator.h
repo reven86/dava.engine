@@ -38,19 +38,24 @@ class InspBase;
 class PreferencesRegistrator
 {
 public:
-    PreferencesRegistrator(const DAVA::InspInfo* inspInfo);
+    using DefaultValuesList = DAVA::Map<DAVA::String, DAVA::VariantType>;
+    PreferencesRegistrator(const DAVA::InspInfo* inspInfo, const DefaultValuesList& defaultValues = DefaultValuesList());
     PreferencesRegistrator(DAVA::InspBase* inspBase);
     ~PreferencesRegistrator();
 
 private:
-    const DAVA::InspInfo* trackedIntrospectionInfo = nullptr;
     DAVA::InspBase* trackedIntrospection = nullptr;
 };
 
 #define REGISTER_PREFERENCES \
-            PreferencesRegistrator preferencesRegistrator = PreferencesRegistrator(static_cast<DAVA::InspBase*>(this));
+    PreferencesRegistrator preferencesRegistrator = PreferencesRegistrator(static_cast<DAVA::InspBase*>(this));
 
-#define REGISTER_PREFERENCES_ON_START(class) \
-            PreferencesRegistrator preferencesRegistrator(class ::TypeInfo());
+#define PREFERENCES_DEFAULT(name, value) \
+    {DAVA::String(name), VariantType(value)}
+
+#define REGISTER_PREFERENCES_ON_START(class, defaultValues) \
+    PreferencesRegistrator preferencesRegistrator(class ::TypeInfo(), PreferencesRegistrator::DefaultValuesList({ defaultValues }));
+
+
 
 #endif //PREFERENCES_REGISTRATOR

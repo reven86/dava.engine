@@ -32,33 +32,44 @@
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
+#include "Base/StaticSingleton.h"
+#include "PreferencesRegistrator.h"
 
 namespace DAVA
 {
 class InspBase;
 };
 
-class PreferencesStorage
+class PreferencesStorage : private DAVA::StaticSingleton<PreferencesStorage>
 {
-public:
-    PreferencesStorage(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
-    ~PreferencesStorage();
+    friend struct PreferencesStorageWrapper;
 
-    static void RegisterType(const DAVA::InspInfo* inspInfo);
-    static void UnregisterType(const DAVA::InspInfo* inspInfo);
+public:
+    PreferencesStorage();
+
+    static void RegisterType(const DAVA::InspInfo* inspInfo, const PreferencesRegistrator::DefaultValuesList& defaultValues);
     static void RegisterPreferences(DAVA::InspBase* inspBase);
     static void UnregisterPreferences(const DAVA::InspBase* inspBase);
+    static void SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
 
 private:
+    void SetupStoragePathImpl(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
     void RegisterPreferencesImpl(DAVA::InspBase* inspBase);
     void UnregisterPreferencesImpl(const DAVA::InspBase* inspBase);
 
-    DAVA::String GenerateKey(const DAVA::InspInfo* inspInfo) const;
+    static DAVA::String GenerateKey(const DAVA::InspInfo* inspInfo);
 
-    static PreferencesStorage* self;
     DAVA::FilePath localStorage;
     DAVA::ScopedPtr<DAVA::KeyedArchive> editorPreferences;
-    DAVA::ScopedPtr<DAVA::KeyedArchive> preferencesToSave;
+
+    struct ClassInfo;
+    DAVA::Set<std::unique_ptr<ClassInfo>> registeredInsp;
+};
+
+struct PreferencesStorageWrapper
+{
+    PreferencesStorageWrapper();
+    ~PreferencesStorageWrapper();
 };
 
 #endif //PREFERENCES_STORAGE
