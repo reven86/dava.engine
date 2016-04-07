@@ -1,33 +1,30 @@
 set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp  Private/*.cpp)  
 set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h    Private/*.h)
 
-
 if(ANDROID)
-    list( APPEND ADDED_CPP_PATTERNS Private/Android/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/Android/*.h)
+    list( APPEND ADDED_CPP_PATTERNS Private/android/*.cpp)
+    list( APPEND ADDED_H_PATTERNS Private/android/*.h)
 endif()
 
 if(IOS)
-    list( APPEND ADDED_CPP_PATTERNS Private/iOS/*.cpp Private/iOS/*.mm)
-    list( APPEND ADDED_H_PATTERNS Private/iOS/*.h)
+    list( APPEND ADDED_CPP_PATTERNS Private/ios/*.cpp Private/ios/*.mm)
+    list( APPEND ADDED_H_PATTERNS Private/ios/*.h)
 endif()
 
 if(MACOS)
-    list( APPEND ADDED_CPP_PATTERNS Private/MacOS/*.cpp Private/MacOS/*.mm)
-    list( APPEND ADDED_H_PATTERNS Private/MacOS/*.h)
+    list( APPEND ADDED_CPP_PATTERNS Private/osx/*.cpp Private/osx/*.mm)
+    list( APPEND ADDED_H_PATTERNS Private/osx/*.h)
 endif()
 
 if((WIN32) AND (NOT WINDOWS_UAP))
-    list( APPEND ADDED_CPP_PATTERNS Private/Win32/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/Win32/*.h)
+    list( APPEND ADDED_CPP_PATTERNS Private/win32/*.cpp)
+    list( APPEND ADDED_H_PATTERNS Private/win32/*.h)
 endif()
 
 if(WINDOWS_UAP)
-    list( APPEND ADDED_CPP_PATTERNS Private/UWP/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/UWP/*.h)
+    list( APPEND ADDED_CPP_PATTERNS Private/uwp/*.cpp)
+    list( APPEND ADDED_H_PATTERNS Private/uwp/*.h)
 endif()
-
-
 
 if( NOT ANDROID )
     list( APPEND ERASE_FILES UITextFieldAndroid.cpp 

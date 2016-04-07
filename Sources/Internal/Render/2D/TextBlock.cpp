@@ -907,30 +907,30 @@ void TextBlock::CalculateCacheParams()
     float32 lyoffset = 0.f;
     for (auto& line : multitlineInfo)
     {
-        if (align & ALIGN_RIGHT)
-        {
-            line.xoffset = drawSize.x - line.visibleadvance;
-        }
-        else if (align & ALIGN_HCENTER)
-        {
-            line.xoffset = (drawSize.x - line.visibleadvance) * 0.5f;
-        }
-        else
+        if (align & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)
         {
             line.xoffset = 0.f;
         }
+        else if (align & ALIGN_RIGHT)
+        {
+            line.xoffset = drawSize.x - line.visibleadvance;
+        }
+        else //if (align & ALIGN_HCENTER)
+        {
+            line.xoffset = (drawSize.x - line.visibleadvance) * 0.5f;
+        }
 
-        if (align & ALIGN_BOTTOM)
+        if (align & ALIGN_TOP)
+        {
+            line.yoffset = lyoffset;
+        }
+        else if (align & ALIGN_BOTTOM)
         {
             line.yoffset = lyoffset + drawSize.y - static_cast<float32>(textMetrics.height);
         }
-        else if (align & ALIGN_VCENTER)
+        else //if (align & ALIGN_VCENTER)
         {
             line.yoffset = lyoffset + (drawSize.y - static_cast<float32>(textMetrics.height)) * 0.5f;
-        }
-        else
-        {
-            line.yoffset = lyoffset;
         }
 
         lyoffset += line.yadvance;
@@ -958,29 +958,30 @@ void TextBlock::CalculateCacheParams()
     cacheTextSize = Vector2(float32(textMetrics.width), float32(textMetrics.height));
 
     // Align sprite offset
-    if (align & ALIGN_RIGHT)
-    {
-        cacheSpriteOffset.x = float32(textMetrics.drawRect.dx - textMetrics.width + textMetrics.drawRect.x);
-    }
-    else if (align & ALIGN_HCENTER)
-    {
-        cacheSpriteOffset.x = (textMetrics.drawRect.dx - textMetrics.width) * 0.5f + textMetrics.drawRect.x;
-    }
-    else
+    if (align & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)
     {
         cacheSpriteOffset.x = float32(textMetrics.drawRect.x);
     }
-    if (align & ALIGN_BOTTOM)
+    else if (align & ALIGN_RIGHT)
+    {
+        cacheSpriteOffset.x = float32(textMetrics.drawRect.dx - textMetrics.width + textMetrics.drawRect.x);
+    }
+    else //if (align & ALIGN_HCENTER)
+    {
+        cacheSpriteOffset.x = (textMetrics.drawRect.dx - textMetrics.width) * 0.5f + textMetrics.drawRect.x;
+    }
+
+    if (align & ALIGN_TOP)
+    {
+        cacheSpriteOffset.y = float32(textMetrics.drawRect.y);
+    }
+    else if (align & ALIGN_BOTTOM)
     {
         cacheSpriteOffset.y = float32(textMetrics.drawRect.dy - textMetrics.height + textMetrics.drawRect.y);
     }
-    else if (align & ALIGN_VCENTER)
+    else //if (align & ALIGN_VCENTER)
     {
         cacheSpriteOffset.y = (textMetrics.drawRect.dy - textMetrics.height) * 0.5f + textMetrics.drawRect.y;
-    }
-    else
-    {
-        cacheSpriteOffset.y = float32(textMetrics.drawRect.y);
     }
 
     // Restore font size

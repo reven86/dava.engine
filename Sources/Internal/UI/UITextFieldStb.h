@@ -48,7 +48,7 @@ struct Rect;
 // so no hierarchy for internal UIStaticText, and call UpdateRect
 // every frame, and render directly in SyctemDraw. This helps
 // to find similar bugs in all implementations
-class TextFieldStbImpl : public StbTextEditBridge
+class TextFieldStbImpl : public StbTextEditBridge::StbTextDelegate
 {
 public:
     friend class UITextField;
@@ -98,14 +98,13 @@ public:
 
     void Input(UIEvent* currentInput);
 
-    // StbTextEditBridge
+    // StbTextEditBridge::StbTextDelegate
     uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
     uint32 DeleteText(uint32 position, uint32 length) override;
     const Vector<TextBlock::Line>& GetMultilineInfo() override;
     const Vector<float32>& GetCharactersSizes() override;
-    uint32 GetLength() override;
-    WideString::value_type GetChar(uint32 i) override;
-    void SendKey(uint32 codePoint) override;
+    uint32 GetTextLength() override;
+    WideString::value_type GetCharAt(uint32 i) override;
 
 private:
     void UpdateSelection(uint32 start, uint32 end);
@@ -113,6 +112,7 @@ private:
 
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
+    StbTextEditBridge* stb = nullptr;
     float32 cursorTime = 0.0f;
     int32 maxLength;
     bool needRedraw = true;

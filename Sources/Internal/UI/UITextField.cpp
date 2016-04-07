@@ -286,16 +286,16 @@ void UITextField::SetPosition(const DAVA::Vector2& position)
 
 void UITextField::SetMultiline(bool value)
 {
-    if (value != isMultiline_)
+    if (value != isMultiline)
     {
-        isMultiline_ = value;
-        textFieldImpl->SetMultiline(isMultiline_);
+        isMultiline = value;
+        textFieldImpl->SetMultiline(isMultiline);
     }
 }
 
 bool UITextField::IsMultiline() const
 {
-    return isMultiline_;
+    return isMultiline;
 }
 
 void UITextField::SetText(const WideString& text_)
@@ -524,7 +524,7 @@ void UITextField::SetRenderToTexture(bool value)
 {
     // Workaround! Users need scrolling of large texts in
     // multiline mode so we have to disable render into texture
-    if (isMultiline_)
+    if (isMultiline)
     {
         value = false;
     }

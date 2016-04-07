@@ -387,7 +387,7 @@ private:
     // All Boolean variables are grouped together because of DF-2149.
     bool isPassword;
     bool enableReturnKeyAutomatically;
-    bool isMultiline_ = false;
+    bool isMultiline = false;
 
     TextFieldPlatformImpl* textFieldImpl = nullptr;
     int32 maxLength = -1;

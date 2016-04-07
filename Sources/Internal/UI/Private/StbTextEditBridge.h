@@ -42,10 +42,76 @@ struct StbState;
 class StbTextEditBridge
 {
 public:
+    class StbTextDelegate
+    {
+    public:
+        /**
+        * \brief Service function for insert text in data structure
+        * \param[in] position position of inserting
+        * \param[in] str string to inserting
+        * \param[in] length string length
+        * \return count of inserted characters
+        */
+        virtual uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
+
+        /**
+        * \brief Service function for delete text from data structure
+        * \param[in] position position of deleting
+        * \param[in] length deleting substring length
+        * \return count of deleted characters
+        */
+        virtual uint32 DeleteText(uint32 position, uint32 length) = 0;
+
+        /**
+        * \brief Service function for getting information about lines in text
+        * \return vector of lines information
+        */
+        virtual const Vector<TextBlock::Line>& GetMultilineInfo() = 0;
+
+        /**
+        * \brief Service function for getting information of characters sizes
+        * \return vector of characters sizes
+        */
+        virtual const Vector<float32>& GetCharactersSizes() = 0;
+
+        /**
+        * \brief Service function for getting text length
+        * \return text length
+        */
+        virtual uint32 GetTextLength() = 0;
+
+        /**
+        * \brief Service function for getting character from text
+        * \param[in] i character index
+        * \return character
+        */
+        virtual WideString::value_type GetCharAt(uint32 i) = 0;
+    };
+
+    enum CotrolKeys : uint32
+    {
+        KEY_SHIFT_MASK = 0x00020000,
+        KEY_LEFT = 0x00010000,
+        KEY_RIGHT = 0x00010001,
+        KEY_UP = 0x00010002,
+        KEY_DOWN = 0x00010003,
+        KEY_LINESTART = 0x00010004,
+        KEY_LINEEND = 0x00010005,
+        KEY_TEXTSTART = 0x00010006,
+        KEY_TEXTEND = 0x00010007,
+        KEY_DELETE = 0x00010008,
+        KEY_BACKSPACE = 8,
+        KEY_UNDO = 0x00010009,
+        KEY_REDO = 0x00010010,
+        KEY_INSERT = 0x00010011,
+        KEY_WORDLEFT = 0x00010012,
+        KEY_WORDRIGHT = 0x00010013,
+    };
+
     /**
      * \brief Default constructor
      */
-    StbTextEditBridge();
+    StbTextEditBridge(StbTextDelegate* delegate);
 
     /**
      * \brief Copy constructor
@@ -111,9 +177,27 @@ public:
      *        cursor equal text length - cursor after last symbol
      * \return character index
      */
-    uint32 GetCursor() const;
+    uint32 GetCursorPosition() const;
 
-    void SetCursor(uint32 position) const;
+    /**
+    * \brief Move cursor to position.
+    *        Cursor equal 0 - cursor before first symbol,
+    *        cursor equal text length - cursor after last symbol
+    * \param[in] position new cursor position
+    */
+    void SetCursorPosition(uint32 position) const;
+
+    /**
+    * \brief Enable single line mode
+    * \param[in] signleLine flag of single line mode enabling
+    */
+    void SetSingleLineMode(bool signleLine);
+
+    /**
+    * \brief Return single line mode flag
+    * \return if True that single line mode is enabled
+    */
+    bool IsSingleLineMode() const;
 
     /**
      * \brief Return inserting mode flag
@@ -122,69 +206,15 @@ public:
     bool IsInsertMode() const;
 
     /**
-     * \brief Service function for insert text in data structure
-     * \param[in] position position of inserting
-     * \param[in] str string to inserting
-     * \param[in] length string length
-     * \return count of inserted characters
+     * \brief Return delegate
+     * \return delegate
      */
-    virtual uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) = 0;
-
-    /**
-     * \brief Service function for delete text from data structure
-     * \param[in] position position of deleting
-     * \param[in] length deleting substring length
-     * \return count of deleted characters
-     */
-    virtual uint32 DeleteText(uint32 position, uint32 length) = 0;
-
-    /**
-     * \brief Service function for getting information about lines in text
-     * \return vector of lines information
-     */
-    virtual const Vector<TextBlock::Line>& GetMultilineInfo() = 0;
-
-    /**
-     * \brief Service function for getting information of characters sizes
-     * \return vector of characters sizes
-     */
-    virtual const Vector<float32>& GetCharactersSizes() = 0;
-
-    /**
-     * \brief Service function for getting text length
-     * \return text length
-     */
-    virtual uint32 GetLength() = 0;
-
-    /**
-     * \brief Service function for getting character from text
-     * \param[in] i character index
-     * \return character
-     */
-    virtual WideString::value_type GetChar(uint32 i) = 0;
+    StbTextDelegate* GetDelegate() const;
 
 private:
     StbState* stb_state = nullptr; //!< Inner STB state structure ptr
+    StbTextDelegate* delegate = nullptr;
 };
 }
-
-#define STB_TEXTEDIT_K_SHIFT 0x00020000 //SHIFT MODIFICATOR
-#define STB_TEXTEDIT_K_LEFT 0x00010000 //KEY_DOWN(VK_LEFT)
-#define STB_TEXTEDIT_K_RIGHT 0x00010001 //KEY_DOWN(VK_RIGHT)
-#define STB_TEXTEDIT_K_UP 0x00010002 //KEY_DOWN(VK_UP)
-#define STB_TEXTEDIT_K_DOWN 0x00010003 //KEY_DOWN(VK_DOWN)
-#define STB_TEXTEDIT_K_LINESTART 0x00010004 //KEY_DOWN(VK_HOME)
-#define STB_TEXTEDIT_K_LINEEND 0x00010005 //KEY_DOWN(VK_END)
-#define STB_TEXTEDIT_K_TEXTSTART 0x00010006 //KEY_DOWN(VK_HOME + VK_CTRL)
-#define STB_TEXTEDIT_K_TEXTEND 0x00010007 //KEY_DOWN(VK_END + VK_CTRL)
-#define STB_TEXTEDIT_K_DELETE 0x00010008 //KEY_DOWN(VK_DELETE)
-#define STB_TEXTEDIT_K_BACKSPACE 8 //CHAR(8) or KEY_DOWN(VK_BACKSPACE)
-#define STB_TEXTEDIT_K_UNDO 26 //CHAR(26) or KEY_DOWN(VK_Z + VK_CTRL)
-#define STB_TEXTEDIT_K_REDO 25 //CHAR(25) or KEY_DOWN(VK_Y + VK_CTRL)
-#define STB_TEXTEDIT_K_INSERT 0x00010009 //KEY_DOWN(VK_INSERT)
-#define STB_TEXTEDIT_K_WORDLEFT 0x00010010 //KEY_DOWN(VK_LEFT + VK_CTRL)
-#define STB_TEXTEDIT_K_WORDRIGHT 0x00010011 //KEY_DOWN(VK_RIGHT + VK_CTRL)
-#define STB_TEXTEDIT_K_PGUP 0x00010012 //KEY_DOWN(VK_PGUP)
-#define STB_TEXTEDIT_K_PGDOWN 0x00010013 //KEY_DOWN(VK_PGDN)
 
 #endif //__DAVA_UITEXTFIELDSTBBRIDGE_H__

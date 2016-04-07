@@ -28,6 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "StbTextEditBridge.h"
 
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #define STB_TEXTEDIT_CHARTYPE DAVA::WideString::value_type
 #define STB_TEXTEDIT_STRING DAVA::StbTextEditBridge
 //#define STB_TEXTEDIT_UNDOSTATECOUNT   99 // Use by default
@@ -35,20 +40,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define STB_TEXTEDIT_POSITIONTYPE    int // Use by default
 #define STB_TEXTEDIT_NEWLINE L'\n'
 
-#if __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#endif
-
 #include <stb/stb_textedit.h>
 
-inline void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
+inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
-    auto start = DAVA::uint32(start_i);
-    if (start >= str->GetLength())
+    auto start = static_cast<DAVA::uint32>(start_i);
+    if (start >= str->GetDelegate()->GetTextLength())
         return;
 
-    auto linesInfo = str->GetMultilineInfo();
+    auto linesInfo = str->GetDelegate()->GetMultilineInfo();
     auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [start](const DAVA::TextBlock::Line& l)
                                    {
                                        return l.offset == static_cast<DAVA::uint32>(start);
@@ -61,47 +61,89 @@ inline void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* row, STB_TEXTEDIT_STRING* str
     row->baseline_y_delta = 0.f;
     row->ymin = line.yoffset;
     row->ymax = line.yoffset + line.yadvance;
+
+    // If single line mode enabled then extend height for first/last
+    // lines to size of text field
+    if (str->IsSingleLineMode())
+    {
+        if (!linesInfo.empty() && lineInfoIt == linesInfo.begin())
+        {
+            row->ymin = FLT_MIN;
+        }
+        if (!linesInfo.empty() && lineInfoIt == linesInfo.end() - 1)
+        {
+            row->ymax = FLT_MAX;
+        }
+    }
 }
 
-inline int STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* str, int pos, STB_TEXTEDIT_CHARTYPE* newtext, int num)
+inline int stb_insertchars(STB_TEXTEDIT_STRING* str, int pos, STB_TEXTEDIT_CHARTYPE* newtext, int num)
 {
-    return int(str->InsertText(DAVA::uint32(pos), newtext, DAVA::uint32(num)));
+    return int(str->GetDelegate()->InsertText(static_cast<DAVA::uint32>(pos), newtext, static_cast<DAVA::uint32>(num)));
 }
 
-inline int STB_TEXTEDIT_DELETECHARS(STB_TEXTEDIT_STRING* str, int pos, int num)
+inline int stb_deletechars(STB_TEXTEDIT_STRING* str, int pos, int num)
 {
-    return int(str->DeleteText(DAVA::uint32(pos), DAVA::uint32(num)));
+    return int(str->GetDelegate()->DeleteText(static_cast<DAVA::uint32>(pos), static_cast<DAVA::uint32>(num)));
 }
 
-inline int STB_TEXTEDIT_STRINGLEN(STB_TEXTEDIT_STRING* str)
+inline int stb_stringlen(STB_TEXTEDIT_STRING* str)
 {
-    return int(str->GetLength());
+    return int(str->GetDelegate()->GetTextLength());
 }
 
-inline float STB_TEXTEDIT_GETWIDTH(STB_TEXTEDIT_STRING* str, int n, int i)
+inline float stb_getwidth(STB_TEXTEDIT_STRING* str, int n, int i)
 {
-    auto charsSizes = str->GetCharactersSizes();
-    if (DAVA::uint32(charsSizes.size()) > DAVA::uint32(n + i))
+    auto charsSizes = str->GetDelegate()->GetCharactersSizes();
+    if (static_cast<DAVA::uint32>(charsSizes.size()) > static_cast<DAVA::uint32>(n + i))
     {
         return charsSizes[n + i];
     }
     return 0.f;
 }
 
-inline int STB_TEXTEDIT_KEYTOTEXT(int key)
+inline int stb_keytotext(int key)
 {
     return key;
 }
 
-inline STB_TEXTEDIT_CHARTYPE STB_TEXTEDIT_GETCHAR(STB_TEXTEDIT_STRING* str, int i)
+inline STB_TEXTEDIT_CHARTYPE stb_getchar(STB_TEXTEDIT_STRING* str, int i)
 {
-    return str->GetChar(DAVA::uint32(i));
+    return str->GetDelegate()->GetCharAt(static_cast<DAVA::uint32>(i));
 }
 
-inline int STB_TEXTEDIT_IS_SPACE(STB_TEXTEDIT_CHARTYPE ch)
+inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 {
     return isspace(ch) || ch == ',' || ch == ';' || ch == '(' || ch == ')' || ch == '{' || ch == '}' || ch == '[' || ch == ']' || ch == '|';
 }
+
+#define STB_TEXTEDIT_LAYOUTROW stb_layoutrow
+#define STB_TEXTEDIT_INSERTCHARS stb_insertchars
+#define STB_TEXTEDIT_DELETECHARS stb_deletechars
+#define STB_TEXTEDIT_STRINGLEN stb_stringlen
+#define STB_TEXTEDIT_GETWIDTH stb_getwidth
+#define STB_TEXTEDIT_KEYTOTEXT stb_keytotext
+#define STB_TEXTEDIT_GETCHAR stb_getchar
+#define STB_TEXTEDIT_IS_SPACE stb_isspace
+
+#define STB_TEXTEDIT_K_SHIFT DAVA::StbTextEditBridge::KEY_SHIFT_MASK
+#define STB_TEXTEDIT_K_LEFT DAVA::StbTextEditBridge::KEY_LEFT
+#define STB_TEXTEDIT_K_RIGHT DAVA::StbTextEditBridge::KEY_RIGHT
+#define STB_TEXTEDIT_K_UP DAVA::StbTextEditBridge::KEY_UP
+#define STB_TEXTEDIT_K_DOWN DAVA::StbTextEditBridge::KEY_DOWN
+#define STB_TEXTEDIT_K_LINESTART DAVA::StbTextEditBridge::KEY_LINESTART
+#define STB_TEXTEDIT_K_LINEEND DAVA::StbTextEditBridge::KEY_LINEEND
+#define STB_TEXTEDIT_K_TEXTSTART DAVA::StbTextEditBridge::KEY_TEXTSTART
+#define STB_TEXTEDIT_K_TEXTEND DAVA::StbTextEditBridge::KEY_TEXTEND
+#define STB_TEXTEDIT_K_DELETE DAVA::StbTextEditBridge::KEY_DELETE
+#define STB_TEXTEDIT_K_BACKSPACE DAVA::StbTextEditBridge::KEY_BACKSPACE
+#define STB_TEXTEDIT_K_UNDO DAVA::StbTextEditBridge::KEY_UNDO
+#define STB_TEXTEDIT_K_REDO DAVA::StbTextEditBridge::KEY_REDO
+#define STB_TEXTEDIT_K_INSERT DAVA::StbTextEditBridge::KEY_INSERT
+#define STB_TEXTEDIT_K_WORDLEFT DAVA::StbTextEditBridge::KEY_WORDLEFT
+#define STB_TEXTEDIT_K_WORDRIGHT DAVA::StbTextEditBridge::KEY_WORDRIGHT
+//#define STB_TEXTEDIT_K_PGUP
+//#define STB_TEXTEDIT_K_PGDOWN
 
 #define STB_TEXTEDIT_IMPLEMENTATION
 #include <stb/stb_textedit.h>
@@ -118,9 +160,11 @@ struct StbState : public STB_TexteditState
 {
 };
 
-StbTextEditBridge::StbTextEditBridge()
+StbTextEditBridge::StbTextEditBridge(StbTextDelegate* delegate)
     : stb_state(new StbState())
+    , delegate(delegate)
 {
+    DVASSERT_MSG(delegate, "StbTextEditBridge must be inited with delegate!");
     stb_textedit_initialize_state(stb_state, 0);
 }
 
@@ -176,18 +220,33 @@ uint32 StbTextEditBridge::GetSelectionEnd() const
     return static_cast<uint32>(stb_state->select_end);
 }
 
-uint32 StbTextEditBridge::GetCursor() const
+uint32 StbTextEditBridge::GetCursorPosition() const
 {
     return static_cast<uint32>(stb_state->cursor);
 }
 
-void StbTextEditBridge::SetCursor(uint32 position) const
+void StbTextEditBridge::SetCursorPosition(uint32 position) const
 {
-    stb_state->cursor = int(position);
+    stb_state->cursor = static_cast<int>(position);
+}
+
+void StbTextEditBridge::SetSingleLineMode(bool signleLine)
+{
+    stb_state->single_line = static_cast<unsigned char>(signleLine);
+}
+
+bool StbTextEditBridge::IsSingleLineMode() const
+{
+    return stb_state->single_line != 0;
 }
 
 bool StbTextEditBridge::IsInsertMode() const
 {
     return stb_state->insert_mode != 0;
+}
+
+StbTextEditBridge::StbTextDelegate* StbTextEditBridge::GetDelegate() const
+{
+    return delegate;
 }
 }
