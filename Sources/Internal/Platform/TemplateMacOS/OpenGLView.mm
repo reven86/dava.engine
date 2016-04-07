@@ -141,15 +141,8 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        rhi::ResetParam params;
-        params.window = self;
-        params.width = backingSize[0];
-        params.height = backingSize[1];
-        Renderer::Reset(params);
-
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, backingScale, backingScale);
+        Core::Instance()->SetNativeView(self);
     }
 
     [super reshape];
