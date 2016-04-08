@@ -33,8 +33,6 @@ macro( setup_main_module )
                 DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
                 DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
             )
-
-
                 
 
         define_source_files (
