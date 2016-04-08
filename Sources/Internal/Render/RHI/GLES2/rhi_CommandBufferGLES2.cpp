@@ -375,7 +375,7 @@ static bool _GLES2_RenderThreadExitPending = false;
 static DAVA::Spinlock _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
-static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync(true, 0);
+static DAVA::Semaphore _GLES2_RenderThreadSuspendSync;
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
     
 static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
@@ -2292,7 +2292,6 @@ void UninitializeRenderThreadGLES2()
 
 void SuspendGLES2()
 {
-    _GLES2_RenderThreadSuspendSync.Reset();
     _GLES2_RenderThreadSuspended.Set(true);
     while (!_GLES2_RenderThreadSuspendSyncReached)
     {
@@ -2309,7 +2308,7 @@ void ResumeGLES2()
 {
     Logger::Error("Render GLES Resumed");
     _GLES2_RenderThreadSuspended.Set(false);
-    _GLES2_RenderThreadSuspendSync.Signal();
+    _GLES2_RenderThreadSuspendSync.Post();
 }
 
 //------------------------------------------------------------------------------
