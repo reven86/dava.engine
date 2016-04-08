@@ -377,7 +377,7 @@ static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
 static DAVA::Semaphore _GLES2_RenderThreadSuspendSync;
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
-    
+
 static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
 
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
@@ -2298,7 +2298,7 @@ void SuspendGLES2()
         _GLES2_FramePreparedEvent.Signal(); //avoid stall
     }
     _GLES2_RenderThreadSuspendSyncReached = false;
-    
+
     Logger::Error("Render GLES Suspended");
 }
 
