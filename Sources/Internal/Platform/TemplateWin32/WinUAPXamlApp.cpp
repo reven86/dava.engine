@@ -51,6 +51,7 @@
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
 #include "WinApiUAP.h"
+#include "WinSystemTimer.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -401,12 +402,12 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
-            WinApiUAP::TimeBeginPeriod(WinApiUAP::TimeGetMinPeriod());
+            EnableHighResolutionTimer(true);
             break;
         case CoreWindowActivationState::Deactivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            WinApiUAP::TimeEndPeriod(WinApiUAP::TimeGetMinPeriod());
+            EnableHighResolutionTimer(false);
             break;
         default:
             break;

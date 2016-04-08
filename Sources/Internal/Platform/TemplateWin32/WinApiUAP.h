@@ -34,20 +34,29 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-namespace DAVA
+typedef UINT MMRESULT;
+
+typedef struct timecaps_tag
 {
-//wrapper for WinAPI for UAP
+    UINT wPeriodMin; /* minimum period supported  */
+    UINT wPeriodMax; /* maximum period supported  */
+} TIMECAPS, *LPTIMECAPS;
+
+extern MMRESULT(WINAPI* timeGetDevCaps)(LPTIMECAPS ptc, UINT cbtc);
+extern MMRESULT(WINAPI* timeBeginPeriod)(UINT uPeriod);
+extern MMRESULT(WINAPI* timeEndPeriod)(UINT uPeriod);
+
 namespace WinApiUAP
 {
+enum eWinApiPart
+{
+    SYSTEM_TIMER_SERVICE,
+};
+
 void Initialize();
-
-void TimeBeginPeriod(uint32 msPeriod);
-void TimeEndPeriod(uint32 msPeriod);
-
-uint32 TimeGetMinPeriod();
-uint32 TimeGetMaxPeriod();
-};
-};
+bool IsAvalible(eWinApiPart);
+}
 
 #endif
+
 #endif // __DAVAENGINE_WINAPI_UAP_H__

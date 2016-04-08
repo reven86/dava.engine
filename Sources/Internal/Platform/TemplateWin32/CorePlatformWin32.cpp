@@ -30,9 +30,8 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
-#include <TimeAPI.h>
-#include "Debug/Profiler.h"
 
+#include "WinSystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/InputSystem.h"
@@ -838,7 +837,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     float32 scaleY = 1.f;
     scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
     RECT rect;
-    TIMECAPS sistemTimerCaps;
 
     if (IsMouseInputEvent(message))
     {
@@ -993,8 +991,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
 
-            timeGetDevCaps(&sistemTimerCaps, sizeof(TIMECAPS));
-            timeEndPeriod(sistemTimerCaps.wPeriodMin);
+            EnableHighResolutionTimer(false);
 
             if (appCore)
             {
@@ -1012,8 +1009,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             Logger::FrameworkDebug("[PlatformWin32] activate application");
 
-            timeGetDevCaps(&sistemTimerCaps, sizeof(TIMECAPS));
-            timeBeginPeriod(sistemTimerCaps.wPeriodMin);
+            EnableHighResolutionTimer(true);
 
             if (appCore)
             {
