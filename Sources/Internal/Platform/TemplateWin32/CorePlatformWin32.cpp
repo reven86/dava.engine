@@ -1009,6 +1009,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             Logger::FrameworkDebug("[PlatformWin32] activate application");
 
+            //We need activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation if very inaccuracy
             EnableHighResolutionTimer(true);
 
             if (appCore)

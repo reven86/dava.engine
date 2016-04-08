@@ -402,6 +402,9 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
+
+            //We need activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation if very inaccuracy
             EnableHighResolutionTimer(true);
             break;
         case CoreWindowActivationState::Deactivated:
