@@ -168,7 +168,6 @@ class MaterialEditor::PropertiesBuilder
 public:
     PropertiesBuilder(MaterialEditor* editor_)
         : editor(editor_)
-        , globalMaterial(nullptr)
     {
         SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
         if (scene != nullptr)
@@ -473,8 +472,8 @@ private:
     }
 
 private:
-    MaterialEditor* editor;
-    DAVA::NMaterial* globalMaterial;
+    MaterialEditor* editor = nullptr;
+    DAVA::NMaterial* globalMaterial = nullptr;
 };
 
 class MaterialEditor::ConfigNameValidator : public QValidator
@@ -689,7 +688,6 @@ void MaterialEditor::SelectEntities(DAVA::NMaterial* material)
 
 void MaterialEditor::SetCurMaterial(const QList<DAVA::NMaterial*>& materials)
 {
-    DAVA::Logger::Info("[MaterialEditor::SetCurMaterial] MaterialCount : %d", materials.size());
     int curScrollPos = ui->materialProperty->verticalScrollBar()->value();
 
     curMaterials = materials;
@@ -1083,7 +1081,7 @@ void MaterialEditor::OnAddRemoveButton()
     QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
     if (nullptr != btn)
     {
-        QtPropertyDataInspDynamic* data = (QtPropertyDataInspDynamic*)btn->GetPropertyData();
+        QtPropertyDataInspDynamic* data = static_cast<QtPropertyDataInspDynamic*>(btn->GetPropertyData());
         if (nullptr != data)
         {
             int memberFlags = data->dynamicInfo->MemberFlags(data->ddata, data->name);
@@ -1542,6 +1540,7 @@ void MaterialEditor::RefreshMaterialProperties()
 {
     SetCurMaterial(curMaterials);
     PropertiesBuilder(this).UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+    ui->materialProperty->ShowButtonsUnderCursor();
 }
 
 void MaterialEditor::removeInvalidTexture()
