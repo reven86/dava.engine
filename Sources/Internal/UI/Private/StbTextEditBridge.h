@@ -42,6 +42,32 @@ struct StbState;
 class StbTextEditBridge
 {
 public:
+    /**
+     * \brief Control keys in stb_textedit
+     */
+    enum CotrolKeys : uint32
+    {
+        KEY_SHIFT_MASK = 0x00020000,
+        KEY_LEFT = 0x00010000,
+        KEY_RIGHT = 0x00010001,
+        KEY_UP = 0x00010002,
+        KEY_DOWN = 0x00010003,
+        KEY_LINESTART = 0x00010004,
+        KEY_LINEEND = 0x00010005,
+        KEY_TEXTSTART = 0x00010006,
+        KEY_TEXTEND = 0x00010007,
+        KEY_DELETE = 0x00010008,
+        KEY_BACKSPACE = 8,
+        KEY_UNDO = 0x00010009,
+        KEY_REDO = 0x00010010,
+        KEY_INSERT = 0x00010011,
+        KEY_WORDLEFT = 0x00010012,
+        KEY_WORDRIGHT = 0x00010013,
+    };
+
+    /**
+     * \brief Delegate to implement stb_textedit callbacks
+     */
     class StbTextDelegate
     {
     public:
@@ -86,26 +112,6 @@ public:
         * \return character
         */
         virtual WideString::value_type GetCharAt(uint32 i) = 0;
-    };
-
-    enum CotrolKeys : uint32
-    {
-        KEY_SHIFT_MASK = 0x00020000,
-        KEY_LEFT = 0x00010000,
-        KEY_RIGHT = 0x00010001,
-        KEY_UP = 0x00010002,
-        KEY_DOWN = 0x00010003,
-        KEY_LINESTART = 0x00010004,
-        KEY_LINEEND = 0x00010005,
-        KEY_TEXTSTART = 0x00010006,
-        KEY_TEXTEND = 0x00010007,
-        KEY_DELETE = 0x00010008,
-        KEY_BACKSPACE = 8,
-        KEY_UNDO = 0x00010009,
-        KEY_REDO = 0x00010010,
-        KEY_INSERT = 0x00010011,
-        KEY_WORDLEFT = 0x00010012,
-        KEY_WORDRIGHT = 0x00010013,
     };
 
     /**
@@ -213,8 +219,13 @@ public:
 
 private:
     StbState* stb_state = nullptr; //!< Inner STB state structure ptr
-    StbTextDelegate* delegate = nullptr;
+    StbTextDelegate* delegate = nullptr; //!< Inner delegate to implement stb callbacks
 };
+
+inline StbTextEditBridge::StbTextDelegate* StbTextEditBridge::GetDelegate() const
+{
+    return delegate;
+}
 }
 
 #endif //__DAVA_UITEXTFIELDSTBBRIDGE_H__

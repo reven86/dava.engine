@@ -59,32 +59,28 @@ public:
 
     /**
      * \brief Clear system clipboard
+     * \return true if successful
      */
-    void ClearClipboard() const;
+    bool ClearClipboard() const;
+
+    /**
+     * \brief Check that system clipboard contains Unicode text
+     * \return true if system clipboard contains Unicode text
+     */
+    bool HasText() const;
 
     /**
      * \brief Copy to system clipboard WideString as Unicode string
      * \param[in] str input string
+     * \return true if successful
      */
-    void SetWideString(const WideString& str) const;
+    bool SetText(const WideString& str);
 
     /**
      * \brief Get from system clipboard Unicode text data as WideString
      * \return WideString with clipboard content
      */
-    WideString GetWideString() const;
-
-    /**
-     * \brief Copy to system clipboard String as ASCII/UTF-8 string
-     * \param[in] str input string
-     */
-    void SetString(const String& str) const;
-
-    /**
-     * \brief Get from system clipboard ASCII/UTF-8 text data as String
-     * \return String with clipboard contetn
-     */
-    String GetString() const;
+    WideString GetText() const;
 
 private:
     IClipboardImpl* pImpl;

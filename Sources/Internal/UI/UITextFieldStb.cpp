@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "Utils/UTF8Utils.h"
 
 #include <numeric>
 
@@ -298,8 +299,8 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->IntersectClipRect(clipRect);
 
-    auto& scale = d.scale;
-    auto& offset = d.GetUnrotatedRect().GetPosition();
+    const auto& scale = d.scale;
+    const auto& offset = d.GetUnrotatedRect().GetPosition();
 
     for (const auto& r : selectionRects)
     {
@@ -386,7 +387,8 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
     bool apply = true;
     if (delegate)
     {
-        apply = delegate->TextFieldKeyPressed(control, position, length, WideString());
+        WideString str;
+        apply = delegate->TextFieldKeyPressed(control, position, length, str);
     }
     if (apply)
     {
@@ -689,23 +691,15 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
 #if ENABLE_CLIPBOARD
         else if (currentInput->key == Key::KEY_X && isCtrl)
         {
-            auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
-            auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
-            auto selectedText = control->GetText().substr(selStart, selEnd - selStart);
-            Clipboard().SetWideString(selectedText);
-            stb->Cut();
+            CutToClipboard();
         }
         else if (currentInput->key == Key::KEY_C && isCtrl)
         {
-            auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
-            auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
-            auto selectedText = control->GetText().substr(selStart, selEnd - selStart);
-            Clipboard().SetWideString(selectedText);
+            CopyToClipboard();
         }
         else if (currentInput->key == Key::KEY_V && isCtrl)
         {
-            auto clipboardText = Clipboard().GetWideString();
-            stb->Paste(clipboardText);
+            PasteFromClipboard();
         }
 #endif
     }
@@ -729,11 +723,9 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
             stb->SendKey('\t'); // or SendKey(' '); 
         }
 #endif
-        // Send printable characters
+        // Send printable characters (include Font check)
         else if (iswprint(currentInput->keyChar)
-#if 1 // Check what symbol exists in font
                  && (control->GetFont() != nullptr && control->GetFont()->IsCharAvaliable(currentInput->keyChar))
-#endif
                  )
         {
             stb->SendKey(currentInput->keyChar);
@@ -751,5 +743,62 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
+}
+
+bool TextFieldStbImpl::CutToClipboard()
+{
+#if ENABLE_CLIPBOARD
+    auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    auto selectedText = control->GetText().substr(selStart, selEnd - selStart);
+    if (Clipboard().SetText(selectedText))
+    {
+        stb->Cut();
+        return true;
+    }
+#endif
+    return false;
+}
+
+bool TextFieldStbImpl::CopyToClipboard()
+{
+#if ENABLE_CLIPBOARD
+    auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    auto selectedText = control->GetText().substr(selStart, selEnd - selStart);
+#endif
+    return Clipboard().SetText(selectedText);
+}
+
+bool TextFieldStbImpl::PasteFromClipboard()
+{
+#if ENABLE_CLIPBOARD
+    auto font = control->GetFont();
+    // Can't paste any text without font
+    if (font != nullptr)
+    {
+        WideString clipText;
+        Clipboard clip;
+        if (clip.HasText())
+        {
+            clipText = clip.GetText();
+            // Remove not valid characters (include Font check)
+            clipText = StringUtils::RemoveNonPrintable(clipText);
+            StringUtils::RemoveEmoji(clipText);
+            clipText.erase(std::remove_if(clipText.begin(), clipText.end(), [font](WideString::value_type& ch)
+                                          {
+                                              return !font->IsCharAvaliable(ch);
+                                          }),
+                           clipText.end());
+
+            if (!clipText.empty())
+            {
+                stb->Paste(clipText);
+                return true;
+            }
+        }
+    }
+#endif
+    return false;
 }
 }

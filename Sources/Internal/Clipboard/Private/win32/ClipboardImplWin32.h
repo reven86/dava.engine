@@ -40,11 +40,10 @@ public:
     ClipboardImplWin32();
     ~ClipboardImplWin32() override;
     bool IsReadyToUse() const override;
-    void ClearClipboard() const override;
-    void SetWideString(const WideString& str) const override;
-    WideString GetWideString() const override;
-    void SetString(const String& str) const override;
-    String GetString() const override;
+    bool ClearClipboard() const override;
+    bool HasText() const override;
+    bool SetText(const WideString& str) override;
+    WideString GetText() const override;
 
 private:
     bool isReady = false;

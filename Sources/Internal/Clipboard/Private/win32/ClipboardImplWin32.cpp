@@ -30,6 +30,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <WinUser.h>
 
+#ifdef UNICODE
+#define TEXT_FORMAT CF_UNICODETEXT
+#else
+#define TEXT_FORMAT CF_TEXT
+#endif
+
 namespace DAVA
 {
 ClipboardImplWin32::ClipboardImplWin32()
@@ -50,75 +56,58 @@ bool ClipboardImplWin32::IsReadyToUse() const
     return isReady;
 }
 
-void ClipboardImplWin32::ClearClipboard() const
+bool ClipboardImplWin32::ClearClipboard() const
 {
     if (isReady)
     {
-        ::EmptyClipboard();
+        return ::EmptyClipboard() != 0;
     }
+    return false;
 }
 
-void ClipboardImplWin32::SetWideString(const WideString& str) const
+bool ClipboardImplWin32::HasText() const
+{
+    return ::IsClipboardFormatAvailable(TEXT_FORMAT) != 0;
+}
+
+bool ClipboardImplWin32::SetText(const WideString& str)
 {
     if (isReady)
     {
-        ClearClipboard();
         auto length = str.length();
         auto hglbCopy = ::GlobalAlloc(GMEM_MOVEABLE, (length + 1) * sizeof(WideString::value_type));
-        auto lptstrCopy = static_cast<LPWSTR>(::GlobalLock(hglbCopy));
-        Memcpy(lptstrCopy, str.c_str(), length * sizeof(WideString::value_type));
-        lptstrCopy[length] = static_cast<WideString::value_type>(0); // null character
-        ::GlobalUnlock(hglbCopy);
-        ::SetClipboardData(CF_UNICODETEXT, hglbCopy);
-    }
-}
-
-WideString ClipboardImplWin32::GetWideString() const
-{
-    WideString outPut;
-    if (isReady && ::IsClipboardFormatAvailable(CF_UNICODETEXT))
-    {
-        auto hglb = ::GetClipboardData(CF_UNICODETEXT);
-        if (hglb != nullptr)
+        if (hglbCopy != nullptr)
         {
-            auto lptstr = static_cast<LPWSTR>(::GlobalLock(hglb));
-            if (lptstr != NULL)
+            auto lptstrCopy = static_cast<LPWSTR>(::GlobalLock(hglbCopy));
+            if (lptstrCopy != nullptr)
             {
-                outPut = WideString(lptstr);
-                ::GlobalUnlock(hglb);
+                Memcpy(lptstrCopy, str.c_str(), length * sizeof(WideString::value_type));
+                lptstrCopy[length] = static_cast<WideString::value_type>(0); // null character
+                ::GlobalUnlock(hglbCopy);
+
+                ClearClipboard();
+                if (::SetClipboardData(TEXT_FORMAT, hglbCopy) != nullptr)
+                {
+                    return true;
+                }
             }
         }
     }
-    return outPut;
+    return false;
 }
 
-void ClipboardImplWin32::SetString(const String& str) const
+WideString ClipboardImplWin32::GetText() const
 {
-    if (isReady)
+    WideString outPut;
+    if (isReady && HasText())
     {
-        ClearClipboard();
-        auto length = str.length();
-        auto hglbCopy = ::GlobalAlloc(GMEM_MOVEABLE, (length + 1) * sizeof(WideString::value_type));
-        auto lptstrCopy = static_cast<LPSTR>(::GlobalLock(hglbCopy));
-        Memcpy(lptstrCopy, str.c_str(), length * sizeof(WideString::value_type));
-        lptstrCopy[length] = static_cast<WideString::value_type>(0); // null character
-        ::GlobalUnlock(hglbCopy);
-        ::SetClipboardData(CF_TEXT, hglbCopy);
-    }
-}
-
-String ClipboardImplWin32::GetString() const
-{
-    String outPut;
-    if (isReady && ::IsClipboardFormatAvailable(CF_TEXT))
-    {
-        auto hglb = ::GetClipboardData(CF_TEXT);
+        auto hglb = ::GetClipboardData(TEXT_FORMAT);
         if (hglb != nullptr)
         {
-            auto lptstr = static_cast<LPSTR>(::GlobalLock(hglb));
-            if (lptstr != NULL)
+            auto lptstr = static_cast<LPTSTR>(::GlobalLock(hglb));
+            if (lptstr != nullptr)
             {
-                outPut = String(lptstr);
+                outPut = WideString(lptstr);
                 ::GlobalUnlock(hglb);
             }
         }

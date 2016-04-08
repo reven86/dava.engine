@@ -49,6 +49,9 @@ inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int sta
         return;
 
     auto linesInfo = str->GetDelegate()->GetMultilineInfo();
+    if (linesInfo.empty())
+        return;
+
     auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [start](const DAVA::TextBlock::Line& l)
                                    {
                                        return l.offset == static_cast<DAVA::uint32>(start);
@@ -68,11 +71,11 @@ inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int sta
     {
         if (!linesInfo.empty() && lineInfoIt == linesInfo.begin())
         {
-            row->ymin = FLT_MIN;
+            row->ymin = std::numeric_limits<float>::lowest();
         }
         if (!linesInfo.empty() && lineInfoIt == linesInfo.end() - 1)
         {
-            row->ymax = FLT_MAX;
+            row->ymax = std::numeric_limits<float>::max();
         }
     }
 }
@@ -245,8 +248,4 @@ bool StbTextEditBridge::IsInsertMode() const
     return stb_state->insert_mode != 0;
 }
 
-StbTextEditBridge::StbTextDelegate* StbTextEditBridge::GetDelegate() const
-{
-    return delegate;
-}
 }

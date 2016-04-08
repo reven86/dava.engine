@@ -51,28 +51,24 @@ bool Clipboard::IsReadyToUse() const
     return pImpl->IsReadyToUse();
 }
 
-void Clipboard::ClearClipboard() const
+bool Clipboard::ClearClipboard() const
 {
-    pImpl->ClearClipboard();
+    return pImpl->ClearClipboard();
 }
 
-void Clipboard::SetWideString(const WideString& str) const
+bool Clipboard::HasText() const
 {
-    pImpl->SetWideString(str);
+    return pImpl->HasText();
 }
 
-WideString Clipboard::GetWideString() const
+bool Clipboard::SetText(const WideString& str)
 {
-    return pImpl->GetWideString();
+    return pImpl->SetText(str);
 }
 
-void Clipboard::SetString(const String& str) const
+WideString Clipboard::GetText() const
 {
-    pImpl->SetString(str);
+    return pImpl->GetText();
 }
 
-String Clipboard::GetString() const
-{
-    return pImpl->GetString();
-}
 }

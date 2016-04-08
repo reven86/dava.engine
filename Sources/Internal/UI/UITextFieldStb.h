@@ -92,11 +92,13 @@ public:
     int32 GetTextAlign();
     void SetRect(const Rect& rect);
     void SystemDraw(const UIGeometricData& d);
-
     void SetSelectionColor(const Color& selectionColor);
     const Color& GetSelectionColor() const;
-
     void Input(UIEvent* currentInput);
+
+    bool CutToClipboard();
+    bool CopyToClipboard();
+    bool PasteFromClipboard();
 
     // StbTextEditBridge::StbTextDelegate
     uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;

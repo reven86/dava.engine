@@ -52,32 +52,28 @@ public:
 
     /**
      * \brief Clear system clipboard
+     * \return true if successful 
      */
-    virtual void ClearClipboard() const = 0;
+    virtual bool ClearClipboard() const = 0;
+
+    /**
+     * \brief Check that system clipboard contains Unicode text
+     * \return true if system clipboard contains Unicode text
+     */
+    virtual bool HasText() const = 0;
 
     /**
      * \brief Copy to system clipboard WideString as Unicode string
      * \param[in] str input string
+     * \return true if successful
      */
-    virtual void SetWideString(const WideString& str) const = 0;
+    virtual bool SetText(const WideString& str) = 0;
 
     /**
      * \brief Get from system clipboard Unicode text data as WideString
      * \return WideString with clipboard content
      */
-    virtual WideString GetWideString() const = 0;
-
-    /**
-     * \brief Copy to system clipboard String as ASCII/UTF-8 string
-     * \param[in] str input string
-     */
-    virtual void SetString(const String& str) const = 0;
-
-    /**
-     * \brief Get from system clipboard ASCII/UTF-8 text data as String
-     * \return String with clipboard contetn
-     */
-    virtual String GetString() const = 0;
+    virtual WideString GetText() const = 0;
 };
 }
 
