@@ -43,7 +43,7 @@ void EnableHighResolutionTimer(bool enable)
 #if defined(__DAVAENGINE_WIN32__)
     timerServiceAvailable = true;
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    timerServiceAvailable = WinApiUAP::IsAvalible(WinApiUAP::SYSTEM_TIMER_SERVICE);
+    timerServiceAvailable = WinApiUAP::IsAvailable(WinApiUAP::SYSTEM_TIMER_SERVICE);
 #endif
 
     if (timerServiceAvailable)

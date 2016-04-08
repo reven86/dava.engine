@@ -54,7 +54,7 @@ enum eWinApiPart
 };
 
 void Initialize();
-bool IsAvalible(eWinApiPart);
+bool IsAvailable(eWinApiPart);
 }
 
 #endif

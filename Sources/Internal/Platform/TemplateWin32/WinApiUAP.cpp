@@ -69,7 +69,7 @@ void Initialize()
     }
 }
 
-bool IsAvalible(eWinApiPart part)
+bool IsAvailable(eWinApiPart part)
 {
     if (!initialized)
         return false;
@@ -85,7 +85,6 @@ bool IsAvalible(eWinApiPart part)
 
     return false;
 }
-
 }
 
 #endif
