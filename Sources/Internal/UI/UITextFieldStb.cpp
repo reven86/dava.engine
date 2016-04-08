@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/StringUtils.h"
 
 #include <numeric>
 
