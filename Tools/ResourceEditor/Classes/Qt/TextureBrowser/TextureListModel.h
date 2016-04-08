@@ -30,12 +30,15 @@
 #ifndef __TEXTURE_LIST_MODEL_H__
 #define __TEXTURE_LIST_MODEL_H__
 
-#include <QAbstractListModel>
-#include <QVector>
-
 #include "DAVAEngine.h"
+
+#include "Classes/Qt/Scene/SceneEditor2.h"
+
 #include "Scene/SceneHelper.h"
 #include "Scene/EntityGroup.h"
+
+#include <QAbstractListModel>
+#include <QVector>
 
 class TextureListModel : public QAbstractListModel
 {
@@ -53,7 +56,7 @@ public:
     TextureListModel(QObject* parent = 0);
     ~TextureListModel();
 
-    void setScene(DAVA::Scene* scene);
+    void setScene(SceneEditor2* scene);
     void setHighlight(const EntityGroup* nodes);
     void setFilter(QString filter);
     void setFilterBySelectedNode(bool enabled);
@@ -64,6 +67,7 @@ public:
 
     void dataReady(const DAVA::TextureDescriptor* descriptor);
 
+    QModelIndex getIndex(const DAVA::TextureDescriptor* texture);
     DAVA::Texture* getTexture(const QModelIndex& index) const;
     DAVA::Texture* getTexture(const DAVA::TextureDescriptor* descriptor) const;
     DAVA::TextureDescriptor* getDescriptor(const QModelIndex& index) const;
@@ -83,7 +87,7 @@ private:
     void clear();
     void applyFilterAndSort();
 
-    DAVA::Scene* activeScene;
+    SceneEditor2* activeScene;
 };
 
 struct SortFnByName
