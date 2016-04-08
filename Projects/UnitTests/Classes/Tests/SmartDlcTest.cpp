@@ -35,7 +35,7 @@ DAVA_TESTCLASS (SmartDlcTest)
     {
         using namespace DAVA;
 
-        FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/sqlite.db");
+        FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/test.db");
         FilePath folderWithDownloadedPacks("~res:/TestData/SmartDlcTest/packs/");
         String urlToServerWithPacks("http://wargaminguberserver.net/packs");
 
@@ -57,12 +57,13 @@ DAVA_TESTCLASS (SmartDlcTest)
 
         try
         {
-            sdlc.FindPack(fileNotInPack);
-            TEST_VERIFY(false && "we can't find not existing file");
+            SmartDlc::PackName packID = sdlc.FindPack(fileNotInPack);
+            TEST_VERIFY(packID.empty() && "no such file in any archive");
         }
         catch (std::exception& ex)
         {
-            TEST_VERIFY(ex.what() == String("can't open db file: \"~res:/Data/no_such_file_in_any_pack.txt\""));
+            Logger::Error("%s", ex.what());
+            TEST_VERIFY(false);
         }
 
         FilePath fileInPack("~res:/Data/exist.txt");
