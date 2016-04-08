@@ -26,8 +26,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_CLIPBOARDIMPLWIN32_H__
-#define __DAVAENGINE_CLIPBOARDIMPLWIN32_H__
+#ifndef __DAVAENGINE_CLIPBOARDIMPLSTUB_H__
+#define __DAVAENGINE_CLIPBOARDIMPLSTUB_H__
 
 #include "Base/BaseTypes.h"
 #include "Clipboard/Private/IClipboardImpl.h"
@@ -74,4 +74,4 @@ inline WideString ClipboardImplStub::GetText() const
 }
 }
 
-#endif //__DAVAENGINE_CLIPBOARDIMPLWIN32_H__
+#endif //__DAVAENGINE_CLIPBOARDIMPLSTUB_H__
