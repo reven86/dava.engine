@@ -486,6 +486,7 @@ void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect
 void TextFieldPlatformImpl::TextFieldKeyboardHidden()
 {
     textField->OnKeyboardHidden();
+    textField->StopEdit();
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
