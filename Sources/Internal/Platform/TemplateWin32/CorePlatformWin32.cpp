@@ -43,6 +43,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "Debug/Profiler.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 

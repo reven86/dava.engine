@@ -82,6 +82,8 @@ bool IsAvalible(eWinApiPart part)
     default:
         break;
     }
+
+    return false;
 }
 
 }
