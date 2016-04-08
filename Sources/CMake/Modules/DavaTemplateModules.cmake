@@ -41,7 +41,7 @@ macro( setup_main_module )
             GLOB_ERASE_FILES   ${ERASE_FILES}   ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
         )
 
-        if( IOS AND ${MODULE_TYPE} STREQUAL "DINAMIC" )
+        if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
             set( MODULE_TYPE "STATIC" )
         endif()
 
@@ -68,7 +68,7 @@ macro( setup_main_module )
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 append_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )
                 add_library( ${NAME_MODULE} STATIC  ${H_FILES}  ${CPP_FILES} )
-            elseif( ${MODULE_TYPE} STREQUAL "DINAMIC" )
+            elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
                # append_property( DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )
                 add_library( ${NAME_MODULE} SHARED  ${H_FILES}  ${CPP_FILES} )
             endif()

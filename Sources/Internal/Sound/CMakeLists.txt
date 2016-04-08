@@ -1,7 +1,7 @@
 
 set( NAME_MODULE Sound )
 
-set( MODULE_TYPE INLINE )#INLINE STATIC DINAMIC 
+set( MODULE_TYPE INLINE )#INLINE STATIC DYNAMIC 
 
 set( HPP_FILES                   *.h *.hpp            )
 set( CPP_FILES                   *.cpp                )
