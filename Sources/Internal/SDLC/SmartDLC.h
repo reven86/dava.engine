@@ -50,8 +50,6 @@ public:
 
         PackState(const PackName& name, Status state, float priority, float progress);
         PackState() = delete;
-        PackState(const PackState&) = delete;
-        PackState& operator=(const PackState&) = delete;
 
         PackName name; // уникальное имя пака
         Status state; // NotRequested default;
@@ -92,7 +90,7 @@ public:
     void DeletePack(const PackName& packID);
 
     // отслеживание статуса запросов
-    Signal<const PackName&, const PackState&> onPackStateChanged;
+    Signal<const PackState&> onPackStateChanged;
 
 private:
     std::unique_ptr<SmartDlcImpl> impl;

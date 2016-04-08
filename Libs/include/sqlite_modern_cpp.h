@@ -18,7 +18,8 @@
 
 namespace sqlite {
 
-	struct sqlite_exception: public std::runtime_error {
+	class sqlite_exception: public std::runtime_error {
+    public:
 		sqlite_exception(const char* msg):runtime_error(msg) {}
 	};
 
@@ -28,40 +29,41 @@ namespace sqlite {
 		//SQLITE_OK, SQLITE_NOTICE, SQLITE_WARNING, SQLITE_ROW, SQLITE_DONE
 		//
 		//Note these names are exact matches to the names of the SQLITE error codes.
-		class error: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class internal: public sqlite_exception{ using sqlite_exception::sqlite_exception; };
-		class perm: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class abort: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class busy: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class locked: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class nomem: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class readonly: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class interrupt: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class ioerr: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class corrupt: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class notfound: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class full: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class cantopen: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class protocol: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class empty: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class schema: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class toobig: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class constraint: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class mismatch: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class misuse: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class nolfs: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class auth: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class format: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class range: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class notadb: public sqlite_exception { using sqlite_exception::sqlite_exception; };
+		class error: public sqlite_exception { public: error(const char* msg):sqlite_exception(msg){}; };
+		class internal: public sqlite_exception{ public: internal(const char* msg) :sqlite_exception(msg) {}; };
+		class perm: public sqlite_exception { public: perm(const char* msg) :sqlite_exception(msg) {}; };
+		class abort: public sqlite_exception { public: abort(const char* msg) :sqlite_exception(msg) {}; };
+		class busy: public sqlite_exception { public: busy(const char* msg) :sqlite_exception(msg) {}; };
+		class locked: public sqlite_exception { public: locked(const char* msg) :sqlite_exception(msg) {}; };
+		class nomem: public sqlite_exception { public: nomem(const char* msg) :sqlite_exception(msg) {}; };
+		class readonly: public sqlite_exception { public: readonly(const char* msg) :sqlite_exception(msg) {}; };
+		class interrupt: public sqlite_exception { public: interrupt(const char* msg) :sqlite_exception(msg) {}; };
+		class ioerr: public sqlite_exception { public: ioerr(const char* msg) :sqlite_exception(msg) {}; };
+		class corrupt: public sqlite_exception { public: corrupt(const char* msg) :sqlite_exception(msg) {}; };
+		class notfound: public sqlite_exception { public: notfound(const char* msg) :sqlite_exception(msg) {}; };
+		class full: public sqlite_exception { public: full(const char* msg) :sqlite_exception(msg) {}; };
+		class cantopen: public sqlite_exception { public: cantopen(const char* msg) :sqlite_exception(msg) {}; };
+		class protocol: public sqlite_exception { public: protocol(const char* msg) :sqlite_exception(msg) {}; };
+		class empty: public sqlite_exception { public: empty(const char* msg) :sqlite_exception(msg) {}; };
+		class schema: public sqlite_exception { public: schema(const char* msg) :sqlite_exception(msg) {}; };
+		class toobig: public sqlite_exception { public: toobig(const char* msg) :sqlite_exception(msg) {}; };
+		class constraint: public sqlite_exception { public: constraint(const char* msg) :sqlite_exception(msg) {}; };
+		class mismatch: public sqlite_exception { public: mismatch(const char* msg) :sqlite_exception(msg) {}; };
+		class misuse: public sqlite_exception { public: misuse(const char* msg) :sqlite_exception(msg) {}; };
+		class nolfs: public sqlite_exception { public: nolfs(const char* msg) :sqlite_exception(msg) {}; };
+		class auth: public sqlite_exception { public: auth(const char* msg) :sqlite_exception(msg) {}; };
+		class format: public sqlite_exception { public: format(const char* msg) :sqlite_exception(msg) {}; };
+		class range: public sqlite_exception { public: range(const char* msg) :sqlite_exception(msg) {}; };
+		class notadb: public sqlite_exception { public: notadb(const char* msg) :sqlite_exception(msg) {}; };
 
 		//Some additional errors are here for the C++ interface
-		class more_rows: public sqlite_exception { using sqlite_exception::sqlite_exception; };
-		class no_rows: public sqlite_exception { using sqlite_exception::sqlite_exception; };
+		class more_rows: public sqlite_exception { public: more_rows(const char* msg) :sqlite_exception(msg) {}; };
+		class no_rows: public sqlite_exception { public: no_rows(const char* msg) :sqlite_exception(msg) {}; };
 
 		static void throw_sqlite_error(const int& error_code) {
-			if(error_code == SQLITE_ERROR) throw exceptions::error(sqlite3_errstr(error_code));
-			else if(error_code == SQLITE_INTERNAL) throw exceptions::internal  (sqlite3_errstr(error_code));
+            const char* err_str = sqlite3_errstr(error_code);
+            if (error_code == SQLITE_ERROR) throw exceptions::error(err_str);
+			else if(error_code == SQLITE_INTERNAL) throw exceptions::internal(sqlite3_errstr(error_code));
 			else if(error_code == SQLITE_PERM) throw exceptions::perm(sqlite3_errstr(error_code));
 			else if(error_code == SQLITE_ABORT) throw exceptions::abort(sqlite3_errstr(error_code));
 			else if(error_code == SQLITE_BUSY) throw exceptions::busy(sqlite3_errstr(error_code));
@@ -239,7 +241,7 @@ namespace sqlite {
 		database_binder(std::shared_ptr<sqlite3> db, std::string const & sql):
 			database_binder(db, std::u16string(sql.begin(), sql.end())) {}
 
-		~database_binder() noexcept(false) {
+		~database_binder()/* noexcept(false) */ {
 			/* Will be executed if no >>op is found, but not if an exception
 			is in mid flight */
 			if(!execution_started && !std::uncaught_exception()) {

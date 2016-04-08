@@ -31,6 +31,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+SmartDlc::PackState::PackState(const PackName& name, Status state, float priority, float progress)
+    : name(name)
+    , state(state)
+    , priority(priority)
+    , downloadProgress(progress)
+{
+}
+
 static bool PackCompare(const SmartDlc::PackState* lhs, SmartDlc::PackState* rhs)
 {
     return lhs->priority < rhs->priority;
@@ -78,11 +86,10 @@ public:
     }
     void UpdateCurrentDownload()
     {
-        // TODO
         if (currentDownload != nullptr)
         {
             DownloadManager* dm = DownloadManager::Instance();
-            DownloadStatus status = DownloadStatus::DL_UNKNOWN;
+            DownloadStatus status = DL_UNKNOWN;
             dm->GetStatus(downloadHandler, status);
             uint64 progress = 0;
             switch (status)
@@ -94,11 +101,25 @@ public:
                     if (dm->GetTotal(downloadHandler, total))
                     {
                         currentDownload->downloadProgress = static_cast<float>(progress) / total;
+                        // fire event on update progress
+                        sdlcPublic->onPackStateChanged.Emit(*currentDownload);
                     }
                 }
                 break;
             case DL_FINISHED:
-                // TODO implement it
+            {
+                // now mount archive
+                // validate it
+                FileSystem* fs = FileSystem::Instance();
+                FilePath archivePath = packsDB + currentDownload->name;
+                fs->Mount(archivePath, "Data");
+
+                currentDownload->state = SmartDlc::PackState::Mounted;
+                currentDownload = nullptr;
+                downloadHandler = 0;
+            }
+            break;
+            default:
                 break;
             }
         }
@@ -156,6 +177,7 @@ SmartDlc::SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const
     impl->packsDB = packsDB;
     impl->localPacksDir = localPacksDir;
     impl->remotePacksUrl = remotePacksUrl;
+    impl->sdlcPublic = this;
 
     // open DB and load packs state then mount all archives to FileSystem
     impl->packDB.reset(new PacksDB(packsDB));
@@ -231,10 +253,10 @@ Vector<SmartDlc::PackState*> SmartDlc::GetRequestedPacks() const
 void SmartDlc::DeletePack(const SmartDlc::PackName& packID)
 {
     auto& state = impl->GetPackState(packID);
-    if (state.state == SmartDlc::PackState::Mounted)
+    if (state.state == PackState::Mounted)
     {
         // first modify DB
-        state.state = SmartDlc::PackState::NotRequested;
+        state.state = PackState::NotRequested;
         state.priority = 0.5f;
         state.downloadProgress = 0.f;
 

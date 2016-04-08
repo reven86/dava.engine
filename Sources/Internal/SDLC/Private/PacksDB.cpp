@@ -88,7 +88,7 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
     String relativePath = relativeFilePath.GetRelativePathname("~res:/");
     data->db << "SELECT pack_name FROM files WHERE path=?;"
              << relativePath
-    >> [&](String packName)
+    >> [&](std::string packName)
     {
         result = std::move(packName);
     };
@@ -101,7 +101,7 @@ void PacksDB::GetAllPacksState(Vector<SmartDlc::PackState>& out) const
     out.clear();
 
     data->db << "SELECT name, status, priority, progress FROM packs;"
-    >> [&](String name, uint32 status, float priority, float progress)
+    >> [&](String name, int32 status, float32 priority, float32 progress)
     {
         auto stat = static_cast<SmartDlc::PackState::Status>(status);
         out.push_back(SmartDlc::PackState(name, stat, priority, progress));
