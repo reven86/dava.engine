@@ -225,11 +225,7 @@ void ShowFileInExplorer(const QString& path)
     args << "select POSIX file \"" + fileInfo.absoluteFilePath() + "\"";
     args << "-e";
     args << "end tell";
-    int returnCode = QProcess::execute("osascript", args);
-    if (returnCode < 0)
-    {
-        DAVA::Logger::Info("Show in folder fail. Error code : %d", returnCode);
-    }
+    QProcess::startDetached("osascript", args);
 #elif defined(Q_OS_WIN)
     QStringList args;
     args << "/select," << QDir::toNativeSeparators(fileInfo.absoluteFilePath());
