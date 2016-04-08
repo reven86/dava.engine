@@ -249,6 +249,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
 
 load_property( PROPERTY_LIST 
         DEFINITIONS
+        DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
         DEFINITIONS_${DAVA_PLATFORM_CURENT} 
         )
 if( DEFINITIONS )
@@ -257,6 +258,10 @@ endif()
 
 if( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
     add_definitions( ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} )
+endif()
+
+if( ANDROID )
+    list ( APPEND LIST_SHARED_LIBRARIES ${DINAMIC_LIBRARIES_ANDROID} )
 endif()
 
 include_directories      (.)

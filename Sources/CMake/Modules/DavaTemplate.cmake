@@ -108,6 +108,7 @@ endif()
 
 if( DAVA_FOUND )
     include_directories   ( ${DAVA_INCLUDE_DIR} )
+    include_directories   ( ${DAVA_ENGINE_DIR} )
     include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
