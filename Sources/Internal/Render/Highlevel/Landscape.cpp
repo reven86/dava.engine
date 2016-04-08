@@ -1125,7 +1125,7 @@ void Landscape::PrepareToRender(Camera* camera)
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
     {
-        subdivision->PrepareSubdivision(GetRenderSystem()->GetMainCamera(), worldTransform);
+        subdivision->PrepareSubdivision(camera, worldTransform);
     }
 
     switch (renderMode)
