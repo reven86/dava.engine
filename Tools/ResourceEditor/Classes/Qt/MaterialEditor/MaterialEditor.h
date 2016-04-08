@@ -89,14 +89,14 @@ protected:
     void SetCurMaterial(const QList<DAVA::NMaterial*>& materials);
 
     void FillBase();
-    void FillDynamic(QtPropertyData* root, const FastName& dynamicName);
+    void FillDynamic(QtPropertyData* root, const DAVA::FastName& dynamicName);
     void FillInvalidTextures();
     void FillIllumination();
     void FillTemplates(const QList<DAVA::NMaterial*>& materials);
     void FinishCreation();
 
-    void FillDynamicMember(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, const FastName& memberName);
-    void FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const FastName& memberName);
+    void FillDynamicMember(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, const DAVA::FastName& memberName);
+    void FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const DAVA::FastName& memberName);
     void FillDynamicMembers(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, bool isGlobal);
 
     void ApplyTextureValidator(QtPropertyDataInspDynamic* data);
@@ -152,7 +152,7 @@ private:
                                  DAVA::KeyedArchive* propertiesArchive) const;
 
     void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
-                                             DAVA::SerializationContext* context, uint32 options);
+                                             DAVA::SerializationContext* context, DAVA::uint32 options);
     void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
     void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
     void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
@@ -160,8 +160,8 @@ private:
 
     QtPropertyData* AddSection(const DAVA::FastName& sectionName);
 
-    void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
-    bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
+    void AddMaterialFlagIfNeed(DAVA::NMaterial* material, const DAVA::FastName& flagName);
+    bool HasMaterialProperty(DAVA::NMaterial* material, const DAVA::FastName& paramName);
 
     void UpdateTabs();
 

@@ -134,7 +134,7 @@ inline Entity* Component::GetEntity() const
     uint32 GetType() const override { return TYPE; }; \
     static const uint32 C_TYPE = TYPE; 
 
-#define MAKE_COMPONENT_MASK(x) (1ULL << static_cast<uint64>(x))
+#define MAKE_COMPONENT_MASK(x) (1ULL << static_cast<DAVA::uint64>(x))
 
 template <template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T>& container)

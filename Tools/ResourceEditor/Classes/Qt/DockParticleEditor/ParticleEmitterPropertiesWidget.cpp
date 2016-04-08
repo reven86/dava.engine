@@ -43,14 +43,14 @@ bool IsInnerEmitter(const DAVA::ParticleEffectComponent* effectComponent, const 
     if (effectComponent->GetEmitterId(emitterToCheck) != -1)
         return false;
 
-    for (int32 index = 0, size = effectComponent->GetEmittersCount(); index < size; ++index)
+    for (DAVA::int32 index = 0, size = effectComponent->GetEmittersCount(); index < size; ++index)
     {
-        ParticleEmitter* emitter = effectComponent->GetEmitter(index);
+        DAVA::ParticleEmitter* emitter = effectComponent->GetEmitter(index);
         if (emitter)
         {
-            for (const ParticleLayer* layer : emitter->layers)
+            for (const DAVA::ParticleLayer* layer : emitter->layers)
             {
-                if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES && layer->innerEmitter == emitterToCheck)
+                if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES && layer->innerEmitter == emitterToCheck)
                 {
                     return true;
                 }
@@ -63,10 +63,8 @@ bool IsInnerEmitter(const DAVA::ParticleEffectComponent* effectComponent, const 
 }
 
 ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : QWidget(parent)
+    , BaseParticleEditorContentWidget()
 {
     mainLayout = new QVBoxLayout();
     this->setLayout(mainLayout);
@@ -210,7 +208,7 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     DVASSERT(emitter != 0);
     DVASSERT(effect != 0);
 
-    Vector3 position;
+    DAVA::Vector3 position;
     position.x = positionXSpinBox->value();
     position.y = positionYSpinBox->value();
     position.z = positionZSpinBox->value();
@@ -234,41 +232,41 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     DVASSERT(emitter != 0);
 
     DVASSERT(emitterType->currentIndex() != -1);
-    ParticleEmitter::eType type = (ParticleEmitter::eType)emitterType->currentIndex();
+    DAVA::ParticleEmitter::eType type = static_cast<DAVA::ParticleEmitter::eType>(emitterType->currentIndex());
 
-    PropLineWrapper<float32> emissionRange;
+    DAVA::PropLineWrapper<DAVA::float32> emissionRange;
     if (!emitterEmissionRange->GetValue(0, emissionRange.GetPropsPtr()))
         return;
 
-    PropLineWrapper<Vector3> emissionVector;
+    DAVA::PropLineWrapper<DAVA::Vector3> emissionVector;
     if (!emitterEmissionVector->GetValues(emissionVector.GetPropsPtr()))
         return;
 
-    PropLineWrapper<float32> radius;
+    DAVA::PropLineWrapper<DAVA::float32> radius;
     if (!emitterRadius->GetValue(0, radius.GetPropsPtr()))
         return;
 
-    PropLineWrapper<Color> colorOverLife;
+    DAVA::PropLineWrapper<DAVA::Color> colorOverLife;
     if (!emitterColorWidget->GetValues(colorOverLife.GetPropsPtr()))
         return;
 
-    PropLineWrapper<Vector3> size;
+    DAVA::PropLineWrapper<DAVA::Vector3> size;
     if (!emitterSize->GetValues(size.GetPropsPtr()))
         return;
 
-    float32 life = emitterLife->value();
-    float32 currentLifeTime = emitter->lifeTime;
+    DAVA::float32 life = emitterLife->value();
+    DAVA::float32 currentLifeTime = emitter->lifeTime;
     bool initEmittersByDef = FLOAT_EQUAL(life, currentLifeTime) ? false : true;
 
     bool isShortEffect = shortEffectCheckBox->isChecked();
 
-    PropLineWrapper<float32> propAngle;
-    PropLineWrapper<float32> propAngleVariation;
+    DAVA::PropLineWrapper<DAVA::float32> propAngle;
+    DAVA::PropLineWrapper<DAVA::float32> propAngleVariation;
     emitterAngle->GetValue(0, propAngle.GetPropsPtr());
     emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 
     std::unique_ptr<CommandUpdateEmitter> commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(emitter);
-    commandUpdateEmitter->Init(FastName(emitterNameLineEdit->text().toStdString().c_str()),
+    commandUpdateEmitter->Init(DAVA::FastName(emitterNameLineEdit->text().toStdString().c_str()),
                                type,
                                emissionRange.GetPropLine(),
                                emissionVector.GetPropLine(),
@@ -300,7 +298,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
     shortEffectCheckBox->setChecked(emitter->shortEffect);
 
-    float32 emitterLifeTime = emitter->lifeTime;
+    DAVA::float32 emitterLifeTime = emitter->lifeTime;
 
     float minTime = 0.f;
     float minTimeLimit = 0.f;
@@ -315,7 +313,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     }
     else
     {
-        int32 emitterId = effect->GetEmitterId(emitter);
+        DAVA::int32 emitterId = effect->GetEmitterId(emitter);
         originalYamlPath = QString::fromStdString(effect->GetEmitterData(emitterId).originalFilepath.GetAbsolutePathname());
     }
 
@@ -324,8 +322,8 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
     emitterType->setCurrentIndex(emitter->emitterType);
 
-    int32 emitterId = effect->GetEmitterId(emitter);
-    Vector3 position = (emitterId == -1) ? Vector3(0, 0, 0) : effect->GetSpawnPosition(emitterId);
+    DAVA::int32 emitterId = effect->GetEmitterId(emitter);
+    DAVA::Vector3 position = (emitterId == -1) ? DAVA::Vector3(0, 0, 0) : effect->GetSpawnPosition(emitterId);
     positionXSpinBox->setValue((double)position.x);
     positionYSpinBox->setValue((double)position.y);
     positionZSpinBox->setValue((double)position.z);
@@ -336,7 +334,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
         maxTime = emitterEmissionRange->GetMaxBoundary();
     }
     emitterEmissionRange->Init(minTime, maxTime, minTimeLimit, maxTimeLimit, updateMinimize);
-    emitterEmissionRange->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->emissionRange)).GetProps(), Qt::blue, "emission range");
+    emitterEmissionRange->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(emitter->emissionRange)).GetProps(), Qt::blue, "emission range");
     emitterEmissionRange->SetMinLimits(EMISSION_RANGE_MIN_LIMIT_DEGREES);
     emitterEmissionRange->SetMaxLimits(EMISSION_RANGE_MAX_LIMIT_DEGREES);
     emitterEmissionRange->SetYLegendMark(DEGREE_MARK_CHARACTER);
@@ -347,15 +345,15 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
         maxTime = emitterEmissionVector->GetMaxBoundary();
     }
     emitterEmissionVector->Init(minTime, maxTime, minTimeLimit, maxTimeLimit, updateMinimize, true);
-    Vector<QColor> vectorColors;
+    DAVA::Vector<QColor> vectorColors;
     vectorColors.push_back(Qt::red);
     vectorColors.push_back(Qt::darkGreen);
     vectorColors.push_back(Qt::blue);
-    Vector<QString> vectorLegends;
+    DAVA::Vector<QString> vectorLegends;
     vectorLegends.push_back("emission vector: x");
     vectorLegends.push_back("emission vector: y");
     vectorLegends.push_back("emission vector: z");
-    emitterEmissionVector->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(emitter->emissionVector)).GetProps(), vectorColors, vectorLegends);
+    emitterEmissionVector->AddLines(DAVA::PropLineWrapper<DAVA::Vector3>(DAVA::PropertyLineHelper::GetValueLine(emitter->emissionVector)).GetProps(), vectorColors, vectorLegends);
 
     if (!needUpdateTimeLimits)
     {
@@ -363,7 +361,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
         maxTime = emitterRadius->GetMaxBoundary();
     }
     emitterRadius->Init(minTime, maxTime, minTimeLimit, maxTimeLimit, updateMinimize);
-    emitterRadius->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->radius)).GetProps(), Qt::blue, "radius");
+    emitterRadius->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(emitter->radius)).GetProps(), Qt::blue, "radius");
     // Radius cannot be negative.
     emitterRadius->SetMinLimits(0.0f);
 
@@ -373,12 +371,12 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
         maxTime = emitterAngle->GetMaxBoundary();
     }
     emitterAngle->Init(minTime, maxTime, minTimeLimit, maxTimeLimit, updateMinimize);
-    emitterAngle->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->emissionAngle)).GetProps(), Qt::blue, "emission angle base");
-    emitterAngle->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->emissionAngleVariation)).GetProps(), Qt::green, "emission angle spread");
+    emitterAngle->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(emitter->emissionAngle)).GetProps(), Qt::blue, "emission angle base");
+    emitterAngle->AddLine(1, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(emitter->emissionAngleVariation)).GetProps(), Qt::green, "emission angle spread");
     emitterAngle->SetYLegendMark(DEGREE_MARK_CHARACTER);
 
     emitterColorWidget->Init(0.f, emitterLifeTime, "color over life");
-    emitterColorWidget->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(emitter->colorOverLife)).GetProps());
+    emitterColorWidget->SetValues(DAVA::PropLineWrapper<DAVA::Color>(DAVA::PropertyLineHelper::GetValueLine(emitter->colorOverLife)).GetProps());
 
     if (!needUpdateTimeLimits)
     {
@@ -387,15 +385,15 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     }
     emitterSize->Init(minTime, maxTime, minTimeLimit, maxTimeLimit, updateMinimize, true);
     emitterSize->SetMinLimits(0);
-    Vector<QColor> sizeColors;
+    DAVA::Vector<QColor> sizeColors;
     sizeColors.push_back(Qt::red);
     sizeColors.push_back(Qt::darkGreen);
     sizeColors.push_back(Qt::blue);
-    Vector<QString> sizeLegends;
+    DAVA::Vector<QString> sizeLegends;
     sizeLegends.push_back("size: x");
     sizeLegends.push_back("size: y");
     sizeLegends.push_back("size: z");
-    emitterSize->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(emitter->size)).GetProps(), sizeColors, sizeLegends);
+    emitterSize->AddLines(DAVA::PropLineWrapper<DAVA::Vector3>(DAVA::PropertyLineHelper::GetValueLine(emitter->size)).GetProps(), sizeColors, sizeLegends);
     emitterSize->EnableLock(true);
 
     emitterLife->setValue(emitterLifeTime);
@@ -408,7 +406,7 @@ void ParticleEmitterPropertiesWidget::OnEmitterYamlPathChanged(const QString& ne
     UpdateTooltip();
 }
 
-void ParticleEmitterPropertiesWidget::RestoreVisualState(KeyedArchive* visualStateProps)
+void ParticleEmitterPropertiesWidget::RestoreVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
@@ -420,12 +418,12 @@ void ParticleEmitterPropertiesWidget::RestoreVisualState(KeyedArchive* visualSta
     emitterSize->SetVisualState(visualStateProps->GetArchive("EMITTER_SIZE_PROPS"));
 }
 
-void ParticleEmitterPropertiesWidget::StoreVisualState(KeyedArchive* visualStateProps)
+void ParticleEmitterPropertiesWidget::StoreVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
 
-    KeyedArchive* props = new KeyedArchive();
+    DAVA::KeyedArchive* props = new DAVA::KeyedArchive();
 
     props->DeleteAllKeys();
     emitterEmissionRange->GetVisualState(props);

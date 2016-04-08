@@ -276,10 +276,11 @@ void CorePlatformAndroid::KeyUp(int32 keyCode)
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnKeyUnpressed(static_cast<DAVA::Key>(keyCode));
+    keyboard.OnKeyUnpressed(keyEvent.key);
 }
 
 void CorePlatformAndroid::KeyDown(int32 keyCode)
@@ -291,10 +292,11 @@ void CorePlatformAndroid::KeyDown(int32 keyCode)
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnKeyPressed(static_cast<DAVA::Key>(keyCode));
+    keyboard.OnKeyPressed(keyEvent.key);
 }
 
 void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
@@ -323,6 +325,7 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
     newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
+    newEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
     InputSystem::Instance()->ProcessInputEvent(&newEvent);
@@ -338,7 +341,7 @@ void CorePlatformAndroid::OnGamepadTriggersAvailable(bool isAvailable)
     InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
 }
 
-void CorePlatformAndroid::OnInput(int32, int32, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs)
+void CorePlatformAndroid::OnInput(Vector<UIEvent>& allInputs)
 {
     DVASSERT(!allInputs.empty());
     if (!allInputs.empty())
