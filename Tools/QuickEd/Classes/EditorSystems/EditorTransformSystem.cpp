@@ -109,8 +109,6 @@ struct MagnetLine
 const float32 TRANSFORM_EPSILON = 0.0005f;
 } //namespace
 
-#include "Base/Introspection.h"
-
 EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {

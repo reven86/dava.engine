@@ -94,7 +94,7 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
     {
         if (!loadedPreferences->Load(defaultStorage))
         {
-            DVASSERT(false && "failed to load editor preferences from default storage");
+            DAVA::Logger::Error("failed to load editor preferences from default storage");
         }
     }
 
@@ -102,7 +102,7 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
     {
         if (!loadedPreferences->Load(localStorage))
         {
-            DVASSERT(false && "faild to load editor preferences from local storage");
+            DAVA::Logger::Error("faild to load editor preferences from local storage");
         }
     }
     //all preferences must be registered on app start

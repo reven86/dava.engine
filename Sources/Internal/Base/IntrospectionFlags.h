@@ -34,7 +34,7 @@
 
 namespace DAVA
 {
-enum eIntrospectionFlags
+enum eIntrospectionFlags : uint32
 {
     I_NONE = 0x00,
 
@@ -45,8 +45,6 @@ enum eIntrospectionFlags
     I_LOAD = 1 << 3, // this member should be loaded during serialization
 
     I_PREFERENCE = 1 << 4, // this member should be used as preference
-
-    I_ALL = 0xFFFFFFFF
 };
 };
 
