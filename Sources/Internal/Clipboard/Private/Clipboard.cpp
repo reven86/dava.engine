@@ -70,5 +70,4 @@ WideString Clipboard::GetText() const
 {
     return pImpl->GetText();
 }
-
 }

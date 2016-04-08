@@ -724,8 +724,8 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         }
 #endif
         // Send printable characters (include Font check)
-        else if (iswprint(currentInput->keyChar)
-                 && (control->GetFont() != nullptr && control->GetFont()->IsCharAvaliable(currentInput->keyChar))
+        else if (iswprint(static_cast<wint_t>(currentInput->keyChar))
+                 && (control->GetFont() != nullptr && control->GetFont()->IsCharAvaliable(static_cast<char16>(currentInput->keyChar)))
                  )
         {
             stb->SendKey(currentInput->keyChar);
@@ -787,7 +787,7 @@ bool TextFieldStbImpl::PasteFromClipboard()
             StringUtils::RemoveEmoji(clipText);
             clipText.erase(std::remove_if(clipText.begin(), clipText.end(), [font](WideString::value_type& ch)
                                           {
-                                              return !font->IsCharAvaliable(ch);
+                                              return !font->IsCharAvaliable(static_cast<char16>(ch));
                                           }),
                            clipText.end());
 

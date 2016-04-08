@@ -247,5 +247,4 @@ bool StbTextEditBridge::IsInsertMode() const
 {
     return stb_state->insert_mode != 0;
 }
-
 }
