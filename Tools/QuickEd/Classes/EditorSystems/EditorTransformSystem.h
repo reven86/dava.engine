@@ -26,15 +26,18 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+
 #ifndef __QUICKED_TRANSFORM_SYSTEM_H__
 #define __QUICKED_TRANSFORM_SYSTEM_H__
 
-#include "EditorSystems/BaseEditorSystem.h"
-#include "EditorSystems/EditorSystemsManager.h"
+
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 #include "UI/UIControl.h"
+#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
 #include <array>
+#include "EditorSystems/BaseEditorSystem.h"
+#include "EditorSystems/EditorSystemsManager.h"
 
 namespace DAVA
 {
@@ -42,7 +45,7 @@ class UIGeometricData;
 class UIControl;
 }
 
-class EditorTransformSystem final : public BaseEditorSystem
+class EditorTransformSystem : DAVA::InspBase, public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
@@ -103,6 +106,16 @@ private:
     AbstractProperty* positionProperty = nullptr;
     AbstractProperty* angleProperty = nullptr;
     AbstractProperty* pivotProperty = nullptr;
+
+    DAVA::Vector2 minimumSize;
+
+public:
+    INTROSPECTION(EditorTransformSystem,
+                  MEMBER(minimumSize, "minimumSize", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_PREFERENCE)
+                  )
+
+private:
+    REGISTER_PREFERENCES
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

@@ -34,17 +34,17 @@
 
 namespace DAVA
 {
-enum eIntrospectionFlags
+enum eIntrospectionFlags : uint32
 {
     I_NONE = 0x00,
 
-    I_VIEW = 0x01, // this member can be view by user
-    I_EDIT = 0x02, // this member can be edited by user
+    I_VIEW = 1 << 0, // this member can be view by user
+    I_EDIT = 1 << 1, // this member can be edited by user
 
-    I_SAVE = 0x04, // this member should be saved during serialization
-    I_LOAD = 0x08, // this member should be loaded during serialization
+    I_SAVE = 1 << 2, // this member should be saved during serialization
+    I_LOAD = 1 << 3, // this member should be loaded during serialization
 
-    I_ALL = 0xFFFFFFFF
+    I_PREFERENCE = 1 << 4, // this member should be used as preference
 };
 };
 

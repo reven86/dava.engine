@@ -36,6 +36,7 @@
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/EditorPreferences/PreferencesStorage.h"
 #include <QtGlobal>
 
 void InitPVRTexTool()
@@ -54,7 +55,11 @@ int main(int argc, char* argv[])
     DAVA::Core::Run(argc, argv);
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
-
+    const char* settingsPath = "QuickEdSettings.archive";
+    DAVA::FilePath defaultPreferencesPath(DAVA::String("~res:/") + settingsPath);
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::SetupStoragePath(defaultPreferencesPath, localPrefrencesPath);
+    PreferencesStorageWrapper prefWrapper;
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
@@ -69,6 +74,7 @@ int main(int argc, char* argv[])
         QObject::connect(&a, &QApplication::applicationStateChanged, [&qtLayer](Qt::ApplicationState state) {
             state == Qt::ApplicationActive ? qtLayer.OnResume() : qtLayer.OnSuspend();
         });
+
         InitPVRTexTool();
         {
             // Editor Settings might be used by any singleton below during initialization, so
