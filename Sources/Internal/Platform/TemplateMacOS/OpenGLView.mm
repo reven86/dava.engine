@@ -141,7 +141,7 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        float32& scale = DeviceInfo::GetScreenInfo().scale;
+        float32 scale = DeviceInfo::GetScreenInfo().scale;
         Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
         Core::Instance()->SetNativeView(self);
     }
