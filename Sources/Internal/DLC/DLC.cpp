@@ -759,6 +759,7 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
             switch (downloadError)
             {
             case DAVA::DLE_NO_ERROR:
+                Logger::InfoToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Downloaded succesfully.");
                 //we want to have this switch from DS_DOWNLOADING to DS_PATCHING when app is in background,
                 //that's why we call FSM() directly instead of using job in PostEvent()
                 FSM(EVENT_DOWNLOAD_OK);
@@ -774,12 +775,13 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
             case DAVA::DLE_FILE_ERROR:
                 // writing file problem
                 DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrno);
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error $d", dlcContext.lastErrno);
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastErrno);
                 PostError(DE_WRITE_ERROR);
                 break;
 
             default:
                 // some other unexpected error during download process
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Unexpected download error.");
                 PostError(DE_DOWNLOAD_ERROR);
                 break;
             }
@@ -809,6 +811,7 @@ void DLC::StepPatchBegin()
 
     // read number of available patches
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
+    patchReader.SetLogsFilePath(logsFilePath);
     if (patchReader.ReadFirst())
     {
         do
@@ -840,7 +843,6 @@ void DLC::StepPatchFinish()
         PostEvent(EVENT_PATCH_OK);
         break;
 
-    case PatchFileReader::ERROR_ORIG_READ:
     case PatchFileReader::ERROR_CANT_READ:
         PostError(DE_READ_ERROR);
         break;
@@ -878,8 +880,9 @@ void DLC::StepPatchCancel()
 
 void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
 {
+    Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
-
+    Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] PatchReader created");
     bool applySuccess = true;
     const PatchInfo* patchInfo = nullptr;
 
@@ -909,6 +912,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 // Patch will be applied only if it fit condition, specified by caller
                 if (conditionFn(patchInfo))
                 {
+                    //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Applying patch %d.", dlcContext.appliedPatchCount);
                     applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
                     if (applySuccess)
                     {
@@ -921,11 +925,14 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 {
                     if (truncate)
                     {
+                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Truncate");
                         patchReader.Truncate();
+                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadPrev");
                         patchReader.ReadPrev();
                     }
                     else
                     {
+                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadNext");
                         patchReader.ReadNext();
                     }
 

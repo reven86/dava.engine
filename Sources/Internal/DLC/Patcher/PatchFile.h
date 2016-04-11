@@ -80,6 +80,8 @@ public:
     PatchFileWriter(const FilePath& path, WriterMode mode, BSType diffType, bool beVerbose = false);
     ~PatchFileWriter();
 
+    void SetLogsFilePath(const FilePath& path);
+
     // TODO:
     // description
     bool Write(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
@@ -88,10 +90,16 @@ protected:
     bool SingleWrite(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
     void EnumerateDir(const FilePath& path, const FilePath& base, List<String>& in);
 
+    FilePath logFilePath = "";
     DAVA::FilePath patchPath;
     BSType diffType;
     bool verbose;
 };
+
+inline void PatchFileWriter::SetLogsFilePath(const DAVA::FilePath& path)
+{
+    logFilePath = path;
+}
 
 // ======================================================================================
 // class for reading/applying patch file
@@ -125,6 +133,7 @@ public:
 
     const PatchInfo* GetCurInfo() const;
 
+    void SetLogsFilePath(const FilePath& path);
     PatchError GetLastError() const;
     PatchError GetParseError() const;
     int32 GetErrno() const;
@@ -135,6 +144,7 @@ public:
 protected:
     File* patchFile;
     PatchInfo curInfo;
+    FilePath logFilePath;
     PatchError lastError;
     PatchError parseError;
     int32 curErrno;
@@ -149,6 +159,11 @@ protected:
     bool DoRead();
     bool ReadDataBack(void* data, uint32 size);
 };
+
+inline void PatchFileReader::SetLogsFilePath(const DAVA::FilePath& path)
+{
+    logFilePath = path;
+}
 }
 
 #endif // __DAVAENGINE_TOOLS_RESOURCE_PATCHER_H__
