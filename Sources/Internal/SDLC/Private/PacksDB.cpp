@@ -76,34 +76,35 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SDLC/Private/PacksDB.h"
 #include <sqlite_modern_cpp.h>
+#include "MemoryManager/MemoryManager.h"
 
 namespace DAVA
 {
-static void* MyMalloc(int32 size)
+static void* SqliteMalloc(int32 size)
 {
-    return ::malloc(size);
+    return MemoryManager::Instance()->Allocate(static_cast<size_t>(size), ALLOC_POOL_SQLITE);
 }
-static void MyFree(void* ptr)
+static void SqliteFree(void* ptr)
 {
-    ::free(ptr);
+    MemoryManager::Instance()->Deallocate(ptr);
 }
-static void* MyRealloc(void* ptr, int32 size)
+static void* SqliteRealloc(void* ptr, int32 size)
 {
-    return ::realloc(ptr, size);
+    return MemoryManager::Instance()->Reallocate(ptr, static_cast<size_t>(size));
 }
-static int32 MyMemSize(void* ptr)
+static int32 SqliteMemSize(void* ptr)
 {
-    return ::_msize(ptr);
+    return static_cast<int32>(MemoryManager::Instance()->MemorySize(ptr));
 }
-static int32 MyRoundUp(int32 size)
+static int32 SqliteRoundUp(int32 size)
 {
-    return size;
+    return size + (16 - (size & (16 - 1)));
 }
-static int32 MyMemInit(void* pAppData)
+static int32 SqliteMemInit(void* pAppData)
 {
     return 0;
 }
-static void MyMemShutdown(void* pAppData)
+static void SqliteMemShutdown(void* pAppData)
 {
     // do nothing
 }
@@ -114,13 +115,13 @@ public:
     PacksDBData(const String& dbPath)
     {
         sqlite3_mem_methods mem = {
-            &MyMalloc,
-            &MyFree,
-            &MyRealloc,
-            &MyMemSize,
-            &MyRoundUp,
-            &MyMemInit,
-            &MyMemShutdown
+            &SqliteMalloc,
+            &SqliteFree,
+            &SqliteRealloc,
+            &SqliteMemSize,
+            &SqliteRoundUp,
+            &SqliteMemInit,
+            &SqliteMemShutdown
         };
         int32 result = sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
         db.reset(new sqlite::database(dbPath));
@@ -167,13 +168,24 @@ void PacksDB::GetAllPacksState(Vector<SmartDlc::PackState>& out) const
 
 void PacksDB::UpdatePackState(const SmartDlc::PackState& state)
 {
-    data->GetDB() << "begin";
-    data->GetDB() << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?"
-                  << static_cast<int32>(state.state)
-                  << state.priority
-                  << state.downloadProgress
-                  << state.name;
-    data->GetDB() << "commit";
+    try
+    {
+        data->GetDB() << "begin;";
+
+        data->GetDB() << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?;"
+                      << static_cast<int32>(state.state)
+                      << state.priority
+                      << state.downloadProgress
+                      << state.name;
+
+        data->GetDB() << "commit;";
+    }
+    catch (std::exception&)
+    {
+        data->GetDB() << "rollback;";
+
+        throw; // rethrow current exception
+    }
 }
 
 } // end namespace DAVA

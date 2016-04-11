@@ -477,6 +477,21 @@ void MemoryManager::Deallocate(void* ptr)
     }
 }
 
+size_t MemoryManager::MemorySize(void* ptr)
+{
+    if (ptr != nullptr)
+    {
+        MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
+
+        bool isAccessible = IsMemoryAddressAccessible(block);
+        if (isAccessible && BLOCK_MARK == block->mark)
+        {
+            return block->allocByApp;
+        }
+    }
+    return MallocHook::MallocSize(ptr);
+}
+
 void* MemoryManager::InternalAllocate(size_t size)
 {
     const size_t totalSize = sizeof(InternalMemoryBlock) + size;

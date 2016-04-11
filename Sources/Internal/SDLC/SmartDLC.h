@@ -36,25 +36,25 @@ class SmartDlcImpl;
 class SmartDlc final
 {
 public:
-    using PackName = String;
 
     struct PackState
     {
         enum Status : uint32
         {
             NotRequested = 0, // не загружен на FS
-            Queued = 1, // поставлен в очередь на загрузку
+            Requested = 1, // поставлен в очередь на загрузку
             Downloading = 2, // загружается на FS
             Mounted = 3 // существует на FS и готов к использованию
         };
 
-        PackState(const PackName& name, Status state, float priority, float progress);
+        PackState(const String& name, Status state, float priority, float progress);
         PackState() = delete;
 
-        PackName name; // уникальное имя пака
+        String name; // уникальное имя пака
         Status state; // NotRequested default;
         float priority; // текущий приоритет закачки
         float downloadProgress; // from 0.0 to 1.0
+        bool isCrc32Valid;
     };
 
     // 1. открываю SQlite базу вычитываю всю инфу по пакам (в случае ошибки - исключение, продолжать загружать игру не возможно)
@@ -73,21 +73,21 @@ public:
     void Update();
 
     // получение имени пака по относительному имени файла внтутри пака (если файл не принадлежит ни одному паку исключение)
-    const PackName& FindPack(const FilePath& relativePathInPack) const;
+    const String& FindPack(const FilePath& relativePathInPack) const;
 
     // получение статуса пака (исключение если неверный айдишник пака?)
-    const PackState& GetPackState(const PackName& packID) const;
+    const PackState& GetPackState(const String& packID) const;
 
     // запрос пака или файла (запрос файла на самом деле
     // сделает запрос пака в котором этот файл находится)
-    const PackState& RequestPack(const PackName& packID, float priority = 0.5f);
+    const PackState& RequestPack(const String& packID, float priority = 0.5f);
 
-    // получение паков, находящихся в очереди
-    Vector<PackState*> GetRequestedPacks() const;
+    // получение всех паков их состояний
+    const Vector<PackState*>& GetAllState() const;
 
     // возможность освободить место на устройстве пользователя
     // удалив скаченный пак
-    void DeletePack(const PackName& packID);
+    void DeletePack(const String& packID);
 
     // отслеживание статуса запросов
     Signal<const PackState&> onPackStateChanged;

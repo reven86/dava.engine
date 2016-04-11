@@ -6,7 +6,7 @@ set( DAVA_DISABLE_AUTOTESTS true )
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
 if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
-    set ( DAVA_MEMORY_PROFILER 0 )
+    set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
 set          ( WARNINGS_AS_ERRORS true )

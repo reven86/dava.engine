@@ -55,31 +55,16 @@ DAVA_TESTCLASS (SmartDlcTest)
 
         FilePath fileNotInPack("~res:/Data/no_such_file_in_any_pack.txt");
 
-        try
-        {
-            SmartDlc::PackName packID = sdlc.FindPack(fileNotInPack);
-            TEST_VERIFY(packID.empty() && "no such file in any archive");
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("%s", ex.what());
-            TEST_VERIFY(false);
-        }
+        String packID = sdlc.FindPack(fileNotInPack);
+        TEST_VERIFY(packID.empty() && "no such file in any archive");
 
-        FilePath fileInPack("~res:/Data/exist.txt");
+        FilePath fileInPack("~res:/Data/TestData/Utf8Test/utf16le.txt");
 
-        SmartDlc::PackName packName;
+        String packName = sdlc.FindPack(fileInPack);
 
-        try
-        {
-            packName = sdlc.FindPack(fileInPack);
-        }
-        catch (std::exception&)
-        {
-            TEST_VERIFY(false && "should find file in pack");
-        }
+        TEST_VERIFY(!packName.empty() && "should find file in pack");
 
-        TEST_VERIFY(packName == SmartDlc::PackName("first.pak"));
+        TEST_VERIFY(packName == String("unit_test.pak"));
 
         try
         {
@@ -104,6 +89,7 @@ DAVA_TESTCLASS (SmartDlcTest)
             {
                 // wait
                 Thread::Sleep(500);
+                sdlc.Update();
                 Logger::Info("download progress: %d", static_cast<int32>(nextState.downloadProgress * 100));
             }
 

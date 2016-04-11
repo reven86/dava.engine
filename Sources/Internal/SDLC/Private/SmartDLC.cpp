@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-SmartDlc::PackState::PackState(const PackName& name, Status state, float priority, float progress)
+SmartDlc::PackState::PackState(const String& name, Status state, float priority, float progress)
     : name(name)
     , state(state)
     , priority(priority)
@@ -216,17 +216,17 @@ void SmartDlc::Update()
     }
 }
 
-const SmartDlc::PackName& SmartDlc::FindPack(const FilePath& relativePathInPack) const
+const String& SmartDlc::FindPack(const FilePath& relativePathInPack) const
 {
     return impl->packDB->FindPack(relativePathInPack);
 }
 
-const SmartDlc::PackState& SmartDlc::GetPackState(const PackName& packID) const
+const SmartDlc::PackState& SmartDlc::GetPackState(const String& packID) const
 {
     return impl->GetPackState(packID);
 }
 
-const SmartDlc::PackState& SmartDlc::RequestPack(const PackName& packID, float priority)
+const SmartDlc::PackState& SmartDlc::RequestPack(const String& packID, float priority)
 {
     priority = std::max(0.f, priority);
     priority = std::min(1.f, priority);
@@ -245,12 +245,22 @@ const SmartDlc::PackState& SmartDlc::RequestPack(const PackName& packID, float p
     return packState;
 }
 
-Vector<SmartDlc::PackState*> SmartDlc::GetRequestedPacks() const
+const Vector<SmartDlc::PackState*>& SmartDlc::GetAllState() const
 {
-    return impl->queue;
+    static Vector<SmartDlc::PackState*> allState;
+
+    allState.clear();
+    allState.reserve(impl->packs.size());
+
+    for (auto& state : impl->packs)
+    {
+        allState.push_back(&state);
+    }
+
+    return allState;
 }
 
-void SmartDlc::DeletePack(const SmartDlc::PackName& packID)
+void SmartDlc::DeletePack(const String& packID)
 {
     auto& state = impl->GetPackState(packID);
     if (state.state == PackState::Mounted)
