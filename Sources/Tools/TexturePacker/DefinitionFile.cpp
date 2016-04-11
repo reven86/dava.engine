@@ -247,12 +247,13 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Warning("| %s", psdName);
             Logger::Warning("=================================================================");
         }
+
         if (layer.visible == false)
         {
-            Logger::Error("============================ WARNING ============================");
-            Logger::Error("| File contains invisible layer %d (%s)", lIndex, layerName.c_str());
-            Logger::Error("| %s", psdName);
-            Logger::Error("=================================================================");
+            // Logger::Warning("============================ WARNING ============================");
+            // Logger::Warning("| File contains invisible layer %d (%s)", lIndex, layerName.c_str());
+            // Logger::Warning("| %s", psdName);
+            // Logger::Warning("=================================================================");
         }
 
         frameNames[lIndex] = useLayerNames && !layerName.empty() ? layerName : DAVA::Format("frame%d", lIndex);
