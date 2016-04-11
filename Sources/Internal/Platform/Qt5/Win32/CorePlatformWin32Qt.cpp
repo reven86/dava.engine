@@ -41,22 +41,7 @@ namespace DAVA
 {
 void CoreWin32PlatformQt::InitArgs()
 {
-    int argc = 0;
-    LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
-
-    if (argc > 0 && NULL != szArglist)
-    {
-        Vector<String> args;
-        args.reserve(argc);
-        for (int i = 0; i < argc; ++i)
-        {
-            args.emplace_back(WStringToString(szArglist[i]));
-        }
-
-        SetCommandLine(std::move(args));
-    }
-
-    ::LocalFree(szArglist);
+    SetCommandLine(GetCommandLineArgs());
 }
 
 void CoreWin32PlatformQt::Quit()

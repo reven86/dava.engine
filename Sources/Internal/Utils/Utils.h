@@ -38,6 +38,7 @@
 #include "FileSystem/FilePath.h"
 #include "Render/RenderBase.h"
 #include <sstream>
+#include "shellapi.h"
 
 #ifdef __DAVAENGINE_WIN_UAP__
 #include <ppltasks.h>
@@ -207,6 +208,9 @@ T WaitAsync(Windows::Foundation::IAsyncOperation<T> ^ async_operation)
     return concurrency::create_task(async_operation).get();
 }
 #endif
+#ifdef __DAVAENGINE_WIN32__
+Vector<String> GetCommandLineArgs();
+#endif // __DAVAENGINE_WIN32__
 };
 
 #endif // __DAVAENGINE_UTILS_H__
