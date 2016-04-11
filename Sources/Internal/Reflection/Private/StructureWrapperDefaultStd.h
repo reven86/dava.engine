@@ -1,5 +1,5 @@
 #pragma once
-#include "StructureWrapperDefault.h"
+#include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA
 {

@@ -5,13 +5,13 @@
 #include <vector>
 
 #include "Base/Any.h"
-#include "ReflectedObject.h"
-#include "ReflectionVirt.h"
+#include "Reflection/ReflectedObject.h"
+#include "Reflection/ReflectionVirt.h"
 
-#define DAVA_DECLARE_VIRTUAL_REFLECTION(T)                                          \
+#define DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION                                        \
     const DAVA::ReflectionDB* GetVirtualReflectionDB() const override               \
     {                                                                               \
-        return DAVA::ReflectionDB::GetGlobalDB<T>();                                \
+        return DAVA::Ref::AutoGetReflectionDB(this);                                \
     }
 
 namespace DAVA
@@ -37,6 +37,8 @@ public:
         , db(db_)
     {
     }
+
+    void Dump(std::ostream& stream);
 
     bool IsValid() const;
     bool IsReadonly() const;

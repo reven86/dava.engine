@@ -1,16 +1,17 @@
 #pragma once
-#include "Reflection/Private/ValueWrapperDefault.h"
+#include "Functional/Function.h"
+#include "Reflection/ReflectionWrappers.h"
 
 namespace DAVA
 {
-template <typename GetT, typename SetT, typename C>
-class ValueWrapperClassFn : public ValueWrapper
+template <typename GetT, typename SetT>
+class ValueWrapperFn : public ValueWrapper
 {
-    using Getter = GetT (C::*)();
-    using Setter = void (C::*)(SetT);
+    using Getter = Function<GetT()>;
+    using Setter = Function<void(SetT)>;
 
 public:
-    ValueWrapperClassFn(Getter getter_, Setter setter_ = nullptr)
+    ValueWrapperFn(Getter getter_, Setter setter_ = nullptr)
         : ValueWrapper()
         , getter(getter_)
         , setter(setter_)
@@ -31,10 +32,8 @@ public:
     {
         using UnrefGetT = typename std::remove_reference<GetT>::type;
 
-        C* cls = object.GetPtr<C>();
-
         Any ret;
-        UnrefGetT v = (cls->*getter)();
+        UnrefGetT v = getter();
         ret.Set(std::move(v));
         return ret;
     }
@@ -47,10 +46,8 @@ public:
 
         if (nullptr != setter)
         {
-            C* cls = object.GetPtr<C>();
-
             const SetT& v = value.Get<UnrefSetT>();
-            (cls->*setter)(v);
+            setter(v);
 
             ret = true;
         }
@@ -78,14 +75,12 @@ private:
 
     inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::true_type /* is_pointer */, std::false_type /* is_reference */) const
     {
-        C* cls = object.GetPtr<C>();
-        return ReflectedObject((cls->*getter)());
+        return ReflectedObject(getter());
     }
 
     inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::false_type /* is_pointer */, std::true_type /* is_reference */) const
     {
-        C* cls = object.GetPtr<C>();
-        GetT v = (cls->*getter)();
+        GetT v = getter();
         return ReflectedObject(&v);
     }
 };

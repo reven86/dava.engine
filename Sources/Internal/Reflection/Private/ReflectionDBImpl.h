@@ -1,13 +1,22 @@
 #pragma once
 
 #ifndef DAVA_REFLECTION_DB__H
-#include "../ReflectionDB.h"
+#include "Reflection/ReflectionDB.h"
 #endif
 
-#include "../ReflectionWrappersDefault.h"
+#include "Reflection/ReflectionWrappersDefault.h"
 
 namespace DAVA
 {
+namespace Ref
+{
+template <typename T>
+static const ReflectionDB* AutoGetReflectionDB(const T* this_)
+{
+    return ReflectionDB::GetGlobalDB<T>();
+}
+} // namespace Ref
+
 template <typename T>
 const ReflectionDB* ReflectionDB::GetGlobalDB()
 {
@@ -51,7 +60,7 @@ ReflectionDB* ReflectionDB::EditGlobalDB()
 }
 
 template <typename B, typename D>
-static void ReflectionDB::RegisterBaseClass()
+void ReflectionDB::RegisterBaseClass()
 {
     static_assert(std::is_base_of<B, D>::value, "D should be derived from B");
     Type::Instance<D>()->baseTypes.insert(Type::Instance<B>());

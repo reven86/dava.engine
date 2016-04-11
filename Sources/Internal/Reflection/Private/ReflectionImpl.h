@@ -1,11 +1,11 @@
 #pragma once
 
 #ifndef DAVA_REFLECTION__H
-#include "../Reflection.h"
+#include "Reflection/Reflection.h"
 #endif
 
-#include "../ReflectionWrappers.h"
-#include "../ReflectionDB.h"
+#include "Reflection/ReflectionWrappers.h"
+#include "Reflection/ReflectionDB.h"
 
 namespace DAVA
 {

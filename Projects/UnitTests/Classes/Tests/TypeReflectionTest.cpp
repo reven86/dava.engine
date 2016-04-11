@@ -24,7 +24,9 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+=====================================================================================*/\
+
+#include <iostream>
 
 #include "Base/Result.h"
 #include "Reflection/Reflection.h"
@@ -49,9 +51,9 @@ struct SimpleStruct
     int b = 1024;
 };
 
-class BaseBase : public VirtualReflectionDB
+class BaseBase : public VirtualReflection
 {
-    DAVA_DECLARE_VIRTUAL_REFLECTION(BaseBase)
+    DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION;
 
 public:
     int basebase = 99;
@@ -60,7 +62,7 @@ public:
 class TestBaseClass : public BaseBase
 {
     DAVA_DECLARE_TYPE_INITIALIZER;
-    DAVA_DECLARE_VIRTUAL_REFLECTION(TestBaseClass)
+    DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION;
 
 public:
     enum TestEnum
@@ -229,140 +231,13 @@ DAVA_TYPE_INITIALIZER(TestBaseClass)
     .Field("GetCustomPtrConstFn", &TestBaseClass::GetCustomPtrConstFn, nullptr)
     .Field("GetEnum", &TestBaseClass::GetEnum, &TestBaseClass::SetEnum)
     .Field("GetGetEnumAsInt", &TestBaseClass::GetEnumAsInt, &TestBaseClass::SetEnumRef)
+    .Field("Lambda", Function<int()>([]() { return 1088; }), nullptr)
     .End();
 
     ReflectionRegistrator<SimpleStruct>::Begin()
     .Field("a", &SimpleStruct::a)
     .Field("b", &SimpleStruct::b)
     .End();
-}
-
-struct type_printer
-{
-    const DAVA::Type* type;
-    void (*print)(char* buf, size_t bufsz, const DAVA::Any& any);
-};
-
-type_printer* get_type_printer(const DAVA::Type* type)
-{
-    static type_printer pointer_printer = { DAVA::Type::Instance<void*>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { sprintf(buf, "0x%p", any.Get<void*>()); } };
-
-    static std::vector<type_printer> printers = {
-        { DAVA::Type::Instance<int>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%d", any.Get<int>()); } },
-        { DAVA::Type::Instance<size_t>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%llu", static_cast<uint64_t>(any.Get<size_t>())); } },
-        { DAVA::Type::Instance<std::string>(), [](char* buf, size_t bufsz, const DAVA::Any& any) { Snprintf(buf, bufsz, "%s", any.Get<std::string>().c_str()); } }
-    };
-
-    type_printer* ret = nullptr;
-
-    if (nullptr != type)
-    {
-        if (type->IsPointer())
-        {
-            ret = &pointer_printer;
-        }
-        else
-        {
-            for (size_t i = 0; i < printers.size(); ++i)
-            {
-                if (printers[i].type == type || printers[i].type == type->Decay())
-                {
-                    ret = &printers[i];
-                    break;
-                }
-            }
-        }
-    }
-
-    return ret;
-}
-
-void print_name_value(const char* name, const char* value, int level)
-{
-    static char buf[1024];
-
-    int n = 0;
-    for (int i = 0; i < level; ++i)
-    {
-        n += Snprintf(buf + n, sizeof(buf) - n, "  ");
-    }
-
-    if (nullptr != name)
-    {
-        n += Snprintf(buf + n, sizeof(buf) - n, "%s", name);
-    }
-
-    for (int i = n; i < 40; ++i)
-    {
-        n += Snprintf(buf + n, sizeof(buf) - n, " ");
-    }
-
-    n += Snprintf(buf + n, sizeof(buf) - n, " : ");
-
-    if (nullptr != value)
-    {
-        n += Snprintf(buf + n, sizeof(buf) - n, "%s", value);
-    }
-
-    //sprintf(buf + n, "\n");
-    Logger::Info("%s", buf);
-}
-
-const char* anytostr(const DAVA::Any& any)
-{
-    static char buf[1024];
-    buf[0] = 0;
-
-    const DAVA::Type* anytype = any.GetType();
-    type_printer* printer = get_type_printer(anytype);
-
-    if (nullptr != printer)
-    {
-        printer->print(buf, sizeof(buf), any);
-    }
-    else
-    {
-        sprintf(buf, "??? (%.25s)", anytype->GetName());
-    }
-
-    return buf;
-}
-
-const char* reftostr(const DAVA::Reflection& ref)
-{
-    const DAVA::Type* type = ref.GetValueType();
-    type_printer* printer = get_type_printer(type);
-
-    const char* ret = nullptr;
-    if (nullptr != printer && ref.IsValid())
-    {
-        ret = anytostr(ref.GetValue());
-    }
-    else
-    {
-        static char buf[1024];
-        sprintf(buf, "??? (%.25s)", type->GetName());
-        ret = buf;
-    }
-
-    return ret;
-}
-
-void dumpref(const std::string& name, const DAVA::Reflection& ref, int level)
-{
-    print_name_value(name.c_str(), reftostr(ref), level);
-
-    DAVA::ReflectedObject vobject = ref.GetValueObject();
-    const DAVA::StructureWrapper* structWrapper = ref.GetStructure();
-    if (structWrapper != nullptr)
-    {
-        DAVA::Ref::FieldsList fields = structWrapper->GetFields(vobject);
-
-        for (size_t i = 0; i < fields.size(); ++i)
-        {
-            dumpref(anytostr(fields[i].key), fields[i].valueRef, level + 1);
-        }
-    }
 }
 
 DAVA_TESTCLASS (TypeReflection)
@@ -374,7 +249,7 @@ DAVA_TESTCLASS (TypeReflection)
         TestBaseClass t;
         Reflection t_ref = Reflection::Reflect(&t);
 
-        dumpref("t", t_ref, 0);
+        t_ref.Dump(std::cout);
     }
 
     DAVA_TEST (CtorDtorTest)

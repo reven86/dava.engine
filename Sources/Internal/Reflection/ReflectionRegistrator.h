@@ -1,14 +1,16 @@
-#include "ReflectionWrappersDefault.h"
-#include "Private/StructureWrapperClass.h"
-#include "Private/ValueWrapperStatic.h"
-#include "Private/ValueWrapperStaticFn.h"
-#include "Private/ValueWrapperClass.h"
-#include "Private/ValueWrapperClassFn.h"
-#include "Private/CtorWrapperDefault.h"
-#include "Private/DtorWrapperDefault.h"
-
 #include <cassert>
 #include <tuple>
+
+#include "Functional/Function.h"
+#include "Reflection/ReflectionWrappersDefault.h"
+#include "Reflection/Private/StructureWrapperClass.h"
+#include "Reflection/Private/ValueWrapperStatic.h"
+#include "Reflection/Private/ValueWrapperStaticFn.h"
+#include "Reflection/Private/ValueWrapperFn.h"
+#include "Reflection/Private/ValueWrapperClass.h"
+#include "Reflection/Private/ValueWrapperClassFn.h"
+#include "Reflection/Private/CtorWrapperDefault.h"
+#include "Reflection/Private/DtorWrapperDefault.h"
 
 namespace DAVA
 {
@@ -74,9 +76,9 @@ struct ReflectionRegistrator
     ReflectionRegistrator& Field(const char* name, GetT (*getter)(), std::nullptr_t)
     {
         using SetT = typename std::remove_reference<GetT>::type;
-        auto valueWrapper = std::make_unique<ValueWrapperStaticFn<GetT, SetT>>(getter, nullptr);
-        childrenWrapper->AddFieldFn<GetT>(name, std::move(valueWrapper));
-        return *this;
+        using SetFn = void (*)(SetT);
+
+        return Field(name, getter, static_cast<SetFn>(nullptr));
     }
 
     template <typename GetT, typename SetT>
@@ -91,19 +93,27 @@ struct ReflectionRegistrator
     ReflectionRegistrator& Field(const char* name, GetT (C::*getter)(), std::nullptr_t)
     {
         using SetT = typename std::remove_reference<GetT>::type;
-        auto valueWrapper = std::make_unique<ValueWrapperClassFn<GetT, SetT, C>>(getter, nullptr);
-        childrenWrapper->AddFieldFn<GetT>(name, std::move(valueWrapper));
-        return *this;
+        using SetFn = void (C::*)(SetT);
+
+        return Field(name, getter, static_cast<SetFn>(nullptr));
     }
 
     template <typename GetT>
     ReflectionRegistrator& Field(const char* name, GetT (C::*getter)() const, std::nullptr_t)
     {
         using SetT = typename std::remove_reference<GetT>::type;
-        using GetterT = GetT (C::*)();
-        auto valueWrapper = std::make_unique<ValueWrapperClassFn<GetT, SetT, C>>(reinterpret_cast<GetterT>(getter), nullptr);
-        childrenWrapper->AddFieldFn<GetT>(name, std::move(valueWrapper));
-        return *this;
+        using GetFn = GetT (C::*)();
+        using SetFn = void (C::*)(SetT);
+
+        return Field(name, reinterpret_cast<GetFn>(getter), static_cast<SetFn>(nullptr));
+    }
+
+    template <typename GetT, typename SetT>
+    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)() const, void (C::*setter)(SetT))
+    {
+        using GetFn = GetT (C::*)();
+
+        return Field(name, reinterpret_cast<GetFn>(getter), setter);
     }
 
     template <typename GetT, typename SetT>
@@ -114,11 +124,19 @@ struct ReflectionRegistrator
         return *this;
     }
 
-    template <typename GetT, typename SetT>
-    ReflectionRegistrator& Field(const char* name, GetT (C::*getter)() const, void (C::*setter)(SetT))
+    template <typename GetT>
+    ReflectionRegistrator& Field(const char* name, const Function<GetT()>& getter, std::nullptr_t)
     {
-        using GetterT = GetT (C::*)();
-        auto valueWrapper = std::make_unique<ValueWrapperClassFn<GetT, SetT, C>>(reinterpret_cast<GetterT>(getter), setter);
+        using SetT = typename std::remove_reference<GetT>::type;
+        using SetFn = Function<void(SetT)>;
+
+        return Field(name, getter, SetFn());
+    }
+
+    template <typename GetT, typename SetT>
+    ReflectionRegistrator& Field(const char* name, const Function<GetT()>& getter, const Function<void(SetT)>& setter)
+    {
+        auto valueWrapper = std::make_unique<ValueWrapperFn<GetT, SetT>>(getter, setter);
         childrenWrapper->AddFieldFn<GetT>(name, std::move(valueWrapper));
         return *this;
     }

@@ -1,5 +1,5 @@
-#include "../Reflection.h"
-#include "../ReflectionDB.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionDB.h"
 
 namespace DAVA
 {

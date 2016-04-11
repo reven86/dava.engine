@@ -1,7 +1,7 @@
 #pragma once
-#include "Base/Type.h"
-
 #include <map>
+
+#include "Base/Type.h"
 
 namespace DAVA
 {

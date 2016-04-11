@@ -1,4 +1,4 @@
-#include "StructureWrapperClass.h"
+#include "Reflection/Private/StructureWrapperClass.h"
 
 namespace DAVA
 {

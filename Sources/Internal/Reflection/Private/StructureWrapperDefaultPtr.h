@@ -1,6 +1,6 @@
 #pragma once
-#include "../ReflectionDB.h"
-#include "StructureWrapperDefault.h"
+#include "Reflection/ReflectionDB.h"
+#include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA
 {

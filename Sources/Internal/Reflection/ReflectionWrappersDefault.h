@@ -1,5 +1,5 @@
 #pragma once
-#include "Private/ValueWrapperDefault.h"
-#include "Private/StructureWrapperDefault.h"
-#include "Private/StructureWrapperDefaultPtr.h"
-#include "Private/StructureWrapperDefaultStd.h"
+#include "Reflection/Private/ValueWrapperDefault.h"
+#include "Reflection/Private/StructureWrapperDefault.h"
+#include "Reflection/Private/StructureWrapperDefaultPtr.h"
+#include "Reflection/Private/StructureWrapperDefaultStd.h"

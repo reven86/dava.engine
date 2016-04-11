@@ -1,6 +1,6 @@
 #pragma once
-#include "../Reflection.h"
-#include "../ReflectionWrappers.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionWrappers.h"
 
 namespace DAVA
 {

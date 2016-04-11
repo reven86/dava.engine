@@ -1,9 +1,9 @@
 #pragma once
-#include "Base/Any.h"
-#include "Reflection.h"
-#include "ReflectedObject.h"
-
 #include <vector>
+
+#include "Base/Any.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedObject.h"
 
 namespace DAVA
 {
