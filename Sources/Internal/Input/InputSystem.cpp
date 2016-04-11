@@ -42,7 +42,8 @@ InputSystem::InputSystem()
 {
     keyboard = new KeyboardDevice();
     gamepad = new GamepadDevice();
-    mouseCapture = new MouseCapture();
+    //     mouseCapture = new MouseCapture();
+    mouseCapture = std::make_unique<MouseCapture>();
     AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }

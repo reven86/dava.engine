@@ -142,7 +142,7 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        float32& scale = DeviceInfo::GetScreenInfo().scale;
+        float32 scale = DeviceInfo::GetScreenInfo().scale;
         Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
         Core::Instance()->SetNativeView(self);
     }
@@ -311,17 +311,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
-    NSEventType type = [touch type];
-    switch (type)
-    {
-    case NSMouseMoved:
-    case NSLeftMouseDragged:
-    case NSRightMouseDragged:
-    case NSOtherMouseDragged:
-        break;
-    default:
-        break;
-    }
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];

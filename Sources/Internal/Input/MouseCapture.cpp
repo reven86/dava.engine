@@ -104,7 +104,7 @@ eMouseCaptureMode MouseCapture::GetMode() const
     return context->mode;
 }
 
-void MouseCapture::OnFocused(const bool isFocused)
+void MouseCapture::OnFocused(bool isFocused)
 {
     if (context->focused != isFocused)
     {

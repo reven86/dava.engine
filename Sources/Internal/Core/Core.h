@@ -268,7 +268,7 @@ public:
     void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
 
     rhi::InitParam rendererParams;
-    Signal<const bool> focusChanged;
+    Signal<bool> focusChanged;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -304,7 +304,6 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-    bool focused = false;
 };
 
 inline bool Core::IsActive()

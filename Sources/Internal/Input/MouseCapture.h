@@ -48,7 +48,7 @@ public:
     bool SkipEvents(const class UIEvent* const event);
 
 private:
-    void OnFocused(const bool isFocused);
+    void OnFocused(bool isFocused);
     std::unique_ptr<struct MouseCaptureContext> context;
     std::unique_ptr<class MouseCapturePrivate> privateImpl;
 

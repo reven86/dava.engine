@@ -41,22 +41,23 @@ namespace DAVA
 {
 void MouseCapturePrivate::SetNativePining(eMouseCaptureMode newMode)
 {
+    CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
     DVASSERT(swapchain);
 
     if (eMouseCaptureMode::PINING == newMode)
     {
-        swapchain->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([]()
-                                                                                                  {
-                                                                                                      Window::Current->CoreWindow->PointerCursor = nullptr;
-                                                                                                  }));
+        core->RunOnUIThread([]()
+                            {
+                                Window::Current->CoreWindow->PointerCursor = nullptr;
+                            });
     }
     else
     {
-        swapchain->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([]()
-                                                                                                  {
-                                                                                                      Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
-                                                                                                  }));
+        core->RunOnUIThread([]()
+                            {
+                                Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+                            });
     }
 }
 
