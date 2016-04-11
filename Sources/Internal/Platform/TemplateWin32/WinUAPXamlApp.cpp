@@ -51,6 +51,8 @@
 
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
+#include "WinApiUAP.h"
+#include "WinSystemTimer.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -102,6 +104,11 @@ WinUAPXamlApp::WinUAPXamlApp()
     }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
+
+    if (!isPhoneApiDetected)
+    {
+        WinApiUAP::Initialize();
+    }
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
@@ -344,6 +351,10 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             {
                 Core::Instance()->FocusReceived();
             }
+
+            //We need to activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
+            EnableHighResolutionTimer(true);
             break;
         case CoreWindowActivationState::Deactivated:
             if (isPhoneApiDetected)
@@ -355,6 +366,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
                 Core::Instance()->FocusLost();
             }
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            EnableHighResolutionTimer(false);
             break;
         default:
             break;

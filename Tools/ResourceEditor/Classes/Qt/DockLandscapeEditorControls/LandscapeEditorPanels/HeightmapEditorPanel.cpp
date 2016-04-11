@@ -227,7 +227,7 @@ void HeightmapEditorPanel::ConnectToSignals()
 
 void HeightmapEditorPanel::StoreState()
 {
-    KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    DAVA::KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
 
     customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN,
                                sliderWidgetBrushSize->GetRangeMin());
@@ -246,20 +246,20 @@ void HeightmapEditorPanel::RestoreState()
     SceneEditor2* sceneEditor = GetActiveScene();
 
     bool enabled = sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled();
-    int32 brushSize = BrushSizeSystemToUI(sceneEditor->heightmapEditorSystem->GetBrushSize());
-    int32 strength = StrengthSystemToUI(sceneEditor->heightmapEditorSystem->GetStrength());
-    int32 averageStrength = AverageStrengthSystemToUI(sceneEditor->heightmapEditorSystem->GetAverageStrength());
-    int32 toolImage = sceneEditor->heightmapEditorSystem->GetToolImageIndex();
+    DAVA::int32 brushSize = BrushSizeSystemToUI(sceneEditor->heightmapEditorSystem->GetBrushSize());
+    DAVA::int32 strength = StrengthSystemToUI(sceneEditor->heightmapEditorSystem->GetStrength());
+    DAVA::int32 averageStrength = AverageStrengthSystemToUI(sceneEditor->heightmapEditorSystem->GetAverageStrength());
+    DAVA::int32 toolImage = sceneEditor->heightmapEditorSystem->GetToolImageIndex();
     HeightmapEditorSystem::eHeightmapDrawType drawingType = sceneEditor->heightmapEditorSystem->GetDrawingType();
-    float32 height = sceneEditor->heightmapEditorSystem->GetDropperHeight();
+    DAVA::float32 height = sceneEditor->heightmapEditorSystem->GetDropperHeight();
 
-    int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
-    int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
-    int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
-    int32 avStrRangeMin = DEF_AVERAGE_STRENGTH_MIN_VALUE;
-    int32 avStrRangeMax = DEF_AVERAGE_STRENGTH_MAX_VALUE;
+    DAVA::int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
+    DAVA::int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
+    DAVA::int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
+    DAVA::int32 avStrRangeMin = DEF_AVERAGE_STRENGTH_MIN_VALUE;
+    DAVA::int32 avStrRangeMax = DEF_AVERAGE_STRENGTH_MAX_VALUE;
 
-    KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
+    DAVA::KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
     if (customProperties)
     {
         brushRangeMin = customProperties->GetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN,
@@ -303,13 +303,13 @@ void HeightmapEditorPanel::InitBrushImages()
     iconSize = iconSize.expandedTo(QSize(32, 32));
     comboBrushImage->setIconSize(iconSize);
 
-    FilePath toolsPath(ResourceEditor::HEIGHTMAP_EDITOR_TOOLS_PATH);
+    DAVA::FilePath toolsPath(ResourceEditor::HEIGHTMAP_EDITOR_TOOLS_PATH);
 
-    ScopedPtr<FileList> fileList(new FileList(toolsPath));
-    for (int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
+    DAVA::ScopedPtr<DAVA::FileList> fileList(new DAVA::FileList(toolsPath));
+    for (DAVA::int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
     {
         auto pathname = fileList->GetPathname(iFile);
-        if (TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
+        if (DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
         {
             QIcon toolIcon(QPixmap::fromImage(ImageTools::FromDavaImage(pathname)));
 
@@ -321,48 +321,48 @@ void HeightmapEditorPanel::InitBrushImages()
 
 // these functions are designed to convert values from sliders in ui
 // to the values suitable for heightmap editor system
-int32 HeightmapEditorPanel::BrushSizeUIToSystem(int32 uiValue)
+DAVA::int32 HeightmapEditorPanel::BrushSizeUIToSystem(DAVA::int32 uiValue)
 {
     // height map size is differ from the landscape texture size.
     // so to unify brush size necessary to additionally scale brush size by (texture size / height map size) coefficient
-    float32 coef = ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF / GetBrushScaleCoef();
-    int32 systemValue = (int32)(uiValue * coef);
+    DAVA::float32 coef = ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF / GetBrushScaleCoef();
+    DAVA::int32 systemValue = static_cast<DAVA::int32>(uiValue * coef);
 
     return systemValue;
 }
 
-int32 HeightmapEditorPanel::BrushSizeSystemToUI(int32 systemValue)
+DAVA::int32 HeightmapEditorPanel::BrushSizeSystemToUI(DAVA::int32 systemValue)
 {
-    float32 coef = ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF / GetBrushScaleCoef();
-    int32 uiValue = (int32)(systemValue / coef);
+    DAVA::float32 coef = ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF / GetBrushScaleCoef();
+    DAVA::int32 uiValue = static_cast<DAVA::int32>(systemValue / coef);
 
     return uiValue;
 }
 
-float32 HeightmapEditorPanel::StrengthUIToSystem(int32 uiValue)
+DAVA::float32 HeightmapEditorPanel::StrengthUIToSystem(DAVA::int32 uiValue)
 {
-    return (float32)uiValue;
+    return static_cast<DAVA::float32>(uiValue);
 }
 
-int32 HeightmapEditorPanel::StrengthSystemToUI(float32 systemValue)
+DAVA::int32 HeightmapEditorPanel::StrengthSystemToUI(DAVA::float32 systemValue)
 {
-    return (int32)systemValue;
+    return static_cast<DAVA::int32>(systemValue);
 }
 
-float32 HeightmapEditorPanel::AverageStrengthUIToSystem(int32 uiValue)
+DAVA::float32 HeightmapEditorPanel::AverageStrengthUIToSystem(DAVA::int32 uiValue)
 {
-    float32 systemValue = (float32)uiValue / DEF_AVERAGE_STRENGTH_MAX_VALUE;
+    DAVA::float32 systemValue = static_cast<DAVA::float32>(uiValue) / DEF_AVERAGE_STRENGTH_MAX_VALUE;
     return systemValue;
 }
 
-int32 HeightmapEditorPanel::AverageStrengthSystemToUI(float32 systemValue)
+DAVA::int32 HeightmapEditorPanel::AverageStrengthSystemToUI(DAVA::float32 systemValue)
 {
-    int32 uiValue = (int32)(systemValue * DEF_AVERAGE_STRENGTH_MAX_VALUE);
+    DAVA::int32 uiValue = static_cast<DAVA::int32>(systemValue * DEF_AVERAGE_STRENGTH_MAX_VALUE);
     return uiValue;
 }
 // end of convert functions ==========================
 
-float32 HeightmapEditorPanel::GetBrushScaleCoef()
+DAVA::float32 HeightmapEditorPanel::GetBrushScaleCoef()
 {
     SceneEditor2* sceneEditor = GetActiveScene();
 
@@ -372,8 +372,8 @@ float32 HeightmapEditorPanel::GetBrushScaleCoef()
         return ResourceEditor::HEIGHTMAP_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
     }
 
-    float32 heightmapSize = heightmapProxy->Size();
-    float32 textureSize = sceneEditor->landscapeEditorDrawSystem->GetTextureSize(Landscape::TEXTURE_COLOR);
+    DAVA::float32 heightmapSize = heightmapProxy->Size();
+    DAVA::float32 textureSize = sceneEditor->landscapeEditorDrawSystem->GetTextureSize(DAVA::Landscape::TEXTURE_COLOR);
 
     return textureSize / heightmapSize;
 }
@@ -429,7 +429,7 @@ void HeightmapEditorPanel::SetToolImage(int toolImage)
 
     if (!s.isEmpty())
     {
-        FilePath fp(s.toStdString());
+        DAVA::FilePath fp(s.toStdString());
         GetActiveScene()->heightmapEditorSystem->SetToolImage(fp, toolImage);
     }
 }
@@ -703,7 +703,7 @@ void HeightmapEditorPanel::DecreaseAvgStrengthLarge()
 
 void HeightmapEditorPanel::PrevTool()
 {
-    int32 curIndex = comboBrushImage->currentIndex();
+    DAVA::int32 curIndex = comboBrushImage->currentIndex();
     if (curIndex)
     {
         comboBrushImage->setCurrentIndex(curIndex - 1);
@@ -712,7 +712,7 @@ void HeightmapEditorPanel::PrevTool()
 
 void HeightmapEditorPanel::NextTool()
 {
-    int32 curIndex = comboBrushImage->currentIndex();
+    DAVA::int32 curIndex = comboBrushImage->currentIndex();
     if (curIndex < comboBrushImage->count() - 1)
     {
         comboBrushImage->setCurrentIndex(curIndex + 1);

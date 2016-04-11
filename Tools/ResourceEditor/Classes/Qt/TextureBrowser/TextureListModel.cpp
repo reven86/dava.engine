@@ -127,6 +127,18 @@ void TextureListModel::dataReady(const DAVA::TextureDescriptor* desc)
     emit dataChanged(this->index(i), this->index(i));
 }
 
+QModelIndex TextureListModel::getIndex(const DAVA::TextureDescriptor* textureDescriptor)
+{
+    if (textureDescriptor == nullptr)
+        return QModelIndex();
+
+    auto iter = std::find(textureDescriptorsFiltredSorted.begin(), textureDescriptorsFiltredSorted.end(), textureDescriptor);
+    if (iter == textureDescriptorsFiltredSorted.end())
+        return QModelIndex();
+
+    return index(std::distance(textureDescriptorsFiltredSorted.begin(), iter));
+}
+
 void TextureListModel::setFilter(QString filter)
 {
     beginResetModel();
@@ -151,7 +163,7 @@ void TextureListModel::setSortMode(TextureListModel::TextureListSortMode sortMod
     endResetModel();
 }
 
-void TextureListModel::setScene(DAVA::Scene* scene)
+void TextureListModel::setScene(SceneEditor2* scene)
 {
     beginResetModel();
 
@@ -176,6 +188,11 @@ void TextureListModel::setScene(DAVA::Scene* scene)
     applyFilterAndSort();
 
     endResetModel();
+
+    if (activeScene != nullptr)
+    {
+        setHighlight(&activeScene->selectionSystem->GetSelection());
+    }
 }
 
 void TextureListModel::setHighlight(const EntityGroup* nodes)

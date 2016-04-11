@@ -26,40 +26,38 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "WinSystemTimer.h"
 
-#include "LandscapeSetTexturesCommands.h"
-#include "../Qt/Scene/SceneEditor2.h"
-#include "Scene3D/Components/ComponentHelpers.h"
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
+#include "WinApiUAP.h"
+#elif defined(__DAVAENGINE_WIN32__)
+#include <TimeAPI.h>
+#endif
 
-LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity_,
-                                                           const DAVA::FilePath& heightMapPath_,
-                                                           const DAVA::AABBox3& newLandscapeBox_)
-    : Command2(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
+namespace DAVA
 {
-    landscape = FindLandscape(landscapeEntity_);
-    if (NULL == landscape)
+void EnableHighResolutionTimer(bool enable)
+{
+    bool timerServiceAvailable = false;
+#if defined(__DAVAENGINE_WIN32__)
+    timerServiceAvailable = true;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    timerServiceAvailable = WinApiUAP::IsAvailable(WinApiUAP::SYSTEM_TIMER_SERVICE);
+#endif
+
+    if (timerServiceAvailable)
     {
-        return;
+        TIMECAPS sistemTimerCaps;
+        timeGetDevCaps(&sistemTimerCaps, sizeof(TIMECAPS));
+        if (enable)
+        {
+            timeBeginPeriod(static_cast<UINT>(sistemTimerCaps.wPeriodMin));
+        }
+        else
+        {
+            timeEndPeriod(static_cast<UINT>(sistemTimerCaps.wPeriodMin));
+        }
     }
-    landscapeEntity = SafeRetain(landscapeEntity_);
-
-    originalHeightMapPath = landscape->GetHeightmapPathname();
-    originalLandscapeBox = landscape->GetBoundingBox();
-    newHeightMapPath = heightMapPath_;
-    newLandscapeBox = newLandscapeBox_;
 }
-
-LandscapeSetHeightMapCommand::~LandscapeSetHeightMapCommand()
-{
-    SafeRelease(landscapeEntity);
-}
-
-void LandscapeSetHeightMapCommand::Undo()
-{
-    landscape->BuildLandscapeFromHeightmapImage(originalHeightMapPath, originalLandscapeBox);
-}
-
-void LandscapeSetHeightMapCommand::Redo()
-{
-    landscape->BuildLandscapeFromHeightmapImage(newHeightMapPath, newLandscapeBox);
 }
