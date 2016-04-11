@@ -114,6 +114,11 @@ bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
     return true;
 }
 
+bool InputSystem::MouseCaptured()
+{
+    return mouseCapture->MouseCaptured();
+}
+
 bool InputSystem::SkipInputEvents(UIEvent* event)
 {
     return mouseCapture->SkipEvents(event);

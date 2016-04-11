@@ -43,7 +43,7 @@ public:
 
     void SetMode(const eMouseCaptureMode newMode);
     eMouseCaptureMode GetMode() const;
-
+    bool MouseCaptured() const;
     // Deprecated, only for UIControlSystem internal using
     bool SkipEvents(const class UIEvent* const event);
 

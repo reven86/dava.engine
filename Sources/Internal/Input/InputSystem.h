@@ -56,6 +56,7 @@ enum class eMouseCaptureMode
 class InputSystem : public Singleton<InputSystem>
 {
 public:
+    using eMouseCaptureMode = eMouseCaptureMode;
     enum eInputDevice
     {
         INPUT_DEVICE_TOUCH = 1,
@@ -87,6 +88,7 @@ public:
 
     eMouseCaptureMode GetMouseCaptureMode();
     bool SetMouseCaptureMode(eMouseCaptureMode mode);
+    bool MouseCaptured();
 
     // Deprecated, only for UIControlSystem internal using
     bool SkipInputEvents(UIEvent* event);
