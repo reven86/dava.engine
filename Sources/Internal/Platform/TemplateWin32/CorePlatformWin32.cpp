@@ -750,7 +750,7 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
         bool isMove = xPos || yPos;
         bool isInside = false;
 
-        if (InputSystem::Instance()->GetMouseCaptureMode() == eMouseCaptureMode::PINING)
+        if (InputSystem::Instance()->MouseCaptured())
         {
             isInside = true;
         }
@@ -984,7 +984,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         if (!loWord || hiWord)
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
-
+            Core::Instance()->FocusLost();
             if (appCore)
             {
                 // unpress all pressed buttons
@@ -1000,6 +1000,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         else
         {
             Logger::FrameworkDebug("[PlatformWin32] activate application");
+            Core::Instance()->FocusReceived();
             if (appCore)
             {
                 appCore->OnResume();

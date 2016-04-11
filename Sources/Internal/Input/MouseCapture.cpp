@@ -170,7 +170,7 @@ bool MouseCapture::SkipEvents(const UIEvent* const event)
         Vector2 windowSize = Core::Instance()->GetWindowSize();
         inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.x);
         inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
-        if (inRect)
+        if (inRect && context->focused)
         {
             SetNativePining(eMouseCaptureMode::PINING, context->nativeMode, privateImpl);
             context->deferredCapture = false;

@@ -99,7 +99,7 @@ public:
 protected:
     KeyboardDevice* keyboard;
     GamepadDevice* gamepad;
-    std::unique_ptr<MouseCapture> mouseCapture;
+    MouseCapture* mouseCapture;
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
