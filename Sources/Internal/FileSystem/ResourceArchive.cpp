@@ -32,6 +32,7 @@ THIS
 #include "FileSystem/Private/ZipArchive.h"
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 
 #include <fstream>
 
