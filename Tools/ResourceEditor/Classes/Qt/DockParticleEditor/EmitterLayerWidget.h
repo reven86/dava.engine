@@ -45,8 +45,6 @@
 #include <QComboBox>
 #include <QTimer>
 
-using namespace DAVA;
-
 class EmitterLayerWidget : public QWidget, public BaseParticleEditorContentWidget
 {
     Q_OBJECT
@@ -54,8 +52,8 @@ class EmitterLayerWidget : public QWidget, public BaseParticleEditorContentWidge
 public:
     explicit EmitterLayerWidget(QWidget* parent = 0);
 
-    void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
-    ParticleLayer* GetLayer() const
+    void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool updateMinimized);
+    DAVA::ParticleLayer* GetLayer() const
     {
         return layer;
     };
@@ -63,8 +61,8 @@ public:
 
     virtual bool eventFilter(QObject*, QEvent*);
 
-    virtual void StoreVisualState(KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps);
+    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps);
 
     // Switch from/to SuperEmitter mode.
     void SetSuperemitterMode(bool isSuperemitter);
@@ -93,18 +91,18 @@ private:
     void UpdateLayerSprite();
 
     void FillLayerTypes();
-    int32 LayerTypeToIndex(ParticleLayer::eType layerType);
+    DAVA::int32 LayerTypeToIndex(DAVA::ParticleLayer::eType layerType);
 
 private:
     struct LayerTypeMap
     {
-        ParticleLayer::eType layerType;
+        DAVA::ParticleLayer::eType layerType;
         QString layerName;
     };
 
     struct BlendPreset
     {
-        eBlending blending;
+        DAVA::eBlending blending;
         QString presetName;
     };
 
@@ -112,10 +110,10 @@ private:
     static const LayerTypeMap layerTypeMap[];
     static const BlendPreset blendPresetsMap[];
 
-    ParticleLayer* layer = nullptr;
+    DAVA::ParticleLayer* layer = nullptr;
 
     QTimer* spriteUpdateTimer = nullptr;
-    DAVA::Stack<std::pair<rhi::HSyncObject, Texture*>> spriteUpdateTexturesStack;
+    DAVA::Stack<std::pair<rhi::HSyncObject, DAVA::Texture*>> spriteUpdateTexturesStack;
 
     QVBoxLayout* mainBox = nullptr;
     QVBoxLayout* pivotPointLayout = nullptr;
@@ -141,7 +139,7 @@ private:
     QCheckBox* isLongCheckBox = nullptr;
     QCheckBox* isLoopedCheckBox = nullptr;
     QCheckBox* inheritPostionCheckBox = nullptr;
-    QCheckBox* layerLodsCheckBox[LodComponent::MAX_LOD_LAYERS];
+    QCheckBox* layerLodsCheckBox[DAVA::LodComponent::MAX_LOD_LAYERS];
     QCheckBox* frameBlendingCheckBox = nullptr;
     QCheckBox* cameraFacingCheckBox = nullptr;
     QCheckBox* xFacingCheckBox = nullptr;

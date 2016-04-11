@@ -29,7 +29,7 @@
 
 #include "DraggableDialog.h"
 
-DraggableDialog::DraggableDialog(const Rect& rect)
+DraggableDialog::DraggableDialog(const DAVA::Rect& rect)
     : UIControl(rect)
 {
 }
@@ -48,13 +48,13 @@ void DraggableDialog::DidDisappear()
     relativePosition = originalPosition;
 }
 
-void DraggableDialog::Input(UIEvent* currentInput)
+void DraggableDialog::Input(DAVA::UIEvent* currentInput)
 {
-    if (currentInput->phase == UIEvent::Phase::BEGAN)
+    if (currentInput->phase == DAVA::UIEvent::Phase::BEGAN)
     {
         basePoint = currentInput->point;
     }
-    if (currentInput->phase == UIEvent::Phase::DRAG)
+    if (currentInput->phase == DAVA::UIEvent::Phase::DRAG)
     {
         relativePosition += (currentInput->point - basePoint);
         basePoint = currentInput->point;

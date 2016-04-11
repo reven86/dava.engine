@@ -110,7 +110,7 @@ public:
     DebugDrawSystem* debugDrawSystem;
     BeastSystem* beastSystem;
     OwnersSignatureSystem* ownersSignatureSystem;
-    StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
+    DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
     EditorMaterialSystem* materialSystem;
     EditorLODSystem* editorLODSystem = nullptr;
     EditorStatisticsSystem* editorStatisticsSystem = nullptr;
@@ -124,9 +124,9 @@ public:
     PathSystem* pathSystem;
 
     // save/load
-    SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
-    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
-    SceneFileV2::eError SaveScene();
+    DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
+    DAVA::SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
+    DAVA::SceneFileV2::eError SaveScene();
     bool Export(const DAVA::eGPUFamily newGPU);
 
     const DAVA::FilePath& GetScenePath();
@@ -167,32 +167,32 @@ public:
     //Insert entity to begin of scene hierarchy to display editor entities at one place on top og scene tree
     void AddEditorEntity(Entity* editorEntity);
 
-    const RenderStats& GetRenderStats() const;
+    const DAVA::RenderStats& GetRenderStats() const;
 
-    void EnableToolsInstantly(int32 toolFlags);
-    void DisableToolsInstantly(int32 toolFlags, bool saveChanges = true);
-    bool IsToolsEnabled(int32 toolFlags);
-    int32 GetEnabledTools();
+    void EnableToolsInstantly(DAVA::int32 toolFlags);
+    void DisableToolsInstantly(DAVA::int32 toolFlags, bool saveChanges = true);
+    bool IsToolsEnabled(DAVA::int32 toolFlags);
+    DAVA::int32 GetEnabledTools();
 
     SceneEditor2* CreateCopyForExport(); //Need to prevent changes of original scene
-    Entity* Clone(Entity* dstNode /* = NULL */) override;
+    DAVA::Entity* Clone(DAVA::Entity* dstNode /* = NULL */) override;
 
     void Activate() override;
     void Deactivate() override;
 
     void EnableEditorSystems();
 
-    uint32 GetFramesCount() const;
+    DAVA::uint32 GetFramesCount() const;
     void ResetFramesCount();
 
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
     INTROSPECTION(SceneEditor2,
-                  MEMBER(cameraSystem, "CameraSystem", I_VIEW | I_EDIT)
-                  MEMBER(collisionSystem, "Collision System", I_VIEW | I_EDIT)
-                  MEMBER(selectionSystem, "Selection System", I_VIEW | I_EDIT)
-                  MEMBER(gridSystem, "GridSystem", I_VIEW | I_EDIT)
-                  MEMBER(materialSystem, "Material System", I_VIEW | I_EDIT)
+                  MEMBER(cameraSystem, "CameraSystem", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(collisionSystem, "Collision System", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(selectionSystem, "Selection System", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(gridSystem, "GridSystem", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(materialSystem, "Material System", DAVA::I_VIEW | DAVA::I_EDIT)
                   )
 
 protected:
@@ -201,7 +201,7 @@ protected:
 
     DAVA::FilePath curScenePath;
     CommandStack* commandStack = nullptr;
-    RenderStats renderStats;
+    DAVA::RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
@@ -218,7 +218,7 @@ protected:
 
     void Setup3DDrawing();
 
-    uint32 framesCount = 0;
+    DAVA::uint32 framesCount = 0;
 
 private:
     friend struct EditorCommandNotify;

@@ -45,7 +45,7 @@ class ModificationWidget
     Q_OBJECT
 
 public:
-    enum PivotMode : uint32
+    enum PivotMode : DAVA::uint32
     {
         PivotAbsolute,
         PivotRelative,

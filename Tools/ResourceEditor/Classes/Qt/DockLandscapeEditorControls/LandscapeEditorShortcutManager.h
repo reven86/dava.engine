@@ -35,16 +35,14 @@
 
 #include <QShortcut>
 
-using namespace DAVA;
-
 class LandscapeEditorShortcutManager : public DAVA::StaticSingleton<LandscapeEditorShortcutManager>
 {
 public:
     LandscapeEditorShortcutManager();
     ~LandscapeEditorShortcutManager();
 
-    QShortcut* GetShortcutByName(const String& name);
-    QShortcut* CreateOrUpdateShortcut(const String& name, QKeySequence keySequence, bool autoRepeat = true, const String& description = "");
+    QShortcut* GetShortcutByName(const DAVA::String& name);
+    QShortcut* CreateOrUpdateShortcut(const DAVA::String& name, QKeySequence keySequence, bool autoRepeat = true, const DAVA::String& description = "");
 
     void SetHeightMapEditorShortcutsEnabled(bool enabled);
 
@@ -61,7 +59,7 @@ public:
     void SetAvgStrengthShortcutsEnabled(bool enabled);
 
 private:
-    Map<String, QShortcut*> shortcutsMap;
+    DAVA::Map<DAVA::String, QShortcut*> shortcutsMap;
 
     void InitDefaultShortcuts();
 };
