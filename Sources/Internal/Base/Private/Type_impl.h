@@ -2,6 +2,7 @@
 #ifndef DAVAENGINE_TYPE__H
 #include "../Type.h"
 #endif
+#include <atomic>
 
 namespace DAVA
 {
@@ -60,10 +61,7 @@ const Type* GetDerefType(std::true_type)
 } // namespace TypeDetails
 
 template <typename T>
-Type Type::TypeDB<T>::type = { std::common_type<T>() };
-
-template <typename T>
-Type::Type(std::common_type<T>)
+void Type::Init()
 {
     using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_const_t<T>>>;
     static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
@@ -83,9 +81,17 @@ Type::Type(std::common_type<T>)
 }
 
 template <typename T>
-const Type* Type::Instance()
+inline const Type* Type::Instance()
 {
-    return &TypeDB<T>::type;
+    static Type* type = nullptr;
+
+    if (nullptr == type)
+    {
+        type = new Type();
+        type->Init<T>();
+    }
+
+    return type;
 }
 
 } // namespace DAVA

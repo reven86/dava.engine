@@ -53,14 +53,10 @@ public:
     static const Type* Instance(const std::string& permanentName);
 
 protected:
-    template <typename T>
-    struct TypeDB
-    {
-        static Type type;
-    };
+    Type() = default;
 
     template <typename T>
-    Type(std::common_type<T>);
+    void Init();
 
     const char* name = nullptr;
     std::string permanentName;

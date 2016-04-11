@@ -11,9 +11,16 @@ namespace DAVA
 namespace Ref
 {
 template <typename T>
-static const ReflectionDB* AutoGetReflectionDB(const T* this_)
+const ReflectionDB* AutoGetReflectionDB(const T* this_)
 {
     return ReflectionDB::GetGlobalDB<T>();
+}
+
+template <typename T>
+ReflectionDB* GetUniqueReflectionDB()
+{
+    static ReflectionDB db;
+    return &db;
 }
 } // namespace Ref
 
@@ -33,7 +40,7 @@ inline const ReflectionDB* ReflectionDB::GetGlobalDB(T* object)
         ret = VirtualReflectionDBGetter::Get<T>(object);
         if (nullptr == ret)
         {
-            ret = ReflectionDB::GetGlobalDB<T>();
+            ret = ReflectionDB::EditGlobalDB<T>();
         }
     }
 
@@ -43,20 +50,21 @@ inline const ReflectionDB* ReflectionDB::GetGlobalDB(T* object)
 template <typename T>
 ReflectionDB* ReflectionDB::EditGlobalDB()
 {
-    static std::set<std::unique_ptr<ReflectionDB>> allDBs;
-
     using DecayT = typename std::decay<T>::type;
-    const Type* type = Type::Instance<DecayT>();
 
+    ReflectionDB* db = Ref::GetUniqueReflectionDB<DecayT>();
+    const Type* type = Type::Instance<DecayT>();
     if (nullptr == type->reflectionDb)
     {
-        ReflectionDB* db = allDBs.emplace(new ReflectionDB()).first->get();
         db->structureWrapper = std::make_unique<StructureWrapperDefault<DecayT>>();
+        // TODO:
+        // more default wrappers set here
+        // ...
 
         type->reflectionDb = db;
     }
 
-    return type->reflectionDb;
+    return db;
 }
 
 template <typename B, typename D>

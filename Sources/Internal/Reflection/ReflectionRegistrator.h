@@ -156,8 +156,6 @@ struct ReflectionRegistrator
 
 protected:
     ReflectionRegistrator() = default;
-
-    const Type* thisType = Type::Instance<C>();
     std::unique_ptr<StructureWrapperClass> childrenWrapper = std::make_unique<StructureWrapperClass>();
 };
 
