@@ -41,6 +41,15 @@ using DAVA::Logger;
 
 #include "_metal.h"
 
+#if 0
+    #define MTL_TRACE(...) DAVA::Logger::Info(__VA_ARGS__)
+    #define MTL_CP DAVA::Logger::Info("%s : %i", __FILE__, __LINE__);
+#else
+    #define MTL_TRACE(...)
+    #define MTL_CP 
+#endif
+
+
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 namespace rhi
 {
@@ -55,6 +64,7 @@ RenderPassMetal_t
     std::vector<Handle> cmdBuf;
     int priority;
     uint32 do_present:1;
+    uint32 finished : 1;
 };
 
 struct
@@ -71,6 +81,13 @@ CommandBufferMetal_t
     uint32 cur_stride;
 
     void _ApplyVertexData( unsigned firstVertex=0 );
+};
+
+struct
+FrameMetal_t
+{
+    std::vector<Handle> pass;
+    id<CAMetalDrawable> drawable;
 };
 
 void CommandBufferMetal_t::_ApplyVertexData( unsigned firstVertex )
@@ -98,28 +115,42 @@ RHI_IMPL_POOL(CommandBufferMetal_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Desc
 RHI_IMPL_POOL(RenderPassMetal_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectMetal_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
-static id<CAMetalDrawable> _CurDrawable = nil;
-static std::vector<Handle> _CmdQueue;
+static bool _Metal_NextDrawablePending = false;
+static bool _Metal_PresentDrawablePending = false;
 static id<MTLTexture> _ScreenshotTexture = nil;
+
+static std::vector<FrameMetal_t> _Metal_Frame;
+static bool _Metal_NewFramePending = true;
 
 static Handle
 metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
 
+    if (_Metal_NewFramePending)
+    {
+        MTL_TRACE("--- next-frame");
+        FrameMetal_t f;
+
+        f.drawable = [_Metal_Layer nextDrawable];
+        [f.drawable retain];
+        MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
+        [f.drawable retain]; // this is workaround, see Present()
+        _Metal_DefFrameBuf = f.drawable.texture;
+
+        _Metal_Frame.push_back(f);
+        _Metal_NewFramePending = false;
+    }
+
     Handle pass_h = RenderPassPool::Alloc();
+    MTL_TRACE("-rp.alloc %u (%u)", RHI_HANDLE_INDEX(pass_h), cmdBufCount);
     RenderPassMetal_t* pass = RenderPassPool::Get(pass_h);
     bool ds_used = false;
     pass->desc = [MTLRenderPassDescriptor renderPassDescriptor];
 
-    if (!_CurDrawable)
-    {
-        SCOPED_NAMED_TIMING("rhi.mtl-vsync");
-        _CurDrawable = [_Metal_Layer nextDrawable];
-    }
-
-    pass->desc.colorAttachments[0].texture = _CurDrawable.texture;
-    if (passConf.colorBuffer[0].texture != InvalidHandle)
+    if (passConf.colorBuffer[0].texture == InvalidHandle)
+        pass->desc.colorAttachments[0].texture = _Metal_Frame.back().drawable.texture;
+    else
         TextureMetal::SetAsRenderTarget(passConf.colorBuffer[0].texture, pass->desc);
 
     switch (passConf.colorBuffer[0].loadAction)
@@ -169,6 +200,8 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
     pass->priority = passConf.priority;
     pass->do_present = passConf.colorBuffer[0].texture == InvalidHandle;
 
+    id<MTLCommandBuffer> pbuf = nil;
+
     if (cmdBufCount == 1)
     {
         Handle cb_h = CommandBufferPool::Alloc();
@@ -176,9 +209,12 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
         pass->encoder = nil;
         pass->buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
-        //        pass->buf = [_Metal_DefCmdQueue commandBuffer];
+        //pass->buf = [_Metal_DefCmdQueue commandBuffer];
+        [pass->buf retain];
 
         cb->encoder = [pass->buf renderCommandEncoderWithDescriptor:pass->desc];
+        [cb->encoder retain];
+
         cb->buf = pass->buf;
         cb->rt = pass->desc.colorAttachments[0].texture;
         cb->ds_used = ds_used;
@@ -189,12 +225,17 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
         pass->cmdBuf[0] = cb_h;
         cmdBuf[0] = cb_h;
+
+        if (pass->do_present)
+            pbuf = pass->buf;
     }
     else
     {
         pass->buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
-        //        pass->buf = [_Metal_DefCmdQueue commandBuffer];
+        //pass->buf = [_Metal_DefCmdQueue commandBuffer];
+        [pass->buf retain];
         pass->encoder = [pass->buf parallelRenderCommandEncoderWithDescriptor:pass->desc];
+        [pass->encoder retain];
 
         for (unsigned i = 0; i != cmdBufCount; ++i)
         {
@@ -202,6 +243,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
             CommandBufferMetal_t* cb = CommandBufferPool::Get(cb_h);
 
             cb->encoder = [pass->encoder renderCommandEncoder];
+            [cb->encoder retain];
             cb->buf = pass->buf;
             cb->rt = pass->desc.colorAttachments[0].texture;
             cb->ds_used = ds_used;
@@ -212,11 +254,16 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
             pass->cmdBuf[i] = cb_h;
             cmdBuf[i] = cb_h;
+
+            if (i == 0 && pass->do_present)
+                pbuf = cb->buf;
         }
     }
 
     pass->blit_buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
+    [pass->blit_buf retain];
     pass->blit_encoder = [pass->blit_buf blitCommandEncoder];
+    [pass->blit_encoder retain];
 
     return pass_h;
 }
@@ -224,20 +271,28 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 static void
 metal_RenderPass_Begin(Handle pass_h)
 {
+    MTL_TRACE(" -rp.begin %u", RHI_HANDLE_INDEX(pass_h));
     RenderPassMetal_t* pass = RenderPassPool::Get(pass_h);
 
-    _CmdQueue.push_back(pass_h);
+    pass->finished = false;
+    _Metal_Frame.back().pass.push_back(pass_h);
+    MTL_TRACE("  drawable %p %i", (void*)(_Metal_Frame.back().drawable), [_Metal_Frame.back().drawable retainCount]);
 }
 
 static void
 metal_RenderPass_End(Handle pass_h)
 {
+    MTL_TRACE(" -rp.end %u", RHI_HANDLE_INDEX(pass_h));
     RenderPassMetal_t* pass = RenderPassPool::Get(pass_h);
+
+    DVASSERT(!pass->finished);
+    pass->finished = true;
 
     if (pass->cmdBuf.size() > 1)
     {
         [pass->encoder endEncoding];
     }
+    MTL_TRACE("  drawable %p %i", (void*)(_Metal_Frame.back().drawable), [_Metal_Frame.back().drawable retainCount]);
 }
 
 namespace RenderPassMetal
@@ -779,16 +834,35 @@ metal_SyncObject_IsSignaled(Handle obj)
 static void
 metal_Present(Handle syncObject)
 {
+    static unsigned frame_n = 0;
+    MTL_TRACE("--present %u", ++frame_n);
     SCOPED_NAMED_TIMING("rhi.draw-present");
+
+    // this is workaroud against drawable/cmd.buf being de-allocated in certain cases
+    if ([_Metal_Frame.back().drawable retainCount] < 3)
+    {
+        MTL_TRACE("  discard-frame %u", ++frame_n);
+        _Metal_Frame.back().drawable = nil;
+        _Metal_NewFramePending = true;
+        _Metal_Frame.clear();
+
+        if (syncObject != InvalidHandle)
+        {
+            SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+            sync->is_signaled = true;
+        }
+
+        return;
+    }
 
     static std::vector<RenderPassMetal_t*> pass;
 
     // sort cmd-lists by priority
 
     pass.clear();
-    for (unsigned i = 0; i != _CmdQueue.size(); ++i)
+    for (unsigned i = 0; i != _Metal_Frame.back().pass.size(); ++i)
     {
-        RenderPassMetal_t* rp = RenderPassPool::Get(_CmdQueue[i]);
+        RenderPassMetal_t* rp = RenderPassPool::Get(_Metal_Frame.back().pass[i]);
         bool do_add = true;
 
         for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
@@ -814,22 +888,31 @@ metal_Present(Handle syncObject)
         
         if( pass->do_present )
             pbuf = pass->buf;
-    }    
+    }
+    if (pass.size())
+    {
+        MTL_TRACE("  -mtl.present-drawable %p", (void*)(_Metal_Frame.back().drawable));
+        MTL_TRACE("   drawable= %p %i %s", (void*)(_Metal_Frame.back().drawable), [_Metal_Frame.back().drawable retainCount], NSStringFromClass([_Metal_Frame.back().drawable class]).UTF8String);
+        [pbuf presentDrawable:_Metal_Frame.back().drawable];
 
-    [pbuf presentDrawable:_CurDrawable];
+        unsigned f = frame_n;
+        [pbuf addCompletedHandler:^(id<MTLCommandBuffer> cb) {
+          MTL_TRACE("  .frame %u complete", f);
+        }];
+    }
 
     if (pass.size() && pass.back()->cmdBuf.size())
     {
         Handle last_cb_h = pass.back()->cmdBuf.back();
         CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
-        id<MTLTexture> back_buf = _CurDrawable.texture;
+        id<MTLTexture> back_buf = _Metal_DefFrameBuf;
 
         if (_Metal_PendingScreenshotCallback)
         {
             if (!_ScreenshotTexture)
             {
                 MTLPixelFormat pf = MTLPixelFormatBGRA8Unorm;
-                MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:_CurDrawable.texture.width height:_CurDrawable.texture.height mipmapped:NO];
+                MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:_Metal_DefFrameBuf.width height:_Metal_DefFrameBuf.height mipmapped:NO];
 
                 desc.textureType = MTLTextureType2D;
                 desc.mipmapLevelCount = 1;
@@ -847,8 +930,8 @@ metal_Present(Handle syncObject)
             org.x = 0;
             org.y = 0;
             org.z = 0;
-            sz.width = _CurDrawable.texture.width;
-            sz.height = _CurDrawable.texture.height;
+            sz.width = _Metal_DefFrameBuf.width;
+            sz.height = _Metal_DefFrameBuf.height;
             sz.depth = 1;
             [pass.back()->blit_encoder copyFromTexture:back_buf sourceSlice:0 sourceLevel:0 sourceOrigin:org sourceSize:sz toTexture:_ScreenshotTexture destinationSlice:0 destinationLevel:0 destinationOrigin:org];
         }
@@ -896,41 +979,45 @@ metal_Present(Handle syncObject)
 
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
-        RenderPassMetal_t* pass = *p;
+        RenderPassMetal_t* rp = *p;
 
-        for (unsigned b = 0; b != pass->cmdBuf.size(); ++b)
+        MTL_TRACE("  .commit %u   %p", (p - pass.begin()), (void*)(rp->buf));
+        [rp->buf commit];
+        for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
         {
-            Handle cbh = pass->cmdBuf[b];
+            Handle cbh = rp->cmdBuf[b];
             CommandBufferMetal_t* cb = CommandBufferPool::Get(cbh);
 
             cb->buf = nil;
+            [cb->encoder release];
             cb->encoder = nil;
             cb->rt = nil;
 
             CommandBufferPool::Free(cbh);
         }
-        [pass->buf commit];
 
-        pass->desc.colorAttachments[0].texture = nil;
-        pass->desc.depthAttachment.texture = nil;
-        pass->desc = nullptr;
+        rp->desc.colorAttachments[0].texture = nil;
+        rp->desc.depthAttachment.texture = nil;
+        rp->desc = nullptr;
 
-        [pass->blit_encoder endEncoding];
-        [pass->blit_buf commit];
+        [rp->blit_encoder endEncoding];
+        [rp->blit_buf commit];
 
-        pass->buf = nil;
-        pass->encoder = nil;
-        pass->blit_encoder = nil;
-        pass->blit_buf = nil;
-        pass->cmdBuf.clear();
+        [rp->buf release];
+        rp->buf = nil;
+        [rp->encoder release];
+        rp->encoder = nil;
+
+        [rp->blit_encoder release];
+        rp->blit_encoder = nil;
+        [rp->blit_buf release];
+        rp->blit_buf = nil;
+
+        rp->cmdBuf.clear();
     }
 
-
-    for (unsigned i = 0; i != _CmdQueue.size(); ++i)
-        RenderPassPool::Free(_CmdQueue[i]);
-    _CmdQueue.clear();
-
-    _CurDrawable = nil;
+    for (unsigned i = 0; i != _Metal_Frame.back().pass.size(); ++i)
+        RenderPassPool::Free(_Metal_Frame.back().pass[i]);
 
     ConstBufferMetal::InvalidateAllInstances();
 
@@ -945,6 +1032,12 @@ metal_Present(Handle syncObject)
         _ScreenshotTexture = nil;
     }
     _Metal_ScreenshotCallbackSync.Unlock();
+
+    [_Metal_Frame.back().drawable release]; // this additional 'release' is due to workaround
+    [_Metal_Frame.back().drawable release];
+    _Metal_Frame.back().drawable = nil;
+    _Metal_NewFramePending = true;
+    _Metal_Frame.clear();
 }
 
 namespace CommandBufferMetal

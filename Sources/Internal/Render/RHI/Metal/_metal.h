@@ -35,7 +35,6 @@
 
 extern id<MTLDevice> _Metal_Device;
 extern id<MTLCommandQueue> _Metal_DefCmdQueue;
-extern MTLRenderPassDescriptor* _Metal_DefRenderPassDescriptor;
 extern id<MTLTexture> _Metal_DefFrameBuf;
 extern id<MTLTexture> _Metal_DefDepthBuf;
 extern id<MTLTexture> _Metal_DefStencilBuf;
