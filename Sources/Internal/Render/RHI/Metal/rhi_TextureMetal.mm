@@ -358,11 +358,13 @@ metal_Texture_Delete(Handle tex)
         if (self->uid)
         {
             [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+            [self->uid release];
             self->uid = nil;
         }
         if (self->uid2)
         {
             [self->uid2 setPurgeableState:MTLPurgeableStateEmpty];
+            [self->uid2 release];
             self->uid2 = nil;
         }
 

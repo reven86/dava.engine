@@ -99,6 +99,7 @@ metal_VertexBuffer_Delete(Handle vb)
     if (self)
     {
         [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+        [self->uid release];
         self->data = nullptr;
         self->uid = nil;
         VertexBufferMetalPool::Free(vb);
