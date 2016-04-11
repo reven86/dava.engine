@@ -221,7 +221,7 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Error("===============================================================");
             return false;
         }
-
+        
         outImageBasePath.ReplaceBasename(outImageBaseName + "_" + std::to_string(lIndex));
 
         if (layerName.empty())
@@ -246,6 +246,13 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Warning("| File contains layer `%s` with opacity less than 100%% (%.0f)", layerName.c_str(), 100.0f * static_cast<float>(layer.opacity) / 255.0f);
             Logger::Warning("| %s", psdName);
             Logger::Warning("=================================================================");
+        }
+        if (layer.visible == false)
+        {
+            Logger::Error("============================ WARNING ============================");
+            Logger::Error("| File contains invisible layer %d (%s)", lIndex, layerName.c_str());
+            Logger::Error("| %s", psdName);
+            Logger::Error("=================================================================");
         }
 
         frameNames[lIndex] = useLayerNames && !layerName.empty() ? layerName : DAVA::Format("frame%d", lIndex);
