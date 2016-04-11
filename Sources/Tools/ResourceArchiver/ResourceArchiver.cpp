@@ -26,7 +26,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "ResourceArchiver/ResourceArchiver.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
@@ -39,6 +38,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
+#include "AssetCache/AssetCache.h"
+
+#include "ResourceArchiver/ResourceArchiver.h"
 
 #include <algorithm>
 
@@ -52,7 +54,7 @@ const UnorderedMap<String, Compressor::Type> packTypes =
   { "rfc1951", Compressor::Type::RFC1951 },
   { "none", Compressor::Type::None } };
 
-bool StringToPackType(const String& compressionStr, Compressor::Type& type)
+bool StringToCompressType(const String& compressionStr, Compressor::Type& type)
 {
     const auto& found = packTypes.find(compressionStr);
     if (found != packTypes.end())
@@ -66,7 +68,7 @@ bool StringToPackType(const String& compressionStr, Compressor::Type& type)
     }
 }
 
-String PackTypeToString(Compressor::Type packType)
+String CompressTypeToString(Compressor::Type packType)
 {
     for (const auto& type : packTypes)
     {
@@ -77,155 +79,6 @@ String PackTypeToString(Compressor::Type packType)
     }
     return String();
 }
-
-// static bool Packing(Vector<PackFormat::FileTableEntry>& fileTable,
-//                     const Vector<uint8>& inBuffer,
-//                     Vector<uint8>& packingBuf,
-//                     File* output,
-//                     uint32 startPos,
-//                     Compressor::Type packingType)
-// {
-//     bool result = false;
-//
-//     if (packingType == Compressor::Type::Lz4HC)
-//     {
-//         result = LZ4HCCompressor().Compress(inBuffer, packingBuf);
-//     }
-//     else if (packingType == Compressor::Type::Lz4)
-//     {
-//         result = LZ4Compressor().Compress(inBuffer, packingBuf);
-//     }
-//     else if (packingType == Compressor::Type::RFC1951)
-//     {
-//         result = ZipCompressor().Compress(inBuffer, packingBuf);
-//     }
-//
-//     if (!result)
-//     {
-//         return false;
-//     }
-//
-//     uint32 packedSize = static_cast<uint32>(packingBuf.size());
-//
-//     // if packed size worse then raw leave raw bytes
-//     uint32 writeOk = 0;
-//     if (packedSize >= inBuffer.size())
-//     {
-//         packedSize = static_cast<uint32>(inBuffer.size());
-//         packingType = Compressor::Type::None;
-//         writeOk = output->Write(&inBuffer[0], packedSize);
-//     }
-//     else
-//     {
-//         writeOk = output->Write(&packingBuf[0], packedSize);
-//     }
-//
-//     if (writeOk == 0)
-//     {
-//         Logger::Error("can't write into tmp archive file");
-//         return false;
-//     }
-//
-//     PackFormat::PackFile::FilesDataBlock::Data fileData{
-//         startPos, packedSize, static_cast<uint32>(inBuffer.size()), packingType
-//     };
-//
-//     fileTable.push_back(fileData);
-//
-//     return result;
-// }
-//
-// bool CompressFileAndWriteToOutput(const String&
-//                                     const FilePath& baseFolder,
-//                                     Vector<PackFormat::FileTableEntry>& fileTable,
-//                                     Vector<uint8>& inBuffer,
-//                                     Vector<uint8>& packingBuf,
-//                                     File* output)
-// {
-//     using namespace PackFormat;
-//
-//     if ()
-//
-//     String fullPath(baseFolder.GetAbsolutePathname() + fInfo.relativeFilePath);
-//
-//     RefPtr<File> inFile(File::Create(fullPath, File::OPEN | File::READ));
-//
-//     if (!inFile)
-//     {
-//         Logger::Error("can't read input file: %s\n", fInfo.relativeFilePath);
-//         return false;
-//     }
-//
-//     if (!inFile->Seek(0, File::SEEK_FROM_END))
-//     {
-//         Logger::Error("can't seek inside file: %s\n", fInfo.relativeFilePath);
-//         return false;
-//     }
-//     uint32 origSize = inFile->GetPos();
-//     if (!inFile->Seek(0, File::SEEK_FROM_START))
-//     {
-//         Logger::Error("can't seek inside file: %s\n", fInfo.relativeFilePath);
-//         return false;
-//     }
-//
-//     uint32 startPos{ 0 };
-//     if (fileTable.empty() == false)
-//     {
-//         auto& prevPackData = fileTable.back();
-//         startPos = prevPackData.startPositionInPackedFilesBlock + prevPackData.compressed;
-//     }
-//
-//     if (origSize > 0)
-//     {
-//         inBuffer.resize(origSize);
-//         uint32 readOk = inFile->Read(&inBuffer[0], origSize);
-//         if (readOk <= 0)
-//         {
-//             Logger::Error("can't read input file: %s\n", fInfo.relativeFilePath);
-//             return false;
-//         }
-//     }
-//     else
-//     {
-//         PackFile::FilesDataBlock::Data fileData{
-//             startPos,
-//             origSize,
-//             origSize,
-//             Compressor::Type::None
-//         };
-//
-//         fileTable.push_back(fileData);
-//         return true;
-//     }
-//
-//     Compressor::Type compressType = fInfo.compressionType;
-//
-//     if (fInfo.compressionType == Compressor::Type::None)
-//     {
-//         PackFile::FilesDataBlock::Data fileData{
-//             startPos,
-//             origSize,
-//             origSize,
-//             Compressor::Type::None
-//         };
-//
-//         fileTable.push_back(fileData);
-//         bool writeOk = (output->Write(&inBuffer[0], origSize) == origSize);
-//         if (writeOk)
-//         {
-//             Logger::Error("can't write into tmp archive file");
-//             return false;
-//         }
-//     }
-//     else
-//     {
-//         if (!Packing(fileTable, inBuffer, packingBuf, output, startPos, fInfo.compressionType))
-//         {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
 
 struct CollectedFile
 {
@@ -337,12 +190,68 @@ bool WriteRawData(File* outputFile, const Vector<uint8>& srcBuffer)
     return true;
 }
 
-bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, bool addHiddenFiles)
+Vector<uint8> SpliceFileNames(const Vector<CollectedFile>& collectedFiles)
+{
+    Vector<uint8> sortedNamesOriginal;
+    StringStream ss;
+    for (const CollectedFile& file : collectedFiles)
+    {
+        ss << file.archivePath << '\0';
+    }
+    String strNames(ss.str());
+    sortedNamesOriginal.assign(strNames.begin(), strNames.end());
+    return sortedNamesOriginal;
+}
+
+MD5::MD5Digest CalculateSourcesMD5(const Vector<CollectedFile>& collectedFiles)
+{
+    MD5 md5;
+    md5.Init();
+    for (const CollectedFile& collectedFile : collectedFiles)
+    {
+        md5.Update(reinterpret_cast<const uint8*>(collectedFile.archivePath.data()), static_cast<uint32>(collectedFile.archivePath.size()));
+
+        if (!collectedFile.absPath.IsEmpty())
+        {
+            MD5::MD5Digest fileDigest;
+            MD5::ForFile(collectedFile.absPath, fileDigest);
+            md5.Update(fileDigest.digest.data(), static_cast<uint32>(fileDigest.digest.size()));
+        }
+    }
+
+    md5.Final();
+    return md5.GetDigest();
+}
+
+void ConstructCacheKey(AssetCache::CacheItemKey& key, Vector<CollectedFile>& collectedFiles, const DAVA::String& compression)
+{
+    MD5::MD5Digest sourcesMD5 = CalculateSourcesMD5(collectedFiles);
+    AssetCache::SetPrimaryKey(key, sourcesMD5);
+
+    MD5::MD5Digest paramsMD5;
+    MD5::ForData(reinterpret_cast<const uint8*>(compression.data()), compression.size(), paramsMD5);
+    AssetCache::SetSecondaryKey(key, paramsMD5);
+}
+
+bool RetrieveFromCache(const AssetCache::CacheItemKey& key, const FilePath& pathToPackage, const FilePath& pathToLog)
+{
+    // todo: retrieve from cache using Viktor's AssetCache interface
+    return false;
+}
+
+bool AddToCache(const AssetCache::CacheItemKey& key, const FilePath& pathToPack, const FilePath& pathToLog)
+{
+    // todo: add to cache using Viktor's AssetCache interface
+    return false;
+}
+
+Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHiddenFiles)
 {
     Vector<CollectedFile> collectedFiles;
 
-    for (const String& source : sources)
+    for (String source : sources)
     {
+        source = FilePath::NormalizePathname(source);
         FilePath sourcePath(source);
         bool isAbsolutePath = FilePath::IsAbsolutePathname(source);
 
@@ -360,17 +269,16 @@ bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, b
         }
     }
 
-    if (collectedFiles.empty())
-    {
-        LOG_ERROR("No input files for pack");
-        return false;
-    }
-
     std::stable_sort(collectedFiles.begin(), collectedFiles.end(), [](const CollectedFile& left, const CollectedFile& right) -> bool
                      {
                          return CompareCaseInsensitive(left.archivePath, right.archivePath) < 0;
                      });
 
+    return collectedFiles;
+}
+
+bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath)
+{
     PackFormat::PackFile packFile;
     PackFormat::PackFile::HeaderBlock& headerBlock = packFile.header;
     PackFormat::PackFile::NamesBlock& namesBlock = packFile.names;
@@ -382,17 +290,10 @@ bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, b
     headerBlock.marker = PackFormat::FileMarker;
     headerBlock.numFiles = static_cast<uint32>(fileTable.size());
 
-    StringStream ss;
-    for (const CollectedFile& file : collectedFiles)
-    {
-        ss << file.archivePath << '\0';
-    }
-    String strNames(ss.str());
-    Vector<uint8> sortedNamesOriginal(strNames.begin(), strNames.end());
-
+    Vector<uint8> sortedNamesOriginal = SpliceFileNames(collectedFiles);
     namesBlock.sortedNamesLz4hc.reserve(sortedNamesOriginal.size());
 
-    if (!LZ4HCCompressor().Compress(sortedNamesOriginal, namesBlock.sortedNamesLz4hc))
+    if (!Compressor::GetCompressor(Compressor::Type::Lz4HC)->Compress(sortedNamesOriginal, namesBlock.sortedNamesLz4hc))
     {
         LOG_ERROR("Can't compress names block");
         return false;
@@ -407,10 +308,10 @@ bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, b
     headerBlock.filesTableBlockSize = static_cast<uint32>(fileTable.size() * sizeof(PackFormat::PackFile::FilesDataBlock::Data));
     headerBlock.startPackedFilesBlockPosition = headerBlock.startFilesDataBlockPosition + headerBlock.filesTableBlockSize;
 
-    UniquePtr<File> outputFile(File::Create(archiveName, File::CREATE | File::WRITE));
+    UniquePtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
     if (!outputFile)
     {
-        LOG_ERROR("Can't create %s", archiveName.GetAbsolutePathname().c_str());
+        LOG_ERROR("Can't create %s", archivePath.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -424,9 +325,16 @@ bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, b
     Vector<uint8> origFileBuffer;
     Vector<uint8> compressedFileBuffer;
 
+    std::unique_ptr<Compressor> compressor;
+    if (compressionType != Compressor::Type::None)
+    {
+        compressor = Compressor::GetCompressor(compressionType);
+        DVASSERT_MSG(compressor, Format("Can't get '%s' compressor", CompressTypeToString(compressionType).c_str()));
+    }
+
     for (size_t i = 0, filesSize = collectedFiles.size(); i < filesSize; ++i)
     {
-        CollectedFile& collectedFile = collectedFiles[i];
+        const CollectedFile& collectedFile = collectedFiles[i];
         PackFormat::FileTableEntry& fileEntry = fileTable[i];
         fileEntry = { 0 };
 
@@ -442,20 +350,23 @@ bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, b
                 return false;
             }
 
-            if (!LZ4HCCompressor().Compress(origFileBuffer, compressedFileBuffer))
+            bool useCompressedBuffer = (compressionType != Compressor::Type::None);
+            if (useCompressedBuffer)
             {
-                LOG_ERROR("Can't compress contents of %s", collectedFile.absPath.GetAbsolutePathname().c_str());
-                return false;
+                if (!compressor->Compress(origFileBuffer, compressedFileBuffer))
+                {
+                    LOG_ERROR("Can't compress contents of %s", collectedFile.absPath.GetAbsolutePathname().c_str());
+                    return false;
+                }
+                useCompressedBuffer = (compressedFileBuffer.size() < origFileBuffer.size());
             }
-
-            bool useOriginalBuffer = (compressedFileBuffer.size() >= origFileBuffer.size());
 
             fileEntry.startPositionInPackedFilesBlock = dataOffset;
             fileEntry.original = origFileBuffer.size();
             fileEntry.compressed = compressedFileBuffer.size();
-            fileEntry.packType = (useOriginalBuffer ? Compressor::Type::None : Compressor::Type::Lz4HC);
+            fileEntry.packType = (useCompressedBuffer ? compressionType : Compressor::Type::None);
 
-            Vector<uint8>& srcBuffer = (useOriginalBuffer ? origFileBuffer : compressedFileBuffer);
+            Vector<uint8>& srcBuffer = (useCompressedBuffer ? compressedFileBuffer : origFileBuffer);
             dataOffset += srcBuffer.size();
 
             if (!WriteRawData(outputFile, srcBuffer))
@@ -471,7 +382,7 @@ bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, b
         Logger::Info("%s | %s %s | Packed %s, orig size %u, compressed size %u, compression: %s",
                      deviceName.c_str(), date.c_str(), time.c_str(),
                      collectedFile.archivePath.c_str(), fileEntry.original, fileEntry.compressed,
-                     PackTypeToString(fileEntry.packType).c_str());
+                     CompressTypeToString(fileEntry.packType).c_str());
     }
 
     outputFile->Seek(headerBlock.startFilesDataBlockPosition, File::SEEK_FROM_START);
@@ -483,327 +394,39 @@ bool CreateArchive(const FilePath& archiveName, const Vector<String>& sources, b
     return true;
 }
 
-// bool CreateArchive(const FilePath& pacName,
-//                 const Vector<String>& sortedFileNames,
-//                 void (*onPackOneFile)(const ResourceArchive::FileInfo&))
-// {
-//
-// }
+bool CreateArchive(const Vector<String>& sources, bool addHiddenFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath, const FilePath& logPath)
+{
+    Vector<CollectedFile> collectedFiles = CollectFiles(sources, addHiddenFiles);
+    if (collectedFiles.empty())
+    {
+        LOG_ERROR("No input files for pack");
+        return false;
+    }
 
-// void CollectAllFilesInDirectory(const String& pathDirName,
-//                                 bool includeHidden,
-//                                 Vector<String>& output)
-// {
-//     FilePath pathToDir = pathDirName;
-//     RefPtr<FileList> fileList(new FileList(pathToDir, includeHidden));
-//     for (auto file = 0; file < fileList->GetCount(); ++file)
-//     {
-//         if (fileList->IsDirectory(file))
-//         {
-//             auto directoryName = fileList->GetFilename(file);
-//             if ((directoryName != "..") && (directoryName != "."))
-//             {
-//                 String subDir = pathDirName == "."
-//                 ?
-//                 directoryName + '/'
-//                 :
-//                 pathDirName + directoryName + '/';
-//                 CollectAllFilesInDirectory(subDir, includeHidden, output);
-//             }
-//         }
-//         else
-//         {
-//             String filename = fileList->GetFilename(file);
-//             if (filename.at(0) == '.' && !includeHidden)
-//             {
-//                 continue;
-//             }
-//             String pathname =
-//             (pathDirName == "." ? filename : pathDirName + filename);
-//             output.push_back(pathname);
-//         }
-//     }
-// }
+    AssetCache::CacheItemKey key;
+    //if (useCache)
+    {
+        ConstructCacheKey(key, collectedFiles, CompressTypeToString(compressionType));
 
-// Compressor::Type ToPackType(const String& value, Compressor::Type defaultVal)
-// {
-//     const Vector<std::pair<String, Compressor::Type>>
-//     packTypes = { { "lz4", Compressor::Type::Lz4 },
-//                   { "lz4hc", Compressor::Type::Lz4HC },
-//                   { "none", Compressor::Type::None } };
-//     for (auto& pair : packTypes)
-//     {
-//         if (pair.first == value)
-//         {
-//             return pair.second;
-//         }
-//     }
-//     std::cerr << "can't convert: \"" << value
-//               << "\" into any valid compression type, use default\n";
-//     return defaultVal;
-// }
+        if (RetrieveFromCache(key, archivePath, logPath))
+        {
+            return true;
+        }
+    }
 
-// String ToString(Compressor::Type packType)
-// {
-//     static const Vector<const char*> packTypes = { "none", "lz4", "lz4hc", "rfc1951" };
-//
-//     size_t index = static_cast<size_t>(packType);
-//
-//     return packTypes.at(index);
-// }
-//
-// void OnOneFilePacked(const ResourceArchive::FileInfo& info)
-// {
-//     std::cout << "packing file: " << info.relativeFilePath
-//               << " compressed: " << info.compressedSize
-//               << " original: " << info.originalSize
-//               << " packingType: " << ToString(info.compressionType) << '\n';
-// }
-//
-// int PackDirectory(const String& dir,
-//                   const String& pakfileName,
-//                   bool includeHidden)
-// {
-//     std::cout << "===================================================\n"
-//               << "=== Packer started\n"
-//               << "=== Pack directory: " << dir << '\n'
-//               << "=== Pack archiveName: " << pakfileName << '\n'
-//               << "===================================================\n";
-//
-//     auto dirWithSlash = (dir.back() == '/' ? dir : dir + '/');
-//
-//     RefPtr<FileSystem> fileSystem(new FileSystem());
-//
-//     FilePath absPathPack =
-//     fileSystem->GetCurrentWorkingDirectory() + pakfileName;
-//
-//     if (!fileSystem->SetCurrentWorkingDirectory(dirWithSlash))
-//     {
-//         std::cerr << "can't set CWD to: " << dirWithSlash << '\n';
-//         return EXIT_FAILURE;
-//     }
-//
-//     Vector<String> files;
-//
-//     CollectAllFilesInDirectory(".", includeHidden, files);
-//
-//     if (files.empty())
-//     {
-//         std::cerr << "no files found in: " << dir << '\n';
-//         return EXIT_FAILURE;
-//     }
-//
-//     if (fileSystem->IsFile(absPathPack))
-//     {
-//         std::cerr << "pakfile already exist! Delete it.\n";
-//         if (0 != std::remove(absPathPack.GetAbsolutePathname().c_str()))
-//         {
-//             std::cerr << "can't remove existing pakfile.\n";
-//             return EXIT_FAILURE;
-//         }
-//     }
-//
-//     std::stable_sort(begin(files), end(files));
-//
-//     Vector<ResourceArchive::FileInfo> fInfos;
-//     fInfos.reserve(files.size());
-//
-//     for (auto& f : files)
-//     {
-//         ResourceArchive::FileInfo info;
-//         info.relativeFilePath = f.c_str();
-//         info.compressedSize = 0;
-//         info.originalSize = 0;
-//         info.compressionType = Compressor::Type::Lz4HC; // TODO change what you need
-//         fInfos.push_back(info);
-//     }
-//
-//     FilePath baseDir;
-//
-//     std::cout << "start packing...\n";
-//     if (Create(absPathPack, baseDir, fInfos, OnOneFilePacked))
-//     {
-//         std::cout << "Success!\n";
-//         return EXIT_SUCCESS;
-//     }
-//     else
-//     {
-//         std::cout << "Failed!\n";
-//         return EXIT_FAILURE;
-//     }
-// }
-
-// bool UnpackFile(const ResourceArchive& ra,
-//                 const ResourceArchive::FileInfo& fileInfo)
-// {
-//     Vector<uint8> file;
-//     if (!ra.LoadFile(fileInfo.relativeFilePath, file))
-//     {
-//         std::cerr << "can't load file: " << fileInfo.relativeFilePath << " from archive\n";
-//         return false;
-//     }
-//     String filePath(fileInfo.relativeFilePath);
-//     FilePath fullPath = filePath;
-//     FilePath dirPath = fullPath.GetDirectory();
-//     FileSystem::eCreateDirectoryResult result =
-//     FileSystem::Instance()->CreateDirectory(dirPath, true);
-//     if (FileSystem::DIRECTORY_CANT_CREATE == result)
-//     {
-//         std::cerr << "can't create unpack path dir: "
-//                   << dirPath.GetAbsolutePathname() << '\n';
-//         return false;
-//     }
-//     RefPtr<File> f(File::Create(fullPath, File::CREATE | File::WRITE));
-//     if (!f)
-//     {
-//         std::cerr << "can't create file: " << fileInfo.relativeFilePath << '\n';
-//         return false;
-//     }
-//     uint32 writeOk = f->Write(file.data(), file.size());
-//     if (writeOk < file.size())
-//     {
-//         std::cerr << "can't write into file: " << fileInfo.relativeFilePath << '\n';
-//         return false;
-//     }
-//     return true;
-// }
-//
-// int UnpackToDirectory(const String& pak, const String& dir)
-// {
-//     RefPtr<FileSystem> fs(new FileSystem());
-//     if (!fs)
-//     {
-//         std::cerr << "can't create FileSystem\n";
-//         return EXIT_FAILURE;
-//     }
-//     String cwd = fs->GetCurrentWorkingDirectory().GetAbsolutePathname();
-//
-//     std::cout << "===================================================\n"
-//               << "=== Unpacker started\n"
-//               << "=== Unpack directory: " << dir << '\n'
-//               << "=== Unpack archiveName: " << pak << '\n'
-//               << "===================================================\n";
-//
-//     fs->CreateDirectory(dir);
-//     if (!fs->SetCurrentWorkingDirectory(dir + '/'))
-//     {
-//         std::cerr << "can't set CWD to " << dir << '\n';
-//         return EXIT_FAILURE;
-//     }
-//
-//     String absPathPackFile = cwd + pak;
-//     std::unique_ptr<ResourceArchive> ra;
-//
-//     try
-//     {
-//         ra.reset(new ResourceArchive(absPathPackFile));
-//     }
-//     catch (std::exception& ex)
-//     {
-//         std::cerr << "can't open archive: " << ex.what() << '\n';
-//         return EXIT_FAILURE;
-//     }
-//
-//     for (auto& fileInfo : ra->GetFilesInfo())
-//     {
-//         std::cout << "start unpacking: " << fileInfo.relativeFilePath
-//                   << " compressed: " << fileInfo.compressedSize
-//                   << " original: " << fileInfo.originalSize
-//                   << " packingType: " << ToString(fileInfo.compressionType)
-//                   << '\n';
-//         if (!UnpackFile(*ra, fileInfo))
-//         {
-//             return EXIT_FAILURE;
-//         }
-//     }
-//     std::cout << "Success!\n";
-//     return EXIT_SUCCESS;
-// }
-//
-// int ListContent(const String& pakfile)
-// {
-//     RefPtr<FileSystem> fs(new FileSystem());
-//     if (!fs)
-//     {
-//         std::cerr << "can't create FileSystem\n";
-//         return EXIT_FAILURE;
-//     }
-//     std::unique_ptr<ResourceArchive> ra;
-//     try
-//     {
-//         ra.reset(new ResourceArchive(pakfile));
-//     }
-//     catch (...)
-//     {
-//         return EXIT_FAILURE;
-//     }
-//
-//     for (auto& info : ra->GetFilesInfo())
-//     {
-//         std::cout << info.relativeFilePath << " compressed: " << info.compressedSize
-//                   << " original: " << info.originalSize
-//                   << " type: " << ToString(info.compressionType) << '\n';
-//     }
-//     return EXIT_SUCCESS;
-// }
-//
-// static Compressor::Type GetPackingBestType(const String& fileName)
-// {
-//     return Compressor::Type::Lz4HC;
-// };
-
-// int main(int argc, char* argv[])
-// {
-//     ProgramOptions packOptions("pack");
-//     packOptions.AddOption("--compression", VariantType(String("lz4hc")),
-//                           "default compression method, lz4hc - default");
-//     packOptions.AddOption("--add_hidden", VariantType(String("false")),
-//                           "add hidden files to pack list (false or true)");
-//     // default rule pack all files into lz4hc
-//     packOptions.AddOption("--rule", VariantType(String(".lz4hc")),
-//                           "rule to select compression type like: --rule "
-//                           "xml.lz4 supported lz4, lz4hc, none",
-//                           true);
-//     packOptions.AddArgument("directory");
-//     packOptions.AddArgument("pakfile");
-//
-//     ProgramOptions unpackOptions("unpack");
-//     unpackOptions.AddArgument("pakfile");
-//     unpackOptions.AddArgument("directory");
-//
-//     ProgramOptions listOptions("list");
-//     listOptions.AddArgument("pakfile");
-//
-//     if (packOptions.Parse(argc, argv))
-//     {
-//         auto dirName = packOptions.GetArgument("directory");
-//         auto pakFile = packOptions.GetArgument("pakfile");
-//         auto addHidden = packOptions.GetOption("--add_hidden").AsString();
-//
-//         return PackDirectory(dirName, pakFile, addHidden == "true");
-//     }
-//
-//     if (unpackOptions.Parse(argc, argv))
-//     {
-//         auto pakFile = unpackOptions.GetArgument("pakfile");
-//         auto dirName = unpackOptions.GetArgument("directory");
-//
-//         return UnpackToDirectory(pakFile, dirName);
-//     }
-//
-//     if (listOptions.Parse(argc, argv))
-//     {
-//         auto pakFile = listOptions.GetArgument("pakfile");
-//         return ListContent(pakFile);
-//     }
-//
-//     {
-//         packOptions.PrintUsage();
-//         unpackOptions.PrintUsage();
-//         listOptions.PrintUsage();
-//         return EXIT_FAILURE;
-//     }
-// }
+    if (Pack(collectedFiles, compressionType, archivePath))
+    {
+        //if (useCache)
+        {
+            AddToCache(key, archivePath, logPath);
+        }
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 
 } // namespace Archiver
 } // namespace DAVA

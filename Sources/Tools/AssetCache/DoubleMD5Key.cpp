@@ -69,12 +69,12 @@ void DeserializeKey(DoubleMD5Key& key, const KeyedArchive* archieve)
     Memcpy(key.data(), archieve->GetByteArray("keyData"), size);
 }
 
-void SetKeyPart1(DoubleMD5Key& key, const MD5::MD5Digest& digest)
+void SetPrimaryKey(DoubleMD5Key& key, const MD5::MD5Digest& digest)
 {
     Memcpy(key.data(), digest.digest.data(), digest.digest.size());
 }
 
-void SetKeyPart2(DoubleMD5Key& key, const MD5::MD5Digest& digest)
+void SetSecondaryKey(DoubleMD5Key& key, const MD5::MD5Digest& digest)
 {
     Memcpy(key.data() + MD5::MD5Digest::DIGEST_SIZE, digest.digest.data(), digest.digest.size());
 }

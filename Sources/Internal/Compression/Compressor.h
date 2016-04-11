@@ -48,6 +48,8 @@ public:
     virtual bool Compress(const Vector<uint8>& in, Vector<uint8>& out) const = 0;
     // you should resize output to correct size before call this method
     virtual bool Decompress(const Vector<uint8>& in, Vector<uint8>& out) const = 0;
+
+    static std::unique_ptr<Compressor> GetCompressor(Type compressorType);
 };
 
 } // end namespace DAVA

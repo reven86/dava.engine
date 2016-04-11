@@ -75,7 +75,7 @@ ArchivePackTool::ArchivePackTool()
 bool ArchivePackTool::ConvertOptionsToParamsInternal()
 {
     compressionStr = options.GetOption(OptionNames::Compression).AsString();
-    if (!ResourceArchiver::StringToPackType(compressionStr, compressionType))
+    if (!ResourceArchiver::StringToCompressType(compressionStr, compressionType))
     {
         Logger::Error("Invalid compression type: '%s'", compressionStr.c_str());
         return false;
@@ -153,7 +153,6 @@ void ArchivePackTool::ProcessInternal()
     {
     case Source::UseDir:
     {
-        //Logger::Info("Packing '%s' into %s", srcDir.c_str(), packFileName.c_str());
         sources.push_back(srcDir);
         break;
     }
@@ -166,8 +165,7 @@ void ArchivePackTool::ProcessInternal()
             {
                 while (!listFile->IsEof())
                 {
-                    String str;
-                    listFile->ReadString(str);
+                    String str = listFile->ReadLine();
                     sources.push_back(str);
                 }
             }
@@ -196,30 +194,14 @@ void ArchivePackTool::ProcessInternal()
         return;
     }
 
-    AssetCache::CacheItemKey key;
-    if (useCache)
-    {
-        ConstructCacheKey(key, sources, compressionStr);
-
-        if (RetrieveFromCache(key, packFilePath, logFilePath))
-        {
-            return;
-        }
-    }
-
     if (!logFilePath.IsEmpty())
     {
         Logger::Instance()->SetLogPathname(logFilePath);
     }
 
-    if (ResourceArchiver::CreateArchive(packFilePath, sources, addHidden))
+    if (ResourceArchiver::CreateArchive(sources, addHidden, compressionType, packFilePath, logFilePath))
     {
         Logger::Info("done");
-
-        if (useCache)
-        {
-            AddToCache(key, packFilePath, logFilePath);
-        }
         return;
     }
     else
@@ -227,51 +209,4 @@ void ArchivePackTool::ProcessInternal()
         Logger::Info("packing failed");
         return;
     }
-}
-
-MD5::MD5Digest CalculateSourcesMD5(const Vector<String>& sources, bool addHidden)
-{
-    MD5 md5;
-    md5.Init();
-    for (const String& source : sources)
-    {
-        md5.Update(reinterpret_cast<const uint8*>(source.data()), static_cast<uint32>(source.size()));
-
-        FilePath sourcePath(source);
-
-        if (sourcePath.IsDirectoryPathname())
-        {
-            MD5::RecursiveDirectoryMD5(sourcePath, md5, true, addHidden);
-        }
-        else
-        {
-            MD5::MD5Digest fileDigest;
-            MD5::ForFile(source, fileDigest);
-            md5.Update(fileDigest.digest.data(), static_cast<uint32>(fileDigest.digest.size()));
-        }
-    }
-
-    md5.Final();
-    return md5.GetDigest();
-}
-
-void ArchivePackTool::ConstructCacheKey(AssetCache::CacheItemKey& key, const Vector<String>& sources, const DAVA::String& compression) const
-{
-    MD5::MD5Digest sourcesMD5 = CalculateSourcesMD5(sources, addHidden);
-    MD5::MD5Digest paramsMD5;
-    MD5::ForData(reinterpret_cast<const uint8*>(compression.data()), compression.size(), paramsMD5);
-    AssetCache::SetKeyPart1(key, sourcesMD5);
-    AssetCache::SetKeyPart2(key, paramsMD5);
-}
-
-bool ArchivePackTool::RetrieveFromCache(const AssetCache::CacheItemKey& key, const FilePath& pathToPackage, const FilePath& pathToLog) const
-{
-    // todo: retrieve from cache using Viktor's AssetCache interface
-    return false;
-}
-
-bool ArchivePackTool::AddToCache(const AssetCache::CacheItemKey& key, const FilePath& pathToPack, const FilePath& pathToLog) const
-{
-    // todo: add to cache using Viktor's AssetCache interface
-    return false;
 }

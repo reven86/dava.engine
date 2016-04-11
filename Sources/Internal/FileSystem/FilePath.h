@@ -273,6 +273,7 @@ public:
     inline ePathType GetType() const;
 
     static bool IsAbsolutePathname(const String& pathname);
+    static String NormalizePathname(const String& pathname);
 
     static bool ContainPath(const FilePath& basePath, const FilePath& partPath);
     static bool ContainPath(const FilePath& basePath, const String& partPath);
@@ -294,8 +295,6 @@ protected:
     void InitializeWithDirectoryAndName(const WideString& directory, const WideString& filename);
 
     String ResolveResourcesPath() const;
-
-    static String NormalizePathname(const String& pathname);
 
     static String AbsoluteToRelative(const FilePath& directoryPathname, const FilePath& absolutePathname);
 

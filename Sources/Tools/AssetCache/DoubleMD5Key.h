@@ -40,8 +40,8 @@ namespace AssetCache
 static const uint32 HASH_SIZE = MD5::MD5Digest::DIGEST_SIZE * 2;
 using DoubleMD5Key = Array<uint8, HASH_SIZE>;
 
-void SetKeyPart1(DoubleMD5Key& key, const MD5::MD5Digest& digest);
-void SetKeyPart2(DoubleMD5Key& key, const MD5::MD5Digest& digest);
+void SetPrimaryKey(DoubleMD5Key& key, const MD5::MD5Digest& digest);
+void SetSecondaryKey(DoubleMD5Key& key, const MD5::MD5Digest& digest);
 
 } // end of namespace AssetCache
 } // end of namespace DAVA

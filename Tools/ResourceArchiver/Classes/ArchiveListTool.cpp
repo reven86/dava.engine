@@ -56,11 +56,12 @@ void ArchiveListTool::ProcessInternal()
     try
     {
         ResourceArchive archive(packFilename);
+        Logger::Info("Dumping contents of archive %s", packFilename.c_str());
         for (const ResourceArchive::FileInfo& info : archive.GetFilesInfo())
         {
             Logger::Info("%s: compressed size %u, orig size %u, type %s",
                          info.relativeFilePath.c_str(), info.compressedSize, info.originalSize,
-                         ResourceArchiver::PackTypeToString(info.compressionType).c_str());
+                         ResourceArchiver::CompressTypeToString(info.compressionType).c_str());
         }
     }
     catch (std::exception ex)

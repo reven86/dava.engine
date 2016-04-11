@@ -26,19 +26,28 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#pragma once
-
-#include <FileSystem/FilePath.h>
-#include <FileSystem/ResourceArchive.h>
+#include "Compression/Compressor.h"
+#include "Compression/LZ4Compressor.h"
+#include "Compression/ZipCompressor.h"
 
 namespace DAVA
 {
-namespace ResourceArchiver
+std::unique_ptr<Compressor> Compressor::GetCompressor(Type compressorType)
 {
-bool StringToCompressType(const DAVA::String& compressionStr, DAVA::Compressor::Type& type);
-DAVA::String CompressTypeToString(DAVA::Compressor::Type packType);
+    switch (compressorType)
+    {
+    case Type::Lz4:
+        return std::make_unique<LZ4Compressor>();
+    case Type::Lz4HC:
+        return std::make_unique<LZ4HCCompressor>();
+    case Type::RFC1951:
+        return std::make_unique<ZipCompressor>();
+    default:
+    {
+        DVASSERT_MSG(false, Format("Unexpected compressor type: %u", compressorType));
+        return nullptr;
+    }
+    }
+}
 
-bool CreateArchive(const Vector<String>& sourcesList, bool addHiddenFiles, DAVA::Compressor::Type compressType, const FilePath& archivePath, const FilePath& logPath);
-
-} // namespace Archive
-} // namespace DAVA
+} // end namespace DAVA

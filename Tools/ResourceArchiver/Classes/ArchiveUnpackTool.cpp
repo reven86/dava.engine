@@ -94,7 +94,7 @@ void ArchiveUnpackTool::ProcessInternal()
         {
             Logger::Info("Unpacking %s, compressed size %u, orig size %u, pack type %s",
                          fileInfo.relativeFilePath.c_str(), fileInfo.compressedSize, fileInfo.originalSize,
-                         ResourceArchiver::PackTypeToString(fileInfo.compressionType).c_str());
+                         ResourceArchiver::CompressTypeToString(fileInfo.compressionType).c_str());
             if (!UnpackFile(resourceArchive, fileInfo))
             {
                 return;
