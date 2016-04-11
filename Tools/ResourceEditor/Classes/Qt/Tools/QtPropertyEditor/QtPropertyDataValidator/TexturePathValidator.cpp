@@ -54,10 +54,10 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 {
     if (v.type() == QVariant::String)
     {
-        FilePath texturePath = DAVA::FilePath(v.toString().toStdString());
+        DAVA::FilePath texturePath = DAVA::FilePath(v.toString().toStdString());
         if (DAVA::FileSystem::Instance()->Exists(texturePath) && TextureDescriptorUtils::CreateOrUpdateDescriptor(texturePath))
         {
-            FilePath descriptorPath = TextureDescriptor::GetDescriptorPathname(texturePath);
+            DAVA::FilePath descriptorPath = DAVA::TextureDescriptor::GetDescriptorPathname(texturePath);
 
             auto& texturesMap = DAVA::Texture::GetTextureMap();
             auto found = texturesMap.find(FILEPATH_MAP_KEY(descriptorPath));

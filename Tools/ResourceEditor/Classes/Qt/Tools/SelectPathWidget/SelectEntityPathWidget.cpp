@@ -106,7 +106,7 @@ void SelectEntityPathWidget::ConvertFromMimeData(const QMimeData* mimeData, DAVA
 void SelectEntityPathWidget::ConvertQMimeDataFromSceneTree(const QMimeData* mimeData,
                                                            DAVA::List<DAVA::Entity*>& retList)
 {
-    retList = MimeDataHelper::GetPointersFromSceneTreeMime(mimeData);
+    retList = DAVA::MimeDataHelper::GetPointersFromSceneTreeMime(mimeData);
     SetEntities(retList, true);
 }
 
@@ -126,7 +126,7 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
     Q_FOREACH (QUrl url, droppedUrls)
     {
         DAVA::FilePath filePath(url.toLocalFile().toStdString());
-        if (!(FileSystem::Instance()->Exists(filePath) && filePath.GetExtension() == ".sc2"))
+        if (!(DAVA::FileSystem::Instance()->Exists(filePath) && filePath.GetExtension() == ".sc2"))
         {
             continue;
         }

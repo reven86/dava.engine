@@ -30,13 +30,14 @@
 #ifndef TIMELINE_WIDGET_BASE_H
 #define TIMELINE_WIDGET_BASE_H
 
-
 #include <DAVAEngine.h>
+
 #include <QWidget>
 #include <QString>
 #include <QDialog>
-#include <QScrollBar.h>
-#include <qslider.h>
+#include <QScrollBar>
+#include <QSlider>
+#include <QPainter>
 
 #define SCALE_WIDTH 25
 
@@ -59,9 +60,6 @@
 #define SLIDER_HEIGHT_EXPAND 5
 #endif
 
-using namespace DAVA;
-#include <qpainter.h>
-
 class ScrollZoomWidget : public QWidget
 {
     Q_OBJECT
@@ -70,9 +68,9 @@ public:
     explicit ScrollZoomWidget(QWidget* parent = 0);
     ~ScrollZoomWidget();
 
-    virtual void Init(float32 minT, float32 maxT);
-    float32 GetMinBoundary();
-    float32 GetMaxBoundary();
+    virtual void Init(DAVA::float32 minT, DAVA::float32 maxT);
+    DAVA::float32 GetMinBoundary();
+    DAVA::float32 GetMaxBoundary();
 
 signals:
     void ValueChanged();
@@ -100,13 +98,13 @@ protected:
     void UpdateSliderPosition();
     void UpdateZoomSlider();
 
-    QString float2QString(float32 value) const;
+    QString float2QString(DAVA::float32 value) const;
 
-    int32 GetIntValue(float32 value) const;
+    DAVA::int32 GetIntValue(DAVA::float32 value) const;
 
-    void PerformZoom(float newScale, bool moveScroll = true);
+    void PerformZoom(DAVA::float32 newScale, bool moveScroll = true);
 
-    void PerformOffset(float value, bool moveScroll = true);
+    void PerformOffset(DAVA::float32 value, bool moveScroll = true);
 
     enum ePositionRelativelyToDrawRect
     {
@@ -124,14 +122,14 @@ protected slots:
 protected:
     QPoint mouseStartPos;
 
-    float32 minValue;
-    float32 maxValue;
-    float32 minTime;
-    float32 maxTime;
-    float32 generalMinTime;
-    float32 generalMaxTime;
-    float32 minValueLimit;
-    float32 maxValueLimit;
+    DAVA::float32 minValue;
+    DAVA::float32 maxValue;
+    DAVA::float32 minTime;
+    DAVA::float32 maxTime;
+    DAVA::float32 generalMinTime;
+    DAVA::float32 generalMaxTime;
+    DAVA::float32 minValueLimit;
+    DAVA::float32 maxValueLimit;
 
     enum eGridStyle
     {
@@ -141,8 +139,8 @@ protected:
     eGridStyle gridStyle;
 
     QBrush backgroundBrush;
-    float32 scale;
-    float32 initialTimeInterval;
+    DAVA::float32 scale;
+    DAVA::float32 initialTimeInterval;
 
     QScrollBar* horizontalScrollBar;
     QSlider* zoomSlider;

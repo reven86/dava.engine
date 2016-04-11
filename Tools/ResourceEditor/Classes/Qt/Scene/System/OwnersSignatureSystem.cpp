@@ -57,16 +57,16 @@ DAVA::String GetCurrentTime()
     time_t now = time(0);
     tm* utcTime = localtime(&now);
 
-    DAVA::String timeString = Format("%04d.%02d.%02d_%02d_%02d_%02d",
-                                     utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
-                                     utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
+    DAVA::String timeString = DAVA::Format("%04d.%02d.%02d_%02d_%02d_%02d",
+                                           utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
+                                           utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
 
     return timeString;
 }
 
 void UpdateOwner(DAVA::Entity* entity)
 {
-    KeyedArchive* properties = GetCustomPropertiesArchieve(entity);
+    DAVA::KeyedArchive* properties = GetCustomPropertiesArchieve(entity);
     if (nullptr != properties)
     {
         properties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, SettingsManager::GetValue(Settings::General_DesinerName).AsString());
@@ -77,8 +77,8 @@ void UpdateOwner(DAVA::Entity* entity)
 OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 void OwnersSignatureSystem::AddEntity(DAVA::Entity* entity)
@@ -90,8 +90,8 @@ void OwnersSignatureSystem::ImmediateEvent(DAVA::Component* component, DAVA::uin
 {
     switch (event)
     {
-    case EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case EventSystem::TRANSFORM_PARENT_CHANGED:
+    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
     {
         OwnersSignatureSystemInternal::UpdateOwner(component->GetEntity());
         break;

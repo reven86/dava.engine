@@ -35,21 +35,19 @@
 
 #include "Scene/SceneEditor2.h"
 
-using namespace DAVA;
-
 class BaseParticleEditorContentWidget
 {
 public:
     BaseParticleEditorContentWidget();
 
-    virtual void StoreVisualState(KeyedArchive* visualStateProps) = 0;
-    virtual void RestoreVisualState(KeyedArchive* visualStateProps) = 0;
+    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
+    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
 
-    ParticleEmitter* GetEmitter() const
+    DAVA::ParticleEmitter* GetEmitter() const
     {
         return emitter;
     };
-    ParticleEffectComponent* GetEffect() const
+    DAVA::ParticleEffectComponent* GetEffect() const
     {
         return effect;
     };
@@ -69,11 +67,11 @@ protected:
     static const QChar DEGREE_MARK_CHARACTER;
 
     // Conversion from/to playback speed to/from slider value.
-    int ConvertFromPlaybackSpeedToSliderValue(float32 playbackSpeed);
+    int ConvertFromPlaybackSpeedToSliderValue(DAVA::float32 playbackSpeed);
     float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
-    ParticleEmitter* emitter;
-    ParticleEffectComponent* effect;
+    DAVA::ParticleEmitter* emitter;
+    DAVA::ParticleEffectComponent* effect;
 
     SceneEditor2* activeScene;
 };

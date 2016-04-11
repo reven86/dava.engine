@@ -32,24 +32,22 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
-class DraggableDialog : public UIControl
+class DraggableDialog : public DAVA::UIControl
 {
 protected:
     ~DraggableDialog();
 
 public:
-    DraggableDialog(const Rect& rect);
+    DraggableDialog(const DAVA::Rect& rect);
 
     virtual void DidAppear();
     virtual void DidDisappear();
 
-    virtual void Input(UIEvent* currentInput);
+    virtual void Input(DAVA::UIEvent* currentInput);
 
 protected:
-    Vector2 originalPosition;
-    Vector2 basePoint;
+    DAVA::Vector2 originalPosition;
+    DAVA::Vector2 basePoint;
 };
 
 #endif

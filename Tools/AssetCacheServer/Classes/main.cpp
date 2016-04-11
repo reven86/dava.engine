@@ -49,8 +49,8 @@ int main(int argc, char* argv[])
     DAVA::Core::Run(argc, argv);
     QApplication a(argc, argv);
 
-    const QString appUid = "{AACCAACC-6CE2-459A-B26F-79AAF05E0C6B}";
-    const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
+    const QString appUid = "{DAVA.AssetCacheServer.Version.1.0.0}";
+    const QString appUidPath = QCryptographicHash::hash((appUid).toUtf8(), QCryptographicHash::Sha1).toHex();
     RunGuard runGuard(appUidPath);
     if (runGuard.tryToRun())
     {

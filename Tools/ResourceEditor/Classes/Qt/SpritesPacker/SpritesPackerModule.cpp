@@ -80,8 +80,8 @@ void SpritesPackerModule::RepackWithDialog()
 
 void SpritesPackerModule::SetupSpritesPacker(const DAVA::FilePath& projectPath)
 {
-    FilePath inputDir = projectPath + "/DataSource/Gfx/Particles";
-    FilePath outputDir = projectPath + "/Data/Gfx/Particles";
+    DAVA::FilePath inputDir = projectPath + "/DataSource/Gfx/Particles";
+    DAVA::FilePath outputDir = projectPath + "/Data/Gfx/Particles";
 
     spritesPacker->ClearTasks();
     spritesPacker->AddTask(QString::fromStdString(inputDir.GetAbsolutePathname()), QString::fromStdString(outputDir.GetAbsolutePathname()));
@@ -108,10 +108,10 @@ void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA
 
 void SpritesPackerModule::ReloadObjects()
 {
-    Sprite::ReloadSprites();
+    DAVA::Sprite::ReloadSprites();
 
     DAVA::uint32 gpu = spritesPacker->GetResourcePacker().requestedGPUFamily;
-    SettingsManager::SetValue(Settings::Internal_SpriteViewGPU, VariantType(gpu));
+    SettingsManager::SetValue(Settings::Internal_SpriteViewGPU, DAVA::VariantType(gpu));
 
     emit SpritesReloaded();
 }
