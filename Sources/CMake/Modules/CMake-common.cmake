@@ -76,7 +76,7 @@ endmacro ()
 #  PARENT_SCOPE - Glob source files in current directory but set the result in parent-scope's variable ${DIR}_CPP_FILES and ${DIR}_H_FILES instead
 macro (define_source_files)
     # Parse extra arguments
-    cmake_parse_arguments (ARG "PCH;PARENT_SCOPE" "GROUP" "EXTRA_CPP_FILES;EXTRA_H_FILES;GLOB_CPP_PATTERNS;GLOB_H_PATTERNS;GLOB_ERASE_FILES" ${ARGN})
+    cmake_parse_arguments (ARG "PCH;PARENT_SCOPE" "GROUP" "EXTRA_CPP_FILES;EXTRA_H_FILES;GLOB_RECURSE_CPP_PATTERNS;GLOB_RECURSE_H_PATTERNS;GLOB_CPP_PATTERNS;GLOB_H_PATTERNS;GLOB_ERASE_FILES" ${ARGN})
 
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
@@ -93,11 +93,21 @@ macro (define_source_files)
     set ( CPP_FILES )
     set ( H_FILES )
 
+    set ( CPP_FILES_RECURSE )
+    set ( H_FILES_RECURSE )    
+
     file( GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
     file( GLOB H_FILES ${ARG_GLOB_H_PATTERNS} )
 
+    file( GLOB_RECURSE CPP_FILES_RECURSE ${ARG_GLOB_RECURSE_CPP_PATTERNS} )
+    file( GLOB_RECURSE H_FILES_RECURSE ${ARG_GLOB_RECURSE_H_PATTERNS} )    
+
     list( APPEND CPP_FILES ${ARG_EXTRA_CPP_FILES} )
-    list( APPEND H_FILES ${ARG_EXTRA_H_FILES} )
+    list( APPEND H_FILES ${ARG_EXTRA_H_FILES}  )
+
+    list( APPEND CPP_FILES ${CPP_FILES_RECURSE} )
+    list( APPEND H_FILES   ${H_FILES_RECURSE} )
+      
     set ( SOURCE_FILES ${CPP_FILES} ${H_FILES} )
     
     source_group( "" FILES ${SOURCE_FILES} )
@@ -557,7 +567,7 @@ macro( load_property  )
         GET_PROPERTY( VALUE GLOBAL PROPERTY  ${PROPERTY} )
         if( VALUE )
             set( ${PROPERTY} ${VALUE} )
-            message( "load prop ${PROPERTY} -> ${VALUE}" )
+            #message( "load prop ${PROPERTY} -> ${VALUE}" )
         endif()
     endforeach()
 endmacro()

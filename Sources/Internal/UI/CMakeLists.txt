@@ -1,30 +1,19 @@
-set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp)  
-set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h)
 
-if( NOT ANDROID )
-    list( APPEND ERASE_FILES UITextFieldAndroid.cpp 
-                             UITextFieldAndroid.h
-                             UIScreenManagerAndroid.h 
-                             UIScreenManagerAndroid.cpp )
-endif ()
+set( HPP_FILES_RECURSE           *.h   )
+set( CPP_FILES_RECURSE           *.cpp )
+set( CPP_FILES_RECURSE_APPLE     *.mm  )
 
-if ( ( NOT MACOS ) AND ( NOT WIN32 ) ) 
-    list( APPEND ERASE_FILES UIScreenManagerDefault.h 
-                             UIScreenManagerDefault.cpp )
-endif ()
+set( ERASE_FILES_NOT_ANDROID     UITextFieldAndroid.cpp 
+                                 UITextFieldAndroid.h 
+                                 UIScreenManagerAndroid.h 
+                                 UIScreenManagerAndroid.cpp )
 
-if( NOT IOS )
-    list( APPEND ERASE_FILES UIScreenManageriPhone.h 
-                             UIScreenManageriPhoneImpl.h )    
-endif()
+set( ERASE_FILES_NOT_IOS         UIScreenManageriPhone.h 
+                                 UIScreenManageriPhoneImpl.h )
 
-if( APPLE )
-    list( APPEND ADDED_CPP_PATTERNS *.mm )    
-endif()
+set( ERASE_FILES_NOT_MACOS       UIScreenManagerDefault.h  
+                                 UIScreenManagerDefault.cpp  )
 
-define_source_files( PARENT_SCOPE 
-  GLOB_CPP_PATTERNS    ${ADDED_CPP_PATTERNS}
-  GLOB_H_PATTERNS      ${ADDED_H_PATTERNS}
-  GLOB_ERASE_FILES     ${ERASE_FILES} 
-)
+set( ERASE_FILES_NOT_WIN32       ${ERASE_FILES_NOT_MACOS} )
 
+setup_main_module()

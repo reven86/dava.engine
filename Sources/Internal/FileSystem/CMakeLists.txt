@@ -1,12 +1,7 @@
 
-if( ANDROID )
-  set( ERASE_FILES )
+set( HPP_FILES *.h )
+set( CPP_FILES *.cpp )
+set( CPP_FILES_APPLE *.mm  )
+set( ERASE_FILES_NOT_ANDROID  LocalizationAndroid.cpp )
 
-else()
-  set( ERASE_FILES 	LocalizationAndriod.cpp 
-  					LocalizationAndroid.cpp )
-
-endif()
-
-define_source_files (PARENT_SCOPE GLOB_ERASE_FILES ${ERASE_FILES} )
-
+setup_main_module()

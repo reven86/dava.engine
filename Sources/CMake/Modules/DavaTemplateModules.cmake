@@ -1,27 +1,75 @@
 
 #set( NAME_MODULE                )
 #set( MODULE_TYPE                )#INLINE STATIC DINAMIC 
+#
 #set( CPP_FILES                  )
-#set( H_FILES                    )
-#set( ERASE_FILES                )
+#set( HPP_FILES                  )
 #set( CPP_FILES_<PLATFORM>       )
-#set( H_FILES_<PLATFORM>         )
+#set( HPP_FILES_<PLATFORM>       )
+#
+#set( CPP_FILES_RECURSE            )
+#set( HPP_FILES_RECURSE            )
+#set( CPP_FILES_RECURSE_<PLATFORM> )
+#set( HPP_FILES_RECURSE_<PLATFORM> )
+#
+#set( ERASE_FILES                )
 #set( ERASE_FILES_<PLATFORM>     )
+#set( ERASE_FILES_NOT_<PLATFORM>     )
+#
 #set( DEFINITIONS                )
 #set( DEFINITIONS_<PLATFORM>     )
+#
 #set( STATIC_LIBRARIES_<PLATFORM>           )
 #set( STATIC_LIBRARIES_<PLATFORM>_RELEASE   )
 #set( STATIC_LIBRARIES_<PLATFORM>_DEBUG     )
+#
 #set( DINAMIC_LIBRARIES_<PLATFORM>          )
 #set( DINAMIC_LIBRARIES_<PLATFORM>_RELEASE  )
 #set( DINAMIC_LIBRARIES_<PLATFORM>_DEBUG    )
+#
 macro( setup_main_module )
 
-    get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
-    list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
+    set( INIT )
 
-    if (${_index} GREATER -1)
+    if( NAME_MODULE )
+        get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
+        list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
+        if ( ${_index} GREATER -1)
+            set( INIT true )
+        endif()
+    else()
+        set( INIT true )
+    endif()
 
+    if( NOT MODULE_TYPE )
+        set( MODULE_TYPE INLINE )
+    endif()
+
+    if ( INIT )
+        if( APPLE )
+            foreach( VALUE CPP_FILES 
+                           CPP_FILES_RECURSE 
+                           ERASE_FILES 
+                           ERASE_FILES_NOT
+                           DEFINITIONS )
+                if( ${VALUE}_APPLE)
+                    list( APPEND ${VALUE}_${DAVA_PLATFORM_CURENT} ${${VALUE}_APPLE} )  
+                endif()
+            endforeach()
+
+        endif()
+
+        foreach( PLATFORM  ${DAVA_PLATFORM_LIST} )
+            if( NOT ${PLATFORM} AND ERASE_FILES_NOT_${PLATFORM} )
+                list( APPEND ERASE_FILES ${ERASE_FILES_NOT_${PLATFORM}} ) 
+            endif()
+        endforeach()
+
+
+        if( ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT} AND ERASE_FILES )
+             list(REMOVE_ITEM ERASE_FILES ${ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT}} )
+
+        endif()
 
         save_property( PROPERTY_LIST 
                 DEFINITIONS
@@ -33,11 +81,13 @@ macro( setup_main_module )
                 DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
                 DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
             )
-                
-
+        
         define_source_files (
-            GLOB_CPP_PATTERNS  ${CPP_FILES}     ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
-            GLOB_H_PATTERNS    ${HPP_FILES}     ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
+            GLOB_CPP_PATTERNS          ${CPP_FILES}         ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
+            GLOB_H_PATTERNS            ${HPP_FILES}         ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
+            GLOB_RECURSE_CPP_PATTERNS  ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
+            GLOB_RECURSE_H_PATTERNS    ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
+
             GLOB_ERASE_FILES   ${ERASE_FILES}   ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
         )
 
@@ -73,7 +123,6 @@ macro( setup_main_module )
                 add_library( ${NAME_MODULE} SHARED  ${H_FILES}  ${CPP_FILES} )
             endif()
         endif()
-
     endif()
 
 endmacro ()
