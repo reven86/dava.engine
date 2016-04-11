@@ -111,18 +111,19 @@ namespace DAVA
 
         for (unsigned int i = 0; i<pFormatCtx->nb_streams; i++)
             if (pFormatCtx->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_VIDEO){
-                videoindex = i;
+                videoIndex = i;
                 break;
             }
-        if (videoindex == -1){
+        if (videoIndex == -1)
+        {
             Logger::Error("Didn't find a video stream.\n");
             return;
         }
 
-        AV::AVRational avfps = pFormatCtx->streams[videoindex]->avg_frame_rate;
+        AV::AVRational avfps = pFormatCtx->streams[videoIndex]->avg_frame_rate;
         videoFramerate = avfps.num / static_cast<float32>(avfps.den);
-        
-        codecContext = pFormatCtx->streams[videoindex]->codec;
+
+        codecContext = pFormatCtx->streams[videoIndex]->codec;
         pCodec = AV::avcodec_find_decoder(codecContext->codec_id);
         if (pCodec == nullptr){
             Logger::Error("Codec not found.\n");
@@ -190,8 +191,6 @@ namespace DAVA
 
     void MovieViewControl::UpdateVideo(AV::AVPacket * packet, float32 timeElapsed)
     {
-
-
         int32 got_picture;
         int32 ret = AV::avcodec_decode_video2(codecContext, decodedFrame, &got_picture, packet);
         SCOPE_EXIT
@@ -262,13 +261,20 @@ namespace DAVA
 
         do
         {
-            if (AV::av_read_frame(pFormatCtx, packet) < 0)
+            int retRead = -1;
+            retRead = AV::av_read_frame(pFormatCtx, packet);
+            if (retRead < 0)
             {
-               break;
+                //  Logger::FrameworkDebug("EOF or error");
+                return;
             }
         } while (packet->stream_index != videoindex);
 
+        if (packet->stream_index == videoIndex)
+            ;
         UpdateVideo(packet, timeElapsed);
+        //        if (packet->stream_index == audioIndex)
+        //      UpdateAudio(packet, timeElapsed);
     }
 
 }

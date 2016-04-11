@@ -108,7 +108,7 @@ namespace DAVA
         int64_t in_channel_layout = -1;
         struct SwrContext * au_convert_ctx = nullptr;
 
-        unsigned int videoindex = -1;
+        unsigned int videoIndex = -1;
         AV::AVFormatContext * pFormatCtx = nullptr;
         AV::AVCodecContext * codecContext = nullptr;
         AV::AVCodec * pCodec = nullptr;
@@ -120,6 +120,8 @@ namespace DAVA
         AV::SwsContext * img_convert_ctx = nullptr;
 
         char8 * filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
+
+        unsigned int audioIndex = -1;
     };
 }
 
