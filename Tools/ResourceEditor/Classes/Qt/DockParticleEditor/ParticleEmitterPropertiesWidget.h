@@ -55,8 +55,8 @@ public:
 
     virtual bool eventFilter(QObject* o, QEvent* e);
 
-    virtual void StoreVisualState(KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps);
+    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps);
 
     // Accessors to timelines.
     TimeLineWidget* GetEmitterRadiusTimeline()

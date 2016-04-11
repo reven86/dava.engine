@@ -41,8 +41,7 @@
 #include "DockSceneTree/SceneTreeDelegate.h"
 
 class LazyUpdater;
-class SceneTree
-: public QTreeView
+class SceneTree : public QTreeView
 {
     Q_OBJECT
 

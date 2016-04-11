@@ -48,16 +48,16 @@ SceneSelectionSystem::SceneSelectionSystem(SceneEditor2* editor)
     DVASSERT(collisionSystem != nullptr);
     DVASSERT(hoodSystem != nullptr);
     DVASSERT(modificationSystem != nullptr);
-    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
-    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
 {
     if (GetScene())
     {
-        GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+        GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
     }
 }
 
@@ -65,9 +65,9 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 {
     switch (event)
     {
-    case EventSystem::SWITCH_CHANGED:
-    case EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case EventSystem::TRANSFORM_PARENT_CHANGED:
+    case DAVA::EventSystem::SWITCH_CHANGED:
+    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
     {
         if (currentSelection.ContainsObject(component->GetEntity()))
         {
@@ -103,7 +103,7 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
 
 namespace SceneSelectionSystem_Details
 {
-bool FindIfParentWasAdded(DAVA::Entity* entity, const DAVA::List<DAVA::Entity*>& container, Scene* scene)
+bool FindIfParentWasAdded(DAVA::Entity* entity, const DAVA::List<DAVA::Entity*>& container, DAVA::Scene* scene)
 {
     DAVA::Entity* parent = entity->GetParent();
     if (parent == scene || parent == nullptr)
@@ -278,9 +278,9 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
 {
     UpdateGroupSelectionMode();
 
-    const float32 minSelectionSize = 2.0f;
+    const DAVA::float32 minSelectionSize = 2.0f;
 
-    Vector2 selectionSize = selectionEndPoint - selectionStartPoint;
+    DAVA::Vector2 selectionSize = selectionEndPoint - selectionStartPoint;
     if ((std::abs(selectionSize.x) < minSelectionSize) || (std::abs(selectionSize.y) < minSelectionSize))
     {
         return;
@@ -291,22 +291,22 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
     float maxX = std::max(selectionStartPoint.x, selectionEndPoint.x);
     float maxY = std::max(selectionStartPoint.y, selectionEndPoint.y);
 
-    Vector3 p0;
-    Vector3 p1;
-    Vector3 p2;
-    Vector3 p3;
-    Vector3 p4;
+    DAVA::Vector3 p0;
+    DAVA::Vector3 p1;
+    DAVA::Vector3 p2;
+    DAVA::Vector3 p3;
+    DAVA::Vector3 p4;
     SceneCameraSystem* cameraSystem = ((SceneEditor2*)GetScene())->cameraSystem;
-    cameraSystem->GetRayTo2dPoint(Vector2(minX, minY), 1.0f, p0, p1);
-    cameraSystem->GetRayTo2dPoint(Vector2(maxX, minY), 1.0f, p0, p2);
-    cameraSystem->GetRayTo2dPoint(Vector2(minX, maxY), 1.0f, p0, p4);
-    cameraSystem->GetRayTo2dPoint(Vector2(maxX, maxY), 1.0f, p0, p3);
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(minX, minY), 1.0f, p0, p1);
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(maxX, minY), 1.0f, p0, p2);
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(minX, maxY), 1.0f, p0, p4);
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(maxX, maxY), 1.0f, p0, p3);
 
-    Plane planes[4];
-    planes[0] = Plane(p2, p1, p0);
-    planes[1] = Plane(p3, p2, p0);
-    planes[2] = Plane(p4, p3, p0);
-    planes[3] = Plane(p1, p4, p0);
+    DAVA::Plane planes[4];
+    planes[0] = DAVA::Plane(p2, p1, p0);
+    planes[1] = DAVA::Plane(p3, p2, p0);
+    planes[2] = DAVA::Plane(p4, p3, p0);
+    planes[3] = DAVA::Plane(p1, p4, p0);
 
     const SelectableGroup& allSelectedObjects = collisionSystem->ClipObjectsToPlanes(planes, 4);
 
@@ -349,7 +349,7 @@ void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
     }
 }
 
-void SceneSelectionSystem::RemoveEntity(Entity* entity)
+void SceneSelectionSystem::RemoveEntity(DAVA::Entity* entity)
 {
     if (!entitiesForSelection.empty())
     {
@@ -431,12 +431,12 @@ void SceneSelectionSystem::Draw()
         return;
     }
 
-    Vector2 selectionSize = selectionEndPoint - selectionStartPoint;
+    DAVA::Vector2 selectionSize = selectionEndPoint - selectionStartPoint;
     if (selecting && (selectionSize.Length() >= 1.0f))
     {
         DAVA::Rect targetRect(selectionStartPoint, selectionSize);
-        RenderSystem2D::Instance()->FillRect(targetRect, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f / 3.0f));
-        RenderSystem2D::Instance()->DrawRect(targetRect, DAVA::Color::White);
+        DAVA::RenderSystem2D::Instance()->FillRect(targetRect, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f / 3.0f));
+        DAVA::RenderSystem2D::Instance()->DrawRect(targetRect, DAVA::Color::White);
     }
 
     DAVA::int32 drawMode = SettingsManager::GetValue(Settings::Scene_SelectionDrawMode).AsInt32();
@@ -458,8 +458,8 @@ void SceneSelectionSystem::Draw()
             {
                 auto bbox = collisionSystem->GetBoundingBox(item.GetContainedObject());
                 DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
-            }
         }
+    }
     }
 
     DAVA::Color drawColor = DAVA::Color::White;
@@ -793,7 +793,7 @@ DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableGr
         object.GetBoundingBox().GetTransformedBox(object.GetWorldTransform(), transformed);
         result.AddAABBox(transformed);
     }
-    return result.IsEmpty() ? DAVA::AABBox3(Vector3(0.0f, 0.0f, 0.0f), 1.0f) : result;
+    return result.IsEmpty() ? DAVA::AABBox3(DAVA::Vector3(0.0f, 0.0f, 0.0f), 1.0f) : result;
 }
 
 void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)

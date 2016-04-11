@@ -41,6 +41,7 @@ class RenderObject;
 class KeyedArchive;
 class ParticleEffectComponent;
 class ParticleEmitter;
+class ParticleEmitterInstance;
 }
 
 class SceneDumper

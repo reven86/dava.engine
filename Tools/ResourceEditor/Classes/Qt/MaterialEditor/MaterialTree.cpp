@@ -115,7 +115,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
             {
                 curScene->selectionSystem->AddObjectToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
             }
-            const Vector<NMaterial*>& children = material->GetChildren();
+            const DAVA::Vector<DAVA::NMaterial*>& children = material->GetChildren();
             for (auto child : children)
             {
                 fn(child);
@@ -243,7 +243,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
             {
                 const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
                 DVASSERT(removeCommand->GetComponent() != nullptr);
-                if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
+                if (removeCommand->GetComponent()->GetType() == DAVA::Component::RENDER_COMPONENT)
                 {
                     Update();
                 }
@@ -252,8 +252,8 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
             if (command->GetId() == CMDID_BATCH)
             {
                 const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-                const uint32 count = batch->Size();
-                for (uint32 i = 0; i < count; ++i)
+                const DAVA::uint32 count = batch->Size();
+                for (DAVA::uint32 i = 0; i < count; ++i)
                 {
                     const Command2* cmd = batch->GetCommand(i);
                     if (cmd->GetId() == CMDID_COMPONENT_REMOVE)

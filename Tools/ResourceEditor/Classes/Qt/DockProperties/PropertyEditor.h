@@ -38,7 +38,7 @@
 class LazyUpdater;
 struct PropEditorUserData : public QtPropertyData::UserData
 {
-    enum PropertyType : uint32
+    enum PropertyType : DAVA::uint32
     {
         ORIGINAL,
         COPY
@@ -64,7 +64,7 @@ class PropertyEditor : public QtPropertyEditor
     Q_OBJECT
 
 public:
-    enum eViewMode : uint32
+    enum eViewMode : DAVA::uint32
     {
         VIEW_NORMAL,
         VIEW_ADVANCED,
@@ -132,8 +132,8 @@ private:
     void ApplyFavorite(QtPropertyData* data);
     void ApplyCustomExtensions(QtPropertyData* data);
 
-    void OnAddComponent(Component::eType type);
-    void OnAddComponent(Component* component);
+    void OnAddComponent(DAVA::Component::eType type);
+    void OnAddComponent(DAVA::Component* component);
 
     void AddFavoriteChilds(QtPropertyData* parent);
     void RemFavoriteChilds(QtPropertyData* parent);

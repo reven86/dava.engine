@@ -40,7 +40,7 @@
 namespace DAVA
 {
     
-#define FLOAT_EQUAL(f1, f2) (fabsf(f1 - f2) < EPSILON)
+#define FLOAT_EQUAL(f1, f2) (fabsf(f1 - f2) < DAVA::EPSILON)
 #define FLOAT_EQUAL_EPS(f1, f2, EPS) (fabsf(f1 - f2) < EPS)
 }
 

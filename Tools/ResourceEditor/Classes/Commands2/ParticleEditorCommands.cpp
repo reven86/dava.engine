@@ -432,7 +432,7 @@ DAVA::Entity* CommandRestartParticleEffect::GetEntity() const
     return this->effectEntity;
 }
 
-CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(ParticleEmitterInstance* emitter)
+CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(DAVA::ParticleEmitterInstance* emitter)
     : CommandAction(CMDID_PARTICLE_EMITTER_LAYER_ADD)
     , instance(emitter)
 {
@@ -607,7 +607,7 @@ void CommandLoadInnerParticleEmitterFromYaml::Redo()
     if (instance == nullptr)
         return;
 
-    // TODO: restart effect
+    //TODO: restart effect
     instance->GetEmitter()->LoadFromYaml(filePath);
 }
 

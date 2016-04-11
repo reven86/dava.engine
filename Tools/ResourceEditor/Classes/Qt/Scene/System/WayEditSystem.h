@@ -61,7 +61,6 @@ class WayEditSystem : public DAVA::SceneSystem,
 
 public:
     WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* selectionSystem, SceneCollisionSystem* collisionSystem);
-    ~WayEditSystem() override;
 
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
@@ -100,7 +99,7 @@ protected:
     bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
     bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
-protected:
+private:
     SelectableGroup currentSelection;
     SelectableGroup selectedWaypoints;
     SelectableGroup prevSelectedWaypoints;

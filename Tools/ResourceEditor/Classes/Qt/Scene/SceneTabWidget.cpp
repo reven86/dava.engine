@@ -141,8 +141,8 @@ void SceneTabWidget::InitDAVAUI()
     davaUIScreen = new DAVA::UIScreen();
     davaUIScreen->AddControl(dava3DView);
 
-    UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
-    UIScreenManager::Instance()->SetScreen(davaUIScreenID);
+    DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
+    DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
 }
 
 void SceneTabWidget::ReleaseDAVAUI()
@@ -196,10 +196,10 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
     SceneEditor2* scene = new SceneEditor2();
     scene->SetScenePath(scenePathname);
 
-    if (FileSystem::Instance()->Exists(scenePathname))
+    if (DAVA::FileSystem::Instance()->Exists(scenePathname))
     {
-        SceneFileV2::eError sceneWasLoaded = scene->LoadScene(scenePathname);
-        if (sceneWasLoaded != SceneFileV2::ERROR_NO_ERROR)
+        DAVA::SceneFileV2::eError sceneWasLoaded = scene->LoadScene(scenePathname);
+        if (sceneWasLoaded != DAVA::SceneFileV2::ERROR_NO_ERROR)
         {
             QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
         }
@@ -215,18 +215,18 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
 
 bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
 {
-    VersionInfo::SceneVersion sceneVersion = SceneFileV2::LoadSceneVersion(scenePath);
+    DAVA::VersionInfo::SceneVersion sceneVersion = DAVA::SceneFileV2::LoadSceneVersion(scenePath);
 
     if (sceneVersion.IsValid())
     {
-        VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(sceneVersion);
-        const uint32 curVersion = VersionInfo::Instance()->GetCurrentVersion().version;
+        DAVA::VersionInfo::eStatus status = DAVA::VersionInfo::Instance()->TestVersion(sceneVersion);
+        const DAVA::uint32 curVersion = DAVA::VersionInfo::Instance()->GetCurrentVersion().version;
 
         switch (status)
         {
-        case VersionInfo::COMPATIBLE:
+        case DAVA::VersionInfo::COMPATIBLE:
         {
-            const String& branches = VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
+            const DAVA::String& branches = DAVA::VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
             const QString msg = QString("Scene was created with older version or another branch of ResourceEditor. Saving scene will broke compatibility.\nScene version: %1 (required %2)\n\nNext tags will be added:\n%3\n\nContinue opening?").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
             const QMessageBox::StandardButton result = QMessageBox::warning(this, "Compatibility warning", msg, QMessageBox::Open | QMessageBox::Cancel, QMessageBox::Open);
             if (result != QMessageBox::Open)
@@ -235,9 +235,9 @@ bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
             }
             break;
         }
-        case VersionInfo::INVALID:
+        case DAVA::VersionInfo::INVALID:
         {
-            const String& branches = VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
+            const DAVA::String& branches = DAVA::VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
             const QString msg = QString("Scene was created with incompatible version or branch of ResourceEditor.\nScene version: %1 (required %2)\nNext tags aren't implemented in current branch:\n%3").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
             QMessageBox::critical(this, "Compatibility error", msg);
             return false;
@@ -587,7 +587,7 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
 
 bool SceneTabWidget::CloseAllTabs()
 {
-    uint32 count = GetTabCount();
+    DAVA::uint32 count = GetTabCount();
     while (count)
     {
         if (!CloseTab(GetCurrentTab()))

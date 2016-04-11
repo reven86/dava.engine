@@ -33,9 +33,9 @@ const QChar BaseParticleEditorContentWidget::DEGREE_MARK_CHARACTER = QChar(0x00B
 #define PARTICLE_EMITTER_MIN_PLAYBACK_SPEED 0.25f
 #define PARTICLE_EMITTER_MAX_PLAYBACK_SPEED 4.0f
 
-int BaseParticleEditorContentWidget::ConvertFromPlaybackSpeedToSliderValue(float32 playbackSpeed)
+int BaseParticleEditorContentWidget::ConvertFromPlaybackSpeedToSliderValue(DAVA::float32 playbackSpeed)
 {
-    playbackSpeed = Clamp(playbackSpeed, PARTICLE_EMITTER_MIN_PLAYBACK_SPEED, PARTICLE_EMITTER_MAX_PLAYBACK_SPEED);
+    playbackSpeed = DAVA::Clamp(playbackSpeed, PARTICLE_EMITTER_MIN_PLAYBACK_SPEED, PARTICLE_EMITTER_MAX_PLAYBACK_SPEED);
 
     // Our scale is logarithmic.
     uint playbackSpeedInt = (uint)(playbackSpeed / PARTICLE_EMITTER_MIN_PLAYBACK_SPEED);

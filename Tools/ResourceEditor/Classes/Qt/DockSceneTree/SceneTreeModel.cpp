@@ -641,7 +641,7 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
 {
     SceneTreeItem* item = GetItem(_index);
     const QString& name = item->ItemName();
-    uint32 id = 0xFFFFFFFF;
+    DAVA::uint32 id = 0xFFFFFFFF;
 
     DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
     if (nullptr != entity)
@@ -706,7 +706,7 @@ void SceneTreeModel::RebuildIndexesCache()
 void SceneTreeModel::AddIndexesCache(SceneTreeItem* item)
 {
     // go thought all items and remember entities indexes
-    BaseObject* objectToAdd = nullptr;
+    DAVA::BaseObject* objectToAdd = nullptr;
     switch (item->ItemType())
     {
     case SceneTreeItem::EIT_Entity:
@@ -821,7 +821,7 @@ QVariant SceneTreeModel::data(const QModelIndex& _index, int role) const
     case Qt::BackgroundRole:
     {
         SceneTreeItem* item = GetItem(_index);
-        ParticleEmitterInstance* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+        DAVA::ParticleEmitterInstance* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
         if (nullptr != emitter && emitter->GetEmitter()->shortEffect)
         {
             static const QVariant brush(QBrush(QColor(255, 0, 0, 20)));

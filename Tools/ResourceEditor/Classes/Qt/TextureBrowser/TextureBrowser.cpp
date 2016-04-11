@@ -82,9 +82,11 @@ TextureBrowser::TextureBrowser(QWidget* parent)
     textureListSortModes["Name"] = TextureListModel::SortByName;
 
     // global scene manager signals
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
+    SceneSignals* sceneSignals = SceneSignals::Instance();
+    QObject::connect(sceneSignals, &SceneSignals::Activated, this, &TextureBrowser::sceneActivated);
+    QObject::connect(sceneSignals, &SceneSignals::Deactivated, this, &TextureBrowser::sceneDeactivated);
+    QObject::connect(sceneSignals, &SceneSignals::SelectionChanged, this, &TextureBrowser::sceneSelectionChanged);
+    QObject::connect(sceneSignals, &SceneSignals::CommandExecuted, this, &TextureBrowser::OnCommandExecuted);
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
@@ -349,10 +351,10 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage>& images)
     {
         char tmp[1024];
 
-        FilePath imagePath;
+        DAVA::FilePath imagePath;
         if (curDescriptor->IsCubeMap())
         {
-            Vector<FilePath> faces;
+            DAVA::Vector<DAVA::FilePath> faces;
             curDescriptor->GetFacePathnames(faces);
             DVASSERT(faces.size() > 0);
             imagePath = faces[0];
@@ -362,8 +364,8 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage>& images)
             imagePath = curDescriptor->GetSourceTexturePathname();
         }
 
-        const ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePath);
-        String formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
+        const DAVA::ImageInfo info = DAVA::ImageSystem::Instance()->GetImageInfo(imagePath);
+        DAVA::String formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
 
         int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
         int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
@@ -574,41 +576,41 @@ void TextureBrowser::setupTextureViewTabBar()
     p.drawRect(QRect(0, 0, 15, 15));
 
     tabIndex = ui->viewTabBar->addTab("PVR iOS");
-    ui->viewTabBar->setTabData(tabIndex, GPU_POWERVR_IOS);
+    ui->viewTabBar->setTabData(tabIndex, DAVA::GPU_POWERVR_IOS);
     ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
     p.setBrush(QBrush(gpuColor_PVR_Android));
     p.drawRect(QRect(0, 0, 15, 15));
 
     tabIndex = ui->viewTabBar->addTab("PVR Android");
-    ui->viewTabBar->setTabData(tabIndex, GPU_POWERVR_ANDROID);
+    ui->viewTabBar->setTabData(tabIndex, DAVA::GPU_POWERVR_ANDROID);
     ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
     p.setBrush(QBrush(gpuColor_Tegra));
     p.drawRect(QRect(0, 0, 15, 15));
 
     tabIndex = ui->viewTabBar->addTab("Tegra");
-    ui->viewTabBar->setTabData(tabIndex, GPU_TEGRA);
+    ui->viewTabBar->setTabData(tabIndex, DAVA::GPU_TEGRA);
     ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
     p.setBrush(QBrush(gpuColor_MALI));
     p.drawRect(QRect(0, 0, 15, 15));
 
     tabIndex = ui->viewTabBar->addTab("MALI");
-    ui->viewTabBar->setTabData(tabIndex, GPU_MALI);
+    ui->viewTabBar->setTabData(tabIndex, DAVA::GPU_MALI);
     ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
     p.setBrush(QBrush(gpuColor_Adreno));
     p.drawRect(QRect(0, 0, 15, 15));
 
     tabIndex = ui->viewTabBar->addTab("Adreno");
-    ui->viewTabBar->setTabData(tabIndex, GPU_ADRENO);
+    ui->viewTabBar->setTabData(tabIndex, DAVA::GPU_ADRENO);
     ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
     p.setBrush(QBrush(gpuColor_DX11));
     p.drawRect(QRect(0, 0, 15, 15));
     tabIndex = ui->viewTabBar->addTab("DX11");
-    ui->viewTabBar->setTabData(tabIndex, GPU_DX11);
+    ui->viewTabBar->setTabData(tabIndex, DAVA::GPU_DX11);
     ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
     QObject::connect(ui->viewTabBar, SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
@@ -636,7 +638,7 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture* texture, const DAVA::Te
 
         // reload only when editor view format is the same as given texture format
         // or if given texture format if not a file (will happened if some common texture params changed - mipmap/filtering etc.)
-        if (!GPUFamilyDescriptor::IsGPUForDevice(gpu) || gpu == curEditorImageGPUForTextures)
+        if (!DAVA::GPUFamilyDescriptor::IsGPUForDevice(gpu) || gpu == curEditorImageGPUForTextures)
         {
             texture->ReloadAs(curEditorImageGPUForTextures);
             UpdateSceneMaterialsWithTexture(texture);
@@ -646,7 +648,7 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture* texture, const DAVA::Te
 
 void TextureBrowser::UpdateSceneMaterialsWithTexture(DAVA::Texture* texture)
 {
-    Set<NMaterial*> materials;
+    DAVA::Set<DAVA::NMaterial*> materials;
     SceneHelper::EnumerateMaterials(curScene, materials);
     for (auto mat : materials)
     {
@@ -1016,7 +1018,7 @@ void TextureBrowser::convertStatusQueue(int curJob, int jobCount)
     }
 }
 
-void TextureBrowser::setScene(DAVA::Scene* scene)
+void TextureBrowser::setScene(SceneEditor2* scene)
 {
     if (scene != curScene)
     {
@@ -1024,11 +1026,27 @@ void TextureBrowser::setScene(DAVA::Scene* scene)
         curScene = DAVA::SafeRetain(scene);
     }
 
+    DAVA::TextureDescriptor* selectedDescriptor = curDescriptor;
     // reset current texture
     setTexture(nullptr, nullptr);
 
     // set new scene
     textureListModel->setScene(curScene);
+
+    if (selectedDescriptor != nullptr)
+    {
+        DAVA::Texture* texture = textureListModel->getTexture(selectedDescriptor);
+        if (texture != nullptr)
+        {
+            setTexture(texture, selectedDescriptor);
+
+            QModelIndex index = textureListModel->getIndex(selectedDescriptor);
+            if (index.isValid())
+            {
+                ui->listViewTextures->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+            }
+        }
+    }
 }
 
 void TextureBrowser::sceneActivated(SceneEditor2* scene)
@@ -1060,6 +1078,20 @@ void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     if (!isHidden())
     {
         textureListModel->setHighlight(selected);
+    }
+}
+
+void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+{
+    if (curScene != scene || command == nullptr)
+    {
+        return;
+    }
+
+    static DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
+    if (command->MatchCommandIDs(commandIds))
+    {
+        Update();
     }
 }
 

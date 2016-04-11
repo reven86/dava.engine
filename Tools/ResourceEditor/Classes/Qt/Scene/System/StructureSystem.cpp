@@ -1,30 +1,30 @@
 /*==================================================================================
-	Copyright (c) 2008, binaryzebra
-	All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-	* Redistributions of source code must retain the above copyright
-	notice, this list of conditions and the following disclaimer.
-	* Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
-	* Neither the name of the binaryzebra nor the
-	names of its contributors may be used to endorse or promote products
-	derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	=====================================================================================*/
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
 
 #include "Scene/System/StructureSystem.h"
@@ -118,17 +118,17 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     sceneEditor->BeginBatch("Remove entities", objects.size());
     for (auto entity : objects)
-    {
-        for (auto delegate : delegates)
         {
-            delegate->WillRemove(entity);
+            for (auto delegate : delegates)
+            {
+                delegate->WillRemove(entity);
+            }
+            sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(entity));
+            for (auto delegate : delegates)
+            {
+                delegate->DidRemoved(entity);
+            }
         }
-        sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(entity));
-        for (auto delegate : delegates)
-        {
-            delegate->DidRemoved(entity);
-        }
-    }
     sceneEditor->EndBatch();
 }
 
@@ -161,7 +161,7 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstan
     }
     sceneEditor->EndBatch();
     EmitChanged();
-}
+    }
 
 void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitterInstance*>& oldEmitters, DAVA::ParticleEmitterInstance* newEmitter, DAVA::ParticleLayer* newBefore)
 {
@@ -176,7 +176,7 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers
     }
     sceneEditor->EndBatch();
     EmitChanged();
-}
+    }
 
 void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer)
 {
@@ -191,7 +191,7 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     }
     sceneEditor->EndBatch();
     EmitChanged();
-}
+    }
 
 SelectableGroup StructureSystem::ReloadEntities(const SelectableGroup& objects, bool saveLightmapSettings)
 {
@@ -201,19 +201,19 @@ SelectableGroup StructureSystem::ReloadEntities(const SelectableGroup& objects, 
     DAVA::Set<DAVA::FilePath> refsToReload;
 
     for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
-    {
-        DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(entity);
-        if (props != nullptr)
         {
-            DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-            if (!pathToReload.IsEmpty())
+            DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(entity);
+            if (props != nullptr)
             {
-                refsToReload.insert(pathToReload);
+                DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
+                if (!pathToReload.IsEmpty())
+                {
+                    refsToReload.insert(pathToReload);
+                }
             }
         }
-    }
 
-    DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
+        DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
     InternalMapping groupMapping;
     for (; it != refsToReload.end(); ++it)
     {
@@ -284,10 +284,10 @@ void StructureSystem::ReloadInternal(InternalMapping& mapping, const DAVA::FileP
 
                 for (; it != end; ++it)
                 {
-                    DAVA::Entity* newEntityInstance = loadedEntity->Clone();
+                    DAVA::ScopedPtr<DAVA::Entity> newEntityInstance(loadedEntity->Clone());
                     DAVA::Entity* origEntity = it->first;
 
-                    if (NULL != origEntity && NULL != newEntityInstance && NULL != origEntity->GetParent())
+                    if ((origEntity != nullptr) && (newEntityInstance.get() != nullptr) && (origEntity->GetParent() != nullptr))
                     {
                         DAVA::Entity* before = origEntity->GetParent()->GetNextChild(origEntity);
 
@@ -320,12 +320,12 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     if (nullptr != sceneEditor)
     {
-        ScopedPtr<Entity> loadedEntity(Load(newModelPath));
+        DAVA::ScopedPtr<DAVA::Entity> loadedEntity(Load(newModelPath));
         if (static_cast<DAVA::Entity*>(loadedEntity) != nullptr)
         {
             DAVA::Vector3 entityPos = pos;
 
-            KeyedArchive* customProps = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
+            DAVA::KeyedArchive* customProps = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
             customProps->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, newModelPath.GetAbsolutePathname());
 
             if (entityPos.IsZero() && FindLandscape(loadedEntity) == nullptr)
@@ -440,7 +440,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
     DAVA::Entity* loadedEntity = nullptr;
 
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (nullptr != sceneEditor && sc2path.IsEqualToExtension(".sc2") && FileSystem::Instance()->Exists(sc2path))
+    if (nullptr != sceneEditor && sc2path.IsEqualToExtension(".sc2") && DAVA::FileSystem::Instance()->Exists(sc2path))
     {
         if (clearCache)
         {
@@ -456,9 +456,9 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             // sceneFileV2 will remove empty nodes only
             // if there is parent for such nodes.
             {
-                SceneFileV2* tmpSceneFile = new SceneFileV2();
-                Entity* tmpParent = new Entity();
-                Entity* tmpEntity = loadedEntity;
+                DAVA::ScopedPtr<DAVA::SceneFileV2> tmpSceneFile(new DAVA::SceneFileV2());
+                DAVA::ScopedPtr<DAVA::Entity> tmpParent(new DAVA::Entity());
+                DAVA::Entity* tmpEntity = loadedEntity;
 
                 tmpParent->AddNode(tmpEntity);
                 tmpSceneFile->RemoveEmptyHierarchy(tmpEntity);
@@ -466,11 +466,9 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
                 loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
                 DAVA::SafeRelease(tmpEntity);
-                DAVA::SafeRelease(tmpParent);
-                DAVA::SafeRelease(tmpSceneFile);
             }
 
-            KeyedArchive* props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
+            DAVA::KeyedArchive* props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
             props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
 
             CheckAndMarkSolid(loadedEntity);
@@ -488,31 +486,31 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
 void StructureSystem::CopyLightmapSettings(DAVA::NMaterial* fromState, DAVA::NMaterial* toState) const
 {
-    if (fromState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+    if (fromState->HasLocalTexture(DAVA::NMaterialTextureName::TEXTURE_LIGHTMAP))
     {
-        Texture* lightmap = fromState->GetLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
-        if (toState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
-            toState->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
+        DAVA::Texture* lightmap = fromState->GetLocalTexture(DAVA::NMaterialTextureName::TEXTURE_LIGHTMAP);
+        if (toState->HasLocalTexture(DAVA::NMaterialTextureName::TEXTURE_LIGHTMAP))
+            toState->SetTexture(DAVA::NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
         else
-            toState->AddTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
+            toState->AddTexture(DAVA::NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
     }
 
-    if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))
+    if (fromState->HasLocalProperty(DAVA::NMaterialParamName::PARAM_UV_SCALE))
     {
-        const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_SCALE);
-        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))
-            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, data);
+        const float* data = fromState->GetLocalPropValue(DAVA::NMaterialParamName::PARAM_UV_SCALE);
+        if (toState->HasLocalProperty(DAVA::NMaterialParamName::PARAM_UV_SCALE))
+            toState->SetPropertyValue(DAVA::NMaterialParamName::PARAM_UV_SCALE, data);
         else
-            toState->AddProperty(NMaterialParamName::PARAM_UV_SCALE, data, rhi::ShaderProp::TYPE_FLOAT2);
+            toState->AddProperty(DAVA::NMaterialParamName::PARAM_UV_SCALE, data, rhi::ShaderProp::TYPE_FLOAT2);
     }
 
-    if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))
+    if (fromState->HasLocalProperty(DAVA::NMaterialParamName::PARAM_UV_OFFSET))
     {
-        const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_OFFSET);
-        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))
-            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, data);
+        const float* data = fromState->GetLocalPropValue(DAVA::NMaterialParamName::PARAM_UV_OFFSET);
+        if (toState->HasLocalProperty(DAVA::NMaterialParamName::PARAM_UV_OFFSET))
+            toState->SetPropertyValue(DAVA::NMaterialParamName::PARAM_UV_OFFSET, data);
         else
-            toState->AddProperty(NMaterialParamName::PARAM_UV_OFFSET, data, rhi::ShaderProp::TYPE_FLOAT2);
+            toState->AddProperty(DAVA::NMaterialParamName::PARAM_UV_OFFSET, data, rhi::ShaderProp::TYPE_FLOAT2);
     }
 }
 
@@ -639,8 +637,8 @@ bool StructureSystem::CopyLightmapSettings(DAVA::Entity* fromEntity, DAVA::Entit
 
 void StructureSystem::FindMeshesRecursive(DAVA::Entity* entity, DAVA::Vector<DAVA::RenderObject*>& objects) const
 {
-    RenderObject* ro = GetRenderObject(entity);
-    if (ro && ro->GetType() == RenderObject::TYPE_MESH)
+    DAVA::RenderObject* ro = GetRenderObject(entity);
+    if (ro && ro->GetType() == DAVA::RenderObject::TYPE_MESH)
     {
         objects.push_back(ro);
     }
