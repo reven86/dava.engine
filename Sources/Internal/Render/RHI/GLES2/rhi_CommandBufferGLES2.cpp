@@ -1716,7 +1716,10 @@ void CommandBufferGLES2_t::Execute()
             #if defined(__DAVAENGINE_IPHONE__)
             GL_CALL(glDrawArraysInstancedEXT(mode, 0, v_cnt, instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
-            GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            if (glDrawArraysInstanced)
+            {
+                GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            }
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
             #else
@@ -1805,7 +1808,10 @@ void CommandBufferGLES2_t::Execute()
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
             DVASSERT(baseInst == 0) // it's not supported in GLES
-            GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            if (glDrawElementsInstanced)
+            {
+                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            }
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(uint64(i_off)), instCount, baseInst));
             #else
