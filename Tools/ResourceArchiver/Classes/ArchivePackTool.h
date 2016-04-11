@@ -26,15 +26,52 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __RESOURCE_ARCHIVE_TOOL_UTILS_H__
-#define __RESOURCE_ARCHIVE_TOOL_UTILS_H__
+#ifndef __ARCHIVE_PACK_TOOL_H__
+#define __ARCHIVE_PACK_TOOL_H__
 
 #include "Base/BaseTypes.h"
-#include "Compression/Compressor.h"
+#include "FileSystem/ResourceArchive.h"
+#include "CommandLineTool.h"
+#include "AssetCache/AssetCache.h"
 
-namespace ResourceArchiveToolUtils
+class ArchivePackTool : public CommandLineTool
 {
-bool ToPackType(const DAVA::String& compressionStr, DAVA::Compressor::Type& type);
-DAVA::String ToString(DAVA::Compressor::Type packType);
+public:
+    ArchivePackTool();
+
+private:
+    enum class Source
+    {
+        UseDir,
+        UseListFiles,
+        UseSrcFiles,
+        Unknown
+    };
+
+    bool ConvertOptionsToParamsInternal() override;
+    void ProcessInternal() override;
+
+    void CollectAllFilesInDirectory(const DAVA::String& pathDirName, DAVA::Vector<DAVA::String>& output);
+    //void OnOneFilePacked(const DAVA::ResourceArchive::FileInfo& info);
+
+    void ConstructCacheKey(DAVA::AssetCache::CacheItemKey& key, const DAVA::Vector<DAVA::String>& files, const DAVA::String& compression) const;
+    bool RetrieveFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& pathToPack, const DAVA::FilePath& pathToLog) const;
+    bool AddToCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& pathToPack, const DAVA::FilePath& pathToLog) const;
+
+    DAVA::String compressionStr;
+    DAVA::Compressor::Type compressionType;
+    bool addHidden = false;
+    bool useCache = false;
+    DAVA::String ip;
+    DAVA::uint32 port;
+    DAVA::uint32 timeout;
+    DAVA::String logFileName;
+    DAVA::String srcDir;
+    DAVA::List<DAVA::String> listFiles;
+    DAVA::Vector<DAVA::String> srcFiles;
+    DAVA::String packFileName;
+    Source source = Source::Unknown;
 };
-#endif //__RESOURCE_ARCHIVE_TOOL_UTILS_H__
+
+
+#endif // __ARCHIVE_PACK_TOOL_H__

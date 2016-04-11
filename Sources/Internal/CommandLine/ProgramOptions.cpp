@@ -73,6 +73,14 @@ void ProgramOptions::AddArgument(const String& argumentName, bool required)
 
 bool ProgramOptions::Parse(uint32 argc, char* argv[])
 {
+    Vector<String> commandLine(argv, argv + argc);
+    return Parse(commandLine);
+}
+bool ProgramOptions::Parse(const Vector<String>& commandLine)
+{
+    uint32 argc = commandLine.size();
+    const Vector<String>& argv = commandLine;
+
     // if first argument equal command name we should skip it else we should stop parsing
     uint32 argIndex = 1; //skip executable pathname in params
     if (argIndex < argc && commandName == String(argv[argIndex]))
@@ -88,7 +96,7 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
     while (argIndex < argc)
     {
         // search if there is options with such name
-        if (!ParseOption(argIndex, argc, argv))
+        if (!ParseOption(argIndex, commandLine))
         {
             // set required
             if (curParamPos < arguments.size())
@@ -125,8 +133,11 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
     return true;
 }
 
-bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
+bool ProgramOptions::ParseOption(uint32& argIndex, const Vector<String>& commandLine)
 {
+    uint32 argc = commandLine.size();
+    const Vector<String>& argv = commandLine;
+
     const String argString = argv[argIndex];
     for (auto& opt : options)
     {

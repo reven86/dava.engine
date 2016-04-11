@@ -26,24 +26,56 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#pragma once
+#include "CommandToolManager.h"
 
-#include <FileSystem/FilePath.h>
-#include <FileSystem/ResourceArchive.h>
-// #include <FileSystem/FileList.h>
-// #include <CommandLine/ProgramOptions.h>
-// #include <FileSystem/PackArchive.h>
-// #include <Compression/LZ4Compressor.h>
-// #include <Compression/ZipCompressor.h>
+using namespace DAVA;
 
-namespace DAVA
+CommandToolManager::CommandToolManager(String name)
+    : toolName(name)
+    , helpOption("help")
 {
-namespace Archiver
-{
-bool CreateArchive(const FilePath& packName,
-                   const Vector<String>& sortedFileNames,
-                   void (*onPackOneFile)(const ResourceArchive::FileInfo&));
 }
 
-} // namespace Archive
-} // namespace DAVA
+void CommandToolManager::AddTool(std::unique_ptr<CommandLineTool> tool)
+{
+    tools.emplace_back(std::move(tool));
+}
+
+void CommandToolManager::Process(const Vector<String>& commandLine)
+{
+    if (helpOption.Parse(commandLine) == true)
+    {
+        PrintUsage();
+    }
+    else
+    {
+        for (auto& tool : tools)
+        {
+            bool parsed = tool->ParseOptions(commandLine);
+            if (parsed)
+            {
+                tool->Process();
+                return;
+            }
+        }
+    }
+}
+
+void CommandToolManager::PrintUsage()
+{
+    printf("Usage: %s <command>\n", toolName.c_str());
+    printf("\n Commands: ");
+
+    for (const auto& tool : tools)
+    {
+        printf("%s, ", tool->GetToolKey().c_str());
+    }
+    printf("%s", helpOption.GetCommand().c_str());
+
+    printf("\n\n");
+    for (const auto& tool : tools)
+    {
+        tool->PrintUsage();
+        printf("\n");
+    }
+}

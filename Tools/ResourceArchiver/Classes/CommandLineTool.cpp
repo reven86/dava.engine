@@ -26,27 +26,70 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ARCHIVE_UNPACK_TOOL_H__
-#define __ARCHIVE_UNPACK_TOOL_H__
-
-#include "Base/BaseTypes.h"
-#include "FileSystem/ResourceArchive.h"
 #include "CommandLineTool.h"
+#include "Logger/Logger.h"
+#include "Logger/TeamcityOutput.h"
+#include "CommandLine/CommandLineParser.h"
 
-class ArchiveUnpackTool : public CommandLineTool
+using namespace DAVA;
+
+CommandLineTool::CommandLineTool(const DAVA::String& toolName)
+    : options(toolName)
 {
-public:
-    ArchiveUnpackTool();
+    options.AddOption("-v", VariantType(false), "Verbose output");
+    options.AddOption("-h", VariantType(false), "Help for command");
+    options.AddOption("-teamcity", VariantType(false), "Extra output in teamcity format");
+}
 
-private:
-    bool ConvertOptionsToParamsInternal() override;
-    void ProcessInternal() override;
+bool CommandLineTool::ParseOptions(const Vector<String>& commandLine)
+{
+    return options.Parse(commandLine);
+}
 
-    bool ArchiveUnpackTool::UnpackFile(const DAVA::ResourceArchive& ra, const DAVA::ResourceArchive::FileInfo& fileInfo);
+void CommandLineTool::PrintUsage() const
+{
+    options.PrintUsage();
+}
 
-    DAVA::FilePath dstDir;
-    DAVA::String packFilename;
-};
+DAVA::String CommandLineTool::GetToolKey() const
+{
+    return options.GetCommand();
+}
 
+void CommandLineTool::Process()
+{
+    const bool printUsage = options.GetOption("-h").AsBool();
+    if (printUsage)
+    {
+        PrintUsage();
+        return;
+    }
 
-#endif // __ARCHIVE_UNPACK_TOOL_H__
+    PrepareEnvironment();
+
+    if (ConvertOptionsToParamsInternal())
+    {
+        ProcessInternal();
+    }
+    else
+    {
+        PrintUsage();
+    }
+}
+
+void CommandLineTool::PrepareEnvironment() const
+{
+    const bool verboseMode = options.GetOption("-v").AsBool();
+    if (verboseMode)
+    {
+        CommandLineParser::Instance()->SetVerbose(true);
+        Logger::Instance()->SetLogLevel(Logger::LEVEL_DEBUG);
+    }
+
+    const bool useTeamcity = options.GetOption("-teamcity").AsBool();
+    if (useTeamcity)
+    {
+        CommandLineParser::Instance()->SetUseTeamcityOutput(true);
+        Logger::AddCustomOutput(new TeamcityOutput());
+    }
+}

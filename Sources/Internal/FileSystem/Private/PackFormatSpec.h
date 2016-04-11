@@ -50,7 +50,7 @@ struct PackFile
 
     struct NamesBlock
     {
-        String sortedNamesLz4hc; // '\0' separated all file names in pack file compressed with lz4hc
+        Vector<uint8> sortedNamesLz4hc; // '\0' separated all file names in pack file compressed with lz4hc
     } names;
 
     struct FilesDataBlock

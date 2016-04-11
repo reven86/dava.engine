@@ -62,23 +62,24 @@ PackArchive::PackArchive(const FilePath& archiveName)
     {
         throw std::runtime_error("error in header of packfile start position for file names incorrect");
     }
-    String& fileNames = packFile.names.sortedNamesLz4hc;
-    fileNames.resize(headerBlock.namesBlockSizeCompressedLZ4HC, '\0');
+    ;
+    Vector<uint8>& compressedNamesBuffer = packFile.names.sortedNamesLz4hc;
+    compressedNamesBuffer.resize(headerBlock.namesBlockSizeCompressedLZ4HC, '\0');
 
-    numBytesRead = file->Read(&fileNames[0], static_cast<uint32>(fileNames.size()));
-    if (numBytesRead != fileNames.size())
+    numBytesRead = file->Read(compressedNamesBuffer.data(), static_cast<uint32>(compressedNamesBuffer.size()));
+    if (numBytesRead != compressedNamesBuffer.size())
     {
-        throw std::runtime_error("can't read file names from packfile");
+        throw std::runtime_error("Can't read file names from packfile");
     }
 
-    Vector<uint8> compressedNames(begin(fileNames), end(fileNames));
-    Vector<uint8> originalNames;
-    originalNames.resize(packFile.header.namesBlockSizeOriginal);
-    if (!LZ4HCCompressor().Decompress(compressedNames, originalNames))
+    Vector<uint8> originalNamesBuffer;
+    originalNamesBuffer.resize(packFile.header.namesBlockSizeOriginal);
+    if (!LZ4HCCompressor().Decompress(compressedNamesBuffer, originalNamesBuffer))
     {
         throw std::runtime_error("can't uncompress file names");
     }
-    fileNames.assign(begin(originalNames), end(originalNames));
+
+    String fileNames(begin(originalNamesBuffer), end(originalNamesBuffer));
 
     if (headerBlock.startFilesDataBlockPosition != file->GetPos())
     {
@@ -144,7 +145,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
                                  [](const ResourceArchive::FileInfo& first,
                                     const ResourceArchive::FileInfo& second)
                                  {
-                                     return std::strcmp(first.relativeFilePath, second.relativeFilePath) <= 0;
+                                     return CompareCaseInsensitive(first.relativeFilePath, second.relativeFilePath) < 0;
                                  });
     if (!result)
     {

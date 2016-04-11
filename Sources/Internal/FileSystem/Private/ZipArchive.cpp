@@ -66,7 +66,7 @@ ZipArchive::ZipArchive(const FilePath& fileName)
 
     std::stable_sort(begin(fileInfos), end(fileInfos), [](const ResourceArchive::FileInfo& left, const ResourceArchive::FileInfo& right)
                      {
-                         return std::strcmp(left.relativeFilePath, right.relativeFilePath) < 0;
+                         return CompareCaseInsensitive(left.relativeFilePath, right.relativeFilePath) < 0;
                      });
 }
 

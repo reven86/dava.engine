@@ -226,6 +226,8 @@ public:
      */
     String ReadFileContents(const FilePath& pathname);
 
+    bool ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer);
+
     /**
 		\brief Function to attach ResourceArchive to filesystem
 	

@@ -26,23 +26,25 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Logger/Logger.h"
+#include "ResourceArchiver/ResourceArchiver.h"
+
 #include "ArchiveListTool.h"
-#include "Utils.h"
 
 using namespace DAVA;
 
 ArchiveListTool::ArchiveListTool()
-    : CommandLineTool("-pack")
+    : CommandLineTool("-list")
 {
     options.AddArgument("packfile");
 }
 
 bool ArchiveListTool::ConvertOptionsToParamsInternal()
 {
-    packFilename = options.GetArgument("pakfile");
+    packFilename = options.GetArgument("packfile");
     if (packFilename.empty())
     {
-        Logger::Error("pakfile param is not specified");
+        LOG_ERROR("packfile param is not specified");
         return false;
     }
 
@@ -51,16 +53,18 @@ bool ArchiveListTool::ConvertOptionsToParamsInternal()
 
 void ArchiveListTool::ProcessInternal()
 {
-    std::unique_ptr<ResourceArchive> ra(new ResourceArchive(packFilename));
-    if (!ra)
+    try
     {
-        return;
+        ResourceArchive archive(packFilename);
+        for (const ResourceArchive::FileInfo& info : archive.GetFilesInfo())
+        {
+            Logger::Info("%s: compressed size %u, orig size %u, type %s",
+                         info.relativeFilePath.c_str(), info.compressedSize, info.originalSize,
+                         ResourceArchiver::PackTypeToString(info.compressionType).c_str());
+        }
     }
-
-    for (const ResourceArchive::FileInfo& info : ra->GetFilesInfo())
+    catch (std::exception ex)
     {
-        Logger::Info("%s: compressed size %d, orig size %d, type %s",
-                     info.fileName, info.compressedSize, info.originalSize,
-                     ResourceArchiveToolUtils::ToString(info.compressionType));
+        LOG_ERROR("Can't open archive %s: %s", packFilename.c_str(), ex.what());
     }
 }

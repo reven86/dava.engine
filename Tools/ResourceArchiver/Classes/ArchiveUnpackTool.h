@@ -26,66 +26,29 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ARCHIVE_PACK_TOOL_H__
-#define __ARCHIVE_PACK_TOOL_H__
+#ifndef __ARCHIVE_UNPACK_TOOL_H__
+#define __ARCHIVE_UNPACK_TOOL_H__
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/ResourceArchive.h"
-#include "CommandLineTool.h"
-#include "AssetCache/AssetCache.h"
+#include "FileSystem/FilePath.h"
 
-class ArchivePackTool : public CommandLineTool
+#include "CommandLineTool.h"
+
+class ArchiveUnpackTool : public CommandLineTool
 {
 public:
-    ArchivePackTool();
+    ArchiveUnpackTool();
 
 private:
-    struct
-    {
-        const DAVA::String Compression = "-compression";
-        const DAVA::String AddHidden = "-addHidden";
-        const DAVA::String UseCache = "-useCache";
-        const DAVA::String Ip = "-ip";
-        const DAVA::String Port = "-p";
-        const DAVA::String Timeout = "-t";
-        const DAVA::String LogFile = "-log";
-        const DAVA::String Dir = "-dir";
-        const DAVA::String SpecFiles = "-spec";
-        const DAVA::String Files = "-file";
-    } OptionNames;
-
-    enum class Source
-    {
-        UseDir,
-        UseSpecFiles,
-        UseSrcFiles,
-        Unknown
-    };
-
     bool ConvertOptionsToParamsInternal() override;
     void ProcessInternal() override;
 
-    void CollectAllFilesInDirectory(const DAVA::String& pathDirName, DAVA::Vector<DAVA::String>& output);
-    //void OnOneFilePacked(const DAVA::ResourceArchive::FileInfo& info);
+    bool ArchiveUnpackTool::UnpackFile(const DAVA::ResourceArchive& ra, const DAVA::ResourceArchive::FileInfo& fileInfo);
 
-    void ConstructCacheKey(DAVA::AssetCache::CacheItemKey& key, const DAVA::Vector<DAVA::String>& files, const DAVA::String& compression) const;
-    bool RetrieveFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& pathToPack, const DAVA::FilePath& pathToLog) const;
-    bool AddToCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& pathToPack, const DAVA::FilePath& pathToLog) const;
-
-    DAVA::String compressionStr;
-    DAVA::Compressor::Type compressionType;
-    bool addHidden = false;
-    bool useCache = false;
-    DAVA::String ip;
-    DAVA::uint32 port;
-    DAVA::uint32 timeout;
-    DAVA::String logFileName;
-    DAVA::FilePath srcDir;
-    DAVA::List<DAVA::String> specFiles;
-    DAVA::Vector<DAVA::String> srcFiles;
-    DAVA::String packFileName;
-    Source source = Source::Unknown;
+    DAVA::FilePath dstDir;
+    DAVA::String packFilename;
 };
 
 
-#endif // __ARCHIVE_PACK_TOOL_H__
+#endif // __ARCHIVE_UNPACK_TOOL_H__

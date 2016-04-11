@@ -38,6 +38,12 @@
                                 Logger::Debug("%s_2 = %f, %f, %f, %f", #param, param._20, param._21, param._22, param._23); \
                                 Logger::Debug("%s_2 = %f, %f, %f, %f", #param, param._30, param._31, param._32, param._33);
 
+#define LOG_FRAMEWORK(format, ...) Logger::FrameworkDebug("[%s] " format, __FUNCTION__, ##__VA_ARGS__);
+#define LOG_DEBUG(format, ...) Logger::Debug("[%s] " format, __FUNCTION__, ##__VA_ARGS__);
+#define LOG_INFO(format, ...) Logger::Info("[%s] " format, __FUNCTION__, ##__VA_ARGS__);
+#define LOG_WARNING(format, ...) Logger::Warning("[%s] " format, __FUNCTION__, ##__VA_ARGS__);
+#define LOG_ERROR(format, ...) Logger::Error("[%s] " format, __FUNCTION__, ##__VA_ARGS__);
+
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 

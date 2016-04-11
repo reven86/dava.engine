@@ -39,6 +39,7 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
+#include "Base/UniquePtr.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>
@@ -775,7 +776,29 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
 
     SafeRelease(fp);
     return bytes;
-};
+}
+
+bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer)
+{
+    UniquePtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    if (!fp)
+    {
+        LOG_ERROR("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    uint32 fileSize = fp->GetSize();
+    buffer.resize(fileSize);
+    uint32 dataRead = fp->Read(buffer.data(), fileSize);
+
+    if (dataRead != fileSize)
+    {
+        LOG_ERROR("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    return true;
+}
 
 void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {

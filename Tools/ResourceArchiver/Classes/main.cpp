@@ -31,12 +31,17 @@ THIS
 #include "ArchivePackTool.h"
 #include "ArchiveUnpackTool.h"
 #include "ArchiveListTool.h"
-#include "CommandToolManager.h"
+#include "Core/Core.h"
 
-using namespace DAVA;
+#include "CommandToolManager.h"
 
 void FrameworkDidLaunched()
 {
+    CommandToolManager mgr("ResourceArchiver");
+    mgr.AddTool(std::unique_ptr<CommandLineTool>(new ArchivePackTool));
+    mgr.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveUnpackTool));
+    mgr.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveListTool));
+    mgr.Process(Core::Instance()->GetCommandLine());
 }
 
 void FrameworkWillTerminate()
@@ -45,10 +50,5 @@ void FrameworkWillTerminate()
 
 int main(int argc, char* argv[])
 {
-    CommandToolManager mgr("ResourceArchiver");
-    mgr.AddTool(std::unique_ptr<CommandLineTool>(new ArchivePackTool));
-    mgr.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveUnpackTool));
-    mgr.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveListTool));
-    mgr.Process(argc, argv);
-    return 0;
+    return DAVA::Core::RunCmdTool(argc, argv);
 }

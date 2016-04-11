@@ -26,32 +26,30 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __RESOURCE_ARCHIVE_TOOL_H__
-#define __RESOURCE_ARCHIVE_TOOL_H__
+#ifndef __COMMAND_TOOL_MANAGER_H__
+#define __COMMAND_TOOL_MANAGER_H__
 
 #include "Base/BaseTypes.h"
 #include "CommandLine/ProgramOptions.h"
+#include "CommandLineTool.h"
 
-class CommandLineTool
+// the idea is to place CommandToolManager and CommandLineTool into Sources/Tools in near future,
+// combine them with CommandToolManager, CommandLineTool of ResourceEditor/Classes/CommandLine/
+// and use that classes througout all our command line tools
+class CommandToolManager
 {
 public:
-    CommandLineTool(const DAVA::String& toolName);
-    virtual ~CommandLineTool() = default;
-
-    DAVA::String GetToolKey() const;
-    bool ParseOptions(int argc, char* argv[]);
-    void PrintUsage() const;
-    void Process();
-
-protected:
-    virtual bool ConvertOptionsToParamsInternal() = 0;
-    virtual void ProcessInternal() = 0;
+    CommandToolManager(DAVA::String toolName);
+    void AddTool(std::unique_ptr<CommandLineTool> tool);
+    //void Process(int argc, char* argv[]);
+    void Process(const DAVA::Vector<DAVA::String>& commandLine);
 
 private:
-    void PrepareEnvironment() const;
+    void PrintUsage();
 
-protected:
-    DAVA::ProgramOptions options;
+    DAVA::String toolName;
+    DAVA::Vector<std::unique_ptr<CommandLineTool>> tools;
+    DAVA::ProgramOptions helpOption;
 };
 
-#endif // __RESOURCE_ARCHIVE_TOOL_H__
+#endif // __COMMAND_TOOL_MANAGER_H__

@@ -26,70 +26,19 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "CommandLineTool.h"
-#include "Logger/Logger.h"
-#include "Logger/TeamcityOutput.h"
-#include "CommandLine/CommandLineParser.h"
+#pragma once
 
-using namespace DAVA;
+#include <FileSystem/FilePath.h>
+#include <FileSystem/ResourceArchive.h>
 
-CommandLineTool::CommandLineTool(const DAVA::String& toolName)
-    : options(toolName)
+namespace DAVA
 {
-    options.AddOption("-v", VariantType(false), "Verbose output");
-    options.AddOption("-h", VariantType(false), "Help for command");
-    options.AddOption("-teamcity", VariantType(false), "Extra output in teamcity format");
-}
-
-bool CommandLineTool::ParseOptions(int argc, char* argv[])
+namespace ResourceArchiver
 {
-    return options.Parse(argc, argv);
-}
+bool StringToPackType(const DAVA::String& compressionStr, DAVA::Compressor::Type& type);
+DAVA::String PackTypeToString(DAVA::Compressor::Type packType);
 
-void CommandLineTool::PrintUsage() const
-{
-    options.PrintUsage();
-}
+bool CreateArchive(const FilePath& packName, const Vector<String>& sourcesList, bool addHiddenFiles);
 
-DAVA::String CommandLineTool::GetToolKey() const
-{
-    return options.GetCommand();
-}
-
-void CommandLineTool::Process()
-{
-    const bool printUsage = options.GetOption("-h").AsBool();
-    if (printUsage)
-    {
-        PrintUsage();
-        return;
-    }
-
-    PrepareEnvironment();
-
-    if (ConvertOptionsToParamsInternal())
-    {
-        ProcessInternal();
-    }
-    else
-    {
-        PrintUsage();
-    }
-}
-
-void CommandLineTool::PrepareEnvironment() const
-{
-    const bool verboseMode = options.GetOption("-v").AsBool();
-    if (verboseMode)
-    {
-        CommandLineParser::Instance()->SetVerbose(true);
-        Logger::Instance()->SetLogLevel(Logger::LEVEL_DEBUG);
-    }
-
-    const bool useTeamcity = options.GetOption("-teamcity").AsBool();
-    if (useTeamcity)
-    {
-        CommandLineParser::Instance()->SetUseTeamcityOutput(true);
-        Logger::AddCustomOutput(new TeamcityOutput());
-    }
-}
+} // namespace Archive
+} // namespace DAVA

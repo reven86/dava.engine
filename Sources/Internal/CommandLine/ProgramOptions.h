@@ -49,10 +49,11 @@ public:
     const String& GetCommand() const;
 
     bool Parse(uint32 argc, char* argv[]);
+    bool Parse(const Vector<String>& commandLine);
     void PrintUsage() const;
 
 private:
-    bool ParseOption(uint32& argIndex, uint32 argc, char* argv[]);
+    bool ParseOption(uint32& argIndex, const Vector<String>& commandLine);
 
 private:
     struct Option

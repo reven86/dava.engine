@@ -21,8 +21,8 @@ include_directories   ( ${DAVA_INCLUDE_DIR} )
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 
-set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp Archiver/*.cpp )
-set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   TextureCompression/*.h   TexturePacker/*.h   Archiver/*.h  )
+set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp ResourceArchiver/*.cpp )
+set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   TextureCompression/*.h   TexturePacker/*.h   ResourceArchiver/*.h  )
 
 if( DAVA_USE_QT_WIDGETS )
     add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/QtTools" ${CMAKE_CURRENT_BINARY_DIR}/QtTools )
