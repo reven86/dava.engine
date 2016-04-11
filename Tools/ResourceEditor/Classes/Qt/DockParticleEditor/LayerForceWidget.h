@@ -35,8 +35,6 @@
 #include <QWidget>
 #include "BaseParticleEditorContentWidget.h"
 
-using namespace DAVA;
-
 class TimeLineWidget;
 class QVBoxLayout;
 
@@ -48,20 +46,20 @@ public:
     explicit LayerForceWidget(QWidget* parent = 0);
     ~LayerForceWidget();
 
-    void Init(SceneEditor2* scene, ParticleLayer* layer, uint32 forceIndex, bool updateMinimized);
-    ParticleLayer* GetLayer() const
+    void Init(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::uint32 forceIndex, bool updateMinimized);
+    DAVA::ParticleLayer* GetLayer() const
     {
         return layer;
     };
-    int32 GetForceIndex() const
+    DAVA::int32 GetForceIndex() const
     {
         return forceIndex;
     };
 
     void Update();
 
-    virtual void StoreVisualState(KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps);
+    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps);
 
 signals:
     void ValueChanged();
@@ -74,8 +72,8 @@ protected:
 
 private:
     QVBoxLayout* mainBox;
-    ParticleLayer* layer;
-    int32 forceIndex;
+    DAVA::ParticleLayer* layer;
+    DAVA::int32 forceIndex;
 
     TimeLineWidget* forceTimeLine;
     TimeLineWidget* forceOverLifeTimeLine;

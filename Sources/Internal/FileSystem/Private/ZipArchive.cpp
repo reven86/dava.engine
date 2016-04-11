@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FileSystem/Private/ZipArchive.h"
 #include "FileSystem/FilePath.h"
+#include "Logger/Logger.h"
 #include <cstring>
 
 namespace DAVA

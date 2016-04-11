@@ -33,8 +33,6 @@
 #include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
 class QLabel;
 class SliderWidget;
 

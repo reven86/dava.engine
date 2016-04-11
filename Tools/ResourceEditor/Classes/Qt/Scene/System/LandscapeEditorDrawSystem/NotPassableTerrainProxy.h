@@ -32,20 +32,18 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
 class NotPassableTerrainProxy
 {
 public:
-    NotPassableTerrainProxy(int32 heightmapSize);
+    NotPassableTerrainProxy(DAVA::int32 heightmapSize);
     virtual ~NotPassableTerrainProxy();
 
     void SetEnabled(bool enabled);
     bool IsEnabled() const;
 
-    Texture* GetTexture();
+    DAVA::Texture* GetTexture();
     void UpdateTexture(DAVA::Heightmap* heightmap,
-                       const AABBox3& landscapeBoundingBox,
+                       const DAVA::AABBox3& landscapeBoundingBox,
                        const DAVA::Rect2i& forRect);
 
 private:
@@ -64,11 +62,11 @@ private:
     };
 
     bool enabled;
-    Texture* notPassableTexture;
+    DAVA::Texture* notPassableTexture;
     DAVA::float32 notPassableAngleTan;
     DAVA::Vector<TerrainColor> angleColor;
 
-    Vector<rhi::HVertexBuffer> gridBuffers;
+    DAVA::Vector<rhi::HVertexBuffer> gridBuffers;
 
     void LoadColorsArray();
     bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;

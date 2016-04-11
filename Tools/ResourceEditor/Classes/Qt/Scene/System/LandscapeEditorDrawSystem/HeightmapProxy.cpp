@@ -36,9 +36,9 @@ HeightmapProxy::HeightmapProxy(Heightmap* heightmap)
 
 void HeightmapProxy::UpdateRect(const DAVA::Rect& rect)
 {
-    int32 size = Size();
+    DAVA::int32 size = Size();
 
-    Rect bounds(0.f, 0.f, (float32)size, (float32)size);
+    DAVA::Rect bounds(0.f, 0.f, static_cast<DAVA::float32>(size), static_cast<DAVA::float32>(size));
 
     changedRect = rect;
     bounds.ClampToRect(changedRect);
@@ -56,7 +56,7 @@ bool HeightmapProxy::IsHeightmapChanged() const
     return heightmapChanged;
 }
 
-const Rect& HeightmapProxy::GetChangedRect() const
+const DAVA::Rect& HeightmapProxy::GetChangedRect() const
 {
     return changedRect;
 }

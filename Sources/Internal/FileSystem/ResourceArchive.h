@@ -58,6 +58,8 @@ public:
     bool HasFile(const String& relativeFilePath) const;
     bool LoadFile(const String& relativeFilePath, Vector<uint8>& outputFileContent) const;
 
+    bool UnpackToFolder(const FilePath& dir) const;
+
 private:
     std::unique_ptr<ResourceArchiveImpl> impl;
 };

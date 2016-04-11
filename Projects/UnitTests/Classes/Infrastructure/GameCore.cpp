@@ -143,10 +143,6 @@ void GameCore::Update(float32 timeElapsed)
 {
     ProcessTests(timeElapsed);
     ApplicationCore::Update(timeElapsed);
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-    FlushLogs();
-#endif
 }
 
 void GameCore::OnError()
@@ -249,22 +245,45 @@ void GameCore::InitNetwork()
     config.AddService(NetCore::SERVICE_LOG);
 
     netController = NetCore::Instance()->CreateController(config, nullptr);
+
+    flusher.reset(new LogFlusher(&netLogger));
 }
 
 void GameCore::UnInitNetwork()
 {
     netLogger.Uninstall();
-    FlushLogs();
+    flusher->FlushLogs();
+    flusher.reset();
 
     Net::NetCore::Instance()->DestroyControllerBlocked(netController);
 }
 
-void GameCore::FlushLogs()
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+GameCore::LogFlusher::LogFlusher(Net::NetLogger* logger)
+    : netLogger(logger)
 {
-    while (netLogger.IsChannelOpen() && netLogger.GetMessageQueueSize() != 0)
+    Logger::AddCustomOutput(this);
+}
+
+GameCore::LogFlusher::~LogFlusher()
+{
+    Logger::RemoveCustomOutput(this);
+}
+
+void GameCore::LogFlusher::FlushLogs()
+{
+    while (netLogger->IsChannelOpen() && netLogger->GetMessageQueueSize() != 0)
     {
         Net::NetCore::Instance()->Poll();
     }
 }
+
+void GameCore::LogFlusher::Output(DAVA::Logger::eLogLevel, const DAVA::char8*)
+{
+    FlushLogs();
+}
+
+#endif
 
 #endif
