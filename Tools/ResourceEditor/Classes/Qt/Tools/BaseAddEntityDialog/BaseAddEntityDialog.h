@@ -64,7 +64,7 @@ public:
     void virtual SetEntity(DAVA::Entity*);
 
     void AddButton(QWidget* widget, eButtonAlign orientation = BUTTON_ALIGN_LEFT);
-    void AddButton(QWidget* widget, int32 position);
+    void AddButton(QWidget* widget, DAVA::int32 position);
 
 protected slots:
     virtual void OnItemEdited(const QModelIndex&);
@@ -74,8 +74,8 @@ protected:
     virtual void FillPropertyEditorWithContent() = 0;
 
     virtual QtPropertyData* AddInspMemberToEditor(void* object, const DAVA::InspMember*);
-    virtual QtPropertyData* AddKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::String& rowName);
-    virtual QtPropertyData* AddMetaObject(void* _object, const DAVA::MetaInfo* _meta, const String& rowName);
+    virtual QtPropertyData* AddKeyedArchiveMember(DAVA::KeyedArchive* archive, const DAVA::String& key, const DAVA::String& rowName);
+    virtual QtPropertyData* AddMetaObject(void* object, const DAVA::MetaInfo* meta, const DAVA::String& rowName);
 
     void AddControlToUserContainer(QWidget* widget);
     void AddControlToUserContainer(QWidget* widget, const DAVA::String& labelString);
