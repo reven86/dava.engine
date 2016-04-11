@@ -167,11 +167,13 @@ void PacksDB::GetAllPacksState(Vector<SmartDlc::PackState>& out) const
 
 void PacksDB::UpdatePackState(const SmartDlc::PackState& state)
 {
-    data->db << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?"
-             << static_cast<int32>(state.state)
-             << state.priority
-             << state.downloadProgress
-             << state.name;
+    data->GetDB() << "begin";
+    data->GetDB() << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?"
+                  << static_cast<int32>(state.state)
+                  << state.priority
+                  << state.downloadProgress
+                  << state.name;
+    data->GetDB() << "commit";
 }
 
 } // end namespace DAVA
