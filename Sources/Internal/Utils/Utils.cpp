@@ -31,6 +31,10 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/YamlParser.h"
 
+#ifdef __DAVAENGINE_WIN32__
+#include "shellapi.h"
+#endif // __DAVAENGINE_WIN32__
+
 namespace DAVA
 {
 WideString WcharToWString(const wchar_t* s)

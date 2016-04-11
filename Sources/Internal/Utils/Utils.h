@@ -38,7 +38,6 @@
 #include "FileSystem/FilePath.h"
 #include "Render/RenderBase.h"
 #include <sstream>
-#include "shellapi.h"
 
 #ifdef __DAVAENGINE_WIN_UAP__
 #include <ppltasks.h>
