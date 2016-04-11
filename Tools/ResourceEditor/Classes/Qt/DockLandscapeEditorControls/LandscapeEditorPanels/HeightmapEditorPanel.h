@@ -34,8 +34,6 @@
 #include "DAVAEngine.h"
 #include "Qt/Scene/System/HeightmapEditorSystem.h"
 
-using namespace DAVA;
-
 class QComboBox;
 class QRadioButton;
 class QLineEdit;
@@ -129,15 +127,15 @@ private:
     void UpdateRadioState(HeightmapEditorSystem::eHeightmapDrawType type);
     void SetDrawingType(HeightmapEditorSystem::eHeightmapDrawType type);
 
-    float32 GetBrushScaleCoef();
-    int32 BrushSizeUIToSystem(int32 uiValue);
-    int32 BrushSizeSystemToUI(int32 systemValue);
+    DAVA::float32 GetBrushScaleCoef();
+    DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
+    DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
 
-    float32 StrengthUIToSystem(int32 uiValue);
-    int32 StrengthSystemToUI(float32 systemValue);
+    DAVA::float32 StrengthUIToSystem(DAVA::int32 uiValue);
+    DAVA::int32 StrengthSystemToUI(DAVA::float32 systemValue);
 
-    float32 AverageStrengthUIToSystem(int32 uiValue);
-    int32 AverageStrengthSystemToUI(float32 systemValue);
+    DAVA::float32 AverageStrengthUIToSystem(DAVA::int32 uiValue);
+    DAVA::int32 AverageStrengthSystemToUI(DAVA::float32 systemValue);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORPANEL__) */

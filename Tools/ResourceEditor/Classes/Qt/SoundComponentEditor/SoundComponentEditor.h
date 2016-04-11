@@ -72,13 +72,13 @@ private:
 
     void FillEventsList();
 
-    void AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo& param, float32 currentParamValue);
+    void AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo& param, DAVA::float32 currentParamValue);
     void ClearParamsFrame();
     void FillEventParamsFrame();
 
     DAVA::Entity* entity;
     DAVA::SoundComponent* component;
-    int32 selectedEventIndex;
+    DAVA::int32 selectedEventIndex;
 
     SceneEditor2* scene;
 

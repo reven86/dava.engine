@@ -78,6 +78,8 @@ using namespace DAVA;
 
 - (id)init;
 
+- (void)webView:(WebView*)inWebView decidePolicyForNewWindowAction:(NSDictionary*)actionInformation request:(NSURLRequest*)inRequest newFrameName:(WebFrame*)inFrame decisionListener:(id<WebPolicyDecisionListener>)listener;
+
 - (void)webView:(WebView*)webView decidePolicyForNavigationAction:(NSDictionary*)actionInformation request:(NSURLRequest*)request frame:(WebFrame*)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 - (void)webView:(WebView*)sender didFinishLoadForFrame:(WebFrame*)frame;
@@ -99,6 +101,11 @@ using namespace DAVA;
         webView = nullptr;
     }
     return self;
+}
+
+- (void)webView:(WebView*)inWebView decidePolicyForNewWindowAction:(NSDictionary*)actionInformation request:(NSURLRequest*)inRequest newFrameName:(WebFrame*)inFrame decisionListener:(id<WebPolicyDecisionListener>)listener
+{
+    [self webView:inWebView decidePolicyForNavigationAction:actionInformation request:inRequest frame:inFrame decisionListener:listener];
 }
 
 - (void)webView:(WebView*)webView decidePolicyForNavigationAction:(NSDictionary*)actionInformation request:(NSURLRequest*)request frame:(WebFrame*)frame decisionListener:(id<WebPolicyDecisionListener>)listener
