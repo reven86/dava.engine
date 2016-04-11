@@ -113,6 +113,11 @@ Vector<Landscape*> LandscapeSystem::GetLandscapeObjects()
     return landscapes;
 }
 
+const Vector<Entity*>& LandscapeSystem::GetLandscapeEntities()
+{
+    return landscapeEntities;
+}
+
 void LandscapeSystem::DrawPatchMetrics(Landscape* landscape, uint32 level, uint32 x, uint32 y)
 {
     const LandscapeSubdivision::SubdivisionPatchInfo& subdivPatchInfo = landscape->GetSubdivision()->GetPatchInfo(level, x, y);

@@ -50,6 +50,7 @@ public:
     void Process(float32 timeElapsed) override;
 
     Vector<Landscape*> GetLandscapeObjects();
+    const Vector<Entity*>& GetLandscapeEntities();
 
 protected:
     void DrawPatchMetrics(Landscape* landscape, uint32 subdivLevel, uint32 x, uint32 y);

@@ -39,6 +39,7 @@
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
 
 EditorMaterialSystem::MaterialMapping::MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_)
     : entity(entity_)
@@ -265,7 +266,7 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
     if (commandID == CMDID_BATCH)
     {
         const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD }))
+        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY }))
         {
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
@@ -299,7 +300,6 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
 
             break;
         }
-
         case CMDID_LOD_CREATE_PLANE:
         {
             const CreatePlaneLODCommand* lodCommand = static_cast<const CreatePlaneLODCommand*>(command);
@@ -361,6 +361,26 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
                 }
             }
             break;
+        }
+        case CMDID_INSP_MEMBER_MODIFY:
+        {
+            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+
+            const Vector<Entity*>& landscapes = GetScene()->landscapeSystem->GetLandscapeEntities();
+            for (Entity* landEntity : landscapes)
+            {
+                Landscape* landObject = GetLandscape(landEntity);
+                if (landObject == cmd->object)
+                {
+                    static const Array<DAVA::FastName, 3> rebuildMembers = { FastName("heightmapPath"), FastName("useMorphing"), FastName("size") };
+
+                    if (std::find(rebuildMembers.begin(), rebuildMembers.end(), cmd->member->Name()) != rebuildMembers.end())
+                    {
+                        RemoveMaterial(landObject->GetMaterial());
+                        AddMaterials(landEntity);
+                    }
+                }
+            }
         }
 
         default:
