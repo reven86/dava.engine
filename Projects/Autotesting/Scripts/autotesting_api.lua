@@ -581,7 +581,7 @@ function ClearField(field)
 end
 
 function FastSelectControl(control)
-    Log('Scrol to contorol '.. control .. 'through API')
+    Log('Scroll to contorol '.. control .. ' through API')
     autotestingSystem:ScrollToControl(control)
     return ClickControl(control)
 end
