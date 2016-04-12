@@ -14,10 +14,12 @@
 #
 #set( ERASE_FILES                )
 #set( ERASE_FILES_<PLATFORM>     )
-#set( ERASE_FILES_NOT_<PLATFORM>     )
+#set( ERASE_FILES_NOT_<PLATFORM> )
 #
 #set( DEFINITIONS                )
 #set( DEFINITIONS_<PLATFORM>     )
+#set( DEFINITIONS_PRIVATE             )
+#set( DEFINITIONS_PRIVATE_<PLATFORM>  )
 #
 #set( STATIC_LIBRARIES_<PLATFORM>           )
 #set( STATIC_LIBRARIES_<PLATFORM>_RELEASE   )
@@ -51,7 +53,8 @@ macro( setup_main_module )
                            CPP_FILES_RECURSE 
                            ERASE_FILES 
                            ERASE_FILES_NOT
-                           DEFINITIONS )
+                           DEFINITIONS 
+                           DEFINITIONS_PRIVATE )
                 if( ${VALUE}_APPLE)
                     list( APPEND ${VALUE}_${DAVA_PLATFORM_CURENT} ${${VALUE}_APPLE} )  
                 endif()
@@ -119,9 +122,20 @@ macro( setup_main_module )
                 append_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )
                 add_library( ${NAME_MODULE} STATIC  ${H_FILES}  ${CPP_FILES} )
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
-               # append_property( DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )
+
+                add_definitions( -DDAVA_MODULE_EXPORTS )
+                append_property( DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )                
                 add_library( ${NAME_MODULE} SHARED  ${H_FILES}  ${CPP_FILES} )
             endif()
+
+            if( DEFINITIONS_PRIVATE )
+                add_definitions( ${DEFINITIONS_PRIVATE} )
+            endif()
+
+            if( DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT} )
+                add_definitions( ${DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT}} )
+            endif()
+
         endif()
     endif()
 
