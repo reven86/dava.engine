@@ -153,7 +153,7 @@ endmacro ()
 #
 macro (define_source_folders )
 
-    cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;GLOB_ERASE_FOLDERS" ${ARGN})
+    cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;ERASE_FOLDERS" ${ARGN})
     
     IF( NOT ARG_RECURSIVE_CALL )
         set( PROJECT_SOURCE_FILES  ) 
@@ -204,13 +204,12 @@ macro (define_source_folders )
         list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
 
     ENDIF()
-  
-             
+               
     FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
         IF( IS_DIRECTORY "${FOLDER_ITEM}" )
             get_filename_component ( FOLDER_NAME ${FOLDER_ITEM} NAME ) 
             set( NOT_FIND_ERASE_ITEM 1 )
-            FOREACH( ERASE_ITEM ${ARG_GLOB_ERASE_FOLDERS} )
+            FOREACH( ERASE_ITEM ${ARG_ERASE_FOLDERS} )
                 IF( ${FOLDER_NAME} STREQUAL ${ERASE_ITEM} )
                     set( NOT_FIND_ERASE_ITEM 0 )
                     break()     
@@ -234,7 +233,7 @@ macro (define_source_folders )
                     list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
-                    define_source_folders( SRC_ROOT ${FOLDER_ITEM} GLOB_ERASE_FOLDERS ${ARG_GLOB_ERASE_FOLDERS} RECURSIVE_CALL )
+                    define_source_folders( SRC_ROOT ${FOLDER_ITEM} ERASE_FOLDERS ${ARG_ERASE_FOLDERS} RECURSIVE_CALL )
                 ENDIF()
             ENDIF()
         ENDIF()

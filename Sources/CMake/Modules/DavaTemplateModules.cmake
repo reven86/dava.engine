@@ -1,37 +1,57 @@
 
-#set( NAME_MODULE                )
-#set( MODULE_TYPE                )#INLINE STATIC DINAMIC 
+set(  MAIN_MODULE_VALUES 
+NAME_MODULE                            #
+MODULE_TYPE                            #"[ INLINE STATIC DYNAMIC ]"
 #
-#set( CPP_FILES                  )
-#set( HPP_FILES                  )
-#set( CPP_FILES_<PLATFORM>       )
-#set( HPP_FILES_<PLATFORM>       )
+SOURCE_FOLDERS             
+ERASE_FOLDERS              
+ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}   
 #
-#set( CPP_FILES_RECURSE            )
-#set( HPP_FILES_RECURSE            )
-#set( CPP_FILES_RECURSE_<PLATFORM> )
-#set( HPP_FILES_RECURSE_<PLATFORM> )
+CPP_FILES                  
+HPP_FILES                  
+CPP_FILES_${DAVA_PLATFORM_CURENT}       
+HPP_FILES_${DAVA_PLATFORM_CURENT}       
 #
-#set( ERASE_FILES                )
-#set( ERASE_FILES_<PLATFORM>     )
-#set( ERASE_FILES_NOT_<PLATFORM> )
+CPP_FILES_RECURSE            
+HPP_FILES_RECURSE            
+CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
+HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
 #
-#set( DEFINITIONS                )
-#set( DEFINITIONS_<PLATFORM>     )
-#set( DEFINITIONS_PRIVATE             )
-#set( DEFINITIONS_PRIVATE_<PLATFORM>  )
+ERASE_FILES                
+ERASE_FILES_${DAVA_PLATFORM_CURENT}     
+ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT} 
 #
-#set( STATIC_LIBRARIES_<PLATFORM>           )
-#set( STATIC_LIBRARIES_<PLATFORM>_RELEASE   )
-#set( STATIC_LIBRARIES_<PLATFORM>_DEBUG     )
+UNITY_IGNORE_LIST             
+UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}  
 #
-#set( DINAMIC_LIBRARIES_<PLATFORM>          )
-#set( DINAMIC_LIBRARIES_<PLATFORM>_RELEASE  )
-#set( DINAMIC_LIBRARIES_<PLATFORM>_DEBUG    )
+INCLUDES         
+INCLUDES_PRIVATE 
+INCLUDES_${DAVA_PLATFORM_CURENT} 
+INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} 
+#
+DEFINITIONS                
+DEFINITIONS_PRIVATE             
+DEFINITIONS_${DAVA_PLATFORM_CURENT}     
+DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT}  
+#
+STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
+STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
+STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
+#
+DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
+DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG    
+#
+FIND_SYSTEM_LIBRARY                   
+FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
+)
 #
 macro( setup_main_module )
 
     set( INIT )
+
+    get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
 
     if( NAME_MODULE )
         get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
@@ -48,84 +68,123 @@ macro( setup_main_module )
     endif()
 
     if ( INIT )
+        if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
+            set( MODULE_TYPE "STATIC" )
+        endif()
+
+
+        #"APPLE VALUES"
         if( APPLE )
             foreach( VALUE CPP_FILES 
                            CPP_FILES_RECURSE 
                            ERASE_FILES 
                            ERASE_FILES_NOT
                            DEFINITIONS 
-                           DEFINITIONS_PRIVATE )
+                           DEFINITIONS_PRIVATE 
+                           INCLUDES
+                           INCLUDES_PRIVATE 
+                           UNITY_IGNORE_LIST )
                 if( ${VALUE}_APPLE)
                     list( APPEND ${VALUE}_${DAVA_PLATFORM_CURENT} ${${VALUE}_APPLE} )  
                 endif()
             endforeach()
-
         endif()
 
+        #"FIND LIBRARY"
+        foreach( NAME ${FIND_SYSTEM_LIBRARY} ${FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}} )
+            FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
+            if( APPLE )
+                list ( APPEND DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${${NAME}_LIBRARY} )
+            else()
+                list ( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${${NAME}_LIBRARY} )
+            endif()
+        endforeach()        
+
+        #"ERASE FILES"
         foreach( PLATFORM  ${DAVA_PLATFORM_LIST} )
             if( NOT ${PLATFORM} AND ERASE_FILES_NOT_${PLATFORM} )
                 list( APPEND ERASE_FILES ${ERASE_FILES_NOT_${PLATFORM}} ) 
             endif()
         endforeach()
-
-
         if( ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT} AND ERASE_FILES )
              list(REMOVE_ITEM ERASE_FILES ${ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT}} )
 
         endif()
 
+        #"SAVE PROPERTY"
         save_property( PROPERTY_LIST 
-                DEFINITIONS
-                DEFINITIONS_${DAVA_PLATFORM_CURENT} 
-                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}               
-                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
-                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG   
-                DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
-                DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
-                DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
+                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
+                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
             )
         
+
+        if( SOURCE_FOLDERS )
+
+            foreach( VALUE ${MAIN_MODULE_VALUES} )
+                set( ${VALUE}_DIR_NAME ${${VALUE}} )
+                set( ${VALUE}  )
+            endforeach()
+
+            define_source_folders  ( SRC_ROOT            ${SOURCE_FOLDERS_DIR_NAME}
+                                     ERASE_FOLDERS       ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+
+            foreach( VALUE ${MAIN_MODULE_VALUES} )
+                set(  ${VALUE} ${${VALUE}_DIR_NAME} )
+            endforeach()
+
+            set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+
+        endif()
+
+        #"DEFINE SOURCE"
         define_source_files (
             GLOB_CPP_PATTERNS          ${CPP_FILES}         ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
             GLOB_H_PATTERNS            ${HPP_FILES}         ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
             GLOB_RECURSE_CPP_PATTERNS  ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
             GLOB_RECURSE_H_PATTERNS    ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
 
-            GLOB_ERASE_FILES   ${ERASE_FILES}   ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
+            GLOB_ERASE_FILES           ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
         )
 
-        if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
-            set( MODULE_TYPE "STATIC" )
-        endif()
+        set( ALL_SRC ${CPP_FILES} ${PROJECT_SOURCE_FILES} ${H_FILES} )
 
+        set_project_files_properties( "${ALL_SRC}" )
 
+        #"DEFINITIONS"
         if( DEFINITIONS )
             add_definitions( ${DEFINITIONS} )
         endif()
-
         if( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
             add_definitions( ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} )
         endif()
 
-        include_directories( ${ADD_INCLUDES_DIR} )   
+        #"INCLUDES_DIR"
+        if( INCLUDES_DIR )
+            include_directories( ${INCLUDES_DIR} )  
+        endif()
+        if( INCLUDES_DIR_${DAVA_PLATFORM_CURENT} )
+            include_directories( ${INCLUDES_DIR_${DAVA_PLATFORM_CURENT}} )  
+        endif()
+
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
-            get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
             set (${DIR_NAME}_CPP_FILES ${CPP_FILES} PARENT_SCOPE)
             set (${DIR_NAME}_H_FILES ${H_FILES}     PARENT_SCOPE)
 
         else()
-        
-            generated_unity_sources( CPP_FILES )                     
+            generate_source_groups_project ()
+
+            generated_unity_sources( ALL_SRC  IGNORE_LIST ${UNITY_IGNORE_LIST}
+                                              IGNORE_LIST_${DAVA_PLATFORM_CURENT} ${UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}} ) 
+                               
+            append_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )
 
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
-                append_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )
-                add_library( ${NAME_MODULE} STATIC  ${H_FILES}  ${CPP_FILES} )
+                add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} )
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
-
                 add_definitions( -DDAVA_MODULE_EXPORTS )
-                append_property( DINAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )                
-                add_library( ${NAME_MODULE} SHARED  ${H_FILES}  ${CPP_FILES} )
+                add_library( ${NAME_MODULE} SHARED  ${ALL_SRC}  )
             endif()
 
             if( DEFINITIONS_PRIVATE )
@@ -135,6 +194,21 @@ macro( setup_main_module )
             if( DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT} )
                 add_definitions( ${DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT}} )
             endif()
+
+            if( INCLUDES_PRIVATE )
+                include_directories( ${INCLUDES_PRIVATE} ) 
+            endif() 
+
+            target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES} )  
+            target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )  
+
+            foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG} )
+                target_link_libraries  ( ${NAME_MODULE} debug ${FILE} )
+            endforeach ()
+
+            foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
+                target_link_libraries  ( ${NAME_MODULE} optimized ${FILE} )
+            endforeach () 
 
         endif()
     endif()
