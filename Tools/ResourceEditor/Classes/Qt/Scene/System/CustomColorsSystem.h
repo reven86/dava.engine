@@ -39,7 +39,7 @@
 class CustomColorsSystem : public LandscapeEditorSystem
 {
 public:
-    CustomColorsSystem(Scene* scene);
+    CustomColorsSystem(DAVA::Scene* scene);
     virtual ~CustomColorsSystem();
 
     LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
@@ -48,56 +48,56 @@ public:
     virtual void Process(DAVA::float32 timeElapsed);
     virtual void Input(DAVA::UIEvent* event);
 
-    void SetBrushSize(int32 brushSize, bool updateDrawSystem = true);
-    int32 GetBrushSize();
-    void SetColor(int32 colorIndex);
-    int32 GetColor();
+    void SetBrushSize(DAVA::int32 brushSize, bool updateDrawSystem = true);
+    DAVA::int32 GetBrushSize();
+    void SetColor(DAVA::int32 colorIndex);
+    DAVA::int32 GetColor();
 
-    void SaveTexture(const FilePath& filePath);
-    bool LoadTexture(const FilePath& filePath, bool createUndo = true);
-    FilePath GetCurrentSaveFileName();
+    void SaveTexture(const DAVA::FilePath& filePath);
+    bool LoadTexture(const DAVA::FilePath& filePath, bool createUndo = true);
+    DAVA::FilePath GetCurrentSaveFileName();
 
     bool ChangesPresent();
 
 protected:
-    bool CouldApplyImage(Image* image, const String& imageName) const;
+    bool CouldApplyImage(DAVA::Image* image, const DAVA::String& imageName) const;
 
-    int32 curToolSize;
-    Texture* toolImageTexture = nullptr;
+    DAVA::int32 curToolSize;
+    DAVA::Texture* toolImageTexture = nullptr;
 
-    Texture* loadedTexture = nullptr;
+    DAVA::Texture* loadedTexture = nullptr;
 
-    Color drawColor;
-    int32 colorIndex = 0;
+    DAVA::Color drawColor;
+    DAVA::int32 colorIndex = 0;
 
-    Rect updatedRectAccumulator;
+    DAVA::Rect updatedRectAccumulator;
 
     bool editingIsEnabled = false;
 
-    Image* originalImage = nullptr;
+    DAVA::Image* originalImage = nullptr;
 
     void UpdateToolImage(bool force = false);
     void UpdateBrushTool();
-    void CreateToolImage(const FilePath& filePath);
+    void CreateToolImage(const DAVA::FilePath& filePath);
 
-    void AddRectToAccumulator(const Rect& rect);
+    void AddRectToAccumulator(const DAVA::Rect& rect);
     void ResetAccumulatorRect();
-    Rect GetUpdatedRect();
+    DAVA::Rect GetUpdatedRect();
 
     void StoreOriginalState();
     void CreateUndoPoint();
 
-    void StoreSaveFileName(const FilePath& filePath);
+    void StoreSaveFileName(const DAVA::FilePath& filePath);
 
-    FilePath GetScenePath();
-    String GetRelativePathToScenePath(const FilePath& absolutePath);
-    FilePath GetAbsolutePathFromScenePath(const String& relativePath);
-    String GetRelativePathToProjectPath(const FilePath& absolutePath);
-    FilePath GetAbsolutePathFromProjectPath(const String& relativePath);
+    DAVA::FilePath GetScenePath();
+    DAVA::String GetRelativePathToScenePath(const DAVA::FilePath& absolutePath);
+    DAVA::FilePath GetAbsolutePathFromScenePath(const DAVA::String& relativePath);
+    DAVA::String GetRelativePathToProjectPath(const DAVA::FilePath& absolutePath);
+    DAVA::FilePath GetAbsolutePathFromProjectPath(const DAVA::String& relativePath);
 
     void FinishEditing();
 
-    Command2::Pointer CreateSaveFileNameCommand(const String& filePath);
+    Command2::Pointer CreateSaveFileNameCommand(const DAVA::String& filePath);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */

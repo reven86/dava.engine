@@ -44,7 +44,7 @@
 
 namespace
 {
-const String settingsType("Internal/RunActionEventWidget/CurrentType");
+const DAVA::String settingsType("Internal/RunActionEventWidget/CurrentType");
 }
 
 RunActionEventWidget::RunActionEventWidget(QWidget* parent)
@@ -55,13 +55,13 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
     ui->setupUi(this);
     setObjectName("RunActionEventWidget");
 
-    ui->eventType->addItem("Switch", ActionComponent::Action::EVENT_SWITCH_CHANGED);
-    ui->eventType->addItem("Added", ActionComponent::Action::EVENT_ADDED_TO_SCENE);
-    ui->eventType->addItem("User", ActionComponent::Action::EVENT_CUSTOM);
+    ui->eventType->addItem("Switch", DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED);
+    ui->eventType->addItem("Added", DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE);
+    ui->eventType->addItem("User", DAVA::ActionComponent::Action::EVENT_CUSTOM);
 
-    editorIdMap[ActionComponent::Action::EVENT_SWITCH_CHANGED] = 0;
-    editorIdMap[ActionComponent::Action::EVENT_ADDED_TO_SCENE] = 1;
-    editorIdMap[ActionComponent::Action::EVENT_CUSTOM] = 2;
+    editorIdMap[DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED] = 0;
+    editorIdMap[DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE] = 1;
+    editorIdMap[DAVA::ActionComponent::Action::EVENT_CUSTOM] = 2;
 
     autocompleteModel = new QStringListModel(this);
     ui->name->setModel(autocompleteModel);
@@ -75,7 +75,7 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
     connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
 
-    const ActionComponent::Action::eEvent eventType = static_cast<ActionComponent::Action::eEvent>(SettingsManager::Instance()->GetValue(settingsType).AsUInt32());
+    const DAVA::ActionComponent::Action::eEvent eventType = static_cast<DAVA::ActionComponent::Action::eEvent>(SettingsManager::Instance()->GetValue(settingsType).AsUInt32());
     ui->eventType->setCurrentIndex(editorIdMap[eventType]);
 }
 
@@ -85,12 +85,12 @@ RunActionEventWidget::~RunActionEventWidget()
 
 void RunActionEventWidget::OnTypeChanged()
 {
-    const uint32 eventTypeId = ui->eventType->itemData(ui->eventType->currentIndex()).toUInt();
+    const DAVA::uint32 eventTypeId = ui->eventType->itemData(ui->eventType->currentIndex()).toUInt();
     const int editorindex = editorIdMap[eventTypeId];
     DVASSERT(editorindex < ui->stackedWidget->count());
 
     ui->stackedWidget->setCurrentIndex(editorindex);
-    SettingsManager::Instance()->SetValue(settingsType, VariantType(eventTypeId));
+    SettingsManager::Instance()->SetValue(settingsType, DAVA::VariantType(eventTypeId));
 }
 
 void RunActionEventWidget::OnInvoke()
@@ -100,36 +100,36 @@ void RunActionEventWidget::OnInvoke()
     if (editor == NULL)
         return;
 
-    const uint32 switchIndex = ui->switchIndex->value();
-    const FastName name(ui->name->currentText().toStdString().c_str());
+    const DAVA::uint32 switchIndex = ui->switchIndex->value();
+    const DAVA::FastName name(ui->name->currentText().toStdString().c_str());
 
     const EntityGroup& selection = editor->selectionSystem->GetSelection();
     for (const auto& item : selection.GetContent())
     {
-        ActionComponent* component = static_cast<ActionComponent*>(item.first->GetComponent(Component::ACTION_COMPONENT));
+        DAVA::ActionComponent* component = static_cast<DAVA::ActionComponent*>(item.first->GetComponent(DAVA::Component::ACTION_COMPONENT));
         if (component == nullptr)
         {
             continue;
         }
 
-        const uint32 nEvents = component->GetCount();
-        for (uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
+        const DAVA::uint32 nEvents = component->GetCount();
+        for (DAVA::uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
         {
-            ActionComponent::Action& act = component->Get(componentIdx);
+            DAVA::ActionComponent::Action& act = component->Get(componentIdx);
             if (act.eventType == eventTypeId)
             {
                 switch (eventTypeId)
                 {
-                case ActionComponent::Action::EVENT_SWITCH_CHANGED:
+                case DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED:
                     if (act.switchIndex == switchIndex)
                     {
                         component->StartSwitch(switchIndex);
                     }
                     break;
-                case ActionComponent::Action::EVENT_ADDED_TO_SCENE:
+                case DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE:
                     component->StartAdd();
                     break;
-                case ActionComponent::Action::EVENT_CUSTOM:
+                case DAVA::ActionComponent::Action::EVENT_CUSTOM:
                     if (act.userEventId == name)
                     {
                         component->StartUser(name);
@@ -143,13 +143,13 @@ void RunActionEventWidget::OnInvoke()
     }
 }
 
-void RunActionEventWidget::sceneActivated(SceneEditor2* _scene)
+void RunActionEventWidget::sceneActivated(SceneEditor2* scene_)
 {
-    scene = _scene;
+    scene = scene_;
     sceneSelectionChanged(scene, NULL, NULL);
 }
 
-void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const EntityGroup* selected, const EntityGroup* deselected)
+void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const EntityGroup* selected, const EntityGroup* deselected)
 {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
@@ -160,7 +160,7 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const Ent
         return;
     }
 
-    if (scene != _scene)
+    if (scene != scene_)
     {
         return;
     }
@@ -170,14 +170,14 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const Ent
     const EntityGroup& selection = scene->selectionSystem->GetSelection();
     for (const auto& item : selection.GetContent())
     {
-        ActionComponent* component = static_cast<ActionComponent*>(item.first->GetComponent(Component::ACTION_COMPONENT));
+        DAVA::ActionComponent* component = static_cast<DAVA::ActionComponent*>(item.first->GetComponent(DAVA::Component::ACTION_COMPONENT));
         if (!component)
             continue;
-        const uint32 nEvents = component->GetCount();
-        for (uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
+        const DAVA::uint32 nEvents = component->GetCount();
+        for (DAVA::uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
         {
-            ActionComponent::Action& act = component->Get(componentIdx);
-            if (act.eventType == ActionComponent::Action::EVENT_CUSTOM)
+            DAVA::ActionComponent::Action& act = component->Get(componentIdx);
+            if (act.eventType == DAVA::ActionComponent::Action::EVENT_CUSTOM)
             {
                 nameSet.insert(QString(act.userEventId.c_str()));
             }

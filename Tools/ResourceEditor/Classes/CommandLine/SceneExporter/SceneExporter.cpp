@@ -381,6 +381,16 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
             return;
         }
 
+        FilePath sourceFilePath = descriptor->GetSourceTexturePathname();
+        ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(sourceFilePath);
+        if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
+        {
+            Logger::Error("Can't export non-square texture %s into compression format %s",
+                          descriptorPathname.GetAbsolutePathname().c_str(),
+                          GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format));
+            return;
+        }
+
         FilePath compressedTexturePathname = CompressTexture(*descriptor);
         CopyFile(compressedTexturePathname);
     }

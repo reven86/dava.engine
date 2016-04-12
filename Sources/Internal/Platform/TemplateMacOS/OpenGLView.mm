@@ -141,15 +141,9 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        rhi::ResetParam params;
-        params.window = self;
-        params.width = backingSize[0];
-        params.height = backingSize[1];
-        Renderer::Reset(params);
-
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        float32 scale = DeviceInfo::GetScreenInfo().scale;
+        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
+        Core::Instance()->SetNativeView(self);
     }
 
     [super reshape];
@@ -227,18 +221,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
             // simple mouse - sends float values from 0.1 for one wheel tick
             event.wheelDelta.x = rawScrollDeltaX * rawScrollCoefficient;
             event.wheelDelta.y = rawScrollDeltaY * rawScrollCoefficient;
-        }
-    }
-    else
-    {
-        @try
-        {
-            event.tapCount = [curEvent clickCount];
-        }
-        @catch (NSException* exception)
-        {
-            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
-            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
         }
     }
 }

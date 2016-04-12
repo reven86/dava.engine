@@ -94,7 +94,7 @@ private:
     DAVA::Vector2 prevPos;
     DAVA::Vector2 extraDelta;
     SelectedControls selectedControlNodes;
-    DAVA::List<std::unique_ptr<MoveInfo>> nodesToMove;
+    DAVA::List<std::unique_ptr<MoveInfo>> nodesToMoveInfos;
     DAVA::Vector<DAVA::UIControl*> neighbours;
 
     DAVA::UIGeometricData parentGeometricData;

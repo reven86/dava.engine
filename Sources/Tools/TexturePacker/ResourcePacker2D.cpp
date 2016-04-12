@@ -52,7 +52,7 @@
 
 namespace DAVA
 {
-const String ResourcePacker2D::VERSION = "0.0.1";
+const String ResourcePacker2D::VERSION = "0.0.2";
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -266,9 +266,10 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     psdNameWithoutExtension.TruncateExtension();
 
     IMagickHelper::CroppedData cropped_data;
-    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), cropped_data, true);
 
-    if (cropped_data.layers_count == 0)
+    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), &cropped_data, true);
+
+    if (cropped_data.layers_array_size == 0)
     {
         AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
         return nullptr;
@@ -284,32 +285,32 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
 
     defFile->spriteWidth = width;
     defFile->spriteHeight = height;
-    defFile->frameCount = cropped_data.layers_count;
+    defFile->frameCount = static_cast<int>(cropped_data.layers_array_size) - 1;
     defFile->frameRects = new Rect2i[defFile->frameCount];
 
-    for (uint32 k = 0; k < defFile->frameCount; ++k)
+    for (int k = 1; k < static_cast<int>(cropped_data.layers_array_size); ++k)
     {
         //save layer names
         String layerName;
 
         if (useLayerNames)
         {
-            layerName.assign(cropped_data.layers[k].name);
+            layerName.assign(cropped_data.layers_array[k].name);
             if (layerName.empty())
             {
-                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k);
+                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
             }
             // Check if layer name is unique
             Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
             if (it != defFile->frameNames.end())
             {
-                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k, layerName.c_str());
+                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
             }
         }
         else
         {
             layerName.assign("frame");
-            layerName.append(std::to_string(k));
+            layerName.append(std::to_string(k - 1));
         }
 
         defFile->frameNames.push_back(layerName);
@@ -317,39 +318,141 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
         //save layer rects
         if (!withAlpha)
         {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
+            defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy);
 
-            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
-            if ((defFile->frameRects[k].dx > iMaxTextureSize) || (defFile->frameRects[k].dy > iMaxTextureSize))
+            //printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
+
+            if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
             {
-                Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k, maxTextureSize, defFile->frameRects[k].dx, defFile->frameRects[k].dy, width, height);
+                Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
+                                ,
+                                defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
 
-                defFile->frameRects[k].dx = width;
-                defFile->frameRects[k].dy = height;
+                defFile->frameRects[k - 1].dx = width;
+                defFile->frameRects[k - 1].dy = height;
             }
             else
             {
-                if (defFile->frameRects[k].dx > width)
+                if ((defFile->frameRects[k - 1].dx > width))
                 {
-                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dx, width);
-                    defFile->frameRects[k].dx = width;
+                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
+                    defFile->frameRects[k - 1].dx = width;
                 }
 
-                if (defFile->frameRects[k].dy > height)
+                if ((defFile->frameRects[k - 1].dy > height))
                 {
-                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dy, height);
-                    defFile->frameRects[k].dy = height;
+                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
+                    defFile->frameRects[k - 1].dy = height;
                 }
             }
         }
         else
         {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, width, height);
+            defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
         }
     }
 
     return defFile;
 }
+
+//This function disabled due restoring of Tools/Bin/ResourcePacker to older version
+//DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName)
+//{
+//    DVASSERT(processDirectoryPath.IsDirectoryPathname());
+//
+//    uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+//
+//    bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
+//    bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
+//
+//    FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
+//    psdNameWithoutExtension.TruncateExtension();
+//
+//    IMagickHelper::CroppedData cropped_data;
+//    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), cropped_data, true);
+//
+//    if (cropped_data.layers_count == 0)
+//    {
+//        AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
+//        return nullptr;
+//    }
+//
+//    //Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
+//
+//    int width = cropped_data.layer_width;
+//    int height = cropped_data.layer_height;
+//
+//    DefinitionFile* defFile = new DefinitionFile;
+//    defFile->filename = psdNameWithoutExtension + ".txt";
+//
+//    defFile->spriteWidth = width;
+//    defFile->spriteHeight = height;
+//    defFile->frameCount = cropped_data.layers_count;
+//    defFile->frameRects = new Rect2i[defFile->frameCount];
+//
+//    for (uint32 k = 0; k < defFile->frameCount; ++k)
+//    {
+//        //save layer names
+//        String layerName;
+//
+//        if (useLayerNames)
+//        {
+//            layerName.assign(cropped_data.layers[k].name);
+//            if (layerName.empty())
+//            {
+//                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k);
+//            }
+//            // Check if layer name is unique
+//            Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
+//            if (it != defFile->frameNames.end())
+//            {
+//                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k, layerName.c_str());
+//            }
+//        }
+//        else
+//        {
+//            layerName.assign("frame");
+//            layerName.append(std::to_string(k));
+//        }
+//
+//        defFile->frameNames.push_back(layerName);
+//
+//        //save layer rects
+//        if (!withAlpha)
+//        {
+//            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
+//
+//            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
+//            if ((defFile->frameRects[k].dx > iMaxTextureSize) || (defFile->frameRects[k].dy > iMaxTextureSize))
+//            {
+//                Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k, maxTextureSize, defFile->frameRects[k].dx, defFile->frameRects[k].dy, width, height);
+//
+//                defFile->frameRects[k].dx = width;
+//                defFile->frameRects[k].dy = height;
+//            }
+//            else
+//            {
+//                if (defFile->frameRects[k].dx > width)
+//                {
+//                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dx, width);
+//                    defFile->frameRects[k].dx = width;
+//                }
+//
+//                if (defFile->frameRects[k].dy > height)
+//                {
+//                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dy, height);
+//                    defFile->frameRects[k].dy = height;
+//                }
+//            }
+//        }
+//        else
+//        {
+//            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, width, height);
+//        }
+//    }
+//
+//    return defFile;
+//}
 
 Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
 {
@@ -409,6 +512,10 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     String packingParams = mergedFlags;
     packingParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
     packingParams += String("PackerVersion = ") + VERSION;
+    for (const auto& algorithm : packAlgorithms)
+    {
+        packingParams += String("PackerAlgorithm = ") + GlobalEnumMap<DAVA::PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));
+    }
 
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();

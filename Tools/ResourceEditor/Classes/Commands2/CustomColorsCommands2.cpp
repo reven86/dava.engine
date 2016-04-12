@@ -33,18 +33,19 @@
 #include "../Qt/Scene/SceneSignals.h"
 #include "../Qt/Main/QtUtils.h"
 
-ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* _customColorsProxy, const Rect& _updatedRect)
+ModifyCustomColorsCommand::ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage,
+                                                     CustomColorsProxy* customColorsProxy_, const DAVA::Rect& updatedRect_)
     : Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
 {
-    const Vector2 topLeft(floorf(_updatedRect.x), floorf(_updatedRect.y));
-    const Vector2 bottomRight(ceilf(_updatedRect.x + _updatedRect.dx), ceilf(_updatedRect.y + _updatedRect.dy));
+    const DAVA::Vector2 topLeft(floorf(updatedRect_.x), floorf(updatedRect_.y));
+    const DAVA::Vector2 bottomRight(ceilf(updatedRect_.x + updatedRect_.dx), ceilf(updatedRect_.y + updatedRect_.dy));
 
-    updatedRect = Rect(topLeft, bottomRight - topLeft);
+    updatedRect = DAVA::Rect(topLeft, bottomRight - topLeft);
 
-    customColorsProxy = SafeRetain(_customColorsProxy);
+    customColorsProxy = SafeRetain(customColorsProxy_);
 
-    undoImage = Image::CopyImageRegion(originalImage, updatedRect);
-    redoImage = Image::CopyImageRegion(currentImage, updatedRect);
+    undoImage = DAVA::Image::CopyImageRegion(originalImage, updatedRect);
+    redoImage = DAVA::Image::CopyImageRegion(currentImage, updatedRect);
 }
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
@@ -68,11 +69,11 @@ void ModifyCustomColorsCommand::Redo()
 
 void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image)
 {
-    ScopedPtr<Texture> fboTexture(Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
+    DAVA::ScopedPtr<DAVA::Texture> fboTexture(DAVA::Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
 
-    RenderSystem2D::RenderTargetPassDescriptor desc;
+    DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
 
-    Texture* proxy = customColorsProxy->GetTexture();
+    DAVA::Texture* proxy = customColorsProxy->GetTexture();
     desc.colorAttachment = proxy->handle;
     desc.depthAttachment = proxy->handleDepthStencil;
     desc.width = proxy->GetWidth();
@@ -80,14 +81,14 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image)
     desc.clearTarget = false;
     desc.transformVirtualToPhysical = false;
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    RenderSystem2D::Instance()->DrawTexture(fboTexture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    DAVA::RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+    DAVA::RenderSystem2D::Instance()->DrawTexture(fboTexture, customColorsProxy->GetBrushMaterial(), DAVA::Color::White, updatedRect);
+    DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
 
     customColorsProxy->UpdateRect(updatedRect);
 }
 
-Entity* ModifyCustomColorsCommand::GetEntity() const
+DAVA::Entity* ModifyCustomColorsCommand::GetEntity() const
 {
     return nullptr;
 }

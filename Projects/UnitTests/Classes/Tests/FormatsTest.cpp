@@ -74,7 +74,8 @@ DAVA_TESTCLASS (FormatsTest)
         suportedFormats.push_back(FORMAT_RGBA8888);
         suportedFormats.push_back(FORMAT_RGBA5551);
         suportedFormats.push_back(FORMAT_RGBA4444);
-        suportedFormats.push_back(FORMAT_RGB888);
+        if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8))
+            suportedFormats.push_back(FORMAT_RGB888);
         suportedFormats.push_back(FORMAT_RGB565);
         suportedFormats.push_back(FORMAT_A8);
         suportedFormats.push_back(FORMAT_PVR2);
