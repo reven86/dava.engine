@@ -122,10 +122,20 @@ void TextureProperties::Save()
 
 void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
 {
-    int level = 0;
+    DAVA::uint32 baseMinWidth = DAVA::Texture::MINIMAL_WIDTH;
+    DAVA::uint32 baseMinHeght = DAVA::Texture::MINIMAL_HEIGHT;
 
+    const DAVA::uint32& width = curTextureDescriptor->compression[curGPU].compressToWidth;
+    const DAVA::uint32& height = curTextureDescriptor->compression[curGPU].compressToHeight;
+    if ((width != 0 && height != 0) && (width < baseMinWidth || height < baseMinHeght))
+    {
+        baseMinWidth = width;
+        baseMinHeght = height;
+    }
+
+    int level = 0;
     MipMapSizesReset();
-    while (static_cast<DAVA::uint32>(baseWidth) >= DAVA::Texture::MINIMAL_WIDTH && static_cast<DAVA::uint32>(baseHeight) >= DAVA::Texture::MINIMAL_HEIGHT)
+    while (static_cast<DAVA::uint32>(baseWidth) >= baseMinWidth && static_cast<DAVA::uint32>(baseHeight) >= baseMinHeght)
     {
         QSize size(baseWidth, baseHeight);
         QString shownKey;
