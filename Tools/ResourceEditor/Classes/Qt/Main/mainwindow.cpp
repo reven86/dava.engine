@@ -1274,12 +1274,12 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     sceneSaver.EnableCopyConverted(saveWithCompressed);
 
     LoggerErrorHandler handler;
-    Logger::AddCustomOutput(&handler);
+    DAVA::Logger::AddCustomOutput(&handler);
 
     SceneEditor2* sceneForSaving = scene->CreateCopyForExport();
     sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath());
     sceneForSaving->Release();
-    Logger::RemoveCustomOutput(&handler);
+    DAVA::Logger::RemoveCustomOutput(&handler);
 
     WaitStop();
 
