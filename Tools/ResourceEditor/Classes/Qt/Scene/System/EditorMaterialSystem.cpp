@@ -372,13 +372,8 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
                 Landscape* landObject = GetLandscape(landEntity);
                 if (landObject == cmd->object)
                 {
-                    static const Array<DAVA::FastName, 3> rebuildMembers = { FastName("heightmapPath"), FastName("useMorphing"), FastName("size") };
-
-                    if (std::find(rebuildMembers.begin(), rebuildMembers.end(), cmd->member->Name()) != rebuildMembers.end())
-                    {
-                        RemoveMaterial(landObject->GetMaterial());
-                        AddMaterials(landEntity);
-                    }
+                    RemoveMaterial(landObject->GetMaterial());
+                    AddMaterials(landEntity);
                 }
             }
         }

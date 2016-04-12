@@ -134,12 +134,12 @@ private:
 
     SubdivisionMetrics metrics;
 
-    float32 maxHeightError;
-    float32 maxPatchRadiusError;
-    float32 maxAbsoluteHeightError;
+    float32 maxHeightError = 0.f;
+    float32 maxPatchRadiusError = 0.f;
+    float32 maxAbsoluteHeightError = 0.f;
 
     Vector3 cameraPos;
-    float32 tanFovY;
+    float32 tanFovY = 0.f;
 
     Frustum* frustum = nullptr;
     Heightmap* heightmap = nullptr;
