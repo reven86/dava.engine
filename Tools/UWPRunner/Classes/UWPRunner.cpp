@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include <iostream>
 #include <QFile>
 #include <QXmlStreamReader>
 
@@ -118,6 +119,11 @@ void UWPRunner::Run()
     Run(runner);
 }
 
+bool UWPRunner::IsSucceed()
+{
+    return succeed;
+}
+
 void UWPRunner::Run(Runner& runner)
 {
     //installing and starting application
@@ -133,6 +139,7 @@ void UWPRunner::Run(Runner& runner)
 
     if (options.installOnly)
     {
+        succeed = true;
         return;
     }
 
@@ -164,6 +171,7 @@ void UWPRunner::WaitApp()
 
         if (logConsumer.IsChannelOpen())
         {
+            succeed = true;
             watchDogTimer = 0;
         }
         else
@@ -178,6 +186,11 @@ void UWPRunner::WaitApp()
 
         Thread::Sleep(sleepTimeMS);
     } while (!logConsumer.IsSessionEnded());
+
+    if (succeed && options.isDavaApplication)
+    {
+        succeed = davaApplicationTerminated;
+    }
 }
 
 void UWPRunner::ProcessPackageOptions()
@@ -393,13 +406,8 @@ bool UWPRunner::ConfigureIpOverUsb()
     return true;
 }
 
-void UWPRunner::NetLogOutput(const String& logString)
+void SplitLoggerMessage(const String& logString, String& logLevel, String& message)
 {
-    //incoming string is formatted in style "[ip:port] date time message"
-    //extract only message text
-    String logLevel;
-    String message;
-
     size_t spaces = 0;
     for (auto i : logString)
     {
@@ -417,6 +425,29 @@ void UWPRunner::NetLogOutput(const String& logString)
             message += i;
         }
     }
+}
+
+void TeamcityTestOutputFunc(const char* logLevelStr, const char* messageStr)
+{
+    Logger* logger = Logger::Instance();
+    Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevelStr);
+
+    if (ll != Logger::LEVEL__DISABLE)
+    {
+        TeamcityTestsOutput testOutput;
+        testOutput.Output(ll, messageStr);
+    }
+}
+
+void UWPRunner::NetLogOutput(const String& logString)
+{
+    const char* davaAppTermString = "Core::SystemAppFinished";
+
+    //incoming string is formatted in style "[ip:port] date time message"
+    //extract only message text
+    String logLevel;
+    String message;
+    SplitLoggerMessage(logString, logLevel, message);
 
     if (logLevel.empty())
     {
@@ -424,27 +455,44 @@ void UWPRunner::NetLogOutput(const String& logString)
     }
 
     //remove first space
-    logLevel = logLevel.substr(1);
-    message = message.substr(1);
+    const char* logLevelStr = logLevel.c_str() + 1;
+    const char* messageStr = message.c_str() + 1;
 
     if (options.useTeamCityTestOutput)
     {
-        Logger* logger = Logger::Instance();
-        Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevel.c_str());
-
-        if (ll != Logger::LEVEL__DISABLE)
-        {
-            TeamcityTestsOutput testOutput;
-            testOutput.Output(ll, message.c_str());
-        }
+        TeamcityTestOutputFunc(logLevelStr, messageStr);
     }
-    else
+    else if (!options.useTeamCityTestOutput || !options.outputFile.empty())
     {
-        printf("[%s] %s", logLevel.c_str(), message.c_str());
+        StringStream ss;
+        ss << "[" << logLevelStr << "] " << messageStr;
         if (message.back() != '\n' || message.back() != '\r')
         {
-            printf("\n");
+            ss << "\n";
         }
+
+        std::cout << ss.str();
+
+        if (!options.outputFile.empty())
+        {
+            if (!outputFile)
+            {
+                FileSystem::Instance()->DeleteFile(options.outputFile);
+                uint32 attributes = File::WRITE;
+                outputFile.Set(File::Create(options.outputFile, attributes));
+            }
+
+            if (outputFile)
+            {
+                outputFile->WriteString(ss.str(), false);
+                outputFile->Flush();
+            }
+        }
+    }
+
+    if (message.find(davaAppTermString) != String::npos)
+    {
+        davaApplicationTerminated = true;
     }
 }
 
