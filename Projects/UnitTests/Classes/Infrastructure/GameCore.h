@@ -72,7 +72,6 @@ public:
 #if defined(__DAVAENGINE_WIN_UAP__)
     void InitNetwork();
     void UnInitNetwork();
-    void FlushLogs();
 #endif
 
     void Update(DAVA::float32 update) override;
@@ -95,7 +94,22 @@ private:
     DAVA::TeamcityTestsOutput teamCityOutput;
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+
+    class LogFlusher : public DAVA::LoggerOutput
+    {
+    public:
+        LogFlusher(DAVA::Net::NetLogger* logger);
+        ~LogFlusher();
+        void FlushLogs();
+
+    private:
+        // LoggerOutput
+        void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
+        DAVA::Net::NetLogger* netLogger = nullptr;
+    };
+
     DAVA::Net::NetLogger netLogger;
+    std::unique_ptr<LogFlusher> flusher;
     DAVA::Net::NetCore::TrackId netController;
     bool loggerInUse = false;
 #endif

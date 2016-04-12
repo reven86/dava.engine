@@ -29,6 +29,10 @@
 
 #include "KeyboardDevice.h"
 
+#include "UI/UIEvent.h"
+#include "UI/UIControlSystem.h"
+#include "Platform/SystemTimer.h"
+
 #include <algorithm>
 
 namespace DAVA
@@ -426,14 +430,290 @@ void KeyboardDevice::PrepareKeyTranslator()
 #endif
     
 #if defined(__DAVAENGINE_ANDROID__)
-    keyTranslator[0x04] = Key::BACK;
-    keyTranslator[0x52] = Key::MENU;
+    keyTranslator[0] = Key::UNKNOWN;
+    keyTranslator[1] = Key::LEFT;
+    keyTranslator[2] = Key::RIGHT;
+    keyTranslator[3] = Key::HOME;
+    keyTranslator[4] = Key::BACK;
+    //keyTranslator[5] = Key::CALL;
+    //keyTranslator[6] = Key::ENDCALL;
+    keyTranslator[7] = Key::KEY_0;
+    keyTranslator[8] = Key::KEY_1;
+    keyTranslator[9] = Key::KEY_2;
+    keyTranslator[10] = Key::KEY_3;
+    keyTranslator[11] = Key::KEY_4;
+    keyTranslator[12] = Key::KEY_5;
+    keyTranslator[13] = Key::KEY_6;
+    keyTranslator[14] = Key::KEY_7;
+    keyTranslator[15] = Key::KEY_8;
+    keyTranslator[16] = Key::KEY_9;
+    //keyTranslator[17] = Key::STAR;
+    //keyTranslator[18] = Key::POUND;
+    //keyTranslator[19] = Key::DPAD_UP;
+    //keyTranslator[20] = Key::DPAD_DOWN;
+    //keyTranslator[21] = Key::DPAD_LEFT;
+    //keyTranslator[22] = Key::DPAD_RIGHT;
+    //keyTranslator[23] = Key::DPAD_CENTER;
+    //keyTranslator[24] = Key::VOLUME_UP;
+    //keyTranslator[25] = Key::VOLUME_DOWN;
+    //keyTranslator[26] = Key::POWER;
+    //keyTranslator[27] = Key::CAMERA;
+    //keyTranslator[28] = Key::CLEAR;
+    keyTranslator[29] = Key::KEY_A;
+    keyTranslator[30] = Key::KEY_B;
+    keyTranslator[31] = Key::KEY_C;
+    keyTranslator[32] = Key::KEY_D;
+    keyTranslator[33] = Key::KEY_E;
+    keyTranslator[34] = Key::KEY_F;
+    keyTranslator[35] = Key::KEY_G;
+    keyTranslator[36] = Key::KEY_H;
+    keyTranslator[37] = Key::KEY_I;
+    keyTranslator[38] = Key::KEY_J;
+    keyTranslator[39] = Key::KEY_K;
+    keyTranslator[40] = Key::KEY_L;
+    keyTranslator[41] = Key::KEY_M;
+    keyTranslator[42] = Key::KEY_N;
+    keyTranslator[43] = Key::KEY_O;
+    keyTranslator[44] = Key::KEY_P;
+    keyTranslator[45] = Key::KEY_Q;
+    keyTranslator[46] = Key::KEY_R;
+    keyTranslator[47] = Key::KEY_S;
+    keyTranslator[48] = Key::KEY_T;
+    keyTranslator[49] = Key::KEY_U;
+    keyTranslator[50] = Key::KEY_V;
+    keyTranslator[51] = Key::KEY_W;
+    keyTranslator[52] = Key::KEY_X;
+    keyTranslator[53] = Key::KEY_Y;
+    keyTranslator[54] = Key::KEY_Z;
+    keyTranslator[55] = Key::COMMA;
+    keyTranslator[56] = Key::PERIOD;
+    keyTranslator[57] = Key::LALT;
+    keyTranslator[58] = Key::RALT;
+    keyTranslator[59] = Key::LSHIFT;
+    keyTranslator[60] = Key::RSHIFT;
+    keyTranslator[61] = Key::TAB;
+    keyTranslator[62] = Key::SPACE;
+    //keyTranslator[63] = Key::SYM;
+    //keyTranslator[64] = Key::EXPLORER;
+    //keyTranslator[65] = Key::ENVELOPE;
+    keyTranslator[66] = Key::ENTER;
+    keyTranslator[67] = Key::DELETE;
+    keyTranslator[68] = Key::GRAVE;
+    keyTranslator[69] = Key::MINUS;
+    keyTranslator[70] = Key::EQUALS;
+    keyTranslator[71] = Key::LBRACKET;
+    keyTranslator[72] = Key::RBRACKET;
+    keyTranslator[73] = Key::BACKSLASH;
+    keyTranslator[74] = Key::SEMICOLON;
+    keyTranslator[75] = Key::APOSTROPHE;
+    keyTranslator[76] = Key::SLASH;
+    //keyTranslator[77] = Key::AT;
+    //keyTranslator[78] = Key::NUM;
+    //keyTranslator[79] = Key::HEADSETHOOK;
+    //keyTranslator[80] = Key::FOCUS;
+    //keyTranslator[81] = Key::PLUS;
+    keyTranslator[82] = Key::MENU;
+    //keyTranslator[83] = Key::NOTIFICATION;
+    //keyTranslator[84] = Key::SEARCH;
+    //keyTranslator[85] = Key::MEDIA_PLAY_PAUSE;
+    //keyTranslator[86] = Key::MEDIA_STOP;
+    //keyTranslator[87] = Key::MEDIA_NEXT;
+    //keyTranslator[88] = Key::MEDIA_PREVIOUS;
+    //keyTranslator[89] = Key::MEDIA_REWIND;
+    //keyTranslator[90] = Key::MEDIA_FAST_FORWARD;
+    //keyTranslator[91] = Key::MUTE;
+    keyTranslator[92] = Key::PGUP;
+    keyTranslator[93] = Key::PGDN;
+    //keyTranslator[94] = Key::PICTSYMBOLS;
+    //keyTranslator[95] = Key::SWITCH_CHARSET;
+    //keyTranslator[96] = Key::BUTTON_A;
+    //keyTranslator[97] = Key::BUTTON_B;
+    //keyTranslator[98] = Key::BUTTON_C;
+    //keyTranslator[99] = Key::BUTTON_X;
+    //keyTranslator[100] = Key::BUTTON_Y;
+    //keyTranslator[101] = Key::BUTTON_Z;
+    //keyTranslator[102] = Key::BUTTON_L1;
+    //keyTranslator[103] = Key::BUTTON_R1;
+    //keyTranslator[104] = Key::BUTTON_L2;
+    //keyTranslator[105] = Key::BUTTON_R2;
+    //keyTranslator[106] = Key::BUTTON_THUMBL;
+    //keyTranslator[107] = Key::BUTTON_THUMBR;
+    //keyTranslator[108] = Key::BUTTON_START;
+    //keyTranslator[109] = Key::BUTTON_SELECT;
+    //keyTranslator[110] = Key::BUTTON_MODE;
+    keyTranslator[111] = Key::ESCAPE;
+    //keyTranslator[112] = Key::FORWARD_DEL;
+    keyTranslator[113] = Key::LCTRL;
+    keyTranslator[114] = Key::RCTRL;
+    keyTranslator[115] = Key::CAPSLOCK;
+    keyTranslator[116] = Key::SCROLLLOCK;
+    keyTranslator[117] = Key::LWIN;
+    keyTranslator[118] = Key::RWIN;
+    //keyTranslator[119] = Key::FUNCTION;
+    //keyTranslator[120] = Key::SYSRQ;
+    keyTranslator[121] = Key::PAUSE;
+    keyTranslator[122] = Key::HOME;
+    keyTranslator[123] = Key::END;
+    keyTranslator[124] = Key::INSERT;
+    //keyTranslator[125] = Key::FORWARD;
+    //keyTranslator[126] = Key::MEDIA_PLAY;
+    //keyTranslator[127] = Key::MEDIA_PAUSE;
+    //keyTranslator[128] = Key::MEDIA_CLOSE;
+    //keyTranslator[129] = Key::MEDIA_EJECT;
+    //keyTranslator[130] = Key::MEDIA_RECORD;
+    keyTranslator[131] = Key::F1;
+    keyTranslator[132] = Key::F2;
+    keyTranslator[133] = Key::F3;
+    keyTranslator[134] = Key::F4;
+    keyTranslator[135] = Key::F5;
+    keyTranslator[136] = Key::F6;
+    keyTranslator[137] = Key::F7;
+    keyTranslator[138] = Key::F8;
+    keyTranslator[139] = Key::F9;
+    keyTranslator[140] = Key::F10;
+    keyTranslator[141] = Key::F11;
+    keyTranslator[142] = Key::F12;
+    keyTranslator[143] = Key::NUMLOCK;
+    keyTranslator[144] = Key::NUMPAD0;
+    keyTranslator[145] = Key::NUMPAD1;
+    keyTranslator[146] = Key::NUMPAD2;
+    keyTranslator[147] = Key::NUMPAD3;
+    keyTranslator[148] = Key::NUMPAD4;
+    keyTranslator[149] = Key::NUMPAD5;
+    keyTranslator[150] = Key::NUMPAD6;
+    keyTranslator[151] = Key::NUMPAD7;
+    keyTranslator[152] = Key::NUMPAD8;
+    keyTranslator[153] = Key::NUMPAD9;
+    keyTranslator[154] = Key::DIVIDE;
+    keyTranslator[155] = Key::MULTIPLY;
+    keyTranslator[156] = Key::SUBTRACT;
+    keyTranslator[157] = Key::ADD;
+    keyTranslator[158] = Key::DECIMAL;
+    //keyTranslator[159] = Key::NUMPAD_COMMA;
+    keyTranslator[160] = Key::NUMPADENTER;
+    keyTranslator[161] = Key::EQUALS;
+//keyTranslator[162] = Key::NUMPAD_LEFT_PAREN;
+//keyTranslator[163] = Key::NUMPAD_RIGHT_PAREN;
+//keyTranslator[164] = Key::VOLUME_MUTE;
+//keyTranslator[165] = Key::INFO;
+//keyTranslator[166] = Key::CHANNEL_UP;
+//keyTranslator[167] = Key::CHANNEL_DOWN;
+//keyTranslator[168] = Key::ZOOM_IN;
+//keyTranslator[169] = Key::ZOOM_OUT;
+//keyTranslator[170] = Key::TV;
+//keyTranslator[171] = Key::WINDOW;
+//keyTranslator[172] = Key::GUIDE;
+//keyTranslator[173] = Key::DVR;
+//keyTranslator[174] = Key::BOOKMARK;
+//keyTranslator[175] = Key::CAPTIONS;
+//keyTranslator[176] = Key::SETTINGS;
+//keyTranslator[177] = Key::TV_POWER;
+//keyTranslator[178] = Key::TV_INPUT;
+//keyTranslator[179] = Key::STB_POWER;
+//keyTranslator[180] = Key::STB_INPUT;
+//keyTranslator[181] = Key::AVR_POWER;
+//keyTranslator[182] = Key::AVR_INPUT;
+//keyTranslator[183] = Key::PROG_RED;
+//keyTranslator[184] = Key::PROG_GREEN;
+//keyTranslator[185] = Key::PROG_YELLOW;
+//keyTranslator[186] = Key::PROG_BLUE;
+//keyTranslator[187] = Key::APP_SWITCH;
+//    keyTranslator[188] = Key::BUTTON_1;
+//    keyTranslator[189] = Key::BUTTON_2;
+//    keyTranslator[190] = Key::BUTTON_3;
+//    keyTranslator[191] = Key::BUTTON_4;
+//    keyTranslator[192] = Key::BUTTON_5;
+//    keyTranslator[193] = Key::BUTTON_6;
+//    keyTranslator[194] = Key::BUTTON_7;
+//    keyTranslator[195] = Key::BUTTON_8;
+//    keyTranslator[196] = Key::BUTTON_9;
+//    keyTranslator[197] = Key::BUTTON_10;
+//    keyTranslator[198] = Key::BUTTON_11;
+//    keyTranslator[199] = Key::BUTTON_12;
+//    keyTranslator[200] = Key::BUTTON_13;
+//    keyTranslator[201] = Key::BUTTON_14;
+//    keyTranslator[202] = Key::BUTTON_15;
+//    keyTranslator[203] = Key::BUTTON_16;
+//keyTranslator[204] = Key::LANGUAGE_SWITCH;
+//keyTranslator[205] = Key::MANNER_MODE;
+//keyTranslator[206] = Key::3D_MODE;
+//keyTranslator[207] = Key::CONTACTS;
+//keyTranslator[208] = Key::CALENDAR;
+//keyTranslator[209] = Key::MUSIC;
+//keyTranslator[210] = Key::CALCULATOR;
+//keyTranslator[211] = Key::ZENKAKU_HANKAKU;
+//keyTranslator[212] = Key::EISU;
+//keyTranslator[213] = Key::MUHENKAN;
+//keyTranslator[214] = Key::HENKAN;
+//keyTranslator[215] = Key::KATAKANA_HIRAGANA;
+//keyTranslator[216] = Key::YEN;
+//keyTranslator[217] = Key::RO;
+//keyTranslator[218] = Key::KANA;
+//keyTranslator[219] = Key::ASSIST;
+//keyTranslator[220] = Key::BRIGHTNESS_DOWN;
+//keyTranslator[221] = Key::BRIGHTNESS_UP;
+//keyTranslator[222] = Key::MEDIA_AUDIO_TRACK;
+//keyTranslator[223] = Key::SLEEP;
+//keyTranslator[224] = Key::WAKEUP;
+//keyTranslator[225] = Key::PAIRING;
+//keyTranslator[226] = Key::MEDIA_TOP_MENU;
+//keyTranslator[227] = Key::11;
+//keyTranslator[228] = Key::12;
+//keyTranslator[229] = Key::LAST_CHANNEL;
+//keyTranslator[230] = Key::TV_DATA_SERVICE;
+//keyTranslator[231] = Key::VOICE_ASSIST;
+//keyTranslator[232] = Key::TV_RADIO_SERVICE;
+//keyTranslator[233] = Key::TV_TELETEXT;
+//    keyTranslator[234] = Key::TV_NUMBER_ENTRY;
+//    keyTranslator[235] = Key::TV_TERRESTRIAL_ANALOG;
+//    keyTranslator[236] = Key::TV_TERRESTRIAL_DIGITAL;
+//    keyTranslator[237] = Key::TV_SATELLITE;
+//    keyTranslator[238] = Key::TV_SATELLITE_BS;
+//    keyTranslator[239] = Key::TV_SATELLITE_CS;
+//    keyTranslator[240] = Key::TV_SATELLITE_SERVICE;
+//    keyTranslator[241] = Key::TV_NETWORK;
+//    keyTranslator[242] = Key::TV_ANTENNA_CABLE;
+//    keyTranslator[243] = Key::TV_INPUT_HDMI_1;
+//    keyTranslator[244] = Key::TV_INPUT_HDMI_2;
+//    keyTranslator[245] = Key::TV_INPUT_HDMI_3;
+//    keyTranslator[246] = Key::TV_INPUT_HDMI_4;
+//    keyTranslator[247] = Key::TV_INPUT_COMPOSITE_1;
+//    keyTranslator[248] = Key::TV_INPUT_COMPOSITE_2;
+//    keyTranslator[249] = Key::TV_INPUT_COMPONENT_1;
+//    keyTranslator[250] = Key::TV_INPUT_COMPONENT_2;
+//    keyTranslator[251] = Key::TV_INPUT_VGA_1;
+//    keyTranslator[252] = Key::TV_AUDIO_DESCRIPTION;
+//    keyTranslator[253] = Key::TV_AUDIO_DESCRIPTION_MIX_UP;
+//    keyTranslator[254] = Key::TV_AUDIO_DESCRIPTION_MIX_DOWN;
+//    keyTranslator[255] = Key::TV_ZOOM_MODE;
+//    keyTranslator[256] = Key::TV_CONTENTS_MENU;
+//    keyTranslator[257] = Key::TV_MEDIA_CONTEXT_MENU;
+//    keyTranslator[258] = Key::TV_TIMER_PROGRAMMING;
+//    keyTranslator[259] = Key::HELP;
 #endif
 }
 
 void KeyboardDevice::ClearAllKeys()
 {
     currentFrameKeyStatus.reset();
+
+    UIControlSystem* uiControlSys = UIControlSystem::Instance();
+    if (uiControlSys != nullptr)
+    {
+        UIEvent e;
+        e.phase = UIEvent::Phase::KEY_UP;
+        e.device = UIEvent::Device::KEYBOARD;
+        e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        for (uint32 key = static_cast<uint32>(Key::ESCAPE); key < static_cast<uint32>(Key::TOTAL_KEYS_COUNT); key += 1)
+        {
+            if (realKeyStatus[key])
+            {
+                e.key = static_cast<Key>(key);
+                uiControlSys->OnInput(&e);
+            }
+        }
+    }
+
     realKeyStatus.reset();
 }
-};
+} // end namespace DAVA

@@ -31,11 +31,6 @@
 
 using namespace DAVA;
 
-namespace
-{
-typedef DAVA::Set<String> StringSet;
-}
-
 SceneProcessor::SceneProcessor(EntityProcessorBase* _entityProcessor /*= NULL*/)
     : entityProcessor(SafeRetain(_entityProcessor))
 {
@@ -65,7 +60,7 @@ bool SceneProcessor::Execute(DAVA::Scene* currentScene)
 
     int32 childrenCount = currentScene->GetChildrenCount();
 
-    StringSet refToOwnerSet;
+    Set<String> refToOwnerSet;
 
     const bool needProcessExternal = entityProcessor->NeedProcessExternal();
     bool sceneModified = false;
@@ -93,9 +88,8 @@ bool SceneProcessor::Execute(DAVA::Scene* currentScene)
             }
 
             const String referenceToOwner = props->GetString("editor.referenceToOwner");
-            std::pair<StringSet::iterator, bool> insertResult = refToOwnerSet.insert(referenceToOwner);
-
-            if (insertResult.second)
+            bool newItemInserted = refToOwnerSet.insert(referenceToOwner).second;
+            if (newItemInserted)
             {
                 Scene* newScene = new Scene();
                 newScene->LoadScene(referenceToOwner);

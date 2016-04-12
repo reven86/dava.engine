@@ -1,30 +1,30 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+ Copyright (c) 2008, binaryzebra
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of the binaryzebra nor the
+ names of its contributors may be used to endorse or promote products
+ derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ =====================================================================================*/
 
 
 #include "TexturePacker/ResourcePacker2D.h"
@@ -34,49 +34,22 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/DateTime.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
+
+#include "AssetCache/AssetCacheClient.h"
 
 namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.3";
 const String ResourcePacker2D::INTERNAL_LIBPSD_VERSION = "0.0.1";
-
-enum AssetClientCode : int
-{
-    OK = 0,
-    WRONG_COMMAND_LINE = 1,
-    WRONG_IP = 2,
-    TIMEOUT = 3,
-    CANNOT_CONNECT = 4,
-    SERVER_ERROR = 5,
-    CANNOT_READ_FILES = 6
-};
-
-const String& GetCodeAsString(AssetClientCode code)
-{
-    static Array<String, 7> codeStrings = { { "OK",
-                                              "WRONG_COMMAND_LINE",
-                                              "WRONG_IP",
-                                              "TIMEOUT",
-                                              "CANNOT_CONNECT",
-                                              "SERVER_ERROR",
-                                              "CANNOT_READ_FILES" } };
-    static String codeUnknown("CODE_UNKNOWN");
-
-    if (code >= 0 && code < static_cast<int>(codeStrings.size()))
-    {
-        return codeStrings[code];
-    }
-    else
-    {
-        return codeUnknown;
-    }
-}
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -324,23 +297,56 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     }
 
     CommandLineParser::Instance()->SetFlags(currentFlags);
+    String mergedFlags;
+    Merge(currentFlags, ' ', mergedFlags);
+
+    String packingParams = mergedFlags;
+    packingParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
+    packingParams += String("PackerVersion = ") + VERSION;
+    packingParams += String("LibPSDVersion = ") + INTERNAL_LIBPSD_VERSION;
+    for (const auto& algorithm : packAlgorithms)
+    {
+        packingParams += String("PackerAlgorithm = ") + GlobalEnumMap<DAVA::PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));
+    }
 
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
 
     bool inputDirHasFiles = false;
+    uint64 allFilesSize = 0;
+    uint32 allFilesCount = 0;
+
+    static const Vector<String> ignoredFileNames = { ".DS_Store", "flags.txt", "Thumbs.db", ".gitignore" };
+    auto IsFileIgnoredByName = [](const Vector<String>& ignoredFileNames, const String& filename)
+    {
+        auto found = std::find_if(ignoredFileNames.begin(), ignoredFileNames.end(), [&filename](const String& name)
+                                  {
+                                      return (CompareCaseInsensitive(filename, name) == 0);
+                                  });
+
+        return (found != ignoredFileNames.end());
+    };
+
     for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
         {
+            String fileName = fileList->GetFilename(fi);
+            if (IsFileIgnoredByName(ignoredFileNames, fileName))
+            {
+                continue;
+            }
+
             inputDirHasFiles = true;
-            break;
+
+            packingParams += fileName;
+            allFilesSize += fileList->GetFileSize(fi);
+            ++allFilesCount;
         }
     }
 
-    String mergedFlags;
-    Merge(currentFlags, ' ', mergedFlags);
-    Logger::FrameworkDebug("Flags applied for current folder: %s", mergedFlags.c_str());
+    packingParams += Format("FilesSize = %llu", allFilesSize);
+    packingParams += Format("FilesCount = %u", allFilesCount);
 
     String mergedParams = mergedFlags;
     mergedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
@@ -352,7 +358,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     }
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
-    bool paramsModified = RecalculateParamsMD5(mergedParams, processDir + "params.md5");
+    bool paramsModified = RecalculateParamsMD5(packingParams, processDir + "params.md5");
 
     bool modified = outputDirModified || inputDirModified || paramsModified;
     if (modified)
@@ -521,90 +527,41 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     }
 }
 
+void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const String& comment)
+{
+    cacheClient = cacheClient_;
+
+    cacheItemDescription.machineName = WStringToString(DeviceInfo::GetName());
+
+    DateTime timeNow = DateTime::Now();
+    cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+
+    cacheItemDescription.comment = comment;
+}
+
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
     //no cache client in win uap
     return false;
 #else
+
     if (!IsUsingCache())
     {
         return false;
     }
 
-    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-    SCOPE_EXIT
+    AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, outputPath);
+    if (requested == AssetCache::Error::NO_ERRORS)
     {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
-    };
-
-    Vector<String> arguments;
-    arguments.push_back("get");
-
-    arguments.push_back("-h");
-    arguments.push_back(AssetCache::KeyToString(key));
-
-    arguments.push_back("-f");
-    arguments.push_back(outputPath.GetAbsolutePathname());
-
-    if (!cacheClientIp.empty())
-    {
-        arguments.push_back("-ip");
-        arguments.push_back(cacheClientIp);
-    }
-
-    if (!cacheClientPort.empty())
-    {
-        arguments.push_back("-p");
-        arguments.push_back(cacheClientPort);
-    }
-
-    if (!cacheClientTimeout.empty())
-    {
-        arguments.push_back("-t");
-        arguments.push_back(cacheClientTimeout);
-    }
-
-    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-    Process cacheClient(cacheClientTool, arguments);
-    if (cacheClient.Run(false))
-    {
-        cacheClient.Wait();
-
-        auto exitCode = cacheClient.GetExitCode();
-        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-        if (exitCode == AssetClientCode::OK)
-        {
-            Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(),
-                         static_cast<float64>(getTime) / 1000.0);
-            return true;
-        }
-        else
-        {
-            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d (%s)",
-                         inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0,
-                         exitCode, GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
-            const String& procOutput = cacheClient.GetOutput();
-            if (!procOutput.empty())
-            {
-                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-            }
-
-            if (exitCode == AssetClientCode::TIMEOUT)
-            {
-                isUsingCache = false;
-            }
-
-            return false;
-        }
+        return true;
     }
     else
     {
-        Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
-        return false;
+        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
     }
+
+    return false;
 #endif
 }
 
@@ -619,107 +576,40 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         return false;
     }
 
-    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-    SCOPE_EXIT
-    {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
-    };
+    AssetCache::CachedItemValue value;
 
-    String fileListString;
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
     for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
-            if (fileListString.empty() == false)
-            {
-                fileListString += String(",");
-            }
-
-            fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
+            value.Add(outFilesList->GetPathname(fi));
         }
     }
 
-    if (fileListString.empty() == false)
+    if (!value.IsEmpty())
     {
-        Vector<String> arguments;
-        arguments.push_back("add");
+        value.UpdateValidationData();
+        value.SetDescription(cacheItemDescription);
 
-        arguments.push_back("-h");
-        arguments.push_back(AssetCache::KeyToString(key));
-
-        arguments.push_back("-f");
-        arguments.push_back(fileListString);
-
-        if (!cacheClientIp.empty())
+        AssetCache::Error added = cacheClient->AddToCacheSynchronously(key, value);
+        if (added == AssetCache::Error::NO_ERRORS)
         {
-            arguments.push_back("-ip");
-            arguments.push_back(cacheClientIp);
-        }
-
-        if (!cacheClientPort.empty())
-        {
-            arguments.push_back("-p");
-            arguments.push_back(cacheClientPort);
-        }
-
-        if (!cacheClientTimeout.empty())
-        {
-            arguments.push_back("-t");
-            arguments.push_back(cacheClientTimeout);
-        }
-        else if (outFilesList->GetFileCount() > 20)
-        {
-            arguments.push_back("-t");
-            arguments.push_back("5"); //enlarge default timeout
-        }
-
-        uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-        Process cacheClient(cacheClientTool, arguments);
-        if (cacheClient.Run(false))
-        {
-            cacheClient.Wait();
-
-            auto exitCode = cacheClient.GetExitCode();
-            getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-            if (exitCode == AssetClientCode::OK)
-            {
-                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(),
-                             static_cast<float64>(getTime) / 1000.0);
-                return true;
-            }
-            else
-            {
-                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)",
-                             inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0,
-                             exitCode, GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
-                const String& procOutput = cacheClient.GetOutput();
-                if (!procOutput.empty())
-                {
-                    Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-                }
-
-                if (exitCode == AssetClientCode::TIMEOUT)
-                {
-                    isUsingCache = false;
-                }
-
-                return false;
-            }
+            Logger::Info("%s - added to cache", inputPath.GetAbsolutePathname().c_str());
+            return true;
         }
         else
         {
-            Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
-            return false;
+            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
         }
     }
     else
     {
-        Logger::FrameworkDebug("Dir [%s] is empty. Nothing to add to cache", outputPath.GetAbsolutePathname().c_str());
-        return false;
+        Logger::Info("%s - empty folder", inputPath.GetAbsolutePathname().c_str());
     }
+
+    return false;
+        
 #endif
 }
 
@@ -734,21 +624,13 @@ void ResourcePacker2D::AddError(const String& errorMsg)
     errors.insert(errorMsg);
 }
 
-void ResourcePacker2D::SetCacheClientTool(const FilePath& path, const String& ip, const String& port, const String& timeout)
+bool ResourcePacker2D::IsUsingCache() const
 {
-    cacheClientTool = path;
-    cacheClientIp = ip;
-    cacheClientPort = port;
-    cacheClientTimeout = timeout;
-    isUsingCache = !cacheClientTool.IsEmpty();
-}
-
-void ResourcePacker2D::ClearCacheClientTool()
-{
-    cacheClientTool = "";
-    cacheClientIp.clear();
-    cacheClientPort.clear();
-    cacheClientTimeout.clear();
-    isUsingCache = false;
+#ifdef __DAVAENGINE_WIN_UAP__
+    //no cache in win uap
+    return false;
+#else
+    return (cacheClient != nullptr) && cacheClient->IsConnected();
+#endif
 }
 };

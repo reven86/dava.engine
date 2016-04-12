@@ -33,29 +33,27 @@ DeleteRenderBatchCommand::DeleteRenderBatchCommand(DAVA::Entity* en, DAVA::Rende
     : Command2(CMDID_DELETE_RENDER_BATCH, "Delete Render Batch")
     , entity(en)
     , renderObject(ro)
-    , renderBatchIndex(batchIndex)
 {
     DVASSERT(entity);
     DVASSERT(renderObject);
-    DVASSERT(renderBatchIndex < renderObject->GetRenderBatchCount());
+    DVASSERT(batchIndex < renderObject->GetRenderBatchCount());
 
-    renderBatch = renderObject->GetRenderBatch(renderBatchIndex, lodIndex, switchIndex);
-    renderBatch->Retain();
+    renderBatch = renderObject->GetRenderBatch(batchIndex, lodIndex, switchIndex);
+    DAVA::SafeRetain(renderBatch);
 }
 
 DeleteRenderBatchCommand::~DeleteRenderBatchCommand()
 {
-    SafeRelease(renderBatch);
+    DAVA::SafeRelease(renderBatch);
 }
 
 void DeleteRenderBatchCommand::Redo()
 {
-    renderObject->RemoveRenderBatch(renderBatchIndex);
+    renderObject->RemoveRenderBatch(renderBatch);
 }
 
 void DeleteRenderBatchCommand::Undo()
 {
-    renderBatchIndex = renderObject->GetRenderBatchCount();
     renderObject->AddRenderBatch(renderBatch, lodIndex, switchIndex);
 }
 

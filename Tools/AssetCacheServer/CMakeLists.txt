@@ -47,4 +47,6 @@ set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
+set( DISABLE_SOUNDS         true)
+
 setup_main_executable()

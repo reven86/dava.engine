@@ -221,7 +221,7 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Error("===============================================================");
             return false;
         }
-        
+
         outImageBasePath.ReplaceBasename(outImageBaseName + "_" + std::to_string(lIndex));
 
         if (layerName.empty())

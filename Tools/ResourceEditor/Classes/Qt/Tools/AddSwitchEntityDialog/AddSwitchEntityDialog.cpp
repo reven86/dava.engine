@@ -47,12 +47,12 @@ AddSwitchEntityDialog::AddSwitchEntityDialog(QWidget* parent)
 {
     setAcceptDrops(true);
     setAttribute(Qt::WA_DeleteOnClose, true);
-    FilePath defaultPath(ProjectManager::Instance()->GetDataSourcePath());
+    DAVA::FilePath defaultPath(ProjectManager::Instance()->GetDataSourcePath());
 
     SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     if (scene)
     {
-        FilePath scenePath = scene->GetScenePath();
+        DAVA::FilePath scenePath = scene->GetScenePath();
         if (scenePath.Exists())
         {
             defaultPath = scenePath.GetDirectory();
@@ -97,7 +97,7 @@ void AddSwitchEntityDialog::GetPathEntities(DAVA::Vector<DAVA::Entity*>& entitie
 {
     Q_FOREACH (SelectEntityPathWidget* widget, pathWidgets)
     {
-        Entity* entity = widget->GetOutputEntity(editor);
+        DAVA::Entity* entity = widget->GetOutputEntity(editor);
         if (entity)
         {
             entities.push_back(entity);
@@ -114,7 +114,7 @@ void AddSwitchEntityDialog::accept()
         return;
     }
 
-    Vector<Entity*> vector;
+    DAVA::Vector<DAVA::Entity*> vector;
     GetPathEntities(vector, scene);
 
     if (vector.empty())
@@ -135,16 +135,16 @@ void AddSwitchEntityDialog::accept()
         if (creator.HasSwitchComponentsRecursive(vector[i]))
         {
             canCreateSwitch = false;
-            Logger::Error("Can't create switch in switch: %s%s", vector[i]->GetName().c_str(),
-                          PointerSerializer::FromPointer(vector[i]).c_str());
+            DAVA::Logger::Error("Can't create switch in switch: %s%s", vector[i]->GetName().c_str(),
+                                PointerSerializer::FromPointer(vector[i]).c_str());
             ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH);
             return;
         }
         if (!creator.HasRenderObjectsRecursive(vector[i]))
         {
             canCreateSwitch = false;
-            Logger::Error("Entity '%s' hasn't mesh render objects%s", vector[i]->GetName().c_str(),
-                          PointerSerializer::FromPointer(vector[i]).c_str());
+            DAVA::Logger::Error("Entity '%s' hasn't mesh render objects%s", vector[i]->GetName().c_str(),
+                                PointerSerializer::FromPointer(vector[i]).c_str());
             ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS);
             return;
         }
@@ -159,7 +159,7 @@ void AddSwitchEntityDialog::accept()
             scene->Exec(Command2::Create<EntityRemoveCommand>(vector[i]));
         }
 
-        Entity* switchEntity = creator.CreateSwitchEntity(vector);
+        DAVA::Entity* switchEntity = creator.CreateSwitchEntity(vector);
         scene->Exec(Command2::Create<EntityAddCommand>(switchEntity, scene));
 
         for (DAVA::uint32 i = 0; i < switchCount; ++i)
@@ -168,7 +168,7 @@ void AddSwitchEntityDialog::accept()
         }
 
         scene->EndBatch();
-        SafeRelease(switchEntity);
+        DAVA::SafeRelease(switchEntity);
     }
 
     BaseAddEntityDialog::accept();
