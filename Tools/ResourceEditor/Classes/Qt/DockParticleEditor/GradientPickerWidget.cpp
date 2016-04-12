@@ -28,19 +28,20 @@
 
 
 #include "GradientPickerWidget.h"
-#include <QPainter>
-#include <QPaintEvent>
 
 #include "Main/QtUtils.h"
 #include "Tools/ColorPicker/ColorPicker.h"
 
-#define BACKGROUND_COLOR (Color(0x80, 0x80, 0x80, 0xff) / 255.f)
-#define BORDER_COLOR Color::Black
-#define EMPTY_WIDGET_COLOR Color::Black
-#define DEFAULT_GRADIENT_COLOR Color::White
-#define UNSELECTED_MARKER_COLOR Color::White
-#define SELECTED_MARKER_COLOR Color(0.f, 1.f, 0.f, 1.f)
-#define TEXT_COLOR Color::White
+#include <QPainter>
+#include <QPaintEvent>
+
+#define BACKGROUND_COLOR (DAVA::Color(0x80, 0x80, 0x80, 0xff) / 255.f)
+#define BORDER_COLOR DAVA::Color::Black
+#define EMPTY_WIDGET_COLOR DAVA::Color::Black
+#define DEFAULT_GRADIENT_COLOR DAVA::Color::White
+#define UNSELECTED_MARKER_COLOR DAVA::Color::White
+#define SELECTED_MARKER_COLOR DAVA::Color(0.f, 1.f, 0.f, 1.f)
+#define TEXT_COLOR DAVA::Color::White
 
 #define MARKER_SIZE 4
 #define TILED_RECT_SIZE 20
@@ -49,18 +50,12 @@
 #define LEGEND_HEIGHT 12
 
 GradientPickerWidget::GradientPickerWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    minTime(0.f)
-    ,
-    maxTime(1.f)
-    ,
-    selectedPointIndex(-1)
-    ,
-    showCursorPos(false)
-    ,
-    legend("")
+    : QWidget(parent)
+    , minTime(0.f)
+    , maxTime(1.f)
+    , selectedPointIndex(-1)
+    , showCursorPos(false)
+    , legend("")
 {
     setMinimumHeight(WIDGET_MIN_HEIGHT);
     setMaximumHeight(WIDGET_MAX_HEIGHT);
@@ -83,13 +78,13 @@ GradientPickerWidget::~GradientPickerWidget()
 {
 }
 
-void GradientPickerWidget::Init(float32 minT, float32 maxT, const QString& legend)
+void GradientPickerWidget::Init(DAVA::float32 minT, DAVA::float32 maxT, const QString& legend)
 {
     SetLimits(minT, maxT);
     this->legend = legend;
 }
 
-void GradientPickerWidget::SetLimits(float32 minT, float32 maxT)
+void GradientPickerWidget::SetLimits(DAVA::float32 minT, DAVA::float32 maxT)
 {
     if (maxT - minT < 0.01f || minT > maxT)
         return;
@@ -98,34 +93,34 @@ void GradientPickerWidget::SetLimits(float32 minT, float32 maxT)
     maxTime = maxT;
 }
 
-void GradientPickerWidget::SetValues(const Vector<PropValue<Color>>& values)
+void GradientPickerWidget::SetValues(const DAVA::Vector<DAVA::PropValue<DAVA::Color>>& values)
 {
     ClearPoints();
-    for (uint32 i = 0; i < values.size(); ++i)
+    for (DAVA::uint32 i = 0; i < values.size(); ++i)
     {
         AddColorPoint(values[i].t, values[i].v);
     }
     update();
 }
 
-bool GradientPickerWidget::ComparePoints(const std::pair<float32, Color>& a, const std::pair<float32, Color>& b)
+bool GradientPickerWidget::ComparePoints(const std::pair<DAVA::float32, DAVA::Color>& a, const std::pair<DAVA::float32, DAVA::Color>& b)
 {
     return (a.first < b.first);
 }
 
-bool GradientPickerWidget::CompareIndices(int32 a, int32 b)
+bool GradientPickerWidget::CompareIndices(DAVA::int32 a, DAVA::int32 b)
 {
     return (a > b);
 }
 
-bool GradientPickerWidget::GetValues(Vector<PropValue<Color>>* values)
+bool GradientPickerWidget::GetValues(DAVA::Vector<DAVA::PropValue<DAVA::Color>>* values)
 {
-    Vector<std::pair<float32, Color>> sortedPoints = points;
+    DAVA::Vector<std::pair<DAVA::float32, DAVA::Color>> sortedPoints = points;
     std::sort(sortedPoints.begin(), sortedPoints.end(), ComparePoints);
 
-    for (uint32 i = 0; i < sortedPoints.size(); ++i)
+    for (DAVA::uint32 i = 0; i < sortedPoints.size(); ++i)
     {
-        values->push_back(PropValue<Color>(sortedPoints[i].first, sortedPoints[i].second));
+        values->push_back(DAVA::PropValue<DAVA::Color>(sortedPoints[i].first, sortedPoints[i].second));
     }
 
     return true;
@@ -163,7 +158,7 @@ void GradientPickerWidget::paintEvent(QPaintEvent*)
     QLinearGradient gradient(graphRect.left(), graphCenter.y(), graphRect.right(), graphCenter.y());
     if (points.empty())
         gradient.setColorAt(0.f, ColorToQColor(EMPTY_WIDGET_COLOR));
-    for (uint32 i = 0; i < points.size(); ++i)
+    for (DAVA::uint32 i = 0; i < points.size(); ++i)
     {
         gradient.setColorAt(GetGradientPosFromTime(points[i].first), ColorToQColor(points[i].second));
     }
@@ -177,8 +172,8 @@ void GradientPickerWidget::paintEvent(QPaintEvent*)
 
     QBrush selectedBrush(ColorToQColor(SELECTED_MARKER_COLOR));
     QBrush unselectedBrush(ColorToQColor(UNSELECTED_MARKER_COLOR));
-    Vector<QRectF> markers = GetMarkerRects();
-    for (uint32 i = 0; i < markers.size(); ++i)
+    DAVA::Vector<QRectF> markers = GetMarkerRects();
+    for (DAVA::uint32 i = 0; i < markers.size(); ++i)
     {
         if (i == selectedPointIndex)
             painter.setBrush(selectedBrush);
@@ -193,14 +188,14 @@ void GradientPickerWidget::mouseMoveEvent(QMouseEvent* event)
     QPoint point = event->pos();
     QRect graphRect = GetGraphRect();
 
-    int32 newX = qMin(graphRect.right(), point.x());
+    DAVA::int32 newX = qMin(graphRect.right(), point.x());
     newX = qMax(newX, graphRect.left());
 
     showCursorPos = true;
     cursorPos.setX(newX);
     cursorPos.setY(point.y());
 
-    float32 x = GetTimeFromCursorPos(newX);
+    DAVA::float32 x = GetTimeFromCursorPos(newX);
 
     if (selectedPointIndex != -1 && event->buttons() == Qt::LeftButton)
     {
@@ -213,8 +208,8 @@ void GradientPickerWidget::mouseMoveEvent(QMouseEvent* event)
 void GradientPickerWidget::mousePressEvent(QMouseEvent* event)
 {
     QPoint point = event->pos();
-    Vector<int32> pointIds = GetMarkersFromCursorPos(point);
-    int32 pointId = pointIds[0];
+    DAVA::Vector<DAVA::int32> pointIds = GetMarkersFromCursorPos(point);
+    DAVA::int32 pointId = pointIds[0];
 
     if (event->button() == Qt::LeftButton)
     {
@@ -228,7 +223,7 @@ void GradientPickerWidget::mousePressEvent(QMouseEvent* event)
             QRect graphRect = GetGraphRect();
             if (graphRect.contains(point))
             {
-                float32 x = GetTimeFromCursorPos(point.x());
+                DAVA::float32 x = GetTimeFromCursorPos(point.x());
                 AddPoint(x);
                 update();
             }
@@ -244,17 +239,17 @@ void GradientPickerWidget::mousePressEvent(QMouseEvent* event)
 void GradientPickerWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
     QPoint point = event->pos();
-    Vector<int32> pointIds = GetMarkersFromCursorPos(point);
-    int32 pointId = pointIds[0];
+    DAVA::Vector<DAVA::int32> pointIds = GetMarkersFromCursorPos(point);
+    DAVA::int32 pointId = pointIds[0];
 
     if (pointId != -1 && event->button() == Qt::LeftButton)
     {
-        const Color oldColor = points[pointId].second;
+        const DAVA::Color oldColor = points[pointId].second;
         ColorPicker cp(this);
         cp.setWindowTitle("Marker color");
         cp.SetDavaColor(oldColor);
         const bool result = cp.Exec();
-        const Color newColor = cp.GetDavaColor();
+        const DAVA::Color newColor = cp.GetDavaColor();
 
         if (result && newColor != oldColor)
         {
@@ -271,9 +266,9 @@ void GradientPickerWidget::mouseReleaseEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton && selectedPointIndex != -1)
     {
         QPoint point = event->pos();
-        Vector<int32> pointIds = GetMarkersFromCursorPos(point);
+        DAVA::Vector<DAVA::int32> pointIds = GetMarkersFromCursorPos(point);
 
-        for (uint32 i = 0; i < pointIds.size(); ++i)
+        for (DAVA::uint32 i = 0; i < pointIds.size(); ++i)
         {
             if (pointIds[i] == selectedPointIndex)
             {
@@ -296,7 +291,7 @@ void GradientPickerWidget::leaveEvent(QEvent*)
 
 QRect GradientPickerWidget::GetGraphRect()
 {
-    int32 indent = MARKER_SIZE + 1;
+    DAVA::int32 indent = MARKER_SIZE + 1;
     return this->rect().adjusted(indent, LEGEND_HEIGHT, -indent, -indent);
 }
 
@@ -307,7 +302,7 @@ QRect GradientPickerWidget::GetTextRect()
     return r;
 }
 
-bool GradientPickerWidget::AddPoint(float32 point)
+bool GradientPickerWidget::AddPoint(DAVA::float32 point)
 {
     if (points.empty())
         point = 0.f;
@@ -315,7 +310,7 @@ bool GradientPickerWidget::AddPoint(float32 point)
     return AddColorPoint(point, GetCurrentPointColor());
 }
 
-bool GradientPickerWidget::AddColorPoint(float32 point, const Color& color)
+bool GradientPickerWidget::AddColorPoint(DAVA::float32 point, const DAVA::Color& color)
 {
     if (point < minTime || point > maxTime)
         return false;
@@ -324,12 +319,12 @@ bool GradientPickerWidget::AddColorPoint(float32 point, const Color& color)
     return true;
 }
 
-bool GradientPickerWidget::SetCurrentPointColor(const Color& color)
+bool GradientPickerWidget::SetCurrentPointColor(const DAVA::Color& color)
 {
     return SetPointColor(selectedPointIndex, color);
 }
 
-bool GradientPickerWidget::SetPointColor(uint32 index, const DAVA::Color& color)
+bool GradientPickerWidget::SetPointColor(DAVA::uint32 index, const DAVA::Color& color)
 {
     if (index >= points.size())
         return false;
@@ -338,12 +333,12 @@ bool GradientPickerWidget::SetPointColor(uint32 index, const DAVA::Color& color)
     return true;
 }
 
-Color GradientPickerWidget::GetCurrentPointColor()
+DAVA::Color GradientPickerWidget::GetCurrentPointColor()
 {
     return GetPointColor(selectedPointIndex);
 }
 
-Color GradientPickerWidget::GetPointColor(uint32 index)
+DAVA::Color GradientPickerWidget::GetPointColor(DAVA::uint32 index)
 {
     if (index >= points.size())
         return DEFAULT_GRADIENT_COLOR;
@@ -356,7 +351,7 @@ bool GradientPickerWidget::DeleteCurrentPoint()
     return DeletePoint(selectedPointIndex);
 }
 
-bool GradientPickerWidget::DeletePoint(uint32 index)
+bool GradientPickerWidget::DeletePoint(DAVA::uint32 index)
 {
     if (index >= points.size())
         return false;
@@ -367,7 +362,7 @@ bool GradientPickerWidget::DeletePoint(uint32 index)
     {
         selectedPointIndex = -1;
     }
-    else if (selectedPointIndex > (int32)index)
+    else if (selectedPointIndex > static_cast<DAVA::int32>(index))
     {
         --selectedPointIndex;
     }
@@ -375,10 +370,10 @@ bool GradientPickerWidget::DeletePoint(uint32 index)
     return true;
 }
 
-bool GradientPickerWidget::DeletePoints(Vector<int32> indices)
+bool GradientPickerWidget::DeletePoints(DAVA::Vector<DAVA::int32> indices)
 {
     std::sort(indices.begin(), indices.end(), CompareIndices);
-    for (uint32 i = 0; i < indices.size(); ++i)
+    for (DAVA::uint32 i = 0; i < indices.size(); ++i)
         if (!DeletePoint(indices[i]))
             return false;
 
@@ -390,45 +385,45 @@ void GradientPickerWidget::ClearPoints()
     points.clear();
 }
 
-float32 GradientPickerWidget::GetTimeFromCursorPos(float32 xPos)
+DAVA::float32 GradientPickerWidget::GetTimeFromCursorPos(DAVA::float32 xPos)
 {
     QRectF graphRect = GetGraphRect();
-    float32 timeLine = maxTime - minTime;
+    DAVA::float32 timeLine = maxTime - minTime;
     xPos -= graphRect.left();
 
-    float32 time = minTime + timeLine * xPos / graphRect.width();
+    DAVA::float32 time = minTime + timeLine * xPos / graphRect.width();
     return time;
 }
 
-float32 GradientPickerWidget::GetCursorPosFromTime(float32 time)
+DAVA::float32 GradientPickerWidget::GetCursorPosFromTime(DAVA::float32 time)
 {
     QRectF graphRect = GetGraphRect();
-    float32 timeLine = maxTime - minTime;
+    DAVA::float32 timeLine = maxTime - minTime;
 
-    float32 pos = graphRect.left() + graphRect.width() * time / timeLine;
+    DAVA::float32 pos = graphRect.left() + graphRect.width() * time / timeLine;
     return pos;
 }
 
-float32 GradientPickerWidget::GetGradientPosFromTime(float32 time)
+DAVA::float32 GradientPickerWidget::GetGradientPosFromTime(DAVA::float32 time)
 {
-    float32 timeLine = maxTime - minTime;
+    DAVA::float32 timeLine = maxTime - minTime;
 
-    float32 gradientPos = (time - minTime) / timeLine;
+    DAVA::float32 gradientPos = (time - minTime) / timeLine;
     return gradientPos;
 }
 
-Vector<QRectF> GradientPickerWidget::GetMarkerRects()
+DAVA::Vector<QRectF> GradientPickerWidget::GetMarkerRects()
 {
-    Vector<QRectF> rects;
+    DAVA::Vector<QRectF> rects;
 
     QRectF graphRect = GetGraphRect();
     QPointF graphCenter = graphRect.center();
-    for (uint32 i = 0; i < points.size(); ++i)
+    for (DAVA::uint32 i = 0; i < points.size(); ++i)
     {
         QRectF pointMarker;
         pointMarker.setSize(QSizeF(MARKER_SIZE * 2, MARKER_SIZE * 2));
 
-        int32 x = GetCursorPosFromTime(points[i].first);
+        DAVA::int32 x = GetCursorPosFromTime(points[i].first);
         pointMarker.moveCenter(QPointF(x, graphCenter.y()));
 
         rects.push_back(pointMarker);
@@ -437,12 +432,12 @@ Vector<QRectF> GradientPickerWidget::GetMarkerRects()
     return rects;
 }
 
-Vector<int32> GradientPickerWidget::GetMarkersFromCursorPos(const QPoint& point)
+DAVA::Vector<DAVA::int32> GradientPickerWidget::GetMarkersFromCursorPos(const QPoint& point)
 {
-    Vector<QRectF> markers = GetMarkerRects();
-    Vector<int32> res;
+    DAVA::Vector<QRectF> markers = GetMarkerRects();
+    DAVA::Vector<DAVA::int32> res;
 
-    for (uint32 i = 0; i < markers.size(); ++i)
+    for (DAVA::uint32 i = 0; i < markers.size(); ++i)
     {
         if (markers[i].contains(point))
         {

@@ -518,6 +518,7 @@ void VegetationRenderObject::BuildSpatialStructure()
 
     uint32 treeDepth = FastLog2(mapSize);
 
+    visibleCells.clear();
     quadTree.Init(treeDepth);
     AbstractQuadTreeNode<VegetationSpatialData>* node = quadTree.GetRoot();
 

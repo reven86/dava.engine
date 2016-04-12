@@ -40,7 +40,7 @@ Matrix4 ConvertMatrix(FMMatrix44& matrix)
     for (int k = 0; k < 4; ++k)
         for (int l = 0; l < 4; ++l)
             result._data[k][l] = matrix.m[k][l];
-    ;
+
     return result;
 }
 
@@ -50,7 +50,7 @@ Matrix4 ConvertMatrixT(FMMatrix44& matrix)
     for (int k = 0; k < 4; ++k)
         for (int l = 0; l < 4; ++l)
             result._data[k][l] = matrix.m[l][k];
-    ;
+
     return result;
 }
 

@@ -108,18 +108,18 @@ void ImageTools::ConvertImage(const DAVA::TextureDescriptor* descriptor, const D
     TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
-bool ImageTools::SplitImage(const FilePath& pathname, Set<String>& errorLog)
+bool ImageTools::SplitImage(const FilePath& pathname)
 {
     Image* loadedImage = CreateTopLevelImage(pathname);
     if (!loadedImage)
     {
-        errorLog.insert(String(Format("Can't load image %s", pathname.GetAbsolutePathname().c_str())));
+        Logger::Error("Can't load image %s", pathname.GetAbsolutePathname().c_str());
         return false;
     }
 
     if (loadedImage->GetPixelFormat() != FORMAT_RGBA8888)
     {
-        errorLog.insert(String(Format("Incorrect image format %s. Must be RGBA8888", PixelFormatDescriptor::GetPixelFormatString(loadedImage->GetPixelFormat()))));
+        Logger::Error("Incorrect image format %s. Must be RGBA8888", PixelFormatDescriptor::GetPixelFormatString(loadedImage->GetPixelFormat()));
         return false;
     }
 
@@ -137,7 +137,7 @@ bool ImageTools::SplitImage(const FilePath& pathname, Set<String>& errorLog)
     return true;
 }
 
-bool ImageTools::MergeImages(const FilePath& folder, Set<String>& errorLog)
+bool ImageTools::MergeImages(const FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -145,21 +145,21 @@ bool ImageTools::MergeImages(const FilePath& folder, Set<String>& errorLog)
 
     if (channels.IsEmpty())
     {
-        errorLog.insert(String(Format("Can't load one or more channel images from folder %s", folder.GetAbsolutePathname().c_str())));
+        Logger::Error("Can't load one or more channel images from folder %s", folder.GetAbsolutePathname().c_str());
         channels.ReleaseImages();
         return false;
     }
 
     if (!channels.HasFormat(FORMAT_A8))
     {
-        errorLog.insert(String("Can't merge images. Source format must be Grayscale 8bit"));
+        Logger::Error("Can't merge images. Source format must be Grayscale 8bit");
         channels.ReleaseImages();
         return false;
     }
 
     if (!channels.ChannelesResolutionEqual())
     {
-        errorLog.insert(String("Can't merge images. Source images must have same size"));
+        Logger::Error("Can't merge images. Source images must have same size");
         channels.ReleaseImages();
         return false;
     }

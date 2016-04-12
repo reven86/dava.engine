@@ -29,6 +29,8 @@
 #include "Base/Platform.h"
 #include "Concurrency/Thread.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/LocalizationSystem.h"
+#include "Job/JobManager.h"
 #include "Logger/Logger.h"
 #include "Network/NetCore.h"
 #include "Platform/SystemTimer.h"
@@ -38,7 +40,7 @@
     #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #endif //PLATFORMS
 
-#include "AssetCacheClient.h"
+#include "ClientApplication.h"
 
 void FrameworkDidLaunched()
 {
@@ -51,9 +53,9 @@ void FrameworkWillTerminate()
 void CreateDAVA()
 {
 #if defined(__DAVAENGINE_MACOS__)
-    DAVA::Core* core = new DAVA::CoreMacOSPlatform();
+    new DAVA::CoreMacOSPlatform();
 #elif defined(__DAVAENGINE_WIN32__)
-    DAVA::Core* core = new DAVA::CoreWin32Platform();
+    new DAVA::CoreWin32Platform();
 #else // PLATFORMS
     static_assert(false, "Need create Core object");
 #endif //PLATFORMS
@@ -62,12 +64,14 @@ void CreateDAVA()
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
     DAVA::Logger::Instance()->EnableConsoleMode();
 
+    new DAVA::JobManager();
     new DAVA::FileSystem();
     DAVA::FilePath::InitializeBundleName();
 
     DAVA::FileSystem::Instance()->SetDefaultDocumentsDirectory();
     DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
+    new DAVA::LocalizationSystem();
     new DAVA::SystemTimer();
 
     DAVA::Thread::InitMainThread();
@@ -77,12 +81,16 @@ void CreateDAVA()
 
 void ReleaseDAVA()
 {
+    DAVA::JobManager::Instance()->WaitWorkerJobs();
+
     DAVA::Net::NetCore::Instance()->Finish(true);
     DAVA::Net::NetCore::Instance()->Release();
 
     DAVA::SystemTimer::Instance()->Release();
-
+    DAVA::LocalizationSystem::Instance()->Release();
     DAVA::FileSystem::Instance()->Release();
+    DAVA::JobManager::Instance()->Release();
+
     DAVA::Logger::Instance()->Release();
 
     DAVA::Core::Instance()->Release();
@@ -92,7 +100,7 @@ int main(int argc, char* argv[])
 {
     CreateDAVA();
 
-    AssetCacheClient cacheClient;
+    ClientApplication cacheClient;
     bool parsed = cacheClient.ParseCommandLine(argc, argv);
     if (parsed)
     {
@@ -100,5 +108,5 @@ int main(int argc, char* argv[])
     }
 
     ReleaseDAVA();
-    return cacheClient.GetExitCode();
+    return static_cast<int>(cacheClient.GetExitCode());
 }

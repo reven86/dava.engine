@@ -34,6 +34,8 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/DateTime.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
@@ -43,43 +45,14 @@
 #include "IMagickHelper.h"
 
 #include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
+
+#include "AssetCache/AssetCacheClient.h"
 
 namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.2";
-
-enum AssetClientCode : int
-{
-    OK = 0,
-    WRONG_COMMAND_LINE = 1,
-    WRONG_IP = 2,
-    TIMEOUT = 3,
-    CANNOT_CONNECT = 4,
-    SERVER_ERROR = 5,
-    CANNOT_READ_FILES = 6
-};
-
-const String& GetCodeAsString(AssetClientCode code)
-{
-    static Array<String, 7> codeStrings = { { "OK",
-                                              "WRONG_COMMAND_LINE",
-                                              "WRONG_IP",
-                                              "TIMEOUT",
-                                              "CANNOT_CONNECT",
-                                              "SERVER_ERROR",
-                                              "CANNOT_READ_FILES" } };
-    static String codeUnknown("CODE_UNKNOWN");
-
-    if (code >= 0 && code < static_cast<int>(codeStrings.size()))
-    {
-        return codeStrings[code];
-    }
-    else
-    {
-        return codeUnknown;
-    }
-}
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -288,9 +261,10 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     psdNameWithoutExtension.TruncateExtension();
 
     IMagickHelper::CroppedData cropped_data;
-    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), cropped_data, true);
 
-    if (cropped_data.layers_count == 0)
+    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), &cropped_data, true);
+
+    if (cropped_data.layers_array_size == 0)
     {
         AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
         return nullptr;
@@ -306,32 +280,32 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
 
     defFile->spriteWidth = width;
     defFile->spriteHeight = height;
-    defFile->frameCount = cropped_data.layers_count;
+    defFile->frameCount = static_cast<int>(cropped_data.layers_array_size) - 1;
     defFile->frameRects = new Rect2i[defFile->frameCount];
 
-    for (uint32 k = 0; k < defFile->frameCount; ++k)
+    for (int k = 1; k < static_cast<int>(cropped_data.layers_array_size); ++k)
     {
         //save layer names
         String layerName;
 
         if (useLayerNames)
         {
-            layerName.assign(cropped_data.layers[k].name);
+            layerName.assign(cropped_data.layers_array[k].name);
             if (layerName.empty())
             {
-                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k);
+                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
             }
             // Check if layer name is unique
             Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
             if (it != defFile->frameNames.end())
             {
-                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k, layerName.c_str());
+                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
             }
         }
         else
         {
             layerName.assign("frame");
-            layerName.append(std::to_string(k));
+            layerName.append(std::to_string(k - 1));
         }
 
         defFile->frameNames.push_back(layerName);
@@ -339,39 +313,141 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
         //save layer rects
         if (!withAlpha)
         {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
+            defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy);
 
-            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
-            if ((defFile->frameRects[k].dx > iMaxTextureSize) || (defFile->frameRects[k].dy > iMaxTextureSize))
+            //printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
+
+            if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
             {
-                Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k, maxTextureSize, defFile->frameRects[k].dx, defFile->frameRects[k].dy, width, height);
+                Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
+                                ,
+                                defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
 
-                defFile->frameRects[k].dx = width;
-                defFile->frameRects[k].dy = height;
+                defFile->frameRects[k - 1].dx = width;
+                defFile->frameRects[k - 1].dy = height;
             }
             else
             {
-                if (defFile->frameRects[k].dx > width)
+                if ((defFile->frameRects[k - 1].dx > width))
                 {
-                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dx, width);
-                    defFile->frameRects[k].dx = width;
+                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
+                    defFile->frameRects[k - 1].dx = width;
                 }
 
-                if (defFile->frameRects[k].dy > height)
+                if ((defFile->frameRects[k - 1].dy > height))
                 {
-                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dy, height);
-                    defFile->frameRects[k].dy = height;
+                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
+                    defFile->frameRects[k - 1].dy = height;
                 }
             }
         }
         else
         {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, width, height);
+            defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
         }
     }
 
     return defFile;
 }
+
+//This function disabled due restoring of Tools/Bin/ResourcePacker to older version
+//DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName)
+//{
+//    DVASSERT(processDirectoryPath.IsDirectoryPathname());
+//
+//    uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+//
+//    bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
+//    bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
+//
+//    FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
+//    psdNameWithoutExtension.TruncateExtension();
+//
+//    IMagickHelper::CroppedData cropped_data;
+//    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), cropped_data, true);
+//
+//    if (cropped_data.layers_count == 0)
+//    {
+//        AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
+//        return nullptr;
+//    }
+//
+//    //Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
+//
+//    int width = cropped_data.layer_width;
+//    int height = cropped_data.layer_height;
+//
+//    DefinitionFile* defFile = new DefinitionFile;
+//    defFile->filename = psdNameWithoutExtension + ".txt";
+//
+//    defFile->spriteWidth = width;
+//    defFile->spriteHeight = height;
+//    defFile->frameCount = cropped_data.layers_count;
+//    defFile->frameRects = new Rect2i[defFile->frameCount];
+//
+//    for (uint32 k = 0; k < defFile->frameCount; ++k)
+//    {
+//        //save layer names
+//        String layerName;
+//
+//        if (useLayerNames)
+//        {
+//            layerName.assign(cropped_data.layers[k].name);
+//            if (layerName.empty())
+//            {
+//                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k);
+//            }
+//            // Check if layer name is unique
+//            Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
+//            if (it != defFile->frameNames.end())
+//            {
+//                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k, layerName.c_str());
+//            }
+//        }
+//        else
+//        {
+//            layerName.assign("frame");
+//            layerName.append(std::to_string(k));
+//        }
+//
+//        defFile->frameNames.push_back(layerName);
+//
+//        //save layer rects
+//        if (!withAlpha)
+//        {
+//            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
+//
+//            int32 iMaxTextureSize = static_cast<int32>(maxTextureSize);
+//            if ((defFile->frameRects[k].dx > iMaxTextureSize) || (defFile->frameRects[k].dy > iMaxTextureSize))
+//            {
+//                Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k, maxTextureSize, defFile->frameRects[k].dx, defFile->frameRects[k].dy, width, height);
+//
+//                defFile->frameRects[k].dx = width;
+//                defFile->frameRects[k].dy = height;
+//            }
+//            else
+//            {
+//                if (defFile->frameRects[k].dx > width)
+//                {
+//                    Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dx, width);
+//                    defFile->frameRects[k].dx = width;
+//                }
+//
+//                if (defFile->frameRects[k].dy > height)
+//                {
+//                    Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k, defFile->frameRects[k].dy, height);
+//                    defFile->frameRects[k].dy = height;
+//                }
+//            }
+//        }
+//        else
+//        {
+//            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, width, height);
+//        }
+//    }
+//
+//    return defFile;
+//}
 
 Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
 {
@@ -425,34 +501,58 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     }
 
     CommandLineParser::Instance()->SetFlags(currentFlags);
+    String mergedFlags;
+    Merge(currentFlags, ' ', mergedFlags);
+
+    String packingParams = mergedFlags;
+    packingParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
+    packingParams += String("PackerVersion = ") + VERSION;
+    for (const auto& algorithm : packAlgorithms)
+    {
+        packingParams += String("PackerAlgorithm = ") + GlobalEnumMap<DAVA::PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));
+    }
 
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
 
     bool inputDirHasFiles = false;
+    uint64 allFilesSize = 0;
+    uint32 allFilesCount = 0;
+
+    static const Vector<String> ignoredFileNames = { ".DS_Store", "flags.txt", "Thumbs.db", ".gitignore" };
+    auto IsFileIgnoredByName = [](const Vector<String>& ignoredFileNames, const String& filename)
+    {
+        auto found = std::find_if(ignoredFileNames.begin(), ignoredFileNames.end(), [&filename](const String& name)
+                                  {
+                                      return (CompareCaseInsensitive(filename, name) == 0);
+                                  });
+
+        return (found != ignoredFileNames.end());
+    };
+
     for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
         {
+            String fileName = fileList->GetFilename(fi);
+            if (IsFileIgnoredByName(ignoredFileNames, fileName))
+            {
+                continue;
+            }
+
             inputDirHasFiles = true;
-            break;
+
+            packingParams += fileName;
+            allFilesSize += fileList->GetFileSize(fi);
+            ++allFilesCount;
         }
     }
 
-    String mergedFlags;
-    Merge(currentFlags, ' ', mergedFlags);
-    Logger::FrameworkDebug("Flags applied for current folder: %s", mergedFlags.c_str());
-
-    String mergedParams = mergedFlags;
-    mergedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
-    mergedParams += String("PackerVersion = ") + VERSION;
-    for (const auto& algorithm : packAlgorithms)
-    {
-        mergedParams += String("PackerAlgorithm = ") + GlobalEnumMap<DAVA::PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));
-    }
+    packingParams += Format("FilesSize = %llu", allFilesSize);
+    packingParams += Format("FilesCount = %u", allFilesCount);
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
-    bool paramsModified = RecalculateParamsMD5(mergedParams, processDir + "params.md5");
+    bool paramsModified = RecalculateParamsMD5(packingParams, processDir + "params.md5");
 
     bool modified = outputDirModified || inputDirModified || paramsModified;
     if (modified)
@@ -628,90 +728,41 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     }
 }
 
+void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const String& comment)
+{
+    cacheClient = cacheClient_;
+
+    cacheItemDescription.machineName = WStringToString(DeviceInfo::GetName());
+
+    DateTime timeNow = DateTime::Now();
+    cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+
+    cacheItemDescription.comment = comment;
+}
+
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
     //no cache client in win uap
     return false;
 #else
+
     if (!IsUsingCache())
     {
         return false;
     }
 
-    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-    SCOPE_EXIT
+    AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, outputPath);
+    if (requested == AssetCache::Error::NO_ERRORS)
     {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
-    };
-
-    Vector<String> arguments;
-    arguments.push_back("get");
-
-    arguments.push_back("-h");
-    arguments.push_back(AssetCache::KeyToString(key));
-
-    arguments.push_back("-f");
-    arguments.push_back(outputPath.GetAbsolutePathname());
-
-    if (!cacheClientIp.empty())
-    {
-        arguments.push_back("-ip");
-        arguments.push_back(cacheClientIp);
-    }
-
-    if (!cacheClientPort.empty())
-    {
-        arguments.push_back("-p");
-        arguments.push_back(cacheClientPort);
-    }
-
-    if (!cacheClientTimeout.empty())
-    {
-        arguments.push_back("-t");
-        arguments.push_back(cacheClientTimeout);
-    }
-
-    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-    Process cacheClient(cacheClientTool, arguments);
-    if (cacheClient.Run(false))
-    {
-        cacheClient.Wait();
-
-        auto exitCode = cacheClient.GetExitCode();
-        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-        if (exitCode == AssetClientCode::OK)
-        {
-            Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(),
-                         static_cast<float64>(getTime) / 1000.0);
-            return true;
-        }
-        else
-        {
-            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d (%s)",
-                         inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0,
-                         exitCode, GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
-            const String& procOutput = cacheClient.GetOutput();
-            if (!procOutput.empty())
-            {
-                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-            }
-
-            if (exitCode == AssetClientCode::TIMEOUT)
-            {
-                isUsingCache = false;
-            }
-
-            return false;
-        }
+        return true;
     }
     else
     {
-        Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
-        return false;
+        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
     }
+
+    return false;
 #endif
 }
 
@@ -726,107 +777,40 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         return false;
     }
 
-    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-    SCOPE_EXIT
-    {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
-    };
+    AssetCache::CachedItemValue value;
 
-    String fileListString;
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
     for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
-            if (fileListString.empty() == false)
-            {
-                fileListString += String(",");
-            }
-
-            fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
+            value.Add(outFilesList->GetPathname(fi));
         }
     }
 
-    if (fileListString.empty() == false)
+    if (!value.IsEmpty())
     {
-        Vector<String> arguments;
-        arguments.push_back("add");
+        value.UpdateValidationData();
+        value.SetDescription(cacheItemDescription);
 
-        arguments.push_back("-h");
-        arguments.push_back(AssetCache::KeyToString(key));
-
-        arguments.push_back("-f");
-        arguments.push_back(fileListString);
-
-        if (!cacheClientIp.empty())
+        AssetCache::Error added = cacheClient->AddToCacheSynchronously(key, value);
+        if (added == AssetCache::Error::NO_ERRORS)
         {
-            arguments.push_back("-ip");
-            arguments.push_back(cacheClientIp);
-        }
-
-        if (!cacheClientPort.empty())
-        {
-            arguments.push_back("-p");
-            arguments.push_back(cacheClientPort);
-        }
-
-        if (!cacheClientTimeout.empty())
-        {
-            arguments.push_back("-t");
-            arguments.push_back(cacheClientTimeout);
-        }
-        else if (outFilesList->GetFileCount() > 20)
-        {
-            arguments.push_back("-t");
-            arguments.push_back("5"); //enlarge default timeout
-        }
-
-        uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-        Process cacheClient(cacheClientTool, arguments);
-        if (cacheClient.Run(false))
-        {
-            cacheClient.Wait();
-
-            auto exitCode = cacheClient.GetExitCode();
-            getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-            if (exitCode == AssetClientCode::OK)
-            {
-                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(),
-                             static_cast<float64>(getTime) / 1000.0);
-                return true;
-            }
-            else
-            {
-                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)",
-                             inputPath.GetAbsolutePathname().c_str(), static_cast<float64>(getTime) / 1000.0,
-                             exitCode, GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
-                const String& procOutput = cacheClient.GetOutput();
-                if (!procOutput.empty())
-                {
-                    Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-                }
-
-                if (exitCode == AssetClientCode::TIMEOUT)
-                {
-                    isUsingCache = false;
-                }
-
-                return false;
-            }
+            Logger::Info("%s - added to cache", inputPath.GetAbsolutePathname().c_str());
+            return true;
         }
         else
         {
-            Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
-            return false;
+            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
         }
     }
     else
     {
-        Logger::FrameworkDebug("Dir [%s] is empty. Nothing to add to cache", outputPath.GetAbsolutePathname().c_str());
-        return false;
+        Logger::Info("%s - empty folder", inputPath.GetAbsolutePathname().c_str());
     }
+
+    return false;
+
 #endif
 }
 
@@ -841,21 +825,13 @@ void ResourcePacker2D::AddError(const String& errorMsg)
     errors.insert(errorMsg);
 }
 
-void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath& path, const String& ip, const String& port, const String& timeout)
+bool ResourcePacker2D::IsUsingCache() const
 {
-    cacheClientTool = path;
-    cacheClientIp = ip;
-    cacheClientPort = port;
-    cacheClientTimeout = timeout;
-    isUsingCache = !cacheClientTool.IsEmpty();
-}
-
-void ResourcePacker2D::ClearCacheClientTool()
-{
-    cacheClientTool = "";
-    cacheClientIp.clear();
-    cacheClientPort.clear();
-    cacheClientTimeout.clear();
-    isUsingCache = false;
+#ifdef __DAVAENGINE_WIN_UAP__
+    //no cache in win uap
+    return false;
+#else
+    return (cacheClient != nullptr) && cacheClient->IsConnected();
+#endif
 }
 };

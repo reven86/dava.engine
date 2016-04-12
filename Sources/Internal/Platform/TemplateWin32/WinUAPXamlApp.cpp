@@ -46,9 +46,12 @@
 
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
 
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
+#include "WinApiUAP.h"
+#include "WinSystemTimer.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -100,6 +103,11 @@ WinUAPXamlApp::WinUAPXamlApp()
     }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
+
+    if (!isPhoneApiDetected)
+    {
+        WinApiUAP::Initialize();
+    }
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
@@ -369,6 +377,8 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 void WinUAPXamlApp::OnSuspending(::Platform::Object ^ sender, Windows::ApplicationModel::SuspendingEventArgs ^ args)
 {
     core->RunOnMainThreadBlocked([]() {
+        // unpress all pressed keys
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         Core::Instance()->GetApplicationCore()->OnSuspend();
         rhi::SuspendRendering();
     });
@@ -392,10 +402,15 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
+
+            //We need to activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
+            EnableHighResolutionTimer(true);
             break;
         case CoreWindowActivationState::Deactivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            EnableHighResolutionTimer(false);
             break;
         default:
             break;
@@ -788,7 +803,6 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.point.y = y;
     newTouch.phase = phase;
     newTouch.device = device;
-    newTouch.tapCount = 1;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
@@ -1003,7 +1017,6 @@ void WinUAPXamlApp::SendBackKeyEvents()
     core->RunOnMainThread([this]() {
         UIEvent ev;
         ev.keyChar = 0;
-        ev.tapCount = 1;
         ev.phase = UIEvent::Phase::KEY_DOWN;
         ev.key = Key::BACK;
         ev.device = UIEvent::Device::KEYBOARD;

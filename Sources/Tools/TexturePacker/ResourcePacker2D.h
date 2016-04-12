@@ -38,11 +38,13 @@
 #include <atomic>
 
 #include "AssetCache/CacheItemKey.h"
+#include "AssetCache/CachedItemValue.h"
 
 namespace DAVA
 {
 class DefinitionFile;
 class YamlNode;
+class AssetCacheClient;
 
 class ResourcePacker2D
 {
@@ -58,8 +60,7 @@ public:
     void SetRunning(bool arg);
     bool IsRunning() const;
 
-    void SetCacheClientTool(const FilePath& path, const String& ip, const String& port, const String& timeout);
-    void ClearCacheClientTool();
+    void SetCacheClient(AssetCacheClient* cacheClient, const String& comment);
 
     void PackResources(eGPUFamily forGPU);
 
@@ -101,26 +102,13 @@ public:
     Vector<PackingAlgorithm> packAlgorithms;
 
 private:
-    FilePath cacheClientTool;
-    String cacheClientIp;
-    String cacheClientPort;
-    String cacheClientTimeout;
-    bool isUsingCache = false;
+    AssetCacheClient* cacheClient = nullptr;
+    AssetCache::CachedItemValue::Description cacheItemDescription;
 
     Set<String> errors;
 
     std::atomic<bool> running;
 };
-
-inline bool ResourcePacker2D::IsUsingCache() const
-{
-#ifdef __DAVAENGINE_WIN_UAP__
-    //no cache in win uap
-    return false;
-#else
-    return isUsingCache;
-#endif
-}
 
 inline bool ResourcePacker2D::IsRunning() const
 {

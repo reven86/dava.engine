@@ -74,7 +74,7 @@ bool JobQueueWorker::PopAndExec()
         LockGuard<Spinlock> guard(lock);
         if (nextPopIndex < nextPushIndex)
         {
-            fn = jobs[nextPopIndex++];
+            fn = std::move(jobs[nextPopIndex++]);
         }
     }
 
