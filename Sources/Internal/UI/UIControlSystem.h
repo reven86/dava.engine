@@ -50,7 +50,7 @@ class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
 class UIFocusSystem;
-class UIKeyInputSystem;
+class UIInputSystem;
 class UIScreenshoter;
 
 class ScreenSwitchListener
@@ -325,11 +325,10 @@ private:
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
     UIFocusSystem* focusSystem = nullptr;
-    UIKeyInputSystem* keyInputSystem = nullptr;
+    UIInputSystem* inputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
-    Vector<UIEvent> touchEvents;
 
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIScreen> nextScreen;
@@ -342,10 +341,7 @@ private:
     int32 screenLockCount = 0;
     int32 frameSkip = 0;
 
-    UIControl* exclusiveInputLocker = nullptr;
     UIControl* hovered = nullptr;
-    UIControl* focusedControlWhenTouchBegan = nullptr;
-    Vector2 positionOfTouchWhenTouchBegan;
 
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;

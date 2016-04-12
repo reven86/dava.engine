@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_KEY_INPUT_SYSTEM_H__
-#define __DAVAENGINE_UI_KEY_INPUT_SYSTEM_H__
+#ifndef __DAVAENGINE_UI_INPUT_SYSTEM_H__
+#define __DAVAENGINE_UI_INPUT_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -37,39 +37,39 @@
 
 namespace DAVA
 {
-class UIControl;
-class UIList;
-class UIEvent;
-class UIFocusSystem;
-
-class UIKeyInputSystem
-{
-public:
-    UIKeyInputSystem(UIFocusSystem* focusSystem);
-    ~UIKeyInputSystem();
-
-    void HandleKeyEvent(UIEvent* event);
-    void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
-    void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
-
-public:
-    static const FastName ACTION_FOCUS_LEFT;
-    static const FastName ACTION_FOCUS_RIGHT;
-    static const FastName ACTION_FOCUS_UP;
-    static const FastName ACTION_FOCUS_DOWN;
-
-    static const FastName ACTION_FOCUS_NEXT;
-    static const FastName ACTION_FOCUS_PREV;
-
-    static const FastName ACTION_PERFORM;
-    static const FastName ACTION_ESCAPE;
-
-private:
-    UIFocusSystem* focusSystem = nullptr;
-    UIActionMap globalActions;
-    UIInputMap globalInputMap;
-    int32 modifiers = 0;
-};
+    class UIControl;
+    class UIList;
+    class UIEvent;
+    class UIFocusSystem;
+    
+    class UIInputSystem
+    {
+    public:
+        UIInputSystem(UIFocusSystem* focusSystem);
+        ~UIInputSystem();
+        
+        void HandleKeyEvent(UIEvent* event);
+        void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
+        void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
+        
+    public:
+        static const FastName ACTION_FOCUS_LEFT;
+        static const FastName ACTION_FOCUS_RIGHT;
+        static const FastName ACTION_FOCUS_UP;
+        static const FastName ACTION_FOCUS_DOWN;
+        
+        static const FastName ACTION_FOCUS_NEXT;
+        static const FastName ACTION_FOCUS_PREV;
+        
+        static const FastName ACTION_PERFORM;
+        static const FastName ACTION_ESCAPE;
+        
+    private:
+        UIFocusSystem* focusSystem = nullptr;
+        UIActionMap globalActions;
+        UIInputMap globalInputMap;
+        int32 modifiers = 0;
+    };
 }
 
 

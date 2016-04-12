@@ -326,6 +326,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
+    ENUM_ADD_DESCR(UIComponent::MODAL_INPUT_COMPONENT, "ModalInput");
     ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");

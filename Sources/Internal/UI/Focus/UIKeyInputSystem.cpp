@@ -33,7 +33,7 @@
 #include "UI/UIEvent.h"
 
 #include "UI/Focus/UIFocusSystem.h"
-#include "UI/Actions/UIActionBindingComponent.h"
+#include "UI/Input/UIActionBindingComponent.h"
 
 #include "Input/InputSystem.h"
 

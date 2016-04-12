@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_KEY_INPUT_SYSTEM_H__
-#define __DAVAENGINE_UI_KEY_INPUT_SYSTEM_H__
+#ifndef __DAVAENGINE_UI_INPUT_SYSTEM_H__
+#define __DAVAENGINE_UI_INPUT_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -38,37 +38,44 @@
 namespace DAVA
 {
 class UIControl;
-class UIList;
+class UIScreen;
 class UIEvent;
 class UIFocusSystem;
+class UIKeyInputSystem;
 
-class UIKeyInputSystem
+class UIInputSystem
 {
 public:
-    UIKeyInputSystem(UIFocusSystem* focusSystem);
-    ~UIKeyInputSystem();
+    UIInputSystem(UIFocusSystem* focusSystem);
+    ~UIInputSystem();
 
-    void HandleKeyEvent(UIEvent* event);
-    void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
-    void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
+    void SetCurrentScreen(UIScreen* screen);
+    void SetPopupContainer(UIControl* popupContainer);
+
+    void HandleEvent(UIEvent* event);
+
+    void CancelInput(UIEvent* touch);
+    void CancelAllInputs();
+    void CancelInputs(UIControl* control, bool hierarchical);
+    void SwitchInputToControl(uint32 eventID, UIControl* targetControl);
+
+    const Vector<UIEvent>& GetAllInputs();
+
+    void SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId);
+    UIControl* GetExclusiveInputLocker();
 
 public:
-    static const FastName ACTION_FOCUS_LEFT;
-    static const FastName ACTION_FOCUS_RIGHT;
-    static const FastName ACTION_FOCUS_UP;
-    static const FastName ACTION_FOCUS_DOWN;
-
-    static const FastName ACTION_FOCUS_NEXT;
-    static const FastName ACTION_FOCUS_PREV;
-
-    static const FastName ACTION_PERFORM;
-    static const FastName ACTION_ESCAPE;
-
 private:
+    UIScreen* currentScreen = nullptr;
+    UIControl* popupContainer = nullptr;
+
     UIFocusSystem* focusSystem = nullptr;
-    UIActionMap globalActions;
-    UIInputMap globalInputMap;
-    int32 modifiers = 0;
+    UIKeyInputSystem* keyInputSystem = nullptr;
+
+    Vector<UIEvent> touchEvents;
+    UIControl* focusedControlWhenTouchBegan = nullptr;
+    Vector2 positionOfTouchWhenTouchBegan;
+    UIControl* exclusiveInputLocker = nullptr;
 };
 }
 

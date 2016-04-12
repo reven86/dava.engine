@@ -39,7 +39,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
-#include "UI/Focus/UIKeyInputSystem.h"
+#include "UI/Input/UIInputSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -63,7 +63,7 @@ UIControlSystem::UIControlSystem()
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
     focusSystem = new UIFocusSystem();
-    keyInputSystem = new UIKeyInputSystem(focusSystem);
+    inputSystem = new UIInputSystem(focusSystem);
 
     screenshoter = new UIScreenshoter();
 
@@ -71,6 +71,7 @@ UIControlSystem::UIControlSystem()
     popupContainer->SetName("UIControlSystem_popupContainer");
     popupContainer->SetInputEnabled(false);
     popupContainer->InvokeActive(UIControl::eViewState::VISIBLE);
+    inputSystem->SetPopupContainer(popupContainer.Get());
 
     // calculate default radius
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
@@ -89,6 +90,9 @@ UIControlSystem::UIControlSystem()
 
 UIControlSystem::~UIControlSystem()
 {
+    inputSystem->SetPopupContainer(nullptr);
+    inputSystem->SetCurrentScreen(nullptr);
+
     popupContainer->InvokeInactive();
     popupContainer = nullptr;
 
@@ -100,7 +104,7 @@ UIControlSystem::~UIControlSystem()
 
     SafeDelete(styleSheetSystem);
     SafeDelete(layoutSystem);
-    SafeDelete(keyInputSystem);
+    SafeDelete(inputSystem);
     SafeDelete(focusSystem);
     SafeDelete(screenshoter);
 }
@@ -237,6 +241,7 @@ void UIControlSystem::ProcessScreenLogic()
 
             RefPtr<UIScreen> prevScreen = currentScreen;
             currentScreen = nullptr;
+            inputSystem->SetCurrentScreen(currentScreen.Get());
 
             if ((nextScreenProcessed == nullptr) || (prevScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
             {
@@ -254,6 +259,8 @@ void UIControlSystem::ProcessScreenLogic()
             nextScreenProcessed->LoadGroup();
         }
         currentScreen = nextScreenProcessed;
+        inputSystem->SetCurrentScreen(currentScreen.Get());
+
         if (currentScreen)
         {
             currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
@@ -387,35 +394,7 @@ void UIControlSystem::Draw()
 
 void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetControl)
 {
-    for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
-    {
-        if ((*it).touchId == eventID)
-        {
-            CancelInput(&(*it));
-
-            if (targetControl->IsPointInside((*it).point))
-            {
-                (*it).controlState = UIEvent::CONTROL_STATE_INSIDE;
-                targetControl->touchesInside++;
-            }
-            else
-            {
-                (*it).controlState = UIEvent::CONTROL_STATE_OUTSIDE;
-            }
-            (*it).touchLocker = targetControl;
-            targetControl->currentInputID = eventID;
-            if (targetControl->GetExclusiveInput())
-            {
-                SetExclusiveInputLocker(targetControl, eventID);
-            }
-            else
-            {
-                SetExclusiveInputLocker(NULL, -1);
-            }
-
-            targetControl->totalTouches++;
-        }
-    }
+    return inputSystem->SwitchInputToControl(eventID, targetControl);
 }
 
 void UIControlSystem::OnInput(UIEvent* newEvent)
@@ -441,132 +420,23 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         {
             Replay::Instance()->RecordEvent(newEvent);
         }
-        UIEvent* eventToHandle = nullptr;
-
-        if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
-        {
-            auto it = std::find_if(begin(touchEvents), end(touchEvents), [newEvent](const UIEvent& ev) {
-                return ev.touchId == newEvent->touchId;
-            });
-            if (it == end(touchEvents))
-            {
-                touchEvents.push_back(*newEvent);
-                eventToHandle = &touchEvents.back();
-            }
-            else
-            {
-                it->timestamp = newEvent->timestamp;
-                it->physPoint = newEvent->physPoint;
-                it->point = newEvent->point;
-                it->tapCount = newEvent->tapCount;
-                it->phase = newEvent->phase;
-                it->inputHandledType = newEvent->inputHandledType;
-
-                eventToHandle = &(*it);
-            }
-        }
-        else
-        {
-            eventToHandle = newEvent;
-        }
-
-        if (currentScreen)
-        {
-            UIEvent::Phase phase = eventToHandle->phase;
-
-            if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT)
-            {
-                keyInputSystem->HandleKeyEvent(eventToHandle);
-            }
-            else
-            {
-                if (phase == UIEvent::Phase::BEGAN)
-                {
-                    focusedControlWhenTouchBegan = focusSystem->GetFocusedControl();
-                    positionOfTouchWhenTouchBegan = eventToHandle->point;
-                }
-
-                if (!popupContainer->SystemInput(eventToHandle))
-                {
-                    currentScreen->SystemInput(eventToHandle);
-                }
-
-                if (phase == UIEvent::Phase::ENDED)
-                {
-                    UIControl* focusedControl = focusSystem->GetFocusedControl();
-                    if (focusedControl != nullptr)
-                    {
-                        static const float32 draggingThresholdSq = 20.0f * 20.0f;
-                        bool focusWasntChanged = focusedControl == focusedControlWhenTouchBegan;
-
-                        bool touchWasntDragged = (positionOfTouchWhenTouchBegan - eventToHandle->point).SquareLength() < draggingThresholdSq;
-                        bool touchOutsideControl = !focusedControl->IsPointInside(eventToHandle->point);
-                        if (focusWasntChanged && touchWasntDragged && touchOutsideControl)
-                        {
-                            focusedControl->OnTouchOutsideFocus();
-                        }
-                    }
-                    focusedControlWhenTouchBegan = nullptr;
-                }
-            }
-        }
-
-        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [this](UIEvent& ev) {
-            bool shouldRemove = (ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED);
-            if (shouldRemove)
-            {
-                CancelInput(&ev);
-            }
-            return shouldRemove;
-        });
-        touchEvents.erase(startRemoveIt, end(touchEvents));
+        inputSystem->HandleEvent(newEvent);
     } // end if frameSkip <= 0
 }
 
 void UIControlSystem::CancelInput(UIEvent* touch)
 {
-    if (touch->touchLocker)
-    {
-        touch->touchLocker->SystemInputCancelled(touch);
-    }
-    if (touch->touchLocker != currentScreen.Get())
-    {
-        currentScreen->SystemInputCancelled(touch);
-    }
+    inputSystem->CancelInput(touch);
 }
+
 void UIControlSystem::CancelAllInputs()
 {
-    for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
-    {
-        CancelInput(&(*it));
-    }
-    touchEvents.clear();
+    inputSystem->CancelAllInputs();
 }
 
 void UIControlSystem::CancelInputs(UIControl* control, bool hierarchical)
 {
-    for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
-    {
-        if (!hierarchical)
-        {
-            if (it->touchLocker == control)
-            {
-                CancelInput(&(*it));
-                break;
-            }
-            continue;
-        }
-        UIControl* parentLockerControl = it->touchLocker;
-        while (parentLockerControl)
-        {
-            if (control == parentLockerControl)
-            {
-                CancelInput(&(*it));
-                break;
-            }
-            parentLockerControl = parentLockerControl->GetParent();
-        }
-    }
+    inputSystem->CancelInputs(control, hierarchical);
 }
 
 int32 UIControlSystem::LockInput()
@@ -599,29 +469,17 @@ int32 UIControlSystem::GetLockInputCounter() const
 
 const Vector<UIEvent>& UIControlSystem::GetAllInputs()
 {
-    return touchEvents;
+    return inputSystem->GetAllInputs();
 }
 
 void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId)
 {
-    SafeRelease(exclusiveInputLocker);
-    if (locker != NULL)
-    {
-        for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
-        {
-            if (it->touchId != lockEventId && it->touchLocker != locker)
-            { //cancel all inputs excepts current input and inputs what allready handles by this locker.
-                CancelInput(&(*it));
-            }
-        }
-    }
-
-    exclusiveInputLocker = SafeRetain(locker);
+    inputSystem->SetExclusiveInputLocker(locker, lockEventId);
 }
 
 UIControl* UIControlSystem::GetExclusiveInputLocker()
 {
-    return exclusiveInputLocker;
+    return inputSystem->GetExclusiveInputLocker();
 }
 
 void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)

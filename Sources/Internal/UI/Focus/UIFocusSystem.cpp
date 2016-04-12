@@ -33,8 +33,8 @@
 #include "UI/Focus/FocusHelpers.h"
 #include "UI/Focus/DirectionBasedNavigationAlgorithm.h"
 #include "UI/Focus/TabTraversalAlgorithm.h"
-#include "UI/Actions/UIActionBindingComponent.h"
-#include "UI/Actions/UIActionComponent.h"
+#include "UI/Input/UIActionBindingComponent.h" // TODO: Fix dependencies
+#include "UI/Input/UIActionComponent.h" // TODO: Fix dependencies
 
 #include "UI/UIControl.h"
 #include "UI/UIList.h"
@@ -67,6 +67,7 @@ void UIFocusSystem::SetRoot(UIControl* newRoot)
     {
         UIControl* focusedControl = FindFirstControl(newRoot);
         ClearFocusState(newRoot);
+        SetFocusedControl(nullptr);
 
         SetFocusedControl(focusedControl);
     }

@@ -36,9 +36,10 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Input/UIModalInputComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
-#include "UI/Actions/UIActionComponent.h"
-#include "UI/Actions/UIActionBindingComponent.h"
+#include "UI/Input/UIActionComponent.h"
+#include "UI/Input/UIActionBindingComponent.h"
 
 namespace DAVA
 {
@@ -82,6 +83,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case ANCHOR_COMPONENT:
         return new UIAnchorComponent();
+
+    case MODAL_INPUT_COMPONENT:
+        return new UIModalInputComponent();
 
     case FOCUS_COMPONENT:
         return new UIFocusComponent();
