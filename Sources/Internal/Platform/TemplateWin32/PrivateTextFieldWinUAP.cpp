@@ -633,6 +633,8 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
+    core->XamlApplication()->CaptureTextBox(nativeControl);
+
     SetNativeCaretPosition(GetNativeText()->Length());
 
     Windows::Foundation::Rect nativeKeyboardRect = InputPane::GetForCurrentView()->OccludedRect;
@@ -660,8 +662,7 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             {
                 uiTextField->SetFocused();
             }
-
-            if (uiTextField == UIControlSystem::Instance()->GetFocusedControl() && !uiTextField->IsEditing())
+            if (!uiTextField->IsEditing())
             {
                 uiTextField->StartEdit();
             }
@@ -683,13 +684,6 @@ void PrivateTextFieldWinUAP::OnLostFocus()
     {
         waitRenderToTextureComplete = true;
         RenderToTexture(true);
-    }
-
-    // prevent lose focus on pointer up event
-    if (uiTextField != nullptr && UIControlSystem::Instance()->GetFocusedControl() == uiTextField && uiTextField->IsEditing())
-    {
-        nativeControl->Focus(FocusState::Programmatic);
-        return;
     }
 
     auto self{ shared_from_this() };
@@ -1143,7 +1137,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
                 UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-                uiTextField->SetSprite(sprite.Get(), 0);
+                if (!uiTextField->IsEditing())
+                {
+                    // Do not set rendered texture if control has focus
+                    uiTextField->SetSprite(sprite.Get(), 0);
+                }
             }
             if (moveOffScreenOnCompletion)
             {

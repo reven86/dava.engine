@@ -57,6 +57,11 @@ void ControlContainer::SetSystemVisible(bool visible)
     systemVisible = visible;
 }
 
+bool ControlContainer::GetSystemVisible() const
+{
+    return systemVisible;
+}
+
 HUDContainer::HUDContainer(ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , node(node_)
@@ -76,41 +81,61 @@ void HUDContainer::AddChild(ControlContainer* container)
 
 void HUDContainer::InitFromGD(const UIGeometricData& gd)
 {
-    const Rect& ur = gd.GetUnrotatedRect();
-    SetPivot(control->GetPivot());
-    SetRect(ur);
-    SetAngle(gd.angle);
     bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
-    if (valid)
+    bool containerVisible = contolIsInValidState && visibleProperty->GetVisibleInEditor();
+    if (containerVisible)
     {
         PackageBaseNode* parent = node->GetParent();
-        while (valid && nullptr != parent)
+        while (containerVisible && nullptr != parent)
         {
             ControlNode* parentControlNode = dynamic_cast<ControlNode*>(parent);
             if (parentControlNode == nullptr)
             {
                 break;
             }
-            valid &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
+            containerVisible &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
             parent = parent->GetParent();
         }
     }
-    SetVisibilityFlag(valid);
-
-    if (valid)
+    SetVisibilityFlag(containerVisible);
+    if (containerVisible)
     {
+        auto actualSize = gd.size * gd.scale;
+        auto changedGD = gd;
+        bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;
+        if (controlIsMoveOnly)
+        {
+            changedGD.position -= ::Rotate((minimumSize - actualSize) / 2.0f, changedGD.angle);
+            changedGD.size = minimumSize / gd.scale;
+        }
+
+        Rect ur(changedGD.position - ::Rotate(changedGD.pivotPoint, changedGD.angle) * changedGD.scale, changedGD.size * changedGD.scale);
+        SetRect(ur);
+
+        SetAngle(changedGD.angle);
+
         for (auto child : childs)
         {
-            child->InitFromGD(gd);
+            auto area = child->GetArea();
+            bool childVisible = child->GetSystemVisible() && changedGD.scale.x > 0.0f && changedGD.scale.y > 0.0f;
+            if (area != HUDAreaInfo::FRAME_AREA)
+            {
+                childVisible &= !controlIsMoveOnly;
+            }
+            child->SetVisibilityFlag(childVisible);
+            if (childVisible)
+            {
+                child->InitFromGD(changedGD);
+            }
         }
     }
 }
 
-void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
+void HUDContainer::SystemDraw(const UIGeometricData& gd)
 {
-    InitFromGD(control->GetGeometricData());
-    UIControl::SystemDraw(geometricData);
+    auto controlGD = control->GetGeometricData();
+    InitFromGD(controlGD);
+    UIControl::SystemDraw(gd);
 }
 
 FrameControl::FrameControl()
@@ -128,14 +153,9 @@ FrameControl::FrameControl()
     }
 }
 
-void FrameControl::InitFromGD(const UIGeometricData& geometricData)
+void FrameControl::InitFromGD(const UIGeometricData& gd)
 {
-    Rect rect = geometricData.GetUnrotatedRect();
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
-    SetRect(rect);
+    SetRect(Rect(Vector2(0.0f, 0.0f), gd.size * gd.scale));
 }
 
 UIControl* FrameControl::CreateFrameBorderControl(uint32 border)
@@ -175,40 +195,34 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
-void FrameRectControl::InitFromGD(const UIGeometricData& geometricData)
+void FrameRectControl::InitFromGD(const UIGeometricData& gd)
 {
     Rect rect(Vector2(), FRAME_RECT_SIZE);
-    rect.SetCenter(GetPos(geometricData));
-
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
+    rect.SetCenter(GetPos(gd));
     SetRect(rect);
 }
 
-Vector2 FrameRectControl::GetPos(const UIGeometricData& geometricData) const
+Vector2 FrameRectControl::GetPos(const UIGeometricData& gd) const
 {
-    Rect rect = geometricData.GetUnrotatedRect();
-    Vector2 retVal = rect.GetPosition();
+    Rect rect(Vector2(0.0f, 0.0f), gd.size * gd.scale);
     switch (area)
     {
     case HUDAreaInfo::TOP_LEFT_AREA:
-        return retVal;
+        return Vector2(0.0f, 0.0f);
     case HUDAreaInfo::TOP_CENTER_AREA:
-        return retVal + Vector2(rect.dx / 2.0f, 0.0f);
+        return Vector2(rect.dx / 2.0f, 0.0f);
     case HUDAreaInfo::TOP_RIGHT_AREA:
-        return retVal + Vector2(rect.dx, 0.0f);
+        return Vector2(rect.dx, 0.0f);
     case HUDAreaInfo::CENTER_LEFT_AREA:
-        return retVal + Vector2(0, rect.dy / 2.0f);
+        return Vector2(0, rect.dy / 2.0f);
     case HUDAreaInfo::CENTER_RIGHT_AREA:
-        return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        return Vector2(rect.dx, rect.dy / 2.0f);
     case HUDAreaInfo::BOTTOM_LEFT_AREA:
-        return retVal + Vector2(0, rect.dy);
+        return Vector2(0, rect.dy);
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
-        return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        return Vector2(rect.dx / 2.0f, rect.dy);
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
-        return retVal + Vector2(rect.dx, rect.dy);
+        return Vector2(rect.dx, rect.dy);
     default:
         DVASSERT(!"wrong area passed to hud control");
         return Vector2(0.0f, 0.0f);
@@ -224,18 +238,10 @@ PivotPointControl::PivotPointControl()
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
-void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
+void PivotPointControl::InitFromGD(const UIGeometricData& gd)
 {
     Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
-    const Rect& controlRect = geometricData.GetUnrotatedRect();
-    bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
-    SetVisibilityFlag(systemVisible && visible);
-    rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
-
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
+    rect.SetCenter(gd.pivotPoint * gd.scale);
     SetRect(rect);
 }
 
@@ -248,19 +254,14 @@ RotateControl::RotateControl()
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
-void RotateControl::InitFromGD(const UIGeometricData& geometricData)
+void RotateControl::InitFromGD(const UIGeometricData& gd)
 {
-    Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
-    Rect controlRect = geometricData.GetUnrotatedRect();
-    bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
-    SetVisibilityFlag(systemVisible && visible);
+    Rect rect(Vector2(0.0f, 0.0f), ROTATE_CONTROL_SIZE);
+    Rect controlRect(Vector2(0.0f, 0.0f), gd.size * gd.scale);
 
-    rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
+    const int margin = 5;
+    rect.SetCenter(Vector2(controlRect.dx / 2.0f, controlRect.GetPosition().y - ROTATE_CONTROL_SIZE.y - margin));
 
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
     SetRect(rect);
 }
 

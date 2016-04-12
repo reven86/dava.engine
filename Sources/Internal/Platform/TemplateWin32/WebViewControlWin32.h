@@ -186,7 +186,7 @@ private:
     HWND hwnd;
 
     // The browser itself.
-    IWebBrowser2* webBrowser;
+    CComPtr<IWebBrowser2> webBrowser;
 
     EventSink* sink;
 

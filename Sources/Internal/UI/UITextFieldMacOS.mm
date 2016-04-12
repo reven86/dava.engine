@@ -42,7 +42,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
-
+#include "UI/Focus/FocusHelpers.h"
 // +-----------+          +------+
 // |ObjCWrapper+----------+IField|
 // +-----+-----+          +----+-+
@@ -1408,7 +1408,7 @@ doCommandBySelector:(SEL)commandSelector
 
     if ([*partialStringPtr length] >= maxLength)
     {
-        int spaceLeft = maxLength - [origString length] - 1;
+        int spaceLeft = maxLength - [origString length];
         // we can crop part of string only if user try to add to end
         if (spaceLeft > 0 && origSelRange.location == [origString length])
         {
@@ -1434,7 +1434,7 @@ doCommandBySelector:(SEL)commandSelector
 
         // if user paste text with gesture in native control
         // we need make dava control in sync with focus
-        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl)
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl && DAVA::FocusHelpers::CanFocusControl(davaCtrl))
         {
             DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl);
         }

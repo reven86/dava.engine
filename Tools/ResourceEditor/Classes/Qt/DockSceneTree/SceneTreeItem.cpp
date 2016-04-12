@@ -130,7 +130,7 @@ DAVA::Entity* SceneTreeItemEntity::GetEntity(SceneTreeItem* item)
 
     if (nullptr != item && item->ItemType() == SceneTreeItem::EIT_Entity)
     {
-        SceneTreeItemEntity* itemEntity = (SceneTreeItemEntity*)item;
+        SceneTreeItemEntity* itemEntity = static_cast<SceneTreeItemEntity*>(item);
         ret = itemEntity->entity;
     }
 

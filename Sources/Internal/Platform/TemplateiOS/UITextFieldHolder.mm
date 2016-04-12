@@ -111,6 +111,10 @@
         {
             DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
         }
+        if (!cppTextField->IsEditing())
+        {
+            cppTextField->StartEdit();
+        }
     }
 }
 
@@ -131,6 +135,10 @@
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
         {
             DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
+        }
+        if (!cppTextField->IsEditing())
+        {
+            cppTextField->StartEdit();
         }
     }
 }

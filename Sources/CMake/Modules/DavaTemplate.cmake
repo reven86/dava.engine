@@ -47,18 +47,12 @@ if( DAVA_DISABLE_AUTOTESTS )
     add_definitions ( -DDISABLE_AUTOTESTS )
 endif()
 
-if( MACOS_DATA )
-    set( APP_DATA ${MACOS_DATA} )
-
-elseif( WIN32_DATA )
-    set( APP_DATA ${WIN32_DATA} )
-
-elseif( IOS_DATA )
-    set( APP_DATA ${IOS_DATA} )
-
-elseif( ANDROID_DATA )
-    set( APP_DATA ${ANDROID_DATA} )
-
+if( WIN32 )
+    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN)
+    list ( APPEND ADDITIONAL_DLL_FILES ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN} )
+elseif( MACOS )
+    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC)
+    list ( APPEND MACOS_DYLIB  ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC} )
 endif()
 
 if ( STEAM_SDK_FOUND )
@@ -290,6 +284,14 @@ list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                                CUSTOM_PACK_1     ${UNIFIED_CUSTOM_PACK_1}
+                                                CUSTOM_PACK_2     ${UNIFIED_CUSTOM_PACK_2}
+                                                CUSTOM_PACK_3     ${UNIFIED_CUSTOM_PACK_3}
+                                                CUSTOM_PACK_4     ${UNIFIED_CUSTOM_PACK_4}
+                                                CUSTOM_PACK_5     ${UNIFIED_CUSTOM_PACK_5}
+                                                CUSTOM_PACK_6     ${UNIFIED_CUSTOM_PACK_6}
+                                                CUSTOM_PACK_7     ${UNIFIED_CUSTOM_PACK_7}
+
                                                )
 
 if( ANDROID )
@@ -623,9 +625,14 @@ if( DEPLOY )
 
         endif()
 
-		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} ${ADDITIONAL_DLL_FILES} )
+		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
+
+        foreach ( ITEM ${ADDITIONAL_DLL_FILES})
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
+        endforeach ()
+
 
         set( OUTPUT_DIR "${DEPLOY_DIR}" )
         foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )

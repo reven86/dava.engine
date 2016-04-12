@@ -31,7 +31,7 @@
 #include "ControlsFactory.h"
 
 ExtendedDialog::ExtendedDialog()
-    : UIControl(UIScreenManager::Instance()->GetScreen()->GetRect())
+    : UIControl(DAVA::UIScreenManager::Instance()->GetScreen()->GetRect())
 {
     ControlsFactory::CustomizeDialogFreeSpace(this);
 
@@ -55,22 +55,22 @@ bool ExtendedDialog::IsShown() const
     return isShown;
 }
 
-const Rect ExtendedDialog::GetScreenRect() const
+const DAVA::Rect ExtendedDialog::GetScreenRect() const
 {
-    UIScreen* activeScreen = UIScreenManager::Instance()->GetScreen();
+    DAVA::UIScreen* activeScreen = DAVA::UIScreenManager::Instance()->GetScreen();
     if (activeScreen)
     {
         return activeScreen->GetRect();
     }
 
-    return Rect();
+    return DAVA::Rect();
 }
 
-const Rect ExtendedDialog::GetDialogRect() const
+const DAVA::Rect ExtendedDialog::GetDialogRect() const
 {
-    const Rect screenRect = GetScreenRect();
+    const DAVA::Rect screenRect = GetScreenRect();
 
-    return Rect(screenRect.dx / 4, screenRect.dy / 4, screenRect.dx / 2, screenRect.dy / 2);
+    return DAVA::Rect(screenRect.dx / 4, screenRect.dy / 4, screenRect.dx / 2, screenRect.dy / 2);
 }
 
 void ExtendedDialog::Close()

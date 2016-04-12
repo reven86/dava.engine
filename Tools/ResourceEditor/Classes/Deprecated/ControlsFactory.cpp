@@ -30,218 +30,218 @@
 #include "ControlsFactory.h"
 #include "Qt/Settings/SettingsManager.h"
 
-Font* ControlsFactory::font12 = NULL;
-Font* ControlsFactory::font20 = NULL;
+DAVA::Font* ControlsFactory::font12 = NULL;
+DAVA::Font* ControlsFactory::font20 = NULL;
 
-UIButton* ControlsFactory::CreateButton(Vector2 pos, const WideString& buttonText, bool designers)
+DAVA::UIButton* ControlsFactory::CreateButton(DAVA::Vector2 pos, const DAVA::WideString& buttonText, bool designers)
 {
-    UIButton* btn = new UIButton(Rect(pos.x, pos.y, BUTTON_WIDTH, BUTTON_HEIGHT));
+    DAVA::UIButton* btn = new DAVA::UIButton(DAVA::Rect(pos.x, pos.y, BUTTON_WIDTH, BUTTON_HEIGHT));
     CustomizeButton(btn, buttonText, designers);
     return btn;
 }
 
-UIButton* ControlsFactory::CreateButton(const Rect& rect, const WideString& buttonText, bool designers)
+DAVA::UIButton* ControlsFactory::CreateButton(const DAVA::Rect& rect, const DAVA::WideString& buttonText, bool designers)
 {
-    UIButton* btn = new UIButton(rect);
+    DAVA::UIButton* btn = new DAVA::UIButton(rect);
     CustomizeButton(btn, buttonText, designers);
     return btn;
 }
 
-void ControlsFactory::CustomizeButton(UIButton* btn, const WideString& buttonText, bool designers)
+void ControlsFactory::CustomizeButton(DAVA::UIButton* btn, const DAVA::WideString& buttonText, bool designers)
 {
-    Font* font = GetFont12();
+    DAVA::Font* font = GetFont12();
 
-    btn->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-    btn->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
-    btn->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
-    btn->SetStateDrawType(UIControl::STATE_SELECTED, UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_PRESSED_INSIDE, DAVA::UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_DISABLED, DAVA::UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_SELECTED, DAVA::UIControlBackground::DRAW_FILL);
 
     if (designers)
     {
-        btn->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(97.f / 255.f, 69.f / 255.f, 68.f / 255.f, 1.f));
+        btn->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->SetColor(DAVA::Color(97.f / 255.f, 69.f / 255.f, 68.f / 255.f, 1.f));
     }
     else
     {
-        btn->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.0f, 0.0f, 0.0f, 0.5f));
+        btn->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->SetColor(DAVA::Color(0.0f, 0.0f, 0.0f, 0.5f));
     }
-    btn->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->SetColor(Color(0.5f, 0.5f, 0.5f, 0.5f));
-    btn->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
-    btn->GetStateBackground(UIControl::STATE_SELECTED)->SetColor(Color(0.0f, 0.0f, 1.0f, 0.2f));
+    btn->GetStateBackground(DAVA::UIControl::STATE_PRESSED_INSIDE)->SetColor(DAVA::Color(0.5f, 0.5f, 0.5f, 0.5f));
+    btn->GetStateBackground(DAVA::UIControl::STATE_DISABLED)->SetColor(DAVA::Color(0.2f, 0.2f, 0.2f, 0.2f));
+    btn->GetStateBackground(DAVA::UIControl::STATE_SELECTED)->SetColor(DAVA::Color(0.0f, 0.0f, 1.0f, 0.2f));
 
-    btn->SetStateFont(UIControl::STATE_PRESSED_INSIDE, font);
-    btn->SetStateFont(UIControl::STATE_DISABLED, font);
-    btn->SetStateFont(UIControl::STATE_NORMAL, font);
-    btn->SetStateFont(UIControl::STATE_SELECTED, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_PRESSED_INSIDE, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_DISABLED, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_SELECTED, font);
 
-    btn->SetStateText(UIControl::STATE_PRESSED_INSIDE, buttonText);
-    btn->SetStateText(UIControl::STATE_DISABLED, buttonText);
-    btn->SetStateText(UIControl::STATE_NORMAL, buttonText);
-    btn->SetStateText(UIControl::STATE_SELECTED, buttonText);
+    btn->SetStateText(DAVA::UIControl::STATE_PRESSED_INSIDE, buttonText);
+    btn->SetStateText(DAVA::UIControl::STATE_DISABLED, buttonText);
+    btn->SetStateText(DAVA::UIControl::STATE_NORMAL, buttonText);
+    btn->SetStateText(DAVA::UIControl::STATE_SELECTED, buttonText);
 
     AddBorder(btn);
 }
 
-void ControlsFactory::CustomizeButtonExpandable(UIButton* btn)
+void ControlsFactory::CustomizeButtonExpandable(DAVA::UIButton* btn)
 {
     //Temporary fix for loading of UI Interface to avoid reloading of texrures to different formates.
     // 1. Reset default format before loading of UI
     // 2. Restore default format after loading of UI from stored settings.
-    Texture::SetDefaultGPU(GPU_ORIGIN);
+    DAVA::Texture::SetDefaultGPU(DAVA::GPU_ORIGIN);
 
-    UIControl* expandable = new UIControl(Rect(btn->GetSize().dx - btn->GetSize().dy, 0, btn->GetSize().dy, btn->GetSize().dy));
+    DAVA::UIControl* expandable = new DAVA::UIControl(DAVA::Rect(btn->GetSize().dx - btn->GetSize().dy, 0, btn->GetSize().dy, btn->GetSize().dy));
     expandable->SetInputEnabled(false);
     expandable->SetSprite("~res:/Gfx/UI/arrowdown", 0);
     btn->AddControl(expandable);
 
     SafeRelease(expandable);
 
-    Texture::SetDefaultGPU(static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
+    DAVA::Texture::SetDefaultGPU(static_cast<DAVA::eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
-UIButton* ControlsFactory::CreateImageButton(const Rect& rect, const FilePath& imagePath)
+DAVA::UIButton* ControlsFactory::CreateImageButton(const DAVA::Rect& rect, const DAVA::FilePath& imagePath)
 {
-    UIButton* btn = new UIButton(rect);
+    DAVA::UIButton* btn = new DAVA::UIButton(rect);
     CustomizeImageButton(btn, imagePath);
     return btn;
 }
 
-void ControlsFactory::CustomizeImageButton(UIButton* btn, const FilePath& imagePath)
+void ControlsFactory::CustomizeImageButton(DAVA::UIButton* btn, const DAVA::FilePath& imagePath)
 {
-    btn->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_SCALE_TO_RECT);
-    btn->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_SCALE_TO_RECT);
-    btn->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_SCALE_TO_RECT);
-    btn->SetStateDrawType(UIControl::STATE_SELECTED, UIControlBackground::DRAW_SCALE_TO_RECT);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_SCALE_TO_RECT);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_PRESSED_INSIDE, DAVA::UIControlBackground::DRAW_SCALE_TO_RECT);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_DISABLED, DAVA::UIControlBackground::DRAW_SCALE_TO_RECT);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_SELECTED, DAVA::UIControlBackground::DRAW_SCALE_TO_RECT);
 
-    btn->SetStateSprite(UIControl::STATE_PRESSED_INSIDE, imagePath);
-    btn->SetStateSprite(UIControl::STATE_DISABLED, imagePath);
-    btn->SetStateSprite(UIControl::STATE_NORMAL, imagePath);
-    btn->SetStateSprite(UIControl::STATE_SELECTED, imagePath);
+    btn->SetStateSprite(DAVA::UIControl::STATE_PRESSED_INSIDE, imagePath);
+    btn->SetStateSprite(DAVA::UIControl::STATE_DISABLED, imagePath);
+    btn->SetStateSprite(DAVA::UIControl::STATE_NORMAL, imagePath);
+    btn->SetStateSprite(DAVA::UIControl::STATE_SELECTED, imagePath);
 
-    btn->SetStateFrame(UIControl::STATE_PRESSED_INSIDE, 0);
-    btn->SetStateFrame(UIControl::STATE_DISABLED, 0);
-    btn->SetStateFrame(UIControl::STATE_NORMAL, 0);
-    btn->SetStateFrame(UIControl::STATE_SELECTED, 0);
+    btn->SetStateFrame(DAVA::UIControl::STATE_PRESSED_INSIDE, 0);
+    btn->SetStateFrame(DAVA::UIControl::STATE_DISABLED, 0);
+    btn->SetStateFrame(DAVA::UIControl::STATE_NORMAL, 0);
+    btn->SetStateFrame(DAVA::UIControl::STATE_SELECTED, 0);
 }
 
-UIButton* ControlsFactory::CreateCloseWindowButton(const Rect& rect)
+DAVA::UIButton* ControlsFactory::CreateCloseWindowButton(const DAVA::Rect& rect)
 {
-    UIButton* btn = new UIButton(rect);
+    DAVA::UIButton* btn = new DAVA::UIButton(rect);
     CustomizeCloseWindowButton(btn);
     return btn;
 }
 
-void ControlsFactory::CustomizeCloseWindowButton(UIButton* btn)
+void ControlsFactory::CustomizeCloseWindowButton(DAVA::UIButton* btn)
 {
-    Font* font = GetFont12();
+    DAVA::Font* font = GetFont12();
 
-    btn->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-    btn->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_PRESSED_INSIDE, DAVA::UIControlBackground::DRAW_FILL);
 
-    btn->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(1.0f, 0.0f, 0.0f, 0.5f));
-    btn->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->SetColor(Color(0.8f, 0.0f, 0.0f, 0.5f));
+    btn->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->SetColor(DAVA::Color(1.0f, 0.0f, 0.0f, 0.5f));
+    btn->GetStateBackground(DAVA::UIControl::STATE_PRESSED_INSIDE)->SetColor(DAVA::Color(0.8f, 0.0f, 0.0f, 0.5f));
 
-    btn->SetStateFont(UIControl::STATE_PRESSED_INSIDE, font);
-    btn->SetStateFont(UIControl::STATE_DISABLED, font);
-    btn->SetStateFont(UIControl::STATE_NORMAL, font);
-    btn->SetStateFont(UIControl::STATE_SELECTED, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_PRESSED_INSIDE, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_DISABLED, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
+    btn->SetStateFont(DAVA::UIControl::STATE_SELECTED, font);
 
-    btn->SetStateText(UIControl::STATE_PRESSED_INSIDE, L"X");
-    btn->SetStateText(UIControl::STATE_DISABLED, L"X");
-    btn->SetStateText(UIControl::STATE_NORMAL, L"X");
-    btn->SetStateText(UIControl::STATE_SELECTED, L"X");
+    btn->SetStateText(DAVA::UIControl::STATE_PRESSED_INSIDE, L"X");
+    btn->SetStateText(DAVA::UIControl::STATE_DISABLED, L"X");
+    btn->SetStateText(DAVA::UIControl::STATE_NORMAL, L"X");
+    btn->SetStateText(DAVA::UIControl::STATE_SELECTED, L"X");
 
     AddBorder(btn);
 }
 
-Font* ControlsFactory::GetFont12()
+DAVA::Font* ControlsFactory::GetFont12()
 {
     if (!font12)
     {
-        font12 = FTFont::Create("~res:/Fonts/MyriadPro-Regular.otf");
+        font12 = DAVA::FTFont::Create("~res:/Fonts/MyriadPro-Regular.otf");
         font12->SetSize(12);
     }
     return font12;
 }
 
-Font* ControlsFactory::GetFont20()
+DAVA::Font* ControlsFactory::GetFont20()
 {
     if (!font20)
     {
-        font20 = FTFont::Create("~res:/Fonts/MyriadPro-Regular.otf");
+        font20 = DAVA::FTFont::Create("~res:/Fonts/MyriadPro-Regular.otf");
         font20->SetSize(20);
     }
     return font12;
 }
 
-Color ControlsFactory::GetColorLight()
+DAVA::Color ControlsFactory::GetColorLight()
 {
-    return Color(1.0f, 1.0f, 1.0f, 1.0f);
+    return DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-Color ControlsFactory::GetColorDark()
+DAVA::Color ControlsFactory::GetColorDark()
 {
-    return Color(0.0f, 0.0f, 0.0f, 1.0f);
+    return DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-Color ControlsFactory::GetColorError()
+DAVA::Color ControlsFactory::GetColorError()
 {
-    return Color(1.0f, 0.0f, 0.0f, 0.8f);
+    return DAVA::Color(1.0f, 0.0f, 0.0f, 0.8f);
 }
 
-void ControlsFactory::CustomizeScreenBack(UIControl* screen)
+void ControlsFactory::CustomizeScreenBack(DAVA::UIControl* screen)
 {
-    screen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    screen->GetBackground()->SetColor(Color(0.7f, 0.7f, 0.7f, 1.0f));
+    screen->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    screen->GetBackground()->SetColor(DAVA::Color(0.7f, 0.7f, 0.7f, 1.0f));
 }
 
-UIControl* ControlsFactory::CreateLine(const Rect& rect)
+DAVA::UIControl* ControlsFactory::CreateLine(const DAVA::Rect& rect)
 {
-    return CreateLine(rect, Color(0.8f, 0.8f, 0.8f, 1.0f));
+    return CreateLine(rect, DAVA::Color(0.8f, 0.8f, 0.8f, 1.0f));
 }
 
-UIControl* ControlsFactory::CreateLine(const Rect& rect, Color color)
+DAVA::UIControl* ControlsFactory::CreateLine(const DAVA::Rect& rect, DAVA::Color color)
 {
-    UIControl* lineControl = new UIControl(rect);
+    DAVA::UIControl* lineControl = new DAVA::UIControl(rect);
     lineControl->GetBackground()->color = color;
-    lineControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    lineControl->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
     return lineControl;
 }
 
-void ControlsFactory::CusomizeBottomLevelControl(UIControl* c)
+void ControlsFactory::CusomizeBottomLevelControl(DAVA::UIControl* c)
 {
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    c->GetBackground()->SetColor(Color(0.5f, 0.5f, 0.5f, 1.0f));
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    c->GetBackground()->SetColor(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f));
 }
 
-void ControlsFactory::CusomizeTransparentControl(UIControl* c, float32 transparentLevel)
+void ControlsFactory::CusomizeTransparentControl(DAVA::UIControl* c, DAVA::float32 transparentLevel)
 {
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    c->GetBackground()->SetColor(Color(0.0f, 0.0f, 0.0f, transparentLevel));
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    c->GetBackground()->SetColor(DAVA::Color(0.0f, 0.0f, 0.0f, transparentLevel));
 }
 
-void ControlsFactory::CusomizeTopLevelControl(UIControl* c)
+void ControlsFactory::CusomizeTopLevelControl(DAVA::UIControl* c)
 {
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    c->GetBackground()->SetColor(Color(0.5f, 0.5f, 0.5f, 1.0f));
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    c->GetBackground()->SetColor(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f));
 }
 
-void ControlsFactory::CusomizeListControl(UIControl* c)
+void ControlsFactory::CusomizeListControl(DAVA::UIControl* c)
 {
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    c->GetBackground()->SetColor(Color(0.92f, 0.92f, 0.92f, 1.0f));
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    c->GetBackground()->SetColor(DAVA::Color(0.92f, 0.92f, 0.92f, 1.0f));
 }
 
-UIControl* ControlsFactory::CreatePanelControl(const Rect& rect, bool addBorder)
+DAVA::UIControl* ControlsFactory::CreatePanelControl(const DAVA::Rect& rect, bool addBorder)
 {
-    UIControl* ctrl = new UIControl(rect);
+    DAVA::UIControl* ctrl = new DAVA::UIControl(rect);
     CustomizePanelControl(ctrl, addBorder);
     return ctrl;
 }
 
-void ControlsFactory::CustomizePanelControl(UIControl* c, bool addBorder)
+void ControlsFactory::CustomizePanelControl(DAVA::UIControl* c, bool addBorder)
 {
-    c->GetBackground()->color = Color(0.4f, 0.4f, 0.4f, 1.0f);
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.4f, 0.4f, 0.4f, 1.0f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 
     if (addBorder)
     {
@@ -249,80 +249,80 @@ void ControlsFactory::CustomizePanelControl(UIControl* c, bool addBorder)
     }
 }
 
-void ControlsFactory::CustomizeExpandButton(UIButton* btn)
+void ControlsFactory::CustomizeExpandButton(DAVA::UIButton* btn)
 {
-    Color color(0.1f, 0.5f, 0.05f, 1.0f);
-    btn->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-    btn->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
-    btn->SetStateDrawType(UIControl::STATE_HOVER, UIControlBackground::DRAW_FILL);
-    btn->GetStateBackground(UIControl::STATE_NORMAL)->color = color;
-    btn->GetStateBackground(UIControl::STATE_HOVER)->color = color + 0.1f;
-    btn->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->color = color + 0.3f;
+    DAVA::Color color(0.1f, 0.5f, 0.05f, 1.0f);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_PRESSED_INSIDE, DAVA::UIControlBackground::DRAW_FILL);
+    btn->SetStateDrawType(DAVA::UIControl::STATE_HOVER, DAVA::UIControlBackground::DRAW_FILL);
+    btn->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->color = color;
+    btn->GetStateBackground(DAVA::UIControl::STATE_HOVER)->color = color + 0.1f;
+    btn->GetStateBackground(DAVA::UIControl::STATE_PRESSED_INSIDE)->color = color + 0.3f;
 }
 
-void ControlsFactory::CustomizeListCell(UIListCell* c, const WideString& text, bool setLightFont)
+void ControlsFactory::CustomizeListCell(DAVA::UIListCell* c, const DAVA::WideString& text, bool setLightFont)
 {
-    Font* font = GetFont12();
+    DAVA::Font* font = GetFont12();
 
-    c->SetStateFont(UIControl::STATE_NORMAL, font);
-    c->SetStateFont(UIControl::STATE_SELECTED, font);
+    c->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
+    c->SetStateFont(DAVA::UIControl::STATE_SELECTED, font);
 
-    c->SetStateText(UIControl::STATE_NORMAL, text);
-    c->SetStateText(UIControl::STATE_SELECTED, text);
+    c->SetStateText(DAVA::UIControl::STATE_NORMAL, text);
+    c->SetStateText(DAVA::UIControl::STATE_SELECTED, text);
 
-    c->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-    c->SetStateDrawType(UIControl::STATE_SELECTED, UIControlBackground::DRAW_FILL);
-    c->GetStateBackground(UIControl::STATE_NORMAL)->color = Color(1.0f, 1.0f, 1.0f, 0.0f);
-    c->GetStateBackground(UIControl::STATE_SELECTED)->color = Color(1.0f, 0.8f, 0.8f, 1.0f);
+    c->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_SELECTED, DAVA::UIControlBackground::DRAW_FILL);
+    c->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->color = DAVA::Color(1.0f, 1.0f, 1.0f, 0.0f);
+    c->GetStateBackground(DAVA::UIControl::STATE_SELECTED)->color = DAVA::Color(1.0f, 0.8f, 0.8f, 1.0f);
 
     if (setLightFont)
     {
-        c->GetStateTextControl(UIControl::STATE_NORMAL)->SetTextColor(Color::White);
-        c->GetStateTextControl(UIControl::STATE_SELECTED)->SetTextColor(Color::White);
+        c->GetStateTextControl(DAVA::UIControl::STATE_NORMAL)->SetTextColor(DAVA::Color::White);
+        c->GetStateTextControl(DAVA::UIControl::STATE_SELECTED)->SetTextColor(DAVA::Color::White);
     }
     else
     {
-        c->GetStateTextControl(UIControl::STATE_NORMAL)->SetTextColor(Color::Black);
-        c->GetStateTextControl(UIControl::STATE_SELECTED)->SetTextColor(Color::Black);
+        c->GetStateTextControl(DAVA::UIControl::STATE_NORMAL)->SetTextColor(DAVA::Color::Black);
+        c->GetStateTextControl(DAVA::UIControl::STATE_SELECTED)->SetTextColor(DAVA::Color::Black);
     }
 }
 
-void ControlsFactory::CustomizeListCellAlternative(UIListCell* c, const WideString& text)
+void ControlsFactory::CustomizeListCellAlternative(DAVA::UIListCell* c, const DAVA::WideString& text)
 {
-    Font* font = GetFont12();
+    DAVA::Font* font = GetFont12();
 
-    c->SetStateFont(UIControl::STATE_NORMAL, font);
-    c->SetStateFont(UIControl::STATE_SELECTED, font);
+    c->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
+    c->SetStateFont(DAVA::UIControl::STATE_SELECTED, font);
 
-    c->SetStateText(UIControl::STATE_NORMAL, text);
-    c->SetStateText(UIControl::STATE_SELECTED, text);
+    c->SetStateText(DAVA::UIControl::STATE_NORMAL, text);
+    c->SetStateText(DAVA::UIControl::STATE_SELECTED, text);
 
-    c->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-    c->SetStateDrawType(UIControl::STATE_SELECTED, UIControlBackground::DRAW_FILL);
-    c->GetStateBackground(UIControl::STATE_NORMAL)->color = Color(0.4f, 0.8f, 0.4f, 1.0f);
-    c->GetStateBackground(UIControl::STATE_SELECTED)->color = Color(1.0f, 0.8f, 0.8f, 1.0f);
+    c->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_SELECTED, DAVA::UIControlBackground::DRAW_FILL);
+    c->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->color = DAVA::Color(0.4f, 0.8f, 0.4f, 1.0f);
+    c->GetStateBackground(DAVA::UIControl::STATE_SELECTED)->color = DAVA::Color(1.0f, 0.8f, 0.8f, 1.0f);
 }
 
-void ControlsFactory::CustomizeMenuPopupCell(UIListCell* c, const WideString& text)
+void ControlsFactory::CustomizeMenuPopupCell(DAVA::UIListCell* c, const DAVA::WideString& text)
 {
-    Font* font = GetFont12();
+    DAVA::Font* font = GetFont12();
 
-    c->SetStateFont(UIControl::STATE_NORMAL, font);
-    c->SetStateFont(UIControl::STATE_SELECTED, font);
+    c->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
+    c->SetStateFont(DAVA::UIControl::STATE_SELECTED, font);
 
-    c->SetStateText(UIControl::STATE_NORMAL, text);
-    c->SetStateText(UIControl::STATE_SELECTED, text);
+    c->SetStateText(DAVA::UIControl::STATE_NORMAL, text);
+    c->SetStateText(DAVA::UIControl::STATE_SELECTED, text);
 
-    c->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-    c->SetStateDrawType(UIControl::STATE_SELECTED, UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_SELECTED, DAVA::UIControlBackground::DRAW_FILL);
 
-    c->GetStateBackground(UIControl::STATE_NORMAL)->color = Color(0.1f, 0.1f, 0.1f, 0.6f);
-    c->GetStateBackground(UIControl::STATE_SELECTED)->color = Color(0.6f, 0.6f, 0.6f, 0.6f);
+    c->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->color = DAVA::Color(0.1f, 0.1f, 0.1f, 0.6f);
+    c->GetStateBackground(DAVA::UIControl::STATE_SELECTED)->color = DAVA::Color(0.6f, 0.6f, 0.6f, 0.6f);
 
-    Rect rect = c->GetRect();
+    DAVA::Rect rect = c->GetRect();
     rect.y = rect.dy - 1;
     rect.dy = 1;
-    UIControl* line = CreateLine(rect);
+    DAVA::UIControl* line = CreateLine(rect);
     c->AddControl(line);
     SafeRelease(line);
 }
@@ -331,91 +331,91 @@ void ControlsFactory::CustomizePropertyCell(DAVA::UIControl* c, bool isActivePar
 {
     if (isActivePart)
     {
-        c->GetBackground()->color = Color(0.5f, 0.5f, 0.5f, 0.5f);
+        c->GetBackground()->color = DAVA::Color(0.5f, 0.5f, 0.5f, 0.5f);
     }
     else
     {
-        c->GetBackground()->color = Color(0.4f, 0.4f, 0.4f, 1.0f);
+        c->GetBackground()->color = DAVA::Color(0.4f, 0.4f, 0.4f, 1.0f);
     }
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
-void ControlsFactory::CustomizeEditablePropertyCell(UIControl* c)
+void ControlsFactory::CustomizeEditablePropertyCell(DAVA::UIControl* c)
 {
-    c->GetBackground()->color = Color(0.2f, 0.2f, 0.2f, 0.6f);
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.2f, 0.2f, 0.2f, 0.6f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
-void ControlsFactory::CustomizeUneditablePropertyCell(UIControl* c)
+void ControlsFactory::CustomizeUneditablePropertyCell(DAVA::UIControl* c)
 {
-    c->GetBackground()->color = Color(0.4f, 0.4f, 0.4f, 0.5f);
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.4f, 0.4f, 0.4f, 0.5f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
-void ControlsFactory::CustomizePropertySectionCell(UIControl* c)
+void ControlsFactory::CustomizePropertySectionCell(DAVA::UIControl* c)
 {
-    c->GetBackground()->color = Color(0.4f, 0.8f, 0.4f, 1.0f);
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.4f, 0.8f, 0.4f, 1.0f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
-void ControlsFactory::CustomizePropertySubsectionCell(UIControl* c)
+void ControlsFactory::CustomizePropertySubsectionCell(DAVA::UIControl* c)
 {
-    c->GetBackground()->color = Color(0.4f, 0.8f, 0.4f, 0.5f);
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.4f, 0.8f, 0.4f, 0.5f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
-void ControlsFactory::CustomizePropertyButtonCell(UIListCell* c)
+void ControlsFactory::CustomizePropertyButtonCell(DAVA::UIListCell* c)
 {
-    c->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-    c->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
-    c->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
-    c->SetStateDrawType(UIControl::STATE_SELECTED, UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_PRESSED_INSIDE, DAVA::UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_DISABLED, DAVA::UIControlBackground::DRAW_FILL);
+    c->SetStateDrawType(DAVA::UIControl::STATE_SELECTED, DAVA::UIControlBackground::DRAW_FILL);
 
-    c->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.0f, 0.0f, 0.0f, 0.5f));
-    c->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->SetColor(Color(0.5f, 0.5f, 0.5f, 0.5f));
-    c->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
-    c->GetStateBackground(UIControl::STATE_SELECTED)->SetColor(Color(0.0f, 0.0f, 1.0f, 0.2f));
+    c->GetStateBackground(DAVA::UIControl::STATE_NORMAL)->SetColor(DAVA::Color(0.0f, 0.0f, 0.0f, 0.5f));
+    c->GetStateBackground(DAVA::UIControl::STATE_PRESSED_INSIDE)->SetColor(DAVA::Color(0.5f, 0.5f, 0.5f, 0.5f));
+    c->GetStateBackground(DAVA::UIControl::STATE_DISABLED)->SetColor(DAVA::Color(0.2f, 0.2f, 0.2f, 0.2f));
+    c->GetStateBackground(DAVA::UIControl::STATE_SELECTED)->SetColor(DAVA::Color(0.0f, 0.0f, 1.0f, 0.2f));
 
-    Font* font = GetFont12();
-    c->SetStateFont(UIControl::STATE_PRESSED_INSIDE, font);
-    c->SetStateFont(UIControl::STATE_DISABLED, font);
-    c->SetStateFont(UIControl::STATE_NORMAL, font);
-    c->SetStateFont(UIControl::STATE_SELECTED, font);
+    DAVA::Font* font = GetFont12();
+    c->SetStateFont(DAVA::UIControl::STATE_PRESSED_INSIDE, font);
+    c->SetStateFont(DAVA::UIControl::STATE_DISABLED, font);
+    c->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
+    c->SetStateFont(DAVA::UIControl::STATE_SELECTED, font);
 }
 
-void ControlsFactory::CustomizeDialogFreeSpace(UIControl* c)
+void ControlsFactory::CustomizeDialogFreeSpace(DAVA::UIControl* c)
 {
-    c->GetBackground()->color = Color(0.0f, 0.0f, 0.0f, 0.3f);
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.0f, 0.0f, 0.0f, 0.3f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
-void ControlsFactory::CustomizeDialog(UIControl* c)
+void ControlsFactory::CustomizeDialog(DAVA::UIControl* c)
 {
-    c->GetBackground()->color = Color(0.0f, 0.0f, 0.0f, 0.5f);
-    c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.0f, 0.0f, 0.0f, 0.5f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
 void ControlsFactory::SetScrollbar(DAVA::UIList* l)
 {
-    //Temporary fix for loading of UI Interface to avoid reloading of texrures to different formates.
+    //Temporary fix for loading of UI Interface to avoid reloading of textures to different formates.
     // 1. Reset default format before loading of UI
     // 2. Restore default format after loading of UI from stored settings.
-    Texture::SetDefaultGPU(GPU_ORIGIN);
+    DAVA::Texture::SetDefaultGPU(DAVA::GPU_ORIGIN);
 
-    UIControl* c = l->FindByName("ScrollBar");
+    DAVA::UIControl* c = l->FindByName("ScrollBar");
     if (c)
         return;
 
-    Rect fr = l->GetRect();
+    DAVA::Rect fr = l->GetRect();
 
-    Sprite* scrollSpr = Sprite::Create("~res:/Gfx/UI/scroll");
+    DAVA::Sprite* scrollSpr = DAVA::Sprite::Create("~res:/Gfx/UI/scroll");
 
-    UIScrollBar* scrollBar = new UIScrollBar(Rect(fr.dx - scrollSpr->GetWidth(), 0, scrollSpr->GetWidth(), fr.dy),
-                                             UIScrollBar::ORIENTATION_VERTICAL);
+    DAVA::UIScrollBar* scrollBar = new DAVA::UIScrollBar(DAVA::Rect(fr.dx - scrollSpr->GetWidth(), 0, scrollSpr->GetWidth(), fr.dy),
+                                                         DAVA::UIScrollBar::ORIENTATION_VERTICAL);
     scrollBar->SetName("ScrollBar");
 
     scrollBar->GetSlider()->SetSprite(scrollSpr, 0);
-    scrollBar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
+    scrollBar->GetSlider()->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_STRETCH_VERTICAL);
     scrollBar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
 
     scrollBar->SetDelegate(l);
@@ -425,12 +425,12 @@ void ControlsFactory::SetScrollbar(DAVA::UIList* l)
     SafeRelease(scrollSpr);
     SafeRelease(scrollBar);
 
-    Texture::SetDefaultGPU(static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
+    DAVA::Texture::SetDefaultGPU(static_cast<DAVA::eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
-void ControlsFactory::RemoveScrollbar(UIList* l)
+void ControlsFactory::RemoveScrollbar(DAVA::UIList* l)
 {
-    UIControl* scrollBar = l->FindByName("ScrollBar");
+    DAVA::UIControl* scrollBar = l->FindByName("ScrollBar");
     if (scrollBar)
     {
         scrollBar->GetParent()->RemoveControl(scrollBar);
@@ -439,41 +439,41 @@ void ControlsFactory::RemoveScrollbar(UIList* l)
 
 void ControlsFactory::AddBorder(DAVA::UIControl* c)
 {
-    Rect fullRect = c->GetRect();
+    DAVA::Rect fullRect = c->GetRect();
 
-    Color lineColor(1.f, 1.f, 1.f, 0.5f);
+    DAVA::Color lineColor(1.f, 1.f, 1.f, 0.5f);
 
-    UIControl* leftLine = c->FindByName("LeftLine", false);
+    DAVA::UIControl* leftLine = c->FindByName("LeftLine", false);
     if (!leftLine)
     {
-        leftLine = ControlsFactory::CreateLine(Rect(0, 1, 1, fullRect.dy - 2), lineColor);
+        leftLine = ControlsFactory::CreateLine(DAVA::Rect(0, 1, 1, fullRect.dy - 2), lineColor);
         leftLine->SetName("LeftLine");
         c->AddControl(leftLine);
         SafeRelease(leftLine);
     }
 
-    UIControl* rightLine = c->FindByName("RightLine", false);
+    DAVA::UIControl* rightLine = c->FindByName("RightLine", false);
     if (!rightLine)
     {
-        rightLine = ControlsFactory::CreateLine(Rect(fullRect.dx - 1, 1, 1, fullRect.dy - 2), lineColor);
+        rightLine = ControlsFactory::CreateLine(DAVA::Rect(fullRect.dx - 1, 1, 1, fullRect.dy - 2), lineColor);
         rightLine->SetName("RightLine");
         c->AddControl(rightLine);
         SafeRelease(rightLine);
     }
 
-    UIControl* topLine = c->FindByName("TopLine", false);
+    DAVA::UIControl* topLine = c->FindByName("TopLine", false);
     if (!topLine)
     {
-        topLine = ControlsFactory::CreateLine(Rect(0, 0, fullRect.dx, 1), lineColor);
+        topLine = ControlsFactory::CreateLine(DAVA::Rect(0, 0, fullRect.dx, 1), lineColor);
         topLine->SetName("TopLine");
         c->AddControl(topLine);
         SafeRelease(topLine);
     }
 
-    UIControl* bottomtLine = c->FindByName("BottomLine", false);
+    DAVA::UIControl* bottomtLine = c->FindByName("BottomLine", false);
     if (!bottomtLine)
     {
-        bottomtLine = ControlsFactory::CreateLine(Rect(0, fullRect.dy - 1, fullRect.dx, 1), lineColor);
+        bottomtLine = ControlsFactory::CreateLine(DAVA::Rect(0, fullRect.dy - 1, fullRect.dx, 1), lineColor);
         bottomtLine->SetName("BottomLine");
         c->AddControl(bottomtLine);
         SafeRelease(bottomtLine);

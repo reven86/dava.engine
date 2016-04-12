@@ -179,6 +179,7 @@ public:
     const String& GetKeyName(Key key);
     const Key GetKeyByName(const String& name);
 
+    void ClearAllKeys(); // unpress keys during ALT+TAB or similar events
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
@@ -198,8 +199,6 @@ public:
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
-    void ClearAllKeys();
-
 #ifdef __DAVAENGINE_MACOS__
 private:
 #endif

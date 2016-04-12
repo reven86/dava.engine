@@ -310,11 +310,15 @@ public:
     void SetClearColor(const Color& clearColor);
     void SetUseClearPass(bool useClearPass);
 
+    void SetDefaultTapCountSettings();
+    void SetTapCountSettings(float32 time, int32 radius);
+
 private:
     void ProcessScreenLogic();
 
     void NotifyListenersWillSwitch(UIScreen* screen);
     void NotifyListenersDidSwitch(UIScreen* screen);
+    int32 CalculatedTapCount(UIEvent* newEvent);
 
     friend void Core::CreateSingletons();
 
@@ -340,7 +344,8 @@ private:
 
     UIControl* exclusiveInputLocker = nullptr;
     UIControl* hovered = nullptr;
-    UIControl* focusedControl = nullptr;
+    UIControl* focusedControlWhenTouchBegan = nullptr;
+    Vector2 positionOfTouchWhenTouchBegan;
 
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;
@@ -348,6 +353,19 @@ private:
     bool removeCurrentScreen = false;
 
     uint32 resizePerFrame = 0; //used for logging some strange crahses on android
+    int32 doubleClickRadiusSquared = 0;
+    float32 doubleClickTime = 0.f;
+    const float32 defaultDoubleClickTime = 0.5f; // seconds
+    int32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
+    struct LastClickData
+    {
+        uint32 touchId = 0;
+        Vector2 physPoint;
+        float64 timestamp = 0.0;
+        int32 tapCount = 0;
+        bool lastClickEnded = false;
+    };
+    LastClickData lastClickData;
 };
 };
 

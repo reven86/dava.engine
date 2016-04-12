@@ -29,6 +29,7 @@
 
 #include "UI/UITextField.h"
 #include "Input/KeyboardDevice.h"
+#include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 
@@ -83,17 +84,17 @@ public:
     }
     void OpenKeyboard()
     {
-        if (!isKeyboardOpened)
+        if (!isEditing)
         {
-            isKeyboardOpened = true;
+            isEditing = true;
             control_->OnKeyboardShown(Rect());
         }
     }
     void CloseKeyboard()
     {
-        if (isKeyboardOpened)
+        if (isEditing)
         {
-            isKeyboardOpened = false;
+            isEditing = false;
             control_->OnKeyboardHidden();
         }
     }
@@ -122,7 +123,7 @@ public:
     {
         // see comment for TextFieldPlatformImpl class above
 
-        if (control_ == UIControlSystem::Instance()->GetFocusedControl() && isKeyboardOpened)
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
         {
             float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
             cursorTime += timeElapsed;
@@ -275,7 +276,7 @@ private:
     float32 cursorTime = 0.0f;
     bool needRedraw = true;
     bool showCursor = true;
-    bool isKeyboardOpened = false;
+    bool isEditing = false;
 };
 } // end namespace DAVA
 #endif
@@ -580,7 +581,7 @@ void UITextField::Input(UIEvent* currentInput)
 
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN || currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        if (currentInput->key == Key::ENTER)
+        if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
         {
             if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
             {
@@ -618,7 +619,7 @@ void UITextField::Input(UIEvent* currentInput)
                 SetText(GetAppliedChanges(length, 1, str));
             }
         }
-        else if (currentInput->key == Key::ENTER)
+        else if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
         {
             if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
             {
@@ -892,10 +893,18 @@ int32 UITextField::GetMaxLength() const
 
 void UITextField::OnStartEditing()
 {
+    if (delegate != nullptr)
+    {
+        delegate->OnStartEditing();
+    }
 }
 
 void UITextField::OnStopEditing()
 {
+    if (delegate != nullptr)
+    {
+        delegate->OnStopEditing();
+    }
 }
 
 void UITextField::OnKeyboardShown(const Rect& keyboardRect)

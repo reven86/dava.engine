@@ -144,8 +144,8 @@ protected:
     void ApplyFavorite(QtPropertyData* data);
     void ApplyCustomExtensions(QtPropertyData* data);
 
-    void OnAddComponent(Component::eType type);
-    void OnAddComponent(Component* component);
+    void OnAddComponent(DAVA::Component::eType type);
+    void OnAddComponent(DAVA::Component* component);
 
     void AddFavoriteChilds(QtPropertyData* parent);
     void RemFavoriteChilds(QtPropertyData* parent);

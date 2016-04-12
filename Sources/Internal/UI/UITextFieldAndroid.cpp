@@ -33,6 +33,7 @@
 #include "Render/Image/ImageConvert.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Focus/FocusHelpers.h"
 
 using namespace DAVA;
 
@@ -485,6 +486,7 @@ void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect
 void TextFieldPlatformImpl::TextFieldKeyboardHidden()
 {
     textField->OnKeyboardHidden();
+    textField->StopEdit();
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
@@ -501,9 +503,13 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
     {
         if (hasFocus)
         {
-            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField && FocusHelpers::CanFocusControl(textField))
             {
                 DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
+            }
+            if (!textField->IsEditing())
+            {
+                textField->StartEdit();
             }
         }
     }
