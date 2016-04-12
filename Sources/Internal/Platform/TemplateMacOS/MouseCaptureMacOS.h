@@ -47,7 +47,7 @@ public:
 private:
     bool cursorVisible = true;
     // hack for mouse move event after capture
-    uint32 skipMouseMoveEvent = 0;
+    uint32 skipMouseMoveEvents = 0;
 
     void MovePointerToWindowCenter();
     void OSXShowCursor();

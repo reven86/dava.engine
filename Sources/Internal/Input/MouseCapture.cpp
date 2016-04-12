@@ -44,7 +44,6 @@
 
 namespace DAVA
 {
-
 struct MouseCaptureContext
 {
     eMouseCaptureMode mode = eMouseCaptureMode::OFF;
