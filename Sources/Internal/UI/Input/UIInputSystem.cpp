@@ -33,7 +33,7 @@
 #include "UI/UIEvent.h"
 
 #include "UI/Focus/UIFocusSystem.h"
-#include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Input/UIModalInputComponent.h"
 #include "UI/Focus/UIKeyInputSystem.h"
 
 #include "Input/InputSystem.h"
@@ -58,6 +58,15 @@ UIInputSystem::~UIInputSystem()
 void UIInputSystem::SetCurrentScreen(UIScreen* screen)
 {
     currentScreen = screen;
+    if (currentScreen != nullptr)
+    {
+        UIControl* root = FindNearestToUserModalControl(currentScreen);
+        focusSystem->SetRoot(root);
+    }
+    else
+    {
+        focusSystem->SetRoot(nullptr);
+    }
 }
 
 void UIInputSystem::SetPopupContainer(UIControl* container)
@@ -67,14 +76,44 @@ void UIInputSystem::SetPopupContainer(UIControl* container)
 
 void UIInputSystem::OnControlVisible(UIControl* control)
 {
+    if (control->GetComponent<UIModalInputComponent>() != nullptr)
+    {
+        if (currentScreen != nullptr)
+        {
+            UIControl* root = FindNearestToUserModalControl(currentScreen);
+            focusSystem->SetRoot(root);
+        }
+        else
+        {
+            focusSystem->SetRoot(nullptr);
+        }
+    }
     focusSystem->OnControlVisible(control);
 }
 
 void UIInputSystem::OnControlInvisible(UIControl* control)
 {
+    if (control->GetHover())
+    {
+        SetHoveredControl(nullptr);
+    }
+
     if (control->GetInputEnabled())
     {
         CancelInputs(control, false);
+    }
+
+    if (control->GetComponent<UIModalInputComponent>() != nullptr)
+    {
+        if (currentScreen != nullptr)
+        {
+            UIControl* root = FindNearestToUserModalControl(currentScreen);
+            focusSystem->SetRoot(root);
+        }
+        else
+        {
+            focusSystem->SetRoot(nullptr);
+        }
     }
 
     focusSystem->OnControlInvisible(control);
@@ -290,5 +329,24 @@ void UIInputSystem::SetHoveredControl(UIControl* newHovered)
 UIControl* UIInputSystem::GetHoveredControl() const
 {
     return hovered;
+}
+
+UIControl* UIInputSystem::FindNearestToUserModalControl(UIControl* current)
+{
+    const List<UIControl*>& children = current->GetChildren();
+    for (auto it = children.rbegin(); it != children.rend(); ++it)
+    {
+        UIControl* result = FindNearestToUserModalControl(*it);
+        if (result != nullptr)
+        {
+            return result;
+        }
+    }
+
+    if (current->GetComponent<UIModalInputComponent>() != nullptr)
+    {
+        return current;
+    }
+    return nullptr;
 }
 }

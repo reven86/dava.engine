@@ -126,16 +126,18 @@ void UIFocusSystem::SetFocusedControl(UIControl* control)
 
 void UIFocusSystem::OnControlVisible(UIControl* control)
 {
-    UIComponent* bindingComponent = control->GetComponent<UIActionBindingComponent>();
-    if (bindingComponent != nullptr)
+    if (!focusedControl.Valid() && FocusHelpers::CanFocusControl(control) && root.Valid())
     {
-        if (!root.Valid())
-            SetRoot(control);
-    }
+        UIControl* c = control;
+        while (c != nullptr && c != root.Get())
+        {
+            c = c->GetParent();
+        }
 
-    if (!focusedControl.Valid() && FocusHelpers::CanFocusControl(control))
-    {
-        SetFocusedControl(control);
+        if (c != nullptr) // control in current hierarchy
+        {
+            SetFocusedControl(control);
+        }
     }
 }
 

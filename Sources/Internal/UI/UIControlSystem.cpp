@@ -259,13 +259,12 @@ void UIControlSystem::ProcessScreenLogic()
             nextScreenProcessed->LoadGroup();
         }
         currentScreen = nextScreenProcessed;
-        inputSystem->SetCurrentScreen(currentScreen.Get());
 
         if (currentScreen)
         {
             currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
         }
-        focusSystem->SetRoot(currentScreen.Get());
+        inputSystem->SetCurrentScreen(currentScreen.Get());
 
         NotifyListenersDidSwitch(currentScreen.Get());
 
@@ -532,11 +531,6 @@ void UIControlSystem::OnControlVisible(UIControl* control)
 
 void UIControlSystem::OnControlInvisible(UIControl* control)
 {
-    if (control->GetHover())
-    {
-        SetHoveredControl(nullptr);
-    }
-
     inputSystem->OnControlInvisible(control);
 }
 

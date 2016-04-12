@@ -69,8 +69,9 @@ public:
     void SetHoveredControl(UIControl* newHovered);
     UIControl* GetHoveredControl() const;
 
-public:
 private:
+    UIControl* FindNearestToUserModalControl(UIControl* current);
+
     UIScreen* currentScreen = nullptr;
     UIControl* popupContainer = nullptr;
 
