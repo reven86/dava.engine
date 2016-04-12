@@ -90,16 +90,10 @@ protected:
     bool SingleWrite(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
     void EnumerateDir(const FilePath& path, const FilePath& base, List<String>& in);
 
-    FilePath logFilePath = "";
     DAVA::FilePath patchPath;
     BSType diffType;
     bool verbose;
 };
-
-inline void PatchFileWriter::SetLogsFilePath(const DAVA::FilePath& path)
-{
-    logFilePath = path;
-}
 
 // ======================================================================================
 // class for reading/applying patch file

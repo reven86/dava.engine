@@ -619,19 +619,8 @@ bool PatchFileReader::DoRead()
         if (!eof)
         {
             // read header and remember bsdiff pos
-            int32 patchPos;
-            if (patchPositions.size() > curPatchIndex)
-            {
-                patchPos = patchPositions[curPatchIndex];
-                ret = true;
-            }
-            else
-            {
-                lastError = ERROR_CORRUPTED;
-                Logger::Error("%d patch positions left. But %d requested", patchPositions.size(), curPatchIndex);
-            }
-
-            if (ret && patchFile->Seek(patchPos, File::SEEK_FROM_START) && curInfo.Read(patchFile))
+            int32 patchPos = patchPositions[curPatchIndex];
+            if (patchFile->Seek(patchPos, File::SEEK_FROM_START) && curInfo.Read(patchFile))
             {
                 curBSDiffPos = patchFile->GetPos();
                 ret = true;
@@ -728,9 +717,11 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
         {
             if (!FileSystem::Instance()->CopyFile(origPath, newPath, true))
             {
+                // can't copy original file to the new path.
+                lastError = ERROR_NEW_WRITE;
                 curErrno = errno;
                 ret = false;
-                Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] Can't copy %s to %s", origPath.GetFilename().c_str(), newPath.GetFilename().c_str());
+                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't copy %s to %s", origPath.GetFilename().c_str(), newPath.GetFilename().c_str());
             }
         }
     }
