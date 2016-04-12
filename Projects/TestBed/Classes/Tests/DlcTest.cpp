@@ -338,13 +338,13 @@ void DlcTest::Update(float32 timeElapsed)
             staticText->SetText(L"Canceling...");
             break;
         case DLC::DS_DONE:
-            if (dlc->GetError() == DLC::DE_NO_ERROR)
+            if (dlc->GetErrorInfo().error == DLC::DE_NO_ERROR)
             {
                 staticText->SetText(L"Done!");
             }
             else
             {
-                DAVA::String errorText = DAVA::Format("Error %s!", GlobalEnumMap<DAVA::DLC::DLCError>::Instance()->ToString(dlc->GetError()));
+                DAVA::String errorText = DAVA::Format("Error %s!", GlobalEnumMap<DAVA::DLC::DLCError>::Instance()->ToString(dlc->GetErrorInfo().error));
                 DAVA::WideString wErrorText;
                 DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)errorText.c_str(), errorText.size(), wErrorText);
                 staticText->SetText(wErrorText);
@@ -509,7 +509,7 @@ void DLCCrashTest::Update(float32 timeElapsed, DLC* dlc)
     if (dlc->GetState() == DLC::DS_DONE)
     {
         int ret = 0;
-        if (dlc->GetError() != DLC::DE_NO_ERROR)
+        if (dlc->GetErrorInfo().error != DLC::DE_NO_ERROR)
         {
             ret = 1;
         }
@@ -538,7 +538,7 @@ void DLCCrashTest::Update(float32 timeElapsed, DLC* dlc)
                         newDbObject->SetObjectName(dbObject->GetObjectName());
                         newDbObject->AddString("state", "finished");
                         newDbObject->AddInt32("retries", retryCount - DLC_TEST_MAX_RETRY_COUNT);
-                        newDbObject->AddInt32("error", dlc->GetError());
+                        newDbObject->AddInt32("error", dlc->GetErrorInfo().error);
                         newDbObject->Finish();
 
                         dbClient->SaveDBObject(newDbObject, dbObject);
