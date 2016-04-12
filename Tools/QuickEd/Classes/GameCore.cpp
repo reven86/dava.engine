@@ -115,9 +115,8 @@ void GameCore::Draw()
 void GameCore::UnpackHelp()
 {
     //Unpack Help to Documents.
-    String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
     FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
-    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
+    if (!FileSystem::Instance()->Exists(docsPath))
     {
         ResourceArchive* helpRA = new ResourceArchive();
         if (helpRA->Open("~res:/Help.docs"))
@@ -126,7 +125,6 @@ void GameCore::UnpackHelp()
             FileSystem::Instance()->CreateDirectory(docsPath, true);
 
             helpRA->UnpackToFolder(docsPath);
-            EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 
         SafeRelease(helpRA);

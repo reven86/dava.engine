@@ -184,7 +184,16 @@ void Project::SetIsOpen(bool arg)
     if (arg)
     {
         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
-        projectHistory += "$" + (GetProjectPath() + GetProjectName()).toStdString();
+        QString newProjectPath = GetProjectPath() + GetProjectName();
+        QStringList projectsPathes = GetProjectsHistory();
+        projectsPathes.removeAll(newProjectPath);
+        projectsPathes += newProjectPath;
+        const int maxProjectsHistorySize = 5;
+        while (projectsPathes.size() > maxProjectsHistorySize)
+        {
+            projectsPathes.removeFirst();
+        }
+        projectsHistory += projectsPathes.join(':').toStdString();
     }
     emit IsOpenChanged(arg);
 }
@@ -197,6 +206,12 @@ QString Project::GetProjectPath() const
 QString Project::GetProjectName() const
 {
     return projectName;
+}
+
+QStringList Project::GetProjectsHistory() const
+{
+    QString history = QString::fromStdString(projectsHistory);
+    return history.split(":", QString::SkipEmptyParts);
 }
 
 void Project::SetProjectPath(QString arg)

@@ -30,11 +30,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
+#include "Base/Introspection.h"
 #include "Logger/Logger.h"
+#include "Render/RenderBase.h"
 #include "ui_mainwindow.h"
 
-#include "EditorSettings.h"
+#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+
 #include <QtGui>
 #include <QtWidgets>
 
@@ -50,7 +52,7 @@ class SpritesPacker;
 class LoggerOutputObject;
 class Project;
 
-class MainWindow : public QMainWindow, public Ui::MainWindow
+class MainWindow : public QMainWindow, public Ui::MainWindow, DAVA::InspBase
 {
     Q_OBJECT
 
@@ -63,6 +65,7 @@ public:
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
     QComboBox* GetComboBoxLanguage();
+    void RebuildRecentMenu(const QStringList& lastProjectsPathes);
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -88,8 +91,6 @@ private slots:
 
     void OnOpenProject();
 
-    void RebuildRecentMenu();
-
     void OnBackgroundCustomColorClicked();
 
     void OnPixelizationStateChanged(bool isPixelized);
@@ -111,9 +112,17 @@ private:
     void SetupBackgroundMenu();
     void UpdateProjectSettings();
 
-    // Save/restore positions of DockWidgets and main window geometry
-    void SaveMainWindowState();
-    void RestoreMainWindowState();
+    bool IsPixelized() const;
+    void SetPixelized(bool pixelized);
+
+    DAVA::String GetState() const;
+    void SetState(const DAVA::String& array);
+
+    DAVA::String GetGeometry() const;
+    void SetGeometry(const DAVA::String& array);
+
+    DAVA::String GetConsoleState() const;
+    void SetConsoleState(const DAVA::String& array);
 
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
@@ -122,6 +131,14 @@ private:
     QComboBox* comboboxLanguage = nullptr;
     QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
     QString currentProjectPath;
+
+public:
+    INTROSPECTION(MainWindow,
+                  PROPERTY("isPixelized", "IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
+                  PROPERTY("state", "State", GetState, SetState, DAVA::I_PREFERENCE)
+                  PROPERTY("geometry", "Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
+                  PROPERTY("consoleState", "ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
+                  )
 };
 
 #endif // MAINWINDOW_H

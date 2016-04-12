@@ -55,68 +55,6 @@ void EditorSettings::Save()
     settings->Save(EDITOR_SETTINGS_FILE);
 }
 
-int32 EditorSettings::GetLastOpenedCount()
-{
-    return settings->GetInt32("LastOpenedFilesCount", 0);
-}
-
-String EditorSettings::GetLastOpenedFile(int32 index)
-{
-    int32 count = GetLastOpenedCount();
-    DVASSERT((0 <= index) && (index < count));
-
-    return settings->GetString(Format("LastOpenedFile_%d", index), "");
-}
-
-void EditorSettings::AddLastOpenedFile(const String& pathToFile)
-{
-    Vector<String> filesList;
-
-    // Put all slash symbols to Unix style
-    QString normalizedPath = QDir::toNativeSeparators(QString::fromStdString(pathToFile));
-    String _pathToFile = normalizedPath.toStdString();
-
-    const int32 count = GetLastOpenedCount();
-
-    for (int32 i = 0; i < count; ++i)
-    {
-        String path = settings->GetString(Format("LastOpenedFile_%d", i), "");
-        if (path == _pathToFile)
-        {
-            continue;
-        }
-
-        filesList.push_back(path);
-    }
-
-    filesList.insert(filesList.begin(), _pathToFile);
-
-    if (filesList.size() > RECENT_FILES_COUNT)
-    {
-        filesList.erase(filesList.begin() + RECENT_FILES_COUNT, filesList.end());
-    }
-
-    for (int32 i = 0; i < static_cast<int32>(filesList.size()); ++i)
-    {
-        settings->SetString(Format("LastOpenedFile_%d", i), filesList[i]);
-    }
-
-    settings->SetInt32("LastOpenedFilesCount", static_cast<int32>(filesList.size()));
-
-    Save();
-}
-
-void EditorSettings::SetUIEditorVersion(const String& editorVersion)
-{
-    settings->SetString("editor.version", editorVersion);
-    Save();
-}
-
-String EditorSettings::GetUIEditorVersion()
-{
-    return settings->GetString("editor.version");
-}
-
 void EditorSettings::SetPixelized(bool value)
 {
     settings->SetBool("editor.pixelized", value);

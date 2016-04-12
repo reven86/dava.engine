@@ -66,6 +66,8 @@ public:
     QString GetProjectPath() const;
     QString GetProjectName() const;
 
+    QStringList GetProjectsHistory() const;
+
 signals:
     void IsOpenChanged(bool arg);
     void ProjectPathChanged(QString arg);
@@ -79,11 +81,11 @@ private:
     bool isOpen = false;
     DAVA::FilePath projectPath;
     QString projectName;
-    DAVA::String projectHistory;
+    DAVA::String projectsHistory;
 
 public:
     INTROSPECTION(Project,
-                  MEMBER(projectHistory, "ProjectHistory", DAVA::I_VIEW | DAVA::I_SAVE | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(projectsHistory, "ProjectsHistory", DAVA::I_VIEW | DAVA::I_SAVE | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
     REGISTER_PREFERENCES

@@ -31,6 +31,7 @@
 #include "Project/Project.h"
 #include "Document.h"
 #include "DocumentGroup.h"
+#include "Render/Texture.h"
 
 #include "Helpers/ResourcesManageHelper.h"
 
@@ -41,9 +42,12 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/EditorPreferences/PreferencesStorage.h"
 
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
+
+REGISTER_PREFERENCES_ON_START2(MainWindow)
 
 namespace MainWindow_namespace
 {
@@ -97,18 +101,18 @@ MainWindow::MainWindow(QWidget* parent)
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
-    RestoreMainWindowState();
 
-    RebuildRecentMenu();
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
 
     OnDocumentChanged(nullptr);
+
+    PreferencesStorage::RegisterPreferences(this);
 }
 
 MainWindow::~MainWindow()
 {
-    SaveMainWindowState();
+    PreferencesStorage::UnregisterPreferences(this);
 }
 
 void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
@@ -145,34 +149,6 @@ void MainWindow::OnDocumentChanged(Document* document)
     packageWidget->setEnabled(enabled);
     propertiesWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
-}
-
-void MainWindow::SaveMainWindowState()
-{
-    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.setValue(MainWindow_namespace::APP_GEOMETRY, saveGeometry());
-    settings.setValue(MainWindow_namespace::APP_STATE, saveState());
-    settings.setValue(MainWindow_namespace::CONSOLE_STATE, logWidget->Serialize());
-}
-
-void MainWindow::RestoreMainWindowState()
-{
-    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    auto val = settings.value(MainWindow_namespace::APP_GEOMETRY);
-    if (val.canConvert<QByteArray>())
-    {
-        restoreGeometry(settings.value(MainWindow_namespace::APP_GEOMETRY).toByteArray());
-    }
-    val = settings.value(MainWindow_namespace::APP_STATE);
-    if (val.canConvert<QByteArray>())
-    {
-        restoreState(settings.value(MainWindow_namespace::APP_STATE).toByteArray());
-    }
-    val = settings.value(MainWindow_namespace::CONSOLE_STATE);
-    if (val.canConvert<QByteArray>())
-    {
-        logWidget->Deserialize(val.toByteArray());
-    }
 }
 
 QComboBox* MainWindow::GetComboBoxLanguage()
@@ -290,7 +266,6 @@ void MainWindow::InitMenu()
 
     // Pixelization.
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
-    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
 }
 
 void MainWindow::SetupViewMenu()
@@ -416,25 +391,16 @@ void MainWindow::SetupBackgroundMenu()
     }
 }
 
-void MainWindow::RebuildRecentMenu()
+void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
 {
     menuRecent->clear();
-    // Get up to date count of recent project actions
-    int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
-    QStringList projectList;
-
-    for (int32 i = 0; i < projectCount; ++i)
-    {
-        projectList << QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(i).c_str()));
-    }
-    projectList.removeDuplicates();
-    for (auto& projectPath : projectList)
+    for (auto& projectPath : lastProjectsPathes)
     {
         QAction* recentProject = new QAction(projectPath, this);
         recentProject->setData(projectPath);
         menuRecent->addAction(recentProject);
     }
-    menuRecent->setEnabled(projectCount > 0);
+    menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
 }
 
 void MainWindow::OnBackgroundCustomColorClicked()
@@ -476,7 +442,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
     {
         UpdateProjectSettings();
 
-        RebuildRecentMenu();
+        RebuildRecentMenu(project->GetProjectsHistory());
         FillComboboxLanguages(project);
         this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
@@ -514,24 +480,16 @@ void MainWindow::OnOpenProject()
 
 void MainWindow::UpdateProjectSettings()
 {
-    // Add file to recent project files list
-    EditorSettings::Instance()->AddLastOpenedFile(currentProjectPath.toStdString());
-
     // Save to settings default project directory
     QFileInfo fileInfo(currentProjectPath);
     QString projectDir = fileInfo.absoluteDir().absolutePath();
 
     // Update window title
     this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(currentProjectPath));
-
-    // Apply the pixelization value.
-    Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
 
 void MainWindow::OnPixelizationStateChanged(bool isPixelized)
 {
-    EditorSettings::Instance()->SetPixelized(isPixelized);
-
     Texture::SetPixelization(isPixelized);
 }
 
@@ -556,4 +514,50 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     {
         logWidget->AddMessage(logLevel, output);
     }
+}
+
+bool MainWindow::IsPixelized() const
+{
+    return actionPixelized->isChecked();
+}
+
+void MainWindow::SetPixelized(bool pixelized)
+{
+    actionPixelized->setChecked(pixelized);
+}
+
+DAVA::String MainWindow::GetState() const
+{
+    QByteArray state = saveState();
+    return state.toStdString();
+}
+
+void MainWindow::SetState(const DAVA::String& array)
+{
+    QByteArray state = QByteArray::fromStdString(array);
+    restoreState(state);
+}
+
+DAVA::String MainWindow::GetGeometry() const
+{
+    QByteArray geometry = saveGeometry();
+    return geometry.toStdString();
+}
+
+void MainWindow::SetGeometry(const DAVA::String& array)
+{
+    QByteArray geometry = QByteArray::fromStdString(array);
+    restoreGeometry(geometry);
+}
+
+DAVA::String MainWindow::GetConsoleState() const
+{
+    QByteArray consoleState = logWidget->Serialize();
+    return consoleState.toStdString();
+}
+
+void MainWindow::SetConsoleState(const DAVA::String& array)
+{
+    QByteArray consoleState = QByteArray::fromStdString(array);
+    logWidget->Deserialize(consoleState);
 }

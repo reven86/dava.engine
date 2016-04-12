@@ -27,6 +27,10 @@
 =====================================================================================*/
 
 
+#include "Core/Core.h"
+#include "Particles/ParticleEmitter.h"
+#include "FileSystem/FileSystem.h"
+
 #include <QApplication>
 #include "UI/mainwindow.h"
 
@@ -59,7 +63,7 @@ int main(int argc, char* argv[])
     DAVA::FilePath defaultPreferencesPath(DAVA::String("~res:/") + settingsPath);
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::SetupStoragePath(defaultPreferencesPath, localPrefrencesPath);
-    PreferencesStorage::PreferencesStorageSaver prefWrapper;
+    PreferencesStorage::PreferencesStorageSaver prefSaver;
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
@@ -77,10 +81,6 @@ int main(int argc, char* argv[])
 
         InitPVRTexTool();
         {
-            // Editor Settings might be used by any singleton below during initialization, so
-            // initialize it before any other one.
-            EditorSettings editorSettings;
-
             EditorCore editorCore;
 
             editorCore.Start();

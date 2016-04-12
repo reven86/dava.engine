@@ -65,6 +65,8 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
+    mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
+
     connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
@@ -152,10 +154,10 @@ void EditorCore::OnReloadSprites()
 
 void EditorCore::OnGLWidgedInitialized()
 {
-    int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
-    if (projectCount > 0)
+    QStringList projectsPathes = project->GetProjectsHistory();
+    if (!projectsPathes.isEmpty())
     {
-        OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
+        OpenProject(projectsPathes.last());
     }
 }
 

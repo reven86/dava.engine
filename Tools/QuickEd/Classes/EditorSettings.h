@@ -41,27 +41,12 @@ enum eBackgroundType : DAVA::int64
 class EditorSettings : public DAVA::Singleton<EditorSettings>
 {
 public:
-    enum eDefaultSettings
-    {
-        RECENT_FILES_COUNT = 5,
-    };
-
 public:
     EditorSettings();
     virtual ~EditorSettings();
 
     void Save();
 
-    DAVA::int32 GetLastOpenedCount();
-    DAVA::String GetLastOpenedFile(DAVA::int32 index);
-    void AddLastOpenedFile(const DAVA::String& pathToFile);
-
-    void SetUIEditorVersion(const DAVA::String& editorVersion);
-    DAVA::String GetUIEditorVersion();
-
-    // Whether "Pixelized" or "Smooth" images representation is used.
-    void SetPixelized(bool value);
-    bool IsPixelized() const;
 
     DAVA::Color GetGrigColor() const;
     void SetGrigColor(const DAVA::Color& color);
