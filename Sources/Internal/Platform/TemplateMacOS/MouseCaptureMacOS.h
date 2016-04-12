@@ -42,9 +42,12 @@ class MouseCapturePrivate
 public:
     void SetNativePining(eMouseCaptureMode newMode);
     void SetCursorInCenter();
+    bool SkipEvents();
 
 private:
     bool cursorVisible = true;
+    // hack for mouse move event after capture
+    uint32 skipMouseMoveEvent = 0;
 
     void MovePointerToWindowCenter();
     void OSXShowCursor();

@@ -34,6 +34,9 @@
 namespace DAVA
 {
 enum class eMouseCaptureMode;
+class UIEvent;
+struct MouseCaptureContext;
+class MouseCapturePrivate;
 
 class MouseCapture final
 {
@@ -45,12 +48,12 @@ public:
     eMouseCaptureMode GetMode() const;
     bool MouseCaptured() const;
     // Deprecated, only for UIControlSystem internal using
-    bool SkipEvents(const class UIEvent* const event);
+    bool SkipEvents(const UIEvent* event);
 
 private:
     void OnFocused(bool isFocused);
-    std::unique_ptr<struct MouseCaptureContext> context;
-    std::unique_ptr<class MouseCapturePrivate> privateImpl;
+    std::unique_ptr<MouseCaptureContext> context;
+    std::unique_ptr<MouseCapturePrivate> privateImpl;
 
     MouseCapture(MouseCapture&) = delete;
     MouseCapture& operator=(MouseCapture const&) = delete;

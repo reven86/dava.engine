@@ -65,6 +65,11 @@ void MouseCapturePrivate::SetCursorInCenter()
 {
 }
 
+bool MouseCapturePrivate::SkipEvents()
+{
+    return false;
+}
+
 } // namespace DAVA
 
 #endif //  __DAVAENGINE_WIN_UAP__

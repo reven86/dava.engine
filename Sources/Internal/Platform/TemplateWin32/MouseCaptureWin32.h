@@ -42,6 +42,7 @@ class MouseCapturePrivate
 public:
     void SetNativePining(eMouseCaptureMode newMode);
     void SetCursorInCenter();
+    bool SkipEvents();
 
 private:
     bool SetSystemCursorVisibility(bool show);

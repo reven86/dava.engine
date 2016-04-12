@@ -44,10 +44,6 @@
 
 namespace DAVA
 {
-// hack for mouse move event after capture
-#if defined(__DAVAENGINE_MACOS__)
-uint32 skipMouseMoveEvent = 0;
-#endif
 
 struct MouseCaptureContext
 {
@@ -64,12 +60,6 @@ void SetNativePining(const eMouseCaptureMode& newNativeMode, eMouseCaptureMode& 
     if (newNativeMode != nativeMode)
     {
         nativeMode = newNativeMode;
-#if defined(__DAVAENGINE_MACOS__)
-        if (eMouseCaptureMode::PINING == nativeMode)
-        {
-            skipMouseMoveEvent = 4;
-        }
-#endif
         privateImpl->SetNativePining(nativeMode);
     }
 }
@@ -146,15 +136,12 @@ bool MouseCapture::MouseCaptured() const
     return eMouseCaptureMode::PINING == context->nativeMode;
 }
 
-bool MouseCapture::SkipEvents(const UIEvent* const event)
+bool MouseCapture::SkipEvents(const UIEvent* event)
 {
-#if defined(__DAVAENGINE_MACOS__)
-    if (skipMouseMoveEvent)
+    if (privateImpl->SkipEvents())
     {
-        skipMouseMoveEvent--;
         return true;
     }
-#endif
     context->focusChanged = false;
     if (eMouseCaptureMode::PINING == context->mode && context->focused && !context->deferredCapture)
     {
@@ -219,7 +206,7 @@ bool MouseCapture::MouseCaptured() const
     return false;
 }
 
-bool MouseCapture::SkipEvents(const UIEvent* const event)
+bool MouseCapture::SkipEvents(const UIEvent* event)
 {
     return false;
 }

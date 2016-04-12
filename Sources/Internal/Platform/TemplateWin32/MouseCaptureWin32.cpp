@@ -45,6 +45,11 @@ void MouseCapturePrivate::SetCursorInCenter()
     SetCursorPos(centerX, centerY);
 }
 
+bool MouseCapturePrivate::SkipEvents()
+{
+    return false;
+}
+
 bool MouseCapturePrivate::SetSystemCursorVisibility(bool show)
 {
     DAVA::int32 showCount = 0;

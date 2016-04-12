@@ -91,7 +91,7 @@ public:
     bool MouseCaptured();
 
     // Deprecated, only for UIControlSystem internal using
-    bool SkipInputEvents(UIEvent* event);
+    DAVA_DEPRECATED(bool SkipInputEvents(UIEvent* event));
 
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;

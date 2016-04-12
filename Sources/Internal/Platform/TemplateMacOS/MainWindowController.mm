@@ -31,7 +31,6 @@
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Input/MouseCapture.h"
 
 #import <AppKit/NSApplication.h>
 #import "Platform/TemplateMacOS/HelperAppDelegate.h"
