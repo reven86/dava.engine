@@ -66,6 +66,24 @@ private:
 };
 
 // ======================================================================================
+// a small info to describe write errors
+// ======================================================================================
+struct PatchingErrorInfo
+{
+    struct FileInfo
+    {
+        FilePath path = "";
+        uint32 size = 0;
+        uint32 crc = 0;
+    };
+
+    FileInfo expected;
+    FileInfo actual;
+
+    int32 fileErrno;
+};
+
+// ======================================================================================
 // class for creating/writing patch file
 // ======================================================================================
 class PatchFileWriter
@@ -130,7 +148,7 @@ public:
     void SetLogsFilePath(const FilePath& path);
     PatchError GetLastError() const;
     PatchError GetParseError() const;
-    int32 GetErrno() const;
+    PatchingErrorInfo GetErrorDetails() const;
 
     bool Truncate();
     bool Apply(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
@@ -141,9 +159,9 @@ protected:
     FilePath logFilePath;
     PatchError lastError;
     PatchError parseError;
-    int32 curErrno;
     bool verbose;
     bool eof;
+    PatchingErrorInfo lastErrorInfo;
 
     Vector<int32> patchPositions;
     size_t initialPositionsCount;
@@ -157,6 +175,21 @@ protected:
 inline void PatchFileReader::SetLogsFilePath(const DAVA::FilePath& path)
 {
     logFilePath = path;
+}
+
+inline PatchFileReader::PatchError PatchFileReader::GetLastError() const
+{
+    return lastError;
+}
+
+inline PatchFileReader::PatchError PatchFileReader::GetParseError() const
+{
+    return parseError;
+}
+
+inline PatchingErrorInfo PatchFileReader::GetErrorDetails() const
+{
+    return lastErrorInfo;
 }
 }
 

@@ -118,7 +118,7 @@ public:
     /** 
         \brief Return errno from patching process
     */
-    int32 GetLastErrno() const;
+    PatchingErrorInfo GetLastErrorInfo() const;
 
     /**
         \brief Return patching error
@@ -187,7 +187,7 @@ protected:
         uint32 appliedPatchCount;
         volatile bool patchInProgress;
         PatchFileReader::PatchError patchingError;
-        int32 lastErrno;
+        PatchingErrorInfo lastErrorInfo;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;
