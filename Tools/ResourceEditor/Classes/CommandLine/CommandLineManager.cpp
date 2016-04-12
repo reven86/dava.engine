@@ -61,6 +61,8 @@ void CommandLineManager::CreateTools()
 #endif //#if defined (__DAVAENGINE_BEAST__)
 }
 
+CommandLineManager::~CommandLineManager() = default;
+
 void CommandLineManager::ParseCommandLine(int argc, char* argv[])
 {
     isConsoleModeEnabled = Core::Instance()->IsConsoleMode();

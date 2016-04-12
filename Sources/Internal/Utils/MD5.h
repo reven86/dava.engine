@@ -82,6 +82,11 @@ class MD5
 public:
     struct MD5Digest
     {
+        MD5Digest()
+        {
+            digest.fill(0);
+        }
+
         bool operator==(const MD5Digest& right) const
         {
             return digest == right.digest;
