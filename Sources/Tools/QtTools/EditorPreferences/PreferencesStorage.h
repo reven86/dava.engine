@@ -40,22 +40,34 @@ namespace DAVA
 class InspBase;
 };
 
-class PreferencesStorage : private DAVA::StaticSingleton<PreferencesStorage>
+class PreferencesStorage : public DAVA::StaticSingleton<PreferencesStorage>
 {
-    friend struct PreferencesStorageWrapper;
-
 public:
+    using DefaultValuesList = DAVA::Map<DAVA::String, DAVA::VariantType>;
+
     PreferencesStorage();
 
-    static void RegisterType(const DAVA::InspInfo* inspInfo, const PreferencesRegistrator::DefaultValuesList& defaultValues);
-    static void RegisterPreferences(DAVA::InspBase* inspBase);
-    static void UnregisterPreferences(const DAVA::InspBase* inspBase);
+    static void RegisterType(const DAVA::InspInfo* inspInfo, const DefaultValuesList& defaultValues = DefaultValuesList());
+    template <typename T>
+    static void RegisterPreferences(T* obj);
+    template <typename T>
+    static void UnregisterPreferences(T* obj);
+
+    static void RegisterPreferences(void* realObj, DAVA::InspBase* inspBase);
+    static void UnregisterPreferences(void* realObj, const DAVA::InspBase* inspBase);
+
     static void SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
+
+    struct PreferencesStorageSaver
+    {
+        PreferencesStorageSaver();
+        ~PreferencesStorageSaver();
+    };
 
 private:
     void SetupStoragePathImpl(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
-    void RegisterPreferencesImpl(DAVA::InspBase* inspBase);
-    void UnregisterPreferencesImpl(const DAVA::InspBase* inspBase);
+    void RegisterPreferencesImpl(void* realObj, DAVA::InspBase* inspBase);
+    void UnregisterPreferencesImpl(void* realObj, const DAVA::InspBase* inspBase);
 
     static DAVA::String GenerateKey(const DAVA::InspInfo* inspInfo);
 
@@ -66,10 +78,19 @@ private:
     DAVA::Set<std::unique_ptr<ClassInfo>> registeredInsp;
 };
 
-struct PreferencesStorageWrapper
+template <typename T>
+void PreferencesStorage::RegisterPreferences(T* realObject)
 {
-    PreferencesStorageWrapper();
-    ~PreferencesStorageWrapper();
-};
+    static_assert(std::is_base_of<DAVA::InspBase, T>::value, "type T must be derived from InspBase");
+    RegisterPreferences(realObject, static_cast<DAVA::InspBase*>(realObject));
+}
+
+template <typename T>
+void PreferencesStorage::UnregisterPreferences(T* realObject)
+{
+    static_assert(std::is_base_of<DAVA::InspBase, T>::value, "type T must be derived from InspBase");
+    UnregisterPreferences(realObject, static_cast<DAVA::InspBase*>(realObject));
+}
+
 
 #endif //PREFERENCES_STORAGE

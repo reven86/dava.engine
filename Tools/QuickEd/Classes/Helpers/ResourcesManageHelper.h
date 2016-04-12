@@ -43,16 +43,12 @@ class ResourcesManageHelper
 public:
     // Helper to work with resources
     static QString GetFontRelativePath(const QString& resourceFileName, bool graphicsFont = false);
-    static QString GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont = false);
-    static QString GetResourceRelativePath(const QString& resourceAbsolutePath, bool keepFileExtension = false);
     static QStringList GetFontsList();
     // Get path to documentation folder
     static QString GetDocumentationPath();
     // Get graphics font sprite file path
     static QString GetGraphicsFontPath(Font* font);
 
-    // Working directory
-    static QString GetDefaultDirectory();
     // Resource directory
     static QString GetResourceRootDirectory();
     // Get sprites data directory
@@ -80,15 +76,11 @@ public:
     static void SetProjectPath(const QString& path);
     // Get folder with resource data for specified project path
     static QString GetDataPath(const QString& projectPath);
-    // Path to palform specific files for specified project path
-    static QString GetPlatformRootPath(const QString& projectPath);
     // Project file path for specified project path
     static QString GetProjectFilePath(const QString& projectPath);
     // Initialize project internal resources
     // Do not use this function elsewhere than during application init!!!
     static void InitInternalResources();
-    // Show error message
-    static void ShowErrorMessage(const QString& messageParam);
 
 private:
     static QString projectTitle;

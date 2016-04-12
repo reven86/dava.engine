@@ -40,22 +40,41 @@ class PreferencesRegistrator
 public:
     using DefaultValuesList = DAVA::Map<DAVA::String, DAVA::VariantType>;
     PreferencesRegistrator(const DAVA::InspInfo* inspInfo, const DefaultValuesList& defaultValues = DefaultValuesList());
-    PreferencesRegistrator(DAVA::InspBase* inspBase);
+    PreferencesRegistrator(void* objPtr, DAVA::InspBase* inspBase);
     ~PreferencesRegistrator();
 
 private:
+    void* objectPtr = nullptr;
     DAVA::InspBase* trackedIntrospection = nullptr;
 };
 
 #define REGISTER_PREFERENCES \
-    PreferencesRegistrator preferencesRegistrator = PreferencesRegistrator(static_cast<DAVA::InspBase*>(this));
+    PreferencesRegistrator preferencesRegistrator = PreferencesRegistrator(static_cast<void*>(this), static_cast<DAVA::InspBase*>(this));
 
 #define PREFERENCES_DEFAULT(name, value) \
     {DAVA::String(name), VariantType(value)}
 
-#define REGISTER_PREFERENCES_ON_START(class, defaultValues) \
-    PreferencesRegistrator preferencesRegistrator(class ::TypeInfo(), PreferencesRegistrator::DefaultValuesList({ defaultValues }));
+#define REGISTER_PREFERENCES_ON_START(Classname, defaultValues) \
+    namespace Classname##_local {\
+        PreferencesRegistrator preferencesRegistrator(Classname::TypeInfo(), PreferencesRegistrator::DefaultValuesList({ defaultValues })); \
+    }   
 
+#define REGISTER_PREFERENCES_ON_START2(Classname) \
+    namespace Classname##_local {\
+        PreferencesRegistrator preferencesRegistrator(Classname::TypeInfo()); \
+    }
+
+template <typename T, typename UI>
+struct UiInitializer
+{
+    UiInitializer(T* t, UI* uiForm)
+    {
+        uiForm->setupUi(t);
+    }
+};
+#define INIT_QT_UI(Class, ui) \
+    friend class UiInitializer; \
+    UiInitializer init(Class, ui);
 
 
 #endif //PREFERENCES_REGISTRATOR

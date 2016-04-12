@@ -471,10 +471,10 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    QString projectPath = project->GetProjectPath() + project->GetProjectName();
+    currentProjectPath = project->GetProjectPath() + project->GetProjectName();
     if (resultList)
     {
-        UpdateProjectSettings(projectPath);
+        UpdateProjectSettings();
 
         RebuildRecentMenu();
         FillComboboxLanguages(project);
@@ -494,8 +494,14 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 
 void MainWindow::OnOpenProject()
 {
+    QString defaultPath = currentProjectPath;
+    if (defaultPath.isNull() || defaultPath.isEmpty())
+    {
+        defaultPath = QDir::currentPath();
+    }
+
     QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
-                                                      ResourcesManageHelper::GetDefaultDirectory(),
+                                                      defaultPath,
                                                       tr("Project (*.uieditor)"));
     if (projectPath.isEmpty())
     {
@@ -506,18 +512,17 @@ void MainWindow::OnOpenProject()
     emit ActionOpenProjectTriggered(projectPath);
 }
 
-void MainWindow::UpdateProjectSettings(const QString& projectPath)
+void MainWindow::UpdateProjectSettings()
 {
     // Add file to recent project files list
-    EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
+    EditorSettings::Instance()->AddLastOpenedFile(currentProjectPath.toStdString());
 
     // Save to settings default project directory
-    QFileInfo fileInfo(projectPath);
+    QFileInfo fileInfo(currentProjectPath);
     QString projectDir = fileInfo.absoluteDir().absolutePath();
-    EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
 
     // Update window title
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(currentProjectPath));
 
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());

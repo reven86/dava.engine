@@ -50,25 +50,9 @@ EditorSettings::~EditorSettings()
     SafeRelease(settings);
 }
 
-KeyedArchive* EditorSettings::GetSettings()
-{
-    return settings;
-}
-
 void EditorSettings::Save()
 {
     settings->Save(EDITOR_SETTINGS_FILE);
-}
-
-void EditorSettings::SetProjectPath(const String& projectPath)
-{
-    settings->SetString(String("ProjectPath"), projectPath);
-    Save();
-}
-
-String EditorSettings::GetProjectPath()
-{
-    return settings->GetString(String("ProjectPath"), String(""));
 }
 
 int32 EditorSettings::GetLastOpenedCount()

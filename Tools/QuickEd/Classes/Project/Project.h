@@ -33,10 +33,11 @@
 #include <QObject>
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
+#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
 
 class PackageNode;
 
-class Project : public QObject
+class Project : public QObject, public DAVA::InspBase
 {
     Q_OBJECT
     Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
@@ -78,6 +79,14 @@ private:
     bool isOpen = false;
     DAVA::FilePath projectPath;
     QString projectName;
+    DAVA::String projectHistory;
+
+public:
+    INTROSPECTION(Project,
+                  MEMBER(projectHistory, "ProjectHistory", DAVA::I_VIEW | DAVA::I_SAVE | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  )
+
+    REGISTER_PREFERENCES
 };
 
 inline EditorFontSystem* Project::GetEditorFontSystem() const

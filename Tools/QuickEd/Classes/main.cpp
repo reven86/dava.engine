@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     DAVA::FilePath defaultPreferencesPath(DAVA::String("~res:/") + settingsPath);
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::SetupStoragePath(defaultPreferencesPath, localPrefrencesPath);
-    PreferencesStorageWrapper prefWrapper;
+    PreferencesStorage::PreferencesStorageSaver prefWrapper;
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);

@@ -50,11 +50,7 @@ public:
     EditorSettings();
     virtual ~EditorSettings();
 
-    DAVA::KeyedArchive* GetSettings();
     void Save();
-
-    void SetProjectPath(const DAVA::String& projectPath);
-    DAVA::String GetProjectPath();
 
     DAVA::int32 GetLastOpenedCount();
     DAVA::String GetLastOpenedFile(DAVA::int32 index);

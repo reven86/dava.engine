@@ -41,6 +41,8 @@
 
 using namespace DAVA;
 
+REGISTER_PREFERENCES_ON_START2(Project)
+
 Project::Project(QObject* parent)
     : QObject(parent)
     , editorFontSystem(new EditorFontSystem(this))
@@ -182,6 +184,7 @@ void Project::SetIsOpen(bool arg)
     if (arg)
     {
         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
+        projectHistory += "$" + (GetProjectPath() + GetProjectName()).toStdString();
     }
     emit IsOpenChanged(arg);
 }

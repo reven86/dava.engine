@@ -109,7 +109,7 @@ private:
     void InitMenu();
     void SetupViewMenu();
     void SetupBackgroundMenu();
-    void UpdateProjectSettings(const QString& filename);
+    void UpdateProjectSettings();
 
     // Save/restore positions of DockWidgets and main window geometry
     void SaveMainWindowState();
@@ -121,6 +121,7 @@ private:
 
     QComboBox* comboboxLanguage = nullptr;
     QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
+    QString currentProjectPath;
 };
 
 #endif // MAINWINDOW_H

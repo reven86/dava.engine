@@ -42,12 +42,12 @@ struct PreferencesStorage::ClassInfo
     PreferencesRegistrator::DefaultValuesList defaultValues;
 };
 
-PreferencesStorageWrapper::PreferencesStorageWrapper()
+PreferencesStorage::PreferencesStorageSaver::PreferencesStorageSaver()
 {
-    PreferencesStorage::Instance();
+    PreferencesStorage::Instance(); //check that the storage exists
 }
 
-PreferencesStorageWrapper::~PreferencesStorageWrapper()
+PreferencesStorage::PreferencesStorageSaver::~PreferencesStorageSaver()
 {
     PreferencesStorage* storage = PreferencesStorage::Instance();
     if (!storage->editorPreferences->Save(storage->localStorage))
@@ -67,16 +67,16 @@ void PreferencesStorage::RegisterType(const DAVA::InspInfo* inspInfo, const Pref
     self->registeredInsp.insert(std::make_unique<ClassInfo>(inspInfo, defaultValues)); //storing pointer to static memory
 }
 
-void PreferencesStorage::RegisterPreferences(DAVA::InspBase* inspBase)
+void PreferencesStorage::RegisterPreferences(void* realObject, DAVA::InspBase* inspBase)
 {
     PreferencesStorage* self = Instance();
-    self->RegisterPreferencesImpl(inspBase);
+    self->RegisterPreferencesImpl(realObject, inspBase);
 }
 
-void PreferencesStorage::UnregisterPreferences(const DAVA::InspBase* inspBase)
+void PreferencesStorage::UnregisterPreferences(void* realObject, const DAVA::InspBase* inspBase)
 {
     PreferencesStorage* self = Instance();
-    self->UnregisterPreferencesImpl(inspBase);
+    self->UnregisterPreferencesImpl(realObject, inspBase);
 }
 
 void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage)
@@ -134,8 +134,10 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
                     value = iter->second;
                 }
             }
-            DVASSERT(value.type != DAVA::VariantType::TYPE_NONE);
-            classInfoArchive->SetVariant(name, value);
+            if (value.type != DAVA::VariantType::TYPE_NONE)
+            {
+                classInfoArchive->SetVariant(name, value);
+            }
         }
         if (classInfoArchive->Count() != 0)
         {
@@ -144,7 +146,7 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
     }
 }
 
-void PreferencesStorage::RegisterPreferencesImpl(DAVA::InspBase* inspBase)
+void PreferencesStorage::RegisterPreferencesImpl(void* realObj, DAVA::InspBase* inspBase)
 {
     DVASSERT(nullptr != inspBase);
 
@@ -173,15 +175,14 @@ void PreferencesStorage::RegisterPreferencesImpl(DAVA::InspBase* inspBase)
             continue;
         }
         DAVA::VariantType* value = archive->GetVariant(name);
-        DAVA::VariantType val = member->Value(inspBase);
         if (value != nullptr && value->GetType() != DAVA::VariantType::TYPE_NONE)
         {
-            member->SetValue(inspBase, *value);
+            member->SetValue(realObj, *value);
         }
     }
 }
 
-void PreferencesStorage::UnregisterPreferencesImpl(const DAVA::InspBase* inspBase)
+void PreferencesStorage::UnregisterPreferencesImpl(void* realObj, const DAVA::InspBase* inspBase)
 {
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
@@ -196,7 +197,7 @@ void PreferencesStorage::UnregisterPreferencesImpl(const DAVA::InspBase* inspBas
             continue;
         }
         DAVA::String name(member->Name().c_str());
-        DAVA::VariantType value = member->Value(const_cast<void*>(static_cast<const void*>(inspBase))); //SUDDENLY! current version not support Value by const pointer
+        DAVA::VariantType value = member->Value(realObj); //SUDDENLY! current version not support Value by const pointer
         archive->SetVariant(name, value);
     }
 

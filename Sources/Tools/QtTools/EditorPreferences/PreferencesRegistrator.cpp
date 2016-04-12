@@ -37,16 +37,17 @@ PreferencesRegistrator::PreferencesRegistrator(const DAVA::InspInfo* inspInfo, c
     PreferencesStorage::RegisterType(inspInfo, defaultValues);
 }
 
-PreferencesRegistrator::PreferencesRegistrator(DAVA::InspBase* inspBase)
-    : trackedIntrospection(inspBase)
+PreferencesRegistrator::PreferencesRegistrator(void* objPtr, DAVA::InspBase* inspBase)
+    : objectPtr(objPtr)
+    , trackedIntrospection(inspBase)
 {
-    PreferencesStorage::RegisterPreferences(trackedIntrospection);
+    PreferencesStorage::RegisterPreferences(objectPtr, trackedIntrospection);
 }
 
 PreferencesRegistrator::~PreferencesRegistrator()
 {
-    if (nullptr != trackedIntrospection)
+    if (nullptr != trackedIntrospection && nullptr != objectPtr)
     {
-        PreferencesStorage::UnregisterPreferences(trackedIntrospection);
+        PreferencesStorage::UnregisterPreferences(objectPtr, trackedIntrospection);
     }
 }
