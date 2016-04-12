@@ -48,9 +48,9 @@ QString defaultStyleSheet;
 eTheme currentTheme;
 bool themesInitialized = false;
 QStringList themesNames = { "classic", "dark" };
-QColor textColor(192, 192, 192);
+QColor textColor(225, 225, 225);
 QColor disabledTextColor(100, 100, 100);
-QColor windowColor(53, 53, 53);
+QColor windowColor(40, 43, 53);
 
 void SetupClassicTheme();
 void SetupDarkTheme();
@@ -185,7 +185,7 @@ QColor GetViewLineAlternateColor()
 
 QColor GetChangedPropertyColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::black) : QColor(225, 225, 225);
+    return currentTheme == Themes::Classic ? QColor(Qt::black) : QColor(255, 255, 255);
 }
 
 QColor GetPrototypeColor()
