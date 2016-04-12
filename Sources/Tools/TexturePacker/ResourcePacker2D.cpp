@@ -348,15 +348,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     packingParams += Format("FilesSize = %llu", allFilesSize);
     packingParams += Format("FilesCount = %u", allFilesCount);
 
-    String mergedParams = mergedFlags;
-    mergedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
-    mergedParams += String("PackerVersion = ") + VERSION;
-    mergedParams += String("LIBPSDVersion = ") + INTERNAL_LIBPSD_VERSION;
-    for (const auto& algorithm : packAlgorithms)
-    {
-        mergedParams += String("PackerAlgorithm = ") + GlobalEnumMap<PackingAlgorithm>::Instance()->ToString(static_cast<int>(algorithm));
-    }
-
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
     bool paramsModified = RecalculateParamsMD5(packingParams, processDir + "params.md5");
 
