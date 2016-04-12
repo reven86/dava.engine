@@ -27,39 +27,36 @@
 =====================================================================================*/
 
 
-#include "LandscapeSetTexturesCommands.h"
-#include "../Qt/Scene/SceneEditor2.h"
-#include "Scene3D/Components/ComponentHelpers.h"
+#ifndef __DAVAENGINE_WINAPI_UAP_H__
+#define __DAVAENGINE_WINAPI_UAP_H__
 
-LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity_,
-                                                           const DAVA::FilePath& heightMapPath_,
-                                                           const DAVA::AABBox3& newLandscapeBox_)
-    : Command2(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+typedef UINT MMRESULT;
+
+typedef struct timecaps_tag
 {
-    landscape = FindLandscape(landscapeEntity_);
-    if (NULL == landscape)
-    {
-        return;
-    }
-    landscapeEntity = SafeRetain(landscapeEntity_);
+    UINT wPeriodMin; /* minimum period supported  */
+    UINT wPeriodMax; /* maximum period supported  */
+} TIMECAPS, *LPTIMECAPS;
 
-    originalHeightMapPath = landscape->GetHeightmapPathname();
-    originalLandscapeBox = landscape->GetBoundingBox();
-    newHeightMapPath = heightMapPath_;
-    newLandscapeBox = newLandscapeBox_;
+extern MMRESULT(WINAPI* timeGetDevCaps)(LPTIMECAPS ptc, UINT cbtc);
+extern MMRESULT(WINAPI* timeBeginPeriod)(UINT uPeriod);
+extern MMRESULT(WINAPI* timeEndPeriod)(UINT uPeriod);
+
+namespace WinApiUAP
+{
+enum eWinApiPart
+{
+    SYSTEM_TIMER_SERVICE,
+};
+
+void Initialize();
+bool IsAvailable(eWinApiPart);
 }
 
-LandscapeSetHeightMapCommand::~LandscapeSetHeightMapCommand()
-{
-    SafeRelease(landscapeEntity);
-}
+#endif
 
-void LandscapeSetHeightMapCommand::Undo()
-{
-    landscape->BuildLandscapeFromHeightmapImage(originalHeightMapPath, originalLandscapeBox);
-}
-
-void LandscapeSetHeightMapCommand::Redo()
-{
-    landscape->BuildLandscapeFromHeightmapImage(newHeightMapPath, newLandscapeBox);
-}
+#endif // __DAVAENGINE_WINAPI_UAP_H__
