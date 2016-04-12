@@ -314,6 +314,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
