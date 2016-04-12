@@ -28,6 +28,7 @@
 
 #include <SDLC/SmartDLC.h>
 #include "UnitTests/UnitTests.h"
+#include "Utils/CRC32.h"
 
 DAVA_TESTCLASS (SmartDlcTest)
 {
@@ -39,7 +40,7 @@ DAVA_TESTCLASS (SmartDlcTest)
         FilePath folderWithDownloadedPacks("~res:/TestData/SmartDlcTest/packs/");
         String urlToServerWithPacks("http://wargaminguberserver.net/packs");
 
-        SmartDlc sdlc(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
+        PackManager sdlc(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
 
         TEST_VERIFY(sdlc.IsProcessingEnabled() == false);
 
@@ -58,7 +59,7 @@ DAVA_TESTCLASS (SmartDlcTest)
         String packID = sdlc.FindPack(fileNotInPack);
         TEST_VERIFY(packID.empty() && "no such file in any archive");
 
-        FilePath fileInPack("~res:/Data/TestData/Utf8Test/utf16le.txt");
+        FilePath fileInPack("~res:/TestData/Utf8Test/utf16le.txt");
 
         String packName = sdlc.FindPack(fileInPack);
 
@@ -66,26 +67,36 @@ DAVA_TESTCLASS (SmartDlcTest)
 
         TEST_VERIFY(packName == String("unit_test.pak"));
 
+        // calculate crc32 for pak
+        uint64 start = SystemTimer::Instance()->AbsoluteMS();
+
+        uint32 crc32 = CRC32::ForFile("C:\\Users\\l_chayka\\fun\\Data.zip");
+
+        uint64 finish = SystemTimer::Instance()->AbsoluteMS();
+
+        float timeToDoCrc32 = (finish - start) / 1000.0f;
+        Logger::Info("time to calculate CRC32 for %s : %f, crc32: 0x%X", packName.c_str(), timeToDoCrc32, crc32);
+
         try
         {
-            const SmartDlc::PackState& packState = sdlc.GetPackState(packName);
+            const PackManager::PackState& packState = sdlc.GetPackState(packName);
             TEST_VERIFY(packState.downloadProgress == 0.f);
             TEST_VERIFY(packState.name == packName);
             TEST_VERIFY(packState.priority == 0.5f);
-            TEST_VERIFY(packState.state == SmartDlc::PackState::NotRequested);
+            TEST_VERIFY(packState.state == PackManager::PackState::NotRequested);
 
             sdlc.DisableProcessing();
 
-            const SmartDlc::PackState& requestedState = sdlc.RequestPack(packName);
+            const PackManager::PackState& requestedState = sdlc.RequestPack(packName);
 
-            TEST_VERIFY(requestedState.state == SmartDlc::PackState::Queued);
+            TEST_VERIFY(requestedState.state == PackManager::PackState::Requested);
 
             sdlc.EnableProcessing();
 
             auto& nextState = sdlc.RequestPack(packName, 0.1f);
-            TEST_VERIFY(nextState.state == SmartDlc::PackState::Downloading);
+            TEST_VERIFY(nextState.state == PackManager::PackState::Downloading);
 
-            while (nextState.state == SmartDlc::PackState::Downloading)
+            while (nextState.state == PackManager::PackState::Downloading)
             {
                 // wait
                 Thread::Sleep(500);
@@ -93,7 +104,7 @@ DAVA_TESTCLASS (SmartDlcTest)
                 Logger::Info("download progress: %d", static_cast<int32>(nextState.downloadProgress * 100));
             }
 
-            TEST_VERIFY(nextState.state == SmartDlc::PackState::Mounted);
+            TEST_VERIFY(nextState.state == PackManager::PackState::Mounted);
 
             ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
             TEST_VERIFY(file);

@@ -153,7 +153,7 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
     return result;
 }
 
-void PacksDB::GetAllPacksState(Vector<SmartDlc::PackState>& out) const
+void PacksDB::GetAllPacksState(Vector<PackManager::PackState>& out) const
 {
     out.clear();
 
@@ -161,21 +161,23 @@ void PacksDB::GetAllPacksState(Vector<SmartDlc::PackState>& out) const
 
     selectQuery >> [&](String name, int32 status, float32 priority, float32 progress)
     {
-        auto stat = static_cast<SmartDlc::PackState::Status>(status);
-        out.push_back(SmartDlc::PackState(name, stat, priority, progress));
+        auto stat = static_cast<PackManager::PackState::Status>(status);
+        PackManager::PackState state;
+        state.name = name;
+        state.state = stat;
+        // TODO update properties
+        out.push_back(state);
     };
 }
 
-void PacksDB::UpdatePackState(const SmartDlc::PackState& state)
+void PacksDB::UpdatePackState(const PackManager::PackState& state)
 {
     try
     {
         data->GetDB() << "begin;";
-
+        // TODO update properties
         data->GetDB() << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?;"
                       << static_cast<int32>(state.state)
-                      << state.priority
-                      << state.downloadProgress
                       << state.name;
 
         data->GetDB() << "commit;";

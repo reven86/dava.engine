@@ -31,12 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-class SmartDlcImpl;
+class ArchiveManagerImpl;
 
-class SmartDlc final
+class PackManager final
 {
 public:
-
     struct PackState
     {
         enum Status : uint32
@@ -47,21 +46,23 @@ public:
             Mounted = 3 // существует на FS и готов к использованию
         };
 
-        PackState(const String& name, Status state, float priority, float progress);
-        PackState() = delete;
-
-        String name; // уникальное имя пака
-        Status state; // NotRequested default;
-        float priority; // текущий приоритет закачки
-        float downloadProgress; // from 0.0 to 1.0
-        bool isCrc32Valid;
+        String name = ""; // уникальное имя пака
+        Status state = NotRequested; // NotRequested default;
+        String remoteUrl = ""; // url used for download archive or empty
+        float32 downloadProgress = 0.f; // 0.0f to 1.0f
+        float32 priority = 0.f; // 0.0f to 1.0f
+        uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (not read from
+        uint32 crc32FromDB = 0; // crc32 from filesdb
+        Vector<String> dependensy{}; // names of dependency archive
     };
 
-    // 1. открываю SQlite базу вычитываю всю инфу по пакам (в случае ошибки - исключение, продолжать загружать игру не возможно)
-    // 2. подключаю все паки которые находятся по пути localPacksDir (в случае ошибки, исключение, кто-то поудалял внутреннии ресурсы игры)
-    // 3. сохраняю url на сервер для докачки новых паков (не трачу время на его проверку, если сервер лежит например или не доступен)
-    SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl);
-    ~SmartDlc();
+    // 1. вычитываю данные по всем пакам из бызы
+    // 2. перебираю все паки на файловой системе
+    // 3. рядом с каждым паком лежит мета файл в котором его CRC32 которую сравниваю со значением в базе
+    // 4. монтирую каждый пак у которого совпадает CRC32, если не совпадает, то было обновление игры и этот пак изменился его нужно удалить
+    // 5. если что-то качалось и был краш или выход из игры то мы в любом случае докачиваем из промежуточных временных файлов, если можем, или качаем заново(по запросу)
+    PackManager(const FilePath& filesDB, const FilePath& localPacksDir, const String& remotePacksUrl);
+    ~PackManager();
 
     // контроль фоновых загрузок (обработка запросов)
     // если обработка запросов не включена, то запросы всех паков переключаются в Queued состояние
@@ -73,7 +74,7 @@ public:
     void Update();
 
     // получение имени пака по относительному имени файла внтутри пака (если файл не принадлежит ни одному паку исключение)
-    const String& FindPack(const FilePath& relativePathInPack) const;
+    const String& FindPack(const FilePath& relativePathInArchive) const;
 
     // получение статуса пака (исключение если неверный айдишник пака?)
     const PackState& GetPackState(const String& packID) const;
@@ -93,7 +94,7 @@ public:
     Signal<const PackState&> onPackStateChanged;
 
 private:
-    std::unique_ptr<SmartDlcImpl> impl;
+    std::unique_ptr<ArchiveManagerImpl> impl;
 };
 
 } // end namespace DAVA

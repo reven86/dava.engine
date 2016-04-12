@@ -31,20 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-SmartDlc::PackState::PackState(const String& name, Status state, float priority, float progress)
-    : name(name)
-    , state(state)
-    , priority(priority)
-    , downloadProgress(progress)
-{
-}
-
-static bool PackCompare(const SmartDlc::PackState* lhs, SmartDlc::PackState* rhs)
+static bool PackCompare(const PackManager::PackState* lhs, PackManager::PackState* rhs)
 {
     return lhs->priority < rhs->priority;
 }
 
-class SmartDlcImpl
+class ArchiveManagerImpl
 {
 public:
     uint32 GetPackIndex(const String& packName)
@@ -56,7 +48,7 @@ public:
         }
         throw std::runtime_error("can't find pack with name: " + packName);
     }
-    SmartDlc::PackState& GetPackState(const String& packName)
+    PackManager::PackState& GetPackState(const String& packName)
     {
         uint32 index = GetPackIndex(packName);
         return packs[index];
@@ -64,7 +56,7 @@ public:
     void AddToDownloadQueue(const String& packName)
     {
         uint32 index = GetPackIndex(packName);
-        SmartDlc::PackState* packState = &packs[index];
+        PackManager::PackState* packState = &packs[index];
         queue.push_back(packState);
         std::stable_sort(begin(queue), end(queue), PackCompare);
 
@@ -76,7 +68,7 @@ public:
     void UpdateQueuePriority(const String& packName, float priority)
     {
         uint32 index = GetPackIndex(packName);
-        SmartDlc::PackState* packState = &packs[index];
+        PackManager::PackState* packState = &packs[index];
         auto it = std::find(begin(queue), end(queue), packState);
         if (it != end(queue))
         {
@@ -114,7 +106,7 @@ public:
                 FilePath archivePath = packsDB + currentDownload->name;
                 fs->Mount(archivePath, "Data");
 
-                currentDownload->state = SmartDlc::PackState::Mounted;
+                currentDownload->state = PackManager::PackState::Mounted;
                 currentDownload = nullptr;
                 downloadHandler = 0;
             }
@@ -150,7 +142,7 @@ public:
         for (auto& pack : packs)
         {
             // mount pack
-            if (pack.state == SmartDlc::PackState::Mounted)
+            if (pack.state == PackManager::PackState::Mounted)
             {
                 FilePath archiveName = localPacksDir + pack.name;
                 fs->Mount(archiveName, "Data");
@@ -162,18 +154,18 @@ public:
     FilePath localPacksDir;
     String remotePacksUrl;
     bool isProcessingEnabled = false;
-    SmartDlc* sdlcPublic = nullptr;
+    PackManager* sdlcPublic = nullptr;
     UnorderedMap<String, uint32> packsIndex;
-    Vector<SmartDlc::PackState> packs;
-    Vector<SmartDlc::PackState*> queue;
-    SmartDlc::PackState* currentDownload = nullptr;
+    Vector<PackManager::PackState> packs;
+    Vector<PackManager::PackState*> queue;
+    PackManager::PackState* currentDownload = nullptr;
     std::unique_ptr<PacksDB> packDB;
     uint32 downloadHandler = 0;
 };
 
-SmartDlc::SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl)
+PackManager::PackManager(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl)
 {
-    impl.reset(new SmartDlcImpl());
+    impl.reset(new ArchiveManagerImpl());
     impl->packsDB = packsDB;
     impl->localPacksDir = localPacksDir;
     impl->remotePacksUrl = remotePacksUrl;
@@ -185,24 +177,24 @@ SmartDlc::SmartDlc(const FilePath& packsDB, const FilePath& localPacksDir, const
     impl->MountDownloadedPacks();
 }
 
-SmartDlc::~SmartDlc() = default;
+PackManager::~PackManager() = default;
 
-bool SmartDlc::IsProcessingEnabled() const
+bool PackManager::IsProcessingEnabled() const
 {
     return impl->isProcessingEnabled;
 }
 
-void SmartDlc::EnableProcessing()
+void PackManager::EnableProcessing()
 {
     impl->isProcessingEnabled = true;
 }
 
-void SmartDlc::DisableProcessing()
+void PackManager::DisableProcessing()
 {
     impl->isProcessingEnabled = false;
 }
 
-void SmartDlc::Update()
+void PackManager::Update()
 {
     // first check if something downloading
     if (impl->isProcessingEnabled)
@@ -216,17 +208,17 @@ void SmartDlc::Update()
     }
 }
 
-const String& SmartDlc::FindPack(const FilePath& relativePathInPack) const
+const String& PackManager::FindPack(const FilePath& relativePathInPack) const
 {
     return impl->packDB->FindPack(relativePathInPack);
 }
 
-const SmartDlc::PackState& SmartDlc::GetPackState(const String& packID) const
+const PackManager::PackState& PackManager::GetPackState(const String& packID) const
 {
     return impl->GetPackState(packID);
 }
 
-const SmartDlc::PackState& SmartDlc::RequestPack(const String& packID, float priority)
+const PackManager::PackState& PackManager::RequestPack(const String& packID, float priority)
 {
     priority = std::max(0.f, priority);
     priority = std::min(1.f, priority);
@@ -234,7 +226,7 @@ const SmartDlc::PackState& SmartDlc::RequestPack(const String& packID, float pri
     auto& packState = impl->GetPackState(packID);
     if (packState.state == PackState::NotRequested)
     {
-        packState.state = PackState::Queued;
+        packState.state = PackState::Requested;
         packState.priority = priority;
         impl->AddToDownloadQueue(packID);
     }
@@ -245,9 +237,9 @@ const SmartDlc::PackState& SmartDlc::RequestPack(const String& packID, float pri
     return packState;
 }
 
-const Vector<SmartDlc::PackState*>& SmartDlc::GetAllState() const
+const Vector<PackManager::PackState*>& PackManager::GetAllState() const
 {
-    static Vector<SmartDlc::PackState*> allState;
+    static Vector<PackManager::PackState*> allState;
 
     allState.clear();
     allState.reserve(impl->packs.size());
@@ -260,7 +252,7 @@ const Vector<SmartDlc::PackState*>& SmartDlc::GetAllState() const
     return allState;
 }
 
-void SmartDlc::DeletePack(const String& packID)
+void PackManager::DeletePack(const String& packID)
 {
     auto& state = impl->GetPackState(packID);
     if (state.state == PackState::Mounted)

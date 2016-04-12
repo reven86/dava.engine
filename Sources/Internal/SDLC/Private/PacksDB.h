@@ -42,9 +42,9 @@ public:
 
     const String& FindPack(const FilePath& relativeFilePath) const;
 
-    void GetAllPacksState(Vector<SmartDlc::PackState>& out) const;
+    void GetAllPacksState(Vector<PackManager::PackState>& out) const;
 
-    void UpdatePackState(const SmartDlc::PackState& state);
+    void UpdatePackState(const PackManager::PackState& state);
 
 private:
     std::unique_ptr<PacksDBData> data;
