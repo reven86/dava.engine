@@ -197,14 +197,13 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const DA
 
                 for (DAVA::int32 y = yRect; (y < yRect + GRID_QUAD_SIZE) && y < heightmapSize; ++y)
                 {
-                    const DAVA::int32 yOffset = y * heightmapSize;
-                    const DAVA::float32 ydx = (heightmapSize - y - 1) * dx;
+                    const DAVA::float32 ydx = (heightmapSize - y) * dx;
 
                     for (DAVA::int32 x = xRect; (x < xRect + GRID_QUAD_SIZE) && x < heightmapSize; ++x)
                     {
-                        const DAVA::uint16 currentPoint = heightmap->Data()[yOffset + x];
-                        const DAVA::uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
-                        const DAVA::uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmapSize];
+                        const DAVA::uint16 currentPoint = heightmap->GetHeightClamp(x, y);
+                        const DAVA::uint16 rightPoint = heightmap->GetHeightClamp(x + 1, y);
+                        const DAVA::uint16 bottomPoint = heightmap->GetHeightClamp(x, y + 1);
 
                         const DAVA::uint16 deltaRight = static_cast<DAVA::uint16>(abs(static_cast<DAVA::int32>(currentPoint) - static_cast<DAVA::int32>(rightPoint)));
                         const DAVA::uint16 deltaBottom = static_cast<DAVA::uint16>(abs(static_cast<DAVA::int32>(currentPoint) - static_cast<DAVA::int32>(bottomPoint)));
