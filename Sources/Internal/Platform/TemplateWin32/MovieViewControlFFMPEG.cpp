@@ -268,7 +268,7 @@ namespace DAVA
                 //  Logger::FrameworkDebug("EOF or error");
                 return;
             }
-        } while (packet->stream_index != videoindex);
+        } while (packet->stream_index != videoIndex);
 
         if (packet->stream_index == videoIndex)
             ;
