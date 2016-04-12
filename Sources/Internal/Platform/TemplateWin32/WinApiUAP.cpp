@@ -26,41 +26,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#pragma once
+#include "WinApiUAP.h"
 
-#include "Compression/Compressor.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-namespace DAVA
+MMRESULT(WINAPI* timeGetDevCaps)
+(LPTIMECAPS ptc, UINT cbtc) = nullptr;
+MMRESULT(WINAPI* timeBeginPeriod)
+(UINT uPeriod) = nullptr;
+MMRESULT(WINAPI* timeEndPeriod)
+(UINT uPeriod) = nullptr;
+
+namespace WinApiUAP
 {
-class ResourceArchiveImpl;
+bool initialized = false;
 
-class FilePath;
-
-class ResourceArchive final
+void Initialize()
 {
-public:
-    explicit ResourceArchive(const FilePath& filePath);
-    ~ResourceArchive();
-
-    struct FileInfo
+    if (!initialized)
     {
-        FileInfo() = default;
-        FileInfo(const char8* relativePath, uint32 originalSize, uint32 compressedSize, Compressor::Type compressionType);
+        // Here land of black magic and fire-spitting dragons begins
+        MEMORY_BASIC_INFORMATION bi;
+        VirtualQuery(static_cast<void*>(&GetModuleFileNameA), &bi, sizeof(bi));
+        HMODULE hkernel = reinterpret_cast<HMODULE>(bi.AllocationBase);
 
-        String relativeFilePath;
-        uint32 originalSize = 0;
-        uint32 compressedSize = 0;
-        Compressor::Type compressionType = Compressor::Type::None;
-    };
+        HMODULE(WINAPI * LoadLibraryW)
+        (LPCWSTR lpLibFileName);
+        LoadLibraryW = reinterpret_cast<decltype(LoadLibraryW)>(GetProcAddress(hkernel, "LoadLibraryW"));
 
-    const Vector<FileInfo>& GetFilesInfo() const;
-    const FileInfo* GetFileInfo(const String& relativeFilePath) const;
-    bool HasFile(const String& relativeFilePath) const;
-    bool LoadFile(const String& relativeFilePath, Vector<uint8>& outputFileContent) const;
+        if (LoadLibraryW)
+        {
+            HMODULE hWinmm = LoadLibraryW(L"winmm.dll");
+            if (hWinmm)
+            {
+                timeGetDevCaps = reinterpret_cast<decltype(timeGetDevCaps)>(GetProcAddress(hWinmm, "timeGetDevCaps"));
+                timeBeginPeriod = reinterpret_cast<decltype(timeBeginPeriod)>(GetProcAddress(hWinmm, "timeBeginPeriod"));
+                timeEndPeriod = reinterpret_cast<decltype(timeEndPeriod)>(GetProcAddress(hWinmm, "timeEndPeriod"));
+            }
+        }
 
-    bool UnpackToFolder(const FilePath& dir) const;
+        initialized = true;
+    }
+}
 
-private:
-    std::unique_ptr<ResourceArchiveImpl> impl;
-};
-} // end namespace DAVA
+bool IsAvailable(eWinApiPart part)
+{
+    if (!initialized)
+        return false;
+
+    switch (part)
+    {
+    case WinApiUAP::SYSTEM_TIMER_SERVICE:
+        return (timeGetDevCaps && timeBeginPeriod && timeEndPeriod);
+        break;
+    default:
+        break;
+    }
+
+    return false;
+}
+}
+
+#endif

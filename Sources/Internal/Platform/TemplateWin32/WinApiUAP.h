@@ -26,41 +26,37 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#pragma once
 
-#include "Compression/Compressor.h"
+#ifndef __DAVAENGINE_WINAPI_UAP_H__
+#define __DAVAENGINE_WINAPI_UAP_H__
 
-namespace DAVA
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+typedef UINT MMRESULT;
+
+typedef struct timecaps_tag
 {
-class ResourceArchiveImpl;
+    UINT wPeriodMin; /* minimum period supported  */
+    UINT wPeriodMax; /* maximum period supported  */
+} TIMECAPS, *LPTIMECAPS;
 
-class FilePath;
+extern MMRESULT(WINAPI* timeGetDevCaps)(LPTIMECAPS ptc, UINT cbtc);
+extern MMRESULT(WINAPI* timeBeginPeriod)(UINT uPeriod);
+extern MMRESULT(WINAPI* timeEndPeriod)(UINT uPeriod);
 
-class ResourceArchive final
+namespace WinApiUAP
 {
-public:
-    explicit ResourceArchive(const FilePath& filePath);
-    ~ResourceArchive();
-
-    struct FileInfo
-    {
-        FileInfo() = default;
-        FileInfo(const char8* relativePath, uint32 originalSize, uint32 compressedSize, Compressor::Type compressionType);
-
-        String relativeFilePath;
-        uint32 originalSize = 0;
-        uint32 compressedSize = 0;
-        Compressor::Type compressionType = Compressor::Type::None;
-    };
-
-    const Vector<FileInfo>& GetFilesInfo() const;
-    const FileInfo* GetFileInfo(const String& relativeFilePath) const;
-    bool HasFile(const String& relativeFilePath) const;
-    bool LoadFile(const String& relativeFilePath, Vector<uint8>& outputFileContent) const;
-
-    bool UnpackToFolder(const FilePath& dir) const;
-
-private:
-    std::unique_ptr<ResourceArchiveImpl> impl;
+enum eWinApiPart
+{
+    SYSTEM_TIMER_SERVICE,
 };
-} // end namespace DAVA
+
+void Initialize();
+bool IsAvailable(eWinApiPart);
+}
+
+#endif
+
+#endif // __DAVAENGINE_WINAPI_UAP_H__

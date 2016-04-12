@@ -26,41 +26,38 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#pragma once
+#include "WinSystemTimer.h"
 
-#include "Compression/Compressor.h"
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
+#include "WinApiUAP.h"
+#elif defined(__DAVAENGINE_WIN32__)
+#include <TimeAPI.h>
+#endif
 
 namespace DAVA
 {
-class ResourceArchiveImpl;
-
-class FilePath;
-
-class ResourceArchive final
+void EnableHighResolutionTimer(bool enable)
 {
-public:
-    explicit ResourceArchive(const FilePath& filePath);
-    ~ResourceArchive();
+    bool timerServiceAvailable = false;
+#if defined(__DAVAENGINE_WIN32__)
+    timerServiceAvailable = true;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    timerServiceAvailable = WinApiUAP::IsAvailable(WinApiUAP::SYSTEM_TIMER_SERVICE);
+#endif
 
-    struct FileInfo
+    if (timerServiceAvailable)
     {
-        FileInfo() = default;
-        FileInfo(const char8* relativePath, uint32 originalSize, uint32 compressedSize, Compressor::Type compressionType);
-
-        String relativeFilePath;
-        uint32 originalSize = 0;
-        uint32 compressedSize = 0;
-        Compressor::Type compressionType = Compressor::Type::None;
-    };
-
-    const Vector<FileInfo>& GetFilesInfo() const;
-    const FileInfo* GetFileInfo(const String& relativeFilePath) const;
-    bool HasFile(const String& relativeFilePath) const;
-    bool LoadFile(const String& relativeFilePath, Vector<uint8>& outputFileContent) const;
-
-    bool UnpackToFolder(const FilePath& dir) const;
-
-private:
-    std::unique_ptr<ResourceArchiveImpl> impl;
-};
-} // end namespace DAVA
+        TIMECAPS sistemTimerCaps;
+        timeGetDevCaps(&sistemTimerCaps, sizeof(TIMECAPS));
+        if (enable)
+        {
+            timeBeginPeriod(static_cast<UINT>(sistemTimerCaps.wPeriodMin));
+        }
+        else
+        {
+            timeEndPeriod(static_cast<UINT>(sistemTimerCaps.wPeriodMin));
+        }
+    }
+}
+}

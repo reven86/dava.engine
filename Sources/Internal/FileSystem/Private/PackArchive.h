@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FileSystem/Private/ResourceArchivePrivate.h"
 #include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/File.h"
 
 namespace DAVA
 {
