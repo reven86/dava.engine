@@ -65,6 +65,21 @@ void UIInputSystem::SetPopupContainer(UIControl* container)
     popupContainer = container;
 }
 
+void UIInputSystem::OnControlVisible(UIControl* control)
+{
+    focusSystem->OnControlVisible(control);
+}
+
+void UIInputSystem::OnControlInvisible(UIControl* control)
+{
+    if (control->GetInputEnabled())
+    {
+        CancelInputs(control, false);
+    }
+
+    focusSystem->OnControlInvisible(control);
+}
+
 void UIInputSystem::HandleEvent(UIEvent* newEvent)
 {
     UIEvent* eventToHandle = nullptr;
@@ -228,7 +243,7 @@ void UIInputSystem::SwitchInputToControl(uint32 eventID, UIControl* targetContro
     }
 }
 
-const Vector<UIEvent>& UIInputSystem::GetAllInputs()
+const Vector<UIEvent>& UIInputSystem::GetAllInputs() const
 {
     return touchEvents;
 }
@@ -250,8 +265,30 @@ void UIInputSystem::SetExclusiveInputLocker(UIControl* locker, uint32 lockEventI
     exclusiveInputLocker = SafeRetain(locker);
 }
 
-UIControl* UIInputSystem::GetExclusiveInputLocker()
+UIControl* UIInputSystem::GetExclusiveInputLocker() const
 {
     return exclusiveInputLocker;
+}
+
+void UIInputSystem::SetHoveredControl(UIControl* newHovered)
+{
+    if (hovered != newHovered)
+    {
+        if (hovered)
+        {
+            hovered->SystemDidRemoveHovered();
+            hovered->Release();
+        }
+        hovered = SafeRetain(newHovered);
+        if (hovered)
+        {
+            hovered->SystemDidSetHovered();
+        }
+    }
+}
+
+UIControl* UIInputSystem::GetHoveredControl() const
+{
+    return hovered;
 }
 }

@@ -204,7 +204,7 @@ public:
 	 \brief Returns all currently active inputs.
 	 \returns all inputs active in the system
 	 */
-    const Vector<UIEvent>& GetAllInputs();
+    const Vector<UIEvent>& GetAllInputs() const;
 
     /**
 	 \brief Sets requested control as a exclusive input locker.
@@ -218,7 +218,7 @@ public:
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
 	 \returns exclusive input locker
 	 */
-    UIControl* GetExclusiveInputLocker();
+    UIControl* GetExclusiveInputLocker() const;
 
     /**
 	 \brief Returns base geometric data seted in the system.
@@ -262,7 +262,7 @@ public:
     /**
 	 \brief Returns control hovered by the mnouse for now
 	 */
-    UIControl* GetHoveredControl(UIControl* newHovered);
+    UIControl* GetHoveredControl() const;
 
     /**
 	 \brief Called by the control to set himself as the focused control
@@ -275,7 +275,7 @@ public:
     /**
 	 \brief Returns currently focused control
 	 */
-    UIControl* GetFocusedControl();
+    UIControl* GetFocusedControl() const;
 
     void AddScreenSwitchListener(ScreenSwitchListener* listener);
     void RemoveScreenSwitchListener(ScreenSwitchListener* listener);
@@ -340,8 +340,6 @@ private:
     int32 lockInputCounter = 0;
     int32 screenLockCount = 0;
     int32 frameSkip = 0;
-
-    UIControl* hovered = nullptr;
 
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;

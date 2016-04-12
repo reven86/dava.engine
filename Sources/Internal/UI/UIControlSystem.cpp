@@ -467,7 +467,7 @@ int32 UIControlSystem::GetLockInputCounter() const
     return lockInputCounter;
 }
 
-const Vector<UIEvent>& UIControlSystem::GetAllInputs()
+const Vector<UIEvent>& UIControlSystem::GetAllInputs() const
 {
     return inputSystem->GetAllInputs();
 }
@@ -477,7 +477,7 @@ void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, uint32 lockEven
     inputSystem->SetExclusiveInputLocker(locker, lockEventId);
 }
 
-UIControl* UIControlSystem::GetExclusiveInputLocker()
+UIControl* UIControlSystem::GetExclusiveInputLocker() const
 {
     return inputSystem->GetExclusiveInputLocker();
 }
@@ -512,24 +512,12 @@ void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)
 
 void UIControlSystem::SetHoveredControl(UIControl* newHovered)
 {
-    if (hovered != newHovered)
-    {
-        if (hovered)
-        {
-            hovered->SystemDidRemoveHovered();
-            hovered->Release();
-        }
-        hovered = SafeRetain(newHovered);
-        if (hovered)
-        {
-            hovered->SystemDidSetHovered();
-        }
-    }
+    inputSystem->SetHoveredControl(newHovered);
 }
 
-UIControl* UIControlSystem::GetHoveredControl(UIControl* newHovered)
+UIControl* UIControlSystem::GetHoveredControl() const
 {
-    return hovered;
+    return inputSystem->GetHoveredControl();
 }
 
 void UIControlSystem::SetFocusedControl(UIControl* newFocused)
@@ -539,7 +527,7 @@ void UIControlSystem::SetFocusedControl(UIControl* newFocused)
 
 void UIControlSystem::OnControlVisible(UIControl* control)
 {
-    focusSystem->OnControlVisible(control);
+    inputSystem->OnControlVisible(control);
 }
 
 void UIControlSystem::OnControlInvisible(UIControl* control)
@@ -549,15 +537,10 @@ void UIControlSystem::OnControlInvisible(UIControl* control)
         SetHoveredControl(nullptr);
     }
 
-    if (control->GetInputEnabled())
-    {
-        CancelInputs(control, false);
-    }
-
-    focusSystem->OnControlInvisible(control);
+    inputSystem->OnControlInvisible(control);
 }
 
-UIControl* UIControlSystem::GetFocusedControl()
+UIControl* UIControlSystem::GetFocusedControl() const
 {
     return focusSystem->GetFocusedControl();
 }

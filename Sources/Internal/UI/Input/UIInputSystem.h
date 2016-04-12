@@ -52,6 +52,9 @@ public:
     void SetCurrentScreen(UIScreen* screen);
     void SetPopupContainer(UIControl* popupContainer);
 
+    void OnControlVisible(UIControl* control);
+    void OnControlInvisible(UIControl* control);
+
     void HandleEvent(UIEvent* event);
 
     void CancelInput(UIEvent* touch);
@@ -59,10 +62,12 @@ public:
     void CancelInputs(UIControl* control, bool hierarchical);
     void SwitchInputToControl(uint32 eventID, UIControl* targetControl);
 
-    const Vector<UIEvent>& GetAllInputs();
+    const Vector<UIEvent>& GetAllInputs() const;
 
     void SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId);
-    UIControl* GetExclusiveInputLocker();
+    UIControl* GetExclusiveInputLocker() const;
+    void SetHoveredControl(UIControl* newHovered);
+    UIControl* GetHoveredControl() const;
 
 public:
 private:
@@ -71,6 +76,8 @@ private:
 
     UIFocusSystem* focusSystem = nullptr;
     UIKeyInputSystem* keyInputSystem = nullptr;
+
+    UIControl* hovered = nullptr;
 
     Vector<UIEvent> touchEvents;
     UIControl* focusedControlWhenTouchBegan = nullptr;
