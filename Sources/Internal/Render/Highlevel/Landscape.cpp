@@ -78,6 +78,8 @@ const uint32 LANDSCAPE_MATERIAL_SORTING_KEY = 10;
 static const uint32 PATCH_SIZE_VERTICES = 9;
 static const uint32 PATCH_SIZE_QUADS = (PATCH_SIZE_VERTICES - 1);
 
+static const uint32 INSTANCE_DATA_BUFFERS_POOL_SIZE = 9;
+
 Landscape::Landscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -962,6 +964,19 @@ void Landscape::AllocateGeometryDataInstancing()
     /////////////////////////////////////////////////////////////////
 
     instanceDataSize = (renderMode == RENDERMODE_INSTANCING) ? INSTANCE_DATA_SIZE : INSTANCE_DATA_SIZE_MORPHING;
+
+    for (uint32 i = 0; i < INSTANCE_DATA_BUFFERS_POOL_SIZE; ++i)
+    {
+        rhi::VertexBuffer::Descriptor instanceBufferDesc;
+        instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
+        instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+
+        InstanceDataBuffer* instanceDataBuffer = new InstanceDataBuffer();
+        instanceDataBuffer->bufferSize = instanceBufferDesc.size;
+        instanceDataBuffer->buffer = rhi::CreateVertexBuffer(instanceBufferDesc);
+
+        freeInstanceDataBuffers.push_back(instanceDataBuffer);
+    }
 
     rhi::VertexBuffer::Descriptor vdesc;
     vdesc.size = VERTICES_COUNT * sizeof(VertexInstancing);

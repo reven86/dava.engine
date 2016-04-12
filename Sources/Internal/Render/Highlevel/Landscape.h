@@ -305,7 +305,7 @@ protected:
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
     uint8* instanceDataPtr = nullptr;
-    uint32 instanceDataMaxCount = 64; //64 instances - initial value. It's will automatic enhanced if needed.
+    uint32 instanceDataMaxCount = 128; //128 instances - initial value. It's will automatic enhanced if needed.
     uint32 instanceDataSize = 0;
 
     Vector<InstanceDataBuffer*> freeInstanceDataBuffers;
