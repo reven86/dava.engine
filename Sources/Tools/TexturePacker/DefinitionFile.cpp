@@ -261,7 +261,9 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         uint32* sourceData = reinterpret_cast<uint32*>(layer.image_data);
         for (psd_int i = 0, e = layer.width * layer.height; i < e; ++i)
         {
-            sourceData[i] = (sourceData[i] & 0xff00ff00) | (sourceData[i] & 0x000000ff) << 16 | (sourceData[i] & 0xff0000) >> 16;
+            auto alpha = (sourceData[i] & 0xff000000) >> 24;
+            alpha = static_cast<psd_uchar>(layer.opacity * alpha / 255) << 24;
+            sourceData[i] = alpha | (sourceData[i] & 0x0000ff00) | (sourceData[i] & 0x000000ff) << 16 | (sourceData[i] & 0xff0000) >> 16;
         }
 
         auto dataToSave = reinterpret_cast<char*>(layer.image_data);
