@@ -26,34 +26,38 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "SharedIcon.h"
-#include "Base/BaseTypes.h"
+#include "WinSystemTimer.h"
 
-#include <QCoreApplication>
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
+#include "WinApiUAP.h"
+#elif defined(__DAVAENGINE_WIN32__)
+#include <TimeAPI.h>
+#endif
 
-namespace SharedIconLocal
+namespace DAVA
 {
-DAVA::UnorderedMap<DAVA::String, QIcon> sharedMap;
-struct CleanUpRegistrator
+void EnableHighResolutionTimer(bool enable)
 {
-    CleanUpRegistrator()
+    bool timerServiceAvailable = false;
+#if defined(__DAVAENGINE_WIN32__)
+    timerServiceAvailable = true;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    timerServiceAvailable = WinApiUAP::IsAvailable(WinApiUAP::SYSTEM_TIMER_SERVICE);
+#endif
+
+    if (timerServiceAvailable)
     {
-        qAddPostRoutine([]()
-                        {
-                            sharedMap.clear();
-                        });
+        TIMECAPS sistemTimerCaps;
+        timeGetDevCaps(&sistemTimerCaps, sizeof(TIMECAPS));
+        if (enable)
+        {
+            timeBeginPeriod(static_cast<UINT>(sistemTimerCaps.wPeriodMin));
+        }
+        else
+        {
+            timeEndPeriod(static_cast<UINT>(sistemTimerCaps.wPeriodMin));
+        }
     }
-} cleanUpRegistrator;
 }
-
-const QIcon& SharedIcon(const char* path)
-{
-    using namespace SharedIconLocal;
-
-    DAVA::String stringPath(path);
-    auto iconIter = sharedMap.find(stringPath);
-    if (iconIter != sharedMap.end())
-        return iconIter->second;
-
-    return sharedMap.emplace(std::move(stringPath), QIcon(path)).first->second;
 }
