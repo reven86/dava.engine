@@ -74,12 +74,12 @@ public:
         float32 normalFov = 70.f;
         float32 zoomFov = 6.5f;
 
-        float32 normalMaxHeightError = 0.02f;
-        float32 normalMaxPatchRadiusError = 0.8f;
+        float32 normalMaxHeightError = 0.014f;
+        float32 normalMaxPatchRadiusError = 1.0f;
         float32 normalMaxAbsoluteHeightError = 3.f;
 
-        float32 zoomMaxHeightError = 0.04f;
-        float32 zoomMaxPatchRadiusError = 1.6f;
+        float32 zoomMaxHeightError = 0.03f;
+        float32 zoomMaxPatchRadiusError = 2.0f;
         float32 zoomMaxAbsoluteHeightError = 3.f;
 
         INTROSPECTION(SubdivisionMetrics,

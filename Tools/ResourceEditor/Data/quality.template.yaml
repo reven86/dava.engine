@@ -70,27 +70,27 @@ landscape:
   - 
    quality: "LOW"
    morphing: true
-   normalMaxHeightError: 0.02
-   normalMaxPatchRadiusError: 0.8
+   normalMaxHeightError: 0.014
+   normalMaxPatchRadiusError: 1.0
    normalMaxAbsoluteHeightError: 3.0
-   zoomMaxHeightError: 0.04
-   zoomMaxPatchRadiusError: 1.6
+   zoomMaxHeightError: 0.03
+   zoomMaxPatchRadiusError: 2.0
    zoomMaxAbsoluteHeightError: 3.0
   - 
    quality: "MEDIUM"
    morphing: true
-   normalMaxHeightError: 0.015
-   normalMaxPatchRadiusError: 0.5
+   normalMaxHeightError: 0.012
+   normalMaxPatchRadiusError: 1.0
    normalMaxAbsoluteHeightError: 2.5
    zoomMaxHeightError: 0.025
-   zoomMaxPatchRadiusError: 1.6
+   zoomMaxPatchRadiusError: 2.0
    zoomMaxAbsoluteHeightError: 2.5
   -
    quality: "HIGH"
    morphing: true
-   normalMaxHeightError: 0.005
-   normalMaxPatchRadiusError: 0.2
+   normalMaxHeightError: 0.01
+   normalMaxPatchRadiusError: 0.4
    normalMaxAbsoluteHeightError: 1.0
-   zoomMaxHeightError: 0.01
-   zoomMaxPatchRadiusError: 0.4
+   zoomMaxHeightError: 0.015
+   zoomMaxPatchRadiusError: 0.8
    zoomMaxAbsoluteHeightError: 1.0
