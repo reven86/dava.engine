@@ -117,7 +117,7 @@ void ApplicationCore::OnSuspend()
     Core::Instance()->SetIsActive(false);
 
 #if defined(__DAVAENGINE_ANDROID__)
-    StartBackbroundTicker();
+    StartBackgroundTicker();
 #endif
 }
 
@@ -133,7 +133,7 @@ void ApplicationCore::OnResume()
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-void ApplicationCore::StartBackbroundTicker(uint32 tickPeriod)
+void ApplicationCore::StartBackgroundTicker(uint32 tickPeriod)
 {
     if (NULL == backgroundTicker)
     {
@@ -184,7 +184,9 @@ bool ApplicationCore::OnQuit()
 
 void ApplicationCore::OnAppFinished()
 {
-    // Default implementation is empty.
+#if defined(__DAVAENGINE_ANDROID__)
+    StopBackgroundTicker();
+#endif
 }
 
 void ApplicationCore::OnBackground()

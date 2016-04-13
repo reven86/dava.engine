@@ -612,7 +612,7 @@ void SoundSystem::PreloadFMODEventGroupData(const String& groupName)
     FMOD::EventGroup* eventGroup = nullptr;
     FMOD_VERIFY(fmodEventSystem->getGroup(groupName.c_str(), true, &eventGroup));
     if (eventGroup)
-        FMOD_VERIFY(eventGroup->loadEventData());
+        FMOD_VERIFY(eventGroup->loadEventData(FMOD_EVENT_RESOURCE_STREAMS_AND_SAMPLES, FMOD_EVENT_NONBLOCKING));
 }
 
 void SoundSystem::ReleaseFMODEventGroupData(const String& groupName)

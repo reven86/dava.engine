@@ -74,7 +74,7 @@ void QtPropertyKeyedArchiveMember::CheckAndFillPresetValues()
             }
             else
             {
-                const DAVA::Vector<Color>& allowedColors = EditorConfig::Instance()->GetColorPropertyValues(key);
+                const DAVA::Vector<DAVA::Color>& allowedColors = EditorConfig::Instance()->GetColorPropertyValues(key);
                 for (size_t i = 0; i < allowedColors.size(); ++i)
                 {
                     AddAllowedValue(DAVA::VariantType((int)i), ColorToQColor(allowedColors[i]));

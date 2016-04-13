@@ -282,7 +282,7 @@ protected:
     /**
 		\brief Should be started only when Main thread is stopped
 	 */
-    void StartBackbroundTicker(uint32 tickPeriod = 250);
+    void StartBackgroundTicker(uint32 tickPeriod = 250);
     /**
 		\brief Should be stopped before Main thread start
 	 */

@@ -40,8 +40,6 @@
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
 #include "Scene/SceneEditor2.h"
 
-using namespace DAVA;
-
 #define LEFT_INDENT 20
 #define TOP_INDENT 14
 #define BOTTOM_INDENT 24
@@ -64,21 +62,21 @@ public:
     explicit ParticleTimeLineWidget(QWidget* parent = 0);
     ~ParticleTimeLineWidget();
 
-    void Init(float32 minTime, float32 maxTime) override;
+    void Init(DAVA::float32 minTime, DAVA::float32 maxTime) override;
 
     struct LINE
     {
-        float32 startTime;
-        float32 endTime;
-        float32 deltaTime;
-        float32 loopEndTime;
+        DAVA::float32 startTime;
+        DAVA::float32 endTime;
+        DAVA::float32 deltaTime;
+        DAVA::float32 loopEndTime;
         bool isLooped;
         bool hasLoopVariation;
         QColor color;
         QString legend;
-        ParticleLayer* layer;
+        DAVA::ParticleLayer* layer;
     };
-    typedef DAVA::Map<uint32, LINE> LINE_MAP;
+    typedef DAVA::Map<DAVA::uint32, LINE> LINE_MAP;
 
 signals:
     void ChangeVisible(bool visible);
@@ -118,15 +116,16 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private:
-    bool GetLineRect(uint32 id, QRect& startPoint, QRect& endPoint) const;
-    bool GetLoopedLineRect(uint32 id, QRect& startPoint, QRect& endPoint, float32 startTime, float32 endTime) const;
+    bool GetLineRect(DAVA::uint32 id, QRect& startPoint, QRect& endPoint) const;
+    bool GetLoopedLineRect(DAVA::uint32 id, QRect& startPoint, QRect& endPoint, DAVA::float32 startTime, DAVA::float32 endTime) const;
     QRect GetGraphRect() const override;
     QPoint GetPoint(const QPoint&) const;
 
-    void AddLayerLine(uint32 layerLineID, float32 minTime, float32 maxTime,
-                      const QColor& layerColor, ParticleLayer* layer);
-    void AddLine(uint32 lineId, float32 startTime, float32 endTime, float32 deltaTime, float32 loopEndTime, bool isLooped,
-                 bool hasLoopVariation, const QColor& color, const QString& legend, ParticleLayer* layer);
+    void AddLayerLine(DAVA::uint32 layerLineID, DAVA::float32 minTime, DAVA::float32 maxTime,
+                      const QColor& layerColor, DAVA::ParticleLayer* layer);
+    void AddLine(DAVA::uint32 lineId, DAVA::float32 startTime, DAVA::float32 endTime, DAVA::float32 deltaTime,
+                 DAVA::float32 loopEndTime, bool isLooped, bool hasLoopVariation, const QColor& color,
+                 const QString& legend, DAVA::ParticleLayer* layer);
 
     void OnValueChanged(int lineId);
     void UpdateSizePolicy() override;
@@ -140,7 +139,7 @@ private:
 
     // Handle situation when the Particle Emitter Node is selected (including
     // case when separate Layer node is selected.
-    void HandleEmitterSelected(ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer);
+    void HandleEmitterSelected(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
 
     QRect GetSliderRect() const override;
     QRect GetIncreaseRect() const override;
@@ -149,28 +148,28 @@ private:
 
 private:
     // Get the width/height for particle counter label.
-    void GetParticlesCountWidthHeight(const LINE& line, int32& width, int32& height);
+    void GetParticlesCountWidthHeight(const LINE& line, DAVA::int32& width, DAVA::int32& height);
 
-    // Cleanup all the timelines and info.
+    // Cleanup all timelines and info.
     void CleanupTimelines();
 
     LINE_MAP lines;
     QPoint selectedPoint;
     QFont nameFont;
 
-    ParticleEffectComponent* selectedEffect = nullptr;
-    ParticleEmitter* selectedEmitter = nullptr;
+    DAVA::ParticleEffectComponent* selectedEffect = nullptr;
+    DAVA::ParticleEmitter* selectedEmitter = nullptr;
 
-    int32 selectedLine;
-    int32 selectedLineOrigin;
-    Entity* emitterNode = nullptr;
-    Entity* effectNode = nullptr;
-    ParticleLayer* selectedLayer = nullptr;
+    DAVA::int32 selectedLine;
+    DAVA::int32 selectedLineOrigin;
+    DAVA::Entity* emitterNode = nullptr;
+    DAVA::Entity* effectNode = nullptr;
+    DAVA::ParticleLayer* selectedLayer = nullptr;
 
     QTimer updateTimer;
 
     // List of data columns.
-    List<ParticlesExtraInfoColumn*> infoColumns;
+    DAVA::List<ParticlesExtraInfoColumn*> infoColumns;
 
     // Scene currently selected.
     SceneEditor2* activeScene = nullptr;
@@ -180,9 +179,9 @@ private:
         //Q_OBJECT
 
     public:
-        explicit SetPointValueDlg(float32 value, float32 minValue, float32 maxValue, QWidget* parent = 0);
+        explicit SetPointValueDlg(DAVA::float32 value, DAVA::float32 minValue, DAVA::float32 maxValue, QWidget* parent = 0);
 
-        float32 GetValue() const;
+        DAVA::float32 GetValue() const;
 
     private:
         EventFilterDoubleSpinBox* valueSpin = nullptr;
