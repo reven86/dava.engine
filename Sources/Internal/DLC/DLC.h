@@ -55,12 +55,12 @@ public:
         DE_CONNECT_ERROR // Can't connect to remote host
     };
 
-    struct DLCErrorInfo
+    struct DLCErrorDetails
     {
         DLCError error = DE_NO_ERROR;
         int32 fileErrno = 0;
         FilePath filePath;
-        PatchingErrorInfo patchingError;
+        PatchFileReader::PatchingErrorDetails patchingError;
     };
 
     enum DLCState
@@ -121,12 +121,7 @@ public:
     /**
         \brief Returns DLC state machine error with details.
     */
-    DLCErrorInfo GetErrorInfo() const;
-
-    /**
-        \brief Return patching error
-    */
-    PatchFileReader::PatchError GetPatchError() const;
+    DLCErrorDetails GetLastErrorDetails() const;
 
     /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
@@ -189,8 +184,7 @@ protected:
         uint32 totalPatchCount;
         uint32 appliedPatchCount;
         volatile bool patchInProgress;
-        PatchFileReader::PatchError patchingError;
-        DLCErrorInfo lastErrorInfo;
+        DLCErrorDetails lastErrorDetails;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;

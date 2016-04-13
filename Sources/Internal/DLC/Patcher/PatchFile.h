@@ -66,24 +66,6 @@ private:
 };
 
 // ======================================================================================
-// a small info to describe write errors
-// ======================================================================================
-struct PatchingErrorInfo
-{
-    struct FileInfo
-    {
-        FilePath path = "";
-        uint32 size = 0;
-        uint32 crc = 0;
-    };
-
-    FileInfo expected;
-    FileInfo actual;
-
-    int32 fileErrno;
-};
-
-// ======================================================================================
 // class for creating/writing patch file
 // ======================================================================================
 class PatchFileWriter
@@ -135,6 +117,23 @@ public:
         ERROR_UNKNOWN
     };
 
+    struct PatchingErrorDetails
+    {
+        struct FileInfo
+        {
+            FilePath path = "";
+            uint32 size = 0;
+            uint32 crc = 0;
+        };
+
+        PatchError value = ERROR_NO;
+
+        FileInfo expected;
+        FileInfo actual;
+
+        int32 fileErrno = 0;
+    };
+
     PatchFileReader(const FilePath& path, bool beVerbose = false);
     ~PatchFileReader();
 
@@ -146,9 +145,8 @@ public:
     const PatchInfo* GetCurInfo() const;
 
     void SetLogsFilePath(const FilePath& path);
-    PatchError GetLastError() const;
-    PatchError GetParseError() const;
-    PatchingErrorInfo GetErrorDetails() const;
+    PatchFileReader::PatchError GetParseError() const;
+    PatchFileReader::PatchingErrorDetails GetLastErrorDetails() const;
 
     bool Truncate();
     bool Apply(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
@@ -161,7 +159,7 @@ protected:
     PatchError parseError;
     bool verbose;
     bool eof;
-    PatchingErrorInfo lastErrorInfo;
+    PatchingErrorDetails lastErrorDetails;
 
     Vector<int32> patchPositions;
     size_t initialPositionsCount;
@@ -177,19 +175,14 @@ inline void PatchFileReader::SetLogsFilePath(const DAVA::FilePath& path)
     logFilePath = path;
 }
 
-inline PatchFileReader::PatchError PatchFileReader::GetLastError() const
-{
-    return lastError;
-}
-
 inline PatchFileReader::PatchError PatchFileReader::GetParseError() const
 {
     return parseError;
 }
 
-inline PatchingErrorInfo PatchFileReader::GetErrorDetails() const
+inline PatchFileReader::PatchingErrorDetails PatchFileReader::GetLastErrorDetails() const
 {
-    return lastErrorInfo;
+    return lastErrorDetails;
 }
 }
 
