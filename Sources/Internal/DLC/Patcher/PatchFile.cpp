@@ -770,7 +770,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                             fileErrorDetails.expected.size = origSize;
                             fileErrorDetails.fileErrno = errno;
                             fileErrorDetails.actual.path = origPath;
-                            fileErrorDetails.expected.path = "";
+                            fileErrorDetails.expected.path = origPath;
                             lastError = ERROR_ORIG_READ;
                             Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply]  %d bytes readed but %d expected from %s.", bytesReaded, origSize, origPath.GetAbsolutePathname().c_str());
                             ret = false;
