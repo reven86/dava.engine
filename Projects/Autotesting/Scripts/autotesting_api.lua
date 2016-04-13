@@ -581,7 +581,7 @@ function ClearField(field)
 end
 
 function FastSelectControl(control)
-    Log('Scrol to contorol '.. control .. 'through API')
+    Log('Scroll to contorol '.. control .. ' through API')
     autotestingSystem:ScrollToControl(control)
     return ClickControl(control)
 end
@@ -758,7 +758,7 @@ function Click(x, y, waitTime, touchId)
     local waitTime = waitTime or TIMECLICK
     local touchId = touchId or 1
     local position = Vector.Vector2(x, y)
-    ClickPosition(position, touchId, waitTime)
+    ClickPosition(position, waitTime, touchId)
 end
 
 function KeyPress(key, control)
@@ -770,25 +770,25 @@ function KeyPress(key, control)
 end
 
 function ClickControl(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("ClickControl name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId)
+        ClickPosition(position, TIMECLICK, touchId)
         return true
     end
     return false
 end
 
 function DoubleClick(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId)
-        ClickPosition(position, waitTime, touchId)
+        ClickPosition(position, TIMECLICK, touchId)
+        ClickPosition(position, TIMECLICK, touchId)
         return true
     end
     return false

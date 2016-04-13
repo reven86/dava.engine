@@ -26,34 +26,37 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "SharedIcon.h"
-#include "Base/BaseTypes.h"
 
-#include <QCoreApplication>
+#ifndef __DAVAENGINE_WINAPI_UAP_H__
+#define __DAVAENGINE_WINAPI_UAP_H__
 
-namespace SharedIconLocal
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+typedef UINT MMRESULT;
+
+typedef struct timecaps_tag
 {
-DAVA::UnorderedMap<DAVA::String, QIcon> sharedMap;
-struct CleanUpRegistrator
+    UINT wPeriodMin; /* minimum period supported  */
+    UINT wPeriodMax; /* maximum period supported  */
+} TIMECAPS, *LPTIMECAPS;
+
+extern MMRESULT(WINAPI* timeGetDevCaps)(LPTIMECAPS ptc, UINT cbtc);
+extern MMRESULT(WINAPI* timeBeginPeriod)(UINT uPeriod);
+extern MMRESULT(WINAPI* timeEndPeriod)(UINT uPeriod);
+
+namespace WinApiUAP
 {
-    CleanUpRegistrator()
-    {
-        qAddPostRoutine([]()
-                        {
-                            sharedMap.clear();
-                        });
-    }
-} cleanUpRegistrator;
+enum eWinApiPart
+{
+    SYSTEM_TIMER_SERVICE,
+};
+
+void Initialize();
+bool IsAvailable(eWinApiPart);
 }
 
-const QIcon& SharedIcon(const char* path)
-{
-    using namespace SharedIconLocal;
+#endif
 
-    DAVA::String stringPath(path);
-    auto iconIter = sharedMap.find(stringPath);
-    if (iconIter != sharedMap.end())
-        return iconIter->second;
-
-    return sharedMap.emplace(std::move(stringPath), QIcon(path)).first->second;
-}
+#endif // __DAVAENGINE_WINAPI_UAP_H__
