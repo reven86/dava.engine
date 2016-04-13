@@ -251,12 +251,13 @@ void DialogReloadSprites::BlockingStop()
     this->setEnabled(false);
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QEventLoop loop;
-    connect(spritesPacker, &SpritesPacker::Finished, &loop, &QEventLoop::quit);
+    connect(&workerThread, &QThread::finished, &loop, &QEventLoop::quit);
     spritesPacker->Cancel();
-    if (spritesPacker->IsRunning())
+    if (workerThread.isRunning())
     {
         loop.exec();
     }
+
     QApplication::restoreOverrideCursor();
     this->setEnabled(true);
 }

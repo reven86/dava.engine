@@ -110,16 +110,15 @@ bool EditorSettings::IsUsingAssetCache() const
 
 String EditorSettings::GetAssetCacheIp() const
 {
-    return settings->GetString("editor.assetCacheIp", "localhost");
+    return settings->GetString("editor.assetCacheIp", DAVA::AssetCache::LOCALHOST);
 }
 
-String EditorSettings::GetAssetCachePort() const
+uint32 EditorSettings::GetAssetCachePort() const
 {
-    static String port = std::to_string(DAVA::AssetCache::ASSET_SERVER_PORT);
-    return settings->GetString("editor.assetCachePort", port);
+    return settings->GetUInt32("editor.assetCachePort", DAVA::AssetCache::ASSET_SERVER_PORT);
 }
 
-String EditorSettings::GetAssetCacheTimeoutSec() const
+uint64 EditorSettings::GetAssetCacheTimeoutSec() const
 {
-    return settings->GetString("editor.assetCacheTimeoutSec", "5");
+    return settings->GetUInt64("editor.assetCacheTimeoutSec", 1);
 }

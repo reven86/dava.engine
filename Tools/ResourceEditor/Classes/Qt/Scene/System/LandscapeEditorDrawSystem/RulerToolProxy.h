@@ -32,23 +32,21 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
-class RulerToolProxy : public BaseObject
+class RulerToolProxy : public DAVA::BaseObject
 {
 protected:
     ~RulerToolProxy();
 
 public:
-    RulerToolProxy(int32 size);
+    RulerToolProxy(DAVA::int32 size);
 
-    int32 GetSize();
+    DAVA::int32 GetSize();
 
-    Texture* GetTexture();
+    DAVA::Texture* GetTexture();
 
 protected:
-    Texture* rulerToolTexture;
-    int32 size;
+    DAVA::Texture* rulerToolTexture;
+    DAVA::int32 size;
     bool spriteChanged;
 };
 
