@@ -391,9 +391,9 @@ EntityGroup EntityModificationSystem::BeginModification(const EntityGroup& input
     DAVA::Vector2 vy = yPos - zeroPos;
     DAVA::Vector2 vz = zPos - zeroPos;
 
-    crossXY = Abs(vx.CrossProduct(vy));
-    crossXZ = Abs(vx.CrossProduct(vz));
-    crossYZ = Abs(vy.CrossProduct(vz));
+    crossXY = DAVA::Abs(vx.CrossProduct(vy));
+    crossXZ = DAVA::Abs(vx.CrossProduct(vz));
+    crossYZ = DAVA::Abs(vy.CrossProduct(vz));
 
     // real rotate should be done in direction of 2dAxis normal,
     // so calculate this normal
@@ -505,8 +505,8 @@ void EntityModificationSystem::ApplyModification()
     if (nullptr != sceneEditor)
     {
         bool transformChanged = false;
-        uint32 count = static_cast<uint32>(modifEntities.size());
-        for (uint32 i = 0; i < count; ++i)
+        DAVA::uint32 count = static_cast<DAVA::uint32>(modifEntities.size());
+        for (DAVA::uint32 i = 0; i < count; ++i)
         {
             if (modifEntities[i].originalTransform != modifEntities[i].entity->GetLocalTransform())
             {
@@ -787,17 +787,17 @@ bool EntityModificationSystem::IsEntityContainRecursive(const DAVA::Entity* enti
 void EntityModificationSystem::CloneBegin()
 {
     // remove modif entities that are children for other modif entities
-    for (uint32 i = 0; i < modifEntities.size(); ++i)
+    for (DAVA::uint32 i = 0; i < modifEntities.size(); ++i)
     {
         auto checkedEntity = modifEntities[i].entity;
-        for (uint32 j = 0; j < modifEntities.size(); ++j)
+        for (DAVA::uint32 j = 0; j < modifEntities.size(); ++j)
         {
             if (i == j)
                 continue;
 
             if (modifEntities[j].entity->IsMyChildRecursive(checkedEntity))
             {
-                RemoveExchangingWithLast(modifEntities, i);
+                DAVA::RemoveExchangingWithLast(modifEntities, i);
                 --i;
                 break;
             }
@@ -825,10 +825,10 @@ void EntityModificationSystem::CloneBegin()
 
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
-            Scene* scene = origEntity->GetScene();
+            DAVA::Scene* scene = origEntity->GetScene();
             if (scene)
             {
-                StaticOcclusionSystem* sosystem = scene->staticOcclusionSystem;
+                DAVA::StaticOcclusionSystem* sosystem = scene->staticOcclusionSystem;
                 DVASSERT(sosystem);
 
                 sosystem->InvalidateOcclusionIndicesRecursively(newEntity);
@@ -847,16 +847,16 @@ void EntityModificationSystem::CloneEnd()
     {
         SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
 
-        uint32 count = static_cast<uint32>(modifEntities.size());
+        DAVA::uint32 count = static_cast<DAVA::uint32>(modifEntities.size());
         sceneEditor->BeginBatch("Clone", count);
 
         // we just moved original objects. Now we should return them back
         // to there original positions and move cloned object to the new positions
         // and only after that perform "add cloned entities to scene" commands
-        for (uint32 i = 0; i < count; ++i)
+        for (DAVA::uint32 i = 0; i < count; ++i)
         {
             // remember new transform
-            Matrix4 newLocalTransform = modifEntities[i].entity->GetLocalTransform();
+            DAVA::Matrix4 newLocalTransform = modifEntities[i].entity->GetLocalTransform();
 
             // return original entity to original pos
             modifEntities[i].entity->SetLocalTransform(modifEntities[i].originalTransform);
@@ -919,7 +919,7 @@ void EntityModificationSystem::LockTransform(const EntityGroup& entities, bool l
         return;
     }
 
-    uint32 count = static_cast<uint32>(entities.Size());
+    DAVA::uint32 count = static_cast<DAVA::uint32>(entities.Size());
     sceneEditor->BeginBatch("Lock entities", count);
     for (const auto& item : entities.GetContent())
     {
@@ -1024,7 +1024,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
                     break;
                 }
 
-                uint32 count = static_cast<uint32>(entity->GetChildrenCount());
+                DAVA::uint32 count = static_cast<DAVA::uint32>(entity->GetChildrenCount());
                 sceneEditor->BeginBatch(commandMessage, count + 1);
 
                 // transform parent entity
@@ -1033,7 +1033,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
 
                 // transform child entities with inversed parent transformation
                 transform.Inverse();
-                for (uint32 i = 0; i < count; ++i)
+                for (DAVA::uint32 i = 0; i < count; ++i)
                 {
                     DAVA::Entity* childEntity = entity->GetChild(i);
                     sceneEditor->Exec(Command2::Create<TransformCommand>(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));

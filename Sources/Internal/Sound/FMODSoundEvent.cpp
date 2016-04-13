@@ -99,7 +99,7 @@ bool FMODSoundEvent::Trigger()
     }
 
     FMOD::Event* fmodEvent = nullptr;
-    FMOD_RESULT result = fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_DEFAULT, &fmodEvent);
+    FMOD_RESULT result = fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_NONBLOCKING, &fmodEvent);
 
     if (result == FMOD_OK)
     {

@@ -27,39 +27,12 @@
 =====================================================================================*/
 
 
-#include "LandscapeSetTexturesCommands.h"
-#include "../Qt/Scene/SceneEditor2.h"
-#include "Scene3D/Components/ComponentHelpers.h"
+#ifndef __DAVAENGINE_WINSYSTEMTIMER_H__
+#define __DAVAENGINE_WINSYSTEMTIMER_H__
 
-LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity_,
-                                                           const DAVA::FilePath& heightMapPath_,
-                                                           const DAVA::AABBox3& newLandscapeBox_)
-    : Command2(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
+namespace DAVA
 {
-    landscape = FindLandscape(landscapeEntity_);
-    if (NULL == landscape)
-    {
-        return;
-    }
-    landscapeEntity = SafeRetain(landscapeEntity_);
-
-    originalHeightMapPath = landscape->GetHeightmapPathname();
-    originalLandscapeBox = landscape->GetBoundingBox();
-    newHeightMapPath = heightMapPath_;
-    newLandscapeBox = newLandscapeBox_;
+void EnableHighResolutionTimer(bool enable);
 }
 
-LandscapeSetHeightMapCommand::~LandscapeSetHeightMapCommand()
-{
-    SafeRelease(landscapeEntity);
-}
-
-void LandscapeSetHeightMapCommand::Undo()
-{
-    landscape->BuildLandscapeFromHeightmapImage(originalHeightMapPath, originalLandscapeBox);
-}
-
-void LandscapeSetHeightMapCommand::Redo()
-{
-    landscape->BuildLandscapeFromHeightmapImage(newHeightMapPath, newLandscapeBox);
-}
+#endif // __DAVAENGINE_WINSYSTEMTIMER_H__
