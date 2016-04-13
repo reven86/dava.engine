@@ -60,7 +60,7 @@ void UIInputSystem::SetCurrentScreen(UIScreen* screen)
     currentScreen = screen;
     if (currentScreen != nullptr)
     {
-        UIControl* root = FindNearestToUserModalControl(currentScreen);
+        UIControl* root = FindNearestToUserModalControl();
         focusSystem->SetRoot(root);
     }
     else
@@ -80,7 +80,7 @@ void UIInputSystem::OnControlVisible(UIControl* control)
     {
         if (currentScreen != nullptr)
         {
-            UIControl* root = FindNearestToUserModalControl(currentScreen);
+            UIControl* root = FindNearestToUserModalControl();
             focusSystem->SetRoot(root);
         }
         else
@@ -107,7 +107,7 @@ void UIInputSystem::OnControlInvisible(UIControl* control)
     {
         if (currentScreen != nullptr)
         {
-            UIControl* root = FindNearestToUserModalControl(currentScreen);
+            UIControl* root = FindNearestToUserModalControl();
             focusSystem->SetRoot(root);
         }
         else
@@ -331,12 +331,22 @@ UIControl* UIInputSystem::GetHoveredControl() const
     return hovered;
 }
 
-UIControl* UIInputSystem::FindNearestToUserModalControl(UIControl* current)
+UIControl* UIInputSystem::FindNearestToUserModalControl() const
+{
+    UIControl* control = FindNearestToUserModalControlImpl(popupContainer);
+    if (control != nullptr)
+    {
+        return control;
+    }
+    return FindNearestToUserModalControlImpl(currentScreen);
+}
+
+UIControl* UIInputSystem::FindNearestToUserModalControlImpl(UIControl* current) const
 {
     const List<UIControl*>& children = current->GetChildren();
     for (auto it = children.rbegin(); it != children.rend(); ++it)
     {
-        UIControl* result = FindNearestToUserModalControl(*it);
+        UIControl* result = FindNearestToUserModalControlImpl(*it);
         if (result != nullptr)
         {
             return result;

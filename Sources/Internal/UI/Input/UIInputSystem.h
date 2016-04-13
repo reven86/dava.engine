@@ -70,7 +70,8 @@ public:
     UIControl* GetHoveredControl() const;
 
 private:
-    UIControl* FindNearestToUserModalControl(UIControl* current);
+    UIControl* FindNearestToUserModalControl() const;
+    UIControl* FindNearestToUserModalControlImpl(UIControl* current) const;
 
     UIScreen* currentScreen = nullptr;
     UIControl* popupContainer = nullptr;
