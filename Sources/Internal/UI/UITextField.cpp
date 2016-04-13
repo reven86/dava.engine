@@ -336,6 +336,7 @@ void UITextField::StartEdit()
 {
     if (!isEditing)
     {
+        SetRenderToTexture(false);
         isEditing = true;
         textFieldImpl->OpenKeyboard();
         OnStartEditing();
@@ -346,6 +347,7 @@ void UITextField::StopEdit()
 {
     if (isEditing)
     {
+        SetRenderToTexture(true);
         isEditing = false;
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
@@ -374,7 +376,6 @@ void UITextField::OnInactive()
 
 void UITextField::OnFocused()
 {
-    SetRenderToTexture(false);
     if (startEditPolicy == START_EDIT_WHEN_FOCUSED)
     {
         StartEdit();
@@ -388,8 +389,6 @@ void UITextField::SetFocused()
 
 void UITextField::OnFocusLost()
 {
-    SetRenderToTexture(true);
-
     StopEdit();
 
     if (delegate != nullptr)
