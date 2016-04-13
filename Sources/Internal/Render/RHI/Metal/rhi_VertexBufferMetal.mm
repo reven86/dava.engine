@@ -68,14 +68,37 @@ static Handle
 metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 {
     Handle handle = InvalidHandle;
-    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+    unsigned sz = desc.size;
+    const unsigned min_sz = 64 * 1024;
+    const void* data = desc.initialData;
+
+    if (sz < min_sz)
+    {
+        static unsigned temp_sz = 0;
+        static void* temp = nullptr;
+
+        sz = min_sz;
+
+        if (desc.initialData)
+        {
+            if (temp_sz < sz)
+            {
+                temp_sz = sz;
+                temp = realloc(temp, temp_sz);
+            }
+
+            memcpy(temp, desc.initialData, desc.size);
+            data = temp;
+        }
+    }
+
+    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:data length:sz options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:sz options:MTLResourceOptionCPUCacheModeDefault];
 
     if (uid)
     {
         handle = VertexBufferMetalPool::Alloc();
         VertexBufferMetal_t* vb = VertexBufferMetalPool::Get(handle);
 
-        //-        vb->data = [uid contents];
         vb->size = desc.size;
         vb->uid = uid;
 

@@ -62,18 +62,83 @@ public:
 typedef ResourcePool<IndexBufferMetal_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, false> IndexBufferMetalPool;
 RHI_IMPL_POOL(IndexBufferMetal_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, false);
 
+static bool
+_NonZero(const void* data, unsigned data_sz)
+{
+    static unsigned zero_sz = 0;
+    static void* zero = nullptr;
+
+    if (data_sz > zero_sz)
+    {
+        zero = realloc(zero, data_sz);
+        zero_sz = data_sz;
+        memset(zero, 0, zero_sz);
+    }
+
+    return memcmp(data, zero, data_sz) != 0;
+}
+
+static void
+_CheckAllIndexBuffers()
+{
+    for (IndexBufferMetalPool::Iterator i = IndexBufferMetalPool::Begin(), i_end = IndexBufferMetalPool::End(); i != i_end; ++i)
+    {
+        if (!_NonZero([i->uid contents], i->size))
+        {
+            DAVA::Logger::Info("ib-lost  %p sz= %u", [i->uid contents], i->size);
+            //            DVASSERT(!"kaboom!!!");
+        }
+    }
+}
+
 //==============================================================================
 
 static Handle
 metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {
     Handle handle = InvalidHandle;
-    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+    unsigned sz = desc.size;
+    const unsigned min_sz = 64 * 1024;
+    const void* data = desc.initialData;
+
+    if (sz < min_sz)
+    {
+        static unsigned temp_sz = 0;
+        static void* temp = nullptr;
+
+        sz = min_sz;
+
+        if (desc.initialData)
+        {
+            if (temp_sz < sz)
+            {
+                temp_sz = sz;
+                temp = realloc(temp, temp_sz);
+            }
+
+            memcpy(temp, desc.initialData, desc.size);
+            data = temp;
+        }
+    }
+
+    //    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:data length:sz options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:sz options:MTLResourceOptionCPUCacheModeDefault];
 
     if (uid)
     {
+        /*
+if( desc.initialData )
+{
+    DVASSERT(_NonZero( [uid contents], desc.size ));
+}
+else
+{
+    memset( [uid contents], 0xA1, sz );
+}
+*/
         handle = IndexBufferMetalPool::Alloc();
         IndexBufferMetal_t* ib = IndexBufferMetalPool::Get(handle);
+        //DAVA::Logger::Info( "ib-create %i  %p sz= %u", RHI_HANDLE_INDEX(handle), [uid contents], desc.size );
 
         ib->size = desc.size;
         ib->uid = uid;
@@ -85,6 +150,7 @@ metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     {
         Logger::Error("failed to create IB");
     }
+    //_CheckAllIndexBuffers();
 
     return handle;
 }
@@ -98,12 +164,14 @@ metal_IndexBuffer_Delete(Handle ib)
 
     if (self)
     {
+        //DAVA::Logger::Info( "ib-del %i  %p sz= %u", RHI_HANDLE_INDEX(ib), [self->uid contents], self->size );
         [self->uid setPurgeableState:MTLPurgeableStateEmpty];
         [self->uid release];
         self->uid = nil;
         self->data = nullptr;
         IndexBufferMetalPool::Free(ib);
     }
+    //_CheckAllIndexBuffers();
 }
 
 //------------------------------------------------------------------------------
@@ -123,6 +191,7 @@ metal_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
         success = true;
     }
 
+    //DVASSERT(_NonZero( self->data, self->size ));
     self->data = nullptr;
 
     return success;
@@ -150,6 +219,7 @@ metal_IndexBuffer_Unmap(Handle ib)
 {
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
 
+    //DVASSERT(_NonZero( self->data, self->size ));
     DVASSERT(self->data);
     self->data = nullptr;
 }
@@ -176,7 +246,16 @@ id<MTLBuffer>
 GetBuffer(Handle ib)
 {
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
-
+    /*
+if( self )
+{
+if( !_NonZero( [self->uid contents], self->size ) )
+{
+DAVA::Logger::Info( "ib-lost %i  sz= %u", RHI_HANDLE_INDEX(ib), self->size );
+DVASSERT(!"kaboom!!!");
+}
+}
+*/
     return (self) ? self->uid : nil;
 }
 

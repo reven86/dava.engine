@@ -208,8 +208,8 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         CommandBufferMetal_t* cb = CommandBufferPool::Get(cb_h);
 
         pass->encoder = nil;
-        pass->buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
-        //pass->buf = [_Metal_DefCmdQueue commandBuffer];
+        //pass->buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
+        pass->buf = [_Metal_DefCmdQueue commandBuffer];
         [pass->buf retain];
 
         cb->encoder = [pass->buf renderCommandEncoderWithDescriptor:pass->desc];
@@ -231,8 +231,8 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
     }
     else
     {
-        pass->buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
-        //pass->buf = [_Metal_DefCmdQueue commandBuffer];
+        //pass->buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
+        pass->buf = [_Metal_DefCmdQueue commandBuffer];
         [pass->buf retain];
         pass->encoder = [pass->buf parallelRenderCommandEncoderWithDescriptor:pass->desc];
         [pass->encoder retain];
