@@ -354,8 +354,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
     }
 
-    Core::Instance()->SetNativeView(openGLView);
-
     // start animation
     currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
@@ -377,14 +375,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
-
-    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
-    rendererParams.window = mainWindowController->openGLView;
-    rendererParams.width = backingSize[0];
-    rendererParams.height = backingSize[1];
-
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
+    float32 scale = DeviceInfo::GetScreenInfo().scale;
+    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scale, scale);
 }
 
 - (void)setMinimumWindowSize:(float32)width height:(float32)height
@@ -668,11 +660,9 @@ void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
 
         //This magick needed to correctly 'reshape' GLView and resize back-buffer.
         //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
-        NSSize sz = [mainWindowController->openGLView frame].size;
-        sz.width += 1;
-        [mainWindowController->mainWindow setContentSize:sz];
-        sz.width -= 1;
-        [mainWindowController->mainWindow setContentSize:sz];
+        [mainWindowController->mainWindow setContentView:nil];
+        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+        [mainWindowController->mainWindow makeFirstResponder:mainWindowController->openGLView];
     }
 }
 };

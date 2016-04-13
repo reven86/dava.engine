@@ -58,11 +58,12 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
 
     SceneEditor2* scene = static_cast<SceneEditor2*>(entity->GetScene());
     DVASSERT(scene != nullptr);
-    const DAVA::Set<NMaterial*> topLevelMaterials = scene->materialSystem->GetTopParents();
-    DAVA::Set<NMaterial*>::iterator iter = std::find_if(topLevelMaterials.begin(), topLevelMaterials.end(), [](NMaterial* material) {
-        DVASSERT(material->HasLocalFXName());
-        return material->GetLocalFXName() == DAVA::NMaterialName::SHADOW_VOLUME;
-    });
+    const DAVA::Set<DAVA::NMaterial*> topLevelMaterials = scene->materialSystem->GetTopParents();
+    DAVA::Set<DAVA::NMaterial*>::iterator iter = std::find_if(topLevelMaterials.begin(), topLevelMaterials.end(), [](DAVA::NMaterial* material)
+                                                              {
+                                                                  DVASSERT(material->HasLocalFXName());
+                                                                  return material->GetLocalFXName() == DAVA::NMaterialName::SHADOW_VOLUME;
+                                                              });
 
     if (iter != topLevelMaterials.end())
     {
@@ -70,7 +71,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
     }
     else
     {
-        ScopedPtr<DAVA::NMaterial> shadowMaterial(new DAVA::NMaterial());
+        DAVA::ScopedPtr<DAVA::NMaterial> shadowMaterial(new DAVA::NMaterial());
         shadowMaterial->SetMaterialName(DAVA::FastName("Shadow_Material"));
         shadowMaterial->SetFXName(DAVA::NMaterialName::SHADOW_VOLUME);
 

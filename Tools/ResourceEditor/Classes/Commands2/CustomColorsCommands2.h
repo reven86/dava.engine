@@ -39,25 +39,23 @@
 class CustomColorsProxy;
 class SceneEditor2;
 
-using namespace DAVA;
-
 class ModifyCustomColorsCommand : public Command2
 {
 public:
-    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* customColorsProxy, const Rect& updatedRect);
+    ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy, const DAVA::Rect& updatedRect);
     ~ModifyCustomColorsCommand() override;
 
     void Undo() override;
     void Redo() override;
-    Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const override;
 
 protected:
     CustomColorsProxy* customColorsProxy;
-    Image* undoImage;
-    Image* redoImage;
-    Rect updatedRect;
+    DAVA::Image* undoImage;
+    DAVA::Image* redoImage;
+    DAVA::Rect updatedRect;
 
-    void ApplyImage(Image* image);
+    void ApplyImage(DAVA::Image* image);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__) */

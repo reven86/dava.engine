@@ -48,8 +48,8 @@ public slots:
         ProjectManager::Instance()->UpdateParticleSprites();
         ProjectManager::Instance()->OnSceneViewInitialized();
 
-        int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-        eGPUFamily family = static_cast<eGPUFamily>(val);
+        DAVA::uint32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
+        DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
         DAVA::Texture::SetDefaultGPU(family);
 
         DVASSERT(QtMainWindow::Instance() != nullptr);

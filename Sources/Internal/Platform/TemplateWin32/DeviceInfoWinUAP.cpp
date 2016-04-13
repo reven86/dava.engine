@@ -62,6 +62,7 @@ using namespace ::Windows::System::UserProfile;
 using namespace ::Windows::UI::Xaml;
 using namespace ::Windows::System::Profile;
 using namespace ::Windows::Globalization;
+using namespace ::Windows::UI::ViewManagement;
 
 namespace DAVA
 {
@@ -73,6 +74,8 @@ const char* DEFAULT_TOUCH_ID = "touchId";
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
+    isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+    platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     if (isTouchPresent)
@@ -81,8 +84,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         Set<String>& setIdDevices = (*(hidsAccessor))[TOUCH];
         setIdDevices.emplace(DEFAULT_TOUCH_ID);
     }
-    isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
-    platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
 
     AnalyticsVersionInfo ^ versionInfo = AnalyticsInfo::VersionInfo;
     Platform::String ^ deviceVersion = versionInfo->DeviceFamilyVersion;
@@ -242,6 +243,23 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         {
             std::swap(screenInfo.width, screenInfo.height);
         }
+        //  in Continuum mode, we don't have touch
+        if (isMobileMode)
+        {
+            bool last = isContinuumMode;
+            if (UserInteractionMode::Mouse == UIViewSettings::GetForCurrentView()->UserInteractionMode)
+            {
+                isContinuumMode = true;
+            }
+            else
+            {
+                isContinuumMode = false;
+            }
+            if (last != isContinuumMode)
+            {
+                NotifyAllClients(TOUCH, !isContinuumMode);
+            }
+        }
     };
     core->RunOnUIThreadBlocked(func);
     // start device watchers, after creation main thread dispatcher
@@ -308,6 +326,11 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
+    // continuum mode don't have touch
+    if (DeviceInfo::HID_TOUCH_TYPE == type && isContinuumMode)
+    {
+        return false;
+    }
     auto func = [type](HIDConvPair pair) -> bool {
         return pair.second == type;
     };
@@ -317,7 +340,7 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 
 bool DeviceInfoPrivate::IsTouchPresented()
 {
-    return isTouchPresent; //  Touch is always present in MSVS simulator
+    return isTouchPresent && !isContinuumMode; //  Touch is always present in MSVS simulator
 }
 
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)

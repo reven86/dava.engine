@@ -32,8 +32,6 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
 class ControlsFactory
 {
 public:
@@ -70,23 +68,23 @@ public:
 public:
     static void ReleaseFonts();
 
-    static void AddBorder(UIControl* c);
+    static void AddBorder(DAVA::UIControl* c);
 
-    static UIButton* CreateButton(const Rect& rect, const WideString& buttonText, bool designers = false);
-    static void CustomizeButton(UIButton* btn, const WideString& buttonText, bool designers = false);
+    static DAVA::UIButton* CreateButton(const DAVA::Rect& rect, const DAVA::WideString& buttonText, bool designers = false);
+    static void CustomizeButton(DAVA::UIButton* btn, const DAVA::WideString& buttonText, bool designers = false);
 
-    static Font* GetFont12();
-    static Font* GetFont20();
+    static DAVA::Font* GetFont12();
+    static DAVA::Font* GetFont20();
 
-    static Color GetColorError();
+    static DAVA::Color GetColorError();
 
-    static UIControl* CreateLine(const Rect& rect, Color color);
+    static DAVA::UIControl* CreateLine(const DAVA::Rect& rect, DAVA::Color color);
 
-    static void CustomizeDialogFreeSpace(UIControl* c);
-    static void CustomizeDialog(UIControl* c);
+    static void CustomizeDialogFreeSpace(DAVA::UIControl* c);
+    static void CustomizeDialog(DAVA::UIControl* c);
 
-    static Font* font12;
-    static Font* font20;
+    static DAVA::Font* font12;
+    static DAVA::Font* font20;
 };
 
 

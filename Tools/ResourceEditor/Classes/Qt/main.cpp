@@ -68,13 +68,13 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
 int main(int argc, char* argv[])
 {
 #if defined(__DAVAENGINE_MACOS__)
-    const String pvrTexToolPath = "~res:/PVRTexToolCLI";
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
 #elif defined(__DAVAENGINE_WIN32__)
-    const String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
 #endif
 
     DAVA::Core::Run(argc, argv);
-    QtLayer qtLayer;
+    DAVA::QtLayer qtLayer;
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 
     DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
@@ -85,8 +85,8 @@ int main(int argc, char* argv[])
     BeastProxy beastProxy;
 #endif //__DAVAENGINE_BEAST__
 
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
-    QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
+    DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
+    DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
     {
         EditorConfig config;
@@ -117,7 +117,7 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 //    WinConsoleIOLocker locker; //temporary disabled because of freezes of Windows Console
 #endif //platforms
 
-    Core::Instance()->EnableConsoleMode();
+    DAVA::Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
 
@@ -137,8 +137,8 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     glWidget.hide();
 
     //Trick for correct loading of sprites.
-    VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
+    DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
     cmdLineManager.Process();
 }
@@ -169,8 +169,8 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 
         TextureCache textureCache;
 
-        LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
-        LocalizationSystem::Instance()->SetCurrentLocale("en");
+        DAVA::LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
+        DAVA::LocalizationSystem::Instance()->SetCurrentLocale("en");
 
         // check and unpack help documents
         UnpackHelpDoc();
@@ -206,8 +206,8 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 void UnpackHelpDoc()
 {
     DAVA::String editorVer = SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
-    DAVA::FilePath docsPath = FilePath(ResourceEditor::DOCUMENTATION_PATH);
-    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
+    DAVA::FilePath docsPath = DAVA::FilePath(ResourceEditor::DOCUMENTATION_PATH);
+    if (editorVer != APPLICATION_BUILD_VERSION || !DAVA::FileSystem::Instance()->Exists(docsPath))
     {
         DAVA::Logger::FrameworkDebug("Unpacking Help...");
         DAVA::ResourceArchive* helpRA = new DAVA::ResourceArchive();
@@ -219,7 +219,7 @@ void UnpackHelpDoc()
         }
         DAVA::SafeRelease(helpRA);
     }
-    SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(APPLICATION_BUILD_VERSION)));
+    SettingsManager::SetValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String(APPLICATION_BUILD_VERSION)));
 }
 
 void FixOSXFonts()

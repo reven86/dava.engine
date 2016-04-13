@@ -33,21 +33,19 @@
 #include "DAVAEngine.h"
 #include "Deprecated/EditorHeightmap.h"
 
-using namespace DAVA;
-
 class HeightmapProxy : public EditorHeightmap
 {
 public:
-    HeightmapProxy(Heightmap* heightmap);
+    HeightmapProxy(DAVA::Heightmap* heightmap);
 
-    void UpdateRect(const Rect& rect);
+    void UpdateRect(const DAVA::Rect& rect);
     void ResetHeightmapChanged();
 
     bool IsHeightmapChanged() const;
-    const Rect& GetChangedRect() const;
+    const DAVA::Rect& GetChangedRect() const;
 
 private:
-    Rect changedRect;
+    DAVA::Rect changedRect;
     bool heightmapChanged = false;
 };
 

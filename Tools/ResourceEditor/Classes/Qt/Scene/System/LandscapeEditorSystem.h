@@ -55,11 +55,11 @@ protected:
     SceneSelectionSystem* selectionSystem;
     EntityModificationSystem* modifSystem;
     LandscapeEditorDrawSystem* drawSystem;
-    Vector2 cursorPosition;
-    Vector2 prevCursorPos;
-    Texture* cursorTexture = nullptr;
-    float32 cursorSize = 0.0f;
-    float32 landscapeSize = 0.0f;
+    DAVA::Vector2 cursorPosition;
+    DAVA::Vector2 prevCursorPos;
+    DAVA::Texture* cursorTexture = nullptr;
+    DAVA::float32 cursorSize = 0.0f;
+    DAVA::float32 landscapeSize = 0.0f;
     bool isIntersectsLandscape = false;
     bool enabled = false;
 };

@@ -33,43 +33,41 @@
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
 
-using namespace DAVA;
-
 class SceneExporter
 {
 public:
-    void SetGPUForExporting(const eGPUFamily newGPU);
+    void SetGPUForExporting(const DAVA::eGPUFamily newGPU);
 
-    void SetCompressionQuality(TextureConverter::eConvertQuality quality);
+    void SetCompressionQuality(DAVA::TextureConverter::eConvertQuality quality);
 
-    void SetInFolder(const FilePath& folderPathname);
-    void SetOutFolder(const FilePath& folderPathname);
+    void SetInFolder(const DAVA::FilePath& folderPathname);
+    void SetOutFolder(const DAVA::FilePath& folderPathname);
 
     void EnableOptimizations(bool enable);
 
-    void ExportSceneFile(const String& fileName, Set<String>& errorLog);
-    void ExportTextureFile(const String& fileName, Set<String>& errorLog);
+    void ExportSceneFile(const DAVA::String& fileName, DAVA::Set<DAVA::String>& errorLog);
+    void ExportTextureFile(const DAVA::String& fileName, DAVA::Set<DAVA::String>& errorLog);
 
-    void ExportSceneFolder(const String& folderName, Set<String>& errorLog);
-    void ExportTextureFolder(const String& folderName, Set<String>& errorLog);
+    void ExportSceneFolder(const DAVA::String& folderName, DAVA::Set<DAVA::String>& errorLog);
+    void ExportTextureFolder(const DAVA::String& folderName, DAVA::Set<DAVA::String>& errorLog);
 
-    void ExportScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
+    void ExportScene(DAVA::Scene* scene, const DAVA::FilePath& fileName, DAVA::Set<DAVA::String>& errorLog);
 
 private:
-    void RemoveEditorNodes(Entity* rootNode);
-    void RemoveEditorCustomProperties(Entity* rootNode);
+    void RemoveEditorNodes(DAVA::Entity* rootNode);
+    void RemoveEditorCustomProperties(DAVA::Entity* rootNode);
 
-    bool ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog);
-    bool ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog);
-    bool ExportTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
-    void CompressTexture(const TextureDescriptor* descriptor);
-    bool CopyCompressedTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
+    bool ExportDescriptors(DAVA::Scene* scene, DAVA::Set<DAVA::String>& errorLog);
+    bool ExportTextureDescriptor(const DAVA::FilePath& pathname, DAVA::Set<DAVA::String>& errorLog);
+    bool ExportTexture(const DAVA::TextureDescriptor* descriptor, DAVA::Set<DAVA::String>& errorLog);
+    void CompressTexture(const DAVA::TextureDescriptor* descriptor);
+    bool CopyCompressedTexture(const DAVA::TextureDescriptor* descriptor, DAVA::Set<DAVA::String>& errorLog);
 
-    bool ExportLandscape(Scene* scene, Set<String>& errorLog);
+    bool ExportLandscape(DAVA::Scene* scene, DAVA::Set<DAVA::String>& errorLog);
 
     SceneUtils sceneUtils;
-    eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
-    TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
+    DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
+    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
     bool optimizeOnExport = true;
     bool exportForAllGPUs = false;
 };

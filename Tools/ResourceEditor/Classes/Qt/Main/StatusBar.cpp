@@ -95,7 +95,7 @@ void StatusBar::UpdateDistanceToCamera()
 
     if (scene->selectionSystem->GetSelectionCount() > 0)
     {
-        float32 distanceToCamera = scene->cameraSystem->GetDistanceToCamera();
+        DAVA::float32 distanceToCamera = scene->cameraSystem->GetDistanceToCamera();
         SetDistanceToCamera(distanceToCamera);
     }
     else
