@@ -37,9 +37,11 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
 #if defined(__DAVAENGINE_BEAST__)
+
+#include "SceneParser.h"
+
+using namespace DAVA;
 
 #include "SceneParser.h"
 

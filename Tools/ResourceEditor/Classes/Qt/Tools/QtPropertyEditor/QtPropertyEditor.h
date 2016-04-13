@@ -74,6 +74,7 @@ public:
 
     void SetUpdateTimeout(int ms);
     int GetUpdateTimeout();
+    void ShowButtonsUnderCursor();
 
     virtual void ApplyStyle(QtPropertyData* data, int style);
 
@@ -105,9 +106,6 @@ protected slots:
     virtual void rowsAboutToBeInserted(const QModelIndex& parent, int start, int end);
     void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
     virtual void rowsOp(const QModelIndex& parent, int start, int end);
-
-private:
-    void ShowButtonsUnderCursor();
 };
 
 #endif // __QT_PROPERTY_VIEW_H__
