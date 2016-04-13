@@ -58,6 +58,9 @@ public:
 
     static void SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
 
+    static void SaveValueByKey(const DAVA::String& key, const DAVA::VariantType& value);
+    static DAVA::VariantType LoadValueByKey(const DAVA::String& key);
+
     struct PreferencesStorageSaver
     {
         PreferencesStorageSaver();
@@ -68,6 +71,9 @@ private:
     void SetupStoragePathImpl(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
     void RegisterPreferencesImpl(void* realObj, DAVA::InspBase* inspBase);
     void UnregisterPreferencesImpl(void* realObj, const DAVA::InspBase* inspBase);
+
+    void SaveValueByKeyImpl(const DAVA::String& key, const DAVA::VariantType& value);
+    DAVA::VariantType LoadValueByKeyImpl(const DAVA::String& key);
 
     static DAVA::String GenerateKey(const DAVA::InspInfo* inspInfo);
 

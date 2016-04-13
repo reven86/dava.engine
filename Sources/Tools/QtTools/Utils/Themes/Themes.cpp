@@ -29,6 +29,9 @@
 
 #include "Themes.h"
 #include "Debug/DVassert.h"
+
+#include "QtTools/EditorPreferences/PreferencesStorage.h"
+
 #include <QtGlobal>
 #include <QStyle>
 #include <QApplication>
@@ -37,8 +40,7 @@
 
 namespace Themes_namespace
 {
-const QString themeSettingsGroup = "QtTools/Themes";
-const QString themeSettingsKey = "ThemeName";
+const DAVA::String themeSettingsKey = "ThemeName";
 }
 
 namespace Themes
@@ -61,19 +63,12 @@ void InitFromQApplication()
     defaultStyleSheet = qApp->styleSheet();
     defaultPalette = QGuiApplication::palette();
     qAddPostRoutine([]() {
-        QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-        settings.beginGroup(Themes_namespace::themeSettingsGroup);
-        settings.setValue(Themes_namespace::themeSettingsKey, static_cast<int>(currentTheme));
-        settings.endGroup();
-        settings.sync();
+        PreferencesStorage::SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(currentTheme)));
     });
-    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.beginGroup(Themes_namespace::themeSettingsGroup);
-    auto value = settings.value(Themes_namespace::themeSettingsKey);
-    settings.endGroup();
-    if (value.canConvert<int>())
+    DAVA::VariantType value = PreferencesStorage::LoadValueByKey(Themes_namespace::themeSettingsKey);
+    if (value.GetType() == DAVA::VariantType::TYPE_INT64)
     {
-        currentTheme = static_cast<eTheme>(value.value<int>());
+        currentTheme = static_cast<eTheme>(value.AsInt64());
     }
     else
     {

@@ -30,6 +30,8 @@
 #ifndef __SPRITES_PACKER_H__
 #define __SPRITES_PACKER_H__
 
+
+#include "Base/Introspection.h"
 #include "Render/RenderBase.h"
 #include "TextureCompression/TextureConverter.h"
 #include "TexturePacker/ResourcePacker2D.h"
@@ -42,7 +44,7 @@ class ResourcePacker2D;
 }
 class QDir;
 
-class SpritesPacker : public QObject
+class SpritesPacker : public QObject, DAVA::InspBase
 {
     Q_OBJECT
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
@@ -79,6 +81,26 @@ signals:
 
 private:
     std::atomic<bool> running;
+
+    bool IsUsingAssetCache() const;
+    void SetUsingAssetCacheEnabled(bool enabled);
+
+    DAVA::String GetAssetCacheIp() const;
+    void SetAssetCacheIp(const DAVA::String& ip);
+
+    DAVA::String GetAssetCachePort() const;
+    void SetAssetCachePort(const DAVA::String& port);
+
+    DAVA::String GetAssetCacheTimeout() const;
+    void SetAssetCacheTimeout(const DAVA::String& timeout);
+
+public:
+    INTROSPECTION(SpritesPacker,
+                  PROPERTY("isUsingAssetCache", "Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCacheIp", "Asset Cache IP", GetAssetCacheIp, SetAssetCacheIp, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCachePort", "Asset Cache Port", GetAssetCachePort, SetAssetCachePort, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCacheTimeout", "Asset Cache Timeout", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  )
 };
 
 #endif //__SPRITES_PACKER_H__

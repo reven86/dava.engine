@@ -29,7 +29,11 @@
 
 #include "Debug/DVAssert.h"
 #include "PreferencesStorage.h"
-#include <locale>
+
+namespace PreferencesStorage_local
+{
+DAVA::String rawPreferencesKey = "raw local preferences storage preferences";
+}
 
 struct PreferencesStorage::ClassInfo
 {
@@ -144,6 +148,11 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
             editorPreferences->SetArchive(key, classInfoArchive);
         }
     }
+    DAVA::KeyedArchive* rawPreferencesArchive = loadedPreferences->GetArchive(PreferencesStorage_local::rawPreferencesKey);
+    if (rawPreferencesArchive != nullptr)
+    {
+        editorPreferences->SetArchive(PreferencesStorage_local::rawPreferencesKey, rawPreferencesArchive);
+    }
 }
 
 void PreferencesStorage::RegisterPreferencesImpl(void* realObj, DAVA::InspBase* inspBase)
@@ -203,6 +212,41 @@ void PreferencesStorage::UnregisterPreferencesImpl(void* realObj, const DAVA::In
 
     DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
     editorPreferences->SetArchive(key, archive);
+}
+
+void PreferencesStorage::SaveValueByKey(const DAVA::String& key, const DAVA::VariantType& value)
+{
+    PreferencesStorage* self = Instance();
+    self->SaveValueByKeyImpl(key, value);
+}
+
+DAVA::VariantType PreferencesStorage::LoadValueByKey(const DAVA::String& key)
+{
+    PreferencesStorage* self = Instance();
+    return self->LoadValueByKeyImpl(key);
+}
+
+void PreferencesStorage::SaveValueByKeyImpl(const DAVA::String& key, const DAVA::VariantType& value)
+{
+    DAVA::KeyedArchive* rawPreferencesArchive = editorPreferences->GetArchive(PreferencesStorage_local::rawPreferencesKey);
+    if (rawPreferencesArchive != nullptr)
+    {
+        rawPreferencesArchive->SetVariant(key, value);
+    }
+}
+
+DAVA::VariantType PreferencesStorage::LoadValueByKeyImpl(const DAVA::String& key)
+{
+    DAVA::KeyedArchive* rawPreferencesArchive = editorPreferences->GetArchive(PreferencesStorage_local::rawPreferencesKey);
+    if (rawPreferencesArchive != nullptr)
+    {
+        DAVA::VariantType* loadedValutPtr = rawPreferencesArchive->GetVariant(key);
+        if (nullptr != loadedValutPtr)
+        {
+            return *loadedValutPtr;
+        }
+    }
+    return DAVA::VariantType();
 }
 
 DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo)
