@@ -2189,7 +2189,7 @@ Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisDat
     result.resize(totalCount);
 
     int32 vid = 0;
-    int32 lastBefore = 0;
+    int32 lastBefore = -1;
     int32 firstAfter = totalCount;
     //position tile and gradient
     for (int32 i = 0; i < tileCount; i++)
