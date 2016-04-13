@@ -137,31 +137,24 @@ inline void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Wi
 inline void DeferredScreenMetricEvents::DeferredTick()
 {
     Windows::Foundation::Rect windowRect = Windows::UI::Xaml::Window::Current->CoreWindow->Bounds;
-    float32 windowScale = static_cast<float32>(Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->RawPixelsPerViewPixel);
-    DVASSERT(windowScale);
+
     float32 w = windowRect.Width;
     float32 h = windowRect.Height;
-    float32 trueMinWidth = minWindowWidth / windowScale;
-    float32 trueMinHeight = minWindowHeight / windowScale;
-    DVASSERT(scaleX * scaleY);
 
-    bool trackMinSize = trueMinWidth > 0.0f && trueMinHeight > 0.0f;
-    if (!isPhoneApiDetected && trackMinSize && (w < trueMinWidth || h < trueMinHeight))
+    bool trackMinSize = minWindowWidth > 0.0f && minWindowHeight > 0.0f;
+    if (!isPhoneApiDetected && trackMinSize && (w < minWindowWidth || h < minWindowHeight))
     {
-        w = std::max(w, trueMinWidth);
-        h = std::max(h, trueMinHeight);
+        w = std::max(w, minWindowWidth);
+        h = std::max(h, minWindowHeight);
         Windows::Foundation::Size size(w, h);
         auto currentView = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView();
 
         bool success = currentView->TryResizeView(size);
         if (!success)
         {
-            size.Width = trueMinWidth;
-            size.Height = trueMinHeight;
-            if (!currentView->TryResizeView(size))
-            {
-                Logger::FrameworkDebug("[DeferredScreenMetricEvents::DeferredTick]: Unable to resize window to minimum size");
-            }
+            Logger::FrameworkDebug("[DeferredScreenMetricEvents::DeferredTick]: Unable to resize window to minimum size");
+            // Do not forget to notify game about size changing and prevent eternal resizing attempts
+            lockUpdate = false;
         }
     }
     else
