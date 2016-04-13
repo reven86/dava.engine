@@ -57,9 +57,13 @@ public:
 
     struct DLCErrorDetails
     {
+        struct DLCFileErr
+        {
+            int32 value = 0;
+            FilePath path;
+        };
         DLCError error = DE_NO_ERROR;
-        int32 fileErrno = 0;
-        FilePath filePath;
+        DLCFileErr fileError;
         PatchFileReader::PatchingErrorDetails patchingError;
     };
 

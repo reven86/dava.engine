@@ -457,8 +457,7 @@ void DLC::StepCheckInfoBegin()
     // write current dlcState into state-file
     if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
-        dlcContext.lastErrorDetails.fileErrno = errno;
-        dlcContext.lastErrorDetails.filePath = dlcContext.stateInfoStorePath;
+        dlcContext.lastErrorDetails.fileError = { errno, dlcContext.stateInfoStorePath };
         Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Can't write dlcState %d to stateInfoStorePath = %s", dlcState, dlcContext.stateInfoStorePath.GetAbsolutePathname().c_str());
         PostError(DE_WRITE_ERROR);
         return;
@@ -493,8 +492,7 @@ void DLC::StepCheckInfoFinish(const uint32& id, const DownloadStatus& status)
                 }
                 else
                 {
-                    dlcContext.lastErrorDetails.filePath = dlcContext.remoteVerStotePath;
-                    dlcContext.lastErrorDetails.fileErrno = errno;
+                    dlcContext.lastErrorDetails.fileError = { errno, dlcContext.remoteVerStotePath };
                     Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't read remoteVer from %s", dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
                     PostError(DE_READ_ERROR);
                 }
@@ -511,8 +509,7 @@ void DLC::StepCheckInfoFinish(const uint32& id, const DownloadStatus& status)
                 else if (DLE_FILE_ERROR == downloadError)
                 {
                     // writing file problem
-                    dlcContext.lastErrorDetails.filePath = dlcContext.remoteVerStotePath;
-                    dlcContext.lastErrorDetails.fileErrno = errno;
+                    dlcContext.lastErrorDetails.fileError = { errno, dlcContext.remoteVerStotePath };
                     Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't write to info file.");
                     PostError(DE_WRITE_ERROR);
                 }
@@ -602,7 +599,7 @@ void DLC::StepCheckPatchFinish(const uint32& id, const DownloadStatus& status)
                     else if (DLE_FILE_ERROR == downloadErrorFull)
                     {
                         // writing file problem
-                        dlcContext.lastErrorDetails.fileErrno = errno;
+                        dlcContext.lastErrorDetails.fileError = { errno, dlcContext.remotePatchUrl };
                         Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckPatchFinish] Can't write patch to %s.", dlcContext.remotePatchUrl.c_str());
                         PostError(DE_WRITE_ERROR);
                     }
@@ -652,8 +649,8 @@ void DLC::StepCheckMetaFinish(const uint32& id, const DownloadStatus& status)
             else if (DLE_FILE_ERROR == downloadError)
             {
                 // writing file problem
-                dlcContext.lastErrorDetails.fileErrno = errno;
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckMetaFinish] Can't save Meta.");
+                dlcContext.lastErrorDetails.fileError = { errno, dlcContext.remoteMetaStorePath };
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckMetaFinish] Can't save Meta to %s.", dlcContext.remoteMetaStorePath.GetAbsolutePathname().c_str());
                 PostError(DE_WRITE_ERROR);
             }
             else
@@ -676,8 +673,8 @@ void DLC::StepDownloadPatchBegin()
     // write current dlcState into state-file
     if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
-        dlcContext.lastErrorDetails.fileErrno = errno;
-        Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.");
+        dlcContext.lastErrorDetails.fileError = { errno, dlcContext.stateInfoStorePath };
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.", dlcContext.stateInfoStorePath.GetAbsolutePathname().c_str());
         PostError(DE_WRITE_ERROR);
         return;
     }
@@ -765,8 +762,8 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
 
             case DAVA::DLE_FILE_ERROR:
                 // writing file problem
-                DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrorDetails.fileErrno);
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastErrorDetails.fileErrno);
+                DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrorDetails.fileError.value);
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastErrorDetails.fileError.value);
                 PostError(DE_WRITE_ERROR);
                 break;
 
@@ -858,7 +855,7 @@ void DLC::StepPatchFinish()
 
     if (errors)
     {
-        Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Error applying patch: %u, errno %u", dlcContext.lastErrorDetails.patchingError.value, dlcContext.lastErrorDetails.fileErrno);
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Error applying patch: %u, errno %u", dlcContext.lastErrorDetails.patchingError.value, dlcContext.lastErrorDetails.fileError.value);
     }
 }
 
@@ -915,14 +912,11 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 {
                     if (truncate)
                     {
-                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Truncate");
                         patchReader.Truncate();
-                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadPrev");
                         patchReader.ReadPrev();
                     }
                     else
                     {
-                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadNext");
                         patchReader.ReadNext();
                     }
 
@@ -960,7 +954,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         {
             // error, version can't be written
             dlcContext.lastErrorDetails.patchingError.value = PatchFileReader::ERROR_NEW_WRITE;
-            dlcContext.lastErrorDetails.fileErrno = errno;
+            dlcContext.lastErrorDetails.fileError = { errno, dlcContext.localVerStorePath };
         }
 
         // clean patch file if it was fully truncated
