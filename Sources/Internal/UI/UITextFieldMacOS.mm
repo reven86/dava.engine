@@ -755,7 +755,7 @@ public:
     {
         // HACK for battle screen
         // check if focus not synced
-        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText);
+        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText) && davaText->IsEditing();
         if (isFocused)
         {
             NSWindow* window = [NSApp keyWindow];
