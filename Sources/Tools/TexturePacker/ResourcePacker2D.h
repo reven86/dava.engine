@@ -49,6 +49,7 @@ class AssetCacheClient;
 class ResourcePacker2D
 {
     static const String VERSION;
+    static const String INTERNAL_LIBPSD_VERSION;
 
 public:
     void InitFolders(const FilePath& inputPath, const FilePath& outputPath);
@@ -76,7 +77,6 @@ private:
     bool IsUsingCache() const;
 
     Vector<String> FetchFlags(const FilePath& flagsPathname);
-    DefinitionFile* ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName);
     static String GetProcessFolderName();
 
     void AddError(const String& errorMsg);
