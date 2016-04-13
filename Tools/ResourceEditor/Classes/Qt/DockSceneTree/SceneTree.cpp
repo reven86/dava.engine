@@ -659,13 +659,12 @@ protected:
     {
         SceneEditor2* sceneEditor = GetScene();
         bool hasSelectedForces = false;
-        ForEachSelectedByType(SceneTreeItem::EIT_Emitter, [&sceneEditor, &hasSelectedForces](SceneTreeItem* item)
-                              {
-                                  hasSelectedForces = true;
-                                  SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
-                                  sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterItem->emitterInstance));
-                              });
-
+        ForEachSelectedByType(SceneTreeItem::EIT_Emitter, [&sceneEditor, &hasSelectedForces](SceneTreeItem* item) {
+            hasSelectedForces = true;
+            SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
+            sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterItem->emitterInstance));
+        });
+        
         MarkStructureChanged();
     }
 
@@ -759,14 +758,12 @@ private:
 
 SceneTree::SceneTree(QWidget* parent /*= 0*/)
     : QTreeView(parent)
-    , isInSync(false)
+    , treeModel(new SceneTreeModel())
+    , filteringProxyModel(new SceneTreeFilteringModel(treeModel))
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
-
-    treeModel = new SceneTreeModel();
-    filteringProxyModel = new SceneTreeFilteringModel(treeModel);
-
+    
     setModel(filteringProxyModel);
 
     treeDelegate = new SceneTreeDelegate();
@@ -971,11 +968,13 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
     CMDID_PARTICLE_EMITTER_LAYER_REMOVE,
     CMDID_PARTICLE_EMITTER_LAYER_CLONE,
     CMDID_PARTICLE_EMITTER_FORCE_ADD,
-    CMDID_PARTICLE_EMITTER_FORCE_REMOVE
+    CMDID_PARTICLE_EMITTER_FORCE_REMOVE,
+    CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
     } };
 
     if (command->MatchCommandIDs(idsForUpdate))
     {
+        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
         treeUpdater->Update();
     }
 }
@@ -1057,7 +1056,6 @@ void SceneTree::ShowContextMenu(const QPoint& pos)
     DVASSERT(item != nullptr);
 
     QPoint globalPos = mapToGlobal(pos);
-    bool updateStructure = false;
 
     auto showMenuFn = [&](BaseContextMenu&& menu)
     {
@@ -1301,7 +1299,6 @@ void SceneTree::SyncSelectionFromTree()
 void SceneTree::EmitParticleSignals(const QItemSelection& selected)
 {
     SceneEditor2* curScene = treeModel->GetScene();
-    bool isParticleElements = false;
     bool emitterSelected = false;
 
     // allow only single selected entities
@@ -1321,26 +1318,28 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                     if (nullptr != DAVA::GetEffectComponent(entity))
                     {
                         SceneSignals::Instance()->EmitEffectSelected(curScene, GetEffectComponent(entity));
-                        isParticleElements = true;
                     }
                 }
                 break;
+                        
                 case SceneTreeItem::EIT_Emitter:
-                    emitterSelected = true;
                 case SceneTreeItem::EIT_InnerEmitter:
+                {
+                    emitterSelected = true;
                     SceneSignals::Instance()->EmitEmitterSelected(curScene, ((SceneTreeItemParticleEmitter*)item)->effect, ((SceneTreeItemParticleEmitter*)item)->emitterInstance);
-                    isParticleElements = true;
-                    break;
+                }
+                break;
+                        
                 case SceneTreeItem::EIT_Layer:
                 {
                     SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)item;
                     if (nullptr != itemLayer->emitterInstance && nullptr != itemLayer->layer)
                     {
                         SceneSignals::Instance()->EmitLayerSelected(curScene, itemLayer->effect, itemLayer->emitterInstance, itemLayer->layer, false);
-                        isParticleElements = true;
                     }
                 }
                 break;
+                        
                 case SceneTreeItem::EIT_Force:
                 {
                     SceneTreeItemParticleForce* itemForce = (SceneTreeItemParticleForce*)item;
@@ -1352,8 +1351,6 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                             if (layer->forces[i] == itemForce->force)
                             {
                                 SceneSignals::Instance()->EmitForceSelected(curScene, layer, i);
-                                isParticleElements = true;
-
                                 break;
                             }
                         }

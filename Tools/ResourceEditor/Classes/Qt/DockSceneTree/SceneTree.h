@@ -88,21 +88,20 @@ private:
     void UpdateTree();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
-
+    
     class BaseContextMenu;
     class EntityContextMenu;
     class ParticleLayerContextMenu;
     class ParticleForceContextMenu;
     class ParticleEmitterContextMenu;
     class ParticleInnerEmitterContextMenu;
-
+    
+private:
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
-    SceneTreeDelegate* treeDelegate;
-
-    bool isInSync;
-
-    LazyUpdater* treeUpdater;
+    SceneTreeDelegate* treeDelegate = nullptr;
+    LazyUpdater* treeUpdater = nullptr;
+    bool isInSync = false;
 };
 
 #endif // __QT_SCENE_TREE_H__

@@ -69,7 +69,6 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
     DVASSERT((emitter != nullptr) && (owner != nullptr));
 
     SceneCollisionSystem* collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;
-    DAVA::ParticleEffectComponent* effect = GetEffectComponent(owner);
 
     DAVA::Vector3 center = emitter->GetSpawnPosition();
     TransformPerserveLength(center, DAVA::Matrix3(owner->GetWorldTransform()));

@@ -135,4 +135,6 @@ bool EmitterTransformProxy::TransformDependsFromObject(Selectable::Object* depen
         if (TransformDependsFromObject(dependant, asEntity->GetChild(i)))
             return true;
     }
+    
+    return false;
 }

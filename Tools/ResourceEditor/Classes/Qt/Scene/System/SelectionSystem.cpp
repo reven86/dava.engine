@@ -172,7 +172,6 @@ void SceneSelectionSystem::ProcessSelectedGroup(const SelectableGroup::Collectio
     SelectableGroup::CollectionType collisionObjects;
     collisionObjects.reserve(allObjects.size());
 
-    auto i = allObjects.begin();
     for (const auto& item : allObjects)
     {
         bool wasAdded = false;
@@ -456,7 +455,6 @@ void SceneSelectionSystem::Draw()
         {
             if (item.SupportsTransformType(Selectable::TransformType::Disabled))
             {
-                auto bbox = collisionSystem->GetBoundingBox(item.GetContainedObject());
                 DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
         }
     }

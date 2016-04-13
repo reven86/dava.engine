@@ -227,9 +227,9 @@ void ParticleEditorWidget::OnInnerEmitterSelectedFromSceneTree(SceneEditor2* sce
 
 void ParticleEditorWidget::HandleEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, bool forceUpdate)
 {
-    if (emitter &&
-        MODE_EMITTER == widgetMode &&
-        (!forceUpdate && (emitterPropertiesWidget->GetEmitterInstance()->GetEmitter() == emitter->GetEmitter())))
+    auto widgetInstance = emitterPropertiesWidget->GetEmitterInstance();
+    auto sameEmitter = (widgetInstance != nullptr) && (widgetInstance->GetEmitter() == emitter->GetEmitter());
+    if ((emitter != nullptr) && (MODE_EMITTER == widgetMode) && (!forceUpdate && sameEmitter))
     {
         return;
     }
