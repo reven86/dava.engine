@@ -36,7 +36,14 @@ namespace DAVA
 enum class eMouseCaptureMode;
 class UIEvent;
 struct MouseCaptureContext;
-class MouseCapturePrivate;
+
+class MouseCaptureInterface
+{
+public:
+    virtual void SetNativePining(eMouseCaptureMode newMode) = 0;
+    virtual void SetCursorInCenter() = 0;
+    virtual bool SkipEvents() = 0;
+};
 
 class MouseCapture final
 {
@@ -46,17 +53,17 @@ public:
 
     void SetMode(const eMouseCaptureMode newMode);
     eMouseCaptureMode GetMode() const;
-    bool MouseCaptured() const;
+    bool IsPinningEnabled() const;
     // Deprecated, only for UIControlSystem internal using
-    bool SkipEvents(const UIEvent* event);
+    DAVA_DEPRECATED(bool SkipEvents(const UIEvent* event));
 
 private:
-    void OnFocused(bool isFocused);
     std::unique_ptr<MouseCaptureContext> context;
-    std::unique_ptr<MouseCapturePrivate> privateImpl;
+    std::unique_ptr<MouseCaptureInterface> privateImpl;
 
-    MouseCapture(MouseCapture&) = delete;
-    MouseCapture& operator=(MouseCapture const&) = delete;
+    void SetNativePining(eMouseCaptureMode newNativeMode);
+    MouseCapture(const MouseCapture&) = delete;
+    MouseCapture& operator=(const MouseCapture&) = delete;
 };
 
 } //  namespace DAVA

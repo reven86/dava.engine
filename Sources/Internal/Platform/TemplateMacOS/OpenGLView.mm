@@ -180,7 +180,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
 
-    if (InputSystem::Instance()->MouseCaptured())
+    if (InputSystem::Instance()->IsPinningEnabled())
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];

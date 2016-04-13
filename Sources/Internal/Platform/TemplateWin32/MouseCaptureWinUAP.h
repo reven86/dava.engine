@@ -33,16 +33,16 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Input/MouseCapture.h"
+
 namespace DAVA
 {
-enum class eMouseCaptureMode;
-
-class MouseCapturePrivate
+class MouseCapturePrivate : public MouseCaptureInterface
 {
 public:
-    void SetNativePining(eMouseCaptureMode newMode);
-    void SetCursorInCenter();
-    bool SkipEvents();
+    void SetNativePining(eMouseCaptureMode newMode) override;
+    void SetCursorInCenter() override;
+    bool SkipEvents() override;
 };
 }
 

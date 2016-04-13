@@ -33,21 +33,29 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 
+#include "Input/MouseCapture.h"
+
 namespace DAVA
 {
-enum class eMouseCaptureMode;
-
-class MouseCapturePrivate
+class MouseCapturePrivate : public MouseCaptureInterface
 {
 public:
-    void SetNativePining(eMouseCaptureMode newMode);
-    void SetCursorInCenter();
-    bool SkipEvents();
+    void SetNativePining(eMouseCaptureMode newMode) override;
+    void SetCursorInCenter() override;
+    bool SkipEvents() override;
 
 private:
     bool cursorVisible = true;
-    // hack for mouse move event after capture
+    // If mouse pointer was outside window rectangle when enabling pinning mode then
+    // mouse clicks are forwarded to other windows and our application loses focus.
+    // So move mouse pointer to window center before enabling pinning mode.
+    // Secondly, after using CGWarpMouseCursorPosition function to center mouse pointer
+    // mouse move events arrive with big delta which causes mouse hopping.
+    // The best solution I have investigated is to skip first N mouse move events after enabling
+    // pinning mode: global variable mouseMoveSkipCounter is set to some reasonable value
+    // and is checked in OpenGLView's process method to skip mouse move events
     uint32 skipMouseMoveEvents = 0;
+    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 
     void MovePointerToWindowCenter();
     void OSXShowCursor();

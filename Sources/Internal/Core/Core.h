@@ -267,6 +267,7 @@ public:
     void InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
     void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
 
+    bool IsFocused();
     rhi::InitParam rendererParams;
     Signal<bool> focusChanged;
 
@@ -283,6 +284,7 @@ private:
 
     KeyedArchive* options;
 
+    bool isFocused = false;
     bool isActive;
 
     uint32 globalFrameIndex;

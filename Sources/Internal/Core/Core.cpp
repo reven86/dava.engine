@@ -786,7 +786,8 @@ void Core::FocusLost()
     {
         core->OnFocusLost();
     }
-    focusChanged.Emit(false);
+    isFocused = false;
+    focusChanged.Emit(isFocused);
 }
 
 void Core::FocusReceived()
@@ -795,7 +796,8 @@ void Core::FocusReceived()
     {
         core->OnFocusReceived();
     }
-    focusChanged.Emit(true);
+    isFocused = true;
+    focusChanged.Emit(isFocused);
 }
 
 uint32 Core::GetGlobalFrameIndex()
@@ -943,6 +945,11 @@ void Core::SetIsActive(bool _isActive)
 {
     isActive = _isActive;
     Logger::Info("Core::SetIsActive %s", (_isActive) ? "TRUE" : "FALSE");
+}
+
+bool Core::IsFocused()
+{
+    return isFocused;
 }
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)

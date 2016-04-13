@@ -50,7 +50,7 @@ void MouseCapturePrivate::SetNativePining(eMouseCaptureMode newMode)
         OSXHideCursor();
         MovePointerToWindowCenter();
         CGAssociateMouseAndMouseCursorPosition(false);
-        skipMouseMoveEvents = 4;
+        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
         break;
     case eMouseCaptureMode::FRAME:
     // Unsupported yet

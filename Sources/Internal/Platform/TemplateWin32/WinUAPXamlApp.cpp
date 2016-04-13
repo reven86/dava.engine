@@ -543,7 +543,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             core->RunOnMainThread(fn);
         }
 
-        if (!InputSystem::Instance()->MouseCaptured())
+        if (!InputSystem::Instance()->IsPinningEnabled())
         {
             if (mouseButtonsState.none())
             {
@@ -723,7 +723,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
         float32 dy = static_cast<float32>(args->MouseDelta.Y);
 
         // win10 send dx == 0 and dy == 0 if mouse buttons change state only if one button already pressed
-        if (InputSystem::Instance()->MouseCaptured() && (dx != 0.f || dy != 0.f))
+        if (InputSystem::Instance()->IsPinningEnabled() && (dx != 0.f || dy != 0.f))
         {
             if (mouseButtonsState.none())
             {

@@ -114,9 +114,9 @@ bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
     return true;
 }
 
-bool InputSystem::MouseCaptured()
+bool InputSystem::IsPinningEnabled()
 {
-    return mouseCapture->MouseCaptured();
+    return mouseCapture->IsPinningEnabled();
 }
 
 bool InputSystem::SkipInputEvents(UIEvent* event)

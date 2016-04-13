@@ -751,7 +751,7 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
         bool isMove = xPos || yPos;
         bool isInside = false;
 
-        if (InputSystem::Instance()->MouseCaptured())
+        if (InputSystem::Instance()->IsPinningEnabled())
         {
             isInside = true;
         }
