@@ -76,30 +76,5 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
         processed = rootControl->SystemProcessInput(event);
     }
 
-    if (!processed && (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT))
-    {
-        switch (event->key)
-        {
-        case Key::LEFT:
-            focusSystem->MoveFocusLeft();
-            break;
-
-        case Key::RIGHT:
-            focusSystem->MoveFocusRight();
-            break;
-
-        case Key::UP:
-            focusSystem->MoveFocusUp();
-            break;
-
-        case Key::DOWN:
-            focusSystem->MoveFocusDown();
-            break;
-
-        default:
-            // do nothing
-            break;
-        }
-    }
 }
 }
