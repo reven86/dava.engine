@@ -91,7 +91,10 @@ public:
     bool Fetch(const FilePath& folder);
     void Free();
 
-    void Export(const FilePath& folder) const;
+    size_t GetItemCount() const;
+
+    void ExportToFolder(const FilePath& folder) const;
+    bool ExportToFile(const FilePath& filePath) const;
 
     void SetDescription(const Description& description);
     const Description& GetDescription() const;

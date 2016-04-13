@@ -38,7 +38,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
+
 #include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheClient.h"
 
 #include "ResourceArchiver/ResourceArchiver.h"
 
@@ -223,26 +225,104 @@ MD5::MD5Digest CalculateSourcesMD5(const Vector<CollectedFile>& collectedFiles)
     return md5.GetDigest();
 }
 
-void ConstructCacheKey(AssetCache::CacheItemKey& key, Vector<CollectedFile>& collectedFiles, const DAVA::String& compression)
+MD5::MD5Digest CalculateParamsMD5(Vector<String> params)
+{
+    MD5 md5;
+    md5.Init();
+    for (const String& param : params)
+    {
+        md5.Update(reinterpret_cast<const uint8*>(param.data()), static_cast<uint32>(param.size()));
+    }
+
+    md5.Final();
+    return md5.GetDigest();
+}
+
+void ConstructCacheKeys(AssetCache::CacheItemKey& keyForArchive, AssetCache::CacheItemKey& keyForLog, Vector<CollectedFile>& collectedFiles, const DAVA::String& compression)
 {
     MD5::MD5Digest sourcesMD5 = CalculateSourcesMD5(collectedFiles);
-    AssetCache::SetPrimaryKey(key, sourcesMD5);
+    AssetCache::SetPrimaryKey(keyForArchive, sourcesMD5);
+    AssetCache::SetPrimaryKey(keyForLog, sourcesMD5);
 
-    MD5::MD5Digest paramsMD5;
-    MD5::ForData(reinterpret_cast<const uint8*>(compression.data()), compression.size(), paramsMD5);
-    AssetCache::SetSecondaryKey(key, paramsMD5);
+    MD5::MD5Digest paramsMD5Archive = CalculateParamsMD5({ compression, "key for archive file" });
+    MD5::MD5Digest paramsMD5Log = CalculateParamsMD5({ compression, "this one is for log file" });
+    AssetCache::SetSecondaryKey(keyForArchive, paramsMD5Archive);
+    AssetCache::SetSecondaryKey(keyForArchive, paramsMD5Log);
 }
 
-bool RetrieveFromCache(const AssetCache::CacheItemKey& key, const FilePath& pathToPackage, const FilePath& pathToLog)
+bool RetrieveFileFromCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemKey& key, const FilePath& outputFile)
 {
-    // todo: retrieve from cache using Viktor's AssetCache interface
-    return false;
+    DVASSERT(assetCacheClient != nullptr);
+
+    AssetCache::CachedItemValue retrievedData;
+    AssetCache::Error result = assetCacheClient->RequestFromCacheSynchronously(key, &retrievedData);
+    if (result == AssetCache::Error::NO_ERRORS)
+    {
+        if (retrievedData.ExportToFile(outputFile))
+        {
+            Logger::Info("%s is retrieved from cache", outputFile.GetAbsolutePathname().c_str());
+            return true;
+        }
+        else
+        {
+            LOG_ERROR("Can't export retrieved data to file %s", outputFile.GetAbsolutePathname().c_str());
+            return false;
+        }
+    }
+    else
+    {
+        Logger::Info("Failed to retrieve %s from cache: %s", outputFile.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(result).c_str());
+        return false;
+    }
 }
 
-bool AddToCache(const AssetCache::CacheItemKey& key, const FilePath& pathToPack, const FilePath& pathToLog)
+bool RetrieveFromCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemKey& keyForArchive, const AssetCache::CacheItemKey& keyForLog, const FilePath& pathToArchive, const FilePath& pathToLog)
 {
-    // todo: add to cache using Viktor's AssetCache interface
-    return false;
+    bool archiveIsRetrieved = RetrieveFileFromCache(assetCacheClient, keyForArchive, pathToArchive);
+    if (archiveIsRetrieved && !pathToLog.IsEmpty())
+    {
+        RetrieveFileFromCache(assetCacheClient, keyForLog, pathToLog);
+    }
+
+    return archiveIsRetrieved;
+}
+
+bool AddFileToCache(AssetCacheClient* assetCacheClient, const AssetCache::CachedItemValue::Description& description, const AssetCache::CacheItemKey& key, const FilePath& pathToFile)
+{
+    DVASSERT(assetCacheClient != nullptr);
+
+    AssetCache::CachedItemValue value;
+    value.Add(pathToFile);
+    value.UpdateValidationData();
+    value.SetDescription(description);
+    AssetCache::Error result = assetCacheClient->AddToCacheSynchronously(key, value);
+    if (result == AssetCache::Error::NO_ERRORS)
+    {
+        Logger::Info("%s is added to cache", pathToFile.GetAbsolutePathname().c_str());
+        return true;
+    }
+    else
+    {
+        Logger::Info("Failed to add %s to cache: %s", pathToFile.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(result).c_str());
+        return false;
+    }
+}
+
+bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemKey& keyForArchive, const AssetCache::CacheItemKey& keyForLog, const FilePath& pathToArchive, const FilePath& pathToLog)
+{
+    DateTime timeNow = DateTime::Now();
+    AssetCache::CachedItemValue::Description cacheItemDescription;
+    cacheItemDescription.machineName = WStringToString(DeviceInfo::GetName());
+    cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+    cacheItemDescription.comment = Format("Resource archive %s", pathToArchive.GetAbsolutePathname().c_str());
+
+    bool archiveIsAdded = AddFileToCache(assetCacheClient, cacheItemDescription, keyForArchive, pathToArchive);
+    if (archiveIsAdded && !pathToLog.IsEmpty())
+    {
+        AddFileToCache(assetCacheClient, cacheItemDescription, keyForLog, pathToLog);
+    }
+
+    return archiveIsAdded;
 }
 
 Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHiddenFiles)
@@ -394,7 +474,8 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     return true;
 }
 
-bool CreateArchive(const Vector<String>& sources, bool addHiddenFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath, const FilePath& logPath)
+bool CreateArchive(const Vector<String>& sources, bool addHiddenFiles, DAVA::Compressor::Type compressionType,
+                   const FilePath& archivePath, const FilePath& logPath, AssetCacheClient* assetCacheClient)
 {
     Vector<CollectedFile> collectedFiles = CollectFiles(sources, addHiddenFiles);
     if (collectedFiles.empty())
@@ -403,12 +484,19 @@ bool CreateArchive(const Vector<String>& sources, bool addHiddenFiles, DAVA::Com
         return false;
     }
 
-    AssetCache::CacheItemKey key;
-    //if (useCache)
+    if (archivePath.IsEmpty())
     {
-        ConstructCacheKey(key, collectedFiles, CompressTypeToString(compressionType));
+        LOG_ERROR("Archive path is not set");
+        return false;
+    }
 
-        if (RetrieveFromCache(key, archivePath, logPath))
+    AssetCache::CacheItemKey keyForArchive;
+    AssetCache::CacheItemKey keyForLog;
+    if (assetCacheClient != nullptr)
+    {
+        ConstructCacheKeys(keyForArchive, keyForLog, collectedFiles, CompressTypeToString(compressionType));
+
+        if (true == RetrieveFromCache(assetCacheClient, keyForArchive, keyForLog, archivePath, logPath))
         {
             return true;
         }
@@ -416,14 +504,17 @@ bool CreateArchive(const Vector<String>& sources, bool addHiddenFiles, DAVA::Com
 
     if (Pack(collectedFiles, compressionType, archivePath))
     {
-        //if (useCache)
+        Logger::Info("packing done");
+
+        if (assetCacheClient != nullptr)
         {
-            AddToCache(key, archivePath, logPath);
+            AddToCache(assetCacheClient, keyForArchive, keyForLog, archivePath, logPath);
         }
         return true;
     }
     else
     {
+        Logger::Info("packing failed");
         return false;
     }
 }

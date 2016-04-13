@@ -32,7 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/BaseTypes.h"
 #include "FileSystem/ResourceArchive.h"
 #include "CommandLineTool.h"
-#include "AssetCache/AssetCache.h"
+#include "AssetCache/CacheItemKey.h"
+#include "AssetCache/AssetCacheClient.h"
 
 class ArchivePackTool : public CommandLineTool
 {
@@ -52,7 +53,6 @@ private:
     void ProcessInternal() override;
 
     void CollectAllFilesInDirectory(const DAVA::String& pathDirName, DAVA::Vector<DAVA::String>& output);
-    //void OnOneFilePacked(const DAVA::ResourceArchive::FileInfo& info);
 
     void ConstructCacheKey(DAVA::AssetCache::CacheItemKey& key, const DAVA::Vector<DAVA::String>& files, const DAVA::String& compression) const;
     bool RetrieveFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& pathToPack, const DAVA::FilePath& pathToLog) const;
@@ -62,9 +62,7 @@ private:
     DAVA::Compressor::Type compressionType;
     bool addHidden = false;
     bool useCache = false;
-    DAVA::String ip;
-    DAVA::uint32 port;
-    DAVA::uint32 timeout;
+    AssetCacheClient::ConnectionParams assetCacheParams;
     DAVA::String logFileName;
     DAVA::String srcDir;
     DAVA::List<DAVA::String> listFiles;

@@ -101,7 +101,7 @@ AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::Ca
 {
     {
         LockGuard<Mutex> guard(requestLocker);
-        request = Request(key, FilePath(), AssetCache::PACKET_ADD_REQUEST);
+        request = Request(key, nullptr, AssetCache::PACKET_ADD_REQUEST);
     }
 
     AssetCache::Error resultCode = AssetCache::Error::CANNOT_SEND_REQUEST_ADD;
@@ -120,11 +120,13 @@ AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::Ca
     return resultCode;
 }
 
-AssetCache::Error AssetCacheClient::RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outputFolder)
+AssetCache::Error AssetCacheClient::RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, AssetCache::CachedItemValue* value)
 {
+    DVASSERT(value != nullptr);
+
     {
         LockGuard<Mutex> guard(requestLocker);
-        request = Request(key, outputFolder, AssetCache::PACKET_GET_REQUEST);
+        request = Request(key, value, AssetCache::PACKET_GET_REQUEST);
     }
 
     AssetCache::Error resultCode = AssetCache::Error::CANNOT_SEND_REQUEST_GET;
@@ -234,15 +236,16 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
                 request.result = AssetCache::Error::NO_ERRORS;
                 request.recieved = true;
                 request.processingRequest = true;
-            }
+                *(request.value) = value;
+                //            }
 
             DumpInfo(key, value);
 
-            FileSystem::Instance()->CreateDirectory(currentRequest.outputFolder, true);
-            value.Export(currentRequest.outputFolder);
+            //             FileSystem::Instance()->CreateDirectory(currentRequest.outputFolder, true);
+            //             value.Export(currentRequest.outputFolder);
 
-            { // mark request as processed
-                LockGuard<Mutex> guard(requestLocker);
+            //             { // mark request as processed
+            //                 LockGuard<Mutex> guard(requestLocker);
                 request.processingRequest = false;
             }
         }

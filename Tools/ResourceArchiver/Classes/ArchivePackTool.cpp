@@ -26,21 +26,15 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/FileList.h"
-#include "Utils/Utils.h"
-#include "Utils/MD5.h"
-#include "Functional/Function.h"
-#include "ResourceArchiver/ResourceArchiver.h"
 #include "Base/UniquePtr.h"
+#include "FileSystem/FileSystem.h"
+#include "ResourceArchiver/ResourceArchiver.h"
+
+#include "AssetCache/AssetCacheClient.h"
 
 #include "ArchivePackTool.h"
 
 using namespace DAVA;
-
-static const String DEFAULT_CACHE_IP = "";
-static const uint32 DEFAULT_CACHE_PORT = 44234;
-static const uint32 DEFAULT_CACHE_TIMEOUT_MS = 5000;
 
 namespace OptionNames
 {
@@ -62,9 +56,9 @@ ArchivePackTool::ArchivePackTool()
     options.AddOption(OptionNames::Compression, VariantType(String("lz4hc")), "default compression method, lz4hc - default");
     options.AddOption(OptionNames::AddHidden, VariantType(false), "add hidden files to pack list");
     options.AddOption(OptionNames::UseCache, VariantType(false), "use asset cache");
-    options.AddOption(OptionNames::Ip, VariantType(DEFAULT_CACHE_IP), "asset cache ip");
-    options.AddOption(OptionNames::Port, VariantType(DEFAULT_CACHE_PORT), "asset cache port");
-    options.AddOption(OptionNames::Timeout, VariantType(DEFAULT_CACHE_TIMEOUT_MS), "asset cache timeout");
+    options.AddOption(OptionNames::Ip, VariantType(AssetCache::LOCALHOST), "asset cache ip");
+    options.AddOption(OptionNames::Port, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "asset cache port");
+    options.AddOption(OptionNames::Timeout, VariantType(1000u), "asset cache timeout");
     options.AddOption(OptionNames::LogFile, VariantType(String("")), "package process log file");
     options.AddOption(OptionNames::Dir, VariantType(String("")), "source files directory");
     options.AddOption(OptionNames::ListFiles, VariantType(String("")), "text files containing list of source files", true);
@@ -83,9 +77,9 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
 
     addHidden = options.GetOption(OptionNames::AddHidden).AsBool();
     useCache = options.GetOption(OptionNames::UseCache).AsBool();
-    ip = options.GetOption(OptionNames::Ip).AsString();
-    port = options.GetOption(OptionNames::Port).AsUInt32();
-    timeout = options.GetOption(OptionNames::Timeout).AsUInt32();
+    assetCacheParams.ip = options.GetOption(OptionNames::Ip).AsString();
+    assetCacheParams.port = options.GetOption(OptionNames::Port).AsUInt32();
+    assetCacheParams.timeoutms = options.GetOption(OptionNames::Timeout).AsUInt32();
     logFileName = options.GetOption(OptionNames::LogFile).AsString();
 
     source = Source::Unknown;
@@ -196,17 +190,26 @@ void ArchivePackTool::ProcessInternal()
 
     if (!logFilePath.IsEmpty())
     {
+        FileSystem::Instance()->DeleteFile(logFilePath);
         Logger::Instance()->SetLogPathname(logFilePath);
     }
 
-    if (ResourceArchiver::CreateArchive(sources, addHidden, compressionType, packFilePath, logFilePath))
+    std::unique_ptr<AssetCacheClient> assetCache;
+    if (useCache)
     {
-        Logger::Info("done");
-        return;
+        assetCache.reset(new AssetCacheClient(true));
+        AssetCache::Error result = assetCache->ConnectSynchronously(assetCacheParams);
+        if (result != AssetCache::Error::NO_ERRORS)
+        {
+            LOG_ERROR("Can't connect to asset cache server %s:%u, reason is %s", assetCacheParams.ip, assetCacheParams.port, AssetCache::ErrorToString(result).c_str());
+            assetCache.reset();
+        }
     }
-    else
+
+    ResourceArchiver::CreateArchive(sources, addHidden, compressionType, packFilePath, logFilePath, assetCache.get());
+
+    if (assetCache)
     {
-        Logger::Info("packing failed");
-        return;
+        assetCache->Disconnect();
     }
 }

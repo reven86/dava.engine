@@ -33,12 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+class AssetCacheClient;
+
 namespace ResourceArchiver
 {
 bool StringToCompressType(const DAVA::String& compressionStr, DAVA::Compressor::Type& type);
 DAVA::String CompressTypeToString(DAVA::Compressor::Type packType);
 
-bool CreateArchive(const Vector<String>& sourcesList, bool addHiddenFiles, DAVA::Compressor::Type compressType, const FilePath& archivePath, const FilePath& logPath);
+bool CreateArchive(const Vector<String>& sourcesList, bool addHiddenFiles, DAVA::Compressor::Type compressType,
+                   const FilePath& archivePath, const FilePath& logPath, AssetCacheClient* client);
 
 } // namespace Archive
 } // namespace DAVA
