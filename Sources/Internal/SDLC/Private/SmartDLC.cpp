@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SDLC/SmartDLC.h"
 #include "SDLC/Private/PacksDB.h"
+#include "FileSystem/FileList.h"
 
 namespace DAVA
 {
@@ -60,7 +61,7 @@ public:
         queue.push_back(packState);
         std::stable_sort(begin(queue), end(queue), PackCompare);
 
-        if (!IsDownloading())
+        if (isProcessingEnabled && !IsDownloading())
         {
             StartNextPackDownloading();
         }
@@ -136,18 +137,79 @@ public:
             downloadHandler = dm->Download(fullUrl, archivePath);
         }
     }
+
+    void StopDownloading()
+    {
+        if (currentDownload != nullptr)
+        {
+            DownloadManager* dm = DownloadManager::Instance();
+            dm->Cancel(downloadHandler);
+        }
+    }
+
     void MountDownloadedPacks()
     {
         FileSystem* fs = FileSystem::Instance();
-        for (auto& pack : packs)
+
+        // build packIndex
+        for (uint32 packIndex = 0; packIndex < packs.size(); ++packIndex)
         {
-            // mount pack
-            if (pack.state == PackManager::PackState::Mounted)
-            {
-                FilePath archiveName = localPacksDir + pack.name;
-                fs->Mount(archiveName, "Data");
-            }
+            PackManager::PackState& pack = packs[packIndex];
+            packsIndex[pack.name] = packIndex;
         }
+
+        ScopedPtr<FileList> fileList(new FileList(localPacksDir, false));
+
+        uint32 numFilesAndDirs = fileList->GetCount();
+
+        for (uint32 fileIndex = 0; fileIndex < numFilesAndDirs; ++fileIndex)
+        {
+            if (fileList->IsDirectory(fileIndex))
+            {
+                continue;
+            }
+            const FilePath& filePath = fileList->GetPathname(fileIndex);
+            String fileName = filePath.GetFilename();
+            auto it = packsIndex.find(fileName);
+            if (it != end(packsIndex))
+            {
+                // check CRC32 meta and try mount this file
+                ScopedPtr<File> metaFile(File::Create(filePath + ".crc32", File::OPEN | File::READ));
+                if (metaFile)
+                {
+                    String content;
+                    metaFile->ReadString(content);
+
+                    unsigned int crc32 = 0;
+                    {
+                        StringStream ss;
+                        ss << std::hex << content;
+                        ss >> crc32;
+                    }
+
+                    PackManager::PackState& pack = packs.at(it->second);
+                    pack.crc32FromMeta = crc32;
+                    if (pack.crc32FromDB != pack.crc32FromMeta)
+                    {
+                        // old Pack file with previous version crc32 - delete it
+                        fs->DeleteFile(filePath);
+                        fs->DeleteFile(filePath + ".crc32");
+                    }
+                    else
+                    {
+                        try
+                        {
+                            fs->Mount(filePath, "Data");
+                            pack.state = PackManager::PackState::Mounted;
+                        }
+                        catch (std::exception& ex)
+                        {
+                            Logger::Error("%s", ex.what());
+                        }
+                    }
+                }
+            }
+        } // end for fileIndex
     }
 
     FilePath packsDB;
@@ -165,6 +227,11 @@ public:
 
 PackManager::PackManager(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl)
 {
+    if (!localPacksDir.IsDirectoryPathname())
+    {
+        throw std::runtime_error("not directory path_name:" + localPacksDir.GetStringValue());
+    }
+
     impl.reset(new ArchiveManagerImpl());
     impl->packsDB = packsDB;
     impl->localPacksDir = localPacksDir;
@@ -186,12 +253,24 @@ bool PackManager::IsProcessingEnabled() const
 
 void PackManager::EnableProcessing()
 {
-    impl->isProcessingEnabled = true;
+    if (!impl->isProcessingEnabled)
+    {
+        impl->isProcessingEnabled = true;
+    }
 }
 
 void PackManager::DisableProcessing()
 {
-    impl->isProcessingEnabled = false;
+    if (impl->isProcessingEnabled)
+    {
+        impl->isProcessingEnabled = false;
+        impl->StopDownloading();
+        if (impl->currentDownload)
+        {
+            impl->AddToDownloadQueue(impl->currentDownload->name);
+            impl->currentDownload = nullptr;
+        }
+    }
 }
 
 void PackManager::Update()

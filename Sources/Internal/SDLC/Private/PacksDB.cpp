@@ -157,17 +157,39 @@ void PacksDB::GetAllPacksState(Vector<PackManager::PackState>& out) const
 {
     out.clear();
 
-    auto selectQuery = data->GetDB() << "SELECT name, status, priority, download FROM packs";
+    auto selectQuery = data->GetDB() << "SELECT name, hash FROM packs";
 
-    selectQuery >> [&](String name, int32 status, float32 priority, float32 progress)
+    selectQuery >> [&](String name, String hash)
     {
-        auto stat = static_cast<PackManager::PackState::Status>(status);
         PackManager::PackState state;
         state.name = name;
-        state.state = stat;
-        // TODO update properties
+        state.state = PackManager::PackState::NotRequested;
+
+        unsigned int crc32 = 0;
+        if (!hash.empty())
+        {
+            StringStream ss;
+            ss << std::hex << hash;
+            ss >> crc32;
+        }
+
+        state.crc32FromDB = crc32;
+
         out.push_back(state);
     };
+
+    auto selectDependency = data->GetDB() << "SELECT depends_name FROM dependency WHERE pack_name = ?";
+
+    for (auto& pack : out)
+    {
+        selectDependency << pack.name;
+        selectDependency >> [&](String depends_name)
+        {
+            pack.dependensy.push_back(depends_name);
+        };
+
+        selectDependency->reset();
+    }
 }
 
 void PacksDB::UpdatePackState(const PackManager::PackState& state)

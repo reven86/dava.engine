@@ -38,7 +38,7 @@ DAVA_TESTCLASS (SmartDlcTest)
 
         FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/test.db");
         FilePath folderWithDownloadedPacks("~res:/TestData/SmartDlcTest/packs/");
-        String urlToServerWithPacks("http://wargaminguberserver.net/packs");
+        String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/packs/");
 
         PackManager sdlc(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
 
@@ -67,22 +67,13 @@ DAVA_TESTCLASS (SmartDlcTest)
 
         TEST_VERIFY(packName == String("unit_test.pak"));
 
-        // calculate crc32 for pak
-        uint64 start = SystemTimer::Instance()->AbsoluteMS();
-
-        uint32 crc32 = CRC32::ForFile("C:\\Users\\l_chayka\\fun\\Data.zip");
-
-        uint64 finish = SystemTimer::Instance()->AbsoluteMS();
-
-        float timeToDoCrc32 = (finish - start) / 1000.0f;
-        Logger::Info("time to calculate CRC32 for %s : %f, crc32: 0x%X", packName.c_str(), timeToDoCrc32, crc32);
-
         try
         {
+            packName = "virtual_test_pack.pak";
             const PackManager::PackState& packState = sdlc.GetPackState(packName);
-            TEST_VERIFY(packState.downloadProgress == 0.f);
             TEST_VERIFY(packState.name == packName);
-            TEST_VERIFY(packState.priority == 0.5f);
+            TEST_VERIFY(packState.crc32FromDB == 0); // virtual pack no files
+            TEST_VERIFY(packState.crc32FromMeta == 0); // virtual pack no files
             TEST_VERIFY(packState.state == PackManager::PackState::NotRequested);
 
             sdlc.DisableProcessing();
@@ -94,9 +85,11 @@ DAVA_TESTCLASS (SmartDlcTest)
             sdlc.EnableProcessing();
 
             auto& nextState = sdlc.RequestPack(packName, 0.1f);
-            TEST_VERIFY(nextState.state == PackManager::PackState::Downloading);
+            TEST_VERIFY(nextState.state == PackManager::PackState::Downloading || nextState.state == PackManager::PackState::Requested);
 
-            while (nextState.state == PackManager::PackState::Downloading)
+            uint32 maxIter = 30;
+
+            while (nextState.state != PackManager::PackState::Mounted && maxIter-- > 0)
             {
                 // wait
                 Thread::Sleep(500);
@@ -110,15 +103,19 @@ DAVA_TESTCLASS (SmartDlcTest)
             TEST_VERIFY(file);
             if (file)
             {
-                TEST_VERIFY(file->GetSize() == 100500);
+                TEST_VERIFY(file->GetSize() == 138); // utf16le.txt - 138 byte
+
                 String fileContent(file->GetSize(), '\0');
                 file->Read(&fileContent[0], static_cast<uint32>(fileContent.size()));
 
-                TEST_VERIFY(fileContent == "content of the file");
+                uint32 crc32 = CRC32::ForBuffer(fileContent.data(), static_cast<uint32>(fileContent.size()));
+
+                TEST_VERIFY(crc32 == 0x60076e58);
             }
         }
-        catch (std::exception&)
+        catch (std::exception& ex)
         {
+            Logger::Error("%s", ex.what());
             TEST_VERIFY(false);
         }
 
