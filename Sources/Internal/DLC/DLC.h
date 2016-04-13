@@ -59,10 +59,10 @@ public:
     {
         struct DLCFileErr
         {
-            int32 value = 0;
+            int32 fileErrno = 0;
             FilePath path;
         };
-        DLCError error = DE_NO_ERROR;
+        DLCError value = DE_NO_ERROR;
         DLCFileErr fileError;
         PatchFileReader::PatchingErrorDetails patchingError;
     };
@@ -125,7 +125,7 @@ public:
     /**
         \brief Returns DLC state machine error with details.
     */
-    DLCErrorDetails GetLastErrorDetails() const;
+    DLCErrorDetails GetErrorDetails() const;
 
     /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
@@ -188,7 +188,7 @@ protected:
         uint32 totalPatchCount;
         uint32 appliedPatchCount;
         volatile bool patchInProgress;
-        DLCErrorDetails lastErrorDetails;
+        DLCErrorDetails errorDetails;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;
