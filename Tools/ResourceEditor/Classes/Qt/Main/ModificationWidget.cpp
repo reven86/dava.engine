@@ -234,12 +234,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
 
     DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
     SelectableGroup selection = curScene->selectionSystem->GetSelection();
-
-    // remove child objects, to avoid double transformation
-    selection.RemoveIf([&selection](const Selectable& obj) {
-        auto entity = obj.AsEntity();
-        return (entity == nullptr) ? false : selection.ContainsObject(entity->GetParent());
-    });
+    selection.RemoveObjectsWithDependantTransform();
 
     switch (modifMode)
     {

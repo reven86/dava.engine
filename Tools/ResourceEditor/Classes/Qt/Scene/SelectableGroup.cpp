@@ -177,3 +177,30 @@ bool SelectableGroup::IsLocked() const
 {
     return lockCounter > 0;
 }
+
+void SelectableGroup::RemoveObjectsWithDependantTransform()
+{
+    DAVA::Set<DAVA::size_type> objectsToRemove;
+    for (DAVA::size_type i = 0; i < objects.size(); ++i)
+    {
+        if (objectsToRemove.count(i) == 0)
+        {
+            for (DAVA::size_type j = 0; j < objects.size(); ++j)
+            {
+                if ((i != j) && (objectsToRemove.count(j) == 0))
+                {
+                    if (objects[i].TransformDependsOn(objects[j]))
+                    {
+                        objectsToRemove.insert(i);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    for (auto i = objectsToRemove.rbegin(), e = objectsToRemove.rend(); i != e; ++i)
+    {
+        objects.erase(objects.begin() + (*i));
+    }
+}

@@ -304,11 +304,7 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
         return inputEntities;
 
     SelectableGroup result = inputEntities;
-    // remove children to prevent double transformation
-    result.RemoveIf([&result](const Selectable& obj) {
-        auto entity = obj.AsEntity();
-        return (entity == nullptr) ? false : result.ContainsObject(entity->GetParent());
-    });
+    result.RemoveObjectsWithDependantTransform();
 
     modifEntities.reserve(result.GetSize());
     for (const auto& item : result.GetContent())
