@@ -26,34 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "SharedIcon.h"
-#include "Base/BaseTypes.h"
 
-#include <QCoreApplication>
+#ifndef __DAVAENGINE_WINSYSTEMTIMER_H__
+#define __DAVAENGINE_WINSYSTEMTIMER_H__
 
-namespace SharedIconLocal
+namespace DAVA
 {
-DAVA::UnorderedMap<DAVA::String, QIcon> sharedMap;
-struct CleanUpRegistrator
-{
-    CleanUpRegistrator()
-    {
-        qAddPostRoutine([]()
-                        {
-                            sharedMap.clear();
-                        });
-    }
-} cleanUpRegistrator;
+void EnableHighResolutionTimer(bool enable);
 }
 
-const QIcon& SharedIcon(const char* path)
-{
-    using namespace SharedIconLocal;
-
-    DAVA::String stringPath(path);
-    auto iconIter = sharedMap.find(stringPath);
-    if (iconIter != sharedMap.end())
-        return iconIter->second;
-
-    return sharedMap.emplace(std::move(stringPath), QIcon(path)).first->second;
-}
+#endif // __DAVAENGINE_WINSYSTEMTIMER_H__
