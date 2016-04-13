@@ -44,6 +44,7 @@ extern "C"
 #include <libavutil/imgutils.h>
 #include <libavutil/rational.h>
 #include <libswscale/swscale.h>
+#include <libswresample/swresample.h>
 #ifdef __cplusplus
 };
 #endif
@@ -85,12 +86,20 @@ namespace DAVA
         void Update(float32 timeElapsed) override;
 
     private:
-
+        bool InitVideo();
         void UpdateVideo(AV::AVPacket * packet, float32 timeElapsed);
+        bool InitAudio();
+        void UpdateAudio(AV::AVPacket* packet, float32 timeElapsed);
 
-        const uint8 emptyPixelColor = 255;
+        char8* filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
+
         static bool isFFMGEGInited;
         bool isPlaying = false;
+        bool isAudioVideoStreamsInited = false;
+        AV::AVFormatContext* avformatContext = nullptr;
+
+        const uint8 emptyPixelColor = 255;
+
         Texture * videoTexture = nullptr;
         float32 videoFramerate = 0.f;
 
@@ -106,22 +115,24 @@ namespace DAVA
         uint32_t len = 0;
         int32 index = 0;
         int64_t in_channel_layout = -1;
-        struct SwrContext * au_convert_ctx = nullptr;
+        struct SwrContext* videoConvertContext = nullptr;
 
-        unsigned int videoIndex = -1;
-        AV::AVFormatContext * pFormatCtx = nullptr;
-        AV::AVCodecContext * codecContext = nullptr;
-        AV::AVCodec * pCodec = nullptr;
+        unsigned int videoStreamIndex = -1;
+        AV::AVCodecContext* videoCodecContext = nullptr;
+        AV::AVCodec* videoCodec = nullptr;
         AV::AVFrame * decodedFrame = nullptr;
         AV::AVFrame * yuvDecodedScaledFrame = nullptr;
         uint8 * out_buffer = nullptr;
-        AV::AVPacket * packet = nullptr;
-        int32 y_size;
+        AV::AVPacket* videoPacket = nullptr;
         AV::SwsContext * img_convert_ctx = nullptr;
 
-        char8 * filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
-
-        unsigned int audioIndex = -1;
+        const uint32 maxAudioFrameSize = 192000; // 1 second of 48khz 32bit audio
+        unsigned int audioStreamIndex = -1;
+        AV::AVCodecContext* audioCodecContext = nullptr;
+        AV::AVCodec* audioCodec = nullptr;
+        AV::AVPacket* audioPacket = nullptr;
+        AV::AVFrame* audioFrame = nullptr;
+        AV::SwrContext* audioConvertContext = nullptr;
     };
 }
 

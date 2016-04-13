@@ -46,22 +46,22 @@ namespace DAVA
             {
                 av_frame_free(&decodedFrame);
             }
-            if (codecContext)
+            if (videoCodecContext)
             {
-                avcodec_close(codecContext);
+                avcodec_close(videoCodecContext);
             }
-            if (pFormatCtx)
+            if (avformatContext)
             {
-                avformat_close_input(&pFormatCtx);
+                avformat_close_input(&avformatContext);
             }
             if (img_convert_ctx)
             {
                 sws_freeContext(img_convert_ctx);
             }
 
-            if (packet)
+            if (videoPacket)
             {
-                av_packet_unref(packet);
+                av_packet_unref(videoPacket);
             }
 
             SafeDeleteArray(rgbTextureBuffer);
@@ -98,57 +98,83 @@ namespace DAVA
     // Open the Movie.
     void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
     {
-        pFormatCtx = AV::avformat_alloc_context();
+        isAudioVideoStreamsInited = false;
 
-        if (AV::avformat_open_input(&pFormatCtx, filepath, nullptr, nullptr) != 0){
+        avformatContext = AV::avformat_alloc_context();
+
+        if (AV::avformat_open_input(&avformatContext, filepath, nullptr, nullptr) != 0)
+        {
             Logger::Error("Couldn't open input stream.\n");
             return;
         }
-        if (AV::avformat_find_stream_info(pFormatCtx, nullptr)<0){
+        if (AV::avformat_find_stream_info(avformatContext, nullptr) < 0)
+        {
             Logger::Error("Couldn't find stream information.\n");
             return;
         }
 
-        for (unsigned int i = 0; i<pFormatCtx->nb_streams; i++)
-            if (pFormatCtx->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_VIDEO){
-                videoIndex = i;
+        bool isVideoSubsystemInited = InitVideo();
+        if (!isVideoSubsystemInited)
+        {
+            Logger::Error("Can't init video decoder.");
+        }
+
+        bool isAudioSubsystemInited = InitAudio();
+        if (!isAudioSubsystemInited)
+        {
+            Logger::Error("Can't init audio decoder.");
+        }
+
+        isAudioVideoStreamsInited = isVideoSubsystemInited && isAudioSubsystemInited;
+    }
+
+    bool MovieViewControl::InitVideo()
+    {
+        for (unsigned int i = 0; i < avformatContext->nb_streams; i++)
+        {
+            if (avformatContext->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_VIDEO)
+            {
+                videoStreamIndex = i;
                 break;
             }
-        if (videoIndex == -1)
+        }
+        if (videoStreamIndex == -1)
         {
             Logger::Error("Didn't find a video stream.\n");
-            return;
+            return false;
         }
 
-        AV::AVRational avfps = pFormatCtx->streams[videoIndex]->avg_frame_rate;
+        AV::AVRational avfps = avformatContext->streams[videoStreamIndex]->avg_frame_rate;
         videoFramerate = avfps.num / static_cast<float32>(avfps.den);
 
-        codecContext = pFormatCtx->streams[videoIndex]->codec;
-        pCodec = AV::avcodec_find_decoder(codecContext->codec_id);
-        if (pCodec == nullptr){
+        videoCodecContext = avformatContext->streams[videoStreamIndex]->codec;
+        videoCodec = AV::avcodec_find_decoder(videoCodecContext->codec_id);
+        if (videoCodec == nullptr)
+        {
             Logger::Error("Codec not found.\n");
-            return;
+            return false;
         }
-        if (AV::avcodec_open2(codecContext, pCodec, nullptr)<0){
+        if (AV::avcodec_open2(videoCodecContext, videoCodec, nullptr) < 0)
+        {
             Logger::Error("Could not open codec.\n");
-            return;
+            return false;
         }
 
         AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_RGBA;
 
         decodedFrame = AV::av_frame_alloc();
         yuvDecodedScaledFrame = AV::av_frame_alloc();
-        out_buffer = (uint8_t *)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, codecContext->width, codecContext->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
-        AV::avpicture_fill((AV::AVPicture *)yuvDecodedScaledFrame, out_buffer, avPixelFormat, codecContext->width, codecContext->height);
-        packet = (AV::AVPacket *)AV::av_mallocz(sizeof(AV::AVPacket));
+        out_buffer = (uint8_t*)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, videoCodecContext->width, videoCodecContext->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
+        AV::avpicture_fill((AV::AVPicture*)yuvDecodedScaledFrame, out_buffer, avPixelFormat, videoCodecContext->width, videoCodecContext->height);
+        videoPacket = (AV::AVPacket*)AV::av_mallocz(sizeof(AV::AVPacket));
 
-        img_convert_ctx = AV::sws_getContext(codecContext->width, codecContext->height, codecContext->pix_fmt, codecContext->width, codecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
+        img_convert_ctx = AV::sws_getContext(videoCodecContext->width, videoCodecContext->height, videoCodecContext->pix_fmt, videoCodecContext->width, videoCodecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
-        textureWidth = NextPowerOf2(codecContext->width);
-        textureHeight = NextPowerOf2(codecContext->height);
+        textureWidth = NextPowerOf2(videoCodecContext->width);
+        textureHeight = NextPowerOf2(videoCodecContext->height);
         textureBufferSize = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(textureFormat);
-        frameHeight = codecContext->height;
-        frameWidth = codecContext->width;
+        frameHeight = videoCodecContext->height;
+        frameWidth = videoCodecContext->width;
 
         // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
         rgbTextureBuffer = new uint8[textureBufferSize];
@@ -157,28 +183,102 @@ namespace DAVA
         // we suppose that next time we will fill same part of the texture.
         Memset(rgbTextureBuffer, emptyPixelColor, textureBufferSize);
 
-        Renderer::SetDesiredFPS(60);
+        return true;
+    }
+
+    bool MovieViewControl::InitAudio()
+    {
+        for (unsigned int i = 0; i < avformatContext->nb_streams; i++)
+        {
+            if (avformatContext->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_AUDIO)
+            {
+                audioStreamIndex = i;
+                break;
+            }
+        }
+        if (audioStreamIndex == -1)
+        {
+            Logger::Error("Didn't find an audio stream.\n");
+            return false;
+        }
+
+        // Get a pointer to the codec context for the audio stream
+        audioCodecContext = avformatContext->streams[audioStreamIndex]->codec;
+
+        // Find the decoder for the audio stream
+        audioCodec = avcodec_find_decoder(audioCodecContext->codec_id);
+        if (audioCodec == nullptr)
+        {
+            printf("Codec not found.\n");
+            return false;
+        }
+
+        // Open codec
+        if (avcodec_open2(audioCodecContext, audioCodec, nullptr) < 0)
+        {
+            printf("Could not open codec.\n");
+            return false;
+        }
+
+        audioPacket = (AV::AVPacket*)AV::av_mallocz(sizeof(AV::AVPacket));
+        av_init_packet(audioPacket);
+
+        //Out Audio Param
+        uint64_t out_channel_layout = AV_CH_LAYOUT_STEREO;
+        //nb_samples: AAC-1024 MP3-1152
+        int out_nb_samples = audioCodecContext->frame_size;
+        AV::AVSampleFormat out_sample_fmt = AV::AV_SAMPLE_FMT_S16;
+        int out_sample_rate = 44100;
+        int out_channels = AV::av_get_channel_layout_nb_channels(out_channel_layout);
+        //Out Buffer Size
+        int out_buffer_size = av_samples_get_buffer_size(nullptr, out_channels, out_nb_samples, out_sample_fmt, 1);
+
+        out_buffer = (uint8_t*)AV::av_mallocz(maxAudioFrameSize * 2);
+        audioFrame = AV::av_frame_alloc();
+
+        //FIX:Some Codec's Context Information is missing
+        in_channel_layout = AV::av_get_default_channel_layout(audioCodecContext->channels);
+        //Swr
+
+        audioConvertContext = AV::swr_alloc();
+        audioConvertContext = AV::swr_alloc_set_opts(audioConvertContext, out_channel_layout, out_sample_fmt, out_sample_rate,
+                                                     in_channel_layout, audioCodecContext->sample_fmt, audioCodecContext->sample_rate, 0, nullptr);
+        AV::swr_init(audioConvertContext);
+
+        return true;
     }
 
     // Start/stop the video playback.
     void MovieViewControl::Play()
     {
+        if (!isAudioVideoStreamsInited)
+            return;
+
         isPlaying = true;
     }
 
     void MovieViewControl::Stop()
     {
+        if (!isAudioVideoStreamsInited)
+            return;
+
         isPlaying = false;
     }
 
     // Pause/resume the playback.
     void MovieViewControl::Pause()
     {
+        if (!isAudioVideoStreamsInited)
+            return;
+
         isPlaying = false;
     }
 
     void MovieViewControl::Resume()
     {
+        if (!isAudioVideoStreamsInited)
+            return;
+
         isPlaying = true;
     }
 
@@ -192,7 +292,7 @@ namespace DAVA
     void MovieViewControl::UpdateVideo(AV::AVPacket * packet, float32 timeElapsed)
     {
         int32 got_picture;
-        int32 ret = AV::avcodec_decode_video2(codecContext, decodedFrame, &got_picture, packet);
+        int32 ret = AV::avcodec_decode_video2(videoCodecContext, decodedFrame, &got_picture, packet);
         SCOPE_EXIT
         {
             AV::av_packet_unref(packet);
@@ -242,9 +342,49 @@ namespace DAVA
         }
     }
 
+    void MovieViewControl::UpdateAudio(AV::AVPacket* packet, float32 timeElapsed)
+    {
+        while (AV::av_read_frame(avformatContext, packet) >= 0)
+        {
+            if (audioPacket->stream_index == audioStreamIndex)
+            {
+                int got_data;
+                int ret = avcodec_decode_audio4(audioCodecContext, audioFrame, &got_data, packet);
+                if (ret < 0)
+                {
+                    printf("Error in decoding audio frame.\n");
+                    return;
+                }
+                if (got_data > 0)
+                {
+                    AV::swr_convert(audioConvertContext, &out_buffer, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
+                    index++;
+                }
+
+#if USE_SDL
+                while (audio_len > 0) //Wait until finish
+                    SDL_Delay(1);
+
+                //Set audio buffer (PCM data)
+                audio_chunk = (Uint8*)out_buffer;
+                //Audio buffer length
+                audio_len = out_buffer_size;
+                audio_pos = audio_chunk;
+
+                //Play
+                SDL_PauseAudio(0);
+#endif
+            }
+            av_free_packet(packet);
+        }
+    }
+
     // UIControl update and draw implementation
     void MovieViewControl::Update(float32 timeElapsed)
     {
+        if (!isAudioVideoStreamsInited)
+            return;
+
         if (!isPlaying)
             return;
 
@@ -259,22 +399,23 @@ namespace DAVA
             timeAfterLastRender = 0.f;
         }
 
-        do
-        {
+        //  do
+        //{
             int retRead = -1;
-            retRead = AV::av_read_frame(pFormatCtx, packet);
+            retRead = AV::av_read_frame(avformatContext, videoPacket);
             if (retRead < 0)
             {
                 //  Logger::FrameworkDebug("EOF or error");
                 return;
             }
-        } while (packet->stream_index != videoIndex);
+            //} while (packet->stream_index != videoIndex);
+            // } while (packet->stream_index != audioIndex);
 
-        if (packet->stream_index == videoIndex)
-            ;
-        UpdateVideo(packet, timeElapsed);
-        //        if (packet->stream_index == audioIndex)
-        //      UpdateAudio(packet, timeElapsed);
+            if (videoPacket->stream_index == videoStreamIndex)
+                UpdateVideo(videoPacket, timeElapsed);
+
+            if (videoPacket->stream_index == audioStreamIndex)
+                UpdateAudio(videoPacket, timeElapsed);
     }
 
 }
