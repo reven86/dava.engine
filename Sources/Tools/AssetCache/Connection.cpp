@@ -67,6 +67,7 @@ Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, 
 
 Connection::~Connection()
 {
+    listener = nullptr;
     if (Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance() != nullptr)
     {
         DisconnectBlocked();
@@ -133,7 +134,7 @@ void Connection::Delete(Net::IChannelListener* obj, void* context)
 
 void Connection::OnChannelOpen(Net::IChannel* channel)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnChannelOpen(channel);
     }
@@ -141,7 +142,7 @@ void Connection::OnChannelOpen(Net::IChannel* channel)
 
 void Connection::OnChannelClosed(Net::IChannel* channel, const char8* message)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnChannelClosed(channel, message);
     }
@@ -149,7 +150,7 @@ void Connection::OnChannelClosed(Net::IChannel* channel, const char8* message)
 
 void Connection::OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnPacketReceived(channel, buffer, length);
     }
@@ -157,7 +158,7 @@ void Connection::OnPacketReceived(Net::IChannel* channel, const void* buffer, si
 
 void Connection::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnPacketSent(channel, buffer, length);
     }
@@ -165,7 +166,7 @@ void Connection::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t
 
 void Connection::OnPacketDelivered(Net::IChannel* channel, uint32 packetId)
 {
-    if (listener)
+    if (listener != nullptr)
     {
         listener->OnPacketDelivered(channel, packetId);
     }

@@ -37,6 +37,8 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "EditorSettings.h"
 
+#include "AssetCache/AssetCacheClient.h"
+
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
@@ -49,6 +51,7 @@ EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
+    , cacheClient(nullptr)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
@@ -56,8 +59,10 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
+    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
+    connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
+
     connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
-    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
@@ -106,11 +111,6 @@ EditorCore::EditorCore(QObject* parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
-
-    connect(spritesPacker.get(), &SpritesPacker::Finished, []()
-            {
-                Sprite::ReloadSprites();
-            });
 }
 
 EditorCore::~EditorCore() = default;
@@ -130,7 +130,7 @@ void EditorCore::Start()
     mainWindow->show();
 }
 
-void EditorCore::OnReloadSprites()
+void EditorCore::OnReloadSpritesStarted()
 {
     for (auto& document : documentGroup->GetDocuments())
     {
@@ -140,6 +140,17 @@ void EditorCore::OnReloadSprites()
         }
     }
     mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+}
+
+void EditorCore::OnReloadSpritesFinished()
+{
+    if (cacheClient)
+    {
+        cacheClient->Disconnect();
+        cacheClient.reset();
+    }
+
+    Sprite::ReloadSprites();
 }
 
 void EditorCore::OnGLWidgedInitialized()
@@ -155,15 +166,26 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
-        spritesPacker->SetCacheTool(
-        EditorSettings::Instance()->GetAssetCacheIp(),
-        EditorSettings::Instance()->GetAssetCachePort(),
-        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+        String ipStr = EditorSettings::Instance()->GetAssetCacheIp();
+
+        DAVA::AssetCacheClient::ConnectionParams params;
+        params.ip = (ipStr.empty() ? AssetCache::LOCALHOST : ipStr);
+        params.port = static_cast<DAVA::uint16>(EditorSettings::Instance()->GetAssetCachePort());
+        params.timeoutms = EditorSettings::Instance()->GetAssetCacheTimeoutSec() * 1000; //in ms
+
+        cacheClient.reset(new AssetCacheClient(true));
+        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
+        if (connected != AssetCache::Error::NO_ERRORS)
+        {
+            cacheClient.reset();
+        }
     }
     else
     {
-        spritesPacker->ClearCacheTool();
+        cacheClient.reset();
     }
+
+    spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
 
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();
@@ -234,7 +256,9 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString& classesStr)
 
     UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
     for (String& token : tokens)
+    {
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
+    }
 
     for (auto& document : documentGroup->GetDocuments())
     {

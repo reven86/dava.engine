@@ -43,6 +43,11 @@ class Project;
 class PackageNode;
 class SpritesPacker;
 
+namespace DAVA
+{
+class AssetCacheClient;
+}
+
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
@@ -54,7 +59,9 @@ public:
     void Start();
 
 private slots:
-    void OnReloadSprites();
+
+    void OnReloadSpritesStarted();
+    void OnReloadSpritesFinished();
 
     void OnProjectPathChanged(const QString& path);
     void OnGLWidgedInitialized();
@@ -79,6 +86,8 @@ private:
     int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
 
     std::unique_ptr<SpritesPacker> spritesPacker;
+    std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
+
     Project* project = nullptr;
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
