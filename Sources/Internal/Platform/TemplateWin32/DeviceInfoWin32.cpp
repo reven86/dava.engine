@@ -159,7 +159,7 @@ String DeviceInfoPrivate::GetTimeZone()
     WCHAR* stdName = timeZoneInformation.StandardName;
 
     String generalName = TimeZoneHelper::GetGeneralNameByStdName(stdName);
-    DVASSERT_MSG("No &s timezone found! Check time zones map", generalName.c_str());
+    DVASSERT_MSG(!generalName.empty(), Format("No &s timezone found! Check time zones map", generalName.c_str()).c_str());
 
     return generalName;
 }
