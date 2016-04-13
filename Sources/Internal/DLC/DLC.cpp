@@ -152,6 +152,11 @@ DLC::DLCErrorDetails DLC::GetErrorDetails() const
     return dlcContext.errorDetails;
 }
 
+DLC::DLCError DLC::GetError() const
+{
+    return dlcContext.errorDetails.dlcError;
+}
+
 FilePath DLC::GetMetaStorePath() const
 {
     return dlcContext.remoteMetaStorePath;
@@ -170,7 +175,7 @@ void DLC::PostEvent(DLCEvent event)
 
 void DLC::PostError(DLCError error)
 {
-    dlcContext.errorDetails.value = error;
+    dlcContext.errorDetails.dlcError = error;
     PostEvent(EVENT_ERROR);
 }
 
@@ -207,7 +212,7 @@ void DLC::FSM(DLCEvent event)
             }
             break;
         case EVENT_CANCEL:
-            dlcContext.errorDetails.value = DE_WAS_CANCELED;
+            dlcContext.errorDetails.dlcError = DE_WAS_CANCELED;
             dlcState = DS_DONE;
             break;
         default:
@@ -296,7 +301,7 @@ void DLC::FSM(DLCEvent event)
             dlcState = DS_DOWNLOADING;
             break;
         case EVENT_CANCEL:
-            dlcContext.errorDetails.value = DE_WAS_CANCELED;
+            dlcContext.errorDetails.dlcError = DE_WAS_CANCELED;
             dlcState = DS_DONE;
             break;
         default:
@@ -349,7 +354,7 @@ void DLC::FSM(DLCEvent event)
         case EVENT_DOWNLOAD_OK:
         case EVENT_PATCH_OK:
         case EVENT_ERROR:
-            dlcContext.errorDetails.value = DE_WAS_CANCELED;
+            dlcContext.errorDetails.dlcError = DE_WAS_CANCELED;
             dlcState = DS_DONE;
             break;
         default:
@@ -378,7 +383,7 @@ void DLC::FSM(DLCEvent event)
 
     if (EVENT_ERROR == event)
     {
-        DVASSERT(DE_NO_ERROR != dlcContext.errorDetails.value && "Unhandled error, dlcError is set to NO_ERROR");
+        DVASSERT(DE_NO_ERROR != dlcContext.errorDetails.dlcError && "Unhandled error, dlcError is set to NO_ERROR");
     }
 
     if (!eventHandled)
@@ -993,7 +998,7 @@ void DLC::StepClean()
 
 void DLC::StepDone()
 {
-    if (DE_NO_ERROR == dlcContext.errorDetails.value)
+    if (DE_NO_ERROR == dlcContext.errorDetails.dlcError)
     {
         FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
         FileSystem::Instance()->DeleteFile(dlcContext.stateInfoStorePath);

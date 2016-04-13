@@ -62,7 +62,7 @@ public:
             int32 fileErrno = 0;
             FilePath path;
         };
-        DLCError value = DE_NO_ERROR;
+        DLCError dlcError = DE_NO_ERROR;
         DLCFileErr fileError;
         PatchFileReader::PatchingErrorDetails patchingError;
     };
@@ -126,6 +126,11 @@ public:
         \brief Returns DLC state machine error with details.
     */
     DLCErrorDetails GetErrorDetails() const;
+
+    /**
+        \brief Returns DLC state machine error.
+    */
+    DLCError GetError() const;
 
     /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
