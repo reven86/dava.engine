@@ -905,7 +905,6 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 // Patch will be applied only if it fit condition, specified by caller
                 if (conditionFn(patchInfo))
                 {
-                    //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Applying patch %d.", dlcContext.appliedPatchCount);
                     applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
                     if (applySuccess)
                     {
