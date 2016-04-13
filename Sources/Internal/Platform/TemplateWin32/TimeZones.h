@@ -150,6 +150,43 @@ Map<FastName, FastName> namesMap =
   { FastName("Samoa Standard Time"), FastName("Pacific/Apia") },
   { FastName("Line Islands Standard Time"), FastName("Pacific/Kiritimati") }
 };
+
+Map<FastName, FastName> winStdToCommonNamesMap =
+{
+  { FastName("Russia TZ 1 Standard Time"), FastName("Kaliningrad Standard Time") },
+  { FastName("Russia TZ 2 Standard Time"), FastName("Russian Standard Time") },
+  { FastName("Russia TZ 3 Standard Time"), FastName("Russia Time Zone 3") },
+  { FastName("Russia TZ 4 Standard Time"), FastName("Ekaterinburg Standard Time") },
+  { FastName("Russia TZ 5 Standard Time"), FastName("N. Central Asia Standard Time") },
+  { FastName("Russia TZ 6 Standard Time"), FastName("North Asia Standard Time") },
+  { FastName("Russia TZ 7 Standard Time"), FastName("North Asia East Standard Time") },
+  { FastName("Russia TZ 8 Standard Time"), FastName("Yakutsk Standard Time") },
+  { FastName("Russia TZ 9 Standard Time"), FastName("Vladivostok Standard Time") },
+  { FastName("Russia TZ 10 Standard Time"), FastName("Russia Time Zone 10") },
+  { FastName("Russia TZ 11 Standard Time"), FastName("Russia Time Zone 11") },
+
+};
+
+String GetGeneralNameByStdName(const WideString& name)
+{
+    FastName stdName(WStringToString(name));
+
+    auto stdIter = TimeZoneHelper::winStdToCommonNamesMap.find(stdName);
+    if (stdIter != TimeZoneHelper::winStdToCommonNamesMap.end())
+    {
+        stdName = TimeZoneHelper::winStdToCommonNamesMap.at(stdName);
+    }
+
+    auto iter = TimeZoneHelper::namesMap.find(stdName);
+    if (iter == TimeZoneHelper::namesMap.end())
+    {
+        return String("");
+    }
+    FastName commonName = iter->second;
+
+    String timeZonename(commonName.c_str());
+    return timeZonename;
+}
 }
 }
 #endif

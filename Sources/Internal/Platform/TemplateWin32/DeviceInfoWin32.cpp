@@ -156,30 +156,12 @@ String DeviceInfoPrivate::GetTimeZone()
     TIME_ZONE_INFORMATION timeZoneInformation;
     DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
 
-    WCHAR* name;
-    switch (ret)
-    {
-    case TIME_ZONE_ID_DAYLIGHT:
-        name = timeZoneInformation.DaylightName;
-        break;
-    case TIME_ZONE_ID_STANDARD:
-    case TIME_ZONE_ID_UNKNOWN:
-    default:
-        name = timeZoneInformation.StandardName;
-        break;
-    }
+    WCHAR* stdName = timeZoneInformation.StandardName;
 
-    FastName timeZone(WStringToString(name));
+    String generalName = TimeZoneHelper::GetGeneralNameByStdName(stdName);
+    DVASSERT_MSG("No &s timezone found! Check time zones map", generalName.c_str());
 
-    auto iter = TimeZoneHelper::namesMap.find(timeZone);
-    if (iter == TimeZoneHelper::namesMap.end())
-    {
-        DVASSERT_MSG("No &s timezone found! Check time zones map", timeZone.c_str());
-        return String("");
-    }
-
-    String timeZonename(iter->second.c_str());
-    return timeZonename;
+    return generalName;
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
