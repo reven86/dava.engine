@@ -38,9 +38,7 @@ STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
 #
-DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
-DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
-DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG    
+DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
 #
 FIND_SYSTEM_LIBRARY                   
 FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
@@ -88,6 +86,10 @@ macro( setup_main_module )
             endforeach()
         endif()
 
+        if( ANDROID )
+            list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}}  )
+        endif()
+
         #"FIND LIBRARY"
         foreach( NAME ${FIND_SYSTEM_LIBRARY} ${FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}} )
             FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
@@ -116,8 +118,6 @@ macro( setup_main_module )
                 DEFINITIONS
                 DEFINITIONS_${DAVA_PLATFORM_CURENT}
                 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
-                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
-                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
                 )
 
         load_property( PROPERTY_LIST 
@@ -210,9 +210,8 @@ macro( setup_main_module )
 
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST )
                 list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${TARGET_MODULES_LIST} )
-
+                
             endif()
-
 
             if( DEFINITIONS_PRIVATE )
                 add_definitions( ${DEFINITIONS_PRIVATE} )
@@ -229,7 +228,6 @@ macro( setup_main_module )
             if( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
                 include_directories( ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} ) 
             endif() 
-
 
             target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )  
 
