@@ -30,8 +30,8 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
-#include "Debug/Profiler.h"
 
+#include "WinSystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/InputSystem.h"
@@ -43,6 +43,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "Debug/Profiler.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -991,6 +992,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
 
+            EnableHighResolutionTimer(false);
+
             if (appCore)
             {
                 // unpress all pressed buttons
@@ -1006,6 +1009,11 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         else
         {
             Logger::FrameworkDebug("[PlatformWin32] activate application");
+
+            //We need to activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
+            EnableHighResolutionTimer(true);
+
             if (appCore)
             {
                 appCore->OnResume();

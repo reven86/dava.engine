@@ -26,34 +26,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "SharedIcon.h"
-#include "Base/BaseTypes.h"
+#include "WinApiUAP.h"
 
-#include <QCoreApplication>
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-namespace SharedIconLocal
+MMRESULT(WINAPI* timeGetDevCaps)
+(LPTIMECAPS ptc, UINT cbtc) = nullptr;
+MMRESULT(WINAPI* timeBeginPeriod)
+(UINT uPeriod) = nullptr;
+MMRESULT(WINAPI* timeEndPeriod)
+(UINT uPeriod) = nullptr;
+
+namespace WinApiUAP
 {
-DAVA::UnorderedMap<DAVA::String, QIcon> sharedMap;
-struct CleanUpRegistrator
+bool initialized = false;
+
+void Initialize()
 {
-    CleanUpRegistrator()
+    if (!initialized)
     {
-        qAddPostRoutine([]()
-                        {
-                            sharedMap.clear();
-                        });
+        // Here land of black magic and fire-spitting dragons begins
+        MEMORY_BASIC_INFORMATION bi;
+        VirtualQuery(static_cast<void*>(&GetModuleFileNameA), &bi, sizeof(bi));
+        HMODULE hkernel = reinterpret_cast<HMODULE>(bi.AllocationBase);
+
+        HMODULE(WINAPI * LoadLibraryW)
+        (LPCWSTR lpLibFileName);
+        LoadLibraryW = reinterpret_cast<decltype(LoadLibraryW)>(GetProcAddress(hkernel, "LoadLibraryW"));
+
+        if (LoadLibraryW)
+        {
+            HMODULE hWinmm = LoadLibraryW(L"winmm.dll");
+            if (hWinmm)
+            {
+                timeGetDevCaps = reinterpret_cast<decltype(timeGetDevCaps)>(GetProcAddress(hWinmm, "timeGetDevCaps"));
+                timeBeginPeriod = reinterpret_cast<decltype(timeBeginPeriod)>(GetProcAddress(hWinmm, "timeBeginPeriod"));
+                timeEndPeriod = reinterpret_cast<decltype(timeEndPeriod)>(GetProcAddress(hWinmm, "timeEndPeriod"));
+            }
+        }
+
+        initialized = true;
     }
-} cleanUpRegistrator;
 }
 
-const QIcon& SharedIcon(const char* path)
+bool IsAvailable(eWinApiPart part)
 {
-    using namespace SharedIconLocal;
+    if (!initialized)
+        return false;
 
-    DAVA::String stringPath(path);
-    auto iconIter = sharedMap.find(stringPath);
-    if (iconIter != sharedMap.end())
-        return iconIter->second;
+    switch (part)
+    {
+    case WinApiUAP::SYSTEM_TIMER_SERVICE:
+        return (timeGetDevCaps && timeBeginPeriod && timeEndPeriod);
+        break;
+    default:
+        break;
+    }
 
-    return sharedMap.emplace(std::move(stringPath), QIcon(path)).first->second;
+    return false;
 }
+}
+
+#endif

@@ -675,8 +675,8 @@ void Core::SystemProcessFrame()
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
 
 //#endif
-
-#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
+// delete after change resize in Android and IOS (Core::WindowSizeChanged)
+#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
         VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
         if (vsc->WasScreenSizeChanged())
@@ -747,12 +747,12 @@ void Core::SystemProcessFrame()
     profiler::DumpAverage();
     #endif
 
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
     if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
     {
         ApplyWindowSize();
     }
-#endif // defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
+#endif // defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
 }
 
 void Core::GoBackground(bool isLock)
@@ -861,7 +861,6 @@ void Core::SetNativeView(void* newNativeView)
     DVASSERT(nullptr != newNativeView);
     if (screenMetrics.nativeView != newNativeView)
     {
-        screenMetrics.nativeViewModified = true;
         screenMetrics.nativeView = newNativeView;
     }
 }
@@ -881,7 +880,6 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
     screenMetrics.height = height;
     screenMetrics.scaleX = scaleX;
     screenMetrics.scaleY = scaleY;
-    screenMetrics.nativeViewModified = false;
     screenMetrics.screenMetricsModified = false;
     screenMetrics.initialized = true;
 
@@ -921,6 +919,7 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 void Core::ApplyWindowSize()
 {
     DVASSERT(Renderer::IsInitialized());
+    screenMetrics.screenMetricsModified = false;
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
     int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
 
@@ -928,12 +927,7 @@ void Core::ApplyWindowSize()
     rhi::ResetParam params;
     params.width = physicalWidth;
     params.height = physicalHeight;
-    screenMetrics.screenMetricsModified = false;
-    if (screenMetrics.nativeViewModified)
-    {
-        screenMetrics.nativeViewModified = false;
-        params.window = screenMetrics.nativeView;
-    }
+    params.window = screenMetrics.nativeView;
     Renderer::Reset(params);
 
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
