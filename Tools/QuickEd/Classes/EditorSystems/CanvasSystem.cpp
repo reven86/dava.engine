@@ -26,15 +26,20 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "CanvasSystem.h"
-#include "EditorSystems/EditorSystemsManager.h"
+
+#include "Base/Introspection.h"
 #include "UI/UIControl.h"
 #include "Base/BaseTypes.h"
+
+#include "CanvasSystem.h"
+#include "EditorSystems/EditorSystemsManager.h"
+
+#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/ControlProperties/RootProperty.h"
-#include "EditorSettings.h"
 
 using namespace DAVA;
 
@@ -47,50 +52,42 @@ public:
     ~GridControl() override = default;
 
 private:
-    void OnBackgroundTypeChanged(eBackgroundType type);
-    void OnBackgroundColorChanged(const Color& color);
     void Draw(const UIGeometricData& geometricData) override;
-    eBackgroundType coloredBackground = BackgroundTexture;
+    DAVA::Color GetBackgroundColor() const;
+    void SetBackgroundColor(const DAVA::Color& color);
+
+public:
+    INTROSPECTION_EXTEND(GridControl, UIControl,
+                         PROPERTY("backgroundColor", "Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         )
+
+    REGISTER_PREFERENCES
 };
+
+namespace GridControl_local
+{
+PreferencesRegistrator preferencesRegistrator(GridControl::TypeInfo(), { { DAVA::FastName("backgroundColor"), DAVA::VariantType(DAVA::Color()) } });
+}
 
 GridControl::GridControl()
 {
-    auto settings = EditorSettings::Instance();
-    OnBackgroundTypeChanged(settings->GetGridType());
-
-    settings->GridTypeChanged.Connect(this, &GridControl::OnBackgroundTypeChanged);
-    settings->GridColorChanged.Connect(this, &GridControl::OnBackgroundColorChanged);
+    background->SetDrawType(UIControlBackground::DRAW_TILED);
+    background->SetSprite("~res:/Gfx/GrayGrid", 0);
 }
 
-void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
+DAVA::Color GridControl::GetBackgroundColor() const
 {
-    coloredBackground = type;
-    switch (coloredBackground)
-    {
-    case BackgroundColor:
-        background->SetDrawType(UIControlBackground::DRAW_FILL);
-        background->SetColor(EditorSettings::Instance()->GetGrigColor());
-        break;
-    case BackgroundTexture:
-        background->SetDrawType(UIControlBackground::DRAW_TILED);
-        background->SetSprite("~res:/Gfx/GrayGrid", 0);
-        background->SetColor(Color());
-        break;
-    }
+    return background->GetColor();
 }
 
-void GridControl::OnBackgroundColorChanged(const Color& color)
+void GridControl::SetBackgroundColor(const DAVA::Color& color)
 {
     background->SetColor(color);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
 {
-    if (coloredBackground == BackgroundColor)
-    {
-        UIControl::Draw(geometricData);
-    }
-    else if (0.0f != geometricData.scale.x)
+    if (0.0f != geometricData.scale.x)
     {
         float32 invScale = 1.0f / geometricData.scale.x;
         UIGeometricData unscaledGd;

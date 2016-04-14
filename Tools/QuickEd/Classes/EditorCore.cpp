@@ -38,9 +38,6 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "EditorSettings.h"
-
-#include "AssetCache/AssetCacheClient.h"
 
 #include <QSettings>
 #include <QVariant>
@@ -55,6 +52,16 @@
 #include "UI/Package/PackageModel.h"
 
 using namespace DAVA;
+
+namespace EditorCore_local
+{
+PreferencesRegistrator preferencesRegistrator(EditorCore::TypeInfo(), {
+                                                                      { DAVA::FastName("isUsingAssetCache"), DAVA::VariantType(false) },
+                                                                      { DAVA::FastName("assetCacheIp"), DAVA::VariantType(AssetCache::LOCALHOST) },
+                                                                      { DAVA::FastName("assetCachePort"), DAVA::VariantType(0) },
+                                                                      { DAVA::FastName("assetCacheTimeout"), DAVA::VariantType(0) }
+                                                                      });
+}
 
 EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
@@ -173,17 +180,10 @@ void EditorCore::OnGLWidgedInitialized()
 
 void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
-    if (EditorSettings::Instance()->IsUsingAssetCache())
+    if (assetCacheEnabled)
     {
-        String ipStr = EditorSettings::Instance()->GetAssetCacheIp();
-
-        DAVA::AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? AssetCache::LOCALHOST : ipStr);
-        params.port = static_cast<DAVA::uint16>(EditorSettings::Instance()->GetAssetCachePort());
-        params.timeoutms = EditorSettings::Instance()->GetAssetCacheTimeoutSec() * 1000; //in ms
-
         cacheClient.reset(new AssetCacheClient(true));
-        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
+        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
         if (connected != AssetCache::Error::NO_ERRORS)
         {
             cacheClient.reset();
@@ -336,4 +336,44 @@ void EditorCore::OnExit()
     {
         qApp->quit();
     }
+}
+
+bool EditorCore::IsUsingAssetCache() const
+{
+    return assetCacheEnabled;
+}
+
+void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
+{
+    assetCacheEnabled = enabled;
+}
+
+DAVA::String EditorCore::GetAssetCacheIp() const
+{
+    return connectionParams.ip;
+}
+
+void EditorCore::SetAssetCacheIp(const DAVA::String& ip)
+{
+    connectionParams.ip = ip;
+}
+
+DAVA::uint16 EditorCore::GetAssetCachePort() const
+{
+    return connectionParams.port;
+}
+
+void EditorCore::SetAssetCachePort(DAVA::uint16 port)
+{
+    connectionParams.port = port;
+}
+
+DAVA::uint64 EditorCore::GetAssetCacheTimeout() const
+{
+    return connectionParams.timeoutms;
+}
+
+void EditorCore::SetAssetCacheTimeout(DAVA::uint64 timeout)
+{
+    connectionParams.timeoutms = timeout;
 }

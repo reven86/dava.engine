@@ -30,11 +30,14 @@
 #ifndef QUICKED_EDITOR_CORE_H
 #define QUICKED_EDITOR_CORE_H
 
-#include <QObject>
-#include "UI/mainwindow.h"
+
+#include "Base/Introspection.h"
 #include "Project/Project.h"
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "AssetCache/AssetCacheClient.h"
+#include "UI/mainwindow.h"
+#include <QObject>
 
 class QAction;
 class Document;
@@ -48,7 +51,7 @@ namespace DAVA
 class AssetCacheClient;
 }
 
-class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
+class EditorCore : public QObject, public DAVA::Singleton<EditorCore>, public DAVA::InspBase
 {
     Q_OBJECT
 public:
@@ -78,11 +81,19 @@ private slots:
     void OnExit();
 
 private:
-    void ApplyFileChanges();
-    Document* GetDocument(const QString& path) const;
     void OpenProject(const QString& path);
 
-    int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
+    bool IsUsingAssetCache() const;
+    void SetUsingAssetCacheEnabled(bool enabled);
+
+    DAVA::String GetAssetCacheIp() const;
+    void SetAssetCacheIp(const DAVA::String& ip);
+
+    DAVA::uint16 GetAssetCachePort() const;
+    void SetAssetCachePort(DAVA::uint16 port);
+
+    DAVA::uint64 GetAssetCacheTimeout() const;
+    void SetAssetCacheTimeout(DAVA::uint64 timeout);
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
@@ -90,6 +101,19 @@ private:
     Project* project = nullptr;
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
+
+    DAVA::AssetCacheClient::ConnectionParams connectionParams;
+    bool assetCacheEnabled;
+
+public:
+    INTROSPECTION(EditorCore,
+                  PROPERTY("isUsingAssetCache", "Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCacheIp", "Asset Cache IP", GetAssetCacheIp, SetAssetCacheIp, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCachePort", "Asset Cache Port", GetAssetCachePort, SetAssetCachePort, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCacheTimeout", "Asset Cache Timeout (ms)", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  )
+
+    REGISTER_PREFERENCES
 };
 
 inline EditorFontSystem* GetEditorFontSystem()

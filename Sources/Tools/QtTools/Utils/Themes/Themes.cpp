@@ -40,7 +40,7 @@
 
 namespace Themes_namespace
 {
-const DAVA::String themeSettingsKey = "ThemeName";
+const DAVA::FastName themeSettingsKey("ThemeName");
 }
 
 namespace Themes

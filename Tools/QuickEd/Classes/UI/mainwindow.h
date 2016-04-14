@@ -52,7 +52,7 @@ class SpritesPacker;
 class LoggerOutputObject;
 class Project;
 
-class MainWindow : public QMainWindow, public Ui::MainWindow, DAVA::InspBase
+class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspBase
 {
     Q_OBJECT
 
@@ -90,8 +90,6 @@ private slots:
     void OnShowHelp();
 
     void OnOpenProject();
-
-    void OnBackgroundCustomColorClicked();
 
     void OnPixelizationStateChanged(bool isPixelized);
 

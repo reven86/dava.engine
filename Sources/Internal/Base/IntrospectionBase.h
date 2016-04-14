@@ -160,6 +160,8 @@ public:
 
     virtual const InspMemberDynamic* Dynamic() const;
 
+    const InspInfo* GetParentInsp() const;
+
     int Flags() const;
 
 protected:

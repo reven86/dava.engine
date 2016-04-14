@@ -34,6 +34,7 @@
 #include "FileSystem/FilePath.h"
 #include "Base/StaticSingleton.h"
 #include "PreferencesRegistrator.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -43,10 +44,10 @@ class InspBase;
 class PreferencesStorage : public DAVA::StaticSingleton<PreferencesStorage>
 {
 public:
-    using DefaultValuesList = DAVA::Map<DAVA::String, DAVA::VariantType>;
+    using DefaultValuesList = DAVA::Map<DAVA::FastName, DAVA::VariantType>;
 
     PreferencesStorage();
-
+    ~PreferencesStorage();
     static void RegisterType(const DAVA::InspInfo* inspInfo, const DefaultValuesList& defaultValues = DefaultValuesList());
     template <typename T>
     static void RegisterPreferences(T* obj);
@@ -58,8 +59,14 @@ public:
 
     static void SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
 
-    static void SaveValueByKey(const DAVA::String& key, const DAVA::VariantType& value);
-    static DAVA::VariantType LoadValueByKey(const DAVA::String& key);
+    static void SaveValueByKey(const DAVA::FastName& key, const DAVA::VariantType& value);
+    static DAVA::VariantType LoadValueByKey(const DAVA::FastName& key);
+
+    static const DAVA::InspInfo* GetInspInfo(const DAVA::FastName& className);
+    static const DAVA::InspMember* GetInspMember(const DAVA::InspInfo* inspInfo, const DAVA::FastName& propertyName);
+
+    static void SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value);
+    static DAVA::VariantType GetPreferencesValue(const DAVA::InspMember* member);
 
     struct PreferencesStorageSaver
     {
@@ -67,13 +74,15 @@ public:
         ~PreferencesStorageSaver();
     };
 
+    DAVA::Signal<const DAVA::InspInfo*, const DAVA::InspMember*, const DAVA::VariantType&> ValueChanged;
+
 private:
     void SetupStoragePathImpl(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
     void RegisterPreferencesImpl(void* realObj, DAVA::InspBase* inspBase);
     void UnregisterPreferencesImpl(void* realObj, const DAVA::InspBase* inspBase);
 
-    void SaveValueByKeyImpl(const DAVA::String& key, const DAVA::VariantType& value);
-    DAVA::VariantType LoadValueByKeyImpl(const DAVA::String& key);
+    void SaveValueByKeyImpl(const DAVA::FastName& key, const DAVA::VariantType& value);
+    DAVA::VariantType LoadValueByKeyImpl(const DAVA::FastName& key);
 
     static DAVA::String GenerateKey(const DAVA::InspInfo* inspInfo);
 
@@ -82,6 +91,7 @@ private:
 
     struct ClassInfo;
     DAVA::Set<std::unique_ptr<ClassInfo>> registeredInsp;
+    DAVA::Map<const DAVA::InspInfo*, DAVA::Set<void*>> registeredObjects;
 };
 
 template <typename T>
@@ -97,6 +107,5 @@ void PreferencesStorage::UnregisterPreferences(T* realObject)
     static_assert(std::is_base_of<DAVA::InspBase, T>::value, "type T must be derived from InspBase");
     UnregisterPreferences(realObject, static_cast<DAVA::InspBase*>(realObject));
 }
-
 
 #endif //PREFERENCES_STORAGE

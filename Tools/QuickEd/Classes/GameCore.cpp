@@ -29,10 +29,12 @@
 
 #include "GameCore.h"
 
+#include "FileSystem/FileSystem.h"
+#include "UI/UIControlSystem.h"
+
 #include "Grid/GridVisualizer.h"
 
 //#include "ScreenManager.h"
-#include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Version.h"
@@ -66,8 +68,6 @@ GameCore::GameCore()
 GameCore::~GameCore()
 {
     GridVisualizer::Instance()->Release();
-
-    EditorSettings::Instance()->Release();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();

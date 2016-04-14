@@ -43,6 +43,7 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
 
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
@@ -54,15 +55,7 @@ namespace MainWindow_namespace
 const QString APP_GEOMETRY = "geometry";
 const QString APP_STATE = "windowstate";
 const QString CONSOLE_STATE = "console state";
-
-void SetColoredIconToAction(QAction* action, QColor color)
-{
-    QPixmap pixmap(16, 16);
-    pixmap.fill(color);
-    action->setIcon(pixmap);
-    action->setData(color);
-}
-}
+};
 
 using namespace DAVA;
 
@@ -311,84 +304,10 @@ void MainWindow::SetupBackgroundMenu()
 {
     menuView->addSeparator();
     // Setup the Background Color menu.
-    QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
     menuView->addSeparator();
-    menuView->addMenu(backgroundColorMenu);
-
-    QActionGroup* actionGroup = new QActionGroup(backgroundColorMenu);
-    QAction* defaultBackgroundColorAction = new QAction(tr("Default"), backgroundColorMenu);
-
-    actionGroup->addAction(defaultBackgroundColorAction);
-    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
-        if (toggled)
-        {
-            EditorSettings::Instance()->SetGridType(BackgroundTexture);
-        }
-    });
-
-    backgroundColorMenu->addAction(defaultBackgroundColorAction);
-    backgroundColorMenu->addSeparator();
-    static const struct
-    {
-        QColor color;
-        QString colorName;
-    } colorsMap[] =
-    {
-      { Qt::black, "Black" },
-      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
-      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
-      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
-    };
-    for (const auto& colorItem : colorsMap)
-    {
-        QAction* colorAction = new QAction(colorItem.colorName, backgroundColorMenu);
-        QColor color(colorItem.color);
-        MainWindow_namespace::SetColoredIconToAction(colorAction, color);
-
-        actionGroup->addAction(colorAction);
-        backgroundColorMenu->addAction(colorAction);
-        connect(colorAction, &QAction::toggled, [color](bool toggled) {
-            if (toggled)
-            {
-                EditorSettings::Instance()->SetGridType(BackgroundColor);
-                EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
-            }
-        });
-    }
-    QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
-    backgroundColorMenu->addAction(backgroundCustomColorAction);
-    connect(backgroundCustomColorAction, &QAction::triggered, this, &MainWindow::OnBackgroundCustomColorClicked);
-    actionGroup->addAction(backgroundCustomColorAction);
-
-    for (auto& action : actionGroup->actions())
-    {
-        action->setCheckable(true);
-    }
-    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
-        previousBackgroundColorAction = action;
-    });
-
-    auto editorSettings = EditorSettings::Instance();
-    if (!editorSettings->GetGridType())
-    {
-        defaultBackgroundColorAction->trigger();
-    }
-    else
-    {
-        QColor color = ColorToQColor(editorSettings->GetGrigColor());
-        for (auto& action : actionGroup->actions())
-        {
-            if (action->data().value<QColor>() == color)
-            {
-                action->trigger();
-            }
-        }
-        if (actionGroup->checkedAction() == nullptr)
-        {
-            MainWindow_namespace::SetColoredIconToAction(backgroundCustomColorAction, color);
-            backgroundCustomColorAction->setChecked(true);
-        }
-    }
+    QAction* backgroundColorAction = PreferencesActionsFactory::CreateActionForPreference(FastName("GridControl"), FastName("backgroundColor"), this);
+    backgroundColorAction->setText(tr("Background color"));
+    menuView->addAction(backgroundColorAction);
 }
 
 void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
@@ -401,24 +320,6 @@ void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
         menuRecent->addAction(recentProject);
     }
     menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
-}
-
-void MainWindow::OnBackgroundCustomColorClicked()
-{
-    QAction* customColorAction = qobject_cast<QAction*>(sender());
-    QColor curColor = customColorAction->data().value<QColor>();
-    QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
-    if (!color.isValid())
-    {
-        if (previousBackgroundColorAction != nullptr && previousBackgroundColorAction != customColorAction) //if we launch app with custom color previous color action will be nullptr
-        {
-            previousBackgroundColorAction->trigger();
-        }
-        return;
-    }
-    MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
-    EditorSettings::Instance()->SetGridType(BackgroundColor);
-    EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 
 void MainWindow::closeEvent(QCloseEvent* ev)

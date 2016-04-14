@@ -29,7 +29,6 @@
 
 #include "ResourcesManageHelper.h"
 //
-#include "EditorSettings.h"
 #include "StringUtils.h"
 #include "FileSystem/FileSystem.h"
 #include "StringConstants.h"
