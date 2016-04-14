@@ -122,7 +122,12 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             {
                 entry.isDirectory = (DT_DIR == namelist[n]->d_type);
             }
-            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+
+            if (entry.name != "." && entry.name != "..")
+            {
+                entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+            }
+
             if (entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
@@ -234,20 +239,11 @@ bool FileList::IsHidden(int32 index) const
     return fileList[index].isHidden;
 }
 
-//bool FileList::FileEntry::operator< (const FileList::FileEntry &other)
-//{
-//    if (!isDirectory && other.isDirectory)
-//    {
-//        return true;
-//    }
-//
-//    if (name < other.name)
-//    {
-//        return true;
-//    }
-//
-//    return false;
-//}
+uint32 FileList::GetFileSize(uint32 index) const
+{
+    DVASSERT(index < (uint32)fileList.size());
+    return fileList[index].size;
+}
 
 void FileList::Sort()
 {

@@ -26,6 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "FileSystem/FileList.h"
+#include "Functional/Function.h"
+#include "Render/Image/ImageSystem.h"
+
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "ImageTools/ImageTools.h"
 #include "Settings/SettingsManager.h"
@@ -130,7 +134,7 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
 
 void CreateDescriptorsForFolder(const FilePath& folderPath, const KeyedArchive* preset)
 {
-    auto fileAction = MakeFunction(&Internal::CreateOrUpdateDescriptor);
+    auto fileAction = DAVA::MakeFunction(&Internal::CreateOrUpdateDescriptor);
     RecursiveWalk(fileAction, folderPath, preset);
 }
 
@@ -165,7 +169,7 @@ void SetPreset(const FilePath& descriptorPath, const KeyedArchive* preset, bool 
 
 void SetPresetForFolder(const FilePath& folder, const KeyedArchive* preset, bool toConvert, TextureConverter::eConvertQuality quality)
 {
-    auto fileAction = MakeFunction(&Internal::SetPreset);
+    auto fileAction = DAVA::MakeFunction(&Internal::SetPreset);
     RecursiveWalk(fileAction, folder, preset, toConvert, quality);
 }
 
@@ -173,7 +177,7 @@ void SetPresetForFolder(const FilePath& folder, const KeyedArchive* preset, bool
 
 void ResaveDescriptorsForFolder(const FilePath& folderPath)
 {
-    auto fileAction = MakeFunction(&ResaveDescriptor);
+    auto fileAction = DAVA::MakeFunction(&ResaveDescriptor);
     Internal::RecursiveWalk(fileAction, folderPath);
 }
 
@@ -201,7 +205,7 @@ bool CreateOrUpdateDescriptor(const DAVA::FilePath& texturePath, const DAVA::Fil
 
 void SetCompressionParamsForFolder(const FilePath& folderPath, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression>& compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps)
 {
-    auto fileAction = MakeFunction(&SetCompressionParams);
+    auto fileAction = DAVA::MakeFunction(&SetCompressionParams);
     Internal::RecursiveWalk(fileAction, folderPath, compressionParams, convertionEnabled, force, quality, generateMipMaps);
 }
 

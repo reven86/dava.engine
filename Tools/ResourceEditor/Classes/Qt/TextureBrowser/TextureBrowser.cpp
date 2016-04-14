@@ -240,12 +240,11 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
     // second set texture view to appropriate state
     if (NULL != curTexture && NULL != curDescriptor)
     {
-        bool needConvert = true;
-
+        bool needConvert = (convertMode != eTextureConvertMode::CONVERT_NOT_REQUESTED);
         // set empty image to converted image view. it will be visible until
         // conversion done (signal by textureConvertor).
         ui->textureAreaConverted->setImage(QImage());
-        ui->textureAreaConverted->waitbarShow(true);
+        ui->textureAreaConverted->waitbarShow(needConvert);
 
         // set current tab
         ui->viewTabBar->setCurrentIndex(curTextureView);
@@ -256,8 +255,7 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
             // try to find image in cache
             const QList<QImage>& images = TextureCache::Instance()->getConverted(curDescriptor, view);
 
-            if (images.size() > 0 &&
-                !images[0].isNull())
+            if (images.size() > 0 && !images[0].isNull())
             {
                 // image already in cache, just draw it
                 updateConvertedImageAndInfo(images, *curDescriptor);
@@ -271,6 +269,10 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
         {
             // Start convert. Signal will be emitted when conversion done
             TextureConvertor::Instance()->GetConverted(curDescriptor, view, convertMode);
+        }
+        else
+        {
+            infoConvertedIsUpToDate = true;
         }
     }
 

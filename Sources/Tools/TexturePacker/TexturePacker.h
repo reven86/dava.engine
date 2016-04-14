@@ -37,6 +37,7 @@
 #include "Math/Math2D.h"
 #include "TextureCompression/TextureConverter.h"
 #include "TexturePacker/Spritesheet.h"
+#include "TexturePacker/DefinitionFile.h"
 
 namespace DAVA
 {
@@ -46,8 +47,8 @@ class FilePath;
 
 struct SpriteItem
 {
+    DefinitionFile::Pointer defFile;
     uint32 spriteWeight = 0;
-    DefinitionFile* defFile = nullptr;
     uint32 frameIndex = 0;
 };
 
@@ -76,11 +77,11 @@ public:
     TexturePacker();
 
     // pack textures to single texture
-    void PackToTextures(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU);
+    void PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU);
     // page each PSD file to separate texture
-    void PackToTexturesSeparate(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU);
+    void PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU);
     // pack one sprite and use several textures if more than one needed
-    void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& remainingList, eGPUFamily forGPU);
+    void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& remainingList, eGPUFamily forGPU);
 
     void SetUseOnlySquareTextures();
     void SetMaxTextureSize(uint32 maxTextureSize);
@@ -118,15 +119,14 @@ private:
 
     bool CheckFrameSize(const Size2i& spriteSize, const Size2i& frameSize);
 
-    Vector<SpriteItem> PrepareSpritesVector(const List<DefinitionFile*>& defList);
-
+    Vector<SpriteItem> PrepareSpritesVector(const DefinitionFile::Collection& defList);
     Vector<std::unique_ptr<SpritesheetLayout>> PackSprites(Vector<SpriteItem>& spritesToPack, const Vector<ImageExportKeys>& imageExportKeys);
-    void SaveResultSheets(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const Vector<ImageExportKeys>& imageExportKeys);
+    void SaveResultSheets(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const Vector<ImageExportKeys>& imageExportKeys);
 
     int32 TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem>& tempSortVector, bool fullPackOnly);
 
-    bool WriteDefinition(const std::unique_ptr<SpritesheetLayout>& sheet, const FilePath& outputPath, const String& textureName, DefinitionFile* defFile);
-    bool WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedAtlases, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile);
+    bool WriteDefinition(const std::unique_ptr<SpritesheetLayout>& sheet, const FilePath& outputPath, const String& textureName, const DefinitionFile& defFile);
+    bool WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedAtlases, const FilePath& outputPath, const String& _textureName, const DefinitionFile& defFile);
     void WriteDefinitionString(FILE* fp, const Rect2i& writeRect, const Rect2i& originRect, int textureIndex, const String& frameName);
 
     void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const SpriteBoundsRect& drawRect, const Rect2i& frameRect);

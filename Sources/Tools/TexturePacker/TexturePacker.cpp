@@ -105,7 +105,7 @@ DAVA::int32 TexturePacker::TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem
 
     for (uint32 i = 0; i < tempSortVector.size();)
     {
-        DefinitionFile* defFile = tempSortVector[i].defFile;
+        const DefinitionFile::Pointer& defFile = tempSortVector[i].defFile;
         uint32 frame = tempSortVector[i].frameIndex;
         if (sheet->AddSprite(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
         {
@@ -124,22 +124,22 @@ DAVA::int32 TexturePacker::TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem
     return weight;
 }
 
-void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU)
+void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU)
 {
     Logger::FrameworkDebug("Packing to separate textures");
 
-    for (DefinitionFile* defFile : defsList)
+    for (const DefinitionFile::Pointer& defFile : defsList)
     {
         PackToMultipleTextures(outputPath, defFile->filename.GetBasename().c_str(), { defFile }, forGPU);
     }
 }
 
-void TexturePacker::PackToTextures(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU)
+void TexturePacker::PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU)
 {
     PackToMultipleTextures(outputPath, "texture", defsList, forGPU);
 }
 
-void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& defList, eGPUFamily forGPU)
+void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, eGPUFamily forGPU)
 {
     DVASSERT_MSG(packAlgorithms.empty() == false, "Packing algorithm was not specified");
 
@@ -149,10 +149,10 @@ void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const cha
     SaveResultSheets(outputPath, basename, defList, resultSheets, imageExportKeys);
 }
 
-Vector<SpriteItem> TexturePacker::PrepareSpritesVector(const List<DefinitionFile*>& defList)
+Vector<SpriteItem> TexturePacker::PrepareSpritesVector(const DefinitionFile::Collection& defList)
 {
     Vector<SpriteItem> spritesToPack;
-    for (DefinitionFile* defFile : defList)
+    for (const DefinitionFile::Pointer& defFile : defList)
     {
         for (uint32 frame = 0; frame < defFile->frameCount; ++frame)
         {
@@ -235,7 +235,7 @@ Vector<std::unique_ptr<SpritesheetLayout>> TexturePacker::PackSprites(Vector<Spr
     return resultSheets;
 }
 
-void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const Vector<ImageExportKeys>& imageExportKeys)
+void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const Vector<ImageExportKeys>& imageExportKeys)
 {
     Logger::FrameworkDebug("* Writing %d final texture(s)", resultSheets.size());
 
@@ -245,7 +245,7 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
         finalImages[i].Create(resultSheets[i]->GetRect().dx, resultSheets[i]->GetRect().dy);
     }
 
-    for (DefinitionFile* defFile : defList)
+    for (const DefinitionFile::Pointer& defFile : defList)
     {
         for (uint32 frame = 0; frame < defFile->frameCount; ++frame)
         {
@@ -285,43 +285,47 @@ void TexturePacker::SaveResultSheets(const FilePath& outputPath, const char* bas
         ExportImage(finalImages[imageNum], imageExportKeys, textureName);
     }
 
-    for (DefinitionFile* defFile : defList)
+    for (const DefinitionFile::Pointer& defFile : defList)
     {
         String fileName = defFile->filename.GetFilename();
         FilePath textureName = outputPath + "texture";
 
-        if (!WriteMultipleDefinition(resultSheets, outputPath, basename, defFile))
+        if (!WriteMultipleDefinition(resultSheets, outputPath, basename, *(defFile.Get())))
         {
             AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
         }
     }
 }
 
-bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedSheets, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile)
+bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<SpritesheetLayout>>& usedSheets, const FilePath& outputPath,
+                                            const String& _textureName, const DefinitionFile& defFile)
 {
-    String fileName = defFile->filename.GetFilename();
+    String fileName = defFile.filename.GetFilename();
     Logger::FrameworkDebug("* Write definition: %s", fileName.c_str());
 
     FilePath defFilePath = outputPath + fileName;
     FILE* fp = fopen(defFilePath.GetAbsolutePathname().c_str(), "wt");
-    if (!fp)
+    if (fp == nullptr)
+    {
+        AddError(Format("Unable to open file for writing: %s", defFilePath.GetAbsolutePathname().c_str()));
         return false;
+    }
 
     String textureExtension = TextureDescriptor::GetDescriptorExtension();
 
     Vector<int> frameToSheetIndex;
-    frameToSheetIndex.resize(defFile->frameCount);
+    frameToSheetIndex.resize(defFile.frameCount);
 
     Map<int, int> sheetIndexToFileIndex;
 
     // find used texture indexes for this sprite
-    for (uint32 frame = 0; frame < defFile->frameCount; ++frame)
+    for (uint32 frame = 0; frame < defFile.frameCount; ++frame)
     {
         const SpriteBoundsRect* packedInfo = 0;
         uint32 sheetIndex = 0;
         for (; sheetIndex < usedSheets.size(); ++sheetIndex)
         {
-            packedInfo = usedSheets[sheetIndex]->GetSpriteBoundsRect(&defFile->frameRects[frame]);
+            packedInfo = usedSheets[sheetIndex]->GetSpriteBoundsRect(&defFile.frameRects[frame]);
             if (packedInfo)
                 break;
         }
@@ -347,28 +351,28 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
         }
     }
 
-    fprintf(fp, "%d %d\n", defFile->spriteWidth, defFile->spriteHeight);
-    fprintf(fp, "%d\n", defFile->frameCount);
-    for (uint32 frame = 0; frame < defFile->frameCount; ++frame)
+    fprintf(fp, "%d %d\n", defFile.spriteWidth, defFile.spriteHeight);
+    fprintf(fp, "%d\n", defFile.frameCount);
+    for (uint32 frame = 0; frame < defFile.frameCount; ++frame)
     {
         const SpriteBoundsRect* spriteBounds = nullptr;
         for (const std::unique_ptr<SpritesheetLayout>& atlas : usedSheets)
         {
-            spriteBounds = atlas->GetSpriteBoundsRect(&defFile->frameRects[frame]);
+            spriteBounds = atlas->GetSpriteBoundsRect(&defFile.frameRects[frame]);
             if (spriteBounds)
                 break;
         }
         int packerIndex = sheetIndexToFileIndex[frameToSheetIndex[frame]]; // here get real index in file for our used texture
         if (spriteBounds)
         {
-            const Rect2i& origRect = defFile->frameRects[frame];
+            const Rect2i& origRect = defFile.frameRects[frame];
             const Rect2i& writeRect = spriteBounds->spriteRect;
-            String frameName = defFile->frameNames.size() > 0 ? defFile->frameNames[frame] : String();
+            String frameName = defFile.frameNames.size() > 0 ? defFile.frameNames[frame] : String();
             WriteDefinitionString(fp, writeRect, origRect, packerIndex, frameName);
 
-            if (!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
+            if (!CheckFrameSize(Size2i(defFile.spriteWidth, defFile.spriteHeight), writeRect.GetSize()))
             {
-                Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
+                Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile.filename.GetBasename().c_str(), frame);
             }
         }
         else
@@ -381,12 +385,6 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
             FileSystem::Instance()->DeleteFile(outputPath + fileName);
             return false;
         }
-    }
-
-    for (int pathInfoLine = 0; pathInfoLine < (int)defFile->pathsInfo.size(); ++pathInfoLine)
-    {
-        String& line = defFile->pathsInfo[pathInfoLine];
-        fprintf(fp, "%s", line.c_str());
     }
 
     fclose(fp);

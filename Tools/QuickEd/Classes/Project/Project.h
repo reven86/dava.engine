@@ -33,8 +33,10 @@
 #include <QObject>
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
+#include "Base/Result.h"
 
 class PackageNode;
+class QFileInfo;
 
 class Project : public QObject
 {
@@ -48,10 +50,13 @@ public:
     virtual ~Project();
     bool Open(const QString& path);
     void Close();
-    bool CheckAndUnlockProject(const QString& projectPath);
+    bool CanOpenProject(const QString& path) const;
 
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
+    static const QString& GetScreensRelativePath();
+    static const QString& GetProjectFileName();
+    QString CreateNewProject(DAVA::Result* result = nullptr);
 
 private:
     bool OpenInternal(const QString& path);
@@ -79,15 +84,5 @@ private:
     DAVA::FilePath projectPath;
     QString projectName;
 };
-
-inline EditorFontSystem* Project::GetEditorFontSystem() const
-{
-    return editorFontSystem;
-}
-
-inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
-{
-    return editorLocalizationSystem;
-}
 
 #endif // QUICKED__PROJECT_H__

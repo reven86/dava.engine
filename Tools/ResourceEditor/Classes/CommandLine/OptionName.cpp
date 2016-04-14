@@ -74,6 +74,11 @@ const DAVA::String OptionName::SavePreset("-savepreset");
 const DAVA::String OptionName::PresetOpt("-preset");
 const DAVA::String OptionName::PresetsList("-presetslist");
 
+const DAVA::String OptionName::UseAssetCache("-useCache");
+const DAVA::String OptionName::AssetCacheIP("-ip");
+const DAVA::String OptionName::AssetCachePort("-p");
+const DAVA::String OptionName::AssetCacheTimeout("-t");
+
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {
     return ("-" + DAVA::GPUFamilyDescriptor::GetGPUName(gpuFamily));

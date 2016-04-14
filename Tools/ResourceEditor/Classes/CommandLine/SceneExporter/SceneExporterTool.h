@@ -32,8 +32,11 @@
 
 #include "CommandLine/CommandLineTool.h"
 #include "TextureCompression/TextureConverter.h"
+#include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheClient.h"
 
-class SceneExporter;
+#include "CommandLine/SceneExporter/SceneExporter.h"
+
 class SceneExporterTool : public CommandLineTool
 {
     enum eAction : DAVA::int8
@@ -43,14 +46,6 @@ class SceneExporterTool : public CommandLineTool
         ACTION_EXPORT_FILE,
         ACTION_EXPORT_FOLDER,
         ACTION_EXPORT_FILELIST
-    };
-
-    enum eObject : DAVA::int32
-    {
-        OBJECT_NONE = -1,
-
-        OBJECT_SCENE = 0,
-        OBJECT_TEXTURE
     };
 
 public:
@@ -63,26 +58,26 @@ private:
     void ProcessInternal() override;
     DAVA::FilePath GetQualityConfigPath() const override;
 
-    void ExportFolder(SceneExporter& exporter);
-    void ExportFile(SceneExporter& exporter);
-    void ExportFileList(SceneExporter& exporter);
-
-    eAction commandAction = ACTION_NONE;
-    eObject commandObject = OBJECT_NONE;
-
-    DAVA::String filename;
-    DAVA::String foldername;
-    DAVA::FilePath fileListPath;
+    SceneExporter::ExportedObjectCollection exportedObjects;
+    DAVA::AssetCacheClient::ConnectionParams connectionsParams;
 
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
     DAVA::FilePath qualityConfigPath;
 
+    DAVA::String filename;
+    DAVA::String foldername;
+    DAVA::FilePath fileListPath;
+
+    eAction commandAction = ACTION_NONE;
+    SceneExporter::eExportedObjectType commandObject = SceneExporter::OBJECT_NONE;
+
     DAVA::eGPUFamily requestedGPU = DAVA::GPU_ORIGIN;
+    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
+
     bool optimizeOnExport = true;
     bool exportForAllGPUs = false;
-
-    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
+    bool useAssetCache = false;
 };
 
 
