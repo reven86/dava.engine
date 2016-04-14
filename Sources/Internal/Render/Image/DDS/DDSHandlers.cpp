@@ -74,6 +74,15 @@ const uint32 FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
 
 const uint32 FOURCC_DX10 = MAKEFOURCC('D', 'X', '1', '0');
 
+const uint32 DDSD_CAPS = 0x1U;
+const uint32 DDSD_HEIGHT = 0x2U;
+const uint32 DDSD_WIDTH = 0x4U;
+const uint32 DDSD_PITCH = 0x8U;
+const uint32 DDSD_PIXELFORMAT = 0x1000U;
+const uint32 DDSD_MIPMAPCOUNT = 0x20000U;
+const uint32 DDSD_LINEARSIZE = 0x80000U;
+const uint32 DDSD_DEPTH = 0x800000;
+
 const uint32 DDSCAPS_COMPLEX = 0x00000008U;
 const uint32 DDSCAPS_TEXTURE = 0x00001000U;
 const uint32 DDSCAPS_MIPMAP = 0x00400000U;
@@ -625,6 +634,8 @@ bool DDSHandler::SetFormatInfo()
     uint32& aMask = mainHeader.format.ABitMask;
     uint32& fourcc = mainHeader.format.fourCC;
 
+    mainHeader.format.size = sizeof(dds::DDS_PIXELFORMAT);
+
     needDirectConvert = false;
 
     switch (davaPixelFormat)
@@ -689,6 +700,7 @@ bool DDSHandler::SetFormatInfo()
         break;
     }
     case FORMAT_DXT1:
+    case FORMAT_DXT1A:
     {
         flags = dds::DDPF_FOURCC;
         fourcc = dds::FOURCC_DX10;
@@ -947,6 +959,15 @@ void DDSHandler::FetchPixelFormats()
             }
         }
     }
+
+    if (davaPixelFormat == FORMAT_DXT1) // can actually be DXT1A
+    {
+        PixelFormat storedFormat = static_cast<PixelFormat>(mainHeader.reserved.davaPixelFormat);
+        if (storedFormat == FORMAT_DXT1 || storedFormat == FORMAT_DXT1A)
+        {
+            davaPixelFormat = storedFormat;
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1005,7 +1026,7 @@ ImageInfo DDSReaderImpl::GetImageInfo()
         }
 
         info.dataSize = file->GetSize() - headersSize;
-        info.mipmapsCount = mainHeader.mipMapCount;
+        info.mipmapsCount = Max(mainHeader.mipMapCount, 1u); // for dds, image without multiple mipmaps has mipcount = 0, for us - it's 1
         info.faceCount = faceCount;
     }
 
@@ -1157,16 +1178,28 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
     DVASSERT(images[0].empty() == false);
     DVASSERT(images[0][0] != nullptr);
 
-    mainHeader.mipMapCount = static_cast<uint32>(images[0].size());
+    auto numImagesInFace = images[0].size();
+
+    mainHeader.size = sizeof(dds::DDS_HEADER);
+    mainHeader.mipMapCount = 0;
+    mainHeader.flags = dds::DDSD_CAPS | dds::DDSD_WIDTH | dds::DDSD_HEIGHT | dds::DDSD_PIXELFORMAT;
     mainHeader.width = images[0][0]->width;
     mainHeader.height = images[0][0]->height;
+    mainHeader.caps = dds::DDSCAPS_TEXTURE;
+
+    if (numImagesInFace > 1)
+    {
+        mainHeader.mipMapCount = static_cast<uint32>(numImagesInFace);
+        mainHeader.flags |= dds::DDSD_MIPMAPCOUNT;
+        mainHeader.caps |= (dds::DDSCAPS_COMPLEX | dds::DDSCAPS_MIPMAP);
+    }
 
     PixelFormat srcFormat = images[0][0]->format;
 
     faceCount = 0;
     for (const Vector<Image*>& mips : images)
     {
-        DVASSERT_MSG(mips.size() == mainHeader.mipMapCount, "image faces have different mips count");
+        DVASSERT_MSG(mips.size() == numImagesInFace, "image faces have different mips count");
         DVASSERT(mips[0] != nullptr);
         faces[faceCount++] = static_cast<rhi::TextureFace>(mips[0]->cubeFaceID);
         for (const Image* image : mips)
