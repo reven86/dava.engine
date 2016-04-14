@@ -580,10 +580,15 @@ function ClearField(field)
     KeyPress(2)
 end
 
-function FastSelectControl(control)
-    Log('Scroll to contorol '.. control .. ' through API')
-    autotestingSystem:ScrollToControl(control)
-    return ClickControl(control)
+function FastSelectControl(name, waitTime)
+    local waitTime = waitTime or SMALL_TIMEOUT
+    if not WaitControl(name, waitTime) then
+        Log("Control " .. name .. " not found.")
+        return false
+    end
+    Log('Scroll to contorol '.. name .. ' through API')
+    autotestingSystem:ScrollToControl(name)
+    return ClickControl(name)
 end
 
 function SelectItemInList(listName, item)
