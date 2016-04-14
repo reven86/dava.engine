@@ -130,7 +130,7 @@ public:
         FileInfo actual;
     };
 
-    PatchFileReader(const FilePath& path, bool beVerbose = false);
+    PatchFileReader(const FilePath& path, bool beVerbose = false, bool enablePermissive = false);
     ~PatchFileReader();
 
     bool ReadFirst();
@@ -150,6 +150,7 @@ public:
     bool Apply(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
 
 protected:
+    bool isPermissiveMode;
     File* patchFile;
     PatchInfo curInfo;
     FilePath logFilePath;

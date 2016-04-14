@@ -888,7 +888,7 @@ void DLC::StepPatchCancel()
 void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
-    PatchFileReader patchReader(dlcContext.remotePatchStorePath);
+    PatchFileReader patchReader(dlcContext.remotePatchStorePath, false, true);
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] PatchReader created");
     bool applySuccess = true;
     const PatchInfo* patchInfo = nullptr;

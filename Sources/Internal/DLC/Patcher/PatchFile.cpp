@@ -434,8 +434,9 @@ void PatchFileWriter::EnumerateDir(const FilePath& dirPath, const FilePath& base
 // ======================================================================================
 // PatchFileReader
 // ======================================================================================
-PatchFileReader::PatchFileReader(const FilePath& path, bool beVerbose)
-    : verbose(beVerbose)
+PatchFileReader::PatchFileReader(const FilePath& path, bool beVerbose, bool enablePermissive)
+    : isPermissiveMode(enablePermissive)
+    , verbose(beVerbose)
     , lastError(ERROR_NO)
     , parseError(ERROR_NO)
     , lastFileErrno(0)
@@ -921,12 +922,17 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
         else
         {
             // should original file exists?
-            if (!curInfo.origPath.empty())
+            // PermissiveMode allows to delete changed files if they should be deleted
+            if (!isPermissiveMode && !curInfo.origPath.empty())
             {
                 // check original crc
                 uint32 origCRC = CRC32::ForFile(origPath);
                 if (origCRC != curInfo.origCRC)
                 {
+                    lastErrorDetails.actual.crc = origCRC;
+                    lastErrorDetails.expected.crc = curInfo.origCRC;
+                    lastErrorDetails.actual.path = origPath;
+                    lastErrorDetails.expected.path = curInfo.origPath;
                     lastError = ERROR_ORIG_FILE_CRC;
                     ret = false;
                     Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Original crc doesn't matches to expected. %s", origPath.GetAbsolutePathname().c_str());
