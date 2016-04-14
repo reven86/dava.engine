@@ -187,9 +187,17 @@ namespace DAVA
         return true;
     }
 
+    struct PCMBuffer
+    {
+        uint8* data;
+        uint32 size;
+    };
+    static std::queue<PCMBuffer> pcmBuffers;
+
     FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
     {
         // Read from your buffer here...
+
         return FMOD_OK;
     }
 
@@ -244,9 +252,9 @@ namespace DAVA
         int out_sample_rate = 44100;
         int out_channels = AV::av_get_channel_layout_nb_channels(out_channel_layout);
         //Out Buffer Size
-        int out_buffer_size = av_samples_get_buffer_size(nullptr, out_channels, out_nb_samples, out_sample_fmt, 1);
+        outAudioBufferSize = static_cast<uint32>(av_samples_get_buffer_size(nullptr, out_channels, out_nb_samples, out_sample_fmt, 1));
 
-        out_buffer = (uint8_t*)AV::av_mallocz(maxAudioFrameSize * 2);
+        outAudioBuffer = (uint8_t*)AV::av_mallocz(maxAudioFrameSize * 2);
         audioFrame = AV::av_frame_alloc();
 
         //FIX:Some Codec's Context Information is missing
@@ -388,12 +396,16 @@ namespace DAVA
             }
             if (got_data > 0)
             {
-                AV::swr_convert(audioConvertContext, &out_buffer, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
+                AV::swr_convert(audioConvertContext, &outAudioBuffer, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
                 index++;
             }
 
-            uint8_t** frameData = audioFrame->data;
-            //audioFrame->linesize[]
+            uint8* buf = new uint8[outAudioBufferSize];
+            Memcpy(buf, outAudioBuffer, outAudioBufferSize);
+            PCMBuffer buffer;
+            buffer.data = buf;
+            buffer.size = outAudioBufferSize;
+            pcmBuffers.push(buffer);
         }
         av_free_packet(packet);
     }
