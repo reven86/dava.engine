@@ -126,7 +126,7 @@ public:
             uint32 crc = 0;
         };
 
-        PatchError value = ERROR_NO;
+        PatchError patchingError = ERROR_NO;
 
         FileInfo expected;
         FileInfo actual;
@@ -146,7 +146,7 @@ public:
 
     void SetLogsFilePath(const FilePath& path);
     PatchFileReader::PatchError GetParseError() const;
-    PatchFileReader::PatchingErrorDetails GetLastErrorDetails() const;
+    PatchFileReader::PatchingErrorDetails GetLastError() const;
 
     bool Truncate();
     bool Apply(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
@@ -155,11 +155,10 @@ protected:
     File* patchFile;
     PatchInfo curInfo;
     FilePath logFilePath;
-    PatchError lastError;
     PatchError parseError;
     bool verbose;
     bool eof;
-    PatchingErrorDetails lastErrorDetails;
+    PatchingErrorDetails lastErrorWithDetails;
 
     Vector<int32> patchPositions;
     size_t initialPositionsCount;
@@ -180,9 +179,9 @@ inline PatchFileReader::PatchError PatchFileReader::GetParseError() const
     return parseError;
 }
 
-inline PatchFileReader::PatchingErrorDetails PatchFileReader::GetLastErrorDetails() const
+inline PatchFileReader::PatchingErrorDetails PatchFileReader::GetLastError() const
 {
-    return lastErrorDetails;
+    return lastErrorWithDetails;
 }
 }
 

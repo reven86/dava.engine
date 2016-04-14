@@ -55,18 +55,6 @@ public:
         DE_CONNECT_ERROR // Can't connect to remote host
     };
 
-    struct DLCErrorDetails
-    {
-        struct DLCFileErr
-        {
-            int32 fileErrno = 0;
-            FilePath path;
-        };
-        DLCError dlcError = DE_NO_ERROR;
-        DLCFileErr fileError;
-        PatchFileReader::PatchingErrorDetails patchingError;
-    };
-
     enum DLCState
     {
         DS_INIT,
@@ -123,14 +111,24 @@ public:
     DLCState GetState() const;
 
     /**
-        \brief Returns DLC state machine error with details.
-    */
-    DLCErrorDetails GetErrorDetails() const;
-
-    /**
         \brief Returns DLC state machine error.
     */
     DLCError GetError() const;
+
+    /**
+    \brief Return errno from patching process
+    */
+    int32 GetLastErrno() const;
+
+    /** 
+        \brief Return error details from patching process
+    */
+    PatchFileReader::PatchingErrorDetails GetLastErrorInfo() const;
+
+    /**
+        \brief Return patching error
+    */
+    PatchFileReader::PatchError GetPatchError() const;
 
     /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
@@ -193,7 +191,9 @@ protected:
         uint32 totalPatchCount;
         uint32 appliedPatchCount;
         volatile bool patchInProgress;
-        DLCErrorDetails errorDetails;
+        int32 lastErrno;
+        PatchFileReader::PatchError patchingError;
+        PatchFileReader::PatchingErrorDetails lastPatchingErrorDetails;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;
@@ -202,6 +202,7 @@ protected:
 
     FilePath logsFilePath;
     DLCState dlcState;
+    DLCError dlcError;
     DLCContext dlcContext;
 
     // FSM variables

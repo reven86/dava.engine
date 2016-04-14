@@ -42,6 +42,7 @@ namespace DAVA
 {
 DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinationDir, const FilePath& workingDir, const String& gameVersion, const FilePath& resVersionPath, bool forceFullUpdate)
     : dlcState(DS_INIT)
+    , dlcError(DE_NO_ERROR)
     , patchingThread(NULL)
 {
     DVASSERT(workingDir.IsDirectoryPathname());
@@ -84,7 +85,9 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
     dlcContext.patchInProgress = true;
     dlcContext.totalPatchCount = 0;
     dlcContext.appliedPatchCount = 0;
-    dlcContext.errorDetails = DLCErrorDetails();
+    dlcContext.patchingError = PatchFileReader::ERROR_NO;
+    dlcContext.lastErrno = 0;
+    dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
@@ -147,14 +150,24 @@ DLC::DLCState DLC::GetState() const
     return dlcState;
 }
 
-DLC::DLCErrorDetails DLC::GetErrorDetails() const
-{
-    return dlcContext.errorDetails;
-}
-
 DLC::DLCError DLC::GetError() const
 {
-    return dlcContext.errorDetails.dlcError;
+    return dlcError;
+}
+
+int32 DLC::GetLastErrno() const
+{
+    return dlcContext.lastErrno;
+}
+
+PatchFileReader::PatchingErrorDetails DLC::GetLastErrorInfo() const
+{
+    return dlcContext.lastPatchingErrorDetails;
+}
+
+PatchFileReader::PatchError DLC::GetPatchError() const
+{
+    return dlcContext.patchingError;
 }
 
 FilePath DLC::GetMetaStorePath() const
@@ -175,7 +188,7 @@ void DLC::PostEvent(DLCEvent event)
 
 void DLC::PostError(DLCError error)
 {
-    dlcContext.errorDetails.dlcError = error;
+    dlcError = error;
     PostEvent(EVENT_ERROR);
 }
 
@@ -212,7 +225,7 @@ void DLC::FSM(DLCEvent event)
             }
             break;
         case EVENT_CANCEL:
-            dlcContext.errorDetails.dlcError = DE_WAS_CANCELED;
+            dlcError = DE_WAS_CANCELED;
             dlcState = DS_DONE;
             break;
         default:
@@ -301,7 +314,7 @@ void DLC::FSM(DLCEvent event)
             dlcState = DS_DOWNLOADING;
             break;
         case EVENT_CANCEL:
-            dlcContext.errorDetails.dlcError = DE_WAS_CANCELED;
+            dlcError = DE_WAS_CANCELED;
             dlcState = DS_DONE;
             break;
         default:
@@ -354,7 +367,7 @@ void DLC::FSM(DLCEvent event)
         case EVENT_DOWNLOAD_OK:
         case EVENT_PATCH_OK:
         case EVENT_ERROR:
-            dlcContext.errorDetails.dlcError = DE_WAS_CANCELED;
+            dlcError = DE_WAS_CANCELED;
             dlcState = DS_DONE;
             break;
         default:
@@ -383,7 +396,7 @@ void DLC::FSM(DLCEvent event)
 
     if (EVENT_ERROR == event)
     {
-        DVASSERT(DE_NO_ERROR != dlcContext.errorDetails.dlcError && "Unhandled error, dlcError is set to NO_ERROR");
+        DVASSERT(DE_NO_ERROR != dlcError && "Unhandled error, dlcError is set to NO_ERROR");
     }
 
     if (!eventHandled)
@@ -462,8 +475,7 @@ void DLC::StepCheckInfoBegin()
     // write current dlcState into state-file
     if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
-        dlcContext.errorDetails.fileError.fileErrno = errno;
-        dlcContext.errorDetails.fileError.path = dlcContext.stateInfoStorePath;
+        dlcContext.lastErrno = errno;
         Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Can't write dlcState %d to stateInfoStorePath = %s", dlcState, dlcContext.stateInfoStorePath.GetAbsolutePathname().c_str());
         PostError(DE_WRITE_ERROR);
         return;
@@ -498,8 +510,7 @@ void DLC::StepCheckInfoFinish(const uint32& id, const DownloadStatus& status)
                 }
                 else
                 {
-                    dlcContext.errorDetails.fileError.fileErrno = errno;
-                    dlcContext.errorDetails.fileError.path = dlcContext.remoteVerStotePath;
+                    dlcContext.lastErrno = errno;
                     Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't read remoteVer from %s", dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
                     PostError(DE_READ_ERROR);
                 }
@@ -516,8 +527,7 @@ void DLC::StepCheckInfoFinish(const uint32& id, const DownloadStatus& status)
                 else if (DLE_FILE_ERROR == downloadError)
                 {
                     // writing file problem
-                    dlcContext.errorDetails.fileError.fileErrno = errno;
-                    dlcContext.errorDetails.fileError.path = dlcContext.remoteVerStotePath;
+                    dlcContext.lastErrno = errno;
                     Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't write to info file.");
                     PostError(DE_WRITE_ERROR);
                 }
@@ -607,8 +617,7 @@ void DLC::StepCheckPatchFinish(const uint32& id, const DownloadStatus& status)
                     else if (DLE_FILE_ERROR == downloadErrorFull)
                     {
                         // writing file problem
-                        dlcContext.errorDetails.fileError.fileErrno = errno;
-                        dlcContext.errorDetails.fileError.path = dlcContext.remotePatchUrl;
+                        dlcContext.lastErrno = errno;
                         Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckPatchFinish] Can't write patch to %s.", dlcContext.remotePatchUrl.c_str());
                         PostError(DE_WRITE_ERROR);
                     }
@@ -658,9 +667,8 @@ void DLC::StepCheckMetaFinish(const uint32& id, const DownloadStatus& status)
             else if (DLE_FILE_ERROR == downloadError)
             {
                 // writing file problem
-                dlcContext.errorDetails.fileError.fileErrno = errno;
-                dlcContext.errorDetails.fileError.path = dlcContext.remoteMetaStorePath;
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckMetaFinish] Can't save Meta to %s.", dlcContext.remoteMetaStorePath.GetAbsolutePathname().c_str());
+                dlcContext.lastErrno = errno;
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckMetaFinish] Can't save Meta.");
                 PostError(DE_WRITE_ERROR);
             }
             else
@@ -683,9 +691,8 @@ void DLC::StepDownloadPatchBegin()
     // write current dlcState into state-file
     if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
-        dlcContext.errorDetails.fileError.fileErrno = errno;
-        dlcContext.errorDetails.fileError.path = dlcContext.stateInfoStorePath;
-        Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.", dlcContext.stateInfoStorePath.GetAbsolutePathname().c_str());
+        dlcContext.lastErrno = errno;
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.");
         PostError(DE_WRITE_ERROR);
         return;
     }
@@ -773,8 +780,8 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
 
             case DAVA::DLE_FILE_ERROR:
                 // writing file problem
-                DownloadManager::Instance()->GetFileErrno(id, dlcContext.errorDetails.fileError.fileErrno);
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.errorDetails.fileError.fileErrno);
+                DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastPatchingErrorDetails.fileErrno);
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastPatchingErrorDetails.fileErrno);
                 PostError(DE_WRITE_ERROR);
                 break;
 
@@ -802,7 +809,8 @@ void DLC::StepPatchBegin()
         return;
     }
 
-    dlcContext.errorDetails = DLCErrorDetails();
+    dlcContext.patchingError = PatchFileReader::ERROR_NO;
+    dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
     dlcContext.patchInProgress = true;
     dlcContext.appliedPatchCount = 0;
     dlcContext.totalPatchCount = 0;
@@ -834,7 +842,7 @@ void DLC::StepPatchFinish()
     dlcContext.prevState = 0;
     dlcContext.localVer = -1;
 
-    switch (dlcContext.errorDetails.patchingError.value)
+    switch (dlcContext.patchingError)
     {
     case PatchFileReader::ERROR_NO:
         errors = false;
@@ -866,7 +874,7 @@ void DLC::StepPatchFinish()
 
     if (errors)
     {
-        Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Error applying patch: %u, errno %u", dlcContext.errorDetails.patchingError.value, dlcContext.errorDetails.fileError.fileErrno);
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Error applying patch: %u, errno %u", dlcContext.patchingError, dlcContext.lastPatchingErrorDetails.fileErrno);
     }
 }
 
@@ -910,6 +918,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 // Patch will be applied only if it fit condition, specified by caller
                 if (conditionFn(patchInfo))
                 {
+                    //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Applying patch %d.", dlcContext.appliedPatchCount);
                     applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
                     if (applySuccess)
                     {
@@ -922,11 +931,14 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 {
                     if (truncate)
                     {
+                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Truncate");
                         patchReader.Truncate();
+                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadPrev");
                         patchReader.ReadPrev();
                     }
                     else
                     {
+                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadNext");
                         patchReader.ReadNext();
                     }
 
@@ -951,8 +963,9 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                    });
 
     // check if no errors occurred during patching
-    dlcContext.errorDetails.patchingError = patchReader.GetLastErrorDetails();
-    if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.errorDetails.patchingError.value)
+    dlcContext.lastPatchingErrorDetails = patchReader.GetLastError();
+    dlcContext.patchingError = patchReader.GetLastError().patchingError;
+    if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
         DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);
 
@@ -963,9 +976,8 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         if (!WriteUint32(dlcContext.localVerStorePath, dlcContext.remoteVer))
         {
             // error, version can't be written
-            dlcContext.errorDetails.patchingError.value = PatchFileReader::ERROR_NEW_WRITE;
-            dlcContext.errorDetails.fileError.fileErrno = errno;
-            dlcContext.errorDetails.fileError.path = dlcContext.localVerStorePath;
+            dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+            dlcContext.lastErrno = errno;
         }
 
         // clean patch file if it was fully truncated
@@ -998,7 +1010,7 @@ void DLC::StepClean()
 
 void DLC::StepDone()
 {
-    if (DE_NO_ERROR == dlcContext.errorDetails.dlcError)
+    if (DE_NO_ERROR == dlcError)
     {
         FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
         FileSystem::Instance()->DeleteFile(dlcContext.stateInfoStorePath);
