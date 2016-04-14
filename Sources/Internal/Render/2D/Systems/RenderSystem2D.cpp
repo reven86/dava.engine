@@ -342,15 +342,6 @@ void RenderSystem2D::UpdateVirtualToPhysicalMatrix(bool value)
     currentPhysicalToVirtualScale = value ? actualPhysicalToVirtualScale : Vector2(1.0f, 1.0f);
 }
 
-float32 RenderSystem2D::AlignToX(float32 value)
-{
-    return std::floor(value / currentPhysicalToVirtualScale.x + 0.5f) * currentPhysicalToVirtualScale.x;
-}
-
-float32 RenderSystem2D::AlignToY(float32 value)
-{
-    return std::floor(value / currentPhysicalToVirtualScale.y + 0.5f) * currentPhysicalToVirtualScale.y;
-}
 
 void RenderSystem2D::SetClip(const Rect& rect)
 {
@@ -1409,10 +1400,11 @@ void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* g
     Matrix3 transformMatr;
     gd.BuildTransformMatrix(transformMatr);
 
-    if (needGenerateData || td.transformMatr != transformMatr)
+    if (needGenerateData || (td.transformMatr != transformMatr) || (td.usePerPixelAccuracy != state->usePerPixelAccuracy))
     {
         td.transformMatr = transformMatr;
-        td.GenerateTransformData();
+        td.usePerPixelAccuracy = state->usePerPixelAccuracy;
+        td.GenerateTransformData(td.usePerPixelAccuracy);
     }
 
     spriteVertexCount = static_cast<int32>(td.transformedVertices.size());
@@ -2337,9 +2329,17 @@ void TiledMultilayerData::GenerateTileData()
     }
 }
 
-void TiledMultilayerData::GenerateTransformData()
+void TiledMultilayerData::GenerateTransformData(bool usePerPixelAccuracy)
 {
-    for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
-        transformedVertices[i] = vertices[i] * transformMatr;
+    if (usePerPixelAccuracy)
+    {
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = RenderSystem2D::Instance()->GetAlignedVertex(vertices[i] * transformMatr);
+    }
+    else
+    {
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = vertices[i] * transformMatr;
+    }
 }
 };

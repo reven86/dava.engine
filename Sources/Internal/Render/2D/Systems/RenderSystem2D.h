@@ -103,12 +103,14 @@ struct TiledMultilayerData
     Sprite* detail = nullptr;
     Sprite* gradient = nullptr;
     Sprite* contour = nullptr;
+
     Vector2 size;
     Vector2 stretchCap;
     Matrix3 transformMatr;
+    bool usePerPixelAccuracy;
 
     void GenerateTileData();
-    void GenerateTransformData();
+    void GenerateTransformData(bool usePerPixelAccuracy);
     ~TiledMultilayerData();
 
 private:
@@ -348,6 +350,8 @@ public:
     const RenderTargetPassDescriptor& GetMainTargetDescriptor();
     void SetMainTargetDescriptor(const RenderTargetPassDescriptor& descriptor);
 
+    Vector2 GetAlignedVertex(const Vector2& vertex);
+
 private:
     void UpdateVirtualToPhysicalMatrix(bool);
     bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
@@ -441,6 +445,21 @@ inline uint32 RenderSystem2D::GetVertexLayoutId(uint32 texCoordStreamCount)
 inline uint32 RenderSystem2D::GetVBOStride(uint32 texCoordStreamCount)
 {
     return VBO_STRIDE[texCoordStreamCount];
+}
+
+inline float32 RenderSystem2D::AlignToX(float32 value)
+{
+    return std::floor(value / currentPhysicalToVirtualScale.x + 0.5f) * currentPhysicalToVirtualScale.x;
+}
+
+inline float32 RenderSystem2D::AlignToY(float32 value)
+{
+    return std::floor(value / currentPhysicalToVirtualScale.y + 0.5f) * currentPhysicalToVirtualScale.y;
+}
+
+inline Vector2 RenderSystem2D::GetAlignedVertex(const Vector2& vertex)
+{
+    return Vector2(AlignToX(vertex.x), AlignToY(vertex.y));
 }
 
 } // ns
