@@ -38,14 +38,13 @@
 
 namespace DAVA
 {
-
 class File;
 class TextureDescriptor final
 {
     static const String DESCRIPTOR_EXTENSION;
     static const String DEFAULT_CUBEFACE_EXTENSION;
 
-    enum eSignatures: uint32
+    enum eSignatures : uint32
     {
         COMPRESSED_FILE = 0x00EEEE00,
         NOTCOMPRESSED_FILE = 0x00EE00EE
@@ -75,15 +74,15 @@ public:
 
     struct TextureDataSettings : public InspBase
     {
-        enum eOptionsFlag: uint8
+        enum eOptionsFlag : uint8
         {
-            FLAG_GENERATE_MIPMAPS       = 1 << 0,
-            FLAG_IS_NORMAL_MAP          = 1 << 1,
-            FLAG_HAS_SEPARATE_HD_MIP    = 1 << 2,
+            FLAG_GENERATE_MIPMAPS = 1 << 0,
+            FLAG_IS_NORMAL_MAP = 1 << 1,
+            FLAG_HAS_SEPARATE_HD_MIP = 1 << 2,
 
-            FLAG_INVALID                = 1 << 7,
+            FLAG_INVALID = 1 << 7,
 
-            FLAG_DEFAULT                = FLAG_GENERATE_MIPMAPS
+            FLAG_DEFAULT = FLAG_GENERATE_MIPMAPS
         };
 
         TextureDataSettings()

@@ -256,9 +256,8 @@ void SaveImageToFile(Image* image, const FilePath& path)
     ImageSystem::Instance()->Save(path, image);
 }
 
-DAVA::Texture * Create3DTextureFromPng(const DAVA::FilePath& pngPathname)
+DAVA::Texture* Create3DTextureFromPng(const DAVA::FilePath& pngPathname)
 {
     DAVA::ScopedPtr<DAVA::Image> pngImage(CreateTopLevelImage(pngPathname));
     return Texture::CreateFromData(pngImage, false);
 }
-

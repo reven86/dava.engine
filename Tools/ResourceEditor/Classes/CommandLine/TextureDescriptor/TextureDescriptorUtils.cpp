@@ -96,7 +96,7 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
         descriptor->pathname = descriptorPath;
         descriptor->dataSettings.sourceFileFormat = sourceFormat;
         descriptor->dataSettings.sourceFileExtension = sourceExtension;
-        
+
         descriptor->compression[eGPUFamily::GPU_ORIGIN].containerType = sourceFormat;
         descriptor->compression[eGPUFamily::GPU_ORIGIN].format = info.format;
 
