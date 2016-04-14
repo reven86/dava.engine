@@ -783,7 +783,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                         if (origSize != curInfo.origSize || origCRC != curInfo.origCRC)
                         {
                             lastErrorDetails.actual.size = bytesReaded;
-                            lastErrorDetails.expected.size = origSize;
+                            lastErrorDetails.expected.size = curInfo.origSize;
                             lastErrorDetails.actual.crc = origCRC;
                             lastErrorDetails.expected.crc = curInfo.origCRC;
                             lastErrorDetails.actual.path = origPath;
