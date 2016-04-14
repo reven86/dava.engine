@@ -53,6 +53,8 @@ extern "C"
 #include "Sound/FMODUtils.h"
 #include "fmod.h"
 
+#include "FileSystem/DynamicMemoryFile.h"
+
 #include <queue>
 
 namespace DAVA
@@ -67,6 +69,7 @@ namespace DAVA
         };
 
         Deque<PCMBuffer> pcmBuffers;
+        DynamicMemoryFile* pcmData;
 
         ~MovieViewControl() override;
 

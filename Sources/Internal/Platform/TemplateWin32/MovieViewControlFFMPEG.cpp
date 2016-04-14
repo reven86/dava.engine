@@ -200,11 +200,19 @@ namespace DAVA
         if (nullptr == movieControl || movieControl->pcmBuffers.size() <= 0)
             return FMOD_OK;
 
-        MovieViewControl::PCMBuffer pcmPacket = movieControl->pcmBuffers.front();
-        movieControl->pcmBuffers.pop();
+        //   while (movieControl->pcmBuffers.size() <= 0)
+        {
+        }
 
-        Memset(data, 0, pcmPacket.size);
-        Memcpy(data, pcmPacket.data, pcmPacket.size);
+        // while (movieControl->pcmBuffers.size() <= 0)
+        {
+            MovieViewControl::PCMBuffer pcmPacket = movieControl->pcmBuffers.front();
+            movieControl->pcmBuffers.pop_front();
+
+            Logger::Error("PCM DATA TRANSFER: %d data from %d", pcmPacket.size, datalen);
+            Memset(data, 0, datalen);
+            Memcpy(data, pcmPacket.data, pcmPacket.size);
+        }
 
         return FMOD_OK;
     }
@@ -279,7 +287,7 @@ namespace DAVA
         memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
 
         exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
-        exinfo.decodebuffersize = out_sample_rate; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
+        //exinfo.decodebuffersize = out_sample_rate; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
         exinfo.length = out_sample_rate * out_channels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
         exinfo.numchannels = out_channels; /* Number of channels in the sound. */
         exinfo.defaultfrequency = out_sample_rate; /* Default playback rate of sound. */
@@ -289,10 +297,15 @@ namespace DAVA
 
         FMOD::Sound* sound;
         FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
-        FMOD_RESULT result = system->createStream(NULL, FMOD_OPENUSER, &exinfo, &sound);
+        FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
         sound->setUserData(this);
 
-        system->playSound(FMOD_CHANNEL_FREE, sound, false, nullptr);
+        FMOD::Channel* channel;
+        system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
+        channel->setLoopCount(-1);
+        channel->setMode(FMOD_LOOP_NORMAL);
+        channel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
+        channel->setPaused(false);
 
         return true;
     }
@@ -412,7 +425,7 @@ namespace DAVA
             buffer.data = new uint8[outAudioBufferSize];
             Memcpy(buffer.data, outAudioBuffer, outAudioBufferSize);
             buffer.size = outAudioBufferSize;
-            pcmBuffers.push(buffer);
+            pcmBuffers.push_back(buffer);
         }
         av_free_packet(packet);
     }
