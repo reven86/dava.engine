@@ -72,6 +72,10 @@ JniTextField::JniTextField(uint32_t id)
 void JniTextField::Create(Rect controlRect)
 {
     Rect rect = JNI::V2I(controlRect);
+
+    rect.dx = std::max(0.0f, rect.dx);
+    rect.dy = std::max(0.0f, rect.dy);
+
     create(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
@@ -83,6 +87,10 @@ void JniTextField::Destroy()
 void JniTextField::UpdateRect(const Rect& controlRect)
 {
     Rect rect = JNI::V2I(controlRect);
+
+    rect.dx = std::max(0.0f, rect.dx);
+    rect.dy = std::max(0.0f, rect.dy);
+
     updateRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
