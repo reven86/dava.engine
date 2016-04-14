@@ -786,6 +786,8 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                             lastErrorDetails.expected.size = origSize;
                             lastErrorDetails.actual.crc = origCRC;
                             lastErrorDetails.expected.crc = curInfo.origCRC;
+                            lastErrorDetails.actual.path = origPath;
+                            lastErrorDetails.expected.path = curInfo.origPath;
 
                             // source crc differ for expected
                             lastError = ERROR_ORIG_BUFFER_CRC;
