@@ -26,47 +26,36 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FOCUS_COMPONENT_H__
-#define __DAVAENGINE_UI_FOCUS_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_FOCUS_GROUP_COMPONENT_H__
+#define __DAVAENGINE_UI_FOCUS_GROUP_COMPONENT_H__
 
 #include "Base/BaseTypes.h"
 
 #include "UI/Components/UIComponent.h"
-#include "UI/Focus/FocusHelpers.h"
 
 namespace DAVA
 {
-class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
+class UIFocusGroupComponent : public UIBaseComponent<UIComponent::FOCUS_GROUP_COMPONENT>
 {
 public:
-    UIFocusComponent();
-    UIFocusComponent(const UIFocusComponent& src);
+    UIFocusGroupComponent();
+    UIFocusGroupComponent(const UIFocusGroupComponent& src);
 
 protected:
-    virtual ~UIFocusComponent();
+    virtual ~UIFocusGroupComponent();
 
 private:
-    UIFocusComponent& operator=(const UIFocusComponent&) = delete;
+    UIFocusGroupComponent& operator=(const UIFocusGroupComponent&) = delete;
 
 public:
-    UIFocusComponent* Clone() const override;
-
-    bool IsEnabled() const;
-    void SetEnabled(bool value);
-
-    bool IsRequestFocus() const;
-    void SetRequestFocus(bool value);
+    UIFocusGroupComponent* Clone() const override;
 
 private:
-    bool enabled = true;
-    bool requestFocus = false;
-
 public:
-    INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
+    INTROSPECTION_EXTEND(UIFocusGroupComponent, UIComponent,
+                         nullptr);
 };
 }
 
 
-#endif //__DAVAENGINE_UI_FOCUS_COMPONENT_H__
+#endif //__DAVAENGINE_UI_FOCUS_GROUP_COMPONENT_H__

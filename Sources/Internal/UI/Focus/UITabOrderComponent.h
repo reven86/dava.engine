@@ -26,47 +26,41 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FOCUS_COMPONENT_H__
-#define __DAVAENGINE_UI_FOCUS_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_TAB_ORDER_COMPONENT_H__
+#define __DAVAENGINE_UI_TAB_ORDER_COMPONENT_H__
 
 #include "Base/BaseTypes.h"
 
 #include "UI/Components/UIComponent.h"
-#include "UI/Focus/FocusHelpers.h"
 
 namespace DAVA
 {
-class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
+class UITabOrderComponent : public UIBaseComponent<UIComponent::TAB_ORDER_COMPONENT>
 {
 public:
-    UIFocusComponent();
-    UIFocusComponent(const UIFocusComponent& src);
+    UITabOrderComponent();
+    UITabOrderComponent(const UITabOrderComponent& src);
 
 protected:
-    virtual ~UIFocusComponent();
+    virtual ~UITabOrderComponent();
 
 private:
-    UIFocusComponent& operator=(const UIFocusComponent&) = delete;
+    UITabOrderComponent& operator=(const UITabOrderComponent&) = delete;
 
 public:
-    UIFocusComponent* Clone() const override;
+    UITabOrderComponent* Clone() const override;
 
-    bool IsEnabled() const;
-    void SetEnabled(bool value);
-
-    bool IsRequestFocus() const;
-    void SetRequestFocus(bool value);
+    int32 GetTabOrder() const;
+    void SetTabOrder(int32 val);
 
 private:
-    bool enabled = true;
-    bool requestFocus = false;
+    int32 tabOrder = 0;
 
 public:
-    INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
+    INTROSPECTION_EXTEND(UITabOrderComponent, UIComponent,
+                         PROPERTY("tab", "Tab Order", GetTabOrder, SetTabOrder, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 
 
-#endif //__DAVAENGINE_UI_FOCUS_COMPONENT_H__
+#endif //__DAVAENGINE_UI_TAB_ORDER_COMPONENT_H__

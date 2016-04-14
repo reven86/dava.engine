@@ -26,47 +26,74 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FOCUS_COMPONENT_H__
-#define __DAVAENGINE_UI_FOCUS_COMPONENT_H__
-
-#include "Base/BaseTypes.h"
-
-#include "UI/Components/UIComponent.h"
-#include "UI/Focus/FocusHelpers.h"
+#include "UINavigationComponent.h"
 
 namespace DAVA
 {
-class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
+UINavigationComponent::UINavigationComponent()
 {
-public:
-    UIFocusComponent();
-    UIFocusComponent(const UIFocusComponent& src);
-
-protected:
-    virtual ~UIFocusComponent();
-
-private:
-    UIFocusComponent& operator=(const UIFocusComponent&) = delete;
-
-public:
-    UIFocusComponent* Clone() const override;
-
-    bool IsEnabled() const;
-    void SetEnabled(bool value);
-
-    bool IsRequestFocus() const;
-    void SetRequestFocus(bool value);
-
-private:
-    bool enabled = true;
-    bool requestFocus = false;
-
-public:
-    INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
-};
 }
 
+UINavigationComponent::UINavigationComponent(const UINavigationComponent& src)
+{
+    for (int i = 0; i < FocusHelpers::DIRECTION_COUNT; i++)
+    {
+        nextFocusPath[i] = src.nextFocusPath[i];
+    }
+}
 
-#endif //__DAVAENGINE_UI_FOCUS_COMPONENT_H__
+UINavigationComponent::~UINavigationComponent()
+{
+}
+
+UINavigationComponent* UINavigationComponent::Clone() const
+{
+    return new UINavigationComponent(*this);
+}
+
+const String& UINavigationComponent::GetNextFocusLeft() const
+{
+    return nextFocusPath[FocusHelpers::LEFT];
+}
+
+void UINavigationComponent::SetNextFocusLeft(const String& val)
+{
+    nextFocusPath[FocusHelpers::LEFT] = val;
+}
+
+const String& UINavigationComponent::GetNextFocusRight() const
+{
+    return nextFocusPath[FocusHelpers::RIGHT];
+}
+
+void UINavigationComponent::SetNextFocusRight(const String& val)
+{
+    nextFocusPath[FocusHelpers::RIGHT] = val;
+}
+
+const String& UINavigationComponent::GetNextFocusUp() const
+{
+    return nextFocusPath[FocusHelpers::UP];
+}
+
+void UINavigationComponent::SetNextFocusUp(const String& val)
+{
+    nextFocusPath[FocusHelpers::UP] = val;
+}
+
+const String& UINavigationComponent::GetNextFocusDown() const
+{
+    return nextFocusPath[FocusHelpers::DOWN];
+}
+
+void UINavigationComponent::SetNextFocusDown(const String& val)
+{
+    nextFocusPath[FocusHelpers::DOWN] = val;
+}
+
+const String& UINavigationComponent::GetNextControlPathInDirection(FocusHelpers::Direction dir)
+{
+    DVASSERT(0 <= dir && dir < FocusHelpers::DIRECTION_COUNT);
+    return nextFocusPath[dir];
+}
+}

@@ -26,47 +26,35 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FOCUS_COMPONENT_H__
-#define __DAVAENGINE_UI_FOCUS_COMPONENT_H__
-
-#include "Base/BaseTypes.h"
-
-#include "UI/Components/UIComponent.h"
-#include "UI/Focus/FocusHelpers.h"
+#include "UITabOrderComponent.h"
 
 namespace DAVA
 {
-class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
+UITabOrderComponent::UITabOrderComponent()
 {
-public:
-    UIFocusComponent();
-    UIFocusComponent(const UIFocusComponent& src);
-
-protected:
-    virtual ~UIFocusComponent();
-
-private:
-    UIFocusComponent& operator=(const UIFocusComponent&) = delete;
-
-public:
-    UIFocusComponent* Clone() const override;
-
-    bool IsEnabled() const;
-    void SetEnabled(bool value);
-
-    bool IsRequestFocus() const;
-    void SetRequestFocus(bool value);
-
-private:
-    bool enabled = true;
-    bool requestFocus = false;
-
-public:
-    INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
-};
 }
 
+UITabOrderComponent::UITabOrderComponent(const UITabOrderComponent& src)
+    : tabOrder(src.tabOrder)
+{
+}
 
-#endif //__DAVAENGINE_UI_FOCUS_COMPONENT_H__
+UITabOrderComponent::~UITabOrderComponent()
+{
+}
+
+UITabOrderComponent* UITabOrderComponent::Clone() const
+{
+    return new UITabOrderComponent(*this);
+}
+
+int32 UITabOrderComponent::GetTabOrder() const
+{
+    return tabOrder;
+}
+
+void UITabOrderComponent::SetTabOrder(int32 val)
+{
+    tabOrder = val;
+}
+}

@@ -328,6 +328,9 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
     ENUM_ADD_DESCR(UIComponent::MODAL_INPUT_COMPONENT, "ModalInput");
     ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
+    ENUM_ADD_DESCR(UIComponent::FOCUS_GROUP_COMPONENT, "FocusGroup");
+    ENUM_ADD_DESCR(UIComponent::NAVIGATION_COMPONENT, "Navigation");
+    ENUM_ADD_DESCR(UIComponent::TAB_ORDER_COMPONENT, "TabOrder");
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
 };
@@ -356,12 +359,6 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
 {
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT, "LeftToRight");
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
-};
-
-ENUM_DECLARE(UIFocusComponent::ePolicy)
-{
-    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE, "Focusable");
-    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE_GROUP, "FocusableGroup");
 };
 
 ENUM_DECLARE(rhi::TextureAddrMode)

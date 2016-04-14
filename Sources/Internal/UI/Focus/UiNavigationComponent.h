@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FOCUS_COMPONENT_H__
-#define __DAVAENGINE_UI_FOCUS_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_NAVIGATION_COMPONENT_H__
+#define __DAVAENGINE_UI_NAVIGATION_COMPONENT_H__
 
 #include "Base/BaseTypes.h"
 
@@ -36,37 +36,46 @@
 
 namespace DAVA
 {
-class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
+class UINavigationComponent : public UIBaseComponent<UIComponent::NAVIGATION_COMPONENT>
 {
 public:
-    UIFocusComponent();
-    UIFocusComponent(const UIFocusComponent& src);
+    UINavigationComponent();
+    UINavigationComponent(const UINavigationComponent& src);
 
 protected:
-    virtual ~UIFocusComponent();
+    virtual ~UINavigationComponent();
 
 private:
-    UIFocusComponent& operator=(const UIFocusComponent&) = delete;
+    UINavigationComponent& operator=(const UINavigationComponent&) = delete;
 
 public:
-    UIFocusComponent* Clone() const override;
+    UINavigationComponent* Clone() const override;
 
-    bool IsEnabled() const;
-    void SetEnabled(bool value);
+    const String& GetNextFocusLeft() const;
+    void SetNextFocusLeft(const String& val);
 
-    bool IsRequestFocus() const;
-    void SetRequestFocus(bool value);
+    const String& GetNextFocusRight() const;
+    void SetNextFocusRight(const String& val);
+
+    const String& GetNextFocusUp() const;
+    void SetNextFocusUp(const String& val);
+
+    const String& GetNextFocusDown() const;
+    void SetNextFocusDown(const String& val);
+
+    const String& GetNextControlPathInDirection(FocusHelpers::Direction dir);
 
 private:
-    bool enabled = true;
-    bool requestFocus = false;
+    String nextFocusPath[FocusHelpers::DIRECTION_COUNT];
 
 public:
-    INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
+    INTROSPECTION_EXTEND(UINavigationComponent, UIComponent,
+                         PROPERTY("left", "Next Focus Left", GetNextFocusLeft, SetNextFocusLeft, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("right", "Next Focus Right", GetNextFocusRight, SetNextFocusRight, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("up", "Next Focus Up", GetNextFocusUp, SetNextFocusUp, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("down", "Next Focus Down", GetNextFocusDown, SetNextFocusDown, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 
 
-#endif //__DAVAENGINE_UI_FOCUS_COMPONENT_H__
+#endif //__DAVAENGINE_UI_NAVIGATION_COMPONENT_H__
