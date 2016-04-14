@@ -918,7 +918,6 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 // Patch will be applied only if it fit condition, specified by caller
                 if (conditionFn(patchInfo))
                 {
-                    //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Applying patch %d.", dlcContext.appliedPatchCount);
                     applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
                     if (applySuccess)
                     {
@@ -931,14 +930,11 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                 {
                     if (truncate)
                     {
-                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Truncate");
                         patchReader.Truncate();
-                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadPrev");
                         patchReader.ReadPrev();
                     }
                     else
                     {
-                        //Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] ReadNext");
                         patchReader.ReadNext();
                     }
 
@@ -963,9 +959,9 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                    });
 
     // check if no errors occurred during patching
-    dlcContext.lastErrno = patchReader.GetLastError().fileErrno;
-    dlcContext.patchingError = patchReader.GetLastError().patchingError;
-    dlcContext.lastPatchingErrorDetails = patchReader.GetLastError();
+    dlcContext.lastErrno = patchReader.GetLastErrorDetails().fileErrno;
+    dlcContext.patchingError = patchReader.GetLastError();
+    dlcContext.lastPatchingErrorDetails = patchReader.GetLastErrorDetails();
 
     if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
@@ -979,6 +975,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         {
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+            dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
             dlcContext.lastErrno = errno;
         }
 

@@ -436,6 +436,7 @@ void PatchFileWriter::EnumerateDir(const FilePath& dirPath, const FilePath& base
 // ======================================================================================
 PatchFileReader::PatchFileReader(const FilePath& path, bool beVerbose)
     : verbose(beVerbose)
+    , lastError(ERROR_NO)
     , parseError(ERROR_NO)
     , initialPositionsCount(0)
     , curPatchIndex(0)
@@ -592,8 +593,7 @@ bool PatchFileReader::DoRead()
 {
     lastErrorWithDetails = PatchingErrorDetails();
     bool ret = false;
-
-    lastErrorWithDetails.patchingError = ERROR_NO;
+    lastError = ERROR_NO;
 
     // reset header and bsdiff pos
     curBSDiffPos = 0;
@@ -612,29 +612,34 @@ bool PatchFileReader::DoRead()
             }
             else
             {
-                lastErrorWithDetails.patchingError = ERROR_CORRUPTED;
+                lastError = ERROR_CORRUPTED;
             }
         }
         else
         {
             // end of file, so we should set lastError to
             // the parseError value
-            lastErrorWithDetails.patchingError = parseError;
+            lastError = parseError;
 
             // no errors, check if patch file wasn't empty
-            if (ERROR_NO == lastErrorWithDetails.patchingError && 0 == initialPositionsCount)
+            if (ERROR_NO == lastError && 0 == initialPositionsCount)
             {
                 // patch file without
-                lastErrorWithDetails.patchingError = ERROR_EMPTY_PATCH;
+                lastError = ERROR_EMPTY_PATCH;
             }
         }
     }
     else
     {
-        lastErrorWithDetails.patchingError = parseError;
+        lastError = parseError;
     }
 
     return ret;
+}
+
+DAVA::PatchFileReader::PatchError PatchFileReader::GetLastError() const
+{
+    return lastError;
 }
 
 bool PatchFileReader::Truncate()
@@ -662,6 +667,7 @@ bool PatchFileReader::Truncate()
 bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath, const FilePath& _newBase, const FilePath& _newPath)
 {
     bool ret = true;
+    lastError = ERROR_NO;
     lastErrorWithDetails = PatchingErrorDetails();
 
     FilePath origBase = _origBase;
@@ -683,7 +689,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
 
     if (0 == curBSDiffPos)
     {
-        lastErrorWithDetails.patchingError = ERROR_EMPTY_PATCH;
+        lastError = ERROR_EMPTY_PATCH;
         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply]  Patch is empty");
         return false;
     }
@@ -702,7 +708,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
             if (!FileSystem::Instance()->CopyFile(origPath, newPath, true))
             {
                 // can't copy original file to the new path.
-                lastErrorWithDetails.patchingError = ERROR_NEW_WRITE;
+                lastError = ERROR_NEW_WRITE;
                 lastErrorWithDetails.fileErrno = errno;
                 lastErrorWithDetails.expected.path = newPath;
                 lastErrorWithDetails.actual.path = origPath;
@@ -748,7 +754,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                     lastErrorWithDetails.fileErrno = errno;
                     lastErrorWithDetails.expected.path = origPath;
                     lastErrorWithDetails.actual.path = "";
-                    lastErrorWithDetails.patchingError = ERROR_ORIG_READ;
+                    lastError = ERROR_ORIG_READ;
                     Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't read origFile from %s", origPath.GetAbsolutePathname().c_str());
                     ret = false;
                 }
@@ -767,7 +773,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                             lastErrorWithDetails.fileErrno = errno;
                             lastErrorWithDetails.actual.path = origPath;
                             lastErrorWithDetails.expected.path = origPath;
-                            lastErrorWithDetails.patchingError = ERROR_ORIG_READ;
+                            lastError = ERROR_ORIG_READ;
                             Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply]  %d bytes readed but %d expected from %s.", bytesReaded, origSize, origPath.GetAbsolutePathname().c_str());
                             ret = false;
                         }
@@ -784,7 +790,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                             lastErrorWithDetails.expected.crc = curInfo.origCRC;
 
                             // source crc differ for expected
-                            lastErrorWithDetails.patchingError = ERROR_ORIG_BUFFER_CRC;
+                            lastError = ERROR_ORIG_BUFFER_CRC;
                             ret = false;
                             Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Crc is not match for file %s", origPath.GetAbsolutePathname().c_str());
                         }
@@ -792,7 +798,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                     else
                     {
                         // can't allocate memory
-                        lastErrorWithDetails.patchingError = ERROR_MEMORY;
+                        lastError = ERROR_MEMORY;
                         ret = false;
                         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Cant'allocate %d bytes for %s", origSize, origPath.GetAbsolutePathname().c_str());
                     }
@@ -809,7 +815,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                         lastErrorWithDetails.fileErrno = errno;
                         lastErrorWithDetails.expected.path = newPath;
                         lastErrorWithDetails.actual.path = "";
-                        lastErrorWithDetails.patchingError = ERROR_NEW_CREATE;
+                        lastError = ERROR_NEW_CREATE;
                         ret = false;
                         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't create new directory %s", newPath.GetAbsolutePathname().c_str());
                     }
@@ -829,7 +835,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                         lastErrorWithDetails.fileErrno = errno;
                         lastErrorWithDetails.expected.path = tmpNewPath;
                         lastErrorWithDetails.actual.path = "";
-                        lastErrorWithDetails.patchingError = ERROR_NEW_CREATE;
+                        lastError = ERROR_NEW_CREATE;
                         ret = false;
                         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't create temp file &s", tmpNewPath.GetAbsolutePathname().c_str());
                     }
@@ -850,14 +856,14 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                         lastErrorWithDetails.expected.size = curInfo.newSize;
                                         lastErrorWithDetails.actual.path = "";
                                         lastErrorWithDetails.actual.size = newFile->GetSize();
-                                        lastErrorWithDetails.patchingError = ERROR_NEW_WRITE;
+                                        lastError = ERROR_NEW_WRITE;
                                         ret = false;
                                         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't write data to file %s", newFile->GetFilename().GetAbsolutePathname().c_str());
                                     }
                                 }
                                 else
                                 {
-                                    lastErrorWithDetails.patchingError = ERROR_CORRUPTED;
+                                    lastError = ERROR_CORRUPTED;
                                     ret = false;
                                     Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't patch %s", origPath.GetAbsolutePathname().c_str());
                                 }
@@ -865,7 +871,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                             else
                             {
                                 // can't allocate memory
-                                lastErrorWithDetails.patchingError = ERROR_MEMORY;
+                                lastError = ERROR_MEMORY;
                                 ret = false;
                                 Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't allocate %d bytes for new data", curInfo.newSize);
                             }
@@ -882,7 +888,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 lastErrorWithDetails.expected.path = tmpNewPath;
                                 lastErrorWithDetails.actual.crc = actualCRC;
                                 lastErrorWithDetails.expected.crc = curInfo.newCRC;
-                                lastErrorWithDetails.patchingError = ERROR_NEW_CRC;
+                                lastError = ERROR_NEW_CRC;
                                 ret = false;
                                 Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected. %s", tmpNewPath.GetAbsolutePathname().c_str());
                             }
@@ -897,7 +903,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 lastErrorWithDetails.fileErrno = errno;
                                 lastErrorWithDetails.expected.path = newPath;
                                 lastErrorWithDetails.actual.path = tmpNewPath;
-                                lastErrorWithDetails.patchingError = ERROR_NEW_WRITE;
+                                lastError = ERROR_NEW_WRITE;
                                 ret = false;
                                 Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't move patched file to %s", newPath.GetAbsolutePathname().c_str());
 
@@ -921,7 +927,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                 uint32 origCRC = CRC32::ForFile(origPath);
                 if (origCRC != curInfo.origCRC)
                 {
-                    lastErrorWithDetails.patchingError = ERROR_ORIG_FILE_CRC;
+                    lastError = ERROR_ORIG_FILE_CRC;
                     ret = false;
                     Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Original crc doesn't matches to expected. %s", origPath.GetAbsolutePathname().c_str());
                 }
@@ -944,7 +950,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                         lastErrorWithDetails.fileErrno = errno;
                         lastErrorWithDetails.actual.path = newPathToDelete;
                         lastErrorWithDetails.expected.path = "";
-                        lastErrorWithDetails.patchingError = ERROR_NEW_WRITE;
+                        lastError = ERROR_NEW_WRITE;
                         ret = false;
                         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
                     }
@@ -956,7 +962,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                         lastErrorWithDetails.fileErrno = errno;
                         lastErrorWithDetails.actual.path = newPathToDelete;
                         lastErrorWithDetails.expected.path = "";
-                        lastErrorWithDetails.patchingError = ERROR_NEW_WRITE;
+                        lastError = ERROR_NEW_WRITE;
                         ret = false;
                         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
                     }
