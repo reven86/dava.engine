@@ -75,6 +75,5 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
     {
         processed = rootControl->SystemProcessInput(event);
     }
-
 }
 }
