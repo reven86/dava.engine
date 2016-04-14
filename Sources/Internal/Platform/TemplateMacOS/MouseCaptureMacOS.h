@@ -37,10 +37,10 @@
 
 namespace DAVA
 {
-class MouseCaptureMacOS : public MouseCaptureInterface
+class MouseDeviceMacOS : public MouseDeviceInterface
 {
 public:
-    void SetNativePining(eMouseCaptureMode newMode) override;
+    void SetMode(eCaptureMode newMode) override;
     void SetCursorInCenter() override;
     bool SkipEvents() override;
 

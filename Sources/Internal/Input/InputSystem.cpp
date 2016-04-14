@@ -41,7 +41,7 @@ InputSystem::InputSystem()
 {
     keyboard = new KeyboardDevice();
     gamepad = new GamepadDevice();
-    mouseCapture = new MouseCapture();
+    mouse = new MouseDevice();
     AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
@@ -50,7 +50,7 @@ InputSystem::~InputSystem()
 {
     SafeRelease(gamepad);
     SafeRelease(keyboard);
-    delete mouseCapture;
+    SafeRelease(mouse);
 }
 
 void InputSystem::ProcessInputEvent(UIEvent* event)
@@ -102,24 +102,4 @@ void InputSystem::OnAfterUpdate()
     keyboard->OnFinishFrame();
 }
 
-eMouseCaptureMode InputSystem::GetMouseCaptureMode()
-{
-    return mouseCapture->GetMode();
-}
-
-bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
-{
-    mouseCapture->SetMode(mode);
-    return true;
-}
-
-bool InputSystem::IsPinningEnabled() const
-{
-    return mouseCapture->IsPinningEnabled();
-}
-
-bool InputSystem::SkipInputEvents(UIEvent* event)
-{
-    return mouseCapture->SkipEvents(event);
-}
 };

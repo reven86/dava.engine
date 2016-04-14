@@ -45,12 +45,10 @@ namespace DAVA
 {
 class KeyboardDevice;
 class GamepadDevice;
-class MouseCapture;
 
 class InputSystem : public Singleton<InputSystem>
 {
 public:
-    using eMouseCaptureMode = eMouseCaptureMode;
     enum eInputDevice
     {
         INPUT_DEVICE_TOUCH = 1,
@@ -79,13 +77,7 @@ public:
 
     inline KeyboardDevice& GetKeyboard();
     inline GamepadDevice& GetGamepadDevice();
-
-    eMouseCaptureMode GetMouseCaptureMode();
-    bool SetMouseCaptureMode(eMouseCaptureMode mode);
-    bool IsPinningEnabled() const;
-
-    // Deprecated, only for UIControlSystem internal using
-    DAVA_DEPRECATED(bool SkipInputEvents(UIEvent* event));
+    inline MouseDevice& GetMouseDevice();
 
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;
@@ -93,7 +85,7 @@ public:
 protected:
     KeyboardDevice* keyboard;
     GamepadDevice* gamepad;
-    MouseCapture* mouseCapture;
+    MouseDevice* mouse;
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
@@ -109,6 +101,11 @@ inline KeyboardDevice& InputSystem::GetKeyboard()
 inline GamepadDevice& InputSystem::GetGamepadDevice()
 {
     return *gamepad;
+}
+
+inline MouseDevice& InputSystem::GetMouseDevice()
+{
+    return *mouse;
 }
 
 inline void InputSystem::EnableMultitouch(bool enabled)

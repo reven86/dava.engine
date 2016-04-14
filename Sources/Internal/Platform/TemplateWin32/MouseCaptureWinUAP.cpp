@@ -39,13 +39,13 @@ using namespace ::Windows::UI::Xaml::Controls;
 
 namespace DAVA
 {
-void MouseCaptureUWP::SetNativePining(eMouseCaptureMode newMode)
+void MouseDeviceUWP::SetMode(eCaptureMode newMode)
 {
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
     DVASSERT(swapchain);
 
-    if (eMouseCaptureMode::PINING == newMode)
+    if (eCaptureMode::PINING == newMode)
     {
         core->RunOnUIThread([]()
                             {
@@ -61,11 +61,11 @@ void MouseCaptureUWP::SetNativePining(eMouseCaptureMode newMode)
     }
 }
 
-void MouseCaptureUWP::SetCursorInCenter()
+void MouseDeviceUWP::SetCursorInCenter()
 {
 }
 
-bool MouseCaptureUWP::SkipEvents()
+bool MouseDeviceUWP::SkipEvents()
 {
     return false;
 }

@@ -37,10 +37,10 @@
 
 namespace DAVA
 {
-class MouseCaptureUWP : public MouseCaptureInterface
+class MouseDeviceUWP : public MouseDeviceInterface
 {
 public:
-    void SetNativePining(eMouseCaptureMode newMode) override;
+    void SetMode(eCaptureMode newMode) override;
     void SetCursorInCenter() override;
     bool SkipEvents() override;
 };

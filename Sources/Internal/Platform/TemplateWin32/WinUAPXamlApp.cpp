@@ -543,7 +543,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             core->RunOnMainThread(fn);
         }
 
-        if (!InputSystem::Instance()->IsPinningEnabled())
+        if (!InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
         {
             if (mouseButtonsState.none())
             {
@@ -700,7 +700,7 @@ void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Devic
     SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED2);
 }
 
-void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ args)
+void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, MouseEventArgs ^ args)
 {
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     if (mousePointer != nullptr)
@@ -723,7 +723,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
         float32 dy = static_cast<float32>(args->MouseDelta.Y);
 
         // win10 send dx == 0 and dy == 0 if mouse buttons change state only if one button already pressed
-        if (InputSystem::Instance()->IsPinningEnabled() && (dx != 0.f || dy != 0.f))
+        if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled() && (dx != 0.f || dy != 0.f))
         {
             if (mouseButtonsState.none())
             {
@@ -782,7 +782,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     swapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerReleased);
     swapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerMoved);
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
-
+    using Windows::Devices::Input::MouseDevice;
     token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);

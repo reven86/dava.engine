@@ -35,7 +35,7 @@
 
 namespace DAVA
 {
-void MouseCaptureWin32::SetCursorInCenter()
+void MouseDeviceWin32::SetCursorInCenter()
 {
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
     RECT wndRect;
@@ -45,12 +45,12 @@ void MouseCaptureWin32::SetCursorInCenter()
     SetCursorPos(centerX, centerY);
 }
 
-bool MouseCaptureWin32::SkipEvents()
+bool MouseDeviceWin32::SkipEvents()
 {
     return false;
 }
 
-bool MouseCaptureWin32::SetSystemCursorVisibility(bool show)
+bool MouseDeviceWin32::SetSystemCursorVisibility(bool show)
 {
     DAVA::int32 showCount = 0;
     showCount = ShowCursor(show); // No cursor info available, just call
@@ -73,15 +73,15 @@ bool MouseCaptureWin32::SetSystemCursorVisibility(bool show)
     return true;
 }
 
-void MouseCaptureWin32::SetNativePining(eMouseCaptureMode newMode)
+void MouseDeviceWin32::SetMode(eCaptureMode newMode)
 {
     switch (newMode)
     {
-    case eMouseCaptureMode::OFF:
-    case eMouseCaptureMode::PINING:
+    case eCaptureMode::OFF:
+    case eCaptureMode::PINING:
     {
-        SetSystemCursorVisibility(newMode != eMouseCaptureMode::PINING);
-        if (newMode == eMouseCaptureMode::PINING)
+        SetSystemCursorVisibility(newMode != eCaptureMode::PINING);
+        if (newMode == eCaptureMode::PINING)
         {
             POINT p;
             GetCursorPos(&p);
@@ -96,7 +96,7 @@ void MouseCaptureWin32::SetNativePining(eMouseCaptureMode newMode)
         }
         break;
     }
-    case eMouseCaptureMode::FRAME:
+    case eCaptureMode::FRAME:
         Logger::Error("Unsupported cursor capture mode");
         break;
     default:

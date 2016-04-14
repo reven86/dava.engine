@@ -38,32 +38,32 @@
 
 namespace DAVA
 {
-void MouseCaptureMacOS::SetNativePining(eMouseCaptureMode newMode)
+void MouseDeviceMacOS::SetMode(eCaptureMode newMode)
 {
     switch (newMode)
     {
-    case eMouseCaptureMode::OFF:
+    case eCaptureMode::OFF:
         OSXShowCursor();
         CGAssociateMouseAndMouseCursorPosition(true);
         break;
-    case eMouseCaptureMode::PINING:
+    case eCaptureMode::PINING:
         OSXHideCursor();
         MovePointerToWindowCenter();
         CGAssociateMouseAndMouseCursorPosition(false);
         skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
         break;
-    case eMouseCaptureMode::FRAME:
+    case eCaptureMode::FRAME:
     // Unsupported yet
     default:
         DVASSERT_MSG(false, "Unsupported cursor capture mode");
     }
 }
 
-void MouseCaptureMacOS::SetCursorInCenter()
+void MouseDeviceMacOS::SetCursorInCenter()
 {
 }
 
-bool MouseCaptureMacOS::SkipEvents()
+bool MouseDeviceMacOS::SkipEvents()
 {
     if (skipMouseMoveEvents)
     {
@@ -73,7 +73,7 @@ bool MouseCaptureMacOS::SkipEvents()
     return false;
 }
 
-void MouseCaptureMacOS::MovePointerToWindowCenter()
+void MouseDeviceMacOS::MovePointerToWindowCenter()
 {
     NSRect windowRect = [[static_cast<NSView*>(Core::Instance()->GetNativeView()) window] frame];
     NSRect screenRect = [[NSScreen mainScreen] frame];
@@ -85,7 +85,7 @@ void MouseCaptureMacOS::MovePointerToWindowCenter()
     CGWarpMouseCursorPosition(CGPointMake(x, y));
 }
 
-void MouseCaptureMacOS::OSXShowCursor()
+void MouseDeviceMacOS::OSXShowCursor()
 {
     if (!cursorVisible)
     {
@@ -94,7 +94,7 @@ void MouseCaptureMacOS::OSXShowCursor()
     }
 }
 
-void MouseCaptureMacOS::OSXHideCursor()
+void MouseDeviceMacOS::OSXHideCursor()
 {
     if (cursorVisible)
     {

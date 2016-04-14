@@ -629,7 +629,7 @@ bool IsMouseInputEvent(UINT message)
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
 {
-    if (InputSystem::Instance()->GetMouseCaptureMode() == eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseCaptureMode() == eCaptureMode::PINING)
     {
         return true;
     }

@@ -30,44 +30,48 @@
 #define __FRAMEWORK__MOUSECAPTURE_H__
 
 #include <memory>
+#include "Base/BaseObject.h"
 
 namespace DAVA
 {
 class UIEvent;
-struct MouseCaptureContext;
+struct MouseDeviceContext;
+class MouseDeviceInterface;
 
-enum class eMouseCaptureMode
+enum class eCaptureMode
 {
     OFF = 0, //!< Disable any capturing (send absolute xy)
     FRAME, //!< Capture system cursor into window rect (send absolute xy)
     PINING //!<< Capture system cursor on current position (send xy move delta)
 };
 
-class MouseCaptureInterface
+class MouseDevice final : public BaseObject
 {
 public:
-    virtual void SetNativePining(eMouseCaptureMode newMode) = 0;
-    virtual void SetCursorInCenter() = 0;
-    virtual bool SkipEvents() = 0;
-    virtual ~MouseCaptureInterface() = default;
-};
+    MouseDevice();
+    ~MouseDevice();
+    MouseDevice(const MouseDevice&) = delete;
+    MouseDevice& operator=(const MouseDevice&) = delete;
 
-class MouseCapture final
-{
-public:
-    MouseCapture();
-    ~MouseCapture();
-    MouseCapture(const MouseCapture&) = delete;
-    MouseCapture& operator=(const MouseCapture&) = delete;
-
-    void SetMode(const eMouseCaptureMode newMode);
-    eMouseCaptureMode GetMode() const;
+    void SetMode(eCaptureMode newMode);
+    eCaptureMode GetMode() const;
     bool IsPinningEnabled() const;
     // Deprecated, only for UIControlSystem internal using
     DAVA_DEPRECATED(bool SkipEvents(const UIEvent* event));
 
 private:
-    MouseCaptureContext* context;
+    void SetSystemMode(eCaptureMode sysMode);
+    MouseDeviceContext* context;
+    MouseDeviceInterface* privateImpl;
+};
+
+class MouseDeviceInterface
+{
+public:
+    virtual void SetMode(eCaptureMode newMode) = 0;
+    virtual void SetCursorInCenter() = 0;
+    virtual bool SkipEvents() = 0;
+    virtual ~MouseDeviceInterface() = default;
 };
 
 } //  namespace DAVA

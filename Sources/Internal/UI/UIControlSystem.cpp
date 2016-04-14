@@ -428,7 +428,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         return;
     }
 
-    if (InputSystem::Instance()->SkipInputEvents(newEvent))
+    if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
         return;
 
     if (frameSkip <= 0)
