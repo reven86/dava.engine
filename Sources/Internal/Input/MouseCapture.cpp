@@ -111,6 +111,8 @@ MouseCapture::MouseCapture()
 
 MouseCapture::~MouseCapture()
 {
+    delete context;
+    delete privateImpl;
 }
 
 void MouseCapture::SetMode(const eMouseCaptureMode newMode)

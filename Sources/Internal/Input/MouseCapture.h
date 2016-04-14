@@ -43,6 +43,9 @@ public:
     virtual void SetNativePining(eMouseCaptureMode newMode) = 0;
     virtual void SetCursorInCenter() = 0;
     virtual bool SkipEvents() = 0;
+    virtual ~MouseCaptureInterface()
+    {
+    }
 };
 
 class MouseCapture final
