@@ -336,10 +336,10 @@ void UITextField::StartEdit()
 {
     if (!isEditing)
     {
+        OnStartEditing();
         SetRenderToTexture(false);
         isEditing = true;
         textFieldImpl->OpenKeyboard();
-        OnStartEditing();
     }
 }
 
