@@ -187,16 +187,24 @@ namespace DAVA
         return true;
     }
 
-    struct PCMBuffer
-    {
-        uint8* data;
-        uint32 size;
-    };
-    static std::queue<PCMBuffer> pcmBuffers;
 
     FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
     {
         // Read from your buffer here...
+
+        void* soundData;
+        reinterpret_cast<FMOD::Sound*>(sound)->getUserData(&soundData);
+
+        MovieViewControl* movieControl = reinterpret_cast<MovieViewControl*>(soundData);
+
+        if (nullptr == movieControl || movieControl->pcmBuffers.size() <= 0)
+            return FMOD_OK;
+
+        MovieViewControl::PCMBuffer pcmPacket = movieControl->pcmBuffers.front();
+        movieControl->pcmBuffers.pop();
+
+        Memset(data, 0, pcmPacket.size);
+        Memcpy(data, pcmPacket.data, pcmPacket.size);
 
         return FMOD_OK;
     }
@@ -270,12 +278,11 @@ namespace DAVA
 
         memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
 
-        uint32 channels = 2;
         exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
-        exinfo.decodebuffersize = 44100; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
-        exinfo.length = 44100 * channels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
-        exinfo.numchannels = channels; /* Number of channels in the sound. */
-        exinfo.defaultfrequency = 44100; /* Default playback rate of sound. */
+        exinfo.decodebuffersize = out_sample_rate; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
+        exinfo.length = out_sample_rate * out_channels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
+        exinfo.numchannels = out_channels; /* Number of channels in the sound. */
+        exinfo.defaultfrequency = out_sample_rate; /* Default playback rate of sound. */
         exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
         exinfo.pcmreadcallback = &pcmreadcallback; /* User callback for reading. */
         exinfo.pcmsetposcallback = &pcmsetposcallback; /* User callback for seeking. */
@@ -283,6 +290,7 @@ namespace DAVA
         FMOD::Sound* sound;
         FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
         FMOD_RESULT result = system->createStream(NULL, FMOD_OPENUSER, &exinfo, &sound);
+        sound->setUserData(this);
 
         system->playSound(FMOD_CHANNEL_FREE, sound, false, nullptr);
 
@@ -400,10 +408,9 @@ namespace DAVA
                 index++;
             }
 
-            uint8* buf = new uint8[outAudioBufferSize];
-            Memcpy(buf, outAudioBuffer, outAudioBufferSize);
             PCMBuffer buffer;
-            buffer.data = buf;
+            buffer.data = new uint8[outAudioBufferSize];
+            Memcpy(buffer.data, outAudioBuffer, outAudioBufferSize);
             buffer.size = outAudioBufferSize;
             pcmBuffers.push(buffer);
         }

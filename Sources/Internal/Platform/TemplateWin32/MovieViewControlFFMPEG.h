@@ -60,6 +60,13 @@ namespace DAVA
     class MovieViewControl : public IMovieViewControl, public UIControl
     {
     public:
+        struct PCMBuffer
+        {
+            uint8* data;
+            uint32 size;
+        };
+
+        Deque<PCMBuffer> pcmBuffers;
 
         ~MovieViewControl() override;
 
@@ -140,13 +147,6 @@ namespace DAVA
         AV::SwrContext* audioConvertContext = nullptr;
         uint8* outAudioBuffer = nullptr;
         uint32 outAudioBufferSize = 0;
-
-        struct PCMBuffer
-        {
-            uint8* data;
-            uint32 size;
-        };
-        std::queue<PCMBuffer> pcmBuffers;
     };
 }
 
