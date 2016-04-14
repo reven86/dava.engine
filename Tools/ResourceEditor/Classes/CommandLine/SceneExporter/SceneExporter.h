@@ -90,29 +90,22 @@ private:
 
     void ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
 
-    //    bool ExportDescriptors(DAVA::Scene* scene, DAVA::Set<DAVA::String>& errorLog);
-    //    bool ExportTextureDescriptor(const DAVA::FilePath& pathname, DAVA::Set<DAVA::String>& errorLog);
-    //    bool ExportTexture(const DAVA::TextureDescriptor* descriptor, DAVA::Set<DAVA::String>& errorLog);
-    //    void CompressTexture(const DAVA::TextureDescriptor* descriptor);
-    //    bool CopyCompressedTexture(const DAVA::TextureDescriptor* descriptor, DAVA::Set<DAVA::String>& errorLog);
-
-    DAVA::FilePath CompressTexture(DAVA::TextureDescriptor& descriptor) const;
-    void CopySourceTexture(DAVA::TextureDescriptor& descriptor) const;
+    bool ExportTextures(const DAVA::Vector<DAVA::eGPUFamily>& gpus, DAVA::TextureConverter::eConvertQuality quality, DAVA::TextureDescriptor& descriptor);
 
     bool CopyFile(const DAVA::FilePath& filePath) const;
     bool CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const;
-
-    DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
-    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
-
-    bool optimizeOnExport = true;
-    bool exportForAllGPUs = false;
 
     DAVA::FilePath dataFolder;
     DAVA::FilePath dataSourceFolder;
 
     DAVA::AssetCacheClient* cacheClient = nullptr;
     DAVA::AssetCache::CachedItemValue::Description cacheItemDescription;
+
+    DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
+    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
+
+    bool optimizeOnExport = false;
+    bool exportForAllGPUs = false;
 };
 
 
