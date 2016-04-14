@@ -35,7 +35,7 @@
 
 namespace DAVA
 {
-void MouseCapturePrivate::SetCursorInCenter()
+void MouseCaptureWin32::SetCursorInCenter()
 {
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
     RECT wndRect;
@@ -45,12 +45,12 @@ void MouseCapturePrivate::SetCursorInCenter()
     SetCursorPos(centerX, centerY);
 }
 
-bool MouseCapturePrivate::SkipEvents()
+bool MouseCaptureWin32::SkipEvents()
 {
     return false;
 }
 
-bool MouseCapturePrivate::SetSystemCursorVisibility(bool show)
+bool MouseCaptureWin32::SetSystemCursorVisibility(bool show)
 {
     DAVA::int32 showCount = 0;
     showCount = ShowCursor(show); // No cursor info available, just call
@@ -73,7 +73,7 @@ bool MouseCapturePrivate::SetSystemCursorVisibility(bool show)
     return true;
 }
 
-void MouseCapturePrivate::SetNativePining(eMouseCaptureMode newMode)
+void MouseCaptureWin32::SetNativePining(eMouseCaptureMode newMode)
 {
     switch (newMode)
     {

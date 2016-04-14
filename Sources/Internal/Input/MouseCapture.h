@@ -33,9 +33,15 @@
 
 namespace DAVA
 {
-enum class eMouseCaptureMode;
 class UIEvent;
 struct MouseCaptureContext;
+
+enum class eMouseCaptureMode
+{
+    OFF = 0, //!< Disable any capturing (send absolute xy)
+    FRAME, //!< Capture system cursor into window rect (send absolute xy)
+    PINING //!<< Capture system cursor on current position (send xy move delta)
+};
 
 class MouseCaptureInterface
 {
@@ -51,6 +57,8 @@ class MouseCapture final
 public:
     MouseCapture();
     ~MouseCapture();
+    MouseCapture(const MouseCapture&) = delete;
+    MouseCapture& operator=(const MouseCapture&) = delete;
 
     void SetMode(const eMouseCaptureMode newMode);
     eMouseCaptureMode GetMode() const;
@@ -60,11 +68,6 @@ public:
 
 private:
     MouseCaptureContext* context;
-    MouseCaptureInterface* privateImpl;
-
-    void SetNativePining(eMouseCaptureMode newNativeMode);
-    MouseCapture(const MouseCapture&) = delete;
-    MouseCapture& operator=(const MouseCapture&) = delete;
 };
 
 } //  namespace DAVA

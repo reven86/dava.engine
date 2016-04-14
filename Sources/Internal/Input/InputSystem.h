@@ -36,6 +36,7 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "InputCallback.h"
+#include "Input/MouseCapture.h"
 
 /**
 	\defgroup inputsystem	Input System
@@ -45,13 +46,6 @@ namespace DAVA
 class KeyboardDevice;
 class GamepadDevice;
 class MouseCapture;
-
-enum class eMouseCaptureMode
-{
-    OFF = 0, //!< Disable any capturing (send absolute xy)
-    FRAME, //!< Capture system cursor into window rect (send absolute xy)
-    PINING //!<< Capture system cursor on current position (send xy move delta)
-};
 
 class InputSystem : public Singleton<InputSystem>
 {

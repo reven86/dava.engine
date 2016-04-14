@@ -38,7 +38,7 @@
 
 namespace DAVA
 {
-void MouseCapturePrivate::SetNativePining(eMouseCaptureMode newMode)
+void MouseCaptureMacOS::SetNativePining(eMouseCaptureMode newMode)
 {
     switch (newMode)
     {
@@ -59,11 +59,11 @@ void MouseCapturePrivate::SetNativePining(eMouseCaptureMode newMode)
     }
 }
 
-void MouseCapturePrivate::SetCursorInCenter()
+void MouseCaptureMacOS::SetCursorInCenter()
 {
 }
 
-bool MouseCapturePrivate::SkipEvents()
+bool MouseCaptureMacOS::SkipEvents()
 {
     if (skipMouseMoveEvents)
     {
@@ -73,7 +73,7 @@ bool MouseCapturePrivate::SkipEvents()
     return false;
 }
 
-void MouseCapturePrivate::MovePointerToWindowCenter()
+void MouseCaptureMacOS::MovePointerToWindowCenter()
 {
     NSRect windowRect = [[static_cast<NSView*>(Core::Instance()->GetNativeView()) window] frame];
     NSRect screenRect = [[NSScreen mainScreen] frame];
@@ -85,7 +85,7 @@ void MouseCapturePrivate::MovePointerToWindowCenter()
     CGWarpMouseCursorPosition(CGPointMake(x, y));
 }
 
-void MouseCapturePrivate::OSXShowCursor()
+void MouseCaptureMacOS::OSXShowCursor()
 {
     if (!cursorVisible)
     {
@@ -94,7 +94,7 @@ void MouseCapturePrivate::OSXShowCursor()
     }
 }
 
-void MouseCapturePrivate::OSXHideCursor()
+void MouseCaptureMacOS::OSXHideCursor()
 {
     if (cursorVisible)
     {

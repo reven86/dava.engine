@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __FRAMEWORK__MOUSECAPTUREMACOS__
-#define __FRAMEWORK__MOUSECAPTUREMACOS__
+#ifndef __FRAMEWORK__MOUSECAPTUREMACOS_H__
+#define __FRAMEWORK__MOUSECAPTUREMACOS_H__
 
 #include "Base/Platform.h"
 
@@ -37,7 +37,7 @@
 
 namespace DAVA
 {
-class MouseCapturePrivate : public MouseCaptureInterface
+class MouseCaptureMacOS : public MouseCaptureInterface
 {
 public:
     void SetNativePining(eMouseCaptureMode newMode) override;
@@ -66,4 +66,4 @@ private:
 
 #endif //  __DAVAENGINE_MACOS__
 
-#endif //  __FRAMEWORK__MOUSECAPTUREMACOS__
+#endif //  __FRAMEWORK__MOUSECAPTUREMACOS_H__

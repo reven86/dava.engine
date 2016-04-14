@@ -26,19 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Core/Core.h"
+#include "Input/MouseCapture.h"
+#include "UI/UIEvent.h"
+
 #include "Platform/TemplateMacOS/MouseCaptureMacOS.h"
 #include "Platform/TemplateWin32/MouseCaptureWin32.h"
 #include "Platform/TemplateWin32/MouseCaptureWinUAP.h"
 
-#include "Core/Core.h"
-#include "Input/InputSystem.h"
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-#include "Input/MouseCapture.h"
-
 namespace DAVA
 {
-class MouseCapturePrivate : public MouseCaptureInterface
+class MouseCaptureStub : public MouseCaptureInterface
 {
 public:
     void SetNativePining(eMouseCaptureMode newMode) override
@@ -53,11 +51,6 @@ public:
     }
 };
 
-} //  DAVA
-#endif // defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-namespace DAVA
-{
 struct MouseCaptureContext
 {
     eMouseCaptureMode mode = eMouseCaptureMode::OFF;
@@ -66,14 +59,39 @@ struct MouseCaptureContext
     bool focusChanged = false;
     bool firstEntered = true;
     bool deferredCapture = false;
+    MouseCaptureInterface* privateImpl;
+
+    MouseCaptureContext();
+    ~MouseCaptureContext();
+    void SetPining(eMouseCaptureMode newNativeMode);
 };
 
-void MouseCapture::SetNativePining(eMouseCaptureMode newNativeMode)
+MouseCaptureContext::MouseCaptureContext()
 {
-    if (newNativeMode != context->nativeMode)
+#if defined(__DAVAENGINE_MACOS__)
+    privateImpl = new MouseCaptureMacOS();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    privateImpl = new MouseCaptureUWP();
+#elif defined(__DAVAENGINE_WIN32__)
+    privateImpl = new MouseCaptureWin32();
+#elif defined(__DAVAENGINE_IPHONE__)
+    privateImpl = new MouseCaptureStub();
+#elif defined(__DAVAENGINE_ANDROID__)
+    privateImpl = new MouseCaptureStub();
+#endif
+}
+
+MouseCaptureContext::~MouseCaptureContext()
+{
+    delete privateImpl;
+}
+
+void MouseCaptureContext::SetPining(eMouseCaptureMode newNativeMode)
+{
+    if (newNativeMode != nativeMode)
     {
-        context->nativeMode = newNativeMode;
-        privateImpl->SetNativePining(context->nativeMode);
+        nativeMode = newNativeMode;
+        privateImpl->SetNativePining(nativeMode);
     }
 }
 
@@ -98,13 +116,12 @@ MouseCapture::MouseCapture()
                 }
                 else
                 {
-                    SetNativePining(eMouseCaptureMode::OFF);
+                    context->SetPining(eMouseCaptureMode::OFF);
                 }
             }
         }
     };
     context = new MouseCaptureContext();
-    privateImpl = new MouseCapturePrivate();
     Core::Instance()->focusChanged.Connect(focusChanged);
     context->focused = Core::Instance()->IsFocused();
 }
@@ -112,7 +129,6 @@ MouseCapture::MouseCapture()
 MouseCapture::~MouseCapture()
 {
     delete context;
-    delete privateImpl;
 }
 
 void MouseCapture::SetMode(const eMouseCaptureMode newMode)
@@ -122,14 +138,14 @@ void MouseCapture::SetMode(const eMouseCaptureMode newMode)
         context->mode = newMode;
         if (eMouseCaptureMode::OFF == context->mode)
         {
-            SetNativePining(context->mode);
+            context->SetPining(context->mode);
             context->deferredCapture = false;
         }
         if (eMouseCaptureMode::PINING == context->mode)
         {
             if (context->focused && !context->focusChanged)
             {
-                SetNativePining(context->mode);
+                context->SetPining(context->mode);
             }
             else
             {
@@ -152,13 +168,13 @@ bool MouseCapture::IsPinningEnabled() const
 bool MouseCapture::SkipEvents(const UIEvent* event)
 {
     context->focusChanged = false;
-    if (privateImpl->SkipEvents())
+    if (context->privateImpl->SkipEvents())
     {
         return true;
     }
     if (IsPinningEnabled())
     {
-        privateImpl->SetCursorInCenter();
+        context->privateImpl->SetCursorInCenter();
     }
     if (context->deferredCapture)
     {
@@ -170,7 +186,7 @@ bool MouseCapture::SkipEvents(const UIEvent* event)
             inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
             if (inRect && context->focused)
             {
-                SetNativePining(eMouseCaptureMode::PINING);
+                context->SetPining(eMouseCaptureMode::PINING);
                 context->deferredCapture = false;
             }
         }
