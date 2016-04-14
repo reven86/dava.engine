@@ -342,7 +342,6 @@ void RenderSystem2D::UpdateVirtualToPhysicalMatrix(bool value)
     currentPhysicalToVirtualScale = value ? actualPhysicalToVirtualScale : Vector2(1.0f, 1.0f);
 }
 
-
 void RenderSystem2D::SetClip(const Rect& rect)
 {
     if ((currentClip == rect) || (currentClip.dx < 0 && rect.dx < 0) || (currentClip.dy < 0 && rect.dy < 0))
