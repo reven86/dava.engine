@@ -34,10 +34,11 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Input/MouseCapture.h"
+#include "Math/Math2D.h"
 
 namespace DAVA
 {
-class MouseCapturePrivate : private MouseCaptureInterface
+class MouseCapturePrivate : public MouseCaptureInterface
 {
 public:
     void SetNativePining(eMouseCaptureMode newMode) override;

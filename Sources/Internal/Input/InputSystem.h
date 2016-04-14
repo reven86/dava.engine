@@ -88,7 +88,7 @@ public:
 
     eMouseCaptureMode GetMouseCaptureMode();
     bool SetMouseCaptureMode(eMouseCaptureMode mode);
-    bool IsPinningEnabled();
+    bool IsPinningEnabled() const;
 
     // Deprecated, only for UIControlSystem internal using
     DAVA_DEPRECATED(bool SkipInputEvents(UIEvent* event));

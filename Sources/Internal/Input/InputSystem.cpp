@@ -114,7 +114,7 @@ bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
     return true;
 }
 
-bool InputSystem::IsPinningEnabled()
+bool InputSystem::IsPinningEnabled() const
 {
     return mouseCapture->IsPinningEnabled();
 }
