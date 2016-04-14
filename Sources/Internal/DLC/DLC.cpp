@@ -809,6 +809,7 @@ void DLC::StepPatchBegin()
         return;
     }
 
+    dlcContext.lastErrno = 0;
     dlcContext.patchingError = PatchFileReader::ERROR_NO;
     dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
     dlcContext.patchInProgress = true;
@@ -874,7 +875,7 @@ void DLC::StepPatchFinish()
 
     if (errors)
     {
-        Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Error applying patch: %u, errno %u", dlcContext.patchingError, dlcContext.lastPatchingErrorDetails.fileErrno);
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Error applying patch: %u, errno %u", dlcContext.patchingError, dlcContext.lastErrno);
     }
 }
 
@@ -959,8 +960,8 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                    });
 
     // check if no errors occurred during patching
-    dlcContext.lastErrno = patchReader.GetLastErrorDetails().fileErrno;
-    dlcContext.patchingError = patchReader.GetLastError();
+    dlcContext.lastErrno = patchReader.GetFileError();
+    dlcContext.patchingError = patchReader.GetError();
     dlcContext.lastPatchingErrorDetails = patchReader.GetLastErrorDetails();
 
     if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)

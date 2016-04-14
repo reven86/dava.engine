@@ -128,8 +128,6 @@ public:
 
         FileInfo expected;
         FileInfo actual;
-
-        int32 fileErrno = 0;
     };
 
     PatchFileReader(const FilePath& path, bool beVerbose = false);
@@ -143,8 +141,9 @@ public:
     const PatchInfo* GetCurInfo() const;
 
     void SetLogsFilePath(const FilePath& path);
+    int32 GetFileError() const;
     PatchFileReader::PatchError GetParseError() const;
-    PatchFileReader::PatchError GetLastError() const;
+    PatchFileReader::PatchError GetError() const;
     PatchFileReader::PatchingErrorDetails GetLastErrorDetails() const;
 
     bool Truncate();
@@ -156,9 +155,10 @@ protected:
     FilePath logFilePath;
     PatchError lastError;
     PatchError parseError;
+    int32 lastFileErrno;
     bool verbose;
     bool eof;
-    PatchingErrorDetails lastErrorWithDetails;
+    PatchingErrorDetails lastErrorDetails;
 
     Vector<int32> patchPositions;
     size_t initialPositionsCount;
@@ -174,14 +174,24 @@ inline void PatchFileReader::SetLogsFilePath(const DAVA::FilePath& path)
     logFilePath = path;
 }
 
+inline int32 PatchFileReader::GetFileError() const
+{
+    return lastFileErrno;
+}
+
 inline PatchFileReader::PatchError PatchFileReader::GetParseError() const
 {
     return parseError;
 }
 
+inline PatchFileReader::PatchError PatchFileReader::GetError() const
+{
+    return lastError;
+}
+
 inline PatchFileReader::PatchingErrorDetails PatchFileReader::GetLastErrorDetails() const
 {
-    return lastErrorWithDetails;
+    return lastErrorDetails;
 }
 }
 
