@@ -74,6 +74,11 @@ void SetDispatchTable(const Dispatch& dispatch)
 
 void Initialize(Api api, const InitParam& param)
 {
+// CRAP: hardcoded api, for testing
+#if defined(__DAVAENGINE_IPHONE__)
+    api = RHI_METAL;
+#endif
+
     switch (api)
     {
 #if defined(__DAVAENGINE_WIN32__)
