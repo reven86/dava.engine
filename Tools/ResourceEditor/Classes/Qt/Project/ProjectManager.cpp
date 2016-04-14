@@ -111,7 +111,7 @@ void ProjectManager::OpenProject(const DAVA::FilePath& incomePath)
 
         if (DAVA::FileSystem::Instance()->Exists(incomePath))
         {
-            DAVA::FilePath::AddTopResourcesFolder(projectPath);
+            DAVA::FilePath::AddTopResourcesFolder(projectPath + "Data/");
 
             SettingsManager::SetValue(Settings::Internal_LastProjectPath, DAVA::VariantType(projectPath));
 
@@ -164,7 +164,7 @@ void ProjectManager::CloseProject()
     if (!projectPath.IsEmpty())
     {
         isParticleSpritesUpdated = false;
-        DAVA::FilePath::RemoveResourcesFolder(projectPath);
+        DAVA::FilePath::RemoveResourcesFolder(projectPath + "Data/");
 
         projectPath = "";
         UpdateInternalValues();

@@ -126,10 +126,6 @@ void FilePath::InitializeBundleName()
     FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
     FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
     SetBundleName(execDirectory);
-    if (workingDirectory != execDirectory)
-    {
-        AddResourcesFolder(workingDirectory);
-    }
 
     FilePath dataDirPath(workingDirectory + "Data/");
     if (FileSystem::Instance()->Exists(dataDirPath))
