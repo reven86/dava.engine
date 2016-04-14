@@ -58,15 +58,7 @@ UIInputSystem::~UIInputSystem()
 void UIInputSystem::SetCurrentScreen(UIScreen* screen)
 {
     currentScreen = screen;
-    if (currentScreen != nullptr)
-    {
-        UIControl* root = FindNearestToUserModalControl();
-        focusSystem->SetRoot(root);
-    }
-    else
-    {
-        focusSystem->SetRoot(nullptr);
-    }
+    UpdateModalControl();
 }
 
 void UIInputSystem::SetPopupContainer(UIControl* container)
@@ -78,15 +70,7 @@ void UIInputSystem::OnControlVisible(UIControl* control)
 {
     if (control->GetComponent<UIModalInputComponent>() != nullptr)
     {
-        if (currentScreen != nullptr)
-        {
-            UIControl* root = FindNearestToUserModalControl();
-            focusSystem->SetRoot(root);
-        }
-        else
-        {
-            focusSystem->SetRoot(nullptr);
-        }
+        UpdateModalControl();
     }
     focusSystem->OnControlVisible(control);
 }
@@ -105,15 +89,7 @@ void UIInputSystem::OnControlInvisible(UIControl* control)
 
     if (control->GetComponent<UIModalInputComponent>() != nullptr)
     {
-        if (currentScreen != nullptr)
-        {
-            UIControl* root = FindNearestToUserModalControl();
-            focusSystem->SetRoot(root);
-        }
-        else
-        {
-            focusSystem->SetRoot(nullptr);
-        }
+        UpdateModalControl();
     }
 
     focusSystem->OnControlInvisible(control);
@@ -166,7 +142,11 @@ void UIInputSystem::HandleEvent(UIEvent* newEvent)
                 positionOfTouchWhenTouchBegan = eventToHandle->point;
             }
 
-            if (!popupContainer->SystemInput(eventToHandle))
+            if (modalControl.Valid())
+            {
+                modalControl->SystemInput(eventToHandle);
+            }
+            else if (!popupContainer->SystemInput(eventToHandle))
             {
                 currentScreen->SystemInput(eventToHandle);
             }
@@ -329,6 +309,22 @@ void UIInputSystem::SetHoveredControl(UIControl* newHovered)
 UIControl* UIInputSystem::GetHoveredControl() const
 {
     return hovered;
+}
+
+void UIInputSystem::UpdateModalControl()
+{
+    if (currentScreen != nullptr)
+    {
+        UIControl* root = FindNearestToUserModalControl();
+        focusSystem->SetRoot(root);
+        modalControl = root;
+        CancelInputs(<#DAVA::UIControl * control #>, <#bool hierarchical #>)
+    }
+    else
+    {
+        focusSystem->SetRoot(nullptr);
+        modalControl = nullptr;
+    }
 }
 
 UIControl* UIInputSystem::FindNearestToUserModalControl() const

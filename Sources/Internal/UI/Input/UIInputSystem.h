@@ -70,11 +70,13 @@ public:
     UIControl* GetHoveredControl() const;
 
 private:
+    void UpdateModalControl();
     UIControl* FindNearestToUserModalControl() const;
     UIControl* FindNearestToUserModalControlImpl(UIControl* current) const;
 
     UIScreen* currentScreen = nullptr;
     UIControl* popupContainer = nullptr;
+    RefPtr<UIControl> modalControl;
 
     UIFocusSystem* focusSystem = nullptr;
     UIKeyInputSystem* keyInputSystem = nullptr;
