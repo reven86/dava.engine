@@ -333,18 +333,16 @@ Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHidden
     {
         source = FilePath::NormalizePathname(source);
         FilePath sourcePath(source);
-        bool isAbsolutePath = FilePath::IsAbsolutePathname(source);
 
         if (sourcePath.IsDirectoryPathname())
         {
-            String archivePath = (isAbsolutePath ? (sourcePath.GetLastDirectoryName() + '/') : source);
-            CollectAllFilesInDirectory(sourcePath, archivePath, addHiddenFiles, collectedFiles);
+            CollectAllFilesInDirectory(sourcePath, sourcePath.GetLastDirectoryName() + '/', addHiddenFiles, collectedFiles);
         }
         else
         {
             CollectedFile collectedFile;
             collectedFile.absPath = sourcePath;
-            collectedFile.archivePath = (isAbsolutePath ? sourcePath.GetBasename() : source);
+            collectedFile.archivePath = sourcePath.GetBasename();
             collectedFiles.push_back(collectedFile);
         }
     }

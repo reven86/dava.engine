@@ -90,7 +90,7 @@ void ArchiveUnpackTool::ProcessInternal()
     {
         ResourceArchive resourceArchive(packFullPath);
 
-        for (auto& fileInfo : resourceArchive.GetFilesInfo())
+        for (const ResourceArchive::FileInfo& fileInfo : resourceArchive.GetFilesInfo())
         {
             Logger::Info("Unpacking %s, compressed size %u, orig size %u, pack type %s",
                          fileInfo.relativeFilePath.c_str(), fileInfo.compressedSize, fileInfo.originalSize,
@@ -116,8 +116,8 @@ bool ArchiveUnpackTool::UnpackFile(const ResourceArchive& archive, const Resourc
         LOG_ERROR("Can't load file %s from archive", fileInfo.relativeFilePath);
         return false;
     }
-    String filePath(fileInfo.relativeFilePath);
-    FilePath fullPath = filePath;
+
+    FilePath fullPath(fileInfo.relativeFilePath);
     FilePath dirPath = fullPath.GetDirectory();
     FileSystem::eCreateDirectoryResult result = FileSystem::Instance()->CreateDirectory(dirPath, true);
     if (FileSystem::DIRECTORY_CANT_CREATE == result)
@@ -125,17 +125,24 @@ bool ArchiveUnpackTool::UnpackFile(const ResourceArchive& archive, const Resourc
         LOG_ERROR("Can't create unpack path dir %s", dirPath.GetAbsolutePathname().c_str());
         return false;
     }
-    UniquePtr<File> file(File::Create(fullPath, File::CREATE | File::WRITE));
-    if (!file)
+
+    if (!fullPath.IsDirectoryPathname())
     {
-        LOG_ERROR("Can't create file %s", fileInfo.relativeFilePath);
-        return false;
+        UniquePtr<File> file(File::Create(fullPath, File::CREATE | File::WRITE));
+        if (!file)
+        {
+            LOG_ERROR("Can't create file %s", fullPath.GetAbsolutePathname().c_str());
+            return false;
+        }
+
+        uint32 dataSize = static_cast<uint32>(content.size());
+        uint32 written = file->Write(content.data(), dataSize);
+        if (written != dataSize)
+        {
+            LOG_ERROR("Can't write into %s", fullPath.GetAbsolutePathname().c_str());
+            return false;
+        }
     }
-    uint32 written = file->Write(content.data(), content.size());
-    if (written != content.size())
-    {
-        LOG_ERROR("Can't write into %s", fileInfo.relativeFilePath);
-        return false;
-    }
+
     return true;
 }

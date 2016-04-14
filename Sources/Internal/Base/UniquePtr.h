@@ -61,7 +61,7 @@ template <typename BASE_OBJECT>
 UniquePtr<BASE_OBJECT>::UniquePtr(BASE_OBJECT* p)
     : object(p)
 {
-    DVASSERT(p->GetRetainCount() == 1);
+    DVASSERT(p ? p->GetRetainCount() == 1 : true);
 }
 
 template <typename BASE_OBJECT>
@@ -71,7 +71,7 @@ const UniquePtr<BASE_OBJECT>& UniquePtr<BASE_OBJECT>::operator=(BASE_OBJECT* p)
     {
         SafeRelease(object);
         object = p;
-        DVASSERT(p->GetRetainCount() == 1);
+        DVASSERT(p ? p->GetRetainCount() == 1 : true);
     }
 
     return *this;
@@ -114,7 +114,7 @@ void UniquePtr<BASE_OBJECT>::reset(BASE_OBJECT* p)
     {
         SafeRelease(object);
         object = p;
-        DVASSERT(p->GetRetainCount() == 1);
+        DVASSERT(p ? p->GetRetainCount() == 1 : true);
     }
 }
 
