@@ -948,29 +948,36 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                     newPathToDelete += curInfo.origPath;
                 }
 
-                if (newPathToDelete.IsDirectoryPathname())
+                // don't try to delete file or folder if it is not exists in permissive mode
+                // try to delete anyway if permissive mode is not enabled
+                bool isFileExists = FileSystem::Instance()->Exists(newPathToDelete);
+                bool shouldToTtryToDelete = !isPermissiveMode || (isPermissiveMode && isFileExists);
+                if (shouldToTtryToDelete)
                 {
-                    // delete only empty directory
-                    if (!FileSystem::Instance()->DeleteDirectory(newPathToDelete))
+                    if (newPathToDelete.IsDirectoryPathname())
                     {
-                        lastFileErrno = errno;
-                        lastErrorDetails.actual.path = newPathToDelete;
-                        lastErrorDetails.expected.path = "";
-                        lastError = ERROR_NEW_WRITE;
-                        ret = false;
-                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
+                        // delete only empty directory
+                        if (!FileSystem::Instance()->DeleteDirectory(newPathToDelete))
+                        {
+                            lastFileErrno = errno;
+                            lastErrorDetails.actual.path = newPathToDelete;
+                            lastErrorDetails.expected.path = "";
+                            lastError = ERROR_NEW_WRITE;
+                            ret = false;
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
+                        }
                     }
-                }
-                else
-                {
-                    if (!FileSystem::Instance()->DeleteFile(newPathToDelete))
+                    else
                     {
-                        lastFileErrno = errno;
-                        lastErrorDetails.actual.path = newPathToDelete;
-                        lastErrorDetails.expected.path = "";
-                        lastError = ERROR_NEW_WRITE;
-                        ret = false;
-                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
+                        if (!FileSystem::Instance()->DeleteFile(newPathToDelete))
+                        {
+                            lastFileErrno = errno;
+                            lastErrorDetails.actual.path = newPathToDelete;
+                            lastErrorDetails.expected.path = "";
+                            lastError = ERROR_NEW_WRITE;
+                            ret = false;
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
+                        }
                     }
                 }
             }
