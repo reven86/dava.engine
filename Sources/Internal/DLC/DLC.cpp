@@ -780,8 +780,8 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
 
             case DAVA::DLE_FILE_ERROR:
                 // writing file problem
-                DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastPatchingErrorDetails.fileErrno);
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastPatchingErrorDetails.fileErrno);
+                DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrno);
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastErrno);
                 PostError(DE_WRITE_ERROR);
                 break;
 
@@ -963,8 +963,10 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                    });
 
     // check if no errors occurred during patching
-    dlcContext.lastPatchingErrorDetails = patchReader.GetLastError();
+    dlcContext.lastErrno = patchReader.GetLastError().fileErrno;
     dlcContext.patchingError = patchReader.GetLastError().patchingError;
+    dlcContext.lastPatchingErrorDetails = patchReader.GetLastError();
+
     if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
         DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);
