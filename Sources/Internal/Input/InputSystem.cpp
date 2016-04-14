@@ -101,5 +101,4 @@ void InputSystem::OnAfterUpdate()
 {
     keyboard->OnFinishFrame();
 }
-
 };
