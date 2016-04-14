@@ -52,7 +52,6 @@ macro( setup_main_module )
 
     get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-
     if( NAME_MODULE )
         get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
         list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
@@ -71,7 +70,6 @@ macro( setup_main_module )
         if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
             set( MODULE_TYPE "STATIC" )
         endif()
-
 
         #"APPLE VALUES"
         if( APPLE )
@@ -93,9 +91,11 @@ macro( setup_main_module )
         #"FIND LIBRARY"
         foreach( NAME ${FIND_SYSTEM_LIBRARY} ${FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}} )
             FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
-            if( APPLE )
-                list ( APPEND DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${${NAME}_LIBRARY} )
+
+            if( ${NAME}_LIBRARY )
+                list ( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${${NAME}_LIBRARY} )
             else()
+                find_package( ${NAME} )
                 list ( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${${NAME}_LIBRARY} )
             endif()
         endforeach()        
@@ -113,10 +113,18 @@ macro( setup_main_module )
 
         #"SAVE PROPERTY"
         save_property( PROPERTY_LIST 
+                DEFINITIONS
+                DEFINITIONS_${DAVA_PLATFORM_CURENT}
                 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
                 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
                 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
-            )
+                )
+
+        load_property( PROPERTY_LIST 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
+                )
         
 
         if( SOURCE_FOLDERS )
@@ -134,6 +142,11 @@ macro( setup_main_module )
             endforeach()
 
             set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+
+            load_property( PROPERTY_LIST   
+                    DEFINITIONS
+                    DEFINITIONS_${DAVA_PLATFORM_CURENT}
+                )
 
         endif()
 
@@ -160,11 +173,12 @@ macro( setup_main_module )
         endif()
 
         #"INCLUDES_DIR"
-        if( INCLUDES_DIR )
-            include_directories( ${INCLUDES_DIR} )  
+        load_property( PROPERTY_LIST INCLUDES )
+        if( INCLUDES )
+            include_directories( ${INCLUDES} )  
         endif()
-        if( INCLUDES_DIR_${DAVA_PLATFORM_CURENT} )
-            include_directories( ${INCLUDES_DIR_${DAVA_PLATFORM_CURENT}} )  
+        if( INCLUDES_${DAVA_PLATFORM_CURENT} )
+            include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )  
         endif()
 
 
@@ -172,20 +186,33 @@ macro( setup_main_module )
             set (${DIR_NAME}_CPP_FILES ${CPP_FILES} PARENT_SCOPE)
             set (${DIR_NAME}_H_FILES ${H_FILES}     PARENT_SCOPE)
 
+            save_property( PROPERTY_LIST 
+                    STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
+                    STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
+                    STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
+                    )
+
         else()
+            project( ${NAME_MODULE} )
+
             generate_source_groups_project ()
 
             generated_unity_sources( ALL_SRC  IGNORE_LIST ${UNITY_IGNORE_LIST}
                                               IGNORE_LIST_${DAVA_PLATFORM_CURENT} ${UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}} ) 
                                
-            append_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${NAME_MODULE} )
-
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} )
+                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
+
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
                 add_definitions( -DDAVA_MODULE_EXPORTS )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC}  )
+
+                load_property( PROPERTY_LIST TARGET_MODULES_LIST )
+                list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${TARGET_MODULES_LIST} )
+
             endif()
+
 
             if( DEFINITIONS_PRIVATE )
                 add_definitions( ${DEFINITIONS_PRIVATE} )
@@ -199,7 +226,11 @@ macro( setup_main_module )
                 include_directories( ${INCLUDES_PRIVATE} ) 
             endif() 
 
-            target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES} )  
+            if( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
+                include_directories( ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} ) 
+            endif() 
+
+
             target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )  
 
             foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG} )

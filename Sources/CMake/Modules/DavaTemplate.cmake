@@ -39,7 +39,11 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
-load_property( PROPERTY_LIST   
+load_property( PROPERTY_LIST 
+        TARGET_MODULES_LIST  
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE  
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
@@ -587,10 +591,6 @@ if( TARGET_FILE_TREE_FOUND )
 
 endif()
 
-if( DAVA_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
-
-endif()
 
 if( ANDROID )
     set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
@@ -605,16 +605,16 @@ if( ANDROID )
         endforeach()
     endforeach()
 
-endif()
+endif() 
 
-target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
+target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} ${TARGET_MODULES_LIST} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
-    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG})
 endforeach ()
 
 foreach ( FILE ${LIBRARIES_RELEASE} )
-    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE}  )
 endforeach ()
 
 

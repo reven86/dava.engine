@@ -560,6 +560,10 @@ function (append_property KEY_PROP  VALUE)
 endfunction()
 
 
+function (reset_property KEY_PROP )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )
+endfunction()
+
 macro( load_property  )
     cmake_parse_arguments (ARG "" "" "PROPERTY_LIST" ${ARGN})
     foreach( PROPERTY ${ARG_PROPERTY_LIST} )
