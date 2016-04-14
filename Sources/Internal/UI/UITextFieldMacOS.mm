@@ -431,6 +431,9 @@ public:
             currentRect = rectSrc;
             NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
 
+            controlRect.size.width = std::max(0.0, controlRect.size.width);
+            controlRect.size.height = std::max(0.0, controlRect.size.height);
+
             [nsScrollView setFrame:controlRect];
             [nsTextView setFrame:controlRect];
         }
@@ -755,7 +758,7 @@ public:
     {
         // HACK for battle screen
         // check if focus not synced
-        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText);
+        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText) && davaText->IsEditing();
         if (isFocused)
         {
             NSWindow* window = [NSApp keyWindow];
@@ -818,6 +821,9 @@ public:
 
         if (!NSEqualRects(nativeControlRect, controlRect))
         {
+            controlRect.size.width = std::max(0.0, controlRect.size.width);
+            controlRect.size.height = std::max(0.0, controlRect.size.height);
+
             [nsTextField setFrame:controlRect];
             nativeControlRect = controlRect;
         }

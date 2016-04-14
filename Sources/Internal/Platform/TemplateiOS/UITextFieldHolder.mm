@@ -663,6 +663,7 @@
     if (cppTextField)
     {
         cppTextField->OnKeyboardHidden();
+        cppTextField->StopEdit();
     }
 }
 
