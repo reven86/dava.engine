@@ -58,8 +58,8 @@ public:
     DAVA_DEPRECATED(bool SkipEvents(const UIEvent* event));
 
 private:
-    std::unique_ptr<MouseCaptureContext> context;
-    std::unique_ptr<MouseCaptureInterface> privateImpl;
+    MouseCaptureContext* context;
+    MouseCaptureInterface* privateImpl;
 
     void SetNativePining(eMouseCaptureMode newNativeMode);
     MouseCapture(const MouseCapture&) = delete;

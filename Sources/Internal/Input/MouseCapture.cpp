@@ -103,8 +103,8 @@ MouseCapture::MouseCapture()
             }
         }
     };
-    context = std::make_unique<MouseCaptureContext>();
-    privateImpl = std::make_unique<MouseCapturePrivate>();
+    context = new MouseCaptureContext();
+    privateImpl = new MouseCapturePrivate();
     Core::Instance()->focusChanged.Connect(focusChanged);
     context->focused = Core::Instance()->IsFocused();
 }
