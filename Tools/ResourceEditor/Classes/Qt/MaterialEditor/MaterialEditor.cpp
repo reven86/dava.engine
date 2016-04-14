@@ -1189,7 +1189,7 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint& po
                     bool hasProperty = material->HasLocalProperty(propertyName);
                     if (hasProperty)
                     {
-                        QMenu menu;
+                        QMenu menu(this);
                         menu.addAction("Add to Global Material");
                         QAction* resultAction = menu.exec(ui->materialProperty->viewport()->mapToGlobal(pos));
 

@@ -664,8 +664,6 @@ protected:
             SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
             sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterItem->emitterInstance));
         });
-        
-        MarkStructureChanged();
     }
 
     void AddLayer()
