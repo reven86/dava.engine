@@ -50,6 +50,9 @@ extern "C"
 #endif
 }
 
+#include "Sound/FMODUtils.h"
+#include "fmod.h"
+
 namespace DAVA
 {
     class MovieViewControl : public IMovieViewControl, public UIControl

@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "MovieViewControlFFMPEG.h"
+#include "Sound/SoundSystem.h"
 
 namespace DAVA
 {
@@ -186,6 +187,18 @@ namespace DAVA
         return true;
     }
 
+    FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
+    {
+        // Read from your buffer here...
+        return FMOD_OK;
+    }
+
+    FMOD_RESULT F_CALLBACK pcmsetposcallback(FMOD_SOUND* sound, int subsound, unsigned int position, FMOD_TIMEUNIT postype)
+    {
+        // Seek to a location in your data, may not be required for what you want to do
+        return FMOD_OK;
+    }
+
     bool MovieViewControl::InitAudio()
     {
         for (unsigned int i = 0; i < avformatContext->nb_streams; i++)
@@ -244,6 +257,26 @@ namespace DAVA
         audioConvertContext = AV::swr_alloc_set_opts(audioConvertContext, out_channel_layout, out_sample_fmt, out_sample_rate,
                                                      in_channel_layout, audioCodecContext->sample_fmt, audioCodecContext->sample_rate, 0, nullptr);
         AV::swr_init(audioConvertContext);
+
+        FMOD_CREATESOUNDEXINFO exinfo;
+
+        memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
+
+        uint32 channels = 2;
+        exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
+        exinfo.decodebuffersize = 44100; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
+        exinfo.length = 44100 * channels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
+        exinfo.numchannels = channels; /* Number of channels in the sound. */
+        exinfo.defaultfrequency = 44100; /* Default playback rate of sound. */
+        exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
+        exinfo.pcmreadcallback = &pcmreadcallback; /* User callback for reading. */
+        exinfo.pcmsetposcallback = &pcmsetposcallback; /* User callback for seeking. */
+
+        FMOD::Sound* sound;
+        FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
+        FMOD_RESULT result = system->createStream(NULL, FMOD_OPENUSER, &exinfo, &sound);
+
+        system->playSound(FMOD_CHANNEL_FREE, sound, false, nullptr);
 
         return true;
     }
@@ -344,39 +377,25 @@ namespace DAVA
 
     void MovieViewControl::UpdateAudio(AV::AVPacket* packet, float32 timeElapsed)
     {
-        while (AV::av_read_frame(avformatContext, packet) >= 0)
+        if (packet->stream_index == audioStreamIndex)
         {
-            if (audioPacket->stream_index == audioStreamIndex)
+            int got_data;
+            int ret = avcodec_decode_audio4(audioCodecContext, audioFrame, &got_data, packet);
+            if (ret < 0)
             {
-                int got_data;
-                int ret = avcodec_decode_audio4(audioCodecContext, audioFrame, &got_data, packet);
-                if (ret < 0)
-                {
-                    printf("Error in decoding audio frame.\n");
-                    return;
-                }
-                if (got_data > 0)
-                {
-                    AV::swr_convert(audioConvertContext, &out_buffer, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
-                    index++;
-                }
-
-#if USE_SDL
-                while (audio_len > 0) //Wait until finish
-                    SDL_Delay(1);
-
-                //Set audio buffer (PCM data)
-                audio_chunk = (Uint8*)out_buffer;
-                //Audio buffer length
-                audio_len = out_buffer_size;
-                audio_pos = audio_chunk;
-
-                //Play
-                SDL_PauseAudio(0);
-#endif
+                printf("Error in decoding audio frame.\n");
+                return;
             }
-            av_free_packet(packet);
+            if (got_data > 0)
+            {
+                AV::swr_convert(audioConvertContext, &out_buffer, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
+                index++;
+            }
+
+            uint8_t** frameData = audioFrame->data;
+            //audioFrame->linesize[]
         }
+        av_free_packet(packet);
     }
 
     // UIControl update and draw implementation
@@ -399,23 +418,23 @@ namespace DAVA
             timeAfterLastRender = 0.f;
         }
 
-        //  do
-        //{
+        do
+        {
             int retRead = -1;
             retRead = AV::av_read_frame(avformatContext, videoPacket);
             if (retRead < 0)
             {
-                //  Logger::FrameworkDebug("EOF or error");
+                Logger::FrameworkDebug("EOF or error");
                 return;
             }
-            //} while (packet->stream_index != videoIndex);
-            // } while (packet->stream_index != audioIndex);
-
-            if (videoPacket->stream_index == videoStreamIndex)
-                UpdateVideo(videoPacket, timeElapsed);
-
             if (videoPacket->stream_index == audioStreamIndex)
+            {
                 UpdateAudio(videoPacket, timeElapsed);
+            }
+        } while (videoPacket->stream_index != videoStreamIndex);
+
+        if (videoPacket->stream_index == videoStreamIndex)
+            UpdateVideo(videoPacket, timeElapsed);
     }
 
 }

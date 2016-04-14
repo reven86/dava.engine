@@ -127,6 +127,11 @@ public:
     int32 GetChannelsUsed() const;
     int32 GetChannelsMax() const;
 
+    FMOD::System* GetFmodSystem() const
+    {
+        return fmodSystem;
+    }
+
 #ifdef __DAVAENGINE_IPHONE__
     bool IsSystemMusicPlaying();
     void DuckSystemMusic(bool duck);
