@@ -527,7 +527,8 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
         break;
     case DRAW_TILED_MULTILAYER:
         drawState.SetMaterial(RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL[gradientMode]);
-        drawState.usePerPixelAccuracy = (perPixelAccuracyType == PER_PIXEL_ACCURACY_ENABLED) || (perPixelAccuracyType == PER_PIXEL_ACCURACY_FORCED);
+        drawState.usePerPixelAccuracy = (perPixelAccuracyType == PER_PIXEL_ACCURACY_FORCED) || ((perPixelAccuracyType == PER_PIXEL_ACCURACY_ENABLED) && (lastDrawPos == geometricData.position));
+        lastDrawPos = geometricData.position;
         RenderSystem2D::Instance()->DrawTiledMultylayer(mask, detail, gradient, contour, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledMultulayerData, drawColor);
         break;
     default:
