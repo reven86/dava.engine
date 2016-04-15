@@ -30,24 +30,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PREFERENCES_MODEL
 #define PREFERENCES_MODEL
 
-#include <QAbstractItemModel>
+#include "Base/Introspection.h"
+#include <QStandardItemModel>
 
-class PreferencesModel : public QAbstractItemModel
+class PreferencesModel : public QStandardItemModel
 {
     Q_OBJECT
 
 public:
+    enum eType
+    {
+        TYPE_INSP,
+        TYPE_MEMBER
+    };
+
+    enum eRoles
+    {
+        ROLE_TYPE = Qt::UserRole + 1,
+        ROLE_POINTER
+    };
+
     PreferencesModel(QObject* parent);
-    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex& child) const override;
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
-    Qt::ItemFlags flags(const QModelIndex& index) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
+private:
+    void BuildTree();
+    static QString MakeDataFromVariant(const DAVA::InspMember* member);
 };
+
+Q_DECLARE_METATYPE(PreferencesModel::eType);
+Q_DECLARE_METATYPE(PreferencesModel::eRoles);
+Q_DECLARE_METATYPE(const DAVA::InspInfo*);
+Q_DECLARE_METATYPE(const DAVA::InspMember*);
 
 #endif //PREFERENCES_MODEL

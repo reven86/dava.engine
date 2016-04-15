@@ -31,12 +31,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QVBoxLayout>
 #include "UI/Properties/PropertiesTreeView.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
+#include "Preferences/PreferencesModel.h"
 
 PreferencesDialog::PreferencesDialog(QWidget* parent, Qt::WindowFlags flags)
     : QDialog(parent, flags)
 {
     setLayout(new QVBoxLayout());
     QTreeView* treeView = new PropertiesTreeView(this);
+    PreferencesModel* preferencesModel = new PreferencesModel(this);
+    treeView->setModel(preferencesModel);
     layout()->addWidget(treeView);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate());
 }

@@ -35,17 +35,6 @@ namespace PreferencesStorage_local
 DAVA::String rawPreferencesKey = "raw local preferences storage preferences";
 }
 
-struct PreferencesStorage::ClassInfo
-{
-    ClassInfo(const DAVA::InspInfo* inspInfo_, const PreferencesRegistrator::DefaultValuesList& defaultValues_)
-        : inspInfo(inspInfo_)
-        , defaultValues(defaultValues_)
-    {
-    }
-    const DAVA::InspInfo* inspInfo;
-    PreferencesRegistrator::DefaultValuesList defaultValues;
-};
-
 PreferencesStorage::PreferencesStorageSaver::PreferencesStorageSaver()
 {
     PreferencesStorage::Instance(); //check that the storage exists
@@ -70,7 +59,12 @@ PreferencesStorage::~PreferencesStorage() = default;
 void PreferencesStorage::RegisterType(const DAVA::InspInfo* inspInfo, const PreferencesRegistrator::DefaultValuesList& defaultValues)
 {
     PreferencesStorage* self = Instance();
-    self->registeredInsp.insert(std::make_unique<ClassInfo>(inspInfo, defaultValues)); //storing pointer to static memory
+    RegisteredIntrospection& registeredInsp = self->registeredInsp;
+    if (std::find(registeredInsp.begin(), registeredInsp.end(), inspInfo) == registeredInsp.end())
+    {
+        registeredInsp.push_back(inspInfo);
+        self->defaultValues[inspInfo] = defaultValues;
+    }
 }
 
 void PreferencesStorage::RegisterPreferences(void* realObject, DAVA::InspBase* inspBase)
@@ -112,10 +106,9 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
         }
     }
     //all preferences must be registered on app start
-    for (const auto& classInfo : registeredInsp) //create new settings archive
+    for (const DAVA::InspInfo* inspInfo : registeredInsp) //create new settings archive
     {
-        const PreferencesRegistrator::DefaultValuesList& defaultValues = classInfo->defaultValues;
-        const DAVA::InspInfo* inspInfo = classInfo->inspInfo;
+        const PreferencesRegistrator::DefaultValuesList& defaultValuesList = defaultValues[inspInfo];
         DAVA::String key = GenerateKey(inspInfo);
         DAVA::KeyedArchive* loadedData = loadedPreferences->GetArchive(key);
         DAVA::ScopedPtr<DAVA::KeyedArchive> classInfoArchive(new DAVA::KeyedArchive);
@@ -134,8 +127,8 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
             }
             if (value.type == DAVA::VariantType::TYPE_NONE)
             {
-                auto iter = defaultValues.find(memberName);
-                if (iter != defaultValues.end())
+                auto iter = defaultValuesList.find(memberName);
+                if (iter != defaultValuesList.end())
                 {
                     value = iter->second;
                 }
@@ -255,9 +248,8 @@ DAVA::VariantType PreferencesStorage::LoadValueByKeyImpl(const DAVA::FastName& k
 const DAVA::InspInfo* PreferencesStorage::GetInspInfo(const DAVA::FastName& className)
 {
     PreferencesStorage* self = Instance();
-    for (const auto& iter : self->registeredInsp)
+    for (const DAVA::InspInfo* info : self->registeredInsp)
     {
-        const DAVA::InspInfo* info = iter->inspInfo;
         if (info->Name() == className)
         {
             return info;
@@ -332,6 +324,11 @@ DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember
         return DAVA::VariantType();
     }
     return *value;
+}
+
+const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegisteredInsp()
+{
+    return Instance()->registeredInsp;
 }
 
 DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo)

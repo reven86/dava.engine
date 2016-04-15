@@ -97,6 +97,7 @@ private slots:
     void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
+    void OnEditorPreferencesTriggered();
 
 private:
     void InitLanguageBox();

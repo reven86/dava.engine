@@ -45,6 +45,7 @@ class PreferencesStorage : public DAVA::StaticSingleton<PreferencesStorage>
 {
 public:
     using DefaultValuesList = DAVA::Map<DAVA::FastName, DAVA::VariantType>;
+    using RegisteredIntrospection = DAVA::Vector<const DAVA::InspInfo*>;
 
     PreferencesStorage();
     ~PreferencesStorage();
@@ -67,6 +68,8 @@ public:
 
     static void SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value);
     static DAVA::VariantType GetPreferencesValue(const DAVA::InspMember* member);
+
+    static const RegisteredIntrospection& GetRegisteredInsp();
 
     struct PreferencesStorageSaver
     {
@@ -91,8 +94,8 @@ private:
     DAVA::FilePath localStorage;
     DAVA::ScopedPtr<DAVA::KeyedArchive> editorPreferences;
 
-    struct ClassInfo;
-    DAVA::Set<std::unique_ptr<ClassInfo>> registeredInsp;
+    RegisteredIntrospection registeredInsp;
+    DAVA::Map<const DAVA::InspInfo*, DefaultValuesList> defaultValues;
     DAVA::Map<const DAVA::InspInfo*, DAVA::Set<void*>> registeredObjects;
 };
 

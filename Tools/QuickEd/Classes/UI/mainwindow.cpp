@@ -44,6 +44,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/EditorPreferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
+#include "Preferences/PreferencesDialog.h"
 
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
@@ -94,6 +95,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+
     InitMenu();
 
     menuTools->setEnabled(false);
@@ -260,6 +262,8 @@ void MainWindow::InitMenu()
 
     // Pixelization.
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
+
+    connect(actionEditor_Preferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
 }
 
 void MainWindow::SetupViewMenu()
@@ -416,6 +420,12 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     {
         logWidget->AddMessage(logLevel, output);
     }
+}
+
+void MainWindow::OnEditorPreferencesTriggered()
+{
+    PreferencesDialog dialog;
+    dialog.exec();
 }
 
 bool MainWindow::IsPixelized() const

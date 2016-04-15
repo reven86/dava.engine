@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -213,6 +213,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionReloadSprites"/>
+   <addaction name="actionEditor_Preferences"/>
   </widget>
   <widget class="QDockWidget" name="consoleDockWidget">
    <property name="windowTitle">
@@ -478,6 +479,15 @@
    </property>
    <property name="toolTip">
     <string>reload sprites</string>
+   </property>
+  </action>
+  <action name="actionEditor_Preferences">
+   <property name="icon">
+    <iconset resource="../DataQt/icons.qrc">
+     <normaloff>:/Icons/configure.png</normaloff>:/Icons/configure.png</iconset>
+   </property>
+   <property name="text">
+    <string>Editor Preferences</string>
    </property>
   </action>
  </widget>
