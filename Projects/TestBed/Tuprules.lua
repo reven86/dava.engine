@@ -23,5 +23,5 @@ dava.add_pack_rule("pack2",
 
 dava.add_pack_rule("pack3",
 {
-    { "Data", "" }
+    { "Data", "%.*" }
 })

@@ -136,31 +136,40 @@ dava.create_lists = function()
 
     -- go throught all files in current dir
     for k, file in pairs(files) do
-        local file_full_path = cur_dir .. "/" .. file
-        local pack_found = false
 
+        local packs_found = { }
+        local file_full_path = cur_dir .. "/" .. file
+        
         -- go through pack
         for pai, pack in pairs(dava.im.packs) do
-            local is_exclusive = false
+
+            local pack_found = false
+            local is_pack_exclusive = false
+
+            local rules_found = { }
 
             -- each pack has multiple rules
-            for kk, rule in pairs(pack.rules) do
+            for ri, rule in pairs(pack.rules) do
+
+                local rule_found = false
+                local is_rule_exclusive = false
 
                 -- dependency specification
-                if kk == "depends" then
+                if ri == "depends" then
 
                     -- nothing to do here
 
-                elseif kk == "exclusive" then
+                elseif ri == "exclusive" then
+
                     -- mark that we found exclusive pack
-                    is_exclusive = true
+                    is_pack_exclusive = true
 
                 -- when pack rule is a simple string
                 -- we should just compare it to match
                 elseif type(rule) == "string" then
 
                     if pack.rules == file_full_path then
-                        pack_found = add_to_affected_packs(pack.name, file)
+                        rule_found = add_to_affected_packs(pack.name, file)
                     end
 
                 -- when pack rule is a table
@@ -170,20 +179,13 @@ dava.create_lists = function()
 
                     local dir_rule = rule[1]
                     local file_rule = rule[2]
-                    local is_exclusive = false
 
                     if #rule > 2 then
-                        is_exclusive = rule[3]
+                        is_rule_exclusive = rule[3]
                     end
 
-                    --
-                    -- TODO:
-                    -- use is_exclusive value
-                    -- ...
-                    --
-
                     if cur_dir:match(dir_rule) and file:match(file_rule) then
-                        pack_found = add_to_affected_packs(pack.name, file)
+                        rule_found = add_to_affected_packs(pack.name, file)
                     end
 
                 -- when pack rule is a function
@@ -191,22 +193,42 @@ dava.create_lists = function()
                 elseif type(rule) == "function" then
 
                     if rule(cur_dir, file) == true then
-                        pack_found = add_to_affected_packs(pack.name, file)
+                        rule_found = add_to_affected_packs(pack.name, file)
                     end
 
                 -- this should never happend
                 else
                     assert(false, "this should never happend, type(pack_rule) = " .. type(pack_rule))
                 end
+
+                if rule_found == true then
+                    rules_found[#rules_found + 1] = ri
+                    if is_rule_exclusive then
+                        break
+                    end
+                end
             end
 
-            if is_exclusive and pack_found then
-                -- exclusive rule will break matching no other rules
-                break
+            assert(#rules_found < 2, "File " .. 
+                file .. " is matching more than one rule: " ..
+                tostring(rules_found[1]) .. " and " ..
+                tostring(rules_found[2]) .. " while processing pack " ..
+                pack.name)
+
+            if #rules_found > 0 then
+                packs_found[#packs_found + 1] = pack.name
+                if is_pack_exclusive then
+                    break
+                end
             end
         end
 
-        if pack_found == false then
+        assert(#packs_found < 2, "File " ..
+            file .. " is matching more than one pack: " .. 
+            tostring(packs_found[1]) .. " and " ..
+            tostring(packs_found[2]))
+
+        if #packs_found == 0 then
             add_to_affected_packs(dava.im.packlist_default, file)
         end
     end
