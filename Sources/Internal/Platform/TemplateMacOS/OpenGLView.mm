@@ -34,7 +34,6 @@
 extern void FrameworkMain(int argc, char* argv[]);
 
 @implementation OpenGLView
-@synthesize willQuit;
 
 - (id)initWithFrame:(NSRect)frameRect
 {
@@ -77,8 +76,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     trackingArea = nil;
     [self enableTrackingArea];
-    isFirstDraw = true;
-    willQuit = false;
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
@@ -147,14 +144,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     }
 
     [super reshape];
-}
-
-- (void)drawRect:(NSRect)theRect
-{
-    if (willQuit)
-        return;
-
-    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (BOOL)acceptsFirstResponder
