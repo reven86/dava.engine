@@ -47,8 +47,6 @@
 
 #include "MemoryManager/MemoryProfiler.h"
 
-#include "Input/MouseCapture.h"
-
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 

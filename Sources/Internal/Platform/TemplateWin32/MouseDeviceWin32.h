@@ -26,50 +26,34 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __FRAMEWORK__MOUSECAPTUREWIN32_H__
+#define __FRAMEWORK__MOUSECAPTUREWIN32_H__
+
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__)
 
-#include "Platform/TemplateWin32/MouseCaptureWinUAP.h"
-#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
-
-using namespace ::Windows::UI::Core;
-using namespace ::Windows::UI::Xaml;
-using namespace ::Windows::UI::Xaml::Controls;
+#include "Input/MouseDevice.h"
+#include "Math/Math2D.h"
 
 namespace DAVA
 {
-void MouseDeviceUWP::SetMode(eCaptureMode newMode)
+class MouseDeviceWin32 : public MouseDeviceInterface
 {
-    CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
-    DVASSERT(swapchain);
+public:
+    void SetMode(eCaptureMode newMode) override;
+    void SetCursorInCenter() override;
+    bool SkipEvents() override;
 
-    if (eCaptureMode::PINING == newMode)
-    {
-        core->RunOnUIThread([]()
-                            {
-                                Window::Current->CoreWindow->PointerCursor = nullptr;
-                            });
-    }
-    else
-    {
-        core->RunOnUIThread([]()
-                            {
-                                Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
-                            });
-    }
-}
+private:
+    bool SetSystemCursorVisibility(bool show);
 
-void MouseDeviceUWP::SetCursorInCenter()
-{
-}
+    bool lastSystemCursorShowState = true;
+    Point2i lastCursorPosition;
+};
 
-bool MouseDeviceUWP::SkipEvents()
-{
-    return false;
-}
+} //  namespace DAVA
 
-} // namespace DAVA
+#endif //  __DAVAENGINE_WIN32__
 
-#endif //  __DAVAENGINE_WIN_UAP__
+#endif //  __FRAMEWORK__MOUSECAPTUREWIN32_H__

@@ -27,12 +27,12 @@
 =====================================================================================*/
 
 #include "Core/Core.h"
-#include "Input/MouseCapture.h"
+#include "Input/MouseDevice.h"
 #include "UI/UIEvent.h"
 
-#include "Platform/TemplateMacOS/MouseCaptureMacOS.h"
-#include "Platform/TemplateWin32/MouseCaptureWin32.h"
-#include "Platform/TemplateWin32/MouseCaptureWinUAP.h"
+#include "Platform/TemplateMacOS/MouseDeviceMacOS.h"
+#include "Platform/TemplateWin32/MouseDeviceWin32.h"
+#include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
 
 namespace DAVA
 {

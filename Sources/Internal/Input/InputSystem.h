@@ -36,7 +36,7 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "InputCallback.h"
-#include "Input/MouseCapture.h"
+#include "Input/MouseDevice.h"
 
 /**
 	\defgroup inputsystem	Input System

@@ -26,34 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __FRAMEWORK__MOUSECAPTUREWIN32_H__
-#define __FRAMEWORK__MOUSECAPTUREWIN32_H__
+#ifndef __FRAMEWORK__MOUSECAPTUREWINUAP_H__
+#define __FRAMEWORK__MOUSECAPTUREWINUAP_H__
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Input/MouseCapture.h"
-#include "Math/Math2D.h"
+#include "Input/MouseDevice.h"
 
 namespace DAVA
 {
-class MouseDeviceWin32 : public MouseDeviceInterface
+class MouseDeviceUWP : public MouseDeviceInterface
 {
 public:
     void SetMode(eCaptureMode newMode) override;
     void SetCursorInCenter() override;
     bool SkipEvents() override;
-
-private:
-    bool SetSystemCursorVisibility(bool show);
-
-    bool lastSystemCursorShowState = true;
-    Point2i lastCursorPosition;
 };
+}
 
-} //  namespace DAVA
+#endif //  __DAVAENGINE_WIN_UAP__
 
-#endif //  __DAVAENGINE_WIN32__
-
-#endif //  __FRAMEWORK__MOUSECAPTUREWIN32_H__
+#endif //  __FRAMEWORK__MOUSECAPTUREWINUAP_H__

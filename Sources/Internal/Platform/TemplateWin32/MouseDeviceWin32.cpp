@@ -30,7 +30,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Platform/TemplateWin32/MouseCaptureWin32.h"
+#include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
 namespace DAVA
