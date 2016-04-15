@@ -35,6 +35,7 @@ include ( DavaTemplateModules  )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
+include ( DavaLibs             )
 
 #
 macro ( set_project_files_properties FILES_LIST )
