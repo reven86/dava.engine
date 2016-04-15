@@ -49,7 +49,7 @@ DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
 void CreateWindowSizeDependentResources();
 void SetSwapChainPanel(SwapChainPanel ^ panel);
-void SetBackBufferSize(Windows::Foundation::Size backbufferSize, Windows::Foundation::Size backbufferScale);
+void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Windows::Foundation::Size& backbufferScale);
 void SetCurrentOrientation(DisplayOrientations currentOrientation);
 void ValidateDevice();
 void HandleDeviceLost();
@@ -570,7 +570,7 @@ void SetSwapChainPanel(SwapChainPanel ^ panel)
 }
 
 // This method is called in the event handler for the SizeChanged event.
-void SetBackBufferSize(Windows::Foundation::Size backbufferSize, Windows::Foundation::Size backbufferScale)
+void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Windows::Foundation::Size& backbufferScale)
 {
     m_backbufferSize = backbufferSize;
     m_backbufferScale = backbufferScale;
@@ -724,7 +724,7 @@ void init_device_and_swapchain_uap(void* panel)
 
 void resize_swapchain(int32 width, int32 height, float32 scaleX, float32 scaleY)
 {
-    SetBackBufferSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)),
+    SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)),
                       Windows::Foundation::Size(scaleX, scaleY));
 
     rhi::CommandBufferDX11::DiscardAll();
