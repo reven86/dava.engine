@@ -88,6 +88,8 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 
     Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
 
+    Vector<PackingAlgorithm> packAlgorithms;
+
     String alg = CommandLineParser::Instance()->GetCommandParam("-alg");
     if (alg.empty() || CompareCaseInsensitive(alg, "maxrect") == 0)
     {
@@ -146,7 +148,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
         }
     }
 
-    RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
+    RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory, packAlgorithms);
 
     // Put latest md5 after convertation
     RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true);
@@ -262,7 +264,7 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
     return tokens;
 }
 
-void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<String>& passedFlags)
+void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<PackingAlgorithm>& packAlgorithms, const Vector<String>& passedFlags)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
 
@@ -511,7 +513,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
 
-                    RecursiveTreeWalk(input, output, flagsToPass);
+                    RecursiveTreeWalk(input, output, packAlgorithms, flagsToPass);
                 }
             }
         }
