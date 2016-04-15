@@ -336,9 +336,9 @@ void UITextField::StartEdit()
 {
     if (!isEditing)
     {
+        isEditing = true;
         OnStartEditing();
         SetRenderToTexture(false);
-        isEditing = true;
         textFieldImpl->OpenKeyboard();
     }
 }
@@ -347,8 +347,8 @@ void UITextField::StopEdit()
 {
     if (isEditing)
     {
-        SetRenderToTexture(true);
         isEditing = false;
+        SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
     }

@@ -494,7 +494,6 @@ void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect
 void TextFieldPlatformImpl::TextFieldKeyboardHidden()
 {
     textField->OnKeyboardHidden();
-    textField->StopEdit();
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
@@ -515,9 +514,13 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
             {
                 DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
             }
-            if (!textField->IsEditing())
+            textField->StartEdit();
+        }
+        else
+        {
+            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
             {
-                textField->StartEdit();
+                textField->StopEdit();
             }
         }
     }
