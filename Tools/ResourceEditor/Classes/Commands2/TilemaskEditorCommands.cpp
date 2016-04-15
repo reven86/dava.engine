@@ -34,16 +34,16 @@
 
 #include "Main/QtUtils.h"
 
-ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy_, const Rect& updatedRect_)
+ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy_, const DAVA::Rect& updatedRect_)
     : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
     , landscapeProxy(SafeRetain(landscapeProxy_))
 {
-    updatedRect = Rect(std::floor(updatedRect_.x), std::floor(updatedRect_.y), std::ceil(updatedRect_.dx), std::ceil(updatedRect_.dy));
+    updatedRect = DAVA::Rect(std::floor(updatedRect_.x), std::floor(updatedRect_.y), std::ceil(updatedRect_.dx), std::ceil(updatedRect_.dy));
 
-    undoImageMask = Image::CopyImageRegion(landscapeProxy->GetTilemaskImageCopy(), updatedRect);
+    undoImageMask = DAVA::Image::CopyImageRegion(landscapeProxy->GetTilemaskImageCopy(), updatedRect);
 
-    ScopedPtr<Image> currentImageMask(landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK)->CreateImageFromMemory());
-    redoImageMask = Image::CopyImageRegion(currentImageMask, updatedRect);
+    DAVA::ScopedPtr<DAVA::Image> currentImageMask(landscapeProxy->GetLandscapeTexture(DAVA::Landscape::TEXTURE_TILEMASK)->CreateImageFromMemory());
+    redoImageMask = DAVA::Image::CopyImageRegion(currentImageMask, updatedRect);
 }
 
 ModifyTilemaskCommand::~ModifyTilemaskCommand()
@@ -56,51 +56,51 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 void ModifyTilemaskCommand::Undo()
 {
     ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE));
-    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK));
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(DAVA::Landscape::TEXTURE_TILEMASK));
 
     landscapeProxy->DecreaseTilemaskChanges();
 
-    Rect r = Rect(Vector2(0, 0), Vector2(undoImageMask->GetWidth(), undoImageMask->GetHeight()));
-    Image* mask = landscapeProxy->GetTilemaskImageCopy();
+    DAVA::Rect r = DAVA::Rect(DAVA::Vector2(0, 0), DAVA::Vector2(undoImageMask->GetWidth(), undoImageMask->GetHeight()));
+    DAVA::Image* mask = landscapeProxy->GetTilemaskImageCopy();
     mask->InsertImage(undoImageMask, updatedRect.GetPosition(), r);
 }
 
 void ModifyTilemaskCommand::Redo()
 {
     ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE));
-    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK));
+    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(DAVA::Landscape::TEXTURE_TILEMASK));
 
     landscapeProxy->IncreaseTilemaskChanges();
 
-    Rect r = Rect(Vector2(0, 0), Vector2(redoImageMask->GetWidth(), redoImageMask->GetHeight()));
-    Image* mask = landscapeProxy->GetTilemaskImageCopy();
+    DAVA::Rect r = DAVA::Rect(DAVA::Vector2(0, 0), DAVA::Vector2(redoImageMask->GetWidth(), redoImageMask->GetHeight()));
+    DAVA::Image* mask = landscapeProxy->GetTilemaskImageCopy();
     mask->InsertImage(redoImageMask, updatedRect.GetPosition(), r);
 }
 
-Entity* ModifyTilemaskCommand::GetEntity() const
+DAVA::Entity* ModifyTilemaskCommand::GetEntity() const
 {
     return nullptr;
 }
 
-void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex)
+void ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image* image, DAVA::Texture* dstTex)
 {
-    ScopedPtr<Texture> fboTexture(Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
+    DAVA::ScopedPtr<DAVA::Texture> fboTexture(DAVA::Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
 
-    auto material = RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
+    auto material = DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
 
-    RenderSystem2D::RenderTargetPassDescriptor desc;
+    DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.colorAttachment = dstTex->handle;
     desc.depthAttachment = dstTex->handleDepthStencil;
     desc.width = dstTex->GetWidth();
     desc.height = dstTex->GetHeight();
     desc.clearTarget = false;
     desc.transformVirtualToPhysical = false;
-    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    RenderSystem2D::Instance()->DrawTexture(fboTexture, material, Color::White, updatedRect);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    DAVA::RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+    DAVA::RenderSystem2D::Instance()->DrawTexture(fboTexture, material, DAVA::Color::White, updatedRect);
+    DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
-SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy_, const FastName& level_, const Color& color_)
+SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy_, const DAVA::FastName& level_, const DAVA::Color& color_)
     : Command2(CMDID_SET_TILE_COLOR, "Set tile color")
     , level(level_)
     , redoColor(color_)
@@ -124,7 +124,7 @@ void SetTileColorCommand::Redo()
     landscapeProxy->SetLandscapeTileColor(level, redoColor);
 }
 
-Entity* SetTileColorCommand::GetEntity() const
+DAVA::Entity* SetTileColorCommand::GetEntity() const
 {
     return nullptr;
 }

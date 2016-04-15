@@ -136,11 +136,6 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 {
     // should be started on UI thread
-    if (isPhoneApiDetected)
-    {
-        return false;
-    }
-
     if (mouseCaptureMode != newMode)
     {
         // Setup new capture mode
@@ -170,11 +165,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 {
     // should be started on UI thread
-    if (isPhoneApiDetected)
-    {
-        return isMouseCursorShown == isVisible;
-    }
-
     if (isVisible != isMouseCursorShown)
     {
         if (isVisible)

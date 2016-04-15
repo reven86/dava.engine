@@ -34,14 +34,12 @@
 
 #include "Render/UniqueStateSet.h"
 
-using namespace DAVA;
-
 namespace DAVA
 {
 class Image;
 }
 
-class LandscapeProxy : public BaseObject
+class LandscapeProxy : public DAVA::BaseObject
 {
 public:
     enum eTilemaskTextures
@@ -60,38 +58,38 @@ public:
         MODES_COUNT
     };
 
-    static const FastName LANDSCAPE_TEXTURE_TOOL;
-    static const FastName LANDSCAPE_TEXTURE_CURSOR; //should use clamp wrap mode
-    static const FastName LANSDCAPE_FLAG_CURSOR;
-    static const FastName LANSDCAPE_FLAG_TOOL;
-    static const FastName LANSDCAPE_FLAG_TOOL_MIX;
-    static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
+    static const DAVA::FastName LANDSCAPE_TEXTURE_TOOL;
+    static const DAVA::FastName LANDSCAPE_TEXTURE_CURSOR; //should use clamp wrap mode
+    static const DAVA::FastName LANSDCAPE_FLAG_CURSOR;
+    static const DAVA::FastName LANSDCAPE_FLAG_TOOL;
+    static const DAVA::FastName LANSDCAPE_FLAG_TOOL_MIX;
+    static const DAVA::FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
 
 protected:
     virtual ~LandscapeProxy();
 
 public:
-    LandscapeProxy(Landscape* landscape, Entity* node);
+    LandscapeProxy(DAVA::Landscape* landscape, DAVA::Entity* node);
 
     void SetMode(LandscapeProxy::eLandscapeMode mode);
 
-    const AABBox3& GetLandscapeBoundingBox();
-    Texture* GetLandscapeTexture(const FastName& level);
-    Color GetLandscapeTileColor(const FastName& level);
-    void SetLandscapeTileColor(const FastName& level, const Color& color);
+    const DAVA::AABBox3& GetLandscapeBoundingBox();
+    DAVA::Texture* GetLandscapeTexture(const DAVA::FastName& level);
+    DAVA::Color GetLandscapeTileColor(const DAVA::FastName& level);
+    void SetLandscapeTileColor(const DAVA::FastName& level, const DAVA::Color& color);
 
-    void SetToolTexture(Texture* texture, bool mixColors);
+    void SetToolTexture(DAVA::Texture* texture, bool mixColors);
 
-    RenderObject* GetRenderObject();
-    void SetHeightmap(Heightmap* heightmap);
+    DAVA::RenderObject* GetRenderObject();
+    void SetHeightmap(DAVA::Heightmap* heightmap);
 
     void CursorEnable();
     void CursorDisable();
-    void SetCursorTexture(Texture* texture);
-    void SetCursorSize(float32 size);
-    void SetCursorPosition(const Vector2& position);
+    void SetCursorTexture(DAVA::Texture* texture);
+    void SetCursorSize(DAVA::float32 size);
+    void SetCursorPosition(const DAVA::Vector2& position);
 
-    Vector3 PlacePoint(const Vector3& point);
+    DAVA::Vector3 PlacePoint(const DAVA::Vector3& point);
 
     bool IsTilemaskChanged();
     void ResetTilemaskChanged();
@@ -99,16 +97,16 @@ public:
     void DecreaseTilemaskChanges();
 
     void InitTilemaskImageCopy();
-    Image* GetTilemaskImageCopy();
+    DAVA::Image* GetTilemaskImageCopy();
 
     void InitTilemaskDrawTextures();
-    Texture* GetTilemaskDrawTexture(int32 number);
+    DAVA::Texture* GetTilemaskDrawTexture(DAVA::int32 number);
     void SwapTilemaskDrawTextures();
 
     void UpdateTileMaskPathname();
 
 protected:
-    FilePath GetPathForSourceTexture() const;
+    DAVA::FilePath GetPathForSourceTexture() const;
 
 protected:
     enum eToolTextureType
@@ -121,22 +119,22 @@ protected:
         TEXTURE_TYPES_COUNT
     };
 
-    Image* tilemaskImageCopy = nullptr;
-    Array<Texture*, TILEMASK_TEXTURE_COUNT> tilemaskDrawTextures;
+    DAVA::Image* tilemaskImageCopy = nullptr;
+    DAVA::Array<DAVA::Texture*, TILEMASK_TEXTURE_COUNT> tilemaskDrawTextures;
 
-    int32 tilemaskWasChanged = 0;
+    DAVA::int32 tilemaskWasChanged = 0;
 
-    FilePath sourceTilemaskPath;
+    DAVA::FilePath sourceTilemaskPath;
 
-    Landscape* baseLandscape = nullptr;
-    NMaterial* landscapeEditorMaterial = nullptr;
-    Vector4 cursorCoordSize;
+    DAVA::Landscape* baseLandscape = nullptr;
+    DAVA::NMaterial* landscapeEditorMaterial = nullptr;
+    DAVA::Vector4 cursorCoordSize;
 
     eLandscapeMode mode = MODE_ORIGINAL_LANDSCAPE;
 
     void UpdateDisplayedTexture();
 
-    Texture* cursorTexture = nullptr;
+    DAVA::Texture* cursorTexture = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEPROXY__) */

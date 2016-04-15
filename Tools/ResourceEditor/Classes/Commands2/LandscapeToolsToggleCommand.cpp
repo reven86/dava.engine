@@ -66,7 +66,7 @@ bool TryEnableWithFunctions(SceneEditor2* editor, DAVA::uint32 allowedTools,
     return true;
 }
 
-bool TryDisableWithFunctions(SceneEditor2* editor, const String& error,
+bool TryDisableWithFunctions(SceneEditor2* editor, const DAVA::String& error,
                              const LandscapeToolsToggleCommand::IsEnabledFunction& isEnabled,
                              const LandscapeToolsToggleCommand::DisableFunction& disable)
 {

@@ -34,8 +34,6 @@
 
 #include <QTreeWidget>
 
-using namespace DAVA;
-
 class QLabel;
 
 class TileTexturePreviewWidget : public QTreeWidget
@@ -51,17 +49,17 @@ public:
         MODES_COUNT
     };
 
-    static const int32 TEXTURE_PREVIEW_WIDTH = 180;
-    static const int32 TEXTURE_PREVIEW_HEIGHT = 32;
+    static const DAVA::int32 TEXTURE_PREVIEW_WIDTH = 180;
+    static const DAVA::int32 TEXTURE_PREVIEW_HEIGHT = 32;
 
     explicit TileTexturePreviewWidget(QWidget* parent = 0);
     ~TileTexturePreviewWidget();
 
-    void AddTexture(Image* previewTexture, const Color& color = Color::White);
-    void UpdateColor(uint32 index, const Color& color);
+    void AddTexture(DAVA::Image* previewTexture, const DAVA::Color& color = DAVA::Color::White);
+    void UpdateColor(DAVA::uint32 index, const DAVA::Color& color);
 
-    uint32 GetSelectedTexture();
-    void SetSelectedTexture(uint32 number);
+    DAVA::uint32 GetSelectedTexture();
+    void SetSelectedTexture(DAVA::uint32 number);
 
     void SetMode(eWidgetModes mode);
 
@@ -72,23 +70,23 @@ protected:
 
 signals:
     void SelectionChanged(int selectedTexture);
-    void TileColorChanged(int32 tileNumber, Color color);
+    void TileColorChanged(DAVA::int32 tileNumber, DAVA::Color color);
 
 private slots:
     void OnCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
     void OnItemChanged(QTreeWidgetItem* item, int column);
 
 private:
-    static const int32 COLOR_PREVIEW_COLUMN = 1;
-    static const int32 COLOR_SELECT_BUTTON_COLUMN = 2;
-    static const int32 DEF_TILE_TEXTURES_COUNT = 4;
-    static const int32 TEXTURE_PREVIEW_WIDTH_SMALL = 110;
+    static const DAVA::int32 COLOR_PREVIEW_COLUMN = 1;
+    static const DAVA::int32 COLOR_SELECT_BUTTON_COLUMN = 2;
+    static const DAVA::int32 DEF_TILE_TEXTURES_COUNT = 4;
+    static const DAVA::int32 TEXTURE_PREVIEW_WIDTH_SMALL = 110;
 
-    int32 selectedTexture;
+    DAVA::int32 selectedTexture;
 
-    Vector<Color> colors;
-    Vector<Image*> images;
-    Vector<QLabel*> labels;
+    DAVA::Vector<DAVA::Color> colors;
+    DAVA::Vector<DAVA::Image*> images;
+    DAVA::Vector<QLabel*> labels;
 
     eWidgetModes mode;
 
@@ -96,15 +94,15 @@ private:
 
     void ConnectToSignals();
 
-    void SetColor(uint32 number, const Color& color);
-    void UpdateImage(uint32 number);
-    void UpdateColor(uint32 number);
+    void SetColor(DAVA::uint32 number, const DAVA::Color& color);
+    void UpdateImage(DAVA::uint32 number);
+    void UpdateColor(DAVA::uint32 number);
     void UpdateSelection();
 
     void InitWithColors();
     void InitWithoutColors();
 
-    Image* MultiplyImageWithColor(Image* image, const Color& color);
+    DAVA::Image* MultiplyImageWithColor(DAVA::Image* image, const DAVA::Color& color);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILETEXTUREPREVIEWWIDGET__) */
