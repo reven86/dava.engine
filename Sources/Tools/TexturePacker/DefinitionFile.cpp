@@ -222,7 +222,7 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Error("===================================================================");
             return false;
         }
-        
+
         if (layer.width * layer.height == 0)
         {
             Logger::Error("============================== ERROR ==============================");

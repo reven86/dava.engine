@@ -390,7 +390,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                 uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
                 bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
                 bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
-                bool verbose = CommandLineParser::Instance()->IsFlagSet("--verbose");
+                bool verbose = CommandLineParser::Instance()->GetVerbose();
 
                 if (clearOutputDirectory)
                 {
