@@ -2850,6 +2850,8 @@
 		1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */; };
 		1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */; };
 		1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */; };
+		1D1022861CC1119F00AD68BD /* MouseDeviceWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */; };
+		1D1022871CC1119F00AD68BD /* MouseDeviceWinUAP.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */; };
 		1DAA2B311CA595FB00E9E3EE /* MouseDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */; };
 		1DAA2B321CA595FB00E9E3EE /* MouseDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */; };
 		1DAA2B351CA5964D00E9E3EE /* MouseDeviceMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */; };
@@ -3928,6 +3930,8 @@
 		1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
 		1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
 		1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
+		1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWin32.h; path = TemplateWin32/MouseDeviceWin32.h; sourceTree = "<group>"; };
+		1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWinUAP.h; path = TemplateWin32/MouseDeviceWinUAP.h; sourceTree = "<group>"; };
 		1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MouseDevice.cpp; sourceTree = "<group>"; };
 		1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDevice.h; sourceTree = "<group>"; };
 		1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDeviceMacOS.h; sourceTree = "<group>"; };
@@ -4671,6 +4675,7 @@
 		028C09EB1BD66A5E00B2266F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				1D1022831CC1116D00AD68BD /* TemplateWin32 */,
 				03C12A921C4FD827002D4636 /* Reachability.h */,
 				03C12A931C4FD827002D4636 /* Reachability.mm */,
 				028C09ED1BD66A5E00B2266F /* DateTime.cpp */,
@@ -5549,6 +5554,15 @@
 			name = Command;
 			sourceTree = "<group>";
 		};
+		1D1022831CC1116D00AD68BD /* TemplateWin32 */ = {
+			isa = PBXGroup;
+			children = (
+				1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */,
+				1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */,
+			);
+			name = TemplateWin32;
+			sourceTree = "<group>";
+		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -6252,6 +6266,7 @@
 				028C15791BD66A6000B2266F /* ImageFormatInterface.h in Headers */,
 				028C0F761BD66A6000B2266F /* DownloadManager.h in Headers */,
 				028C17FB1BD66A6000B2266F /* WaveComponent.h in Headers */,
+				1D1022861CC1119F00AD68BD /* MouseDeviceWin32.h in Headers */,
 				028C11771BD66A6000B2266F /* NetService.h in Headers */,
 				028C0FC41BD66A6000B2266F /* FilePath.h in Headers */,
 				028C18C41BD66A6000B2266F /* WASDControllerSystem.h in Headers */,
@@ -6633,6 +6648,7 @@
 				028C0DCF1BD66A6000B2266F /* BaseMath.h in Headers */,
 				028C10691BD66A6000B2266F /* InputSystem.h in Headers */,
 				028C15EE1BD66A6000B2266F /* Renderer.h in Headers */,
+				1D1022871CC1119F00AD68BD /* MouseDeviceWinUAP.h in Headers */,
 				028C16691BD66A6000B2266F /* dbg_Draw.h in Headers */,
 				028C0FB81BD66A6000B2266F /* File.h in Headers */,
 				028C0E501BD66A6000B2266F /* Observable.h in Headers */,
