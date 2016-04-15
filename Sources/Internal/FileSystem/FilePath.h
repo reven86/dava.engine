@@ -316,7 +316,7 @@ protected:
     String absolutePathname;
     ePathType pathType;
 
-    static List<FilePath> resourceFolders;
+    static Vector<FilePath> resourceFolders;
 };
 
 bool operator<(const FilePath& left, const FilePath& right);

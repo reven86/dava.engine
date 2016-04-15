@@ -63,7 +63,8 @@ File::~File()
 
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
-    return FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    File* result = FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)

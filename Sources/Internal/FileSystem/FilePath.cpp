@@ -40,7 +40,7 @@
 
 namespace DAVA
 {
-List<FilePath> FilePath::resourceFolders;
+Vector<FilePath> FilePath::resourceFolders;
 
 void FilePath::SetBundleName(const FilePath& newBundlePath)
 {
@@ -54,9 +54,11 @@ void FilePath::SetBundleName(const FilePath& newBundlePath)
     virtualBundlePath.pathType = PATH_IN_RESOURCES;
 
     if (!resourceFolders.empty())
-        resourceFolders.pop_front();
+    {
+        resourceFolders.erase(begin(resourceFolders));
+    }
 
-    resourceFolders.push_front(virtualBundlePath);
+    resourceFolders.insert(begin(resourceFolders), virtualBundlePath);
 }
 
 const FilePath& FilePath::GetBundleName()
@@ -84,24 +86,32 @@ void FilePath::AddTopResourcesFolder(const FilePath& folder)
 
     FilePath resPath = folder;
     resPath.pathType = PATH_IN_RESOURCES;
-    resourceFolders.push_front(resPath);
+    resourceFolders.insert(begin(resourceFolders), resPath);
 }
 
 void FilePath::RemoveResourcesFolder(const FilePath& folder)
 {
-    for (List<FilePath>::iterator it = resourceFolders.begin(); it != resourceFolders.end(); ++it)
+    auto it = std::remove(begin(resourceFolders), end(resourceFolders), folder);
+    if (it != end(resourceFolders))
     {
-        if (folder == *it)
-        {
-            resourceFolders.erase(it);
-            return;
-        }
+        resourceFolders.erase(it);
     }
 }
 
 const List<FilePath>& FilePath::GetResourcesFolders()
 {
-    return resourceFolders;
+    // for backward compatibility use list values
+    static List<FilePath> list;
+
+    if (list.size() != resourceFolders.size() ||
+        !std::equal(begin(resourceFolders), end(resourceFolders), begin(list)))
+    {
+        list.clear();
+
+        std::copy(begin(resourceFolders), end(resourceFolders), std::back_inserter(list));
+    }
+
+    return list;
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -430,9 +440,9 @@ String FilePath::ResolveResourcesPath() const
         }
         else
         {
-            for (auto iter = resourceFolders.rbegin(); iter != resourceFolders.rend(); ++iter)
+            for (const auto& resDir : resourceFolders)
             {
-                path = iter->absolutePathname + relativePathname;
+                path = resDir.absolutePathname + relativePathname;
                 if (FileSystem::Instance()->Exists(path))
                 {
                     return path.absolutePathname;
