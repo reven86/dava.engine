@@ -620,7 +620,7 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
         }
 
         descriptor->compression[key.forGPU].format = key.pixelFormat;
-        descriptor->compression[key.forGPU].containerType = key.imageFormat;
+        descriptor->compression[key.forGPU].imageFormat = key.imageFormat;
 
         PngImageExt imageForGPU(image);
         if (key.imageFormat == ImageFormat::IMAGE_FORMAT_DDS || key.imageFormat == ImageFormat::IMAGE_FORMAT_PVR)

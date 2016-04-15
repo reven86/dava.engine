@@ -88,8 +88,13 @@ void ProcessRecourcePacker()
     inputDir.MakeDirectoryPathname();
 
     String lastDir = inputDir.GetDirectory().GetLastDirectoryName();
-    FilePath outputDir = inputDir + ("../../Data/" + lastDir + "/");
 
+    FilePath outputDir = CommandLineParser::GetCommandParam("-output");
+    if (outputDir.IsEmpty())
+    {
+        outputDir = inputDir + ("../../Data/" + lastDir + "/");
+    }
+    outputDir.MakeDirectoryPathname();
     resourcePacker.InitFolders(inputDir, outputDir);
 
     if (resourcePacker.rootDirectory.IsEmpty())

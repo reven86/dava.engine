@@ -120,6 +120,8 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     FilePath processDirectoryPath = rootDirectory + GetProcessFolderName();
     FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
 
+    FileSystem::Instance()->CreateDirectory(outputGfxDirectory, true);
+
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
         if (Core::Instance()->IsConsoleMode())

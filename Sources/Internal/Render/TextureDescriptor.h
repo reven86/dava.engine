@@ -119,7 +119,7 @@ public:
     struct Compression : public InspBase
     {
         int32 format = PixelFormat::FORMAT_INVALID;
-        uint32 containerType = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+        uint32 imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
         mutable uint32 sourceFileCrc = 0;
         int32 compressToWidth = 0;
         int32 compressToHeight = 0;
@@ -129,7 +129,7 @@ public:
 
         INTROSPECTION(Compression,
                       MEMBER(format, InspDesc("format", GlobalEnumMap<PixelFormat>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-                      MEMBER(containerType, InspDesc("format", GlobalEnumMap<ImageFormat>::Instance()), I_EDIT | I_SAVE)
+                      MEMBER(imageFormat, InspDesc("format", GlobalEnumMap<ImageFormat>::Instance()), I_EDIT | I_SAVE)
                       MEMBER(sourceFileCrc, "Source File CRC", I_SAVE)
                       MEMBER(compressToWidth, "compressToWidth", I_SAVE)
                       MEMBER(compressToHeight, "compressToHeight", I_SAVE)
@@ -230,10 +230,8 @@ public:
     static Array<ImageFormat, 5> sourceTextureTypes;
     static Array<ImageFormat, 2> compressedTextureTypes;
 
-private:
-public:
     eGPUFamily gpu = eGPUFamily::GPU_INVALID;
-    ImageFormat containerType = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+    ImageFormat imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
     PixelFormat format = PixelFormat::FORMAT_INVALID; // texture format
 
     bool isCompressedFile = false;
