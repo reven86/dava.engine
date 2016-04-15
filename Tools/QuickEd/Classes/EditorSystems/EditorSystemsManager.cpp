@@ -158,7 +158,7 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
     std::advance(iter, insertToEnd ? index - 1 : index);
     PackageBaseNode* target = *iter;
     PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-    for (uint32 i = 0; i < controlsNode->GetCount(); ++i)
+    for (uint32 i = 0, count = controlsNode->GetCount(); i < count; ++i)
     {
         if (controlsNode->Get(i) == target)
         {

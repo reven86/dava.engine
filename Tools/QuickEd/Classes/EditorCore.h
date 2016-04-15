@@ -89,8 +89,8 @@ private:
     DAVA::String GetAssetCacheIp() const;
     void SetAssetCacheIp(const DAVA::String& ip);
 
-    DAVA::uint16 GetAssetCachePort() const;
-    void SetAssetCachePort(DAVA::uint16 port);
+    DAVA::uint32 GetAssetCachePort() const;
+    void SetAssetCachePort(DAVA::uint32 port);
 
     DAVA::uint64 GetAssetCacheTimeout() const;
     void SetAssetCacheTimeout(DAVA::uint64 timeout);

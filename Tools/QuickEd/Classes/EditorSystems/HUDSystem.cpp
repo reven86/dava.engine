@@ -334,7 +334,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
         magnetControls.reserve(count);
         magnetTargetControls.reserve(count);
-        for (int i = 0; i < count; ++i)
+        for (size_t i = 0; i < count; ++i)
         {
             UIControl* lineControl = new UIControl();
             lineControl->SetName(FastName("magnet line control"));

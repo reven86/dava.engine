@@ -67,7 +67,6 @@ int main(int argc, char* argv[])
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
-
         QApplication a(argc, argv);
         a.setOrganizationName("DAVA");
         a.setApplicationName("QuickEd");

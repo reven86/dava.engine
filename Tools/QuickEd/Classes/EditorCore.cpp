@@ -58,8 +58,8 @@ namespace EditorCore_local
 PreferencesRegistrator preferencesRegistrator(EditorCore::TypeInfo(), {
                                                                       { DAVA::FastName("isUsingAssetCache"), DAVA::VariantType(false) },
                                                                       { DAVA::FastName("assetCacheIp"), DAVA::VariantType(AssetCache::LOCALHOST) },
-                                                                      { DAVA::FastName("assetCachePort"), DAVA::VariantType(0) },
-                                                                      { DAVA::FastName("assetCacheTimeout"), DAVA::VariantType(0) }
+                                                                      { DAVA::FastName("assetCachePort"), DAVA::VariantType(DAVA::uint32(0)) },
+                                                                      { DAVA::FastName("assetCacheTimeout"), DAVA::VariantType(DAVA::uint64(0)) }
                                                                       });
 }
 
@@ -358,12 +358,12 @@ void EditorCore::SetAssetCacheIp(const DAVA::String& ip)
     connectionParams.ip = ip;
 }
 
-DAVA::uint16 EditorCore::GetAssetCachePort() const
+DAVA::uint32 EditorCore::GetAssetCachePort() const
 {
     return connectionParams.port;
 }
 
-void EditorCore::SetAssetCachePort(DAVA::uint16 port)
+void EditorCore::SetAssetCachePort(DAVA::uint32 port)
 {
     connectionParams.port = port;
 }

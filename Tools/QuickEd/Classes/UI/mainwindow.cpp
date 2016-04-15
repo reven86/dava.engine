@@ -48,14 +48,15 @@
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-REGISTER_PREFERENCES_ON_START2(MainWindow)
-
-namespace MainWindow_namespace
+namespace MainWindow_local
 {
-const QString APP_GEOMETRY = "geometry";
-const QString APP_STATE = "windowstate";
-const QString CONSOLE_STATE = "console state";
-};
+PreferencesRegistrator preferencesRegistrator(MainWindow::TypeInfo(), {
+                                                                      { DAVA::FastName("isPixelized"), DAVA::VariantType(bool(false)) },
+                                                                      { DAVA::FastName("state"), DAVA::VariantType(DAVA::String()) },
+                                                                      { DAVA::FastName("geometry"), DAVA::VariantType(DAVA::String()) },
+                                                                      { DAVA::FastName("consoleState"), DAVA::VariantType(DAVA::String()) }
+                                                                      });
+}
 
 using namespace DAVA;
 
@@ -305,7 +306,7 @@ void MainWindow::SetupBackgroundMenu()
     menuView->addSeparator();
     // Setup the Background Color menu.
     menuView->addSeparator();
-    QAction* backgroundColorAction = PreferencesActionsFactory::CreateActionForPreference(FastName("GridControl"), FastName("backgroundColor"), this);
+    QAction* backgroundColorAction = PreferencesActionsFactory::CreateActionForPreference(FastName("ColorControl"), FastName("backgroundColor"), this);
     backgroundColorAction->setText(tr("Background color"));
     menuView->addAction(backgroundColorAction);
 }
@@ -429,36 +430,36 @@ void MainWindow::SetPixelized(bool pixelized)
 
 DAVA::String MainWindow::GetState() const
 {
-    QByteArray state = saveState();
+    QByteArray state = saveState().toBase64();
     return state.toStdString();
 }
 
 void MainWindow::SetState(const DAVA::String& array)
 {
     QByteArray state = QByteArray::fromStdString(array);
-    restoreState(state);
+    restoreState(QByteArray::fromBase64(state));
 }
 
 DAVA::String MainWindow::GetGeometry() const
 {
-    QByteArray geometry = saveGeometry();
+    QByteArray geometry = saveGeometry().toBase64();
     return geometry.toStdString();
 }
 
 void MainWindow::SetGeometry(const DAVA::String& array)
 {
     QByteArray geometry = QByteArray::fromStdString(array);
-    restoreGeometry(geometry);
+    restoreGeometry(QByteArray::fromBase64(geometry));
 }
 
 DAVA::String MainWindow::GetConsoleState() const
 {
-    QByteArray consoleState = logWidget->Serialize();
+    QByteArray consoleState = logWidget->Serialize().toBase64();
     return consoleState.toStdString();
 }
 
 void MainWindow::SetConsoleState(const DAVA::String& array)
 {
     QByteArray consoleState = QByteArray::fromStdString(array);
-    logWidget->Deserialize(consoleState);
+    logWidget->Deserialize(QByteArray::fromBase64(consoleState));
 }

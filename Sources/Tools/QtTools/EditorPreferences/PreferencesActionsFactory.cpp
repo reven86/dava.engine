@@ -369,8 +369,8 @@ QAction* PreferencesActionsFactory::CreateActionForPreference(const DAVA::FastNa
 {
     const DAVA::InspInfo* inspInfo = PreferencesStorage::GetInspInfo(className);
     const DAVA::InspMember* inspMember = PreferencesStorage::GetInspMember(inspInfo, propertyName);
-    const DAVA::MetaInfo* metaInfo = inspMember->Type();
     DVASSERT(inspInfo != nullptr && inspMember != nullptr);
+    const DAVA::MetaInfo* metaInfo = inspMember->Type();
     PreferencesFactory_local::AbstractAction* action = nullptr;
     if (metaInfo == DAVA::MetaInfo::Instance<bool>())
     {

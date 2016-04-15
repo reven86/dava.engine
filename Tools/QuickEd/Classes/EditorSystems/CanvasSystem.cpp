@@ -45,7 +45,28 @@ using namespace DAVA;
 
 namespace CanvasSystem_namespace
 {
-class GridControl : public UIControl, public TrackedObject
+class ColorControl : public UIControl
+{
+public:
+    ColorControl();
+    ~ColorControl() override = default;
+
+private:
+    DAVA::Color GetBackgroundColor() const;
+    void SetBackgroundColor(const DAVA::Color& color);
+    void Draw(const UIGeometricData& geometricData) override;
+
+public:
+    INTROSPECTION_EXTEND(ColorControl, UIControl,
+                         PROPERTY("backgroundColor", "Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         )
+
+    REGISTER_PREFERENCES
+};
+
+PreferencesRegistrator preferencesRegistrator(ColorControl::TypeInfo(), { { DAVA::FastName("backgroundColor"), DAVA::VariantType(Color::Transparent) } });
+
+class GridControl : public UIControl
 {
 public:
     GridControl();
@@ -53,36 +74,15 @@ public:
 
 private:
     void Draw(const UIGeometricData& geometricData) override;
-    DAVA::Color GetBackgroundColor() const;
-    void SetBackgroundColor(const DAVA::Color& color);
-
-public:
-    INTROSPECTION_EXTEND(GridControl, UIControl,
-                         PROPERTY("backgroundColor", "Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                         )
-
-    REGISTER_PREFERENCES
 };
-
-namespace GridControl_local
-{
-PreferencesRegistrator preferencesRegistrator(GridControl::TypeInfo(), { { DAVA::FastName("backgroundColor"), DAVA::VariantType(DAVA::Color()) } });
-}
 
 GridControl::GridControl()
 {
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetSprite("~res:/Gfx/GrayGrid", 0);
-}
-
-DAVA::Color GridControl::GetBackgroundColor() const
-{
-    return background->GetColor();
-}
-
-void GridControl::SetBackgroundColor(const DAVA::Color& color)
-{
-    background->SetColor(color);
+    ScopedPtr<UIControl> colorControl(new ColorControl());
+    colorControl->SetName("Color control");
+    UIControl::AddControl(colorControl);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
@@ -96,6 +96,27 @@ void GridControl::Draw(const UIGeometricData& geometricData)
         unscaledGd.AddGeometricData(geometricData);
         UIControl::Draw(unscaledGd);
     }
+}
+
+ColorControl::ColorControl()
+{
+    background->SetDrawType(UIControlBackground::DRAW_FILL);
+}
+
+DAVA::Color ColorControl::GetBackgroundColor() const
+{
+    return background->GetColor();
+}
+
+void ColorControl::SetBackgroundColor(const DAVA::Color& color)
+{
+    background->SetColor(color);
+}
+
+void ColorControl::Draw(const UIGeometricData& geometricData)
+{
+    SetSize(parent->GetSize());
+    UIControl::Draw(geometricData);
 }
 
 } //unnamed namespe

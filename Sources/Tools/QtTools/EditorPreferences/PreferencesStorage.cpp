@@ -146,10 +146,8 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
                     DVASSERT(false && ss.str().c_str());
                 }
             }
-            if (value.type != DAVA::VariantType::TYPE_NONE)
-            {
-                classInfoArchive->SetVariant(memberName.c_str(), value);
-            }
+            DVASSERT(value.type != DAVA::VariantType::TYPE_NONE)
+            classInfoArchive->SetVariant(memberName.c_str(), value);
         }
         if (classInfoArchive->Count() != 0)
         {
@@ -185,6 +183,7 @@ void PreferencesStorage::RegisterPreferencesImpl(void* realObj, DAVA::InspBase* 
         DAVA::String name(member->Name().c_str());
         if (!archive->IsKeyExists(name))
         {
+            DVASSERT(false && "Preference not exist in archive!")
             continue;
         }
         DAVA::VariantType* value = archive->GetVariant(name);
@@ -199,7 +198,7 @@ void PreferencesStorage::UnregisterPreferencesImpl(void* realObj, const DAVA::In
 {
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
-
+    registeredObjects[info].erase(realObj);
     DAVA::ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive);
 
     for (int i = 0, count = info->MembersCount(); i < count; ++i)
@@ -256,9 +255,9 @@ DAVA::VariantType PreferencesStorage::LoadValueByKeyImpl(const DAVA::FastName& k
 const DAVA::InspInfo* PreferencesStorage::GetInspInfo(const DAVA::FastName& className)
 {
     PreferencesStorage* self = Instance();
-    for (const auto& iter : self->registeredObjects)
+    for (const auto& iter : self->registeredInsp)
     {
-        const DAVA::InspInfo* info = iter.first;
+        const DAVA::InspInfo* info = iter->inspInfo;
         if (info->Name() == className)
         {
             return info;
@@ -285,14 +284,29 @@ const DAVA::InspMember* PreferencesStorage::GetInspMember(const DAVA::InspInfo* 
 
 void PreferencesStorage::SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
-    DVASSERT(nullptr != inspInfo && nullptr != member);
     PreferencesStorage* self = Instance();
-    const auto& registeredObjects = self->registeredObjects.at(inspInfo);
-    for (void* registeredObject : registeredObjects)
+    self->SetNewValueToAllRegisteredObjectsImpl(inspInfo, member, value);
+}
+
+void PreferencesStorage::SetNewValueToAllRegisteredObjectsImpl(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value)
+{
+    DVASSERT(nullptr != inspInfo && nullptr != member);
+
+    DAVA::KeyedArchive* archive = editorPreferences->GetArchive(GenerateKey(inspInfo));
+    DVASSERT(nullptr != archive);
+
+    archive->SetVariant(member->Name().c_str(), value);
+
+    auto findIter = registeredObjects.find(inspInfo);
+    if (findIter != registeredObjects.end())
     {
-        member->SetValue(registeredObject, value);
-        self->ValueChanged.Emit(inspInfo, member, value);
+        const auto& registeredObjects = findIter->second;
+        for (void* registeredObject : registeredObjects)
+        {
+            member->SetValue(registeredObject, value);
+        }
     }
+    ValueChanged.Emit(inspInfo, member, value);
 }
 
 DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember* member)
@@ -311,7 +325,7 @@ DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember
         DVASSERT(false && "introspection are not registered in preferences storage");
         return DAVA::VariantType();
     }
-    DAVA::VariantType* value = archive->GetVariant(key);
+    DAVA::VariantType* value = archive->GetVariant(member->Name().c_str());
     if (value == nullptr)
     {
         DVASSERT(false && "required value not found");

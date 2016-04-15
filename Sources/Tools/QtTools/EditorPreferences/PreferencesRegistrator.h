@@ -51,16 +51,6 @@ private:
 #define REGISTER_PREFERENCES \
     PreferencesRegistrator preferencesRegistrator = PreferencesRegistrator(static_cast<void*>(this), static_cast<DAVA::InspBase*>(this));
 
-#define REGISTER_PREFERENCES_ON_START(Classname, defaultValues) \
-    namespace Classname##_local {\
-        PreferencesRegistrator preferencesRegistrator(Classname::TypeInfo(), defaultValues); \
-    }   
-
-#define REGISTER_PREFERENCES_ON_START2(Classname) \
-    namespace Classname##_local {\
-        PreferencesRegistrator preferencesRegistrator(Classname::TypeInfo()); \
-    }
-
 template <typename T, typename UI>
 struct UiInitializer
 {

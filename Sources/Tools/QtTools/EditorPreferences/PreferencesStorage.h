@@ -84,6 +84,8 @@ private:
     void SaveValueByKeyImpl(const DAVA::FastName& key, const DAVA::VariantType& value);
     DAVA::VariantType LoadValueByKeyImpl(const DAVA::FastName& key);
 
+    void SetNewValueToAllRegisteredObjectsImpl(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value);
+
     static DAVA::String GenerateKey(const DAVA::InspInfo* inspInfo);
 
     DAVA::FilePath localStorage;
