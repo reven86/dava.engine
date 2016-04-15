@@ -740,7 +740,7 @@ void TextureBrowser::texturePropertyChanged(int type)
         if (type == TextureProperties::PROP_FORMAT)
         { // add ImageFormat by pixel format
             DAVA::PixelFormat format = static_cast<DAVA::PixelFormat>(curDescriptor->compression[curTextureView].format);
-            curDescriptor->compression[curTextureView].containerType = DAVA::GPUFamilyDescriptor::GetCompressedFileFormat(curTextureView, format);
+            curDescriptor->compression[curTextureView].imageFormat = DAVA::GPUFamilyDescriptor::GetCompressedFileFormat(curTextureView, format);
         }
 
         // set current Texture view and force texture conversion
