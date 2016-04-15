@@ -581,13 +581,14 @@ function ClearField(field)
 end
 
 function FastSelectControl(name, waitTime)
+    Log('Scroll to contorol '.. name .. ' through API')
     local waitTime = waitTime or SMALL_TIMEOUT
     if not WaitControl(name, waitTime) then
         Log("Control " .. name .. " not found.")
         return false
     end
-    Log('Scroll to contorol '.. name .. ' through API')
     autotestingSystem:ScrollToControl(name)
+    Yield()
     return ClickControl(name)
 end
 
