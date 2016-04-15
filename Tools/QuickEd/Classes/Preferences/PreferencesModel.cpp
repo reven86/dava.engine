@@ -80,13 +80,25 @@ void PreferencesModel::BuildTree()
         {
             QList<QStandardItem*> memberItems;
             const DAVA::InspMember* member = info->Member(i);
+            if ((member->Flags() & DAVA::I_VIEW) == 0)
+            {
+                continue;
+            }
+            bool isEditable = member->Flags() & DAVA::I_EDIT;
             QStandardItem* itemMemberName = new QStandardItem(member->Desc().text);
+            itemInspName->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             itemMemberName->setData(TYPE_MEMBER, ROLE_TYPE);
             itemMemberName->setData(QVariant::fromValue(member), ROLE_POINTER);
             memberItems << itemMemberName;
 
             QString text = MakeDataFromVariant(member);
             QStandardItem* itemMemberValue = new QStandardItem(text);
+            Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
+            if (isEditable)
+            {
+                flags |= Qt::ItemIsEditable;
+            }
+            itemInspName->setFlags(flags);
             itemMemberValue->setData(TYPE_MEMBER, ROLE_TYPE);
             itemMemberValue->setData(QVariant::fromValue(member), ROLE_POINTER);
             memberItems << itemMemberValue;
