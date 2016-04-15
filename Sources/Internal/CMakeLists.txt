@@ -1,11 +1,13 @@
 set( NAME_MODULE DavaFramework )
 
-
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
 
+set( INCLUDES_WIN32                 ${WINDOWSSDK_LATEST_DIR}/include/shared        
+                                    $ENV{DXSDK_DIR}/include )
+  
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 
                                     UIKit 

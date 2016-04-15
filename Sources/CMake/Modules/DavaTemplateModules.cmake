@@ -113,20 +113,6 @@ macro( setup_main_module )
 
         endif()
 
-        #"SAVE PROPERTY"
-        save_property( PROPERTY_LIST 
-                DEFINITIONS
-                DEFINITIONS_${DAVA_PLATFORM_CURENT}
-                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
-                )
-
-        load_property( PROPERTY_LIST 
-                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
-                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
-                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
-                )
-        
-
         if( SOURCE_FOLDERS )
 
             foreach( VALUE ${MAIN_MODULE_VALUES} )
@@ -164,6 +150,24 @@ macro( setup_main_module )
 
         set_project_files_properties( "${ALL_SRC}" )
 
+
+        #"SAVE PROPERTY"
+        save_property( PROPERTY_LIST 
+                DEFINITIONS
+                DEFINITIONS_${DAVA_PLATFORM_CURENT}
+                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
+                )
+
+        load_property( PROPERTY_LIST 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
+                STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
+                )
+
+
         #"DEFINITIONS"
         if( DEFINITIONS )
             add_definitions( ${DEFINITIONS} )
@@ -181,17 +185,9 @@ macro( setup_main_module )
             include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )  
         endif()
 
-
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
             set (${DIR_NAME}_CPP_FILES ${CPP_FILES} PARENT_SCOPE)
             set (${DIR_NAME}_H_FILES ${H_FILES}     PARENT_SCOPE)
-
-            save_property( PROPERTY_LIST 
-                    STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
-                    STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
-                    STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
-                    )
-
         else()
             project( ${NAME_MODULE} )
 
@@ -238,6 +234,10 @@ macro( setup_main_module )
             foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
                 target_link_libraries  ( ${NAME_MODULE} optimized ${FILE} )
             endforeach () 
+
+            reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} )
+            reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE )
+            reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
 
         endif()
     endif()

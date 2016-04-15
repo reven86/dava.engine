@@ -27,6 +27,10 @@ if( ANDROID )
 
 endif()
 
+if( WIN32 AND NOT WINDOWS_UAP )
+    include( FindWindowsSDK )
+endif()
+
 include ( PlatformSettings     )
 include ( MergeStaticLibrarees )
 include ( FileTreeCheck        )
