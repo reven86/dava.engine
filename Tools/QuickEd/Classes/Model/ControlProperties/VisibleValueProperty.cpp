@@ -40,7 +40,7 @@ VisibleValueProperty::VisibleValueProperty(DAVA::BaseObject* object, const DAVA:
 void VisibleValueProperty::SetVisibleInEditor(bool visible)
 {
     visibleInEditor = visible;
-    member->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
+    member->SetValue(GetObject(), VariantType(visibleInGame && visibleInEditor));
 }
 
 bool VisibleValueProperty::GetVisibleInEditor() const
@@ -56,5 +56,5 @@ VariantType VisibleValueProperty::GetValue() const
 void VisibleValueProperty::ApplyValue(const DAVA::VariantType& value)
 {
     visibleInGame = value.AsBool();
-    member->SetValue(GetBaseObject(), VariantType(visibleInGame && visibleInEditor));
+    member->SetValue(GetObject(), VariantType(visibleInGame && visibleInEditor));
 }

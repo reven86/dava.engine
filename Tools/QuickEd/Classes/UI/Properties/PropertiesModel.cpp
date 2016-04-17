@@ -486,8 +486,17 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_UINT32:
         return QVariant(val.AsUInt32()).toString();
 
+    case VariantType::TYPE_INT64:
+        return QVariant(val.AsInt64()).toString();
+
+    case VariantType::TYPE_UINT64:
+        return QVariant(val.AsUInt64()).toString();
+
     case VariantType::TYPE_FLOAT:
         return QVariant(val.AsFloat()).toString();
+
+    case VariantType::TYPE_FLOAT64:
+        return QVariant(val.AsFloat64()).toString();
 
     case VariantType::TYPE_STRING:
         return StringToQString(val.AsString());
@@ -495,14 +504,8 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_WIDE_STRING:
         return WideStringToQString(val.AsWideString());
 
-    //        case VariantType::TYPE_UINT32:
-    //            return val.AsUInt32();
-    //
-    //        case VariantType::TYPE_INT64:
-    //            return val.AsInt64();
-    //
-    //        case VariantType::TYPE_UINT64:
-    //            return val.AsUInt64();
+    case VariantType::TYPE_FASTNAME:
+        return StringToQString(val.AsFastName().c_str());
 
     case VariantType::TYPE_VECTOR2:
         return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
@@ -523,7 +526,6 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_MATRIX2:
     case VariantType::TYPE_MATRIX3:
     case VariantType::TYPE_MATRIX4:
-    case VariantType::TYPE_FASTNAME:
     case VariantType::TYPE_AABBOX3:
     default:
         DVASSERT(false);

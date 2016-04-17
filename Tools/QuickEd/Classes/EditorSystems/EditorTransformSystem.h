@@ -111,7 +111,7 @@ private:
 
 public:
     INTROSPECTION(EditorTransformSystem,
-                  MEMBER(minimumSize, "minimumSize", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_PREFERENCE)
+                  MEMBER(minimumSize, "minimumSize", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
 private:

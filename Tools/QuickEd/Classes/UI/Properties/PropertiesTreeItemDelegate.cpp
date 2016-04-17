@@ -42,6 +42,8 @@
 #include <QToolButton>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QSortFilterProxyModel>
+#include <QAbstractItemModel>
 #include "QtControls/lineeditext.h"
 
 #include "DAVAEngine.h"
@@ -108,12 +110,19 @@ PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
 
 QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(index);
+    QModelIndex sourceIndex = index;
+    const QAbstractItemModel* model = index.model();
+    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
+    if (sortModel != nullptr)
+    {
+        sourceIndex = sortModel->mapToSource(index);
+    }
+    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
         PropertyWidget* editorWidget = new PropertyWidget(parent);
         editorWidget->setObjectName(QString::fromUtf8("editorWidget"));
-        QWidget* editor = currentDelegate->createEditor(editorWidget, option, index);
+        QWidget* editor = currentDelegate->createEditor(editorWidget, option, sourceIndex);
         if (!editor)
         {
             DAVA::SafeDelete(editorWidget);
@@ -135,7 +144,7 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
             editorWidget->layout()->addWidget(editor);
 
             QList<QAction*> actions;
-            currentDelegate->enumEditorActions(editorWidget, index, actions);
+            currentDelegate->enumEditorActions(editorWidget, sourceIndex, actions);
 
             foreach (QAction* action, actions)
             {
@@ -150,7 +159,7 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
         return editorWidget;
     }
 
-    if (index.data(Qt::EditRole).type() == QVariant::Bool)
+    if (sourceIndex.data(Qt::EditRole).type() == QVariant::Bool)
         return NULL;
 
     return QStyledItemDelegate::createEditor(parent, option, index);
@@ -158,10 +167,18 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
 
 void PropertiesTreeItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(index);
+    QModelIndex sourceIndex = index;
+    const QAbstractItemModel* model = index.model();
+    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
+    if (sortModel != nullptr)
+    {
+        sourceIndex = sortModel->mapToSource(index);
+    }
+
+    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
-        return currentDelegate->setEditorData(editor, index);
+        return currentDelegate->setEditorData(editor, sourceIndex);
     }
 
     QStyledItemDelegate::setEditorData(editor, index);
@@ -169,7 +186,14 @@ void PropertiesTreeItemDelegate::setEditorData(QWidget* editor, const QModelInde
 
 void PropertiesTreeItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(index);
+    QModelIndex sourceIndex = index;
+    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
+    if (sortModel != nullptr)
+    {
+        sourceIndex = sortModel->mapToSource(index);
+    }
+
+    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
         currentDelegate->setModelData(editor, model, index);
@@ -181,11 +205,6 @@ void PropertiesTreeItemDelegate::setModelData(QWidget* editor, QAbstractItemMode
         return;
 
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-bool PropertiesTreeItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
-{
-    return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
 AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIndex(const QModelIndex& index) const

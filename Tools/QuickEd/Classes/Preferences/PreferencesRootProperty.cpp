@@ -27,63 +27,73 @@
 =====================================================================================*/
 
 
-#ifndef __UI_EDITOR_INTROSPECTION_PROPERTY__
-#define __UI_EDITOR_INTROSPECTION_PROPERTY__
+#include "Preferences/PreferencesRootProperty.h"
+#include "QtTools/EditorPreferences/PreferencesStorage.h"
 
-#include "ValueProperty.h"
+using namespace DAVA;
 
-namespace DAVA
+PreferencesRootProperty::PreferencesRootProperty()
+    : AbstractProperty()
 {
-class UIControl;
+    const auto& registeredInsp = PreferencesStorage::GetRegisteredInsp();
+    for (const InspInfo* info : registeredInsp)
+    {
+        Section* sectionProperty = new Section(info->Name().c_str());
+        sectionProperty->SetParent(this);
+        sections.push_back(sectionProperty);
+
+        for (int i = 0, count = info->MembersCount(); i < count; ++i)
+        {
+            ScopedPtr<PreferencesIntrospectionProperty> inspProp(new PreferencesIntrospectionProperty(info->Member(i)));
+            sectionProperty->AddProperty(inspProp);
+        }
+    }
 }
 
-class SubValueProperty;
-
-class IntrospectionProperty : public ValueProperty
+PreferencesRootProperty::~PreferencesRootProperty()
 {
-public:
-    IntrospectionProperty(void* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType);
-
-protected:
-    virtual ~IntrospectionProperty();
-
-public:
-    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
-
-    void Refresh(DAVA::int32 refreshFlags) override;
-    void Accept(PropertyVisitor* visitor) override;
-
-    ePropertyType GetType() const override;
-    DAVA::uint32 GetFlags() const override;
-
-    DAVA::VariantType GetValue() const override;
-
-    void* GetObject() const
+    for (auto section : sections)
     {
-        return object;
+        section->Release();
     }
+}
 
-    const EnumMap* GetEnumMap() const override;
+uint32 PreferencesRootProperty::GetCount() const
+{
+    return sections.size();
+}
 
-    bool IsSameMember(const DAVA::InspMember* aMember) const override
+AbstractProperty* PreferencesRootProperty::GetProperty(int index) const
+{
+    DVASSERT(index >= 0);
+    DVASSERT(index < sections.size());
+    return sections.at(index);
+}
+
+void PreferencesRootProperty::Refresh(DAVA::int32 refreshFlags)
+{
+    for (int32 i = 0, count = static_cast<int32>(GetCount()); i < count; i++)
     {
-        return (aMember == member);
+        GetProperty(i)->Refresh(refreshFlags);
     }
+}
 
-    const DAVA::InspMember* GetMember() const;
+void PreferencesRootProperty::Accept(PropertyVisitor*)
+{
+}
 
-    void DisableResetFeature();
+bool PreferencesRootProperty::IsReadOnly() const
+{
+    return false;
+}
 
-protected:
-    void ApplyValue(const DAVA::VariantType& value) override;
+const DAVA::String& PreferencesRootProperty::GetName() const
+{
+    static String rootName = "PREFERENCES ROOT";
+    return rootName;
+}
 
-protected:
-    void * object;
-    const DAVA::InspMember* member;
-    DAVA::int32 flags;
-
-private:
-    DAVA::VariantType sourceValue;
-};
-
-#endif //__UI_EDITOR_INTROSPECTION_PROPERTY__
+AbstractProperty::ePropertyType PreferencesRootProperty::GetType() const
+{
+    return TYPE_HEADER;
+}

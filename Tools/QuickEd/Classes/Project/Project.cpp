@@ -196,7 +196,7 @@ void Project::SetIsOpen(bool arg)
         {
             projectsPathes.removeFirst();
         }
-        projectsHistory += projectsPathes.join(':').toStdString();
+        projectsHistory = projectsPathes.join(':').toStdString();
     }
     emit IsOpenChanged(arg);
 }

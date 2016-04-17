@@ -30,10 +30,8 @@
 #include "Debug/DVAssert.h"
 #include "PreferencesStorage.h"
 
-namespace PreferencesStorage_local
-{
-DAVA::String rawPreferencesKey = "raw local preferences storage preferences";
-}
+#include "Base/BaseTypes.h"
+#include "Math/AABBox3.h"
 
 PreferencesStorage::PreferencesStorageSaver::PreferencesStorageSaver()
 {
@@ -51,7 +49,13 @@ PreferencesStorage::PreferencesStorageSaver::~PreferencesStorageSaver()
 
 PreferencesStorage::PreferencesStorage()
     : editorPreferences(new DAVA::KeyedArchive())
+    , unnamedPreferencesKey("unnamed preferences")
+    , preferencesKey("preferences")
 {
+    editorPreferences->SetArchive(unnamedPreferencesKey, new DAVA::KeyedArchive());
+    editorPreferences->SetArchive(preferencesKey, new DAVA::KeyedArchive());
+    unnamedPreferencesArchive = editorPreferences->GetArchive(unnamedPreferencesKey);
+    preferencesArchive = editorPreferences->GetArchive(preferencesKey);
 }
 
 PreferencesStorage::~PreferencesStorage() = default;
@@ -106,11 +110,28 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
         }
     }
     //all preferences must be registered on app start
+
+    DAVA::KeyedArchive* loadedUnnamedPreferences = loadedPreferences->GetArchive(unnamedPreferencesKey);
+    if (nullptr != loadedUnnamedPreferences)
+    {
+        for (const auto& obj : loadedUnnamedPreferences->GetArchieveData())
+        {
+            unnamedPreferencesArchive->SetVariant(obj.first, *obj.second);
+        }
+    }
+    DAVA::KeyedArchive* loadedPreferencesArchive = loadedPreferences->GetArchive(preferencesKey);
+    if (nullptr != loadedPreferencesArchive)
+    {
+        for (const auto& obj : loadedPreferencesArchive->GetArchieveData())
+        {
+            preferencesArchive->SetVariant(obj.first, *obj.second);
+        }
+    }
     for (const DAVA::InspInfo* inspInfo : registeredInsp) //create new settings archive
     {
         const PreferencesRegistrator::DefaultValuesList& defaultValuesList = defaultValues[inspInfo];
         DAVA::String key = GenerateKey(inspInfo);
-        DAVA::KeyedArchive* loadedData = loadedPreferences->GetArchive(key);
+        DAVA::KeyedArchive* loadedData = loadedData = preferencesArchive->GetArchive(key);
         DAVA::ScopedPtr<DAVA::KeyedArchive> classInfoArchive(new DAVA::KeyedArchive);
         for (int i = 0, count = inspInfo->MembersCount(); i < count; ++i)
         {
@@ -136,7 +157,7 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
                 {
                     DAVA::StringStream ss;
                     ss << "no default value for insp member: " << inspInfo->Name().c_str() << " : " << memberName.c_str();
-                    DVASSERT(false && ss.str().c_str());
+                    DVASSERT_MSG(false, ss.str().c_str());
                 }
             }
             DVASSERT(value.type != DAVA::VariantType::TYPE_NONE)
@@ -144,24 +165,18 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
         }
         if (classInfoArchive->Count() != 0)
         {
-            editorPreferences->SetArchive(key, classInfoArchive);
+            preferencesArchive->SetArchive(key, classInfoArchive);
         }
-    }
-    DAVA::KeyedArchive* rawPreferencesArchive = loadedPreferences->GetArchive(PreferencesStorage_local::rawPreferencesKey);
-    if (rawPreferencesArchive != nullptr)
-    {
-        editorPreferences->SetArchive(PreferencesStorage_local::rawPreferencesKey, rawPreferencesArchive);
     }
 }
 
 void PreferencesStorage::RegisterPreferencesImpl(void* realObj, DAVA::InspBase* inspBase)
 {
     DVASSERT(nullptr != inspBase);
-
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
     registeredObjects[info].insert(realObj);
     DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
-    DAVA::KeyedArchive* archive = editorPreferences->GetArchive(key, nullptr);
+    DAVA::KeyedArchive* archive = preferencesArchive->GetArchive(key, nullptr);
     if (nullptr == archive)
     {
         return;
@@ -202,12 +217,13 @@ void PreferencesStorage::UnregisterPreferencesImpl(void* realObj, const DAVA::In
             continue;
         }
         DAVA::String name(member->Name().c_str());
-        DAVA::VariantType value = member->Value(realObj); //SUDDENLY! current version not support Value by const pointer
+        DAVA::VariantType value = member->Value(realObj);
         archive->SetVariant(name, value);
+        ValueChanged.Emit(info, member, value);
     }
 
     DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
-    editorPreferences->SetArchive(key, archive);
+    preferencesArchive->SetArchive(key, archive);
 }
 
 void PreferencesStorage::SaveValueByKey(const DAVA::FastName& key, const DAVA::VariantType& value)
@@ -224,23 +240,15 @@ DAVA::VariantType PreferencesStorage::LoadValueByKey(const DAVA::FastName& key)
 
 void PreferencesStorage::SaveValueByKeyImpl(const DAVA::FastName& key, const DAVA::VariantType& value)
 {
-    DAVA::KeyedArchive* rawPreferencesArchive = editorPreferences->GetArchive(PreferencesStorage_local::rawPreferencesKey);
-    if (rawPreferencesArchive != nullptr)
-    {
-        rawPreferencesArchive->SetVariant(key.c_str(), value);
-    }
+    unnamedPreferencesArchive->SetVariant(key.c_str(), value);
 }
 
 DAVA::VariantType PreferencesStorage::LoadValueByKeyImpl(const DAVA::FastName& key)
 {
-    DAVA::KeyedArchive* rawPreferencesArchive = editorPreferences->GetArchive(PreferencesStorage_local::rawPreferencesKey);
-    if (rawPreferencesArchive != nullptr)
+    DAVA::VariantType* loadedValutPtr = unnamedPreferencesArchive->GetVariant(key.c_str());
+    if (nullptr != loadedValutPtr)
     {
-        DAVA::VariantType* loadedValutPtr = rawPreferencesArchive->GetVariant(key.c_str());
-        if (nullptr != loadedValutPtr)
-        {
-            return *loadedValutPtr;
-        }
+        return *loadedValutPtr;
     }
     return DAVA::VariantType();
 }
@@ -284,7 +292,7 @@ void PreferencesStorage::SetNewValueToAllRegisteredObjectsImpl(const DAVA::InspI
 {
     DVASSERT(nullptr != inspInfo && nullptr != member);
 
-    DAVA::KeyedArchive* archive = editorPreferences->GetArchive(GenerateKey(inspInfo));
+    DAVA::KeyedArchive* archive = preferencesArchive->GetArchive(GenerateKey(inspInfo));
     DVASSERT(nullptr != archive);
 
     archive->SetVariant(member->Name().c_str(), value);
@@ -311,7 +319,7 @@ DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember
     DVASSERT(nullptr != inspInfo);
     auto key = GenerateKey(inspInfo);
     PreferencesStorage* self = Instance();
-    DAVA::KeyedArchive* archive = self->editorPreferences->GetArchive(key, nullptr);
+    DAVA::KeyedArchive* archive = self->preferencesArchive->GetArchive(key, nullptr);
     if (archive == nullptr)
     {
         DVASSERT(false && "introspection are not registered in preferences storage");

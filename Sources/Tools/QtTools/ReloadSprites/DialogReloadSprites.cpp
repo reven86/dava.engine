@@ -228,12 +228,14 @@ void DialogReloadSprites::EnableForseRepack(bool enabled)
 
 DAVA::String DialogReloadSprites::GetConsoleState() const
 {
-    return ui->logWidget->Serialize().toStdString();
+    QByteArray consoleState = ui->logWidget->Serialize().toBase64();
+    return consoleState.toStdString();
 }
 
 void DialogReloadSprites::SetConsoleState(const DAVA::String& str)
 {
-    ui->logWidget->Deserialize(QByteArray::fromStdString(str));
+    QByteArray consoleState = QByteArray::fromStdString(str);
+    ui->logWidget->Deserialize(QByteArray::fromBase64(consoleState));
 }
 
 bool DialogReloadSprites::IsConsoleVisible() const

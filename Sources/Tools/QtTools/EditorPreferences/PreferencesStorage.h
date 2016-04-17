@@ -97,6 +97,10 @@ private:
     RegisteredIntrospection registeredInsp;
     DAVA::Map<const DAVA::InspInfo*, DefaultValuesList> defaultValues;
     DAVA::Map<const DAVA::InspInfo*, DAVA::Set<void*>> registeredObjects;
+    DAVA::KeyedArchive* preferencesArchive = nullptr;
+    DAVA::KeyedArchive* unnamedPreferencesArchive = nullptr;
+    const DAVA::String unnamedPreferencesKey;
+    const DAVA::String preferencesKey;
 };
 
 template <typename T>

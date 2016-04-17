@@ -27,18 +27,32 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef PREFERENCES_WIDGET
-#define PREFERENCES_WIDGET
+#pragma once
 
-
+#include "Base/Introspection.h"
+#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
 #include <QDialog>
+class QTreeView;
 
-class PreferencesDialog : public QDialog
+class PreferencesDialog : public QDialog, public DAVA::InspBase
 {
-    Q_OBJECT
 
 public:
     PreferencesDialog(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
-};
+    ~PreferencesDialog();
 
-#endif //PREFERENCES_WIDGET
+private:
+    DAVA::String GetGeometry() const;
+    void SetGeometry(const DAVA::String& str);
+
+    DAVA::String GetHeaderState() const;
+    void SetHeaderState(const DAVA::String& str);
+
+    QTreeView* treeView = nullptr;
+
+public:
+    INTROSPECTION(PreferencesDialog,
+                  PROPERTY("currentGeometry", "Current Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
+                  PROPERTY("headerState", "Header State", GetHeaderState, SetHeaderState, DAVA::I_PREFERENCE)
+                  )
+};

@@ -30,38 +30,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PREFERENCES_MODEL
 #define PREFERENCES_MODEL
 
-#include "Base/Introspection.h"
-#include <QStandardItemModel>
+#include "UI/Properties/PropertiesModel.h"
+#include <QSortFilterProxyModel>
 
-class PreferencesModel : public QStandardItemModel
+class PreferencesFilterModel : public QSortFilterProxyModel
 {
-    Q_OBJECT
-
 public:
-    enum eType
-    {
-        TYPE_INSP,
-        TYPE_MEMBER
-    };
-
-    enum eRoles
-    {
-        ROLE_TYPE = Qt::UserRole + 1,
-        ROLE_POINTER
-    };
-
-    PreferencesModel(QObject* parent);
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    PreferencesFilterModel(QObject* parent = nullptr);
 
 private:
-    void BuildTree();
-    static QString MakeDataFromVariant(const DAVA::InspMember* member);
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 };
 
-Q_DECLARE_METATYPE(PreferencesModel::eType);
-Q_DECLARE_METATYPE(PreferencesModel::eRoles);
-Q_DECLARE_METATYPE(const DAVA::InspInfo*);
-Q_DECLARE_METATYPE(const DAVA::InspMember*);
+class PreferencesModel : public PropertiesModel
+{
+public:
+    PreferencesModel(QObject* parent);
+
+protected:
+    void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value) override;
+    void ResetProperty(AbstractProperty* property) override;
+};
 
 #endif //PREFERENCES_MODEL

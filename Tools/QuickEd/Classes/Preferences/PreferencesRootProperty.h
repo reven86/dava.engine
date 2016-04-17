@@ -27,63 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef __UI_EDITOR_INTROSPECTION_PROPERTY__
-#define __UI_EDITOR_INTROSPECTION_PROPERTY__
+#pragma once
 
-#include "ValueProperty.h"
+#include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
+#include "Preferences/PreferencesIntrospectionProperty.h"
 
-namespace DAVA
-{
-class UIControl;
-}
-
-class SubValueProperty;
-
-class IntrospectionProperty : public ValueProperty
+class PreferencesRootProperty : public AbstractProperty
 {
 public:
-    IntrospectionProperty(void* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    using Section = SectionProperty<PreferencesIntrospectionProperty>;
 
-protected:
-    virtual ~IntrospectionProperty();
+    PreferencesRootProperty();
+    ~PreferencesRootProperty();
 
 public:
-    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
+    virtual DAVA::uint32 GetCount() const override;
+    virtual AbstractProperty* GetProperty(int index) const override;
 
     void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor* visitor) override;
+    bool IsReadOnly() const override;
 
+    const DAVA::String& GetName() const override;
     ePropertyType GetType() const override;
-    DAVA::uint32 GetFlags() const override;
-
-    DAVA::VariantType GetValue() const override;
-
-    void* GetObject() const
-    {
-        return object;
-    }
-
-    const EnumMap* GetEnumMap() const override;
-
-    bool IsSameMember(const DAVA::InspMember* aMember) const override
-    {
-        return (aMember == member);
-    }
-
-    const DAVA::InspMember* GetMember() const;
-
-    void DisableResetFeature();
-
-protected:
-    void ApplyValue(const DAVA::VariantType& value) override;
-
-protected:
-    void * object;
-    const DAVA::InspMember* member;
-    DAVA::int32 flags;
 
 private:
-    DAVA::VariantType sourceValue;
+    DAVA::Vector<Section*> sections;
 };
-
-#endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

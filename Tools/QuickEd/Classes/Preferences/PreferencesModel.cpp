@@ -27,165 +27,51 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#include "Base/Introspection.h"
-#include "PreferencesModel.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
-#include "QtTools/Utils/Themes/Themes.h"
-#include "Utils/QtDavaConvertion.h"
+#include "Preferences/PreferencesModel.h"
+#include "Preferences/PreferencesRootProperty.h"
 
-PreferencesModel::PreferencesModel(QObject* parent)
-    : QStandardItemModel(parent)
+PreferencesFilterModel::PreferencesFilterModel(QObject* parent)
+    : QSortFilterProxyModel(parent)
 {
-    BuildTree();
 }
 
-QVariant PreferencesModel::data(const QModelIndex& index, int role) const
+bool PreferencesFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    QStandardItem* item = itemFromIndex(index);
-    if (role == ROLE_TYPE)
+    const QModelIndex source = sourceModel()->index(source_row, 0, source_parent);
+    AbstractProperty* prop = static_cast<AbstractProperty*>(source.internalPointer());
+    PreferencesIntrospectionProperty* inspProp = dynamic_cast<PreferencesIntrospectionProperty*>(prop);
+    if (nullptr == inspProp)
     {
-        return item->data(ROLE_TYPE);
-    }
-    auto parent = item->parent();
-    switch (role)
-    {
-    case Qt::BackgroundRole:
-        return parent == nullptr ? Themes::GetViewLineAlternateColor() : QVariant();
-    default:
-        return item->data(role);
-    }
-}
-
-bool PreferencesModel::setData(const QModelIndex& index, const QVariant& value, int role)
-{
-    QStandardItem* item = itemFromIndex(index);
-    item->setData(value, role);
-    return true;
-}
-
-void PreferencesModel::BuildTree()
-{
-    setHorizontalHeaderLabels(QStringList() << tr("Property") << tr("Value"));
-    const auto& registeredInsp = PreferencesStorage::GetRegisteredInsp();
-    for (const DAVA::InspInfo* info : registeredInsp)
-    {
-        QList<QStandardItem*> items;
-        QStandardItem* itemInspName = new QStandardItem(info->Name().c_str());
-        itemInspName->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-        itemInspName->setData(TYPE_INSP, ROLE_TYPE);
-        itemInspName->setData(QVariant::fromValue(info), ROLE_POINTER);
-        items << itemInspName;
-
-        for (int i = 0, count = info->MembersCount(); i < count; ++i)
+        SectionProperty<PreferencesIntrospectionProperty>* sectionProp = dynamic_cast<SectionProperty<PreferencesIntrospectionProperty>*>(prop);
+        if (nullptr != sectionProp)
         {
-            QList<QStandardItem*> memberItems;
-            const DAVA::InspMember* member = info->Member(i);
-            QStandardItem* itemMemberName = new QStandardItem(member->Desc().text);
-            itemMemberName->setData(TYPE_MEMBER, ROLE_TYPE);
-            itemMemberName->setData(QVariant::fromValue(member), ROLE_POINTER);
-            memberItems << itemMemberName;
-
-            QString text = MakeDataFromVariant(member);
-            QStandardItem* itemMemberValue = new QStandardItem(text);
-            itemMemberValue->setData(TYPE_MEMBER, ROLE_TYPE);
-            itemMemberValue->setData(QVariant::fromValue(member), ROLE_POINTER);
-            memberItems << itemMemberValue;
-            itemInspName->appendRow(memberItems);
-        }
-
-        QStandardItem* itemInspValue = new QStandardItem();
-        itemInspValue->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-        itemInspValue->setData(TYPE_INSP, ROLE_TYPE);
-        itemInspValue->setData(QVariant::fromValue(info), ROLE_POINTER);
-        items << itemInspValue;
-
-        invisibleRootItem()->appendRow(items);
-    }
-}
-
-QString PreferencesModel::MakeDataFromVariant(const DAVA::InspMember* member)
-{
-    DAVA::VariantType value = PreferencesStorage::GetPreferencesValue(member);
-    const DAVA::InspDesc& desc = member->Desc();
-    switch (value.GetType())
-    {
-    case DAVA::VariantType::TYPE_NONE:
-        return QString();
-
-    case DAVA::VariantType::TYPE_BOOLEAN:
-        return QString();
-
-    case DAVA::VariantType::TYPE_INT32:
-        if (desc.type == DAVA::InspDesc::T_ENUM)
-        {
-            DAVA::int32 e = value.AsInt32();
-            return QString::fromStdString(desc.enumMap->ToString(e));
-        }
-        else if (desc.type == DAVA::InspDesc::T_FLAGS)
-        {
-            DAVA::int32 e = value.AsInt32();
-            QString res = "";
-            int p = 0;
-            while (e)
+            bool isVisible = false;
+            for (int i = 0, count = sectionProp->GetCount(); i < count && !isVisible; ++i)
             {
-                if ((e & 0x01) != 0)
-                {
-                    if (!res.isEmpty())
-                        res += " | ";
-                    res += QString::fromStdString(desc.enumMap->ToString(1 << p));
-                }
-                p++;
-                e >>= 1;
+                isVisible |= ((sectionProp->GetProperty(i)->GetMember()->Flags() & DAVA::I_VIEW) != 0);
             }
-            return res;
+            return isVisible;
         }
         else
         {
-            return QVariant(value.AsInt32()).toString();
+            return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
         }
-
-    case DAVA::VariantType::TYPE_UINT32:
-        return QVariant(value.AsUInt32()).toString();
-
-    case DAVA::VariantType::TYPE_INT64:
-        return QVariant(value.AsInt64()).toString();
-
-    case DAVA::VariantType::TYPE_UINT64:
-        return QVariant(value.AsUInt64()).toString();
-
-    case DAVA::VariantType::TYPE_FLOAT:
-        return QVariant(value.AsFloat()).toString();
-
-    case DAVA::VariantType::TYPE_STRING:
-        return QString::fromStdString(value.AsString());
-
-    case DAVA::VariantType::TYPE_WIDE_STRING:
-        return QString::fromStdWString(value.AsWideString());
-
-    case DAVA::VariantType::TYPE_VECTOR2:
-        return QString::fromStdString(DAVA::Format("%g; %g", value.AsVector2().x, value.AsVector2().y));
-
-    case DAVA::VariantType::TYPE_COLOR:
-        return QColorToHex(ColorToQColor(value.AsColor()));
-
-    case DAVA::VariantType::TYPE_VECTOR4:
-        return StringToQString(DAVA::Format("%g; %g; %g; %g", value.AsVector4().x, value.AsVector4().y, value.AsVector4().z, value.AsVector4().w));
-
-    case DAVA::VariantType::TYPE_FILEPATH:
-        return StringToQString(value.AsFilePath().GetStringValue());
-
-    case DAVA::VariantType::TYPE_BYTE_ARRAY:
-    case DAVA::VariantType::TYPE_KEYED_ARCHIVE:
-    case DAVA::VariantType::TYPE_VECTOR3:
-
-    case DAVA::VariantType::TYPE_MATRIX2:
-    case DAVA::VariantType::TYPE_MATRIX3:
-    case DAVA::VariantType::TYPE_MATRIX4:
-    case DAVA::VariantType::TYPE_FASTNAME:
-    case DAVA::VariantType::TYPE_AABBOX3:
-    default:
-        DVASSERT(false);
-        break;
     }
-    return QString();
+    return (inspProp->GetMember()->Flags() & DAVA::I_VIEW) != 0;
+}
+
+PreferencesModel::PreferencesModel(QObject* parent)
+    : PropertiesModel(parent)
+{
+    rootProperty = new PreferencesRootProperty();
+}
+
+void PreferencesModel::ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value)
+{
+    property->SetValue(value);
+}
+
+void PreferencesModel::ResetProperty(AbstractProperty* property)
+{
+    property->ResetValue();
 }

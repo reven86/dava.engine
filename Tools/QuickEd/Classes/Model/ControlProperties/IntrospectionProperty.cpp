@@ -51,9 +51,9 @@ const FastName INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 const FastName INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
-IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+IntrospectionProperty::IntrospectionProperty(void* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(aMember->Desc().text)
-    , object(SafeRetain(anObject))
+    , object(anObject)
     , member(aMember)
     , flags(EF_CAN_RESET)
 {
@@ -129,10 +129,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
         sourceValue = member->Value(object);
 }
 
-IntrospectionProperty::~IntrospectionProperty()
-{
-    SafeRelease(object);
-}
+IntrospectionProperty::~IntrospectionProperty() = default;
 
 IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
 {
