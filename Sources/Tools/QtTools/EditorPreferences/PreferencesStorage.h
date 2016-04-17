@@ -33,7 +33,6 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
 #include "Base/StaticSingleton.h"
-#include "PreferencesRegistrator.h"
 #include "Functional/Signal.h"
 
 namespace DAVA
@@ -54,9 +53,6 @@ public:
     static void RegisterPreferences(T* obj);
     template <typename T>
     static void UnregisterPreferences(T* obj);
-
-    static void RegisterPreferences(void* realObj, DAVA::InspBase* inspBase);
-    static void UnregisterPreferences(void* realObj, const DAVA::InspBase* inspBase);
 
     static void SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
 
@@ -107,14 +103,14 @@ template <typename T>
 void PreferencesStorage::RegisterPreferences(T* realObject)
 {
     static_assert(std::is_base_of<DAVA::InspBase, T>::value, "type T must be derived from InspBase");
-    RegisterPreferences(realObject, static_cast<DAVA::InspBase*>(realObject));
+    Instance()->RegisterPreferencesImpl(realObject, static_cast<DAVA::InspBase*>(realObject));
 }
 
 template <typename T>
 void PreferencesStorage::UnregisterPreferences(T* realObject)
 {
     static_assert(std::is_base_of<DAVA::InspBase, T>::value, "type T must be derived from InspBase");
-    UnregisterPreferences(realObject, static_cast<DAVA::InspBase*>(realObject));
+    Instance()->UnregisterPreferencesImpl(realObject, static_cast<DAVA::InspBase*>(realObject));
 }
 
 #endif //PREFERENCES_STORAGE

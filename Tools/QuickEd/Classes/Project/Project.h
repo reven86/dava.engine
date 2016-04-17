@@ -88,7 +88,7 @@ public:
                   MEMBER(projectsHistory, "ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
 
-    REGISTER_PREFERENCES
+    REGISTER_PREFERENCES(Project)
 };
 
 inline EditorFontSystem* Project::GetEditorFontSystem() const

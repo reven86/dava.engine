@@ -51,12 +51,12 @@
 
 namespace MainWindow_local
 {
-PreferencesRegistrator preferencesRegistrator(MainWindow::TypeInfo(), {
-                                                                      { DAVA::FastName("isPixelized"), DAVA::VariantType(bool(false)) },
-                                                                      { DAVA::FastName("state"), DAVA::VariantType(DAVA::String()) },
-                                                                      { DAVA::FastName("geometry"), DAVA::VariantType(DAVA::String()) },
-                                                                      { DAVA::FastName("consoleState"), DAVA::VariantType(DAVA::String()) }
-                                                                      });
+InspInfoRegistrator inspInfoRegistrator(MainWindow::TypeInfo(), {
+                                                                { DAVA::FastName("isPixelized"), DAVA::VariantType(bool(false)) },
+                                                                { DAVA::FastName("state"), DAVA::VariantType(DAVA::String()) },
+                                                                { DAVA::FastName("geometry"), DAVA::VariantType(DAVA::String()) },
+                                                                { DAVA::FastName("consoleState"), DAVA::VariantType(DAVA::String()) }
+                                                                });
 }
 
 using namespace DAVA;

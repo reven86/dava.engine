@@ -55,12 +55,12 @@ using namespace DAVA;
 
 namespace EditorCore_local
 {
-PreferencesRegistrator preferencesRegistrator(EditorCore::TypeInfo(), {
-                                                                      { DAVA::FastName("isUsingAssetCache"), DAVA::VariantType(false) },
-                                                                      { DAVA::FastName("assetCacheIp"), DAVA::VariantType(AssetCache::LOCALHOST) },
-                                                                      { DAVA::FastName("assetCachePort"), DAVA::VariantType(DAVA::uint32(0)) },
-                                                                      { DAVA::FastName("assetCacheTimeout"), DAVA::VariantType(DAVA::uint64(0)) }
-                                                                      });
+InspInfoRegistrator inspInfoRegistrator(EditorCore::TypeInfo(), {
+                                                                { DAVA::FastName("isUsingAssetCache"), DAVA::VariantType(false) },
+                                                                { DAVA::FastName("assetCacheIp"), DAVA::VariantType(AssetCache::LOCALHOST) },
+                                                                { DAVA::FastName("assetCachePort"), DAVA::VariantType(DAVA::uint32(0)) },
+                                                                { DAVA::FastName("assetCacheTimeout"), DAVA::VariantType(DAVA::uint64(0)) }
+                                                                });
 }
 
 EditorCore::EditorCore(QObject* parent)

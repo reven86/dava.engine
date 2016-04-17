@@ -37,10 +37,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace PreferencesDialog_local
 {
-PreferencesRegistrator preferencesRegistrator(PreferencesDialog::TypeInfo(), {
-                                                                             { DAVA::FastName("currentGeometry"), DAVA::VariantType(DAVA::String()) },
-                                                                             { DAVA::FastName("headerState"), DAVA::VariantType(DAVA::String()) }
-                                                                             });
+InspInfoRegistrator inspInfoRegistrator(PreferencesDialog::TypeInfo(), {
+                                                                       { DAVA::FastName("currentGeometry"), DAVA::VariantType(DAVA::String()) },
+                                                                       { DAVA::FastName("headerState"), DAVA::VariantType(DAVA::String()) }
+                                                                       });
 }
 
 PreferencesDialog::PreferencesDialog(QWidget* parent, Qt::WindowFlags flags)

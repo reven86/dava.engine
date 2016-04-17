@@ -43,7 +43,9 @@ using namespace DAVA;
 
 namespace Project_local
 {
-PreferencesRegistrator preferencesRegistrator(Project::TypeInfo(), { { DAVA::FastName("projectsHistory"), DAVA::VariantType(DAVA::String()) } });
+InspInfoRegistrator inspInfoRegistrator(Project::TypeInfo(), {
+                                                             { DAVA::FastName("projectsHistory"), DAVA::VariantType(DAVA::String()) }
+                                                             });
 }
 
 Project::Project(QObject* parent)

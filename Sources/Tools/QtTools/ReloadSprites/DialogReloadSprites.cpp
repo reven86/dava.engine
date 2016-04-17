@@ -45,13 +45,13 @@ POP_QT_WARNING_SUPRESSOR
 using namespace DAVA;
 namespace DialogReloadSprites_local
 {
-PreferencesRegistrator preferencesRegistrator(DialogReloadSprites::TypeInfo(), {
-                                                                               { DAVA::FastName("currentGPU"), DAVA::VariantType(DAVA::int64(DAVA::GPU_ORIGIN)) },
-                                                                               { DAVA::FastName("quality"), DAVA::VariantType(DAVA::int64(TextureConverter::ECQ_VERY_HIGH)) },
-                                                                               { DAVA::FastName("forceRepackEnabled"), DAVA::VariantType(bool(false)) },
-                                                                               { DAVA::FastName("consoleState"), DAVA::VariantType(DAVA::String()) },
-                                                                               { DAVA::FastName("consoleVisible"), DAVA::VariantType(bool(true)) }
-                                                                               });
+InspInfoRegistrator inspInfoRegistrator(DialogReloadSprites::TypeInfo(), {
+                                                                         { DAVA::FastName("currentGPU"), DAVA::VariantType(DAVA::int64(DAVA::GPU_ORIGIN)) },
+                                                                         { DAVA::FastName("quality"), DAVA::VariantType(DAVA::int64(TextureConverter::ECQ_VERY_HIGH)) },
+                                                                         { DAVA::FastName("forceRepackEnabled"), DAVA::VariantType(bool(false)) },
+                                                                         { DAVA::FastName("consoleState"), DAVA::VariantType(DAVA::String()) },
+                                                                         { DAVA::FastName("consoleVisible"), DAVA::VariantType(bool(true)) }
+                                                                         });
 }
 
 DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)

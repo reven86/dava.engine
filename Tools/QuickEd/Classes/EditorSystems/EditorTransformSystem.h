@@ -45,7 +45,7 @@ class UIGeometricData;
 class UIControl;
 }
 
-class EditorTransformSystem : DAVA::InspBase, public BaseEditorSystem
+class EditorTransformSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
@@ -115,7 +115,7 @@ public:
                   )
 
 private:
-    REGISTER_PREFERENCES
+    REGISTER_PREFERENCES(EditorTransformSystem)
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__
