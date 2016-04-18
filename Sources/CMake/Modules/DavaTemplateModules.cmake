@@ -96,6 +96,7 @@ macro( setup_main_module )
             set( STATIC_LIBRARIES_WIN32_RELEASE ${STATIC_LIBRARIES_WINUAP_RELEASE} )  
             set( STATIC_LIBRARIES_WIN32_DEBUG   ${STATIC_LIBRARIES_WINUAP_DEBUG} )  
             set( DYNAMIC_LIBRARIES_WIN32        ${DYNAMIC_LIBRARIES_WINUAP} )   
+            add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
         endif()
 
         #"FIND LIBRARY"
