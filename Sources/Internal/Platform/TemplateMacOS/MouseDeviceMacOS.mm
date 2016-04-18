@@ -34,7 +34,7 @@
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
 #include "Input/InputSystem.h"
-#include "Platform/MouseDeviceMacOS.h"
+#include "Platform/TemplateMacOS/MouseDeviceMacOS.h"
 
 namespace DAVA
 {

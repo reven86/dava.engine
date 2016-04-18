@@ -29,7 +29,6 @@
 
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
-#include "Input/MouseCapture.h"
 #include <ApplicationServices/ApplicationServices.h>
 
 extern void FrameworkMain(int argc, char* argv[]);

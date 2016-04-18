@@ -1993,6 +1993,10 @@
 		1C04D27B1C91C895006F012F /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C04D2741C91C895006F012F /* SetCollectionItemValueCommand.h */; };
 		1C04D27C1C91C895006F012F /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C04D2751C91C895006F012F /* SetPropertyValueCommand.cpp */; };
 		1C04D27D1C91C895006F012F /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C04D2761C91C895006F012F /* SetPropertyValueCommand.h */; };
+		1D10227C1CC10BCA00AD68BD /* MouseDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1D10227A1CC10BCA00AD68BD /* MouseDevice.cpp */; };
+		1D10227D1CC10BCA00AD68BD /* MouseDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D10227B1CC10BCA00AD68BD /* MouseDevice.h */; };
+		1D1022811CC10C1A00AD68BD /* MouseDeviceWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D10227F1CC10C1A00AD68BD /* MouseDeviceWin32.h */; };
+		1D1022821CC10C1A00AD68BD /* MouseDeviceWinUAP.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D1022801CC10C1A00AD68BD /* MouseDeviceWinUAP.h */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		5003524E1A52DC8F003418BD /* libuv_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50194DD01A52D94B00557DAB /* libuv_ios.a */; };
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
@@ -3050,6 +3054,10 @@
 		1C04D2741C91C895006F012F /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
 		1C04D2751C91C895006F012F /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
 		1C04D2761C91C895006F012F /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
+		1D10227A1CC10BCA00AD68BD /* MouseDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MouseDevice.cpp; sourceTree = "<group>"; };
+		1D10227B1CC10BCA00AD68BD /* MouseDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDevice.h; sourceTree = "<group>"; };
+		1D10227F1CC10C1A00AD68BD /* MouseDeviceWin32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWin32.h; path = TemplateWin32/MouseDeviceWin32.h; sourceTree = "<group>"; };
+		1D1022801CC10C1A00AD68BD /* MouseDeviceWinUAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWinUAP.h; path = TemplateWin32/MouseDeviceWinUAP.h; sourceTree = "<group>"; };
 		496526CF167F173400107C70 /* libdxt_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_ios.a; path = ../../Libs/libs/libdxt_ios.a; sourceTree = "<group>"; };
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
 		5C0105D11577993400E0B939 /* libmongodb_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_ios.a; path = ../../Libs/libs/libmongodb_ios.a; sourceTree = "<group>"; };
@@ -3492,6 +3500,8 @@
 		02E7C20D1BD624A5002F026D /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				1D10227A1CC10BCA00AD68BD /* MouseDevice.cpp */,
+				1D10227B1CC10BCA00AD68BD /* MouseDevice.h */,
 				02E7CF961BD63A54002F026D /* GamepadDevice.cpp */,
 				02E7C20E1BD624A5002F026D /* Accelerometer.cpp */,
 				02E7C20F1BD624A5002F026D /* Accelerometer.h */,
@@ -3740,6 +3750,7 @@
 		02E7C2BF1BD624A5002F026D /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				1D10227E1CC10BDE00AD68BD /* TemplateWin32 */,
 				0367CFF21C4FDC8C004D42A0 /* Reachability.h */,
 				0367CFF31C4FDC8C004D42A0 /* Reachability.mm */,
 				02E7CF0E1BD63943002F026D /* DateTime.cpp */,
@@ -4698,6 +4709,15 @@
 			name = Command;
 			sourceTree = "<group>";
 		};
+		1D10227E1CC10BDE00AD68BD /* TemplateWin32 */ = {
+			isa = PBXGroup;
+			children = (
+				1D10227F1CC10C1A00AD68BD /* MouseDeviceWin32.h */,
+				1D1022801CC10C1A00AD68BD /* MouseDeviceWinUAP.h */,
+			);
+			name = TemplateWin32;
+			sourceTree = "<group>";
+		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -5444,6 +5464,7 @@
 				02E7CC811BD624A7002F026D /* BulletComponent.h in Headers */,
 				02E7C82F1BD624A7002F026D /* MemoryManager.h in Headers */,
 				02E7CB171BD624A7002F026D /* VegetationRenderData.h in Headers */,
+				1D10227D1CC10BCA00AD68BD /* MouseDevice.h in Headers */,
 				02E7CAE71BD624A7002F026D /* RenderSystem.h in Headers */,
 				02E7C9C91BD624A7002F026D /* OpenUDIDios.h in Headers */,
 				02E7C6F51BD624A7002F026D /* Spinlock.h in Headers */,
@@ -5711,6 +5732,7 @@
 				021414171819851100925E51 /* DAVAClassRegistrator.h in Headers */,
 				02E7CB071BD624A7002F026D /* StaticOcclusionRenderPass.h in Headers */,
 				02E7CD931BD624A7002F026D /* StaticOcclusionSystem.h in Headers */,
+				1D1022821CC10C1A00AD68BD /* MouseDeviceWinUAP.h in Headers */,
 				02E7C6FB1BD624A7002F026D /* ThreadLocalPtr.h in Headers */,
 				02E7CB1F1BD624A7002F026D /* CRCAdditionInterface.h in Headers */,
 				02E7C8A91BD624A7002F026D /* LogConsumer.h in Headers */,
@@ -5864,6 +5886,7 @@
 				02E7C7D91BD624A7002F026D /* AABBox2.h in Headers */,
 				02E7CAC91BD624A7002F026D /* Mesh.h in Headers */,
 				02E7CE4D1BD624A7002F026D /* UIControlHelpers.h in Headers */,
+				1D1022811CC10C1A00AD68BD /* MouseDeviceWin32.h in Headers */,
 				02E7CC591BD624A7002F026D /* UniqueStateSet.h in Headers */,
 				02E7CF0C1BD6392D002F026D /* UIControlFamily.h in Headers */,
 				02E7C8711BD624A7002F026D /* NetConfig.h in Headers */,
@@ -6541,6 +6564,7 @@
 				02E7CC251BD624A7002F026D /* rhi_CommandBufferMetal.mm in Sources */,
 				D7B105A31C720D19008288AF /* ParticleEmitterNode.cpp in Sources */,
 				02E7CAED1BD624A7002F026D /* ShadowVolumeRenderLayer.cpp in Sources */,
+				1D10227C1CC10BCA00AD68BD /* MouseDevice.cpp in Sources */,
 				02E7C6911BD624A6002F026D /* IntrospectionBase.cpp in Sources */,
 				02E7CBAD1BD624A7002F026D /* PreProcess.cpp in Sources */,
 				02E7CC9B1BD624A7002F026D /* DebugRenderComponent.cpp in Sources */,
