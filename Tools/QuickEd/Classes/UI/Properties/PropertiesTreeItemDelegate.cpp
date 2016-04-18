@@ -205,24 +205,13 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
         auto propName_iter = propertyNameTypeItemDelegates.find(StringToQString(property->GetName()));
         if (propName_iter != propertyNameTypeItemDelegates.end())
             return propName_iter.value();
-    }
 
-    QVariant editValue = index.data(Qt::EditRole);
-    if (editValue.userType() == QMetaTypeId<DAVA::VariantType>::qt_metatype_id())
-    {
-        DAVA::VariantType variantType = editValue.value<DAVA::VariantType>();
-        QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*>::const_iterator var_iter = variantTypeItemDelegates.find(variantType.GetType());
+        auto var_iter = variantTypeItemDelegates.find(property->GetValueType());
         if (var_iter != variantTypeItemDelegates.end())
             return var_iter.value();
     }
-    else
-    {
-        QMap<QVariant::Type, AbstractPropertyDelegate*>::const_iterator iter = qvariantItemDelegates.find(editValue.type());
-        if (iter != qvariantItemDelegates.end())
-            return iter.value();
-    }
 
-    return NULL;
+    return nullptr;
 }
 
 void PropertiesTreeItemDelegate::emitCommitData(QWidget* editor)

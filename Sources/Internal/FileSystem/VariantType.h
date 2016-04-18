@@ -487,6 +487,7 @@ public:
     static VariantType LoadData(const void* src, const MetaInfo* meta);
     static void SaveData(void* dst, const MetaInfo* meta, const VariantType& val);
 
+    static VariantType::eVariantType TypeFromMetaInfo(const MetaInfo* metaType);
     static VariantType FromType(int type);
     static VariantType Convert(const VariantType& val, int type);
     static VariantType Convert(const VariantType& val, const MetaInfo* metaType);

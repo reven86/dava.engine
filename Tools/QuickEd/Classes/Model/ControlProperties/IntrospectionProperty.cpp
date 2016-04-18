@@ -52,7 +52,7 @@ const FastName INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : ValueProperty(aMember->Desc().text)
+    : ValueProperty(aMember->Desc().text, VariantType::TypeFromMetaInfo(aMember->Type()), &aMember->Desc())
     , object(SafeRetain(anObject))
     , member(aMember)
     , flags(EF_CAN_RESET)
@@ -78,50 +78,6 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
     {
         SetDefaultValue(member->Value(object));
     }
-
-    static std::vector<String> vector2ComponentNames = { "X", "Y" };
-    static std::vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
-    static std::vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
-
-    std::vector<String>* componentNames = nullptr;
-    std::vector<SubValueProperty*> children;
-    VariantType defaultValue = GetDefaultValue();
-    if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
-    {
-        componentNames = &vector2ComponentNames;
-    }
-    else if (defaultValue.GetType() == VariantType::TYPE_COLOR)
-    {
-        componentNames = &colorComponentNames;
-    }
-    else if (defaultValue.GetType() == VariantType::TYPE_VECTOR4)
-    {
-        componentNames = &marginsComponentNames;
-    }
-    else if (defaultValue.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_FLAGS)
-    {
-        const EnumMap* map = member->Desc().enumMap;
-        for (size_t i = 0; i < map->GetCount(); ++i)
-        {
-            int val = 0;
-            map->GetValue(i, val);
-            children.push_back(new SubValueProperty(i, map->ToString(val)));
-        }
-    }
-
-    if (componentNames != nullptr)
-    {
-        for (size_t i = 0; i < componentNames->size(); ++i)
-            children.push_back(new SubValueProperty(i, componentNames->at(i)));
-    }
-
-    for (auto child : children)
-    {
-        child->SetParent(this);
-        AddSubValueProperty(child);
-        SafeRelease(child);
-    }
-    children.clear();
 
     if (sourceProperty != nullptr)
         sourceValue = sourceProperty->sourceValue;
@@ -177,17 +133,6 @@ void IntrospectionProperty::Accept(PropertyVisitor* visitor)
     visitor->VisitIntrospectionProperty(this);
 }
 
-IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
-{
-    auto type = member->Desc().type;
-    if (type == InspDesc::T_ENUM)
-        return TYPE_ENUM;
-    else if (type == InspDesc::T_FLAGS)
-        return TYPE_FLAGS;
-
-    return TYPE_VARIANT;
-}
-
 uint32 IntrospectionProperty::GetFlags() const
 {
     uint32 result = flags;
@@ -199,17 +144,6 @@ uint32 IntrospectionProperty::GetFlags() const
 VariantType IntrospectionProperty::GetValue() const
 {
     return member->Value(object);
-}
-
-const EnumMap* IntrospectionProperty::GetEnumMap() const
-{
-    auto type = member->Desc().type;
-
-    if (type == InspDesc::T_ENUM ||
-        type == InspDesc::T_FLAGS)
-        return member->Desc().enumMap;
-
-    return nullptr;
 }
 
 const DAVA::InspMember* IntrospectionProperty::GetMember() const

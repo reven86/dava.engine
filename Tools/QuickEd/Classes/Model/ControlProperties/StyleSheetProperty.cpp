@@ -37,15 +37,24 @@
 
 using namespace DAVA;
 
+namespace SStyleSheetProperty
+{
+static VariantType::eVariantType GetValueType(uint32 propertyIndex)
+{
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
+    return VariantType::TypeFromMetaInfo(descr.memberInfo->Type());
+}
+}
+
 StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& aProperty)
-    : ValueProperty("prop")
+    : ValueProperty("prop", SStyleSheetProperty::GetValueType(aProperty.propertyIndex))
     , property(aProperty)
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     SetName(String(descr.GetFullName().c_str()));
     SetOverridden(true);
 
-    VariantTypeProperty* prop = new VariantTypeProperty("Value", property.value);
+    VariantTypeProperty* prop = new VariantTypeProperty("Value", &descr.memberInfo->Desc(), property.value);
     prop->SetValue(property.value);
     prop->SetParent(this);
     properties.push_back(prop);

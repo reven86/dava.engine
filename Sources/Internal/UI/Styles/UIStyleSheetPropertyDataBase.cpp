@@ -159,6 +159,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
             if (member->Name() == descr.name)
             {
                 DVASSERT(descr.memberInfo == nullptr);
+                DVASSERT(descr.defaultValue.GetType() == VariantType::TypeFromMetaInfo(member->Type()));
                 descr.memberInfo = member;
                 break;
             }
