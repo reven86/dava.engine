@@ -62,14 +62,10 @@ namespace DAVA
     class MovieViewControl : public IMovieViewControl, public UIControl
     {
     public:
-        struct PCMBuffer
-        {
-            uint8* data;
-            uint32 size;
-        };
-
-        Deque<PCMBuffer> pcmBuffers;
-        DynamicMemoryFile* pcmData;
+        Mutex pcmMutex;
+        DynamicMemoryFile* pcmData = nullptr;
+        uint32 writePos = 0;
+        uint32 readPos = 0;
 
         ~MovieViewControl() override;
 
@@ -101,17 +97,30 @@ namespace DAVA
         void Update(float32 timeElapsed) override;
 
     private:
+        AV::AVFormatContext* CreateContext(const String& path);
+
         bool InitVideo();
         void UpdateVideo(AV::AVPacket * packet, float32 timeElapsed);
         bool InitAudio();
         void UpdateAudio(AV::AVPacket* packet, float32 timeElapsed);
 
-        char8* filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
+        void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
+        void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
+        void ReadingThread(BaseObject* caller, void* callerData, void* userData);
+
+        String filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
 
         static bool isFFMGEGInited;
         bool isPlaying = false;
         bool isAudioVideoStreamsInited = false;
-        AV::AVFormatContext* avformatContext = nullptr;
+        AV::AVFormatContext* avFormatAudioContext = nullptr;
+        AV::AVFormatContext* avFormatVideoContext = nullptr;
+
+        Thread* audioDecodingThread = nullptr;
+        Thread* videoDecodingThread = nullptr;
+        Thread* readingDataThread = nullptr;
+
+        float32 lastUpdateTime = 0.f;
 
         const uint8 emptyPixelColor = 255;
 
@@ -132,25 +141,69 @@ namespace DAVA
         int64_t in_channel_layout = -1;
         struct SwrContext* videoConvertContext = nullptr;
 
+        // AV::AVPacket* packet = nullptr;
         unsigned int videoStreamIndex = -1;
         AV::AVCodecContext* videoCodecContext = nullptr;
         AV::AVCodec* videoCodec = nullptr;
         AV::AVFrame * decodedFrame = nullptr;
         AV::AVFrame * yuvDecodedScaledFrame = nullptr;
         uint8 * out_buffer = nullptr;
-        AV::AVPacket* videoPacket = nullptr;
         AV::SwsContext * img_convert_ctx = nullptr;
 
         const uint32 maxAudioFrameSize = 192000; // 1 second of 48khz 32bit audio
         unsigned int audioStreamIndex = -1;
         AV::AVCodecContext* audioCodecContext = nullptr;
         AV::AVCodec* audioCodec = nullptr;
-        AV::AVPacket* audioPacket = nullptr;
         AV::AVFrame* audioFrame = nullptr;
         AV::SwrContext* audioConvertContext = nullptr;
         uint8* outAudioBuffer = nullptr;
         uint32 outAudioBufferSize = 0;
+
+        Deque<AV::AVPacket*> audioPackets;
+        Mutex audioPacketsMutex;
+
+        Deque<AV::AVPacket*> videoPackets;
+        Mutex videoPacketsMutex;
     };
+
+    inline void MovieViewControl::Stop()
+    {
+        if (!isAudioVideoStreamsInited)
+            return;
+
+        isPlaying = false;
+        videoDecodingThread->Cancel();
+        audioDecodingThread->Cancel();
+        readingDataThread->Cancel();
+        SafeRelease(videoDecodingThread);
+        SafeRelease(audioDecodingThread);
+        SafeRelease(readingDataThread);
+    }
+
+    // Pause/resume the playback.
+    inline void MovieViewControl::Pause()
+    {
+        if (!isAudioVideoStreamsInited)
+            return;
+
+        isPlaying = false;
+    }
+
+    inline void MovieViewControl::Resume()
+    {
+        if (!isAudioVideoStreamsInited)
+            return;
+
+        isPlaying = true;
+    }
+
+    // Whether the movie is being played?
+    inline bool MovieViewControl::IsPlaying() const
+    {
+        return isPlaying;
+    }
 }
+
+
 
 #endif
