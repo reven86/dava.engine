@@ -113,7 +113,7 @@ public:
                   PROPERTY("assetCacheTimeout", "Asset Cache Timeout (ms)", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
-    REGISTER_PREFERENCES
+    REGISTER_PREFERENCES(EditorCore)
 };
 
 inline EditorFontSystem* GetEditorFontSystem()

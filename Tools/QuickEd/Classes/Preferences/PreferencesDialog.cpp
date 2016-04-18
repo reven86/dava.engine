@@ -28,18 +28,64 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "Preferences/PreferencesDialog.h"
-#include <QVBoxLayout>
+#include "Preferences/PreferencesModel.h"
 #include "UI/Properties/PropertiesTreeView.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-#include "Preferences/PreferencesModel.h"
+#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include <QVBoxLayout>
+#include <QHeaderView>
+
+namespace PreferencesDialog_local
+{
+InspInfoRegistrator inspInfoRegistrator(PreferencesDialog::TypeInfo(), {
+                                                                       { DAVA::FastName("currentGeometry"), DAVA::VariantType(DAVA::String()) },
+                                                                       { DAVA::FastName("headerState"), DAVA::VariantType(DAVA::String()) }
+                                                                       });
+}
 
 PreferencesDialog::PreferencesDialog(QWidget* parent, Qt::WindowFlags flags)
     : QDialog(parent, flags)
+    , treeView(new PropertiesTreeView(this))
 {
+    resize(800, 600);
     setLayout(new QVBoxLayout());
-    QTreeView* treeView = new PropertiesTreeView(this);
     PreferencesModel* preferencesModel = new PreferencesModel(this);
-    treeView->setModel(preferencesModel);
+    PreferencesFilterModel* preferencesFilterModel = new PreferencesFilterModel(this);
+    preferencesFilterModel->setSourceModel(preferencesModel);
+    treeView->setModel(preferencesFilterModel);
     layout()->addWidget(treeView);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate());
+
+    treeView->expandToDepth(0);
+
+    PreferencesStorage::RegisterPreferences(this);
+}
+
+PreferencesDialog::~PreferencesDialog()
+{
+    PreferencesStorage::UnregisterPreferences(this);
+}
+
+DAVA::String PreferencesDialog::GetGeometry() const
+{
+    QByteArray geometry = saveGeometry();
+    return geometry.toBase64().toStdString();
+}
+
+void PreferencesDialog::SetGeometry(const DAVA::String& str)
+{
+    QByteArray geometry = QByteArray::fromStdString(str);
+    restoreGeometry(QByteArray::fromBase64(geometry));
+}
+
+DAVA::String PreferencesDialog::GetHeaderState() const
+{
+    QByteArray geometry = treeView->header()->saveState();
+    return geometry.toBase64().toStdString();
+}
+
+void PreferencesDialog::SetHeaderState(const DAVA::String& str)
+{
+    QByteArray geometry = QByteArray::fromStdString(str);
+    treeView->header()->restoreState(QByteArray::fromBase64(geometry));
 }

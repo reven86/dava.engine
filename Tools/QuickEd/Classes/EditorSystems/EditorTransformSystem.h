@@ -45,7 +45,7 @@ class UIGeometricData;
 class UIControl;
 }
 
-class EditorTransformSystem : DAVA::InspBase, public BaseEditorSystem
+class EditorTransformSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
@@ -111,11 +111,11 @@ private:
 
 public:
     INTROSPECTION(EditorTransformSystem,
-                  MEMBER(minimumSize, "minimumSize", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_PREFERENCE)
+                  MEMBER(minimumSize, "minimumSize", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
 private:
-    REGISTER_PREFERENCES
+    REGISTER_PREFERENCES(EditorTransformSystem)
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

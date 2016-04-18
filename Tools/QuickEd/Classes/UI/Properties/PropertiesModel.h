@@ -73,7 +73,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
 
-private:
+protected:
     void UpdateAllChangedProperties();
 
     // PropertyListener
@@ -97,15 +97,15 @@ private:
     void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
     void StyleSelectorWasRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
 
-    void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value);
-    void ResetProperty(AbstractProperty* property);
+    virtual void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value);
+    virtual void ResetProperty(AbstractProperty* property);
 
     QModelIndex indexByProperty(AbstractProperty* property, int column = 0);
     QString makeQVariant(const AbstractProperty* property) const;
     void initVariantType(DAVA::VariantType& var, const QVariant& val) const;
     void CleanUp();
 
-private:
+protected:
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;

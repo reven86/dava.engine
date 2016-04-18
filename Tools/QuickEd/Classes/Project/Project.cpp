@@ -43,7 +43,9 @@ using namespace DAVA;
 
 namespace Project_local
 {
-PreferencesRegistrator preferencesRegistrator(Project::TypeInfo(), { { DAVA::FastName("projectsHistory"), DAVA::VariantType(DAVA::String()) } });
+InspInfoRegistrator inspInfoRegistrator(Project::TypeInfo(), {
+                                                             { DAVA::FastName("projectsHistory"), DAVA::VariantType(DAVA::String()) }
+                                                             });
 }
 
 Project::Project(QObject* parent)
@@ -196,7 +198,7 @@ void Project::SetIsOpen(bool arg)
         {
             projectsPathes.removeFirst();
         }
-        projectsHistory += projectsPathes.join(':').toStdString();
+        projectsHistory = projectsPathes.join(':').toStdString();
     }
     emit IsOpenChanged(arg);
 }

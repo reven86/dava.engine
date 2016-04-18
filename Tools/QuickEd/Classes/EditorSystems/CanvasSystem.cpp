@@ -58,13 +58,15 @@ private:
 
 public:
     INTROSPECTION_EXTEND(ColorControl, UIControl,
-                         PROPERTY("backgroundColor", "Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         PROPERTY("backgroundColor", "Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
                          )
 
-    REGISTER_PREFERENCES
+    REGISTER_PREFERENCES(ColorControl)
 };
 
-PreferencesRegistrator preferencesRegistrator(ColorControl::TypeInfo(), { { DAVA::FastName("backgroundColor"), DAVA::VariantType(Color::Transparent) } });
+InspInfoRegistrator inspInfoRegistrator(ColorControl::TypeInfo(), {
+                                                                  { DAVA::FastName("backgroundColor"), DAVA::VariantType(Color::Transparent) }
+                                                                  });
 
 class GridControl : public UIControl
 {
