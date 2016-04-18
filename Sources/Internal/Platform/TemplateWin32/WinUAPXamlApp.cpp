@@ -46,7 +46,7 @@
 
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"
-#include "Input/MouseCapture.h"
+#include "Input/MouseDevice.h"
 #include "Input/KeyboardDevice.h"
 
 #include "WinUAPXamlApp.h"
