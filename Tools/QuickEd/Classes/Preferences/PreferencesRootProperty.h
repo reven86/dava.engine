@@ -33,25 +33,9 @@
 #include "Model/ControlProperties/SectionProperty.h"
 #include "Preferences/PreferencesIntrospectionProperty.h"
 
-class PreferencesRootProperty : public AbstractProperty
+class PreferencesRootProperty : public SectionProperty<PreferencesIntrospectionProperty>
 {
 public:
-    using Section = SectionProperty<PreferencesIntrospectionProperty>;
 
     PreferencesRootProperty();
-    ~PreferencesRootProperty();
-
-public:
-    virtual DAVA::uint32 GetCount() const override;
-    virtual AbstractProperty* GetProperty(int index) const override;
-
-    void Refresh(DAVA::int32 refreshFlags) override;
-    void Accept(PropertyVisitor* visitor) override;
-    bool IsReadOnly() const override;
-
-    const DAVA::String& GetName() const override;
-    ePropertyType GetType() const override;
-
-private:
-    DAVA::Vector<Section*> sections;
 };

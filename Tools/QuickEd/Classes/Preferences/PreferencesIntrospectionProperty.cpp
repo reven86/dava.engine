@@ -38,6 +38,16 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     , member(aMember)
     , flags(EF_CAN_RESET)
 {
+    DAVA::String name(aMember->Desc().text);
+    size_t index = name.find_last_of('/');
+    if (index == DAVA::String::npos)
+    {
+        SetName(name);
+    }
+    else
+    {
+        SetName(name.substr(index + 1));
+    }
     DAVA::VariantType value = PreferencesStorage::GetPreferencesValue(member);
     SetDefaultValue(value);
 

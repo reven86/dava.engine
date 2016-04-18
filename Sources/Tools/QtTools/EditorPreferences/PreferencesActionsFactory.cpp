@@ -328,7 +328,8 @@ public:
     void OnTriggered(bool /*triggered*/) override
     {
         QColor currentValue = data().value<QColor>();
-        QColor color = QColorDialog::getColor(currentValue, qApp->activeWindow(), "Select color", QColorDialog::ShowAlphaChannel);
+
+        QColor color = QColorDialog::getColor(currentValue, qApp->activeWindow(), "Select color", QColorDialog::ShowAlphaChannel | QColorDialog::DontUseNativeDialog);
         if (!color.isValid())
         {
             return;

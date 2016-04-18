@@ -85,7 +85,7 @@ private:
 
 public:
     INTROSPECTION(Project,
-                  MEMBER(projectsHistory, "ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  MEMBER(projectsHistory, "ProjectInternal/ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
 
     REGISTER_PREFERENCES(Project)

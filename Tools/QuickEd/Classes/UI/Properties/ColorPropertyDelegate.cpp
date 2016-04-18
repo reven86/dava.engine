@@ -40,9 +40,7 @@
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 
-namespace
-{
-QPixmap CreateIcon(const QColor& color)
+QPixmap CreateIconFromColor(const QColor& color)
 {
     QPixmap pix(16, 16);
     QPainter p(&pix);
@@ -61,7 +59,6 @@ QPixmap CreateIcon(const QColor& color)
     p.setBrush(QBrush(color));
     p.drawRect(QRect(0, 0, 15, 15));
     return pix;
-}
 }
 
 ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate* delegate)
@@ -161,6 +158,6 @@ void ColorPropertyDelegate::OnTextChanged(const QString& text)
     if (valid)
     {
         QColor color(HexToQColor(text));
-        chooseColorAction->setIcon(CreateIcon(color));
+        chooseColorAction->setIcon(CreateIconFromColor(color));
     }
 }

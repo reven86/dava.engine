@@ -29,71 +29,58 @@
 
 #include "Preferences/PreferencesRootProperty.h"
 #include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include <QString>
+#include <QStringList>
 
 using namespace DAVA;
 
+namespace PreferencesRootProperty_local
+{
+struct PreferencesLocation
+{
+    DAVA::Map<DAVA::String, PreferencesLocation> locations; //locations inside current location
+    DAVA::Vector<const DAVA::InspMember*> members; //leaf insp member
+};
+
+void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, SectionProperty<PreferencesIntrospectionProperty>* property)
+{
+    for (const auto& locationAndName : preferencesLocation.locations)
+    {
+        ScopedPtr<SectionProperty<PreferencesIntrospectionProperty>> section(new SectionProperty<PreferencesIntrospectionProperty>(locationAndName.first));
+        property->AddSection(section);
+        CreatePropertiesTree(locationAndName.second, section);
+    }
+    for (const DAVA::InspMember* member : preferencesLocation.members)
+    {
+        DAVA::ScopedPtr<PreferencesIntrospectionProperty> memberProperty(new PreferencesIntrospectionProperty(member));
+        property->AddProperty(memberProperty);
+    }
+}
+}
+
 PreferencesRootProperty::PreferencesRootProperty()
-    : AbstractProperty()
+    : SectionProperty<PreferencesIntrospectionProperty>("PREFERENCES_ROOT_PROPERTY")
 {
     const auto& registeredInsp = PreferencesStorage::GetRegisteredInsp();
+    PreferencesRootProperty_local::PreferencesLocation rootPreferencesLocation;
+
     for (const InspInfo* info : registeredInsp)
     {
-        Section* sectionProperty = new Section(info->Name().c_str());
-        sectionProperty->SetParent(this);
-        sections.push_back(sectionProperty);
-
+        //insp info do not store necessary information for this proprety
         for (int i = 0, count = info->MembersCount(); i < count; ++i)
         {
-            ScopedPtr<PreferencesIntrospectionProperty> inspProp(new PreferencesIntrospectionProperty(info->Member(i)));
-            sectionProperty->AddProperty(inspProp);
+            const InspMember* member = info->Member(i);
+            QString description(member->Desc().text);
+            QStringList folders = description.split('/', QString::SkipEmptyParts);
+            PreferencesRootProperty_local::PreferencesLocation* currentLocation = &rootPreferencesLocation;
+            for (int index = 0, foldersCount = folders.size(); index < (foldersCount - 1); ++index)
+            {
+                DAVA::String folder = folders.at(index).toStdString();
+                currentLocation = &currentLocation->locations[folder];
+            }
+            currentLocation->members.push_back(member);
         }
     }
-}
 
-PreferencesRootProperty::~PreferencesRootProperty()
-{
-    for (auto section : sections)
-    {
-        section->Release();
-    }
-}
-
-uint32 PreferencesRootProperty::GetCount() const
-{
-    return sections.size();
-}
-
-AbstractProperty* PreferencesRootProperty::GetProperty(int index) const
-{
-    DVASSERT(index >= 0);
-    DVASSERT(index < sections.size());
-    return sections.at(index);
-}
-
-void PreferencesRootProperty::Refresh(DAVA::int32 refreshFlags)
-{
-    for (int32 i = 0, count = static_cast<int32>(GetCount()); i < count; i++)
-    {
-        GetProperty(i)->Refresh(refreshFlags);
-    }
-}
-
-void PreferencesRootProperty::Accept(PropertyVisitor*)
-{
-}
-
-bool PreferencesRootProperty::IsReadOnly() const
-{
-    return false;
-}
-
-const DAVA::String& PreferencesRootProperty::GetName() const
-{
-    static String rootName = "PREFERENCES ROOT";
-    return rootName;
-}
-
-AbstractProperty::ePropertyType PreferencesRootProperty::GetType() const
-{
-    return TYPE_HEADER;
+    PreferencesRootProperty_local::CreatePropertiesTree(rootPreferencesLocation, this);
 }

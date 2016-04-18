@@ -52,7 +52,7 @@ private:
 
 public:
     INTROSPECTION(PreferencesDialog,
-                  PROPERTY("currentGeometry", "Current Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
-                  PROPERTY("headerState", "Header State", GetHeaderState, SetHeaderState, DAVA::I_PREFERENCE)
+                  PROPERTY("currentGeometry", "PreferencesDialogInternal/Current Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
+                  PROPERTY("headerState", "PreferencesDialogInternal/Header State", GetHeaderState, SetHeaderState, DAVA::I_PREFERENCE)
                   )
 };

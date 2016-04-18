@@ -155,3 +155,20 @@ const AbstractProperty* AbstractProperty::GetRootProperty() const
         property = property->parent;
     return property;
 }
+
+AbstractProperty* AbstractProperty::FindPropertyByName(const String& name)
+{
+    if (GetName() == name)
+    {
+        return this;
+    }
+    for (DAVA::uint32 index = 0, count = GetCount(); index < count; ++index)
+    {
+        AbstractProperty* property = GetProperty(index)->FindPropertyByName(name);
+        if (property != nullptr)
+        {
+            return property;
+        }
+    }
+    return nullptr;
+}

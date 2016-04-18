@@ -133,10 +133,10 @@ private:
 
 public:
     INTROSPECTION(MainWindow,
-                  PROPERTY("isPixelized", "IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
-                  PROPERTY("state", "State", GetState, SetState, DAVA::I_PREFERENCE)
-                  PROPERTY("geometry", "Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
-                  PROPERTY("consoleState", "ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
+                  PROPERTY("isPixelized", "MainWindowInternal/IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
+                  PROPERTY("state", "MainWindowInternal/State", GetState, SetState, DAVA::I_PREFERENCE)
+                  PROPERTY("geometry", "MainWindowInternal/Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
+                  PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };
 

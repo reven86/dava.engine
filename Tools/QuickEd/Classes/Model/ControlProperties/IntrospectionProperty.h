@@ -78,7 +78,7 @@ protected:
     void ApplyValue(const DAVA::VariantType& value) override;
 
 protected:
-    void * object;
+    void* object;
     const DAVA::InspMember* member;
     DAVA::int32 flags;
 

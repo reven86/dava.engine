@@ -29,7 +29,8 @@
 
 #include "ComponentPropertiesSection.h"
 
-#include "IntrospectionProperty.h"
+#include "Model/ControlProperties/IntrospectionProperty.h"
+
 #include "PropertyVisitor.h"
 
 #include "UI/UIControl.h"
@@ -109,8 +110,9 @@ void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSecti
         prototypeSection = nullptr; // weak
         for (uint32 i = 0; i < GetCount(); i++)
         {
-            ValueProperty* value = GetProperty(i);
-            if (value->GetPrototypeProperty())
+            AbstractProperty* property = GetProperty(i);
+            ValueProperty* value = dynamic_cast<ValueProperty*>(property);
+            if (nullptr != value && value->GetPrototypeProperty())
             {
                 DVASSERT(value->GetPrototypeProperty()->GetParent() == section);
                 value->DetachPrototypeProperty(value->GetPrototypeProperty());

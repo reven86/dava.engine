@@ -54,6 +54,7 @@
 #include "QtTools/Utils/Themes/Themes.h"
 
 #include <chrono>
+#include "ColorPropertyDelegate.h"
 
 using namespace std::chrono;
 using namespace DAVA;
@@ -143,13 +144,14 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         return QVariant();
 
     AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
+    DAVA::VariantType value = property->GetValue();
     uint32 flags = property->GetFlags();
     switch (role)
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
-            return property->GetValue().AsBool() ? Qt::Checked : Qt::Unchecked;
+        if (value.GetType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
+            return value.AsBool() ? Qt::Checked : Qt::Unchecked;
     }
     break;
 
@@ -186,7 +188,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         QVariant var;
         if (index.column() != 0)
         {
-            var.setValue<DAVA::VariantType>(property->GetValue());
+            var.setValue<DAVA::VariantType>(value);
         }
         return var;
     }
@@ -196,6 +198,14 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         if (property->GetType() == AbstractProperty::TYPE_HEADER)
         {
             return Themes::GetViewLineAlternateColor();
+        }
+        break;
+
+    case Qt::DecorationRole:
+        if (index.column() == 1 && value.GetType() == VariantType::TYPE_COLOR)
+        {
+            QColor color = ColorToQColor(value.AsColor());
+            return CreateIconFromColor(color);
         }
         break;
 

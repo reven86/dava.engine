@@ -263,7 +263,7 @@ void MainWindow::InitMenu()
     // Pixelization.
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
 
-    connect(actionEditor_Preferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
+    connect(action_settings, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
 }
 
 void MainWindow::SetupViewMenu()

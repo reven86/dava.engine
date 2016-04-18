@@ -107,10 +107,10 @@ private:
 
 public:
     INTROSPECTION(EditorCore,
-                  PROPERTY("isUsingAssetCache", "Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  PROPERTY("assetCacheIp", "Asset Cache IP", GetAssetCacheIp, SetAssetCacheIp, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  PROPERTY("assetCachePort", "Asset Cache Port", GetAssetCachePort, SetAssetCachePort, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  PROPERTY("assetCacheTimeout", "Asset Cache Timeout (ms)", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCacheIp", "Asset cache/Asset Cache IP", GetAssetCacheIp, SetAssetCacheIp, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCachePort", "Asset cache/Asset Cache Port", GetAssetCachePort, SetAssetCachePort, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("assetCacheTimeout", "Asset cache/Asset Cache Timeout (ms)", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
     REGISTER_PREFERENCES(EditorCore)
