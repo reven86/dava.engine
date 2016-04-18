@@ -95,7 +95,6 @@ macro( setup_main_module )
                 string(REPLACE "WIN32" "WINUAP" VALUE_UAP ${VALUE})
                 set( ${VALUE} ${${VALUE_UAP}} )
             endforeach()
-            add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
         endif()
 
         #"FIND LIBRARY"
