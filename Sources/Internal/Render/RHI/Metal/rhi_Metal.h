@@ -47,12 +47,12 @@ void metal_Initialize(const InitParam& param);
 
 namespace VertexBufferMetal
 {
-id<MTLBuffer> GetBuffer(Handle ib);
+id<MTLBuffer> GetBuffer(Handle ib, unsigned* base);
 }
 
 namespace IndexBufferMetal
 {
-id<MTLBuffer> GetBuffer(Handle ib);
+id<MTLBuffer> GetBuffer(Handle ib, unsigned* base);
 MTLIndexType GetType(Handle ib);
 }
 

@@ -35,6 +35,8 @@
 using DAVA::Logger;
 
     #include "_metal.h"
+    #include "mem_RemoteHeap.h"
+    #include "mem_BufferAllocator.h"
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
@@ -56,6 +58,7 @@ public:
     unsigned size;
     void* data;
     id<MTLBuffer> uid;
+    BufferAllocator::Block block;
     MTLIndexType type;
 };
 
@@ -91,66 +94,58 @@ _CheckAllIndexBuffers()
     }
 }
 
+static BufferAllocator _IB_Pool("IB", 2 * 1024 * 1024, 256);
+
 //==============================================================================
 
 static Handle
 metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {
     Handle handle = InvalidHandle;
-    unsigned sz = desc.size;
-    const unsigned min_sz = 64 * 1024;
-    const void* data = desc.initialData;
 
-    if (sz < min_sz)
+    if (desc.usage == USAGE_DYNAMICDRAW)
     {
-        static unsigned temp_sz = 0;
-        static void* temp = nullptr;
+        id<MTLBuffer> uid = (desc.initialData)
+        ?
+        [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault]
+        :
+        [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
 
-        sz = min_sz;
-
-        if (desc.initialData)
+        if (uid)
         {
-            if (temp_sz < sz)
-            {
-                temp_sz = sz;
-                temp = realloc(temp, temp_sz);
-            }
+            handle = IndexBufferMetalPool::Alloc();
+            IndexBufferMetal_t* ib = IndexBufferMetalPool::Get(handle);
+            //DAVA::Logger::Info( "ib-create-dynamic %i  %p sz= %u", RHI_HANDLE_INDEX(handle), [uid contents], desc.size );
 
-            memcpy(temp, desc.initialData, desc.size);
-            data = temp;
+            ib->data = [uid contents];
+            ib->size = desc.size;
+            ib->uid = uid;
+            ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
+
+            [ib->uid setPurgeableState:MTLPurgeableStateNonVolatile];
         }
-    }
-
-    //    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
-    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:data length:sz options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:sz options:MTLResourceOptionCPUCacheModeDefault];
-
-    if (uid)
-    {
-        /*
-if( desc.initialData )
-{
-    DVASSERT(_NonZero( [uid contents], desc.size ));
-}
-else
-{
-    memset( [uid contents], 0xA1, sz );
-}
-*/
-        handle = IndexBufferMetalPool::Alloc();
-        IndexBufferMetal_t* ib = IndexBufferMetalPool::Get(handle);
-        //DAVA::Logger::Info( "ib-create %i  %p sz= %u", RHI_HANDLE_INDEX(handle), [uid contents], desc.size );
-
-        ib->size = desc.size;
-        ib->uid = uid;
-        ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
-
-        [ib->uid setPurgeableState:MTLPurgeableStateNonVolatile];
     }
     else
     {
-        Logger::Error("failed to create IB");
+        BufferAllocator::Block block;
+
+        if (_IB_Pool.alloc(desc.size, &block))
+        {
+            //DAVA::Logger::Info( "ib-create %i  sz= %u", RHI_HANDLE_INDEX(handle), desc.size );
+            //_IB_Pool.dump_stats();
+            handle = IndexBufferMetalPool::Alloc();
+            IndexBufferMetal_t* ib = IndexBufferMetalPool::Get(handle);
+
+            ib->block = block;
+            ib->size = desc.size;
+            ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
+            ib->data = block.ptr;
+            ib->uid = nil;
+
+            if (desc.initialData)
+                memcpy(block.ptr, desc.initialData, desc.size);
+        }
     }
-    //_CheckAllIndexBuffers();
 
     return handle;
 }
@@ -165,10 +160,23 @@ metal_IndexBuffer_Delete(Handle ib)
     if (self)
     {
         //DAVA::Logger::Info( "ib-del %i  %p sz= %u", RHI_HANDLE_INDEX(ib), [self->uid contents], self->size );
-        [self->uid setPurgeableState:MTLPurgeableStateEmpty];
-        [self->uid release];
-        self->uid = nil;
-        self->data = nullptr;
+        if (self->uid)
+        {
+            [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+            [self->uid release];
+            self->uid = nil;
+            self->data = nullptr;
+        }
+        else
+        {
+            _IB_Pool.free(self->block);
+            self->data = nullptr;
+            self->block.ptr = nullptr;
+            self->block.buffer = nil;
+            self->block.base = 0;
+            //_IB_Pool.dump_stats();
+        }
+
         IndexBufferMetalPool::Free(ib);
     }
     //_CheckAllIndexBuffers();
@@ -182,8 +190,8 @@ metal_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
     bool success = false;
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
 
-    if (!self->data)
-        self->data = [self->uid contents];
+    //    if (!self->data)
+    //        self->data = [self->uid contents];
 
     if (offset + size <= self->size)
     {
@@ -192,7 +200,7 @@ metal_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
     }
 
     //DVASSERT(_NonZero( self->data, self->size ));
-    self->data = nullptr;
+    //   self->data = nullptr;
 
     return success;
 }
@@ -204,8 +212,8 @@ metal_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 {
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
 
-    if (!self->data)
-        self->data = [self->uid contents];
+    //    if (!self->data)
+    //        self->data = [self->uid contents];
 
     DVASSERT(self->data);
 
@@ -221,7 +229,7 @@ metal_IndexBuffer_Unmap(Handle ib)
 
     //DVASSERT(_NonZero( self->data, self->size ));
     DVASSERT(self->data);
-    self->data = nullptr;
+    //    self->data = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -243,20 +251,23 @@ void SetupDispatch(Dispatch* dispatch)
 }
 
 id<MTLBuffer>
-GetBuffer(Handle ib)
+GetBuffer(Handle ib, unsigned* base)
 {
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
-    /*
-if( self )
-{
-if( !_NonZero( [self->uid contents], self->size ) )
-{
-DAVA::Logger::Info( "ib-lost %i  sz= %u", RHI_HANDLE_INDEX(ib), self->size );
-DVASSERT(!"kaboom!!!");
-}
-}
-*/
-    return (self) ? self->uid : nil;
+    id<MTLBuffer> uid;
+
+    if (self->uid)
+    {
+        uid = self->uid;
+        *base = 0;
+    }
+    else
+    {
+        uid = self->block.buffer;
+        *base = self->block.base;
+    }
+
+    return uid;
 }
 
 MTLIndexType
