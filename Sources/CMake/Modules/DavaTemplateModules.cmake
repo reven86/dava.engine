@@ -89,6 +89,14 @@ macro( setup_main_module )
         if( ANDROID )
             list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}}  )
         endif()
+        
+        if( WINDOWS_UAP )
+            set( ERASE_FOLDERS_WIN32            ${ERASE_FOLDERS_WINUAP} )
+            set( STATIC_LIBRARIES_WIN32         ${STATIC_LIBRARIES_WINUAP} )  
+            set( STATIC_LIBRARIES_WIN32_RELEASE ${STATIC_LIBRARIES_WINUAP_RELEASE} )  
+            set( STATIC_LIBRARIES_WIN32_DEBUG   ${STATIC_LIBRARIES_WINUAP_DEBUG} )  
+            set( DYNAMIC_LIBRARIES_WIN32        ${DYNAMIC_LIBRARIES_WINUAP} )   
+        endif()
 
         #"FIND LIBRARY"
         foreach( NAME ${FIND_SYSTEM_LIBRARY} ${FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}} )

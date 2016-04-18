@@ -68,7 +68,7 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_a
 
 
 
-if( WIN32 ) 
+if( WIN32 AND NOT WINDOWS_UAP ) 
 
     set( WIN32_RELEASE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/detours.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
@@ -192,8 +192,8 @@ if( WIN32 )
                                      "dxgi.lib" )
 
     if( X64_MODE )
-        set( STATIC_LIBRARIES_WIN32_RELEASE ${WIN64_RELEASE} )
-        set( STATIC_LIBRARIES_WIN32_DEBUG   ${WIN64_DEBUG} )
+        set( DAVA_STATIC_LIBRARIES_WIN32_RELEASE ${WIN64_RELEASE} )
+        set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG   ${WIN64_DEBUG} )
 
         list ( APPEND DAVA_STATIC_LIBRARIES_WIN32
             "$ENV{DXSDK_DIR}/lib/x64/d3dx9.lib"
@@ -203,8 +203,8 @@ if( WIN32 )
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
         )
     else ()
-        set( STATIC_LIBRARIES_WIN32_RELEASE ${WIN32_RELEASE} )
-        set( STATIC_LIBRARIES_WIN32_DEBUG   ${WIN32_DEBUG} )
+        set( DAVA_STATIC_LIBRARIES_WIN32_RELEASE ${WIN32_RELEASE} )
+        set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG   ${WIN32_DEBUG} )
 
         list ( APPEND DAVA_STATIC_LIBRARIES_WIN32
 
@@ -216,8 +216,24 @@ if( WIN32 )
         )
     endif ()
 
-    list ( APPEND STATIC_LIBRARIES_WIN32_RELEASE "msvcrt.lib"  )
-    list ( APPEND STATIC_LIBRARIES_WIN32_DEBUG   "msvcrtd.lib" )
+    list ( APPEND DAVA_STATIC_LIBRARIES_WIN32_RELEASE "msvcrt.lib"  )
+    list ( APPEND DAVA_STATIC_LIBRARIES_WIN32_DEBUG   "msvcrtd.lib" )
+
+endif()
+
+
+if( WIN32 AND WINDOWS_UAP ) 
+
+    set( DAVA_STATIC_LIBRARIES_WINUAP   "d2d1.lib"
+                                        "d3d11.lib"
+                                        "d3dcompiler.lib"
+                                        "dxgi.lib"
+                                        "dxguid.lib"
+                                        "dwrite.lib"
+                                        "iphlpapi.lib" )
+                                        
+    set( DAVA_STATIC_LIBRARIES_WINUAP_RELEASE )
+    set( DAVA_STATIC_LIBRARIES_WINUAP_DEBUG   )
 
 endif()
 
