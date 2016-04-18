@@ -144,7 +144,8 @@ void UIInputSystem::HandleEvent(UIEvent* newEvent)
 
             if (modalControl.Valid())
             {
-                modalControl->SystemInput(eventToHandle);
+                RefPtr<UIControl> control = modalControl;
+                control->SystemInput(eventToHandle);
             }
             else if (!popupContainer->SystemInput(eventToHandle))
             {
@@ -316,9 +317,9 @@ void UIInputSystem::UpdateModalControl()
     if (currentScreen != nullptr)
     {
         UIControl* root = FindNearestToUserModalControl();
-        focusSystem->SetRoot(root);
+        focusSystem->SetRoot(root == nullptr ? currentScreen : root);
         modalControl = root;
-        CancelInputs(<#DAVA::UIControl * control #>, <#bool hierarchical #>)
+        //CancelInputs(<#DAVA::UIControl * control #>, <#bool hierarchical #>)
     }
     else
     {
@@ -349,7 +350,7 @@ UIControl* UIInputSystem::FindNearestToUserModalControlImpl(UIControl* current) 
         }
     }
 
-    if (current->GetComponent<UIModalInputComponent>() != nullptr)
+    if (current->GetComponent<UIModalInputComponent>() != nullptr && current->IsVisible())
     {
         return current;
     }
