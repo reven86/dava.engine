@@ -49,7 +49,7 @@ public:
     ImageFormat GetImageFormat() const override;
     bool CanProcessFile(File* infile) const override;
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
@@ -59,7 +59,7 @@ public:
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
-    static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
+    static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex, bool forceSoftwareConvertation = false);
     static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
 
 private:

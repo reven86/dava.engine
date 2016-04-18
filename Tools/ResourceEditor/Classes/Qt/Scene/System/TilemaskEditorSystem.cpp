@@ -381,7 +381,7 @@ void TilemaskEditorSystem::UpdateToolImage()
     SafeRelease(toolImageTexture);
 
     DAVA::Vector<DAVA::Image*> images;
-    DAVA::ImageSystem::Instance()->Load(toolImagePath, images);
+    DAVA::ImageSystem::Instance()->Load(toolImagePath, images, 0, 0);
     if (images.size())
     {
         DVASSERT(images.size() == 1);

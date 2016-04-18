@@ -132,6 +132,8 @@
 
 #include "SpritesPacker/SpritesPackerModule.h"
 
+#include "Tools/ExportSceneDialog/ExportSceneDialog.h"
+
 QtMainWindow::QtMainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -1364,6 +1366,11 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
 
 void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
 {
+    ExportSceneDialog dlg;
+    dlg.exec();
+
+    return;
+
     SceneEditor2* scene = GetCurrentScene();
     if (scene == nullptr || !SaveTilemask(false))
     {

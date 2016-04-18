@@ -46,8 +46,8 @@ class ImageSystem : public Singleton<ImageSystem>
 public:
     ImageSystem();
 
-    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
-    eErrorCode Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
+    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
+    eErrorCode Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
 
     Image* EnsurePowerOf2Image(Image* image) const;
     void EnsurePowerOf2Images(Vector<Image*>& images) const;

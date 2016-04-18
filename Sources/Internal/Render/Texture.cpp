@@ -434,7 +434,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 continue;
 
             Vector<Image*> faceImage;
-            ImageSystem::Instance()->Load(currentfacePath, faceImage, baseMipMap);
+            ImageSystem::Instance()->Load(currentfacePath, faceImage, baseMipMap, 0);
             if (faceImage.size() == 0)
             {
                 Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
@@ -476,9 +476,12 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     }
     else
     {
-        FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
+        Vector<FilePath> imagePathnames = texDescriptor->CreatePathnamesForGPU(gpu);
+        for (auto& path : imagePathnames)
+        {
+            ImageSystem::Instance()->Load(path, *images, baseMipMap, images->size());
+        }
 
-        ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
         ImageSystem::Instance()->EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {

@@ -26,41 +26,33 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#pragma once
 
-#ifndef __DAVAENGINE_WEB_P_HELPER_H__
-#define __DAVAENGINE_WEB_P_HELPER_H__
+#include "Render/RenderBase.h"
 
-#include "Render/Image/ImageFormatInterface.h"
+#include <QDialog.h>
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
+class FilePathBrowser;
+class QCheckBox;
+class QComboBox;
 
-namespace DAVA
+class ExportSceneDialog : public QDialog
 {
-class LibWebPHelper : public ImageFormatInterface
-{
+    Q_OBJECT
+
 public:
-    LibWebPHelper();
+    explicit ExportSceneDialog(QWidget* parent = 0);
+    ~ExportSceneDialog() override;
 
-    ImageFormat GetImageFormat() const override;
+private:
+    void SetupUI();
+    void InitializeValues();
 
-    bool CanProcessFile(File* file) const override;
+    FilePathBrowser* projectPathBrowser = nullptr;
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
+    DAVA::Array<QCheckBox*, DAVA::eGPUFamily::GPU_FAMILY_COUNT> gpuSelector;
+    QComboBox* qualitySelector = nullptr;
 
-    //only RGBA8888 or RGB888
-    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    //only RGBA8888 or RGB888
-    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    ImageInfo GetImageInfo(File* infile) const override;
+    QCheckBox* optimizeOnExport = nullptr;
+    QCheckBox* useHDtextures = nullptr;
 };
-
-inline ImageFormat LibWebPHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_WEBP;
-}
-};
-
-#endif // __DAVAENGINE_WEB_P_HELPER_H__

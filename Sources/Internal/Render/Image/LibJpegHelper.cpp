@@ -85,7 +85,7 @@ bool LibJpegHelper::CanProcessFile(File* infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
@@ -109,6 +109,7 @@ eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32
     jerr.pub.error_exit = jpegErrorExit;
 
     ScopedPtr<Image> image(new Image());
+    image->mipmapLevel = firstMipmapIndex;
 
     //set error handling block, which will be called in case of fail of jpeg_start_decompress,jpeg_read_scanlines...
     if (setjmp(jerr.setjmp_buffer))

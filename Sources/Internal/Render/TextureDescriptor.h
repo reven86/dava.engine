@@ -51,7 +51,7 @@ class TextureDescriptor final
     };
 
 public:
-    static const int8 CURRENT_VERSION = 12;
+    static const int8 CURRENT_VERSION = 13;
 
     struct TextureDrawSettings : public InspBase
     {
@@ -137,6 +137,11 @@ public:
                       )
     };
 
+    struct GPUSettings
+    {
+        Compression compression;
+    };
+
 public:
     TextureDescriptor();
 
@@ -171,7 +176,6 @@ public:
 
     void GetFacePathnames(Vector<FilePath>& faceNames) const;
     void GenerateFacePathnames(const FilePath& baseName, const Array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
-    static void GenerateFacePathnames(const FilePath& baseName, Vector<FilePath>& faceNames, const String& extension);
 
     static const String& GetDescriptorExtension();
     static const String& GetLightmapTextureExtension();
@@ -185,15 +189,13 @@ public:
     static bool IsSupportedSourceFormat(ImageFormat imageFormat);
     static bool IsSupportedCompressedFormat(ImageFormat imageFormat);
 
-    const String& GetSourceTextureExtension() const;
     const String& GetFaceExtension(uint32 face) const;
 
     static FilePath GetDescriptorPathname(const FilePath& texturePathname);
 
-    FilePath CreateCompressedTexturePathname(eGPUFamily forGPU, ImageFormat imageFormat) const;
-    FilePath CreatePathnameForGPU(const eGPUFamily forGPU) const;
+    Vector<FilePath> CreatePathnamesForGPU(const eGPUFamily forGPU) const;
+
     PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
-    ImageFormat GetImageFormatForGPU(const eGPUFamily forGPU) const;
 
     bool Reload();
 
@@ -210,6 +212,7 @@ protected:
 
     void LoadVersion11(File* file);
     void LoadVersion12(File* file);
+    void LoadVersion13(File* file);
 
     uint32 ReadSourceCRC() const;
     uint32 GetConvertedCRC(eGPUFamily forGPU) const;
@@ -225,6 +228,7 @@ public:
     FastName qualityGroup;
     TextureDrawSettings drawSettings;
     TextureDataSettings dataSettings;
+
     Compression compression[GPU_FAMILY_COUNT];
 
     static Array<ImageFormat, 5> sourceTextureTypes;

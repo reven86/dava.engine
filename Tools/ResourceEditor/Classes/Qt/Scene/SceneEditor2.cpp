@@ -296,7 +296,7 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
         SceneExporter exporter;
         exporter.SetFolders(dataFolder, dataSourceFolder);
         exporter.SetCompressionParams(newGPU, qualityValue);
-        exporter.EnableOptimizations(newGPU != DAVA::GPU_ORIGIN);
+        exporter.EnableOptimizations(newGPU != DAVA::GPU_ORIGIN, true);
 
         const DAVA::FilePath& scenePathname = GetScenePath();
         DAVA::FilePath newScenePathname = dataFolder + scenePathname.GetRelativePathname(dataSourceFolder);

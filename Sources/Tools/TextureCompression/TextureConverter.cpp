@@ -109,6 +109,9 @@ FilePath TextureConverter::ConvertTexture(const TextureDescriptor& descriptor, e
 
 FilePath TextureConverter::GetOutputPath(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreatePathnameForGPU(gpuFamily);
+    Vector<FilePath> pathes = descriptor.CreatePathnamesForGPU(gpuFamily);
+    if (pathes.empty())
+        return FilePath();
+    return pathes[0];
 }
 };

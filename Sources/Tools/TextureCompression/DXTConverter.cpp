@@ -43,7 +43,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
     FilePath fileToConvert = descriptor.GetSourceTexturePathname();
 
     Vector<Image*> inputImages;
-    auto loadResult = ImageSystem::Instance()->Load(fileToConvert, inputImages, 0);
+    auto loadResult = ImageSystem::Instance()->Load(fileToConvert, inputImages, 0, 0);
 
     if (loadResult != eErrorCode::SUCCESS || inputImages.empty())
     {
@@ -152,7 +152,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
     for (uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
     {
         if (faceNames[i].IsEmpty() ||
-            ImageSystem::Instance()->Load(faceNames[i], imageSets[i]) != DAVA::eErrorCode::SUCCESS ||
+            ImageSystem::Instance()->Load(faceNames[i], imageSets[i], 0, 0) != DAVA::eErrorCode::SUCCESS ||
             imageSets[i].empty())
         {
             Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't load %s", fileToConvert.GetAbsolutePathname().c_str());
@@ -274,6 +274,12 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
 
 FilePath DXTConverter::GetDXTOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreatePathnameForGPU(gpuFamily);
+    Vector<FilePath> pathes = descriptor.CreatePathnamesForGPU(gpuFamily);
+    if (pathes.empty())
+    {
+        return FilePath();
+    }
+
+    return pathes[0];
 }
 };

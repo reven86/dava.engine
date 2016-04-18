@@ -49,7 +49,7 @@ bool LibPSDHelper::CanProcessFile(File* infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const
 {
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     auto fileName = infile->GetFilename().GetAbsolutePathname();
@@ -87,6 +87,7 @@ eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 
         Vector<uint8> emptyData(psd->width * psd->height * PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::PixelFormat::FORMAT_RGBA8888) / 8, 0);
         Image* resultImage = Image::CreateFromData(psd->width, psd->height, DAVA::PixelFormat::FORMAT_RGBA8888, emptyData.data());
         resultImage->InsertImage(layerImage, layer.left, layer.top);
+        resultImage->mipmapLevel = firstMipmapIndex;
         imageSet.push_back(resultImage);
     }
 

@@ -137,9 +137,9 @@ bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
     return isPvrFile;
 }
 
-eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap) const
+eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const
 {
-    if (LoadImages(infile, imageSet, fromMipmap))
+    if (LoadImages(infile, imageSet, fromMipmap, firstMipmapIndex))
     {
         return eErrorCode::SUCCESS;
     }
@@ -383,7 +383,7 @@ PVRFile* LibPVRHelper::ReadFile(File* file, bool readMetaData /*= false*/, bool 
     return pvrFile;
 }
 
-bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, int32 fromMipMap)
+bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, int32 fromMipMap, int32 firstMipmapIndex)
 {
     PVRFile* pvrFile = ReadFile(infile, true, true);
     SCOPE_EXIT
@@ -412,7 +412,7 @@ bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, int32 from
     bool loadAllPvrData = true;
     for (uint32 i = fromMipMap; i < mipmapLevelCount; ++i)
     {
-        loadAllPvrData &= LoadMipMapLevel(pvrFile, i, (i - fromMipMap), imageSet);
+        loadAllPvrData &= LoadMipMapLevel(pvrFile, i, (i - fromMipMap) + firstMipmapIndex, imageSet);
     }
 
     return loadAllPvrData;

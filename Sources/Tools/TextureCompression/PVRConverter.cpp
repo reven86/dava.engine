@@ -153,7 +153,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
     FilePath filePath = descriptor.GetSourceTexturePathname();
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(filePath, images);
+    ImageSystem::Instance()->Load(filePath, images, 0, 0);
 
     if (!images.size())
     {
@@ -320,7 +320,10 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const
 
 FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreatePathnameForGPU(gpuFamily);
+    Vector<FilePath> pathes = descriptor.CreatePathnamesForGPU(gpuFamily);
+    if (pathes.empty())
+        return FilePath();
+    return pathes[0];
 }
 
 void PVRConverter::SetPVRTexTool(const FilePath& textToolPathname)

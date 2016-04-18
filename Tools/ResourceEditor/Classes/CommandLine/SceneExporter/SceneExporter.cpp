@@ -273,9 +273,10 @@ void SceneExporter::SetFolders(const FilePath& dataFolder_, const FilePath& data
     dataSourceFolder = dataSourceFolder_;
 }
 
-void SceneExporter::EnableOptimizations(bool enable)
+void SceneExporter::EnableOptimizations(bool optimizeOnExport_, bool useHDTextures_)
 {
-    optimizeOnExport = enable;
+    optimizeOnExport = optimizeOnExport_;
+    useHDTextures = useHDTextures_;
 }
 
 void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_, String machineName, String runDate, String comment)
@@ -384,8 +385,6 @@ DAVA::FilePath CompressTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverte
 {
     DVASSERT(GPUFamilyDescriptor::IsGPUForDevice(gpu));
 
-    DAVA::FilePath compressedTexureName = descriptor.CreatePathnameForGPU(gpu);
-
     const bool needToConvert = !descriptor.IsCompressedTextureActual(gpu);
     if (needToConvert)
     {
@@ -393,7 +392,13 @@ DAVA::FilePath CompressTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverte
         return TextureConverter::ConvertTexture(descriptor, gpu, true, quality);
     }
 
-    return compressedTexureName;
+    DAVA::Vector<DAVA::FilePath> compressedTexureNames = descriptor.CreatePathnamesForGPU(gpu);
+    if (compressedTexureNames.empty())
+    {
+        return DAVA::FilePath();
+    }
+
+    return compressedTexureNames[0];
 }
 }
 

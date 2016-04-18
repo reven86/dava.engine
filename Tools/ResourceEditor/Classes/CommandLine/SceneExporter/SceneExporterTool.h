@@ -78,6 +78,7 @@ private:
     bool optimizeOnExport = true;
     bool exportForAllGPUs = false;
     bool useAssetCache = false;
+    bool useHDTextures = false;
 };
 
 

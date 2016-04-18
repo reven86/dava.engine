@@ -152,6 +152,7 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
 
     options.AddOption(OptionName::AllGPUs, VariantType(false), "Export for all gpus at same time.");
+    options.AddOption(OptionName::HDTextures, VariantType(false), "Use 0-mip level as texture.hd.ext");
 
     options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
     options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::LOCALHOST), "ip of adress of Asset Cache Server");
@@ -187,6 +188,7 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
     optimizeOnExport = !saveNormals;
 
     exportForAllGPUs = options.GetOption(OptionName::AllGPUs).AsBool();
+    useHDTextures = options.GetOption(OptionName::HDTextures).AsBool();
 
     useAssetCache = options.GetOption(OptionName::UseAssetCache).AsBool();
     if (useAssetCache)
@@ -256,7 +258,7 @@ void SceneExporterTool::ProcessInternal()
         exporter.SetCompressionParams(requestedGPU, quality);
     }
 
-    exporter.EnableOptimizations(optimizeOnExport);
+    exporter.EnableOptimizations(optimizeOnExport, useHDTextures);
 
     if (useAssetCache)
     {

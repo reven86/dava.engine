@@ -76,7 +76,7 @@ public:
 
     void SetFolders(const DAVA::FilePath& dataFolder, const DAVA::FilePath& dataSourceFolder);
     void SetCompressionParams(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality);
-    void EnableOptimizations(bool enable);
+    void EnableOptimizations(bool optimizeOnExport, bool useHDTextures);
 
     bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
     void ExportObjects(const ExportedObjectCollection& exportedObjects);
@@ -105,6 +105,7 @@ private:
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
 
     bool optimizeOnExport = false;
+    bool useHDTextures = false;
     bool exportForAllGPUs = false;
 };
 
