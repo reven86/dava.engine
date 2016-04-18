@@ -124,7 +124,7 @@
     if (focusedCtrl != nullptr && focusedCtrl == focusedAfterCtrl)
     {
         DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focusedCtrl);
-        if (tf)
+        if (tf && tf->IsEditing())
         {
             if (theEvent.type == NSKeyDown || theEvent.type == NSKeyUp)
             {
