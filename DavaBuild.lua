@@ -3,8 +3,6 @@ dava = {}
 dava.im = { }
 dava.initialized = false;
 
-require("dava_debug")
-
 -- 
 -- this can be used in user rules
 --
@@ -22,10 +20,40 @@ dava.config.packlist_output_dir = "Output/packlist"
 dava.config.packlist_ext = "list"
 dava.config.packlist_default = "__else__"
 
+--
+-- return directory path from file @path,
+-- that is divided with separatot @sep
+--
+function dava_get_dir(path, sep)
+    sep = sep or'/'
+    return path:match("(.*"..sep..")")
+end
+
+--
+-- prints given table @tbl
+--
+function dava_dump_table(tbl, indent)
+    if not indent then 
+        indent = 0 
+    end
+
+    for key, val in pairs(tbl) do
+        formatting = string.rep("  ", indent) .. key .. ": "
+        if type(val) == "table" then
+            print(formatting)
+            dava_dump_table(val, indent+1)
+        elseif type(val) == 'boolean' then
+            print(formatting .. tostring(val))
+        else
+            print(formatting .. tostring(val))
+        end
+    end
+end
+
 -- 
 -- this function will be automatically called
 --
-dava.init = function()
+function dava_init()
     if dava.initialized ~= true then
         dava.im.output_dir = dava.project_dir .. "/" .. dava.config.output_dir
         dava.im.packs_db_output = dava.im.output_dir .. "/" .. dava.config.output_db
@@ -56,14 +84,14 @@ dava.init = function()
         -- commands
         dava.im.cmd_cp = "cp"
         dava.im.cmd_cat = "cat"
-        dava.im.cmd_fwdep = fwpath .. "dep"
-        dava.im.cmd_fwzip = fwpath .. "../7za"
-        dava.im.cmd_fwsql = fwpath .. "../sqlite3"
+        dava.im.cmd_fwdep = fwpath .. "Tools/Bin/dep"
+        dava.im.cmd_fwzip = fwpath .. "Tools/Bin/7za"
+        dava.im.cmd_fwsql = fwpath .. "Tools/Bin/sqlite3"
 
         -- edit commands for win32
         if dava.platform == "win32" then
             dava.im.cmd_cat = "type 2> nul"
-            dava.im.cmd_fwzip = fwpath .. "../7z"
+            dava.im.cmd_fwzip = fwpath .. "Tools/Bin/7z"
 
             -- make slashes in commands win compatible
             for k,v in pairs(dava.im) do
@@ -87,35 +115,63 @@ end
 --   * function witch takes 2 args: directory and file and sould return true
 --     if that pair is matching specified pack name
 --
-dava.add_pack_rule = function(pack_name, pack_rules)
-    dava.init()
+function dava_add_pack_rule(pack_name, pack_rules)
+    dava_init()
 
-	assert(type(pack_name) == "string", "Pack name should be a string")
-	assert(type(pack_rules) == "table", "Pack rules should be table")
-	assert(dava.im.packs[pack_name] == nil, "Pack '" .. pack_name .. "' is already defined")
+	if type(pack_name) ~= "string" then
+        error "Pack name should be a string"
+    end
+
+	if type(pack_rules) ~= "table" then
+        error "Pack rules should be table"
+    end
+
+    if dava.im.packs[pack_name] ~= nil then
+        print(pack_name)
+        error "Pack is already defined"
+    end
 
 	for k, v in pairs(pack_rules) do
-        if type(k) ~= "number" then
-            assert(type(k) == "string" and (k == "depends" or k == "exclusive"), "Pack dependencies should be declared with 'depends' key.")
-            if k == "depends" then
-                assert(type(v) == "table", "Pack dependencies should be declared as array")
-            end
-        elseif type(v) ~= "string" then
+
+        if type(k) == "number" then
             if type(v) == "table" then
-                assert(#v >= 2 and type(v[1]) == "string" and type(v[2]) == "string",
-                    "Pack rule #" .. k .. " table should be defined as { 'dir pattern', 'file pattern', exclusive = false }")
+                if #v < 2 or type(v[1]) ~= "string" or type(v[2]) ~= "string" then
+                    print("rule #" .. k)
+                    error "Pack rule # table should be defined as { 'dir pattern', 'file pattern', exclusive = false }"
+                end
             elseif type(v) ~= "function" then
-                assert(false, "Pack rule #" .. k .. " can be either string, table or function")
+                print("rule #" .. k)
+                error "Pack rule can be either string, table or function"
             end
+        elseif type(k) == "string" then
+            if k ~= "depends" and k ~= "exclusive" then
+                error "Pack dependencies should be declared with 'depends' or 'exclusive' key."
+            end
+        else
+            print(v)
+            error "Unknown pack rule"
         end
+
 	end
 
 	dava.im.packs[#dava.im.packs + 1] = { name = pack_name, rules = pack_rules }
 end
 
 
-dava.create_lists = function()
-    dava.init()
+function dava_add_packs(packs)
+    dava_init()
+
+    if type(packs) ~= "table" then
+        error "Packs should be defined in table"
+    end
+
+    for k, v in pairs(packs) do
+        dava_add_pack_rule(k, v)
+    end
+end
+
+function dava_create_lists()
+    dava_init()
 
     local cur_dir = dava.current_dir
 	local files = tup.glob("*")
@@ -198,7 +254,7 @@ dava.create_lists = function()
 
                 -- this should never happend
                 else
-                    assert(false, "this should never happend, type(pack_rule) = " .. type(pack_rule))
+                    error "Unknown rule type"
                 end
 
                 if rule_found == true then
@@ -209,11 +265,10 @@ dava.create_lists = function()
                 end
             end
 
-            assert(#rules_found < 2, "File " .. 
-                file .. " is matching more than one rule: " ..
-                tostring(rules_found[1]) .. " and " ..
-                tostring(rules_found[2]) .. " while processing pack " ..
-                pack.name)
+            if #rules_found >= 2 then
+                print("File: " .. file .. ", pack: " .. pack.name .. ", rule1: " .. tostring(rules_found[1]) .. ", rule2: " .. tostring(rules_found[2]))
+                error "File is matching more than one rule"
+            end
 
             if #rules_found > 0 then
                 packs_found[#packs_found + 1] = pack.name
@@ -223,10 +278,10 @@ dava.create_lists = function()
             end
         end
 
-        assert(#packs_found < 2, "File " ..
-            file .. " is matching more than one pack: " .. 
-            tostring(packs_found[1]) .. " and " ..
-            tostring(packs_found[2]))
+        if #packs_found >= 2 then
+            print("File: " .. file .. ", pack1: " .. tostring(packs_found[1]) .. ", pack2: " .. tostring(packs_found[2]))
+            error "File is matching more than one pack"
+        end
 
         if #packs_found == 0 then
             add_to_affected_packs(dava.im.packlist_default, file)
@@ -260,8 +315,8 @@ dava.create_lists = function()
 	end
 end
 
-dava.create_packs = function()
-    dava.init()
+function dava_create_packs()
+    dava_init()
 
     local packs_merged_sql_input = {}
     local packs_merged_sql_output = dava.project_dir .. "/" .. dava.config.packlist_output_dir .. "/merged/merged.sql"
