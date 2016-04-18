@@ -234,8 +234,8 @@ if( WIN32 AND WINDOWS_UAP )
                                         "iphlpapi.lib" 
                                         ${LIST_SHARED_LIBRARIES} )
                                         
-    set( DAVA_STATIC_LIBRARIES_WINUAP_RELEASE )
-    set( DAVA_STATIC_LIBRARIES_WINUAP_DEBUG   )
+    set( DAVA_STATIC_LIBRARIES_WINUAP_RELEASE ${LIST_SHARED_LIBRARIES_RELEASE} )
+    set( DAVA_STATIC_LIBRARIES_WINUAP_DEBUG   ${LIST_SHARED_LIBRARIES_DEBUG} )
 
 endif()
 
