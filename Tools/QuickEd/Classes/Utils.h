@@ -27,18 +27,23 @@
 =====================================================================================*/
 
 
-#ifndef __UIEditor__StringUtils__
-#define __UIEditor__StringUtils__
+#pragma once
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
+
 #include <QString>
+#include <QPixmap>
+#include <QColor>
 
-namespace DAVA
-{
 // Different string utilities.
 // Truncate the file extension.
 QString TruncateFileExtension(const QString& fileName, const QString& extension);
-bool FindAndReplace(String& str, const String& from, const String& to);
-};
+bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::String& to);
 
-#endif /* defined(__UIEditor__Utils__) */
+QPixmap CreateIconFromColor(const QColor& color);
+
+namespace TextureDescriptorUtils
+{
+bool CreateDescriptorIfNeed(const DAVA::FilePath& pngPathname);
+};

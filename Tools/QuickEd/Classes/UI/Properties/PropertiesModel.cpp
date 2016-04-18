@@ -29,6 +29,8 @@
 
 #include "PropertiesModel.h"
 
+#include "Utils.h"
+
 #include <QPoint>
 #include <QColor>
 #include <QFont>
@@ -54,7 +56,6 @@
 #include "QtTools/Utils/Themes/Themes.h"
 
 #include <chrono>
-#include "ColorPropertyDelegate.h"
 
 using namespace std::chrono;
 using namespace DAVA;

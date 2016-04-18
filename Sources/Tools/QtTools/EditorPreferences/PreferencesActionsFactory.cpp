@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Functional/Signal.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
 #include "QtTools/EditorPreferences/PreferencesStorage.h"
+
 #include <QAction>
 #include <QInputDialog>
 #include <QApplication>

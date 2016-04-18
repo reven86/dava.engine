@@ -34,8 +34,6 @@
 
 class QToolButton;
 
-extern QPixmap CreateIconFromColor(const QColor& color);
-
 class ColorPropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
