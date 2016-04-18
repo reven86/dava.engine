@@ -19,5 +19,6 @@ set( ERASE_FILES_IOS  )
 set( ERASE_FILES_MACOS AppDelegate.h AppDelegate.mm HelperAppDelegate.h HelperAppDelegate.mm MainWindowController.h MainWindowController.mm OpenGLView.h OpenGLView.mm CoreMacOSPlatform.h )
 
 set( ERASE_FILES_WIN32 CorePlatformWin32.cpp CorePlatformWin32.h )
+set( ERASE_FILES_WINUAP ${ERASE_FILES_WIN32} )
 
 setup_main_module()

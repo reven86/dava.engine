@@ -103,8 +103,8 @@ if( DAVA_DISABLE_AUTOTESTS  )
 endif()
 
 if ( STEAM_SDK_FOUND )
-    include_directories( ${STEAM_SDK_HEADERS} )
-    list( APPEND DEFINITIONS -D__DAVAENGINE_STEAM__ )
+    set( INCLUDES ${INCLUDES} ${STEAM_SDK_HEADERS} )
+    set( DEFINITIONS ${DEFINITIONS} -D__DAVAENGINE_STEAM__ )
 endif ()
 
 setup_main_module()

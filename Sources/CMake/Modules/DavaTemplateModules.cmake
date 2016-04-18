@@ -137,11 +137,6 @@ macro( setup_main_module )
 
             set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 
-            load_property( PROPERTY_LIST   
-                    DEFINITIONS
-                    DEFINITIONS_${DAVA_PLATFORM_CURENT}
-                )
-
         endif()
 
         #"DEFINE SOURCE"
@@ -170,6 +165,8 @@ macro( setup_main_module )
                 )
 
         load_property( PROPERTY_LIST 
+                DEFINITIONS
+                DEFINITIONS_${DAVA_PLATFORM_CURENT}
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
