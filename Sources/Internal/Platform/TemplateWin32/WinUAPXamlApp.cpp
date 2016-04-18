@@ -50,6 +50,8 @@
 
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
+#include "WinApiUAP.h"
+#include "WinSystemTimer.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -101,6 +103,11 @@ WinUAPXamlApp::WinUAPXamlApp()
     }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
+
+    if (!isPhoneApiDetected)
+    {
+        WinApiUAP::Initialize();
+    }
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
@@ -133,11 +140,6 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 {
     // should be started on UI thread
-    if (isPhoneApiDetected)
-    {
-        return false;
-    }
-
     if (mouseCaptureMode != newMode)
     {
         // Setup new capture mode
@@ -167,11 +169,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 {
     // should be started on UI thread
-    if (isPhoneApiDetected)
-    {
-        return isMouseCursorShown == isVisible;
-    }
-
     if (isVisible != isMouseCursorShown)
     {
         if (isVisible)
@@ -395,10 +392,15 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
+
+            //We need to activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
+            EnableHighResolutionTimer(true);
             break;
         case CoreWindowActivationState::Deactivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            EnableHighResolutionTimer(false);
             break;
         default:
             break;

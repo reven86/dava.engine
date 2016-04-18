@@ -48,6 +48,16 @@ enum eBlending
     BLENDING_STRONG_MULTIPLICATIVE
 };
 
+enum eGradientBlendMode
+{
+    GRADIENT_MULTIPLY = 0,
+    GRADIENT_BLEND,
+    GRADIENT_ADD,
+    GRADIENT_SCREEN,
+    GRADIENT_OVERLAY,
+    GRADIENT_BLEND_MODE_COUNT
+};
+
 enum ImageQuality : uint8
 {
     MIN_IMAGE_QUALITY = 0,

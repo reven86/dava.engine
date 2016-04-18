@@ -226,6 +226,8 @@ enum MoviePlayerHelperPlaybackState
 - (void)setRect:(const DAVA::Rect&)rect
 {
     videoRect = rect;
+    videoRect.dx = std::max(0.0f, videoRect.dx);
+    videoRect.dy = std::max(0.0f, videoRect.dy);
     if (playerState == eStateInitializedOK)
     {
         [self applyVideoRect];

@@ -39,9 +39,9 @@ LandscapeEditorShortcutManager::~LandscapeEditorShortcutManager()
 {
 }
 
-QShortcut* LandscapeEditorShortcutManager::GetShortcutByName(const String& name)
+QShortcut* LandscapeEditorShortcutManager::GetShortcutByName(const DAVA::String& name)
 {
-    Map<String, QShortcut*>::iterator it = shortcutsMap.find(name);
+    DAVA::Map<DAVA::String, QShortcut*>::iterator it = shortcutsMap.find(name);
     if (it != shortcutsMap.end())
     {
         return it->second;
@@ -50,8 +50,8 @@ QShortcut* LandscapeEditorShortcutManager::GetShortcutByName(const String& name)
     return NULL;
 }
 
-QShortcut* LandscapeEditorShortcutManager::CreateOrUpdateShortcut(const String& name, QKeySequence keySequence,
-                                                                  bool autoRepeat, const String& description)
+QShortcut* LandscapeEditorShortcutManager::CreateOrUpdateShortcut(const DAVA::String& name, QKeySequence keySequence,
+                                                                  bool autoRepeat, const DAVA::String& description)
 {
     QShortcut* shortcut = GetShortcutByName(name);
     if (shortcut == NULL)
