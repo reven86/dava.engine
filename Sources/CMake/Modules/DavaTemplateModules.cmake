@@ -244,6 +244,10 @@ macro( setup_main_module )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
 
+            if ( WINDOWS_UAP )
+                set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
+            endif()
+
         endif()
     endif()
 
