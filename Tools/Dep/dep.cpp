@@ -1,10 +1,8 @@
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 #include <string>
 #include <set>
 #include <vector>
-#include <chrono>
 
 static const uint32_t crc32_tab[256] =
 {
