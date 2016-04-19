@@ -15,5 +15,6 @@ set( ERASE_FILES_NOT_MACOS       UIScreenManagerDefault.h
                                  UIScreenManagerDefault.cpp  )
 
 set( ERASE_FILES_NOT_WIN32       ${ERASE_FILES_NOT_MACOS} )
+set( ERASE_FILES_NOT_WINUAP      ${ERASE_FILES_NOT_MACOS} )
 
 setup_main_module()
