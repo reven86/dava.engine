@@ -116,7 +116,7 @@ private:
         float32 radius;
     };
 
-    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect);
+    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y, AABBox3* parentBbox, const Rect2i& updateRect);
     void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0);
 
     const PatchQuadInfo& GetPatchQuadInfo(uint32 level, uint32 x, uint32 y) const;

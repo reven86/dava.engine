@@ -66,10 +66,10 @@ void LandscapeSubdivision::PrepareSubdivision(Camera* camera, const Matrix4* wor
 
 void LandscapeSubdivision::UpdatePatchInfo(const Rect2i& heighmapRect)
 {
-    UpdatePatchInfo(0, 0, 0, heighmapRect);
+    UpdatePatchInfo(0, 0, 0, nullptr, heighmapRect);
 }
 
-void LandscapeSubdivision::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, const Rect2i& updateRect)
+void LandscapeSubdivision::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, AABBox3* parentBbox, const Rect2i& updateRect)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -164,10 +164,13 @@ void LandscapeSubdivision::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, con
     uint32 x2 = x << 1;
     uint32 y2 = y << 1;
 
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0, &patch->bbox, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0, &patch->bbox, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1, &patch->bbox, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1, &patch->bbox, updateRect);
+
+    if (parentBbox)
+        parentBbox->AddAABBox(patch->bbox);
 }
 
 void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0)
@@ -314,6 +317,6 @@ void LandscapeSubdivision::BuildSubdivision(Heightmap* _heightmap, const AABBox3
     subdivPatchArray.resize(subdivPatchCount);
     patchQuadArray.resize(subdivPatchCount);
 
-    UpdatePatchInfo(0, 0, 0, Rect2i(0, 0, -1, -1));
+    UpdatePatchInfo(0, 0, 0, nullptr, Rect2i(0, 0, -1, -1));
 }
 };
