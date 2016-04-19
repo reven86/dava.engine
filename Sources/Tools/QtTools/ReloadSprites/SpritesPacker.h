@@ -34,13 +34,14 @@
 #include "TextureCompression/TextureConverter.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include <QObject>
+#include <QDir>
 #include <atomic>
 
 namespace DAVA
 {
 class ResourcePacker2D;
+class AssetCacheClient;
 }
-class QDir;
 
 class SpritesPacker : public QObject
 {
@@ -49,10 +50,8 @@ class SpritesPacker : public QObject
 
 public:
     SpritesPacker(QObject* parent = nullptr);
-    ~SpritesPacker();
 
-    void SetCacheTool(const DAVA::String& ip, const DAVA::String& port, const DAVA::String& timeout);
-    void ClearCacheTool();
+    void SetCacheClient(DAVA::AssetCacheClient* cacheClient, const DAVA::String& comment);
 
     void AddTask(const QDir& inputDir, const QDir& outputDir);
     void ClearTasks();

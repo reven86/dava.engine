@@ -113,7 +113,7 @@ def get_project_type(dst_platform, is_console):
     if "android" == dst_platform:
         current_platform = platform.system()
 
-        if not is_console:
+        if not g_is_console:
             project_string += "Eclipse CDT4 - "
 
         if "MinGW" == current_platform:
@@ -179,14 +179,15 @@ def main():
     else:
         destination_platform = options.platform_name.lower()
 
+    if False == parse_additional_params(options.additional_params):
+        parser.print_help()
+        exit()
+
     project_type = get_project_type(destination_platform, g_is_console)
     if project_type == "":
         print "Unknown project type. Seems get_project_type() works wrong."
         exit()
 
-    if False == parse_additional_params(options.additional_params):
-        parser.print_help()
-        exit()
 
     toolchain, project_type = get_toolchain(destination_platform, project_type)
 

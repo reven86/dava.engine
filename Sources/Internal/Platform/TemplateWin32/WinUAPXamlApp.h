@@ -45,13 +45,14 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
+#include "Platform/DeviceInfo.h"
+
 namespace DAVA
 {
 
 class Thread;
 class CorePlatformWinUAP;
 class DispatcherWinUAP;
-class DeferredScreenMetricEvents;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -117,8 +118,10 @@ private:
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
 
-    // Swap chain panel state change handlers
-    void ScreenMetricsUpdated(float32 widht, float32 height, float32 scaleX, float32 scaleY);
+    // Size and scale changing handlers
+    void OnCoreWindowSizeChanged(::Windows::UI::Core::CoreWindow^ coreWindow, ::Windows::UI::Core::WindowSizeChangedEventArgs^ arg);
+    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs^ arg);
+    void OnSwapChainPanelCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel^ panel, Platform::Object^ obj);
 
     // Mouse and touch handlers
     void OnSwapChainPanelPointerPressed(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
@@ -140,6 +143,7 @@ private:
     void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
+    DeviceInfo::ScreenInfo ObtainScreenInfo();
     void SetupEventHandlers();
     void CreateBaseXamlUI();
 
@@ -167,6 +171,9 @@ private:
     Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
+
+    float32 minWindowWidth = 0.0f;
+    float32 minWindowHeight = 0.0f;
 
     Thread* mainLoopThread = nullptr;
 
@@ -209,7 +216,7 @@ private:
     void SetMouseButtonState(UIEvent::MouseButton button, bool value);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-    std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
+
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
