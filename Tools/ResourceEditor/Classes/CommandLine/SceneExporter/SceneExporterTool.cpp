@@ -28,19 +28,115 @@
 
 #include "CommandLine/SceneExporter/SceneExporterTool.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
-
-#include "Project/ProjectManager.h"
-#include "Utils/StringUtils.h"
-
 #include "CommandLine/OptionName.h"
 
+#include "FileSystem/File.h"
+#include "FileSystem/FileList.h"
+#include "Platform/DateTime.h"
+#include "Platform/DeviceInfo.h"
+#include "Render/GPUFamilyDescriptor.h"
+#include "Render/Highlevel/Heightmap.h"
+
 using namespace DAVA;
+
+namespace SceneExporterToolInternal
+{
+void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const FilePath& inFolder, const SceneExporter::eExportedObjectType objectType, SceneExporter::ExportedObjectCollection& exportedObjects)
+{
+    DVASSERT(folderPathname.IsDirectoryPathname())
+
+    ScopedPtr<FileList> fileList(new FileList(folderPathname));
+    for (int32 i = 0, count = fileList->GetCount(); i < count; ++i)
+    {
+        const FilePath& pathname = fileList->GetPathname(i);
+        if (fileList->IsDirectory(i))
+        {
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                CollectObjectsFromFolder(pathname, inFolder, objectType, exportedObjects);
+            }
+        }
+        else if ((SceneExporter::OBJECT_SCENE == objectType) && (pathname.IsEqualToExtension(".sc2")))
+        {
+            String::size_type exportedPos = pathname.GetAbsolutePathname().find(".exported.sc2");
+            if (exportedPos != String::npos)
+            {
+                Logger::Warning("[SceneExporterTool] Found temporary file: %s\nPlease delete it manualy", pathname.GetAbsolutePathname().c_str());
+                continue;
+            }
+
+            exportedObjects.emplace_back(SceneExporter::OBJECT_SCENE, pathname.GetRelativePathname(inFolder));
+        }
+        else if ((SceneExporter::OBJECT_TEXTURE == objectType) && (pathname.IsEqualToExtension(".tex")))
+        {
+            exportedObjects.emplace_back(SceneExporter::OBJECT_TEXTURE, pathname.GetRelativePathname(inFolder));
+        }
+    }
+}
+
+SceneExporter::eExportedObjectType GetObjectType(const FilePath& pathname)
+{
+    static const Vector<std::pair<SceneExporter::eExportedObjectType, String>> objectDefinition =
+    {
+      { SceneExporter::OBJECT_TEXTURE, ".tex" },
+      { SceneExporter::OBJECT_SCENE, ".sc2" },
+      { SceneExporter::OBJECT_HEIGHTMAP, Heightmap::FileExtension() },
+    };
+
+    for (const auto& def : objectDefinition)
+    {
+        if (pathname.IsEqualToExtension(def.second))
+        {
+            return def.first;
+        }
+    }
+
+    return SceneExporter::OBJECT_NONE;
+}
+
+bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inFolder, SceneExporter::ExportedObjectCollection& exportedObjects)
+{
+    ScopedPtr<File> fileWithLinks(File::Create(fileListPath, File::OPEN | File::READ));
+    if (!fileWithLinks)
+    {
+        Logger::Error("[SceneExporterTool] cannot open file with links %s", fileListPath.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    do
+    {
+        String link = fileWithLinks->ReadLine();
+        if (link.empty())
+        {
+            Logger::Warning("[SceneExporterTool] found empty string in file %s", fileListPath.GetAbsolutePathname().c_str());
+            break;
+        }
+
+        FilePath exportedPathname = inFolder + link;
+        if (exportedPathname.IsDirectoryPathname())
+        {
+            CollectObjectsFromFolder(exportedPathname, inFolder, SceneExporter::OBJECT_SCENE, exportedObjects);
+        }
+        else
+        {
+            const SceneExporter::eExportedObjectType objType = GetObjectType(exportedPathname);
+            if (objType != SceneExporter::OBJECT_NONE)
+            {
+                exportedObjects.emplace_back(objType, std::move(link));
+            }
+        }
+
+    } while (!fileWithLinks->IsEof());
+
+    return true;
+}
+}
 
 SceneExporterTool::SceneExporterTool()
     : CommandLineTool("-sceneexporter")
 {
-    options.AddOption(OptionName::Scene, VariantType(false), "Target object is scene, so we need to export *.sc2 files");
-    options.AddOption(OptionName::Texture, VariantType(false), "Target object is texture, so we need to export *.tex files");
+    options.AddOption(OptionName::Scene, VariantType(false), "Target object is scene, so we need to export *.sc2 files from folder");
+    options.AddOption(OptionName::Texture, VariantType(false), "Target object is texture, so we need to export *.tex files from folder");
 
     options.AddOption(OptionName::InDir, VariantType(String("")), "Path for Project/DataSource/3d/ folder");
     options.AddOption(OptionName::OutDir, VariantType(String("")), "Path for Project/Data/3d/ folder");
@@ -54,6 +150,11 @@ SceneExporterTool::SceneExporterTool()
 
     options.AddOption(OptionName::SaveNormals, VariantType(false), "Disable removing of normals from vertexes");
     options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
+
+    options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
+    options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::LOCALHOST), "ip of adress of Asset Cache Server");
+    options.AddOption(OptionName::AssetCachePort, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "port of adress of Asset Cache Server");
+    options.AddOption(OptionName::AssetCacheTimeout, VariantType(static_cast<uint32>(1)), "timeout for caching operations");
 }
 
 void SceneExporterTool::ConvertOptionsToParamsInternal()
@@ -67,14 +168,14 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
 
     if (options.GetOption(OptionName::Texture).AsBool())
     {
-        commandObject = OBJECT_TEXTURE;
+        commandObject = SceneExporter::OBJECT_TEXTURE;
     }
     else if (options.GetOption(OptionName::Scene).AsBool() || options.GetOption(OptionName::deprecated_Export).AsBool())
     {
-        commandObject = OBJECT_SCENE;
+        commandObject = SceneExporter::OBJECT_SCENE;
     }
 
-    const String gpuName = options.GetOption(OptionName::GPU).AsString();
+    String gpuName = options.GetOption(OptionName::GPU).AsString();
     requestedGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
 
     const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
@@ -82,20 +183,28 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
 
     const bool saveNormals = options.GetOption(OptionName::SaveNormals).AsBool();
     optimizeOnExport = !saveNormals;
+
+    useAssetCache = options.GetOption(OptionName::UseAssetCache).AsBool();
+    if (useAssetCache)
+    {
+        connectionsParams.ip = options.GetOption(OptionName::AssetCacheIP).AsString();
+        connectionsParams.port = static_cast<uint16>(options.GetOption(OptionName::AssetCachePort).AsUInt32());
+        connectionsParams.timeoutms = options.GetOption(OptionName::AssetCacheTimeout).AsUInt32() * 1000; //ms
+    }
 }
 
 bool SceneExporterTool::InitializeInternal()
 {
     if (inFolder.IsEmpty())
     {
-        AddError("Input folder was not selected");
+        Logger::Error("[SceneExporterTool] Input folder was not selected");
         return false;
     }
     inFolder.MakeDirectoryPathname();
 
     if (outFolder.IsEmpty())
     {
-        AddError("Output folder was not selected");
+        Logger::Error("[SceneExporterTool] Output folder was not selected");
         return false;
     }
 
@@ -115,13 +224,13 @@ bool SceneExporterTool::InitializeInternal()
     }
     else
     {
-        AddError("Target for exporting was not selected");
+        Logger::Error("[SceneExporterTool] Target for exporting was not selected");
         return false;
     }
 
     if (requestedGPU == GPU_INVALID)
     {
-        AddError("Unsupported gpu parameter was selected");
+        Logger::Error("[SceneExporterTool] Unsupported gpu parameter was selected");
         return false;
     }
 
@@ -130,93 +239,63 @@ bool SceneExporterTool::InitializeInternal()
 
 void SceneExporterTool::ProcessInternal()
 {
-    SceneExporter exporter;
+    AssetCacheClient cacheClient(true);
 
-    exporter.SetOutFolder(outFolder);
-    exporter.SetInFolder(inFolder);
-    exporter.SetGPUForExporting(requestedGPU);
+    SceneExporter exporter;
+    exporter.SetFolders(outFolder, inFolder);
+    exporter.SetCompressionParams(requestedGPU, quality);
     exporter.EnableOptimizations(optimizeOnExport);
-    exporter.SetCompressionQuality(quality);
+
+    if (useAssetCache)
+    {
+        AssetCache::Error connected = cacheClient.ConnectSynchronously(connectionsParams);
+        if (connected == AssetCache::Error::NO_ERRORS)
+        {
+            String machineName = WStringToString(DeviceInfo::GetName());
+            DateTime timeNow = DateTime::Now();
+            String timeString = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+
+            exporter.SetCacheClient(&cacheClient, machineName, timeString, "Resource Editor. Export scene");
+        }
+        else
+        {
+            useAssetCache = false;
+        }
+    }
 
     if (commandAction == ACTION_EXPORT_FILE)
     {
-        ExportFile(exporter);
+        commandObject = SceneExporterToolInternal::GetObjectType(inFolder + filename);
+        if (commandObject == SceneExporter::OBJECT_NONE)
+        {
+            Logger::Error("[SceneExporterTool] found wrong filename %s", filename.c_str());
+            return;
+        }
+        exportedObjects.emplace_back(commandObject, std::move(filename));
     }
     else if (commandAction == ACTION_EXPORT_FOLDER)
     {
-        ExportFolder(exporter);
-    }
-    if (commandAction == ACTION_EXPORT_FILELIST)
-    {
-        ExportFileList(exporter);
-    }
-}
+        FilePath folderPathname(inFolder + foldername);
+        folderPathname.MakeDirectoryPathname();
 
-void SceneExporterTool::ExportFolder(SceneExporter& exporter)
-{
-    if (OBJECT_SCENE == commandObject)
-    {
-        exporter.ExportSceneFolder(foldername, errors);
+        SceneExporterToolInternal::CollectObjectsFromFolder(folderPathname, inFolder, commandObject, exportedObjects);
     }
-    else if (OBJECT_TEXTURE == commandObject)
+    else if (commandAction == ACTION_EXPORT_FILELIST)
     {
-        exporter.ExportTextureFolder(foldername, errors);
-    }
-}
-
-void SceneExporterTool::ExportFile(SceneExporter& exporter)
-{
-    if (OBJECT_SCENE == commandObject)
-    {
-        exporter.ExportSceneFile(filename, errors);
-    }
-    else if (OBJECT_TEXTURE == commandObject)
-    {
-        exporter.ExportTextureFile(filename, errors);
-    }
-}
-
-void SceneExporterTool::ExportFileList(SceneExporter& exporter)
-{
-    ScopedPtr<File> fileWithLinks(File::Create(fileListPath, File::OPEN | File::READ));
-    if (!fileWithLinks)
-    {
-        AddError(Format("[SceneExporterTool] Can't open file %s", fileListPath.GetAbsolutePathname().c_str()));
-        return;
-    }
-
-    bool isEof = false;
-
-    do
-    {
-        String link = fileWithLinks->ReadLine();
-        if (link.empty())
+        bool collected = SceneExporterToolInternal::CollectObjectFromFileList(fileListPath, inFolder, exportedObjects);
+        if (!collected)
         {
-            break;
+            Logger::Error("[SceneExporterTool] Can't collect links from file %s", fileListPath.GetAbsolutePathname().c_str());
+            return;
         }
+    }
 
-        const FilePath exportedPathname = inFolder + link;
-        if (exportedPathname.IsDirectoryPathname())
-        {
-            commandObject = OBJECT_SCENE;
-            foldername = link;
-            ExportFolder(exporter);
-        }
-        else if (exportedPathname.IsEqualToExtension(".sc2"))
-        {
-            commandObject = OBJECT_SCENE;
-            filename = link;
-            ExportFile(exporter);
-        }
-        else if (exportedPathname.IsEqualToExtension(".tex"))
-        {
-            commandObject = OBJECT_TEXTURE;
-            filename = link;
-            ExportFile(exporter);
-        }
+    exporter.ExportObjects(exportedObjects);
 
-        isEof = fileWithLinks->IsEof();
-    } while (!isEof);
+    if (useAssetCache)
+    {
+        cacheClient.Disconnect();
+    }
 }
 
 FilePath SceneExporterTool::GetQualityConfigPath() const
