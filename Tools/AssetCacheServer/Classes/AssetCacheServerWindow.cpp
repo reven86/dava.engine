@@ -59,8 +59,8 @@
 
 namespace
 {
-String DEFAULT_REMOTE_IP = "127.0.0.1";
-uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+const DAVA::String DEFAULT_REMOTE_IP = DAVA::AssetCache::LOCALHOST;
+const DAVA::uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
 }
 
 AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent)

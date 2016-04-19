@@ -58,7 +58,7 @@ public:
     virtual void EndArray() override;
 
     DAVA::YamlNode* GetYamlNode() const;
-    void WriteToFile(const DAVA::FilePath& path);
+    bool WriteToFile(const DAVA::FilePath& path);
     DAVA::String WriteToString() const;
 
 private:

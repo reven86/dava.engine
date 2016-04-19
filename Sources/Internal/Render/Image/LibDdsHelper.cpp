@@ -882,14 +882,14 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     if (!ddsFile)
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open file %s", filePathname.GetStringValue().c_str());
-        return false;
+        return 0;
     }
 
     DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
     if (!header.IsValid())
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] is not DDS file %s", filePathname.GetStringValue().c_str());
-        return false;
+        return 0;
     }
 
     if (header.formatHeader.metadata.crcTag == METADATA_CRC_TAG)

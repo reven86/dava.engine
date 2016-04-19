@@ -57,13 +57,13 @@ bool BeastCommandLineTool::InitializeInternal()
 {
     if (scenePathname.IsEmpty() || !scenePathname.IsEqualToExtension(".sc2"))
     {
-        AddError("Scene was not selected");
+        Logger::Error("Scene was not selected");
         return false;
     }
 
     if (outputPath.IsEmpty())
     {
-        AddError("Out folder was not selected");
+        Logger::Error("Out folder was not selected");
         return false;
     }
     outputPath.MakeDirectoryPathname();

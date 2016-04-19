@@ -351,16 +351,6 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
 
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
-#if defined(__DAVAENGINE_ANDROID__)
-    if (frameworkPath.GetType() == FilePath::PATH_IN_RESOURCES &&
-        frameworkPath.GetAbsolutePathname().size() &&
-        frameworkPath.GetAbsolutePathname().c_str()[0] != '/')
-    {
-#ifdef USE_LOCAL_RESOURCES
-        return File::CreateFromSystemPath(frameworkPath, attributes);
-#endif
-    }
-#endif //#if defined(__DAVAENGINE_ANDROID__)
     return File::CreateFromSystemPath(frameworkPath, attributes);
 }
 
@@ -454,7 +444,12 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     const String& path = pathToCheck.GetAbsolutePathname();
     if (IsAPKPath(path))
     {
-        return (fileSet.find(path) != fileSet.end());
+        // TODO fix this ugly old HACK we shouldn't add Data as prefix
+        // Because fileSystem.yaml already inside Data directory
+        // We even can build list of all assets on android on file system
+        // initialization
+        String pathInFileSystemYaml = "Data/" + path;
+        return (fileSet.find(pathInFileSystemYaml) != end(fileSet));
     }
 #endif
 
@@ -850,11 +845,8 @@ bool FileSystem::IsAPKPath(const String& path) const
 
 void FileSystem::Init()
 {
-#ifdef USE_LOCAL_RESOURCES
     YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
-#else
-    YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
-#endif
+
     if (parser)
     {
         const YamlNode* node = parser->GetRootNode();

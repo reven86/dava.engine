@@ -261,8 +261,8 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     // 3. set control's position and size
     nativeMovieView->MinHeight = 0.0; // Force minimum control sizes to zero to
     nativeMovieView->MinWidth = 0.0; // allow setting any control sizes
-    nativeMovieView->Width = controlRect.dx;
-    nativeMovieView->Height = controlRect.dy;
+    nativeMovieView->Width = std::max(0.0f, controlRect.dx);
+    nativeMovieView->Height = std::max(0.0f, controlRect.dy);
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
 
     { //'workaround' for ATI HD ****G adapters

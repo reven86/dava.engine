@@ -35,6 +35,7 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/File.h"
 #include "ImageFormatInterface.h"
+#include <memory>
 
 namespace DAVA
 {
@@ -44,7 +45,6 @@ class ImageSystem : public Singleton<ImageSystem>
 {
 public:
     ImageSystem();
-    virtual ~ImageSystem();
 
     eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
     eErrorCode Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
@@ -72,13 +72,13 @@ public:
 private:
     ImageInfo GetImageInfo(File* infile) const;
 
-    Array<ImageFormatInterface*, IMAGE_FORMAT_COUNT> wrappers;
+    Array<std::unique_ptr<ImageFormatInterface>, IMAGE_FORMAT_COUNT> wrappers;
 };
 
 inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
 {
     DVASSERT(fileFormat < IMAGE_FORMAT_COUNT);
-    return wrappers[fileFormat];
+    return wrappers[fileFormat].get();
 }
 
 inline const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
