@@ -98,6 +98,11 @@ void FilePath::RemoveResourcesFolder(const FilePath& folder)
     }
 }
 
+const Vector<FilePath>& FilePath::GetResFolders()
+{
+    return resourceFolders;
+}
+
 const List<FilePath>& FilePath::GetResourcesFolders()
 {
     // for backward compatibility use list values
