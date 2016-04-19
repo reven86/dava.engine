@@ -147,8 +147,8 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
         DVASSERT_MSG(false, "[CreateFromAPK] Package file should be initialized.");
         return nullptr;
     }
-
-    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
+    // TODO in future remove ugly HACK with prefix path
+    String assetFileStr = "assets/Data/" + filePath.GetAbsolutePathname();
     return CreateFromAPKAssetsPath(package, filePath, assetFileStr, attributes);
 }
 
@@ -174,7 +174,8 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         if (!file)
         {
 #ifdef __DAVAENGINE_ANDROID__
-            return CreateFromAPK(filePath, attributes);
+            File* fromAPK = CreateFromAPK(filePath, attributes);
+            return fromAPK; // simpler debugging on android
 #else
             return nullptr;
 #endif

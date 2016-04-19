@@ -54,7 +54,7 @@ public:
 public:
     FilePath();
     FilePath(const FilePath& path);
-    FilePath(FilePath&& path) DAVA_NOEXCEPT;
+    FilePath(FilePath&& path);
 
     FilePath(const String& sourcePath);
     FilePath(const WideString& sourcePath);
@@ -82,7 +82,7 @@ public:
     static FilePath CreateWithNewExtension(const FilePath& pathname, const String& extension);
 
     FilePath& operator=(const FilePath& path);
-    FilePath& operator=(FilePath&& path) DAVA_NOEXCEPT;
+    FilePath& operator=(FilePath&& path);
     FilePath operator+(const String& path) const;
     FilePath& operator+=(const String& path);
 

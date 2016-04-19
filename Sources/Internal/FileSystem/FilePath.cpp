@@ -185,12 +185,6 @@ void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
     SetBundleName(FilePath("/mnt/sdcard/DavaProject/Data/"));
-
-    FilePath zipDataPath;
-    zipDataPath.pathType = PATH_IN_RESOURCES;
-    resourceFolders.push_back(zipDataPath);
-#else
-    SetBundleName(FilePath("Data/"));
 #endif
 }
 
@@ -239,10 +233,9 @@ FilePath::FilePath(const FilePath& path)
     absolutePathname = path.absolutePathname;
 }
 
-FilePath::FilePath(FilePath&& path) DAVA_NOEXCEPT
-: pathType(path.pathType)
-  ,
-  absolutePathname(std::move(path.absolutePathname))
+FilePath::FilePath(FilePath&& path)
+    : pathType(path.pathType)
+    , absolutePathname(std::move(path.absolutePathname))
 {
     path.pathType = PATH_EMPTY;
 }
@@ -336,10 +329,6 @@ void FilePath::Initialize(const String& _pathname)
     else if (pathType == PATH_IN_RESOURCES)
     {
         absolutePathname = pathname;
-#if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
-        if (0 == pathname.find("~zip:"))
-            absolutePathname = "Data" + absolutePathname.substr(5);
-#endif
     }
     else if (pathType == PATH_IN_DOCUMENTS)
     {
@@ -427,28 +416,23 @@ FilePath FilePath::FromNativeString(const NativeStringType& path)
 
 String FilePath::ResolveResourcesPath() const
 {
-    String::size_type find = absolutePathname.find("~res:/");
-    if (find != String::npos)
+    const char* absStr = absolutePathname.c_str();
+    if (0 == strncmp(absStr, "~res:/", 6))
     {
         String relativePathname = absolutePathname.substr(6);
         FilePath path;
 
-        if (resourceFolders.size() == 1) // optimization to avoid call path.Exists()
+        for (const auto& resDir : resourceFolders)
         {
-            path = resourceFolders.front().absolutePathname + relativePathname;
-            return path.absolutePathname;
-        }
-        else
-        {
-            for (const auto& resDir : resourceFolders)
+            path = resDir.absolutePathname + relativePathname;
+            if (FileSystem::Instance()->Exists(path))
             {
-                path = resDir.absolutePathname + relativePathname;
-                if (FileSystem::Instance()->Exists(path))
-                {
-                    return path.absolutePathname;
-                }
+                return path.absolutePathname;
             }
         }
+        // if we can't find full path to file from any resource folder return relative path
+        // for example if we on android path may contains "assets/Data"
+        return relativePathname;
     }
 
     return absolutePathname;
@@ -462,7 +446,7 @@ FilePath& FilePath::operator=(const FilePath& path)
     return *this;
 }
 
-FilePath& FilePath::operator=(FilePath&& path) DAVA_NOEXCEPT
+FilePath& FilePath::operator=(FilePath&& path)
 {
     absolutePathname = std::move(path.absolutePathname);
     pathType = path.pathType;
