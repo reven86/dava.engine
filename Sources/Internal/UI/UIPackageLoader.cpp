@@ -527,10 +527,6 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
 
                     if (res.GetType() == VariantType::TYPE_NONE)
                     {
-                        if (member->Name() == FastName("spriteModification"))
-                        {
-                            int32 t = 0;
-                        }
                         res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
                     }
                 }

@@ -52,7 +52,7 @@ const FastName INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : ValueProperty(aMember->Desc().text, VariantType::TypeFromMetaInfo(aMember->Type()), &aMember->Desc())
+    : ValueProperty(aMember->Desc().text, VariantType::TypeFromMetaInfo(aMember->Type()), true, &aMember->Desc())
     , object(SafeRetain(anObject))
     , member(aMember)
     , flags(EF_CAN_RESET)

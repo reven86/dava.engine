@@ -37,8 +37,6 @@ namespace DAVA
 class UIControl;
 }
 
-class SubValueProperty;
-
 class IntrospectionProperty : public ValueProperty
 {
 public:

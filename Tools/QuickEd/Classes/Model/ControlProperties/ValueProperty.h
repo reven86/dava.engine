@@ -32,21 +32,19 @@
 
 #include "AbstractProperty.h"
 
-class SubValueProperty;
-
 class ValueProperty : public AbstractProperty
 {
 public:
-    ValueProperty(const DAVA::String& propName, DAVA::VariantType::eVariantType valueType, const DAVA::InspDesc* inspDesc = nullptr);
+    ValueProperty(const DAVA::String& propName, DAVA::VariantType::eVariantType valueType, bool builtinSubProps = false, const DAVA::InspDesc* inspDesc = nullptr);
 
 protected:
     virtual ~ValueProperty();
 
 public:
-    virtual DAVA::uint32 GetCount() const override;
-    virtual AbstractProperty* GetProperty(DAVA::int32 index) const override;
+    DAVA::uint32 GetCount() const override;
+    AbstractProperty* GetProperty(DAVA::int32 index) const override;
 
-    virtual void Refresh(DAVA::int32 refreshFlags) override;
+    void Refresh(DAVA::int32 refreshFlags) override;
 
     void AttachPrototypeProperty(const ValueProperty* prototypeProperty);
     void DetachPrototypeProperty(const ValueProperty* prototypeProperty);
@@ -84,18 +82,19 @@ protected:
     void SetName(const DAVA::String& newName);
     void SetOverridden(bool overridden);
     void SetStylePropertyIndex(DAVA::int32 index);
-    void AddSubValueProperty(SubValueProperty* prop);
+    void AddSubValueProperty(AbstractProperty* prop);
 
 private:
     DAVA::VariantType ChangeValueComponent(const DAVA::VariantType& value, const DAVA::VariantType& component, DAVA::int32 index) const;
     DAVA::VariantType::eVariantType GetValueTypeComponent(DAVA::int32 index) const;
     DAVA::VariantType GetValueComponent(const DAVA::VariantType& value, DAVA::int32 index) const;
+    void GenerateBuiltInSubProperties();
 
 private:
     DAVA::String name;
     DAVA::VariantType::eVariantType valueType;
     DAVA::VariantType defaultValue;
-    DAVA::Vector<DAVA::RefPtr<SubValueProperty>> children;
+    DAVA::Vector<DAVA::RefPtr<AbstractProperty>> children;
     DAVA::int32 stylePropertyIndex = -1;
     bool overridden = false;
     const DAVA::InspDesc* inspDesc = nullptr;

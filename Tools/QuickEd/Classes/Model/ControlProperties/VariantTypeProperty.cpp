@@ -37,7 +37,7 @@
 using namespace DAVA;
 
 VariantTypeProperty::VariantTypeProperty(const String& name, const DAVA::InspDesc* desc, VariantType& vt)
-    : ValueProperty(name, vt.GetType(), desc)
+    : ValueProperty(name, vt.GetType(), true, desc)
     , value(vt)
 {
     SetOverridden(true);

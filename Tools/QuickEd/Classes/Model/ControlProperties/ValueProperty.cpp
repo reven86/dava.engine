@@ -34,55 +34,23 @@
 
 using namespace DAVA;
 
-ValueProperty::ValueProperty(const String& propName, VariantType::eVariantType type, const InspDesc* desc)
+namespace SValueProperty
+{
+static const Vector<String> VECTOR2_COMPONENT_NAMES = { "X", "Y" };
+static const Vector<String> COLOR_COMPONENT_NAMES = { "Red", "Green", "Blue", "Alpha" };
+static const Vector<String> MARGINS_COMPONENT_NAMESs = { "Left", "Top", "Right", "Bottom" };
+}
+
+ValueProperty::ValueProperty(const String& propName, VariantType::eVariantType type, bool builtinSubProps, const InspDesc* desc)
     : name(propName)
     , valueType(type)
     , defaultValue(VariantType::FromType(type))
     , inspDesc(desc)
 {
-    static Vector<String> vector2ComponentNames = { "X", "Y" };
-    static Vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
-    static Vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
-
-    Vector<String>* componentNames = nullptr;
-    Vector<SubValueProperty*> subProperties;
-    VariantType::eVariantType valueType = GetValueType();
-    if (valueType == VariantType::TYPE_VECTOR2)
+    if (builtinSubProps)
     {
-        componentNames = &vector2ComponentNames;
+        GenerateBuiltInSubProperties();
     }
-    else if (valueType == VariantType::TYPE_COLOR)
-    {
-        componentNames = &colorComponentNames;
-    }
-    else if (valueType == VariantType::TYPE_VECTOR4)
-    {
-        componentNames = &marginsComponentNames;
-    }
-    else if (valueType == VariantType::TYPE_INT32 && inspDesc && inspDesc->type == InspDesc::T_FLAGS)
-    {
-        const EnumMap* map = inspDesc->enumMap;
-        for (size_t i = 0; i < map->GetCount(); ++i)
-        {
-            int val = 0;
-            DVVERIFY(map->GetValue(i, val));
-            subProperties.push_back(new SubValueProperty(i, map->ToString(val)));
-        }
-    }
-
-    if (componentNames != nullptr)
-    {
-        for (size_t i = 0; i < componentNames->size(); ++i)
-            subProperties.push_back(new SubValueProperty(i, componentNames->at(i)));
-    }
-
-    for (SubValueProperty* prop : subProperties)
-    {
-        prop->SetParent(this);
-        AddSubValueProperty(prop);
-        SafeRelease(prop);
-    }
-    subProperties.clear();
 }
 
 ValueProperty::~ValueProperty()
@@ -115,7 +83,7 @@ void ValueProperty::Refresh(int32 refreshFlags)
     if ((refreshFlags & REFRESH_DEFAULT_VALUE) != 0 && prototypeProperty)
         SetDefaultValue(prototypeProperty->GetValue());
 
-    for (RefPtr<SubValueProperty>& prop : children)
+    for (RefPtr<AbstractProperty>& prop : children)
         prop->Refresh(refreshFlags);
 }
 
@@ -285,9 +253,9 @@ void ValueProperty::SetStylePropertyIndex(int32 index)
     stylePropertyIndex = index;
 }
 
-void ValueProperty::AddSubValueProperty(SubValueProperty* prop)
+void ValueProperty::AddSubValueProperty(AbstractProperty* prop)
 {
-    children.push_back(RefPtr<SubValueProperty>(SafeRetain(prop)));
+    children.push_back(RefPtr<AbstractProperty>(SafeRetain(prop)));
 }
 
 VariantType ValueProperty::ChangeValueComponent(const VariantType& value, const VariantType& component, int32 index) const
@@ -448,4 +416,47 @@ VariantType ValueProperty::GetValueComponent(const VariantType& value, int32 ind
         DVASSERT(false);
         return VariantType();
     }
+}
+
+void ValueProperty::GenerateBuiltInSubProperties()
+{
+    const Vector<String>* componentNames = nullptr;
+    Vector<SubValueProperty*> subProperties;
+    VariantType::eVariantType valueType = GetValueType();
+    if (valueType == VariantType::TYPE_VECTOR2)
+    {
+        componentNames = &SValueProperty::VECTOR2_COMPONENT_NAMES;
+    }
+    else if (valueType == VariantType::TYPE_COLOR)
+    {
+        componentNames = &SValueProperty::COLOR_COMPONENT_NAMES;
+    }
+    else if (valueType == VariantType::TYPE_VECTOR4)
+    {
+        componentNames = &SValueProperty::MARGINS_COMPONENT_NAMESs;
+    }
+    else if (valueType == VariantType::TYPE_INT32 && inspDesc && inspDesc->type == InspDesc::T_FLAGS)
+    {
+        const EnumMap* map = inspDesc->enumMap;
+        for (size_t i = 0; i < map->GetCount(); ++i)
+        {
+            int val = 0;
+            DVVERIFY(map->GetValue(i, val));
+            subProperties.push_back(new SubValueProperty(i, map->ToString(val)));
+        }
+    }
+
+    if (componentNames != nullptr)
+    {
+        for (size_t i = 0; i < componentNames->size(); ++i)
+            subProperties.push_back(new SubValueProperty(i, componentNames->at(i)));
+    }
+
+    for (SubValueProperty* prop : subProperties)
+    {
+        prop->SetParent(this);
+        AddSubValueProperty(prop);
+        SafeRelease(prop);
+    }
+    subProperties.clear();
 }
