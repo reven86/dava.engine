@@ -519,6 +519,7 @@ void SceneSelectionSystem::SetSelection(SelectableGroup& newSelection)
     /*
 	 * Actually change selection
 	 */
+    recentlySelectedEntities.Clear();
     for (const auto& i : currentSelection.GetContent())
     {
         objectsToSelect.Remove(i.GetContainedObject());

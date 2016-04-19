@@ -50,7 +50,7 @@ class SceneTreeFilteringModel;
 class SceneTreeItem : public QStandardItem
 {
 public:
-    enum eItemType
+    enum eItemType : uint32_t
     {
         EIT_Entity,
         EIT_Emitter,
@@ -59,18 +59,18 @@ public:
         EIT_InnerEmitter
     };
 
-    enum eItemDataRole
+    enum eItemDataRole : uint32_t
     {
         EIDR_Type = Qt::UserRole,
         EIDR_Data,
     };
 
-    SceneTreeItem(eItemType type);
+    SceneTreeItem(eItemType type, DAVA::BaseObject* object_);
     virtual ~SceneTreeItem() = default;
 
     QVariant data(int role) const;
 
-    int ItemType() const;
+    uint32_t ItemType() const;
     virtual const QIcon& ItemIcon() const;
 
     virtual QString ItemName() const = 0;
@@ -81,8 +81,11 @@ public:
     bool IsHighlighed() const;
     void SetHighlight(bool state);
 
+    DAVA::BaseObject* GetItemObject() const;
+
 protected:
-    eItemType type;
+    DAVA::BaseObject* object = nullptr;
+    eItemType type = EIT_Entity;
     bool isAcceptedByFilter = false;
     bool isHighlighted = false;
 };

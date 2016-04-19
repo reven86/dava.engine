@@ -37,15 +37,12 @@
 #include "Scene/SceneSignals.h"
 
 ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
-    :
-    ScrollZoomWidget(parent)
-    ,
-    selectedPoint(-1, -1)
-    ,
+    : ScrollZoomWidget(parent)
+    , selectedPoint(-1, -1)
 #ifdef Q_OS_WIN
-    nameFont("Courier", 8, QFont::Normal)
+    , nameFont("Courier", 8, QFont::Normal)
 #else
-    nameFont("Courier", 12, QFont::Normal)
+    , nameFont("Courier", 12, QFont::Normal)
 #endif
 {
     backgroundBrush.setColor(Qt::white);
@@ -53,59 +50,22 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
 
     gridStyle = GRID_STYLE_LIMITS;
 
-    // Signals handling from Scene Tree.
-    connect(SceneSignals::Instance(),
-            SIGNAL(EffectSelected(SceneEditor2*, DAVA::ParticleEffectComponent*)),
-            this,
-            SLOT(OnEffectSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*)));
-    connect(SceneSignals::Instance(),
-            SIGNAL(EmitterSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)),
-            this,
-            SLOT(OnEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)));
-    connect(SceneSignals::Instance(),
-            SIGNAL(InnerEmitterSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)),
-            this,
-            SLOT(OnInnerEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*)));
-    connect(SceneSignals::Instance(),
-            SIGNAL(LayerSelected(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*, DAVA::ParticleLayer*, bool)),
-            this,
-            SLOT(OnLayerSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitterInstance*, DAVA::ParticleLayer*, bool)));
-    connect(SceneSignals::Instance(),
-            SIGNAL(ForceSelected(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)),
-            this,
-            SLOT(OnForceSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)));
+    auto dispatcher = SceneSignals::Instance();
+    connect(dispatcher, &SceneSignals::SelectionChanged, this, &ParticleTimeLineWidget::OnSelectionChanged);
 
     // Get the notification about changes in Particle Editor items.
-    connect(SceneSignals::Instance(),
-            SIGNAL(ParticleEmitterValueChanged(SceneEditor2*, DAVA::ParticleEmitterInstance*)),
-            this,
-            SLOT(OnParticleEmitterValueChanged(SceneEditor2*, DAVA::ParticleEmitterInstance*)));
-    connect(SceneSignals::Instance(),
-            SIGNAL(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)),
-            this,
-            SLOT(OnParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)));
+    connect(dispatcher, &SceneSignals::ParticleEmitterValueChanged, this, &ParticleTimeLineWidget::OnParticleEmitterValueChanged);
+    connect(dispatcher, &SceneSignals::ParticleLayerValueChanged, this, &ParticleTimeLineWidget::OnParticleLayerValueChanged);
 
     // Particle Effect Started/Stopped notification is also needed to set/reset stats.
-    connect(SceneSignals::Instance(),
-            SIGNAL(ParticleEffectStateChanged(SceneEditor2*, DAVA::Entity*, bool)),
-            this,
-            SLOT(OnParticleEffectStateChanged(SceneEditor2*, DAVA::Entity*, bool)));
+    connect(dispatcher, &SceneSignals::ParticleEffectStateChanged, this, &ParticleTimeLineWidget::OnParticleEffectStateChanged);
 
     // Particle Emitter Loaded notification is needed to re-initialize the Timeline.
-    connect(SceneSignals::Instance(),
-            SIGNAL(ParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitterInstance*)),
-            this,
-            SLOT(OnParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitterInstance*)));
+    connect(dispatcher, &SceneSignals::ParticleEmitterLoaded, this, &ParticleTimeLineWidget::OnParticleEmitterLoaded);
 
     // Notifications about structure changes are needed to re-initialize the Timeline.
-    connect(SceneSignals::Instance(),
-            SIGNAL(ParticleLayerAdded(SceneEditor2*, DAVA::ParticleEmitterInstance*, DAVA::ParticleLayer*)),
-            this,
-            SLOT(OnParticleLayerAdded(SceneEditor2*, DAVA::ParticleEmitterInstance*, DAVA::ParticleLayer*)));
-    connect(SceneSignals::Instance(),
-            SIGNAL(ParticleLayerRemoved(SceneEditor2*, DAVA::ParticleEmitterInstance*)),
-            this,
-            SLOT(OnParticleLayerRemoved(SceneEditor2*, DAVA::ParticleEmitterInstance*)));
+    connect(dispatcher, &SceneSignals::ParticleLayerAdded, this, &ParticleTimeLineWidget::OnParticleLayerAdded);
+    connect(dispatcher, &SceneSignals::ParticleLayerRemoved, this, &ParticleTimeLineWidget::OnParticleLayerRemoved);
 
     Init(0, 0);
 
@@ -863,37 +823,50 @@ void ParticleTimeLineWidget::OnParticleEffectStateChanged(SceneEditor2* scene, D
     ResetLayersExtraInfoValues();
 }
 
-void ParticleTimeLineWidget::OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect)
+void ParticleTimeLineWidget::OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
+    bool shouldReset = true;
+    SCOPE_EXIT
+    {
+        if (shouldReset)
+        {
+            activeScene = nullptr;
+            CleanupTimelines();
+            emit ChangeVisible(false);
+        }
+    };
+
+    if (selected->GetSize() != 1)
+        return;
+
     activeScene = scene;
-
-    OnParticleEffectSelected(effect);
-}
-
-void ParticleTimeLineWidget::OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
-{
-    activeScene = scene;
-
-    HandleEmitterSelected(effect, emitter, NULL);
-}
-
-void ParticleTimeLineWidget::OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
-{
-    activeScene = scene;
-    HandleEmitterSelected(effect, emitter, NULL);
-}
-
-void ParticleTimeLineWidget::OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
-{
-    activeScene = scene;
-    HandleEmitterSelected(effect, emitter, layer);
-}
-
-void ParticleTimeLineWidget::OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
-{
-    activeScene = scene;
-
-    HandleEmitterSelected(NULL, NULL, layer);
+    const auto& obj = selected->GetFirst();
+    if (obj.CanBeCastedTo<DAVA::Entity>())
+    {
+        auto entity = obj.AsEntity();
+        auto effect = static_cast<DAVA::ParticleEffectComponent*>(entity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
+        if (effect != nullptr)
+        {
+            shouldReset = false;
+            OnParticleEffectSelected(effect);
+        }
+    }
+    else if (obj.CanBeCastedTo<DAVA::ParticleEmitterInstance>())
+    {
+        shouldReset = false;
+        auto instance = obj.Cast<DAVA::ParticleEmitterInstance>();
+        HandleEmitterSelected(instance->GetOwner(), instance, nullptr);
+    }
+    else if (obj.CanBeCastedTo<DAVA::ParticleLayer>() && (deselected->GetSize() == 1))
+    {
+        auto layer = obj.Cast<DAVA::ParticleLayer>();
+        auto instance = deselected->GetFirst().Cast<DAVA::ParticleEmitterInstance>();
+        if ((instance != nullptr) && instance->GetEmitter()->ContainsLayer(layer))
+        {
+            shouldReset = false;
+            HandleEmitterSelected(instance->GetOwner(), instance, layer);
+        }
+    }
 }
 
 void ParticleTimeLineWidget::OnParticleEmitterValueChanged(SceneEditor2* /*scene*/, DAVA::ParticleEmitterInstance* emitter)

@@ -261,8 +261,8 @@ void TimeLineWidget::paintEvent(QPaintEvent* e)
 
             //draw drawed colors
             QRect rect = GetLineDrawRect();
-            rect.translate(rect.width() * lineCount / lines.size(), 0);
-            rect.setWidth(rect.width() / lines.size());
+            rect.translate(static_cast<int>(rect.width() * lineCount / lines.size()), 0);
+            rect.setWidth(static_cast<int>(rect.width() / lines.size()));
             if (drawLine == -1)
                 painter.fillRect(rect, iter->second.color);
             else
@@ -482,7 +482,7 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>
 
     for (DAVA::int32 i = 0; i < 2; i++)
     {
-        DAVA::int32 id = this->lines.size();
+        auto id = this->lines.size();
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];
@@ -516,7 +516,7 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>
 
     for (DAVA::int32 i = 0; i < 3; i++)
     {
-        DAVA::int32 id = this->lines.size();
+        auto id = this->lines.size();
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];
@@ -1060,9 +1060,7 @@ void TimeLineWidget::SetPointValue(DAVA::uint32 lineId, DAVA::uint32 pointId, DA
                         }
                     }
 
-                    //remove first point
-                    //lines[lineId].line.erase(lines[lineId].line.begin() + lines[lineId].line.size() - 2);
-                    DeletePoint(lineId, lines[lineId].line.size() - 2);
+                    DeletePoint(lineId, static_cast<DAVA::uint32>(lines[lineId].line.size() - 2));
                 }
                 i = 0;
             }

@@ -66,13 +66,6 @@ signals:
     void MouseOver(SceneEditor2* scene, const SelectableGroup* objects);
     void MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
 
-    // particles - selection
-    void EffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-    void EmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
-    void InnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
-    void LayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void ForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
-
     // particles - value changed
     void ParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
     void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
@@ -180,28 +173,6 @@ public:
     {
         emit MouseOverSelection(scene, objects);
     }
-
-    // Particle Editor Selection signals.
-    void EmitEffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect)
-    {
-        emit EffectSelected(scene, effect);
-    };
-    void EmitEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
-    {
-        emit EmitterSelected(scene, effect, emitter);
-    };
-    void EmitInnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter)
-    {
-        emit InnerEmitterSelected(scene, effect, emitter);
-    };
-    void EmitLayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
-    {
-        emit LayerSelected(scene, effect, emitter, layer, forceRefresh);
-    };
-    void EmitForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
-    {
-        emit ForceSelected(scene, layer, forceIndex);
-    };
 
     // Particle Editor Value Changed signals.
     void EmitParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
