@@ -97,6 +97,9 @@ public:
         void SetIsNormalMap(bool isNormalMap);
         bool GetIsNormalMap() const;
 
+        void SetSeparateHDTextures(bool separateHDTextures);
+        bool GetSeparateHDTextures() const;
+
         String cubefaceExtensions[Texture::CUBE_FACE_COUNT];
         String sourceFileExtension;
         uint8 textureFlags = eOptionsFlag::FLAG_DEFAULT;

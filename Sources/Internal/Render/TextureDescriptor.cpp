@@ -203,6 +203,16 @@ bool TextureDescriptor::TextureDataSettings::GetIsNormalMap() const
     return IsFlagEnabled(FLAG_IS_NORMAL_MAP);
 }
 
+void TextureDescriptor::TextureDataSettings::SetSeparateHDTextures(bool separateHDTextures)
+{
+    EnableFlag(separateHDTextures, FLAG_HAS_SEPARATE_HD_MIP);
+}
+
+bool TextureDescriptor::TextureDataSettings::GetSeparateHDTextures() const
+{
+    return IsFlagEnabled(FLAG_HAS_SEPARATE_HD_MIP);
+}
+
 void TextureDescriptor::TextureDataSettings::EnableFlag(bool enable, int8 flag)
 {
     if (enable)

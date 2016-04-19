@@ -100,7 +100,7 @@ private:
 
     void ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
 
-    bool ExportTextures(const DAVA::Vector<DAVA::eGPUFamily>& gpus, DAVA::TextureConverter::eConvertQuality quality, DAVA::TextureDescriptor& descriptor);
+    bool ExportTextures(DAVA::TextureDescriptor& descriptor);
 
     bool CopyFile(const DAVA::FilePath& filePath) const;
     bool CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const;

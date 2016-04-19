@@ -397,7 +397,7 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
         return;
     }
 
-    bool texturesExported = ExportTextures(exportingParams.exportForGPUs, exportingParams.quality, *descriptor);
+    bool texturesExported = ExportTextures(*descriptor);
     if (texturesExported)
     {
         if (exportingParams.exportForGPUs.size() == 1)
@@ -411,13 +411,15 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
     }
 }
 
-bool SceneExporter::ExportTextures(const DAVA::Vector<DAVA::eGPUFamily>& gpus, DAVA::TextureConverter::eConvertQuality quality, DAVA::TextureDescriptor& descriptor)
+bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 {
     DAVA::FilePath sourceFilePath = descriptor.GetSourceTexturePathname();
     DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(sourceFilePath);
 
+    descriptor.dataSettings.SetSeparateHDTextures(exportingParams.useHDTextures);
+
     bool exported = true;
-    for (auto& gpu : gpus)
+    for (auto& gpu : exportingParams.exportForGPUs)
     {
         if (DAVA::GPUFamilyDescriptor::IsGPUForDevice(gpu))
         {
@@ -439,7 +441,7 @@ bool SceneExporter::ExportTextures(const DAVA::Vector<DAVA::eGPUFamily>& gpus, D
                 continue;
             }
 
-            DAVA::FilePath compressedName = SceneExporterLocal::CompressTexture(gpu, quality, descriptor);
+            DAVA::FilePath compressedName = SceneExporterLocal::CompressTexture(gpu, exportingParams.quality, descriptor);
             exported = exported && CopyFile(compressedName);
         }
         else
