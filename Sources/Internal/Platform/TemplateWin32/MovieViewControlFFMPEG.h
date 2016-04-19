@@ -62,11 +62,6 @@ namespace DAVA
     class MovieViewControl : public IMovieViewControl, public UIControl
     {
     public:
-        Mutex pcmMutex;
-        DynamicMemoryFile* pcmData = nullptr;
-        uint32 writePos = 0;
-        uint32 readPos = 0;
-
         ~MovieViewControl() override;
 
         // IMovieViewControl Interface implementation
@@ -97,24 +92,27 @@ namespace DAVA
         void Update(float32 timeElapsed) override;
 
     private:
-        AV::AVFormatContext* CreateContext(const String& path);
+        AV::AVFormatContext* CreateContext(const FilePath& path);
+
+        static FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
+        static FMOD_RESULT F_CALLBACK pcmsetposcallback(FMOD_SOUND* sound, int subsound, unsigned int position, FMOD_TIMEUNIT postype);
 
         bool InitVideo();
-        void UpdateVideo(AV::AVPacket * packet, float32 timeElapsed);
+        void DecodeVideo(AV::AVPacket* packet);
+        void UpdateVideo();
         bool InitAudio();
-        void UpdateAudio(AV::AVPacket* packet, float32 timeElapsed);
+        void DecodeAudio(AV::AVPacket* packet, float32 timeElapsed);
 
         void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void ReadingThread(BaseObject* caller, void* callerData, void* userData);
 
-        String filepath = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
-
         static bool isFFMGEGInited;
         bool isPlaying = false;
         bool isAudioVideoStreamsInited = false;
-        AV::AVFormatContext* avFormatAudioContext = nullptr;
-        AV::AVFormatContext* avFormatVideoContext = nullptr;
+
+        FMOD_CREATESOUNDEXINFO exinfo;
+        AV::AVFormatContext* movieContext = nullptr;
 
         Thread* audioDecodingThread = nullptr;
         Thread* videoDecodingThread = nullptr;
@@ -131,10 +129,9 @@ namespace DAVA
         uint32 textureHeight = 0;
         uint32 frameHeight = 0;
         uint32 frameWidth = 0;
+        const AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_RGBA;
         const PixelFormat textureFormat = PixelFormat::FORMAT_RGBA8888;
         uint32 textureBufferSize = 0;
-        uint8 * rgbTextureBufferHolder[1];
-        uint8 * rgbTextureBuffer = nullptr;
 
         uint32_t len = 0;
         int32 index = 0;
@@ -146,7 +143,7 @@ namespace DAVA
         AV::AVCodecContext* videoCodecContext = nullptr;
         AV::AVCodec* videoCodec = nullptr;
         AV::AVFrame * decodedFrame = nullptr;
-        AV::AVFrame * yuvDecodedScaledFrame = nullptr;
+        AV::AVFrame* rgbDecodedScaledFrame = nullptr;
         uint8 * out_buffer = nullptr;
         AV::SwsContext * img_convert_ctx = nullptr;
 
@@ -156,29 +153,36 @@ namespace DAVA
         AV::AVCodec* audioCodec = nullptr;
         AV::AVFrame* audioFrame = nullptr;
         AV::SwrContext* audioConvertContext = nullptr;
-        uint8* outAudioBuffer = nullptr;
         uint32 outAudioBufferSize = 0;
+        FMOD::Channel* fmodChannel = nullptr;
 
         Deque<AV::AVPacket*> audioPackets;
         Mutex audioPacketsMutex;
 
+        Mutex pcmMutex;
+        DynamicMemoryFile* pcmData = nullptr;
+        uint32 writePos = 0;
+        uint32 readPos = 0;
+
         Deque<AV::AVPacket*> videoPackets;
         Mutex videoPacketsMutex;
+
+        struct DecodedFrameBuffer
+        {
+            ~DecodedFrameBuffer()
+            {
+                SafeDeleteArray(data);
+            }
+
+            PixelFormat textureFormat = FORMAT_INVALID;
+            uint8* data;
+            uint32 size = 0;
+            uint32 width = 0;
+            uint32 height = 0;
+        };
+        Deque<DecodedFrameBuffer*> decodedFrames;
+        Mutex decodedFramesMutex;
     };
-
-    inline void MovieViewControl::Stop()
-    {
-        if (!isAudioVideoStreamsInited)
-            return;
-
-        isPlaying = false;
-        videoDecodingThread->Cancel();
-        audioDecodingThread->Cancel();
-        readingDataThread->Cancel();
-        SafeRelease(videoDecodingThread);
-        SafeRelease(audioDecodingThread);
-        SafeRelease(readingDataThread);
-    }
 
     // Pause/resume the playback.
     inline void MovieViewControl::Pause()
@@ -187,6 +191,7 @@ namespace DAVA
             return;
 
         isPlaying = false;
+        fmodChannel->setPaused(!isPlaying);
     }
 
     inline void MovieViewControl::Resume()
@@ -195,6 +200,7 @@ namespace DAVA
             return;
 
         isPlaying = true;
+        fmodChannel->setPaused(!isPlaying);
     }
 
     // Whether the movie is being played?
