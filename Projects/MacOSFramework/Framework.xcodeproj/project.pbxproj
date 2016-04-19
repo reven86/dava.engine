@@ -2875,6 +2875,12 @@
 		5C97965A14E3F09F00FFFA14 /* libyaml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97965914E3F09F00FFFA14 /* libyaml_macos.a */; };
 		620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
 		6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
+		6E1E44E41CBD2B2F003C895A /* LibPSDHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E1E44E21CBD2B2F003C895A /* LibPSDHelper.cpp */; };
+		6E1E44E51CBD2B2F003C895A /* LibPSDHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E1E44E21CBD2B2F003C895A /* LibPSDHelper.cpp */; };
+		6E1E44E61CBD2B2F003C895A /* LibPSDHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E1E44E21CBD2B2F003C895A /* LibPSDHelper.cpp */; };
+		6E1E44E71CBD2B2F003C895A /* LibPSDHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E1E44E31CBD2B2F003C895A /* LibPSDHelper.h */; };
+		6E1E44E81CBD2B2F003C895A /* LibPSDHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E1E44E31CBD2B2F003C895A /* LibPSDHelper.h */; };
+		6E1E44E91CBD2B2F003C895A /* LibPSDHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E1E44E31CBD2B2F003C895A /* LibPSDHelper.h */; };
 		6EC4681E1C58E54D0083C264 /* VisibilityCheckComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6EC4681C1C58E54D0083C264 /* VisibilityCheckComponent.cpp */; };
 		6EC4681F1C58E54D0083C264 /* VisibilityCheckComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EC4681D1C58E54D0083C264 /* VisibilityCheckComponent.h */; };
 		72C84EB31B29C220003A52E0 /* libwebp_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB21B29C220003A52E0 /* libwebp_macos.a */; };
@@ -2957,6 +2963,8 @@
 		E898A2BF16BD265400732C04 /* libfreetype_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA29C33F1446EF270049FD7A /* libfreetype_macos.a */; };
 		E89CE91216C549D2006BEFF4 /* libcurl_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E89CE91116C549D2006BEFF4 /* libcurl_macos.a */; };
 		E89EDE241A2E15D00036E993 /* liblua_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7FBCFC016CD2060006F1B3F /* liblua_macos.a */; };
+		E8E7F3051CBFA72E0030AFCB /* libpsd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E8E7F3041CBFA72E0030AFCB /* libpsd.a */; };
+		E8E7F3061CBFA7510030AFCB /* libpsd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E8E7F3041CBFA72E0030AFCB /* libpsd.a */; };
 		EA29C3401446EF270049FD7A /* libfreetype_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA29C33F1446EF270049FD7A /* libfreetype_macos.a */; };
 		FE44432A114D8DF600F5EFD6 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444329114D8DF600F5EFD6 /* ApplicationServices.framework */; };
 		FE578C601327927C0081BDE9 /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5D1327927C0081BDE9 /* libogg_macos.a */; };
@@ -3954,6 +3962,8 @@
 		5C77AB7C14C7509D00E92D28 /* libpng_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_macos.a; path = ../../Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
 		5C97965914E3F09F00FFFA14 /* libyaml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_macos.a; path = ../../Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
 		627AFA6C18E964E300F2A52A /* libjpeg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_macos.a; path = ../../Libs/libs/libjpeg_macos.a; sourceTree = "<group>"; };
+		6E1E44E21CBD2B2F003C895A /* LibPSDHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibPSDHelper.cpp; sourceTree = "<group>"; };
+		6E1E44E31CBD2B2F003C895A /* LibPSDHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibPSDHelper.h; sourceTree = "<group>"; };
 		6EC4681C1C58E54D0083C264 /* VisibilityCheckComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VisibilityCheckComponent.cpp; path = Components/VisibilityCheckComponent.cpp; sourceTree = "<group>"; };
 		6EC4681D1C58E54D0083C264 /* VisibilityCheckComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VisibilityCheckComponent.h; path = Components/VisibilityCheckComponent.h; sourceTree = "<group>"; };
 		72C84EB21B29C220003A52E0 /* libwebp_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_macos.a; path = ../../Libs/libs/libwebp_macos.a; sourceTree = "<group>"; };
@@ -3992,6 +4002,7 @@
 		E8989B3516BD24E400732C04 /* DoxygenDocumenation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoxygenDocumenation.h; sourceTree = "<group>"; };
 		E898A2C416BD265400732C04 /* libFrameworkQt.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkQt.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E89CE91116C549D2006BEFF4 /* libcurl_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_macos.a; path = ../../Libs/libs/libcurl_macos.a; sourceTree = "<group>"; };
+		E8E7F3041CBFA72E0030AFCB /* libpsd.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpsd.a; path = ../../Libs/lib_CMake/mac/libpsd.a; sourceTree = "<group>"; };
 		EA29C33F1446EF270049FD7A /* libfreetype_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype_macos.a; path = ../../Libs/freetype/lib/libfreetype_macos.a; sourceTree = "<group>"; };
 		FE444329114D8DF600F5EFD6 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		FE44442F114E77EC00F5EFD6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = /System/Library/Frameworks/OpenAL.framework; sourceTree = "<absolute>"; };
@@ -4029,6 +4040,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8E7F3051CBFA72E0030AFCB /* libpsd.a in Frameworks */,
 				72C84EB31B29C220003A52E0 /* libwebp_macos.a in Frameworks */,
 				B70DDCF91C980336004516A8 /* libicucommon_macos.a in Frameworks */,
 				0381655E1C4FDA8900D8D9E1 /* SystemConfiguration.framework in Frameworks */,
@@ -4057,6 +4069,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8E7F3061CBFA7510030AFCB /* libpsd.a in Frameworks */,
 				0381655D1C4FDA7A00D8D9E1 /* SystemConfiguration.framework in Frameworks */,
 				E89EDE241A2E15D00036E993 /* liblua_macos.a in Frameworks */,
 				4F53ED4A19A23C3300D3869D /* libcurl_macos.a in Frameworks */,
@@ -4928,6 +4941,8 @@
 				028C0B1B1BD66A5E00B2266F /* LibJpegHelper.h */,
 				028C0B1C1BD66A5E00B2266F /* LibPngHelper.cpp */,
 				028C0B1D1BD66A5E00B2266F /* LibPngHelper.h */,
+				6E1E44E21CBD2B2F003C895A /* LibPSDHelper.cpp */,
+				6E1E44E31CBD2B2F003C895A /* LibPSDHelper.h */,
 				028C0B1E1BD66A5E00B2266F /* LibPVRHelper.cpp */,
 				028C0B1F1BD66A5E00B2266F /* LibPVRHelper.h */,
 				028C0B201BD66A5E00B2266F /* LibTgaHelper.cpp */,
@@ -5500,6 +5515,7 @@
 		0867D691FE84028FC02AAC07 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				E8E7F3041CBFA72E0030AFCB /* libpsd.a */,
 				B70DDCF81C980336004516A8 /* libicucommon_macos.a */,
 				FECFC0A512E87E3000C71562 /* Internal */,
 				03C12A9A1C4FD8D3002D4636 /* SystemConfiguration.framework */,
@@ -5893,6 +5909,7 @@
 				028C0E821BD66A6000B2266F /* CollisionObject2.h in Headers */,
 				028C0E6D1BD66A6000B2266F /* Serializable.h in Headers */,
 				028C0E461BD66A6000B2266F /* ObjectCreator.h in Headers */,
+				6E1E44E91CBD2B2F003C895A /* LibPSDHelper.h in Headers */,
 				028C15EA1BD66A6000B2266F /* RenderCallbacks.h in Headers */,
 				028C15871BD66A6000B2266F /* LibDdsHelper.h in Headers */,
 				028C11821BD66A6000B2266F /* PeerDesription.h in Headers */,
@@ -6473,6 +6490,7 @@
 				028C15401BD66A6000B2266F /* StaticOcclusion.h in Headers */,
 				028C15FD1BD66A6000B2266F /* RGBColor.h in Headers */,
 				028C0DC31BD66A6000B2266F /* AbstractQuadTree.h in Headers */,
+				6E1E44E71CBD2B2F003C895A /* LibPSDHelper.h in Headers */,
 				028C18E21BD66A6000B2266F /* LightUpdateSystem.h in Headers */,
 				028C19481BD66A6000B2266F /* FMODSoundEvent.h in Headers */,
 				028C108D1BD66A6000B2266F /* AABBox3.h in Headers */,
@@ -6946,6 +6964,7 @@
 				028C1AE71BD66A6100B2266F /* UIScrollViewContainer.h in Headers */,
 				028C0E811BD66A6000B2266F /* CollisionObject2.h in Headers */,
 				028C0E6C1BD66A6000B2266F /* Serializable.h in Headers */,
+				6E1E44E81CBD2B2F003C895A /* LibPSDHelper.h in Headers */,
 				028C0E451BD66A6000B2266F /* ObjectCreator.h in Headers */,
 				028C15E91BD66A6000B2266F /* RenderCallbacks.h in Headers */,
 				028C15861BD66A6000B2266F /* LibDdsHelper.h in Headers */,
@@ -7630,6 +7649,7 @@
 				028C16051BD66A6000B2266F /* dbg_Draw.cpp in Sources */,
 				028C0E371BD66A6000B2266F /* Message.cpp in Sources */,
 				028C14D31BD66A6000B2266F /* Heightmap.cpp in Sources */,
+				6E1E44E61CBD2B2F003C895A /* LibPSDHelper.cpp in Sources */,
 				028C194D1BD66A6000B2266F /* FMODSoundSystem.cpp in Sources */,
 				028C178E1BD66A6000B2266F /* RotationControllerComponent.cpp in Sources */,
 				028C19861BD66A6000B2266F /* AnchorLayoutAlgorithm.cpp in Sources */,
@@ -7817,6 +7837,7 @@
 				028C15E51BD66A6000B2266F /* RenderCallbacks.cpp in Sources */,
 				028C18EB1BD66A6000B2266F /* ParticleEffectSystem.cpp in Sources */,
 				028C14BF1BD66A6000B2266F /* Camera.cpp in Sources */,
+				6E1E44E41CBD2B2F003C895A /* LibPSDHelper.cpp in Sources */,
 				028C0FAF1BD66A6000B2266F /* DynamicMemoryFile.cpp in Sources */,
 				028C10661BD66A6000B2266F /* InputSystem.cpp in Sources */,
 				028C0D931BD66A6000B2266F /* KeyedArchive_wrap.cxx in Sources */,
@@ -8543,6 +8564,7 @@
 				028C16041BD66A6000B2266F /* dbg_Draw.cpp in Sources */,
 				028C0E361BD66A6000B2266F /* Message.cpp in Sources */,
 				028C14D21BD66A6000B2266F /* Heightmap.cpp in Sources */,
+				6E1E44E51CBD2B2F003C895A /* LibPSDHelper.cpp in Sources */,
 				028C194C1BD66A6000B2266F /* FMODSoundSystem.cpp in Sources */,
 				028C178D1BD66A6000B2266F /* RotationControllerComponent.cpp in Sources */,
 				028C19851BD66A6000B2266F /* AnchorLayoutAlgorithm.cpp in Sources */,

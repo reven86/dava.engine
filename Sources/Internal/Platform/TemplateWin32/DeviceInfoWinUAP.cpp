@@ -220,29 +220,27 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 }
 
 // temporary decision
-void DeviceInfoPrivate::InitializeScreenInfo()
+void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit)
 {
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+
+    if (screenInfo_.width > 0 && screenInfo_.height > 0)
+    {
+        screenInfo = screenInfo_;
+    }
+
+    // First time InitializeScreenInfo is called before dava thread and dispatcher are created
+    // so use this flag to leave function
+    if (!fullInit)
+    {
+        return;
+    }
 
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
     auto func = [this]() {
         // should be started on UI thread
-        CoreWindow ^ coreWindow = Window::Current->CoreWindow;
-        DVASSERT(coreWindow != nullptr);
-
-        screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
-        screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
-
-        DisplayInformation ^ displayInfo = DisplayInformation::GetForCurrentView();
-        DVASSERT(displayInfo != nullptr);
-        screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
-        DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
-        if (DisplayOrientations::Portrait == curOrientation || DisplayOrientations::PortraitFlipped == curOrientation)
-        {
-            std::swap(screenInfo.width, screenInfo.height);
-        }
         //  in Continuum mode, we don't have touch
         if (isMobileMode)
         {
@@ -261,7 +259,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
             }
         }
     };
-    core->RunOnUIThreadBlocked(func);
+    core->RunOnUIThread(func);
     // start device watchers, after creation main thread dispatcher
     if (!watchersCreated)
     {

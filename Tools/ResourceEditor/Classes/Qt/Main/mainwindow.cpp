@@ -88,6 +88,7 @@
 
 #include "Tools/HangingObjectsHeight/HangingObjectsHeight.h"
 #include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
+#include "Tools/LoggerOutput/LoggerErrorHandler.h"
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
@@ -1273,15 +1274,20 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     sceneSaver.SetOutFolder(folder);
     sceneSaver.EnableCopyConverted(saveWithCompressed);
 
-    DAVA::Set<DAVA::String> errorsLog;
+    LoggerErrorHandler handler;
+    DAVA::Logger::AddCustomOutput(&handler);
 
     SceneEditor2* sceneForSaving = scene->CreateCopyForExport();
-    sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath(), errorsLog);
+    sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath());
     sceneForSaving->Release();
+    DAVA::Logger::RemoveCustomOutput(&handler);
 
     WaitStop();
 
-    ShowErrorDialog(errorsLog);
+    if (handler.HasErrors())
+    {
+        ShowErrorDialog(handler.GetErrors());
+    }
 }
 
 void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)

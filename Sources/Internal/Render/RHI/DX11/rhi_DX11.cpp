@@ -151,7 +151,7 @@ dx11_Reset(const ResetParam& param)
     else
     {
 #if defined(__DAVAENGINE_WIN_UAP__)
-        resize_swapchain(param.width, param.height);
+        resize_swapchain(param.width, param.height, param.scaleX, param.scaleY);
 #else
 //Not implemented
 #endif
