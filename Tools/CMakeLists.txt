@@ -18,7 +18,8 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_
 
 include               ( CMake-common )
 
-find_package          ( DavaFramework REQUIRED )
+set                   ( DAVA_DISABLE_AUTOTESTS true )
+find_package          ( DavaFramework REQUIRED COMPONENTS ALL )
 find_package          ( DavaTools     REQUIRED )
 
 set                   ( IGNORE_FILE_TREE_CHECK 1 )#tmp
