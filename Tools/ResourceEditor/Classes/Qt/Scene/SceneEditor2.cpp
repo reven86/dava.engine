@@ -791,35 +791,23 @@ void LookAtSelection(SceneEditor2* scene)
 
 void RemoveSelection(SceneEditor2* scene)
 {
-    if (scene != nullptr)
+    if (scene == nullptr)
+        return;
+
+    const auto& selection = scene->selectionSystem->GetSelection();
+
+    SelectableGroup objectsToRemove;
+    for (const auto& item : selection.GetContent())
     {
-        const auto& selection = scene->selectionSystem->GetSelection();
-
-        SelectableGroup objectToRemove;
-
-        for (const auto& item : selection.GetContent())
+        if ((item.CanBeCastedTo<DAVA::Entity>() == false) || (item.AsEntity()->GetLocked() == false))
         {
-            if (item.CanBeCastedTo<DAVA::Entity>())
-            {
-                auto entity = item.AsEntity();
-                if (entity->GetLocked())
-                {
-                    DAVA::StringStream ss;
-                    ss << "Can not remove entity " << entity->GetName().c_str() <<
-                    ": entity is locked!" << PointerSerializer::FromPointer(entity);
-                    DAVA::Logger::Warning("%s", ss.str().c_str());
-                }
-            }
-            else
-            {
-                objectToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
-            }
+            objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
         }
+    }
 
-        if (objectToRemove.IsEmpty() == false)
-        {
-            scene->structureSystem->Remove(objectToRemove);
-        }
+    if (objectsToRemove.IsEmpty() == false)
+    {
+        scene->structureSystem->Remove(objectsToRemove);
     }
 }
 
