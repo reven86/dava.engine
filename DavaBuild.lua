@@ -91,7 +91,8 @@ function dava_init()
         -- edit commands for win32
         if dava.platform == "win32" then
             dava.im.cmd_cat = "type 2> nul"
-            dava.im.cmd_fwzip = fwpath .. "Tools/Bin/7z"
+            dava.im.cmd_fwzip = fwpath .. "Tools/Bin/7z.exe"
+            dava.im.cmd_fwsql = fwpath .. "Tools/Bin/sqlite3.exe"
 
             -- make slashes in commands win compatible
             for k,v in pairs(dava.im) do
