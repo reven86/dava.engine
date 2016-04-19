@@ -2,7 +2,7 @@
 if( DavaFramework_FIND_COMPONENTS )
     append_property( DAVA_COMPONENTS "DavaFramework;${DavaFramework_FIND_COMPONENTS}" )
 else()
-    append_property( DAVA_COMPONENTS  DavaFramework Sound  )
+    append_property( DAVA_COMPONENTS  "DavaFramework;Sound"  )
 endif()
 
 if ( DAVA_FOUND )
