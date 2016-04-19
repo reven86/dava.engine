@@ -578,16 +578,6 @@ void UITextField::Input(UIEvent* currentInput)
     if (this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-    if (currentInput->phase == UIEvent::Phase::KEY_DOWN || currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
-    {
-        if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
-        {
-            if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
-            {
-                StartEdit();
-            }
-        }
-    }
     if (currentInput->phase == UIEvent::Phase::ENDED)
     {
         if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
@@ -620,10 +610,6 @@ void UITextField::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
         {
-            if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
-            {
-                StartEdit();
-            }
             delegate->TextFieldShouldReturn(this);
         }
         else if (currentInput->key == Key::ESCAPE)
