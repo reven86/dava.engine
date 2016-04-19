@@ -247,18 +247,27 @@ void SceneExporterTool::ProcessInternal()
 {
     AssetCacheClient cacheClient(true);
 
-    SceneExporter exporter;
-    exporter.SetFolders(outFolder, inFolder);
+    SceneExporter::Params exportingParams;
+    exportingParams.dataFolder = outFolder;
+    exportingParams.dataSourceFolder = inFolder;
     if (exportForAllGPUs)
     {
-        exporter.SetCompressionParams(GPU_FAMILY_COUNT, quality);
+        for (DAVA::int32 gpu = DAVA::GPU_POWERVR_IOS; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)
+        {
+            exportingParams.exportForGPUs.push_back(static_cast<DAVA::eGPUFamily>(gpu));
+        }
     }
     else
     {
-        exporter.SetCompressionParams(requestedGPU, quality);
+        exportingParams.exportForGPUs.push_back(requestedGPU);
     }
 
-    exporter.EnableOptimizations(optimizeOnExport, useHDTextures);
+    exportingParams.quality = quality;
+    exportingParams.optimizeOnExport = optimizeOnExport;
+    exportingParams.useHDTextures = useHDTextures;
+
+    SceneExporter exporter;
+    exporter.SetExportingParams(exportingParams);
 
     if (useAssetCache)
     {

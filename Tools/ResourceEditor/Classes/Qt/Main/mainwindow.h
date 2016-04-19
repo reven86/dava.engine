@@ -106,7 +106,7 @@ public slots:
     void OnSceneSaveToFolderCompressed();
     void OnRecentFilesTriggered(QAction* recentAction);
     void OnRecentProjectsTriggered(QAction* recentAction);
-    void ExportMenuTriggered(QAction* exportAsAction);
+    void ExportTriggered();
     void OnImportSpeedTreeXML();
     void RemoveSelection();
 

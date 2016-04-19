@@ -69,14 +69,24 @@ public:
         DAVA::String relativePathname;
     };
 
+    struct Params
+    {
+        DAVA::FilePath dataFolder;
+        DAVA::FilePath dataSourceFolder;
+
+        DAVA::Vector<DAVA::eGPUFamily> exportForGPUs;
+        DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
+
+        bool optimizeOnExport = false;
+        bool useHDTextures = false;
+    };
+
     SceneExporter() = default;
     ~SceneExporter();
 
     using ExportedObjectCollection = DAVA::Vector<ExportedObject>;
 
-    void SetFolders(const DAVA::FilePath& dataFolder, const DAVA::FilePath& dataSourceFolder);
-    void SetCompressionParams(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality);
-    void EnableOptimizations(bool optimizeOnExport, bool useHDTextures);
+    void SetExportingParams(const SceneExporter::Params& exportingParams);
 
     bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
     void ExportObjects(const ExportedObjectCollection& exportedObjects);
@@ -95,18 +105,10 @@ private:
     bool CopyFile(const DAVA::FilePath& filePath) const;
     bool CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const;
 
-    DAVA::FilePath dataFolder;
-    DAVA::FilePath dataSourceFolder;
-
     DAVA::AssetCacheClient* cacheClient = nullptr;
     DAVA::AssetCache::CachedItemValue::Description cacheItemDescription;
 
-    DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
-    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
-
-    bool optimizeOnExport = false;
-    bool useHDTextures = false;
-    bool exportForAllGPUs = false;
+    SceneExporter::Params exportingParams;
 };
 
 

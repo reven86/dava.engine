@@ -45,13 +45,23 @@ signals:
     void pathChanged(const QString& path);
 
 public:
+    enum eFileType
+    {
+        File,
+        Folder
+    };
+
     explicit FilePathBrowser(QWidget* parent = NULL);
     ~FilePathBrowser();
 
     void SetHint(const QString& hint);
     void SetDefaultFolder(const QString& path);
     void SetPath(const QString& path);
+    const QString& GetPath() const;
+
     void SetFilter(const QString& filter);
+
+    void SetType(eFileType type);
 
     QSize sizeHint() const;
 
@@ -79,6 +89,8 @@ private:
     QString defaultFolder;
     QString path;
     QString filter;
+
+    eFileType type = eFileType::File;
 };
 
 

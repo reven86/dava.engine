@@ -189,12 +189,6 @@
       <string>Recent Projects</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuExport">
-     <property name="title">
-      <string>Export</string>
-     </property>
-     <addaction name="separator"/>
-    </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
       <string>Import</string>
@@ -217,9 +211,9 @@
     <addaction name="actionSaveScene"/>
     <addaction name="actionSaveSceneAs"/>
     <addaction name="separator"/>
+    <addaction name="actionExport"/>
     <addaction name="menuSave_To_Folder_With_Children"/>
     <addaction name="separator"/>
-    <addaction name="menuExport"/>
     <addaction name="menuImport"/>
     <addaction name="separator"/>
    </widget>
@@ -2158,6 +2152,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+R</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
    </property>
   </action>
  </widget>

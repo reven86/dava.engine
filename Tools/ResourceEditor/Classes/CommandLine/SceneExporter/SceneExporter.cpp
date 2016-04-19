@@ -256,28 +256,14 @@ void CollectTextureDescriptors(Scene* scene, const FilePath& dataSourceFolder, S
 
 SceneExporter::~SceneExporter() = default;
 
-void SceneExporter::SetCompressionParams(const eGPUFamily gpu, TextureConverter::eConvertQuality quality_)
+void SceneExporter::SetExportingParams(const SceneExporter::Params& exportingParams_)
 {
-    exportForGPU = gpu;
-    exportForAllGPUs = (gpu == GPU_FAMILY_COUNT);
+    exportingParams = exportingParams_;
 
-    quality = quality_;
+    DVASSERT(exportingParams.dataFolder.IsDirectoryPathname());
+    DVASSERT(exportingParams.dataSourceFolder.IsDirectoryPathname());
 }
 
-void SceneExporter::SetFolders(const FilePath& dataFolder_, const FilePath& dataSourceFolder_)
-{
-    DVASSERT(dataFolder_.IsDirectoryPathname());
-    DVASSERT(dataSourceFolder_.IsDirectoryPathname());
-
-    dataFolder = dataFolder_;
-    dataSourceFolder = dataSourceFolder_;
-}
-
-void SceneExporter::EnableOptimizations(bool optimizeOnExport_, bool useHDTextures_)
-{
-    optimizeOnExport = optimizeOnExport_;
-    useHDTextures = useHDTextures_;
-}
 
 void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_, String machineName, String runDate, String comment)
 {
@@ -291,7 +277,7 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
 {
     Logger::Info("Exporting of %s", sceneLink.c_str());
 
-    FilePath outScenePathname = dataFolder + sceneLink;
+    FilePath outScenePathname = exportingParams.dataFolder + sceneLink;
     FilePath outSceneFolder = outScenePathname.GetDirectory();
     FilePath linksPathname(outSceneFolder + SceneExporterCache::LINKS_NAME);
 
@@ -308,7 +294,7 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
     AssetCache::CacheItemKey cacheKey;
     if (cacheClient != nullptr && cacheClient->IsConnected())
     { //request Scene from cache
-        SceneExporterCache::CalculateSceneKey(scenePathname, sceneLink, cacheKey, static_cast<uint32>(optimizeOnExport));
+        SceneExporterCache::CalculateSceneKey(scenePathname, sceneLink, cacheKey, static_cast<uint32>(exportingParams.optimizeOnExport));
 
         AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(cacheKey, outScenePathname.GetDirectory());
         if (requested == AssetCache::Error::NO_ERRORS)
@@ -411,21 +397,16 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
         return;
     }
 
-    if (exportForAllGPUs)
+    bool texturesExported = ExportTextures(exportingParams.exportForGPUs, exportingParams.quality, *descriptor);
+    if (texturesExported)
     {
-        static const DAVA::Vector<DAVA::eGPUFamily> GPUs = { DAVA::GPU_POWERVR_IOS, DAVA::GPU_POWERVR_ANDROID, DAVA::GPU_TEGRA, DAVA::GPU_MALI, DAVA::GPU_ADRENO, DAVA::GPU_DX11, DAVA::GPU_ORIGIN };
-        bool texturesExported = ExportTextures(GPUs, quality, *descriptor);
-        if (texturesExported)
+        if (exportingParams.exportForGPUs.size() == 1)
         {
-            descriptor->Save(dataFolder + descriptorLink);
+            descriptor->Export(exportingParams.dataFolder + descriptorLink, exportingParams.exportForGPUs[0]);
         }
-    }
-    else
-    {
-        bool texturesExported = ExportTextures({ exportForGPU }, quality, *descriptor);
-        if (texturesExported)
+        else
         {
-            descriptor->Export(dataFolder + descriptorLink, exportForGPU);
+            descriptor->Save(exportingParams.dataFolder + descriptorLink);
         }
     }
 }
@@ -492,13 +473,13 @@ void SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const
 
 bool SceneExporter::CopyFile(const FilePath& filePath) const
 {
-    String workingPathname = filePath.GetRelativePathname(dataSourceFolder);
+    String workingPathname = filePath.GetRelativePathname(exportingParams.dataSourceFolder);
     return CopyFile(filePath, workingPathname);
 }
 
 bool SceneExporter::CopyFile(const FilePath& filePath, const String& fileLink) const
 {
-    FilePath newFilePath = dataFolder + fileLink;
+    FilePath newFilePath = exportingParams.dataFolder + fileLink;
 
     bool retCopy = FileSystem::Instance()->CopyFile(filePath, newFilePath, true);
     if (!retCopy)
@@ -511,17 +492,17 @@ bool SceneExporter::CopyFile(const FilePath& filePath, const String& fileLink) c
 
 bool SceneExporter::ExportScene(Scene* scene, const FilePath& scenePathname, ExportedObjectCollection& exportedObjects)
 {
-    String relativeSceneFilename = scenePathname.GetRelativePathname(dataSourceFolder);
-    FilePath outScenePathname = dataFolder + relativeSceneFilename;
+    String relativeSceneFilename = scenePathname.GetRelativePathname(exportingParams.dataSourceFolder);
+    FilePath outScenePathname = exportingParams.dataFolder + relativeSceneFilename;
 
-    SceneExporterInternal::PrepareSceneToExport(scene, optimizeOnExport);
+    SceneExporterInternal::PrepareSceneToExport(scene, exportingParams.optimizeOnExport);
 
-    SceneExporterInternal::CollectHeightmapPathname(scene, dataSourceFolder, exportedObjects); //must be first
-    SceneExporterInternal::CollectTextureDescriptors(scene, dataSourceFolder, exportedObjects);
+    SceneExporterInternal::CollectHeightmapPathname(scene, exportingParams.dataSourceFolder, exportedObjects); //must be first
+    SceneExporterInternal::CollectTextureDescriptors(scene, exportingParams.dataSourceFolder, exportedObjects);
 
     // save scene to new place
     FilePath tempSceneName = FilePath::CreateWithNewExtension(scenePathname, ".exported.sc2");
-    scene->SaveScene(tempSceneName, optimizeOnExport);
+    scene->SaveScene(tempSceneName, exportingParams.optimizeOnExport);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, outScenePathname, true);
     if (!moved)
@@ -540,8 +521,8 @@ void SceneExporter::ExportObjects(const ExportedObjectCollection& exportedObject
     folders.reserve(exportedObjects.size());
     folders.insert(""); // To create root directory for scene
 
-    String inFolderString = dataSourceFolder.GetAbsolutePathname();
-    String outFolderString = dataFolder.GetAbsolutePathname();
+    String inFolderString = exportingParams.dataSourceFolder.GetAbsolutePathname();
+    String outFolderString = exportingParams.dataFolder.GetAbsolutePathname();
 
     //enumerate target folders for exported objects
     for (const auto& object : exportedObjects)

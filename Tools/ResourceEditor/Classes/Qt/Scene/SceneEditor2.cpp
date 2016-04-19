@@ -278,28 +278,19 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
     return SaveScene(curScenePath);
 }
 
-bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
+bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
 {
     DAVA::ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
     {
-        const DAVA::FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
-        DAVA::FilePath dataFolder = projectPath + "Data/3d/";
-        DAVA::FilePath dataSourceFolder = projectPath + "DataSource/3d/";
-
-        DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
-        DAVA::TextureConverter::eConvertQuality qualityValue = static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32());
-
         LoggerErrorHandler handler;
         DAVA::Logger::AddCustomOutput(&handler);
 
         SceneExporter exporter;
-        exporter.SetFolders(dataFolder, dataSourceFolder);
-        exporter.SetCompressionParams(newGPU, qualityValue);
-        exporter.EnableOptimizations(newGPU != DAVA::GPU_ORIGIN, true);
+        exporter.SetExportingParams(exportingParams);
 
         const DAVA::FilePath& scenePathname = GetScenePath();
-        DAVA::FilePath newScenePathname = dataFolder + scenePathname.GetRelativePathname(dataSourceFolder);
+        DAVA::FilePath newScenePathname = exportingParams.dataFolder + scenePathname.GetRelativePathname(exportingParams.dataSourceFolder);
         DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
 
         SceneExporter::ExportedObjectCollection exportedObjects;

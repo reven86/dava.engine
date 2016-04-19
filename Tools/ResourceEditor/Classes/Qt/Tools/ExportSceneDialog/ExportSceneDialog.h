@@ -44,6 +44,15 @@ public:
     explicit ExportSceneDialog(QWidget* parent = 0);
     ~ExportSceneDialog() override;
 
+    DAVA::FilePath GetDataFolder() const;
+    DAVA::Vector<DAVA::eGPUFamily> GetGPUs() const;
+    DAVA::TextureConverter::eConvertQuality GetQuality() const;
+    bool GetOptimizeOnExport() const;
+    bool GetUseHDTextures() const;
+
+public Q_SLOTS:
+    void accept() override;
+
 private:
     void SetupUI();
     void InitializeValues();
