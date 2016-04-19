@@ -45,7 +45,7 @@ ValueProperty::ValueProperty(const String& propName, VariantType::eVariantType t
     static Vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
 
     Vector<String>* componentNames = nullptr;
-    Vector<SubValueProperty*> childrenSubProps;
+    Vector<SubValueProperty*> subProperties;
     VariantType::eVariantType valueType = GetValueType();
     if (valueType == VariantType::TYPE_VECTOR2)
     {
@@ -66,23 +66,23 @@ ValueProperty::ValueProperty(const String& propName, VariantType::eVariantType t
         {
             int val = 0;
             DVVERIFY(map->GetValue(i, val));
-            childrenSubProps.push_back(new SubValueProperty(i, map->ToString(val)));
+            subProperties.push_back(new SubValueProperty(i, map->ToString(val)));
         }
     }
 
     if (componentNames != nullptr)
     {
         for (size_t i = 0; i < componentNames->size(); ++i)
-            childrenSubProps.push_back(new SubValueProperty(i, componentNames->at(i)));
+            subProperties.push_back(new SubValueProperty(i, componentNames->at(i)));
     }
 
-    for (SubValueProperty* child : childrenSubProps)
+    for (SubValueProperty* prop : subProperties)
     {
-        child->SetParent(this);
-        AddSubValueProperty(child);
-        SafeRelease(child);
+        prop->SetParent(this);
+        AddSubValueProperty(prop);
+        SafeRelease(prop);
     }
-    childrenSubProps.clear();
+    subProperties.clear();
 }
 
 ValueProperty::~ValueProperty()
@@ -391,7 +391,7 @@ VariantType::eVariantType ValueProperty::GetValueTypeComponent(int32 index) cons
     case VariantType::TYPE_INT32:
         if (GetType() == TYPE_FLAGS)
         {
-            return VariantType::TYPE_INT32;
+            return VariantType::TYPE_BOOLEAN;
         }
         else
         {
