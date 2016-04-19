@@ -88,6 +88,7 @@ int main(int argc, char* argv[])
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
     DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
+    int exitCode = 0;
     {
         EditorConfig config;
         SettingsManager settingsManager;
@@ -95,18 +96,21 @@ int main(int argc, char* argv[])
         SceneValidator sceneValidator;
 
         CommandLineManager cmdLine(argc, argv);
-
         if (cmdLine.IsEnabled())
         {
             RunConsole(argc, argv, cmdLine);
         }
-        else
+        else if (argc == 1)
         {
             RunGui(argc, argv, cmdLine);
         }
+        else
+        {
+            exitCode = 1; //wrong commandLine
+        }
     }
 
-    return 0;
+    return exitCode;
 }
 
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
@@ -119,14 +123,14 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 
     DAVA::Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->EnableConsoleMode();
-    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
     QApplication a(argc, argv);
 
     DavaGLWidget glWidget;
     glWidget.MakeInvisible();
 
-    DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
+    DAVA::Logger::Info(QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     // Delayed initialization throught event loop
     glWidget.show();
@@ -194,7 +198,7 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
                                    mainWindow.EnableGlobalTimeout(true);
                                    auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
 
-                                   QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
+                                   QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
 
                                    mainWindow.show();
 

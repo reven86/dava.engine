@@ -80,6 +80,8 @@ public:
     //! Get file or folder name
     const String& GetFilename(int32 index) const;
 
+    uint32 GetFileSize(uint32 index) const;
+
     /**
 		\brief is file with given index in this list is a directory
 		\return true if this is directory
