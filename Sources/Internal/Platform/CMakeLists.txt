@@ -11,6 +11,8 @@ set( HPP_FILES_MACOS TemplateMacOS/*.h  )
 set( CPP_FILES_WIN32 TemplateWin32/*.cpp )
 set( HPP_FILES_WIN32 TemplateWin32/*.h  )
 
+set( CPP_FILES_WINUAP TemplateWin32/*.cpp )
+set( HPP_FILES_WINUAP TemplateWin32/*.h  )
 
 set( ERASE_FILES_ANDROID  )
 
