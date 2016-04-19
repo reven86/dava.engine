@@ -1,6 +1,4 @@
 
-macro( InitDavaLib )
-
 set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_ios_release.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_ios.a
@@ -224,7 +222,7 @@ if( WIN32 AND NOT WINDOWS_UAP )
 endif()
 
 
-if( WIN32 AND WINDOWS_UAP ) 
+if( WINDOWS_UAP ) 
     add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
 
     set( DAVA_STATIC_LIBRARIES_WINUAP   "d2d1.lib"
@@ -240,5 +238,3 @@ if( WIN32 AND WINDOWS_UAP )
     set( DAVA_STATIC_LIBRARIES_WINUAP_DEBUG   ${LIST_SHARED_LIBRARIES_DEBUG} )
 
 endif()
-
-endmacro ()
