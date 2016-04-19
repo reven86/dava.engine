@@ -69,7 +69,7 @@ void LandscapeSubdivision::UpdatePatchInfo(const Rect2i& heighmapRect)
     UpdatePatchInfo(0, 0, 0, nullptr, heighmapRect);
 }
 
-void LandscapeSubdivision::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, AABBox3* parentBbox, const Rect2i& updateRect)
+void LandscapeSubdivision::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, PatchQuadInfo* parentPatch, const Rect2i& updateRect)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -159,18 +159,27 @@ void LandscapeSubdivision::UpdatePatchInfo(uint32 level, uint32 x, uint32 y, AAB
         }
     }
 
-    patch->radius = Distance(patch->bbox.GetCenter(), patch->bbox.max);
-
     uint32 x2 = x << 1;
     uint32 y2 = y << 1;
 
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0, &patch->bbox, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0, &patch->bbox, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1, &patch->bbox, updateRect);
-    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1, &patch->bbox, updateRect);
+    //UpdatePatchInfo can modify 'maxError' and 'bbox' of parentPatch
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0, patch, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0, patch, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1, patch, updateRect);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1, patch, updateRect);
 
-    if (parentBbox)
-        parentBbox->AddAABBox(patch->bbox);
+    patch->radius = Distance(patch->bbox.GetCenter(), patch->bbox.max);
+
+    if (parentPatch)
+    {
+        if (Abs(parentPatch->maxError) < Abs(patch->maxError))
+        {
+            parentPatch->maxError = patch->maxError;
+            parentPatch->positionOfMaxError = patch->positionOfMaxError;
+        }
+
+        parentPatch->bbox.AddAABBox(patch->bbox);
+    }
 }
 
 void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags, float32 heightError0, float32 radiusError0)
