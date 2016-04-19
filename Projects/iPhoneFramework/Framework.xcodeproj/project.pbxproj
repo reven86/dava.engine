@@ -2007,6 +2007,10 @@
 		5C97964714E3E75000FFFA14 /* libxml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964514E3E75000FFFA14 /* libxml_ios.a */; };
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
 		6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6252BF2518ED506E00058754 /* libjpeg_ios.a */; };
+		6E1E44DE1CBD2B06003C895A /* LibPSDHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E1E44DC1CBD2B06003C895A /* LibPSDHelper.cpp */; };
+		6E1E44DF1CBD2B06003C895A /* LibPSDHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E1E44DC1CBD2B06003C895A /* LibPSDHelper.cpp */; };
+		6E1E44E01CBD2B06003C895A /* LibPSDHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E1E44DD1CBD2B06003C895A /* LibPSDHelper.h */; };
+		6E1E44E11CBD2B06003C895A /* LibPSDHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E1E44DD1CBD2B06003C895A /* LibPSDHelper.h */; };
 		6EC468251C58E58E0083C264 /* VisibilityCheckComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6EC468231C58E58E0083C264 /* VisibilityCheckComponent.cpp */; };
 		6EC468261C58E58E0083C264 /* VisibilityCheckComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EC468241C58E58E0083C264 /* VisibilityCheckComponent.h */; };
 		72C84EB61B29C98B003A52E0 /* libwebp_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB51B29C98B003A52E0 /* libwebp_ios.a */; };
@@ -3070,6 +3074,8 @@
 		5C97964514E3E75000FFFA14 /* libxml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_ios.a; path = ../../Libs/libs/libxml_ios.a; sourceTree = "<group>"; };
 		5C97964614E3E75000FFFA14 /* libyaml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_ios.a; path = ../../Libs/libs/libyaml_ios.a; sourceTree = "<group>"; };
 		6252BF2518ED506E00058754 /* libjpeg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_ios.a; path = ../../Libs/libs/libjpeg_ios.a; sourceTree = "<group>"; };
+		6E1E44DC1CBD2B06003C895A /* LibPSDHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibPSDHelper.cpp; sourceTree = "<group>"; };
+		6E1E44DD1CBD2B06003C895A /* LibPSDHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibPSDHelper.h; sourceTree = "<group>"; };
 		6EC468231C58E58E0083C264 /* VisibilityCheckComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VisibilityCheckComponent.cpp; sourceTree = "<group>"; };
 		6EC468241C58E58E0083C264 /* VisibilityCheckComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityCheckComponent.h; sourceTree = "<group>"; };
 		72C84EB51B29C98B003A52E0 /* libwebp_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_ios.a; path = ../../Libs/libs/libwebp_ios.a; sourceTree = "<group>"; };
@@ -3999,6 +4005,8 @@
 				02E7C3F11BD624A5002F026D /* LibJpegHelper.h */,
 				02E7C3F21BD624A5002F026D /* LibPngHelper.cpp */,
 				02E7C3F31BD624A5002F026D /* LibPngHelper.h */,
+				6E1E44DC1CBD2B06003C895A /* LibPSDHelper.cpp */,
+				6E1E44DD1CBD2B06003C895A /* LibPSDHelper.h */,
 				02E7C3F41BD624A5002F026D /* LibPVRHelper.cpp */,
 				02E7C3F51BD624A5002F026D /* LibPVRHelper.h */,
 				02E7C3F61BD624A5002F026D /* LibTgaHelper.cpp */,
@@ -5063,6 +5071,7 @@
 				02E7CE361BD624A7002F026D /* TheoraPlayer.h in Headers */,
 				02E7CB461BD624A7002F026D /* LibWebPHelper.h in Headers */,
 				02E7C6F41BD624A7002F026D /* Semaphore.h in Headers */,
+				6E1E44E11CBD2B06003C895A /* LibPSDHelper.h in Headers */,
 				02E7C0F51BD6248E002F026D /* BiDiHelper.h in Headers */,
 				02E7CF3B1BD639A4002F026D /* List.h in Headers */,
 				02E7CA841BD624A7002F026D /* TextLayout.h in Headers */,
@@ -5827,6 +5836,7 @@
 				02E7C6DB1BD624A6002F026D /* Atomic.h in Headers */,
 				02E7CE291BD624A7002F026D /* UIStyleSheetStructs.h in Headers */,
 				02E7CC911BD624A7002F026D /* SnapToLandscapeControllerComponent.h in Headers */,
+				6E1E44E01CBD2B06003C895A /* LibPSDHelper.h in Headers */,
 				02E7C7EF1BD624A7002F026D /* MathConstants.h in Headers */,
 				02E7CD9F1BD624A7002F026D /* UpdateSystem.h in Headers */,
 				02E7C6091BD624A6002F026D /* KeyframeAnimation.h in Headers */,
@@ -6261,6 +6271,7 @@
 				02E7CDE41BD624A7002F026D /* FlowLayoutAlgorithm.cpp in Sources */,
 				02E7C60C1BD624A6002F026D /* LinearAnimation.cpp in Sources */,
 				02E7CDE01BD624A7002F026D /* ControlLayoutData.cpp in Sources */,
+				6E1E44DF1CBD2B06003C895A /* LibPSDHelper.cpp in Sources */,
 				02E7C8561BD624A7002F026D /* NetworkUtils.cpp in Sources */,
 				02E7CC221BD624A7002F026D /* rhi_VertexBufferGLES2.cpp in Sources */,
 				02E7C64C1BD624A6002F026D /* UIControlSwig.cpp in Sources */,
@@ -6666,6 +6677,7 @@
 				02E7CDA51BD624A7002F026D /* WindSystem.cpp in Sources */,
 				02E7CAF11BD624A7002F026D /* SkinnedMesh.cpp in Sources */,
 				02E7C8F51BD624A7002F026D /* ParticlePropertyLine.cpp in Sources */,
+				6E1E44DE1CBD2B06003C895A /* LibPSDHelper.cpp in Sources */,
 				02E7C7C31BD624A7002F026D /* InputSystem.cpp in Sources */,
 				02E7CCCB1BD624A7002F026D /* UpdatableComponent.cpp in Sources */,
 				02E7C8F11BD624A7002F026D /* ParticleLayer.cpp in Sources */,

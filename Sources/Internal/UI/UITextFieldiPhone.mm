@@ -341,6 +341,11 @@ void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffse
 
     nativeRect = CGRectIntegral(nativeRect);
     nativeRect.origin.x += xOffset;
+
+    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
+    nativeRect.size.width = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.width);
+    nativeRect.size.height = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.height);
+
     textFieldHolder->textCtrl.frame = nativeRect;
 }
 

@@ -34,7 +34,7 @@
 
 namespace DAVA
 {
-class ProgramOptions
+class ProgramOptions final
 {
 public:
     ProgramOptions(const String& _commandName);

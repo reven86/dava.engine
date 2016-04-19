@@ -30,7 +30,11 @@
 #include "SpritesPacker.h"
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
+
+#include <QDir>
 #include <QDirIterator>
+
+#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
@@ -38,20 +42,6 @@ SpritesPacker::SpritesPacker(QObject* parent)
     : QObject(parent)
     , running(false)
 {
-}
-
-SpritesPacker::~SpritesPacker()
-{
-}
-
-void SpritesPacker::SetCacheTool(const String& ip, const String& port, const String& timeout)
-{
-    resourcePacker2D.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
-}
-
-void SpritesPacker::ClearCacheTool()
-{
-    resourcePacker2D.ClearCacheClientTool();
 }
 
 void SpritesPacker::AddTask(const QDir& inputDir, const QDir& outputDir)
@@ -123,4 +113,9 @@ void SpritesPacker::SetRunning(bool arg)
 const DAVA::ResourcePacker2D& SpritesPacker::GetResourcePacker() const
 {
     return resourcePacker2D;
+}
+
+void SpritesPacker::SetCacheClient(AssetCacheClient* cacheClient, const String& comment)
+{
+    resourcePacker2D.SetCacheClient(cacheClient, comment);
 }

@@ -38,6 +38,7 @@ const FastName NMaterialName::DECAL_ALPHATEST = FastName("~res:/Materials/Decal.
 const FastName NMaterialName::PIXELLIT_SPECULARMAP_OPAQUE = FastName("~res:/Materials/PixelLit.SpecularMap.Opaque.material");
 const FastName NMaterialName::TEXTURED_ALPHATEST = FastName("~res:/Materials/Textured.Alphatest.material");
 const FastName NMaterialName::TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/Textured.VertexColor.Alphatest.material");
+const FastName NMaterialName::TEXTURED_VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/Textured.VertexColor.Alphablend.material");
 const FastName NMaterialName::DECAL_OPAQUE = FastName("~res:/Materials/Decal.Opaque.material");
 const FastName NMaterialName::TEXTURED_OPAQUE = FastName("~res:/Materials/Textured.Opaque.material");
 const FastName NMaterialName::TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/Textured.VertexColor.Opaque.material");

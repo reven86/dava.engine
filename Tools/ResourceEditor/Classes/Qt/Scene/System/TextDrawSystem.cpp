@@ -111,7 +111,7 @@ void TextDrawSystem::PushNextBatch(const Color& color)
     batchDescriptor.indexCount = DAVA::Min(TextBlockGraphicRender::GetSharedIndexBufferCapacity(), indexCount);
     batchDescriptor.vertexPointer = vertices.front().position.data;
     batchDescriptor.vertexStride = TextBlockGraphicRender::TextVerticesDefaultStride;
-    batchDescriptor.texCoordPointer = vertices.front().texCoord.data;
+    batchDescriptor.texCoordPointer[0] = vertices.front().texCoord.data;
     batchDescriptor.texCoordStride = TextBlockGraphicRender::TextVerticesDefaultStride;
     batchDescriptor.indexPointer = TextBlockGraphicRender::GetSharedIndexBuffer();
     batchDescriptor.material = fontMaterial;
