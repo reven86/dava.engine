@@ -27,6 +27,10 @@
 =====================================================================================*/
 
 #include "FileSystem/FileSystem.h"
+#include "AssetCache/AssetCacheClient.h"
+
+#include "Platform/DeviceInfo.h"
+#include "Platform/DateTime.h"
 
 #include "SpriteResourcesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
@@ -62,19 +66,36 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
 {
     DAVA::FileSystem::Instance()->CreateDirectory(outputDir, true);
 
+    DAVA::AssetCacheClient cacheClient(true);
     DAVA::ResourcePacker2D resourcePacker;
 
     resourcePacker.forceRepack = true;
     resourcePacker.InitFolders(inputDir, outputDir);
     resourcePacker.isLightmapsPacking = isLightmapPacking;
 
+    bool shouldDisconnectClient = false;
     if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
     {
-        auto ip = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
-        auto port = SettingsManager::GetValue(Settings::General_AssetCache_Port).AsString();
-        auto timeout = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsString();
-        resourcePacker.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
+        DAVA::String ipStr = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
+        DAVA::uint16 port = static_cast<DAVA::uint16>(SettingsManager::GetValue(Settings::General_AssetCache_Port).AsUInt32());
+        DAVA::uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
+
+        DAVA::AssetCacheClient::ConnectionParams params;
+        params.ip = (ipStr.empty() ? DAVA::AssetCache::LOCALHOST : ipStr);
+        params.port = port;
+        params.timeoutms = timeoutSec * 1000; //in ms
+
+        DAVA::AssetCache::Error connected = cacheClient.ConnectSynchronously(params);
+        if (connected == DAVA::AssetCache::Error::NO_ERRORS)
+        {
+            resourcePacker.SetCacheClient(&cacheClient, "Resource Editor.Repack Sprites");
+            shouldDisconnectClient = true;
+        }
     }
 
     resourcePacker.PackResources(gpu);
+    if (shouldDisconnectClient)
+    {
+        cacheClient.Disconnect();
+    }
 }

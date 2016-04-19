@@ -177,7 +177,7 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     if (!ddsFile)
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open %s", filePathname.GetStringValue().c_str());
-        return false;
+        return 0;
     }
 
     std::unique_ptr<DDSReader> reader(DDSReader::CreateReader(ddsFile));

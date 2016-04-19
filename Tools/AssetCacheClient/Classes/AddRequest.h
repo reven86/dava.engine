@@ -31,16 +31,19 @@
 
 #include "CacheRequest.h"
 
+namespace DAVA
+{
+class AssetCacheClient;
+}
+
 class AddRequest : public CacheRequest
 {
 public:
     AddRequest();
 
-    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey& key, bool added) override;
-
 protected:
-    int SendRequest() override;
-    int CheckOptionsInternal() const override;
+    DAVA::AssetCache::Error SendRequest(DAVA::AssetCacheClient& cacheClient) override;
+    DAVA::AssetCache::Error CheckOptionsInternal() const override;
 };
 
 #endif //__ADD_REQUEST_H__

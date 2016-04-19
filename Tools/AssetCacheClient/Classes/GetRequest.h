@@ -31,16 +31,19 @@
 
 #include "CacheRequest.h"
 
-class GetRequest : public CacheRequest
+namespace DAVA
+{
+class AssetCacheClient;
+}
+
+class GetRequest : public CacheRequest, DAVA::AssetCache::ClientNetProxyListener
 {
 public:
     GetRequest();
 
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value) override;
-
 protected:
-    int SendRequest() override;
-    int CheckOptionsInternal() const override;
+    DAVA::AssetCache::Error SendRequest(DAVA::AssetCacheClient& cacheClient) override;
+    DAVA::AssetCache::Error CheckOptionsInternal() const override;
 };
 
 #endif //__GET_REQUEST_H__

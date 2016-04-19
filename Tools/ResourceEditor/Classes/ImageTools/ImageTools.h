@@ -93,9 +93,9 @@ enum eComponentsRGBA
 DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps = 0);
 void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality);
 
-bool SplitImage(const DAVA::FilePath& pathname, DAVA::Set<DAVA::String>& errorLog);
+bool SplitImage(const DAVA::FilePath& pathname);
 
-bool MergeImages(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog);
+bool MergeImages(const DAVA::FilePath& folder);
 
 Channels CreateSplittedImages(DAVA::Image* originalImage);
 

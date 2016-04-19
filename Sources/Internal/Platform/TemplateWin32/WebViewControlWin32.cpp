@@ -1214,6 +1214,8 @@ void WebViewControl::SetRect(const Rect& rect)
     VirtualCoordinatesSystem& coordSys = *VirtualCoordinatesSystem::Instance();
 
     Rect convertedRect = coordSys.ConvertVirtualToPhysical(rect);
+    convertedRect.dx = std::max(0.0f, convertedRect.dx);
+    convertedRect.dy = std::max(0.0f, convertedRect.dy);
 
     browserRectTmp.left = static_cast<LONG>(convertedRect.x);
     browserRectTmp.top = static_cast<LONG>(convertedRect.y);

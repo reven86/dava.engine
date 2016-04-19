@@ -42,6 +42,7 @@
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibTgaHelper.h"
 #include "Render/Image/LibWebPHelper.h"
+#include "Render/Image/LibPSDHelper.h"
 
 #include "Base/ScopedPtr.h"
 
