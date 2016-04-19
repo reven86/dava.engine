@@ -78,7 +78,7 @@ QVariant SceneTreeItem::data(int role) const
     return v;
 }
 
-uint32_t SceneTreeItem::ItemType() const
+DAVA::uint32 SceneTreeItem::ItemType() const
 {
     return type;
 }

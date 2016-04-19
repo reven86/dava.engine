@@ -50,7 +50,7 @@ class SceneTreeFilteringModel;
 class SceneTreeItem : public QStandardItem
 {
 public:
-    enum eItemType : uint32_t
+    enum eItemType : DAVA::uint32
     {
         EIT_Entity,
         EIT_Emitter,
@@ -59,7 +59,7 @@ public:
         EIT_InnerEmitter
     };
 
-    enum eItemDataRole : uint32_t
+    enum eItemDataRole : DAVA::uint32
     {
         EIDR_Type = Qt::UserRole,
         EIDR_Data,
@@ -70,7 +70,7 @@ public:
 
     QVariant data(int role) const;
 
-    uint32_t ItemType() const;
+    DAVA::uint32 ItemType() const;
     virtual const QIcon& ItemIcon() const;
 
     virtual QString ItemName() const = 0;

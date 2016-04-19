@@ -338,15 +338,14 @@ void ParticleEmitterPropertiesWidget::UpdateProperties()
     DAVA::int32 emitterId = effect->GetEmitterInstanceIndex(instance);
     DAVA::Vector3 position = (emitterId == -1) ? DAVA::Vector3(0, 0, 0) : effect->GetSpawnPosition(emitterId);
 
-    auto SetSpinboxValueSilently = [](EventFilterDoubleSpinBox* box, float value) {
-        bool blocked = box->blockSignals(true);
-        box->setValue(value);
-        box->blockSignals(blocked);
-    };
-
-    SetSpinboxValueSilently(positionXSpinBox, position.x);
-    SetSpinboxValueSilently(positionYSpinBox, position.y);
-    SetSpinboxValueSilently(positionZSpinBox, position.z);
+    {
+        QSignalBlocker lockX(positionXSpinBox);
+        QSignalBlocker lockY(positionYSpinBox);
+        QSignalBlocker lockZ(positionZSpinBox);
+        positionXSpinBox->setValue(position.x);
+        positionYSpinBox->setValue(position.y);
+        positionZSpinBox->setValue(position.z);
+    }
 
     if (!needUpdateTimeLimits)
     {

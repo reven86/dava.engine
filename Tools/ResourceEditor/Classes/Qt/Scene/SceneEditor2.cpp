@@ -245,8 +245,8 @@ void SceneEditor2::ExtractEditorEntities()
     DAVA::Vector<DAVA::Entity*> allEntities;
     GetChildNodes(allEntities);
 
-    DAVA::uint32 count = allEntities.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    DAVA::size_type count = allEntities.size();
+    for (DAVA::size_type i = 0; i < count; ++i)
     {
         if (allEntities[i]->GetName().find("editor.") != DAVA::String::npos)
         {
@@ -263,7 +263,7 @@ void SceneEditor2::InjectEditorEntities()
     bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
     selectionSystem->EnableSystem(false);
 
-    for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
+    for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
         AddEditorEntity(editorEntities[i]);
         editorEntities[i]->Release();

@@ -482,7 +482,9 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>
 
     for (DAVA::int32 i = 0; i < 2; i++)
     {
-        auto id = this->lines.size();
+        DAVA::size_type id = this->lines.size();
+        // no panic, this->lines - is map<uint32, struct>
+        // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];
@@ -516,7 +518,9 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>
 
     for (DAVA::int32 i = 0; i < 3; i++)
     {
-        auto id = this->lines.size();
+        DAVA::size_type id = this->lines.size();
+        // no panic, this->lines - is map<uint32, struct>
+        // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];

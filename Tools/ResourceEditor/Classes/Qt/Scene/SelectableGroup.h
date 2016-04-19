@@ -47,7 +47,7 @@ public:
     CollectionType& GetMutableContent();
 
     bool IsEmpty() const;
-    CollectionType::size_type GetSize() const;
+    DAVA::size_type GetSize() const;
     void Clear();
 
     void Add(Selectable::Object* object);
@@ -184,7 +184,7 @@ inline bool SelectableGroup::IsEmpty() const
     return objects.empty();
 }
 
-inline SelectableGroup::CollectionType::size_type SelectableGroup::GetSize() const
+inline DAVA::size_type SelectableGroup::GetSize() const
 {
     return objects.size();
 }
