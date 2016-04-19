@@ -48,8 +48,6 @@ public:
     void Process();
 
 protected:
-    void AddError(const DAVA::String& errorMessage); //need to aggregate errors in output
-
     virtual void ConvertOptionsToParamsInternal() = 0;
     virtual bool InitializeInternal() = 0;
     virtual void ProcessInternal() = 0;
@@ -61,10 +59,8 @@ private:
     void PrepareEnvironment() const;
     void PrepareQualitySystem() const;
     bool Initialize();
-    void PrintResults() const;
 
 protected:
-    DAVA::Set<DAVA::String> errors;
     DAVA::ProgramOptions options;
 };
 

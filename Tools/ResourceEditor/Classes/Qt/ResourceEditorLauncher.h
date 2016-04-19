@@ -51,15 +51,7 @@ inline void ResourceEditorLauncher::Launch()
 {
     Selectable::AddTransformProxyForClass<DAVA::Entity, EntityTransformProxy>();
     Selectable::AddTransformProxyForClass<DAVA::ParticleEmitterInstance, EmitterTransformProxy>();
-
-    DVASSERT(ProjectManager::Instance() != nullptr);
     ProjectManager::Instance()->OpenLastProject();
-    ProjectManager::Instance()->UpdateParticleSprites();
-    ProjectManager::Instance()->OnSceneViewInitialized();
-
-    DVASSERT(QtMainWindow::Instance() != nullptr);
-    QtMainWindow::Instance()->SetupTitle();
-    QtMainWindow::Instance()->OnSceneNew();
 }
 
 inline ResourceEditorLauncher::~ResourceEditorLauncher()

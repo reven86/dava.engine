@@ -29,15 +29,16 @@
 
 #include "DAVAEngine.h"
 
-#include <QDir>
-#include <QApplication>
-#include <QMessageBox>
-
 #include "Project.h"
 #include "EditorFontSystem.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Helpers/ResourcesManageHelper.h"
+
+#include <QDir>
+#include <QApplication>
+#include <QMessageBox>
+#include <QFileDialog>
 
 using namespace DAVA;
 
@@ -70,9 +71,12 @@ void Project::Close()
 bool Project::OpenInternal(const QString& path)
 {
     // Attempt to create a project
-    YamlParser* parser = YamlParser::Create(path.toStdString());
-    if (nullptr == parser)
+    ScopedPtr<YamlParser> parser(YamlParser::Create(path.toStdString()));
+    if (!parser)
+    {
         return false;
+    }
+
     QFileInfo fileInfo(path);
     if (!fileInfo.exists())
     {
@@ -80,15 +84,14 @@ bool Project::OpenInternal(const QString& path)
     }
     SetProjectName(fileInfo.fileName());
 
-    YamlNode* projectRoot = parser->GetRootNode();
-    if (nullptr == projectRoot)
-    {
-        SafeRelease(parser);
-        return false;
-    }
-
     FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
+
+    QDir projectDir = fileInfo.absoluteDir();
+    if (!projectDir.mkpath("." + GetScreensRelativePath()))
+    {
+        return false;
+    }
 
     SetProjectPath(fileInfo.absolutePath());
     projectPath.MakeDirectoryPathname();
@@ -101,70 +104,121 @@ bool Project::OpenInternal(const QString& path)
         FilePath::AddResourcesFolder(projectPath);
     }
 
-    const YamlNode* fontNode = projectRoot->Get("font");
-
-    // Get font node
-    if (nullptr != fontNode)
+    YamlNode* projectRoot = parser->GetRootNode();
+    if (nullptr != projectRoot)
     {
-        // Get default font node
-        const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-        if (nullptr != defaultFontPath)
+        const YamlNode* fontNode = projectRoot->Get("font");
+
+        // Get font node
+        if (nullptr != fontNode)
         {
-            FilePath localizationFontsPath(defaultFontPath->AsString());
-            if (FileSystem::Instance()->Exists(localizationFontsPath))
+            // Get default font node
+            const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
+            if (nullptr != defaultFontPath)
             {
-                editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
+                FilePath localizationFontsPath(defaultFontPath->AsString());
+                if (FileSystem::Instance()->Exists(localizationFontsPath))
+                {
+                    editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
+                }
             }
         }
+
+        if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
+        {
+            editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
+        }
+
+        editorFontSystem->LoadLocalizedFonts();
+
+        const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
+        const YamlNode* localeNode = projectRoot->Get("Locale");
+        if (localizationPathNode != nullptr && localeNode != nullptr)
+        {
+            FilePath localePath = localizationPathNode->AsString();
+            QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
+            QDir localePathDir(absPath);
+            editorLocalizationSystem->SetDirectory(localePathDir);
+
+            QString currentLocale = QString::fromStdString(localeNode->AsString());
+            editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
+        }
     }
-
-    if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
-    {
-        editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
-    }
-
-    editorFontSystem->LoadLocalizedFonts();
-
-    const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
-    const YamlNode* localeNode = projectRoot->Get("Locale");
-    if (localizationPathNode != nullptr && localeNode != nullptr)
-    {
-        FilePath localePath = localizationPathNode->AsString();
-        QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
-        QDir localePathDir(absPath);
-        editorLocalizationSystem->SetDirectory(localePathDir);
-
-        QString currentLocale = QString::fromStdString(localeNode->AsString());
-        editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
-    }
-
-    SafeRelease(parser);
 
     return true;
 }
 
-bool Project::CheckAndUnlockProject(const QString& projectPath)
+bool Project::CanOpenProject(const QString& projectPath) const
 {
-    if (!FileSystem::Instance()->IsFileLocked(projectPath.toStdString()))
+    if (projectPath.isEmpty())
     {
-        // Nothing to unlock.
-        return true;
+        return false; //this is not performace fix. QDir return true for empty path
     }
+    QFileInfo fileInfo(projectPath);
+    return fileInfo.exists() && fileInfo.isFile();
+}
 
-    if (QMessageBox::question(qApp->activeWindow(), tr("File is locked!"), tr("The project file %1 is locked by other user. Do you want to unlock it?").arg(projectPath)) == QMessageBox::No)
+EditorFontSystem* Project::GetEditorFontSystem() const
+{
+    return editorFontSystem;
+}
+
+EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
+{
+    return editorLocalizationSystem;
+}
+
+const QString& Project::GetScreensRelativePath()
+{
+    static const QString relativePath("/Data/UI");
+    return relativePath;
+}
+
+const QString& Project::GetProjectFileName()
+{
+    static const QString projectFile("ui.uieditor");
+    return projectFile;
+}
+
+QString Project::CreateNewProject(Result* result /*=nullptr*/)
+{
+    if (result == nullptr)
     {
-        return false;
+        Result dummy; //code cleaner
+        result = &dummy;
     }
-
-    // Check whether it is possible to unlock project file.
-    if (!FileSystem::Instance()->LockFile(projectPath.toStdString(), false))
+    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), tr("Select directory for new project"));
+    if (projectDirPath.isEmpty())
     {
-        QMessageBox::critical(qApp->activeWindow(), tr("Unable to unlock project file!"),
-                              tr("Unable to unlock project file %1. Please check whether the project is opened in another QuickEd and close it, if yes.").arg(projectPath));
-        return false;
+        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
+        return "";
     }
+    bool needOverwriteProjectFile = true;
+    QDir projectDir(projectDirPath);
+    const QString projectFileName = GetProjectFileName();
+    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
+    if (QFile::exists(fullProjectFilePath))
+    {
+        if (QMessageBox::Yes == QMessageBox::question(qApp->activeWindow(), tr("Project file exists!"), tr("Project file %1 exists! Open this project?").arg(fullProjectFilePath)))
+        {
+            return fullProjectFilePath;
+        }
 
-    return true;
+        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
+        return "";
+    }
+    QFile projectFile(fullProjectFilePath);
+    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate)) // create project file
+    {
+        *result = Result(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
+        return "";
+    }
+    if (!projectDir.mkpath(projectDir.canonicalPath() + GetScreensRelativePath()))
+    {
+        *result = Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
+        return "";
+    }
+    return fullProjectFilePath;
 }
 
 bool Project::IsOpen() const
