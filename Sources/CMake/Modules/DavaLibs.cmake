@@ -1,4 +1,6 @@
 
+macro( InitDavaLib )
+
 set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_ios_release.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_ios.a
@@ -239,4 +241,4 @@ if( WIN32 AND WINDOWS_UAP )
 
 endif()
 
-
+endmacro ()

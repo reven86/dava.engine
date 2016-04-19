@@ -1,3 +1,5 @@
+InitDavaLib()
+
 set( NAME_MODULE DavaFramework )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
