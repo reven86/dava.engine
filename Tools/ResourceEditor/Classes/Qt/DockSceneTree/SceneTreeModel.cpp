@@ -705,40 +705,7 @@ void SceneTreeModel::RebuildIndexesCache()
 
 void SceneTreeModel::AddIndexesCache(SceneTreeItem* item)
 {
-    // go thought all items and remember entities indexes
-    DAVA::BaseObject* objectToAdd = nullptr;
-    switch (item->ItemType())
-    {
-    case SceneTreeItem::EIT_Entity:
-    {
-        objectToAdd = SceneTreeItemEntity::GetEntity(item);
-        break;
-    }
-    case SceneTreeItem::EIT_Emitter:
-    case SceneTreeItem::EIT_InnerEmitter:
-    {
-        objectToAdd = SceneTreeItemParticleEmitter::GetEmitter(item);
-        break;
-    }
-    case SceneTreeItem::EIT_Layer:
-    {
-        objectToAdd = SceneTreeItemParticleLayer::GetLayer(item);
-        break;
-    }
-    case SceneTreeItem::EIT_Force:
-    {
-        objectToAdd = SceneTreeItemParticleForce::GetForce(item);
-        break;
-    }
-    default:
-        DVASSERT_MSG(0, "INVALID ITEM TYPE");
-    }
-
-    if (objectToAdd != nullptr)
-    {
-        indexesCache.emplace(objectToAdd, item->index());
-    }
-
+    indexesCache.emplace(item->GetItemObject(), item->index());
     for (int i = 0; i < item->rowCount(); ++i)
     {
         AddIndexesCache((SceneTreeItem*)item->child(i));
