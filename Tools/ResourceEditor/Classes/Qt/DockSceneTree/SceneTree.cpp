@@ -761,7 +761,7 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
-    
+
     setModel(filteringProxyModel);
 
     treeDelegate = new SceneTreeDelegate();
@@ -1319,7 +1319,7 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                     }
                 }
                 break;
-                        
+
                 case SceneTreeItem::EIT_Emitter:
                 case SceneTreeItem::EIT_InnerEmitter:
                 {
@@ -1327,7 +1327,7 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                     SceneSignals::Instance()->EmitEmitterSelected(curScene, ((SceneTreeItemParticleEmitter*)item)->effect, ((SceneTreeItemParticleEmitter*)item)->emitterInstance);
                 }
                 break;
-                        
+
                 case SceneTreeItem::EIT_Layer:
                 {
                     SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)item;
@@ -1337,7 +1337,7 @@ void SceneTree::EmitParticleSignals(const QItemSelection& selected)
                     }
                 }
                 break;
-                        
+
                 case SceneTreeItem::EIT_Force:
                 {
                     SceneTreeItemParticleForce* itemForce = (SceneTreeItemParticleForce*)item;

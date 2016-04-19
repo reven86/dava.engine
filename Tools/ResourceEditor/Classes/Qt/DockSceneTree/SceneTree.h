@@ -88,14 +88,14 @@ private:
     void UpdateTree();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
-    
+
     class BaseContextMenu;
     class EntityContextMenu;
     class ParticleLayerContextMenu;
     class ParticleForceContextMenu;
     class ParticleEmitterContextMenu;
     class ParticleInnerEmitterContextMenu;
-    
+
 private:
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;

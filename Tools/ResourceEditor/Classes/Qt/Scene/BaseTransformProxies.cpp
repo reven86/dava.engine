@@ -56,7 +56,7 @@ bool EntityTransformProxy::SupportsTransformType(Selectable::Object* object, Sel
 bool EntityTransformProxy::TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const
 {
     DVASSERT_MSG(dependant != dependsOn, "[TransformDependsFromObject] One object provided to both parameters");
-    
+
     auto asEntity = Selectable(dependsOn).AsEntity();
     return (asEntity != nullptr) && asEntity->IsMyChildRecursive(static_cast<DAVA::Entity*>(dependant));
 }
@@ -113,11 +113,11 @@ bool EmitterTransformProxy::SupportsTransformType(Selectable::Object* object, Se
 bool EmitterTransformProxy::TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const
 {
     DVASSERT_MSG(dependant != dependsOn, "[TransformDependsFromObject] One object provided to both parameters");
-    
+
     auto asEntity = Selectable(dependsOn).AsEntity();
     if (asEntity == nullptr)
         return false;
-    
+
     // check if emitter instance contained inside entity
     auto component = static_cast<DAVA::ParticleEffectComponent*>(asEntity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
     if (component != nullptr)
@@ -128,13 +128,13 @@ bool EmitterTransformProxy::TransformDependsFromObject(Selectable::Object* depen
                 return true;
         }
     }
-    
+
     // or it's children
     for (DAVA::int32 i = 0, e = asEntity->GetChildrenCount(); i < e; ++i)
     {
         if (TransformDependsFromObject(dependant, asEntity->GetChild(i)))
             return true;
     }
-    
+
     return false;
 }

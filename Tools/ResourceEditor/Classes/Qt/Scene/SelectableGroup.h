@@ -77,7 +77,7 @@ public:
     void Lock();
     void Unlock();
     bool IsLocked() const;
-    
+
     void RemoveObjectsWithDependantTransform();
 
 public:

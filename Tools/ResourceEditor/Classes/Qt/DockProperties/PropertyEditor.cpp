@@ -811,7 +811,7 @@ void PropertyEditor::OnItemEdited(const QModelIndex& index) // TODO: fix undo/re
         curScene->BeginBatch("Edit properties", nMerged + 1);
 
         curScene->Exec(propData->CreateLastCommand());
-        
+
         propData->ForeachMergedItem([&curScene](QtPropertyData* item) {
             curScene->Exec(item->CreateLastCommand());
             return true;
