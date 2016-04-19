@@ -44,6 +44,11 @@ ClientNetProxy::ClientNetProxy()
     DVASSERT(nullptr != Net::NetCore::Instance());
 }
 
+ClientNetProxy::~ClientNetProxy()
+{
+    Disconnect();
+}
+
 bool ClientNetProxy::Connect(const String& ip, uint16 port)
 {
     DVASSERT(nullptr == netClient);
@@ -54,9 +59,10 @@ bool ClientNetProxy::Connect(const String& ip, uint16 port)
 
 void ClientNetProxy::Disconnect()
 {
+    openedChannel = nullptr;
+
     addressResolver.Cancel();
     netClient.reset();
-    openedChannel = nullptr;
 }
 
 void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 status)
