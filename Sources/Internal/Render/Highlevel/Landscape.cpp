@@ -373,13 +373,13 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMo
                     uint16 x2 = xx;
                     if ((x & 0x1) && x != mipLastIndex)
                     {
-                        x1 -= step;
-                        x2 += step;
+                        x1 += step;
+                        x2 -= step;
                     }
 
                     *mipDataPtr++ = heightmap->GetHeight(xx, yy);
 
-                    uint16 h1 = heightmap->GetHeight(x1, y1);
+                    uint16 h1 = heightmap->GetHeightClamp(x1, y1);
                     uint16 h2 = heightmap->GetHeightClamp(x2, y2);
                     *mipDataPtr++ = (h1 + h2) / 2;
                 }
@@ -832,12 +832,12 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                 }
 
                 *indicesPtr++ = GetVertexIndex(x0aligned, y0aligned);
-                *indicesPtr++ = GetVertexIndex(x1aligned2, y1aligned2);
+                *indicesPtr++ = GetVertexIndex(x1aligned, y0aligned2);
                 *indicesPtr++ = GetVertexIndex(x0aligned2, y1aligned);
 
-                *indicesPtr++ = GetVertexIndex(x0aligned, y0aligned);
                 *indicesPtr++ = GetVertexIndex(x1aligned, y0aligned2);
                 *indicesPtr++ = GetVertexIndex(x1aligned2, y1aligned2);
+                *indicesPtr++ = GetVertexIndex(x0aligned2, y1aligned);
 
                 queueIndexCount += 6;
             }
@@ -924,10 +924,10 @@ void Landscape::AllocateGeometryDataInstancing()
             if (x < (PATCH_SIZE_VERTICES - 1) && y < (PATCH_SIZE_VERTICES - 1))
             {
                 *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 0);
-                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
                 *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
 
-                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 0);
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
                 *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
                 *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 1);
             }
@@ -938,26 +938,26 @@ void Landscape::AllocateGeometryDataInstancing()
     {
         //x = 0; y = i; left side of patch without corners
         patchVertices[i * PATCH_SIZE_VERTICES].edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
-        patchVertices[i * PATCH_SIZE_VERTICES].edgeShiftDirection = Vector2(0.f, 1.f) / float32(PATCH_SIZE_QUADS);
-        patchVertices[i * PATCH_SIZE_VERTICES].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
+        patchVertices[i * PATCH_SIZE_VERTICES].edgeShiftDirection = Vector2(0.f, -1.f) / float32(PATCH_SIZE_QUADS);
+        patchVertices[i * PATCH_SIZE_VERTICES].edgeVertexIndex = float32(i);
         patchVertices[i * PATCH_SIZE_VERTICES].edgeMaskNull = 0.f;
 
         //x = i; y = 0; bottom side of patch without corners
         patchVertices[i].edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
-        patchVertices[i].edgeShiftDirection = Vector2(1.f, 0.f) / float32(PATCH_SIZE_QUADS);
-        patchVertices[i].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
+        patchVertices[i].edgeShiftDirection = Vector2(-1.f, 0.f) / float32(PATCH_SIZE_QUADS);
+        patchVertices[i].edgeVertexIndex = float32(i);
         patchVertices[i].edgeMaskNull = 0.f;
 
         //x = PATCH_QUAD_COUNT; y = i; right side of patch without corners
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
-        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeShiftDirection = Vector2(0.f, -1.f) / float32(PATCH_SIZE_QUADS);
-        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeVertexIndex = float32(i);
+        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeShiftDirection = Vector2(0.f, 1.f) / float32(PATCH_SIZE_QUADS);
+        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMaskNull = 0.f;
 
         //x = i; y = PATCH_QUAD_COUNT; top side of patch without corners
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
-        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeShiftDirection = Vector2(-1.f, 0.f) / float32(PATCH_SIZE_QUADS);
-        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeVertexIndex = float32(i);
+        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeShiftDirection = Vector2(1.f, 0.f) / float32(PATCH_SIZE_QUADS);
+        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMaskNull = 0.f;
     }
 
