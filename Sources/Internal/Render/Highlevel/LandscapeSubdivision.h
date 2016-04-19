@@ -94,6 +94,7 @@ public:
 
     void BuildSubdivision(Heightmap* heightmap, const AABBox3& bbox, uint32 patchSizeQuads, uint32 minSubdivideLevel, bool calculateMorph);
     void PrepareSubdivision(Camera* camera, const Matrix4* worldTransform);
+    void ReleaseInternalData();
 
     const SubdivisionLevelInfo& GetLevelInfo(uint32 level) const;
     const SubdivisionPatchInfo& GetPatchInfo(uint32 level, uint32 x, uint32 y) const;

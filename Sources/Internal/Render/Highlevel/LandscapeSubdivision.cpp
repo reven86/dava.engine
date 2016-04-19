@@ -40,7 +40,20 @@ LandscapeSubdivision::LandscapeSubdivision()
 
 LandscapeSubdivision::~LandscapeSubdivision()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     SafeRelease(frustum);
+    SafeRelease(heightmap);
+}
+
+void LandscapeSubdivision::ReleaseInternalData()
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    subdivLevelInfoArray.clear();
+    patchQuadArray.clear();
+    subdivPatchArray.clear();
+
     SafeRelease(heightmap);
 }
 
@@ -301,9 +314,10 @@ void LandscapeSubdivision::BuildSubdivision(Heightmap* _heightmap, const AABBox3
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    ReleaseInternalData();
+
     DVASSERT(_heightmap);
 
-    SafeRelease(heightmap);
     heightmap = SafeRetain(_heightmap);
     bbox = _bbox;
     minSubdivLevel = minSubdivideLevel;

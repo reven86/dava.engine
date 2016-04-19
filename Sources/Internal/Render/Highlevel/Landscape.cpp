@@ -86,7 +86,6 @@ Landscape::Landscape()
 
     type = TYPE_LANDSCAPE;
 
-    heightmap = new Heightmap();
     subdivision = new LandscapeSubdivision();
 
     renderMode = (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_NO_INSTANCING;
@@ -165,6 +164,8 @@ void Landscape::ReleaseGeometryData()
 
     indices.clear();
 
+    subdivision->ReleaseInternalData();
+
     quadsInWidthPow2 = 0;
 
     ////Instanced data
@@ -239,6 +240,7 @@ bool Landscape::BuildHeightmap()
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     bool retValue = false;
+    SafeRelease(heightmap);
 
     if (DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
@@ -253,6 +255,7 @@ bool Landscape::BuildHeightmap()
             else
             {
                 DVASSERT(imageSet[0]->GetWidth() == imageSet[0]->GetHeight());
+                heightmap = new Heightmap();
                 heightmap->BuildFromImage(imageSet[0]);
                 retValue = true;
             }
@@ -262,6 +265,7 @@ bool Landscape::BuildHeightmap()
     }
     else if (heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
     {
+        heightmap = new Heightmap();
         retValue = heightmap->Load(heightmapPath);
     }
 
@@ -272,7 +276,7 @@ void Landscape::AllocateGeometryData()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (!heightmap->Size())
+    if (!heightmap || !heightmap->Size())
     {
         return;
     }
@@ -1130,6 +1134,11 @@ void Landscape::PrepareToRender(Camera* camera)
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     RenderObject::PrepareToRender(camera);
+
+    if (!heightmap || !heightmap->Size())
+    {
+        return;
+    }
 
     TIME_PROFILE("Landscape.PrepareToRender");
 
