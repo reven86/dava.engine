@@ -30,6 +30,7 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_macos.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpsd.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl_macos_release.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libtheora_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_macos.a
@@ -83,6 +84,7 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libjpeg.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libmongodb_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libogg_static.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libpsd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libtheora_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libuv.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libvorbisfile_static.lib"
@@ -111,6 +113,7 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libjpegd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libmongodb_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libogg_static_d.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libpsd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libtheora_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libuv.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libvorbisfile_static_d.lib"
@@ -136,6 +139,7 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libeay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libmongodb_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libogg_static.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libpsd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libvorbisfile_static.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libvorbis_static.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libwebp.lib"
@@ -162,6 +166,7 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libdxtd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libmongodb_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libogg_static.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libpsd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libuv.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libvorbisfile_static_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libvorbis_static_d.lib"
