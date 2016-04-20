@@ -131,7 +131,7 @@ public:
             // start downloading
             auto fullUrl = remotePacksUrl + currentDownload->name;
 
-            FilePath archivePath = packsDB + currentDownload->name;
+            FilePath archivePath = localPacksDir + currentDownload->name;
 
             DownloadManager* dm = DownloadManager::Instance();
             downloadHandler = dm->Download(fullUrl, archivePath);

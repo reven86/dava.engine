@@ -28,7 +28,9 @@
 
 #include <SDLC/SmartDLC.h>
 #include "UnitTests/UnitTests.h"
+#include "FileSystem/File.h"
 #include "Utils/CRC32.h"
+#include "DLC/Downloader/DownloadManager.h"
 
 DAVA_TESTCLASS (SmartDlcTest)
 {
@@ -93,6 +95,8 @@ DAVA_TESTCLASS (SmartDlcTest)
             {
                 // wait
                 Thread::Sleep(500);
+                DownloadManager* dm = DownloadManager::Instance();
+                dm->Update();
                 sdlc.Update();
                 Logger::Info("download progress: %d", static_cast<int32>(nextState.downloadProgress * 100));
             }
