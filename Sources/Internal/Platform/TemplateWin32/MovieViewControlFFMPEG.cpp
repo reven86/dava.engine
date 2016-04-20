@@ -212,6 +212,102 @@ namespace DAVA
         return true;
     }
 
+    void MovieViewControl::EnqueueDecodedVideoBuffer(MovieViewControl::DecodedFrameBuffer* buf)
+    {
+        uint32 framesInBuffer = 0;
+
+        do
+        {
+            decodedFramesMutex.Lock();
+            framesInBuffer = decodedFrames.size();
+            decodedFramesMutex.Unlock();
+
+            if (framesInBuffer > 1)
+            {
+                Thread::Sleep(1);
+            }
+
+        } while (framesInBuffer > 1);
+
+        decodedFramesMutex.Lock();
+        decodedFrames.push_back(buf);
+        decodedFramesMutex.Unlock();
+    }
+
+    MovieViewControl::DecodedFrameBuffer* MovieViewControl::DequeueDecodedVideoBuffer()
+    {
+        decodedFramesMutex.Lock();
+        uint32 size = decodedFrames.size();
+        decodedFramesMutex.Unlock();
+
+        if (size == 0)
+        {
+            return nullptr;
+        }
+
+        decodedFramesMutex.Lock();
+        DecodedFrameBuffer* frameBuffer = decodedFrames.front();
+        decodedFrames.pop_front();
+        decodedFramesMutex.Unlock();
+
+        return frameBuffer;
+    }
+
+    void MovieViewControl::EnqueuePacket(AV::AVPacket* packet)
+    {
+        if (packet->stream_index == videoStreamIndex)
+        {
+            //uint32 packetsCount = 0;
+            //do
+            // {
+            //videoPacketsMutex.Lock();
+            //   packetsCount = videoPackets.size();
+            //videoPacketsMutex.Unlock();
+            //} while (packetsCount >= 3);
+
+            LockGuard<Mutex> locker(videoPacketsMutex);
+            videoPackets.push_back(packet);
+        }
+        else
+        if (packet->stream_index == audioStreamIndex)
+        {
+            uint32 packetsCount = 0;
+            //do
+            // {
+            //audioPacketsMutex.Lock();
+            //   packetsCount = audioPackets.size();
+            //                    audioPacketsMutex.Unlock();
+
+            //} while (packetsCount >= 30);
+
+            LockGuard<Mutex> locker(audioPacketsMutex);
+            audioPackets.push_back(packet);
+        }
+        else
+        {
+            AV::av_packet_unref(packet);
+        }
+    }
+
+    MovieViewControl::DecodedPCMData* MovieViewControl::DequePCMAudio()
+    {
+        decodedAudioMutex.Lock();
+        uint32 size = decodedAudio.size();
+        decodedAudioMutex.Unlock();
+
+        if (size == 0)
+        {
+            return nullptr;
+        }
+
+        decodedAudioMutex.Lock();
+        DecodedPCMData* data = decodedAudio.front();
+        decodedAudio.pop_front();
+        decodedAudioMutex.Unlock();
+
+        return data;
+    }
+
     FMOD_RESULT F_CALLBACK MovieViewControl::pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
     {
         // Read from your buffer here...
@@ -224,22 +320,63 @@ namespace DAVA
         if (nullptr == movieControl)
             return FMOD_OK;
 
-        auto pcmData = movieControl->pcmData;
+        //        auto pcmData = movieControl->pcmData;
 
-        if (nullptr == pcmData)
-            return FMOD_OK;
+        //if (nullptr == pcmData)
+        //return FMOD_OK;
 
         if (!movieControl->isPlaying)
             return FMOD_OK;
 
         Memset(data, 0, datalen);
 
+        static DecodedPCMData* lastPcmData = nullptr;
+        static uint32 dataShift = 0;
+
+        uint32 dataToWrite = 0;
+        if (nullptr != lastPcmData)
+        {
+            Memcpy(data, lastPcmData->data + dataShift, lastPcmData->size);
+            SafeDelete(lastPcmData);
+
+            dataShift = 0;
+        }
+
+        dataToWrite = datalen - dataShift;
+        do
+        {
+            SafeDelete(lastPcmData);
+            lastPcmData = movieControl->DequePCMAudio();
+            if (nullptr == lastPcmData)
+                return FMOD_OK;
+
+            if (lastPcmData->size > dataToWrite)
+            {
+                Memcpy((uint8*)data + dataShift, lastPcmData->data, dataToWrite);
+                lastPcmData->size -= dataToWrite;
+                dataShift += dataToWrite;
+                dataShift %= datalen;
+                break;
+            }
+            else
+            {
+                Memcpy((uint8*)data + dataShift, lastPcmData->data, lastPcmData->size);
+                dataToWrite -= lastPcmData->size;
+                dataShift += lastPcmData->size;
+            }
+        } while (true);
+
+        movieControl->pcmMutex.Lock();
+        movieControl->lastDecodedAudioPTS = lastPcmData->pts;
+        movieControl->pcmMutex.Unlock();
+        /*
         movieControl->pcmMutex.Lock();
         uint32 pcmDataSize = pcmData->GetSize();
 
         pcmData->Seek(movieControl->readPos, File::SEEK_FROM_START);
         movieControl->readPos += pcmData->Read(data, static_cast<uint32>(datalen));
         movieControl->pcmMutex.Unlock();
+        */
 
         return FMOD_OK;
     }
@@ -347,6 +484,28 @@ namespace DAVA
         return true;
     }
 
+    float32 MovieViewControl::synchronize_video(AV::AVFrame* src_frame, float32 pts)
+    {
+        float32 frame_delay;
+
+        if (pts != 0)
+        {
+            /* if we have pts, set video clock to it */
+            video_clock = pts;
+        }
+        else
+        {
+            /* if we aren't given a pts, set it to the clock */
+            pts = video_clock;
+        }
+        /* update the video clock */
+        frame_delay = static_cast<float32>(AV::av_q2d(movieContext->streams[videoStreamIndex]->time_base));
+        /* if we are repeating a frame, adjust clock accordingly */
+        frame_delay += src_frame->repeat_pict * (frame_delay * 0.5f);
+        video_clock += frame_delay;
+        return pts;
+    }
+
     void MovieViewControl::DecodeVideo(AV::AVPacket* packet)
     {
         int32 got_picture;
@@ -360,8 +519,22 @@ namespace DAVA
 
         if (got_picture)
         {
-            Logger::Error("Decoding video");
+            int64 pts;
+            if (packet->dts != AV_NOPTS_VALUE)
+            {
+                pts = AV::av_frame_get_best_effort_timestamp(decodedFrame);
+            }
+            else
+            {
+                pts = 0;
+            }
+
+            float32 effectivePTS = GetPTSForFrame(decodedFrame, packet, videoStreamIndex);
+
+            effectivePTS = synchronize_video(decodedFrame, effectivePTS);
+
             DecodedFrameBuffer* frameBuffer = new DecodedFrameBuffer();
+            frameBuffer->pts = effectivePTS;
             frameBuffer->data = new uint8[textureBufferSize];
             // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
             uint8* rgbTextureBufferHolder[1];
@@ -374,29 +547,56 @@ namespace DAVA
             const uint32 scaledHeight = AV::sws_scale(img_convert_ctx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, rgbDecodedScaledFrame->linesize);
             frameBuffer->textureFormat = textureFormat;
 
-            decodedFramesMutex.Lock();
-            decodedFrames.push_back(frameBuffer);
-            decodedFramesMutex.Unlock();
-        }
-        else
-        {
-            Logger::Error("Decoding video NO DATA");
+            EnqueueDecodedVideoBuffer(frameBuffer);
+
+            lastDecodedVideoPTS = effectivePTS;
         }
     }
 
     void MovieViewControl::UpdateVideo()
     {
-        decodedFramesMutex.Lock();
-        uint32 size = decodedFrames.size();
-        decodedFramesMutex.Unlock();
+        static float32 lastVideoPTS = 0;
 
-        if (size == 0)
+        pcmMutex.Lock();
+        float32 audioPTS = lastDecodedAudioPTS;
+        pcmMutex.Unlock();
+
+        DecodedFrameBuffer* frameBuffer = nullptr;
+        bool draw = false;
+
+        do
+        {
+            frameBuffer = DequeueDecodedVideoBuffer();
+            if (nullptr == frameBuffer)
+                return;
+
+            const float32 allowed_delta = 0.1f;
+            lastVideoPTS = frameBuffer->pts;
+
+            if (audioPTS - allowed_delta <= lastVideoPTS)
+            {
+                Logger::Error("A %f V %f DRAW", audioPTS, lastVideoPTS);
+                // OK - draw!
+                draw = true;
+                break;
+            }
+            else
+            {
+                Logger::Error("A %f V %f SKIP", audioPTS, lastVideoPTS);
+                // Audio is faster - we need to skip vedeo
+                draw = false;
+            }
+        } while (!draw);
+
+        SCOPE_EXIT
+        {
+            SafeDelete(frameBuffer);
+        };
+
+        if (!draw)
             return;
 
-        decodedFramesMutex.Lock();
-        DecodedFrameBuffer* frameBuffer = decodedFrames.front();
-        decodedFrames.pop_front();
-        decodedFramesMutex.Unlock();
+        lastVideoPTS = frameBuffer->pts;
 
         if (nullptr == videoTexture)
         {
@@ -415,8 +615,22 @@ namespace DAVA
             // rgbTextureBuffer is a rgbTextureBufferHolder[0]
             videoTexture->TexImage(0, textureWidth, textureHeight, frameBuffer->data, textureBufferSize, Texture::INVALID_CUBEMAP_FACE);
         }
+    }
 
-        SafeDelete(frameBuffer);
+    float32 MovieViewControl::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream)
+    {
+        int64 pts;
+        if (packet->dts != AV_NOPTS_VALUE)
+        {
+            pts = AV::av_frame_get_best_effort_timestamp(frame);
+        }
+        else
+        {
+            pts = 0;
+        }
+
+        float32 effectivePTS = static_cast<float32>(pts * AV::av_q2d(movieContext->streams[stream]->time_base));
+        return effectivePTS;
     }
 
     void MovieViewControl::DecodeAudio(AV::AVPacket* packet, float32 timeElapsed)
@@ -433,7 +647,6 @@ namespace DAVA
         uint8* outAudioBuffer = nullptr;
         if (got_data > 0)
         {
-            Logger::Error("Convert audio");
             outAudioBuffer = outAudioBuffer = new uint8[maxAudioFrameSize * 2];
             AV::swr_convert(audioConvertContext, &outAudioBuffer, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
         }
@@ -443,6 +656,15 @@ namespace DAVA
             return;
         }
 
+        DecodedPCMData* data = new DecodedPCMData();
+        data->data = outAudioBuffer;
+        data->size = outAudioBufferSize;
+        data->pts = GetPTSForFrame(audioFrame, packet, audioStreamIndex);
+        decodedAudioMutex.Lock();
+        decodedAudio.push_back(data);
+        decodedAudioMutex.Unlock();
+
+        /*
         pcmMutex.Lock();
         pcmData->Seek(writePos, File::SEEK_FROM_START);
         if (outAudioBufferSize == pcmData->Write(outAudioBuffer, outAudioBufferSize))
@@ -450,8 +672,8 @@ namespace DAVA
             writePos += outAudioBufferSize;
         }
         pcmMutex.Unlock();
-
-        SafeDeleteArray(outAudioBuffer);
+       */
+        // SafeDeleteArray(outAudioBuffer);
     }
 
     void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
@@ -527,23 +749,8 @@ namespace DAVA
 
             AV::AVPacket* packet = static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
             av_init_packet(packet);
-
             retRead = AV::av_read_frame(movieContext, packet);
-            if (packet->stream_index == videoStreamIndex)
-            {
-                LockGuard<Mutex> locker(videoPacketsMutex);
-                videoPackets.push_back(packet);
-            }
-            else
-            if (packet->stream_index == audioStreamIndex)
-            {
-                LockGuard<Mutex> locker(audioPacketsMutex);
-                audioPackets.push_back(packet);
-            }
-            else
-            {
-                AV::av_packet_unref(packet);
-            }
+            EnqueuePacket(packet);
         } while (retRead >= 0 && thread && !thread->IsCancelling());
     }
 
@@ -557,7 +764,6 @@ namespace DAVA
             return;
 
         lastUpdateTime += timeElapsed;
-
         UpdateVideo();
     }
 

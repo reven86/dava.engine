@@ -107,6 +107,9 @@ namespace DAVA
         void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void ReadingThread(BaseObject* caller, void* callerData, void* userData);
 
+        float32 synchronize_video(AV::AVFrame* src_frame, float32 pts);
+        float32 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
+
         static bool isFFMGEGInited;
         bool isPlaying = false;
         bool isAudioVideoStreamsInited = false;
@@ -124,6 +127,9 @@ namespace DAVA
 
         Texture * videoTexture = nullptr;
         float32 videoFramerate = 0.f;
+        float32 lastDecodedVideoPTS = 0.f;
+        float32 lastDecodedAudioPTS = 0.f;
+        float32 video_clock = 0.f;
 
         uint32 textureWidth = 0;
         uint32 textureHeight = 0;
@@ -174,6 +180,7 @@ namespace DAVA
                 SafeDeleteArray(data);
             }
 
+            float32 pts = 0.f;
             PixelFormat textureFormat = FORMAT_INVALID;
             uint8* data;
             uint32 size = 0;
@@ -182,6 +189,28 @@ namespace DAVA
         };
         Deque<DecodedFrameBuffer*> decodedFrames;
         Mutex decodedFramesMutex;
+
+        void EnqueueDecodedVideoBuffer(MovieViewControl::DecodedFrameBuffer* buf);
+        MovieViewControl::DecodedFrameBuffer* DequeueDecodedVideoBuffer();
+
+        void EnqueuePacket(AV::AVPacket* packet);
+
+        struct DecodedPCMData
+        {
+            ~DecodedPCMData()
+            {
+                SafeDeleteArray(data);
+            }
+
+            float32 pts = 0.f;
+            uint8* data;
+            uint32 size = 0;
+        };
+
+        Deque<DecodedPCMData*> decodedAudio;
+        Mutex decodedAudioMutex;
+
+        DecodedPCMData* DequePCMAudio();
     };
 
     // Pause/resume the playback.
