@@ -95,7 +95,11 @@ bool Project::OpenInternal(const QString& path)
         return false;
     }
 
-    FilePath::RemoveResourcesFolder(projectPath + "Data/");
+    if (!projectPath.IsEmpty())
+    {
+        // if projectPath is empty projectPath + "Data/" -> currentWorkingDir + "Data\"
+        FilePath::RemoveResourcesFolder(projectPath + "Data/");
+    }
     editorLocalizationSystem->Cleanup();
 
     SetProjectPath(fileInfo.absolutePath());

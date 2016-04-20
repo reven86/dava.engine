@@ -427,9 +427,9 @@ String FilePath::ResolveResourcesPath() const
         String relativePathname = absolutePathname.substr(6);
         FilePath path;
 
-        for (const auto& resDir : resourceFolders)
+        for (auto reverseIt = resourceFolders.rbegin(); reverseIt != resourceFolders.rend(); ++reverseIt)
         {
-            path = resDir.absolutePathname + relativePathname;
+            path = reverseIt->absolutePathname + relativePathname;
             if (FileSystem::Instance()->Exists(path))
             {
                 return path.absolutePathname;
