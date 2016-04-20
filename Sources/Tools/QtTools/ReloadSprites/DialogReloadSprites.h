@@ -32,7 +32,6 @@
 
 
 #include "Base/Introspection.h"
-#include "FileSystem/KeyedArchive.h"
 #include "SpritesPacker.h"
 #include "QtTools/EditorPreferences/PreferencesRegistrator.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"

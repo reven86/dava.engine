@@ -31,14 +31,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Base/BaseTypes.h"
 
+class QObject;
 class QAction;
 
 namespace DAVA
 {
 class FastName;
 }
-
-class QObject;
 
 namespace PreferencesActionsFactory
 {

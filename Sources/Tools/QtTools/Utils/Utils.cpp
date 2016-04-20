@@ -32,13 +32,12 @@
 #include "Render/TextureDescriptor.h"
 #include <QPainter>
 
-using namespace DAVA;
 // Truncate the file extension.
 QString TruncateFileExtension(const QString& fileName, const QString& extension)
 {
     // Just wrap around the particular DAVA engine functions.
 
-    String truncatedName = fileName.toStdString();
+    DAVA::String truncatedName = fileName.toStdString();
 
     size_t truncatedStringLen = truncatedName.length() - extension.length();
     bool endsWithExtension = false;
@@ -55,21 +54,21 @@ QString TruncateFileExtension(const QString& fileName, const QString& extension)
     return QString::fromStdString(truncatedName);
 }
 
-bool FindAndReplace(String& str, const String& from, const String& to)
+bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::String& to)
 {
     size_t startPos = str.find(from);
-    if (startPos == String::npos)
+    if (startPos == DAVA::String::npos)
         return false;
     str.replace(startPos, from.length(), to);
     return true;
 }
 
-bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath& pngPathname)
+bool TextureDescriptorUtils::CreateDescriptorIfNeed(const DAVA::FilePath& pngPathname)
 {
-    FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(pngPathname);
-    if (false == FileSystem::Instance()->IsFile(descriptorPathname))
+    DAVA::FilePath descriptorPathname = DAVA::TextureDescriptor::GetDescriptorPathname(pngPathname);
+    if (false == DAVA::FileSystem::Instance()->IsFile(descriptorPathname))
     {
-        TextureDescriptor* descriptor = new TextureDescriptor();
+        DAVA::TextureDescriptor* descriptor = new DAVA::TextureDescriptor();
         descriptor->Save(descriptorPathname);
         delete descriptor;
 

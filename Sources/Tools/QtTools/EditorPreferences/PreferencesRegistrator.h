@@ -66,14 +66,17 @@ PreferencesRegistrator<T>::~PreferencesRegistrator()
     PreferencesStorage::Instance()->UnregisterPreferences(objectPtr);
 }
 
+//use this macro to register PreferencesRegistrator as class member. Will not work if preferences methods use class members, which will be created in c-tor after
 #define REGISTER_PREFERENCES(Class) \
     PreferencesRegistrator<Class> preferencesRegistrator = PreferencesRegistrator<Class>(this);
 
+//use this macro to register introspection when program starts. A PreferencesStorage require this to work correctly
 #define REGISTER_PREFERENCES_ON_START(Class, ...) \
     namespace Class##_local \
     { \
     InspInfoRegistrator inspInfoRegistrator(Class::TypeInfo(), { __VA_ARGS__ }); \
     };
 
+//use this macro with macro REGISTER_PREFERENCES_ON_START(Class, PREF_ARG("name", true))
 #define PREF_ARG(name, value) \
     { DAVA::FastName(name), DAVA::VariantType(value) }

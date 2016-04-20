@@ -45,8 +45,8 @@ POP_QT_WARNING_SUPRESSOR
 using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(DialogReloadSprites,
-                              PREF_ARG("currentGPU", DAVA::int64(DAVA::GPU_ORIGIN)),
-                              PREF_ARG("quality", DAVA::int64(TextureConverter::ECQ_VERY_HIGH)),
+                              PREF_ARG("currentGPU", static_cast<DAVA::int64>(DAVA::GPU_ORIGIN)),
+                              PREF_ARG("quality", static_cast<DAVA::int64>(TextureConverter::ECQ_VERY_HIGH)),
                               PREF_ARG("forceRepackEnabled", false),
                               PREF_ARG("consoleState", DAVA::String()),
                               PREF_ARG("consoleVisible", true)

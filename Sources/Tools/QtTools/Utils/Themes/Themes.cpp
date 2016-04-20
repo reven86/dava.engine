@@ -62,9 +62,7 @@ void InitFromQApplication()
     themesInitialized = true;
     defaultStyleSheet = qApp->styleSheet();
     defaultPalette = QGuiApplication::palette();
-    qAddPostRoutine([]() {
-        PreferencesStorage::Instance()->SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(currentTheme)));
-    });
+
     DAVA::VariantType value = PreferencesStorage::Instance()->LoadValueByKey(Themes_namespace::themeSettingsKey);
     if (value.GetType() == DAVA::VariantType::TYPE_INT64)
     {
@@ -113,6 +111,7 @@ void SetCurrentTheme(eTheme theme)
         DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
         break;
     }
+    PreferencesStorage::Instance()->SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(currentTheme)));
 }
 
 void SetupClassicTheme()

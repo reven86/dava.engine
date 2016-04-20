@@ -50,30 +50,32 @@ class ActionsStorage : public DAVA::TrackedObject
 public:
     ActionsStorage();
 
-    void OnPreferencesValueChanged(const DAVA::InspInfo* info, const DAVA::InspMember* member, const DAVA::VariantType&);
+    void OnPreferencesValueChanged(const DAVA::InspMember* member, const DAVA::VariantType&);
 
-    void RegisterAction(const DAVA::InspMember* member, AbstractAction* action);
-    void UnregisterAction(const DAVA::InspMember* member, AbstractAction* action);
+    void RegisterAction(AbstractAction* action);
+    void UnregisterAction(AbstractAction* action);
 
 private:
-    QMap<const DAVA::InspInfo*, QMap<const DAVA::InspMember*, QSet<AbstractAction*>>> registeredActions;
+    DAVA::UnorderedMap<const DAVA::InspMember*, DAVA::Set<AbstractAction*>> registeredActions;
 };
 
 ActionsStorage storage;
 
 class AbstractAction : public QAction
 {
+    friend class ActionsStorage;
+
 public:
     AbstractAction(const DAVA::InspMember* member_, QObject* parent)
         : QAction(parent)
         , member(member_)
     {
-        storage.RegisterAction(member, this);
+        storage.RegisterAction(this);
         setText(member->Desc().text);
     }
     ~AbstractAction() override
     {
-        storage.UnregisterAction(member, this);
+        storage.UnregisterAction(this);
     }
     virtual void OnValueChanged(const DAVA::VariantType& value) = 0;
     virtual void Init()
@@ -97,23 +99,23 @@ ActionsStorage::ActionsStorage()
     PreferencesStorage::Instance()->ValueChanged.Connect(this, &ActionsStorage::OnPreferencesValueChanged);
 }
 
-void ActionsStorage::OnPreferencesValueChanged(const DAVA::InspInfo* info, const DAVA::InspMember* member, const DAVA::VariantType& value)
+void ActionsStorage::OnPreferencesValueChanged(const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
-    QSet<AbstractAction*> actions = registeredActions[info][member];
+    DAVA::Set<AbstractAction*> actions = registeredActions[member];
     for (auto action : actions)
     {
         action->OnValueChanged(value);
     }
 }
 
-void ActionsStorage::RegisterAction(const DAVA::InspMember* member, AbstractAction* action)
+void ActionsStorage::RegisterAction(AbstractAction* action)
 {
-    registeredActions[member->GetParentInsp()][member].insert(action);
+    registeredActions[action->member].insert(action);
 }
 
-void ActionsStorage::UnregisterAction(const DAVA::InspMember* member, AbstractAction* action)
+void ActionsStorage::UnregisterAction(AbstractAction* action)
 {
-    registeredActions[member->GetParentInsp()][member].remove(action);
+    DVVERIFY(registeredActions[action->member].erase(action) > 0);
 }
 
 class BoolAction : public AbstractAction
