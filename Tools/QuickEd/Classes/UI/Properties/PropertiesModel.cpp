@@ -29,7 +29,7 @@
 
 #include "PropertiesModel.h"
 
-#include "Utils.h"
+#include "QtTools/Utils/Utils.h"
 
 #include <QPoint>
 #include <QColor>

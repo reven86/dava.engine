@@ -29,7 +29,7 @@
 
 #include "ResourcesManageHelper.h"
 //
-#include "Utils.h"
+#include "QtTools/Utils/Utils.h"
 #include "FileSystem/FileSystem.h"
 #include "StringConstants.h"
 #include "DAVAEngine.h"

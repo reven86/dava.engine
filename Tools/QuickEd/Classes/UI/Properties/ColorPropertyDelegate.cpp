@@ -28,7 +28,7 @@
 
 
 #include "ColorPropertyDelegate.h"
-#include "Utils.h"
+#include "QtTools/Utils/Utils.h"
 
 #include <QToolButton>
 #include <QPainter>
