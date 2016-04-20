@@ -157,5 +157,5 @@ bool PreferencesIntrospectionProperty::IsReadOnly() const
 void PreferencesIntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
 {
     sourceValue = value;
-    PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member->GetParentInsp(), member, sourceValue);
+    PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member, sourceValue);
 }
