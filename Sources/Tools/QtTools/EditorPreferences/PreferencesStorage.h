@@ -61,7 +61,7 @@ public:
 
     const DAVA::InspInfo* GetInspInfo(const DAVA::FastName& className) const;
 
-    void SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value);
+    void SetNewValueToAllRegisteredObjects(const DAVA::InspMember* member, const DAVA::VariantType& value);
     DAVA::VariantType GetPreferencesValue(const DAVA::InspMember* member) const;
 
     const RegisteredIntrospection& GetRegisteredInsp() const;

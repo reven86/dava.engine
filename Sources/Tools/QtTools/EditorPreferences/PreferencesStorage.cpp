@@ -208,7 +208,7 @@ void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBa
         ValueChanged.Emit(info, member, value);
     }
 
-    DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
+    DAVA::String key = GenerateKey(info);
     preferencesArchive->SetArchive(key, archive);
 }
 
@@ -239,8 +239,9 @@ const DAVA::InspInfo* PreferencesStorage::GetInspInfo(const DAVA::FastName& clas
     return nullptr;
 }
 
-void PreferencesStorage::SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value)
+void PreferencesStorage::SetNewValueToAllRegisteredObjects(const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
+    const DAVA::InspInfo* inspInfo = member->GetParentInsp();
     DVASSERT(nullptr != inspInfo && nullptr != member);
 
     DAVA::KeyedArchive* archive = preferencesArchive->GetArchive(GenerateKey(inspInfo));
@@ -255,10 +256,9 @@ void PreferencesStorage::SetNewValueToAllRegisteredObjects(const DAVA::InspInfo*
         for (void* registeredObject : registeredObjects)
         {
             member->SetValue(registeredObject, value);
-            ValueChanged.Emit(inspInfo, member, value);
-            break;
         }
     }
+    ValueChanged.Emit(inspInfo, member, value);
 }
 
 DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember* member) const
