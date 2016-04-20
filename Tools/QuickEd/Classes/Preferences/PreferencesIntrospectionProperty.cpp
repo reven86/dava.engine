@@ -48,7 +48,7 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     {
         SetName(name.substr(index + 1));
     }
-    DAVA::VariantType value = PreferencesStorage::GetPreferencesValue(member);
+    DAVA::VariantType value = PreferencesStorage::Instance()->GetPreferencesValue(member);
     SetDefaultValue(value);
 
     static std::vector<DAVA::String> vector2ComponentNames = { "X", "Y" };
@@ -130,7 +130,7 @@ uint32 PreferencesIntrospectionProperty::GetFlags() const
 
 VariantType PreferencesIntrospectionProperty::GetValue() const
 {
-    return PreferencesStorage::GetPreferencesValue(member);
+    return PreferencesStorage::Instance()->GetPreferencesValue(member);
 }
 
 const EnumMap* PreferencesIntrospectionProperty::GetEnumMap() const
@@ -157,5 +157,5 @@ bool PreferencesIntrospectionProperty::IsReadOnly() const
 void PreferencesIntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
 {
     sourceValue = value;
-    PreferencesStorage::SetNewValueToAllRegisteredObjects(member->GetParentInsp(), member, sourceValue);
+    PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member->GetParentInsp(), member, sourceValue);
 }

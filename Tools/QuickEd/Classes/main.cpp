@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     const char* settingsPath = "QuickEdSettings.archive";
     DAVA::FilePath defaultPreferencesPath(DAVA::String("~res:/") + settingsPath);
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
-    PreferencesStorage::SetupStoragePath(defaultPreferencesPath, localPrefrencesPath);
+    PreferencesStorage::Instance()->SetupStoragePath(defaultPreferencesPath, localPrefrencesPath);
     PreferencesStorage::PreferencesStorageSaver prefSaver;
     int returnCode = 0;
     {

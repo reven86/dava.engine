@@ -104,12 +104,12 @@ MainWindow::MainWindow(QWidget* parent)
 
     OnDocumentChanged(nullptr);
 
-    PreferencesStorage::RegisterPreferences(this);
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 MainWindow::~MainWindow()
 {
-    PreferencesStorage::UnregisterPreferences(this);
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)

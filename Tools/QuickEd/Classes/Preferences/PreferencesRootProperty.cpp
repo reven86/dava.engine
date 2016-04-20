@@ -61,7 +61,7 @@ void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, Sectio
 PreferencesRootProperty::PreferencesRootProperty()
     : SectionProperty<PreferencesIntrospectionProperty>("PREFERENCES_ROOT_PROPERTY")
 {
-    const auto& registeredInsp = PreferencesStorage::GetRegisteredInsp();
+    const auto& registeredInsp = PreferencesStorage::Instance()->GetRegisteredInsp();
     PreferencesRootProperty_local::PreferencesLocation rootPreferencesLocation;
 
     for (const InspInfo* info : registeredInsp)

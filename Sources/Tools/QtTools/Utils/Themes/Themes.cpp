@@ -63,9 +63,9 @@ void InitFromQApplication()
     defaultStyleSheet = qApp->styleSheet();
     defaultPalette = QGuiApplication::palette();
     qAddPostRoutine([]() {
-        PreferencesStorage::SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(currentTheme)));
+        PreferencesStorage::Instance()->SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(currentTheme)));
     });
-    DAVA::VariantType value = PreferencesStorage::LoadValueByKey(Themes_namespace::themeSettingsKey);
+    DAVA::VariantType value = PreferencesStorage::Instance()->LoadValueByKey(Themes_namespace::themeSettingsKey);
     if (value.GetType() == DAVA::VariantType::TYPE_INT64)
     {
         currentTheme = static_cast<eTheme>(value.AsInt64());

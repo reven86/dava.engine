@@ -57,13 +57,13 @@ template <typename T>
 PreferencesRegistrator<T>::PreferencesRegistrator(T* obj)
     : objectPtr(obj)
 {
-    PreferencesStorage::RegisterPreferences(objectPtr);
+    PreferencesStorage::Instance()->RegisterPreferences(objectPtr);
 }
 
 template <typename T>
 PreferencesRegistrator<T>::~PreferencesRegistrator()
 {
-    PreferencesStorage::UnregisterPreferences(objectPtr);
+    PreferencesStorage::Instance()->UnregisterPreferences(objectPtr);
 }
 
 #define REGISTER_PREFERENCES(Class) \

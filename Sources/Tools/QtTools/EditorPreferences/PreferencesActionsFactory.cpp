@@ -78,7 +78,7 @@ public:
     {
         setText(member->Desc().text);
         storage.RegisterAction(info, member, this);
-        DAVA::VariantType defaultValue = PreferencesStorage::GetPreferencesValue(member);
+        DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetPreferencesValue(member);
         OnValueChanged(defaultValue);
         type = defaultValue.type;
 
@@ -137,7 +137,7 @@ public:
 
     void OnTriggered(bool triggered) override
     {
-        PreferencesStorage::SetNewValueToAllRegisteredObjects(info, member, DAVA::VariantType(triggered));
+        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(info, member, DAVA::VariantType(triggered));
     }
 };
 
@@ -172,7 +172,7 @@ public:
             DVASSERT(false && "bad type passed to factory");
             return;
         }
-        PreferencesStorage::SetNewValueToAllRegisteredObjects(info, member, newValueVar);
+        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(info, member, newValueVar);
     }
     void OnValueChanged(const DAVA::VariantType& value) override
     {
@@ -225,7 +225,7 @@ public:
             DVASSERT(false && "bad type passed to factory");
             return;
         }
-        PreferencesStorage::SetNewValueToAllRegisteredObjects(info, member, newValueVar);
+        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(info, member, newValueVar);
     }
 
     void OnValueChanged(const DAVA::VariantType& value) override
@@ -279,7 +279,7 @@ public:
             DVASSERT(false && "bad type passed to factory");
             return;
         }
-        PreferencesStorage::SetNewValueToAllRegisteredObjects(info, member, newValueVar);
+        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(info, member, newValueVar);
     }
 
     void OnValueChanged(const DAVA::VariantType& value) override
@@ -345,7 +345,7 @@ public:
             DVASSERT(false && "bad type passed to factory");
             return;
         }
-        PreferencesStorage::SetNewValueToAllRegisteredObjects(info, member, newValueVar);
+        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(info, member, newValueVar);
     }
 
     void OnValueChanged(const DAVA::VariantType& value) override
@@ -385,7 +385,7 @@ public:
 
 QAction* PreferencesActionsFactory::CreateActionForPreference(const DAVA::FastName& className, const DAVA::FastName& propertyName, QObject* parent)
 {
-    const DAVA::InspInfo* inspInfo = PreferencesStorage::GetInspInfo(className);
+    const DAVA::InspInfo* inspInfo = PreferencesStorage::Instance()->GetInspInfo(className);
     const DAVA::InspMember* inspMember = PreferencesStorage::GetInspMember(inspInfo, propertyName);
     DVASSERT(inspInfo != nullptr && inspMember != nullptr);
     const DAVA::MetaInfo* metaInfo = inspMember->Type();

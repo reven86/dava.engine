@@ -71,13 +71,7 @@ void PreferencesStorage::RegisterType(const DAVA::InspInfo* inspInfo, const Defa
     }
 }
 
-void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage)
-{
-    PreferencesStorage* self = Instance();
-    self->SetupStoragePathImpl(defaultStorage, localStorage);
-}
-
-void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage_)
+void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage_)
 {
     localStorage = localStorage_;
     DAVA::ScopedPtr<DAVA::KeyedArchive> loadedPreferences(new DAVA::KeyedArchive);
@@ -158,7 +152,7 @@ void PreferencesStorage::SetupStoragePathImpl(const DAVA::FilePath& defaultStora
     }
 }
 
-void PreferencesStorage::RegisterPreferencesImpl(void* realObj, DAVA::InspBase* inspBase)
+void PreferencesStorage::RegisterPreferences(void* realObj, DAVA::InspBase* inspBase)
 {
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
@@ -190,7 +184,7 @@ void PreferencesStorage::RegisterPreferencesImpl(void* realObj, DAVA::InspBase* 
     }
 }
 
-void PreferencesStorage::UnregisterPreferencesImpl(void* realObj, const DAVA::InspBase* inspBase)
+void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBase* inspBase)
 {
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
@@ -216,22 +210,10 @@ void PreferencesStorage::UnregisterPreferencesImpl(void* realObj, const DAVA::In
 
 void PreferencesStorage::SaveValueByKey(const DAVA::FastName& key, const DAVA::VariantType& value)
 {
-    PreferencesStorage* self = Instance();
-    self->SaveValueByKeyImpl(key, value);
-}
-
-DAVA::VariantType PreferencesStorage::LoadValueByKey(const DAVA::FastName& key)
-{
-    PreferencesStorage* self = Instance();
-    return self->LoadValueByKeyImpl(key);
-}
-
-void PreferencesStorage::SaveValueByKeyImpl(const DAVA::FastName& key, const DAVA::VariantType& value)
-{
     unnamedPreferencesArchive->SetVariant(key.c_str(), value);
 }
 
-DAVA::VariantType PreferencesStorage::LoadValueByKeyImpl(const DAVA::FastName& key)
+DAVA::VariantType PreferencesStorage::LoadValueByKey(const DAVA::FastName& key)
 {
     DAVA::VariantType* loadedValutPtr = unnamedPreferencesArchive->GetVariant(key.c_str());
     if (nullptr != loadedValutPtr)
@@ -241,10 +223,9 @@ DAVA::VariantType PreferencesStorage::LoadValueByKeyImpl(const DAVA::FastName& k
     return DAVA::VariantType();
 }
 
-const DAVA::InspInfo* PreferencesStorage::GetInspInfo(const DAVA::FastName& className)
+const DAVA::InspInfo* PreferencesStorage::GetInspInfo(const DAVA::FastName& className) const
 {
-    PreferencesStorage* self = Instance();
-    for (const DAVA::InspInfo* info : self->registeredInsp)
+    for (const DAVA::InspInfo* info : registeredInsp)
     {
         if (info->Name() == className)
         {
@@ -272,12 +253,6 @@ const DAVA::InspMember* PreferencesStorage::GetInspMember(const DAVA::InspInfo* 
 
 void PreferencesStorage::SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
-    PreferencesStorage* self = Instance();
-    self->SetNewValueToAllRegisteredObjectsImpl(inspInfo, member, value);
-}
-
-void PreferencesStorage::SetNewValueToAllRegisteredObjectsImpl(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value)
-{
     DVASSERT(nullptr != inspInfo && nullptr != member);
 
     DAVA::KeyedArchive* archive = preferencesArchive->GetArchive(GenerateKey(inspInfo));
@@ -297,7 +272,7 @@ void PreferencesStorage::SetNewValueToAllRegisteredObjectsImpl(const DAVA::InspI
     ValueChanged.Emit(inspInfo, member, value);
 }
 
-DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember* member)
+DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember* member) const
 {
     if (member == nullptr)
     {
@@ -322,9 +297,9 @@ DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember
     return *value;
 }
 
-const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegisteredInsp()
+const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegisteredInsp() const
 {
-    return Instance()->registeredInsp;
+    return registeredInsp;
 }
 
 DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo)

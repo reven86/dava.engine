@@ -34,6 +34,6 @@
 
 InspInfoRegistrator::InspInfoRegistrator(const DAVA::InspInfo* inspInfo, const PreferencesStorage::DefaultValuesList& defaultValues)
 {
-    PreferencesStorage::RegisterType(inspInfo, defaultValues);
+    PreferencesStorage::Instance()->RegisterType(inspInfo, defaultValues);
 }
 

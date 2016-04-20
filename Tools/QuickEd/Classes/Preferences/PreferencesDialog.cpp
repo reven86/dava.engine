@@ -57,12 +57,12 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, Qt::WindowFlags flags)
 
     treeView->expandToDepth(0);
 
-    PreferencesStorage::RegisterPreferences(this);
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 PreferencesDialog::~PreferencesDialog()
 {
-    PreferencesStorage::UnregisterPreferences(this);
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 DAVA::String PreferencesDialog::GetGeometry() const

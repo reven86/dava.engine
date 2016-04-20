@@ -47,9 +47,9 @@ using namespace DAVA;
 REGISTER_PREFERENCES_ON_START(DialogReloadSprites,
                               PREF_ARG("currentGPU", DAVA::int64(DAVA::GPU_ORIGIN)),
                               PREF_ARG("quality", DAVA::int64(TextureConverter::ECQ_VERY_HIGH)),
-                              PREF_ARG("forceRepackEnabled", (bool(false)),
-                                       PREF_ARG("consoleState", DAVA::String()),
-                                       PREF_ARG("consoleVisible", true))
+                              PREF_ARG("forceRepackEnabled", false),
+                              PREF_ARG("consoleState", DAVA::String()),
+                              PREF_ARG("consoleVisible", true)
                               )
 
 DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
@@ -108,7 +108,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
     }
     ui->comboBox_quality->setCurrentText(qualityMap->ToString(TextureConverter::ECQ_DEFAULT));
 
-    PreferencesStorage::RegisterPreferences(this);
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 DialogReloadSprites::~DialogReloadSprites()
@@ -117,7 +117,7 @@ DialogReloadSprites::~DialogReloadSprites()
     {
         BlockingStop();
     }
-    PreferencesStorage::UnregisterPreferences(this);
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 void DialogReloadSprites::OnStartClicked()
