@@ -49,15 +49,16 @@
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-namespace MainWindow_local
-{
-InspInfoRegistrator inspInfoRegistrator(MainWindow::TypeInfo(), {
-                                                                { DAVA::FastName("isPixelized"), DAVA::VariantType(bool(false)) },
-                                                                { DAVA::FastName("state"), DAVA::VariantType(DAVA::String()) },
-                                                                { DAVA::FastName("geometry"), DAVA::VariantType(DAVA::String()) },
-                                                                { DAVA::FastName("consoleState"), DAVA::VariantType(DAVA::String()) }
-                                                                });
-}
+REGISTER_PREFERENCES_ON_START(MainWindow
+                              ,
+                              PREF_ARG("isPixelized", false)
+                              ,
+                              PREF_ARG("state", DAVA::String())
+                              ,
+                              PREF_ARG("geometry", DAVA::String())
+                              ,
+                              PREF_ARG("consoleState", DAVA::String())
+                              )
 
 using namespace DAVA;
 

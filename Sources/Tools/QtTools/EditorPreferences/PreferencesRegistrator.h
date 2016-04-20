@@ -68,3 +68,12 @@ PreferencesRegistrator<T>::~PreferencesRegistrator()
 
 #define REGISTER_PREFERENCES(Class) \
     PreferencesRegistrator<Class> preferencesRegistrator = PreferencesRegistrator<Class>(this);
+
+#define REGISTER_PREFERENCES_ON_START(Class, ...) \
+    namespace Class##_local \
+    { \
+    InspInfoRegistrator inspInfoRegistrator(Class::TypeInfo(), { __VA_ARGS__ }); \
+    };
+
+#define PREF_ARG(name, value) \
+    { DAVA::FastName(name), DAVA::VariantType(value) }

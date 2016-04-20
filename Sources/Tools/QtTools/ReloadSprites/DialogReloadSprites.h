@@ -89,11 +89,11 @@ private:
 
 public:
     INTROSPECTION(DialogReloadSprites,
-                  PROPERTY("currentGPU", "InspInfoRegistratorInternal/CurrentGPU", GetCurrentGPU, SetCurrentGPU, DAVA::I_PREFERENCE)
-                  PROPERTY("quality", "InspInfoRegistratorInternal/Quality", GetCurrentQuality, SetCurrentQuality, DAVA::I_PREFERENCE)
-                  PROPERTY("forceRepackEnabled", "InspInfoRegistratorInternal/ForceRepackEnabled", IsForceRepackEnabled, EnableForseRepack, DAVA::I_PREFERENCE)
-                  PROPERTY("consoleState", "InspInfoRegistratorInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
-                  PROPERTY("consoleVisible", "InspInfoRegistratorInternal/ConsoleVisible", IsConsoleVisible, SetConsoleVisible, DAVA::I_PREFERENCE)
+                  PROPERTY("currentGPU", "DialogReloadSpritesInternal/CurrentGPU", GetCurrentGPU, SetCurrentGPU, DAVA::I_PREFERENCE)
+                  PROPERTY("quality", "DialogReloadSpritesInternal/Quality", GetCurrentQuality, SetCurrentQuality, DAVA::I_PREFERENCE)
+                  PROPERTY("forceRepackEnabled", "DialogReloadSpritesInternal/ForceRepackEnabled", IsForceRepackEnabled, EnableForseRepack, DAVA::I_PREFERENCE)
+                  PROPERTY("consoleState", "DialogReloadSpritesInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
+                  PROPERTY("consoleVisible", "DialogReloadSpritesInternal/ConsoleVisible", IsConsoleVisible, SetConsoleVisible, DAVA::I_PREFERENCE)
                   );
 };
 

@@ -42,12 +42,7 @@
 using namespace DAVA;
 using namespace std::chrono;
 
-namespace EditorTransformSystem_local
-{
-InspInfoRegistrator inspInfoRegistrator(EditorTransformSystem::TypeInfo(), {
-                                                                           { DAVA::FastName("minimumSize"), DAVA::VariantType(DAVA::Vector2(16.0f, 16.0f)) }
-                                                                           });
-}
+REGISTER_PREFERENCES_ON_START(EditorTransformSystem, PREF_ARG("minimumSize", DAVA::Vector2(16.0f, 16.0f)))
 
 const EditorTransformSystem::CornersDirections EditorTransformSystem::cornersDirections =
 { {

@@ -35,13 +35,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QVBoxLayout>
 #include <QHeaderView>
 
-namespace PreferencesDialog_local
-{
-InspInfoRegistrator inspInfoRegistrator(PreferencesDialog::TypeInfo(), {
-                                                                       { DAVA::FastName("currentGeometry"), DAVA::VariantType(DAVA::String()) },
-                                                                       { DAVA::FastName("headerState"), DAVA::VariantType(DAVA::String()) }
-                                                                       });
-}
+REGISTER_PREFERENCES_ON_START(PreferencesDialog
+                              ,
+                              PREF_ARG("currentGeometry", DAVA::String())
+                              ,
+                              PREF_ARG("headerState", DAVA::String())
+                              )
 
 PreferencesDialog::PreferencesDialog(QWidget* parent, Qt::WindowFlags flags)
     : QDialog(parent, flags)

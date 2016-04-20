@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/Introspection.h"
 #include "QtTools/EditorPreferences/PreferencesRegistrator.h"
 #include <QDialog>
+
 class QTreeView;
 
 class PreferencesDialog : public QDialog, public DAVA::InspBase

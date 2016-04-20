@@ -64,9 +64,7 @@ public:
     REGISTER_PREFERENCES(ColorControl)
 };
 
-InspInfoRegistrator inspInfoRegistrator(ColorControl::TypeInfo(), {
-                                                                  { DAVA::FastName("backgroundColor"), DAVA::VariantType(Color::Transparent) }
-                                                                  });
+REGISTER_PREFERENCES_ON_START(ColorControl, PREF_ARG("backgroundColor", Color::Transparent))
 
 class GridControl : public UIControl
 {
