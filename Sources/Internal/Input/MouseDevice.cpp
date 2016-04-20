@@ -45,7 +45,7 @@ public:
     void SetCursorInCenter() override
     {
     }
-    bool SkipEvents() override
+    bool SkipEvents(const UIEvent* event) override
     {
         return false;
     }
@@ -147,7 +147,7 @@ bool MouseDevice::IsPinningEnabled() const
 bool MouseDevice::SkipEvents(const UIEvent* event)
 {
     context->focusChanged = false;
-    if (privateImpl->SkipEvents())
+    if (privateImpl->SkipEvents(event))
     {
         return true;
     }
@@ -157,7 +157,13 @@ bool MouseDevice::SkipEvents(const UIEvent* event)
     }
     if (context->deferredCapture)
     {
-        if (event->phase == UIEvent::Phase::ENDED)
+        if (event->device != UIEvent::Device::MOUSE && context->focused)
+        {
+            SetSystemMode(eCaptureMode::PINING);
+            context->deferredCapture = false;
+            return false;
+        }
+        else if ((event->device == UIEvent::Device::MOUSE) && (event->phase == UIEvent::Phase::ENDED))
         {
             bool inRect = true;
             Vector2 windowSize = Core::Instance()->GetWindowSize();

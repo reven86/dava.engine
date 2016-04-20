@@ -70,7 +70,7 @@ class MouseDeviceInterface
 public:
     virtual void SetMode(eCaptureMode newMode) = 0;
     virtual void SetCursorInCenter() = 0;
-    virtual bool SkipEvents() = 0;
+    virtual bool SkipEvents(const UIEvent* event) = 0;
     virtual ~MouseDeviceInterface() = default;
 };
 

@@ -47,6 +47,7 @@ void MouseDeviceUWP::SetMode(eCaptureMode newMode)
 
     if (eCaptureMode::PINING == newMode)
     {
+        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
         core->RunOnUIThread([]()
                             {
                                 Window::Current->CoreWindow->PointerCursor = nullptr;
@@ -65,8 +66,16 @@ void MouseDeviceUWP::SetCursorInCenter()
 {
 }
 
-bool MouseDeviceUWP::SkipEvents()
+bool MouseDeviceUWP::SkipEvents(const UIEvent* event)
 {
+    if (event->device == UIEvent::Device::MOUSE)
+    {
+        if (skipMouseMoveEvents)
+        {
+            skipMouseMoveEvents--;
+            return true;
+        }
+    }
     return false;
 }
 

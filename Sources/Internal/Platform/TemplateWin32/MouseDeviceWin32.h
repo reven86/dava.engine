@@ -43,7 +43,7 @@ class MouseDeviceWin32 : public MouseDeviceInterface
 public:
     void SetMode(eCaptureMode newMode) override;
     void SetCursorInCenter() override;
-    bool SkipEvents() override;
+    bool SkipEvents(const UIEvent* event) override;
 
 private:
     bool SetSystemCursorVisibility(bool show);

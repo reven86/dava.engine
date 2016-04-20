@@ -45,7 +45,7 @@ void MouseDeviceWin32::SetCursorInCenter()
     SetCursorPos(centerX, centerY);
 }
 
-bool MouseDeviceWin32::SkipEvents()
+bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
 {
     return false;
 }

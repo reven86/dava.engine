@@ -63,12 +63,15 @@ void MouseDeviceMacOS::SetCursorInCenter()
 {
 }
 
-bool MouseDeviceMacOS::SkipEvents()
+bool MouseDeviceMacOS::SkipEvents(const UIEvent* event)
 {
-    if (skipMouseMoveEvents)
+    if (event->device == UIEvent::Device::MOUSE)
     {
-        skipMouseMoveEvents--;
-        return true;
+        if (skipMouseMoveEvents)
+        {
+            skipMouseMoveEvents--;
+            return true;
+        }
     }
     return false;
 }

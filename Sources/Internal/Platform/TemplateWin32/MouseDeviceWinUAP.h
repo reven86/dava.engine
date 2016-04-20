@@ -42,7 +42,11 @@ class MouseDeviceUWP : public MouseDeviceInterface
 public:
     void SetMode(eCaptureMode newMode) override;
     void SetCursorInCenter() override;
-    bool SkipEvents() override;
+    bool SkipEvents(const UIEvent* event) override;
+
+private:
+    uint32 skipMouseMoveEvents = 0;
+    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 }
 

@@ -384,7 +384,7 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
             if (!isPhoneApiDetected)
             {
                 Core::Instance()->GoForeground();
-                //Core::Instance()->FocusRecieve();
+                Core::Instance()->FocusReceived();
             }
             Core::Instance()->SetIsActive(true); //TODO: Maybe should move to client side
         }
@@ -392,8 +392,8 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
         {
             if (!isPhoneApiDetected)
             {
-                //Core::Instance()->FocusLost();
                 Core::Instance()->GoBackground(false);
+                Core::Instance()->FocusLost();
             }
             else
             {
@@ -933,11 +933,13 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
     if (isFullscreen_)
     {
         isFullscreen = view->TryEnterFullScreenMode();
+        Logger::Info("!!!!! isFullscreen true , %d", (int)isFullscreen);
     }
     else
     {
         view->ExitFullScreenMode();
         isFullscreen = false;
+        Logger::Info("!!!!! isFullscreen false , %d", (int)isFullscreen);
     }
 }
 
