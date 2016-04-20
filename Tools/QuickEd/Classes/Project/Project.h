@@ -48,7 +48,6 @@ class Project : public QObject, public DAVA::InspBase
 
 public:
     explicit Project(QObject* parent = nullptr);
-    virtual ~Project();
     bool Open(const QString& path);
     void Close();
     bool CanOpenProject(const QString& path) const;

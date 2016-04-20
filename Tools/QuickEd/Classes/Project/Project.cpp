@@ -52,10 +52,6 @@ Project::Project(QObject* parent)
 {
 }
 
-Project::~Project()
-{
-}
-
 bool Project::Open(const QString& path)
 {
     bool result = OpenInternal(path);

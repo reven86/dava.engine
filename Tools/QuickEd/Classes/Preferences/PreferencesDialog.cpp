@@ -35,10 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QVBoxLayout>
 #include <QHeaderView>
 
-REGISTER_PREFERENCES_ON_START(PreferencesDialog
-                              ,
-                              PREF_ARG("currentGeometry", DAVA::String())
-                              ,
+REGISTER_PREFERENCES_ON_START(PreferencesDialog,
+                              PREF_ARG("currentGeometry", DAVA::String()),
                               PREF_ARG("headerState", DAVA::String())
                               )
 

@@ -49,14 +49,10 @@
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-REGISTER_PREFERENCES_ON_START(MainWindow
-                              ,
-                              PREF_ARG("isPixelized", false)
-                              ,
-                              PREF_ARG("state", DAVA::String())
-                              ,
-                              PREF_ARG("geometry", DAVA::String())
-                              ,
+REGISTER_PREFERENCES_ON_START(MainWindow,
+                              PREF_ARG("isPixelized", false),
+                              PREF_ARG("state", DAVA::String()),
+                              PREF_ARG("geometry", DAVA::String()),
                               PREF_ARG("consoleState", DAVA::String())
                               )
 
