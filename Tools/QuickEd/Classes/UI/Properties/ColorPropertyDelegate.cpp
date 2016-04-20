@@ -42,7 +42,6 @@
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 
-
 ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {

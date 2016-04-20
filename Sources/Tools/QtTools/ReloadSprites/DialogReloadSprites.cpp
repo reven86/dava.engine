@@ -64,7 +64,6 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
 
     workerThread.setStackSize(16 * 1024 * 1024);
 
-
     LoggerOutputObject* loggerOutput = new LoggerOutputObject(this); //will be removed by dialog
     connect(loggerOutput, &LoggerOutputObject::OutputReady, ui->logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
 

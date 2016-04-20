@@ -36,6 +36,5 @@
 class PreferencesRootProperty : public SectionProperty<PreferencesIntrospectionProperty>
 {
 public:
-
     PreferencesRootProperty();
 };

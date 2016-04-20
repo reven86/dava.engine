@@ -37,7 +37,6 @@ class QTreeView;
 
 class PreferencesDialog : public QDialog, public DAVA::InspBase
 {
-
 public:
     PreferencesDialog(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
     ~PreferencesDialog();
