@@ -26,55 +26,41 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
-#define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#ifndef __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
+#define __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
 
-#include "UI/Components/UIComponent.h"
+#include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
+#include "Math/Vector.h"
+#include "FocusHelpers.h"
 
 namespace DAVA
 {
 class UIControl;
+class UIList;
+class UIEvent;
 
-class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
+class DirectionBasedNavigationAlgorithm
 {
 public:
-    UIFlowLayoutHintComponent();
-    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);
+    DirectionBasedNavigationAlgorithm(UIControl* root);
+    ~DirectionBasedNavigationAlgorithm();
 
-protected:
-    virtual ~UIFlowLayoutHintComponent();
-
-private:
-    UIFlowLayoutHintComponent& operator=(const UIFlowLayoutHintComponent&) = delete;
-
-public:
-    UIFlowLayoutHintComponent* Clone() const override;
-
-    bool IsNewLineBeforeThis() const;
-    void SetNewLineBeforeThis(bool flag);
-
-    bool IsNewLineAfterThis() const;
-    void SetNewLineAfterThis(bool flag);
+    UIControl* GetNextControl(UIControl* focusedControl, FocusHelpers::Direction dir);
 
 private:
-    void SetLayoutDirty();
+    UIControl* FindFirstControl(UIControl* control) const;
+    UIControl* FindNextControl(UIControl* focusedControl, FocusHelpers::Direction dir) const;
+    UIControl* FindNextSpecifiedControl(UIControl* focusedControl, FocusHelpers::Direction dir) const;
+    UIControl* FindNearestControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const;
+    Vector2 CalcNearestPos(const Vector2& pos, UIControl* testControl, FocusHelpers::Direction dir) const;
 
-private:
-    enum eFlags
-    {
-        FLAG_NEW_LINE_BEFORE_THIS,
-        FLAG_NEW_LINE_AFTER_THIS,
-        FLAG_COUNT
-    };
+    bool CanNavigateToControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const;
+    UIControl* FindFirstControlImpl(UIControl* control, UIControl* candidate) const;
 
-    Bitset<eFlags::FLAG_COUNT> flags;
-
-public:
-    INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
-                         PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT))
+    RefPtr<UIControl> root;
 };
 }
 
 
-#endif //__DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#endif //__DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
