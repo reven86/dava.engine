@@ -36,8 +36,8 @@
 #include "../Qt/Main/QtUtils.h"
 
 ModifyHeightmapCommand::ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
-                                               Heightmap* originalHeightmap,
-                                               const Rect& updatedRect)
+                                               DAVA::Heightmap* originalHeightmap,
+                                               const DAVA::Rect& updatedRect)
     : Command2(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
     , heightmapProxy(heightmapProxy)
 {
@@ -51,11 +51,11 @@ ModifyHeightmapCommand::ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
 
 ModifyHeightmapCommand::~ModifyHeightmapCommand()
 {
-    SafeDeleteArray(undoRegion);
-    SafeDeleteArray(redoRegion);
+    DAVA::SafeDeleteArray(undoRegion);
+    DAVA::SafeDeleteArray(redoRegion);
 }
 
-Entity* ModifyHeightmapCommand::GetEntity() const
+DAVA::Entity* ModifyHeightmapCommand::GetEntity() const
 {
     return NULL;
 }
@@ -70,46 +70,46 @@ void ModifyHeightmapCommand::Undo()
     ApplyHeightmapRegion(undoRegion);
 }
 
-uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
+DAVA::uint16* ModifyHeightmapCommand::GetHeightmapRegion(DAVA::Heightmap* heightmap)
 {
-    int32 size = heightmap->Size();
-    int32 width = (int32)ceilf(updatedRect.dx);
-    int32 height = (int32)ceilf(updatedRect.dy);
-    int32 xOffset = (int32)floorf(updatedRect.x);
-    int32 yOffset = (int32)floorf(updatedRect.y);
+    DAVA::int32 size = heightmap->Size();
+    DAVA::int32 width = static_cast<DAVA::int32>(ceilf(updatedRect.dx));
+    DAVA::int32 height = static_cast<DAVA::int32>(ceilf(updatedRect.dy));
+    DAVA::int32 xOffset = static_cast<DAVA::int32>(floorf(updatedRect.x));
+    DAVA::int32 yOffset = static_cast<DAVA::int32>(floorf(updatedRect.y));
 
     DVASSERT((xOffset + width) <= size && (yOffset + height) <= size);
 
-    uint16* newData = new uint16[width * height];
-    uint16* oldData = heightmap->Data();
+    DAVA::uint16* newData = new DAVA::uint16[width * height];
+    DAVA::uint16* oldData = heightmap->Data();
 
-    for (int32 i = 0; i < height; ++i)
+    for (DAVA::int32 i = 0; i < height; ++i)
     {
-        uint16* src = oldData + (yOffset + i) * size + xOffset;
-        uint16* dst = newData + i * width;
-        memcpy(dst, src, sizeof(uint16) * width);
+        DAVA::uint16* src = oldData + (yOffset + i) * size + xOffset;
+        DAVA::uint16* dst = newData + i * width;
+        memcpy(dst, src, sizeof(DAVA::uint16) * width);
     }
 
     return newData;
 }
 
-void ModifyHeightmapCommand::ApplyHeightmapRegion(uint16* region)
+void ModifyHeightmapCommand::ApplyHeightmapRegion(DAVA::uint16* region)
 {
-    int32 size = heightmapProxy->Size();
-    int32 width = (int32)ceilf(updatedRect.dx);
-    int32 height = (int32)ceilf(updatedRect.dy);
-    int32 xOffset = (int32)floorf(updatedRect.x);
-    int32 yOffset = (int32)floorf(updatedRect.y);
+    DAVA::int32 size = heightmapProxy->Size();
+    DAVA::int32 width = static_cast<DAVA::int32>(ceilf(updatedRect.dx));
+    DAVA::int32 height = static_cast<DAVA::int32>(ceilf(updatedRect.dy));
+    DAVA::int32 xOffset = static_cast<DAVA::int32>(floorf(updatedRect.x));
+    DAVA::int32 yOffset = static_cast<DAVA::int32>(floorf(updatedRect.y));
 
     DVASSERT((xOffset + width) <= size && (yOffset + height) <= size);
 
-    uint16* data = heightmapProxy->Data();
+    DAVA::uint16* data = heightmapProxy->Data();
 
-    for (int32 i = 0; i < height; ++i)
+    for (DAVA::int32 i = 0; i < height; ++i)
     {
-        uint16* src = region + i * width;
-        uint16* dst = data + (yOffset + i) * size + xOffset;
-        memcpy(dst, src, sizeof(uint16) * width);
+        DAVA::uint16* src = region + i * width;
+        DAVA::uint16* dst = data + (yOffset + i) * size + xOffset;
+        memcpy(dst, src, sizeof(DAVA::uint16) * width);
     }
 
     heightmapProxy->UpdateRect(updatedRect);

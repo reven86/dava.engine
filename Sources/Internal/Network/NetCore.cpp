@@ -115,7 +115,7 @@ void NetCore::DestroyControllerBlocked(TrackId id)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
-    DVASSERT(GetTrackedObject(id) != NULL);
+    DVASSERT(GetTrackedObject(id) != nullptr);
 
     volatile bool oneStopped = false;
     loop.Post(Bind(&NetCore::DoDestroy, this, id, &oneStopped));
@@ -251,10 +251,10 @@ void NetCore::AllDestroyed()
 
 IController* NetCore::GetTrackedObject(TrackId id) const
 {
+    DVASSERT(trackedObjects.size() != 0);
+
     Set<IController*>::const_iterator i = trackedObjects.find(TrackIdToObject(id));
-    return i != trackedObjects.end() ? *i
-                                       :
-                                       NULL;
+    return (i != trackedObjects.end()) ? *i : nullptr;
 }
 
 void NetCore::TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag)

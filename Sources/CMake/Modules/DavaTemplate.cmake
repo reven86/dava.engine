@@ -47,14 +47,6 @@ if( DAVA_DISABLE_AUTOTESTS )
     add_definitions ( -DDISABLE_AUTOTESTS )
 endif()
 
-if( WIN32 )
-    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN)
-    list ( APPEND ADDITIONAL_DLL_FILES ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN} )
-elseif( MACOS )
-    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC)
-    list ( APPEND MACOS_DYLIB  ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC} )
-endif()
-
 if ( STEAM_SDK_FOUND )
     add_definitions ( -D__DAVAENGINE_STEAM__ )
     include_directories( ${STEAM_SDK_HEADERS} )
@@ -284,6 +276,14 @@ list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                                CUSTOM_PACK_1     ${UNIFIED_CUSTOM_PACK_1}
+                                                CUSTOM_PACK_2     ${UNIFIED_CUSTOM_PACK_2}
+                                                CUSTOM_PACK_3     ${UNIFIED_CUSTOM_PACK_3}
+                                                CUSTOM_PACK_4     ${UNIFIED_CUSTOM_PACK_4}
+                                                CUSTOM_PACK_5     ${UNIFIED_CUSTOM_PACK_5}
+                                                CUSTOM_PACK_6     ${UNIFIED_CUSTOM_PACK_6}
+                                                CUSTOM_PACK_7     ${UNIFIED_CUSTOM_PACK_7}
+
                                                )
 
 if( ANDROID )

@@ -81,6 +81,8 @@ private:
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
     void LoadWindowMinimumSizeSettings();
 
+    void ClearMouseButtons();
+
     bool willQuit;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
@@ -88,6 +90,8 @@ private:
 
     float32 minWindowWidth = 0.0f;
     float32 minWindowHeight = 0.0f;
+
+    HWND hWindow = nullptr;
 };
 
 } // end namespace DAVA

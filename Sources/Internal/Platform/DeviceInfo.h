@@ -170,7 +170,7 @@ public:
     static NetworkInfo GetNetworkInfo();
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
-    static void InitializeScreenInfo();
+    static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
     static bool IsTouchPresented();
 
     // true if device connected

@@ -33,9 +33,7 @@
 #include "DAVAEngine.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
-using namespace DAVA;
-
-class ScenePreviewControl : public UI3DView
+class ScenePreviewControl : public DAVA::UI3DView
 {
 public:
     enum eError
@@ -45,13 +43,13 @@ public:
     };
 
 public:
-    ScenePreviewControl(const Rect& rect);
+    ScenePreviewControl(const DAVA::Rect& rect);
     virtual ~ScenePreviewControl();
 
-    virtual void Input(UIEvent* touch);
-    virtual void Update(float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent* touch);
+    virtual void Update(DAVA::float32 timeElapsed);
 
-    int32 OpenScene(const FilePath& pathToFile);
+    DAVA::int32 OpenScene(const DAVA::FilePath& pathToFile);
     void ReleaseScene();
     void RecreateScene();
 
@@ -61,9 +59,9 @@ private:
 
 private:
     //scene controls
-    Scene* editorScene = nullptr;
-    RotationControllerSystem* rotationSystem = nullptr;
-    FilePath currentScenePath;
+    DAVA::Scene* editorScene = nullptr;
+    DAVA::RotationControllerSystem* rotationSystem = nullptr;
+    DAVA::FilePath currentScenePath;
     bool needSetCamera = false;
 };
 

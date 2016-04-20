@@ -445,7 +445,7 @@ DAVA::Entity* CommandRestartParticleEffect::GetEntity() const
     return this->effectEntity;
 }
 
-CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(ParticleEmitter* emitter)
+CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(DAVA::ParticleEmitter* emitter)
     : CommandAction(CMDID_PARTICLE_EMITTER_LAYER_ADD)
 {
     this->selectedEmitter = emitter;
