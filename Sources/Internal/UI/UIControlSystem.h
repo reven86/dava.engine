@@ -50,6 +50,7 @@ class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
 class UIFocusSystem;
+class UIKeyInputSystem;
 class UIInputSystem;
 class UIScreenshoter;
 
@@ -303,7 +304,9 @@ public:
     bool IsHostControl(const UIControl* control) const;
 
     UILayoutSystem* GetLayoutSystem() const;
+    UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
+    UIKeyInputSystem* GetKeyInputSystem() const;
 
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
@@ -325,7 +328,6 @@ private:
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
-    UIFocusSystem* focusSystem = nullptr;
     UIInputSystem* inputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 

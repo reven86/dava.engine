@@ -40,17 +40,17 @@
 
 namespace DAVA
 {
-UIInputSystem::UIInputSystem(UIFocusSystem* focusSystem_)
-    : focusSystem(focusSystem_)
+UIInputSystem::UIInputSystem()
 {
+    focusSystem = new UIFocusSystem();
     keyInputSystem = new UIKeyInputSystem(focusSystem);
 }
 
 UIInputSystem::~UIInputSystem()
 {
     SafeDelete(keyInputSystem);
+    SafeDelete(focusSystem);
 
-    focusSystem = nullptr; // we are not owner
     currentScreen = nullptr; // we are not owner
     popupContainer = nullptr; // we are not owner
 }
@@ -310,6 +310,16 @@ void UIInputSystem::SetHoveredControl(UIControl* newHovered)
 UIControl* UIInputSystem::GetHoveredControl() const
 {
     return hovered;
+}
+
+UIFocusSystem* UIInputSystem::GetFocusSystem() const
+{
+    return focusSystem;
+}
+
+UIKeyInputSystem* UIInputSystem::GetKeyInputSystem() const
+{
+    return keyInputSystem;
 }
 
 void UIInputSystem::UpdateModalControl()

@@ -46,7 +46,7 @@ class UIKeyInputSystem;
 class UIInputSystem
 {
 public:
-    UIInputSystem(UIFocusSystem* focusSystem);
+    UIInputSystem();
     ~UIInputSystem();
 
     void SetCurrentScreen(UIScreen* screen);
@@ -68,6 +68,9 @@ public:
     UIControl* GetExclusiveInputLocker() const;
     void SetHoveredControl(UIControl* newHovered);
     UIControl* GetHoveredControl() const;
+
+    UIFocusSystem* GetFocusSystem() const;
+    UIKeyInputSystem* GetKeyInputSystem() const;
 
 private:
     void UpdateModalControl();

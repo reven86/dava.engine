@@ -2880,7 +2880,6 @@
 		32A8BB471CC4CEA1006E69E3 /* UIInputMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB3A1CC4CEA1006E69E3 /* UIInputMap.h */; };
 		32A8BB481CC4CEA1006E69E3 /* UIInputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB3B1CC4CEA1006E69E3 /* UIInputSystem.cpp */; };
 		32A8BB491CC4CEA1006E69E3 /* UIInputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB3C1CC4CEA1006E69E3 /* UIInputSystem.h */; };
-		32A8BB4A1CC4CEA1006E69E3 /* UIInputSystem.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB3D1CC4CEA1006E69E3 /* UIInputSystem.hpp */; };
 		32A8BB4B1CC4CEA1006E69E3 /* UiModalInputComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB3E1CC4CEA1006E69E3 /* UiModalInputComponent.cpp */; };
 		32A8BB4C1CC4CEA1006E69E3 /* UiModalInputComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB3F1CC4CEA1006E69E3 /* UiModalInputComponent.h */; };
 		32A8BB531CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB4D1CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp */; };
@@ -3997,7 +3996,6 @@
 		32A8BB3A1CC4CEA1006E69E3 /* UIInputMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIInputMap.h; sourceTree = "<group>"; };
 		32A8BB3B1CC4CEA1006E69E3 /* UIInputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIInputSystem.cpp; sourceTree = "<group>"; };
 		32A8BB3C1CC4CEA1006E69E3 /* UIInputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIInputSystem.h; sourceTree = "<group>"; };
-		32A8BB3D1CC4CEA1006E69E3 /* UIInputSystem.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = UIInputSystem.hpp; sourceTree = "<group>"; };
 		32A8BB3E1CC4CEA1006E69E3 /* UiModalInputComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UiModalInputComponent.cpp; sourceTree = "<group>"; };
 		32A8BB3F1CC4CEA1006E69E3 /* UiModalInputComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UiModalInputComponent.h; sourceTree = "<group>"; };
 		32A8BB4D1CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusGroupComponent.cpp; sourceTree = "<group>"; };
@@ -5671,7 +5669,6 @@
 				32A8BB3A1CC4CEA1006E69E3 /* UIInputMap.h */,
 				32A8BB3B1CC4CEA1006E69E3 /* UIInputSystem.cpp */,
 				32A8BB3C1CC4CEA1006E69E3 /* UIInputSystem.h */,
-				32A8BB3D1CC4CEA1006E69E3 /* UIInputSystem.hpp */,
 				32A8BB3E1CC4CEA1006E69E3 /* UiModalInputComponent.cpp */,
 				32A8BB3F1CC4CEA1006E69E3 /* UiModalInputComponent.h */,
 			);
@@ -6372,7 +6369,6 @@
 				028C19631BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0E4A1BD66A6000B2266F /* ObjectFactory.h in Headers */,
 				028C18131BD66A6000B2266F /* WindComponent.h in Headers */,
-				32A8BB4A1CC4CEA1006E69E3 /* UIInputSystem.hpp in Headers */,
 				028C1B4C1BD66A6100B2266F /* NSStringUtils.h in Headers */,
 				028C0E711BD66A6000B2266F /* StaticSingleton.h in Headers */,
 				028C0D9C1BD66A6000B2266F /* MongodbUpdateObject.h in Headers */,

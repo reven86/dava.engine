@@ -95,6 +95,7 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
     {
         modifiers &= ~KeyboardShortcut::ConvertKeyToModifier(event->key);
     }
+    KeyboardShortcut shortcut(event->key, modifiers);
 
     UIControl* focusedControl = focusSystem->GetFocusedControl();
     UIControl* rootControl = focusSystem->GetRoot();
@@ -107,7 +108,6 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
     if (!processed && phase == UIEvent::Phase::KEY_DOWN) // try to process shortcuts
     {
         UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
-        KeyboardShortcut shortcut(event->key);
         while (!processed && c != nullptr)
         {
             UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
@@ -134,9 +134,8 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
         }
     }
 
-    if (!processed && (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT))
+    if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        KeyboardShortcut shortcut(event->key);
         FastName action = globalInputMap.FindAction(shortcut);
         if (action.IsValid())
         {
