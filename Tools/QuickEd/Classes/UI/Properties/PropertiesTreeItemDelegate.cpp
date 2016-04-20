@@ -88,6 +88,11 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
     propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
+
+    propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["Gradient"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()

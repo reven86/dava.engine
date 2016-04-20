@@ -87,7 +87,7 @@ const QString PROJECT_DATA = "%1/Data";
 // Platform directory path
 const QString PROJECT_PLATFORM_PATH = PROJECT_DATA + "/UI/";
 // Project file path
-const QString PROJECT_FILE_PATH = "%1/ui.uieditor";
+const QString PROJECT_FILE_PATH = "%1ui.uieditor";
 // Project GFX folder for sprites psd files
 const QString PROJECT_DATASOURCE_GFX = PROJECT_DATASOURCE + GFX;
 // Project GFX folder for graphics fonts sprites psd files

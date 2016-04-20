@@ -24,7 +24,6 @@ add_definitions(
 -D_CRT_SECURE_NO_DEPRECATE
 -DDAVA_QT
 -DDAVA_FMOD
--D_DISABLE_IMAGE_MAGICK
 )
 
 file              ( GLOB_RECURSE QT_LIST "Classes/Qt/*.h"  )

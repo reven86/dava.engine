@@ -280,7 +280,7 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
 
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
-    ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
+    DAVA::ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
     {
         const DAVA::FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
@@ -291,28 +291,28 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
         DAVA::TextureConverter::eConvertQuality qualityValue = static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32());
 
         LoggerErrorHandler handler;
-        Logger::AddCustomOutput(&handler);
+        DAVA::Logger::AddCustomOutput(&handler);
 
         SceneExporter exporter;
         exporter.SetFolders(dataFolder, dataSourceFolder);
         exporter.SetCompressionParams(newGPU, qualityValue);
-        exporter.EnableOptimizations(newGPU != GPU_ORIGIN);
+        exporter.EnableOptimizations(newGPU != DAVA::GPU_ORIGIN);
 
         const DAVA::FilePath& scenePathname = GetScenePath();
         DAVA::FilePath newScenePathname = dataFolder + scenePathname.GetRelativePathname(dataSourceFolder);
-        FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
+        DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
 
         SceneExporter::ExportedObjectCollection exportedObjects;
         exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
         exporter.ExportObjects(exportedObjects);
 
-        Logger::RemoveCustomOutput(&handler);
+        DAVA::Logger::RemoveCustomOutput(&handler);
         if (handler.HasErrors())
         {
             const auto& errorLog = handler.GetErrors();
             for (auto& error : errorLog)
             {
-                Logger::Error("Export error: %s", error.c_str());
+                DAVA::Logger::Error("Export error: %s", error.c_str());
             }
             return false;
         }

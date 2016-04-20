@@ -79,6 +79,7 @@ private slots:
 
     bool CloseProject();
     void OnExit();
+    void OnNewProject();
 
 private:
     void OpenProject(const QString& path);

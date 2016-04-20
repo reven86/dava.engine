@@ -188,6 +188,11 @@ void EditorFontSystem::RemoveFont(Map<String, Font*>* fonts, const String& fontN
 void EditorFontSystem::RefreshAvailableFontLocales()
 {
     availableFontLocales.clear();
+    if (!defaultFontsPath.IsDirectoryPathname())
+    {
+        return;
+    }
+
     FileList* fileList = new FileList(defaultFontsPath);
     for (auto count = fileList->GetCount(), i = 0; i < count; ++i)
     {

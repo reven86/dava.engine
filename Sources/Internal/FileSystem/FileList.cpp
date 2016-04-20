@@ -106,22 +106,26 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
         {
             entry.path = path + namelist[n]->d_name;
             entry.name = namelist[n]->d_name;
-            entry.size = 0;
 
 #if defined(__DAVAENGINE_MACOS__)
+            struct stat entry_stat;
+            stat(entry.path.GetAbsolutePathname().c_str(), &entry_stat);
+
             if (DT_LNK == namelist[n]->d_type)
             {
-                struct stat link_stat;
-                if (0 == stat(entry.path.GetAbsolutePathname().c_str(), &link_stat))
-                {
-                    entry.isDirectory = (S_IFDIR == ((link_stat.st_mode) & S_IFMT));
-                }
+                entry.isDirectory = (S_IFDIR == ((entry_stat.st_mode) & S_IFMT));
             }
             else
-#endif
             {
                 entry.isDirectory = (DT_DIR == namelist[n]->d_type);
             }
+
+            entry.size = entry_stat.st_size;
+
+#elif defined(__DAVAENGINE_IPHONE__)
+            entry.isDirectory = (DT_DIR == namelist[n]->d_type);
+            entry.size = 0;
+#endif
 
             if (entry.name != "." && entry.name != "..")
             {

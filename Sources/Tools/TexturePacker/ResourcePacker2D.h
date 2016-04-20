@@ -49,6 +49,7 @@ class AssetCacheClient;
 class ResourcePacker2D
 {
     static const String VERSION;
+    static const String INTERNAL_LIBPSD_VERSION;
 
 public:
     void InitFolders(const FilePath& inputPath, const FilePath& outputPath);
@@ -76,12 +77,11 @@ private:
     bool IsUsingCache() const;
 
     Vector<String> FetchFlags(const FilePath& flagsPathname);
-    DefinitionFile* ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName);
     static String GetProcessFolderName();
 
     void AddError(const String& errorMsg);
 
-    void RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<String>& flags = Vector<String>());
+    void RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<PackingAlgorithm>& packAlgorithms, const Vector<String>& flags = Vector<String>());
 
     bool GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath);
     bool AddFilesToCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath);
@@ -99,7 +99,6 @@ public:
     bool clearOutputDirectory = true;
     eGPUFamily requestedGPUFamily = GPU_INVALID;
     TextureConverter::eConvertQuality quality = TextureConverter::ECQ_VERY_HIGH;
-    Vector<PackingAlgorithm> packAlgorithms;
 
 private:
     AssetCacheClient* cacheClient = nullptr;
