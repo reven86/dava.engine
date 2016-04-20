@@ -143,7 +143,12 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer");
 
     // CRAP: hardcoded metal-view, for testing
-    renderView = [renderViewController createMetalView];
+    renderView = ((rhi::ApiIsSupported(rhi::RHI_METAL)))
+    ?
+    [renderViewController createMetalView]
+    :
+    [renderViewController createGLView];
+
     /*
     if (rhiRenderer == rhi::RHI_GLES2)
     {
