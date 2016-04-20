@@ -42,6 +42,7 @@
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibTgaHelper.h"
 #include "Render/Image/LibWebPHelper.h"
+#include "Render/Image/LibPSDHelper.h"
 
 #include "Base/ScopedPtr.h"
 
@@ -49,20 +50,13 @@ namespace DAVA
 {
 ImageSystem::ImageSystem()
 {
-    wrappers[IMAGE_FORMAT_PNG] = new LibPngHelper();
-    wrappers[IMAGE_FORMAT_DDS] = new LibDdsHelper();
-    wrappers[IMAGE_FORMAT_PVR] = new LibPVRHelper();
-    wrappers[IMAGE_FORMAT_JPEG] = new LibJpegHelper();
-    wrappers[IMAGE_FORMAT_TGA] = new LibTgaHelper();
-    wrappers[IMAGE_FORMAT_WEBP] = new LibWebPHelper();
-}
-
-ImageSystem::~ImageSystem()
-{
-    for (auto wrapper : wrappers)
-    {
-        delete wrapper;
-    }
+    wrappers[IMAGE_FORMAT_PNG].reset(new LibPngHelper());
+    wrappers[IMAGE_FORMAT_DDS].reset(new LibDdsHelper());
+    wrappers[IMAGE_FORMAT_PVR].reset(new LibPVRHelper());
+    wrappers[IMAGE_FORMAT_JPEG].reset(new LibJpegHelper());
+    wrappers[IMAGE_FORMAT_TGA].reset(new LibTgaHelper());
+    wrappers[IMAGE_FORMAT_WEBP].reset(new LibWebPHelper());
+    wrappers[IMAGE_FORMAT_PSD].reset(new LibPSDHelper());
 }
 
 eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap) const
@@ -159,11 +153,11 @@ eErrorCode ImageSystem::Save(const FilePath& fileName, Image* image, PixelFormat
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath& pathName) const
 {
     const String extension = pathName.GetExtension();
-    for (auto wrapper : wrappers)
+    for (auto& wrapper : wrappers)
     {
         if (wrapper && wrapper->IsFileExtensionSupported(extension))
         {
-            return wrapper;
+            return wrapper.get();
         }
     }
 
@@ -172,11 +166,11 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath& pathN
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(File* file) const
 {
-    for (auto wrapper : wrappers)
+    for (auto& wrapper : wrappers)
     {
         if (wrapper && wrapper->CanProcessFile(file))
         {
-            return wrapper;
+            return wrapper.get();
         }
     }
     DVASSERT(false);
@@ -191,7 +185,7 @@ ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath& pathname) co
 
 ImageFormat ImageSystem::GetImageFormatForExtension(const String& extension) const
 {
-    for (auto wrapper : wrappers)
+    for (auto& wrapper : wrappers)
     {
         if (wrapper && wrapper->IsFileExtensionSupported(extension))
             return wrapper->GetImageFormat();
@@ -202,7 +196,7 @@ ImageFormat ImageSystem::GetImageFormatForExtension(const String& extension) con
 
 ImageFormat ImageSystem::GetImageFormatByName(const String& name) const
 {
-    for (auto wrapper : wrappers)
+    for (auto& wrapper : wrappers)
     {
         if (CompareCaseInsensitive(wrapper->Name(), name) == 0)
             return wrapper->GetImageFormat();

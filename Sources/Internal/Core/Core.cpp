@@ -890,6 +890,8 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
     rendererParams.window = screenMetrics.nativeView;
     rendererParams.width = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
     rendererParams.height = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
+    rendererParams.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
+    rendererParams.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
 
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
@@ -932,6 +934,8 @@ void Core::ApplyWindowSize()
     rhi::ResetParam params;
     params.width = physicalWidth;
     params.height = physicalHeight;
+    params.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
+    params.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
     params.window = screenMetrics.nativeView;
     Renderer::Reset(params);
 

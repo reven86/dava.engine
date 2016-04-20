@@ -62,7 +62,7 @@ bool ImageSplitterTool::InitializeInternal()
     {
         if (filename.IsEmpty())
         {
-            AddError("Pathname of image file was not selected");
+            Logger::Error("Pathname of image file was not selected");
             return false;
         }
     }
@@ -70,14 +70,14 @@ bool ImageSplitterTool::InitializeInternal()
     {
         if (foldername.IsEmpty())
         {
-            AddError("Input folder was not selected");
+            Logger::Error("Input folder was not selected");
             return false;
         }
         foldername.MakeDirectoryPathname();
     }
     else
     {
-        AddError("Wrong action was selected");
+        Logger::Error("Wrong action was selected");
         return false;
     }
 
@@ -88,10 +88,10 @@ void ImageSplitterTool::ProcessInternal()
 {
     if (commandAction == ACTION_SPLIT)
     {
-        ImageTools::SplitImage(filename, errors);
+        ImageTools::SplitImage(filename);
     }
     else if (commandAction == ACTION_MERGE)
     {
-        ImageTools::MergeImages(foldername, errors);
+        ImageTools::MergeImages(foldername);
     }
 }

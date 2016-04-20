@@ -505,6 +505,10 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.height /= scaleDivider;
     webViewRect.size.width /= scaleDivider;
 
+    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
+    webViewRect.size.width = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.width);
+    webViewRect.size.height = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.height);
+
     [(::UIWebView*)webViewPtr setFrame:webViewRect];
 }
 
