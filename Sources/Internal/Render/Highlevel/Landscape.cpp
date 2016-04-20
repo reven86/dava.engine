@@ -1110,9 +1110,12 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Ve
     {
         int32 baseLod = subdivision->GetLevelCount() - level - 1;
 
-        instanceData->neighbourPatchMorph = neighbourMorph;
+        instanceData->neighbourPatchMorph = Vector4(sqrtf(neighbourMorph.x),
+                                                    sqrtf(neighbourMorph.y),
+                                                    sqrtf(neighbourMorph.z),
+                                                    sqrtf(neighbourMorph.w));
         instanceData->patchLod = float32(baseLod);
-        instanceData->patchMorph = patchMorph;
+        instanceData->patchMorph = sqrtf(patchMorph);
         instanceData->centerPixelOffset = .5f / (1 << (heightmapSizePow2 - baseLod));
     }
 
