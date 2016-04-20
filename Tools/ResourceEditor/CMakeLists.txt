@@ -33,6 +33,7 @@ configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 add_definitions       (
 -DDISABLE_NATIVE_WEBVIEW
 -DDISABLE_NATIVE_TEXTFIELD
+-DQT_QML_DEBUG_NO_WARNING
 )
 
 # Ngt tool sshould be found before DavaFramework to force specific for NGT defines 
