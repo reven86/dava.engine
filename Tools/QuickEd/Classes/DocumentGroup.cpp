@@ -167,7 +167,14 @@ void DocumentGroup::AddDocument(const QString& path)
     {
         index = documents.size();
         Document* document = CreateDocument(path);
-        InsertDocument(document, index);
+        if (nullptr != document)
+        {
+            InsertDocument(document, index);
+        }
+        else
+        {
+            return;
+        }
     }
     SetActiveDocument(index);
 }
@@ -255,8 +262,11 @@ void DocumentGroup::ReloadDocument(int index)
     QString path = documents.at(index)->GetPackageAbsolutePath();
     CloseDocument(index);
     Document* document = CreateDocument(path);
-    InsertDocument(document, index);
-    SetActiveDocument(index);
+    if (document != nullptr)
+    {
+        InsertDocument(document, index);
+        SetActiveDocument(index);
+    }
 }
 
 void DocumentGroup::ReloadDocument(Document* document)
@@ -492,11 +502,18 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     QString canonicalFilePath = QFileInfo(path).canonicalFilePath();
     FilePath davaPath(canonicalFilePath.toStdString());
     RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
-
-    Document* document = new Document(packageRef, this);
-    connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
-    connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
-    return document;
+    if (packageRef.Get() != nullptr)
+    {
+        Document* document = new Document(packageRef, this);
+        connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
+        connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
+        return document;
+    }
+    else
+    {
+        DVASSERT(false && "package was not created");
+        return nullptr;
+    }
 }
 
 void DocumentGroup::InsertDocument(Document* document, int index)
