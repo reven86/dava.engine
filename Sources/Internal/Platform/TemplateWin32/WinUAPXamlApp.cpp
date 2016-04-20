@@ -49,7 +49,6 @@
 #include "Input/KeyboardDevice.h"
 
 #include "WinUAPXamlApp.h"
-#include "DeferredEvents.h"
 #include "WinApiUAP.h"
 #include "WinSystemTimer.h"
 
@@ -98,9 +97,6 @@ WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {
-    deferredSizeScaleEvents.reset(new DeferredScreenMetricEvents(isPhoneApiDetected, [this](float32 widht, float32 height, float32 scaleX, float32 scaleY) {
-        ScreenMetricsUpdated(widht, height, scaleX, scaleY);
-    }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
 
@@ -192,6 +188,10 @@ void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation:
     uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
 
     CreateBaseXamlUI();
+
+    // Prepare ScreenInfo before starting dava thread
+    DeviceInfo::ScreenInfo screenInfo = ObtainScreenInfo();
+    DeviceInfo::InitializeScreenInfo(screenInfo, false);
 
     mainLoopThread = Thread::Create([this, args]() { Run(args); });
     mainLoopThread->Start();
@@ -446,10 +446,54 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
     });
 }
 
-void WinUAPXamlApp::ScreenMetricsUpdated(float32 width, float32 height, float32 scaleX, float32 scaleY)
+void WinUAPXamlApp::OnCoreWindowSizeChanged(CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg)
 {
-    core->RunOnMainThread([this, width, height, scaleX, scaleY]() {
-        DeviceInfo::InitializeScreenInfo();
+    float32 coreWindowWidth = arg->Size.Width;
+    float32 coreWindowHeight = arg->Size.Height;
+
+    bool trackMinSize = minWindowWidth > 0.0f && minWindowHeight > 0.0f;
+    if (!isPhoneApiDetected && trackMinSize && (coreWindowWidth < minWindowWidth || coreWindowHeight < minWindowHeight))
+    {
+        float32 w = std::max(coreWindowWidth, minWindowWidth);
+        float32 h = std::max(coreWindowHeight, minWindowHeight);
+        Windows::Foundation::Size size(w, h);
+        auto currentView = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView();
+
+        if (!currentView->TryResizeView(size))
+        {
+            Windows::Foundation::Size defaultSize(minWindowWidth, minWindowHeight);
+            if (!currentView->TryResizeView(defaultSize))
+            {
+                Logger::FrameworkDebug("[WinUAPXamlApp::OnCoreWindowSizeChanged]: Failed to resize window to minimum size");
+            }
+        }
+    }
+}
+
+void WinUAPXamlApp::OnSwapChainPanelSizeChanged(Platform::Object ^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg)
+{
+    float32 width = static_cast<float32>(arg->NewSize.Width);
+    float32 height = static_cast<float32>(arg->NewSize.Height);
+    float32 scaleX = swapChainPanel->CompositionScaleX;
+    float32 scaleY = swapChainPanel->CompositionScaleY;
+
+    DeviceInfo::ScreenInfo screenInfo = ObtainScreenInfo();
+    core->RunOnMainThread([this, width, height, scaleX, scaleY, screenInfo]() {
+        DeviceInfo::InitializeScreenInfo(screenInfo, true);
+        Core::Instance()->WindowSizeChanged(width, height, scaleX, scaleY);
+    });
+}
+
+void WinUAPXamlApp::OnSwapChainPanelCompositionScaleChanged(SwapChainPanel ^ panel, Platform::Object ^ args)
+{
+    float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
+    float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
+    float32 scaleX = swapChainPanel->CompositionScaleX;
+    float32 scaleY = swapChainPanel->CompositionScaleY;
+
+    DeviceInfo::ScreenInfo screenInfo = ObtainScreenInfo();
+    core->RunOnMainThread([this, width, height, scaleX, scaleY, screenInfo]() {
+        DeviceInfo::InitializeScreenInfo(screenInfo, true);
         Core::Instance()->WindowSizeChanged(width, height, scaleX, scaleY);
     });
 }
@@ -809,6 +853,25 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
 
+DeviceInfo::ScreenInfo WinUAPXamlApp::ObtainScreenInfo()
+{
+    DeviceInfo::ScreenInfo result;
+
+    CoreWindow ^ coreWindow = Window::Current->CoreWindow;
+    DisplayInformation ^ displayInfo = DisplayInformation::GetForCurrentView();
+    DisplayOrientations orientation = displayInfo->CurrentOrientation;
+
+    result.width = static_cast<int32>(coreWindow->Bounds.Width);
+    result.height = static_cast<int32>(coreWindow->Bounds.Height);
+    result.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
+
+    if (DisplayOrientations::Portrait == orientation || DisplayOrientations::PortraitFlipped == orientation)
+    {
+        std::swap(result.width, result.height);
+    }
+    return result;
+}
+
 void WinUAPXamlApp::SetupEventHandlers()
 {
     Suspending += ref new SuspendingEventHandler(this, &WinUAPXamlApp::OnSuspending);
@@ -817,19 +880,9 @@ void WinUAPXamlApp::SetupEventHandlers()
     CoreWindow ^ coreWindow = Window::Current->CoreWindow;
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
-    auto coreWindowSizeChanged = ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg) {
-        deferredSizeScaleEvents->CoreWindowSizeChanged(coreWindow, arg);
-    });
-    coreWindow->SizeChanged += coreWindowSizeChanged;
-
-    auto swapChainPanelSizeChanged = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e) {
-        deferredSizeScaleEvents->SwapChainPanelSizeChanged(sender, e);
-    });
-    auto swapChainCompositionScaleChanged = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args) {
-        deferredSizeScaleEvents->SwapChainPanelCompositionScaleChanged(panel, args);
-    });
-    swapChainPanel->SizeChanged += swapChainPanelSizeChanged;
-    swapChainPanel->CompositionScaleChanged += swapChainCompositionScaleChanged;
+    coreWindow->SizeChanged += ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>(this, &WinUAPXamlApp::OnCoreWindowSizeChanged);
+    swapChainPanel->SizeChanged += ref new SizeChangedEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelSizeChanged);
+    swapChainPanel->CompositionScaleChanged += ref new TypedEventHandler<SwapChainPanel ^, Object ^>(this, &WinUAPXamlApp::OnSwapChainPanelCompositionScaleChanged);
 
     // Receive mouse events from SwapChainPanel, not CoreWindow, to not handle native controls' events
     swapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerPressed);
@@ -1042,14 +1095,15 @@ void WinUAPXamlApp::SetWindowMinimumSize(float32 width, float32 height)
             // Note: the largest allowed minimum size is 500 x 500 effective pixels
             // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
             ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(width, height));
-            deferredSizeScaleEvents->SetWindowMinimumSize(width, height);
+            minWindowWidth = width;
+            minWindowHeight = height;
         });
     }
 }
 
 Vector2 WinUAPXamlApp::GetWindowMinimumSize() const
 {
-    return deferredSizeScaleEvents->GetWindowMinimumSize();
+    return Vector2(minWindowWidth, minWindowHeight);
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
