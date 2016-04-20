@@ -113,11 +113,15 @@ void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& defaultStorage, 
     {
         const DefaultValuesList& defaultValuesList = defaultValues[inspInfo];
         DAVA::String key = GenerateKey(inspInfo);
-        DAVA::KeyedArchive* loadedData = loadedData = preferencesArchive->GetArchive(key);
+        DAVA::KeyedArchive* loadedData = preferencesArchive->GetArchive(key);
         DAVA::ScopedPtr<DAVA::KeyedArchive> classInfoArchive(new DAVA::KeyedArchive);
         for (int i = 0, count = inspInfo->MembersCount(); i < count; ++i)
         {
             const DAVA::InspMember* member = inspInfo->Member(i);
+            if ((member->Flags() & DAVA::I_PREFERENCE) == 0)
+            {
+                continue;
+            }
             const DAVA::FastName memberName(member->Name());
             DAVA::VariantType value;
             if (nullptr != loadedData)
@@ -157,7 +161,7 @@ void PreferencesStorage::RegisterPreferences(void* realObj, DAVA::InspBase* insp
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
     registeredObjects[info].insert(realObj);
-    DAVA::String key = GenerateKey(inspBase->GetTypeInfo());
+    DAVA::String key = GenerateKey(info);
     DAVA::KeyedArchive* archive = preferencesArchive->GetArchive(key, nullptr);
     if (nullptr == archive)
     {
@@ -188,7 +192,7 @@ void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBa
 {
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
-    registeredObjects[info].erase(realObj);
+    DVVERIFY(registeredObjects[info].erase(realObj) > 0);
     DAVA::ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive);
 
     for (int i = 0, count = info->MembersCount(); i < count; ++i)
@@ -235,22 +239,6 @@ const DAVA::InspInfo* PreferencesStorage::GetInspInfo(const DAVA::FastName& clas
     return nullptr;
 }
 
-const DAVA::InspMember* PreferencesStorage::GetInspMember(const DAVA::InspInfo* inspInfo, const DAVA::FastName& propertyName)
-{
-    if (nullptr != inspInfo)
-    {
-        for (int i = 0, count = inspInfo->MembersCount(); i < count; ++i)
-        {
-            const DAVA::InspMember* member = inspInfo->Member(i);
-            if (member->Name() == propertyName)
-            {
-                return member;
-            }
-        }
-    }
-    return nullptr;
-}
-
 void PreferencesStorage::SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
     DVASSERT(nullptr != inspInfo && nullptr != member);
@@ -267,9 +255,10 @@ void PreferencesStorage::SetNewValueToAllRegisteredObjects(const DAVA::InspInfo*
         for (void* registeredObject : registeredObjects)
         {
             member->SetValue(registeredObject, value);
+            ValueChanged.Emit(inspInfo, member, value);
+            break;
         }
     }
-    ValueChanged.Emit(inspInfo, member, value);
 }
 
 DAVA::VariantType PreferencesStorage::GetPreferencesValue(const DAVA::InspMember* member) const

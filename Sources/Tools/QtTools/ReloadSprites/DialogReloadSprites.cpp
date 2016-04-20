@@ -35,7 +35,7 @@
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 #include "TextureCompression/TextureConverter.h"
-#include <EditorPreferences/PreferencesStorage.h>
+#include "EditorPreferences/PreferencesStorage.h"
 PUSH_QT_WARNING_SUPRESSOR
 #include "ui_DialogReloadSprites.h"
 #include <QSettings>

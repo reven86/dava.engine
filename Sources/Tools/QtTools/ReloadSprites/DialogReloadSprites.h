@@ -33,9 +33,9 @@
 
 #include "Base/Introspection.h"
 #include "FileSystem/KeyedArchive.h"
+#include "SpritesPacker.h"
 #include "QtTools/EditorPreferences/PreferencesRegistrator.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
-#include "SpritesPacker.h"
 PUSH_QT_WARNING_SUPRESSOR
 #include <QDialog>
 #include <QThread>

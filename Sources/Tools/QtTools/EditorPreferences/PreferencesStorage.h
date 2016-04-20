@@ -53,16 +53,13 @@ public:
     template <typename T>
     void UnregisterPreferences(T* obj);
 
-    void RegisterPreferences(void* realObj, DAVA::InspBase* inspBase);
-    void UnregisterPreferences(void* realObj, const DAVA::InspBase* inspBase);
-
     void SetupStoragePath(const DAVA::FilePath& defaultStorage, const DAVA::FilePath& localStorage);
 
+    //Getter and setter to use preferences manually without introspections. Desired for namespaces and local functions;
     void SaveValueByKey(const DAVA::FastName& key, const DAVA::VariantType& value);
     DAVA::VariantType LoadValueByKey(const DAVA::FastName& key);
 
     const DAVA::InspInfo* GetInspInfo(const DAVA::FastName& className) const;
-    static const DAVA::InspMember* GetInspMember(const DAVA::InspInfo* inspInfo, const DAVA::FastName& propertyName);
 
     void SetNewValueToAllRegisteredObjects(const DAVA::InspInfo* inspInfo, const DAVA::InspMember* member, const DAVA::VariantType& value);
     DAVA::VariantType GetPreferencesValue(const DAVA::InspMember* member) const;
@@ -78,6 +75,9 @@ public:
     DAVA::Signal<const DAVA::InspInfo*, const DAVA::InspMember*, const DAVA::VariantType&> ValueChanged;
 
 private:
+    void RegisterPreferences(void* realObj, DAVA::InspBase* inspBase);
+    void UnregisterPreferences(void* realObj, const DAVA::InspBase* inspBase);
+
     static DAVA::String GenerateKey(const DAVA::InspInfo* inspInfo);
 
     DAVA::FilePath localStorage;

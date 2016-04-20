@@ -371,7 +371,7 @@ public:
 QAction* PreferencesActionsFactory::CreateActionForPreference(const DAVA::FastName& className, const DAVA::FastName& propertyName, QObject* parent)
 {
     const DAVA::InspInfo* inspInfo = PreferencesStorage::Instance()->GetInspInfo(className);
-    const DAVA::InspMember* inspMember = PreferencesStorage::GetInspMember(inspInfo, propertyName);
+    const DAVA::InspMember* inspMember = inspInfo->Member(propertyName);
     DVASSERT(inspInfo != nullptr && inspMember != nullptr);
     const DAVA::MetaInfo* metaInfo = inspMember->Type();
     PreferencesFactory_local::AbstractAction* action = nullptr;
