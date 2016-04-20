@@ -36,6 +36,7 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 namespace DAVA
 {
@@ -80,6 +81,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     case ANCHOR_COMPONENT:
         return new UIAnchorComponent();
 
+    case FOCUS_COMPONENT:
+        return new UIFocusComponent();
+
     default:
         DVASSERT(false);
         return nullptr;
@@ -88,29 +92,6 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
 bool UIComponent::IsMultiple(uint32 componentType)
 {
-    switch (componentType)
-    {
-    case LINEAR_LAYOUT_COMPONENT:
-        return false;
-
-    case FLOW_LAYOUT_COMPONENT:
-        return false;
-
-    case FLOW_LAYOUT_HINT_COMPONENT:
-        return false;
-
-    case IGNORE_LAYOUT_COMPONENT:
-        return false;
-
-    case SIZE_POLICY_COMPONENT:
-        return false;
-
-    case ANCHOR_COMPONENT:
-        return false;
-
-    default:
-        DVASSERT(false);
-        return false;
-    }
+    return false;
 }
 }
