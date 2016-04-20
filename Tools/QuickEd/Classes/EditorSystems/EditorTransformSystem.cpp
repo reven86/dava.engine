@@ -237,6 +237,8 @@ bool EditorTransformSystem::ProcessKey(const Key key)
         }
         if (!deltaPos.IsZero())
         {
+            microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+            currentHash = static_cast<size_t>(us.count());
             MoveAllSelectedControls(deltaPos, false);
             return true;
         }
