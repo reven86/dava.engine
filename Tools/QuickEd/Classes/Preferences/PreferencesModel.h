@@ -27,8 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef PREFERENCES_MODEL
-#define PREFERENCES_MODEL
+#pragma once
 
 #include "UI/Properties/PropertiesModel.h"
 #include <QSortFilterProxyModel>
@@ -51,5 +50,3 @@ protected:
     void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value) override;
     void ResetProperty(AbstractProperty* property) override;
 };
-
-#endif //PREFERENCES_MODEL

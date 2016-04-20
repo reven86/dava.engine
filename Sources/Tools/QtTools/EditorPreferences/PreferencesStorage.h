@@ -27,8 +27,7 @@
 =====================================================================================*/
 
 
-#ifndef PREFERENCES_STORAGE
-#define PREFERENCES_STORAGE
+#pragma once
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
@@ -106,5 +105,3 @@ void PreferencesStorage::UnregisterPreferences(T* realObject)
     static_assert(std::is_base_of<DAVA::InspBase, T>::value, "type T must be derived from InspBase");
     Instance()->UnregisterPreferences(realObject, static_cast<DAVA::InspBase*>(realObject));
 }
-
-#endif //PREFERENCES_STORAGE
