@@ -35,6 +35,8 @@
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 
+#import <UIKit/UIKit.h>
+
 #include "Debug/Profiler.h"
 
 static GLuint colorRenderbuffer = -1;
@@ -42,6 +44,16 @@ static GLuint depthRenderbuffer = -1;
 static int backingWidth = 0;
 static int backingHeight = 0;
 static bool resize_pending = true;
+
+//------------------------------------------------------------------------------
+
+bool
+rhi_MetalIsSupported()
+{
+    return [[UIDevice currentDevice].systemVersion floatValue] >= 8.0;
+}
+
+//------------------------------------------------------------------------------
 
 bool ios_gl_check_layer()
 {

@@ -142,6 +142,7 @@ RenderDeviceCaps
     char deviceDescription[128];
 };
 
+bool ApiIsSupported(Api api);
 void Initialize(Api api, const InitParam& param);
 void Uninitialize();
 void Reset(const ResetParam& param);
