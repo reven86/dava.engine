@@ -32,9 +32,7 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
-class PropertyDescription : public BaseObject
+class PropertyDescription : public DAVA::BaseObject
 {
 protected:
     ~PropertyDescription()
@@ -43,17 +41,17 @@ protected:
 
 public:
     PropertyDescription()
-        : BaseObject()
+        : DAVA::BaseObject()
         , type(0){};
 
-    String name;
-    int32 type;
-    VariantType defaultValue;
-    Vector<String> comboValues;
-    Vector<Color> colorListValues;
+    DAVA::String name;
+    DAVA::int32 type;
+    DAVA::VariantType defaultValue;
+    DAVA::Vector<DAVA::String> comboValues;
+    DAVA::Vector<DAVA::Color> colorListValues;
 };
 
-class EditorConfig : public Singleton<EditorConfig>
+class EditorConfig : public DAVA::Singleton<EditorConfig>
 {
 public:
     EditorConfig();
@@ -72,28 +70,28 @@ public:
         PROPERTY_TYPES_COUNT
     };
 
-    void ParseConfig(const FilePath& filePath);
+    void ParseConfig(const DAVA::FilePath& filePath);
 
-    const Vector<String>& GetProjectPropertyNames();
-    const Vector<String>& GetComboPropertyValues(const String& nameStr);
-    const Vector<Color>& GetColorPropertyValues(const String& nameStr);
+    const DAVA::Vector<DAVA::String>& GetProjectPropertyNames();
+    const DAVA::Vector<DAVA::String>& GetComboPropertyValues(const DAVA::String& nameStr);
+    const DAVA::Vector<DAVA::Color>& GetColorPropertyValues(const DAVA::String& nameStr);
 
-    bool HasProperty(const String& propertyName);
-    int32 GetPropertyValueType(const String& propertyName);
-    VariantType* GetPropertyDefaultValue(const String& propertyName);
+    bool HasProperty(const DAVA::String& propertyName);
+    DAVA::int32 GetPropertyValueType(const DAVA::String& propertyName);
+    DAVA::VariantType* GetPropertyDefaultValue(const DAVA::String& propertyName);
 
 protected:
     void ClearConfig();
 
-    PropertyDescription* GetPropertyDescription(const String& propertyName);
+    PropertyDescription* GetPropertyDescription(const DAVA::String& propertyName);
 
-    int32 GetValueTypeFromPropertyType(int32 propertyType);
-    int32 ParseType(const String& typeStr);
+    DAVA::int32 GetValueTypeFromPropertyType(DAVA::int32 propertyType);
+    DAVA::int32 ParseType(const DAVA::String& typeStr);
 
-    Vector<String> propertyNames;
-    Map<String, PropertyDescription*> properties;
-    Vector<String> empty;
-    Vector<Color> emptyColors;
+    DAVA::Vector<DAVA::String> propertyNames;
+    DAVA::Map<DAVA::String, PropertyDescription*> properties;
+    DAVA::Vector<DAVA::String> empty;
+    DAVA::Vector<DAVA::Color> emptyColors;
 };
 
 

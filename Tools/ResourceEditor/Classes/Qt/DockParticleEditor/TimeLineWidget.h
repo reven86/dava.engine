@@ -30,17 +30,16 @@
 #ifndef TIMELINE_H
 #define TIMELINE_H
 
-
 #include <DAVAEngine.h>
-#include <QWidget>
-#include <QString>
-#include <QDialog>
-#include <QScrollBar.h>
-#include <qslider.h>
+
 #include "ScrollZoomWidget.h"
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
 
-using namespace DAVA;
+#include <QWidget>
+#include <QString>
+#include <QDialog>
+#include <QScrollBar>
+#include <QSlider>
 
 class TimeLineWidget : public ScrollZoomWidget
 {
@@ -50,24 +49,24 @@ public:
     explicit TimeLineWidget(QWidget* parent = 0);
     ~TimeLineWidget();
 
-    void Init(float32 minT, float32 maxT, bool updateSizeState, bool aliasLinePoint = false, bool allowDeleteLine = true, bool integer = false);
-    void Init(float32 minT, float32 maxT, float32 generalMinT, float32 generalMaxT, bool updateSizeState, bool aliasLinePoint = false, bool allowDeleteLine = true, bool integer = false);
-    void SetMinLimits(float32 minV);
-    void SetMaxLimits(float32 maxV);
+    void Init(DAVA::float32 minT, DAVA::float32 maxT, bool updateSizeState, bool aliasLinePoint = false, bool allowDeleteLine = true, bool integer = false);
+    void Init(DAVA::float32 minT, DAVA::float32 maxT, DAVA::float32 generalMinT, DAVA::float32 generalMaxT, bool updateSizeState, bool aliasLinePoint = false, bool allowDeleteLine = true, bool integer = false);
+    void SetMinLimits(DAVA::float32 minV);
+    void SetMaxLimits(DAVA::float32 maxV);
 
     void EnableLock(bool enable);
-    void SetVisualState(KeyedArchive* visualStateProps);
-    void GetVisualState(KeyedArchive* visualStateProps);
+    void SetVisualState(DAVA::KeyedArchive* visualStateProps);
+    void GetVisualState(DAVA::KeyedArchive* visualStateProps);
 
-    void AddLine(uint32 lineId, const Vector<PropValue<float32>>& line, const QColor& color, const QString& legend = "");
-    void AddLines(const Vector<PropValue<Vector2>>& lines, const Vector<QColor>& colors, const Vector<QString>& legends);
-    void AddLines(const Vector<PropValue<Vector3>>& lines, const Vector<QColor>& colors, const Vector<QString>& legends);
+    void AddLine(DAVA::uint32 lineId, const DAVA::Vector<DAVA::PropValue<DAVA::float32>>& line, const QColor& color, const QString& legend = "");
+    void AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>& lines, const DAVA::Vector<QColor>& colors, const DAVA::Vector<QString>& legends);
+    void AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>& lines, const DAVA::Vector<QColor>& colors, const DAVA::Vector<QString>& legends);
 
-    bool GetValue(uint32 lineId, Vector<PropValue<float32>>* line) const;
-    bool GetValues(Vector<PropValue<Vector2>>* lines);
-    bool GetValues(Vector<PropValue<Vector3>>* lines);
+    bool GetValue(DAVA::uint32 lineId, DAVA::Vector<DAVA::PropValue<DAVA::float32>>* line) const;
+    bool GetValues(DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>* lines);
+    bool GetValues(DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>* lines);
 
-    static bool SortPoints(const Vector2& i, const Vector2& j);
+    static bool SortPoints(const DAVA::Vector2& i, const DAVA::Vector2& j);
 
     // Add the mark to X/Y legend values (like 'deg' or 'pts').
     void SetXLegendMark(const QString& value);
@@ -86,15 +85,15 @@ protected:
 
 private:
     using ScrollZoomWidget::Init;
-    typedef Vector<Vector2> LOGIC_POINTS;
+    typedef DAVA::Vector<DAVA::Vector2> LOGIC_POINTS;
 
     QRect GetGraphRect() const override;
-    void DrawLine(QPainter* painter, uint32 lineId);
-    QPoint GetDrawPoint(const Vector2& point) const;
-    Vector2 GetLogicPoint(const QPoint& point) const;
+    void DrawLine(QPainter* painter, DAVA::uint32 lineId);
+    QPoint GetDrawPoint(const DAVA::Vector2& point) const;
+    DAVA::Vector2 GetLogicPoint(const QPoint& point) const;
     QRect GetPointRect(const QPoint& point) const;
 
-    QRect GetLineEnableRect(uint32 lineId) const;
+    QRect GetLineEnableRect(DAVA::uint32 lineId) const;
     int GetLegendHeight() const;
     QRect GetLineDrawRect() const;
     QRect GetMinimizeRect() const;
@@ -105,21 +104,21 @@ private:
     QRect GetDecreaseRect() const override;
     QRect GetSliderRect() const override;
 
-    void SetPointValue(uint32 lineId, uint32 pointId, Vector2 value, bool deleteSamePoints);
+    void SetPointValue(DAVA::uint32 lineId, DAVA::uint32 pointId, DAVA::Vector2 value, bool deleteSamePoints);
 
-    void AddPoint(uint32 lineId, const Vector2& point);
-    bool DeletePoint(uint32 lineId, uint32 pointId);
+    void AddPoint(DAVA::uint32 lineId, const DAVA::Vector2& point);
+    bool DeletePoint(DAVA::uint32 lineId, DAVA::uint32 pointId);
 
-    float32 GetYFromX(uint32 lineId, float32 x);
+    DAVA::float32 GetYFromX(DAVA::uint32 lineId, DAVA::float32 x);
 
     void GraphRectClick(QMouseEvent* event);
 
     void UpdateLimits();
 
-    void GetClickedPoint(const QPoint& point, int32& pointId, int32& lineId) const;
+    void GetClickedPoint(const QPoint& point, DAVA::int32& pointId, DAVA::int32& lineId) const;
     void UpdateSizePolicy() override;
 
-    void ChangePointValueDialog(uint32 pointId, int32 lineId);
+    void ChangePointValueDialog(DAVA::uint32 pointId, DAVA::int32 lineId);
 
     void PostAddLine();
 
@@ -131,9 +130,9 @@ private:
     void GetCrossingPoint(const QPoint& firstPoint, const QPoint& secondPoint, QPoint& leftBorderCrossPoint, QPoint& rightBorderCrossPoint);
 
 private:
-    int32 selectedPoint;
-    int32 selectedLine;
-    int32 drawLine;
+    DAVA::int32 selectedPoint;
+    DAVA::int32 selectedLine;
+    DAVA::int32 drawLine;
 
     bool isLockEnable;
     bool isLocked;
@@ -156,10 +155,10 @@ private:
         QColor color;
         QString legend;
     } LINE;
-    typedef Map<uint32, LINE> LINES_MAP;
+    typedef DAVA::Map<DAVA::uint32, LINE> LINES_MAP;
     LINES_MAP lines;
 
-    Vector2 newPoint;
+    DAVA::Vector2 newPoint;
 
     QString xLegendMark;
     QString yLegendMark;
@@ -170,10 +169,11 @@ class SetPointValueDlg : public QDialog
     Q_OBJECT
 
 public:
-    explicit SetPointValueDlg(float32 time, float32 minTime, float32 maxTime, float32 value, float32 minValue, float32 maxValue, QWidget* parent = 0, bool integer = false);
+    explicit SetPointValueDlg(DAVA::float32 time, DAVA::float32 minTime, DAVA::float32 maxTime, DAVA::float32 value,
+                              DAVA::float32 minValue, DAVA::float32 maxValue, QWidget* parent = 0, bool integer = false);
 
-    float32 GetTime() const;
-    float32 GetValue() const;
+    DAVA::float32 GetTime() const;
+    DAVA::float32 GetValue() const;
 
 private:
     bool isInteger;

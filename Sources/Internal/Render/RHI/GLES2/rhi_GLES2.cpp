@@ -586,11 +586,11 @@ void gles2_Initialize(const InitParam& param)
             ringBufferSize = param.shaderConstRingBufferSize;
         ConstBufferGLES2::InitializeRingBuffer(ringBufferSize);
 
-        Logger::Info("GL inited\n");
-        Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
-        Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
-        Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
-        Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+        Logger::FrameworkDebug("GL inited\n");
+        Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
+        Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
+        Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
+        Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 #if 1
         glEnable(GL_DEBUG_OUTPUT);
@@ -670,11 +670,11 @@ void gles2_Initialize(const InitParam& param)
 
     _Inited = true;
 
-    Logger::Info("GL inited");
-    Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
-    Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
-    Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
-    Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    Logger::FrameworkDebug("GL inited");
+    Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
+    Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
+    Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
+    Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -767,11 +767,11 @@ void gles2_Initialize(const InitParam& param)
 
     _Inited = true;
 
-    Logger::Info("GL inited");
-    Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
-    Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
-    Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
-    Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    Logger::FrameworkDebug("GL inited");
+    Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
+    Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
+    Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
+    Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -864,11 +864,11 @@ void gles2_Initialize(const InitParam& param)
 
     _Inited = true;
 
-    Logger::Info("GL inited");
-    Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
-    Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
-    Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
-    Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    Logger::FrameworkDebug("GL inited");
+    Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
+    Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
+    Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
+    Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);

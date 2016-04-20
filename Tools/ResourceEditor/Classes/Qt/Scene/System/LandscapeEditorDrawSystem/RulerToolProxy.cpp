@@ -29,17 +29,18 @@
 
 #include "RulerToolProxy.h"
 
-RulerToolProxy::RulerToolProxy(int32 size)
+RulerToolProxy::RulerToolProxy(DAVA::int32 size)
     : size(size)
     , spriteChanged(false)
 {
-    rulerToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+    DAVA::uint32 unsignedSize = static_cast<DAVA::uint32>(size);
+    rulerToolTexture = DAVA::Texture::CreateFBO(unsignedSize, unsignedSize, DAVA::FORMAT_RGBA8888);
 
     rhi::Viewport viewport;
     viewport.x = viewport.y = 0U;
-    viewport.width = (uint32)size;
-    viewport.height = (uint32)size;
-    RenderHelper::CreateClearPass(rulerToolTexture->handle, rhi::HTexture(), PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+    viewport.width = unsignedSize;
+    viewport.height = unsignedSize;
+    DAVA::RenderHelper::CreateClearPass(rulerToolTexture->handle, rhi::HTexture(), DAVA::PRIORITY_CLEAR, DAVA::Color(0.f, 0.f, 0.f, 0.f), viewport);
 }
 
 RulerToolProxy::~RulerToolProxy()
@@ -47,12 +48,12 @@ RulerToolProxy::~RulerToolProxy()
     SafeRelease(rulerToolTexture);
 }
 
-int32 RulerToolProxy::GetSize()
+DAVA::int32 RulerToolProxy::GetSize()
 {
     return size;
 }
 
-Texture* RulerToolProxy::GetTexture()
+DAVA::Texture* RulerToolProxy::GetTexture()
 {
     return rulerToolTexture;
 }

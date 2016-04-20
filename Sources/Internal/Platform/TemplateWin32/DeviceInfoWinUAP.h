@@ -61,7 +61,7 @@ public:
     eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
-    void InitializeScreenInfo();
+    void InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit);
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
 
@@ -106,6 +106,7 @@ private:
     bool isMousePresent = false;
     bool isKeyboardPresent = false;
     bool isMobileMode = false;
+    bool isContinuumMode = false;
     bool watchersCreated = false;
 
     ConcurrentObject<Map<NativeHIDType, Set<String>>> hids;

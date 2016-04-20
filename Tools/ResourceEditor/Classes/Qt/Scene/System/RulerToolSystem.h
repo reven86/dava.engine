@@ -33,14 +33,12 @@
 #include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
 
-using namespace DAVA;
-
 class RulerToolSystem : public LandscapeEditorSystem
 {
     static const DAVA::int32 APPROXIMATION_COUNT = 10;
 
 public:
-    RulerToolSystem(Scene* scene);
+    RulerToolSystem(DAVA::Scene* scene);
     virtual ~RulerToolSystem();
 
     LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
@@ -49,26 +47,26 @@ public:
     virtual void Process(DAVA::float32 timeElapsed);
     virtual void Input(DAVA::UIEvent* event);
 
-    float32 GetLength();
-    float32 GetPreviewLength();
+    DAVA::float32 GetLength();
+    DAVA::float32 GetPreviewLength();
 
 protected:
-    Vector2 MirrorPoint(const Vector2& point) const;
+    DAVA::Vector2 MirrorPoint(const DAVA::Vector2& point) const;
 
-    uint32 curToolSize;
-    Texture* toolImageTexture;
+    DAVA::uint32 curToolSize;
+    DAVA::Texture* toolImageTexture;
 
-    List<Vector2> linePoints;
-    List<float32> lengths;
-    Vector2 previewPoint;
-    float32 previewLength;
+    DAVA::List<DAVA::Vector2> linePoints;
+    DAVA::List<DAVA::float32> lengths;
+    DAVA::Vector2 previewPoint;
+    DAVA::float32 previewLength;
     bool previewEnabled;
 
-    void SetStartPoint(const Vector2& point);
-    void AddPoint(const Vector2& point);
+    void SetStartPoint(const DAVA::Vector2& point);
+    void AddPoint(const DAVA::Vector2& point);
     void RemoveLastPoint();
-    void CalcPreviewPoint(const Vector2& point, bool force = false);
-    float32 GetLength(const Vector2& startPoint, const Vector2& endPoint);
+    void CalcPreviewPoint(const DAVA::Vector2& point, bool force = false);
+    DAVA::float32 GetLength(const DAVA::Vector2& startPoint, const DAVA::Vector2& endPoint);
     void DrawPoints();
     void DisablePreview();
     void SendUpdatedLength();

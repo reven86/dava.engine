@@ -56,13 +56,13 @@ bool StaticOcclusionTool::InitializeInternal()
 {
     if (commandAction == ACTION_NONE)
     {
-        AddError("Wrong action was selected");
+        Logger::Error("Wrong action was selected");
         return false;
     }
 
     if (scenePathname.IsEmpty())
     {
-        AddError("Filename was not set");
+        Logger::Error("Filename was not set");
         return false;
     }
 
