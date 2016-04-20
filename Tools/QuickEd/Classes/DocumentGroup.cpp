@@ -231,11 +231,6 @@ void DocumentGroup::CloseDocument(Document* document)
         tabBar->removeTab(index);
         tabBar->blockSignals(signalsWasBlocked);
     }
-    DVVERIFY(documents.removeAll(document) == 1);
-    emit CanSaveAllChanged(!documents.empty());
-
-    undoGroup->removeStack(document->GetUndoStack());
-
     Document* nextDocument = nullptr;
     if (document != active)
     {
@@ -243,8 +238,24 @@ void DocumentGroup::CloseDocument(Document* document)
     }
     else if (!documents.isEmpty())
     {
-        nextDocument = documents.first();
+        DVASSERT(nullptr != active);
+        int activeIndex = documents.indexOf(active);
+        DVASSERT(activeIndex != -1);
+        activeIndex++;
+        if (activeIndex < documents.size())
+        {
+            nextDocument = documents.at(activeIndex);
+        }
+        else
+        {
+            nextDocument = documents.last();
+        }
     }
+    DVVERIFY(documents.removeAll(document) == 1);
+    emit CanSaveAllChanged(!documents.empty());
+
+    undoGroup->removeStack(document->GetUndoStack());
+
     SetActiveDocument(nextDocument);
     delete document;
 }
