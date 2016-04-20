@@ -2226,6 +2226,7 @@ void QtMainWindow::OnBeastAndSave()
     }
 
     RunBeast(dlg.GetPath(), dlg.GetMode());
+    scene->MarkAsChanged();
     SaveScene(scene);
 
     scene->ClearAllCommands();
