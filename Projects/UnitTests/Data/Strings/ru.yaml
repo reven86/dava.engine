@@ -1,4 +1,3 @@
-LANGUAGE_CODE: "ru"
-
-OK: "OK"
-Cancel: "ОТМЕНА"
+"Cancel": "ОТМЕНА"
+"LANGUAGE_CODE": "ru"
+"OK": "OK"

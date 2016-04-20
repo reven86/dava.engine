@@ -36,118 +36,130 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (ResourceArchiverTest)
 {
-    //DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
-
-    //     ResourceArchiverTest()
-    //     {
-    //         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/ResourceArchiverTest/", true);
-    //         RecursiveCopy("~res:/TestData/ResourceArchiverTest/", "~doc:/TestData/ResourceArchiverTest/");
-    //
-    //     #if defined(__DAVAENGINE_WINDOWS__)
-    //         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/ResourceArchiverTestWindowsExtension/", true);
-    //         RecursiveCopy("~res:/TestData/ResourceArchiverTestWindowsExtension/", "~doc:/TestData/ResourceArchiverTestWindowsExtension/");
-    //     #endif
-    //     }
+    ResourceArchiverTest()
+    {
+        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/ResourceArchiverTest/", true);
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/ResourceArchiverTest/", "~doc:/TestData/ResourceArchiverTest/");
+    }
 
     DAVA_TEST (TestCreateWithCompression)
     {
-        UniquePtr<FileList> fileList(new FileList("~res:/TestData/ResourceArchiverTest/SampleSource/"));
+        Vector<String> sampleSource = { "~res:/TestData/ResourceArchiverTest/SampleSource/" };
+        FilePath archivePath("result.archive");
+        SCOPE_EXIT
+        {
+            FileSystem::Instance()->DeleteFile(archivePath);
+        };
+
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, false, Compressor::Type::Lz4, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4.archive"));
+        VerifyCompression(archivePath, Compressor::Type::Lz4);
+
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, false, Compressor::Type::Lz4HC, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4hc.archive"));
+        VerifyCompression(archivePath, Compressor::Type::Lz4HC);
+
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, false, Compressor::Type::RFC1951, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_rfc1951.archive"));
+        VerifyCompression(archivePath, Compressor::Type::RFC1951);
+
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, false, Compressor::Type::None, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_nocompression.archive"));
+        VerifyCompression(archivePath, Compressor::Type::None);
     }
 
-    void TestCreateArchive(Compressor::Type compression)
+    void VerifyCompression(const FilePath& archivePath, Compressor::Type compression)
     {
-        ResourceArchiver::CreateArchive(sources, false, compression, "result.archive", "result.log", nullptr);
+        try
+        {
+            ResourceArchive resourceArchive(archivePath);
+
+            for (const ResourceArchive::FileInfo& fileInfo : resourceArchive.GetFilesInfo())
+            {
+                TEST_VERIFY(fileInfo.compressionType == compression || fileInfo.compressionType == Compressor::Type::None);
+            }
+        }
+        catch (std::exception ex)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, Format("Can't open archive %s: %s", archivePath.GetAbsolutePathname().c_str(), ex.what()));
+        }
     }
 
-    DAVA_TEST (HiddenFileTest)
+    DAVA_TEST (TestCreateWithHidden)
     {
 #if defined(__DAVAENGINE_WIN32__)
-        FilePath file1 = FilePath("~doc:/TestData/ResourceArchiverTest/Folder1/file1");
+        FilePath file1 = FilePath("~doc:/TestData/ResourceArchiverTest/SampleSource/Recursive/flags.txt");
         auto file1str = file1.GetAbsolutePathname();
+
         auto attrs = GetFileAttributesA(file1str.c_str());
-
-        if (attrs & FILE_ATTRIBUTE_HIDDEN)
+        SCOPE_EXIT
         {
-            SetFileAttributesA(file1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN);
+            SetFileAttributesA(file1str.c_str(), attrs);
+        };
+
+        if (!(attrs & FILE_ATTRIBUTE_HIDDEN))
+        {
+            SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
         }
 
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/ResourceArchiverTest/Folder1/"));
-        TEST_VERIFY(files->GetFileCount() == 3);
-        auto i = GetIndex(files, "file1");
-        TEST_VERIFY(i < files->GetCount());
-        TEST_VERIFY(files->IsHidden(i) == false);
+        Vector<String> sampleSource = { "~doc:/TestData/ResourceArchiverTest/SampleSource/" };
+        FilePath archivePath("result.archive");
+        SCOPE_EXIT
+        {
+            FileSystem::Instance()->DeleteFile(archivePath);
+        };
 
-        SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
+        bool useHidden = true;
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, useHidden, Compressor::Type::Lz4, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4.archive"));
+        TEST_VERIFY(true == IsFileExistsInArchive(archivePath, "SampleSource/Recursive/flags.txt"));
 
-        files = new FileList("~doc:/TestData/ResourceArchiverTest/Folder1/");
-        TEST_VERIFY(files->GetFileCount() == 3);
-        i = GetIndex(files, "file1");
-        TEST_VERIFY(i < files->GetCount());
-        TEST_VERIFY(files->IsHidden(i) == true);
+        useHidden = false;
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, useHidden, Compressor::Type::Lz4, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4_nohidden.archive"));
+        TEST_VERIFY(false == IsFileExistsInArchive(archivePath, "SampleSource/Recursive/flags.txt"));
 
-        SetFileAttributesA(file1str.c_str(), attrs);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-        FilePath file1 = "~doc:/TestData/ResourceArchiverTest/Folder1/file1";
-        FilePath file1hidden = "~doc:/TestData/ResourceArchiverTest/Folder1/.file1";
-        TEST_VERIFY(FileSystem::Instance()->CopyFile(file1, file1hidden, true));
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/ResourceArchiverTest/Folder1/"));
-        TEST_VERIFY(files->GetFileCount() == 4);
-        for (auto i = 0; i < files->GetCount(); ++i)
+        FilePath file1 = "~doc:/TestData/ResourceArchiverTest/SampleSource/Recursive/flags.txt";
+        FilePath file1hidden = "~doc:/TestData/ResourceArchiverTest/SampleSource/Recursive/.flags.txt";
+        TEST_VERIFY(true == FileSystem::Instance()->CopyFile(file1, file1hidden, true));
+        SCOPE_EXIT
         {
-            if (!files->IsDirectory(i))
-            {
-                bool startsWithDot = (files->GetFilename(i)[0] == '.');
-                TEST_VERIFY(files->IsHidden(i) == startsWithDot);
-            }
-        }
-        FileSystem::Instance()->DeleteFile(file1hidden);
+            FileSystem::Instance()->DeleteFile(file1hidden);
+        };
+
+        bool useHidden = true;
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, useHidden, Compressor::Type::Lz4, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4_withhidden.archive"));
+        TEST_VERIFY(true == IsFileExistsInArchive(archivePath, "SampleSource/Recursive/.flags.txt"));
+
+        useHidden = false;
+        TEST_VERIFY(true == ResourceArchiver::CreateArchive(sampleSource, useHidden, Compressor::Type::Lz4, archivePath, "", nullptr));
+        TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4.archive"));
+        TEST_VERIFY(false == IsFileExistsInArchive(archivePath, "SampleSource/Recursive/.flags.txt"));
+
 #endif //PLATFORMS
     }
 
-    DAVA_TEST (HiddenDirTest)
+    bool IsFileExistsInArchive(const FilePath& archivePath, const String& pathInArchive)
     {
-#if defined(__DAVAENGINE_WIN32__)
-        FilePath dir1 = FilePath("~doc:/TestData/ResourceArchiverTest/Folder1/");
-        auto dir1str = dir1.GetAbsolutePathname();
-        auto attrs = GetFileAttributesA(dir1str.c_str());
-
-        if (attrs & FILE_ATTRIBUTE_HIDDEN)
+        try
         {
-            SetFileAttributesA(dir1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN);
-        }
+            ResourceArchive resourceArchive(archivePath);
 
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/ResourceArchiverTest/"));
-        TEST_VERIFY(files->GetDirectoryCount() == 3);
-        auto i = GetIndex(files, "Folder1");
-        TEST_VERIFY(i < files->GetCount());
-        TEST_VERIFY(files->IsHidden(i) == false);
-
-        SetFileAttributesA(dir1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
-
-        files = new FileList("~doc:/TestData/ResourceArchiverTest/");
-        TEST_VERIFY(files->GetDirectoryCount() == 3);
-        i = GetIndex(files, "Folder1");
-        TEST_VERIFY(i < files->GetCount());
-        TEST_VERIFY(files->IsHidden(i) == true);
-
-        SetFileAttributesA(dir1str.c_str(), attrs);
-
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-        FilePath folder1hidden = "~doc:/TestData/ResourceArchiverTest/.Folder1/";
-        TEST_VERIFY(FileSystem::Instance()->CreateDirectory(folder1hidden, true));
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/ResourceArchiverTest/"));
-        TEST_VERIFY(files->GetDirectoryCount() == 4);
-        for (auto i = 0; i < files->GetCount(); ++i)
-        {
-            if (files->IsDirectory(i))
+            for (const ResourceArchive::FileInfo& fileInfo : resourceArchive.GetFilesInfo())
             {
-                bool startsWithDot = (files->GetFilename(i)[0] == '.');
-                TEST_VERIFY(files->IsHidden(i) == startsWithDot);
+                if (fileInfo.relativeFilePath == pathInArchive)
+                {
+                    return true;
+                }
             }
         }
-        FileSystem::Instance()->DeleteDirectory(folder1hidden);
+        catch (std::exception ex)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, Format("Can't open archive %s: %s", archivePath.GetAbsolutePathname().c_str(), ex.what()));
+        }
 
-#endif //PLATFORMS
+        return false;
     }
 };

@@ -281,6 +281,11 @@ public:
      */
     bool Exists(const FilePath& filePath) const;
 
+    /**
+    \brief Copies one folder into another recursively
+    */
+    void RecursiveCopy(const FilePath& src, const FilePath& dst);
+
 private:
     bool HasLineEnding(File* f);
 

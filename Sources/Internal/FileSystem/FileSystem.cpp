@@ -1036,4 +1036,21 @@ bool FileSystem::Exists(const FilePath& filePath) const
 
     return IsFile(filePath);
 }
+
+void FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
+{
+    DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
+
+    CreateDirectory(dst, true);
+    CopyDirectory(src, dst);
+
+    UniquePtr<FileList> fileList(new FileList(src));
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
+        {
+            RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+        }
+    }
+}
 }
