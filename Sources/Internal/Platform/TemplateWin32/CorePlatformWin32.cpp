@@ -1054,7 +1054,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
 BOOL CALLBACK SearcherWindows(HWND hWnd, LPARAM lParam)
 {
-    DWORD result;
+    ULONG_PTR result;
     LRESULT ok = ::SendMessageTimeout(hWnd, MSG_ALREADY_RUNNING, 0, 0, SMTO_BLOCK | SMTO_ABORTIFHUNG, 200, &result);
     if (ok == 0)
     {
