@@ -444,12 +444,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     const String& path = pathToCheck.GetAbsolutePathname();
     if (IsAPKPath(path))
     {
-        // TODO fix this ugly old HACK we shouldn't add Data as prefix
-        // Because fileSystem.yaml already inside Data directory
-        // We even can build list of all assets on android on file system
-        // initialization
-        String pathInFileSystemYaml = "Data/" + path;
-        return (fileSet.find(pathInFileSystemYaml) != end(fileSet));
+        return fileSet.find(path) != end(fileSet);
     }
 #endif
 

@@ -436,8 +436,10 @@ String FilePath::ResolveResourcesPath() const
             }
         }
         // if we can't find full path to file from any resource folder return relative path
-        // for example if we on android path may contains "assets/Data"
-        return relativePathname;
+        // for example if we on android in APK path may contains "assets/Data"
+        // so we just add Data/ and inside c++ code append "assets/" in Java
+        // code don't add "assets/"
+        return "Data/" + relativePathname;
     }
 
     return absolutePathname;
