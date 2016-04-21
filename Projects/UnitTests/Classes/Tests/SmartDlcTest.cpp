@@ -27,10 +27,30 @@
 =====================================================================================*/
 
 #include <SDLC/SmartDLC.h>
-#include "UnitTests/UnitTests.h"
-#include "FileSystem/File.h"
-#include "Utils/CRC32.h"
-#include "DLC/Downloader/DownloadManager.h"
+#include <FileSystem/File.h>
+#include <Utils/CRC32.h>
+#include <DLC/Downloader/DownloadManager.h>
+
+//#include "UnitTests/UnitTests.h"
+
+class GameClient
+{
+public:
+    void OnPackStateChange(const PackManager::PackState& packState)
+    {
+        if (packState.name == "virtual_test_pack.pak")
+        {
+            if (packState.state == PackManager::PackState::ErrorLoading)
+            {
+                // TODO request next pack
+            }
+        }
+    }
+    DAVA::SigConnectionID sigConnection;
+
+    //Vector<String> packsToRequest = {"no_such_pack.pak", "virtual_test_pack.pak", "unit_test.pak" };
+    //Vector<bool> requestSuccess = { false, true };
+};
 
 DAVA_TESTCLASS (SmartDlcTest)
 {
@@ -39,7 +59,7 @@ DAVA_TESTCLASS (SmartDlcTest)
         using namespace DAVA;
 
         FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/test.db");
-        FilePath folderWithDownloadedPacks("~res:/TestData/SmartDlcTest/packs/");
+        FilePath folderWithDownloadedPacks("~doc:/SmartDlcTest/packs/");
         String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/packs/");
 
         PackManager sdlc(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
@@ -91,7 +111,7 @@ DAVA_TESTCLASS (SmartDlcTest)
 
             uint32 maxIter = 30;
 
-            while (nextState.state != PackManager::PackState::Mounted && maxIter-- > 0)
+            while ((nextState.state == PackManager::PackState::Requested || nextState.state == PackManager::PackState::Downloading) && maxIter-- > 0)
             {
                 // wait
                 Thread::Sleep(500);

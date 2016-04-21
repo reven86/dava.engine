@@ -80,6 +80,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+#ifdef DAVA_MEMORY_PROFILING_ENABLE
 static void* SqliteMalloc(int32 size)
 {
     return MemoryManager::Instance()->Allocate(static_cast<size_t>(size), ALLOC_POOL_SQLITE);
@@ -108,12 +109,14 @@ static void SqliteMemShutdown(void* pAppData)
 {
     // do nothing
 }
+#endif // DAVA_MEMORY_PROFILING_ENABLE
 
 class PacksDBData
 {
 public:
     PacksDBData(const String& dbPath)
     {
+#ifdef DAVA_MEMORY_PROFILING_ENABLE
         sqlite3_mem_methods mem = {
             &SqliteMalloc,
             &SqliteFree,
@@ -124,6 +127,7 @@ public:
             &SqliteMemShutdown
         };
         int32 result = sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
+#endif // DAVA_MEMORY_PROFILING_ENABLE
         db.reset(new sqlite::database(dbPath));
     }
     sqlite::database& GetDB()
@@ -137,6 +141,11 @@ public:
 PacksDB::PacksDB(const FilePath& filePath)
 {
     data.reset(new PacksDBData(filePath.GetAbsolutePathname()));
+}
+
+PacksDB::~PacksDB()
+{
+    data.reset();
 }
 
 const String& PacksDB::FindPack(const FilePath& relativeFilePath) const

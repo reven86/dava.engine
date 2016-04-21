@@ -27,7 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 #pragma once
 
-#include <Functional/Signal.h>
+#include "Functional/Signal.h"
+#include "DLC/Downloader/DownloadManager.h"
 
 namespace DAVA
 {
@@ -43,7 +44,8 @@ public:
             NotRequested = 0, // не загружен на FS
             Requested = 1, // поставлен в очередь на загрузку
             Downloading = 2, // загружается на FS
-            Mounted = 3 // существует на FS и готов к использованию
+            Mounted = 3, // существует на FS и готов к использованию
+            ErrorLoading = 4 // произошла ошибка при скачивании, конкретная ошибка смотрится по полю downloadError
         };
 
         String name = ""; // уникальное имя пака
@@ -53,6 +55,7 @@ public:
         float32 priority = 0.f; // 0.0f to 1.0f
         uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (not read from
         uint32 crc32FromDB = 0; // crc32 from filesdb
+        DownloadError downloadError = DLE_NO_ERROR;
         Vector<String> dependensy{}; // names of dependency archive
     };
 

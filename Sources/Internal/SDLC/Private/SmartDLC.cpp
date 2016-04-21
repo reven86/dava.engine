@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SDLC/SmartDLC.h"
 #include "SDLC/Private/PacksDB.h"
 #include "FileSystem/FileList.h"
+#include "DLC/Downloader/DownloadManager.h"
 
 namespace DAVA
 {
@@ -49,11 +50,13 @@ public:
         }
         throw std::runtime_error("can't find pack with name: " + packName);
     }
+
     PackManager::PackState& GetPackState(const String& packName)
     {
         uint32 index = GetPackIndex(packName);
         return packs[index];
     }
+
     void AddToDownloadQueue(const String& packName)
     {
         uint32 index = GetPackIndex(packName);
@@ -66,6 +69,7 @@ public:
             StartNextPackDownloading();
         }
     }
+
     void UpdateQueuePriority(const String& packName, float priority)
     {
         uint32 index = GetPackIndex(packName);
@@ -77,6 +81,7 @@ public:
             std::stable_sort(begin(queue), end(queue), PackCompare);
         }
     }
+
     void UpdateCurrentDownload()
     {
         if (currentDownload != nullptr)
@@ -101,15 +106,47 @@ public:
                 break;
             case DL_FINISHED:
             {
-                // now mount archive
-                // validate it
-                FileSystem* fs = FileSystem::Instance();
-                FilePath archivePath = packsDB + currentDownload->name;
-                fs->Mount(archivePath, "Data");
+                // first test error code
+                DownloadError downloadError = DLE_NO_ERROR;
+                if (dm->GetError(downloadHandler, downloadError))
+                {
+                    switch (downloadError)
+                    {
+                    case DLE_CANCELLED: // download was cancelled by our side
+                    case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
+                    case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
+                    case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
+                    case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
+                    case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
+                    case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
+                    case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
+                    case DLE_FILE_ERROR: // file read and write errors
+                    case DLE_UNKNOWN: // we cannot determine the error
+                        // inform user about error
+                        {
+                            currentDownload->state = PackManager::PackState::ErrorLoading;
+                            currentDownload->downloadError = downloadError;
+                            sdlcPublic->onPackStateChanged.Emit(*currentDownload);
+                            break;
+                        }
+                    case DLE_NO_ERROR:
+                    {
+                        // now mount archive
+                        // validate it
+                        FileSystem* fs = FileSystem::Instance();
+                        FilePath archivePath = localPacksDir + currentDownload->name;
+                        fs->Mount(archivePath, "Data");
 
-                currentDownload->state = PackManager::PackState::Mounted;
-                currentDownload = nullptr;
-                downloadHandler = 0;
+                        currentDownload->state = PackManager::PackState::Mounted;
+                    }
+                    } // end switch downloadError
+                    currentDownload = nullptr;
+                    downloadHandler = 0;
+                }
+                else
+                {
+                    throw std::runtime_error(Format("can't get download error code for download job id: %d", downloadHandler));
+                }
             }
             break;
             default:
@@ -117,10 +154,12 @@ public:
             }
         }
     }
+
     bool IsDownloading() const
     {
         return currentDownload != nullptr;
     }
+
     void StartNextPackDownloading()
     {
         if (!queue.empty())

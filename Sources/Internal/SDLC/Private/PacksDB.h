@@ -39,6 +39,7 @@ class PacksDB final
 {
 public:
     PacksDB(const FilePath& filePath);
+    ~PacksDB();
 
     const String& FindPack(const FilePath& relativeFilePath) const;
 
