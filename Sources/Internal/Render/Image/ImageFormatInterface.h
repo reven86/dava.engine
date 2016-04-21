@@ -36,6 +36,7 @@
 #include "FileSystem/File.h"
 #include "Utils/Utils.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Image/Image.h"
 
 namespace DAVA
 {

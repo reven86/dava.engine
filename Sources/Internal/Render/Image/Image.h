@@ -61,6 +61,8 @@ protected:
 public:
     struct LoadingParams
     {
+        LoadingParams(uint32 w = 0, uint32 h = 0, uint32 mipmap = 0) : minimalWidth(w), minimalHeight(h), baseMipmap(mipmap) {}
+
         uint32 minimalWidth = 0;
         uint32 minimalHeight = 0;
         uint32 baseMipmap = 0;
