@@ -31,6 +31,7 @@
 #include "Debug/DVassert.h"
 
 #include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
 
 #include <QtGlobal>
 #include <QStyle>
@@ -41,15 +42,15 @@
 namespace Themes_namespace
 {
 const DAVA::FastName themeSettingsKey("ThemeName");
+GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Classic)));
 }
 
 namespace Themes
 {
 QPalette defaultPalette;
 QString defaultStyleSheet;
-eTheme currentTheme;
 bool themesInitialized = false;
-QStringList themesNames = { "classic", "dark" };
+DAVA::Map<eTheme, QString> themesNames = { { Classic, "classic" }, { Dark, "dark" } };
 QColor textColor(192, 192, 192);
 QColor disabledTextColor(100, 100, 100);
 QColor windowColor(53, 53, 53);
@@ -63,32 +64,31 @@ void InitFromQApplication()
     defaultStyleSheet = qApp->styleSheet();
     defaultPalette = QGuiApplication::palette();
 
-    DAVA::VariantType value = PreferencesStorage::Instance()->LoadValueByKey(Themes_namespace::themeSettingsKey);
-    if (value.GetType() == DAVA::VariantType::TYPE_INT64)
-    {
-        currentTheme = static_cast<eTheme>(value.AsInt64());
-    }
-    else
-    {
-        currentTheme = Classic;
-    }
-    SetCurrentTheme(currentTheme);
+    SetCurrentTheme(GetCurrentTheme());
 }
 
 QStringList ThemesNames()
 {
-    return themesNames;
+    QStringList names;
+    for (const auto& pair : themesNames)
+    {
+        names << pair.second;
+    }
+    return names;
 }
 
 void SetCurrentTheme(const QString& theme)
 {
-    if (!themesNames.contains(theme))
+    for (const auto& pair : themesNames)
     {
-        qWarning("Invalid theme passed to SetTheme");
-        return;
+        if (pair.second == theme)
+        {
+            SetCurrentTheme(pair.first);
+            return;
+        }
     }
-    int index = themesNames.indexOf(theme);
-    SetCurrentTheme(static_cast<eTheme>(index));
+
+    DVASSERT_MSG(false, "Invalid theme passed to SetTheme");
 }
 
 void SetCurrentTheme(eTheme theme)
@@ -98,7 +98,6 @@ void SetCurrentTheme(eTheme theme)
         qWarning("ThemesFactiry uninitialized");
         return;
     }
-    currentTheme = theme;
     switch (theme)
     {
     case Classic:
@@ -111,7 +110,7 @@ void SetCurrentTheme(eTheme theme)
         DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
         break;
     }
-    PreferencesStorage::Instance()->SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(currentTheme)));
+    PreferencesStorage::Instance()->SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
 }
 
 void SetupClassicTheme()
@@ -164,36 +163,37 @@ void SetupDarkTheme()
 
 const QString& GetCurrentThemeStr()
 {
-    return themesNames.at(currentTheme);
+    return themesNames.at(GetCurrentTheme());
 }
 
 eTheme GetCurrentTheme()
 {
-    return currentTheme;
+    DAVA::VariantType value = PreferencesStorage::Instance()->LoadValueByKey(Themes_namespace::themeSettingsKey);
+    return static_cast<eTheme>(value.AsInt64());
 }
 
 QColor GetViewLineAlternateColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::lightGray) : QColor(0x3f, 0x3f, 0x46);
+    return GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : QColor(0x3f, 0x3f, 0x46);
 }
 
 QColor GetChangedPropertyColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::black) : QColor(225, 225, 225);
+    return GetCurrentTheme() == Themes::Classic ? QColor(Qt::black) : QColor(225, 225, 225);
 }
 
 QColor GetPrototypeColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::blue) : QColor("CadetBlue");
+    return GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : QColor("CadetBlue");
 }
 
 QColor GetStyleSheetNodeColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::darkGreen) : QColor("light green");
+    return GetCurrentTheme() == Themes::Classic ? QColor(Qt::darkGreen) : QColor("light green");
 }
 
 QColor GetRulerWidgetBackgroungColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::white) : windowColor;
+    return GetCurrentTheme() == Themes::Classic ? QColor(Qt::white) : windowColor;
 }
 };

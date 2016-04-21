@@ -36,10 +36,14 @@ namespace DAVA
 class InspBase;
 }
 
-class InspInfoRegistrator
+struct InspInfoRegistrator
 {
-public:
     InspInfoRegistrator(const DAVA::InspInfo* inspInfo, const PreferencesStorage::DefaultValuesList& defaultValues = PreferencesStorage::DefaultValuesList());
+};
+
+struct GlobalValuesRegistrator
+{
+    GlobalValuesRegistrator(const DAVA::FastName& key, const DAVA::VariantType& defaultValue);
 };
 
 template <typename T>

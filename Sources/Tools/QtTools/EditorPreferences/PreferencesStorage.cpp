@@ -67,6 +67,12 @@ void PreferencesStorage::RegisterType(const DAVA::InspInfo* inspInfo, const Defa
         registeredInsp.push_back(inspInfo);
         self->defaultValues[inspInfo] = defaultValues;
     }
+    else
+    {
+        DAVA::StringStream ss;
+        ss << "introspection " << inspInfo->Name().c_str() << "already registered!";
+        DVASSERT_MSG(false, ss.str().c_str());
+    }
 }
 
 void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& localStorage_)
@@ -290,13 +296,14 @@ const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegist
 DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo)
 {
     DVASSERT(nullptr != inspInfo);
+    DAVA::String classNameAndMemberNames;
 
     std::hash<DAVA::String> hashFn;
-    size_t hash = hashFn(DAVA::String(inspInfo->Name().c_str()));
+    classNameAndMemberNames += inspInfo->Name().c_str();
+
     for (int i = 0, count = inspInfo->MembersCount(); i < count; ++i)
     {
-        size_t hash2 = hashFn(DAVA::String(inspInfo->Member(i)->Name().c_str()));
-        hash = hash2 ^ (hash << 1);
+        classNameAndMemberNames += inspInfo->Member(i)->Name().c_str();
     }
-    return std::to_string(hash);
+    return std::to_string(hashFn(classNameAndMemberNames));
 }
