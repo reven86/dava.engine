@@ -49,8 +49,8 @@ class BasicSpritesheetLayout : public SpritesheetLayout
 public:
     explicit BasicSpritesheetLayout(uint32 w, uint32 h, bool duplicateEdgePixel, int32 spritesMargin);
 
-    bool AddSprite(const Size2i& spriteSize, void* searchPtr) override;
-    const SpriteBoundsRect* GetSpriteBoundsRect(void* searchPtr) const override;
+    bool AddSprite(const Size2i& spriteSize, const void* searchPtr) override;
+    const SpriteBoundsRect* GetSpriteBoundsRect(const void* searchPtr) const override;
     const Rect2i& GetRect() const override
     {
         return rootNode.cell.marginsRect;
@@ -65,11 +65,11 @@ private:
     {
         std::unique_ptr<SpritesheetNode> child[2];
         SpriteBoundsRect cell;
-        void* spritePtr = nullptr;
+        const void* spritePtr = nullptr;
     };
 
-    SpritesheetNode* Insert(SpritesheetNode* node, const Size2i& imageSize, void* imagePtr);
-    const SpritesheetNode* SearchNodeForPtr(const SpritesheetNode* node, void* imagePtr) const;
+    SpritesheetNode* Insert(SpritesheetNode* node, const Size2i& imageSize, const void* imagePtr);
+    const SpritesheetNode* SearchNodeForPtr(const SpritesheetNode* node, const void* imagePtr) const;
 
     const int32 edgePixel;
     const int32 spritesMargin;
@@ -85,7 +85,7 @@ BasicSpritesheetLayout::BasicSpritesheetLayout(uint32 w, uint32 h, bool duplicat
     rootNode.cell.marginsRect = Rect2i(0, 0, w, h);
 }
 
-BasicSpritesheetLayout::SpritesheetNode* BasicSpritesheetLayout::Insert(SpritesheetNode* node, const Size2i& spriteSize, void* spritePtr)
+BasicSpritesheetLayout::SpritesheetNode* BasicSpritesheetLayout::Insert(SpritesheetNode* node, const Size2i& spriteSize, const void* spritePtr)
 {
     DVASSERT(node != nullptr);
 
@@ -193,7 +193,7 @@ BasicSpritesheetLayout::SpritesheetNode* BasicSpritesheetLayout::Insert(Spritesh
     }
 }
 
-bool BasicSpritesheetLayout::AddSprite(const Size2i& spriteSize, void* spritePtr)
+bool BasicSpritesheetLayout::AddSprite(const Size2i& spriteSize, const void* spritePtr)
 {
     SpritesheetNode* node = Insert(&rootNode, spriteSize, spritePtr);
     if (node != nullptr)
@@ -207,13 +207,13 @@ bool BasicSpritesheetLayout::AddSprite(const Size2i& spriteSize, void* spritePtr
     }
 }
 
-const SpriteBoundsRect* BasicSpritesheetLayout::GetSpriteBoundsRect(void* searchPtr) const
+const SpriteBoundsRect* BasicSpritesheetLayout::GetSpriteBoundsRect(const void* searchPtr) const
 {
     const SpritesheetNode* res = SearchNodeForPtr(&rootNode, searchPtr);
     return (res ? &res->cell : nullptr);
 }
 
-const BasicSpritesheetLayout::SpritesheetNode* BasicSpritesheetLayout::SearchNodeForPtr(const SpritesheetNode* node, void* imagePtr) const
+const BasicSpritesheetLayout::SpritesheetNode* BasicSpritesheetLayout::SearchNodeForPtr(const SpritesheetNode* node, const void* imagePtr) const
 {
     if (imagePtr == node->spritePtr)
     {
@@ -242,8 +242,8 @@ public:
     explicit MaxRectsSpritesheetLayout(uint32 w, uint32 h, bool duplicateEdgePixel, int32 spritesMargin);
 
     // SpritesheetLayout
-    bool AddSprite(const Size2i& spriteSize, void* searchPtr) override;
-    const SpriteBoundsRect* GetSpriteBoundsRect(void* searchPtr) const override;
+    bool AddSprite(const Size2i& spriteSize, const void* searchPtr) override;
+    const SpriteBoundsRect* GetSpriteBoundsRect(const void* searchPtr) const override;
     const Rect2i& GetRect() const override
     {
         return sheetRect;
@@ -255,7 +255,7 @@ public:
 
 protected:
     virtual const SpriteBoundsRect* FindBestFreeRect(const Size2i& spriteSize) const = 0;
-    const SpriteBoundsRect* InsertNewSpriteRect(const SpriteBoundsRect* foundFreeRect, const Size2i& spriteSize, void* spritePtr);
+    const SpriteBoundsRect* InsertNewSpriteRect(const SpriteBoundsRect* foundFreeRect, const Size2i& spriteSize, const void* spritePtr);
     void SplitIntersectedFreeRects(const SpriteBoundsRect* newSpriteRect);
     void RemoveRedundantFreeRects();
 
@@ -265,7 +265,7 @@ protected:
 
     Rect2i sheetRect;
     List<SpriteBoundsRect> freeRects;
-    UnorderedMap<void*, SpriteBoundsRect> spriteRects;
+    UnorderedMap<const void*, SpriteBoundsRect> spriteRects;
 };
 
 MaxRectsSpritesheetLayout::MaxRectsSpritesheetLayout(uint32 w, uint32 h, bool duplicateEdgePixel, int32 margin)
@@ -279,7 +279,7 @@ MaxRectsSpritesheetLayout::MaxRectsSpritesheetLayout(uint32 w, uint32 h, bool du
     freeRects.push_back(firstRect);
 }
 
-bool MaxRectsSpritesheetLayout::AddSprite(const Size2i& spriteSize, void* spritePtr)
+bool MaxRectsSpritesheetLayout::AddSprite(const Size2i& spriteSize, const void* spritePtr)
 {
     // maxrects alg in brief:
     // step1: find best free rect
@@ -300,7 +300,7 @@ bool MaxRectsSpritesheetLayout::AddSprite(const Size2i& spriteSize, void* sprite
     return true;
 }
 
-const SpriteBoundsRect* MaxRectsSpritesheetLayout::InsertNewSpriteRect(const SpriteBoundsRect* foundFreeRect, const Size2i& spriteSize, void* spritePtr)
+const SpriteBoundsRect* MaxRectsSpritesheetLayout::InsertNewSpriteRect(const SpriteBoundsRect* foundFreeRect, const Size2i& spriteSize, const void* spritePtr)
 {
     SpriteBoundsRect boundsRect = *foundFreeRect;
     int32 restWidth = boundsRect.spriteRect.dx - spriteSize.dx;
@@ -457,7 +457,7 @@ void MaxRectsSpritesheetLayout::RemoveRedundantFreeRects()
     }
 }
 
-const SpriteBoundsRect* MaxRectsSpritesheetLayout::GetSpriteBoundsRect(void* searchPtr) const
+const SpriteBoundsRect* MaxRectsSpritesheetLayout::GetSpriteBoundsRect(const void* searchPtr) const
 {
     auto result = spriteRects.find(searchPtr);
     return (result == spriteRects.end() ? nullptr : &(result->second));

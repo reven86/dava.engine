@@ -27,10 +27,14 @@
 =====================================================================================*/
 
 #include "AddRequest.h"
-#include "Constants.h"
 
-#include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
+#include "Platform/DateTime.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/SystemTimer.h"
+#include "Utils/Utils.h"
+
+#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
@@ -40,7 +44,7 @@ AddRequest::AddRequest()
     options.AddOption("-f", VariantType(String("")), "Files list to send files to server", true);
 }
 
-int AddRequest::SendRequest()
+DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
@@ -67,34 +71,30 @@ int AddRequest::SendRequest()
         else
         {
             Logger::Error("[AddRequest::%s] Cannot read file(%s)", __FUNCTION__, path.GetStringValue().c_str());
-            return AssetCacheClientConstants::EXIT_READ_FILES;
+            return AssetCache::Error::READ_FILES;
         }
     }
 
-    auto requestSent = client.AddToCache(key, value);
-    if (!requestSent)
-    {
-        Logger::Error("[AddRequest::%s] Cannot send files to server", __FUNCTION__);
-        return AssetCacheClientConstants::EXIT_CANNOT_CONNECT;
-    }
+    AssetCache::CachedItemValue::Description description;
+    description.machineName = WStringToString(DeviceInfo::GetName());
 
-    return AssetCacheClientConstants::EXIT_OK;
+    DateTime timeNow = DateTime::Now();
+    description.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+    description.comment = "Asset Cache Client";
+
+    value.SetDescription(description);
+    value.UpdateValidationData();
+    return cacheClient.AddToCacheSynchronously(key, value);
 }
 
-int AddRequest::CheckOptionsInternal() const
+DAVA::AssetCache::Error AddRequest::CheckOptionsInternal() const
 {
     const String filepath = options.GetOption("-f").AsString();
     if (filepath.empty())
     {
         Logger::Error("[AddRequest::%s] Empty file list", __FUNCTION__);
-        return AssetCacheClientConstants::EXIT_WRONG_COMMAND_LINE;
+        return AssetCache::Error::WRONG_COMMAND_LINE;
     }
 
-    return AssetCacheClientConstants::EXIT_OK;
-}
-
-void AddRequest::OnAddedToCache(const AssetCache::CacheItemKey& key, bool added)
-{
-    requestResult.recieved = true;
-    requestResult.succeed = added;
+    return AssetCache::Error::NO_ERRORS;
 }

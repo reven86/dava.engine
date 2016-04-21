@@ -58,6 +58,7 @@ bool CheckOptions(const PackageOptions& options);
 class Runner;
 class RegKey;
 
+class AppxBundleHelper;
 class UWPRunner
 {
 public:

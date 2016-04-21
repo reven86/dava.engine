@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{79a50bb7-ae23-4d53-addc-c991ee0cc6f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{a552ea31-96c8-4b21-abc4-caf12e08b55d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\adjustment.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bevel_emboss.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bitmap.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\blend.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\boundary.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\brightness_contrast.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\channel_image.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\channel_mixer.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\color.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\color_balance.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\color_mode.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\color_overlay.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\curves.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\descriptor.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\drop_shadow.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effects.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\file_header.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fixed.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gaussian_blur.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gradient_blend.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gradient_fill.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gradient_map.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gradient_overlay.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\hue_saturation.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\image_data.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\image_resource.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\inner_glow.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\inner_shadow.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\invert.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\layer_mask.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\levels.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\outer_glow.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\path.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pattern.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pattern_fill.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pattern_overlay.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\photo_filter.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\posterize.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\psd.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\psd_system.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\psd_zip.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rect.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\satin.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\selective_color.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\solid_color.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\stream.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\stroke.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\threshold.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\thumbnail.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\type_tool.c">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\psd_bitmap.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_blend.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_descriptor.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_fixed.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_gradient.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_math.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_rect.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_stream.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\psd_system.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\libpsd.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psd_color.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psd_config.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psd_types.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
