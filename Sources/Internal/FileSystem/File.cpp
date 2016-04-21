@@ -148,7 +148,7 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
         return nullptr;
     }
     // TODO in future remove ugly HACK with prefix path
-    String assetFileStr = "assets/Data/" + filePath.GetAbsolutePathname();
+    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
     return CreateFromAPKAssetsPath(package, filePath, assetFileStr, attributes);
 }
 
