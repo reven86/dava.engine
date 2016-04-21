@@ -34,21 +34,52 @@
 
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIModalInputComponent.h"
-#include "UI/Focus/UIKeyInputSystem.h"
+#include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Input/UIActionComponent.h"
 
 #include "Input/InputSystem.h"
 
 namespace DAVA
 {
+const FastName UIInputSystem::ACTION_FOCUS_LEFT("FocusLeft");
+const FastName UIInputSystem::ACTION_FOCUS_RIGHT("FocusRight");
+const FastName UIInputSystem::ACTION_FOCUS_UP("FocusUp");
+const FastName UIInputSystem::ACTION_FOCUS_DOWN("FocusDown");
+
+const FastName UIInputSystem::ACTION_FOCUS_NEXT("FocusNext");
+const FastName UIInputSystem::ACTION_FOCUS_PREV("FocusPrev");
+
+const FastName UIInputSystem::ACTION_PERFORM("PerformAction");
+const FastName UIInputSystem::ACTION_ESCAPE("Escape");
+
 UIInputSystem::UIInputSystem()
 {
     focusSystem = new UIFocusSystem();
-    keyInputSystem = new UIKeyInputSystem(focusSystem);
+
+    BindGlobalShortcut(KeyboardShortcut(Key::LEFT), ACTION_FOCUS_LEFT);
+    BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), ACTION_FOCUS_RIGHT);
+    BindGlobalShortcut(KeyboardShortcut(Key::UP), ACTION_FOCUS_UP);
+    BindGlobalShortcut(KeyboardShortcut(Key::DOWN), ACTION_FOCUS_DOWN);
+
+    BindGlobalShortcut(KeyboardShortcut(Key::TAB), ACTION_FOCUS_NEXT);
+    BindGlobalShortcut(KeyboardShortcut(Key::TAB, KeyboardShortcut::MODIFIER_SHIFT), ACTION_FOCUS_PREV);
+
+    BindGlobalShortcut(KeyboardShortcut(Key::ENTER), ACTION_PERFORM);
+    BindGlobalShortcut(KeyboardShortcut(Key::ESCAPE), ACTION_ESCAPE);
+
+    BindGlobalAction(ACTION_FOCUS_LEFT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusLeft));
+    BindGlobalAction(ACTION_FOCUS_RIGHT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusRight));
+    BindGlobalAction(ACTION_FOCUS_UP, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusUp));
+    BindGlobalAction(ACTION_FOCUS_DOWN, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusDown));
+
+    BindGlobalAction(ACTION_FOCUS_NEXT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusForward));
+    BindGlobalAction(ACTION_FOCUS_PREV, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusBackward));
+
+    BindGlobalAction(ACTION_PERFORM, MakeFunction(focusSystem, &UIFocusSystem::PerformAction));
 }
 
 UIInputSystem::~UIInputSystem()
 {
-    SafeDelete(keyInputSystem);
     SafeDelete(focusSystem);
 
     currentScreen = nullptr; // we are not owner
@@ -95,80 +126,23 @@ void UIInputSystem::OnControlInvisible(UIControl* control)
     focusSystem->OnControlInvisible(control);
 }
 
-void UIInputSystem::HandleEvent(UIEvent* newEvent)
+void UIInputSystem::HandleEvent(UIEvent* event)
 {
-    UIEvent* eventToHandle = nullptr;
-
-    if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
-    {
-        auto it = std::find_if(begin(touchEvents), end(touchEvents), [newEvent](const UIEvent& ev) {
-            return ev.touchId == newEvent->touchId;
-        });
-        if (it == end(touchEvents))
-        {
-            touchEvents.push_back(*newEvent);
-            eventToHandle = &touchEvents.back();
-        }
-        else
-        {
-            it->timestamp = newEvent->timestamp;
-            it->physPoint = newEvent->physPoint;
-            it->point = newEvent->point;
-            it->tapCount = newEvent->tapCount;
-            it->phase = newEvent->phase;
-            it->inputHandledType = newEvent->inputHandledType;
-
-            eventToHandle = &(*it);
-        }
-    }
-    else
-    {
-        eventToHandle = newEvent;
-    }
-
     if (currentScreen)
     {
-        UIEvent::Phase phase = eventToHandle->phase;
+        UIEvent::Phase phase = event->phase;
 
         if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT)
         {
-            keyInputSystem->HandleKeyEvent(eventToHandle);
+            HandleKeyEvent(event);
+        }
+        else if (phase == UIEvent::Phase::BEGAN || phase == UIEvent::Phase::DRAG || phase == UIEvent::Phase::ENDED || phase == UIEvent::Phase::CANCELLED)
+        {
+            HandleTouchEvent(event);
         }
         else
         {
-            if (phase == UIEvent::Phase::BEGAN)
-            {
-                focusedControlWhenTouchBegan = focusSystem->GetFocusedControl();
-                positionOfTouchWhenTouchBegan = eventToHandle->point;
-            }
-
-            if (modalControl.Valid())
-            {
-                RefPtr<UIControl> control = modalControl;
-                control->SystemInput(eventToHandle);
-            }
-            else if (!popupContainer->SystemInput(eventToHandle))
-            {
-                currentScreen->SystemInput(eventToHandle);
-            }
-
-            if (phase == UIEvent::Phase::ENDED)
-            {
-                UIControl* focusedControl = focusSystem->GetFocusedControl();
-                if (focusedControl != nullptr)
-                {
-                    static const float32 draggingThresholdSq = 20.0f * 20.0f;
-                    bool focusWasntChanged = focusedControl == focusedControlWhenTouchBegan;
-
-                    bool touchWasntDragged = (positionOfTouchWhenTouchBegan - eventToHandle->point).SquareLength() < draggingThresholdSq;
-                    bool touchOutsideControl = !focusedControl->IsPointInside(eventToHandle->point);
-                    if (focusWasntChanged && touchWasntDragged && touchOutsideControl)
-                    {
-                        focusedControl->OnTouchOutsideFocus();
-                    }
-                }
-                focusedControlWhenTouchBegan = nullptr;
-            }
+            HandleOtherEvent(event); // joypad, geasture, mouse wheel
         }
     }
 
@@ -317,9 +291,177 @@ UIFocusSystem* UIInputSystem::GetFocusSystem() const
     return focusSystem;
 }
 
-UIKeyInputSystem* UIInputSystem::GetKeyInputSystem() const
+void UIInputSystem::BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName)
 {
-    return keyInputSystem;
+    globalInputMap.BindAction(shortcut, actionName);
+}
+
+void UIInputSystem::BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action)
+{
+    globalActions.Put(actionName, action);
+}
+
+void UIInputSystem::PerformActionOnControl(UIControl* control)
+{
+    if (control != nullptr)
+    {
+        UIActionComponent* actionComponent = control->GetComponent<UIActionComponent>();
+        if (actionComponent != nullptr && actionComponent->GetAction().IsValid())
+        {
+            UIControl* c = control;
+            bool processed = false;
+            while (!processed && c != nullptr)
+            {
+                UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
+                if (actionBindingComponent)
+                {
+                    processed = actionBindingComponent->GetActionMap().Perform(actionComponent->GetAction());
+                }
+
+                c = (c == root.Get()) ? nullptr : c->GetParent();
+            }
+        }
+    }
+}
+
+void UIInputSystem::PerformActionOnFocusedControl()
+{
+    PerformActionOnControl(focusSystem->GetFocusedControl());
+}
+
+void UIInputSystem::HandleTouchEvent(UIEvent* event)
+{
+    DVASSERT(event->phase == UIEvent::Phase::BEGAN || event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::ENDED || event->phase == UIEvent::Phase::CANCELLED);
+
+    UIEvent* eventToHandle = nullptr;
+    auto it = std::find_if(begin(touchEvents), end(touchEvents), [event](const UIEvent& ev) {
+        return ev.touchId == event->touchId;
+    });
+    if (it == end(touchEvents))
+    {
+        touchEvents.push_back(*event);
+        eventToHandle = &touchEvents.back();
+    }
+    else
+    {
+        it->timestamp = event->timestamp;
+        it->physPoint = event->physPoint;
+        it->point = event->point;
+        it->tapCount = event->tapCount;
+        it->phase = event->phase;
+        it->inputHandledType = event->inputHandledType;
+
+        eventToHandle = &(*it);
+    }
+
+    UIEvent::Phase phase = eventToHandle->phase;
+    if (phase == UIEvent::Phase::BEGAN)
+    {
+        focusedControlWhenTouchBegan = focusSystem->GetFocusedControl();
+        positionOfTouchWhenTouchBegan = eventToHandle->point;
+    }
+
+    if (modalControl.Valid())
+    {
+        RefPtr<UIControl> control = modalControl;
+        control->SystemInput(eventToHandle);
+    }
+    else if (!popupContainer->SystemInput(eventToHandle))
+    {
+        currentScreen->SystemInput(eventToHandle);
+    }
+
+    if (phase == UIEvent::Phase::ENDED)
+    {
+        UIControl* focusedControl = focusSystem->GetFocusedControl();
+        if (focusedControl != nullptr)
+        {
+            static const float32 draggingThresholdSq = 20.0f * 20.0f;
+            bool focusWasntChanged = focusedControl == focusedControlWhenTouchBegan;
+
+            bool touchWasntDragged = (positionOfTouchWhenTouchBegan - eventToHandle->point).SquareLength() < draggingThresholdSq;
+            bool touchOutsideControl = !focusedControl->IsPointInside(eventToHandle->point);
+            if (focusWasntChanged && touchWasntDragged && touchOutsideControl)
+            {
+                focusedControl->OnTouchOutsideFocus();
+            }
+        }
+        focusedControlWhenTouchBegan = nullptr;
+    }
+}
+
+void UIInputSystem::HandleKeyEvent(UIEvent* event)
+{
+    UIEvent::Phase phase = event->phase;
+    DVASSERT(phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT);
+
+    if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT)
+    {
+        modifiers |= KeyboardShortcut::ConvertKeyToModifier(event->key);
+    }
+    else if (phase == UIEvent::Phase::KEY_UP)
+    {
+        modifiers &= ~KeyboardShortcut::ConvertKeyToModifier(event->key);
+    }
+    KeyboardShortcut shortcut(event->key, modifiers);
+
+    UIControl* focusedControl = focusSystem->GetFocusedControl();
+    UIControl* rootControl = modalControl.Valid() ? modalControl.Get() : currentScreen;
+
+    if (focusedControl == nullptr && rootControl == nullptr)
+    {
+        return;
+    }
+
+    UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
+    while (c != nullptr)
+    {
+        if (c->SystemProcessInput(event))
+        {
+            break;
+        }
+
+        if (phase == UIEvent::Phase::KEY_DOWN)
+        {
+            UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
+            if (actionBindingComponent)
+            {
+                FastName action = actionBindingComponent->GetInputMap().FindAction(shortcut);
+                if (action.IsValid() && actionBindingComponent->GetActionMap().Perform(action))
+                {
+                    break;
+                }
+            }
+        }
+
+        if (c == rootControl)
+        {
+            break;
+        }
+        c = c->GetParent();
+    }
+
+    if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT)
+    {
+        FastName action = globalInputMap.FindAction(shortcut);
+        if (action.IsValid())
+        {
+            globalActions.Perform(action);
+        }
+    }
+}
+
+void UIInputSystem::HandleOtherEvent(UIEvent* event)
+{
+    if (modalControl.Valid())
+    {
+        RefPtr<UIControl> control = modalControl;
+        control->SystemInput(event);
+    }
+    else if (!popupContainer->SystemInput(event))
+    {
+        currentScreen->SystemInput(event);
+    }
 }
 
 void UIInputSystem::UpdateModalControl()
@@ -329,12 +471,42 @@ void UIInputSystem::UpdateModalControl()
         UIControl* root = FindNearestToUserModalControl();
         focusSystem->SetRoot(root == nullptr ? currentScreen : root);
         modalControl = root;
-        //CancelInputs(<#DAVA::UIControl * control #>, <#bool hierarchical #>)
+
+        if (root != nullptr)
+        {
+            CancelInputForAllOutsideChildren(root);
+        }
     }
     else
     {
         focusSystem->SetRoot(nullptr);
         modalControl = nullptr;
+    }
+}
+
+void UIInputSystem::CancelInputForAllOutsideChildren(UIControl* root)
+{
+    for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
+    {
+        UIControl* control = it->touchLocker;
+        if (control != nullptr)
+        {
+            bool isInHierarchy = false;
+            while (control != nullptr)
+            {
+                if (control == modalControl)
+                {
+                    isInHierarchy = true;
+                    break;
+                }
+                control = control->GetParent();
+            }
+
+            if (!isInHierarchy)
+            {
+                CancelInput(&(*it));
+            }
+        }
     }
 }
 

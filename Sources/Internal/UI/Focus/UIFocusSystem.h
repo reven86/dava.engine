@@ -66,8 +66,6 @@ public:
     bool MoveFocus(FocusHelpers::Direction dir);
     bool MoveFocus(FocusHelpers::TabDirection dir);
 
-    void PerformAction();
-
 private:
     void ClearFocusState(UIControl* control);
     UIControl* FindFirstControl(UIControl* control) const;

@@ -50,7 +50,6 @@ class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
 class UIFocusSystem;
-class UIKeyInputSystem;
 class UIInputSystem;
 class UIScreenshoter;
 
@@ -306,7 +305,6 @@ public:
     UILayoutSystem* GetLayoutSystem() const;
     UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
-    UIKeyInputSystem* GetKeyInputSystem() const;
 
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();

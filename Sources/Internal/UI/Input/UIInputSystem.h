@@ -41,7 +41,6 @@ class UIControl;
 class UIScreen;
 class UIEvent;
 class UIFocusSystem;
-class UIKeyInputSystem;
 
 class UIInputSystem
 {
@@ -70,10 +69,31 @@ public:
     UIControl* GetHoveredControl() const;
 
     UIFocusSystem* GetFocusSystem() const;
-    UIKeyInputSystem* GetKeyInputSystem() const;
+
+    void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
+    void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
+    void PerformActionOnControl(UIControl* control);
+    void PerformActionOnFocusedControl();
+
+    static const FastName ACTION_FOCUS_LEFT;
+    static const FastName ACTION_FOCUS_RIGHT;
+    static const FastName ACTION_FOCUS_UP;
+    static const FastName ACTION_FOCUS_DOWN;
+
+    static const FastName ACTION_FOCUS_NEXT;
+    static const FastName ACTION_FOCUS_PREV;
+
+    static const FastName ACTION_PERFORM;
+    static const FastName ACTION_ESCAPE;
 
 private:
+    void HandleTouchEvent(UIEvent* event);
+    void HandleKeyEvent(UIEvent* event);
+    void HandleOtherEvent(UIEvent* event);
+
     void UpdateModalControl();
+    void CancelInputForAllOutsideChildren(UIControl* root);
+
     UIControl* FindNearestToUserModalControl() const;
     UIControl* FindNearestToUserModalControlImpl(UIControl* current) const;
 
@@ -82,7 +102,6 @@ private:
     RefPtr<UIControl> modalControl;
 
     UIFocusSystem* focusSystem = nullptr;
-    UIKeyInputSystem* keyInputSystem = nullptr;
 
     UIControl* hovered = nullptr;
 
@@ -90,6 +109,10 @@ private:
     UIControl* focusedControlWhenTouchBegan = nullptr;
     Vector2 positionOfTouchWhenTouchBegan;
     UIControl* exclusiveInputLocker = nullptr;
+
+    UIActionMap globalActions;
+    UIInputMap globalInputMap;
+    int32 modifiers = 0;
 };
 }
 

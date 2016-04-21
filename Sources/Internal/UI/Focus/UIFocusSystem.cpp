@@ -218,29 +218,6 @@ bool UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
     return false;
 }
 
-void UIFocusSystem::PerformAction()
-{
-    if (focusedControl != nullptr)
-    {
-        UIActionComponent* actionComponent = focusedControl->GetComponent<UIActionComponent>();
-        if (actionComponent != nullptr && actionComponent->GetAction().IsValid())
-        {
-            UIControl* c = focusedControl.Get();
-            bool processed = false;
-            while (!processed && c != nullptr)
-            {
-                UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
-                if (actionBindingComponent)
-                {
-                    processed = actionBindingComponent->GetActionMap().Perform(actionComponent->GetAction());
-                }
-
-                c = (c == root.Get()) ? nullptr : c->GetParent();
-            }
-        }
-    }
-}
-
 void UIFocusSystem::ClearFocusState(UIControl* control)
 {
     control->SetState(control->GetState() & (~UIControl::STATE_FOCUSED));

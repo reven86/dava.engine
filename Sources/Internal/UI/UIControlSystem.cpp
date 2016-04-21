@@ -678,11 +678,6 @@ UIFocusSystem* UIControlSystem::GetFocusSystem() const
     return inputSystem->GetFocusSystem();
 }
 
-UIKeyInputSystem* UIControlSystem::GetKeyInputSystem() const
-{
-    return inputSystem->GetKeyInputSystem();
-}
-
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
 {
     return styleSheetSystem;
