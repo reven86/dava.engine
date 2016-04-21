@@ -49,11 +49,6 @@ AutotestingSystem::AutotestingSystem()
     : startTimeMS(0)
     , isInit(false)
     , isRunning(false)
-    , isDB(true)
-    , isMaster(true)
-    , isRegistered(false)
-    , isWaiting(false)
-    , isInitMultiplayer(false)
     , needExitApp(false)
     , timeBeforeExit(0.0f)
     , projectName("")
@@ -73,11 +68,16 @@ AutotestingSystem::AutotestingSystem()
     , framework("framework")
     , branchRev("0")
     , frameworkRev("0")
+    , isDB(true)
     , needClearGroupInDB(false)
+    , isMaster(true)
     , requestedHelpers(0)
     , masterId("")
     , masterTask("")
     , masterRunId(0)
+    , isRegistered(false)
+    , isWaiting(false)
+    , isInitMultiplayer(false)
     , multiplayerName("")
     , waitTimeLeft(0.0f)
     , waitCheckTimeLeft(0.0f)
@@ -101,21 +101,37 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     luaSystem->SetDelegate(_delegate);
 }
 
-String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
+DAVA::String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
 {
-    String automationResolvedStrPath = "~res:" + automationPath;
-    if (FileSystem::Instance()->Exists(FilePath(automationResolvedStrPath)))
+    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s path=%s", DeviceInfo::GetPlatformString().c_str(), automationPath.c_str());
+    String automationResolvedStrPath;
+    // Try to find automation data in Documents
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
     {
+        //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
+        automationResolvedStrPath = "d:" + automationPath;
+    }
+    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+    {
+        automationResolvedStrPath = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + automationPath;
+    }
+    else
+    {
+        automationResolvedStrPath = "~doc:" + automationPath;
+    }
+
+    if (FilePath(automationResolvedStrPath).Exists())
+    {
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
         return automationResolvedStrPath;
     }
-#if defined(__DAVAENGINE_ANDROID__)
-    FilePath automationResolvedPath = FileSystem::Instance()->GetPublicDocumentsPath() + automationPath;
-#else
-    FilePath automationResolvedPath = "~doc:" + automationPath;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-    if (FileSystem::Instance()->Exists(automationResolvedPath))
+
+    // If there are no automation data in documents, try to find it in Data
+    if (FilePath("~res:" + automationPath).Exists())
     {
-        return automationResolvedPath.GetStringValue();
+        automationResolvedStrPath = "~res:" + automationPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
+        return automationResolvedStrPath;
     }
     return "";
 }
