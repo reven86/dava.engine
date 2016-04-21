@@ -391,9 +391,17 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
                           GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format));
             return;
         }
+        else if (imgInfo.width < DAVA::Texture::MINIMAL_WIDTH || imgInfo.height < DAVA::Texture::MINIMAL_HEIGHT)
+        {
+            Logger::Error("Can't export texture %s because of small size(%dx%d) of source image", descriptorPathname.GetAbsolutePathname().c_str(), imgInfo.width, imgInfo.height);
+            return;
+        }
 
         FilePath compressedTexturePathname = CompressTexture(*descriptor);
-        CopyFile(compressedTexturePathname);
+        if (compressedTexturePathname.IsEmpty() == false)
+        {
+            CopyFile(compressedTexturePathname);
+        }
     }
     else
     {
@@ -412,6 +420,16 @@ void SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const
 FilePath SceneExporter::CompressTexture(TextureDescriptor& descriptor) const
 {
     DVASSERT(GPUFamilyDescriptor::IsGPUForDevice(exportForGPU));
+
+    DAVA::int32 width = descriptor.compression[exportForGPU].compressToWidth;
+    DAVA::int32 height = descriptor.compression[exportForGPU].compressToHeight;
+
+    if ((width != 0 && width < DAVA::Texture::MINIMAL_WIDTH) || (height != 0 && height < DAVA::Texture::MINIMAL_HEIGHT))
+    {
+        Logger::Error("%s has too small size(%dx%d) for comptression %s", descriptor.pathname.GetAbsolutePathname().c_str(), width, height,
+                      GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(exportForGPU));
+        return FilePath();
+    }
 
     FilePath compressedTexureName = descriptor.CreatePathnameForGPU(exportForGPU);
 
