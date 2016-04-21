@@ -29,6 +29,8 @@
 
 #include "PropertiesModel.h"
 
+#include "Platform/SystemTimer.h"
+
 #include <QPoint>
 #include <QColor>
 #include <QFont>
@@ -53,9 +55,7 @@
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-#include <chrono>
 
-using namespace std::chrono;
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
@@ -403,8 +403,7 @@ void PropertiesModel::ChangeProperty(AbstractProperty* property, const DAVA::Var
     {
         if (nullptr != controlNode)
         {
-            microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-            size_t usCount = static_cast<size_t>(us.count());
+            size_t usCount = static_cast<size_t>(DAVA::SystemTimer::Instance()->GetAbsoluteUs());
             commandExecutor->ChangeProperty(controlNode, property, value, usCount);
         }
         else if (styleSheet)

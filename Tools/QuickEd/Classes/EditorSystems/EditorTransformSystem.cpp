@@ -29,6 +29,7 @@
  
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "Platform/SystemTimer.h"
 
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -37,10 +38,8 @@
 #include "UI/UIControl.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
-#include <chrono>
 
 using namespace DAVA;
-using namespace std::chrono;
 
 const EditorTransformSystem::CornersDirections EditorTransformSystem::cornersDirections =
 { {
@@ -158,8 +157,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::Phase::BEGAN:
     {
-        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-        currentHash = static_cast<size_t>(us.count());
+        currentHash = static_cast<size_t>(DAVA::SystemTimer::Instance()->GetAbsoluteUs());
         extraDelta.SetZero();
         prevPos = currentInput->point;
         if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
@@ -237,8 +235,7 @@ bool EditorTransformSystem::ProcessKey(const Key key)
         }
         if (!deltaPos.IsZero())
         {
-            microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-            currentHash = static_cast<size_t>(us.count());
+            currentHash = static_cast<size_t>(DAVA::SystemTimer::Instance()->GetAbsoluteUs());
             MoveAllSelectedControls(deltaPos, false);
             return true;
         }
