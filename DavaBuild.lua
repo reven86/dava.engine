@@ -19,6 +19,7 @@ dava.config.output_db = "packs.db"
 dava.config.packlist_output_dir = "Output/packlist"
 dava.config.packlist_ext = "list"
 dava.config.packlist_default = "__else__"
+dava.config.packlist_delimiter = "#"
 
 --
 -- return directory path from file @path,
@@ -60,6 +61,7 @@ function dava_init()
         dava.im.packlist_output_dir = dava.project_dir .. "/" .. dava.config.packlist_output_dir
         dava.im.packlist_ext = dava.config.packlist_ext
         dava.im.packlist_default = dava.config.packlist_default
+        dava.im.packlist_delimiter = dava.config.packlist_delimiter
         
         dava.im.packs = { 
             { 
@@ -303,7 +305,7 @@ function dava_create_lists()
         local i = 0
         while i < files_count do
             local index = i / files_to_process
-            local part_output = dava.im.packlist_output_dir .. "/" .. pack_listname .. "_" .. index .. "." .. dava.im.packlist_ext
+            local part_output = dava.im.packlist_output_dir .. "/" .. pack_listname .. dava.im.packlist_delimiter .. index .. "." .. dava.im.packlist_ext
             local part_files = {}
             
             for j = 1, math.min(files_to_process, files_count - i) do
@@ -331,8 +333,8 @@ function dava_create_packs()
         local pack_sql_output = dava.im.packlist_output_dir .. "/" .. pack.name .. ".sql"
 
 	    local pack_in_group = dava.project_dir .. "/<"  .. pack.name .. ">"
-        local pack_in_mask = dava.im.packlist_output_dir .. "/" .. pack.name .. "_*"
-        local empty_pack = dava.im.packlist_output_dir .. "/" .. pack.name .. "_empty." .. dava.im.packlist_ext
+        local pack_in_mask = dava.im.packlist_output_dir .. "/" .. pack.name .. dava.im.packlist_delimiter .. "*." .. dava.im.packlist_ext
+        local empty_pack = dava.im.packlist_output_dir .. "/" .. pack.name .. dava.im.packlist_delimiter .. "empty." .. dava.im.packlist_ext
 
         if dava.platform == "win32" then
             pack_in_mask = pack_in_mask:gsub("/", "\\")
