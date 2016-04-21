@@ -237,8 +237,9 @@ public:
         STATE_DISABLED = 1 << 3, //!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
         STATE_SELECTED = 1 << 4, //!<Just a state for base control, nothing more.
         STATE_HOVER = 1 << 5, //!<This bit is rise then mouse is over the control.
+        STATE_FOCUSED = 1 << 6, //!<Control under focus and will receive keyboard input. Additional this state can be used for setting visual style of control.
 
-        STATE_COUNT = 6
+        STATE_COUNT = 7
     };
 
     static const char* STATE_NAMES[STATE_COUNT];
@@ -549,21 +550,6 @@ public:
      \param[in] hierarchic use true if you want to all control children change input ability.
      */
     virtual void SetInputEnabled(bool isEnabled, bool hierarchic = true);
-
-    /**
-     \brief Returns control focusing ability.
-     Be ware! Base control can be focused by default.
-     \returns true if control can be focused.
-     */
-    inline bool GetFocusEnabled() const;
-
-    /**
-     \brief Sets contol focusing ability.
-     If focus possibility is disabled control can't be focused. Disable focusing for scroll
-     controls (like UIScrollView, UIScrollList, etc.)
-     \param[in] isEnabled is control can be focused?
-     */
-    virtual void SetFocusEnabled(bool isEnabled);
 
     /**
      \brief Returns control enabling state.
@@ -1139,17 +1125,17 @@ public:
      */
     virtual bool IsPointInside(const Vector2& point, bool expandWithFocus = false) const;
 
-    virtual bool IsLostFocusAllowed(UIControl* newFocus);
-
-    virtual void SystemOnFocusLost(UIControl* newFocus);
+    virtual void SystemOnFocusLost();
 
     virtual void SystemOnFocused();
 
-    virtual void OnFocusLost(UIControl* newFocus);
+    virtual void OnFocusLost();
 
     virtual void OnFocused();
 
-    void OnAllAnimationsFinished() override;
+    virtual void OnTouchOutsideFocus();
+
+    virtual void OnAllAnimationsFinished();
 
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
@@ -1233,7 +1219,6 @@ private:
     int32 tag = 0;
     eViewState viewState = eViewState::INACTIVE;
     bool inputEnabled : 1;
-    bool focusEnabled : 1;
 
     /* Components */
 public:
@@ -1431,11 +1416,6 @@ bool UIControl::GetVisibilityFlag() const
 bool UIControl::GetInputEnabled() const
 {
     return inputEnabled;
-}
-
-bool UIControl::GetFocusEnabled() const
-{
-    return focusEnabled;
 }
 
 bool UIControl::GetClipContents() const
