@@ -50,7 +50,7 @@ bool LibWebPHelper::CanProcessFile(File* infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const
+eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     WebPDecoderConfig config;
     WebPBitstreamFeatures* bitstream = &config.input;

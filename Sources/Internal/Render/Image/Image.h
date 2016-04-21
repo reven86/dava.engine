@@ -51,6 +51,33 @@ public:
     
 #endif
 
+struct ImageInfo
+{
+    bool isEmpty() const
+    {
+        return (0 == width || 0 == height);
+    }
+
+    Size2i GetImageSize() const
+    {
+        return Size2i(width, height);
+    }
+
+    bool operator==(const ImageInfo& another) const
+    {
+        return (
+            width == another.width &&
+            height == another.height &&
+            format == another.format);
+    }
+
+    uint32 width = 0;
+    uint32 height = 0;
+    PixelFormat format = FORMAT_INVALID;
+    uint32 dataSize = 0;
+    uint32 mipmapsCount = 0;
+};
+
 class Image : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_IMAGE)
@@ -59,15 +86,6 @@ protected:
     virtual ~Image();
 
 public:
-    struct LoadingParams
-    {
-        LoadingParams(uint32 w = 0, uint32 h = 0, uint32 mipmap = 0) : minimalWidth(w), minimalHeight(h), baseMipmap(mipmap) {}
-
-        uint32 minimalWidth = 0;
-        uint32 minimalHeight = 0;
-        uint32 baseMipmap = 0;
-    };
-
     Image();
 
     static Image* Create(uint32 width, uint32 height, PixelFormat format);
@@ -198,8 +216,6 @@ void Image::Rotate90Left(Type* src, Type* dst, uint32 sideLen)
         }
     }
 }
-
-uint32 GetBaseMipmap(const Image::LoadingParams& sourceImageParams, const Image::LoadingParams& loadingParams);
 
 // Implementation of inline functions
 uint32 Image::GetWidth() const

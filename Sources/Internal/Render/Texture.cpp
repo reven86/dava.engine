@@ -436,7 +436,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
         return false;
     }
 
-    Image::LoadingParams params;
+    ImageSystem::LoadingParams params;
     params.baseMipmap = GetBaseMipMap();
     params.minimalWidth = Texture::MINIMAL_WIDTH;
     params.minimalHeight = Texture::MINIMAL_HEIGHT;

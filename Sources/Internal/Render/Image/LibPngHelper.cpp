@@ -111,7 +111,7 @@ bool LibPngHelper::CanProcessFile(File* infile) const
     return retValue;
 }
 
-eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const
+eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);

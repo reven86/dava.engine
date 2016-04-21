@@ -597,22 +597,4 @@ void Image::Rotate90Left()
     data = newData;
 }
 
-uint32 GetBaseMipmap(const Image::LoadingParams& sourceImageParams, const Image::LoadingParams& loadingParams)
-{
-    if (sourceImageParams.minimalWidth != 0 || sourceImageParams.minimalHeight != 0)
-    {
-        uint32 width = sourceImageParams.minimalWidth;
-        uint32 height = sourceImageParams.minimalHeight;
-        uint32 fromMipMap = sourceImageParams.baseMipmap;
-
-        while ((((width >> fromMipMap) < loadingParams.minimalWidth) || ((height >> fromMipMap) < loadingParams.minimalHeight)) && fromMipMap != 0)
-        {
-            --fromMipMap;
-        }
-
-        return fromMipMap;
-    }
-
-    return sourceImageParams.baseMipmap;
-}
 };

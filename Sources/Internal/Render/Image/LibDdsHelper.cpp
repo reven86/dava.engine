@@ -245,7 +245,7 @@ public:
     static bool InitDecompressor(nvtt::Decompressor& dec, File* file);
     static bool InitDecompressor(nvtt::Decompressor& dec, const uint8* mem, uint32 size);
 
-    static bool ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams, bool forceSoftwareConvertation);
+    static bool ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams, bool forceSoftwareConvertation);
     static PixelFormat GetPixelFormat(nvtt::Decompressor& dec);
     static PixelFormat GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat);
     static nvtt::Format GetNVTTFormatByPixelFormat(PixelFormat pixelFormat);
@@ -256,8 +256,8 @@ public:
     static void SwapBRChannels(uint8* data, uint32 size);
 
 private:
-    static bool DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, PixelFormat format, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams);
-    static bool DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams);
+    static bool DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, PixelFormat format, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
+    static bool DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
 };
 
 const NvttHelper::PairNvttPixelGLFormat NvttHelper::formatNamesMap[] =
@@ -344,7 +344,7 @@ bool NvttHelper::InitDecompressor(nvtt::Decompressor& dec, const uint8* mem, uin
     return true;
 }
 
-bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams, bool forceSoftwareConvertation)
+bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams, bool forceSoftwareConvertation)
 {
     DDSInfo info;
     if (!GetInfo(dec, info))
@@ -366,8 +366,8 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, 
         return false;
     }
 
-    Image::LoadingParams ddsLoadingParams = { info.width, info.height, Min(loadingParams.baseMipmap, info.mipmapsCount - 1) };
-    ddsLoadingParams.baseMipmap = GetBaseMipmap(ddsLoadingParams, loadingParams);
+    ImageSystem::LoadingParams ddsLoadingParams = { info.width, info.height, Min(loadingParams.baseMipmap, info.mipmapsCount - 1) };
+    ddsLoadingParams.baseMipmap = ImageSystem::GetBaseMipmap(ddsLoadingParams, loadingParams);
 
     //check hardware support, in case of rgb use nvtt to reorder bytes
     bool isHardwareSupport = PixelFormatDescriptor::GetPixelFormatDescriptor(GetPixelFormatByNVTTFormat(format)).isHardwareSupported;
@@ -575,14 +575,14 @@ void NvttHelper::SwapBRChannels(uint8* data, uint32 size)
     }
 }
 
-bool NvttHelper::DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams)
+bool NvttHelper::DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
     for (uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
     {
         uint32 faceWidth = info.width;
         uint32 faceHeight = info.height;
 
-        for (int32 i = 0; i < loadingParams.baseMipmap; ++i)
+        for (uint32 i = 0; i < loadingParams.baseMipmap; ++i)
         {
             faceWidth = Max(1u, faceWidth / 2);
             faceHeight = Max(1u, faceHeight / 2);
@@ -619,7 +619,7 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vect
     return true;
 }
 
-bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, PixelFormat format, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams)
+bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, PixelFormat format, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
@@ -652,7 +652,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, Pixe
         uint32 faceWidth = info.width;
         uint32 faceHeight = info.height;
 
-        for (int32 i = 0; i < loadingParams.baseMipmap; ++i)
+        for (uint32 i = 0; i < loadingParams.baseMipmap; ++i)
         {
             unsigned int mipMapSize = 0;
             dec.getMipmapSize(i, mipMapSize);
@@ -745,7 +745,7 @@ bool LibDdsHelper::CanProcessFile(File* infile) const
     return header.IsValid();
 }
 
-eErrorCode LibDdsHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const
+eErrorCode LibDdsHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     return ReadFile(infile, imageSet, loadingParams, false);
 }
@@ -901,7 +901,7 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     return CRC32::ForFile(filePathname);
 }
 
-eErrorCode LibDdsHelper::ReadFile(File* file, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams, bool forceSoftwareConvertation)
+eErrorCode LibDdsHelper::ReadFile(File* file, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams, bool forceSoftwareConvertation)
 {
     DVASSERT(file != nullptr);
 
@@ -955,7 +955,7 @@ bool LibDdsHelper::DecompressImageToRGBA(const Image& image, Vector<Image*>& ima
     bool retValue = NvttHelper::InitDecompressor(dec, compressedImageBuffer, realHeaderSize + image.dataSize);
     if (retValue)
     {
-        retValue = NvttHelper::ReadDxtFile(dec, imageSet, Image::LoadingParams(), forceSoftwareConvertation);
+        retValue = NvttHelper::ReadDxtFile(dec, imageSet, ImageSystem::LoadingParams(), forceSoftwareConvertation);
     }
 
     SafeDeleteArray(compressedImageBuffer);

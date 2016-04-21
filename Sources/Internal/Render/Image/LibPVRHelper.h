@@ -149,7 +149,7 @@ public:
 
     bool CanProcessFile(File* file) const override;
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
@@ -165,7 +165,7 @@ public:
 protected:
     static PVRFile* ReadFile(const FilePath& filePathname, bool readMetaData = false, bool readData = false);
     static PVRFile* ReadFile(File* file, bool readMetaData = false, bool readData = false);
-    static bool LoadImages(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams);
+    static bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
 
     static bool WriteFile(const PVRFile* pvrFile, File* outFile);
 

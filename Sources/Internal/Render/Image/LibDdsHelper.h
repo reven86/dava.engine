@@ -34,6 +34,7 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "Render/Image/ImageFormatInterface.h"
+#include "Render/Image/ImageSystem.h"
 #include "Render/Image/CRCAdditionInterface.h"
 
 namespace DAVA
@@ -49,7 +50,7 @@ public:
     ImageFormat GetImageFormat() const override;
     bool CanProcessFile(File* infile) const override;
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
@@ -59,7 +60,7 @@ public:
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
-    static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams, bool forceSoftwareConvertation = false);
+    static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams, bool forceSoftwareConvertation = false);
     static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
 
 private:
