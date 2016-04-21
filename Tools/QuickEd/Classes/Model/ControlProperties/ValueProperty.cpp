@@ -438,7 +438,7 @@ void ValueProperty::GenerateBuiltInSubProperties()
     else if (valueType == VariantType::TYPE_INT32 && inspDesc && inspDesc->type == InspDesc::T_FLAGS)
     {
         const EnumMap* map = inspDesc->enumMap;
-        for (size_t i = 0; i < map->GetCount(); ++i)
+        for (size_type i = 0; i < map->GetCount(); ++i)
         {
             int val = 0;
             DVVERIFY(map->GetValue(i, val));
@@ -448,7 +448,7 @@ void ValueProperty::GenerateBuiltInSubProperties()
 
     if (componentNames != nullptr)
     {
-        for (size_t i = 0; i < componentNames->size(); ++i)
+        for (size_type i = 0; i < componentNames->size(); ++i)
             subProperties.push_back(new SubValueProperty(i, componentNames->at(i)));
     }
 
