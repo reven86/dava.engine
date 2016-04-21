@@ -40,7 +40,6 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
-
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
