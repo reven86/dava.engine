@@ -208,14 +208,21 @@ macro( setup_main_module )
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
-
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
-                add_definitions( -DDAVA_MODULE_EXPORTS )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC}  )
-
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST )
-                list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${TARGET_MODULES_LIST} )
-                
+                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
+                add_definitions( -DDAVA_MODULE_EXPORTS )                
+
+                if( WIN32 AND NOT DEPLOY )
+                    set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
+                    set( BINARY_WIN32_DIR_DEBUG      "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
+                    set( BINARY_WIN32_DIR_RELWITHDEB "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
+                    save_property( PROPERTY_LIST BINARY_WIN32_DIR_RELEASE 
+                                                 BINARY_WIN32_DIR_DEBUG
+                                                 BINARY_WIN32_DIR_RELWITHDEB )
+                endif()
+
             endif()
 
             if( DEFINITIONS_PRIVATE )

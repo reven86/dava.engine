@@ -41,12 +41,16 @@ include      ( PlatformSettings )
 
 load_property( PROPERTY_LIST 
         TARGET_MODULES_LIST  
+        BINARY_WIN32_DIR_RELEASE
+        BINARY_WIN32_DIR_DEBUG
+        BINARY_WIN32_DIR_RELWITHDEB
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
     )
 
+add_definitions( -DDAVA_ENGINE_EXPORTS ) 
 
 if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
@@ -542,6 +546,10 @@ elseif ( WIN32 )
         set ( DAVA_VCPROJ_USER_TEMPLATE "DavaVcxprojUserTemplate.in" )
     endif ()
 
+    set( DAVA_BINARY_WIN32_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELEASE} ) 
+    set( DAVA_BINARY_WIN32_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_DEBUG}   ) 
+    set( DAVA_BINARY_WIN32_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELWITHDEB}   ) 
+
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/${DAVA_VCPROJ_USER_TEMPLATE}
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
@@ -641,12 +649,13 @@ if( DEPLOY )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
-
         set( OUTPUT_DIR "${DEPLOY_DIR}" )
-        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
-        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+        foreach( TARGET ${PROJECT_NAME} ${TARGET_MODULES_LIST} )
+            foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+                string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+                set_target_properties ( ${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+            endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+        endforeach()
 
     elseif( APPLE )
         set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )

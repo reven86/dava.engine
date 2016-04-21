@@ -32,6 +32,7 @@
 
 #include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
+#include "Base/DllApi.h"
 
 #include <array>
 #include <memory>
