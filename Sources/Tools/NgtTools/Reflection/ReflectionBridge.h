@@ -63,7 +63,7 @@ private:
     const DAVA::MetaInfo* objectType;
     const DAVA::InspMember* memberInsp;
     MetaHandle metaBase;
-    DAVA::WideString dysplayName;
+    DAVA::WideString enumString;
 };
 
 class NGTTypeDefinition : public IClassDefinitionDetails

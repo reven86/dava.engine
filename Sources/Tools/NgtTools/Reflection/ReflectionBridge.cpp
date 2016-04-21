@@ -40,36 +40,29 @@
 
 namespace NGTLayer
 {
-class EnumGenerator : public IEnumGenerator
+DAVA::WideString BuildEnumString(const DAVA::InspMember* insp)
 {
-public:
-    EnumGenerator(const DAVA::InspMember* insp)
-        : memberInsp(insp)
+    std::wstringstream ss;
+    DAVA::InspDesc const& desc = insp->Desc();
+
+    DVASSERT(desc.enumMap != nullptr);
+    size_t enumValuesCount = desc.enumMap->GetCount();
+
+    for (size_t i = 0; i < enumValuesCount; ++i)
     {
-    }
+        int value = 0;
+        desc.enumMap->GetValue(i, value);
+        const char* name = desc.enumMap->ToString(value);
 
-    Collection getCollection(const ObjectHandle& provider, const IDefinitionManager& definitionManager) override
-    {
-        DAVA::InspDesc const& desc = memberInsp->Desc();
-
-        DVASSERT(desc.enumMap != nullptr);
-
-        using TCollection = std::map<int, char const*>;
-        TCollection* enumMap = new TCollection;
-
-        for (size_t i = 0; i < desc.enumMap->GetCount(); ++i)
+        ss << DAVA::StringToWString(name) << L"=" << std::to_wstring(value);
+        if (i < enumValuesCount - 1)
         {
-            int value = 0;
-            if (desc.enumMap->GetValue(i, value))
-                enumMap->insert(std::make_pair(i, desc.enumMap->ToString(value)));
+            ss << L"|";
         }
-
-        return Collection(*enumMap);
     }
 
-private:
-    const DAVA::InspMember* memberInsp;
-};
+    return ss.str();
+}
 
 class DavaObjectStorage : public IObjectHandleStorage
 {
@@ -148,7 +141,7 @@ const char* NGTTypeDefinition::getParentName() const
 {
     const DAVA::InspInfo* parentInfo = info->BaseInfo();
     if (parentInfo != nullptr)
-        parentInfo->Type()->GetTypeName();
+        return parentInfo->Type()->GetTypeName();
 
     return nullptr;
 }
@@ -191,7 +184,10 @@ NGTMemberProperty::NGTMemberProperty(const DAVA::InspMember* member, const DAVA:
 
     const DAVA::InspDesc& desc = memberInsp->Desc();
     if (desc.enumMap != nullptr)
-        metaBase = metaBase + MetaEnum(new EnumGenerator(memberInsp));
+    {
+        enumString = BuildEnumString(memberInsp);
+        metaBase = metaBase + MetaEnum(enumString.c_str());
+    }
 
     const DAVA::MetaInfo* metaType = member->Type();
 

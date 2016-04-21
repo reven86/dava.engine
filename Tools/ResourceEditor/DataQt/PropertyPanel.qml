@@ -22,7 +22,23 @@ Rectangle {
     anchors.right: parent.right
   }
 
- WGFilteredTreeModel {
+  WGTreeModel
+  {
+    id: reflectedModel
+    source: PropertyTree
+
+    ValueExtension {}
+    ColumnExtension {}
+    ComponentExtension {}
+    TreeExtension {}
+    ThumbnailExtension {}
+    SelectionExtension {
+      id: treeModelSelection
+      multiSelect: false
+    }
+  }
+
+  /*WGFilteredTreeModel {
     id: reflectedModel
     source: PropertyTree
 
@@ -41,7 +57,7 @@ Rectangle {
       id: treeModelSelection
       multiSelect: false
     }
-  }
+  }*/
 
   WGTreeView {
     id: reflectedTreeView

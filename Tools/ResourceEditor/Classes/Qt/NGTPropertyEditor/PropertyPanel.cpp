@@ -27,24 +27,34 @@
 =====================================================================================*/
 
 #include "PropertyPanel.h"
+#include "Extensions.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/EntityGroup.h"
 #include "NgtTools/Reflection/ReflectionBridge.h"
 #include "NgtTools/Common/GlobalContext.h"
 
 #include "Scene3D/Entity.h"
-
-#include "core_reflection/i_definition_manager.hpp"
-#include "core_reflection/interfaces/i_reflection_controller.hpp"
-#include "core_data_model/reflection/reflected_tree_model.hpp"
-#include "core_data_model/i_tree_model.hpp"
-#include "core_qt_common/helpers/qt_helpers.hpp"
+#include "Debug/DVAssert.h"
 #include "metainfo/PropertyPanel.mpp"
 
-#include "Debug/DVAssert.h"
+#include <core_reflection/i_definition_manager.hpp>
+#include <core_reflection/interfaces/i_reflection_controller.hpp>
+#include <core_data_model/reflection/reflected_property_model.hpp>
+#include <core_data_model/i_tree_model.hpp>
+#include <core_qt_common/helpers/qt_helpers.hpp>
 
 PropertyPanel::PropertyPanel()
+    : updater(DAVA::MakeFunction(this, &PropertyPanel::UpdateModel))
 {
+    ICommandManager* commandManager = NGTLayer::queryInterface<ICommandManager>();
+    DVASSERT(commandManager != nullptr);
+
+    IDefinitionManager* definitionManager = NGTLayer::queryInterface<IDefinitionManager>();
+    DVASSERT(definitionManager != nullptr);
+
+    model.reset(new ReflectedPropertyModel(*definitionManager, *commandManager));
+    model->registerExtension(new EntityChildCreatorExtension());
+    model->registerExtension(new EntityMergeValueExtension());
 }
 
 PropertyPanel::~PropertyPanel()
@@ -64,9 +74,11 @@ void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiAppl
 
 void PropertyPanel::Finalize()
 {
-    SetObject(nullptr);
+    selectedObjects.clear();
+    SetObject(selectedObjects);
     view->deregisterListener(this);
     view.reset();
+    model.reset();
 }
 
 ObjectHandle PropertyPanel::GetPropertyTree() const
@@ -80,45 +92,50 @@ void PropertyPanel::SetPropertyTree(const ObjectHandle& /*dummyTree*/)
 
 void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
 {
-    if (selected->IsEmpty())
+    selectedObjects.clear();
+    const EntityGroup::EntityMap& content = selected->GetContent();
+    for (const EntityGroup::EntityMap::value_type& node : content)
     {
-        SetObject(nullptr);
+        selectedObjects.push_back(node.first);
+    }
+
+    if (visible)
+    {
+        SetObject(selectedObjects);
     }
     else
     {
-        selectedObject = selected->GetFirstEntity();
-        if (visible)
-        {
-            SetObject(selectedObject);
-        }
-        else
-        {
-            isSelectionDirty = true;
-        }
+        isSelectionDirty = true;
     }
 }
 
-void PropertyPanel::SetObject(DAVA::InspBase* object)
+void PropertyPanel::SetObject(std::vector<DAVA::InspBase*> davaObjects)
 {
-    std::shared_ptr<ITreeModel> tempTreeModel(model);
+    DVASSERT(model != nullptr);
 
     IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
     DVASSERT(defMng != nullptr);
-    IReflectionController* controller = NGTLayer::queryInterface<IReflectionController>();
-    ITreeModel* newModel = nullptr;
-    if (object != nullptr)
+
+    std::vector<ObjectHandle> objects;
+    for (DAVA::InspBase* object : davaObjects)
     {
         const DAVA::InspInfo* info = object->GetTypeInfo();
         NGTLayer::RegisterType(*defMng, info);
 
         IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
-        newModel = new ReflectedTreeModel(NGTLayer::CreateObjectHandle(*defMng, info, object), *defMng, controller);
+        objects.push_back(NGTLayer::CreateObjectHandle(*defMng, info, object));
     }
 
-    model.reset(newModel);
+    model->setObjects(objects);
+}
 
-    IClassDefinition* definition = defMng->getDefinition(getClassIdentifier<PropertyPanel>());
-    definition->bindProperty("PropertyTree", this).setValue(Variant());
+void PropertyPanel::timerEvent(QTimerEvent* e)
+{
+    if (e->timerId() == updateTimerId)
+    {
+        UpdateModel();
+        e->accept();
+    }
 }
 
 void PropertyPanel::onFocusIn(IView* view_)
@@ -127,8 +144,13 @@ void PropertyPanel::onFocusIn(IView* view_)
     visible = true;
     if (isSelectionDirty)
     {
-        SetObject(selectedObject);
+        SetObject(selectedObjects);
         isSelectionDirty = false;
+    }
+
+    if (updateTimerId == -1)
+    {
+        updateTimerId = startTimer(1000);
     }
 }
 
@@ -136,4 +158,15 @@ void PropertyPanel::onFocusOut(IView* view_)
 {
     DVASSERT(view_ == view.get());
     visible = false;
+
+    if (updateTimerId != -1)
+    {
+        killTimer(updateTimerId);
+        updateTimerId = -1;
+    }
+}
+
+void PropertyPanel::UpdateModel()
+{
+    model->update();
 }

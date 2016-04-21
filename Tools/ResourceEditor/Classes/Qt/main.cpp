@@ -41,10 +41,12 @@
 #include "CommandLine/CommandLineManager.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
+#include "NGTPropertyEditor/ComponentProvider.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
 #include "NgtTools/Application/NGTApplication.h"
+#include "NgtTools/Common/GlobalContext.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -59,6 +61,9 @@
 #else
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
+
+#include <core_reflection/i_definition_manager.hpp>
+#include <core_ui_framework/i_ui_framework.hpp>
 
 void UnpackHelpDoc();
 void FixOSXFonts();
@@ -91,7 +96,20 @@ protected:
     {
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("Resource Editor");
+
+        IUIFramework* uiFramework = NGTLayer::queryInterface<IUIFramework>();
+        DVASSERT(uiFramework != nullptr);
+
+        IDefinitionManager* defManager = NGTLayer::queryInterface<IDefinitionManager>();
+        DVASSERT(defManager);
+
+        componentProvider.reset(new NGTLayer::ComponentProvider(*defManager));
+
+        uiFramework->registerComponentProvider(*componentProvider);
     }
+
+private:
+    std::unique_ptr<IComponentProvider> componentProvider;
 };
 
 int main(int argc, char* argv[])

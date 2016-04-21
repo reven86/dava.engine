@@ -142,7 +142,10 @@ public:
     void inc() override
     {
         iterator = collection->Next(iterator);
-        ++linearKey;
+        if (iterator == nullptr)
+            linearKey = END_ITERATOR_POSITION;
+        else
+            ++linearKey;
     }
 
     bool equals(const CollectionIteratorImplBase& that) const override

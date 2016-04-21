@@ -26,66 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __RESOURCEEDITOR_PROPERTYPANEL_H__
-#define __RESOURCEEDITOR_PROPERTYPANEL_H__
+#include "ComponentProvider.h"
 
-#include "QtTools/Updaters/LazyUpdater.h"
-
-#include <core_ui_framework/i_view.hpp>
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_reflection/reflected_object.hpp>
-
-#include <memory>
-#include <QObject>
-
-namespace DAVA
+NGTLayer::ComponentProvider::ComponentProvider(IDefinitionManager& defMng)
+    : definitionManager(defMng)
 {
-class InspBase;
-class InspInfo;
 }
 
-class SceneEditor2;
-class EntityGroup;
-class ReflectedPropertyModel;
-
-class PropertyPanel : public QObject, public IViewEventListener
+const char* NGTLayer::ComponentProvider::componentId(const TypeId& typeId, std::function<bool(size_t)>& predicate) const
 {
-    Q_OBJECT
-    DECLARE_REFLECTED
-public:
-    PropertyPanel();
-    ~PropertyPanel();
+    if (typeId.isPointer())
+    {
+        return "string";
+    }
 
-    void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
-    void Finalize();
-
-    ObjectHandle GetPropertyTree() const;
-    void SetPropertyTree(const ObjectHandle& dummyTree);
-
-    Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
-    void SetObject(std::vector<DAVA::InspBase*> davaObjects);
-
-protected:
-    void timerEvent(QTimerEvent* e);
-
-private:
-    void onFocusIn(IView* view) override;
-    void onFocusOut(IView* view) override;
-
-    void UpdateModel();
-
-private:
-    std::unique_ptr<IView> view;
-    std::unique_ptr<ReflectedPropertyModel> model;
-
-    LazyUpdater updater;
-
-    int updateTimerId = -1;
-
-    bool visible = false;
-    bool isSelectionDirty = false;
-    std::vector<DAVA::InspBase*> selectedObjects;
-};
-
-#endif // __RESOURCEEDITOR_PROPERTYPANEL_H__
+    return nullptr;
+}

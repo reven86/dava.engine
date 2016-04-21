@@ -26,66 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __RESOURCEEDITOR_PROPERTYPANEL_H__
-#define __RESOURCEEDITOR_PROPERTYPANEL_H__
+#pragma once
 
-#include "QtTools/Updaters/LazyUpdater.h"
+#include "core_ui_framework/i_component_provider.hpp"
 
-#include <core_ui_framework/i_view.hpp>
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_reflection/reflected_object.hpp>
+class IDefinitionManager;
 
-#include <memory>
-#include <QObject>
-
-namespace DAVA
+namespace NGTLayer
 {
-class InspBase;
-class InspInfo;
-}
-
-class SceneEditor2;
-class EntityGroup;
-class ReflectedPropertyModel;
-
-class PropertyPanel : public QObject, public IViewEventListener
+class ComponentProvider : public IComponentProvider
 {
-    Q_OBJECT
-    DECLARE_REFLECTED
 public:
-    PropertyPanel();
-    ~PropertyPanel();
-
-    void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
-    void Finalize();
-
-    ObjectHandle GetPropertyTree() const;
-    void SetPropertyTree(const ObjectHandle& dummyTree);
-
-    Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
-    void SetObject(std::vector<DAVA::InspBase*> davaObjects);
-
-protected:
-    void timerEvent(QTimerEvent* e);
+    ComponentProvider(IDefinitionManager& defMng);
+    const char* componentId(const TypeId& typeId, std::function<bool(size_t)>& predicate) const override;
 
 private:
-    void onFocusIn(IView* view) override;
-    void onFocusOut(IView* view) override;
-
-    void UpdateModel();
-
-private:
-    std::unique_ptr<IView> view;
-    std::unique_ptr<ReflectedPropertyModel> model;
-
-    LazyUpdater updater;
-
-    int updateTimerId = -1;
-
-    bool visible = false;
-    bool isSelectionDirty = false;
-    std::vector<DAVA::InspBase*> selectedObjects;
+    IDefinitionManager& definitionManager;
 };
-
-#endif // __RESOURCEEDITOR_PROPERTYPANEL_H__
+}
