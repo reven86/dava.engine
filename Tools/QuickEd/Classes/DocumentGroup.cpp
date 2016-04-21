@@ -173,6 +173,7 @@ void DocumentGroup::AddDocument(const QString& path)
         }
         else
         {
+            QMessageBox::warning(qApp->activeWindow(), tr("Can not create document"), tr("Can not create document by path:\n%1").arg(path));
             return;
         }
     }
