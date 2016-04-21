@@ -26,55 +26,40 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
-#define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#ifndef __DAVAENGINE_TAB_TRAVERSAL_ALGORITHM_H__
+#define __DAVAENGINE_TAB_TRAVERSAL_ALGORITHM_H__
 
-#include "UI/Components/UIComponent.h"
+#include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
+#include "Math/Vector.h"
+#include "FocusHelpers.h"
 
 namespace DAVA
 {
 class UIControl;
+class UIList;
+class UIEvent;
 
-class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
+class TabTraversalAlgorithm
 {
 public:
-    UIFlowLayoutHintComponent();
-    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);
+    TabTraversalAlgorithm(UIControl* root);
+    ~TabTraversalAlgorithm();
 
-protected:
-    virtual ~UIFlowLayoutHintComponent();
-
-private:
-    UIFlowLayoutHintComponent& operator=(const UIFlowLayoutHintComponent&) = delete;
-
-public:
-    UIFlowLayoutHintComponent* Clone() const override;
-
-    bool IsNewLineBeforeThis() const;
-    void SetNewLineBeforeThis(bool flag);
-
-    bool IsNewLineAfterThis() const;
-    void SetNewLineAfterThis(bool flag);
+    UIControl* GetNextControl(UIControl* focusedControl, FocusHelpers::TabDirection dir);
 
 private:
-    void SetLayoutDirty();
+    template <typename It>
+    UIControl* FindNextControl(UIControl* focusedControl, It begin, It end, FocusHelpers::TabDirection dir);
 
-private:
-    enum eFlags
-    {
-        FLAG_NEW_LINE_BEFORE_THIS,
-        FLAG_NEW_LINE_AFTER_THIS,
-        FLAG_COUNT
-    };
+    UIControl* FindFirstControl(UIControl* control, FocusHelpers::TabDirection dir);
+    template <typename It>
+    UIControl* FindFirstControlRecursive(It begin, It end, FocusHelpers::TabDirection dir);
 
-    Bitset<eFlags::FLAG_COUNT> flags;
+    void PrepareChildren(UIControl* control, Vector<UIControl*>& children);
 
-public:
-    INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
-                         PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT))
+    RefPtr<UIControl> root;
 };
 }
 
-
-#endif //__DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#endif // __DAVAENGINE_TAB_TRAVERSAL_ALGORITHM_H__
