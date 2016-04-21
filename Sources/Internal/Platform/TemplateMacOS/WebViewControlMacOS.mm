@@ -333,6 +333,9 @@ void WebViewControl::SetRect(const Rect& srcRect)
     rect += coordSystem->GetPhysicalDrawOffset();
     rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
 
+    rect.dx = std::max(0.0f, rect.dx);
+    rect.dy = std::max(0.0f, rect.dy);
+
     // 2. map physical to window
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
