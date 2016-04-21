@@ -56,6 +56,7 @@ public:
     bool ConnectToDB(const String& collection, const String& dbName, const String& dbHost, const int32 dbPort);
     void CloseConnection();
     void FailOnLocalBuild();
+
     // Work with log object in DB
     KeyedArchive* FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
     KeyedArchive* FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);

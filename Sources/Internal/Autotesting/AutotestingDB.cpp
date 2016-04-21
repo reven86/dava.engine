@@ -41,6 +41,7 @@ namespace DAVA
 {
 const String AutotestingDB::DB_ERROR_STR_VALUE = "not_found";
 const String MULTIPLAYER_ARCHIVE = "multiplayer";
+
 AutotestingDB::AutotestingDB()
     : dbClient(nullptr)
     , logFilePath(FilePath(""))
