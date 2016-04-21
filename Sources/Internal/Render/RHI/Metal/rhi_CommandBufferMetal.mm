@@ -1076,6 +1076,7 @@ metal_Present(Handle syncObject)
         RenderPassPool::Free(_Metal_Frame.back().pass[i]);
 
     ConstBufferMetal::InvalidateAllInstances();
+    ConstBufferMetal::ResetRingBuffer();
 
     [_Metal_Frame.back().drawable release]; // this additional 'release' is due to workaround
     [_Metal_Frame.back().drawable release];

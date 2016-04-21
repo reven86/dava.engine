@@ -135,6 +135,7 @@ namespace ConstBufferMetal
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
+void ResetRingBuffer();
 }
 namespace RenderPassMetal
 {
