@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -52,8 +52,15 @@ extern void FrameworkWillTerminate();
 
 namespace DAVA
 {
+const UINT MSG_ALREADY_RUNNING = ::RegisterWindowMessage(L"MSG_ALREADY_RUNNING");
+bool AlreadyRunning();
+
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    if (AlreadyRunning())
+    {
+        return 0;
+    }
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
@@ -71,6 +78,10 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
 
 int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
 {
+    if (AlreadyRunning())
+    {
+        return 0;
+    }
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
 
@@ -847,7 +858,10 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             return 0;
         }
     }
-
+    if (message == MSG_ALREADY_RUNNING)
+    {
+        return MSG_ALREADY_RUNNING;
+    }
     switch (message)
     {
     case WM_SIZE:
@@ -1037,5 +1051,48 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+BOOL CALLBACK SearcherWindows(HWND hWnd, LPARAM lParam)
+{
+    DWORD result;
+    LRESULT ok = ::SendMessageTimeout(hWnd, MSG_ALREADY_RUNNING, 0, 0, SMTO_BLOCK | SMTO_ABORTIFHUNG, 200, &result);
+    if (ok == 0)
+    {
+        return true; // ignore & continue
+    }
+    if (result == MSG_ALREADY_RUNNING)
+    {
+        HWND* target = reinterpret_cast<HWND*>(lParam);
+        *target = hWnd;
+        return false; // if find
+    }
+    return true; // continue
+}
+
+bool AlreadyRunning()
+{
+    static const wchar_t* UID_MYAPP_ALREADY_RUNNING = L"MYAPP-ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
+    bool alreadyRunning;
+    HANDLE hMutexOneInstance = ::CreateMutex(nullptr, FALSE, UID_MYAPP_ALREADY_RUNNING);
+    alreadyRunning = (::GetLastError() == ERROR_ALREADY_EXISTS || ::GetLastError() == ERROR_ACCESS_DENIED);
+    // return ERROR_ACCESS_DENIED, if mutex created
+    // in other session, as SECURITY_ATTRIBUTES == NULL
+    if (alreadyRunning)
+    {
+        HWND hOther = nullptr;
+        EnumWindows(SearcherWindows, (LPARAM)&hOther);
+        if (hOther != nullptr)
+        {
+            ::SetForegroundWindow(hOther);
+            if (IsIconic(hOther))
+            {
+                ::ShowWindow(hOther, SW_RESTORE);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
