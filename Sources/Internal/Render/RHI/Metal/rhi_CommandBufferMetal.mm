@@ -123,9 +123,25 @@ static id<MTLTexture> _ScreenshotTexture = nil;
 static std::vector<FrameMetal_t> _Metal_Frame;
 static bool _Metal_NewFramePending = true;
 
+//------------------------------------------------------------------------------
+
 static Handle
 metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
+    bool suspended = false;
+
+    _Metal_ScreenshotCallbackSync.Lock();
+    suspended = _Metal_Suspended;
+    _Metal_ScreenshotCallbackSync.Unlock();
+
+    if (suspended)
+    {
+        for (unsigned i = 0; i != cmdBufCount; ++i)
+            cmdBuf[i] = InvalidHandle;
+
+        return InvalidHandle;
+    }
+
     DVASSERT(cmdBufCount);
 
     if (_Metal_NewFramePending)
@@ -141,6 +157,16 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
         _Metal_Frame.push_back(f);
         _Metal_NewFramePending = false;
+    }
+
+    if (!_Metal_Frame.back().drawable)
+    {
+        _Metal_Frame.clear();
+
+        for (unsigned i = 0; i != cmdBufCount; ++i)
+            cmdBuf[i] = InvalidHandle;
+
+        return InvalidHandle;
     }
 
     Handle pass_h = RenderPassPool::Alloc();
@@ -842,8 +868,17 @@ metal_Present(Handle syncObject)
     MTL_TRACE("--present %u", ++frame_n);
     SCOPED_NAMED_TIMING("rhi.draw-present");
 
-    // this is workaroud against drawable/cmd.buf being de-allocated in certain cases
+    bool do_discard = false;
+
+    _Metal_ScreenshotCallbackSync.Lock();
+    if (_Metal_Suspended)
+        do_discard = true;
+    _Metal_ScreenshotCallbackSync.Unlock();
+
     if ([_Metal_Frame.back().drawable retainCount] < 3)
+        do_discard = true; // this is workaroud against drawable/cmd.buf being de-allocated in certain cases
+
+    if (do_discard)
     {
         MTL_TRACE("  discard-frame %u", ++frame_n);
         _Metal_Frame.back().drawable = nil;

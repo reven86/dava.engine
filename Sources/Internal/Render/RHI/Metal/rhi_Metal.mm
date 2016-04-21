@@ -47,6 +47,9 @@ rhi::ScreenShotCallback _Metal_PendingScreenshotCallback = nullptr;
 void* _Metal_ScreenshotData = nullptr;
 DAVA::Mutex _Metal_ScreenshotCallbackSync;
 
+bool _Metal_Suspended = false;
+DAVA::Mutex _Metal_SuspendedSync;
+
 namespace rhi
 {
 Dispatch DispatchMetal = { 0 };
@@ -136,6 +139,10 @@ metal_NeedRestoreResources()
 static void
 metal_Suspend()
 {
+    _Metal_ScreenshotCallbackSync.Lock();
+    _Metal_Suspended = true;
+    _Metal_ScreenshotCallbackSync.Unlock();
+    DAVA::Logger::Info("mtl.render-suspended");
 }
 
 //------------------------------------------------------------------------------
@@ -143,6 +150,10 @@ metal_Suspend()
 static void
 metal_Resume()
 {
+    _Metal_ScreenshotCallbackSync.Lock();
+    _Metal_Suspended = false;
+    _Metal_ScreenshotCallbackSync.Unlock();
+    DAVA::Logger::Info("mtl.render-resumed");
 }
 
 //------------------------------------------------------------------------------
