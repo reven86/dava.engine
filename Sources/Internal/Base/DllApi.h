@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DAVA_ENGINE_API __declspec(dllimport)
 #endif
 #else
-#define DAVA_API __attribute__((visibility("default")))
+#define DAVA_ENGINE_API __attribute__((visibility("default")))
 #endif
 
 #ifdef __DAVAENGINE_WINDOWS__
@@ -47,5 +47,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DAVA_MODULE_API __declspec(dllimport)
 #endif
 #else
-#define DAVA_API __attribute__((visibility("default")))
+#define DAVA_MODULE_API __attribute__((visibility("default")))
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
