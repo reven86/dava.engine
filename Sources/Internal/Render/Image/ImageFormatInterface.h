@@ -76,7 +76,7 @@ public:
     virtual ImageFormat GetImageFormat() const = 0;
     virtual bool CanProcessFile(File* file) const = 0;
 
-    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap) const = 0;
+    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const = 0;
 
     virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;

@@ -85,7 +85,7 @@ bool LibJpegHelper::CanProcessFile(File* infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.

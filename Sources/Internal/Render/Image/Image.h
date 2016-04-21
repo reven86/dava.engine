@@ -59,6 +59,13 @@ protected:
     virtual ~Image();
 
 public:
+    struct LoadingParams
+    {
+        uint32 minimalWidth = 0;
+        uint32 minimalHeight = 0;
+        uint32 baseMipmap = 0;
+    };
+
     Image();
 
     static Image* Create(uint32 width, uint32 height, PixelFormat format);
@@ -189,6 +196,8 @@ void Image::Rotate90Left(Type* src, Type* dst, uint32 sideLen)
         }
     }
 }
+
+uint32 GetBaseMipmap(const Image::LoadingParams& sourceImageParams, const Image::LoadingParams& loadingParams);
 
 // Implementation of inline functions
 uint32 Image::GetWidth() const

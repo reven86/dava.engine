@@ -34,7 +34,8 @@
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/File.h"
-#include "ImageFormatInterface.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageFormatInterface.h"
 #include <memory>
 
 namespace DAVA
@@ -46,8 +47,8 @@ class ImageSystem : public Singleton<ImageSystem>
 public:
     ImageSystem();
 
-    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
-    eErrorCode Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
+    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams = Image::LoadingParams()) const;
+    eErrorCode Load(File* file, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams = Image::LoadingParams()) const;
 
     Image* EnsurePowerOf2Image(Image* image) const;
     void EnsurePowerOf2Images(Vector<Image*>& images) const;

@@ -49,7 +49,7 @@ bool LibPSDHelper::CanProcessFile(File* infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const
 {
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     auto fileName = infile->GetFilename().GetAbsolutePathname();

@@ -59,7 +59,7 @@ ImageSystem::ImageSystem()
     wrappers[IMAGE_FORMAT_PSD].reset(new LibPSDHelper());
 }
 
-eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -67,11 +67,11 @@ eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet,
         return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
-    eErrorCode result = Load(fileRead, imageSet, baseMipmap);
+    eErrorCode result = Load(fileRead, imageSet, loadingParams);
     return result;
 }
 
-eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, const Image::LoadingParams& loadingParams) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -85,7 +85,7 @@ eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMip
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    return properWrapper->ReadFile(file, imageSet, baseMipmap);
+    return properWrapper->ReadFile(file, imageSet, loadingParams);
 }
 
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
