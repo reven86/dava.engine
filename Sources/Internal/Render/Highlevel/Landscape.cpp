@@ -1092,6 +1092,15 @@ void Landscape::DrawLandscapeInstancing()
     }
 }
 
+inline float32 morphFunc(float32 x)
+{
+    float32 _x = 1.f - x;
+    float32 _x4 = _x * _x; //(1 - x) ^ 2
+    _x4 = _x4 * _x4; //(1 - x) ^ 4
+
+    return _x4 * (4.f * _x - 5.f) + 1; //4*(1-x)^5 - 5*(1-x)^4 + 1
+}
+
 void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& neighbourLevel, float32 patchMorph /*= 0.f*/, const Vector4& neighbourMorph /*= Vector4()*/)
 {
     const LandscapeSubdivision::SubdivisionLevelInfo& levelInfo = subdivision->GetLevelInfo(level);
@@ -1110,12 +1119,12 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Ve
     {
         int32 baseLod = subdivision->GetLevelCount() - level - 1;
 
-        instanceData->neighbourPatchMorph = Vector4(sqrtf(neighbourMorph.x),
-                                                    sqrtf(neighbourMorph.y),
-                                                    sqrtf(neighbourMorph.z),
-                                                    sqrtf(neighbourMorph.w));
+        instanceData->neighbourPatchMorph = Vector4(morphFunc(neighbourMorph.x),
+                                                    morphFunc(neighbourMorph.y),
+                                                    morphFunc(neighbourMorph.z),
+                                                    morphFunc(neighbourMorph.w));
         instanceData->patchLod = float32(baseLod);
-        instanceData->patchMorph = sqrtf(patchMorph);
+        instanceData->patchMorph = morphFunc(patchMorph);
         instanceData->centerPixelOffset = .5f / (1 << (heightmapSizePow2 - baseLod));
     }
 
