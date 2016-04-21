@@ -31,23 +31,28 @@
 #include <Utils/CRC32.h>
 #include <DLC/Downloader/DownloadManager.h>
 
-//#include "UnitTests/UnitTests.h"
+#include "UnitTests/UnitTests.h"
 
 class GameClient
 {
 public:
-    void OnPackStateChange(const PackManager::PackState& packState)
+    GameClient(DAVA::PackManager& packManager_)
+        : packManager(packManager_)
+    {
+        sigConnection = packManager.onPackStateChanged.Connect(this, &GameClient::OnPackStateChange);
+    }
+    void OnPackStateChange(const DAVA::PackManager::PackState& packState)
     {
         if (packState.name == "virtual_test_pack.pak")
         {
-            if (packState.state == PackManager::PackState::ErrorLoading)
+            if (packState.state == DAVA::PackManager::PackState::ErrorLoading)
             {
                 // TODO request next pack
             }
         }
     }
     DAVA::SigConnectionID sigConnection;
-
+    DAVA::PackManager& packManager;
     //Vector<String> packsToRequest = {"no_such_pack.pak", "virtual_test_pack.pak", "unit_test.pak" };
     //Vector<bool> requestSuccess = { false, true };
 };
@@ -62,28 +67,30 @@ DAVA_TESTCLASS (SmartDlcTest)
         FilePath folderWithDownloadedPacks("~doc:/SmartDlcTest/packs/");
         String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/packs/");
 
-        PackManager sdlc(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
+        PackManager packManager(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
 
-        TEST_VERIFY(sdlc.IsProcessingEnabled() == false);
+        GameClient client(packManager);
 
-        sdlc.EnableProcessing();
+        TEST_VERIFY(packManager.IsProcessingEnabled() == false);
 
-        TEST_VERIFY(sdlc.IsProcessingEnabled() == true);
+        packManager.EnableProcessing();
 
-        sdlc.DisableProcessing();
+        TEST_VERIFY(packManager.IsProcessingEnabled() == true);
 
-        TEST_VERIFY(sdlc.IsProcessingEnabled() == false);
+        packManager.DisableProcessing();
 
-        sdlc.EnableProcessing();
+        TEST_VERIFY(packManager.IsProcessingEnabled() == false);
+
+        packManager.EnableProcessing();
 
         FilePath fileNotInPack("~res:/Data/no_such_file_in_any_pack.txt");
 
-        String packID = sdlc.FindPack(fileNotInPack);
+        String packID = packManager.FindPack(fileNotInPack);
         TEST_VERIFY(packID.empty() && "no such file in any archive");
 
         FilePath fileInPack("~res:/TestData/Utf8Test/utf16le.txt");
 
-        String packName = sdlc.FindPack(fileInPack);
+        String packName = packManager.FindPack(fileInPack);
 
         TEST_VERIFY(!packName.empty() && "should find file in pack");
 
@@ -92,21 +99,21 @@ DAVA_TESTCLASS (SmartDlcTest)
         try
         {
             packName = "virtual_test_pack.pak";
-            const PackManager::PackState& packState = sdlc.GetPackState(packName);
+            const PackManager::PackState& packState = packManager.GetPackState(packName);
             TEST_VERIFY(packState.name == packName);
             TEST_VERIFY(packState.crc32FromDB == 0); // virtual pack no files
             TEST_VERIFY(packState.crc32FromMeta == 0); // virtual pack no files
             TEST_VERIFY(packState.state == PackManager::PackState::NotRequested);
 
-            sdlc.DisableProcessing();
+            packManager.DisableProcessing();
 
-            const PackManager::PackState& requestedState = sdlc.RequestPack(packName);
+            const PackManager::PackState& requestedState = packManager.RequestPack(packName);
 
             TEST_VERIFY(requestedState.state == PackManager::PackState::Requested);
 
-            sdlc.EnableProcessing();
+            packManager.EnableProcessing();
 
-            auto& nextState = sdlc.RequestPack(packName, 0.1f);
+            auto& nextState = packManager.RequestPack(packName, 0.1f);
             TEST_VERIFY(nextState.state == PackManager::PackState::Downloading || nextState.state == PackManager::PackState::Requested);
 
             uint32 maxIter = 30;
@@ -117,7 +124,7 @@ DAVA_TESTCLASS (SmartDlcTest)
                 Thread::Sleep(500);
                 DownloadManager* dm = DownloadManager::Instance();
                 dm->Update();
-                sdlc.Update();
+                packManager.Update();
                 Logger::Info("download progress: %d", static_cast<int32>(nextState.downloadProgress * 100));
             }
 
