@@ -63,21 +63,6 @@ bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::Str
     return true;
 }
 
-bool TextureDescriptorUtils::CreateDescriptorIfNeed(const DAVA::FilePath& pngPathname)
-{
-    DAVA::FilePath descriptorPathname = DAVA::TextureDescriptor::GetDescriptorPathname(pngPathname);
-    if (false == DAVA::FileSystem::Instance()->IsFile(descriptorPathname))
-    {
-        DAVA::TextureDescriptor* descriptor = new DAVA::TextureDescriptor();
-        descriptor->Save(descriptorPathname);
-        delete descriptor;
-
-        return true;
-    }
-
-    return false;
-}
-
 QPixmap CreateIconFromColor(const QColor& color)
 {
     QPixmap pix(16, 16);

@@ -29,6 +29,7 @@
 
 #include "Themes.h"
 #include "Debug/DVassert.h"
+#include "Base/GlobalEnum.h"
 
 #include "QtTools/EditorPreferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/PreferencesRegistrator.h"
@@ -39,7 +40,13 @@
 #include <QStyleFactory>
 #include <QSettings>
 
-namespace Themes_namespace
+ENUM_DECLARE(Themes::eTheme)
+{
+    ENUM_ADD_DESCR(Themes::Classic, "Classic");
+    ENUM_ADD_DESCR(Themes::Dark, "Dark");
+};
+
+namespace Themes_local
 {
 const DAVA::FastName themeSettingsKey("ThemeName");
 GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Classic)));
@@ -50,7 +57,6 @@ namespace Themes
 QPalette defaultPalette;
 QString defaultStyleSheet;
 bool themesInitialized = false;
-DAVA::Map<eTheme, QString> themesNames = { { Classic, "classic" }, { Dark, "dark" } };
 QColor textColor(192, 192, 192);
 QColor disabledTextColor(100, 100, 100);
 QColor windowColor(53, 53, 53);
@@ -70,20 +76,38 @@ void InitFromQApplication()
 QStringList ThemesNames()
 {
     QStringList names;
-    for (const auto& pair : themesNames)
+    const auto& themesMap = GlobalEnumMap<eTheme>::Instance();
+    for (size_t i = 0; i < themesMap->GetCount(); ++i)
     {
-        names << pair.second;
+        int value;
+        bool ok = themesMap->GetValue(i, value);
+        if (!ok)
+        {
+            DVASSERT_MSG(ok, "wrong enum used to create Themes names");
+            break;
+        }
+        names << QString::fromStdString(themesMap->ToString(value));
     }
     return names;
 }
 
 void SetCurrentTheme(const QString& theme)
 {
-    for (const auto& pair : themesNames)
+    DAVA::String themeStr = theme.toStdString();
+    const auto& themesMap = GlobalEnumMap<eTheme>::Instance();
+    for (size_t i = 0; i < themesMap->GetCount(); ++i)
     {
-        if (pair.second == theme)
+        int value;
+        bool ok = themesMap->GetValue(i, value);
+        if (!ok)
         {
-            SetCurrentTheme(pair.first);
+            DVASSERT_MSG(ok, "wrong enum used");
+            break;
+        }
+        if (themesMap->ToString(value) == themeStr)
+        {
+            eTheme newTheme = static_cast<eTheme>(value);
+            SetCurrentTheme(newTheme);
             return;
         }
     }
@@ -110,7 +134,7 @@ void SetCurrentTheme(eTheme theme)
         DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
         break;
     }
-    PreferencesStorage::Instance()->SaveValueByKey(Themes_namespace::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
+    PreferencesStorage::Instance()->SaveValueByKey(Themes_local::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
 }
 
 void SetupClassicTheme()
@@ -163,12 +187,13 @@ void SetupDarkTheme()
 
 const QString& GetCurrentThemeStr()
 {
-    return themesNames.at(GetCurrentTheme());
+    DAVA::String name = GlobalEnumMap<eTheme>::Instance()->ToString(GetCurrentTheme());
+    return QString::fromStdString(name);
 }
 
 eTheme GetCurrentTheme()
 {
-    DAVA::VariantType value = PreferencesStorage::Instance()->LoadValueByKey(Themes_namespace::themeSettingsKey);
+    DAVA::VariantType value = PreferencesStorage::Instance()->LoadValueByKey(Themes_local::themeSettingsKey);
     return static_cast<eTheme>(value.AsInt64());
 }
 

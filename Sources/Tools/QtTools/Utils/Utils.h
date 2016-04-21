@@ -42,8 +42,3 @@ QString TruncateFileExtension(const QString& fileName, const QString& extension)
 bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::String& to);
 
 QPixmap CreateIconFromColor(const QColor& color);
-
-namespace TextureDescriptorUtils
-{
-bool CreateDescriptorIfNeed(const DAVA::FilePath& pngPathname);
-};
