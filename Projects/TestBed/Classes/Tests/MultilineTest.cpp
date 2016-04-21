@@ -52,7 +52,7 @@ public:
     }
     void TextFieldShouldReturn(UITextField* textField) override
     {
-        textField->CloseKeyboard();
+        textField->StopEdit();
     }
 };
 
