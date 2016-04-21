@@ -295,15 +295,5 @@ const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegist
 
 DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo)
 {
-    DVASSERT(nullptr != inspInfo);
-    DAVA::String classNameAndMemberNames;
-
-    std::hash<DAVA::String> hashFn;
-    classNameAndMemberNames += inspInfo->Name().c_str();
-
-    for (int i = 0, count = inspInfo->MembersCount(); i < count; ++i)
-    {
-        classNameAndMemberNames += inspInfo->Member(i)->Name().c_str();
-    }
-    return std::to_string(hashFn(classNameAndMemberNames));
+    return inspInfo->Name().c_str();
 }
