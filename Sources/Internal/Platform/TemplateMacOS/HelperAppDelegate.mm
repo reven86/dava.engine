@@ -127,7 +127,7 @@ extern void FrameworkWillTerminate();
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
 
-    mainWindowController->openGLView.willQuit = true;
+    mainWindowController->willQuit = true;
 
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();

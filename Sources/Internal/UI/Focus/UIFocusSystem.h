@@ -26,55 +26,54 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
-#define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_FOCUS_SYSTEM_H__
+#define __DAVAENGINE_UI_FOCUS_SYSTEM_H__
 
-#include "UI/Components/UIComponent.h"
+#include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
+#include "Math/Vector.h"
+#include "FocusHelpers.h"
 
 namespace DAVA
 {
 class UIControl;
+class UIList;
+class UIEvent;
 
-class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
+class UIFocusSystem
 {
 public:
-    UIFlowLayoutHintComponent();
-    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);
+    UIFocusSystem();
+    ~UIFocusSystem();
 
-protected:
-    virtual ~UIFlowLayoutHintComponent();
+    UIControl* GetRoot() const;
+    void SetRoot(UIControl* control);
 
-private:
-    UIFlowLayoutHintComponent& operator=(const UIFlowLayoutHintComponent&) = delete;
+    UIControl* GetFocusedControl() const;
+    void SetFocusedControl(UIControl* control);
 
-public:
-    UIFlowLayoutHintComponent* Clone() const override;
+    void ControlBecomInvisible(UIControl* control);
 
-    bool IsNewLineBeforeThis() const;
-    void SetNewLineBeforeThis(bool flag);
+    bool MoveFocusLeft();
+    bool MoveFocusRight();
+    bool MoveFocusUp();
+    bool MoveFocusDown();
 
-    bool IsNewLineAfterThis() const;
-    void SetNewLineAfterThis(bool flag);
-
-private:
-    void SetLayoutDirty();
+    bool MoveFocusForward();
+    bool MoveFocusBackward();
 
 private:
-    enum eFlags
-    {
-        FLAG_NEW_LINE_BEFORE_THIS,
-        FLAG_NEW_LINE_AFTER_THIS,
-        FLAG_COUNT
-    };
+    bool MoveFocus(FocusHelpers::Direction dir);
+    bool MoveFocus(FocusHelpers::TabDirection dir);
 
-    Bitset<eFlags::FLAG_COUNT> flags;
+    void ClearFocusState(UIControl* control);
+    UIControl* FindFirstControl(UIControl* control) const;
+    bool IsControlBetterForFocusThanCandidate(UIControl* c1, UIControl* c2) const;
 
-public:
-    INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
-                         PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT))
+    RefPtr<UIControl> focusedControl;
+    RefPtr<UIControl> root;
 };
 }
 
 
-#endif //__DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#endif //__DAVAENGINE_UI_FOCUS_SYSTEM_H__

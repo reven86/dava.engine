@@ -26,55 +26,54 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
-#define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#include "UIKeyInputSystem.h"
 
-#include "UI/Components/UIComponent.h"
+#include "UI/UIControl.h"
+#include "UI/UIControlSystem.h"
+#include "UI/UIEvent.h"
+
+#include "UI/Focus/UIFocusSystem.h"
+
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
-class UIControl;
-
-class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
+UIKeyInputSystem::UIKeyInputSystem(UIFocusSystem* focusSystem_)
+    : focusSystem(focusSystem_)
 {
-public:
-    UIFlowLayoutHintComponent();
-    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);
-
-protected:
-    virtual ~UIFlowLayoutHintComponent();
-
-private:
-    UIFlowLayoutHintComponent& operator=(const UIFlowLayoutHintComponent&) = delete;
-
-public:
-    UIFlowLayoutHintComponent* Clone() const override;
-
-    bool IsNewLineBeforeThis() const;
-    void SetNewLineBeforeThis(bool flag);
-
-    bool IsNewLineAfterThis() const;
-    void SetNewLineAfterThis(bool flag);
-
-private:
-    void SetLayoutDirty();
-
-private:
-    enum eFlags
-    {
-        FLAG_NEW_LINE_BEFORE_THIS,
-        FLAG_NEW_LINE_AFTER_THIS,
-        FLAG_COUNT
-    };
-
-    Bitset<eFlags::FLAG_COUNT> flags;
-
-public:
-    INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
-                         PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT))
-};
 }
 
+UIKeyInputSystem::~UIKeyInputSystem()
+{
+    focusSystem = nullptr;
+}
 
-#endif //__DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
+{
+    bool processed = false;
+
+    UIEvent::Phase phase = event->phase;
+    DVASSERT(phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT);
+
+    UIControl* focusedControl = focusSystem->GetFocusedControl();
+    UIControl* rootControl = focusSystem->GetRoot();
+
+    if (focusedControl)
+    {
+        UIControl* c = focusedControl;
+        while (c != nullptr && c != rootControl && !processed)
+        {
+            UIControl* tmp = SafeRetain(c);
+            processed = c->SystemProcessInput(event);
+            c = c->GetParent();
+            SafeRelease(tmp);
+        }
+    }
+
+    rootControl = focusSystem->GetRoot();
+    if (!processed && rootControl)
+    {
+        processed = rootControl->SystemProcessInput(event);
+    }
+}
+}
