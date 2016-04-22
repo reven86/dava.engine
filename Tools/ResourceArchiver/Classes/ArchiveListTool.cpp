@@ -28,19 +28,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Logger/Logger.h"
 #include "ResourceArchiver/ResourceArchiver.h"
+#include "Base/UniquePtr.h"
+#include "FileSystem/File.h"
 
 #include "ArchiveListTool.h"
 
 using namespace DAVA;
 
+namespace OptionNames
+{
+const DAVA::String Out = "-out";
+}
+
 ArchiveListTool::ArchiveListTool()
     : CommandLineTool("-list")
 {
+    options.AddOption(OptionNames::Out, VariantType(String("")), "if specified, program output will be copied to this file");
     options.AddArgument("packfile");
 }
 
 bool ArchiveListTool::ConvertOptionsToParamsInternal()
 {
+    outFilePath = options.GetOption(OptionNames::Out).AsString();
     packFilePath = options.GetArgument("packfile");
     if (packFilePath.IsEmpty())
     {
@@ -55,13 +64,32 @@ void ArchiveListTool::ProcessInternal()
 {
     try
     {
+        UniquePtr<File> outFile(nullptr);
+        if (!outFilePath.IsEmpty())
+        {
+            outFile.reset(File::Create(outFilePath, File::CREATE | File::WRITE));
+        }
+
         ResourceArchive archive(packFilePath);
-        Logger::Info("Dumping contents of archive %s", packFilePath.GetFilename().c_str());
+
+        String out = Format("Dumping contents of archive %s", packFilePath.GetFilename().c_str());
+        Logger::Info("%s", out.c_str());
+        if (outFile)
+        {
+            outFile->WriteLine(out);
+        }
+
         for (const ResourceArchive::FileInfo& info : archive.GetFilesInfo())
         {
-            Logger::Info("%s: compressed size %u, orig size %u, type %s",
+            out = Format("%s: compressed size %u, orig size %u, type %s",
                          info.relativeFilePath.c_str(), info.compressedSize, info.originalSize,
                          ResourceArchiver::CompressTypeToString(info.compressionType).c_str());
+
+            Logger::Info("%s", out.c_str());
+            if (outFile)
+            {
+                outFile->WriteLine(out);
+            }
         }
     }
     catch (std::exception ex)
