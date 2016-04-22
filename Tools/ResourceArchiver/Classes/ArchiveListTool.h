@@ -42,7 +42,7 @@ private:
     bool ConvertOptionsToParamsInternal() override;
     void ProcessInternal() override;
 
-    DAVA::String packFilename;
+    DAVA::FilePath packFilePath;
 };
 
 

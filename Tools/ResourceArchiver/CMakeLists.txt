@@ -23,3 +23,5 @@ setup_main_executable()
 if( MSVC )
 	set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
 endif()
+
+install ( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DAVA_TOOLS_BIN_DIR} CONFIGURATIONS Release )

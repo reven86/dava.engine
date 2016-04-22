@@ -45,7 +45,7 @@ ArchiveUnpackTool::ArchiveUnpackTool()
 bool ArchiveUnpackTool::ConvertOptionsToParamsInternal()
 {
     packFilename = options.GetArgument("packfile");
-    if (packFilename.empty())
+    if (packFilename.IsEmpty())
     {
         LOG_ERROR("packfile param is not specified");
         return false;
@@ -64,7 +64,7 @@ bool ArchiveUnpackTool::ConvertOptionsToParamsInternal()
 
 void ArchiveUnpackTool::ProcessInternal()
 {
-    Logger::Info("Unpacking %s into %s", packFilename.c_str(), dstDir.GetAbsolutePathname().c_str());
+    Logger::Info("Unpacking %s into %s", packFilename.GetFilename().c_str(), dstDir.GetAbsolutePathname().c_str());
 
     FilePath currentDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
     SCOPE_EXIT
@@ -84,11 +84,9 @@ void ArchiveUnpackTool::ProcessInternal()
         return;
     }
 
-    FilePath packFullPath = currentDir + packFilename;
-
     try
     {
-        ResourceArchive resourceArchive(packFullPath);
+        ResourceArchive resourceArchive(packFilename);
 
         for (const ResourceArchive::FileInfo& fileInfo : resourceArchive.GetFilesInfo())
         {
@@ -104,7 +102,7 @@ void ArchiveUnpackTool::ProcessInternal()
     }
     catch (std::exception ex)
     {
-        LOG_ERROR("Can't open archive %s: %s", packFullPath.GetAbsolutePathname().c_str(), ex.what());
+        LOG_ERROR("Can't open archive %s: %s", packFilename.GetAbsolutePathname().c_str(), ex.what());
     }
 }
 

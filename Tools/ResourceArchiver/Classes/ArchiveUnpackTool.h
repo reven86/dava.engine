@@ -47,7 +47,7 @@ private:
     bool ArchiveUnpackTool::UnpackFile(const DAVA::ResourceArchive& ra, const DAVA::ResourceArchive::FileInfo& fileInfo);
 
     DAVA::FilePath dstDir;
-    DAVA::String packFilename;
+    DAVA::FilePath packFilename;
 };
 
 

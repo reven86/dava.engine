@@ -45,9 +45,8 @@ const DAVA::String Ip = "-ip";
 const DAVA::String Port = "-p";
 const DAVA::String Timeout = "-t";
 const DAVA::String LogFile = "-log";
-const DAVA::String Dir = "-dir";
-const DAVA::String ListFiles = "-listfile";
-const DAVA::String Files = "-file";
+const DAVA::String Src = "-src";
+const DAVA::String ListFile = "-listfile";
 };
 
 ArchivePackTool::ArchivePackTool()
@@ -60,9 +59,8 @@ ArchivePackTool::ArchivePackTool()
     options.AddOption(OptionNames::Port, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "asset cache port");
     options.AddOption(OptionNames::Timeout, VariantType(1000u), "asset cache timeout");
     options.AddOption(OptionNames::LogFile, VariantType(String("")), "package process log file");
-    options.AddOption(OptionNames::Dir, VariantType(String("")), "source files directory");
-    options.AddOption(OptionNames::ListFiles, VariantType(String("")), "text files containing list of source files", true);
-    options.AddOption(OptionNames::Files, VariantType(String("")), "source files", true);
+    options.AddOption(OptionNames::Src, VariantType(String("")), "source files directory", true);
+    options.AddOption(OptionNames::ListFile, VariantType(String("")), "text files containing list of source files", true);
     options.AddArgument("packfile");
 }
 
@@ -84,19 +82,12 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
 
     source = Source::Unknown;
 
-    srcDir = options.GetOption(OptionNames::Dir).AsString();
-    if (!srcDir.empty())
-    {
-        source = Source::UseDir;
-        srcDir = FilePath::MakeDirectory(srcDir);
-    }
-
-    uint32 listFilesCount = options.GetOptionValuesCount(OptionNames::ListFiles);
-    if (listFilesCount > 1 || options.GetOption(OptionNames::ListFiles, 0).AsString().empty() == false)
+    uint32 listFilesCount = options.GetOptionValuesCount(OptionNames::ListFile);
+    if (listFilesCount > 1 || options.GetOption(OptionNames::ListFile, 0).AsString().empty() == false)
     {
         if (source != Source::Unknown)
         {
-            Logger::Error("Unexpected parameter: %s", OptionNames::ListFiles.c_str());
+            Logger::Error("Unexpected parameter: %s", OptionNames::ListFile.c_str());
             return false;
         }
 
@@ -104,24 +95,24 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
 
         for (uint32 n = 0; n < listFilesCount; ++n)
         {
-            listFiles.push_back(options.GetOption(OptionNames::ListFiles, n).AsString());
+            listFiles.push_back(options.GetOption(OptionNames::ListFile, n).AsString());
         }
     }
 
-    uint32 srcFilesCount = options.GetOptionValuesCount(OptionNames::Files);
-    if (srcFilesCount > 1 || (options.GetOption(OptionNames::Files, 0).AsString().empty() == false))
+    uint32 srcFilesCount = options.GetOptionValuesCount(OptionNames::Src);
+    if (srcFilesCount > 1 || (options.GetOption(OptionNames::Src, 0).AsString().empty() == false))
     {
         if (source != Source::Unknown)
         {
-            Logger::Error("Unexpected parameter: %s", OptionNames::Files.c_str());
+            Logger::Error("Unexpected parameter: %s", OptionNames::Src.c_str());
             return false;
         }
 
-        source = Source::UseSrcFiles;
+        source = Source::UseSrc;
 
         for (uint32 n = 0; n < srcFilesCount; ++n)
         {
-            srcFiles.push_back(options.GetOption(OptionNames::Files, n).AsString());
+            srcFiles.push_back(options.GetOption(OptionNames::Src, n).AsString());
         }
     }
 
@@ -139,17 +130,8 @@ void ArchivePackTool::ProcessInternal()
 {
     Vector<String> sources;
 
-    FilePath initialDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    FilePath packFilePath = initialDir + packFileName;
-    FilePath logFilePath = (logFileName.empty() ? FilePath() : initialDir + logFileName);
-
     switch (source)
     {
-    case Source::UseDir:
-    {
-        sources.push_back(srcDir);
-        break;
-    }
     case Source::UseListFiles:
     {
         for (const String& filename : listFiles)
@@ -160,7 +142,10 @@ void ArchivePackTool::ProcessInternal()
                 while (!listFile->IsEof())
                 {
                     String str = listFile->ReadLine();
-                    sources.push_back(str);
+                    if (!str.empty())
+                    {
+                        sources.push_back(str);
+                    }
                 }
             }
             else
@@ -171,9 +156,10 @@ void ArchivePackTool::ProcessInternal()
         }
         break;
     }
-    case Source::UseSrcFiles:
+    case Source::UseSrc:
     {
         sources.swap(srcFiles);
+        break;
     }
     default:
     {
@@ -184,10 +170,11 @@ void ArchivePackTool::ProcessInternal()
 
     if (sources.empty())
     {
-        LOG_ERROR("No source files");
+        LOG_ERROR("No sources specified");
         return;
     }
 
+    FilePath logFilePath(logFileName);
     if (!logFilePath.IsEmpty())
     {
         FileSystem::Instance()->DeleteFile(logFilePath);
@@ -206,7 +193,7 @@ void ArchivePackTool::ProcessInternal()
         }
     }
 
-    ResourceArchiver::CreateArchive(sources, addHidden, compressionType, packFilePath, logFilePath, assetCache.get());
+    ResourceArchiver::CreateArchive(sources, addHidden, compressionType, packFileName, logFilePath, assetCache.get());
 
     if (assetCache)
     {

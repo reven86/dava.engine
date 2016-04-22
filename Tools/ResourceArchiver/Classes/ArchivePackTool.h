@@ -43,9 +43,8 @@ public:
 private:
     enum class Source
     {
-        UseDir,
         UseListFiles,
-        UseSrcFiles,
+        UseSrc,
         Unknown
     };
 

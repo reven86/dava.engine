@@ -342,7 +342,7 @@ Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHidden
         {
             CollectedFile collectedFile;
             collectedFile.absPath = sourcePath;
-            collectedFile.archivePath = sourcePath.GetBasename();
+            collectedFile.archivePath = sourcePath.GetFilename();
             collectedFiles.push_back(collectedFile);
         }
     }

@@ -41,8 +41,8 @@ ArchiveListTool::ArchiveListTool()
 
 bool ArchiveListTool::ConvertOptionsToParamsInternal()
 {
-    packFilename = options.GetArgument("packfile");
-    if (packFilename.empty())
+    packFilePath = options.GetArgument("packfile");
+    if (packFilePath.IsEmpty())
     {
         LOG_ERROR("packfile param is not specified");
         return false;
@@ -55,8 +55,8 @@ void ArchiveListTool::ProcessInternal()
 {
     try
     {
-        ResourceArchive archive(packFilename);
-        Logger::Info("Dumping contents of archive %s", packFilename.c_str());
+        ResourceArchive archive(packFilePath);
+        Logger::Info("Dumping contents of archive %s", packFilePath.GetFilename().c_str());
         for (const ResourceArchive::FileInfo& info : archive.GetFilesInfo())
         {
             Logger::Info("%s: compressed size %u, orig size %u, type %s",
@@ -66,6 +66,6 @@ void ArchiveListTool::ProcessInternal()
     }
     catch (std::exception ex)
     {
-        LOG_ERROR("Can't open archive %s: %s", packFilename.c_str(), ex.what());
+        LOG_ERROR("Can't open archive %s: %s", packFilePath.GetAbsolutePathname().c_str(), ex.what());
     }
 }
