@@ -1,5 +1,5 @@
-set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp)  
-set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h)
+set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp Focus/*.cpp)  
+set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h   Focus/*.h)
 
 if( NOT ANDROID )
     list( APPEND ERASE_FILES UITextFieldAndroid.cpp 
