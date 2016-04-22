@@ -194,7 +194,7 @@ void PacksDB::GetAllPacksState(Vector<PackManager::PackState>& out) const
         selectDependency << pack.name;
         selectDependency >> [&](String depends_name)
         {
-            pack.dependensy.push_back(depends_name);
+            pack.dependency.push_back(depends_name);
         };
 
         selectDependency->reset();

@@ -56,7 +56,7 @@ public:
         uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (not read from
         uint32 crc32FromDB = 0; // crc32 from filesdb
         DownloadError downloadError = DLE_NO_ERROR;
-        Vector<String> dependensy{}; // names of dependency archive
+        Vector<String> dependency{}; // names of dependency archive
     };
 
     // 1. вычитываю данные по всем пакам из бызы

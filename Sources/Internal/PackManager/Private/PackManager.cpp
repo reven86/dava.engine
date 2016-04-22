@@ -30,13 +30,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PackManager/Private/PacksDB.h"
 #include "FileSystem/FileList.h"
 #include "DLC/Downloader/DownloadManager.h"
+#include "PackManager/Private/DynamicPriorityQueue.h"
 
 namespace DAVA
 {
-static bool PackCompare(const PackManager::PackState* lhs, PackManager::PackState* rhs)
+struct PackPriorityComparator
 {
-    return lhs->priority < rhs->priority;
-}
+    bool operator()(const PackManager::PackState* lhs, const PackManager::PackState* rhs) const
+    {
+        return lhs->priority < rhs->priority;
+    }
+};
 
 class ArchiveManagerImpl
 {
@@ -61,8 +65,16 @@ public:
     {
         uint32 index = GetPackIndex(packName);
         PackManager::PackState* packState = &packs[index];
-        queue.push_back(packState);
-        std::stable_sort(begin(queue), end(queue), PackCompare);
+
+        // TODO теперь нужно узнать виртуальный ли это пакет, и первыми поставить на закачку
+        // так как у нас может быть несколько зависимых паков, тоже виртуальными, то
+        // мы должны сначала сделать плоскую структуру всех зависимых паков, всем им
+        // выставить одинаковый приоритет - текущего виртуального пака и добавить
+        // в очередь на скачку в порядке, зависимостей
+        Set<PackManager::PackState*> dependency;
+        CollectAllDependencyForPack(packName, dependency); // TODO continue here
+
+        queue.Push(packState);
 
         if (isProcessingEnabled && !IsDownloading())
         {
@@ -74,12 +86,7 @@ public:
     {
         uint32 index = GetPackIndex(packName);
         PackManager::PackState* packState = &packs[index];
-        auto it = std::find(begin(queue), end(queue), packState);
-        if (it != end(queue))
-        {
-            packState->priority = priority;
-            std::stable_sort(begin(queue), end(queue), PackCompare);
-        }
+        queue.UpdatePriority(packState);
     }
 
     void UpdateCurrentDownload()
@@ -162,10 +169,9 @@ public:
 
     void StartNextPackDownloading()
     {
-        if (!queue.empty())
+        if (!queue.Empty())
         {
-            currentDownload = queue.front();
-            queue.erase(std::remove(begin(queue), end(queue), currentDownload));
+            currentDownload = queue.Pop();
 
             // start downloading
             auto fullUrl = remotePacksUrl + currentDownload->name;
@@ -258,7 +264,7 @@ public:
     PackManager* sdlcPublic = nullptr;
     UnorderedMap<String, uint32> packsIndex;
     Vector<PackManager::PackState> packs;
-    Vector<PackManager::PackState*> queue;
+    DynamicPriorityQueue<PackManager::PackState, PackPriorityComparator> queue;
     PackManager::PackState* currentDownload = nullptr;
     std::unique_ptr<PacksDB> packDB;
     uint32 downloadHandler = 0;
