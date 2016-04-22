@@ -54,11 +54,13 @@ namespace DAVA
 {
 const UINT MSG_ALREADY_RUNNING = ::RegisterWindowMessage(L"MSG_ALREADY_RUNNING");
 bool AlreadyRunning();
+void ShowRunningApplication();
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
     if (AlreadyRunning())
     {
+        ShowRunningApplication();
         return 0;
     }
     CoreWin32Platform* core = new CoreWin32Platform();
@@ -78,10 +80,6 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
 
 int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
 {
-    if (AlreadyRunning())
-    {
-        return 0;
-    }
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
 
@@ -1071,27 +1069,25 @@ BOOL CALLBACK SearcherWindows(HWND hWnd, LPARAM lParam)
 
 bool AlreadyRunning()
 {
-    static const wchar_t* UID_MYAPP_ALREADY_RUNNING = L"MYAPP-ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
-    bool alreadyRunning;
+    static const wchar_t* UID_MYAPP_ALREADY_RUNNING = L"ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
     HANDLE hMutexOneInstance = ::CreateMutex(nullptr, FALSE, UID_MYAPP_ALREADY_RUNNING);
-    alreadyRunning = (::GetLastError() == ERROR_ALREADY_EXISTS || ::GetLastError() == ERROR_ACCESS_DENIED);
     // return ERROR_ACCESS_DENIED, if mutex created
     // in other session, as SECURITY_ATTRIBUTES == NULL
-    if (alreadyRunning)
+    return (::GetLastError() == ERROR_ALREADY_EXISTS || ::GetLastError() == ERROR_ACCESS_DENIED);
+}
+
+void ShowRunningApplication()
+{
+    HWND hOther = nullptr;
+    EnumWindows(SearcherWindows, (LPARAM)&hOther);
+    if (hOther != nullptr)
     {
-        HWND hOther = nullptr;
-        EnumWindows(SearcherWindows, (LPARAM)&hOther);
-        if (hOther != nullptr)
+        ::SetForegroundWindow(hOther);
+        if (IsIconic(hOther))
         {
-            ::SetForegroundWindow(hOther);
-            if (IsIconic(hOther))
-            {
-                ::ShowWindow(hOther, SW_RESTORE);
-            }
+            ::ShowWindow(hOther, SW_RESTORE);
         }
-        return true;
     }
-    return false;
 }
 
 } // namespace DAVA
