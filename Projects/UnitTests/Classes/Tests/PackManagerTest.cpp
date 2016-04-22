@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <SDLC/SmartDLC.h>
+#include <PackManager/PackManager.h>
 #include <FileSystem/File.h>
 #include <Utils/CRC32.h>
 #include <DLC/Downloader/DownloadManager.h>
@@ -57,9 +57,9 @@ public:
     //Vector<bool> requestSuccess = { false, true };
 };
 
-DAVA_TESTCLASS (SmartDlcTest)
+DAVA_TESTCLASS (PackManagerTest)
 {
-    DAVA_TEST (TestSmartDlc)
+    DAVA_TEST (TestDownloadOfVirtualPack)
     {
         using namespace DAVA;
 
@@ -149,6 +149,5 @@ DAVA_TESTCLASS (SmartDlcTest)
             Logger::Error("%s", ex.what());
             TEST_VERIFY(false);
         }
-
     }
 };

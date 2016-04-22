@@ -26,8 +26,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "SDLC/SmartDLC.h"
-#include "SDLC/Private/PacksDB.h"
+#include "PackManager/PackManager.h"
+#include "PackManager/Private/PacksDB.h"
 #include "FileSystem/FileList.h"
 #include "DLC/Downloader/DownloadManager.h"
 
