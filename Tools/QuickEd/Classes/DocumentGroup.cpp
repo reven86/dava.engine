@@ -236,7 +236,7 @@ void DocumentGroup::CloseDocument(Document* document)
     {
         nextDocument = active;
     }
-    else if (!documents.isEmpty())
+    else if (documents.size() > 1)
     {
         DVASSERT(nullptr != active);
         int activeIndex = documents.indexOf(active);
@@ -248,7 +248,7 @@ void DocumentGroup::CloseDocument(Document* document)
         }
         else
         {
-            nextDocument = documents.last();
+            nextDocument = documents.at(documents.size() - 2); //last document will be removed
         }
     }
     DVVERIFY(documents.removeAll(document) == 1);
