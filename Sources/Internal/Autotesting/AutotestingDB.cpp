@@ -238,7 +238,7 @@ bool AutotestingDB::SaveKeyedArchiveToDevice(const String& archiveName, KeyedArc
 {
     String fileName = Format("/%s_%s_%s_%d_%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex, archiveName.c_str());
     Logger::Info("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
-    Log("DEBUG", Format("%s=%s", archiveName.c_str(), YamlToString(archive)));
+    Log("DEBUG", Format("%s=%s", archiveName.c_str(), YamlToString(archive).c_str()));
     return archive->SaveToYamlFile(logsFolder + fileName);
 }
 

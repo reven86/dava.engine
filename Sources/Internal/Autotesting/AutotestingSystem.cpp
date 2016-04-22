@@ -101,7 +101,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     luaSystem->SetDelegate(_delegate);
 }
 
-DAVA::String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
+String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
 {
     Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s path=%s", DeviceInfo::GetPlatformString().c_str(), automationPath.c_str());
     String automationResolvedStrPath;
