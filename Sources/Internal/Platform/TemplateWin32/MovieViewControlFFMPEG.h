@@ -95,21 +95,24 @@ namespace DAVA
         AV::AVFormatContext* CreateContext(const FilePath& path);
 
         static FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
+        static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
         static FMOD_RESULT F_CALLBACK pcmsetposcallback(FMOD_SOUND* sound, int subsound, unsigned int position, FMOD_TIMEUNIT postype);
 
         bool InitVideo();
-        void DecodeVideo(AV::AVPacket* packet);
-        void UpdateVideo();
+        bool DecodeVideoPacket(AV::AVPacket* packet, float64& pts);
+        void UpdateVideo(float64 elapsedTime);
         bool InitAudio();
-        void DecodeAudio(AV::AVPacket* packet, float32 timeElapsed);
+        void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
 
         void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
+        void VideoPresentationThread(BaseObject* caller, void* callerData, void* userData);
         void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void ReadingThread(BaseObject* caller, void* callerData, void* userData);
 
-        float32 synchronize_video(AV::AVFrame* src_frame, float32 pts);
-        float32 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
+        float64 synchronize_video(AV::AVFrame* src_frame, float64 pts);
+        float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
 
+        float64 videoPlayTime = 0.f;
         static bool isFFMGEGInited;
         bool isPlaying = false;
         bool isAudioVideoStreamsInited = false;
@@ -119,17 +122,19 @@ namespace DAVA
 
         Thread* audioDecodingThread = nullptr;
         Thread* videoDecodingThread = nullptr;
+        Thread* videoPresentationThread = nullptr;
         Thread* readingDataThread = nullptr;
 
-        float32 lastUpdateTime = 0.f;
+        float64 lastUpdateTime = 0.f;
 
         const uint8 emptyPixelColor = 255;
 
         Texture * videoTexture = nullptr;
-        float32 videoFramerate = 0.f;
-        float32 lastDecodedVideoPTS = 0.f;
-        float32 lastDecodedAudioPTS = 0.f;
-        float32 video_clock = 0.f;
+        float64 videoFramerate = 0.f;
+        float64 lastDecodedVideoPTS = 0.f;
+        float64 frame_last_delay = 40e-3;
+        float64 lastDecodedAudioPTS = -1.f;
+        float64 video_clock = 0.f;
 
         uint32 textureWidth = 0;
         uint32 textureHeight = 0;
@@ -180,7 +185,9 @@ namespace DAVA
                 SafeDeleteArray(data);
             }
 
-            float32 pts = 0.f;
+            float64 frame_last_pts = 0.f;
+            float64 pts = 0.f;
+            float64 sleepAfterPresent = 0;
             PixelFormat textureFormat = FORMAT_INVALID;
             uint8* data;
             uint32 size = 0;
@@ -193,7 +200,7 @@ namespace DAVA
         void EnqueueDecodedVideoBuffer(MovieViewControl::DecodedFrameBuffer* buf);
         MovieViewControl::DecodedFrameBuffer* DequeueDecodedVideoBuffer();
 
-        void EnqueuePacket(AV::AVPacket* packet);
+        void SotrPacketsByVideoAndAudio(AV::AVPacket* packet);
 
         struct DecodedPCMData
         {
@@ -202,16 +209,47 @@ namespace DAVA
                 SafeDeleteArray(data);
             }
 
-            float32 pts = 0.f;
+            float64 pts = 0.f;
             uint8* data;
             uint32 size = 0;
+            uint32 written = 0;
         };
+
+        DecodedPCMData* DecodeAudioInPlace();
 
         Deque<DecodedPCMData*> decodedAudio;
         Mutex decodedAudioMutex;
 
         DecodedPCMData* DequePCMAudio();
+
+        uint32 playTime = 0;
+        uint64 frameTimer = 0;
+        void StartPlayingTimer();
+        float64 GetPlayTime();
+        void ShiftPlayTime(float64 delta);
+        float64 GetAudioClock();
+
+        uint32 audio_buf_size = 0;
+
+        float64 audio_clock = 0.f;
+
+        bool hasMoreData = false;
     };
+
+    inline void MovieViewControl::StartPlayingTimer()
+    {
+        frameTimer = SystemTimer::Instance()->AbsoluteMS();
+    }
+
+    inline float64 MovieViewControl::GetPlayTime()
+    {
+        return (SystemTimer::Instance()->AbsoluteMS() - frameTimer) / 1000.f;
+    }
+
+    inline void MovieViewControl::ShiftPlayTime(float64 delta)
+    {
+        frameTimer += delta;
+    }
 
     // Pause/resume the playback.
     inline void MovieViewControl::Pause()
