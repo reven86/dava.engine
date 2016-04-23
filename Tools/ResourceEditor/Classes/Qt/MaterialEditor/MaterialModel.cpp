@@ -45,6 +45,8 @@
 
 #include "Settings/SettingsManager.h"
 
+#include "QtTools/Utils/Utils.h"
+
 #include <QPainter>
 
 MaterialModel::MaterialModel(QObject* parent)

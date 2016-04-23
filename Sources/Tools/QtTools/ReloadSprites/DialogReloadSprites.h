@@ -74,7 +74,7 @@ private:
     void SetCurrentQuality(DAVA::int64 quality);
 
     bool IsForceRepackEnabled() const;
-    void EnableForseRepack(bool enabled);
+    void EnableForceRepack(bool enabled);
 
     DAVA::String GetConsoleState() const;
     void SetConsoleState(const DAVA::String& str);
@@ -90,7 +90,7 @@ public:
     INTROSPECTION(DialogReloadSprites,
                   PROPERTY("currentGPU", "DialogReloadSpritesInternal/CurrentGPU", GetCurrentGPU, SetCurrentGPU, DAVA::I_PREFERENCE)
                   PROPERTY("quality", "DialogReloadSpritesInternal/Quality", GetCurrentQuality, SetCurrentQuality, DAVA::I_PREFERENCE)
-                  PROPERTY("forceRepackEnabled", "DialogReloadSpritesInternal/ForceRepackEnabled", IsForceRepackEnabled, EnableForseRepack, DAVA::I_PREFERENCE)
+                  PROPERTY("forceRepackEnabled", "DialogReloadSpritesInternal/ForceRepackEnabled", IsForceRepackEnabled, EnableForceRepack, DAVA::I_PREFERENCE)
                   PROPERTY("consoleState", "DialogReloadSpritesInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   PROPERTY("consoleVisible", "DialogReloadSpritesInternal/ConsoleVisible", IsConsoleVisible, SetConsoleVisible, DAVA::I_PREFERENCE)
                   );

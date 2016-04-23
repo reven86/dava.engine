@@ -42,7 +42,10 @@
 
 using namespace DAVA;
 
-REGISTER_PREFERENCES_ON_START(Project, PREF_ARG("projectsHistory", DAVA::String()))
+REGISTER_PREFERENCES_ON_START(Project,
+                              PREF_ARG("projectsHistory", DAVA::String()),
+                              PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
+                              )
 
 Project::Project(QObject* parent)
     : QObject(parent)
@@ -238,8 +241,7 @@ void Project::SetIsOpen(bool arg)
         QStringList projectsPathes = GetProjectsHistory();
         projectsPathes.removeAll(newProjectPath);
         projectsPathes += newProjectPath;
-        const int maxProjectsHistorySize = 5;
-        while (projectsPathes.size() > maxProjectsHistorySize)
+        while (projectsPathes.size() > projectsHistorySize)
         {
             projectsPathes.removeFirst();
         }

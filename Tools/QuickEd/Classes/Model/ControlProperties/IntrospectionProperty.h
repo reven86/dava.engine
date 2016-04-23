@@ -79,7 +79,7 @@ protected:
 
 protected:
     void* object;
-    const DAVA::InspMember* member;
+    const DAVA::InspMember* member = nullptr;
     DAVA::int32 flags;
 
 private:

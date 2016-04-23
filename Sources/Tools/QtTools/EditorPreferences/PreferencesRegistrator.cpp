@@ -40,9 +40,9 @@ InspInfoRegistrator::InspInfoRegistrator(const DAVA::InspInfo* inspInfo, const P
 GlobalValuesRegistrator::GlobalValuesRegistrator(const DAVA::FastName& key, const DAVA::VariantType& defaultValue)
 {
     PreferencesStorage* storage = PreferencesStorage::Instance();
-    DAVA::VariantType currentValue = storage->LoadValueByKey(key);
+    DAVA::VariantType currentValue = storage->GetValue(key);
     if (currentValue.type == DAVA::VariantType::TYPE_NONE)
     {
-        storage->SaveValueByKey(key, defaultValue);
+        storage->SetValue(key, defaultValue);
     }
 }

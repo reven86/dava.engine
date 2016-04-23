@@ -31,6 +31,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Deprecated/EditorConfig.h"
 #include "Main/QtUtils.h"
+#include "QtTools/Utils/Utils.h"
 
 QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(const DAVA::FastName& name, DAVA::KeyedArchive* archive_, const DAVA::String& key_)
     : QtPropertyDataDavaVariant(name, DAVA::VariantType())

@@ -218,7 +218,7 @@ bool DialogReloadSprites::IsForceRepackEnabled() const
     return ui->checkBox_repack->isChecked();
 }
 
-void DialogReloadSprites::EnableForseRepack(bool enabled)
+void DialogReloadSprites::EnableForceRepack(bool enabled)
 {
     ui->checkBox_repack->setChecked(enabled);
 }

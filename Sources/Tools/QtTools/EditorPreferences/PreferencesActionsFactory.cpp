@@ -50,7 +50,7 @@ class ActionsStorage : public DAVA::TrackedObject
 public:
     ActionsStorage();
 
-    void OnPreferencesValueChanged(const DAVA::InspMember* member, const DAVA::VariantType&);
+    void OnPreferencesValueChanged(const DAVA::InspMember* member, const DAVA::VariantType& value);
 
     void RegisterAction(AbstractAction* action);
     void UnregisterAction(AbstractAction* action);
@@ -80,7 +80,7 @@ public:
     virtual void OnValueChanged(const DAVA::VariantType& value) = 0;
     virtual void Init()
     {
-        DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetPreferencesValue(member);
+        DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetValue(member);
         OnValueChanged(defaultValue);
         type = defaultValue.type;
 
@@ -96,13 +96,12 @@ protected:
 
 ActionsStorage::ActionsStorage()
 {
-    PreferencesStorage::Instance()->ValueChanged.Connect(this, &ActionsStorage::OnPreferencesValueChanged);
+    PreferencesStorage::Instance()->valueChanged.Connect(this, &ActionsStorage::OnPreferencesValueChanged);
 }
 
 void ActionsStorage::OnPreferencesValueChanged(const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
-    DAVA::Set<AbstractAction*> actions = registeredActions[member];
-    for (auto action : actions)
+    for (AbstractAction* action : registeredActions[member])
     {
         action->OnValueChanged(value);
     }
@@ -138,7 +137,7 @@ public:
 
     void OnTriggered(bool triggered) override
     {
-        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member, DAVA::VariantType(triggered));
+        PreferencesStorage::Instance()->SetValue(member, DAVA::VariantType(triggered));
     }
 };
 
@@ -173,7 +172,7 @@ public:
             DVASSERT(false && "bad type passed to factory");
             return;
         }
-        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member, newValueVar);
+        PreferencesStorage::Instance()->SetValue(member, newValueVar);
     }
     void OnValueChanged(const DAVA::VariantType& value) override
     {
@@ -217,7 +216,7 @@ public:
         switch (type)
         {
         case DAVA::VariantType::TYPE_FLOAT:
-            newValueVar.SetFloat(newVal);
+            newValueVar.SetFloat(static_cast<DAVA::float32>(newVal));
             break;
         case DAVA::VariantType::TYPE_FLOAT64:
             newValueVar.SetFloat64(newVal);
@@ -226,7 +225,7 @@ public:
             DVASSERT(false && "bad type passed to factory");
             return;
         }
-        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member, newValueVar);
+        PreferencesStorage::Instance()->SetValue(member, newValueVar);
     }
 
     void OnValueChanged(const DAVA::VariantType& value) override
@@ -271,7 +270,7 @@ public:
             newValueVar.SetWideString(newVal.toStdWString());
             break;
         case DAVA::VariantType::TYPE_FASTNAME:
-            newValueVar.SetFastName(DAVA::FastName(newVal.toStdString().c_str()));
+            newValueVar.SetFastName(DAVA::FastName(newVal.toStdString()));
             break;
         case DAVA::VariantType::TYPE_FILEPATH:
             newValueVar.SetFilePath(DAVA::FilePath(newVal.toStdString()));
@@ -280,7 +279,7 @@ public:
             DVASSERT(false && "bad type passed to factory");
             return;
         }
-        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member, newValueVar);
+        PreferencesStorage::Instance()->SetValue(member, newValueVar);
     }
 
     void OnValueChanged(const DAVA::VariantType& value) override
@@ -298,7 +297,7 @@ public:
             newVal = QString(value.AsFastName().c_str());
             break;
         case DAVA::VariantType::TYPE_FILEPATH:
-            newVal = QString::fromStdString(value.AsFilePath().GetAbsolutePathname());
+            newVal = QString::fromStdString(value.AsFilePath().GetStringValue());
             break;
         default:
             DVASSERT(false && "unknown type passed to IntAction");
@@ -308,16 +307,6 @@ public:
         setData(QVariant(newVal));
     }
 };
-
-DAVA::Color QColorToColor(const QColor& qtColor)
-{
-    return DAVA::Color(qtColor.redF(), qtColor.greenF(), qtColor.blueF(), qtColor.alphaF());
-}
-
-QColor ColorToQColor(const DAVA::Color& davaColor)
-{
-    return QColor((int)DAVA::Round(davaColor.r * 255.0f), (int)DAVA::Round(davaColor.g * 255.0f), (int)DAVA::Round(davaColor.b * 255.0f), (int)DAVA::Round(davaColor.a * 255.0f));
-}
 
 class ColorAction : public AbstractAction
 {
@@ -329,6 +318,11 @@ public:
 
     void OnTriggered(bool /*triggered*/) override
     {
+        if (type != DAVA::VariantType::TYPE_COLOR)
+        {
+            DVASSERT(false && "bad type passed to factory");
+            return;
+        }
         QColor currentValue = data().value<QColor>();
 
         QColor color = QColorDialog::getColor(currentValue, qApp->activeWindow(), "Select color", QColorDialog::ShowAlphaChannel | QColorDialog::DontUseNativeDialog);
@@ -336,32 +330,19 @@ public:
         {
             return;
         }
-        DAVA::VariantType newValueVar;
-        switch (type)
-        {
-        case DAVA::VariantType::TYPE_COLOR:
-            newValueVar.SetColor(QColorToColor(color));
-            break;
-        default:
-            DVASSERT(false && "bad type passed to factory");
-            return;
-        }
-        PreferencesStorage::Instance()->SetNewValueToAllRegisteredObjects(member, newValueVar);
+        DAVA::VariantType newValueVar(QColorToColor(color));
+        PreferencesStorage::Instance()->SetValue(member, newValueVar);
     }
 
     void OnValueChanged(const DAVA::VariantType& value) override
     {
-        QColor color;
-        switch (value.type)
+        if (value.type != DAVA::VariantType::TYPE_COLOR)
         {
-        case DAVA::VariantType::TYPE_COLOR:
-            color = ColorToQColor(value.AsColor());
-            break;
-        default:
             DVASSERT(false && "unknown type passed to IntAction");
             return;
         }
 
+        QColor color = ColorToQColor(value.AsColor());
         setIcon(CreateIconFromColor(color));
         setData(color);
     }
@@ -379,30 +360,34 @@ QAction* PreferencesActionsFactory::CreateActionForPreference(const DAVA::FastNa
     {
         action = new PreferencesFactory_local::BoolAction(inspMember, parent);
     }
-    if (metaInfo == DAVA::MetaInfo::Instance<DAVA::int32>()
-        || metaInfo == DAVA::MetaInfo::Instance<DAVA::int64>()
-        || metaInfo == DAVA::MetaInfo::Instance<DAVA::uint32>()
-        || metaInfo == DAVA::MetaInfo::Instance<DAVA::uint64>())
+    else if (metaInfo == DAVA::MetaInfo::Instance<DAVA::int32>()
+             || metaInfo == DAVA::MetaInfo::Instance<DAVA::int64>()
+             || metaInfo == DAVA::MetaInfo::Instance<DAVA::uint32>()
+             || metaInfo == DAVA::MetaInfo::Instance<DAVA::uint64>())
     {
         action = new PreferencesFactory_local::IntAction(inspMember, parent);
     }
-    if (metaInfo == DAVA::MetaInfo::Instance<DAVA::float32>()
-        || metaInfo == DAVA::MetaInfo::Instance<DAVA::float64>())
+    else if (metaInfo == DAVA::MetaInfo::Instance<DAVA::float32>()
+             || metaInfo == DAVA::MetaInfo::Instance<DAVA::float64>())
     {
         action = new PreferencesFactory_local::DoubleAction(inspMember, parent);
     }
-    if (metaInfo == DAVA::MetaInfo::Instance<DAVA::String>()
-        || metaInfo == DAVA::MetaInfo::Instance<DAVA::WideString>()
-        || metaInfo == DAVA::MetaInfo::Instance<DAVA::FastName>()
-        || metaInfo == DAVA::MetaInfo::Instance<DAVA::FilePath>())
+    else if (metaInfo == DAVA::MetaInfo::Instance<DAVA::String>()
+             || metaInfo == DAVA::MetaInfo::Instance<DAVA::WideString>()
+             || metaInfo == DAVA::MetaInfo::Instance<DAVA::FastName>()
+             || metaInfo == DAVA::MetaInfo::Instance<DAVA::FilePath>())
     {
         action = new PreferencesFactory_local::StringAction(inspMember, parent);
     }
-    if (metaInfo == DAVA::MetaInfo::Instance<DAVA::Color>())
+    else if (metaInfo == DAVA::MetaInfo::Instance<DAVA::Color>())
     {
         action = new PreferencesFactory_local::ColorAction(inspMember, parent);
     }
-    DVASSERT(nullptr != action && "please create delegate for type");
+    else
+    {
+        DVASSERT(nullptr != action && "please create delegate for type");
+        return nullptr;
+    }
     action->Init();
     return action;
 }

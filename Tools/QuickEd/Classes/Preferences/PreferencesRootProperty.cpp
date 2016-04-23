@@ -61,7 +61,7 @@ void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, Sectio
 PreferencesRootProperty::PreferencesRootProperty()
     : SectionProperty<PreferencesIntrospectionProperty>("PREFERENCES_ROOT_PROPERTY")
 {
-    const auto& registeredInsp = PreferencesStorage::Instance()->GetRegisteredInsp();
+    const PreferencesStorage::RegisteredIntrospection& registeredInsp = PreferencesStorage::Instance()->GetRegisteredInsp();
     PreferencesRootProperty_local::PreferencesLocation rootPreferencesLocation;
 
     for (const InspInfo* info : registeredInsp)
@@ -73,7 +73,7 @@ PreferencesRootProperty::PreferencesRootProperty()
             QString description(member->Desc().text);
             QStringList folders = description.split('/', QString::SkipEmptyParts);
             PreferencesRootProperty_local::PreferencesLocation* currentLocation = &rootPreferencesLocation;
-            for (int index = 0, foldersCount = folders.size(); index < (foldersCount - 1); ++index)
+            for (int index = 0, foldersCount = folders.size() - 1; index < foldersCount; ++index)
             {
                 DAVA::String folder = folders.at(index).toStdString();
                 currentLocation = &currentLocation->locations[folder];

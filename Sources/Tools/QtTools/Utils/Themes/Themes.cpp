@@ -134,7 +134,7 @@ void SetCurrentTheme(eTheme theme)
         DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
         break;
     }
-    PreferencesStorage::Instance()->SaveValueByKey(Themes_local::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
+    PreferencesStorage::Instance()->SetValue(Themes_local::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
 }
 
 void SetupClassicTheme()
@@ -193,7 +193,7 @@ const QString& GetCurrentThemeStr()
 
 eTheme GetCurrentTheme()
 {
-    DAVA::VariantType value = PreferencesStorage::Instance()->LoadValueByKey(Themes_local::themeSettingsKey);
+    DAVA::VariantType value = PreferencesStorage::Instance()->GetValue(Themes_local::themeSettingsKey);
     return static_cast<eTheme>(value.AsInt64());
 }
 

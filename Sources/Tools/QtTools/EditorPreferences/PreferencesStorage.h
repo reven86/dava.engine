@@ -47,23 +47,31 @@ public:
 
     PreferencesStorage();
 
+    //register introspection on start
     void RegisterType(const DAVA::InspInfo* inspInfo, const DefaultValuesList& defaultValues = DefaultValuesList());
+
+    //register object when it created or initialized
     template <typename T>
     void RegisterPreferences(T* obj);
+
+    //unregister object on desctruction to save it state
     template <typename T>
     void UnregisterPreferences(T* obj);
 
     void SetupStoragePath(const DAVA::FilePath& localStorage);
 
-    //Getter and setter to use preferences manually without introspections. Desired for namespaces and local functions;
-    void SaveValueByKey(const DAVA::FastName& key, const DAVA::VariantType& value);
-    DAVA::VariantType LoadValueByKey(const DAVA::FastName& key);
+    //getter and setter to use preferences manually without introspections. Desired for namespaces and local functions;
+    DAVA::VariantType GetValue(const DAVA::FastName& key);
+    void SetValue(const DAVA::FastName& key, const DAVA::VariantType& value);
 
     const DAVA::InspInfo* GetInspInfo(const DAVA::FastName& className) const;
 
-    void SetNewValueToAllRegisteredObjects(const DAVA::InspMember* member, const DAVA::VariantType& value);
-    DAVA::VariantType GetPreferencesValue(const DAVA::InspMember* member) const;
+    //getter and setter to use preferences by introspection member
+    DAVA::VariantType GetValue(const DAVA::InspMember* member) const;
+    //when set value by member it saves as preferences value and applys to all registered objects
+    void SetValue(const DAVA::InspMember* member, const DAVA::VariantType& value);
 
+    //all registered InspInfo to build model
     const RegisteredIntrospection& GetRegisteredInsp() const;
 
     struct PreferencesStorageSaver
@@ -72,7 +80,7 @@ public:
         ~PreferencesStorageSaver();
     };
 
-    DAVA::Signal<const DAVA::InspMember*, const DAVA::VariantType&> ValueChanged;
+    DAVA::Signal<const DAVA::InspMember*, const DAVA::VariantType&> valueChanged;
 
 private:
     void RegisterPreferences(void* realObj, DAVA::InspBase* inspBase);
@@ -86,10 +94,12 @@ private:
     RegisteredIntrospection registeredInsp;
     DAVA::Map<const DAVA::InspInfo*, DefaultValuesList> defaultValues;
     DAVA::Map<const DAVA::InspInfo*, DAVA::Set<void*>> registeredObjects;
-    DAVA::KeyedArchive* preferencesArchive = nullptr;
-    DAVA::KeyedArchive* unnamedPreferencesArchive = nullptr;
-    const DAVA::String unnamedPreferencesKey;
-    const DAVA::String preferencesKey;
+
+    //two different storages: for introspection properties and for manually created preferences
+    DAVA::KeyedArchive* inspPreferencesArchive = nullptr;
+    DAVA::KeyedArchive* keyedPreferencesArchive = nullptr;
+    const DAVA::String inspPreferencesKey;
+    const DAVA::String keyedPreferencesKey;
 };
 
 template <typename T>

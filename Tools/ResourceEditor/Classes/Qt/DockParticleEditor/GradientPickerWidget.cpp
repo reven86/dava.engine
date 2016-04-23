@@ -31,6 +31,7 @@
 
 #include "Main/QtUtils.h"
 #include "Tools/ColorPicker/ColorPicker.h"
+#include "QtTools/Utils/Utils.h"
 
 #include <QPainter>
 #include <QPaintEvent>

@@ -37,6 +37,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/Utils/Utils.h"
 
 #include <QListWidget>
 #include <QDoubleSpinBox>

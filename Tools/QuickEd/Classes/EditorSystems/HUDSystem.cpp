@@ -309,14 +309,14 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     static const float32 axtraSizeValue = 50.0f;
     DVASSERT(magnetControls.size() == magnetTargetControls.size());
 
-    const size_t magnetsSize = magnetControls.size();
-    const size_t newMagnetsSize = magnetLines.size();
+    const size_type magnetsSize = magnetControls.size();
+    const size_type newMagnetsSize = magnetLines.size();
     if (newMagnetsSize < magnetsSize)
     {
         auto linesRIter = magnetControls.rbegin();
         auto rectsRIter = magnetTargetControls.rbegin();
-        size_t count = magnetsSize - newMagnetsSize;
-        for (size_t i = 0; i < count; ++i)
+        size_type count = magnetsSize - newMagnetsSize;
+        for (size_type i = 0; i < count; ++i)
         {
             UIControl* lineControl = (*linesRIter++).Get();
             UIControl* targetRectControl = (*rectsRIter++).Get();
@@ -330,11 +330,11 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
     else if (newMagnetsSize > magnetsSize)
     {
-        size_t count = newMagnetsSize - magnetsSize;
+        size_type count = newMagnetsSize - magnetsSize;
 
         magnetControls.reserve(count);
         magnetTargetControls.reserve(count);
-        for (size_t i = 0; i < count; ++i)
+        for (size_type i = 0; i < count; ++i)
         {
             UIControl* lineControl = new UIControl();
             lineControl->SetName(FastName("magnet line control"));

@@ -79,12 +79,12 @@ IntrospectionProperty::IntrospectionProperty(void* anObject, const DAVA::InspMem
         SetDefaultValue(member->Value(object));
     }
 
-    static std::vector<String> vector2ComponentNames = { "X", "Y" };
-    static std::vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
-    static std::vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
+    static DAVA::Vector<String> vector2ComponentNames = { "X", "Y" };
+    static DAVA::Vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
+    static DAVA::Vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
 
-    std::vector<String>* componentNames = nullptr;
-    std::vector<SubValueProperty*> children;
+    DAVA::Vector<String>* componentNames = nullptr;
+    DAVA::Vector<SubValueProperty*> children;
     VariantType defaultValue = GetDefaultValue();
     if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
     {
@@ -115,7 +115,7 @@ IntrospectionProperty::IntrospectionProperty(void* anObject, const DAVA::InspMem
             children.push_back(new SubValueProperty(i, componentNames->at(i)));
     }
 
-    for (auto child : children)
+    for (SubValueProperty* child : children)
     {
         child->SetParent(this);
         AddSubValueProperty(child);
@@ -176,7 +176,7 @@ void IntrospectionProperty::Accept(PropertyVisitor* visitor)
 
 IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 {
-    auto type = member->Desc().type;
+    InspDesc::Type type = member->Desc().type;
     if (type == InspDesc::T_ENUM)
         return TYPE_ENUM;
     else if (type == InspDesc::T_FLAGS)
@@ -200,7 +200,7 @@ VariantType IntrospectionProperty::GetValue() const
 
 const EnumMap* IntrospectionProperty::GetEnumMap() const
 {
-    auto type = member->Desc().type;
+    InspDesc::Type type = member->Desc().type;
 
     if (type == InspDesc::T_ENUM ||
         type == InspDesc::T_FLAGS)

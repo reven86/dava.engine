@@ -47,8 +47,8 @@ using namespace DAVA;
 REGISTER_PREFERENCES_ON_START(EditorCore,
                               PREF_ARG("isUsingAssetCache", false),
                               PREF_ARG("assetCacheIp", AssetCache::LOCALHOST),
-                              PREF_ARG("assetCachePort", DAVA::uint32(0)),
-                              PREF_ARG("assetCacheTimeout", DAVA::uint64(0))
+                              PREF_ARG("assetCachePort", AssetCache::ASSET_SERVER_PORT),
+                              PREF_ARG("assetCacheTimeout", DAVA::uint64(10 * 1000))
                               )
 
 EditorCore::EditorCore(QObject* parent)
