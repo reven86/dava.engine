@@ -37,7 +37,7 @@ RemoteServerWidget::RemoteServerWidget(QWidget* parent)
 {
     ui->setupUi(this);
 
-    ui->ipLineEdit->setText("127.0.0.1");
+    ui->ipLineEdit->setText(DAVA::AssetCache::LOCALHOST.c_str());
 
     connect(ui->removeServerButton, &QPushButton::clicked,
             this, &RemoteServerWidget::RemoveLater);

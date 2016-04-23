@@ -35,8 +35,8 @@ static D3D11_VIEWPORT m_screenViewport;
 static D3D_FEATURE_LEVEL m_d3dFeatureLevel;
 
 static Windows::Foundation::Size m_d3dRenderTargetSize;
-static Windows::Foundation::Size m_logicalSize;
 static Windows::Foundation::Size m_backbufferSize;
+static Windows::Foundation::Size m_backbufferScale;
 
 DirectX::XMFLOAT4X4 m_orientationTransform3D;
 DisplayOrientations m_nativeOrientation;
@@ -49,7 +49,7 @@ DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
 void CreateWindowSizeDependentResources();
 void SetSwapChainPanel(SwapChainPanel ^ panel);
-void SetBackBufferSize(Windows::Foundation::Size backbufferSize);
+void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Windows::Foundation::Size& backbufferScale);
 void SetCurrentOrientation(DisplayOrientations currentOrientation);
 void ValidateDevice();
 void HandleDeviceLost();
@@ -501,15 +501,12 @@ void CreateWindowSizeDependentResources()
     ComPtr<IDXGISwapChain2> spSwapChain2;
     ThrowIfFailed(m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
 
-    Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([spSwapChain2]() {
-                                                                                            m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
-                                                                                            DXGI_MATRIX_3X2_F inverseScale = { 0 };
-                                                                                            inverseScale._11 = m_logicalSize.Width / m_backbufferSize.Width;
-                                                                                            inverseScale._22 = m_logicalSize.Height / m_backbufferSize.Height;
+    DXGI_MATRIX_3X2_F inverseScale = { 0 };
 
-                                                                                            ThrowIfFailed(
-                                                                                            spSwapChain2->SetMatrixTransform(&inverseScale));
-                                                                                        }));
+    inverseScale._11 = 1.0f / m_backbufferScale.Width;
+    inverseScale._22 = 1.0f / m_backbufferScale.Height;
+
+    ThrowIfFailed(spSwapChain2->SetMatrixTransform(&inverseScale));
 
     // Create a render target view of the swap chain back buffer.
     ThrowIfFailed(
@@ -573,12 +570,10 @@ void SetSwapChainPanel(SwapChainPanel ^ panel)
 }
 
 // This method is called in the event handler for the SizeChanged event.
-void SetBackBufferSize(Windows::Foundation::Size backbufferSize)
+void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Windows::Foundation::Size& backbufferScale)
 {
-    if (m_backbufferSize != backbufferSize)
-    {
-        m_backbufferSize = backbufferSize;
-    }
+    m_backbufferSize = backbufferSize;
+    m_backbufferScale = backbufferScale;
 }
 
 // This method is called in the event handler for the OrientationChanged event.
@@ -710,7 +705,8 @@ void init_device_and_swapchain_uap(void* panel)
 
     CreateDeviceResources();
     SetSwapChainPanel(swapChain);
-    SetBackBufferSize(Windows::Foundation::Size(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height)));
+    SetBackBufferSize(Windows::Foundation::Size(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height)),
+                      Windows::Foundation::Size(_DX11_InitParam.scaleX, _DX11_InitParam.scaleY));
     CreateWindowSizeDependentResources();
 
     _D3D11_Device = m_d3dDevice.Get();
@@ -726,11 +722,13 @@ void init_device_and_swapchain_uap(void* panel)
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
 }
 
-void resize_swapchain(int32 width, int32 height)
+void resize_swapchain(int32 width, int32 height, float32 scaleX, float32 scaleY)
 {
-    SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)));
+    SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)),
+                      Windows::Foundation::Size(scaleX, scaleY));
 
     rhi::CommandBufferDX11::DiscardAll();
+    rhi::ConstBufferDX11::InvalidateAll();
     CreateWindowSizeDependentResources();
 
     _D3D11_SwapChain = m_swapChain.Get();

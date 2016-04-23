@@ -399,7 +399,7 @@ void RootProperty::RefreshProperty(AbstractProperty* property, DAVA::int32 refre
 
 AbstractProperty* RootProperty::FindPropertyByName(const String& name) const
 {
-    int propertiesCount = GetCount();
+    int propertiesCount = static_cast<int>(GetCount());
     for (int index = 0; index < propertiesCount; ++index)
     {
         AbstractProperty* rootProperty = GetProperty(index);
@@ -421,8 +421,10 @@ AbstractProperty* RootProperty::FindPropertyByName(const String& name) const
 
 void RootProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    for (int32 i = 0; i < GetCount(); i++)
+    for (int32 i = 0; i < static_cast<int32>(GetCount()); i++)
+    {
         GetProperty(i)->Refresh(refreshFlags);
+    }
 }
 
 void RootProperty::Accept(PropertyVisitor* visitor)

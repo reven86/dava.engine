@@ -337,8 +337,9 @@ void UITextField::StartEdit()
     if (!isEditing)
     {
         isEditing = true;
-        textFieldImpl->OpenKeyboard();
         OnStartEditing();
+        SetRenderToTexture(false);
+        textFieldImpl->OpenKeyboard();
     }
 }
 
@@ -347,6 +348,7 @@ void UITextField::StopEdit()
     if (isEditing)
     {
         isEditing = false;
+        SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
     }
@@ -374,7 +376,6 @@ void UITextField::OnInactive()
 
 void UITextField::OnFocused()
 {
-    SetRenderToTexture(false);
     if (startEditPolicy == START_EDIT_WHEN_FOCUSED)
     {
         StartEdit();
@@ -388,8 +389,6 @@ void UITextField::SetFocused()
 
 void UITextField::OnFocusLost()
 {
-    SetRenderToTexture(true);
-
     StopEdit();
 
     if (delegate != nullptr)
@@ -579,16 +578,6 @@ void UITextField::Input(UIEvent* currentInput)
     if (this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-    if (currentInput->phase == UIEvent::Phase::KEY_DOWN || currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
-    {
-        if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
-        {
-            if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
-            {
-                StartEdit();
-            }
-        }
-    }
     if (currentInput->phase == UIEvent::Phase::ENDED)
     {
         if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
@@ -621,10 +610,6 @@ void UITextField::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
         {
-            if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
-            {
-                StartEdit();
-            }
             delegate->TextFieldShouldReturn(this);
         }
         else if (currentInput->key == Key::ESCAPE)

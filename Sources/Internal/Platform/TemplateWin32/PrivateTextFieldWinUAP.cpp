@@ -887,9 +887,8 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
         xOffset = rect.x + rect.dx + 1000.0f;
         yOffset = rect.y + rect.dy + 1000.0f;
     }
-
-    nativeControlHolder->Width = rect.dx;
-    nativeControlHolder->Height = rect.dy;
+    nativeControlHolder->Width = std::max(0.0f, rect.dx);
+    nativeControlHolder->Height = std::max(0.0f, rect.dy);
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 }
 
