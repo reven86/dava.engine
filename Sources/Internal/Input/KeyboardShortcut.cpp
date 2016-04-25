@@ -2,9 +2,15 @@
 
 #include "KeyboardDevice.h"
 #include "InputSystem.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
+const String KeyboardShortcut::SHIFT_NAME("SHIFT");
+const String KeyboardShortcut::CTRL_NAME("CTRL");
+const String KeyboardShortcut::ALT_NAME("ALT");
+const String KeyboardShortcut::WIN_NAME("WIN");
+
 KeyboardShortcut::KeyboardShortcut()
 {
 }
@@ -23,8 +29,37 @@ KeyboardShortcut::KeyboardShortcut(Key key_, int32 modifiers_)
 
 KeyboardShortcut::KeyboardShortcut(const String& str)
 {
-    key = InputSystem::Instance()->GetKeyboard().GetKeyByName(str);
+    Vector<String> tokens;
+    Split(str, "+", tokens);
+
     modifiers = 0;
+    for (const String& token : tokens)
+    {
+        String t = Trim(token);
+        if (t == SHIFT_NAME)
+        {
+            modifiers |= MODIFIER_SHIFT;
+        }
+        else if (t == CTRL_NAME)
+        {
+            modifiers |= MODIFIER_CTRL;
+        }
+        else if (t == ALT_NAME)
+        {
+            modifiers |= MODIFIER_ALT;
+        }
+        else if (t == WIN_NAME)
+        {
+            modifiers |= MODIFIER_WIN;
+        }
+        else
+        {
+            DVASSERT(key == Key::UNKNOWN);
+            key = InputSystem::Instance()->GetKeyboard().GetKeyByName(t);
+        }
+    }
+
+    DVASSERT(key != Key::UNKNOWN);
 }
 
 KeyboardShortcut::~KeyboardShortcut()
@@ -60,7 +95,27 @@ int32 KeyboardShortcut::GetModifiers() const
 
 String KeyboardShortcut::ToString() const
 {
-    return InputSystem::Instance()->GetKeyboard().GetKeyName(key);
+    StringStream stream;
+    if ((modifiers & MODIFIER_SHIFT) != 0)
+    {
+        stream << SHIFT_NAME << "+";
+    }
+    if ((modifiers & MODIFIER_CTRL) != 0)
+    {
+        stream << CTRL_NAME << "+";
+    }
+    if ((modifiers & MODIFIER_ALT) != 0)
+    {
+        stream << ALT_NAME << "+";
+    }
+    if ((modifiers & MODIFIER_WIN) != 0)
+    {
+        stream << WIN_NAME << "+";
+    }
+
+    stream << InputSystem::Instance()->GetKeyboard().GetKeyName(key);
+
+    return stream.str();
 }
 
 int32 KeyboardShortcut::ConvertKeyToModifier(Key key)
@@ -78,6 +133,10 @@ int32 KeyboardShortcut::ConvertKeyToModifier(Key key)
     case Key::RCTRL:
     case Key::LCTRL:
         return MODIFIER_CTRL;
+
+    case Key::RWIN:
+    case Key::LWIN:
+        return MODIFIER_WIN;
 
     default:
         return 0;

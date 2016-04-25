@@ -26,51 +26,35 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_INPUT_SYSTEM_H__
-#define __DAVAENGINE_UI_INPUT_SYSTEM_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Math/Vector.h"
-#include "UI/Input/UIActionMap.h"
-#include "UI/Input/UIInputMap.h"
+#include "UITabOrderComponent.h"
 
 namespace DAVA
 {
-    class UIControl;
-    class UIList;
-    class UIEvent;
-    class UIFocusSystem;
-    
-    class UIInputSystem
-    {
-    public:
-        UIInputSystem(UIFocusSystem* focusSystem);
-        ~UIInputSystem();
-        
-        void HandleKeyEvent(UIEvent* event);
-        void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
-        void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
-        
-    public:
-        static const FastName ACTION_FOCUS_LEFT;
-        static const FastName ACTION_FOCUS_RIGHT;
-        static const FastName ACTION_FOCUS_UP;
-        static const FastName ACTION_FOCUS_DOWN;
-        
-        static const FastName ACTION_FOCUS_NEXT;
-        static const FastName ACTION_FOCUS_PREV;
-        
-        static const FastName ACTION_PERFORM;
-        static const FastName ACTION_ESCAPE;
-        
-    private:
-        UIFocusSystem* focusSystem = nullptr;
-        UIActionMap globalActions;
-        UIInputMap globalInputMap;
-        int32 modifiers = 0;
-    };
+UITabOrderComponent::UITabOrderComponent()
+{
 }
 
+UITabOrderComponent::UITabOrderComponent(const UITabOrderComponent& src)
+    : tabOrder(src.tabOrder)
+{
+}
 
-#endif //__DAVAENGINE_UI_KEY_INPUT_SYSTEM_H__
+UITabOrderComponent::~UITabOrderComponent()
+{
+}
+
+UITabOrderComponent* UITabOrderComponent::Clone() const
+{
+    return new UITabOrderComponent(*this);
+}
+
+int32 UITabOrderComponent::GetTabOrder() const
+{
+    return tabOrder;
+}
+
+void UITabOrderComponent::SetTabOrder(int32 val)
+{
+    tabOrder = val;
+}
+}

@@ -303,6 +303,7 @@ public:
     bool IsHostControl(const UIControl* control) const;
 
     UILayoutSystem* GetLayoutSystem() const;
+    UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
 
     UIStyleSheetSystem* GetStyleSheetSystem() const;
@@ -325,7 +326,6 @@ private:
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
-    UIFocusSystem* focusSystem = nullptr;
     UIInputSystem* inputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 

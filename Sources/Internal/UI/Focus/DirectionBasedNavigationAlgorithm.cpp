@@ -29,6 +29,8 @@
 #include "DirectionBasedNavigationAlgorithm.h"
 
 #include "UIFocusComponent.h"
+#include "UIFocusGroupComponent.h"
+#include "UINavigationComponent.h"
 #include "FocusHelpers.h"
 
 #include "UI/UIControl.h"
@@ -73,8 +75,8 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focused
     UIControl* parent = focusedControl;
     while (parent != nullptr && parent != root.Get())
     {
-        UIFocusComponent* focus = parent->GetComponent<UIFocusComponent>();
-        if (focus != nullptr && (focus->GetPolicy() == UIFocusComponent::FOCUSABLE_GROUP))
+        UIFocusGroupComponent* focusGroup = parent->GetComponent<UIFocusGroupComponent>();
+        if (focusGroup != nullptr)
         {
             UIControl* c = FindNearestControl(focusedControl, parent, dir);
             if (c != nullptr)
@@ -96,10 +98,10 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focused
 
 UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
 {
-    UIFocusComponent* focus = focusedControl->GetComponent<UIFocusComponent>();
-    if (focus != nullptr)
+    UINavigationComponent* navigation = focusedControl->GetComponent<UINavigationComponent>();
+    if (navigation != nullptr)
     {
-        const String& controlInDirection = focus->GetNextControlPathInDirection(dir);
+        const String& controlInDirection = navigation->GetNextControlPathInDirection(dir);
         if (!controlInDirection.empty())
         {
             UIControl* next = UIControlHelpers::FindControlByPath(controlInDirection, focusedControl);

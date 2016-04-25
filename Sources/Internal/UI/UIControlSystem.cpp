@@ -62,8 +62,7 @@ UIControlSystem::UIControlSystem()
 
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
-    focusSystem = new UIFocusSystem();
-    inputSystem = new UIInputSystem(focusSystem);
+    inputSystem = new UIInputSystem();
 
     screenshoter = new UIScreenshoter();
 
@@ -105,7 +104,6 @@ UIControlSystem::~UIControlSystem()
     SafeDelete(styleSheetSystem);
     SafeDelete(layoutSystem);
     SafeDelete(inputSystem);
-    SafeDelete(focusSystem);
     SafeDelete(screenshoter);
 }
 
@@ -521,7 +519,7 @@ UIControl* UIControlSystem::GetHoveredControl() const
 
 void UIControlSystem::SetFocusedControl(UIControl* newFocused)
 {
-    focusSystem->SetFocusedControl(newFocused);
+    GetFocusSystem()->SetFocusedControl(newFocused);
 }
 
 void UIControlSystem::OnControlVisible(UIControl* control)
@@ -536,7 +534,7 @@ void UIControlSystem::OnControlInvisible(UIControl* control)
 
 UIControl* UIControlSystem::GetFocusedControl() const
 {
-    return focusSystem->GetFocusedControl();
+    return GetFocusSystem()->GetFocusedControl();
 }
 
 const UIGeometricData& UIControlSystem::GetBaseGeometricData() const
@@ -670,9 +668,14 @@ UILayoutSystem* UIControlSystem::GetLayoutSystem() const
     return layoutSystem;
 }
 
+UIInputSystem* UIControlSystem::GetInputSystem() const
+{
+    return inputSystem;
+}
+
 UIFocusSystem* UIControlSystem::GetFocusSystem() const
 {
-    return focusSystem;
+    return inputSystem->GetFocusSystem();
 }
 
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const

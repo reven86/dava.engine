@@ -29,7 +29,7 @@
 #include "TabTraversalAlgorithm.h"
 
 #include "UI/UIControl.h"
-#include "UI/Focus/UIFocusComponent.h"
+#include "UI/Focus/UITabOrderComponent.h"
 
 namespace DAVA
 {
@@ -146,13 +146,13 @@ void TabTraversalAlgorithm::PrepareChildren(UIControl* control, Vector<UIControl
     children.insert(children.end(), control->GetChildren().begin(), control->GetChildren().end());
 
     std::stable_sort(children.begin(), children.end(), [](UIControl* c1, UIControl* c2) {
-        UIFocusComponent* f1 = c1->GetComponent<UIFocusComponent>();
+        UITabOrderComponent* f1 = c1->GetComponent<UITabOrderComponent>();
         if (f1 == nullptr)
         {
             return false;
         }
 
-        UIFocusComponent* f2 = c2->GetComponent<UIFocusComponent>();
+        UITabOrderComponent* f2 = c2->GetComponent<UITabOrderComponent>();
         return f2 == nullptr || f1->GetTabOrder() < f2->GetTabOrder(); // important: f1 != nullptr
     });
 }

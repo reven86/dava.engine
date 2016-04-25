@@ -38,6 +38,9 @@
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Input/UIModalInputComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Focus/UIFocusGroupComponent.h"
+#include "UI/Focus/UINavigationComponent.h"
+#include "UI/Focus/UITabOrderComponent.h"
 #include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
 
@@ -89,6 +92,15 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case FOCUS_COMPONENT:
         return new UIFocusComponent();
+
+    case FOCUS_GROUP_COMPONENT:
+        return new UIFocusGroupComponent();
+
+    case NAVIGATION_COMPONENT:
+        return new UINavigationComponent();
+
+    case TAB_ORDER_COMPONENT:
+        return new UITabOrderComponent();
 
     case ACTION_COMPONENT:
         return new UIActionComponent();
