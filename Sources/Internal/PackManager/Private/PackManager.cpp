@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileSystem/FileList.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "PackManager/Private/DynamicPriorityQueue.h"
+#include "Utils/CRC32.h"
 
 namespace DAVA
 {
@@ -61,20 +62,24 @@ public:
         return packs[index];
     }
 
-    void AddToDownloadQueue(const String& packName)
+    void CollectAllDependencyForPack(const String& packName, Set<PackManager::PackState*>& dependency)
     {
-        uint32 index = GetPackIndex(packName);
-        PackManager::PackState* packState = &packs[index];
+        PackManager::PackState& packState = GetPackState(packName);
+        for (const String& dependName : packState.dependency)
+        {
+            PackManager::PackState& dependPack = GetPackState(dependName);
+            dependency.insert(&dependPack);
 
-        // TODO теперь нужно узнать виртуальный ли это пакет, и первыми поставить на закачку
-        // так как у нас может быть несколько зависимых паков, тоже виртуальными, то
-        // мы должны сначала сделать плоскую структуру всех зависимых паков, всем им
-        // выставить одинаковый приоритет - текущего виртуального пака и добавить
-        // в очередь на скачку в порядке, зависимостей
-        Set<PackManager::PackState*> dependency;
-        CollectAllDependencyForPack(packName, dependency); // TODO continue here
+            CollectAllDependencyForPack(dependName, dependency);
+        }
+    }
 
-        queue.Push(packState);
+    void AddToDownloadQueue(const String& nextPackName)
+    {
+        uint32 index = GetPackIndex(nextPackName);
+        PackManager::PackState* nextPackState = &packs[index];
+
+        queue.Push(nextPackState);
 
         if (isProcessingEnabled && !IsDownloading())
         {
@@ -107,7 +112,7 @@ public:
                     {
                         currentDownload->downloadProgress = static_cast<float>(progress) / total;
                         // fire event on update progress
-                        sdlcPublic->onPackStateChanged.Emit(*currentDownload);
+                        packMngrPublic->onPackStateChanged.Emit(*currentDownload);
                     }
                 }
                 break;
@@ -131,23 +136,41 @@ public:
                     case DLE_UNKNOWN: // we cannot determine the error
                         // inform user about error
                         {
-                            currentDownload->state = PackManager::PackState::ErrorLoading;
-                            currentDownload->downloadError = downloadError;
-                            sdlcPublic->onPackStateChanged.Emit(*currentDownload);
+                            PackManager::PackState& pack = *currentDownload;
+
+                            pack.state = PackManager::PackState::ErrorLoading;
+                            pack.downloadError = downloadError;
+
+                            packMngrPublic->onPackStateChanged.Emit(pack);
                             break;
                         }
                     case DLE_NO_ERROR:
                     {
+                        // check crc32 of just downloaded file
+                        FilePath archivePath = localPacksDir + currentDownload->name;
+                        uint32 crc32 = CRC32::ForFile(archivePath);
+                        if (crc32 != currentDownload->crc32FromMeta)
+                        {
+                            throw std::runtime_error("crc32 not match");
+                        }
                         // now mount archive
                         // validate it
                         FileSystem* fs = FileSystem::Instance();
-                        FilePath archivePath = localPacksDir + currentDownload->name;
-                        fs->Mount(archivePath, "Data");
+                        try
+                        {
+                            fs->Mount(archivePath, "Data/");
+                        }
+                        catch (std::exception& ex)
+                        {
+                            Logger::Error("%s", ex.what());
+                            throw;
+                        }
 
                         currentDownload->state = PackManager::PackState::Mounted;
                     }
                     } // end switch downloadError
                     currentDownload = nullptr;
+                    queue.Pop();
                     downloadHandler = 0;
                 }
                 else
@@ -171,7 +194,51 @@ public:
     {
         if (!queue.Empty())
         {
+            // leave pack inside queue while downloading not finished
             currentDownload = queue.Pop();
+            const String& nextPackName = currentDownload->name;
+            // теперь нужно узнать виртуальный ли это пакет, и первыми поставить на закачку
+            // так как у нас может быть несколько зависимых паков, тоже виртуальными, то
+            // мы должны сначала сделать плоскую структуру всех зависимых паков, всем им
+            // выставить одинаковый приоритет - текущего виртуального пака и добавить
+            // в очередь на скачку в порядке, зависимостей
+            Set<PackManager::PackState*> dependency;
+            CollectAllDependencyForPack(nextPackName, dependency);
+
+            // http://stackoverflow.com/questions/2088495/how-to-remove-all-even-integers-from-setint-in-c
+            for (auto it = begin(dependency); it != end(dependency);)
+            {
+                if ((*it)->state == PackManager::PackState::Mounted)
+                {
+                    dependency.erase(it++);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+
+            for (PackManager::PackState* pack : dependency)
+            {
+                if (PackManager::PackState::Requested == pack->state ||
+                    PackManager::PackState::Downloading == pack->state)
+                {
+                    if (pack->priority < currentDownload->priority)
+                    {
+                        pack->priority = currentDownload->priority;
+                        queue.UpdatePriority(pack);
+                        // TODO do I have to call signal on change priority?
+                    }
+                }
+                else
+                {
+                    pack->state = PackManager::PackState::Requested;
+                    pack->priority = currentDownload->priority;
+                    queue.Push(pack);
+                }
+            }
+
+            queue.Push(currentDownload);
 
             // start downloading
             auto fullUrl = remotePacksUrl + currentDownload->name;
@@ -189,6 +256,9 @@ public:
         {
             DownloadManager* dm = DownloadManager::Instance();
             dm->Cancel(downloadHandler);
+
+            currentDownload->state = PackManager::PackState::NotRequested;
+            queue.Pop();
         }
     }
 
@@ -261,7 +331,7 @@ public:
     FilePath localPacksDir;
     String remotePacksUrl;
     bool isProcessingEnabled = false;
-    PackManager* sdlcPublic = nullptr;
+    PackManager* packMngrPublic = nullptr;
     UnorderedMap<String, uint32> packsIndex;
     Vector<PackManager::PackState> packs;
     DynamicPriorityQueue<PackManager::PackState, PackPriorityComparator> queue;
@@ -281,7 +351,7 @@ PackManager::PackManager(const FilePath& packsDB, const FilePath& localPacksDir,
     impl->packsDB = packsDB;
     impl->localPacksDir = localPacksDir;
     impl->remotePacksUrl = remotePacksUrl;
-    impl->sdlcPublic = this;
+    impl->packMngrPublic = this;
 
     // open DB and load packs state then mount all archives to FileSystem
     impl->packDB.reset(new PacksDB(packsDB));

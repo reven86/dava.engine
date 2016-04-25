@@ -65,21 +65,11 @@ DAVA_TESTCLASS (PackManagerTest)
 
         FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/test.db");
         FilePath folderWithDownloadedPacks("~doc:/SmartDlcTest/packs/");
-        String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/packs/");
+        String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/");
 
         PackManager packManager(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
 
         GameClient client(packManager);
-
-        TEST_VERIFY(packManager.IsProcessingEnabled() == false);
-
-        packManager.EnableProcessing();
-
-        TEST_VERIFY(packManager.IsProcessingEnabled() == true);
-
-        packManager.DisableProcessing();
-
-        TEST_VERIFY(packManager.IsProcessingEnabled() == false);
 
         packManager.EnableProcessing();
 
@@ -104,14 +94,6 @@ DAVA_TESTCLASS (PackManagerTest)
             TEST_VERIFY(packState.crc32FromDB == 0); // virtual pack no files
             TEST_VERIFY(packState.crc32FromMeta == 0); // virtual pack no files
             TEST_VERIFY(packState.state == PackManager::PackState::NotRequested);
-
-            packManager.DisableProcessing();
-
-            const PackManager::PackState& requestedState = packManager.RequestPack(packName);
-
-            TEST_VERIFY(requestedState.state == PackManager::PackState::Requested);
-
-            packManager.EnableProcessing();
 
             auto& nextState = packManager.RequestPack(packName, 0.1f);
             TEST_VERIFY(nextState.state == PackManager::PackState::Downloading || nextState.state == PackManager::PackState::Requested);
