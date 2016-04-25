@@ -54,13 +54,12 @@ public:
         : UIControl()
         , systemManager(systemManager_)
     {
-        SetDebugDraw(true);
         GetOrCreateComponent<UIModalInputComponent>();
     }
 
-    void Input(UIEvent* currentInput) override
+    bool SystemProcessInput(UIEvent* currentInput) override
     {
-        systemManager->OnInput(currentInput);
+        return systemManager->OnInput(currentInput);
     }
 
 private:

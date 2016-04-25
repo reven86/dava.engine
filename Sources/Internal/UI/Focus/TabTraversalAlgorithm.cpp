@@ -67,10 +67,14 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, Focu
             {
                 return res;
             }
-            else
+
+            res = GetNextControl(parent, dir);
+            if (res != nullptr)
             {
-                return GetNextControl(parent, dir);
+                return res;
             }
+
+            return FindFirstControl(parent, dir);
         }
     }
     return nullptr;
