@@ -32,7 +32,7 @@
 #include "Qt/Settings/SettingsManager.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Scene/SceneHelper.h"
-
+#include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 
 using namespace DAVA;

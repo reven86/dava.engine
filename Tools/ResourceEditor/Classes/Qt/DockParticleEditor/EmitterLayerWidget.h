@@ -35,6 +35,7 @@
 #include "GradientPickerWidget.h"
 #include "BaseParticleEditorContentWidget.h"
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 #include <QWidget>
 #include <QVBoxLayout>

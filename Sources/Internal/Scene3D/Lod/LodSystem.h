@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA

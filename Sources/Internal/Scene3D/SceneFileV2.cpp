@@ -37,7 +37,7 @@
 #include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/Systems/TransformSystem.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Systems/EventSystem.h"
@@ -64,7 +64,6 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
-#include "Scene3D/Converters/LodToLod2Converter.h"
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
 
@@ -1201,14 +1200,6 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
         shadowMaterial->SetFXName(NMaterialName::SHADOW_VOLUME);
         ConvertShadowVolumes(rootNode, shadowMaterial);
         shadowMaterial->Release();
-    }
-
-    if (header.version < OLD_LODS_SCENE_VERSION)
-    {
-        LodToLod2Converter lodConverter;
-        lodConverter.ConvertLodToV2(rootNode);
-        SwitchToRenerObjectConverter switchConverter;
-        switchConverter.ConsumeSwitchedRenderObjects(rootNode);
     }
 
     if (header.version < TREE_ANIMATION_SCENE_VERSION)

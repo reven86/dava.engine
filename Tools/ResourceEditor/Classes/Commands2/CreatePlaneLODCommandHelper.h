@@ -32,6 +32,7 @@
 
 #include "DAVAEngine.h"
 #include "Base/TypeHolders.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 namespace CreatePlaneLODCommandHelper
 {

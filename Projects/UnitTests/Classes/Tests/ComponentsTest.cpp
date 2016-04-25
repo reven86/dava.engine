@@ -28,6 +28,7 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 using namespace DAVA;
 

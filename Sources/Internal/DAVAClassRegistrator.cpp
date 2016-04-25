@@ -98,7 +98,6 @@ REGISTER_CLASS(WaveComponent);
 REGISTER_CLASS(QualitySettingsComponent);
 REGISTER_CLASS(UserComponent);
 REGISTER_CLASS(SwitchComponent);
-REGISTER_CLASS(LodComponent);
 REGISTER_CLASS(ParticleEffectComponent);
 REGISTER_CLASS(CameraComponent);
 REGISTER_CLASS(StaticOcclusionComponent);

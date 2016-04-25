@@ -33,7 +33,7 @@
 #include "Commands2/Base/Command2.h"
 
 #include "Render/Highlevel/RenderBatch.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 class DeleteRenderBatchCommand;
 class DeleteLODCommand : public Command2

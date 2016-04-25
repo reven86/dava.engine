@@ -31,7 +31,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"

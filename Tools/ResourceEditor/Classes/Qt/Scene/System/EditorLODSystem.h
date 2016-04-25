@@ -31,7 +31,7 @@
 #define __SCENE_LOD_SYSTEM_V2_H__
 
 #include "Entity/SceneSystem.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Commands2/CreatePlaneLODCommandHelper.h"
 #include "Scene/SceneTypes.h"
 

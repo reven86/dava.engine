@@ -233,7 +233,7 @@ public:
     virtual void BakeTransforms();
 
     /*
-        \brief Go down by hierarchy and propogate bool custom property to all childs.
+        \brief Go down by hierarchy and propagate bool custom property to all children.
      */
     void PropagateBoolProperty(String name, bool value);
 

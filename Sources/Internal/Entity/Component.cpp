@@ -33,7 +33,6 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"
-#include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/BulletComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/UpdatableComponent.h"
@@ -73,8 +72,6 @@ Component* Component::CreateByType(uint32 componentType)
         return new RenderComponent();
     case DEBUG_RENDER_COMPONENT:
         return new DebugRenderComponent();
-    case LOD_COMPONENT:
-        return new LodComponent();
     case PARTICLE_EFFECT_COMPONENT:
         return new ParticleEffectComponent();
     case BULLET_COMPONENT:

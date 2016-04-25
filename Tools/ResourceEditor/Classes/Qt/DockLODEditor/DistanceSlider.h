@@ -31,7 +31,7 @@
 #define __DISTANCE_SLIDER_H__
 
 #include "Base/BaseTypes.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 #include <QWidget>
 

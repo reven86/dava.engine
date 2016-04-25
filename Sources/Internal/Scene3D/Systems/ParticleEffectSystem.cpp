@@ -36,7 +36,7 @@
 #include "Utils/Random.h"
 #include "Core/PerformanceSettings.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Systems/LodSystem.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Debug/Stats.h"
