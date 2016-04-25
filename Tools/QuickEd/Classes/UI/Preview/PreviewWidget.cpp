@@ -222,12 +222,10 @@ void PreviewWidget::CreateActions()
     davaGLWidget->addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
-    focusNextChildAction->setShortcut(Qt::Key_Tab);
     focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
     davaGLWidget->addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
-    focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
     davaGLWidget->addAction(focusPreviousChildAction);
 }
@@ -307,6 +305,23 @@ void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
 void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 {
     systemsManager->SetEmulationMode(emulationMode);
+
+    if (emulationMode)
+    {
+        focusNextChildAction->setShortcut(0);
+        focusNextChildAction->setEnabled(false);
+
+        focusPreviousChildAction->setShortcut(0);
+        focusPreviousChildAction->setEnabled(false);
+    }
+    else
+    {
+        focusNextChildAction->setShortcut(Qt::Key_Tab);
+        focusNextChildAction->setEnabled(true);
+
+        focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
+        focusPreviousChildAction->setEnabled(true);
+    }
 }
 
 void PreviewWidget::ApplyPosChanges()

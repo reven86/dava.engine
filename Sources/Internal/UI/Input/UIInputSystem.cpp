@@ -75,7 +75,7 @@ UIInputSystem::UIInputSystem()
     BindGlobalAction(ACTION_FOCUS_NEXT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusForward));
     BindGlobalAction(ACTION_FOCUS_PREV, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusBackward));
 
-    BindGlobalAction(ACTION_PERFORM, MakeFunction(focusSystem, &UIFocusSystem::PerformAction));
+    BindGlobalAction(ACTION_PERFORM, MakeFunction(this, &UIInputSystem::PerformActionOnFocusedControl));
 }
 
 UIInputSystem::~UIInputSystem()
@@ -318,7 +318,7 @@ void UIInputSystem::PerformActionOnControl(UIControl* control)
                     processed = actionBindingComponent->GetActionMap().Perform(actionComponent->GetAction());
                 }
 
-                c = (c == root.Get()) ? nullptr : c->GetParent();
+                c = (c == modalControl.Get()) ? nullptr : c->GetParent();
             }
         }
     }

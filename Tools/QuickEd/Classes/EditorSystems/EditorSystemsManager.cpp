@@ -39,6 +39,7 @@
 #include "EditorSystems/EditorTransformSystem.h"
 
 #include "UI/UIControl.h"
+#include "UI/Input/UIModalInputComponent.h"
 
 using namespace DAVA;
 
@@ -46,48 +47,35 @@ const Vector2 minimumSize = Vector2(16.0f, 16.0f);
 
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
-class EditorSystemsManager::RootControl : public UIControl
+class EditorSystemsManager::InputLayerControl : public UIControl
 {
 public:
-    RootControl(EditorSystemsManager* arg);
-    void SetEmulationMode(bool arg);
+    InputLayerControl(EditorSystemsManager* systemManager_)
+        : UIControl()
+        , systemManager(systemManager_)
+    {
+        SetDebugDraw(true);
+        GetOrCreateComponent<UIModalInputComponent>();
+    }
+
+    void Input(UIEvent* currentInput) override
+    {
+        systemManager->OnInput(currentInput);
+    }
 
 private:
-    bool SystemInput(UIEvent* currentInput) override;
-
     EditorSystemsManager* systemManager = nullptr;
-    bool emulationMode = false;
-    Vector2 prevPosition;
 };
 
-EditorSystemsManager::RootControl::RootControl(EditorSystemsManager* arg)
-    : UIControl()
-    , systemManager(arg)
-{
-    DVASSERT(nullptr != systemManager);
-}
-
-void EditorSystemsManager::RootControl::SetEmulationMode(bool arg)
-{
-    emulationMode = arg;
-}
-
-bool EditorSystemsManager::RootControl::SystemInput(UIEvent* currentInput)
-{
-    if (!emulationMode && nullptr != systemManager)
-    {
-        return systemManager->OnInput(currentInput);
-    }
-    return UIControl::SystemInput(currentInput);
-}
-
 EditorSystemsManager::EditorSystemsManager()
-    : rootControl(new RootControl(this))
+    : rootControl(new UIControl())
+    , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
+    rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
@@ -110,6 +98,11 @@ UIControl* EditorSystemsManager::GetRootControl() const
     return rootControl.Get();
 }
 
+DAVA::UIControl* EditorSystemsManager::GetInputLayerControl() const
+{
+    return inputLayerControl.Get();
+}
+
 UIControl* EditorSystemsManager::GetScalableControl() const
 {
     return scalableControl.Get();
@@ -129,7 +122,14 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    rootControl->SetEmulationMode(emulationMode);
+    if (emulationMode)
+    {
+        rootControl->RemoveControl(inputLayerControl.Get());
+    }
+    else
+    {
+        rootControl->AddControl(inputLayerControl.Get());
+    }
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
