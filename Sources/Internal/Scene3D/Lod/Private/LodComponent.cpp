@@ -71,14 +71,6 @@ Component* LodComponent::Clone(Entity* toEntity)
     LodComponent* newLod = new LodComponent();
     newLod->SetEntity(toEntity);
 
-    newLod->lodLayers = lodLayers;
-    const Vector<LodData>::const_iterator endLod = newLod->lodLayers.end();
-    for (Vector<LodData>::iterator it = newLod->lodLayers.begin(); it != endLod; ++it)
-    {
-        LodData& ld = *it;
-        ld.nodes.clear();
-    }
-
     //Lod values
     newLod->CopyLODSettings(this);
 
@@ -92,8 +84,6 @@ void LodComponent::Serialize(KeyedArchive* archive, SerializationContext* serial
     if (NULL != archive)
     {
         uint32 i;
-
-        archive->SetUInt32("lc.flags", flags);
 
         KeyedArchive* lodDistArch = new KeyedArchive();
         for (i = 0; i < MAX_LOD_LAYERS; ++i)
@@ -115,9 +105,6 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
 {
     if (NULL != archive)
     {
-        if (archive->IsKeyExists("lc.flags"))
-            flags = archive->GetUInt32("lc.flags");
-
         forceDistance = INVALID_DISTANCE;
         forceDistanceSq = INVALID_DISTANCE;
         forceLodLayer = INVALID_LOD_LAYER;
@@ -138,7 +125,6 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
         }
     }
 
-    flags |= NEED_UPDATE_AFTER_LOAD;
     Component::Deserialize(archive, serializationContext);
 }
 
@@ -149,8 +135,6 @@ LodComponent::LodComponent()
     , forceDistanceSq(INVALID_DISTANCE)
 {
     lodLayersArray.resize(MAX_LOD_LAYERS);
-
-    flags = NEED_UPDATE_AFTER_LOAD;
 
     for (int32 iLayer = 0; iLayer < MAX_LOD_LAYERS; ++iLayer)
     {
@@ -175,19 +159,6 @@ void LodComponent::SetForceDistance(const float32& newDistance)
 float32 LodComponent::GetForceDistance() const
 {
     return forceDistance;
-}
-
-void LodComponent::GetLodData(Vector<LodData*>& retLodLayers)
-{
-    retLodLayers.clear();
-    retLodLayers.reserve(lodLayers.size());
-
-    Vector<LodData>::const_iterator endIt = lodLayers.end();
-    for (Vector<LodData>::iterator it = lodLayers.begin(); it != endIt; ++it)
-    {
-        LodData* ld = &(*it);
-        retLodLayers.push_back(ld);
-    }
 }
 
 void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
@@ -225,22 +196,6 @@ void LodComponent::SetForceLodLayer(int32 layer)
 int32 LodComponent::GetForceLodLayer() const
 {
     return forceLodLayer;
-}
-
-int32 LodComponent::GetMaxLodLayer() const
-{
-    int32 ret = -1;
-    const Vector<LodData>::const_iterator& end = lodLayers.end();
-    for (Vector<LodData>::const_iterator it = lodLayers.begin(); it != end; ++it)
-    {
-        const LodData& ld = *it;
-        if (ld.layer > ret)
-        {
-            ret = ld.layer;
-        }
-    }
-
-    return ret;
 }
 
 void LodComponent::CopyLODSettings(const LodComponent* fromLOD)

@@ -26,9 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_SCENE3D_LODSYSTEM_H__
-#define __DAVAENGINE_SCENE3D_LODSYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
@@ -51,27 +49,11 @@ public:
     void RemoveEntity(Entity* entity) override;
 
     virtual void SetCamera(Camera* camera);
-    inline Camera* GetCamera() const;
+    Camera* GetCamera() const;
 
-    inline void SetForceUpdateAll();
-
-    static void UpdateEntitiesAfterLoad(Entity* entity);
-    static void UpdateEntityAfterLoad(Entity* entity);
-
-    static void MergeChildLods(Entity* toEntity);
+    void SetForceUpdateAll();
 
     static void ForceUpdate(Entity* entity, Camera* camera, float32 timeElapsed);
-
-    class LodMerger
-    {
-    public:
-        LodMerger(Entity* toEntity);
-        void MergeChildLods();
-
-    private:
-        void GetLodComponentsRecursive(Entity* fromEntity, Vector<Entity*>& allLods);
-        Entity* toEntity;
-    };
 
 private:
     //partial update per frame
@@ -92,7 +74,6 @@ private:
     static inline void ProcessEntity(Entity* entity, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera);
     static inline void PorcessEntityRecursive(Entity* entity, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera);
 
-    static void SetEntityLodRecursive(Entity* entity, int32 currentLod);
     static void SetEntityLod(Entity* entity, int32 currentLod);
 
     Camera* camera;
@@ -101,20 +82,16 @@ private:
 void LodSystem::ProcessEntity(Entity* entity, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
 {
     LodComponent* lod = GetLodComponent(entity);
-    if (lod->flags & LodComponent::NEED_UPDATE_AFTER_LOAD)
-    {
-        UpdateEntityAfterLoad(entity);
-    }
 
     UpdateLod(entity, lod, psLodOffsetSq, psLodMultSq, camera);
 }
 
-void LodSystem::SetForceUpdateAll()
+inline void LodSystem::SetForceUpdateAll()
 {
     forceUpdateAll = true;
 }
 
-Camera* LodSystem::GetCamera() const
+inline Camera* LodSystem::GetCamera() const
 {
     return camera;
 }
@@ -135,5 +112,3 @@ inline void LodSystem::SetEntityLod(Entity* entity, int32 currentLod)
     }
 }
 }
-
-#endif //__DAVAENGINE_SCENE3D_LODSYSTEM_H__

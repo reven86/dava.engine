@@ -284,33 +284,6 @@ void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Enti
     }
 }
 
-void RecursiveProcessLodNode(Entity* curr, int32 lod, void* userData, void (*process)(Entity*, void*))
-{
-    LodComponent* lodComp = static_cast<LodComponent*>(curr->GetComponent(Component::LOD_COMPONENT));
-    if (lodComp)
-    {
-        Vector<LodComponent::LodData*> retLodLayers;
-        lodComp->GetLodData(retLodLayers);
-        for (Vector<LodComponent::LodData*>::iterator it = retLodLayers.begin(); it != retLodLayers.end(); ++it)
-        {
-            LodComponent::LodData* data = *it;
-            if (data->layer == lod)
-            {
-                for (Vector<Entity*>::iterator i = data->nodes.begin(); i != data->nodes.end(); ++i)
-                {
-                    process((*i), userData);
-                }
-                break;
-            }
-        }
-    }
-    else
-    {
-        for (int32 i = 0; i < curr->GetChildrenCount(); i++)
-            RecursiveProcessLodNode(curr->GetChild(i), lod, userData, process);
-    }
-}
-
 SpeedTreeComponent* GetSpeedTreeComponent(const Entity* fromEntity)
 {
     if (fromEntity)
