@@ -164,7 +164,8 @@ int DefinitionFile::GetFrameHeight(uint32 frame) const
     return frameRects[frame].dy;
 }
 
-bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath, uint32 maxTextureSize, bool retainEmptyPixesl, bool useLayerNames)
+bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDirectoryPath, uint32 maxTextureSize,
+                             bool retainEmptyPixesl, bool useLayerNames, bool verboseOutput)
 {
     if (FileSystem::Instance()->CreateDirectory(processDirectoryPath) == FileSystem::DIRECTORY_CANT_CREATE)
     {
@@ -213,31 +214,40 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
         auto& layer = psd->layer_records[lIndex];
         auto layerName = String(reinterpret_cast<const char*>(layer.layer_name));
 
+        if (layer.layer_type != psd_layer_type_normal)
+        {
+            Logger::Error("============================== ERROR ==============================");
+            Logger::Error("| File contains unsupported layer (%s) with type %d", layerName.c_str(), static_cast<int>(layer.layer_type));
+            Logger::Error("| %s", psdName);
+            Logger::Error("===================================================================");
+            return false;
+        }
+
         if (layer.width * layer.height == 0)
         {
-            Logger::Error("============================ ERROR ============================");
-            Logger::Error("| File contains empty layer %d (%s)", lIndex, layerName.c_str());
+            Logger::Error("============================== ERROR ==============================");
+            Logger::Error("| File contains empty layer %d (%s)", lIndex, static_cast<int>(layer.layer_type), layerName.c_str());
             Logger::Error("| %s", psdName);
-            Logger::Error("===============================================================");
+            Logger::Error("===================================================================");
             return false;
         }
 
         outImageBasePath.ReplaceBasename(outImageBaseName + "_" + std::to_string(lIndex));
 
-        if (layerName.empty())
+        if (verboseOutput && layerName.empty())
         {
-            // Logger::Warning("=========================== WARNING ===========================");
-            // Logger::Warning("| PSD file: %s", psdName);
-            // Logger::Warning("| Contains layer without a name: %u", static_cast<int32>(lIndex));
-            // Logger::Warning("===============================================================");
+            Logger::Warning("=========================== WARNING ===========================");
+            Logger::Warning("| PSD file: %s", psdName);
+            Logger::Warning("| Contains layer without a name: %u", static_cast<int32>(lIndex));
+            Logger::Warning("===============================================================");
         }
-        else if (std::find(frameNames.begin(), frameNames.end(), layerName) != frameNames.end())
+        else if (verboseOutput && std::find(frameNames.begin(), frameNames.end(), layerName) != frameNames.end())
         {
-            // Logger::Warning("=========================== WARNING ===========================");
-            // Logger::Warning("| PSD file:");
-            // Logger::Warning("| %s", psdName);
-            // Logger::Warning("| Contains two or more layers with the same name: %s", layerName.c_str());
-            // Logger::Warning("===============================================================");
+            Logger::Warning("=========================== WARNING ===========================");
+            Logger::Warning("| PSD file:");
+            Logger::Warning("| %s", psdName);
+            Logger::Warning("| Contains two or more layers with the same name: %s", layerName.c_str());
+            Logger::Warning("===============================================================");
         }
 
         if (layer.opacity < 255)
@@ -248,12 +258,12 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
             Logger::Warning("=================================================================");
         }
 
-        if (layer.visible == false)
+        if (verboseOutput && (layer.visible == false))
         {
-            // Logger::Warning("============================ WARNING ============================");
-            // Logger::Warning("| File contains invisible layer %d (%s)", lIndex, layerName.c_str());
-            // Logger::Warning("| %s", psdName);
-            // Logger::Warning("=================================================================");
+            Logger::Warning("============================ WARNING ============================");
+            Logger::Warning("| File contains invisible layer %d (%s)", lIndex, layerName.c_str());
+            Logger::Warning("| %s", psdName);
+            Logger::Warning("=================================================================");
         }
 
         frameNames[lIndex] = useLayerNames && !layerName.empty() ? layerName : DAVA::Format("frame%d", lIndex);
@@ -274,11 +284,14 @@ bool DefinitionFile::LoadPSD(const FilePath& fullname, const FilePath& processDi
 
         if ((layer.left < 0) || (layer.top < 0) || (layer.right > psd->width) || (layer.bottom > psd->height))
         {
-            Logger::Warning("============================ Warning ============================");
-            Logger::Warning("| File contains layer `%s` which does not fit canvas", layerName.c_str());
-            Logger::Warning("| %s", psdName);
-            Logger::Warning("| Layer: (%d, %d, %d, %d), canvas: (%d, %d)", layer.left, layer.top, layer.width, layer.height, psd->width, psd->height);
-            Logger::Warning("=================================================================");
+            if (verboseOutput)
+            {
+                Logger::Warning("============================ Warning ============================");
+                Logger::Warning("| File contains layer `%s` which does not fit canvas", layerName.c_str());
+                Logger::Warning("| %s", psdName);
+                Logger::Warning("| Layer: (%d, %d, %d, %d), canvas: (%d, %d)", layer.left, layer.top, layer.width, layer.height, psd->width, psd->height);
+                Logger::Warning("=================================================================");
+            }
 
             int xOffset = Max(0, -imageLeft);
             int yOffset = Max(0, -imageTop);

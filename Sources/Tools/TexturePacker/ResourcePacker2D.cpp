@@ -88,6 +88,8 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 
     Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GlobalEnumMap<eGPUFamily>::Instance()->ToString(forGPU) : "Unknown");
 
+    Vector<PackingAlgorithm> packAlgorithms;
+
     String alg = CommandLineParser::Instance()->GetCommandParam("-alg");
     if (alg.empty() || CompareCaseInsensitive(alg, "maxrect") == 0)
     {
@@ -148,7 +150,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
         }
     }
 
-    RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
+    RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory, packAlgorithms);
 
     // Put latest md5 after convertation
     RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true);
@@ -264,7 +266,7 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
     return tokens;
 }
 
-void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<String>& passedFlags)
+void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<PackingAlgorithm>& packAlgorithms, const Vector<String>& passedFlags)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
 
@@ -390,6 +392,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                 uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
                 bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
                 bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
+                bool verbose = CommandLineParser::Instance()->GetVerbose();
 
                 if (clearOutputDirectory)
                 {
@@ -411,7 +414,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     FilePath fullname = fileList->GetPathname(fi);
                     if (fullname.IsEqualToExtension(".psd"))
                     {
-                        shouldAcceptFile = defFile->LoadPSD(fullname, processDir, maxTextureSize, withAlpha, useLayerNames);
+                        shouldAcceptFile = defFile->LoadPSD(fullname, processDir, maxTextureSize,
+                                                            withAlpha, useLayerNames, verbose);
                     }
                     else if (isLightmapsPacking && fullname.IsEqualToExtension(".png"))
                     {
@@ -513,7 +517,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
 
-                    RecursiveTreeWalk(input, output, flagsToPass);
+                    RecursiveTreeWalk(input, output, packAlgorithms, flagsToPass);
                 }
             }
         }

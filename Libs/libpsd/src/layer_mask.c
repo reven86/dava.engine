@@ -578,9 +578,6 @@ static psd_status psd_get_layer_info(psd_context * context)
 				case 'blnc':
 					status = psd_get_layer_color_balance(context, layer);
 					break;
-				//case 'hue ':
-					// Old Hue/saturation, Photoshop 4.0
-					//break;
 				case 'hue2':
 					status = psd_get_layer_hue_saturation(context, layer);
 					break;
@@ -605,18 +602,15 @@ static psd_status psd_get_layer_info(psd_context * context)
 				case 'phfl':
 					status = psd_get_layer_photo_filter(context, layer);
 					break;
-				case 'lrFX':
-					status = psd_get_layer_effects(context, layer);
-					break;
-				case 'lfx2':
-					status = psd_get_layer_effects2(context,layer);
-					break;
+				// case 'lrFX':
+				//	status = psd_get_layer_effects(context, layer);
+				//	break;
+				// case 'lfx2':
+				//	status = psd_get_layer_effects2(context,layer);
+				//	break;
 				case 'tySh':
 					status = psd_get_layer_type_tool(context, layer);
 					break;
-				//case 'TySh':
-					// Type tool object setting (Photoshop 6.0)
-					//break;
 				case 'SoCo':
 					status = psd_get_layer_solid_color(context, layer);
 					break;
@@ -725,11 +719,8 @@ static psd_status psd_get_layer_info(psd_context * context)
 			case psd_layer_type_folder:
 				group_layer = layer;
 				break;
-			case psd_layer_type_hidden:
+			default:
 				group_layer = NULL;
-				break;
-            default:
-                psd_assert(0);
 		}
 	}
 

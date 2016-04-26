@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
-
 #include "Platform/Qt5/QtLayer.h"
 
 #include "DavaRenderer.h"
@@ -189,7 +188,7 @@ DavaGLWidget::DavaGLWidget(QWidget* parent)
 
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
-    connect(davaGLView, &QQuickWindow::beforeSynchronizing, this, &DavaGLWidget::OnSync, Qt::DirectConnection);
+    connect(davaGLView, &QQuickWindow::beforeRendering, this, &DavaGLWidget::OnPaint, Qt::DirectConnection);
     connect(davaGLView, &QQuickWindow::sceneGraphInvalidated, this, &DavaGLWidget::OnCleanup);
     connect(davaGLView, &DavaGLView::mouseScrolled, this, &DavaGLWidget::mouseScrolled);
     connect(davaGLView, &DavaGLView::OnDrop, this, &DavaGLWidget::OnDrop);
@@ -268,17 +267,19 @@ void Kostil_ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
 }
 } //unnamed namespace
 
-void DavaGLWidget::OnSync()
+void DavaGLWidget::OnPaint()
 {
-    if (nullptr == renderer)
+    if (renderer == nullptr)
     {
         DAVAGLWidget_namespace::Kostil_ForceUpdateCurrentScreen(this);
 
-        renderer = new DavaRenderer();
-        OnResize();
-        connect(davaGLView, &QQuickWindow::beforeRendering, renderer, &DavaRenderer::paint, Qt::DirectConnection);
+        renderer = new DavaRenderer(davaGLView, davaGLView->openglContext());
         emit Initialized();
+        OnResize();
     }
+
+    renderer->paint();
+    davaGLView->resetOpenGLState();
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent*)

@@ -81,7 +81,7 @@ private:
 
     void AddError(const String& errorMsg);
 
-    void RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<String>& flags = Vector<String>());
+    void RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<PackingAlgorithm>& packAlgorithms, const Vector<String>& flags = Vector<String>());
 
     bool GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath);
     bool AddFilesToCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath);
@@ -99,7 +99,6 @@ public:
     bool clearOutputDirectory = true;
     eGPUFamily requestedGPUFamily = GPU_INVALID;
     TextureConverter::eConvertQuality quality = TextureConverter::ECQ_VERY_HIGH;
-    Vector<PackingAlgorithm> packAlgorithms;
 
 private:
     AssetCacheClient* cacheClient = nullptr;

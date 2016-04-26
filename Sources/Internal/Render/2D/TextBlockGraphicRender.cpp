@@ -172,7 +172,7 @@ void TextBlockGraphicRender::Draw(const Color& textColor, const Vector2* offset)
     batch.vertexStride = TextVerticesDefaultStride;
     batch.texCoordStride = TextVerticesDefaultStride;
     batch.vertexPointer = vertexBuffer[0].position.data;
-    batch.texCoordPointer = vertexBuffer[0].texCoord.data;
+    batch.texCoordPointer[0] = vertexBuffer[0].texCoord.data;
     batch.textureSetHandle = graphicFont->GetTexture()->singleTextureSet;
     batch.samplerStateHandle = graphicFont->GetTexture()->samplerStateHandle;
     batch.vertexCount = static_cast<uint32>(vertexBuffer.size());
