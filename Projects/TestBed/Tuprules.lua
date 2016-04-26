@@ -1,26 +1,37 @@
-package.path = package.path .. ";../../../dava.framework/?.lua"
-require("DavaBuild")
+package.path = package.path .. ";../../../dava.framework/Build/?.lua"
+require("TupState")
 
-dava.config.output_dir = ".tupOutput"
-dava.config.packlist_output_dir = ".tupOutput/packlists"
+tupState = TupState.New({
+    outputDir = "__Output",
+    outputDbName = "testbed.db"
+})
 
-dava_add_packs
-{
-    vpack = {
+tupState:AddPacks {
+    {
+        name = "vpack",
         depends = { "pack1", "pack2" }
     },
-
-    pack1 = {
+    {
         exclusive = true,
-        { "Data",  "%.aaa" }
+        name = "pack1",
+        rules = {
+            { "Data",  "%.aaa" }
+        },
     },
-
-    pack2 = {
+    {
         exclusive = true,
-        { "Data", "%.sc2" }
+        name = "pack2",
+        rules = {
+            { "Data", "%.sc2" }
+        },
     },
-
-    pack3 = {
-        { "Data", "%.*" }
+    { 
+        name = "pack3",
+        rules = {
+            { "Data", "%.*" }
+        }
     },
 }
+
+tupState:DbgDumpTable(tupState)
+

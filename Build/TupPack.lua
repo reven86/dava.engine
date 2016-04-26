@@ -1,7 +1,12 @@
+local dbg = require("debugger")
+
 TupPack = {}
 TupPack.__index = TupPack
 
 function TupPack.New(params)
+    local self = setmetatable({}, TupPack)
+    self.rules = { } 
+
     -- check params is a table
     if type(params) ~= "table" then
         error "Pack should be defined as table { name = name, rules = { rules table}, depends = { dependencies }}"
@@ -13,17 +18,17 @@ function TupPack.New(params)
     end
     
     -- create default TupPack table
-    local self = setmetatable({}, TupPack)
     self.name = params.name
-    self.rules = { } 
     self.exclusive = params.exclusive or false
     self.depends = params.depends or { }
     
     -- parse pack rules
-    self.setRule(params.rules or { })
+    self:SetRules(params.rules or { })
+    
+    return self
 end
 
-function TupPack.SetRules(rules)
+function TupPack.SetRules(self, rules)
     -- check that rules are defined in table
 	if type(rules) ~= "table" then
         error "Pack rules should be a table"
@@ -35,16 +40,17 @@ function TupPack.SetRules(rules)
         if type(k) == "number" then
             if type(v) == "table" then
                 if #v < 2 or type(v[1]) ~= "string" or type(v[2]) ~= "string" then
-                    print("rule #" .. k)
+                    print("pack = " .. self.name .. ", rule #" .. k)
                     error "Pack rule # table should be defined as { 'dir pattern', 'file pattern' }"
                 end
             elseif type(v) ~= "function" then
-                print("rule #" .. k)
+                print("pack = " .. self.name .. ", rule #" .. k)
                 error "Pack rule can be either string, table or function"
             end
         -- key type is string
         elseif type(k) == "string" then
             if k ~= "depends" and k ~= "exclusive" then
+                print("pack = " .. self.name .. ", k = " .. tostring(k))
                 error "Pack dependencies should be declared with 'depends' or 'exclusive' key."
             end
         -- unknow key type
@@ -58,7 +64,7 @@ function TupPack.SetRules(rules)
     self.rules = rules
 end
 
-function TupPack.Match(dir, file)
+function TupPack.Match(self, dir, file)
     local full_path = dir .. "/" .. file
     
     -- each pack has multiple rules
