@@ -287,7 +287,7 @@ bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File* file)
     uint32 result = file->Read(&_header, sizeof(Header));
     if (result != sizeof(Header))
     {
-        Logger::Error("SceneFileV2::LoadSceneVersion read file failed.");
+        Logger::Error("SceneFileV2::ReadHeader failed. Read file return %d.", result);
         return false;
     }
 
@@ -405,7 +405,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)
         {
-            Logger::Error("SceneFileV2::LoadScene descriptor are wrong in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_READ_ERROR);
             return GetError();
         }
@@ -446,7 +446,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         uint32 result = file->Read(&dataNodeCount, sizeof(int32));
         if (result != sizeof(int32))
         {
-            Logger::Error("SceneFileV2::LoadScene read failed in file: %s", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene read(%d) dataNodeCount failed in file: %s", result, filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_READ_ERROR);
             return GetError();
         }
@@ -456,7 +456,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             const bool nodeLoaded = LoadDataNode(scene, nullptr, file);
             if (!nodeLoaded)
             {
-                Logger::Error("SceneFileV2::LoadScene load DataNode failed in file: %s", filename.GetAbsolutePathname().c_str());
+                Logger::Error("SceneFileV2::LoadScene LoadDataNode failed in file: %s", filename.GetAbsolutePathname().c_str());
                 SetError(ERROR_FILE_READ_ERROR);
                 return GetError();
             }
@@ -621,7 +621,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)
         {
-            Logger::Error("SceneFileV2::LoadScene descriptor are wrong in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
             return res;
         }
     }
@@ -665,7 +665,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
             if (!loadedNodes)
             {
                 SafeRelease(archive);
-                Logger::Error("SceneFileV2::LoadScene can't load KeyedArchive in node:%d, in file %s", k, file->GetFilename().GetAbsolutePathname().c_str());
+                Logger::Error("SceneFileV2::LoadScene load KeyedArchive in node:%d failed, in file %s", k, file->GetFilename().GetAbsolutePathname().c_str());
                 break;
             }
             res->dataNodes.push_back(archive);
@@ -690,7 +690,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         if (!loadNodes)
         {
             SafeRelease(child);
-            Logger::Error("SceneFileV2::LoadScene can't load SceneArchiveHierarchyNode:%d, in file %s", ci, file->GetFilename().GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in node:%d, in file %s", ci, file->GetFilename().GetAbsolutePathname().c_str());
             break;
         }
         res->children.push_back(child);

@@ -81,7 +81,7 @@ bool KeyedArchive::Load(File* archive)
         const bool seekResult = archive->Seek(0, File::SEEK_FROM_START);
         if (!seekResult)
         {
-            Logger::Error("[KeyedArchive] error loading keyed archive from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+            Logger::Error("[KeyedArchive] seek failed from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
             return false;
         }
         while (!archive->IsEof())
