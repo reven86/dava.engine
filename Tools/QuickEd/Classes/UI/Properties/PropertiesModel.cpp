@@ -31,8 +31,6 @@
 
 #include "QtTools/Utils/Utils.h"
 
-#include <QPoint>
-#include <QColor>
 #include <QFont>
 #include <QVector2D>
 #include <QVector4D>
@@ -199,14 +197,6 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         if (property->GetType() == AbstractProperty::TYPE_HEADER)
         {
             return Themes::GetViewLineAlternateColor();
-        }
-        break;
-
-    case Qt::DecorationRole:
-        if (index.column() == 1 && value.GetType() == VariantType::TYPE_COLOR)
-        {
-            QColor color = ColorToQColor(value.AsColor());
-            return CreateIconFromColor(color);
         }
         break;
 

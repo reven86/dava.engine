@@ -114,7 +114,6 @@ public:
                   PROPERTY("assetCachePort", "Asset cache/Asset Cache Port", GetAssetCachePort, SetAssetCachePort, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   PROPERTY("assetCacheTimeout", "Asset cache/Asset Cache Timeout (ms)", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
-
 };
 
 inline EditorFontSystem* GetEditorFontSystem()
