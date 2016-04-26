@@ -34,8 +34,7 @@ The following example shows properly formatted code sample
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_MYCLASS_H__
-#define __DAVAENGINE_MYCLASS_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 
@@ -56,8 +55,6 @@ inline void MyClass::Foo(int32 i)
 }
 
 }
-
-#endif //__DAVAENGINE_MYCLASS_H__
 ```
 
 ##General
@@ -116,16 +113,7 @@ class Foo
 ```
 
 ####Header guard
-Header files are guarder by define `__PROJECT_FILE_NAME_H__`, for example:
-
-```cpp
-#ifndef __DAVAENGINE_FRUSTUM_H__
-#define __DAVAENGINE_FRUSTUM_H__
-
-//code here
-
-#endif //__DAVAENGINE_FRUSTUM_H__
-``` 
+Header files are guarder by `#pragma once`
 
 ####Commented code
 Remove commented code, we have revision control system for history. 
@@ -171,6 +159,13 @@ In case of names collision add underscore to local variable name.
 MyObject::MyObject(const String& name_)
 :   name(name_)
 {...}
+```
+
+####Function objects
+Function object is both function and variable. We just use the same naming rules as for variables: camel notation begin with lower-case.
+
+```cpp
+auto foo()[]{}
 ```
 
 ####Static constants, defines, enums.
@@ -225,7 +220,23 @@ class MyObject
 //...
 inline void MyObject::Foo()
 {
-//...
 }
 ```
+##CPP 11+ features
+####Autos
+Usage of auto is limited to
+#####lambda function type
 
+```cpp
+auto foo = [&](bool arg1, void* arg2)
+{
+    arg1 = *arg2;
+}
+```
+and
+#####shortening of long template types
+
+```cpp
+Map<FastName, SmartPointer<ObjectType>> map;
+auto iter = map.begin();
+```

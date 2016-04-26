@@ -71,7 +71,7 @@ signals:
     void EmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
     void InnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
     void LayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void ForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
+    void ForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, int forceIndex);
 
     // particles - value changed
     void ParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
@@ -200,7 +200,7 @@ public:
     };
     void EmitForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
     {
-        emit ForceSelected(scene, layer, forceIndex);
+        emit ForceSelected(scene, layer, static_cast<int>(forceIndex));
     };
 
     // Particle Editor Value Changed signals.

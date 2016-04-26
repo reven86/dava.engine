@@ -75,7 +75,7 @@ void SpritesPacker::ReloadSprites(bool clearDirs, bool forceRepack, const eGPUFa
         resourcePacker2D.clearOutputDirectory = clearDirs;
         resourcePacker2D.SetConvertQuality(quality);
         resourcePacker2D.InitFolders(inputFilePath, outputFilePath);
-        resourcePacker2D.PackResources(gpu);
+        resourcePacker2D.PackResources({ gpu });
         if (!resourcePacker2D.IsRunning())
         {
             break;

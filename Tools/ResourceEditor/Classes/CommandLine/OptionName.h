@@ -69,7 +69,6 @@ public:
     static const DAVA::String Yaml;
 
     static const DAVA::String GPU;
-    static const DAVA::String AllGPUs;
     static const DAVA::String Quality;
     static const DAVA::String Force;
     static const DAVA::String Mipmaps;

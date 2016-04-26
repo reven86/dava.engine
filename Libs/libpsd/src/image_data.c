@@ -514,7 +514,7 @@ psd_status psd_get_image_data(psd_context * context)
 	psd_uchar * image_data = NULL, * compress_data = NULL;
 	psd_uchar * count_data, * pixel_data, * channel_data;
 	psd_uchar * dst_alpha, * src_alpha;
-	psd_status status;
+    psd_status status = psd_status_done;
 	psd_layer_record * layer;
 	
 	if(context->load_tag == psd_load_tag_thumbnail || context->load_tag == psd_load_tag_exif)
