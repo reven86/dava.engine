@@ -29,76 +29,102 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "PackManager/PackManager.h"
+#include "DLC/Downloader/DownloadManager.h"
 
 namespace DAVA
 {
-template <typename Type, typename PriorityComparator>
-class DynamicPriorityQueue
+class PackRequest
 {
 public:
-    DynamicPriorityQueue() = default;
+    PackRequest(const String& name, float32 priority);
 
-    bool Empty() const;
-    uint32 Size() const;
-    Type* Top() const;
-    void Push(Type*);
-    void UpdatePriority(Type*);
-    Type* Pop();
+    void Update(PackManager& packManager);
+    void Cancel();
+    void ChangePriority(float32 newPriority);
 
-private:
-    Vector<Type*> items;
+    enum Status : uint32
+    {
+        WaitInQueue = 0,
+        LoadingDependencies = 1,
+        LoadingPack = 2,
+        Mounting = 3,
+    };
+
+    bool operator<(const PackRequest& other) const
+    {
+        return priority < other.priority;
+    }
+
+    struct SubRequest
+    {
+        String packName;
+        uint32 taskId;
+    };
+
+    Status status;
+    String packName;
+    float32 priority;
+    Vector<SubRequest> dependencies;
+    SubRequest finalPackRequest;
 };
 
-template <typename Type, typename PriorityComparator>
-bool DynamicPriorityQueue<Type, PriorityComparator>::Empty() const
+class RequestQueue
+{
+public:
+    RequestQueue() = default;
+
+    bool IsInQueue(const String& packName) const;
+    bool Empty() const;
+    uint32 Size() const;
+    PackRequest& Top();
+    void Push(const String& packName, float32 priority);
+    void Sort();
+    void Pop();
+
+private:
+    Vector<PackRequest> items;
+};
+
+bool RequestQueue::IsInQueue(const String& packName) const
+{
+    auto it = std::find_if(begin(items), end(items), [packName](const PackRequest& r) -> bool
+                           {
+                               return r.packName == packName;
+                           });
+    return items.empty();
+}
+
+bool RequestQueue::Empty() const
 {
     return items.empty();
 }
 
-template <typename Type, typename PriorityComparator>
-uint32 DynamicPriorityQueue<Type, PriorityComparator>::Size() const
+uint32 RequestQueue::Size() const
 {
     return static_cast<uint32>(items.size());
 }
 
-template <typename Type, typename PriorityComparator>
-Type* DynamicPriorityQueue<Type, PriorityComparator>::Top() const
+PackRequest& RequestQueue::Top()
 {
-    Type* topItem = items.front();
+    PackRequest& topItem = items.front();
     return topItem;
 }
 
-template <typename Type, typename PriorityComparator>
-void DynamicPriorityQueue<Type, PriorityComparator>::Push(Type* elem)
+void RequestQueue::Push(const String& packName, float32 priority)
 {
-    auto it = std::find(begin(items), end(items), elem);
-    if (it == end(items))
-    {
-        items.push_back(elem);
-        std::push_heap(begin(items), end(items), PriorityComparator());
-    }
-    else
-    {
-        std::sort_heap(begin(items), end(items), PriorityComparator());
-    }
+    items.emplace_back(PackRequest{ packName, priority });
+    std::push_heap(begin(items), end(items));
 }
 
-template <typename Type, typename PriorityComparator>
-void DynamicPriorityQueue<Type, PriorityComparator>::UpdatePriority(Type* elem)
+void RequestQueue::Sort()
 {
-    auto it = std::find(begin(items), end(items), elem);
-    if (it != end(items))
-    {
-        std::sort_heap(begin(items), end(items), PriorityComparator());
-    }
+    std::sort_heap(begin(items), end(items));
 }
 
-template <typename Type, typename PriorityComparator>
-Type* DynamicPriorityQueue<Type, PriorityComparator>::Pop()
+void RequestQueue::Pop()
 {
-    std::pop_heap(begin(items), end(items), PriorityComparator());
-    Type* topItem = items.back();
+    std::pop_heap(begin(items), end(items));
     items.pop_back();
-    return topItem;
 }
 } // end namespace DAVA
