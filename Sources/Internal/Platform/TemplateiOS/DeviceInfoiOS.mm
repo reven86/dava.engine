@@ -213,9 +213,9 @@ String DeviceInfoPrivate::GetModel()
             model = "iPad Pro 9.7 Cellular";
 
         if ([modelName hasPrefix:@"iPad6,7"])
-            model = "iPad Pro 12.9 WiFi";
+            model = "iPad Pro WiFi";
         if ([modelName hasPrefix:@"iPad6,8"])
-            model = "iPad Pro 12.9 Cellular";
+            model = "iPad Pro Cellular";
 
         // iPod
         if ([modelName hasPrefix:@"iPod1,1"])
