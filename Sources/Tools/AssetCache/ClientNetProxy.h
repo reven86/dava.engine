@@ -46,15 +46,18 @@ class CachedItemValue;
 class ClientNetProxyListener
 {
 public:
+    virtual ~ClientNetProxyListener() = default;
+
     virtual void OnAssetClientStateChanged(){};
     virtual void OnAddedToCache(const CacheItemKey& key, bool added){};
-    virtual void OnReceivedFromCache(const CacheItemKey& key, CachedItemValue&& value){};
+    virtual void OnReceivedFromCache(const CacheItemKey& key, const CachedItemValue& value){};
 };
 
 class ClientNetProxy : public DAVA::Net::IChannelListener
 {
 public:
     ClientNetProxy();
+    ~ClientNetProxy();
 
     void AddListener(ClientNetProxyListener*);
     void RemoveListener(ClientNetProxyListener*);
@@ -62,7 +65,7 @@ public:
     bool Connect(const String& ip, uint16 port);
     void Disconnect();
 
-    bool ChannelIsOpened();
+    bool ChannelIsOpened() const;
 
     bool AddToCache(const CacheItemKey& key, const CachedItemValue& value);
     bool RequestFromCache(const CacheItemKey& key);
@@ -94,7 +97,7 @@ private:
     Set<ClientNetProxyListener*> listeners;
 };
 
-inline bool ClientNetProxy::ChannelIsOpened()
+inline bool ClientNetProxy::ChannelIsOpened() const
 {
     return (openedChannel != nullptr);
 }

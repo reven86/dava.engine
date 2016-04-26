@@ -43,10 +43,13 @@
 
     ApplicationCore* core;
     bool fullScreen;
+    bool willQuit;
 
 @private
     IOPMAssertionID assertionID;
 }
+
+@property(assign) bool willQuit;
 
 - (void)createWindows;
 

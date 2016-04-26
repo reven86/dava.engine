@@ -386,6 +386,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\External\lz4\lz4.h" />
+    <ClInclude Include="..\..\Sources\External\lz4\lz4hc.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h" />
@@ -505,6 +507,7 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
@@ -812,6 +815,12 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\DirectionBasedNavigationAlgorithm.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\FocusHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\TabTraversalAlgorithm.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIFocusComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIFocusSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.h" />
@@ -888,6 +897,8 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\External\lz4\lz4.c" />
+    <ClCompile Include="..\..\Sources\External\lz4\lz4hc.c" />
     <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingDB.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp" />
@@ -981,6 +992,7 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />
@@ -1269,6 +1281,12 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\DirectionBasedNavigationAlgorithm.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\FocusHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\TabTraversalAlgorithm.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIFocusComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIFocusSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.cpp" />

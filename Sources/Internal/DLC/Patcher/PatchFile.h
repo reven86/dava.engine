@@ -80,6 +80,8 @@ public:
     PatchFileWriter(const FilePath& path, WriterMode mode, BSType diffType, bool beVerbose = false);
     ~PatchFileWriter();
 
+    void SetLogsFilePath(const FilePath& path);
+
     // TODO:
     // description
     bool Write(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
@@ -115,7 +117,20 @@ public:
         ERROR_UNKNOWN
     };
 
-    PatchFileReader(const FilePath& path, bool beVerbose = false);
+    struct PatchingErrorDetails
+    {
+        struct FileInfo
+        {
+            FilePath path = "";
+            uint32 size = 0;
+            uint32 crc = 0;
+        };
+
+        FileInfo expected;
+        FileInfo actual;
+    };
+
+    PatchFileReader(const FilePath& path, bool beVerbose = false, bool enablePermissive = false);
     ~PatchFileReader();
 
     bool ReadFirst();
@@ -125,21 +140,26 @@ public:
 
     const PatchInfo* GetCurInfo() const;
 
-    PatchError GetLastError() const;
-    PatchError GetParseError() const;
-    int32 GetErrno() const;
+    void SetLogsFilePath(const FilePath& path);
+    int32 GetFileError() const;
+    PatchFileReader::PatchError GetParseError() const;
+    PatchFileReader::PatchError GetError() const;
+    PatchFileReader::PatchingErrorDetails GetLastErrorDetails() const;
 
     bool Truncate();
     bool Apply(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath);
 
 protected:
+    bool isPermissiveMode;
     File* patchFile;
     PatchInfo curInfo;
+    FilePath logFilePath;
     PatchError lastError;
     PatchError parseError;
-    int32 curErrno;
+    int32 lastFileErrno;
     bool verbose;
     bool eof;
+    PatchingErrorDetails lastErrorDetails;
 
     Vector<int32> patchPositions;
     size_t initialPositionsCount;
@@ -149,6 +169,31 @@ protected:
     bool DoRead();
     bool ReadDataBack(void* data, uint32 size);
 };
+
+inline void PatchFileReader::SetLogsFilePath(const DAVA::FilePath& path)
+{
+    logFilePath = path;
+}
+
+inline int32 PatchFileReader::GetFileError() const
+{
+    return lastFileErrno;
+}
+
+inline PatchFileReader::PatchError PatchFileReader::GetParseError() const
+{
+    return parseError;
+}
+
+inline PatchFileReader::PatchError PatchFileReader::GetError() const
+{
+    return lastError;
+}
+
+inline PatchFileReader::PatchingErrorDetails PatchFileReader::GetLastErrorDetails() const
+{
+    return lastErrorDetails;
+}
 }
 
 #endif // __DAVAENGINE_TOOLS_RESOURCE_PATCHER_H__

@@ -87,6 +87,7 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
     dlcContext.appliedPatchCount = 0;
     dlcContext.patchingError = PatchFileReader::ERROR_NO;
     dlcContext.lastErrno = 0;
+    dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
@@ -157,6 +158,11 @@ DLC::DLCError DLC::GetError() const
 int32 DLC::GetLastErrno() const
 {
     return dlcContext.lastErrno;
+}
+
+PatchFileReader::PatchingErrorDetails DLC::GetLastErrorInfo() const
+{
+    return dlcContext.lastPatchingErrorDetails;
 }
 
 PatchFileReader::PatchError DLC::GetPatchError() const
@@ -759,6 +765,7 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
             switch (downloadError)
             {
             case DAVA::DLE_NO_ERROR:
+                Logger::InfoToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Downloaded succesfully.");
                 //we want to have this switch from DS_DOWNLOADING to DS_PATCHING when app is in background,
                 //that's why we call FSM() directly instead of using job in PostEvent()
                 FSM(EVENT_DOWNLOAD_OK);
@@ -774,12 +781,13 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
             case DAVA::DLE_FILE_ERROR:
                 // writing file problem
                 DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrno);
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error $d", dlcContext.lastErrno);
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastErrno);
                 PostError(DE_WRITE_ERROR);
                 break;
 
             default:
                 // some other unexpected error during download process
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Unexpected download error.");
                 PostError(DE_DOWNLOAD_ERROR);
                 break;
             }
@@ -801,14 +809,16 @@ void DLC::StepPatchBegin()
         return;
     }
 
-    dlcContext.patchingError = PatchFileReader::ERROR_NO;
     dlcContext.lastErrno = 0;
+    dlcContext.patchingError = PatchFileReader::ERROR_NO;
+    dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
     dlcContext.patchInProgress = true;
     dlcContext.appliedPatchCount = 0;
     dlcContext.totalPatchCount = 0;
 
     // read number of available patches
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
+    patchReader.SetLogsFilePath(logsFilePath);
     if (patchReader.ReadFirst())
     {
         do
@@ -840,7 +850,6 @@ void DLC::StepPatchFinish()
         PostEvent(EVENT_PATCH_OK);
         break;
 
-    case PatchFileReader::ERROR_ORIG_READ:
     case PatchFileReader::ERROR_CANT_READ:
         PostError(DE_READ_ERROR);
         break;
@@ -878,8 +887,9 @@ void DLC::StepPatchCancel()
 
 void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
 {
-    PatchFileReader patchReader(dlcContext.remotePatchStorePath);
-
+    Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
+    PatchFileReader patchReader(dlcContext.remotePatchStorePath, false, true);
+    Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] PatchReader created");
     bool applySuccess = true;
     const PatchInfo* patchInfo = nullptr;
 
@@ -950,8 +960,10 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                    });
 
     // check if no errors occurred during patching
-    dlcContext.lastErrno = patchReader.GetErrno();
-    dlcContext.patchingError = patchReader.GetLastError();
+    dlcContext.lastErrno = patchReader.GetFileError();
+    dlcContext.patchingError = patchReader.GetError();
+    dlcContext.lastPatchingErrorDetails = patchReader.GetLastErrorDetails();
+
     if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
         DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);
@@ -964,6 +976,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         {
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+            dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
             dlcContext.lastErrno = errno;
         }
 
