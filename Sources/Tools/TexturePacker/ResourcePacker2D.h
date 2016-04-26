@@ -63,7 +63,7 @@ public:
 
     void SetCacheClient(AssetCacheClient* cacheClient, const String& comment);
 
-    void PackResources(eGPUFamily forGPU);
+    void PackResources(const Vector<eGPUFamily>& forGPUs);
 
     const Set<String>& GetErrors() const;
 
@@ -97,7 +97,7 @@ public:
     bool isLightmapsPacking = false;
     bool forceRepack = false;
     bool clearOutputDirectory = true;
-    eGPUFamily requestedGPUFamily = GPU_INVALID;
+    Vector<eGPUFamily> requestedGPUs;
     TextureConverter::eConvertQuality quality = TextureConverter::ECQ_VERY_HIGH;
 
 private:

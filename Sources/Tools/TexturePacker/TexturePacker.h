@@ -77,11 +77,11 @@ public:
     TexturePacker();
 
     // pack textures to single texture
-    void PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU);
+    void PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, const Vector<eGPUFamily>& forGPUs);
     // page each PSD file to separate texture
-    void PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU);
+    void PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, const Vector<eGPUFamily>& forGPUs);
     // pack one sprite and use several textures if more than one needed
-    void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& remainingList, eGPUFamily forGPU);
+    void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& remainingList, const Vector<eGPUFamily>& forGPUs);
 
     void SetUseOnlySquareTextures();
     void SetMaxTextureSize(uint32 maxTextureSize);
@@ -111,7 +111,7 @@ private:
         bool toConvertOrigin = false;
     };
 
-    Vector<ImageExportKeys> GetExportKeys(eGPUFamily forGPU);
+    Vector<ImageExportKeys> GetExportKeys(const Vector<eGPUFamily>& forGPUs);
     void ExportImage(const PngImageExt& image, const Vector<ImageExportKeys>& exportKeys, const FilePath& exportedPathname);
 
     rhi::TextureAddrMode GetDescriptorWrapMode();

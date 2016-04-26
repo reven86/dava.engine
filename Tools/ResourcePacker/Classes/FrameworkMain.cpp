@@ -29,6 +29,8 @@
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
+
+#include "Utils/Utils.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "CommandLine/CommandLineParser.h"
 
@@ -56,7 +58,6 @@ void PrintUsage()
     printf("\t-ip - asset cache ip\n");
     printf("\t-p - asset cache port\n");
     printf("\t-t - asset cache timeout\n");
-    printf("\t-allGPUs - compress atlasses for all GPU\n");
     printf("\t-output - output folder for .../Project/Data/Gfx/\n");
 
     printf("\n");
@@ -128,19 +129,22 @@ void ProcessRecourcePacker()
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.rootDirectory.GetAbsolutePathname().c_str());
 
-    eGPUFamily exportForGPU = GPU_ORIGIN;
+    Vector<eGPUFamily> exportForGPUs;
     if (CommandLineParser::CommandIsFound(String("-gpu")))
     {
-        String gpuName = CommandLineParser::GetCommandParam("-gpu");
-        exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
-        if (GPU_INVALID == exportForGPU)
+        String gpuNamesString = CommandLineParser::GetCommandParam("-gpu");
+        Vector<String> gpuNames;
+        Split(gpuNamesString, ",", gpuNames);
+
+        for (String& name : gpuNames)
         {
-            exportForGPU = GPU_ORIGIN;
+            exportForGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(name));
         }
     }
-    else if (CommandLineParser::CommandIsFound(String("-allGPUs")))
+
+    if (exportForGPUs.empty())
     {
-        exportForGPU = GPU_FAMILY_COUNT;
+        exportForGPUs.push_back(GPU_ORIGIN);
     }
 
     AssetCacheClient cacheClient(true);
@@ -176,7 +180,7 @@ void ProcessRecourcePacker()
     }
     else
     {
-        resourcePacker.PackResources(exportForGPU);
+        resourcePacker.PackResources(exportForGPUs);
     }
 
     if (shouldDisconnect)

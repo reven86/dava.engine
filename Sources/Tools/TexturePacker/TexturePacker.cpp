@@ -124,26 +124,26 @@ DAVA::int32 TexturePacker::TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem
     return weight;
 }
 
-void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU)
+void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, const Vector<eGPUFamily>& forGPUs)
 {
     Logger::FrameworkDebug("Packing to separate textures");
 
     for (const DefinitionFile::Pointer& defFile : defsList)
     {
-        PackToMultipleTextures(outputPath, defFile->filename.GetBasename().c_str(), { defFile }, forGPU);
+        PackToMultipleTextures(outputPath, defFile->filename.GetBasename().c_str(), { defFile }, forGPUs);
     }
 }
 
-void TexturePacker::PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU)
+void TexturePacker::PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, const Vector<eGPUFamily>& forGPUs)
 {
-    PackToMultipleTextures(outputPath, "texture", defsList, forGPU);
+    PackToMultipleTextures(outputPath, "texture", defsList, forGPUs);
 }
 
-void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, eGPUFamily forGPU)
+void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, const Vector<eGPUFamily>& forGPUs)
 {
     DVASSERT_MSG(packAlgorithms.empty() == false, "Packing algorithm was not specified");
 
-    Vector<ImageExportKeys> imageExportKeys = GetExportKeys(forGPU);
+    Vector<ImageExportKeys> imageExportKeys = GetExportKeys(forGPUs);
     Vector<SpriteItem> spritesToPack = PrepareSpritesVector(defList);
     Vector<std::unique_ptr<SpritesheetLayout>> resultSheets = PackSprites(spritesToPack, imageExportKeys);
     SaveResultSheets(outputPath, basename, defList, resultSheets, imageExportKeys);
@@ -489,21 +489,15 @@ bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& 
     return (pixelParamsRead || imageParamsRead);
 }
 
-Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(eGPUFamily forGPU)
+Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(const Vector<eGPUFamily>& forGPUs)
 {
     Vector<ImageExportKeys> compressionTargets;
-    if (forGPU == eGPUFamily::GPU_FAMILY_COUNT)
+
+    size_type count = forGPUs.size();
+    compressionTargets.resize(count);
+    for (size_type i = 0; i < count; ++i)
     {
-        compressionTargets.resize(eGPUFamily::GPU_FAMILY_COUNT);
-        for (uint32 i = 0; i < eGPUFamily::GPU_FAMILY_COUNT; ++i)
-        {
-            compressionTargets[i].forGPU = static_cast<eGPUFamily>(i);
-        }
-    }
-    else
-    {
-        compressionTargets.resize(1);
-        compressionTargets[0].forGPU = forGPU;
+        compressionTargets[i].forGPU = forGPUs[i];
     }
 
     for (auto& keys : compressionTargets)
@@ -518,7 +512,7 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(eGPUFamily f
             { // read GPU parameters
                 const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(keys.forGPU);
                 bool gpuParametersRead = false;
-                if (CommandLineParser::Instance()->IsFlagSet(gpuNameFlag) || (forGPU == eGPUFamily::GPU_FAMILY_COUNT))
+                if (CommandLineParser::Instance()->IsFlagSet(gpuNameFlag) || (count > 1))
                 {
                     gpuParametersRead = GetGpuParameters(keys.forGPU, keys.pixelFormat, keys.imageFormat, keys.imageQuality);
                 }

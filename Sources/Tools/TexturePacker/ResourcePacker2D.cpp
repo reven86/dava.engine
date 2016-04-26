@@ -78,7 +78,7 @@ void ResourcePacker2D::InitFolders(const FilePath& inputPath, const FilePath& ou
     rootDirectory = inputPath + "../";
 }
 
-void ResourcePacker2D::PackResources(eGPUFamily forGPU)
+void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
 {
     SetRunning(true);
     Logger::FrameworkDebug("\nInput: %s \nOutput: %s \nExclude: %s",
@@ -86,7 +86,10 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
                            outputGfxDirectory.GetAbsolutePathname().c_str(),
                            rootDirectory.GetAbsolutePathname().c_str());
 
-    Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GlobalEnumMap<eGPUFamily>::Instance()->ToString(forGPU) : "Unknown");
+    for (eGPUFamily gpu : forGPUs)
+    {
+        Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != gpu) ? GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu) : "Unknown");
+    }
 
     Vector<PackingAlgorithm> packAlgorithms;
 
@@ -113,7 +116,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
         return;
     }
 
-    requestedGPUFamily = forGPU;
+    requestedGPUs = forGPUs;
     outputDirModified = false;
 
     gfxDirName = inputGfxDirectory.GetLastDirectoryName();
@@ -305,7 +308,12 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     Merge(currentFlags, ' ', mergedFlags);
 
     String packingParams = mergedFlags;
-    packingParams += String("GPU = ") + GlobalEnumMap<eGPUFamily>::Instance()->ToString(requestedGPUFamily);
+
+    for (eGPUFamily gpu : requestedGPUs)
+    {
+        packingParams += String("GPU = ") + GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu);
+    }
+
     packingParams += String("PackerVersion = ") + VERSION;
     packingParams += String("LibPSDVersion = ") + INTERNAL_LIBPSD_VERSION;
     for (const auto& algorithm : packAlgorithms)
@@ -461,11 +469,11 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                     if (CommandLineParser::Instance()->IsFlagSet("--split"))
                     {
-                        packer.PackToTexturesSeparate(outputPath, definitionFileList, requestedGPUFamily);
+                        packer.PackToTexturesSeparate(outputPath, definitionFileList, requestedGPUs);
                     }
                     else
                     {
-                        packer.PackToTextures(outputPath, definitionFileList, requestedGPUFamily);
+                        packer.PackToTextures(outputPath, definitionFileList, requestedGPUs);
                     }
 
                     Set<String> currentErrors = packer.GetErrors();
