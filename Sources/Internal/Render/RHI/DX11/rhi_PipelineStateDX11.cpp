@@ -357,6 +357,7 @@ public:
     bool SetConst(unsigned const_i, unsigned count, const float* data);
     bool SetConst(unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount);
     void SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const;
+    void Invalidate();
 #if !RHI_DX11__USE_DEFERRED_CONTEXTS
     void SetToRHI(const void* instData) const;
     const void* Instance() const;
@@ -577,6 +578,11 @@ const void* ConstBufDX11::Instance() const
     return inst;
 }
 #endif
+
+void ConstBufDX11::Invalidate()
+{
+    updatePending = true;
+}
 
 //==============================================================================
 
@@ -1079,6 +1085,14 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_SetConst = &dx11_ConstBuffer_SetConst;
     dispatch->impl_ConstBuffer_SetConst1fv = &dx11_ConstBuffer_SetConst1fv;
     dispatch->impl_ConstBuffer_Delete = &dx11_ConstBuffer_Delete;
+}
+
+void InvalidateAll()
+{
+    for (ConstBufDX11Pool::Iterator cb = ConstBufDX11Pool::Begin(), cb_end = ConstBufDX11Pool::End(); cb != cb_end; ++cb)
+    {
+        cb->Invalidate();
+    }
 }
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS

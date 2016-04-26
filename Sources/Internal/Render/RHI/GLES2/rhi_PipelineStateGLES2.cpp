@@ -51,11 +51,25 @@ static int cachedBlendEnabled = -1;
 static GLenum cachedBlendSrc = 0;
 static GLenum cachedBlendDst = 0;
 static uint32 cachedProgram = 0;
+static GLboolean mask[4] = { false, false, false, false };
 }
 
 struct
 VertexDeclGLES2
 {
+    struct
+    vattr_t
+    {
+        const GLvoid* pointer;
+        GLint size;
+        GLenum type;
+        int divisor;
+        GLboolean normalized;
+        bool enabled;
+    };
+
+    static vattr_t vattr[VATTR_COUNT];
+
     VertexDeclGLES2()
         : elemCount(0)
         , vattrInited(false)
@@ -197,18 +211,6 @@ VertexDeclGLES2
 
         memset(attr_used, 0, sizeof(attr_used));
 
-        struct
-        vattr_t
-        {
-            bool enabled;
-            GLint size;
-            GLenum type;
-            GLboolean normalized;
-            int divisor;
-            const GLvoid* pointer;
-        };
-
-        static vattr_t vattr[VATTR_COUNT];
         static unsigned cur_stride[MAX_VERTEX_STREAM_COUNT];
         static unsigned cur_stream_count = 0;
         static bool needInit = true;
@@ -317,6 +319,16 @@ VertexDeclGLES2
         VAttrCacheValid = false;
     }
 
+    static void InvalidateVAttrCacheForTools()
+    {
+        InvalidateVAttrCache();
+
+        for (size_t i = 0; i < VATTR_COUNT; ++i)
+        {
+            vattr[i].enabled = false;
+        }
+    }
+
     struct
     Elem
     {
@@ -341,6 +353,7 @@ VertexDeclGLES2
 };
 
 bool VertexDeclGLES2::VAttrCacheValid = false;
+VertexDeclGLES2::vattr_t VertexDeclGLES2::vattr[VATTR_COUNT];
 
 class
 PipelineStateGLES2_t
@@ -769,8 +782,6 @@ void SetToRHI(Handle ps)
         }
     }
 
-    static GLboolean mask[4] = { false, false, false, false };
-
     if (ps2->maskR != mask[0] || ps2->maskG != mask[1] || ps2->maskB != mask[2] || ps2->maskA != mask[3])
     {
         GL_CALL(glColorMask(ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA));
@@ -838,8 +849,9 @@ void InvalidateCache()
     cachedBlendSrc = 0;
     cachedBlendDst = 0;
     cachedProgram = 0;
+    mask[0] = mask[1] = mask[2] = mask[3] = false;
 
-    VertexDeclGLES2::InvalidateVAttrCache();
+    VertexDeclGLES2::InvalidateVAttrCacheForTools();
 }
 
 void InvalidateVattrCache()
