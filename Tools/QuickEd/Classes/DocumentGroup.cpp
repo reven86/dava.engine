@@ -231,20 +231,31 @@ void DocumentGroup::CloseDocument(Document* document)
         tabBar->removeTab(index);
         tabBar->blockSignals(signalsWasBlocked);
     }
-    DVVERIFY(documents.removeAll(document) == 1);
-    emit CanSaveAllChanged(!documents.empty());
-
-    undoGroup->removeStack(document->GetUndoStack());
-
     Document* nextDocument = nullptr;
     if (document != active)
     {
         nextDocument = active;
     }
-    else if (!documents.isEmpty())
+    else if (documents.size() > 1)
     {
-        nextDocument = documents.first();
+        DVASSERT(nullptr != active);
+        int activeIndex = documents.indexOf(active);
+        DVASSERT(activeIndex != -1);
+        activeIndex++;
+        if (activeIndex < documents.size())
+        {
+            nextDocument = documents.at(activeIndex);
+        }
+        else
+        {
+            nextDocument = documents.at(documents.size() - 2); //last document will be removed
+        }
     }
+    DVVERIFY(documents.removeAll(document) == 1);
+    emit CanSaveAllChanged(!documents.empty());
+
+    undoGroup->removeStack(document->GetUndoStack());
+
     SetActiveDocument(nextDocument);
     delete document;
 }
