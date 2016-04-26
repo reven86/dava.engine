@@ -34,8 +34,7 @@
 #include <QScrollBar>
 
 ParticleEditorWidget::ParticleEditorWidget(QWidget* parent /* = 0*/)
-    :
-    QScrollArea(parent)
+    : QScrollArea(parent)
 {
     setWidgetResizable(true);
 
@@ -64,9 +63,9 @@ ParticleEditorWidget::ParticleEditorWidget(QWidget* parent /* = 0*/)
             this,
             SLOT(OnLayerSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*, DAVA::ParticleLayer*, bool)));
     connect(SceneSignals::Instance(),
-            SIGNAL(ForceSelected(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)),
+            SIGNAL(ForceSelected(SceneEditor2*, DAVA::ParticleLayer*, int)),
             this,
-            SLOT(OnForceSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)));
+            SLOT(OnForceSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleLayer*, int)));
 
     // Get the notification about changes in Particle Editor items.
     connect(SceneSignals::Instance(),

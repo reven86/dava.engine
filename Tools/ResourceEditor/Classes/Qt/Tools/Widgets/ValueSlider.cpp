@@ -96,7 +96,7 @@ void ValueSlider::DrawBackground(QPainter* p) const
 {
     const QRect rc = PosArea().adjusted(0, 0, -1, -1);
 
-    p->fillRect(rc, Qt::gray);
+    p->fillRect(rc, Qt::darkGray);
     p->setPen(QPen(Qt::black, 1));
     p->drawRect(rc);
 }
@@ -108,9 +108,9 @@ void ValueSlider::DrawForeground(QPainter* p) const
     const QRect rc(1, 1, w, PosArea().height() - 2);
     const QRect clip = PosArea().adjusted(1, 1, -2, -1);
 
-    const QColor c1(235, 235, 235);
-    const QColor c2(200, 200, 200);
-    const QColor c3(235, 235, 235);
+    const QColor c1(135, 135, 135);
+    const QColor c2(50, 50, 50);
+    const QColor c3(135, 135, 135);
 
     QLinearGradient gradient(1, 1, 1, rc.height());
     gradient.setColorAt(0.0, c1);
