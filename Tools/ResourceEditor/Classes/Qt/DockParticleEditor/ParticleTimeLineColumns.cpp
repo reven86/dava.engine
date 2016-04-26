@@ -56,6 +56,7 @@ void ParticlesExtraInfoColumn::paintEvent(QPaintEvent*)
     painter.setPen(Qt::black);
     QRect textRect(0, 0, rect().width(), TOP_INDENT);
     painter.drawRect(textRect);
+    painter.setPen(Qt::white);
     painter.drawText(textRect, Qt::AlignHCenter | Qt::AlignVCenter, GetExtraInfoHeader());
 
     // Draw the per-layer particles count.
@@ -85,7 +86,7 @@ void ParticlesExtraInfoColumn::paintEvent(QPaintEvent*)
     QFont totalFont = timeLineWidget->nameFont;
     totalFont.setBold(true);
 
-    painter.setPen(QPen(Qt::black, LINE_WIDTH));
+    painter.setPen(QPen(Qt::white, LINE_WIDTH));
     painter.drawText(totalPoint, GetExtraInfoFooter());
 }
 

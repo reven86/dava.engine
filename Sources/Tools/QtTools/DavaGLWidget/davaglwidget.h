@@ -104,7 +104,7 @@ signals:
     void OnDrop(const QMimeData* mimeData);
 
 public slots:
-    void OnSync();
+    void OnPaint();
 
 private slots:
     void OnResize();

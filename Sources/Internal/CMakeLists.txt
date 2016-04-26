@@ -1,8 +1,22 @@
-cmake_minimum_required( VERSION 3.0 )
+macro(grab_libs OUTPUT_LIST_VAR LIB_DIR EXCLUDE_LIBS ADDITIONAL_LIBS)
+    set(OUTPUT_LIST "")
+    file ( GLOB LIB_LIST "${LIB_DIR}/*.lib" )
+    foreach (LIB_FILE ${LIB_LIST})
+        get_filename_component(LIB_NAME ${LIB_FILE} NAME)
+        list (FIND ${EXCLUDE_LIBS} ${LIB_NAME} LIB_INDEX)
+        if (${LIB_INDEX} EQUAL -1)
+            list ( APPEND OUTPUT_LIST ${LIB_FILE}  )
+        endif()
+    endforeach()
+    list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
+    set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
+endmacro()
+
+cmake_minimum_required (VERSION 3.0)
 
 project( DavaFramework )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" )
 
 include( CMake-common )
 
@@ -13,10 +27,10 @@ if ( STEAM_SDK_FOUND )
     add_definitions ( -D__DAVAENGINE_STEAM__ )
 endif ()
 
-set ( FRAMEWORK_DEFINITIONS 
--D_UNICODE 
--DUNICODE 
--D_CRT_SECURE_NO_DEPRECATE 
+set ( FRAMEWORK_DEFINITIONS
+-D_UNICODE
+-DUNICODE
+-D_CRT_SECURE_NO_DEPRECATE
 -D_CRT_NON_CONFORMING_SWPRINTFS
 -DCURL_STATICLIB
 )
@@ -32,6 +46,10 @@ endif()
 
 if( DAVA_USE_RENDERSTATS )
     list( APPEND FRAMEWORK_DEFINITIONS -D__DAVAENGINE_RENDERSTATS__ )
+endif()
+
+if ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+    list( APPEND FRAMEWORK_DEFINITIONS -DDAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
 endif()
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
@@ -82,7 +100,7 @@ if( ANDROID )
 
 elseif( MACOS )
     find_package( ZLIB )
-    add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
+    add_definitions( -D__DAVAENGINE_PTHREAD__ )
 
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
 
@@ -98,12 +116,12 @@ elseif( MACOS )
                     SystemConfiguration
                     IOKit
                 )
-        
+
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
         list ( APPEND LIST_ADDED_SHARED_LIBRARIES  ${${NAME}_LIBRARY} )
     endforeach()
 
-    list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )                           
+    list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
 
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
@@ -119,9 +137,9 @@ elseif( IOS )
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
-    foreach( NAME  CoreGraphics 
-                   Foundation 
-                   UIKit 
+    foreach( NAME  CoreGraphics
+                   Foundation
+                   UIKit
                    OpenGLES
                    Metal
                    OpenAL
@@ -163,18 +181,15 @@ elseif ( WINDOWS_UAP )
     )
     set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
 
-elseif( WIN32 ) 
+elseif( WIN32 )
     include( FindWindowsSDK )
     include_directories   ( ${WINDOWSSDK_LATEST_DIR}/include/shared ) 
-    include_directories   ( $ENV{DXSDK_DIR}/include ) 
+    include_directories   ( $ENV{DXSDK_DIR}/include )
 
 #    link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
     link_directories       ( ${WINDOWSSDK_LATEST_DIR}/lib/x86 )
-    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/*" )
-    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
-
-    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/*.lib" )
-    list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
+    grab_libs(LIST_SHARED_LIBRARIES_DEBUG "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug" EXCLUDE_LIBS ADDITIONAL_DEBUG_LIBS)
+    grab_libs(LIST_SHARED_LIBRARIES_RELEASE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release" EXCLUDE_LIBS ADDITIONAL_RELEASE_LIBS)
 
     # list each library on its own line to ease library addition
     list ( APPEND LIST_SHARED_LIBRARIES
