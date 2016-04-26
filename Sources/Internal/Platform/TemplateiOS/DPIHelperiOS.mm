@@ -73,7 +73,7 @@ const static DeviceScreenInfo devicesInfoList[] =
   DeviceScreenInfo(1080, IPHONE_6_PLUS, ""),
   DeviceScreenInfo(1242, IPHONE_6_PLUS_ZOOM, ""),
   DeviceScreenInfo(1536, IPAD_3_4_AIR_AIR2_PRO, ""),
-  DeviceScreenInfo(1536, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "mini")
+  DeviceScreenInfo(1536, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "mini"),
   DeviceScreenInfo(2048, IPAD_3_4_AIR_AIR2_PRO, "")
 };
 
