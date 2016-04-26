@@ -348,19 +348,19 @@ VariantType YamlNode::AsVariantType() const
         }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_INT8)
         {
-            retValue.SetInt32(it->second->AsInt8());
+            retValue.SetInt8(static_cast<int8>(it->second->AsInt32()));
         }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT8)
         {
-            retValue.SetUInt32(it->second->AsUInt8());
+            retValue.SetUInt8(static_cast<uint8>(it->second->AsUInt32()));
         }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_INT16)
         {
-            retValue.SetInt32(it->second->AsInt16());
+            retValue.SetInt16(static_cast<int16>(it->second->AsInt32()));
         }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT16)
         {
-            retValue.SetUInt32(it->second->AsUInt16());
+            retValue.SetUInt16(static_cast<uint16>(it->second->AsUInt32()));
         }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_INT32)
         {
