@@ -204,7 +204,7 @@ bool DocumentGroup::TryCloseDocument(Document* document)
         QMessageBox::Save);
         if (ret == QMessageBox::Save)
         {
-            SaveDocument(document);
+            SaveDocument(document, false);
         }
         else if (ret == QMessageBox::Cancel)
         {
@@ -303,13 +303,14 @@ void DocumentGroup::SaveAllDocuments()
 {
     for (auto& document : documents)
     {
-        SaveDocument(document);
+        SaveDocument(document, true);
     }
 }
 void DocumentGroup::SaveCurrentDocument()
 {
     DVASSERT(nullptr != active);
-    SaveDocument(active);
+    DVASSERT(!active->GetUndoStack()->isClean());
+    SaveDocument(active, true);
 }
 
 void DocumentGroup::OnCanSaveChanged(bool canSave)
@@ -462,7 +463,7 @@ void DocumentGroup::InsertTab(QTabBar* tabBar, Document* document, int index)
     tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
 }
 
-void DocumentGroup::SaveDocument(Document* document)
+void DocumentGroup::SaveDocument(Document* document, bool force)
 {
     DVASSERT(document != nullptr);
     QFileInfo fileInfo(document->GetPackageAbsolutePath());
@@ -480,7 +481,7 @@ void DocumentGroup::SaveDocument(Document* document)
             return;
         }
     }
-    else if (document->GetUndoStack()->isClean())
+    else if (!force && document->GetUndoStack()->isClean())
     {
         return;
     }
