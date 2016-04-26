@@ -49,6 +49,8 @@ namespace DAVA
 class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
+class UIFocusSystem;
+class UIKeyInputSystem;
 class UIScreenshoter;
 
 class ScreenSwitchListener
@@ -265,7 +267,9 @@ public:
     /**
 	 \brief Called by the control to set himself as the focused control
 	 */
-    void SetFocusedControl(UIControl* newFocused, bool forceSet);
+    void SetFocusedControl(UIControl* newFocused);
+
+    void ControlBecomeInvisible(UIControl* control);
 
     /**
 	 \brief Returns currently focused control
@@ -298,6 +302,7 @@ public:
     bool IsHostControl(const UIControl* control) const;
 
     UILayoutSystem* GetLayoutSystem() const;
+    UIFocusSystem* GetFocusSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
@@ -318,6 +323,8 @@ private:
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
+    UIFocusSystem* focusSystem = nullptr;
+    UIKeyInputSystem* keyInputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
@@ -336,7 +343,8 @@ private:
 
     UIControl* exclusiveInputLocker = nullptr;
     UIControl* hovered = nullptr;
-    UIControl* focusedControl = nullptr;
+    UIControl* focusedControlWhenTouchBegan = nullptr;
+    Vector2 positionOfTouchWhenTouchBegan;
 
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;

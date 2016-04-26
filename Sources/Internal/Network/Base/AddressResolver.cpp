@@ -53,15 +53,16 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(loop != nullptr);
     DVASSERT(handle == nullptr);
+    DVASSERT(cbk != nullptr);
+
+    handle = new uv_getaddrinfo_t;
+    handle->data = this;
 
     struct addrinfo hints;
     hints.ai_family = PF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = 0;
     hints.ai_protocol = IPPROTO_TCP;
-
-    handle = new uv_getaddrinfo_t;
-    handle->data = this;
 
     Array<char, 6> portstring;
     Snprintf(portstring.data(), portstring.size(), "%hu", port);
@@ -87,8 +88,9 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
 void AddressResolver::Cancel()
 {
 #if !defined(DAVA_NETWORK_DISABLE)
-    if (nullptr != handle)
+    if (handle != nullptr)
     {
+        handle->data = nullptr;
         uv_cancel(reinterpret_cast<uv_req_t*>(handle));
         handle = nullptr;
     }
@@ -99,8 +101,9 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
-    if (nullptr != resolver)
+    if (nullptr != resolver && resolver->handle != nullptr)
     {
+        DVASSERT(resolver->handle == handle);
         resolver->GotAddrInfo(status, response);
         resolver->handle = nullptr;
     }
@@ -113,16 +116,13 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
 
 void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
 {
-    if (handle)
+    Endpoint endpoint;
+    if (0 == status)
     {
-        Endpoint endpoint;
-        if (0 == status)
-        {
-            endpoint = Endpoint(response->ai_addr);
-        }
-
-        resolverCallbackFn(endpoint, status);
+        endpoint = Endpoint(response->ai_addr);
     }
+
+    resolverCallbackFn(endpoint, status);
 }
 
 } // end of namespace Net

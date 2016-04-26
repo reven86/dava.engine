@@ -83,22 +83,22 @@ public:
     {
     }
 
-    virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField* /*textField*/)
-    {
-        return false;
-    }
-    virtual bool IsTextFieldCanLostFocus(UITextField* /*textField*/)
-    {
-        return true;
-    }
-
     /*
         \brief Called when device keyboard is displayed/hidden.
         */
     virtual void OnKeyboardShown(const Rect& keyboardRect)
     {
     }
+
     virtual void OnKeyboardHidden()
+    {
+    }
+
+    virtual void OnStartEditing()
+    {
+    }
+
+    virtual void OnStopEditing()
     {
     }
 };
@@ -174,21 +174,35 @@ public:
         RETURN_KEY_EMERGENCY_CALL
     };
 
+    enum eStartEditPolicy
+    {
+        START_EDIT_WHEN_FOCUSED,
+        START_EDIT_BY_USER_REQUEST,
+    };
+
+    enum eStopEditPolicy
+    {
+        STOP_EDIT_WHEN_FOCUS_LOST,
+        STOP_EDIT_BY_USER_REQUEST,
+    };
+
     UITextField(const Rect& rect = Rect());
 
     void OnActive() override;
     void OnInactive() override;
 
     void OnFocused() override;
-    void OnFocusLost(UIControl* newFocus) override;
+    void OnFocusLost() override;
+    void OnTouchOutsideFocus() override;
 
     void SetDelegate(UITextFieldDelegate* delegate);
     UITextFieldDelegate* GetDelegate();
 
     void Update(float32 timeElapsed) override;
 
-    void OpenKeyboard();
-    void CloseKeyboard();
+    bool IsEditing() const;
+    void StartEdit();
+    void StopEdit();
 
     void SetSpriteAlign(int32 align) override;
 
@@ -229,8 +243,6 @@ public:
     void SetFocused();
 
     void ReleaseFocus();
-
-    bool IsLostFocusAllowed(UIControl* newFocus) override;
 
     void SetSelectionColor(const Color& selectionColor);
     const Color& GetSelectionColor() const;
@@ -330,6 +342,12 @@ public:
     int32 GetReturnKeyType() const;
     void SetReturnKeyType(int32 value);
 
+    eStartEditPolicy GetStartEditPolicy() const;
+    void SetStartEditPolicy(eStartEditPolicy policy);
+
+    eStopEditPolicy GetStopEditPolicy() const;
+    void SetStopEditPolicy(eStopEditPolicy policy);
+
     /**
       \brief Enable return key automatically.
      */
@@ -358,6 +376,12 @@ public:
 
     WideString GetVisibleText() const;
 
+    virtual void OnStartEditing();
+    virtual void OnStopEditing();
+
+    virtual void OnKeyboardShown(const Rect& keyboardRect);
+    virtual void OnKeyboardHidden();
+
 protected:
     ~UITextField() override;
     void OnVisible() override;
@@ -372,6 +396,12 @@ private:
     */
     void SetupDefaults();
 
+    int32 GetStartEditPolicyAsInt() const;
+    void SetStartEditPolicyFromInt(int32 policy);
+
+    int32 GetStopEditPolicyAsInt() const;
+    void SetStopEditPolicyFromInt(int32 policy);
+
     WideString text;
     UITextFieldDelegate* delegate = nullptr;
     float32 cursorBlinkingTime = 0.0f;
@@ -383,11 +413,14 @@ private:
     eKeyboardAppearanceType keyboardAppearanceType;
     eKeyboardType keyboardType;
     eReturnKeyType returnKeyType;
+    eStartEditPolicy startEditPolicy = START_EDIT_BY_USER_REQUEST;
+    eStopEditPolicy stopEditPolicy = STOP_EDIT_BY_USER_REQUEST;
 
     // All Boolean variables are grouped together because of DF-2149.
     bool isPassword;
     bool enableReturnKeyAutomatically;
     bool isMultiline = false;
+    bool isEditing = false;
 
     TextFieldPlatformImpl* textFieldImpl = nullptr;
     int32 maxLength = -1;
@@ -411,7 +444,10 @@ public:
                          PROPERTY("keyboardAppearanceType", InspDesc("Keyboard appearance type", GlobalEnumMap<eKeyboardAppearanceType>::Instance()), GetKeyboardAppearanceType, SetKeyboardAppearanceType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("keyboardType", InspDesc("Keyboard type", GlobalEnumMap<eKeyboardType>::Instance()), GetKeyboardType, SetKeyboardType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("returnKeyType", InspDesc("Return key type", GlobalEnumMap<eReturnKeyType>::Instance()), GetReturnKeyType, SetReturnKeyType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("startEditPolicy", InspDesc("Start Edit", GlobalEnumMap<eStartEditPolicy>::Instance()), GetStartEditPolicyAsInt, SetStartEditPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("stopEditPolicy", InspDesc("Stop Edit", GlobalEnumMap<eStopEditPolicy>::Instance()), GetStopEditPolicyAsInt, SetStopEditPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         )
 };
 
 } // namespace DAVA

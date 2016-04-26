@@ -86,8 +86,62 @@ struct StretchDrawData
     Matrix3 transformMatr;
 };
 
+struct TiledMultilayerData
+{
+    Vector<Vector2> vertices;
+    Vector<Vector2> transformedVertices;
+    Vector<Vector2> texCoordsMask;
+    Vector<Vector2> texCoordsDetail;
+    Vector<Vector2> texCoordsGradient;
+    Vector<Vector2> texCoordsContour;
+    Vector<uint16> indices;
+
+    rhi::HTextureSet textureSet;
+    rhi::HSamplerState samplerState;
+
+    Sprite* mask = nullptr;
+    Sprite* detail = nullptr;
+    Sprite* gradient = nullptr;
+    Sprite* contour = nullptr;
+
+    Vector2 size;
+    Vector2 stretchCap;
+    Matrix3 transformMatr;
+    bool usePerPixelAccuracy;
+
+    void GenerateTileData();
+    void GenerateTransformData(bool usePerPixelAccuracy);
+    ~TiledMultilayerData();
+
+private:
+    struct AxisData
+    {
+        float32 pos;
+        float32 texCoordsMask;
+        float32 texCoordsDetail;
+        float32 texCoordsGradient;
+        float32 texCoordsContour;
+    };
+
+    struct SingleStretchData
+    {
+        Vector2 uvBase;
+        Vector2 uvCapMin;
+        Vector2 uvCapMax;
+        Vector2 uvMax;
+    };
+
+    SingleStretchData GenerateStretchData(Sprite* sprite);
+    Vector<AxisData> GenerateSingleAxisData(float32 inSize, float32 inTileSize, float32 inStratchCap,
+                                            float32 gradientBase, float32 gradientDelta, float32 detailBase, float32 detailDelta,
+                                            float32 contourBase, float32 contourStretchBase, float32 contourStretchMax, float32 contourMax,
+                                            float32 maskBase, float32 maskStretchBase, float32 maskStretchMax, float32 maskMax); //unlike in TileData, this method generates actual vertices info along the axis
+};
+
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
+    static const uint32 MAX_TEXTURE_STREAMS_COUNT = 4;
+
 public:
     struct BatchDescriptor
     {
@@ -96,8 +150,9 @@ public:
         uint32 indexCount = 0;
         const float32* vertexPointer = nullptr;
         uint32 vertexStride = 0;
-        const float32* texCoordPointer = nullptr;
+        Array<const float32*, MAX_TEXTURE_STREAMS_COUNT> texCoordPointer = {};
         uint32 texCoordStride = 0;
+        uint32 texCoordCount = 1;
         const uint32* colorPointer = nullptr;
         uint32 colorStride = 0;
         const uint16* indexPointer = nullptr;
@@ -129,6 +184,7 @@ public:
 
     static const FastName RENDER_PASS_NAME;
     static const FastName FLAG_COLOR_OP;
+    static const FastName FLAG_GRADIENT_MODE;
 
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
@@ -137,6 +193,7 @@ public:
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
     static NMaterial* DEFAULT_2D_FILL_ALPHA_MATERIAL;
+    static NMaterial* DEFAULT_COMPOSIT_MATERIAL[GRADIENT_BLEND_MODE_COUNT];
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
@@ -146,6 +203,8 @@ public:
     void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
     void DrawStretched(Sprite* sprite, Sprite::DrawState* drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
     void DrawTiled(Sprite* sprite, Sprite::DrawState* drawState, const Vector2& streatchCap, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color);
+    void DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
+                             Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, const Color& color);
 
     void SetViewMatrix(const Matrix4& viewMatrix);
 
@@ -291,6 +350,8 @@ public:
     const RenderTargetPassDescriptor& GetMainTargetDescriptor();
     void SetMainTargetDescriptor(const RenderTargetPassDescriptor& descriptor);
 
+    Vector2 GetAlignedVertex(const Vector2& vertex);
+
 private:
     void UpdateVirtualToPhysicalMatrix(bool);
     bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
@@ -307,6 +368,9 @@ private:
 
     float32 AlignToX(float32 value);
     float32 AlignToY(float32 value);
+
+    uint32 GetVertexLayoutId(uint32 texCoordStreamCount);
+    uint32 GetVBOStride(uint32 texCoordStreamCount);
 
 private:
     Matrix4 currentVirtualToPhysicalMatrix;
@@ -334,16 +398,10 @@ private:
 
     bool spriteClipping = true;
 
-    struct BatchVertex
-    {
-        Vector3 pos;
-        Vector2 uv;
-        uint32 color;
-    };
-
-    BatchVertex* currentVertexBuffer = nullptr;
+    uint8* currentVertexBuffer = nullptr;
     uint16* currentIndexBuffer = nullptr;
     rhi::Packet currentPacket;
+    uint32 currentTexcoordStreamCount = 1; //1 is for default draw
     uint32 currentIndexBase = 0;
     uint32 vertexIndex = 0;
     uint32 indexIndex = 0;
@@ -352,6 +410,9 @@ private:
     Matrix4 lastCustomWorldMatrix;
     bool lastUsedCustomWorldMatrix = false;
     uint32 lastCustomMatrixSematic = 0;
+
+    uint32 VBO_STRIDE[MAX_TEXTURE_STREAMS_COUNT + 1];
+    uint32 vertexLayouts2d[MAX_TEXTURE_STREAMS_COUNT + 1];
 
     // Batching errors handling
     enum ErrorFlag
@@ -375,6 +436,30 @@ private:
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
 {
     highlightControlsVerticesLimit = verticesCount;
+}
+
+inline uint32 RenderSystem2D::GetVertexLayoutId(uint32 texCoordStreamCount)
+{
+    return vertexLayouts2d[texCoordStreamCount];
+}
+inline uint32 RenderSystem2D::GetVBOStride(uint32 texCoordStreamCount)
+{
+    return VBO_STRIDE[texCoordStreamCount];
+}
+
+inline float32 RenderSystem2D::AlignToX(float32 value)
+{
+    return std::floor(value / currentPhysicalToVirtualScale.x + 0.5f) * currentPhysicalToVirtualScale.x;
+}
+
+inline float32 RenderSystem2D::AlignToY(float32 value)
+{
+    return std::floor(value / currentPhysicalToVirtualScale.y + 0.5f) * currentPhysicalToVirtualScale.y;
+}
+
+inline Vector2 RenderSystem2D::GetAlignedVertex(const Vector2& vertex)
+{
+    return Vector2(AlignToX(vertex.x), AlignToY(vertex.y));
 }
 
 } // ns

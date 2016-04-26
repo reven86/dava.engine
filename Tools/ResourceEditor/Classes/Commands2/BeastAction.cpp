@@ -37,11 +37,11 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
 #if defined(__DAVAENGINE_BEAST__)
 
 #include "SceneParser.h"
+
+using namespace DAVA;
 
 //Beast
 BeastAction::BeastAction(SceneEditor2* scene, const DAVA::FilePath& _outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog)

@@ -81,11 +81,21 @@ void TextFieldStbImpl::CopyDataFrom(TextFieldStbImpl* t)
 void TextFieldStbImpl::OpenKeyboard()
 {
     // On focus text field
-    SetCursorPos(GetTextLength());
+    if (!isEditing)
+    {
+        SetCursorPos(GetTextLength());
+        isEditing = true;
+        control->OnKeyboardShown(Rect());
+    }
 }
 
 void TextFieldStbImpl::CloseKeyboard()
 {
+    if (isEditing)
+    {
+        isEditing = false;
+        control->OnKeyboardHidden();
+    }
 }
 
 void TextFieldStbImpl::SetRenderToTexture(bool)
@@ -116,7 +126,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 {
     // see comment for TextFieldPlatformImpl class above
 
-    if (control == UIControlSystem::Instance()->GetFocusedControl())
+    if (control == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
     {
         float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
         cursorTime += timeElapsed;
@@ -604,7 +614,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         auto isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
         auto isWin = kDevice.IsKeyPressed(Key::LWIN) || kDevice.IsKeyPressed(Key::RWIN);
 
-        if (currentInput->key == Key::ENTER)
+        if (currentInput->key == Key::ENTER && !isAlt)
         {
             if (control->GetDelegate())
             {
@@ -741,6 +751,14 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     {
         auto localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
         stb->Drag(localPoint - staticTextOffset);
+    }
+
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (control->GetStartEditPolicy() == UITextField::START_EDIT_BY_USER_REQUEST)
+        {
+            control->StartEdit();
+        }
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.

@@ -2,6 +2,7 @@ SMALL_TIMEOUT = 3.0
 BIG_TIMEOUT = 30.0 -- Big time out for waiting
 TIMEOUT = 10.0 -- DEFAULT TIMEOUT
 TIMECLICK = 0.2 -- time for simple action
+DOUBLETAP_DELAY = 0.05 --time between two taps
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
@@ -580,10 +581,16 @@ function ClearField(field)
     KeyPress(2)
 end
 
-function FastSelectControl(control)
-    Log('Scrol to contorol '.. control .. 'through API')
-    autotestingSystem:ScrollToControl(control)
-    return ClickControl(control)
+function FastSelectControl(name, waitTime)
+    Log('Scroll to contorol '.. name .. ' through API')
+    local waitTime = waitTime or SMALL_TIMEOUT
+    if not WaitControl(name, waitTime) then
+        Log("Control " .. name .. " not found.")
+        return false
+    end
+    autotestingSystem:ScrollToControl(name)
+    Yield()
+    return ClickControl(name)
 end
 
 function SelectItemInList(listName, item)
@@ -758,7 +765,7 @@ function Click(x, y, waitTime, touchId)
     local waitTime = waitTime or TIMECLICK
     local touchId = touchId or 1
     local position = Vector.Vector2(x, y)
-    ClickPosition(position, touchId, waitTime)
+    ClickPosition(position, waitTime, touchId)
 end
 
 function KeyPress(key, control)
@@ -770,25 +777,25 @@ function KeyPress(key, control)
 end
 
 function ClickControl(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("ClickControl name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId)
+        ClickPosition(position, TIMECLICK, touchId)
         return true
     end
     return false
 end
 
 function DoubleClick(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId)
-        ClickPosition(position, waitTime, touchId)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
+        ClickPosition(position, TIMECLICK, touchId)
         return true
     end
     return false

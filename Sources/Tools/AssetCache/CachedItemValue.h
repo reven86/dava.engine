@@ -48,6 +48,22 @@ class CachedItemValue final
     using ValueDataContainer = Map<String, ValueData>;
 
 public:
+    struct Description
+    {
+        String machineName;
+        String creationDate;
+        String addingChain;
+        String receivingChain;
+        String comment;
+    };
+
+    struct ValidationDetails
+    {
+        uint32 filesCount = 0;
+        uint64 filesDataSize = 0;
+    };
+
+public:
     CachedItemValue() = default;
     ~CachedItemValue();
 
@@ -57,6 +73,7 @@ public:
     CachedItemValue& operator=(const CachedItemValue& right);
     CachedItemValue& operator=(CachedItemValue&& right);
 
+    void Add(const FilePath& pathname);
     void Add(const String& name, ValueData data);
 
     bool IsEmpty() const;
@@ -76,6 +93,12 @@ public:
 
     void Export(const FilePath& folder) const;
 
+    void SetDescription(const Description& description);
+    const Description& GetDescription() const;
+
+    bool IsValid() const;
+    void UpdateValidationData();
+
 private:
     ValueData LoadFile(const FilePath& pathname);
 
@@ -83,6 +106,9 @@ private:
 
 private:
     ValueDataContainer dataContainer;
+
+    Description description;
+    ValidationDetails validationDetails;
 
     uint64 size = 0;
     bool isFetched = false;
@@ -107,6 +133,26 @@ inline uint64 CachedItemValue::GetSize() const
 {
     DVASSERT((dataContainer.empty() && size == 0) || (!dataContainer.empty() && size > 0));
     return size;
+}
+
+inline const CachedItemValue::Description& CachedItemValue::GetDescription() const
+{
+    return description;
+}
+
+inline void CachedItemValue::SetDescription(const CachedItemValue::Description& description_)
+{
+    description = description_;
+}
+
+inline bool operator==(const CachedItemValue::Description& left, const CachedItemValue::Description& right)
+{
+    return (left.machineName == right.machineName) && (left.creationDate == right.creationDate) && (left.addingChain == right.addingChain) && (left.receivingChain == right.receivingChain) && (left.comment == right.comment);
+}
+
+inline bool operator==(const CachedItemValue::ValidationDetails& left, const CachedItemValue::ValidationDetails& right)
+{
+    return (left.filesCount == right.filesCount) && (left.filesDataSize == right.filesDataSize);
 }
 
 } // end of namespace AssetCache

@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "Tests/StaticTextTest.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
 
@@ -134,6 +135,7 @@ void StaticTextTest::LoadResources()
     inputDelegate = new InputDelegate(this);
     inputText->SetDelegate(inputDelegate);
     inputText->SetMultiline(true);
+    inputText->GetOrCreateComponent<UIFocusComponent>();
     AddControl(inputText);
 
     label = new UIStaticText(Rect(450, 5, 200, 20));

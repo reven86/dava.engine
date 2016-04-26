@@ -44,6 +44,7 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
+#include "NgtTools/Application/NGTApplication.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -64,6 +65,34 @@ void FixOSXFonts();
 
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLine);
 void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
+
+class REApplication : public NGTLayer::BaseApplication
+{
+public:
+    REApplication(int argc, char** argv)
+        : BaseApplication(argc, argv)
+    {
+    }
+
+protected:
+    void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override
+    {
+        names.push_back(L"plg_reflection");
+        names.push_back(L"plg_variant");
+        names.push_back(L"plg_command_system");
+        names.push_back(L"plg_serialization");
+        names.push_back(L"plg_file_system");
+        names.push_back(L"plg_editor_interaction");
+        names.push_back(L"plg_qt_app");
+        names.push_back(L"plg_qt_common");
+    }
+
+    void OnPostLoadPugins() override
+    {
+        qApp->setOrganizationName("DAVA");
+        qApp->setApplicationName("Resource Editor");
+    }
+};
 
 int main(int argc, char* argv[])
 {
@@ -88,6 +117,7 @@ int main(int argc, char* argv[])
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
     DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
+    int exitCode = 0;
     {
         EditorConfig config;
         SettingsManager settingsManager;
@@ -95,18 +125,21 @@ int main(int argc, char* argv[])
         SceneValidator sceneValidator;
 
         CommandLineManager cmdLine(argc, argv);
-
         if (cmdLine.IsEnabled())
         {
             RunConsole(argc, argv, cmdLine);
         }
-        else
+        else if (argc == 1)
         {
             RunGui(argc, argv, cmdLine);
         }
+        else
+        {
+            exitCode = 1; //wrong commandLine
+        }
     }
 
-    return 0;
+    return exitCode;
 }
 
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
@@ -119,14 +152,14 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 
     DAVA::Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->EnableConsoleMode();
-    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
     QApplication a(argc, argv);
 
     DavaGLWidget glWidget;
     glWidget.MakeInvisible();
 
-    DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
+    DAVA::Logger::Info(QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     // Delayed initialization throught event loop
     glWidget.show();
@@ -151,59 +184,47 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
 
-    QApplication a(argc, argv);
-    a.setOrganizationName("DAVA");
-    a.setApplicationName("Resource Editor");
-    //scope with editor variables
-    {
-        const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
-        const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
-        RunGuard runGuard(appUidPath);
-        if (!runGuard.tryToRun())
-            return;
+    REApplication a(argc, argv);
+    a.LoadPlugins();
 
-        a.setAttribute(Qt::AA_UseHighDpiPixmaps);
-        a.setAttribute(Qt::AA_ShareOpenGLContexts);
+    const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
+    const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
+    RunGuard runGuard(appUidPath);
+    if (!runGuard.tryToRun())
+        return;
 
-        Q_INIT_RESOURCE(QtToolsResources);
+    Q_INIT_RESOURCE(QtToolsResources);
 
-        TextureCache textureCache;
+    TextureCache textureCache;
 
-        DAVA::LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
-        DAVA::LocalizationSystem::Instance()->SetCurrentLocale("en");
+    DAVA::LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
+    DAVA::LocalizationSystem::Instance()->SetCurrentLocale("en");
 
-        DAVA::int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-        DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
-        DAVA::Texture::SetDefaultGPU(family);
+    DAVA::int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
+    eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
+    DAVA::Texture::SetDefaultGPU(family);
 
-        // check and unpack help documents
-        UnpackHelpDoc();
+    // check and unpack help documents
+    UnpackHelpDoc();
 
-    #ifdef Q_OS_MAC
-        QTimer::singleShot(0, [] { DAVA::QtLayer::MakeAppForeground(); });
-        QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
-    #endif
+#ifdef Q_OS_MAC
+    QTimer::singleShot(0, [] { DAVA::QtLayer::MakeAppForeground(); });
+    QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
+#endif
 
-        ResourceEditorLauncher launcher;
-        {
-            QtMainWindow mainWindow;
+    // create and init UI
+    ResourceEditorLauncher launcher;
+    QtMainWindow mainWindow(a.GetComponentContext());
 
-            QTimer::singleShot(0, [&]
-                               {
-                                   // create and init UI
-                                   mainWindow.EnableGlobalTimeout(true);
-                                   auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
+    mainWindow.EnableGlobalTimeout(true);
+    DavaGLWidget* glWidget = mainWindow.GetSceneWidget()->GetDavaWidget();
 
-                                   QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
+    DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
-                                   mainWindow.show();
+    // start app
+    a.StartApplication(&mainWindow);
 
-                                   DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-                               });
-            // start app
-            a.exec();
-        }
-    }
     ControlsFactory::ReleaseFonts();
 }
 
