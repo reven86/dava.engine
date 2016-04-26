@@ -375,8 +375,10 @@ static bool _GLES2_RenderThreadExitPending = false;
 static DAVA::Spinlock _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
-static DAVA::ManualResetEvent _GLES2_RenderThreadSuspendSync(true, 0);
+static DAVA::Semaphore _GLES2_RenderThreadSuspendSync;
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
+
+static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
 
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
 static uint32 _GLES2_RenderThreadFrameCount = 0;
@@ -2175,7 +2177,13 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
         {
-            _GLES2_RenderThreadSuspendSync.Wait();
+            if (_GLES2_RenderThreadSuspended.Get())
+            {
+                GL_CALL(glFinish());
+                _GLES2_RenderThreadSuspendSyncReached = true;
+                _GLES2_RenderThreadSuspendSync.Wait();
+            }
+            
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
@@ -2285,13 +2293,12 @@ void UninitializeRenderThreadGLES2()
 void SuspendGLES2()
 {
     _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from ExecGL
-    _GLES2_FrameDoneEvent.Wait();
-    _GLES2_FramePreparedEvent.Signal(); //clear possible prepared-done sync from Present
-    _GLES2_FrameDoneEvent.Wait();
-    _GLES2_RenderThreadSuspendSync.Reset();
-    _GLES2_FramePreparedEvent.Signal(); //avoid stall
-    GL_CALL(glFinish());
+    while (!_GLES2_RenderThreadSuspendSyncReached)
+    {
+        _GLES2_FramePreparedEvent.Signal(); //avoid stall
+    }
+    _GLES2_RenderThreadSuspendSyncReached = false;
+
     Logger::Error("Render GLES Suspended");
 }
 
@@ -2299,9 +2306,9 @@ void SuspendGLES2()
 
 void ResumeGLES2()
 {
-    _GLES2_RenderThreadSuspendSync.Signal();
-    _GLES2_RenderThreadSuspended.Set(false);
     Logger::Error("Render GLES Resumed");
+    _GLES2_RenderThreadSuspended.Set(false);
+    _GLES2_RenderThreadSuspendSync.Post();
 }
 
 //------------------------------------------------------------------------------
@@ -2323,13 +2330,22 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 {
     int err = GL_NO_ERROR;
 
-/*
+#if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
+    #define ACQUIRE_CONTEXT() _GLES2_AcquireContext()
+    #define RELEASE_CONTEXT() _GLES2_ReleaseContext()
+#else
+    #define ACQUIRE_CONTEXT()
+    #define RELEASE_CONTEXT()
+#endif
+
+    /*
     do 
     {
         err = glGetError();
     } 
     while ( err != GL_NO_ERROR );
 */
+    ACQUIRE_CONTEXT();
 
 #if 0
 
@@ -2666,6 +2682,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         }
     }
+    RELEASE_CONTEXT();
 #undef EXEC_GL
 }
 

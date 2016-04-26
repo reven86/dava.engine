@@ -39,6 +39,7 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/Landscape.h"
+#include "Render/Image/ImageSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Utils/StringUtils.h"
@@ -384,7 +385,7 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
         }
 
         FilePath sourceFilePath = descriptor->GetSourceTexturePathname();
-        ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(sourceFilePath);
+        DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(sourceFilePath);
         if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
         {
             Logger::Error("Can't export non-square texture %s into compression format %s",

@@ -52,8 +52,17 @@ extern void FrameworkWillTerminate();
 
 namespace DAVA
 {
+const UINT MSG_ALREADY_RUNNING = ::RegisterWindowMessage(L"MSG_ALREADY_RUNNING");
+bool AlreadyRunning();
+void ShowRunningApplication();
+
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    if (AlreadyRunning())
+    {
+        ShowRunningApplication();
+        return 0;
+    }
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
@@ -847,7 +856,10 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             return 0;
         }
     }
-
+    if (message == MSG_ALREADY_RUNNING)
+    {
+        return MSG_ALREADY_RUNNING;
+    }
     switch (message)
     {
     case WM_SIZE:
@@ -1037,5 +1049,45 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+bool AlreadyRunning()
+{
+    static const wchar_t* UID_MYAPP_ALREADY_RUNNING = L"ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
+    HANDLE hMutexOneInstance = ::CreateMutex(nullptr, FALSE, UID_MYAPP_ALREADY_RUNNING);
+    // return ERROR_ACCESS_DENIED, if mutex created
+    // in other session, as SECURITY_ATTRIBUTES == NULL
+    return (::GetLastError() == ERROR_ALREADY_EXISTS || ::GetLastError() == ERROR_ACCESS_DENIED);
+}
+
+void ShowRunningApplication()
+{
+    HWND hOther = nullptr;
+    auto enumWindowsCallback = [](HWND hWnd, LPARAM lParam) -> BOOL
+    {
+        ULONG_PTR result;
+        LRESULT ok = ::SendMessageTimeout(hWnd, MSG_ALREADY_RUNNING, 0, 0, SMTO_BLOCK | SMTO_ABORTIFHUNG, 200, &result);
+        if (ok == 0)
+        {
+            return true; // ignore & continue
+        }
+        if (result == MSG_ALREADY_RUNNING)
+        {
+            HWND* target = reinterpret_cast<HWND*>(lParam);
+            *target = hWnd;
+            return false; // if find
+        }
+        return true; // continue
+    };
+    EnumWindows(enumWindowsCallback, (LPARAM)&hOther);
+    if (hOther != nullptr)
+    {
+        ::SetForegroundWindow(hOther);
+        if (IsIconic(hOther))
+        {
+            ::ShowWindow(hOther, SW_RESTORE);
+        }
+    }
+}
+
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)

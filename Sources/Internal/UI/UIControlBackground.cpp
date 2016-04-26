@@ -43,7 +43,6 @@ namespace DAVA
 {
 UIControlBackground::UIControlBackground()
     : color(Color::White)
-    , spr(NULL)
     , align(ALIGN_HCENTER | ALIGN_VCENTER)
     , type(DRAW_ALIGNED)
     , spriteModification(0)
@@ -53,9 +52,6 @@ UIControlBackground::UIControlBackground()
     , frame(0)
     , lastDrawPos(0, 0)
     , perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
-    , tiledData(NULL)
-    , stretchData(NULL)
-    , margins(NULL)
     , drawColor(Color::White)
     , material(SafeRetain(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL))
 {
@@ -94,6 +90,11 @@ UIControlBackground::~UIControlBackground()
     SafeRelease(material);
     SafeDelete(margins);
     ReleaseDrawData();
+
+    SafeRelease(mask);
+    SafeRelease(detail);
+    SafeRelease(gradient);
+    SafeRelease(contour);
 }
 
 bool UIControlBackground::IsEqualTo(const UIControlBackground* back) const
@@ -524,6 +525,12 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
     case DRAW_TILED:
         RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData, drawColor);
         break;
+    case DRAW_TILED_MULTILAYER:
+        drawState.SetMaterial(RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL[gradientMode]);
+        drawState.usePerPixelAccuracy = (perPixelAccuracyType == PER_PIXEL_ACCURACY_FORCED) || ((perPixelAccuracyType == PER_PIXEL_ACCURACY_ENABLED) && (lastDrawPos == geometricData.position));
+        lastDrawPos = geometricData.position;
+        RenderSystem2D::Instance()->DrawTiledMultylayer(mask, detail, gradient, contour, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledMultulayerData, drawColor);
+        break;
     default:
         break;
     }
@@ -543,6 +550,7 @@ void UIControlBackground::ReleaseDrawData()
 {
     SafeDelete(tiledData);
     SafeDelete(stretchData);
+    SafeDelete(tiledMultulayerData);
 }
 
 void UIControlBackground::SetLeftRightStretchCap(float32 _leftStretchCap)

@@ -76,6 +76,7 @@ private slots:
 
     bool CloseProject();
     void OnExit();
+    void OnNewProject();
 
 private:
     void ApplyFileChanges();

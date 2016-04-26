@@ -115,10 +115,15 @@ public:
     */
     DLCError GetError() const;
 
-    /** 
-        \brief Return errno from patching process
+    /**
+    \brief Return errno from patching process
     */
     int32 GetLastErrno() const;
+
+    /** 
+        \brief Return error details from patching process
+    */
+    PatchFileReader::PatchingErrorDetails GetLastErrorInfo() const;
 
     /**
         \brief Return patching error
@@ -186,8 +191,9 @@ protected:
         uint32 totalPatchCount;
         uint32 appliedPatchCount;
         volatile bool patchInProgress;
-        PatchFileReader::PatchError patchingError;
         int32 lastErrno;
+        PatchFileReader::PatchError patchingError;
+        PatchFileReader::PatchingErrorDetails lastPatchingErrorDetails;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;

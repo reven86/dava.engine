@@ -27,10 +27,7 @@
 =====================================================================================*/
 
 
-#include "Platform/Qt5/QtLayer.h"
 #include "UI/mainwindow.h"
-#include "UI/Preview/ScrollAreaController.h"
-#include "UI/Preview/Ruler/RulerController.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -42,12 +39,6 @@
 
 #include "AssetCache/AssetCacheClient.h"
 
-#include <QSettings>
-#include <QVariant>
-#include <QByteArray>
-#include <QFileSystemWatcher>
-
-#include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
@@ -75,6 +66,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
+    connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
     connect(project, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
 
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
@@ -281,15 +273,20 @@ void EditorCore::OpenProject(const QString& path)
     {
         return;
     }
-
-    if (!project->CheckAndUnlockProject(path))
-    {
-        return;
-    }
     ResultList resultList;
-    if (!project->Open(path))
+
+    if (project->CanOpenProject(path))
     {
-        resultList.AddResult(Result::RESULT_ERROR, "Error while loading project");
+        if (!project->Open(path))
+        {
+            QString message = tr("Error while opening project %1").arg(path);
+            resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        }
+    }
+    else
+    {
+        QString message = tr("Can not open project %1").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
     }
     mainWindow->OnProjectOpened(resultList, project);
 }
@@ -334,5 +331,19 @@ void EditorCore::OnExit()
     if (CloseProject())
     {
         qApp->quit();
+    }
+}
+
+void EditorCore::OnNewProject()
+{
+    Result result;
+    auto projectPath = project->CreateNewProject(&result);
+    if (result)
+    {
+        OpenProject(projectPath);
+    }
+    else if (result.type == Result::RESULT_ERROR)
+    {
+        QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
     }
 }

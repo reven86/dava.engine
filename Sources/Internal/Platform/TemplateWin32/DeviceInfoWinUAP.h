@@ -61,7 +61,7 @@ public:
     eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
-    void InitializeScreenInfo();
+    void InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit);
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
 
