@@ -241,7 +241,7 @@ void Project::SetIsOpen(bool arg)
         QStringList projectsPathes = GetProjectsHistory();
         projectsPathes.removeAll(newProjectPath);
         projectsPathes += newProjectPath;
-        while (projectsPathes.size() > projectsHistorySize)
+        while (static_cast<DAVA::uint32>(projectsPathes.size()) > projectsHistorySize)
         {
             projectsPathes.removeFirst();
         }

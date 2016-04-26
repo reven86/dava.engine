@@ -185,7 +185,7 @@ void SetupDarkTheme()
     qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }");
 }
 
-const QString& GetCurrentThemeStr()
+QString GetCurrentThemeStr()
 {
     DAVA::String name = GlobalEnumMap<eTheme>::Instance()->ToString(GetCurrentTheme());
     return QString::fromStdString(name);

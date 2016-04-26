@@ -81,7 +81,7 @@ public:
 protected:
     Set<SignalBase*> trackedSignals;
 
-    template <bool is_derived_from_tracked_obj>
+    template <bool isDerivedFromTrackedObj>
     struct Detail;
 };
 

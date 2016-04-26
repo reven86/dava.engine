@@ -137,12 +137,15 @@ void PreferencesStorage::SetupStoragePath(const DAVA::FilePath& localStorage_)
                 }
                 else
                 {
-                    DAVA::StringStream ss;
-                    ss << "no default value for insp member: " << inspInfo->Name().c_str() << " : " << memberName.c_str();
-                    DVASSERT_MSG(false, ss.str().c_str());
+                    value = DAVA::VariantType::FromType(member->Type());
+                    if (value.type == DAVA::VariantType::TYPE_NONE)
+                    {
+                        DAVA::StringStream ss;
+                        ss << "no default variant for member: " << inspInfo->Name().c_str() << " : " << memberName.c_str();
+                        DVASSERT_MSG(false, ss.str().c_str());
+                    }
                 }
             }
-            DVASSERT(value.type != DAVA::VariantType::TYPE_NONE)
             classInfoArchive->SetVariant(memberName.c_str(), value);
         }
         if (classInfoArchive->Count() != 0)
@@ -201,7 +204,7 @@ void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBa
         DAVA::String name(member->Name().c_str());
         DAVA::VariantType* oldValue = archive->GetVariant(name);
         DAVA::VariantType value = member->Value(realObj);
-        if (oldValue != nullptr && *oldValue != value)
+        if (oldValue == nullptr || *oldValue != value)
         {
             archive->SetVariant(name, value);
             valueChanged.Emit(member, value);

@@ -77,7 +77,7 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(ControlNode* node, UIControl* hudControl);
+    HUD(EditorSystemsManager* systemsManager, ControlNode* node, UIControl* hudControl);
     ~HUD();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
@@ -86,11 +86,11 @@ struct HUDSystem::HUD
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
 
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
+HUDSystem::HUD::HUD(EditorSystemsManager* systemsManager, ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
     , hudControl(hudControl_)
-    , container(new HUDContainer(node_))
+    , container(new HUDContainer(systemsManager, node_))
 {
     container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
     DAVA::Vector<HUDAreaInfo::eArea> areas;
@@ -147,16 +147,16 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
 {
     InvalidatePressedPoint();
     hudControl->SetName(FastName("hudControl"));
-    systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
-    systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
-    systemManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
-    systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
-    systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
+    systemsManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
+    systemsManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemsManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
+    systemsManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
+    systemsManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
 
 HUDSystem::~HUDSystem()
 {
-    systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+    systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
     SetCanDrawRect(false);
 }
 
@@ -180,7 +180,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
+                hudMap[controlNode] = std::make_unique<HUD>(systemsManager, controlNode, hudControl.Get());
                 sortedControlList.insert(controlNode);
             }
         }
@@ -216,7 +216,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             DVASSERT(node->GetControl() != nullptr);
             return visibleProp->GetVisibleInEditor() && node->GetControl()->IsPointInside(point);
         };
-        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
+        systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
 
@@ -241,7 +241,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 size.y *= -1.0f;
             }
             selectionRectControl->SetRect(Rect(point, size));
-            systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
+            systemsManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
     case UIEvent::Phase::ENDED:
@@ -433,7 +433,7 @@ void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
     if (activeAreaInfo.area != areaInfo.area || activeAreaInfo.owner != areaInfo.owner)
     {
         activeAreaInfo = areaInfo;
-        systemManager->ActiveAreaChanged.Emit(activeAreaInfo);
+        systemsManager->ActiveAreaChanged.Emit(activeAreaInfo);
     }
 }
 
@@ -496,10 +496,10 @@ void HUDSystem::UpdatePlacedOnScreenStatus()
     isPlacedOnScreen = isPlaced;
     if (isPlacedOnScreen)
     {
-        systemManager->GetRootControl()->AddControl(hudControl.Get());
+        systemsManager->GetRootControl()->AddControl(hudControl.Get());
     }
     else
     {
-        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+        systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
     }
 }

@@ -45,8 +45,8 @@ POP_QT_WARNING_SUPRESSOR
 using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(DialogReloadSprites,
-                              PREF_ARG("currentGPU", static_cast<DAVA::int64>(DAVA::GPU_ORIGIN)),
-                              PREF_ARG("quality", static_cast<DAVA::int64>(TextureConverter::ECQ_VERY_HIGH)),
+                              PREF_ARG("currentGPU", static_cast<DAVA::uint8>(DAVA::GPU_ORIGIN)),
+                              PREF_ARG("quality", static_cast<DAVA::uint32>(TextureConverter::ECQ_VERY_HIGH)),
                               PREF_ARG("forceRepackEnabled", false),
                               PREF_ARG("consoleState", DAVA::String()),
                               PREF_ARG("consoleVisible", true)
@@ -116,7 +116,6 @@ DialogReloadSprites::~DialogReloadSprites()
     {
         BlockingStop();
     }
-    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 void DialogReloadSprites::OnStartClicked()
@@ -181,12 +180,12 @@ void DialogReloadSprites::closeEvent(QCloseEvent* event)
     BlockingStop();
 }
 
-DAVA::int64 DialogReloadSprites::GetCurrentGPU() const
+DAVA::uint8 DialogReloadSprites::GetCurrentGPU() const
 {
     return ui->comboBox_targetGPU->currentData().toInt();
 }
 
-void DialogReloadSprites::SetCurrentGPU(DAVA::int64 gpu)
+void DialogReloadSprites::SetCurrentGPU(DAVA::uint8 gpu)
 {
     for (int i = 0, k = ui->comboBox_targetGPU->count(); i < k; i++)
     {
@@ -197,12 +196,12 @@ void DialogReloadSprites::SetCurrentGPU(DAVA::int64 gpu)
     }
 }
 
-DAVA::int64 DialogReloadSprites::GetCurrentQuality() const
+DAVA::uint32 DialogReloadSprites::GetCurrentQuality() const
 {
     return ui->comboBox_quality->currentData().toInt();
 }
 
-void DialogReloadSprites::SetCurrentQuality(DAVA::int64 quality)
+void DialogReloadSprites::SetCurrentQuality(DAVA::uint32 quality)
 {
     for (int i = 0, k = ui->comboBox_quality->count(); i < k; i++)
     {

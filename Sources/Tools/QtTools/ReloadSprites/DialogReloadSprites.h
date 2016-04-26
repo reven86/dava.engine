@@ -67,11 +67,11 @@ protected:
 private:
     void BlockingStop();
 
-    DAVA::int64 GetCurrentGPU() const;
-    void SetCurrentGPU(DAVA::int64 gpu);
+    DAVA::uint8 GetCurrentGPU() const;
+    void SetCurrentGPU(DAVA::uint8 gpu);
 
-    DAVA::int64 GetCurrentQuality() const;
-    void SetCurrentQuality(DAVA::int64 quality);
+    DAVA::uint32 GetCurrentQuality() const;
+    void SetCurrentQuality(DAVA::uint32 quality);
 
     bool IsForceRepackEnabled() const;
     void EnableForceRepack(bool enabled);

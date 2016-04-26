@@ -60,16 +60,6 @@ QString WideStringToQString(const DAVA::WideString& str)
 #endif
 }
 
-DAVA::Color QColorToColor(const QColor& qtColor)
-{
-    return DAVA::Color(qtColor.redF(), qtColor.greenF(), qtColor.blueF(), qtColor.alphaF());
-}
-
-QColor ColorToQColor(const DAVA::Color& davaColor)
-{
-    return QColor((int)DAVA::Round(davaColor.r * 255.0f), (int)DAVA::Round(davaColor.g * 255.0f), (int)DAVA::Round(davaColor.b * 255.0f), (int)DAVA::Round(davaColor.a * 255.0f));
-}
-
 DAVA::Vector2 QVector2DToVector2(const QVector2D& vector)
 {
     return DAVA::Vector2(vector.x(), vector.y());

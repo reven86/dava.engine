@@ -45,9 +45,9 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-    systemManager->PackageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
-    systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+    systemsManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
+    systemsManager->PackageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
+    systemsManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
 }
 
 SelectionSystem::~SelectionSystem() = default;
@@ -107,7 +107,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
         DVASSERT(nullptr != control);
         return !control->GetVisibilityFlag();
     };
-    systemManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate, stopPredicate);
+    systemsManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate, stopPredicate);
     if (!areaNodes.empty())
     {
         for (auto node : areaNodes)
@@ -131,7 +131,7 @@ void SelectionSystem::ClearSelection()
 void SelectionSystem::SelectAllControls()
 {
     SelectedNodes selected;
-    systemManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const ControlNode*) { return true; });
+    systemsManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const ControlNode*) { return true; });
     SetSelection(selected, SelectedNodes());
 }
 
@@ -154,7 +154,7 @@ void SelectionSystem::FocusToChild(bool next)
     }
     PackageBaseNode* nextNode = nullptr;
     Vector<PackageBaseNode*> allNodes;
-    systemManager->CollectControlNodes(std::back_inserter(allNodes), [](const ControlNode*) { return true; });
+    systemsManager->CollectControlNodes(std::back_inserter(allNodes), [](const ControlNode*) { return true; });
     if (allNodes.empty())
     {
         return;
@@ -202,7 +202,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
             DVASSERT(nullptr != control);
             return !control->GetVisibilityFlag();
         };
-        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate, stopPredicate);
+        systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate, stopPredicate);
         if (!nodesUnderPoint.empty())
         {
             selectedNode = nodesUnderPoint.back();
@@ -222,8 +222,8 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
             const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
             return !visibleProp->GetVisibleInEditor();
         };
-        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu, stopPredicate);
-        selectedNode = systemManager->GetControlByMenu(nodesUnderPointForMenu, point);
+        systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu, stopPredicate);
+        selectedNode = systemsManager->GetControlByMenu(nodesUnderPointForMenu, point);
         if (nullptr == selectedNode)
         {
             return true; //selection was required but cancelled
@@ -264,6 +264,6 @@ void SelectionSystem::SetSelection(const SelectedNodes& selected, const Selected
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        systemManager->SelectionChanged.Emit(reallySelected, reallyDeselected);
+        systemsManager->SelectionChanged.Emit(reallySelected, reallyDeselected);
     }
 }

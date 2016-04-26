@@ -45,7 +45,7 @@ public:
     virtual bool OnInput(DAVA::UIEvent* currentInput);
 
 protected:
-    EditorSystemsManager* systemManager = nullptr;
+    EditorSystemsManager* systemsManager = nullptr;
 };
 
 inline BaseEditorSystem::~BaseEditorSystem()

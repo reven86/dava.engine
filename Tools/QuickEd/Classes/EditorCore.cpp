@@ -366,12 +366,12 @@ void EditorCore::SetAssetCacheIp(const DAVA::String& ip)
     connectionParams.ip = ip;
 }
 
-DAVA::uint32 EditorCore::GetAssetCachePort() const
+DAVA::uint16 EditorCore::GetAssetCachePort() const
 {
     return connectionParams.port;
 }
 
-void EditorCore::SetAssetCachePort(DAVA::uint32 port)
+void EditorCore::SetAssetCachePort(DAVA::uint16 port)
 {
     connectionParams.port = port;
 }

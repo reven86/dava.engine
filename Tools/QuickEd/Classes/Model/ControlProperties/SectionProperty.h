@@ -188,8 +188,8 @@ inline AbstractProperty* SectionProperty<ValueType>::GetProperty(DAVA::int32 ind
         DVASSERT(false);
         return nullptr;
     }
-    DAVA::size_type size = sections.size();
-    if (index < static_cast<DAVA::int32>(size))
+    DAVA::int32 size = static_cast<DAVA::int32>(sections.size());
+    if (index < size)
     {
         return sections.at(index);
     }

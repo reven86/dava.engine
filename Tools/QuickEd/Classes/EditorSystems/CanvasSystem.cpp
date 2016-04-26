@@ -319,16 +319,16 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     , controlsCanvas(new UIControl())
 {
     controlsCanvas->SetName(FastName("controls canvas"));
-    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
+    systemsManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
-    systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
-    systemManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
-    systemManager->TransformStateChanged.Connect(this, &CanvasSystem::OnTransformStateChanged);
+    systemsManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
+    systemsManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
+    systemsManager->TransformStateChanged.Connect(this, &CanvasSystem::OnTransformStateChanged);
 }
 
 CanvasSystem::~CanvasSystem()
 {
-    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
+    systemsManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
 }
 
 void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
@@ -415,7 +415,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<const DAVA::Vector2&>::Emit);
+    backgroundController->RootControlPosChanged.Connect(&systemsManager->RootControlPositionChanged, &DAVA::Signal<const DAVA::Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
@@ -480,9 +480,9 @@ void CanvasSystem::LayoutCanvas()
         curY += rect.dy + spacing;
     }
     Vector2 size(maxWidth, totalHeight);
-    systemManager->GetScalableControl()->SetSize(size);
-    systemManager->GetRootControl()->SetSize(size);
-    systemManager->CanvasSizeChanged.Emit();
+    systemsManager->GetScalableControl()->SetSize(size);
+    systemsManager->GetRootControl()->SetSize(size);
+    systemsManager->CanvasSizeChanged.Emit();
 }
 
 void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)

@@ -90,8 +90,8 @@ private:
     DAVA::String GetAssetCacheIp() const;
     void SetAssetCacheIp(const DAVA::String& ip);
 
-    DAVA::uint32 GetAssetCachePort() const;
-    void SetAssetCachePort(DAVA::uint32 port);
+    DAVA::uint16 GetAssetCachePort() const;
+    void SetAssetCachePort(DAVA::uint16 port);
 
     DAVA::uint64 GetAssetCacheTimeout() const;
     void SetAssetCacheTimeout(DAVA::uint64 timeout);
@@ -105,6 +105,7 @@ private:
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
+    REGISTER_PREFERENCES(EditorCore)
 
 public:
     INTROSPECTION(EditorCore,
@@ -114,7 +115,6 @@ public:
                   PROPERTY("assetCacheTimeout", "Asset cache/Asset Cache Timeout (ms)", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
-    REGISTER_PREFERENCES(EditorCore)
 };
 
 inline EditorFontSystem* GetEditorFontSystem()

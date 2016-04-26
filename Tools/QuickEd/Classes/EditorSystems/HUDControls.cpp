@@ -62,9 +62,10 @@ bool ControlContainer::GetSystemVisible() const
     return systemVisible;
 }
 
-HUDContainer::HUDContainer(ControlNode* node_)
+HUDContainer::HUDContainer(EditorSystemsManager* systemsManager_, ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , node(node_)
+    , systemsManager(systemsManager_)
 {
     DVASSERT(nullptr != node);
     SetName(FastName(String("HudContainer of ") + node->GetName().c_str()));
@@ -100,8 +101,9 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetVisibilityFlag(containerVisible);
     if (containerVisible)
     {
-        auto actualSize = gd.size * gd.scale;
-        auto changedGD = gd;
+        const DAVA::Vector2& minimumSize = systemsManager->minimumSize;
+        DAVA::Vector2 actualSize(gd.size * gd.scale);
+        DAVA::UIGeometricData changedGD = gd;
         bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;
         if (controlIsMoveOnly)
         {

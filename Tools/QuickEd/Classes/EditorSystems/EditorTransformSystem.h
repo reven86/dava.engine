@@ -35,6 +35,7 @@
 #include "Math/Vector.h"
 #include "UI/UIControl.h"
 #include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+#include "Input/KeyboardDevice.h"
 #include <array>
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -49,7 +50,6 @@ class EditorTransformSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
-    ~EditorTransformSystem();
 
 private:
     enum eDirections
@@ -69,7 +69,7 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
-    bool ProcessKey(const DAVA::Key key);
+    bool ProcessKey(DAVA::Key key);
     bool ProcessDrag(DAVA::Vector2 point);
 
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
@@ -90,6 +90,9 @@ private:
     void UpdateNeighboursToMove();
 
     void ClampAngle();
+    struct MagnetLine;
+    DAVA::Vector<MagnetLine> CreateMagnetPairs(const DAVA::Rect& box, const DAVA::UIGeometricData* parentGD, const DAVA::Vector<DAVA::UIControl*>& neighbours, DAVA::Vector2::eAxis axis);
+    void ExtractMatchedLines(DAVA::Vector<MagnetLineInfo>& magnets, const DAVA::Vector<MagnetLine>& magnetLines, const DAVA::UIControl* control, DAVA::Vector2::eAxis axis);
 
     size_t currentHash = 0;
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
@@ -107,14 +110,25 @@ private:
     AbstractProperty* angleProperty = nullptr;
     AbstractProperty* pivotProperty = nullptr;
 
-    DAVA::Vector2 minimumSize;
+    DAVA::Vector2 magnetRange;
+    DAVA::float32 moveStepByKeyboard;
+    DAVA::float32 expandedMoveStepByKeyboard;
+    DAVA::Vector2 borderInParentToMagnet;
+    DAVA::Vector2 indentOfControlToManget;
+    DAVA::Vector2 shareOfSizeToMagnetPivot;
+    DAVA::float32 angleSegment;
 
 public:
     INTROSPECTION(EditorTransformSystem,
-                  MEMBER(minimumSize, "Control Transformations/Minimum size", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(magnetRange, "Control Transformations/Magnet range", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(moveStepByKeyboard, "Control Transformations/Move distance by keyboard", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(expandedMoveStepByKeyboard, "Control Transformations/Move distance by keyboard alternate", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(borderInParentToMagnet, "Control Transformations/Magnet distance inside", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(indentOfControlToManget, "Control Transformations/Magnet distance outside", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(shareOfSizeToMagnetPivot, "Control Transformations/Pivot magnet share", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(angleSegment, "Control Transformations/Rotate section angle", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
-private:
     REGISTER_PREFERENCES(EditorTransformSystem)
 };
 

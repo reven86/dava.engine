@@ -45,8 +45,6 @@ class VariantType;
 class UIGeometricData;
 }
 
-extern const DAVA::Vector2 minimumSize;
-
 struct HUDAreaInfo
 {
     enum eArea
@@ -112,7 +110,7 @@ class PackageNode;
 class CanvasSystem;
 class SelectionSystem;
 
-class EditorSystemsManager : PackageListener
+class EditorSystemsManager : PackageListener, DAVA::InspBase
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
@@ -181,6 +179,12 @@ private:
     SelectionContainer selectionContainer;
     CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
+
+public:
+    DAVA::Vector2 minimumSize;
+    INTROSPECTION(EditorSystemsManager,
+                  MEMBER(minimumSize, "Control Transformations/Minimum size", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  )
 };
 
 template <class OutIt, class Predicate>

@@ -60,15 +60,14 @@ class FilePath;
 class VariantType
 {
 public:
-    static const String TYPENAME_UNKNOWN; // "unknown";
-    static const String TYPENAME_BOOLEAN; // "bool";
+    static const String TYPENAME_UNKNOWN; // "unknown"
+    static const String TYPENAME_BOOLEAN; // "bool"
     static const String TYPENAME_INT32; // "int32"
     static const String TYPENAME_UINT32; // "uint32"
     static const String TYPENAME_INT64; // "int64"
     static const String TYPENAME_UINT64; // "uint64"
 
     static const String TYPENAME_FLOAT; // "float"
-    static const String TYPENAME_FLOAT64; // "float64"
     static const String TYPENAME_STRING; // "string"
     static const String TYPENAME_WIDESTRING; // "wideString"
     static const String TYPENAME_BYTE_ARRAY; // "byteArray"
@@ -85,9 +84,19 @@ public:
     static const String TYPENAME_AABBOX3; // "AABBox3"
     static const String TYPENAME_FILEPATH; // "FilePath"
 
+    static const String TYPENAME_FLOAT64; // "float64"
+    static const String TYPENAME_INT8; // "int8"
+    static const String TYPENAME_UINT8; // "uint8"
+    static const String TYPENAME_INT16; // "int16"
+    static const String TYPENAME_UINT16; // "uint16"
+
     VariantType();
     VariantType(const VariantType& value);
     explicit VariantType(bool value);
+    explicit VariantType(int8 value);
+    explicit VariantType(uint8 value);
+    explicit VariantType(int16 value);
+    explicit VariantType(uint16 value);
     explicit VariantType(int32 value);
     explicit VariantType(uint32 value);
     explicit VariantType(float32 value);
@@ -135,7 +144,10 @@ public:
         TYPE_AABBOX3,
         TYPE_FILEPATH,
         TYPE_FLOAT64,
-
+        TYPE_INT8,
+        TYPE_UINT8,
+        TYPE_INT16,
+        TYPE_UINT16,
         TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
     };
     uint8 type;
@@ -143,8 +155,15 @@ public:
     union
     {
         bool boolValue;
+        int8 int8Value;
+        uint8 uint8Value;
+
+        int16 int16Value;
+        uint16 uint16Value;
+
         int32 int32Value;
         uint32 uint32Value;
+
         float32 floatValue;
         float64 float64Value;
 
@@ -199,13 +218,37 @@ public:
     void SetBool(bool value);
 
     /**
-		\brief Function to set int value to variant type variable
+    \brief Function to set int8 value to variant type variable
+    \param[in] value value to set
+    */
+    void SetInt8(int8 value);
+
+    /**
+    \brief Function to set uint8 value to variant type variable
+    \param[in] value value to set
+    */
+    void SetUInt8(uint8 value);
+
+    /**
+    \brief Function to set int16 value to variant type variable
+    \param[in] value value to set
+    */
+    void SetInt16(int16 value);
+
+    /**
+    \brief Function to set uint16 value to variant type variable
+    \param[in] value value to set
+    */
+    void SetUInt16(uint16 value);
+
+    /**
+		\brief Function to set int32 value to variant type variable
 		\param[in] value value to set
 	 */
     void SetInt32(int32 value);
 
     /**
-        \brief Function to set int value to variant type variable
+        \brief Function to set uint32 value to variant type variable
         \param[in] value value to set
 	 */
     void SetUInt32(uint32 value);
@@ -327,6 +370,30 @@ public:
 		\returns value of variable, or generate assert if variable type is different
 	 */
     bool AsBool() const;
+
+    /**
+    \brief Function to return int8 value from variable
+    \returns value of variable, or generate assert if variable type is different
+    */
+    int8 AsInt8() const;
+
+    /**
+    \brief Function to return uint8 value from variable
+    \returns value of variable, or generate assert if variable type is different
+    */
+    uint8 AsUInt8() const;
+
+    /**
+    \brief Function to return int16 value from variable
+    \returns value of variable, or generate assert if variable type is different
+    */
+    int16 AsInt16() const;
+
+    /**
+    \brief Function to return uint16 value from variable
+    \returns value of variable, or generate assert if variable type is different
+    */
+    int32 AsUInt16() const;
 
     /**
 		\brief Function to return int value from variable
@@ -488,7 +555,8 @@ public:
     static void SaveData(void* dst, const MetaInfo* meta, const VariantType& val);
 
     static VariantType FromType(int type);
-    static VariantType Convert(const VariantType& val, int type);
+    static VariantType FromType(const MetaInfo* metaType);
+    static VariantType Convert(const VariantType& val, eVariantType type);
     static VariantType Convert(const VariantType& val, const MetaInfo* metaType);
 
 private:

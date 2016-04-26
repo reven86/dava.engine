@@ -91,5 +91,7 @@ DAVA::Color QColorToColor(const QColor& qtColor)
 
 QColor ColorToQColor(const DAVA::Color& davaColor)
 {
-    return QColor((int)DAVA::Round(davaColor.r * 255.0f), (int)DAVA::Round(davaColor.g * 255.0f), (int)DAVA::Round(davaColor.b * 255.0f), (int)DAVA::Round(davaColor.a * 255.0f));
+    DAVA::float32 maxC = std::max({ 1.0f, davaColor.r, davaColor.g, davaColor.b });
+
+    return QColor::fromRgbF(davaColor.r / maxC, davaColor.g / maxC, davaColor.b / maxC, DAVA::Clamp(davaColor.a, 0.0f, 1.0f));
 }

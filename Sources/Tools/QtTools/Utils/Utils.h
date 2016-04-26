@@ -39,11 +39,11 @@
 
 // Different string utilities.
 // Truncate the file extension.
-QString TruncateFileExtension(const QString& fileName, const QString& extension);
-bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::String& to);
+extern QString TruncateFileExtension(const QString& fileName, const QString& extension);
+extern bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::String& to);
 
-QPixmap CreateIconFromColor(const QColor& color);
+extern QPixmap CreateIconFromColor(const QColor& color);
 
-DAVA::Color QColorToColor(const QColor& qtColor);
+extern DAVA::Color QColorToColor(const QColor& qtColor);
 
-QColor ColorToQColor(const DAVA::Color& davaColor);
+extern QColor ColorToQColor(const DAVA::Color& davaColor);

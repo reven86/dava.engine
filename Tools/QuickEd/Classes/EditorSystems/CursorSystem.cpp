@@ -43,7 +43,7 @@ QMap<QString, QPixmap> CursorSystem::cursorpixes;
 CursorSystem::CursorSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
+    systemsManager->ActiveAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)

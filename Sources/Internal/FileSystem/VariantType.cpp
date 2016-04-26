@@ -47,6 +47,10 @@ namespace DAVA
 {
 const String VariantType::TYPENAME_UNKNOWN = "unknown";
 const String VariantType::TYPENAME_BOOLEAN = "bool";
+const String VariantType::TYPENAME_INT8 = "int8";
+const String VariantType::TYPENAME_UINT8 = "uint8";
+const String VariantType::TYPENAME_INT16 = "int16";
+const String VariantType::TYPENAME_UINT16 = "uint16";
 const String VariantType::TYPENAME_INT32 = "int32";
 const String VariantType::TYPENAME_UINT32 = "uint32";
 const String VariantType::TYPENAME_INT64 = "int64";
@@ -72,6 +76,7 @@ const String VariantType::TYPENAME_FILEPATH = "FilePath";
 const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
 { { VariantType::PairTypeName(VariantType::TYPE_NONE, TYPENAME_UNKNOWN, nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN, TYPENAME_BOOLEAN, MetaInfo::Instance<bool>()),
+
     VariantType::PairTypeName(VariantType::TYPE_INT32, TYPENAME_INT32, MetaInfo::Instance<int32>()),
     VariantType::PairTypeName(VariantType::TYPE_FLOAT, TYPENAME_FLOAT, MetaInfo::Instance<float32>()),
     VariantType::PairTypeName(VariantType::TYPE_STRING, TYPENAME_STRING, MetaInfo::Instance<String>()),
@@ -91,7 +96,12 @@ const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::va
     VariantType::PairTypeName(VariantType::TYPE_FASTNAME, TYPENAME_FASTNAME, MetaInfo::Instance<FastName>()),
     VariantType::PairTypeName(VariantType::TYPE_AABBOX3, TYPENAME_AABBOX3, MetaInfo::Instance<AABBox3>()),
     VariantType::PairTypeName(VariantType::TYPE_FILEPATH, TYPENAME_FILEPATH, MetaInfo::Instance<FilePath>()),
-    VariantType::PairTypeName(VariantType::TYPE_FLOAT64, TYPENAME_FLOAT64, MetaInfo::Instance<float64>()) } };
+    VariantType::PairTypeName(VariantType::TYPE_FLOAT64, TYPENAME_FLOAT64, MetaInfo::Instance<float64>()),
+    VariantType::PairTypeName(VariantType::TYPE_INT8, TYPENAME_INT8, MetaInfo::Instance<int8>()),
+    VariantType::PairTypeName(VariantType::TYPE_UINT8, TYPENAME_UINT8, MetaInfo::Instance<uint8>()),
+    VariantType::PairTypeName(VariantType::TYPE_INT16, TYPENAME_INT16, MetaInfo::Instance<int16>()),
+    VariantType::PairTypeName(VariantType::TYPE_UINT16, TYPENAME_UINT16, MetaInfo::Instance<uint16>())
+} };
 
 VariantType::VariantType()
     : type(TYPE_NONE)
@@ -109,6 +119,29 @@ VariantType::VariantType(bool value)
     : pointerValue(nullptr)
 {
     SetBool(value);
+}
+
+VariantType::VariantType(int8 value)
+    : pointerValue(nullptr)
+{
+    SetInt8(value);
+}
+
+VariantType::VariantType(uint8 value)
+    : pointerValue(nullptr)
+{
+    SetUInt8(value);
+}
+
+VariantType::VariantType(int16 value)
+    : pointerValue(nullptr)
+{
+    SetInt16(value);
+}
+VariantType::VariantType(uint16 value)
+    : pointerValue(nullptr)
+{
+    SetUInt16(value);
 }
 
 VariantType::VariantType(int32 value)
@@ -247,6 +280,33 @@ void VariantType::SetBool(bool value)
     ReleasePointer();
     type = TYPE_BOOLEAN;
     boolValue = value;
+}
+
+void VariantType::SetInt8(int8 value)
+{
+    ReleasePointer();
+    type = TYPE_INT8;
+    int8Value = value;
+}
+
+void VariantType::SetUInt8(uint8 value)
+{
+    ReleasePointer();
+    type = TYPE_UINT8;
+    uint8Value = value;
+}
+void VariantType::SetInt16(int16 value)
+{
+    ReleasePointer();
+    type = TYPE_INT16;
+    int16Value = value;
+}
+
+void VariantType::SetUInt16(uint16 value)
+{
+    ReleasePointer();
+    type = TYPE_UINT16;
+    uint16Value = value;
 }
 
 void VariantType::SetInt32(int32 value)
@@ -413,6 +473,26 @@ void VariantType::SetVariant(const VariantType& var)
         SetBool(var.boolValue);
     }
     break;
+    case TYPE_INT8:
+    {
+        SetInt8(var.int8Value);
+    }
+    break;
+    case TYPE_UINT8:
+    {
+        SetUInt8(var.uint8Value);
+    }
+    break;
+    case TYPE_INT16:
+    {
+        SetInt16(var.int16Value);
+    }
+    break;
+    case TYPE_UINT16:
+    {
+        SetUInt16(var.uint16Value);
+    }
+    break;
     case TYPE_INT32:
     {
         SetInt32(var.int32Value);
@@ -526,6 +606,30 @@ bool VariantType::AsBool() const
 {
     DVASSERT(type == TYPE_BOOLEAN);
     return boolValue;
+}
+
+int8 VariantType::AsInt8() const
+{
+    DVASSERT(type == TYPE_INT8);
+    return int8Value;
+}
+
+uint8 VariantType::AsUInt8() const
+{
+    DVASSERT(type == TYPE_UINT8);
+    return uint8Value;
+}
+
+int16 VariantType::AsInt16() const
+{
+    DVASSERT(type == TYPE_INT16);
+    return int16Value;
+}
+
+int32 VariantType::AsUInt16() const
+{
+    DVASSERT(type == TYPE_UINT16);
+    return uint16Value;
 }
 
 int32 VariantType::AsInt32() const
@@ -682,6 +786,42 @@ bool VariantType::Write(File* fp) const
         }
     }
     break;
+    case TYPE_INT8:
+    {
+        written = fp->Write(&int8Value, 1);
+        if (written != 1)
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_UINT8:
+    {
+        written = fp->Write(&uint8Value, 1);
+        if (written != 1)
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_INT16:
+    {
+        written = fp->Write(&int16Value, 2);
+        if (written != 2)
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_UINT16:
+    {
+        written = fp->Write(&uint16Value, 2);
+        if (written != 2)
+        {
+            return false;
+        }
+    }
+    break;
     case TYPE_INT32:
     {
         written = fp->Write(&int32Value, 4);
@@ -761,7 +901,7 @@ bool VariantType::Write(File* fp) const
         }
         if (0 != len)
         {
-            const Vector<uint8>* container = static_cast<const Vector<uint8>*>(pointerValue);
+            container = static_cast<const Vector<uint8>*>(pointerValue);
             written = fp->Write(&(container->front()), len);
             if (written != len)
             {
@@ -932,6 +1072,42 @@ bool VariantType::Read(File* fp)
     {
         read = fp->Read(&boolValue, 1);
         if (read != 1)
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_INT8:
+    {
+        read = fp->Read(&int8Value, 1);
+        if (read != 1)
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_UINT8:
+    {
+        read = fp->Read(&uint8Value, 1);
+        if (read != 1)
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_INT16:
+    {
+        read = fp->Read(&int16Value, 2);
+        if (read != 2)
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_UINT16:
+    {
+        read = fp->Read(&uint16Value, 2);
+        if (read != 2)
         {
             return false;
         }
@@ -1303,6 +1479,18 @@ bool VariantType::operator==(const VariantType& other) const
         case TYPE_BOOLEAN:
             isEqual = (AsBool() == other.AsBool());
             break;
+        case TYPE_INT8:
+            isEqual = (AsInt8() == other.AsInt8());
+            break;
+        case TYPE_UINT8:
+            isEqual = (AsUInt8() == other.AsUInt8());
+            break;
+        case TYPE_INT16:
+            isEqual = (AsInt16() == other.AsInt16());
+            break;
+        case TYPE_UINT16:
+            isEqual = (AsUInt16() == other.AsUInt16());
+            break;
         case TYPE_INT32:
             isEqual = (AsInt32() == other.AsInt32());
             break;
@@ -1469,6 +1657,18 @@ void* VariantType::MetaObject()
     case TYPE_BOOLEAN:
         ret = &boolValue;
         break;
+    case TYPE_INT8:
+        ret = &int8Value;
+        break;
+    case TYPE_UINT8:
+        ret = &uint8Value;
+        break;
+    case TYPE_INT16:
+        ret = &int16Value;
+        break;
+    case TYPE_UINT16:
+        ret = &uint16Value;
+        break;
     case TYPE_INT32:
         ret = &int32Value;
         break;
@@ -1540,6 +1740,18 @@ VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
     {
     case TYPE_BOOLEAN:
         v.SetBool(*(static_cast<const bool*>(src)));
+        break;
+    case TYPE_INT8:
+        v.SetInt8(*(static_cast<const int8*>(src)));
+        break;
+    case TYPE_UINT8:
+        v.SetUInt8(*(static_cast<const uint8*>(src)));
+        break;
+    case TYPE_INT16:
+        v.SetInt16(*(static_cast<const int16*>(src)));
+        break;
+    case TYPE_UINT16:
+        v.SetUInt16(*(static_cast<const uint16*>(src)));
         break;
     case TYPE_INT32:
         v.SetInt32(*(static_cast<const int32*>(src)));
@@ -1644,99 +1856,98 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
     // this happen only for int8 and uint8 types, because we are storing them in int32 and uint32
     if (meta != valMeta)
     {
-        if (meta == MetaInfo::Instance<int8>() && valMeta == MetaInfo::Instance<int32>())
-        {
-            *(static_cast<int8*>(dst)) = static_cast<int8>(val.AsInt32());
-        }
-        else if (meta == MetaInfo::Instance<uint8>() && valMeta == MetaInfo::Instance<int32>())
-        {
-            *(static_cast<uint8*>(dst)) = static_cast<uint8>(val.AsUInt32());
-        }
-        else
-        {
-            DVASSERT(0 && "Destination type differ from source type");
-        }
+        DVASSERT_MSG(false, "Destination type differ from source type");
+        return;
     }
-    else
+    switch (val.type)
     {
-        switch (val.type)
+    case TYPE_BOOLEAN:
+        *(static_cast<bool*>(dst)) = val.AsBool();
+        break;
+    case TYPE_INT8:
+        *(static_cast<int8*>(dst)) = val.AsInt8();
+        break;
+    case TYPE_UINT8:
+        *(static_cast<uint8*>(dst)) = val.AsUInt8();
+        break;
+    case TYPE_INT16:
+        *(static_cast<int16*>(dst)) = val.AsInt16();
+        break;
+    case TYPE_UINT16:
+        *(static_cast<uint16*>(dst)) = val.AsUInt16();
+        break;
+    case TYPE_INT32:
+        *(static_cast<int32*>(dst)) = val.AsInt32();
+        break;
+    case TYPE_FLOAT:
+        *(static_cast<float32*>(dst)) = val.AsFloat();
+        break;
+    case TYPE_FLOAT64:
+        *(static_cast<float64*>(dst)) = val.AsFloat64();
+        break;
+    case TYPE_STRING:
+        *(static_cast<String*>(dst)) = val.AsString();
+        break;
+    case TYPE_WIDE_STRING:
+        *(static_cast<WideString*>(dst)) = val.AsWideString();
+        break;
+    case TYPE_UINT32:
+        *(static_cast<uint32*>(dst)) = val.AsUInt32();
+        break;
+    //case TYPE_BYTE_ARRAY:
+    //	break;
+    case TYPE_KEYED_ARCHIVE:
+    {
+        KeyedArchive* dstArchive = static_cast<KeyedArchive*>(dst);
+        if (nullptr != dstArchive)
         {
-        case TYPE_BOOLEAN:
-            *(static_cast<bool*>(dst)) = val.AsBool();
-            break;
-        case TYPE_INT32:
-            *(static_cast<int32*>(dst)) = val.AsInt32();
-            break;
-        case TYPE_FLOAT:
-            *(static_cast<float32*>(dst)) = val.AsFloat();
-            break;
-        case TYPE_FLOAT64:
-            *(static_cast<float64*>(dst)) = val.AsFloat64();
-            break;
-        case TYPE_STRING:
-            *(static_cast<String*>(dst)) = val.AsString();
-            break;
-        case TYPE_WIDE_STRING:
-            *(static_cast<WideString*>(dst)) = val.AsWideString();
-            break;
-        case TYPE_UINT32:
-            *(static_cast<uint32*>(dst)) = val.AsUInt32();
-            break;
-        //case TYPE_BYTE_ARRAY:
-        //	break;
-        case TYPE_KEYED_ARCHIVE:
-        {
-            KeyedArchive* dstArchive = static_cast<KeyedArchive*>(dst);
-            if (nullptr != dstArchive)
+            dstArchive->DeleteAllKeys();
+            for (const auto& obj : val.AsKeyedArchive()->GetArchieveData())
             {
-                dstArchive->DeleteAllKeys();
-                for (const auto& obj : val.AsKeyedArchive()->GetArchieveData())
-                {
-                    dstArchive->SetVariant(obj.first, *obj.second);
-                }
+                dstArchive->SetVariant(obj.first, *obj.second);
             }
-            break;
         }
-        case TYPE_INT64:
-            *(static_cast<int64*>(dst)) = val.AsInt64();
-            break;
-        case TYPE_UINT64:
-            *(static_cast<uint64*>(dst)) = val.AsUInt64();
-            break;
-        case TYPE_VECTOR2:
-            *(static_cast<Vector2*>(dst)) = val.AsVector2();
-            break;
-        case TYPE_VECTOR3:
-            *(static_cast<Vector3*>(dst)) = val.AsVector3();
-            break;
-        case TYPE_VECTOR4:
-            *(static_cast<Vector4*>(dst)) = val.AsVector4();
-            break;
-        case TYPE_MATRIX2:
-            *(static_cast<Matrix2*>(dst)) = val.AsMatrix2();
-            break;
-        case TYPE_MATRIX3:
-            *(static_cast<Matrix3*>(dst)) = val.AsMatrix3();
-            break;
-        case TYPE_MATRIX4:
-            *(static_cast<Matrix4*>(dst)) = val.AsMatrix4();
-            break;
-        case TYPE_COLOR:
-            *(static_cast<Color*>(dst)) = val.AsColor();
-            break;
-        case TYPE_FASTNAME:
-            *(static_cast<FastName*>(dst)) = val.AsFastName();
-            break;
-        case TYPE_AABBOX3:
-            *(static_cast<AABBox3*>(dst)) = val.AsAABBox3();
-            break;
-        case TYPE_FILEPATH:
-            *(static_cast<FilePath*>(dst)) = val.AsFilePath();
-            break;
-        default:
-            DVASSERT(0 && "Don't know how to save data from such VariantType");
-            break;
-        }
+        break;
+    }
+    case TYPE_INT64:
+        *(static_cast<int64*>(dst)) = val.AsInt64();
+        break;
+    case TYPE_UINT64:
+        *(static_cast<uint64*>(dst)) = val.AsUInt64();
+        break;
+    case TYPE_VECTOR2:
+        *(static_cast<Vector2*>(dst)) = val.AsVector2();
+        break;
+    case TYPE_VECTOR3:
+        *(static_cast<Vector3*>(dst)) = val.AsVector3();
+        break;
+    case TYPE_VECTOR4:
+        *(static_cast<Vector4*>(dst)) = val.AsVector4();
+        break;
+    case TYPE_MATRIX2:
+        *(static_cast<Matrix2*>(dst)) = val.AsMatrix2();
+        break;
+    case TYPE_MATRIX3:
+        *(static_cast<Matrix3*>(dst)) = val.AsMatrix3();
+        break;
+    case TYPE_MATRIX4:
+        *(static_cast<Matrix4*>(dst)) = val.AsMatrix4();
+        break;
+    case TYPE_COLOR:
+        *(static_cast<Color*>(dst)) = val.AsColor();
+        break;
+    case TYPE_FASTNAME:
+        *(static_cast<FastName*>(dst)) = val.AsFastName();
+        break;
+    case TYPE_AABBOX3:
+        *(static_cast<AABBox3*>(dst)) = val.AsAABBox3();
+        break;
+    case TYPE_FILEPATH:
+        *(static_cast<FilePath*>(dst)) = val.AsFilePath();
+        break;
+    default:
+        DVASSERT(0 && "Don't know how to save data from such VariantType");
+        break;
     }
 }
 
@@ -1760,6 +1971,18 @@ VariantType VariantType::FromType(int type)
     {
     case TYPE_BOOLEAN:
         v.SetBool(false);
+        break;
+    case TYPE_INT8:
+        v.SetInt8(0);
+        break;
+    case TYPE_UINT8:
+        v.SetUInt8(0);
+        break;
+    case TYPE_INT16:
+        v.SetInt16(0);
+        break;
+    case TYPE_UINT16:
+        v.SetUInt16(0);
         break;
     case TYPE_INT32:
         v.SetInt32(0);
@@ -1832,100 +2055,78 @@ VariantType VariantType::FromType(int type)
     return v;
 }
 
-VariantType VariantType::Convert(const VariantType& val, int type)
+VariantType VariantType::FromType(const MetaInfo* metaType)
 {
-    VariantType ret;
-
-    if (val.type == type)
+    for (const PairTypeName& typeName : VariantType::variantNamesMap)
     {
-        ret = val;
-    }
-    else
-    {
-        switch (type)
+        if (typeName.variantMeta == metaType)
         {
-        case TYPE_INT32:
-        {
-            switch (val.type)
-            {
-            case TYPE_UINT32:
-                ret.SetInt32(static_cast<int32>(val.AsUInt32()));
-                break;
-            case TYPE_UINT64:
-                ret.SetInt32(static_cast<int32>(val.AsUInt64()));
-                break;
-            case TYPE_INT64:
-                ret.SetInt32(static_cast<int32>(val.AsUInt64()));
-                break;
-            default:
-                break;
-            }
-        }
-        break;
-
-        case TYPE_UINT32:
-        {
-            switch (val.type)
-            {
-            case TYPE_INT32:
-                ret.SetUInt32(static_cast<uint32>(val.AsInt32()));
-                break;
-            case TYPE_UINT64:
-                ret.SetUInt32(static_cast<uint32>(val.AsUInt64()));
-                break;
-            case TYPE_INT64:
-                ret.SetUInt32(static_cast<uint32>(val.AsUInt64()));
-                break;
-            default:
-                break;
-            }
-        }
-        break;
-
-        case TYPE_INT64:
-        {
-            switch (val.type)
-            {
-            case TYPE_UINT32:
-                ret.SetInt64(static_cast<int64>(val.AsUInt32()));
-                break;
-            case TYPE_UINT64:
-                ret.SetInt64(static_cast<int64>(val.AsUInt64()));
-                break;
-            case TYPE_INT32:
-                ret.SetInt64(static_cast<int64>(val.AsInt32()));
-                break;
-            default:
-                break;
-            }
-        }
-        break;
-
-        case TYPE_UINT64:
-        {
-            switch (val.type)
-            {
-            case TYPE_UINT32:
-                ret.SetInt64(static_cast<uint64>(val.AsUInt32()));
-                break;
-            case TYPE_INT64:
-                ret.SetInt64(static_cast<uint64>(val.AsInt64()));
-                break;
-            case TYPE_INT32:
-                ret.SetInt64(static_cast<uint64>(val.AsInt32()));
-                break;
-            default:
-                break;
-            }
-        }
-        break;
-
-        default:
-            break;
+            return FromType(typeName.variantType);
         }
     }
 
-    return ret;
+    return VariantType();
+}
+
+namespace VariantType_local
+{
+template <typename T>
+VariantType Convert(T value, VariantType::eVariantType type)
+{
+    switch (type)
+    {
+    case VariantType::TYPE_INT8:
+        return VariantType(static_cast<int8>(value));
+    case VariantType::TYPE_UINT8:
+        return VariantType(static_cast<uint8>(value));
+    case VariantType::TYPE_INT16:
+        return VariantType(static_cast<int16>(value));
+    case VariantType::TYPE_UINT16:
+        return VariantType(static_cast<uint16>(value));
+    case VariantType::TYPE_INT32:
+        return VariantType(static_cast<int32>(value));
+    case VariantType::TYPE_UINT32:
+        return VariantType(static_cast<uint32>(value));
+    case VariantType::TYPE_INT64:
+        return VariantType(static_cast<int64>(value));
+    case VariantType::TYPE_UINT64:
+        return VariantType(static_cast<uint64>(value));
+    case VariantType::TYPE_FLOAT:
+        return VariantType(static_cast<float32>(value));
+    case VariantType::TYPE_FLOAT64:
+        return VariantType(static_cast<float64>(value));
+    default:
+        return VariantType();
+    }
+}
+}
+VariantType VariantType::Convert(const VariantType& val, eVariantType type)
+{
+    switch (val.type)
+    {
+    case TYPE_INT8:
+        return VariantType_local::Convert(val.AsInt8(), type);
+    case TYPE_UINT8:
+        return VariantType_local::Convert(val.AsUInt8(), type);
+    case TYPE_INT16:
+        return VariantType_local::Convert(val.AsInt16(), type);
+    case TYPE_UINT16:
+        return VariantType_local::Convert(val.AsInt16(), type);
+    case TYPE_INT32:
+        return VariantType_local::Convert(val.AsInt32(), type);
+    case TYPE_UINT32:
+        return VariantType_local::Convert(val.AsUInt32(), type);
+    case TYPE_INT64:
+        return VariantType_local::Convert(val.AsInt64(), type);
+    case TYPE_UINT64:
+        return VariantType_local::Convert(val.AsUInt64(), type);
+    case TYPE_FLOAT:
+        return VariantType_local::Convert(val.AsInt32(), type);
+    case TYPE_FLOAT64:
+        return VariantType_local::Convert(val.AsUInt32(), type);
+    default:
+        return VariantType();
+    }
 }
 
 DAVA::VariantType VariantType::Convert(const VariantType& val, const MetaInfo* metaType)
@@ -1934,7 +2135,7 @@ DAVA::VariantType VariantType::Convert(const VariantType& val, const MetaInfo* m
     {
         if (typeName.variantMeta == metaType)
         {
-            return VariantType::Convert(val, typeName.variantType);
+            return Convert(val, typeName.variantType);
         }
     }
 
