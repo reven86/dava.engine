@@ -21,12 +21,12 @@ function TupState.New(userConf)
     self.conf = conf
             
     -- can't be defined by user
-    self.conf.platform = tup.getconfig("TUP_PLATFORM");
-    self.conf.projectDir = tup.getcwd()
-    self.conf.currentDir = tup.getrelativedir(self.conf.projectDir)
+    self.platform = tup.getconfig("TUP_PLATFORM");
+    self.projectDir = tup.getcwd()
+    self.currentDir = tup.getrelativedir(self.projectDir)
 
-    local fwPath = self:FindFWPath(self.conf.projectDir)
-    self.conf.frameworkPath = fwPath
+    local fwPath = self:FindFWPath(self.projectDir)
+    self.frameworkPath = fwPath
            
     -- setting up commands
     self.cmd = { }
@@ -36,7 +36,7 @@ function TupState.New(userConf)
     self.cmd.fwzip = fwPath .. "../Tools/Bin/7za"    
     self.cmd.fwsql = fwPath .. "../Tools/Bin/sqlite3"
     
-    if self.conf.platform == "win32" then
+    if self.platform == "win32" then
         self.cmd.cat = "type 2> nul"
         self.cmd.fwzip = fwPath .. "../Tools/Bin/7z.exe"
         self.cmd.fwsql = self.cmd.fwsql .. ".exe"
@@ -47,6 +47,10 @@ function TupState.New(userConf)
     
     self.packs = { }
     self.packNames = { }    
+    
+    if userConf.packs ~= nil then
+        self:AddPacks(userConf.packs)
+    end
     
     return self
 end
@@ -96,10 +100,16 @@ function TupState.ConvertToPlatformPath(p)
 end
 
 function TupState.AddPacks(self, packs)
+
+    -- packs should be defined as table
     if type(packs) ~= "table" then
         error "Packs should be specified as array"
     end
+    
+    dbg()
         
+    -- go throught packs and create
+    -- corresponding TupPack tables
     for k,v in pairs(packs) do
         
         if type(k) ~= "number" then
@@ -108,15 +118,47 @@ function TupState.AddPacks(self, packs)
     
         local pack = TupPack.New(v)
         local packName = pack.name
-                
+        
+        -- check if pack with such name 
+        -- already exists        
         if self.packNames[packName] ~= nil then
             print("PackName = " .. packName)
             error "Such pack name already defined"
         end
         
+        -- remember created pack and its name
         self.packs[#self.packs + 1] = pack
         self.packNames[packName] = true
     end
+end
+
+function TupState.BuildLists(self)
+    
+    local files = tup.glob("*")
+    
+    -- go throught files
+    for k, file in pairs(files) do 
+
+        local matchedPacks = { }
+        
+        -- find all packs that match current file
+        for pi, pack in pairs(self.packs) do
+            if pack:Match(self.currentDir, file) then
+                matchedPacks[#matchedPacks + 1] = pack.name
+                if pack.exclusive == true then
+                    break
+                end
+            end
+        end
+        
+        -- check that file match only one pack
+        -- if not - that should be thread as error
+        if #matchedPacks > 1 then
+            print("Packs: " .. matchedPacks[1] .. " and " .. matchedPacks[2])
+            error "File is matching more than one pack"
+        end
+    end
+    
 end
 
 function TupState.DbgDumpTable(self, table, indent)
