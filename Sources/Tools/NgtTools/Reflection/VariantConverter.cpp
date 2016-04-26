@@ -122,9 +122,29 @@ Variant DVtoV_bool(DAVA::VariantType const& v)
 {
     return Variant(v.AsBool());
 }
+Variant DVtoV_int8(DAVA::VariantType const& v)
+{
+    return Variant(v.AsInt8());
+}
+Variant DVtoV_uint8(DAVA::VariantType const& v)
+{
+    return Variant(v.AsUInt8());
+}
+Variant DVtoV_int16(DAVA::VariantType const& v)
+{
+    return Variant(v.AsInt16());
+}
+Variant DVtoV_uint16(DAVA::VariantType const& v)
+{
+    return Variant(v.AsUInt16());
+}
 Variant DVtoV_int32(DAVA::VariantType const& v)
 {
     return Variant(v.AsInt32());
+}
+Variant DVtoV_uint32(DAVA::VariantType const& v)
+{
+    return Variant(v.AsUInt32());
 }
 Variant DVtoV_float(DAVA::VariantType const& v)
 {
@@ -141,10 +161,6 @@ Variant DVtoV_wideString(DAVA::VariantType const& v)
 Variant DVtoV_int64(DAVA::VariantType const& v)
 {
     return Variant(v.AsInt64());
-}
-Variant DVtoV_uint32(DAVA::VariantType const& v)
-{
-    return Variant(v.AsUInt32());
 }
 Variant DVtoV_uint64(DAVA::VariantType const& v)
 {
@@ -252,11 +268,15 @@ Converter::Converter()
 
     convertFunctions[DAVA::VariantType::TYPE_NONE] = { bind(&VtoDV<void>, _1), bind(&DVtoV_void, _1) };
     convertFunctions[DAVA::VariantType::TYPE_BOOLEAN] = { bind(&VtoDV<bool>, _1), bind(&DVtoV_bool, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_INT8] = { bind(&VtoDV<DAVA::int8>, _1), bind(&DVtoV_int8, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_UINT8] = { bind(&VtoDV<DAVA::uint8>, _1), bind(&DVtoV_uint8, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_INT16] = { bind(&VtoDV<DAVA::int16>, _1), bind(&DVtoV_int16, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_UINT16] = { bind(&VtoDV<DAVA::uint16>, _1), bind(&DVtoV_uint16, _1) };
     convertFunctions[DAVA::VariantType::TYPE_INT32] = { bind(&VtoDV<DAVA::int32>, _1), bind(&DVtoV_int32, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_UINT32] = { bind(&VtoDV<DAVA::uint32>, _1), bind(&DVtoV_uint32, _1) };
     convertFunctions[DAVA::VariantType::TYPE_FLOAT] = { bind(&VtoDV<DAVA::float32>, _1), bind(&DVtoV_float, _1) };
     convertFunctions[DAVA::VariantType::TYPE_STRING] = { bind(&VtoDV<DAVA::String>, _1), bind(&DVtoV_string, _1) };
     convertFunctions[DAVA::VariantType::TYPE_WIDE_STRING] = { bind(&VtoDV<DAVA::WideString>, _1), bind(&DVtoV_wideString, _1) };
-    convertFunctions[DAVA::VariantType::TYPE_UINT32] = { bind(&VtoDV<DAVA::uint32>, _1), bind(&DVtoV_uint32, _1) };
     convertFunctions[DAVA::VariantType::TYPE_INT64] = { bind(&VtoDV<DAVA::int64>, _1), bind(&DVtoV_int64, _1) };
     convertFunctions[DAVA::VariantType::TYPE_UINT64] = { bind(&VtoDV<DAVA::uint64>, _1), bind(&DVtoV_uint64, _1) };
     convertFunctions[DAVA::VariantType::TYPE_VECTOR2] = { bind(&VtoDV<DAVA::Vector2>, _1), bind(&DVtoV_vector2, _1) };

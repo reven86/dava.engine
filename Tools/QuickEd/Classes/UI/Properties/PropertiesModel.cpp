@@ -454,7 +454,14 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 
     case VariantType::TYPE_BOOLEAN:
         return QString();
-
+    case VariantType::TYPE_INT8:
+        return QVariant(val.AsInt8()).toString();
+    case VariantType::TYPE_UINT8:
+        return QVariant(val.AsUInt8()).toString();
+    case VariantType::TYPE_INT16:
+        return QVariant(val.AsInt16()).toString();
+    case VariantType::TYPE_UINT16:
+        return QVariant(val.AsUInt16()).toString();
     case VariantType::TYPE_INT32:
         if (property->GetType() == AbstractProperty::TYPE_ENUM)
         {

@@ -120,7 +120,7 @@ public:
 
     ~VariantType();
 
-    enum eVariantType
+    enum eVariantType : uint8
     {
         TYPE_NONE = 0,
         TYPE_BOOLEAN,
@@ -150,7 +150,7 @@ public:
         TYPE_UINT16,
         TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
     };
-    uint8 type;
+    eVariantType type;
 
     union {
         bool boolValue;

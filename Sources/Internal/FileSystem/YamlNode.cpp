@@ -346,39 +346,63 @@ VariantType YamlNode::AsVariantType() const
         {
             retValue.SetBool(it->second->AsBool());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_INT32)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_INT8)
+        {
+            retValue.SetInt32(it->second->AsInt8());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT8)
+        {
+            retValue.SetUInt32(it->second->AsUInt8());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_INT16)
+        {
+            retValue.SetInt32(it->second->AsInt16());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT16)
+        {
+            retValue.SetUInt32(it->second->AsUInt16());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_INT32)
         {
             retValue.SetInt32(it->second->AsInt32());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_UINT32)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT32)
         {
             retValue.SetUInt32(it->second->AsUInt32());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_INT64)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_INT32)
+        {
+            retValue.SetInt32(it->second->AsInt32());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT32)
+        {
+            retValue.SetUInt32(it->second->AsUInt32());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_INT64)
         {
             retValue.SetInt64(it->second->AsInt64());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_UINT64)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT64)
         {
             retValue.SetUInt64(it->second->AsUInt64());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_FLOAT)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_FLOAT)
         {
             retValue.SetFloat(it->second->AsFloat());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_STRING)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_STRING)
         {
             retValue.SetString(it->second->AsString());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_FASTNAME)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_FASTNAME)
         {
             retValue.SetFastName(it->second->AsFastName());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_WIDESTRING)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_WIDESTRING)
         {
             retValue.SetWideString(it->second->AsWString());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
         {
             const Vector<YamlNode*>& byteArrayNoodes = it->second->AsVector();
             int32 size = static_cast<int32>(byteArrayNoodes.size());
@@ -397,25 +421,25 @@ VariantType YamlNode::AsVariantType() const
             retValue.SetByteArray(innerArray, size);
             delete[] innerArray;
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_KEYED_ARCHIVE)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_KEYED_ARCHIVE)
         {
             ScopedPtr<KeyedArchive> innerArch(new KeyedArchive());
             innerArch->LoadFromYamlNode(this);
             retValue.SetKeyedArchive(innerArch);
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR2)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR2)
         {
             retValue.SetVector2(it->second->AsVector2());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR3)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR3)
         {
             retValue.SetVector3(it->second->AsVector3());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR4)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR4)
         {
             retValue.SetVector4(it->second->AsVector4());
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_MATRIX2)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_MATRIX2)
         {
             const YamlNode* firstRowNode = it->second->Get(0);
             const YamlNode* secondRowNode = it->second->Get(1);
@@ -427,7 +451,7 @@ VariantType YamlNode::AsVariantType() const
             Vector2 sRowVect = secondRowNode->AsVector2();
             retValue.SetMatrix2(Matrix2(fRowVect.x, fRowVect.y, sRowVect.x, sRowVect.y));
         }
-        if (innerTypeName == VariantType::TYPENAME_MATRIX3)
+        else if (innerTypeName == VariantType::TYPENAME_MATRIX3)
         {
             const YamlNode* firstRowNode = it->second->Get(0);
             const YamlNode* secondRowNode = it->second->Get(1);
@@ -447,7 +471,7 @@ VariantType YamlNode::AsVariantType() const
                                         sRowVect.x, sRowVect.y, sRowVect.z,
                                         tRowVect.x, tRowVect.y, tRowVect.z));
         }
-        if (innerTypeName == VariantType::TYPENAME_MATRIX4)
+        else if (innerTypeName == VariantType::TYPENAME_MATRIX4)
         {
             const YamlNode* firstRowNode = it->second->Get(0);
             const YamlNode* secondRowNode = it->second->Get(1);
@@ -469,7 +493,7 @@ VariantType YamlNode::AsVariantType() const
                                         tRowVect.x, tRowVect.y, tRowVect.z, tRowVect.w,
                                         foRowVect.x, foRowVect.y, foRowVect.z, foRowVect.w));
         }
-        if (innerTypeName == DAVA::VariantType::TYPENAME_COLOR)
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_COLOR)
         {
             retValue.SetColor(it->second->AsColor());
         }
@@ -772,9 +796,34 @@ bool YamlNode::InitStringFromVariantType(const VariantType& varType)
         InternalSetString(varType.AsBool() ? "true" : "false", SR_PLAIN_REPRESENTATION);
     }
     break;
+    case VariantType::TYPE_INT8:
+    {
+        InternalSetString(Format("%d", varType.AsInt8()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
+    case VariantType::TYPE_UINT8:
+    {
+        InternalSetString(Format("%u", varType.AsUInt8()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
+    case VariantType::TYPE_INT16:
+    {
+        InternalSetString(Format("%d", varType.AsInt16()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
+    case VariantType::TYPE_UINT16:
+    {
+        InternalSetString(Format("%u", varType.AsUInt16()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_INT32:
     {
         InternalSetString(Format("%d", varType.AsInt32()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
+    case VariantType::TYPE_UINT32:
+    {
+        InternalSetString(Format("%u", varType.AsUInt32()), SR_PLAIN_REPRESENTATION);
     }
     break;
     case VariantType::TYPE_FLOAT:
@@ -795,11 +844,6 @@ bool YamlNode::InitStringFromVariantType(const VariantType& varType)
     case VariantType::TYPE_FILEPATH:
     {
         InternalSetString(varType.AsFilePath().GetStringValue(), SR_DOUBLE_QUOTED_REPRESENTATION);
-    }
-    break;
-    case VariantType::TYPE_UINT32:
-    {
-        InternalSetString(Format("%u", varType.AsUInt32()), SR_PLAIN_REPRESENTATION);
     }
     break;
     case VariantType::TYPE_INT64:
@@ -948,11 +992,15 @@ DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantT
     switch (variantType)
     {
     case VariantType::TYPE_BOOLEAN:
+    case VariantType::TYPE_INT8:
+    case VariantType::TYPE_UINT8:
+    case VariantType::TYPE_INT16:
+    case VariantType::TYPE_UINT16:
     case VariantType::TYPE_INT32:
+    case VariantType::TYPE_UINT32:
     case VariantType::TYPE_FLOAT:
     case VariantType::TYPE_STRING:
     case VariantType::TYPE_WIDE_STRING:
-    case VariantType::TYPE_UINT32:
     case VariantType::TYPE_INT64:
     case VariantType::TYPE_UINT64:
     case VariantType::TYPE_FILEPATH:

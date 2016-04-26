@@ -99,9 +99,13 @@ void QtPropertyDataDavaVariant::InitFlags()
         break;
 
     case DAVA::VariantType::TYPE_FLOAT:
+    case DAVA::VariantType::TYPE_INT8:
+    case DAVA::VariantType::TYPE_UINT8:
+    case DAVA::VariantType::TYPE_INT16:
+    case DAVA::VariantType::TYPE_UINT16:
     case DAVA::VariantType::TYPE_INT32:
-    case DAVA::VariantType::TYPE_INT64:
     case DAVA::VariantType::TYPE_UINT32:
+    case DAVA::VariantType::TYPE_INT64:
     case DAVA::VariantType::TYPE_UINT64:
     case DAVA::VariantType::TYPE_STRING:
     case DAVA::VariantType::TYPE_VECTOR2:
@@ -332,14 +336,26 @@ void QtPropertyDataDavaVariant::SetValueInternal(const QVariant& value)
     case DAVA::VariantType::TYPE_FLOAT:
         ToFloat(value);
         break;
+    case DAVA::VariantType::TYPE_INT8:
+        curVariantValue.SetInt8(value.toInt());
+        break;
+    case DAVA::VariantType::TYPE_UINT8:
+        curVariantValue.SetUInt8(value.toUInt());
+        break;
+    case DAVA::VariantType::TYPE_INT16:
+        curVariantValue.SetInt16(value.toInt());
+        break;
+    case DAVA::VariantType::TYPE_UINT16:
+        curVariantValue.SetUInt16(value.toUInt());
+        break;
     case DAVA::VariantType::TYPE_INT32:
         curVariantValue.SetInt32(value.toInt());
         break;
-    case DAVA::VariantType::TYPE_INT64:
-        curVariantValue.SetInt64(value.toLongLong());
-        break;
     case DAVA::VariantType::TYPE_UINT32:
         curVariantValue.SetUInt32(value.toUInt());
+        break;
+    case DAVA::VariantType::TYPE_INT64:
+        curVariantValue.SetInt64(value.toLongLong());
         break;
     case DAVA::VariantType::TYPE_UINT64:
         curVariantValue.SetUInt64(value.toULongLong());
@@ -685,14 +701,26 @@ QVariant QtPropertyDataDavaVariant::FromDavaVariant(const DAVA::VariantType& var
     case DAVA::VariantType::TYPE_FLOAT:
         v = FromFloat(variant.AsFloat());
         break;
+    case DAVA::VariantType::TYPE_INT8:
+        v = variant.AsInt8();
+        break;
+    case DAVA::VariantType::TYPE_UINT8:
+        v = variant.AsUInt8();
+        break;
+    case DAVA::VariantType::TYPE_INT16:
+        v = variant.AsInt16();
+        break;
+    case DAVA::VariantType::TYPE_UINT16:
+        v = variant.AsUInt16();
+        break;
     case DAVA::VariantType::TYPE_INT32:
         v = variant.AsInt32();
         break;
-    case DAVA::VariantType::TYPE_INT64:
-        v = variant.AsInt64();
-        break;
     case DAVA::VariantType::TYPE_UINT32:
         v = variant.AsUInt32();
+        break;
+    case DAVA::VariantType::TYPE_INT64:
+        v = variant.AsInt64();
         break;
     case DAVA::VariantType::TYPE_UINT64:
         v = variant.AsUInt64();
@@ -1224,6 +1252,18 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedFlagsEditor(QWidget* parent) co
             quint64 intVal = 0;
             switch (real.type)
             {
+            case DAVA::VariantType::TYPE_INT8:
+                intVal = real.AsInt8();
+                break;
+            case DAVA::VariantType::TYPE_UINT8:
+                intVal = real.AsUInt8();
+                break;
+            case DAVA::VariantType::TYPE_INT16:
+                intVal = real.AsInt16();
+                break;
+            case DAVA::VariantType::TYPE_UINT16:
+                intVal = real.AsUInt16();
+                break;
             case DAVA::VariantType::TYPE_INT32:
                 intVal = real.AsInt32();
                 break;

@@ -76,7 +76,6 @@ const String VariantType::TYPENAME_FILEPATH = "FilePath";
 const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
 { { VariantType::PairTypeName(VariantType::TYPE_NONE, TYPENAME_UNKNOWN, nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN, TYPENAME_BOOLEAN, MetaInfo::Instance<bool>()),
-
     VariantType::PairTypeName(VariantType::TYPE_INT32, TYPENAME_INT32, MetaInfo::Instance<int32>()),
     VariantType::PairTypeName(VariantType::TYPE_FLOAT, TYPENAME_FLOAT, MetaInfo::Instance<float32>()),
     VariantType::PairTypeName(VariantType::TYPE_STRING, TYPENAME_STRING, MetaInfo::Instance<String>()),

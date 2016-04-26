@@ -533,14 +533,44 @@ void MongodbClient::WriteData(MongodbObject* mongoObj, const String& key, Varian
             mongoObj->AddInt32(key, value->AsBool());
         }
         break;
+        case VariantType::TYPE_INT8:
+        {
+            mongoObj->AddInt32(key, value->AsInt8());
+        }
+        break;
+        case VariantType::TYPE_UINT8:
+        {
+            mongoObj->AddInt32(key, value->AsUInt8());
+        }
+        break;
+        case VariantType::TYPE_INT16:
+        {
+            mongoObj->AddInt32(key, value->AsInt16());
+        }
+        break;
+        case VariantType::TYPE_UINT16:
+        {
+            mongoObj->AddInt32(key, value->AsUInt16());
+        }
+        break;
         case VariantType::TYPE_INT32:
         {
             mongoObj->AddInt32(key, value->AsInt32());
         }
         break;
+        case VariantType::TYPE_UINT32:
+        {
+            mongoObj->AddInt32(key, value->AsUInt32());
+        }
+        break;
         case VariantType::TYPE_FLOAT:
         {
             mongoObj->AddDouble(key, value->AsFloat());
+        }
+        break;
+        case VariantType::TYPE_FLOAT64:
+        {
+            mongoObj->AddDouble(key, value->AsFloat64());
         }
         break;
         case VariantType::TYPE_STRING:
@@ -556,11 +586,6 @@ void MongodbClient::WriteData(MongodbObject* mongoObj, const String& key, Varian
         case VariantType::TYPE_BYTE_ARRAY:
         {
             mongoObj->AddData(key, const_cast<uint8*>(value->AsByteArray()), value->AsByteArraySize());
-        }
-        break;
-        case VariantType::TYPE_UINT32:
-        {
-            mongoObj->AddInt32(key, value->AsUInt32());
         }
         break;
         case VariantType::TYPE_KEYED_ARCHIVE:

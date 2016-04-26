@@ -167,6 +167,54 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                         }
                         break;
                     }
+                    case VariantType::TYPE_INT8:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            int8 value = 0;
+                            if (1 == sscanf(t.c_str(), "%d", &value))
+                            {
+                                opt.SetValue(VariantType(value));
+                            }
+                        }
+                        break;
+                    }
+                    case VariantType::TYPE_UINT8:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            uint8 value = 0;
+                            if (1 == sscanf(t.c_str(), "%u", &value))
+                            {
+                                opt.SetValue(VariantType(value));
+                            }
+                        }
+                        break;
+                    }
+                    case VariantType::TYPE_INT16:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            int16 value = 0;
+                            if (1 == sscanf(t.c_str(), "%d", &value))
+                            {
+                                opt.SetValue(VariantType(value));
+                            }
+                        }
+                        break;
+                    }
+                    case VariantType::TYPE_UINT16:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            uint16 value = 0;
+                            if (1 == sscanf(t.c_str(), "%u", &value))
+                            {
+                                opt.SetValue(VariantType(value));
+                            }
+                        }
+                        break;
+                    }
                     case VariantType::TYPE_INT32:
                     {
                         for (auto& t : tokens)
