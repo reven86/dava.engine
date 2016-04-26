@@ -668,12 +668,6 @@
 		028C10391BD66A6000B2266F /* YamlParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09311BD66A5E00B2266F /* YamlParser.h */; };
 		028C103A1BD66A6000B2266F /* YamlParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09311BD66A5E00B2266F /* YamlParser.h */; };
 		028C103B1BD66A6000B2266F /* YamlParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09311BD66A5E00B2266F /* YamlParser.h */; };
-		028C103C1BD66A6000B2266F /* ZipFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C09321BD66A5E00B2266F /* ZipFile.cpp */; };
-		028C103D1BD66A6000B2266F /* ZipFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C09321BD66A5E00B2266F /* ZipFile.cpp */; };
-		028C103E1BD66A6000B2266F /* ZipFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C09321BD66A5E00B2266F /* ZipFile.cpp */; };
-		028C103F1BD66A6000B2266F /* ZipFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09331BD66A5E00B2266F /* ZipFile.h */; };
-		028C10401BD66A6000B2266F /* ZipFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09331BD66A5E00B2266F /* ZipFile.h */; };
-		028C10411BD66A6000B2266F /* ZipFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09331BD66A5E00B2266F /* ZipFile.h */; };
 		028C10421BD66A6000B2266F /* Function.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09351BD66A5E00B2266F /* Function.h */; };
 		028C10431BD66A6000B2266F /* Function.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09351BD66A5E00B2266F /* Function.h */; };
 		028C10441BD66A6000B2266F /* Function.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09351BD66A5E00B2266F /* Function.h */; };
@@ -2813,6 +2807,45 @@
 		0381655D1C4FDA7A00D8D9E1 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03C12A9A1C4FD8D3002D4636 /* SystemConfiguration.framework */; };
 		0381655E1C4FDA8900D8D9E1 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03C12A9A1C4FD8D3002D4636 /* SystemConfiguration.framework */; };
 		0381655F1C4FDA8A00D8D9E1 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03C12A9A1C4FD8D3002D4636 /* SystemConfiguration.framework */; };
+		03B249861CBCE81700015637 /* PackArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B249801CBCE81700015637 /* PackArchive.cpp */; };
+		03B249871CBCE81700015637 /* PackArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B249801CBCE81700015637 /* PackArchive.cpp */; };
+		03B249881CBCE81700015637 /* PackArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B249801CBCE81700015637 /* PackArchive.cpp */; };
+		03B249891CBCE81700015637 /* PackArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249811CBCE81700015637 /* PackArchive.h */; };
+		03B2498A1CBCE81700015637 /* PackArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249811CBCE81700015637 /* PackArchive.h */; };
+		03B2498B1CBCE81700015637 /* PackArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249811CBCE81700015637 /* PackArchive.h */; };
+		03B2498C1CBCE81700015637 /* PackFormatSpec.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249821CBCE81700015637 /* PackFormatSpec.h */; };
+		03B2498D1CBCE81700015637 /* PackFormatSpec.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249821CBCE81700015637 /* PackFormatSpec.h */; };
+		03B2498E1CBCE81700015637 /* PackFormatSpec.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249821CBCE81700015637 /* PackFormatSpec.h */; };
+		03B2498F1CBCE81700015637 /* ResourceArchivePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249831CBCE81700015637 /* ResourceArchivePrivate.h */; };
+		03B249901CBCE81700015637 /* ResourceArchivePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249831CBCE81700015637 /* ResourceArchivePrivate.h */; };
+		03B249911CBCE81700015637 /* ResourceArchivePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249831CBCE81700015637 /* ResourceArchivePrivate.h */; };
+		03B249921CBCE81700015637 /* ZipArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B249841CBCE81700015637 /* ZipArchive.cpp */; };
+		03B249931CBCE81700015637 /* ZipArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B249841CBCE81700015637 /* ZipArchive.cpp */; };
+		03B249941CBCE81700015637 /* ZipArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B249841CBCE81700015637 /* ZipArchive.cpp */; };
+		03B249951CBCE81700015637 /* ZipArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249851CBCE81700015637 /* ZipArchive.h */; };
+		03B249961CBCE81700015637 /* ZipArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249851CBCE81700015637 /* ZipArchive.h */; };
+		03B249971CBCE81700015637 /* ZipArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249851CBCE81700015637 /* ZipArchive.h */; };
+		03B249A11CBCEDC900015637 /* Compressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B2499C1CBCEDC900015637 /* Compressor.h */; };
+		03B249A21CBCEDC900015637 /* Compressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B2499C1CBCEDC900015637 /* Compressor.h */; };
+		03B249A31CBCEDC900015637 /* Compressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B2499C1CBCEDC900015637 /* Compressor.h */; };
+		03B249A41CBCEDC900015637 /* LZ4Compressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B2499D1CBCEDC900015637 /* LZ4Compressor.cpp */; };
+		03B249A51CBCEDC900015637 /* LZ4Compressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B2499D1CBCEDC900015637 /* LZ4Compressor.cpp */; };
+		03B249A61CBCEDC900015637 /* LZ4Compressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B2499D1CBCEDC900015637 /* LZ4Compressor.cpp */; };
+		03B249A71CBCEDC900015637 /* LZ4Compressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B2499E1CBCEDC900015637 /* LZ4Compressor.h */; };
+		03B249A81CBCEDC900015637 /* LZ4Compressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B2499E1CBCEDC900015637 /* LZ4Compressor.h */; };
+		03B249A91CBCEDC900015637 /* LZ4Compressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B2499E1CBCEDC900015637 /* LZ4Compressor.h */; };
+		03B249AA1CBCEDC900015637 /* ZipCompressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B2499F1CBCEDC900015637 /* ZipCompressor.cpp */; };
+		03B249AB1CBCEDC900015637 /* ZipCompressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B2499F1CBCEDC900015637 /* ZipCompressor.cpp */; };
+		03B249AC1CBCEDC900015637 /* ZipCompressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03B2499F1CBCEDC900015637 /* ZipCompressor.cpp */; };
+		03B249AD1CBCEDC900015637 /* ZipCompressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249A01CBCEDC900015637 /* ZipCompressor.h */; };
+		03B249AE1CBCEDC900015637 /* ZipCompressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249A01CBCEDC900015637 /* ZipCompressor.h */; };
+		03B249AF1CBCEDC900015637 /* ZipCompressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 03B249A01CBCEDC900015637 /* ZipCompressor.h */; };
+		03B249BA1CBCF17100015637 /* lz4.c in Sources */ = {isa = PBXBuildFile; fileRef = 03B249B81CBCF17100015637 /* lz4.c */; };
+		03B249BB1CBCF17100015637 /* lz4.c in Sources */ = {isa = PBXBuildFile; fileRef = 03B249B81CBCF17100015637 /* lz4.c */; };
+		03B249BC1CBCF17100015637 /* lz4.c in Sources */ = {isa = PBXBuildFile; fileRef = 03B249B81CBCF17100015637 /* lz4.c */; };
+		03B249BD1CBCF17100015637 /* lz4hc.c in Sources */ = {isa = PBXBuildFile; fileRef = 03B249B91CBCF17100015637 /* lz4hc.c */; };
+		03B249BE1CBCF17100015637 /* lz4hc.c in Sources */ = {isa = PBXBuildFile; fileRef = 03B249B91CBCF17100015637 /* lz4hc.c */; };
+		03B249BF1CBCF17100015637 /* lz4hc.c in Sources */ = {isa = PBXBuildFile; fileRef = 03B249B91CBCF17100015637 /* lz4hc.c */; };
 		03C12A8C1C4FD7F9002D4636 /* LocalNotificationMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 03C12A8A1C4FD7F9002D4636 /* LocalNotificationMac.mm */; };
 		03C12A8D1C4FD7F9002D4636 /* LocalNotificationMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 03C12A8A1C4FD7F9002D4636 /* LocalNotificationMac.mm */; };
 		03C12A8E1C4FD7F9002D4636 /* LocalNotificationMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 03C12A8A1C4FD7F9002D4636 /* LocalNotificationMac.mm */; };
@@ -3218,8 +3251,6 @@
 		028C092F1BD66A5E00B2266F /* YamlNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlNode.h; sourceTree = "<group>"; };
 		028C09301BD66A5E00B2266F /* YamlParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlParser.cpp; sourceTree = "<group>"; };
 		028C09311BD66A5E00B2266F /* YamlParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlParser.h; sourceTree = "<group>"; };
-		028C09321BD66A5E00B2266F /* ZipFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipFile.cpp; sourceTree = "<group>"; };
-		028C09331BD66A5E00B2266F /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
 		028C09351BD66A5E00B2266F /* Function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Function.h; sourceTree = "<group>"; };
 		028C09361BD66A5E00B2266F /* Functional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Functional.h; sourceTree = "<group>"; };
 		028C09371BD66A5E00B2266F /* Signal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Signal.h; sourceTree = "<group>"; };
@@ -3934,6 +3965,19 @@
 		028C0D311BD66A6000B2266F /* UtilsMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UtilsMacOS.mm; sourceTree = "<group>"; };
 		0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldMacOS.h; sourceTree = "<group>"; };
 		0347B7DF1C64C211004DB76C /* UITextFieldMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldMacOS.mm; sourceTree = "<group>"; };
+		03B249801CBCE81700015637 /* PackArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackArchive.cpp; sourceTree = "<group>"; };
+		03B249811CBCE81700015637 /* PackArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackArchive.h; sourceTree = "<group>"; };
+		03B249821CBCE81700015637 /* PackFormatSpec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackFormatSpec.h; sourceTree = "<group>"; };
+		03B249831CBCE81700015637 /* ResourceArchivePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceArchivePrivate.h; sourceTree = "<group>"; };
+		03B249841CBCE81700015637 /* ZipArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipArchive.cpp; sourceTree = "<group>"; };
+		03B249851CBCE81700015637 /* ZipArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipArchive.h; sourceTree = "<group>"; };
+		03B2499C1CBCEDC900015637 /* Compressor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Compressor.h; sourceTree = "<group>"; };
+		03B2499D1CBCEDC900015637 /* LZ4Compressor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LZ4Compressor.cpp; sourceTree = "<group>"; };
+		03B2499E1CBCEDC900015637 /* LZ4Compressor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LZ4Compressor.h; sourceTree = "<group>"; };
+		03B2499F1CBCEDC900015637 /* ZipCompressor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipCompressor.cpp; sourceTree = "<group>"; };
+		03B249A01CBCEDC900015637 /* ZipCompressor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipCompressor.h; sourceTree = "<group>"; };
+		03B249B81CBCF17100015637 /* lz4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lz4.c; path = ../../Sources/External/lz4/lz4.c; sourceTree = "<group>"; };
+		03B249B91CBCF17100015637 /* lz4hc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lz4hc.c; path = ../../Sources/External/lz4/lz4hc.c; sourceTree = "<group>"; };
 		03C12A8A1C4FD7F9002D4636 /* LocalNotificationMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalNotificationMac.mm; sourceTree = "<group>"; };
 		03C12A8B1C4FD7F9002D4636 /* LocalNotificationMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationMac.h; sourceTree = "<group>"; };
 		03C12A921C4FD827002D4636 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
@@ -4398,6 +4442,7 @@
 		028C08FF1BD66A5E00B2266F /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				03B2497F1CBCE81700015637 /* Private */,
 				D7E452CE1C50BABD00E5A97D /* LocalizationApple.mm */,
 				028C09001BD66A5E00B2266F /* Bitstream.cpp */,
 				028C09011BD66A5E00B2266F /* Bitstream.h */,
@@ -4438,8 +4483,6 @@
 				028C092F1BD66A5E00B2266F /* YamlNode.h */,
 				028C09301BD66A5E00B2266F /* YamlParser.cpp */,
 				028C09311BD66A5E00B2266F /* YamlParser.h */,
-				028C09321BD66A5E00B2266F /* ZipFile.cpp */,
-				028C09331BD66A5E00B2266F /* ZipFile.h */,
 			);
 			path = FileSystem;
 			sourceTree = "<group>";
@@ -5519,6 +5562,31 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		03B2497F1CBCE81700015637 /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				03B249801CBCE81700015637 /* PackArchive.cpp */,
+				03B249811CBCE81700015637 /* PackArchive.h */,
+				03B249821CBCE81700015637 /* PackFormatSpec.h */,
+				03B249831CBCE81700015637 /* ResourceArchivePrivate.h */,
+				03B249841CBCE81700015637 /* ZipArchive.cpp */,
+				03B249851CBCE81700015637 /* ZipArchive.h */,
+			);
+			path = Private;
+			sourceTree = "<group>";
+		};
+		03B2499B1CBCEDC900015637 /* Compression */ = {
+			isa = PBXGroup;
+			children = (
+				03B2499C1CBCEDC900015637 /* Compressor.h */,
+				03B2499D1CBCEDC900015637 /* LZ4Compressor.cpp */,
+				03B2499E1CBCEDC900015637 /* LZ4Compressor.h */,
+				03B2499F1CBCEDC900015637 /* ZipCompressor.cpp */,
+				03B249A01CBCEDC900015637 /* ZipCompressor.h */,
+			);
+			path = Compression;
+			sourceTree = "<group>";
+		};
 		0867D691FE84028FC02AAC07 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
@@ -5610,6 +5678,8 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				03B249B81CBCF17100015637 /* lz4.c */,
+				03B249B91CBCF17100015637 /* lz4hc.c */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -5652,6 +5722,7 @@
 		FECFC0A512E87E3000C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				03B2499B1CBCEDC900015637 /* Compression */,
 				1CE823471C91C93000D4087C /* Command */,
 				028C08181BD66A5D00B2266F /* Animation */,
 				028C082A1BD66A5D00B2266F /* Autotesting */,
@@ -5771,6 +5842,7 @@
 				028C14761BD66A6000B2266F /* TextBlockRender.h in Headers */,
 				028C11551BD66A6000B2266F /* TCPSocket.h in Headers */,
 				028C1A0D1BD66A6000B2266F /* TheoraPlayer.h in Headers */,
+				03B2498E1CBCE81700015637 /* PackFormatSpec.h in Headers */,
 				028C0E3A1BD66A6000B2266F /* Message.h in Headers */,
 				028C11341BD66A6000B2266F /* IfAddress.h in Headers */,
 				028C18E41BD66A6000B2266F /* LightUpdateSystem.h in Headers */,
@@ -5916,6 +5988,7 @@
 				028C0F961BD66A6000B2266F /* ZLibStream.h in Headers */,
 				028C0DDD1BD66A6000B2266F /* BaseObjectChecker.h in Headers */,
 				028C19711BD66A6000B2266F /* UIComponent.h in Headers */,
+				03B249A31CBCEDC900015637 /* Compressor.h in Headers */,
 				028C108F1BD66A6000B2266F /* AABBox3.h in Headers */,
 				028C0E161BD66A6000B2266F /* HashMap.h in Headers */,
 				028C0EA31BD66A6000B2266F /* ConditionVariable.h in Headers */,
@@ -5986,6 +6059,7 @@
 				028C15811BD66A6000B2266F /* ImageSystem.h in Headers */,
 				028C1A971BD66A6100B2266F /* UIPackageLoader.h in Headers */,
 				028C17281BD66A6000B2266F /* RuntimeTextures.h in Headers */,
+				03B249A91CBCEDC900015637 /* LZ4Compressor.h in Headers */,
 				028C15F01BD66A6000B2266F /* Renderer.h in Headers */,
 				028C19CB1BD66A6000B2266F /* UILinearLayoutComponent.h in Headers */,
 				028C17BB1BD66A6000B2266F /* ParticleEffectComponent.h in Headers */,
@@ -5997,6 +6071,7 @@
 				028C15481BD66A6000B2266F /* StaticOcclusionRenderPass.h in Headers */,
 				028C18091BD66A6000B2266F /* PathComponent.h in Headers */,
 				028C12361BD66A6000B2266F /* ParticlePropertyLine.h in Headers */,
+				03B2498B1CBCE81700015637 /* PackArchive.h in Headers */,
 				028C10441BD66A6000B2266F /* Function.h in Headers */,
 				028C10651BD66A6000B2266F /* InputCallback.h in Headers */,
 				028C15A51BD66A6000B2266F /* LibWebPHelper.h in Headers */,
@@ -6128,6 +6203,7 @@
 				028C12631BD66A6000B2266F /* Process.h in Headers */,
 				028C14DF1BD66A6000B2266F /* Landscape.h in Headers */,
 				028C0D891BD66A6000B2266F /* dlmalloc.h in Headers */,
+				03B249AF1CBCEDC900015637 /* ZipCompressor.h in Headers */,
 				028C119A1BD66A6000B2266F /* NetController.h in Headers */,
 				028C19081BD66A6000B2266F /* SoundUpdateSystem.h in Headers */,
 				028C111C1BD66A6000B2266F /* AddressResolver.h in Headers */,
@@ -6156,6 +6232,7 @@
 				0214140C181984D600925E51 /* DAVAClassRegistrator.h in Headers */,
 				028C0E2E1BD66A6000B2266F /* IntrospectionDynamic.h in Headers */,
 				028C15AB1BD66A6000B2266F /* FXCache.h in Headers */,
+				03B249911CBCE81700015637 /* ResourceArchivePrivate.h in Headers */,
 				028C11A91BD66A6000B2266F /* ProtoTypes.h in Headers */,
 				028C11AF1BD66A6000B2266F /* TCPClientTransport.h in Headers */,
 				028C199B1BD66A6000B2266F /* LayoutHelpers.h in Headers */,
@@ -6198,9 +6275,9 @@
 				028C0EFA1BD66A6000B2266F /* MongodbObject.h in Headers */,
 				028C0F3C1BD66A6000B2266F /* ListAllocator.h in Headers */,
 				028C148E1BD66A6000B2266F /* EdgeAdjacency.h in Headers */,
-				028C10411BD66A6000B2266F /* ZipFile.h in Headers */,
 				028C177F1BD66A6000B2266F /* BulletComponent.h in Headers */,
 				028C19D71BD66A6000B2266F /* ScrollHelper.h in Headers */,
+				03B249971CBCE81700015637 /* ZipArchive.h in Headers */,
 				028C0E431BD66A6000B2266F /* NullType.h in Headers */,
 				028C14F11BD66A6000B2266F /* RenderBatch.h in Headers */,
 				028C10771BD66A6000B2266F /* JobManager.h in Headers */,
@@ -6240,6 +6317,7 @@
 				028C19571BD66A6000B2266F /* SoundEvent.h in Headers */,
 				028C19ED1BD66A6000B2266F /* UIStyleSheetPropertyTable.h in Headers */,
 				028C17261BD66A6000B2266F /* RuntimeTextures.h in Headers */,
+				03B249891CBCE81700015637 /* PackArchive.h in Headers */,
 				028C14E91BD66A6000B2266F /* Mesh.h in Headers */,
 				028C117A1BD66A6000B2266F /* NetworkCommon.h in Headers */,
 				028C197E1BD66A6000B2266F /* IMovieViewControl.h in Headers */,
@@ -6298,6 +6376,7 @@
 				028C147A1BD66A6000B2266F /* TextBlockSoftwareRender.h in Headers */,
 				028C124F1BD66A6000B2266F /* DeviceInfoPrivateBase.h in Headers */,
 				028C153A1BD66A6000B2266F /* SpriteObject.h in Headers */,
+				03B249A71CBCEDC900015637 /* LZ4Compressor.h in Headers */,
 				028C19631BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0E4A1BD66A6000B2266F /* ObjectFactory.h in Headers */,
 				028C18131BD66A6000B2266F /* WindComponent.h in Headers */,
@@ -6351,6 +6430,7 @@
 				028C1AA71BD66A6100B2266F /* UIPopup.h in Headers */,
 				028C0E531BD66A6000B2266F /* Observer.h in Headers */,
 				028C0D5A1BD66A6000B2266F /* LinearAnimation.h in Headers */,
+				03B249951CBCE81700015637 /* ZipArchive.h in Headers */,
 				028C173E1BD66A6000B2266F /* TextureDescriptor.h in Headers */,
 				028C10E11BD66A6000B2266F /* RectPacker.h in Headers */,
 				028C0EB01BD66A6000B2266F /* PosixThreads.h in Headers */,
@@ -6368,6 +6448,7 @@
 				028C0F461BD66A6000B2266F /* Replay.h in Headers */,
 				028C17891BD66A6000B2266F /* ComponentHelpers.h in Headers */,
 				028C14411BD66A6000B2266F /* FontManager.h in Headers */,
+				03B2498C1CBCE81700015637 /* PackFormatSpec.h in Headers */,
 				028C10F01BD66A6000B2266F /* Vector.h in Headers */,
 				028C1B3D1BD66A6100B2266F /* BiDiHelper.h in Headers */,
 				028C13991BD66A6000B2266F /* CorePlatformMacOS.h in Headers */,
@@ -6389,6 +6470,7 @@
 				028C127C1BD66A6000B2266F /* SystemTimer.h in Headers */,
 				028C14D41BD66A6000B2266F /* Heightmap.h in Headers */,
 				028C1B041BD66A6100B2266F /* UITextField.h in Headers */,
+				03B249A11CBCEDC900015637 /* Compressor.h in Headers */,
 				028C0E3B1BD66A6000B2266F /* Meta.h in Headers */,
 				028C15CD1BD66A6000B2266F /* MipmapReplacer.h in Headers */,
 				028C16211BD66A6000B2266F /* internal.h in Headers */,
@@ -6435,6 +6517,7 @@
 				028C19691BD66A6000B2266F /* AbstractUIPackageBuilder.h in Headers */,
 				028C185E1BD66A6000B2266F /* Scene.h in Headers */,
 				028C1AA11BD66A6100B2266F /* UIParticles.h in Headers */,
+				03B249AD1CBCEDC900015637 /* ZipCompressor.h in Headers */,
 				028C12161BD66A6000B2266F /* LocalNotificationText.h in Headers */,
 				028C1B491BD66A6100B2266F /* MD5.h in Headers */,
 				028C17831BD66A6000B2266F /* CameraComponent.h in Headers */,
@@ -6496,6 +6579,7 @@
 				028C171A1BD66A6000B2266F /* rhi_ShaderCache.h in Headers */,
 				028C10961BD66A6000B2266F /* Circle.h in Headers */,
 				028C110E1BD66A6000B2266F /* MemoryProfiler.h in Headers */,
+				03B2498F1CBCE81700015637 /* ResourceArchivePrivate.h in Headers */,
 				028C19121BD66A6000B2266F /* StaticOcclusionBuildSystem.h in Headers */,
 				028C0FDC1BD66A6000B2266F /* KeyedArchiver.h in Headers */,
 				028C1AF21BD66A6100B2266F /* UISpinner.h in Headers */,
@@ -6613,7 +6697,6 @@
 				028C1B581BD66A6100B2266F /* StringFormat.h in Headers */,
 				028C1AEC1BD66A6100B2266F /* UISlider.h in Headers */,
 				028C0E8F1BD66A6000B2266F /* Atomic.h in Headers */,
-				028C103F1BD66A6000B2266F /* ZipFile.h in Headers */,
 				028C0E1A1BD66A6000B2266F /* IndexBitVector.h in Headers */,
 				028C12551BD66A6000B2266F /* MovieViewControlStub.h in Headers */,
 				028C15A91BD66A6000B2266F /* FXCache.h in Headers */,
@@ -6829,6 +6912,7 @@
 				028C181A1BD66A6000B2266F /* LodToLod2Converter.h in Headers */,
 				028C14751BD66A6000B2266F /* TextBlockRender.h in Headers */,
 				028C11541BD66A6000B2266F /* TCPSocket.h in Headers */,
+				03B2498D1CBCE81700015637 /* PackFormatSpec.h in Headers */,
 				028C1A0C1BD66A6000B2266F /* TheoraPlayer.h in Headers */,
 				028C0E391BD66A6000B2266F /* Message.h in Headers */,
 				028C11331BD66A6000B2266F /* IfAddress.h in Headers */,
@@ -6974,6 +7058,7 @@
 				028C1A901BD66A6100B2266F /* UIPackage.h in Headers */,
 				028C0F951BD66A6000B2266F /* ZLibStream.h in Headers */,
 				028C0DDC1BD66A6000B2266F /* BaseObjectChecker.h in Headers */,
+				03B249A21CBCEDC900015637 /* Compressor.h in Headers */,
 				028C19701BD66A6000B2266F /* UIComponent.h in Headers */,
 				028C108E1BD66A6000B2266F /* AABBox3.h in Headers */,
 				028C0E151BD66A6000B2266F /* HashMap.h in Headers */,
@@ -7044,6 +7129,7 @@
 				028C11151BD66A6000B2266F /* TrackingAllocator.h in Headers */,
 				028C15801BD66A6000B2266F /* ImageSystem.h in Headers */,
 				028C1A961BD66A6100B2266F /* UIPackageLoader.h in Headers */,
+				03B249A81CBCEDC900015637 /* LZ4Compressor.h in Headers */,
 				028C17271BD66A6000B2266F /* RuntimeTextures.h in Headers */,
 				028C15EF1BD66A6000B2266F /* Renderer.h in Headers */,
 				028C19CA1BD66A6000B2266F /* UILinearLayoutComponent.h in Headers */,
@@ -7055,6 +7141,7 @@
 				028C197C1BD66A6000B2266F /* DefaultUIPackageBuilder.h in Headers */,
 				028C15471BD66A6000B2266F /* StaticOcclusionRenderPass.h in Headers */,
 				028C18081BD66A6000B2266F /* PathComponent.h in Headers */,
+				03B2498A1CBCE81700015637 /* PackArchive.h in Headers */,
 				028C12351BD66A6000B2266F /* ParticlePropertyLine.h in Headers */,
 				028C10431BD66A6000B2266F /* Function.h in Headers */,
 				028C10641BD66A6000B2266F /* InputCallback.h in Headers */,
@@ -7186,6 +7273,7 @@
 				028C12621BD66A6000B2266F /* Process.h in Headers */,
 				028C14DE1BD66A6000B2266F /* Landscape.h in Headers */,
 				028C0D881BD66A6000B2266F /* dlmalloc.h in Headers */,
+				03B249AE1CBCEDC900015637 /* ZipCompressor.h in Headers */,
 				028C11991BD66A6000B2266F /* NetController.h in Headers */,
 				028C19071BD66A6000B2266F /* SoundUpdateSystem.h in Headers */,
 				028C111B1BD66A6000B2266F /* AddressResolver.h in Headers */,
@@ -7214,6 +7302,7 @@
 				0214140B181984D600925E51 /* DAVAClassRegistrator.h in Headers */,
 				028C0E2D1BD66A6000B2266F /* IntrospectionDynamic.h in Headers */,
 				028C15AA1BD66A6000B2266F /* FXCache.h in Headers */,
+				03B249901CBCE81700015637 /* ResourceArchivePrivate.h in Headers */,
 				028C11A81BD66A6000B2266F /* ProtoTypes.h in Headers */,
 				028C11AE1BD66A6000B2266F /* TCPClientTransport.h in Headers */,
 				028C199A1BD66A6000B2266F /* LayoutHelpers.h in Headers */,
@@ -7256,9 +7345,9 @@
 				028C0EF91BD66A6000B2266F /* MongodbObject.h in Headers */,
 				028C0F3B1BD66A6000B2266F /* ListAllocator.h in Headers */,
 				028C148D1BD66A6000B2266F /* EdgeAdjacency.h in Headers */,
-				028C10401BD66A6000B2266F /* ZipFile.h in Headers */,
 				028C177E1BD66A6000B2266F /* BulletComponent.h in Headers */,
 				028C19D61BD66A6000B2266F /* ScrollHelper.h in Headers */,
+				03B249961CBCE81700015637 /* ZipArchive.h in Headers */,
 				028C0E421BD66A6000B2266F /* NullType.h in Headers */,
 				028C14F01BD66A6000B2266F /* RenderBatch.h in Headers */,
 				028C10761BD66A6000B2266F /* JobManager.h in Headers */,
@@ -7489,10 +7578,12 @@
 				028C19741BD66A6000B2266F /* UIControlFamily.cpp in Sources */,
 				028C0F3F1BD66A6000B2266F /* Profiler.cpp in Sources */,
 				028C18FF1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
+				03B249941CBCE81700015637 /* ZipArchive.cpp in Sources */,
 				7CCE26A61C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */,
 				028C10741BD66A6000B2266F /* JobManager.cpp in Sources */,
 				028C19051BD66A6000B2266F /* SoundUpdateSystem.cpp in Sources */,
 				028C14971BD66A6000B2266F /* PolygonGroup.cpp in Sources */,
+				03B249BF1CBCF17100015637 /* lz4hc.c in Sources */,
 				028C0E851BD66A6000B2266F /* CollisionPolygons.cpp in Sources */,
 				028C19B01BD66A6000B2266F /* UIFlowLayoutComponent.cpp in Sources */,
 				028C17E81BD66A6000B2266F /* TransformComponent.cpp in Sources */,
@@ -7521,7 +7612,6 @@
 				028C1B031BD66A6100B2266F /* UITextField.cpp in Sources */,
 				028C11191BD66A6000B2266F /* AddressResolver.cpp in Sources */,
 				028C13E01BD66A6000B2266F /* WebViewControlMacOS.mm in Sources */,
-				028C103E1BD66A6000B2266F /* ZipFile.cpp in Sources */,
 				028C0FC91BD66A6000B2266F /* FilePathObjective.mm in Sources */,
 				028C16E31BD66A6000B2266F /* rhi_ProgGLES2.cpp in Sources */,
 				028C172B1BD66A6000B2266F /* Shader.cpp in Sources */,
@@ -7575,6 +7665,7 @@
 				028C19411BD66A6000B2266F /* FMODFileSoundEvent.cpp in Sources */,
 				028C1A881BD66A6100B2266F /* UIMovieView.cpp in Sources */,
 				028C17941BD66A6000B2266F /* SnapToLandscapeControllerComponent.cpp in Sources */,
+				03B249881CBCE81700015637 /* PackArchive.cpp in Sources */,
 				028C150C1BD66A6000B2266F /* RenderPass.cpp in Sources */,
 				028C10621BD66A6000B2266F /* GamepadDevice.mm in Sources */,
 				028C19921BD66A6000B2266F /* FlowLayoutAlgorithm.cpp in Sources */,
@@ -7688,6 +7779,7 @@
 				028C14E81BD66A6000B2266F /* Mesh.cpp in Sources */,
 				028C1A041BD66A6000B2266F /* UIStyleSheetYamlLoader.cpp in Sources */,
 				028C174C1BD66A6000B2266F /* GameObjectAnimations.cpp in Sources */,
+				03B249A61CBCEDC900015637 /* LZ4Compressor.cpp in Sources */,
 				028C10861BD66A6000B2266F /* AABBox2.cpp in Sources */,
 				028C19EC1BD66A6000B2266F /* UIStyleSheetPropertyTable.cpp in Sources */,
 				028C10F51BD66A6000B2266F /* AllocatorBridge.cpp in Sources */,
@@ -7776,6 +7868,7 @@
 				028C14611BD66A6000B2266F /* VirtualCoordinatesSystem.cpp in Sources */,
 				028C0D4D1BD66A6000B2266F /* Interpolation.cpp in Sources */,
 				028C0E191BD66A6000B2266F /* IndexBitVector.cpp in Sources */,
+				03B249AC1CBCEDC900015637 /* ZipCompressor.cpp in Sources */,
 				028C17701BD66A6000B2266F /* ActionComponent.cpp in Sources */,
 				7CBC9E871C75D7F400A7C4C6 /* ProgramOptions.cpp in Sources */,
 				028C13B01BD66A6000B2266F /* MovieViewControlMacOS.mm in Sources */,
@@ -7784,6 +7877,7 @@
 				028C144C1BD66A6000B2266F /* GraphicFont.cpp in Sources */,
 				028C10BF1BD66A6000B2266F /* NeonMath.cpp in Sources */,
 				028C15571BD66A6000B2266F /* VegetationPropertyNames.cpp in Sources */,
+				03B249BC1CBCF17100015637 /* lz4.c in Sources */,
 				028C17AC1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E2B1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
 				028C0F6F1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
@@ -7870,6 +7964,7 @@
 				028C0D8A1BD66A6000B2266F /* GameAPI.cpp in Sources */,
 				028C163F1BD66A6000B2266F /* PreProcess.cpp in Sources */,
 				028C19F01BD66A6000B2266F /* UIStyleSheetSelectorChain.cpp in Sources */,
+				03B249AA1CBCEDC900015637 /* ZipCompressor.cpp in Sources */,
 				7CBC9E7F1C75D7F400A7C4C6 /* CommandLineParser.cpp in Sources */,
 				028C17861BD66A6000B2266F /* ComponentHelpers.cpp in Sources */,
 				028C17501BD66A6000B2266F /* GameObjectManager.cpp in Sources */,
@@ -7899,6 +7994,7 @@
 				D729A3A01C5B7B6F000AE64F /* HelperAppDelegate.mm in Sources */,
 				028C0D841BD66A6000B2266F /* dlmalloc.c in Sources */,
 				7CBC9E851C75D7F400A7C4C6 /* ProgramOptions.cpp in Sources */,
+				03B249921CBCE81700015637 /* ZipArchive.cpp in Sources */,
 				028C16061BD66A6000B2266F /* dbg_FontNormal.cxx in Sources */,
 				028C164E1BD66A6000B2266F /* rhi_Impl.cpp in Sources */,
 				028C1ADD1BD66A6100B2266F /* UIScrollView.cpp in Sources */,
@@ -7979,7 +8075,6 @@
 				028C1B011BD66A6100B2266F /* UITextField.cpp in Sources */,
 				028C11171BD66A6000B2266F /* AddressResolver.cpp in Sources */,
 				028C13DE1BD66A6000B2266F /* WebViewControlMacOS.mm in Sources */,
-				028C103C1BD66A6000B2266F /* ZipFile.cpp in Sources */,
 				028C0FC71BD66A6000B2266F /* FilePathObjective.mm in Sources */,
 				028C16E11BD66A6000B2266F /* rhi_ProgGLES2.cpp in Sources */,
 				028C17291BD66A6000B2266F /* Shader.cpp in Sources */,
@@ -8104,6 +8199,7 @@
 				028C15A01BD66A6000B2266F /* LibWebPHelper.cpp in Sources */,
 				028C0DAE1BD66A6000B2266F /* RectSwig.cpp in Sources */,
 				028C19781BD66A6000B2266F /* DefaultUIPackageBuilder.cpp in Sources */,
+				03B249BD1CBCF17100015637 /* lz4hc.c in Sources */,
 				028C0D391BD66A6000B2266F /* Animation.cpp in Sources */,
 				028C19C61BD66A6000B2266F /* UILinearLayoutComponent.cpp in Sources */,
 				028C18161BD66A6000B2266F /* LodToLod2Converter.cpp in Sources */,
@@ -8119,9 +8215,11 @@
 				028C19151BD66A6000B2266F /* StaticOcclusionSystem.cpp in Sources */,
 				321CCA561C6E04490048FAC9 /* UIFocusComponent.cpp in Sources */,
 				028C10361BD66A6000B2266F /* YamlParser.cpp in Sources */,
+				03B249A41CBCEDC900015637 /* LZ4Compressor.cpp in Sources */,
 				028C1B4F1BD66A6100B2266F /* NSStringUtils.mm in Sources */,
 				028C12131BD66A6000B2266F /* LocalNotificationText.cpp in Sources */,
 				028C0F731BD66A6000B2266F /* DownloadManager.cpp in Sources */,
+				03B249861CBCE81700015637 /* PackArchive.cpp in Sources */,
 				028C16ED1BD66A6000B2266F /* rhi_VertexBufferGLES2.cpp in Sources */,
 				028C14381BD66A6000B2266F /* Font.cpp in Sources */,
 				028C17981BD66A6000B2266F /* WASDControllerComponent.cpp in Sources */,
@@ -8157,6 +8255,7 @@
 				028C12221BD66A6000B2266F /* ParticleForce.cpp in Sources */,
 				028C16661BD66A6000B2266F /* rhi_VertexLayout.cpp in Sources */,
 				028C1B311BD66A6100B2266F /* TestCore.cpp in Sources */,
+				03B249BA1CBCF17100015637 /* lz4.c in Sources */,
 				028C116E1BD66A6000B2266F /* NetCore.cpp in Sources */,
 				028C12311BD66A6000B2266F /* ParticlePropertyLine.cpp in Sources */,
 				028C148F1BD66A6000B2266F /* MeshUtils.cpp in Sources */,
@@ -8406,10 +8505,12 @@
 				028C19731BD66A6000B2266F /* UIControlFamily.cpp in Sources */,
 				028C0F3E1BD66A6000B2266F /* Profiler.cpp in Sources */,
 				028C18FE1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
+				03B249931CBCE81700015637 /* ZipArchive.cpp in Sources */,
 				028C10731BD66A6000B2266F /* JobManager.cpp in Sources */,
 				028C19041BD66A6000B2266F /* SoundUpdateSystem.cpp in Sources */,
 				028C14961BD66A6000B2266F /* PolygonGroup.cpp in Sources */,
 				028C0E841BD66A6000B2266F /* CollisionPolygons.cpp in Sources */,
+				03B249BE1CBCF17100015637 /* lz4hc.c in Sources */,
 				028C19AF1BD66A6000B2266F /* UIFlowLayoutComponent.cpp in Sources */,
 				028C17E71BD66A6000B2266F /* TransformComponent.cpp in Sources */,
 				028C16CD1BD66A6000B2266F /* macos_gl.mm in Sources */,
@@ -8437,7 +8538,6 @@
 				028C1B021BD66A6100B2266F /* UITextField.cpp in Sources */,
 				028C11181BD66A6000B2266F /* AddressResolver.cpp in Sources */,
 				028C13DF1BD66A6000B2266F /* WebViewControlMacOS.mm in Sources */,
-				028C103D1BD66A6000B2266F /* ZipFile.cpp in Sources */,
 				028C0FC81BD66A6000B2266F /* FilePathObjective.mm in Sources */,
 				028C16E21BD66A6000B2266F /* rhi_ProgGLES2.cpp in Sources */,
 				028C172A1BD66A6000B2266F /* Shader.cpp in Sources */,
@@ -8492,6 +8592,7 @@
 				028C1A871BD66A6100B2266F /* UIMovieView.cpp in Sources */,
 				028C17931BD66A6000B2266F /* SnapToLandscapeControllerComponent.cpp in Sources */,
 				028C150B1BD66A6000B2266F /* RenderPass.cpp in Sources */,
+				03B249871CBCE81700015637 /* PackArchive.cpp in Sources */,
 				028C10611BD66A6000B2266F /* GamepadDevice.mm in Sources */,
 				028C19911BD66A6000B2266F /* FlowLayoutAlgorithm.cpp in Sources */,
 				028C16D31BD66A6000B2266F /* rhi_DepthStencilStateGLES2.cpp in Sources */,
@@ -8605,6 +8706,7 @@
 				7CCE26A51C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */,
 				028C14E71BD66A6000B2266F /* Mesh.cpp in Sources */,
 				028C1A031BD66A6000B2266F /* UIStyleSheetYamlLoader.cpp in Sources */,
+				03B249A51CBCEDC900015637 /* LZ4Compressor.cpp in Sources */,
 				028C174B1BD66A6000B2266F /* GameObjectAnimations.cpp in Sources */,
 				028C10851BD66A6000B2266F /* AABBox2.cpp in Sources */,
 				028C19EB1BD66A6000B2266F /* UIStyleSheetPropertyTable.cpp in Sources */,
@@ -8693,6 +8795,7 @@
 				028C14601BD66A6000B2266F /* VirtualCoordinatesSystem.cpp in Sources */,
 				028C0D4C1BD66A6000B2266F /* Interpolation.cpp in Sources */,
 				028C0E181BD66A6000B2266F /* IndexBitVector.cpp in Sources */,
+				03B249AB1CBCEDC900015637 /* ZipCompressor.cpp in Sources */,
 				028C176F1BD66A6000B2266F /* ActionComponent.cpp in Sources */,
 				7CBC9E861C75D7F400A7C4C6 /* ProgramOptions.cpp in Sources */,
 				028C13AF1BD66A6000B2266F /* MovieViewControlMacOS.mm in Sources */,
@@ -8701,6 +8804,7 @@
 				028C144B1BD66A6000B2266F /* GraphicFont.cpp in Sources */,
 				028C10BE1BD66A6000B2266F /* NeonMath.cpp in Sources */,
 				028C15561BD66A6000B2266F /* VegetationPropertyNames.cpp in Sources */,
+				03B249BB1CBCF17100015637 /* lz4.c in Sources */,
 				028C17AB1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E2A1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
 				028C0F6E1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
