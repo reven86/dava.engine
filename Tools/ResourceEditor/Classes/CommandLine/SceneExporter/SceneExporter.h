@@ -75,7 +75,7 @@ public:
     using ExportedObjectCollection = DAVA::Vector<ExportedObject>;
 
     void SetFolders(const DAVA::FilePath& dataFolder, const DAVA::FilePath& dataSourceFolder);
-    void SetCompressionParams(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality);
+    void SetCompressionParams(const DAVA::Vector<DAVA::eGPUFamily>& gpus, DAVA::TextureConverter::eConvertQuality quality);
     void EnableOptimizations(bool enable);
 
     bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
@@ -101,11 +101,10 @@ private:
     DAVA::AssetCacheClient* cacheClient = nullptr;
     DAVA::AssetCache::CachedItemValue::Description cacheItemDescription;
 
-    DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
+    DAVA::Vector<DAVA::eGPUFamily> exportForGPUs;
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
 
     bool optimizeOnExport = false;
-    bool exportForAllGPUs = false;
 };
 
 

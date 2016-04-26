@@ -61,7 +61,6 @@ const DAVA::String OptionName::Texture("-texture");
 const DAVA::String OptionName::Yaml("-yaml");
 
 const DAVA::String OptionName::GPU("-gpu");
-const DAVA::String OptionName::AllGPUs("-allGPUs");
 const DAVA::String OptionName::Quality("-quality");
 const DAVA::String OptionName::Force("-f");
 const DAVA::String OptionName::Mipmaps("-m");

@@ -256,11 +256,9 @@ void CollectTextureDescriptors(Scene* scene, const FilePath& dataSourceFolder, S
 
 SceneExporter::~SceneExporter() = default;
 
-void SceneExporter::SetCompressionParams(const eGPUFamily gpu, TextureConverter::eConvertQuality quality_)
+void SceneExporter::SetCompressionParams(const DAVA::Vector<DAVA::eGPUFamily>& gpus, TextureConverter::eConvertQuality quality_)
 {
-    exportForGPU = gpu;
-    exportForAllGPUs = (gpu == GPU_FAMILY_COUNT);
-
+    exportForGPUs = gpus;
     quality = quality_;
 }
 
@@ -406,21 +404,16 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
         return;
     }
 
-    if (exportForAllGPUs)
+    bool texturesExported = ExportTextures(exportForGPUs, quality, *descriptor);
+    if (texturesExported)
     {
-        static const DAVA::Vector<DAVA::eGPUFamily> GPUs = { DAVA::GPU_POWERVR_IOS, DAVA::GPU_POWERVR_ANDROID, DAVA::GPU_TEGRA, DAVA::GPU_MALI, DAVA::GPU_ADRENO, DAVA::GPU_DX11, DAVA::GPU_ORIGIN };
-        bool texturesExported = ExportTextures(GPUs, quality, *descriptor);
-        if (texturesExported)
+        if (exportForGPUs.size() == 1)
+        {
+            descriptor->Export(dataFolder + descriptorLink, exportForGPUs[0]);
+        }
+        else
         {
             descriptor->Save(dataFolder + descriptorLink);
-        }
-    }
-    else
-    {
-        bool texturesExported = ExportTextures({ exportForGPU }, quality, *descriptor);
-        if (texturesExported)
-        {
-            descriptor->Export(dataFolder + descriptorLink, exportForGPU);
         }
     }
 }

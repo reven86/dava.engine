@@ -127,7 +127,7 @@ public:
     DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
     DAVA::SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
     DAVA::SceneFileV2::eError SaveScene();
-    bool Export(const DAVA::eGPUFamily newGPU);
+    bool Export(const DAVA::Vector<DAVA::eGPUFamily>& newGPUs);
 
     const DAVA::FilePath& GetScenePath();
     void SetScenePath(const DAVA::FilePath& newScenePath);

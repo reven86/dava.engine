@@ -278,7 +278,7 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
     return SaveScene(curScenePath);
 }
 
-bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
+bool SceneEditor2::Export(const DAVA::Vector<DAVA::eGPUFamily>& newGPUs)
 {
     DAVA::ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
@@ -295,8 +295,8 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 
         SceneExporter exporter;
         exporter.SetFolders(dataFolder, dataSourceFolder);
-        exporter.SetCompressionParams(newGPU, qualityValue);
-        exporter.EnableOptimizations(newGPU != DAVA::GPU_ORIGIN);
+        exporter.SetCompressionParams(newGPUs, qualityValue);
+        exporter.EnableOptimizations(true); // add this parameter to export dialog in next pull request
 
         const DAVA::FilePath& scenePathname = GetScenePath();
         DAVA::FilePath newScenePathname = dataFolder + scenePathname.GetRelativePathname(dataSourceFolder);

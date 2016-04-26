@@ -1365,7 +1365,15 @@ void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
     WaitStart("Export", "Please wait...");
 
     DAVA::eGPUFamily gpuFamily = static_cast<DAVA::eGPUFamily>(exportAsAction->data().toInt());
-    scene->Export(gpuFamily); // errors will be displayed by logger output
+    if (gpuFamily == DAVA::GPU_FAMILY_COUNT)
+    {
+        DAVA::Vector<DAVA::eGPUFamily> gpus = { DAVA::GPU_POWERVR_IOS, DAVA::GPU_POWERVR_ANDROID, DAVA::GPU_TEGRA, DAVA::GPU_MALI, DAVA::GPU_ADRENO, DAVA::GPU_DX11 };
+        scene->Export(gpus); // errors will be displayed by logger output
+    }
+    else
+    {
+        scene->Export({ gpuFamily }); // errors will be displayed by logger output
+    }
 
     WaitStop();
 

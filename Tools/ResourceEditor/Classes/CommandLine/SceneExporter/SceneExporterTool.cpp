@@ -145,13 +145,11 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::ProcessFileList, VariantType(String("")), "Pathname to file with filenames for exporting");
     options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 
-    options.AddOption(OptionName::GPU, VariantType(String("origin")), "GPU family: PoverVR_iOS, PoverVR_Android, tegra, mali, adreno, origin, dx11");
+    options.AddOption(OptionName::GPU, VariantType(String("origin")), "GPU family: PoverVR_iOS, PoverVR_Android, tegra, mali, adreno, origin, dx11. Can be multiple: -gpu mali,adreno,origin", true);
     options.AddOption(OptionName::Quality, VariantType(static_cast<uint32>(TextureConverter::ECQ_DEFAULT)), "Quality of pvr/etc compression. Default is 4 - the best quality. Available values [0-4]");
 
     options.AddOption(OptionName::SaveNormals, VariantType(false), "Disable removing of normals from vertexes");
     options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
-
-    options.AddOption(OptionName::AllGPUs, VariantType(false), "Export for all gpus at same time.");
 
     options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
     options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::LOCALHOST), "ip of adress of Asset Cache Server");
@@ -177,16 +175,18 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
         commandObject = SceneExporter::OBJECT_SCENE;
     }
 
-    String gpuName = options.GetOption(OptionName::GPU).AsString();
-    requestedGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
+    uint32 count = options.GetOptionValuesCount(OptionName::GPU);
+    for (uint32 i = 0; i < count; ++i)
+    {
+        String gpuName = options.GetOption(OptionName::GPU, i).AsString();
+        requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+    }
 
     const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
     quality = Clamp(static_cast<TextureConverter::eConvertQuality>(qualityValue), TextureConverter::ECQ_FASTEST, TextureConverter::ECQ_VERY_HIGH);
 
     const bool saveNormals = options.GetOption(OptionName::SaveNormals).AsBool();
     optimizeOnExport = !saveNormals;
-
-    exportForAllGPUs = options.GetOption(OptionName::AllGPUs).AsBool();
 
     useAssetCache = options.GetOption(OptionName::UseAssetCache).AsBool();
     if (useAssetCache)
@@ -232,7 +232,7 @@ bool SceneExporterTool::InitializeInternal()
         return false;
     }
 
-    if (requestedGPU == GPU_INVALID && !exportForAllGPUs)
+    if (requestedGPUs.empty())
     {
         Logger::Error("[SceneExporterTool] Unsupported gpu parameter was selected");
         return false;
@@ -247,15 +247,7 @@ void SceneExporterTool::ProcessInternal()
 
     SceneExporter exporter;
     exporter.SetFolders(outFolder, inFolder);
-    if (exportForAllGPUs)
-    {
-        exporter.SetCompressionParams(GPU_FAMILY_COUNT, quality);
-    }
-    else
-    {
-        exporter.SetCompressionParams(requestedGPU, quality);
-    }
-
+    exporter.SetCompressionParams(requestedGPUs, quality);
     exporter.EnableOptimizations(optimizeOnExport);
 
     if (useAssetCache)
