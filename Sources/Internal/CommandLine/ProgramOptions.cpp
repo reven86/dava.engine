@@ -172,7 +172,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                         for (auto& t : tokens)
                         {
                             int8 value = 0;
-                            if (1 == sscanf(t.c_str(), "%d", &value))
+                            if (1 == sscanf(t.c_str(), "%hhd", &value))
                             {
                                 opt.SetValue(VariantType(value));
                             }
@@ -184,7 +184,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                         for (auto& t : tokens)
                         {
                             uint8 value = 0;
-                            if (1 == sscanf(t.c_str(), "%u", &value))
+                            if (1 == sscanf(t.c_str(), "%hhu", &value))
                             {
                                 opt.SetValue(VariantType(value));
                             }
@@ -196,7 +196,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                         for (auto& t : tokens)
                         {
                             int16 value = 0;
-                            if (1 == sscanf(t.c_str(), "%d", &value))
+                            if (1 == sscanf(t.c_str(), "%hd", &value))
                             {
                                 opt.SetValue(VariantType(value));
                             }
@@ -208,7 +208,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                         for (auto& t : tokens)
                         {
                             uint16 value = 0;
-                            if (1 == sscanf(t.c_str(), "%u", &value))
+                            if (1 == sscanf(t.c_str(), "%hu", &value))
                             {
                                 opt.SetValue(VariantType(value));
                             }
