@@ -95,15 +95,6 @@ bool Project::OpenInternal(const QString& path)
     }
 
     SetProjectPath(fileInfo.absolutePath());
-    projectPath.MakeDirectoryPathname();
-
-    const auto& resFolders = FilePath::GetResourcesFolders();
-    const auto& searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
-
-    if (searchIt == resFolders.end())
-    {
-        FilePath::AddResourcesFolder(projectPath);
-    }
 
     YamlNode* projectRoot = parser->GetRootNode();
     if (nullptr != projectRoot)
@@ -270,7 +261,13 @@ void Project::SetProjectPath(QString arg)
 {
     if (GetProjectPath() != arg)
     {
+        FilePath::RemoveResourcesFolder(projectPath);
         projectPath = arg.toStdString().c_str();
+        if (!projectPath.IsEmpty())
+        {
+            projectPath.MakeDirectoryPathname();
+            FilePath::AddResourcesFolder(projectPath);
+        }
         emit ProjectPathChanged(arg);
     }
 }

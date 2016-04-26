@@ -152,8 +152,7 @@ public:
     };
     uint8 type;
 
-    union
-    {
+    union {
         bool boolValue;
         int8 int8Value;
         uint8 uint8Value;
