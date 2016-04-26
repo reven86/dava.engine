@@ -36,20 +36,6 @@
 
 namespace DAVA
 {
-class UIDefaultActions
-{
-public:
-    static const FastName LEFT;
-    static const FastName RIGHT;
-    static const FastName UP;
-    static const FastName DOWN;
-
-    static const FastName FOCUS_NEXT;
-    static const FastName FOCUS_PREV;
-
-    static const FastName ACTIVATE;
-    static const FastName ESCAPE;
-};
 
 class UIActionMap
 {

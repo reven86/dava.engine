@@ -58,7 +58,9 @@ public:
 
     const UIActionMap& GetActionMap() const;
     UIActionMap& GetActionMap();
+
     const UIInputMap& GetInputMap() const;
+    UIInputMap& GetInputMap();
 
     bool IsBlockOtherKeyboardShortcuts() const;
     void SetBlockOtherKeyboardShortcuts(bool block);

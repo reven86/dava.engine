@@ -55,14 +55,6 @@ public:
     void OnControlVisible(UIControl* control);
     void OnControlInvisible(UIControl* control);
 
-    void MoveFocusLeft();
-    void MoveFocusRight();
-    void MoveFocusUp();
-    void MoveFocusDown();
-
-    void MoveFocusForward();
-    void MoveFocusBackward();
-
     bool MoveFocus(FocusHelpers::Direction dir);
     bool MoveFocus(FocusHelpers::TabDirection dir);
 

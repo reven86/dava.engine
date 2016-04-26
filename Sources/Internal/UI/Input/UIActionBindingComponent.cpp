@@ -34,13 +34,6 @@ namespace DAVA
 {
 UIActionBindingComponent::UIActionBindingComponent()
 {
-    GetActionMap().Put(FastName("BATTLE"), []() {
-        Logger::Debug("BATTLE");
-    });
-
-    GetActionMap().Put(FastName("ESC"), []() {
-        Logger::Debug("Escape");
-    });
 }
 
 UIActionBindingComponent::UIActionBindingComponent(const UIActionBindingComponent& src)
@@ -67,6 +60,11 @@ UIActionMap& UIActionBindingComponent::GetActionMap()
 }
 
 const UIInputMap& UIActionBindingComponent::GetInputMap() const
+{
+    return inputMap;
+}
+
+UIInputMap& UIActionBindingComponent::GetInputMap()
 {
     return inputMap;
 }

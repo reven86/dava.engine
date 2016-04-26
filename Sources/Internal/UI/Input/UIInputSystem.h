@@ -70,6 +70,14 @@ public:
 
     UIFocusSystem* GetFocusSystem() const;
 
+    void MoveFocusLeft();
+    void MoveFocusRight();
+    void MoveFocusUp();
+    void MoveFocusDown();
+
+    void MoveFocusForward();
+    void MoveFocusBackward();
+
     void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
     void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
     void PerformActionOnControl(UIControl* control);

@@ -56,24 +56,24 @@ UIInputSystem::UIInputSystem()
 {
     focusSystem = new UIFocusSystem();
 
-    BindGlobalShortcut(KeyboardShortcut(Key::LEFT), ACTION_FOCUS_LEFT);
-    BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), ACTION_FOCUS_RIGHT);
-    BindGlobalShortcut(KeyboardShortcut(Key::UP), ACTION_FOCUS_UP);
-    BindGlobalShortcut(KeyboardShortcut(Key::DOWN), ACTION_FOCUS_DOWN);
+    //    BindGlobalShortcut(KeyboardShortcut(Key::LEFT), ACTION_FOCUS_LEFT);
+    //    BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), ACTION_FOCUS_RIGHT);
+    //    BindGlobalShortcut(KeyboardShortcut(Key::UP), ACTION_FOCUS_UP);
+    //    BindGlobalShortcut(KeyboardShortcut(Key::DOWN), ACTION_FOCUS_DOWN);
+    //
+    //    BindGlobalShortcut(KeyboardShortcut(Key::TAB), ACTION_FOCUS_NEXT);
+    //    BindGlobalShortcut(KeyboardShortcut(Key::TAB, KeyboardShortcut::MODIFIER_SHIFT), ACTION_FOCUS_PREV);
+    //
+    //    BindGlobalShortcut(KeyboardShortcut(Key::ENTER), ACTION_PERFORM);
+    //    BindGlobalShortcut(KeyboardShortcut(Key::ESCAPE), ACTION_ESCAPE);
 
-    BindGlobalShortcut(KeyboardShortcut(Key::TAB), ACTION_FOCUS_NEXT);
-    BindGlobalShortcut(KeyboardShortcut(Key::TAB, KeyboardShortcut::MODIFIER_SHIFT), ACTION_FOCUS_PREV);
+    BindGlobalAction(ACTION_FOCUS_LEFT, MakeFunction(this, &UIInputSystem::MoveFocusLeft));
+    BindGlobalAction(ACTION_FOCUS_RIGHT, MakeFunction(this, &UIInputSystem::MoveFocusRight));
+    BindGlobalAction(ACTION_FOCUS_UP, MakeFunction(this, &UIInputSystem::MoveFocusUp));
+    BindGlobalAction(ACTION_FOCUS_DOWN, MakeFunction(this, &UIInputSystem::MoveFocusDown));
 
-    BindGlobalShortcut(KeyboardShortcut(Key::ENTER), ACTION_PERFORM);
-    BindGlobalShortcut(KeyboardShortcut(Key::ESCAPE), ACTION_ESCAPE);
-
-    BindGlobalAction(ACTION_FOCUS_LEFT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusLeft));
-    BindGlobalAction(ACTION_FOCUS_RIGHT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusRight));
-    BindGlobalAction(ACTION_FOCUS_UP, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusUp));
-    BindGlobalAction(ACTION_FOCUS_DOWN, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusDown));
-
-    BindGlobalAction(ACTION_FOCUS_NEXT, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusForward));
-    BindGlobalAction(ACTION_FOCUS_PREV, MakeFunction(focusSystem, &UIFocusSystem::MoveFocusBackward));
+    BindGlobalAction(ACTION_FOCUS_NEXT, MakeFunction(this, &UIInputSystem::MoveFocusForward));
+    BindGlobalAction(ACTION_FOCUS_PREV, MakeFunction(this, &UIInputSystem::MoveFocusBackward));
 
     BindGlobalAction(ACTION_PERFORM, MakeFunction(this, &UIInputSystem::PerformActionOnFocusedControl));
 }
@@ -301,6 +301,36 @@ void UIInputSystem::BindGlobalAction(const FastName& actionName, const UIActionM
     globalActions.Put(actionName, action);
 }
 
+void UIInputSystem::MoveFocusLeft()
+{
+    focusSystem->MoveFocus(FocusHelpers::Direction::LEFT);
+}
+
+void UIInputSystem::MoveFocusRight()
+{
+    focusSystem->MoveFocus(FocusHelpers::Direction::RIGHT);
+}
+
+void UIInputSystem::MoveFocusUp()
+{
+    focusSystem->MoveFocus(FocusHelpers::Direction::UP);
+}
+
+void UIInputSystem::MoveFocusDown()
+{
+    focusSystem->MoveFocus(FocusHelpers::Direction::DOWN);
+}
+
+void UIInputSystem::MoveFocusForward()
+{
+    focusSystem->MoveFocus(FocusHelpers::TabDirection::FORWARD);
+}
+
+void UIInputSystem::MoveFocusBackward()
+{
+    focusSystem->MoveFocus(FocusHelpers::TabDirection::BACKWARD);
+}
+
 void UIInputSystem::PerformActionOnControl(UIControl* control)
 {
     if (control != nullptr)
@@ -408,37 +438,35 @@ void UIInputSystem::HandleKeyEvent(UIEvent* event)
     UIControl* focusedControl = focusSystem->GetFocusedControl();
     UIControl* rootControl = modalControl.Valid() ? modalControl.Get() : currentScreen;
 
-    if (focusedControl == nullptr && rootControl == nullptr)
+    if (focusedControl != nullptr || rootControl != nullptr)
     {
-        return;
-    }
-
-    UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
-    while (c != nullptr)
-    {
-        if (c->SystemProcessInput(event))
+        UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
+        while (c != nullptr)
         {
-            break;
-        }
-
-        if (phase == UIEvent::Phase::KEY_DOWN)
-        {
-            UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
-            if (actionBindingComponent)
+            if (c->SystemProcessInput(event))
             {
-                FastName action = actionBindingComponent->GetInputMap().FindAction(shortcut);
-                if (action.IsValid() && actionBindingComponent->GetActionMap().Perform(action))
+                break;
+            }
+
+            if (phase == UIEvent::Phase::KEY_DOWN)
+            {
+                UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
+                if (actionBindingComponent)
                 {
-                    break;
+                    FastName action = actionBindingComponent->GetInputMap().FindAction(shortcut);
+                    if (action.IsValid() && actionBindingComponent->GetActionMap().Perform(action))
+                    {
+                        break;
+                    }
                 }
             }
-        }
 
-        if (c == rootControl)
-        {
-            break;
+            if (c == rootControl)
+            {
+                break;
+            }
+            c = c->GetParent();
         }
-        c = c->GetParent();
     }
 
     if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT)

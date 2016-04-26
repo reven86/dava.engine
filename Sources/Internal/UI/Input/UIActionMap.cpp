@@ -2,18 +2,6 @@
 
 namespace DAVA
 {
-const FastName UIDefaultActions::LEFT("Left");
-const FastName UIDefaultActions::RIGHT("Right");
-const FastName UIDefaultActions::UP("Up");
-const FastName UIDefaultActions::DOWN("Down");
-
-const FastName UIDefaultActions::FOCUS_NEXT("FocusNext");
-const FastName UIDefaultActions::FOCUS_PREV("FocusPrev");
-
-const FastName UIDefaultActions::ACTIVATE("Activate");
-
-const FastName UIDefaultActions::ESCAPE("Escape");
-
 UIActionMap::UIActionMap()
 {
 }

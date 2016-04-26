@@ -158,36 +158,6 @@ void UIFocusSystem::OnControlInvisible(UIControl* control)
     }
 }
 
-void UIFocusSystem::MoveFocusLeft()
-{
-    MoveFocus(FocusHelpers::Direction::LEFT);
-}
-
-void UIFocusSystem::MoveFocusRight()
-{
-    MoveFocus(FocusHelpers::Direction::RIGHT);
-}
-
-void UIFocusSystem::MoveFocusUp()
-{
-    MoveFocus(FocusHelpers::Direction::UP);
-}
-
-void UIFocusSystem::MoveFocusDown()
-{
-    MoveFocus(FocusHelpers::Direction::DOWN);
-}
-
-void UIFocusSystem::MoveFocusForward()
-{
-    MoveFocus(FocusHelpers::TabDirection::FORWARD);
-}
-
-void UIFocusSystem::MoveFocusBackward()
-{
-    MoveFocus(FocusHelpers::TabDirection::BACKWARD);
-}
-
 bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
 {
     if (root.Valid() && focusedControl.Valid())
