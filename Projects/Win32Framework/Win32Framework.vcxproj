@@ -386,6 +386,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\External\lz4\lz4.h" />
+    <ClInclude Include="..\..\Sources\External\lz4\lz4hc.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h" />
@@ -505,6 +507,7 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
@@ -894,6 +897,8 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\External\lz4\lz4.c" />
+    <ClCompile Include="..\..\Sources\External\lz4\lz4hc.c" />
     <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingDB.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp" />
@@ -987,6 +992,7 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />

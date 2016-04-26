@@ -235,14 +235,18 @@ void UnpackHelpDoc()
     if (editorVer != APPLICATION_BUILD_VERSION || !DAVA::FileSystem::Instance()->Exists(docsPath))
     {
         DAVA::Logger::FrameworkDebug("Unpacking Help...");
-        DAVA::ResourceArchive* helpRA = new DAVA::ResourceArchive();
-        if (helpRA->Open("~res:/Help.docs"))
+        try
         {
+            DAVA::ResourceArchive helpRA("~res:/Help.docs");
             DAVA::FileSystem::Instance()->DeleteDirectory(docsPath);
             DAVA::FileSystem::Instance()->CreateDirectory(docsPath, true);
-            helpRA->UnpackToFolder(docsPath);
+            helpRA.UnpackToFolder(docsPath);
         }
-        DAVA::SafeRelease(helpRA);
+        catch (std::exception& ex)
+        {
+            DAVA::Logger::Error("can't unpack Help.docs: %s", ex.what());
+            DVASSERT(false && "can't upack Help.docs");
+        }
     }
     SettingsManager::SetValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String(APPLICATION_BUILD_VERSION)));
 }
