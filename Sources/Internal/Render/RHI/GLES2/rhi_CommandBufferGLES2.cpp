@@ -2330,13 +2330,22 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 {
     int err = GL_NO_ERROR;
 
-/*
+#if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
+    #define ACQUIRE_CONTEXT() _GLES2_AcquireContext()
+    #define RELEASE_CONTEXT() _GLES2_ReleaseContext()
+#else
+    #define ACQUIRE_CONTEXT()
+    #define RELEASE_CONTEXT()
+#endif
+
+    /*
     do 
     {
         err = glGetError();
     } 
     while ( err != GL_NO_ERROR );
 */
+    ACQUIRE_CONTEXT();
 
 #if 0
 
@@ -2673,6 +2682,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         }
     }
+    RELEASE_CONTEXT();
 #undef EXEC_GL
 }
 
