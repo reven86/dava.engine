@@ -201,7 +201,7 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     DAVA::LocalizationSystem::Instance()->SetCurrentLocale("en");
 
     DAVA::int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-    eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
+    DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
     DAVA::Texture::SetDefaultGPU(family);
 
     // check and unpack help documents
