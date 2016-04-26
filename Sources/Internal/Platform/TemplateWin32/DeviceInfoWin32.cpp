@@ -153,12 +153,10 @@ String DeviceInfoPrivate::GetRegion()
 String DeviceInfoPrivate::GetTimeZone()
 {
     /*don't remove that code please. it is needed for the nex task*/
-    TIME_ZONE_INFORMATION timeZoneInformation;
-    DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
+    DYNAMIC_TIME_ZONE_INFORMATION timeZoneInformation;
+    DWORD ret = GetDynamicTimeZoneInformation(&timeZoneInformation);
 
-    WCHAR* stdName = timeZoneInformation.StandardName;
-
-    String generalName = TimeZoneHelper::GetGeneralNameByStdName(stdName);
+    String generalName = TimeZoneHelper::GetGeneralNameByStdName(timeZoneInformation.TimeZoneKeyName);
     DVASSERT_MSG(!generalName.empty(), Format("No &s timezone found! Check time zones map", generalName.c_str()).c_str());
 
     return generalName;
