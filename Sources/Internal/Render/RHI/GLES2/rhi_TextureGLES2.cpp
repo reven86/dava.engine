@@ -803,6 +803,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_NeedRestore = &gles2_Texture_NeedRestore;
 }
 
+void InvalidateCache()
+{
+    _GLES2_LastActiveTexture = -1;
+}
+
 void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
