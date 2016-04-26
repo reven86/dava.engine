@@ -1,4 +1,4 @@
-local dbg = require("debugger")
+require("TupUtil")
 
 TupPack = {}
 TupPack.__index = TupPack

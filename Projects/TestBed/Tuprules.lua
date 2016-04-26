@@ -2,7 +2,7 @@ package.path = package.path .. ";../../../dava.framework/Build/?.lua"
 require("TupState")
 
 tupState = TupState.New({
-    outputDir = "__Output",
+    outputDir = ".output",
     outputDbName = "testbed.db"
 })
 
@@ -25,13 +25,13 @@ tupState:AddPacks {
             { "Data", "%.sc2" }
         },
     },
-    { 
-        name = "pack3",
-        rules = {
-            { "Data", "%.*" }
-        }
-    },
+    -- { 
+    --     name = "pack3",
+    --     rules = {
+    --         { "Data", "%.*" }
+    --     }
+    -- },
 }
 
--- tupState:DbgDumpTable(tupState)
+-- UtilDumpTable(tupState)
 
