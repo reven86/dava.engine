@@ -138,6 +138,7 @@ String DeviceInfoPrivate::GetModel()
             model = "iPhone 6s";
         if ([modelName hasPrefix:@"iPhone8,2"])
             model = "iPhone 6s Plus";
+
         if ([modelName hasPrefix:@"iPhone8,4"])
             model = "iPhone SE";
 
@@ -206,10 +207,15 @@ String DeviceInfoPrivate::GetModel()
         if ([modelName hasPrefix:@"iPad5,4"])
             model = "iPad 6 Cellular";
 
+        if ([modelName hasPrefix:@"iPad6,3"])
+            model = "iPad Pro 9.7 WiFi";
+        if ([modelName hasPrefix:@"iPad6,4"])
+            model = "iPad Pro 9.7 Cellular";
+
         if ([modelName hasPrefix:@"iPad6,7"])
-            model = "iPad Pro WiFi";
+            model = "iPad Pro 12.9 WiFi";
         if ([modelName hasPrefix:@"iPad6,8"])
-            model = "iPad Pro Cellular";
+            model = "iPad Pro 12.9 Cellular";
 
         // iPod
         if ([modelName hasPrefix:@"iPod1,1"])
