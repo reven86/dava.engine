@@ -78,7 +78,12 @@ bool KeyedArchive::Load(File* archive)
     }
     else if ((header[0] != 'K') || (header[1] != 'A'))
     {
-        archive->Seek(0, File::SEEK_FROM_START);
+        const bool seekResult = archive->Seek(0, File::SEEK_FROM_START);
+        if (!seekResult)
+        {
+            Logger::Error("[KeyedArchive] error loading keyed archive from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+            return false;
+        }
         while (!archive->IsEof())
         {
             VariantType key;
