@@ -82,17 +82,6 @@ namespace DAVA
         GetBackground()->SetBgDrawType(UIControlBackground::DRAW_SCALE_PROPORTIONAL);
     }
 
-    // Position/visibility.
-    void MovieViewControl::SetRect(const Rect& rect)
-    {
-        UIControl::SetRect(rect);
-    }
-
-    void MovieViewControl::SetVisible(bool isVisible)
-    {
-        UIControl::SetVisibilityFlag(isVisible);
-    }
-
     AV::AVFormatContext* MovieViewControl::CreateContext(const FilePath& path)
     {
         AV::AVFormatContext* context = AV::avformat_alloc_context();
@@ -222,7 +211,7 @@ namespace DAVA
         return true;
     }
 
-    void MovieViewControl::EnqueueDecodedVideoBuffer(MovieViewControl::DecodedFrameBuffer* buf)
+    void MovieViewControl::EnqueueDecodedVideoBuffer(DecodedFrameBuffer* buf)
     {
         uint32 framesInBuffer = 0;
 
@@ -244,7 +233,7 @@ namespace DAVA
         decodedFramesMutex.Unlock();
     }
 
-    MovieViewControl::DecodedFrameBuffer* MovieViewControl::DequeueDecodedVideoBuffer()
+    DecodedFrameBuffer* MovieViewControl::DequeueDecodedVideoBuffer()
     {
         decodedFramesMutex.Lock();
         uint32 size = decodedFrames.size();
@@ -265,11 +254,6 @@ namespace DAVA
 
     void MovieViewControl::SotrPacketsByVideoAndAudio(AV::AVPacket* packet)
     {
-        //while (videoPackets.size() > 3)
-        //            Thread::Sleep(1);
-        //while (audioPackets.size() > 20)
-        //  Thread::Sleep(1);
-
         if (packet->stream_index == videoStreamIndex)
         {
             LockGuard<Mutex> locker(videoPacketsMutex);
@@ -326,21 +310,8 @@ namespace DAVA
         return pts;
     }
 
-    FMOD_RESULT F_CALLBACK MovieViewControl::pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
+    void MovieViewControl::FillBufferByPcmData(uint8* data, uint32 datalen, bool decodeInPlace)
     {
-        // Read from your buffer here...
-        void* soundData;
-        reinterpret_cast<FMOD::Sound*>(sound)->getUserData(&soundData);
-
-        MovieViewControl* movieControl = reinterpret_cast<MovieViewControl*>(soundData);
-
-        if (nullptr == movieControl)
-            return FMOD_ERR_MUSIC_UNINITIALIZED;
-
-        Memset(data, 0, datalen);
-
-        static DecodedPCMData* lastPcmData = nullptr;
-
         uint32 fmodDataWritten = 0;
 
         // Write the data remains from previous call
@@ -363,135 +334,70 @@ namespace DAVA
         do
         {
             // get another PCM Data Packet
-            lastPcmData = movieControl->DequePCMAudio();
-            // it means that it was the last decoded packet in the queue
-            if (nullptr == lastPcmData)
-                break;
-
-            if (isFirstPacketInCallback)
+            if (decodeInPlace)
             {
-                movieControl->lastDecodedAudioPTS = lastPcmData->pts;
-                isFirstPacketInCallback = false;
-            }
-            // empty space in the data buffer
-            uint32 fmodDataEmptySpace = datalen - fmodDataWritten;
-            // if data came couldn't be written into the FMOD buffer fully
-            if (lastPcmData->size - lastPcmData->written >= fmodDataEmptySpace)
-            {
-                //               |     to write       |to move|
-                //               [         new data size      ]
-                // |             |   dataSizeToWrite  |
-                // [written data |     empty space    ]
-                Memcpy((uint8*)data + fmodDataWritten, lastPcmData->data + lastPcmData->written, fmodDataEmptySpace);
-                lastPcmData->written += fmodDataEmptySpace;
-                fmodDataWritten += fmodDataEmptySpace;
-
-                return FMOD_OK;
+                lastPcmData = DecodeAudioInPlace();
             }
             else
             {
-                // write all data rest
-                uint32 dataSizeToWrite = lastPcmData->size - lastPcmData->written;
-                Memcpy((uint8*)data + fmodDataWritten, lastPcmData->data, dataSizeToWrite);
-                lastPcmData->written += dataSizeToWrite;
-                fmodDataWritten += dataSizeToWrite;
-                fillRestPartOfData = true;
+                lastPcmData = DequePCMAudio();
+            }
+            // it means that it was the last decoded packet in the queue
+            if (nullptr == lastPcmData)
+            {
+                if (hasMoreData)
+                    continue;
+                else
+                    break;
+            }
 
+            //if (isFirstPacketInCallback)
+            {
+                lastDecodedAudioPTS = lastPcmData->pts;
+                isFirstPacketInCallback = false;
+            }
+            // empty space in the data buffer
+            const uint32 dataSizeRestInBuffer = datalen - fmodDataWritten;
+            const uint32 dataSizeFromPacketToWrite = lastPcmData->size - lastPcmData->written;
+            const uint32 sizeToWrite = Min(dataSizeRestInBuffer, dataSizeFromPacketToWrite);
+
+            //               |     to write       |to move|
+            //               [         new data size      ]
+            // |             |   dataSizeToWrite  |
+            // [written data |     empty space    ]
+            Memcpy(data + fmodDataWritten, lastPcmData->data + lastPcmData->written, sizeToWrite);
+            lastPcmData->written += sizeToWrite;
+            fmodDataWritten += sizeToWrite;
+
+            if (lastPcmData->written == lastPcmData->size)
+            {
                 SafeDelete(lastPcmData);
             }
+
+            fillRestPartOfData = fmodDataWritten < datalen;
+
         } while (fillRestPartOfData);
 
         SafeDelete(lastPcmData);
-
-        return FMOD_OK;
     }
 
     FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
     {
+        Memset(data, 0, datalen);
+
         // Read from your buffer here...
         void* soundData;
         reinterpret_cast<FMOD::Sound*>(sound)->getUserData(&soundData);
 
         MovieViewControl* movieControl = reinterpret_cast<MovieViewControl*>(soundData);
-
         if (nullptr == movieControl)
-            return FMOD_ERR_MUSIC_UNINITIALIZED;
+            return FMOD_OK;
 
-        Memset(data, 0, datalen);
-
-        static DecodedPCMData* lastPcmData = nullptr;
-
-        uint32 fmodDataWritten = 0;
-
-        // Write the data remains from previous call
-        if (nullptr != lastPcmData)
-        {
-            if (lastPcmData->size - lastPcmData->written > 0)
-            {
-                // |     fmodDataWritten  |     size    |
-                // [.....written data.....][data to write]
-                uint32 dataSizeToWrite = lastPcmData->size - lastPcmData->written;
-                Logger::Error("%d pcm data written", dataSizeToWrite);
-                Memcpy((uint8*)data + fmodDataWritten, lastPcmData->data + lastPcmData->written, dataSizeToWrite);
-                fmodDataWritten += dataSizeToWrite;
-            }
-            SafeDelete(lastPcmData);
-        }
-
-        bool fillRestPartOfData = false;
-
-        do
-        {
-            // get another PCM Data Packet
-            lastPcmData = movieControl->DecodeAudioInPlace();
-            // it means that it was the last decoded packet in the queue
-            if (!movieControl->hasMoreData || nullptr == lastPcmData && !fillRestPartOfData)
-                break;
-
-            if (nullptr == lastPcmData && fillRestPartOfData)
-                continue;
-
-            movieControl->lastDecodedAudioPTS = lastPcmData->pts;
-            Logger::Error("lastDecodedAudioPTS = %f", movieControl->lastDecodedAudioPTS);
-            // empty space in the data buffer
-            uint32 fmodDataEmptySpace = datalen - fmodDataWritten;
-            // if data came couldn't be written into the FMOD buffer fully
-            if (lastPcmData->size - lastPcmData->written >= fmodDataEmptySpace)
-            {
-                //               |     to write       |to move|
-                //               [         new data size      ]
-                // |             |   dataSizeToWrite  |
-                // [written data |     empty space    ]
-                Logger::Error("%d of %d pcm data written", fmodDataEmptySpace, lastPcmData->size - lastPcmData->written);
-                Memcpy((uint8*)data + fmodDataWritten, lastPcmData->data + lastPcmData->written, fmodDataEmptySpace);
-                lastPcmData->written += fmodDataEmptySpace;
-                fmodDataWritten += fmodDataEmptySpace;
-
-                return FMOD_OK;
-            }
-            else
-            {
-                // write all data rest
-                uint32 dataSizeToWrite = lastPcmData->size - lastPcmData->written;
-                Logger::Error("%d of %d pcm data written", dataSizeToWrite, lastPcmData->size - lastPcmData->written);
-                Memcpy((uint8*)data + fmodDataWritten, lastPcmData->data, dataSizeToWrite);
-                lastPcmData->written += dataSizeToWrite;
-                fmodDataWritten += dataSizeToWrite;
-                fillRestPartOfData = fmodDataEmptySpace > 0;
-                SafeDelete(lastPcmData);
-            }
-        } while (fillRestPartOfData);
-
-        SafeDelete(lastPcmData);
+        movieControl->FillBufferByPcmData(reinterpret_cast<uint8*>(data), static_cast<uint32>(datalen), movieControl->decodeAudioOnCallback);
 
         return FMOD_OK;
     }
 
-    FMOD_RESULT F_CALLBACK MovieViewControl::pcmsetposcallback(FMOD_SOUND* sound, int subsound, unsigned int position, FMOD_TIMEUNIT postype)
-    {
-        // Seek to a location in your data, may not be required for what you want to do
-        return FMOD_OK;
-    }
 
     bool MovieViewControl::InitAudio()
     {
@@ -558,22 +464,16 @@ namespace DAVA
             exinfo.numchannels = out_channels; /* Number of channels in the sound. */
             exinfo.defaultfrequency = out_sample_rate; /* Default playback rate of sound. */
             exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
-            //exinfo.pcmreadcallback = &MovieViewControl::pcmreadcallback; /* User callback for reading. */
             exinfo.pcmreadcallback = &MovieViewControl::PcmReadDecodeCallback; /* User callback for reading. */
-            exinfo.pcmsetposcallback = &MovieViewControl::pcmsetposcallback; /* User callback for seeking. */
 
             FMOD::Sound* sound;
             FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
             FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
             sound->setUserData(this);
 
-            if (nullptr != fmodChannel)
-            {
-                fmodChannel->setPaused(true);
-            }
             system->playSound(FMOD_CHANNEL_FREE, sound, true, &fmodChannel);
             fmodChannel->setLoopCount(-1);
-            fmodChannel->setMode(FMOD_LOOP_NORMAL);
+            fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
             fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
             fmodChannel->setPaused(false);
         }
@@ -587,9 +487,11 @@ namespace DAVA
             SafeRelease(audioDecodingThread);
         }
 
-        audioDecodingThread = Thread::Create(Message(this, &MovieViewControl::AudioDecodingThread));
-        audioDecodingThread->Start();
-
+        if (!decodeAudioOnCallback)
+        {
+            audioDecodingThread = Thread::Create(Message(this, &MovieViewControl::AudioDecodingThread));
+            audioDecodingThread->Start();
+        }
         return true;
     }
 
@@ -677,13 +579,7 @@ namespace DAVA
         float64 audioPTS = lastDecodedAudioPTS;
         pcmMutex.Unlock();
 
-        float64 actual_delay;
-        float64 delay;
-        float64 sync_threshold;
-        float64 ref_clock;
-        float64 diff;
-
-        delay = frameBuffer->pts - lastDecodedVideoPTS; /* the pts from last time */
+        float64 delay = frameBuffer->pts - lastDecodedVideoPTS; /* the pts from last time */
         Logger::Error("Delay %f", delay);
         if (delay <= 0 || delay >= 1.0)
         {
@@ -695,13 +591,13 @@ namespace DAVA
         lastDecodedVideoPTS = frameBuffer->pts;
 
         /* update delay to sync to audio */
-        ref_clock = GetAudioClock();
+        float64 ref_clock = GetAudioClock();
         Logger::Error("RefClock %f", ref_clock);
-        diff = frameBuffer->pts - ref_clock;
+        float64 diff = frameBuffer->pts - ref_clock;
 
         /* Skip or repeat the frame. Take delay into account
         FFPlay still doesn't "know if this is the best guess." */
-        sync_threshold = (delay > 0.01f) ? delay : 0.01;
+        float64 sync_threshold = (delay > 0.01f) ? delay : 0.01;
         if (fabs(diff) < 10)
         {
             if (diff <= -sync_threshold)
@@ -716,7 +612,7 @@ namespace DAVA
         ShiftPlayTime(-delay);
 
         /* computer the REAL delay */
-        actual_delay = GetPlayTime();
+        float64 actual_delay = GetPlayTime();
         if (actual_delay < 0.010)
         {
             /* Really it should skip the picture instead */
@@ -725,7 +621,7 @@ namespace DAVA
 
         uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5);
 
-        Logger::Error("sleep time %d", playTime, sleepTime);
+        Logger::Error("sleep time %d", sleepTime);
 
         if (nullptr == videoTexture)
         {
@@ -947,7 +843,7 @@ namespace DAVA
     void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void* userData)
     {
         Thread* thread = static_cast<Thread*>(caller);
-
+        hasMoreData = true;
         int retRead = 0;
         do
         {
@@ -959,16 +855,16 @@ namespace DAVA
 
             AV::AVPacket* packet = static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
             av_init_packet(packet);
+
+            while (videoPackets.size() > 5 || audioPackets.size() > 50)
+            {
+                //Thread::Sleep(1);
+                //continue;
+            }
+
             retRead = AV::av_read_frame(movieContext, packet);
 
-            if (retRead < 0)
-            {
-                hasMoreData = false;
-            }
-            else
-            {
-                hasMoreData = true;
-            }
+            hasMoreData = retRead >= 0;
 
             SotrPacketsByVideoAndAudio(packet);
         } while (retRead >= 0 && thread && !thread->IsCancelling());
@@ -997,11 +893,15 @@ namespace DAVA
         readingDataThread->Cancel();
         videoDecodingThread->Cancel();
         videoPresentationThread->Cancel();
-        audioDecodingThread->Cancel();
         SafeRelease(readingDataThread);
         SafeRelease(videoDecodingThread);
         SafeRelease(videoPresentationThread);
-        SafeRelease(audioDecodingThread);
+
+        if (!decodeAudioOnCallback)
+        {
+            audioDecodingThread->Cancel();
+            SafeRelease(audioDecodingThread);
+        }
     }
 
 }

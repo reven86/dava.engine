@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/IMovieViewControl.h"
 #include "UI/UIControl.h"
 #include "Render\PixelFormatDescriptor.h"
+#include "Sound/SoundSystem.h"
 
 namespace AV
 {
@@ -39,6 +40,7 @@ namespace AV
 extern "C"
 {
 #endif
+#include <libavutil/time.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
@@ -59,6 +61,23 @@ extern "C"
 
 namespace DAVA
 {
+struct DecodedFrameBuffer
+{
+    ~DecodedFrameBuffer()
+    {
+        SafeDeleteArray(data);
+    }
+
+    float64 frame_last_pts = 0.f;
+    float64 pts = 0.f;
+    float64 sleepAfterPresent = 0;
+    PixelFormat textureFormat = FORMAT_INVALID;
+    uint8* data;
+    uint32 size = 0;
+    uint32 width = 0;
+    uint32 height = 0;
+};
+
     class MovieViewControl : public IMovieViewControl, public UIControl
     {
     public:
@@ -70,8 +89,14 @@ namespace DAVA
         void Initialize(const Rect& rect) override;
 
         // Position/visibility.
-        void SetRect(const Rect& rect) override;
-        void SetVisible(bool isVisible) override;
+        void SetRect(const Rect& rect) override
+        {
+            UIControl::SetRect(rect);
+        };
+        void SetVisible(bool isVisible) override
+        {
+            UIControl::SetVisibilityFlag(isVisible);
+        }
 
         // Open the Movie.
         void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
@@ -94,9 +119,7 @@ namespace DAVA
     private:
         AV::AVFormatContext* CreateContext(const FilePath& path);
 
-        static FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
         static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
-        static FMOD_RESULT F_CALLBACK pcmsetposcallback(FMOD_SOUND* sound, int subsound, unsigned int position, FMOD_TIMEUNIT postype);
 
         bool InitVideo();
         bool DecodeVideoPacket(AV::AVPacket* packet, float64& pts);
@@ -178,27 +201,11 @@ namespace DAVA
         Deque<AV::AVPacket*> videoPackets;
         Mutex videoPacketsMutex;
 
-        struct DecodedFrameBuffer
-        {
-            ~DecodedFrameBuffer()
-            {
-                SafeDeleteArray(data);
-            }
-
-            float64 frame_last_pts = 0.f;
-            float64 pts = 0.f;
-            float64 sleepAfterPresent = 0;
-            PixelFormat textureFormat = FORMAT_INVALID;
-            uint8* data;
-            uint32 size = 0;
-            uint32 width = 0;
-            uint32 height = 0;
-        };
         Deque<DecodedFrameBuffer*> decodedFrames;
         Mutex decodedFramesMutex;
 
-        void EnqueueDecodedVideoBuffer(MovieViewControl::DecodedFrameBuffer* buf);
-        MovieViewControl::DecodedFrameBuffer* DequeueDecodedVideoBuffer();
+        void EnqueueDecodedVideoBuffer(DecodedFrameBuffer* buf);
+        DecodedFrameBuffer* DequeueDecodedVideoBuffer();
 
         void SotrPacketsByVideoAndAudio(AV::AVPacket* packet);
 
@@ -220,6 +227,9 @@ namespace DAVA
         Deque<DecodedPCMData*> decodedAudio;
         Mutex decodedAudioMutex;
 
+        DecodedPCMData* lastPcmData = nullptr;
+        bool decodeAudioOnCallback = false;
+        void FillBufferByPcmData(uint8* data, uint32 datalen, bool decodeInPlace);
         DecodedPCMData* DequePCMAudio();
 
         uint32 playTime = 0;
