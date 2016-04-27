@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PackManager/Private/PacksDB.h"
 #include "FileSystem/FileList.h"
 #include "DLC/Downloader/DownloadManager.h"
-#include "PackManager/Private/DynamicPriorityQueue.h"
+#include "PackManager/Private/RequestQueue.h"
 #include "Utils/CRC32.h"
 
 namespace DAVA
@@ -60,18 +60,6 @@ public:
     {
         uint32 index = GetPackIndex(packName);
         return packs[index];
-    }
-
-    void CollectAllDependencyForPack(const String& packName, Set<PackManager::PackState*>& dependency)
-    {
-        PackManager::PackState& packState = GetPackState(packName);
-        for (const String& dependName : packState.dependency)
-        {
-            PackManager::PackState& dependPack = GetPackState(dependName);
-            dependency.insert(&dependPack);
-
-            CollectAllDependencyForPack(dependName, dependency);
-        }
     }
 
     void AddToDownloadQueue(const String& nextPackName)
@@ -197,46 +185,6 @@ public:
             // leave pack inside queue while downloading not finished
             currentDownload = queue.Pop();
             const String& nextPackName = currentDownload->name;
-            // теперь нужно узнать виртуальный ли это пакет, и первыми поставить на закачку
-            // так как у нас может быть несколько зависимых паков, тоже виртуальными, то
-            // мы должны сначала сделать плоскую структуру всех зависимых паков, всем им
-            // выставить одинаковый приоритет - текущего виртуального пака и добавить
-            // в очередь на скачку в порядке, зависимостей
-            Set<PackManager::PackState*> dependency;
-            CollectAllDependencyForPack(nextPackName, dependency);
-
-            // http://stackoverflow.com/questions/2088495/how-to-remove-all-even-integers-from-setint-in-c
-            for (auto it = begin(dependency); it != end(dependency);)
-            {
-                if ((*it)->state == PackManager::PackState::Mounted)
-                {
-                    dependency.erase(it++);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-
-            for (PackManager::PackState* pack : dependency)
-            {
-                if (PackManager::PackState::Requested == pack->state ||
-                    PackManager::PackState::Downloading == pack->state)
-                {
-                    if (pack->priority < currentDownload->priority)
-                    {
-                        pack->priority = currentDownload->priority;
-                        queue.UpdatePriority(pack);
-                        // TODO do I have to call signal on change priority?
-                    }
-                }
-                else
-                {
-                    pack->state = PackManager::PackState::Requested;
-                    pack->priority = currentDownload->priority;
-                    queue.Push(pack);
-                }
-            }
 
             queue.Push(currentDownload);
 
@@ -334,10 +282,8 @@ public:
     PackManager* packMngrPublic = nullptr;
     UnorderedMap<String, uint32> packsIndex;
     Vector<PackManager::PackState> packs;
-    DynamicPriorityQueue<PackManager::PackState, PackPriorityComparator> queue;
-    PackManager::PackState* currentDownload = nullptr;
+    RequestQueue queue;
     std::unique_ptr<PacksDB> packDB;
-    uint32 downloadHandler = 0;
 };
 
 PackManager::PackManager(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl)
@@ -380,11 +326,6 @@ void PackManager::DisableProcessing()
     {
         impl->isProcessingEnabled = false;
         impl->StopDownloading();
-        if (impl->currentDownload)
-        {
-            impl->AddToDownloadQueue(impl->currentDownload->name);
-            impl->currentDownload = nullptr;
-        }
     }
 }
 
@@ -422,11 +363,15 @@ const PackManager::PackState& PackManager::RequestPack(const String& packID, flo
     {
         packState.state = PackState::Requested;
         packState.priority = priority;
-        impl->AddToDownloadQueue(packID);
+
+        impl->queue.Push(packID, priority);
     }
     else
     {
-        impl->UpdateQueuePriority(packID, priority);
+        if (impl->queue.IsInQueue(packID))
+        {
+            impl->UpdateQueuePriority(packID, priority);
+        }
     }
     return packState;
 }
@@ -453,15 +398,16 @@ void PackManager::DeletePack(const String& packID)
     {
         // first modify DB
         state.state = PackState::NotRequested;
-        state.priority = 0.5f;
+        state.priority = 0.0f;
         state.downloadProgress = 0.f;
-
-        impl->packDB->UpdatePackState(state);
 
         // now remove archive from filesystem
         FileSystem* fs = FileSystem::Instance();
         FilePath archivePath = impl->packsDB + packID;
         fs->Unmount(archivePath);
+
+        FilePath archiveCrc32Path = impl->localPacksDir + packID + ".crc";
+        fs->Unmount(archiveCrc32Path);
     }
 }
 } // end namespace DAVA

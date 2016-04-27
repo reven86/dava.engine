@@ -53,8 +53,8 @@ public:
         String remoteUrl = ""; // url used for download archive or empty
         float32 downloadProgress = 0.f; // 0.0f to 1.0f
         float32 priority = 0.f; // 0.0f to 1.0f
-        uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (not read from
-        uint32 crc32FromDB = 0; // crc32 from filesdb
+        uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (0 - pack is pure virtual)
+        uint32 crc32FromDB = 0; // crc32 from filesdb (0 - pack is pure virtual - nothing to download - only dependencies)
         DownloadError downloadError = DLE_NO_ERROR;
         Vector<String> dependency{}; // names of dependency archive
     };

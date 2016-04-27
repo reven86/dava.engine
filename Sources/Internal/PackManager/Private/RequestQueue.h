@@ -30,14 +30,13 @@
 
 #include "Base/BaseTypes.h"
 #include "PackManager/PackManager.h"
-#include "DLC/Downloader/DownloadManager.h"
 
 namespace DAVA
 {
 class PackRequest
 {
 public:
-    PackRequest(const String& name, float32 priority);
+    PackRequest(PackManager& packManager_, const String& name, float32 priority);
 
     void Start();
     void Update(PackManager& packManager);
@@ -46,9 +45,10 @@ public:
 
     enum Status : uint32
     {
-        WaitInQueue = 0,
-        LoadingDependencies = 1,
-        LoadingPack = 2,
+        Wait = 0,
+        LoadCRC32File = 1,
+        LoadingPackFile = 2,
+        CheckCRC32 = 3,
         Mounting = 3,
     };
 
@@ -61,34 +61,42 @@ public:
     {
         String packName;
         uint32 taskId;
+        Status status;
     };
 
     Status GetStatus() const
     {
         return status;
     }
+
     const String& GetPackName() const
     {
         return packName;
     }
+
     float32 GetPriority() const
     {
         return priority;
     }
 
 private:
+    void CollectDownlodbleDependency(const String& packName, Set<const PackManager::PackState*>& dependency);
+
+    PackManager* packManager;
     Status status;
     String packName;
     float32 priority;
-    uint32 currentDependencySubRequest;
-    Vector<SubRequest> dependencies;
-    SubRequest finalPackRequest;
+    uint32 currentDependencySubRequestIndex;
+    Vector<SubRequest> dependencies; // first all dependencies then pack sub request
 };
 
 class RequestQueue
 {
 public:
-    RequestQueue() = default;
+    explicit RequestQueue(PackManager& packManager_)
+        : packManager(packManager_)
+    {
+    }
 
     inline bool IsInQueue(const String& packName) const;
     inline bool Empty() const;
@@ -102,6 +110,7 @@ public:
 private:
     inline void CheckRestartLoading();
 
+    PackManager& packManager;
     String currrentTopLoadingPack;
     Vector<PackRequest> items;
 };
@@ -112,7 +121,7 @@ bool RequestQueue::IsInQueue(const String& packName) const
                            {
                                return r.GetPackName() == packName;
                            });
-    return items.empty();
+    return it != end(items);
 }
 
 bool RequestQueue::Empty() const
