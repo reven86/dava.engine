@@ -924,7 +924,7 @@ gles2_SyncObject_Delete(Handle obj)
 static bool
 gles2_SyncObject_IsSignaled(Handle obj)
 {
-    _GLES2_SyncObjectsSync.Lock();
+    DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
 
     if (!SyncObjectPoolGLES2::IsAlive(obj))
         return true;
@@ -934,8 +934,6 @@ gles2_SyncObject_IsSignaled(Handle obj)
 
     if (sync)
         signaled = sync->is_signaled;
-
-    _GLES2_SyncObjectsSync.Unlock();
 
     return signaled;
 }
