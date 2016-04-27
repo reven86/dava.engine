@@ -17,7 +17,8 @@ function TupState.New(userConf)
     conf.cmdMaxFilesCount = userConf.cmdMaxFilesCount or 255
     conf.intermediateDir = userConf.intermediateDir or ".tmp"
     conf.intermediateListsDir = userConf.intermediateListsDir or "lists"
-    conf.intermediateMergedListsDir = userConf.intermediateMergedListsDir or "mergedlists"
+    conf.intermediateMergedDir = userConf.intermediateMergedDir or "merged"
+    conf.intermediateSqlDir = userConf.intermediateSqlDir or "sql"
     conf.packlistExt = userConf.packlistExt or ".list"
     conf.mergedlistExt = userConf.mergedlistExt or ".mergedlist"
     conf.gpus = userConf.gpus or { ".pvr", ".mali", ".tegra" }
@@ -38,9 +39,13 @@ function TupState.New(userConf)
         .. "/" .. self.conf.intermediateDir 
         .. "/" .. self.conf.intermediateListsDir
         
-    self.mergedlistDir = self.projectDir 
+    self.mergeDir = self.projectDir 
         .. "/" .. self.conf.intermediateDir 
-        .. "/" .. self.conf.intermediateMergedListsDir
+        .. "/" .. self.conf.intermediateMergedDir
+    
+    self.sqlDir = self.projectDir
+        .. "/" .. self.conf.intermediateDir 
+        .. "/" .. self.conf.intermediateSqlDir
         
     local fwPath = self:FindFWPath(self.projectDir)
     self.frameworkPath = fwPath
@@ -82,7 +87,7 @@ function TupState.GetPackListOutput(self, packName, index)
 end
 
 function TupState.GetMergedPackListOutput(self, packName)
-    return self.mergedlistDir .. "/" .. packName .. self.conf.mergedlistExt
+    return self.mergeDir .. "/" .. packName .. self.conf.mergedlistExt
 end
 
 function TupState.GetEmptyPackListOutput(self, packName)
@@ -213,6 +218,8 @@ function TupState.BuildLists(self)
 end
 
 function TupState.BuildPacks(self)
+    local sqlGroup = self.sqlDir .. "/<sql>"
+
     for pai, pack in pairs(self.packs) do
         local packGroup = self:GetPackGroup(pack.name)
 
@@ -247,5 +254,29 @@ function TupState.BuildPacks(self)
         local hashCmdText = "^ Hash for " .. pack.name .. "^ "
         local hashOutput = self.outputDir .. "/" .. pack.name .. ".hash"
         tup.rule(archiveOutput, hashCmdText .. hashCmd, hashOutput)
-    end    
+        
+        -- generate pack sql
+        local packDepends = table.concat(pack.depends, " ")
+        local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -h " .. hashOutput .. " " .. pack.name .. " " .. packDepends .. " > %o"
+        local sqlCmdText = "^ SQL for " .. pack.name .. "^ "
+        local sqlOutput = self.sqlDir .. "/" .. pack.name .. ".sql"
+        tup.rule({ mergePackOutput, hashOutput }, sqlCmdText ..sqlCmd, { sqlOutput, sqlGroup })
+    end
+    
+    -- merge final sql
+    local mergeSqlMask = self.sqlDir .. "/*.sql"
+    local mergeSqlCmd = self.cmd.cat .. " " .. mergeSqlMask .. " > %o"
+    local mergeSqlCmdText = "^ Gen merged sql^ "
+    local mergeSqlOutput = self.mergeDir .. "/final.sql" 
+
+    mergeSqlCmd = UtilConvertToPlatformPath(self.platform, mergeSqlCmd)
+        
+    tup.rule({ mergeSqlMask, sqlGroup }, 
+        mergeSqlCmdText .. mergeSqlCmd, mergeSqlOutput)
+        
+    -- generate packs database
+    local dbOutput = self.outputDir .. "/" .. self.conf.outputDbName
+    local dbCmd = self.cmd.fwsql .. ' -cmd ".read ' .. mergeSqlOutput .. '" -cmd ".save ' .. dbOutput .. '" "" ""'
+    local dbCmdText = "^ Gen final packs DB^ "
+    tup.rule(mergeSqlOutput, dbCmdText .. dbCmd, dbOutput)
 end
