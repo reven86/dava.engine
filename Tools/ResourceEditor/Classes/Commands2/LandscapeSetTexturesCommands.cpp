@@ -31,22 +31,22 @@
 #include "../Qt/Scene/SceneEditor2.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand(Entity* _landscapeEntity,
-                                                           const FilePath& _heightMapPath,
-                                                           const AABBox3& _newLandscapeBox)
+LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity_,
+                                                           const DAVA::FilePath& heightMapPath_,
+                                                           const DAVA::AABBox3& newLandscapeBox_)
     : Command2(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
 {
-    landscape = FindLandscape(_landscapeEntity);
+    landscape = FindLandscape(landscapeEntity_);
     if (NULL == landscape)
     {
         return;
     }
-    landscapeEntity = SafeRetain(_landscapeEntity);
+    landscapeEntity = SafeRetain(landscapeEntity_);
 
     originalHeightMapPath = landscape->GetHeightmapPathname();
     originalLandscapeBox = landscape->GetBoundingBox();
-    newHeightMapPath = _heightMapPath;
-    newLandscapeBox = _newLandscapeBox;
+    newHeightMapPath = heightMapPath_;
+    newLandscapeBox = newLandscapeBox_;
 }
 
 LandscapeSetHeightMapCommand::~LandscapeSetHeightMapCommand()

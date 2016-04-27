@@ -42,6 +42,7 @@ public:
     void Uninitialize();
 
     float* Alloc(unsigned cnt, unsigned* offset = 0);
+    void Reset();
 
     id<MTLBuffer> BufferUID() const;
     unsigned Offset(void* ptr) const;

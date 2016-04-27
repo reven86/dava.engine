@@ -141,6 +141,15 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
     DVASSERT(DAVA::Core::Instance()->GetOptions()->IsKeyExists("renderer"));
     rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer");
+
+    // CRAP: hardcoded metal-view, for testing
+    renderView = ((rhi::ApiIsSupported(rhi::RHI_METAL)))
+    ?
+    [renderViewController createMetalView]
+    :
+    [renderViewController createGLView];
+
+    /*
     if (rhiRenderer == rhi::RHI_GLES2)
     {
         renderView = [renderViewController createGLView];
@@ -149,7 +158,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         renderView = [renderViewController createMetalView];
     }
-
+*/
     ((CoreIOS*)DAVA::Core::Instance())->ProcessResize();
 
     DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, renderViewController);

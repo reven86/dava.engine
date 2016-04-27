@@ -51,6 +51,10 @@ using DAVA::Logger;
 
     #include "MemoryManager/MemoryProfiler.h"
 
+    #if defined(__DAVAENGINE_IPHONE__)
+extern bool rhi_MetalIsSupported(); 
+    #endif
+
 namespace rhi
 {
 uint32 stat_DIP = DAVA::InvalidIndex;
@@ -72,8 +76,52 @@ void SetDispatchTable(const Dispatch& dispatch)
     _Impl = dispatch;
 }
 
+bool
+ApiIsSupported(Api api)
+{
+    bool supported = false;
+
+    switch (api)
+    {
+    case RHI_DX9:
+    {
+            #if defined(__DAVAENGINE_WIN32__)
+        supported = true;
+            #endif
+    }
+    break;
+
+    case RHI_DX11:
+    {
+            #if defined(__DAVAENGINE_WIN32__)
+        supported = true;
+            #endif
+    }
+    break;
+
+    case RHI_METAL:
+    {
+            #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
+        supported = rhi_MetalIsSupported();
+            #endif
+    }
+    break;
+
+    case RHI_GLES2:
+        supported = true;
+        break;
+    }
+
+    return supported;
+}
+
 void Initialize(Api api, const InitParam& param)
 {
+// CRAP: hardcoded api, for testing
+#if defined(__DAVAENGINE_IPHONE__)
+    api = (ApiIsSupported(rhi::RHI_METAL)) ? RHI_METAL : RHI_GLES2;
+#endif
+
     switch (api)
     {
 #if defined(__DAVAENGINE_WIN32__)

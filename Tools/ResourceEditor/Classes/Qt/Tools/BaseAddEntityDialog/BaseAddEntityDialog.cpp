@@ -106,24 +106,24 @@ QtPropertyData* BaseAddEntityDialog::AddInspMemberToEditor(void* object, const D
     return propData;
 }
 
-QtPropertyData* BaseAddEntityDialog::AddKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::String& rowName)
+QtPropertyData* BaseAddEntityDialog::AddKeyedArchiveMember(DAVA::KeyedArchive* archive_, const DAVA::String& key_, const DAVA::String& rowName)
 {
-    QtPropertyData* propData = new QtPropertyKeyedArchiveMember(DAVA::FastName(rowName), _archive, _key);
+    QtPropertyData* propData = new QtPropertyKeyedArchiveMember(DAVA::FastName(rowName), archive_, key_);
     propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
     return propData;
 }
 
-QtPropertyData* BaseAddEntityDialog::AddMetaObject(void* _object, const DAVA::MetaInfo* _meta, const String& rowName)
+QtPropertyData* BaseAddEntityDialog::AddMetaObject(void* object_, const DAVA::MetaInfo* meta_, const DAVA::String& rowName)
 {
-    QtPropertyData* propData = new QtPropertyDataMetaObject(DAVA::FastName(rowName), _object, _meta);
+    QtPropertyData* propData = new QtPropertyDataMetaObject(DAVA::FastName(rowName), object_, meta_);
     propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
     return propData;
 }
 
-void BaseAddEntityDialog::SetEntity(DAVA::Entity* _entity)
+void BaseAddEntityDialog::SetEntity(DAVA::Entity* entity_)
 {
     SafeRelease(entity);
-    entity = SafeRetain(_entity);
+    entity = SafeRetain(entity_);
 }
 
 void BaseAddEntityDialog::AddButton(QWidget* widget, eButtonAlign orientation)
@@ -141,7 +141,7 @@ void BaseAddEntityDialog::AddButton(QWidget* widget, eButtonAlign orientation)
     }
 }
 
-void BaseAddEntityDialog::AddButton(QWidget* widget, int32 position)
+void BaseAddEntityDialog::AddButton(QWidget* widget, DAVA::int32 position)
 {
     ui->lowerLayOut->insertWidget(position, widget);
 }

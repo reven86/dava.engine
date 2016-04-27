@@ -862,6 +862,12 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_ConstCount = nullptr; //&metal_ConstBuffer_ConstCount;
     dispatch->impl_ConstBuffer_Delete = &metal_ConstBuffer_Delete;
 }
+
+void
+ResetRingBuffer()
+{
+    DefaultConstRingBuffer.Reset();
+}
 }
 
 namespace PipelineStateMetal

@@ -34,7 +34,6 @@
 extern void FrameworkMain(int argc, char* argv[]);
 
 @implementation OpenGLView
-@synthesize willQuit;
 
 - (id)initWithFrame:(NSRect)frameRect
 {
@@ -77,8 +76,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     trackingArea = nil;
     [self enableTrackingArea];
-    isFirstDraw = true;
-    willQuit = false;
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
@@ -141,26 +138,14 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        rhi::ResetParam params;
-        params.window = self;
-        params.width = backingSize[0];
-        params.height = backingSize[1];
-        Renderer::Reset(params);
+        float32 scale = DeviceInfo::GetScreenInfo().scale;
+        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
+        Core::Instance()->SetNativeView(self);
 
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        Core::Instance()->SystemProcessFrame();
     }
 
     [super reshape];
-}
-
-- (void)drawRect:(NSRect)theRect
-{
-    if (willQuit)
-        return;
-
-    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (BOOL)acceptsFirstResponder

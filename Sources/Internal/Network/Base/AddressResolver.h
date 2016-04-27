@@ -59,7 +59,7 @@ private:
 private:
     IOLoop* loop = nullptr;
     uv_getaddrinfo_t* handle = nullptr;
-    ResolverCallbackFn resolverCallbackFn;
+    ResolverCallbackFn resolverCallbackFn = nullptr;
 };
 }
 }

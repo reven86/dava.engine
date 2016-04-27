@@ -36,10 +36,12 @@
 #include <QStringList>
 #include <QDataStream>
 
+namespace DAVA
+{
 #define BEGIM_MIME_HANDLER_MAP const MimeDataHelper::MimeHandler MimeDataHelper::mimeHandlerMap[] = {
 
 #define MIME_HANDLER(formatName, getNameFuncPtr)\
-	MimeDataHelper::MimeHandler(formatName, &getNameFuncPtr),
+    MimeDataHelper::MimeHandler(formatName, &getNameFuncPtr),
 
 #define END_MIME_HNADLER_MAP };
 
@@ -172,3 +174,4 @@ void MimeDataHelper::GetItemNamesFromFilePathMime(const QMimeData* mimeData, Lis
         nameList.push_back(url.toLocalFile().toStdString());
     }
 }
+} // namespace DAVA

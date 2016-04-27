@@ -37,8 +37,6 @@
 
 class HoodSystem;
 
-using namespace DAVA;
-
 class HeightmapEditorSystem : public LandscapeEditorSystem
 {
 public:
@@ -54,7 +52,7 @@ public:
         HEIGHTMAP_DRAW_TYPES_COUNT
     };
 
-    HeightmapEditorSystem(Scene* scene);
+    HeightmapEditorSystem(DAVA::Scene* scene);
     virtual ~HeightmapEditorSystem();
 
     LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
@@ -63,53 +61,53 @@ public:
     virtual void Process(DAVA::float32 timeElapsed);
     virtual void Input(DAVA::UIEvent* event);
 
-    void SetBrushSize(int32 brushSize);
-    int32 GetBrushSize();
-    void SetStrength(float32 strength);
-    float32 GetStrength();
-    void SetAverageStrength(float32 averageStrength);
-    float32 GetAverageStrength();
-    void SetToolImage(const FilePath& toolImagePath, int32 index);
-    int32 GetToolImageIndex();
+    void SetBrushSize(DAVA::int32 brushSize);
+    DAVA::int32 GetBrushSize();
+    void SetStrength(DAVA::float32 strength);
+    DAVA::float32 GetStrength();
+    void SetAverageStrength(DAVA::float32 averageStrength);
+    DAVA::float32 GetAverageStrength();
+    void SetToolImage(const DAVA::FilePath& toolImagePath, DAVA::int32 index);
+    DAVA::int32 GetToolImageIndex();
     void SetDrawingType(eHeightmapDrawType type);
     eHeightmapDrawType GetDrawingType();
 
-    void SetDropperHeight(float32 height);
-    float32 GetDropperHeight();
+    void SetDropperHeight(DAVA::float32 height);
+    DAVA::float32 GetDropperHeight();
 
 protected:
-    Vector2 GetHeightmapPositionFromCursor() const;
+    DAVA::Vector2 GetHeightmapPositionFromCursor() const;
 
 protected:
-    Texture* squareTexture = nullptr;
-    uint32 curToolSize = 30;
-    Image* curToolImage = nullptr;
+    DAVA::Texture* squareTexture = nullptr;
+    DAVA::uint32 curToolSize = 30;
+    DAVA::Image* curToolImage = nullptr;
 
     eHeightmapDrawType drawingType = HEIGHTMAP_DRAW_ABSOLUTE;
-    float32 strength = 15.f;
-    float32 averageStrength = 0.5f;
+    DAVA::float32 strength = 15.f;
+    DAVA::float32 averageStrength = 0.5f;
     bool inverseDrawingEnabled = false;
-    FilePath toolImagePath;
-    int32 toolImageIndex = 0;
+    DAVA::FilePath toolImagePath;
+    DAVA::int32 toolImageIndex = 0;
 
-    float32 curHeight = 0.f;
-    Vector2 copyPasteFrom;
-    Vector2 copyPasteTo;
+    DAVA::float32 curHeight = 0.f;
+    DAVA::Vector2 copyPasteFrom;
+    DAVA::Vector2 copyPasteTo;
 
-    Rect heightmapUpdatedRect;
+    DAVA::Rect heightmapUpdatedRect;
 
     bool editingIsEnabled = false;
 
-    Heightmap* originalHeightmap = nullptr;
+    DAVA::Heightmap* originalHeightmap = nullptr;
 
     eHeightmapDrawType activeDrawingType;
 
     void UpdateToolImage();
-    void UpdateBrushTool(float32 timeElapsed);
+    void UpdateBrushTool(DAVA::float32 timeElapsed);
 
-    void AddRectToAccumulator(Rect& accumulator, const Rect& rect);
-    void ResetAccumulatorRect(Rect& accumulator);
-    Rect GetHeightmapUpdatedRect();
+    void AddRectToAccumulator(DAVA::Rect& accumulator, const DAVA::Rect& rect);
+    void ResetAccumulatorRect(DAVA::Rect& accumulator);
+    DAVA::Rect GetHeightmapUpdatedRect();
 
     void StoreOriginalHeightmap();
     void CreateHeightmapUndo();

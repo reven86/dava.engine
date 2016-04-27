@@ -97,6 +97,10 @@ void MovieViewControl::SetRect(const Rect& rect)
     playerViewRect.size.height /= scaleDivider;
     playerViewRect.size.width /= scaleDivider;
 
+    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
+    playerViewRect.size.width = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.width);
+    playerViewRect.size.height = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.height);
+
     [player.view setFrame:playerViewRect];
 }
 

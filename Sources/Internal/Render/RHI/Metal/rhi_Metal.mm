@@ -38,7 +38,6 @@
 
 id<MTLDevice> _Metal_Device = nil;
 id<MTLCommandQueue> _Metal_DefCmdQueue = nil;
-MTLRenderPassDescriptor* _Metal_DefRenderPassDescriptor = nil;
 id<MTLTexture> _Metal_DefFrameBuf = nil;
 id<MTLTexture> _Metal_DefDepthBuf = nil;
 id<MTLTexture> _Metal_DefStencilBuf = nil;
@@ -47,6 +46,9 @@ CAMetalLayer* _Metal_Layer = nil;
 rhi::ScreenShotCallback _Metal_PendingScreenshotCallback = nullptr;
 void* _Metal_ScreenshotData = nullptr;
 DAVA::Mutex _Metal_ScreenshotCallbackSync;
+
+bool _Metal_Suspended = false;
+DAVA::Mutex _Metal_SuspendedSync;
 
 namespace rhi
 {
@@ -137,6 +139,10 @@ metal_NeedRestoreResources()
 static void
 metal_Suspend()
 {
+    _Metal_ScreenshotCallbackSync.Lock();
+    _Metal_Suspended = true;
+    _Metal_ScreenshotCallbackSync.Unlock();
+    DAVA::Logger::Info("mtl.render-suspended");
 }
 
 //------------------------------------------------------------------------------
@@ -144,6 +150,10 @@ metal_Suspend()
 static void
 metal_Resume()
 {
+    _Metal_ScreenshotCallbackSync.Lock();
+    _Metal_Suspended = false;
+    _Metal_ScreenshotCallbackSync.Unlock();
+    DAVA::Logger::Info("mtl.render-resumed");
 }
 
 //------------------------------------------------------------------------------
@@ -162,6 +172,7 @@ metal_TakeScreenshot(ScreenShotCallback callback)
 void metal_Initialize(const InitParam& param)
 {
     _Metal_Layer = (CAMetalLayer*)param.window;
+    [_Metal_Layer retain];
 
     _Metal_Layer.device = MTLCreateSystemDefaultDevice();
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -169,6 +180,7 @@ void metal_Initialize(const InitParam& param)
     _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
 
     _Metal_Device = _Metal_Layer.device;
+    [_Metal_Device retain];
     _Metal_DefCmdQueue = [_Metal_Device newCommandQueue];
 
     // create frame-buffer
@@ -180,25 +192,8 @@ void metal_Initialize(const InitParam& param)
     MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
     MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:w height:h mipmapped:NO];
 
-    _Metal_DefFrameBuf = [_Metal_Device newTextureWithDescriptor:colorDesc];
     _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
     _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
-
-    // create default render-pass desc
-
-    MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
-
-    desc.colorAttachments[0].texture = _Metal_DefFrameBuf;
-    desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-    desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-    desc.colorAttachments[0].clearColor = MTLClearColorMake(0.3, 0.3, 0.6, 1);
-
-    desc.depthAttachment.texture = _Metal_DefDepthBuf;
-    desc.depthAttachment.loadAction = MTLLoadActionClear;
-    desc.depthAttachment.storeAction = MTLStoreActionStore;
-    desc.depthAttachment.clearDepth = 1.0f;
-
-    _Metal_DefRenderPassDescriptor = desc;
 
     // create default depth-state
 
