@@ -26,26 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __FRAMEWORK__MOUSECAPTUREWINUAP_H__
+#define __FRAMEWORK__MOUSECAPTUREWINUAP_H__
 
-#ifndef __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
+#include "Base/Platform.h"
 
-#include "DAVAEngine.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+#include "Input/MouseDevice.h"
 
 namespace DAVA
 {
-class CoreMacOSPlatformBase : public Core
+class MouseDeviceUWP : public MouseDeviceInterface
 {
 public:
-    void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
+    void SetMode(eCaptureMode newMode) override;
+    void SetCursorInCenter() override;
+    bool SkipEvents(const UIEvent* event) override;
 
-    // Signal is emitted when window has been miniaturized/deminiaturized or
-    // when application has been hidden/unhidden.
-    // Signal parameter meaning:
-    //  - when true - application/window has been hidden/minimized
-    //  - when false - application/window has been unhidden/restored
-    Signal<bool> signalAppMinimizedRestored;
+private:
+    uint32 skipMouseMoveEvents = 0;
+    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
-};
+}
 
-#endif // __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
+#endif //  __DAVAENGINE_WIN_UAP__
+
+#endif //  __FRAMEWORK__MOUSECAPTUREWINUAP_H__

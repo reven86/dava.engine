@@ -26,72 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/Platform.h"
-#if defined(__DAVAENGINE_WIN32__)
+#ifndef __FRAMEWORK__MOUSECAPTURE_H__
+#define __FRAMEWORK__MOUSECAPTURE_H__
 
-#include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Concurrency/Thread.h"
-#include "Utils/Utils.h"
-#include "Utils/UTF8Utils.h"
-
-#include <shellapi.h>
+#include <memory>
+#include "Base/BaseObject.h"
 
 namespace DAVA
 {
-CoreWin32PlatformBase::CoreWin32PlatformBase()
+class UIEvent;
+struct MouseDeviceContext;
+class MouseDeviceInterface;
+
+enum class eCaptureMode
 {
-}
+    OFF = 0, //!< Disable any capturing (send absolute xy)
+    FRAME, //!< Capture system cursor into window rect (send absolute xy)
+    PINING //!<< Capture system cursor on current position (send xy move delta)
+};
 
-void CoreWin32PlatformBase::InitArgs()
+class MouseDevice final : public BaseObject
 {
-    int argc = 0;
-    LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+public:
+    MouseDevice();
+    ~MouseDevice();
+    MouseDevice(const MouseDevice&) = delete;
+    MouseDevice& operator=(const MouseDevice&) = delete;
 
-    if (argc > 0 && NULL != szArglist)
-    {
-        Vector<String> args;
-        args.reserve(argc);
-        for (int i = 0; i < argc; ++i)
-        {
-            args.emplace_back(WStringToString(szArglist[i]));
-        }
+    void SetMode(eCaptureMode newMode);
+    eCaptureMode GetMode() const;
+    bool IsPinningEnabled() const;
+    // Deprecated, only for UIControlSystem internal using
+    DAVA_DEPRECATED(bool SkipEvents(const UIEvent* event));
 
-        SetCommandLine(std::move(args));
-    }
+private:
+    void SetSystemMode(eCaptureMode sysMode);
+    MouseDeviceContext* context;
+    MouseDeviceInterface* privateImpl;
+};
 
-    ::LocalFree(szArglist);
-}
-
-void CoreWin32PlatformBase::Quit()
+class MouseDeviceInterface
 {
-    PostQuitMessage(0);
-}
+public:
+    virtual void SetMode(eCaptureMode newMode) = 0;
+    virtual void SetCursorInCenter() = 0;
+    virtual bool SkipEvents(const UIEvent* event) = 0;
+    virtual ~MouseDeviceInterface() = default;
+};
 
-void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
-{
-    RECT wndRect;
-    GetWindowRect(hWnd, &wndRect);
-    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
-    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
-    SetCursorPos(centerX, centerY);
-}
+} //  namespace DAVA
 
-void CoreWin32PlatformBase::SetCursorPositionCenter()
-{
-    SetCursorPosCenterInternal((HWND)GetNativeView());
-}
-
-void CoreWin32PlatformBase::SetCursorPosition(Point2i position)
-{
-    SetCursorPos(position.x, position.y);
-}
-
-Point2i CoreWin32PlatformBase::GetCursorPosition()
-{
-    POINT p;
-    GetCursorPos(&p);
-    return Point2i(p.x, p.y);
-}
-}
-
-#endif // #if defined(__DAVAENGINE_WIN32__)
+#endif //  __FRAMEWORK__MOUSECAPTURE_H__
