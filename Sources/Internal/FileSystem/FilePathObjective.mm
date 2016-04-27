@@ -41,14 +41,14 @@ namespace DAVA
 #if defined(__DAVAENGINE_IPHONE__)
 void FilePath::InitializeBundleName()
 {
-    NSString* bundlePath = [[[NSBundle mainBundle] bundlePath] stringByAppendingString:@"/"];
+    NSString* bundlePath = [[[NSBundle mainBundle] bundlePath] stringByAppendingString:@"/Data/"];
     SetBundleName([bundlePath UTF8String]);
 }
 
 #elif defined(__DAVAENGINE_MACOS__)
 void FilePath::InitializeBundleName()
 {
-    NSString* bundlePath = [[[NSBundle mainBundle] bundlePath] stringByAppendingString:@"/Contents/Resources/"];
+    NSString* bundlePath = [[[NSBundle mainBundle] bundlePath] stringByAppendingString:@"/Contents/Resources/Data/"];
     SetBundleName([bundlePath UTF8String]);
 }
 	
