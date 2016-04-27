@@ -76,9 +76,6 @@ public:
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
 
-    bool GetCursorVisible();
-    bool SetCursorVisible(bool isVisible);
-
     bool IsPhoneApiDetected();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
@@ -86,8 +83,6 @@ public:
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
     Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
-    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
     void SetWindowMinimumSize(float32 width, float32 height);
     Vector2 GetWindowMinimumSize() const;
@@ -101,6 +96,7 @@ public:
     void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
     void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
     void UnfocusUIElement();
+    void CaptureTextBox(Windows::UI::Xaml::Controls::Control^ text);
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -159,6 +155,8 @@ private:
     void SendBackKeyEvents();
 
 private:
+    Windows::UI::Xaml::Input::PointerRoutedEventArgs ^pressedEventArgs = nullptr;
+
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
     std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
@@ -171,6 +169,8 @@ private:
 
     float32 minWindowWidth = 0.0f;
     float32 minWindowHeight = 0.0f;
+
+    Windows::UI::Input::PointerPoint ^ mousePointer = nullptr;
 
     Thread* mainLoopThread = nullptr;
 
@@ -193,7 +193,6 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
@@ -256,16 +255,6 @@ inline void WinUAPXamlApp::SetQuitFlag()
 inline bool WinUAPXamlApp::IsPhoneApiDetected()
 {
     return isPhoneApiDetected;
-}
-
-inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
-{
-    return mouseCaptureMode;
-}
-
-inline bool WinUAPXamlApp::GetCursorVisible()
-{
-    return isMouseCursorShown;
 }
 
 }   // namespace DAVA
