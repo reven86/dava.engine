@@ -55,7 +55,6 @@
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
