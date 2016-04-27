@@ -29,7 +29,7 @@
 #pragma once
 
 #include "Render/PixelFormatDescriptor.h"
-#include "Base/HalfFloat.h"
+#include "Math/HalfFloat.h"
 
 namespace DAVA
 {
