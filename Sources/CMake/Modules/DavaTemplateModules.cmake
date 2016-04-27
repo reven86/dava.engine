@@ -46,6 +46,15 @@ FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}
 #
 macro( setup_main_module )
 
+    if( NOT MODULE_TYPE )
+        set( MODULE_TYPE INLINE )
+    endif()
+
+    if( NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) )
+        project ( ${NAME_MODULE} )
+        include ( CMake-common )
+    endif()
+
     set( INIT )
 
     get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
@@ -63,10 +72,6 @@ macro( setup_main_module )
         else()
             set( INIT true )
         endif()
-    endif()
-
-    if( NOT MODULE_TYPE )
-        set( MODULE_TYPE INLINE )
     endif()
 
     if ( INIT )
