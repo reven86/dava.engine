@@ -96,6 +96,7 @@ public:
     void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
     void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
     void UnfocusUIElement();
+    void CaptureTextBox(Windows::UI::Xaml::Controls::Control^ text);
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -154,6 +155,8 @@ private:
     void SendBackKeyEvents();
 
 private:
+    Windows::UI::Xaml::Input::PointerRoutedEventArgs ^pressedEventArgs = nullptr;
+
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
     std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;

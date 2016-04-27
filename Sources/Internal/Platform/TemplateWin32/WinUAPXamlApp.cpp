@@ -242,6 +242,14 @@ void WinUAPXamlApp::UnfocusUIElement()
     controlThatTakesFocus->Focus(FocusState::Pointer);
 }
 
+void WinUAPXamlApp::CaptureTextBox(Windows::UI::Xaml::Controls::Control ^ control)
+{
+    if (pressedEventArgs && control->CapturePointer(pressedEventArgs->Pointer))
+    {
+        OnSwapChainPanelPointerReleased(this, pressedEventArgs); // send pointer release event because we will'not receive this event after capturing
+    }
+}
+
 void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
@@ -508,6 +516,8 @@ void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProp
 
 void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRoutedEventArgs ^ args)
 {
+    pressedEventArgs = args;
+
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
@@ -567,6 +577,8 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
+    pressedEventArgs = args;
+
     UIEvent::Phase phase = UIEvent::Phase::DRAG;
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;

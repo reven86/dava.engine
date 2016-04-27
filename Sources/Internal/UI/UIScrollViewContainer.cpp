@@ -51,7 +51,6 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
 {
     this->SetInputEnabled(true);
     this->SetMultiInput(true);
-    SetFocusEnabled(false);
 }
 
 UIScrollViewContainer::~UIScrollViewContainer()
