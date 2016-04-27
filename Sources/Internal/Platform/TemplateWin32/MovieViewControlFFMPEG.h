@@ -121,9 +121,10 @@ struct DecodedFrameBuffer
 
         static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
 
+        float64 GetMasterClock();
         bool InitVideo();
         bool DecodeVideoPacket(AV::AVPacket* packet, float64& pts);
-        void UpdateVideo(float64 elapsedTime);
+        void UpdateVideo();
         bool InitAudio();
         void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
 
@@ -228,12 +229,12 @@ struct DecodedFrameBuffer
         Mutex decodedAudioMutex;
 
         DecodedPCMData* lastPcmData = nullptr;
-        bool decodeAudioOnCallback = false;
+        bool decodeAudioOnCallback = true;
         void FillBufferByPcmData(uint8* data, uint32 datalen, bool decodeInPlace);
         DecodedPCMData* DequePCMAudio();
 
         uint32 playTime = 0;
-        uint64 frameTimer = 0;
+        float64 frameTimer = 0.f;
         void StartPlayingTimer();
         float64 GetPlayTime();
         void ShiftPlayTime(float64 delta);
@@ -244,16 +245,22 @@ struct DecodedFrameBuffer
         float64 audio_clock = 0.f;
 
         bool hasMoreData = false;
+
+        float64 GetTime();
     };
 
+    inline float64 MovieViewControl::GetTime()
+    {
+        return (AV::av_gettime() / 1000000.0);
+    }
     inline void MovieViewControl::StartPlayingTimer()
     {
-        frameTimer = SystemTimer::Instance()->AbsoluteMS();
+        frameTimer = GetTime();
     }
 
     inline float64 MovieViewControl::GetPlayTime()
     {
-        return (SystemTimer::Instance()->AbsoluteMS() - frameTimer) / 1000.f;
+        return frameTimer - SystemTimer::Instance()->AbsoluteMS() / 1000.0;
     }
 
     inline void MovieViewControl::ShiftPlayTime(float64 delta)
