@@ -383,6 +383,8 @@ static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
 static uint32 _GLES2_RenderThreadFrameCount = 0;
 
+static DAVA::Mutex _GLES2_SyncObjectsSync;
+
 struct
 FrameGLES2
 {
@@ -892,11 +894,15 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 static Handle
 gles2_SyncObject_Create()
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     Handle handle = SyncObjectPoolGLES2::Alloc();
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(handle);
 
     sync->is_signaled = false;
     sync->is_used = false;
+
+    _GLES2_SyncObjectsSync.Unlock();
 
     return handle;
 }
@@ -906,7 +912,11 @@ gles2_SyncObject_Create()
 static void
 gles2_SyncObject_Delete(Handle obj)
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     SyncObjectPoolGLES2::Free(obj);
+
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -914,6 +924,8 @@ gles2_SyncObject_Delete(Handle obj)
 static bool
 gles2_SyncObject_IsSignaled(Handle obj)
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     if (!SyncObjectPoolGLES2::IsAlive(obj))
         return true;
 
@@ -922,6 +934,8 @@ gles2_SyncObject_IsSignaled(Handle obj)
 
     if (sync)
         signaled = sync->is_signaled;
+
+    _GLES2_SyncObjectsSync.Unlock();
 
     return signaled;
 }
@@ -2097,11 +2111,13 @@ _GLES2_ExecuteQueuedCommands()
 
     // update sync-objects
 
+    _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
