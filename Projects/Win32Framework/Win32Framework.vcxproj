@@ -386,6 +386,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\External\lz4\lz4.h" />
+    <ClInclude Include="..\..\Sources\External\lz4\lz4hc.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h" />
@@ -505,6 +507,7 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
@@ -518,6 +521,7 @@
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
+    <ClInclude Include="..\..\Sources\Internal\Input\MouseDevice.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h" />
@@ -614,13 +618,15 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateMacOS\MouseDeviceMacOS.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\MouseDeviceWin32.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\MouseDeviceWinUAP.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\GraphicFont.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h" />
@@ -631,7 +637,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\DynamicBindings.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\DynamicBufferAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\GPUFamilyDescriptor.h" />
@@ -895,6 +900,8 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\External\lz4\lz4.c" />
+    <ClCompile Include="..\..\Sources\External\lz4\lz4hc.c" />
     <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingDB.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp" />
@@ -988,6 +995,7 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />
@@ -1000,6 +1008,7 @@
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Input\MouseDevice.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp" />
@@ -1071,9 +1080,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\MouseDeviceWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DPIHelperWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\GraphicFont.cpp" />
@@ -1085,7 +1094,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\DynamicBindings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\DynamicBufferAllocator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\GPUFamilyDescriptor.cpp" />

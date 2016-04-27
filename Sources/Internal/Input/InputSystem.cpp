@@ -31,7 +31,6 @@
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
-#include "Render/Cursor.h"
 
 namespace DAVA
 {
@@ -42,6 +41,7 @@ InputSystem::InputSystem()
 {
     keyboard = new KeyboardDevice();
     gamepad = new GamepadDevice();
+    mouse = new MouseDevice();
     AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
@@ -50,6 +50,7 @@ InputSystem::~InputSystem()
 {
     SafeRelease(gamepad);
     SafeRelease(keyboard);
+    SafeRelease(mouse);
 }
 
 void InputSystem::ProcessInputEvent(UIEvent* event)
@@ -99,23 +100,5 @@ void InputSystem::OnBeforeUpdate()
 void InputSystem::OnAfterUpdate()
 {
     keyboard->OnFinishFrame();
-}
-
-InputSystem::eMouseCaptureMode InputSystem::GetMouseCaptureMode()
-{
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
-    return Cursor::GetMouseCaptureMode();
-#else
-    return eMouseCaptureMode::OFF;
-#endif
-}
-
-bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
-{
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
-    return Cursor::SetMouseCaptureMode(mode);
-#else
-    return mode == eMouseCaptureMode::OFF;
-#endif
 }
 };
