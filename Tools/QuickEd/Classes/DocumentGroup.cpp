@@ -270,14 +270,45 @@ void DocumentGroup::CloseDocument(Document* document)
 
 void DocumentGroup::ReloadDocument(int index)
 {
+    static bool blocked = false;
+    if (blocked)
+    {
+        return;
+    }
+    blocked = true;
+
+    SCOPE_EXIT
+    {
+        blocked = false;
+    };
+
     DVASSERT(index >= 0 && index < documents.size());
     QString path = documents.at(index)->GetPackageAbsolutePath();
-    CloseDocument(index);
     Document* document = CreateDocument(path);
     if (document != nullptr)
     {
+        CloseDocument(index);
         InsertDocument(document, index);
         SetActiveDocument(index);
+    }
+    else
+    {
+        QMessageBox::StandardButton ret = QMessageBox::question(
+        qApp->activeWindow(),
+        tr("Close document?"),
+        tr("Can not reopen file %1.\n"
+           "Do you want to restore previous version of document?")
+        .arg(path),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::Yes);
+        if (ret == QMessageBox::Yes)
+        {
+            document->Save();
+        }
+        else
+        {
+            return; //do nothing
+        }
     }
 }
 
@@ -524,7 +555,6 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     }
     else
     {
-        DVASSERT(false && "package was not created");
         return nullptr;
     }
 }
