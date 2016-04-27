@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     QApplication a(argc, argv);
 
     ErrorMessanger::Instance();
-    qInstallMessageHandler(LogMessageHandler);
+    //qInstallMessageHandler(LogMessageHandler);
 
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 

@@ -124,14 +124,10 @@ Branch Branch::LoadFromYamlNode(const YAML::Node* node)
 }
 
 ConfigParser::ConfigParser(const QByteArray& configData)
-    :
-    launcherVersion(LAUNCHER_VER)
-    ,
-    webPageURL("")
-    ,
-    remoteConfigURL("")
-    ,
-    newsID("0")
+    : launcherVersion(LAUNCHER_VER)
+    , webPageURL("")
+    , remoteConfigURL("")
+    , newsID("0")
 {
     if (configData.size())
     {

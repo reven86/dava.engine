@@ -45,7 +45,7 @@ signals:
     void Finished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 public slots:
-    void Download(QUrl url);
+    void Download(const QUrl& url);
     void Cancel();
 
 private slots:

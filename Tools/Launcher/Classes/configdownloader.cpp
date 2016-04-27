@@ -36,14 +36,10 @@
 #include <QProcess>
 
 ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QNetworkAccessManager* accessManager, QWidget* parent)
-    :
-    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
-    ,
-    ui(new Ui::ConfigDownloader)
-    ,
-    downloader(0)
-    ,
-    appManager(manager)
+    : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
+    , ui(new Ui::ConfigDownloader)
+    , downloader(nullptr)
+    , appManager(manager)
 {
     ui->setupUi(this);
 
@@ -62,7 +58,9 @@ ConfigDownloader::~ConfigDownloader()
 
 int ConfigDownloader::exec()
 {
-    downloader->Download(QUrl(appManager->localConfig->GetRemoteConfigURL()));
+    QUrl url("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches");
+    QUrl removeUrl(QUrl(appManager->localConfig->GetRemoteConfigURL()));
+    downloader->Download(url);
 
     return QDialog::exec();
 }
@@ -82,7 +80,8 @@ void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList<QPair<Q
         const QByteArray contentTypeConst("Content-Type");
         for (QList<QPair<QByteArray, QByteArray>>::ConstIterator it = rawHeaderList.begin(); it != rawHeaderList.end(); ++it)
         {
-            if ((*it).first == contentTypeConst && (*it).second.left(9) != QByteArray("text/html"))
+            const QPair<QByteArray, QByteArray>& pair = *it;
+            if (pair.first == contentTypeConst)
             {
                 appManager->ParseRemoteConfigData(downloadedData);
             }
