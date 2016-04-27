@@ -355,33 +355,3 @@ void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
 {
     assetCacheEnabled = enabled;
 }
-
-DAVA::String EditorCore::GetAssetCacheIp() const
-{
-    return connectionParams.ip;
-}
-
-void EditorCore::SetAssetCacheIp(const DAVA::String& ip)
-{
-    connectionParams.ip = ip;
-}
-
-DAVA::uint16 EditorCore::GetAssetCachePort() const
-{
-    return connectionParams.port;
-}
-
-void EditorCore::SetAssetCachePort(DAVA::uint16 port)
-{
-    connectionParams.port = port;
-}
-
-DAVA::uint64 EditorCore::GetAssetCacheTimeout() const
-{
-    return connectionParams.timeoutms;
-}
-
-void EditorCore::SetAssetCacheTimeout(DAVA::uint64 timeout)
-{
-    connectionParams.timeoutms = timeout;
-}

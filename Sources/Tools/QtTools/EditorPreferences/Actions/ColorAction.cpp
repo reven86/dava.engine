@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Base/Introspection.h"
 #include "QtTools/EditorPreferences/Actions/ColorAction.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 #include "QtTools/Utils/Utils.h"
 #include <QColorDialog>
 #include <QApplication>

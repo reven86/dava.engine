@@ -28,6 +28,7 @@
 
 #include "Base/GlobalEnum.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
@@ -35,7 +36,6 @@
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 #include "TextureCompression/TextureConverter.h"
-#include "EditorPreferences/PreferencesStorage.h"
 PUSH_QT_WARNING_SUPRESSOR
 #include "ui_DialogReloadSprites.h"
 #include <QSettings>

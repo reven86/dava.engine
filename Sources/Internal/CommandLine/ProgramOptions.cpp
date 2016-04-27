@@ -128,7 +128,7 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
 bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
 {
     const String argString = argv[argIndex];
-    for (auto& opt : options)
+    for (Option& opt : options)
     {
         if (opt.name == argString)
         {
@@ -161,7 +161,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     case VariantType::TYPE_STRING:
                     case VariantType::TYPE_NONE:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             opt.SetValue(VariantType(t));
                         }
@@ -169,7 +169,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_INT8:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             int8 value = 0;
                             if (1 == sscanf(t.c_str(), "%hhd", &value))
@@ -181,7 +181,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_UINT8:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             uint8 value = 0;
                             if (1 == sscanf(t.c_str(), "%hhu", &value))
@@ -193,7 +193,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_INT16:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             int16 value = 0;
                             if (1 == sscanf(t.c_str(), "%hd", &value))
@@ -205,7 +205,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_UINT16:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             uint16 value = 0;
                             if (1 == sscanf(t.c_str(), "%hu", &value))
@@ -217,7 +217,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_INT32:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             int32 value = 0;
                             if (1 == sscanf(t.c_str(), "%d", &value))
@@ -229,7 +229,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_UINT32:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             uint32 value = 0;
                             if (1 == sscanf(t.c_str(), "%u", &value))
@@ -241,7 +241,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_UINT64:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             uint64 value = 0;
                             if (1 == sscanf(t.c_str(), "%llu", &value))
@@ -253,7 +253,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
                     }
                     case VariantType::TYPE_BOOLEAN:
                     {
-                        for (auto& t : tokens)
+                        for (const String& t : tokens)
                         {
                             if (strcmp(t.c_str(), "true"))
                             {

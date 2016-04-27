@@ -652,22 +652,22 @@ void KeyedArchive::Dump() const
         break;
         case VariantType::TYPE_INT8:
         {
-            Logger::FrameworkDebug("%s : %d", obj.first.c_str(), obj.second->int8Value);
+            Logger::FrameworkDebug("%s : %hhd", obj.first.c_str(), obj.second->int8Value);
         }
         break;
         case VariantType::TYPE_UINT8:
         {
-            Logger::FrameworkDebug("%s : %d", obj.first.c_str(), obj.second->uint8Value);
+            Logger::FrameworkDebug("%s : %hu", obj.first.c_str(), obj.second->uint8Value);
         }
         break;
         case VariantType::TYPE_INT16:
         {
-            Logger::FrameworkDebug("%s : %d", obj.first.c_str(), obj.second->int16Value);
+            Logger::FrameworkDebug("%s : %hd", obj.first.c_str(), obj.second->int16Value);
         }
         break;
         case VariantType::TYPE_UINT16:
         {
-            Logger::FrameworkDebug("%s : %d", obj.first.c_str(), obj.second->uint16Value);
+            Logger::FrameworkDebug("%s : %hu", obj.first.c_str(), obj.second->uint16Value);
         }
         break;
         case VariantType::TYPE_INT32:
@@ -677,7 +677,7 @@ void KeyedArchive::Dump() const
         break;
         case VariantType::TYPE_UINT32:
         {
-            Logger::FrameworkDebug("%s : %d", obj.first.c_str(), obj.second->uint32Value);
+            Logger::FrameworkDebug("%s : %u", obj.first.c_str(), obj.second->uint32Value);
         }
         break;
         case VariantType::TYPE_FLOAT:

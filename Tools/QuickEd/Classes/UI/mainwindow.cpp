@@ -42,7 +42,7 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
 #include "Preferences/PreferencesDialog.h"
 

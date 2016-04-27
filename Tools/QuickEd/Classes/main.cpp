@@ -40,7 +40,7 @@
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 #include <QtGlobal>
 
 void InitPVRTexTool()

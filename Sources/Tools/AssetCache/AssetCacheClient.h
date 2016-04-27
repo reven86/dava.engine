@@ -29,7 +29,9 @@
 #ifndef __ASSET_CACHE_CLIENT_H__
 #define __ASSET_CACHE_CLIENT_H__
 
+#include "Base/Introspection.h"
 #include "AssetCache/AssetCache.h"
+#include "Preferences/PreferencesRegistrator.h"
 #include <atomic>
 
 namespace DAVA
@@ -71,11 +73,19 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
     };
 
 public:
-    struct ConnectionParams
+    struct ConnectionParams : InspBase
     {
         String ip = AssetCache::LOCALHOST;
         uint16 port = AssetCache::ASSET_SERVER_PORT;
         uint64 timeoutms = 60 * 1000;
+
+        REGISTER_PREFERENCES(ConnectionParams)
+
+        INTROSPECTION(ConnectionParams,
+                      MEMBER(ip, "Asset cache/Asset Cache IP", DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                      MEMBER(port, "Asset cache/Asset Cache Port", DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                      MEMBER(timeoutms, "Asset cache/Asset Cache Timeout (ms)", DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                      )
     };
 
     AssetCacheClient(bool emulateNetworkLoop);

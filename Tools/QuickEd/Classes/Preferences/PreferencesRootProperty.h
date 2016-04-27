@@ -29,11 +29,10 @@
 
 #pragma once
 
-#include "Model/ControlProperties/AbstractProperty.h"
-#include "Model/ControlProperties/SectionProperty.h"
+#include "Preferences/PreferencesSectionProperty.h"
 #include "Preferences/PreferencesIntrospectionProperty.h"
 
-class PreferencesRootProperty : public SectionProperty<PreferencesIntrospectionProperty>
+class PreferencesRootProperty : public PreferencesSectionProperty<PreferencesIntrospectionProperty>
 {
 public:
     PreferencesRootProperty();

@@ -46,7 +46,7 @@ void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
     IntrospectionProperty::Refresh(refreshFlags);
 
     if (refreshFlags & REFRESH_FONT)
-        member->SetValue(GetObject(), VariantType(presetName));
+        member->SetValue(GetBaseObject(), VariantType(presetName));
 }
 
 VariantType FontValueProperty::GetValue() const
@@ -57,5 +57,5 @@ VariantType FontValueProperty::GetValue() const
 void FontValueProperty::ApplyValue(const DAVA::VariantType& value)
 {
     presetName = value.AsString();
-    member->SetValue(GetObject(), VariantType(presetName));
+    member->SetValue(GetBaseObject(), VariantType(presetName));
 }

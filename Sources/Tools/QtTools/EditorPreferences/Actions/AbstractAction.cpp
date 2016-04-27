@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "QtTools/EditorPreferences/Actions/AbstractAction.h"
 #include "QtTools/EditorPreferences/Actions/ActionsStorage.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 
 AbstractAction::AbstractAction(const DAVA::InspMember* member_, QObject* parent)
     : QAction(parent)

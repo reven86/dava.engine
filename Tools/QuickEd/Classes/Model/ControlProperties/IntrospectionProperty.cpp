@@ -51,9 +51,9 @@ const FastName INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 const FastName INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
-IntrospectionProperty::IntrospectionProperty(void* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(aMember->Desc().text)
-    , object(anObject)
+    , object(SafeRetain(anObject))
     , member(aMember)
     , flags(EF_CAN_RESET)
 {
@@ -79,12 +79,12 @@ IntrospectionProperty::IntrospectionProperty(void* anObject, const DAVA::InspMem
         SetDefaultValue(member->Value(object));
     }
 
-    static DAVA::Vector<String> vector2ComponentNames = { "X", "Y" };
-    static DAVA::Vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
-    static DAVA::Vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
+    static std::vector<String> vector2ComponentNames = { "X", "Y" };
+    static std::vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
+    static std::vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
 
-    DAVA::Vector<String>* componentNames = nullptr;
-    DAVA::Vector<SubValueProperty*> children;
+    std::vector<String>* componentNames = nullptr;
+    std::vector<SubValueProperty*> children;
     VariantType defaultValue = GetDefaultValue();
     if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
     {
@@ -115,7 +115,7 @@ IntrospectionProperty::IntrospectionProperty(void* anObject, const DAVA::InspMem
             children.push_back(new SubValueProperty(i, componentNames->at(i)));
     }
 
-    for (SubValueProperty* child : children)
+    for (auto child : children)
     {
         child->SetParent(this);
         AddSubValueProperty(child);
@@ -129,7 +129,10 @@ IntrospectionProperty::IntrospectionProperty(void* anObject, const DAVA::InspMem
         sourceValue = member->Value(object);
 }
 
-IntrospectionProperty::~IntrospectionProperty() = default;
+IntrospectionProperty::~IntrospectionProperty()
+{
+    SafeRelease(object);
+}
 
 IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
 {
@@ -176,7 +179,7 @@ void IntrospectionProperty::Accept(PropertyVisitor* visitor)
 
 IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 {
-    InspDesc::Type type = member->Desc().type;
+    auto type = member->Desc().type;
     if (type == InspDesc::T_ENUM)
         return TYPE_ENUM;
     else if (type == InspDesc::T_FLAGS)
@@ -200,7 +203,7 @@ VariantType IntrospectionProperty::GetValue() const
 
 const EnumMap* IntrospectionProperty::GetEnumMap() const
 {
-    InspDesc::Type type = member->Desc().type;
+    auto type = member->Desc().type;
 
     if (type == InspDesc::T_ENUM ||
         type == InspDesc::T_FLAGS)

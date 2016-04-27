@@ -28,10 +28,9 @@
 
 
 #include "Debug/DVAssert.h"
-#include "PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 
 #include "Base/BaseTypes.h"
-#include "Math/AABBox3.h"
 
 PreferencesStorage::PreferencesStorageSaver::PreferencesStorageSaver()
 {
@@ -52,8 +51,10 @@ PreferencesStorage::PreferencesStorage()
     , inspPreferencesKey("preferences")
     , keyedPreferencesKey("unnamed preferences")
 {
-    editorPreferences->SetArchive(keyedPreferencesKey, new DAVA::KeyedArchive());
-    editorPreferences->SetArchive(inspPreferencesKey, new DAVA::KeyedArchive());
+    DAVA::ScopedPtr<DAVA::KeyedArchive> dummyArchive(new DAVA::KeyedArchive());
+
+    editorPreferences->SetArchive(keyedPreferencesKey, dummyArchive); //will copy dummy archive
+    editorPreferences->SetArchive(inspPreferencesKey, dummyArchive); //will copy dummy archive
     keyedPreferencesArchive = editorPreferences->GetArchive(keyedPreferencesKey);
     inspPreferencesArchive = editorPreferences->GetArchive(inspPreferencesKey);
 }

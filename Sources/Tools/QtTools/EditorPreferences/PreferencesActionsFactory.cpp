@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/FastName.h"
 #include "Base/Introspection.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/Actions/Actions.h"
 
 QAction* PreferencesActionsFactory::CreateActionForPreference(const DAVA::FastName& className, const DAVA::FastName& propertyName, QObject* parent)

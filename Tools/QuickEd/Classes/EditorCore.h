@@ -87,15 +87,6 @@ private:
     bool IsUsingAssetCache() const;
     void SetUsingAssetCacheEnabled(bool enabled);
 
-    DAVA::String GetAssetCacheIp() const;
-    void SetAssetCacheIp(const DAVA::String& ip);
-
-    DAVA::uint16 GetAssetCachePort() const;
-    void SetAssetCachePort(DAVA::uint16 port);
-
-    DAVA::uint64 GetAssetCacheTimeout() const;
-    void SetAssetCacheTimeout(DAVA::uint64 timeout);
-
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 
@@ -110,9 +101,6 @@ private:
 public:
     INTROSPECTION(EditorCore,
                   PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  PROPERTY("assetCacheIp", "Asset cache/Asset Cache IP", GetAssetCacheIp, SetAssetCacheIp, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  PROPERTY("assetCachePort", "Asset cache/Asset Cache Port", GetAssetCachePort, SetAssetCachePort, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  PROPERTY("assetCacheTimeout", "Asset cache/Asset Cache Timeout (ms)", GetAssetCacheTimeout, SetAssetCacheTimeout, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 };
 

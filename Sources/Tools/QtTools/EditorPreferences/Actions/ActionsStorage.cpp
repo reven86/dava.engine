@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "QtTools/EditorPreferences/Actions/ActionsStorage.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/Actions/AbstractAction.h"
 
 ActionsStorage::ActionsStorage()

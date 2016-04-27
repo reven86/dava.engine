@@ -34,7 +34,7 @@
 #include "CanvasSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"

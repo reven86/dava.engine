@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "QtTools/EditorPreferences/Actions/BoolAction.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 
 BoolAction::BoolAction(const DAVA::InspMember* member_, QObject* parent)
     : AbstractAction(member_, parent)

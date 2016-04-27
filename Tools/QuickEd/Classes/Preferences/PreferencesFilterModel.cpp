@@ -27,52 +27,55 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#include "Base/Introspection.h"
-#include "QtTools/EditorPreferences/Actions/DoubleAction.h"
-#include "Preferences/PreferencesStorage.h"
-#include <QInputDialog>
-#include <QApplication>
+#include "Preferences/PreferencesFilterModel.h"
+#include "Preferences/PreferencesRootProperty.h"
+#include "Model/ControlProperties/SubValueProperty.h"
 
-DoubleAction::DoubleAction(const DAVA::InspMember* member_, QObject* parent)
-    : AbstractAction(member_, parent)
+namespace PreferencesModel_local
+{
+bool IsPropertyVisible(AbstractProperty* property)
+{
+    PreferencesIntrospectionProperty* inspProp = dynamic_cast<PreferencesIntrospectionProperty*>(property);
+    if (nullptr != inspProp)
+    {
+        return (inspProp->GetMember()->Flags() & DAVA::I_VIEW) != 0;
+    }
+
+    PreferencesSectionProperty<PreferencesIntrospectionProperty>* sectionProp = dynamic_cast<PreferencesSectionProperty<PreferencesIntrospectionProperty>*>(property);
+    if (nullptr != sectionProp)
+    {
+        bool isVisible = false;
+        for (int i = sectionProp->GetCount() - 1; i >= 0 && !isVisible; --i)
+        {
+            isVisible |= IsPropertyVisible(sectionProp->GetChild(i));
+        }
+        return isVisible;
+    }
+    else if (nullptr != dynamic_cast<SubValueProperty*>(property))
+    {
+        return false;
+    }
+    else
+    {
+        DVASSERT(false);
+        return false;
+    }
+}
+}
+
+PreferencesFilterModel::PreferencesFilterModel(QObject* parent)
+    : QSortFilterProxyModel(parent)
 {
 }
 
-void DoubleAction::OnTriggered(bool /*triggered*/)
+bool PreferencesFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    double currentValue = data().toDouble();
-    double newVal = QInputDialog::getDouble(qApp->activeWindow(), QString("enter new value"), QString("enter new value of %s").arg(QString(member->Desc().text)), currentValue);
-    DAVA::VariantType newValueVar;
-    switch (type)
+    const QModelIndex source = sourceModel()->index(source_row, 0, source_parent);
+    AbstractProperty* property = static_cast<AbstractProperty*>(source.internalPointer());
+    SubValueProperty* subValue = dynamic_cast<SubValueProperty*>(property);
+    if (subValue != nullptr)
     {
-    case DAVA::VariantType::TYPE_FLOAT:
-        newValueVar.SetFloat(static_cast<DAVA::float32>(newVal));
-        break;
-    case DAVA::VariantType::TYPE_FLOAT64:
-        newValueVar.SetFloat64(newVal);
-        break;
-    default:
-        DVASSERT(false && "bad type passed to factory");
-        return;
+        return true;
     }
-    PreferencesStorage::Instance()->SetValue(member, newValueVar);
-}
-
-void DoubleAction::OnValueChanged(const DAVA::VariantType& value)
-{
-    double newVal = 0.0f;
-    switch (value.type)
-    {
-    case DAVA::VariantType::TYPE_FLOAT:
-        newVal = value.AsFloat();
-        break;
-    case DAVA::VariantType::TYPE_FLOAT64:
-        newVal = value.AsFloat64();
-        break;
-    default:
-        DVASSERT(false && "unknown type passed to IntAction");
-        return;
-    }
-    setText(member->Desc().text + QString(" : %1").arg(newVal));
-    setData(QVariant(newVal));
+    return PreferencesModel_local::IsPropertyVisible(property);
 }

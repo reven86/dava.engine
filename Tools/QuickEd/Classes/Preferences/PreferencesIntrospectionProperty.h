@@ -44,7 +44,6 @@ public:
     void Accept(PropertyVisitor* visitor) override;
 
     ePropertyType GetType() const override;
-    DAVA::uint32 GetFlags() const override;
 
     DAVA::VariantType GetValue() const override;
 
@@ -54,12 +53,13 @@ public:
 
     bool IsReadOnly() const override;
 
+    bool IsOverriddenLocally() const override;
+
 protected:
     void ApplyValue(const DAVA::VariantType& value) override;
 
 protected:
     const DAVA::InspMember* member;
     DAVA::int32 flags;
-    DAVA::VariantType sourceValue;
     bool isVisible = false;
 };

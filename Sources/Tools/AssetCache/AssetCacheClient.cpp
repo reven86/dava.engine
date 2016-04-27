@@ -33,9 +33,20 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Job/JobManager.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 namespace DAVA
 {
+namespace AssetCacheClient_local
+{
+InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::TypeInfo(), {
+                                                                                        PREF_ARG("isUsingAssetCache", false),
+                                                                                        PREF_ARG("assetCacheIp", DAVA::AssetCache::LOCALHOST),
+                                                                                        PREF_ARG("assetCachePort", DAVA::AssetCache::ASSET_SERVER_PORT),
+                                                                                        PREF_ARG("assetCacheTimeout", DAVA::uint64(10 * 1000))
+                                                                                        });
+};
+
 AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
     : isActive(false)
     , isJobStarted(false)

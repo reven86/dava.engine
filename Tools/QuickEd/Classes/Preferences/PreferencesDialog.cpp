@@ -29,9 +29,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Preferences/PreferencesDialog.h"
 #include "Preferences/PreferencesModel.h"
+#include "Preferences/PreferencesFilterModel.h"
 #include "UI/Properties/PropertiesTreeView.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
 

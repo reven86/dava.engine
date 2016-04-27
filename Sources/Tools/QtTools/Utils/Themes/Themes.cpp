@@ -31,8 +31,8 @@
 #include "Debug/DVassert.h"
 #include "Base/GlobalEnum.h"
 
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
-#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+#include "Preferences/PreferencesStorage.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 #include <QtGlobal>
 #include <QStyle>

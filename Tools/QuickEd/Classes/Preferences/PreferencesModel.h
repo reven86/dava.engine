@@ -30,16 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "UI/Properties/PropertiesModel.h"
-#include <QSortFilterProxyModel>
-
-class PreferencesFilterModel : public QSortFilterProxyModel
-{
-public:
-    PreferencesFilterModel(QObject* parent = nullptr);
-
-private:
-    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
-};
 
 class PreferencesModel : public PropertiesModel
 {

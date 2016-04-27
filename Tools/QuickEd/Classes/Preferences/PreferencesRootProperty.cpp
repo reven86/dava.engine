@@ -28,7 +28,8 @@
 
 
 #include "Preferences/PreferencesRootProperty.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesSectionProperty.h"
+#include "Preferences/PreferencesStorage.h"
 #include <QString>
 #include <QStringList>
 
@@ -42,11 +43,11 @@ struct PreferencesLocation
     DAVA::Vector<const DAVA::InspMember*> members; //leaf insp member
 };
 
-void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, SectionProperty<PreferencesIntrospectionProperty>* property)
+void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, PreferencesSectionProperty<PreferencesIntrospectionProperty>* property)
 {
     for (const auto& locationAndName : preferencesLocation.locations)
     {
-        ScopedPtr<SectionProperty<PreferencesIntrospectionProperty>> section(new SectionProperty<PreferencesIntrospectionProperty>(locationAndName.first));
+        ScopedPtr<PreferencesSectionProperty<PreferencesIntrospectionProperty>> section(new PreferencesSectionProperty<PreferencesIntrospectionProperty>(locationAndName.first));
         property->AddSection(section);
         CreatePropertiesTree(locationAndName.second, section);
     }
@@ -59,7 +60,7 @@ void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, Sectio
 }
 
 PreferencesRootProperty::PreferencesRootProperty()
-    : SectionProperty<PreferencesIntrospectionProperty>("PREFERENCES_ROOT_PROPERTY")
+    : PreferencesSectionProperty<PreferencesIntrospectionProperty>("PREFERENCES_ROOT_PROPERTY")
 {
     const PreferencesStorage::RegisteredIntrospection& registeredInsp = PreferencesStorage::Instance()->GetRegisteredInsp();
     PreferencesRootProperty_local::PreferencesLocation rootPreferencesLocation;

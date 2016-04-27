@@ -35,7 +35,7 @@
 #include "Render/RenderBase.h"
 #include "ui_mainwindow.h"
 
-#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 #include <QtGui>
 #include <QtWidgets>

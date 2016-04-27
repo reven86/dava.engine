@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "Base/Introspection.h"
-#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+#include "Preferences/PreferencesRegistrator.h"
 #include <QDialog>
 
 class QTreeView;

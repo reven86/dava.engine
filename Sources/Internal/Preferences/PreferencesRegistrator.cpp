@@ -29,8 +29,8 @@
 
 #include "Base/Introspection.h"
 
-#include "PreferencesRegistrator.h"
-#include "PreferencesStorage.h"
+#include "Preferences/PreferencesRegistrator.h"
+#include "Preferences/PreferencesStorage.h"
 
 InspInfoRegistrator::InspInfoRegistrator(const DAVA::InspInfo* inspInfo, const PreferencesStorage::DefaultValuesList& defaultValues)
 {

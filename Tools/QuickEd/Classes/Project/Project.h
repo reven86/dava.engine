@@ -34,7 +34,7 @@
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 #include "Base/Result.h"
-#include "QtTools/EditorPreferences/PreferencesRegistrator.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 class PackageNode;
 class QFileInfo;

@@ -798,22 +798,22 @@ bool YamlNode::InitStringFromVariantType(const VariantType& varType)
     break;
     case VariantType::TYPE_INT8:
     {
-        InternalSetString(Format("%d", varType.AsInt8()), SR_PLAIN_REPRESENTATION);
+        InternalSetString(Format("%hhd", varType.AsInt8()), SR_PLAIN_REPRESENTATION);
     }
     break;
     case VariantType::TYPE_UINT8:
     {
-        InternalSetString(Format("%u", varType.AsUInt8()), SR_PLAIN_REPRESENTATION);
+        InternalSetString(Format("%hhu", varType.AsUInt8()), SR_PLAIN_REPRESENTATION);
     }
     break;
     case VariantType::TYPE_INT16:
     {
-        InternalSetString(Format("%d", varType.AsInt16()), SR_PLAIN_REPRESENTATION);
+        InternalSetString(Format("%hd", varType.AsInt16()), SR_PLAIN_REPRESENTATION);
     }
     break;
     case VariantType::TYPE_UINT16:
     {
-        InternalSetString(Format("%u", varType.AsUInt16()), SR_PLAIN_REPRESENTATION);
+        InternalSetString(Format("%hu", varType.AsUInt16()), SR_PLAIN_REPRESENTATION);
     }
     break;
     case VariantType::TYPE_INT32:

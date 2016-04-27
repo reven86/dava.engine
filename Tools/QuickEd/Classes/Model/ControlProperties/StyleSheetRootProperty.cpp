@@ -163,8 +163,8 @@ void StyleSheetRootProperty::AddProperty(StyleSheetProperty* property)
         uint32 index = 0;
         while (index < propertiesSection->GetCount())
         {
-            StyleSheetProperty* p = dynamic_cast<StyleSheetProperty*>(propertiesSection->GetProperty(index));
-            if (p != nullptr && p->GetPropertyIndex() > property->GetPropertyIndex())
+            StyleSheetProperty* p = propertiesSection->GetProperty(index);
+            if (p->GetPropertyIndex() > property->GetPropertyIndex())
                 break;
             index++;
         }
@@ -292,16 +292,7 @@ Vector<UIStyleSheet*> StyleSheetRootProperty::CollectStyleSheets()
     Vector<UIStyleSheet*> result;
     for (uint32 i = 0; i < selectors->GetCount(); i++)
     {
-        AbstractProperty* prop = selectors->GetProperty(i);
-        StyleSheetSelectorProperty* styleSheetProperty = dynamic_cast<StyleSheetSelectorProperty*>(prop);
-        if (nullptr != styleSheetProperty)
-        {
-            result.push_back(styleSheetProperty->GetStyleSheet());
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        result.push_back(selectors->GetProperty(i)->GetStyleSheet());
     }
     return result;
 }
@@ -311,16 +302,7 @@ DAVA::Vector<DAVA::UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectSty
     Vector<UIStyleSheetSelectorChain> result;
     for (uint32 i = 0; i < selectors->GetCount(); i++)
     {
-        AbstractProperty* prop = selectors->GetProperty(i);
-        StyleSheetSelectorProperty* styleSheetProperty = dynamic_cast<StyleSheetSelectorProperty*>(prop);
-        if (nullptr != styleSheetProperty)
-        {
-            result.push_back(styleSheetProperty->GetSelectorChain());
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        result.push_back(selectors->GetProperty(i)->GetSelectorChain());
     }
     return result;
 }
@@ -330,16 +312,7 @@ DAVA::Vector<DAVA::UIStyleSheetProperty> StyleSheetRootProperty::CollectStyleShe
     Vector<UIStyleSheetProperty> properties;
     for (uint32 i = 0; i < propertiesSection->GetCount(); i++)
     {
-        AbstractProperty* prop = propertiesSection->GetProperty(i);
-        StyleSheetProperty* styleSheetProperty = dynamic_cast<StyleSheetProperty*>(prop);
-        if (nullptr != styleSheetProperty)
-        {
-            properties.push_back(styleSheetProperty->GetProperty());
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        properties.push_back(propertiesSection->GetProperty(i)->GetProperty());
     }
     return properties;
 }

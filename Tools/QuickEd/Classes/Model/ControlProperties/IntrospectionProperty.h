@@ -42,7 +42,7 @@ class SubValueProperty;
 class IntrospectionProperty : public ValueProperty
 {
 public:
-    IntrospectionProperty(void* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    IntrospectionProperty(DAVA::BaseObject* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType);
 
 protected:
     virtual ~IntrospectionProperty();
@@ -58,7 +58,7 @@ public:
 
     DAVA::VariantType GetValue() const override;
 
-    void* GetObject() const
+    DAVA::BaseObject* GetBaseObject() const
     {
         return object;
     }
@@ -78,8 +78,8 @@ protected:
     void ApplyValue(const DAVA::VariantType& value) override;
 
 protected:
-    void* object;
-    const DAVA::InspMember* member = nullptr;
+    DAVA::BaseObject* object;
+    const DAVA::InspMember* member;
     DAVA::int32 flags;
 
 private:

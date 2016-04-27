@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Base/Introspection.h"
 #include "QtTools/EditorPreferences/Actions/StringAction.h"
-#include "QtTools/EditorPreferences/PreferencesStorage.h"
+#include "Preferences/PreferencesStorage.h"
 #include <QInputDialog>
 #include <QApplication>
 
