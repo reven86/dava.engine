@@ -168,14 +168,19 @@ KeyedArchive* AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject* dbUpd
 
 void AutotestingDB::WriteLogHeader()
 {
-#if defined(__DAVAENGINE_ANDROID__)
-    logsFolder = FileSystem::Instance()->GetPublicDocumentsPath() + "/autoLogs";
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
-    logsFolder = "D:/autoLogs";
-#else
-    logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+	if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
+	{
+		logsFolder = "D:/autoLogs";
+	}
+	else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+	{
+		logsFolder = FileSystem::Instance()->GetPublicDocumentsPath() + "/autoLogs";
+	}
+	else
+	{
+		logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
+	}
+
     Logger::Info("AutotestingSystem::AutotestingDB path to log file: %s", logsFolder.GetStringValue().c_str());
     if (!FileSystem::Instance()->IsDirectory(logsFolder))
     {
@@ -188,24 +193,18 @@ void AutotestingDB::WriteLogHeader()
         FileSystem::Instance()->DeleteFile(logFilePath);
     }
 
-    Log("INFO", Format("Platform:%s", DeviceInfo::GetPlatformString().c_str()));
-    Log("INFO", Format("Name:%s", autoSys->deviceName.c_str()));
-    Log("INFO", Format("Model:%s", DeviceInfo::GetModel().c_str()));
-    Log("INFO", Format("OSVersion:%s", DeviceInfo::GetVersion().c_str()));
-
-    DateTime time = DateTime::Now();
-    //Get time.GetMonth() return month number - 1. Ex for 01(Jan) it return 00(Jan).
-    String currentDay = Format("%d-%d-%d", time.GetYear(), time.GetMonth() + 1, time.GetDay());
-    Log("INFO", Format("BuildDate:%s", autoSys->buildDate.c_str()));
-    Log("INFO", Format("LaunchDate:%s", currentDay.c_str()));
-    Log("INFO", Format("RunId:%s", autoSys->runId.c_str()));
-    Log("INFO", Format("BuildId:%s", autoSys->buildId.c_str()));
-    Log("INFO", Format("Client:%s", autoSys->branch.c_str()));
-    Log("INFO", Format("ClientRevision:%s", autoSys->branchRev.c_str()));
-    Log("INFO", Format("Framework:%s", autoSys->framework.c_str()));
-    Log("INFO", Format("FrameworkRevision:%s", autoSys->frameworkRev.c_str()));
-    Log("INFO", Format("TestGroup:%s", autoSys->groupName.c_str()));
-    Log("INFO", Format("FileName:%s", autoSys->testFileName.c_str()));
+	DateTime time = DateTime::Now();
+	//Get time.GetMonth() return month number - 1. Ex for 01(Jan) it return 00(Jan).
+	String currentDay = Format("%d-%d-%d", time.GetYear(), time.GetMonth() + 1, time.GetDay());
+	String message = Format("Platform:%s\nName:%s\n", AutotestingSystemLua::Instance()->GetPlatform().c_str(), autoSys->deviceName.c_str()) +
+		Format("Model:%s\nOSVersion:%s\n", DeviceInfo::GetModel().c_str(), DeviceInfo::GetVersion().c_str()) +
+		Format("BuildDate:%s\nLaunchDate:%s\n", autoSys->buildDate.c_str(), currentDay.c_str()) +
+		Format("RunId:%s\nBuildId:%s\n", autoSys->runId.c_str(), autoSys->buildId.c_str()) +
+		Format("Client:%s\nClientRevision:%s\n", autoSys->branch.c_str(), autoSys->branchRev.c_str()) +
+		Format("Framework:%s\nFrameworkRevision:%s\n", autoSys->framework.c_str(), autoSys->frameworkRev.c_str()) +
+		Format("TestGroup:%s\nFileName:%s\n", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
+	WriteLog(message.c_str());
+	Logger::Debug("AutotestingDB::Log: [%s:%s] INFO", autoSys->GetCurrentTimeString().c_str(), message.c_str());
 }
 
 void AutotestingDB::WriteLog(const char8* text, ...)
