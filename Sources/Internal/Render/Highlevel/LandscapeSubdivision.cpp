@@ -201,6 +201,7 @@ void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint
     uint32 offset = levelInfo.offset + (y << level) + x;
     PatchQuadInfo* patch = &patchQuadArray[offset];
     SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[offset];
+    subdivPatchInfo->lastUpdateID = updateID;
 
     // Calculate patch bounding box
     Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE;
@@ -271,7 +272,6 @@ void LandscapeSubdivision::SubdividePatch(uint32 level, uint32 x, uint32 y, uint
         }
 
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
-        subdivPatchInfo->lastUpdateID = updateID;
 
         terminatedPatchesCount++;
     }
