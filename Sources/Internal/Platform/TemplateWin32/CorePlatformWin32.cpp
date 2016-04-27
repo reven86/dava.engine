@@ -185,7 +185,20 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     KeyedArchive* options = Core::GetOptions();
 
     bool shouldEnableFullscreen = false;
-    fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
+
+    DWORD iModeNum = 0;
+    DEVMODE dmi;
+    ZeroMemory(&dmi, sizeof(dmi));
+    dmi.dmSize = sizeof(dmi);
+    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
+    {
+        fullscreenMode.width = dmi.dmPelsWidth;
+        fullscreenMode.height = dmi.dmPelsHeight;
+        fullscreenMode.bpp = dmi.dmBitsPerPel;
+        fullscreenMode.refreshRate = dmi.dmDisplayFrequency;
+        ZeroMemory(&dmi, sizeof(dmi));
+    }
+
     if (options)
     {
         windowedMode.width = options->GetInt32("width");
@@ -456,26 +469,6 @@ void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDis
     }
 }
 
-DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
-{
-    DWORD iModeNum = 0;
-    DEVMODE dmi;
-    ZeroMemory(&dmi, sizeof(dmi));
-    dmi.dmSize = sizeof(dmi);
-
-    DisplayMode mode;
-    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
-    {
-        mode.width = dmi.dmPelsWidth;
-        mode.height = dmi.dmPelsHeight;
-        mode.bpp = dmi.dmBitsPerPel;
-        mode.refreshRate = dmi.dmDisplayFrequency;
-        ZeroMemory(&dmi, sizeof(dmi));
-    }
-
-    return mode;
-}
-
 void CoreWin32Platform::SetIcon(int32 iconId)
 {
     HWND hWindow = static_cast<HWND>(GetNativeView());
@@ -643,7 +636,7 @@ bool IsMouseInputEvent(UINT message)
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
 {
-    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         return true;
     }
@@ -765,9 +758,8 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
         bool isMove = xPos || yPos;
         bool isInside = false;
 
-        if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+        if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
         {
-            SetCursorPosCenterInternal(hWnd);
             isInside = true;
         }
         else
@@ -1003,7 +995,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         if (!loWord || hiWord)
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
-
+            Core::Instance()->FocusLost();
             EnableHighResolutionTimer(false);
 
             if (appCore)
@@ -1026,6 +1018,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
             EnableHighResolutionTimer(true);
 
+            Core::Instance()->FocusReceived();
             if (appCore)
             {
                 appCore->OnResume();
@@ -1048,6 +1041,16 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     }
 
     return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+void CoreWin32Platform::InitArgs()
+{
+    SetCommandLine(GetCommandLineArgs());
+}
+
+void CoreWin32Platform::Quit()
+{
+    PostQuitMessage(0);
 }
 
 bool AlreadyRunning()

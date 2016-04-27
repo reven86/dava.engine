@@ -378,6 +378,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
+
     float32 scale = DeviceInfo::GetScreenInfo().scale;
     Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scale, scale);
 }
@@ -528,10 +529,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent
-{
-}
-
-- (void)mouseExited:(NSEvent*)theEvent
 {
 }
 

@@ -103,7 +103,7 @@ private:
     void ApplyFileChanges();
     int GetIndexByPackagePath(const QString& davaPath) const;
     void InsertTab(QTabBar* tabBar, Document* document, int index);
-    void SaveDocument(Document* document);
+    void SaveDocument(Document* document, bool force);
     Document* CreateDocument(const QString& path);
     void InsertDocument(Document* document, int pos);
     DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);

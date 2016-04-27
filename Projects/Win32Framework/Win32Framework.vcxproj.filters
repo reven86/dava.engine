@@ -204,6 +204,9 @@
     <Filter Include="Internal\Command">
       <UniqueIdentifier>{ca088d15-197c-4f02-b9aa-2d32ba8fb3af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Platform\TemplateMacOS">
+      <UniqueIdentifier>{3c7ab998-ddbe-4924-a21a-78a65a176162}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h">
@@ -424,9 +427,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h">
       <Filter>Internal\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h">
-      <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderBase.h">
       <Filter>Internal\Render</Filter>
@@ -1003,9 +1003,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h">
       <Filter>Internal\Platform</Filter>
@@ -1721,6 +1718,18 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LandscapeSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Input\MouseDevice.h">
+      <Filter>Internal\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\MouseDeviceWin32.h">
+      <Filter>Internal\Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateMacOS\MouseDeviceMacOS.h">
+      <Filter>Internal\Platform\TemplateMacOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\MouseDeviceWinUAP.h">
+      <Filter>Internal\Platform\TemplateWin32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1854,9 +1863,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp">
       <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp">
-      <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderBase.cpp">
       <Filter>Internal\Render</Filter>
@@ -2370,9 +2376,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.cpp">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp">
       <Filter>Internal\Platform</Filter>
@@ -3066,6 +3069,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp">
       <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Input\MouseDevice.cpp">
+      <Filter>Internal\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\MouseDeviceWin32.cpp">
+      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -26,49 +26,66 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include <Compression/ZipCompressor.h>
+#include <Compression/LZ4Compressor.h>
 
-#ifndef __DAVAENGINE_APK_FILE_H__
-#define __DAVAENGINE_APK_FILE_H__
+#include "UnitTests/UnitTests.h"
 
-#include "Base/BaseTypes.h"
+using namespace DAVA;
 
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "Concurrency/Mutex.h"
-#include "FileSystem/DynamicMemoryFile.h"
-
-namespace DAVA
+DAVA_TESTCLASS (CompressorTest)
 {
-class ZipFile : public DynamicMemoryFile
-{
-public:
-    static File* CreateFromAPK(const FilePath& filePath, uint32 attributes);
-#ifdef USE_LOCAL_RESOURCES
-    static File* CreateFromZip(const FilePath& filePath, uint32 attributes);
-    static void SetZipFileName(const String& fileName);
-    static const String& GetZipFileName()
+    DAVA_TEST (TestLZ4_LZ4HC_ZIP)
     {
-        return zipFileName;
-    };
-#endif
+        uint32 inSize = 4096;
+        const Vector<uint8> in(inSize, 'a');
 
-private:
-    ZipFile();
-    virtual ~ZipFile();
+        {
+            LZ4Compressor lz4;
 
-    static ZipFile* CreateFromPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes);
-    static ZipFile* CreateFromData(const FilePath& filePath, const uint8* data, int32 dataSize, uint32 attributes);
+            Vector<uint8> compressedLz4;
 
-    static Mutex mutex;
+            TEST_VERIFY(lz4.Compress(in, compressedLz4));
 
-#ifdef USE_LOCAL_RESOURCES
-    static zip* exZipPackage;
-    static String zipFileName;
-#endif
+            TEST_VERIFY(in.size() > compressedLz4.size());
+
+            Vector<uint8> uncompressedLz4(inSize, '\0');
+
+            TEST_VERIFY(lz4.Decompress(compressedLz4, uncompressedLz4));
+
+            TEST_VERIFY(uncompressedLz4 == in);
+        }
+
+        {
+            LZ4HCCompressor lz4hc;
+
+            Vector<uint8> compressedLz4hc;
+
+            TEST_VERIFY(lz4hc.Compress(in, compressedLz4hc));
+
+            TEST_VERIFY(in.size() > compressedLz4hc.size());
+
+            Vector<uint8> uncompressedLz4hc(inSize, '\0');
+
+            TEST_VERIFY(lz4hc.Decompress(compressedLz4hc, uncompressedLz4hc));
+
+            TEST_VERIFY(uncompressedLz4hc == in);
+        }
+
+        {
+            ZipCompressor zip;
+
+            Vector<uint8> compressedDeflate;
+
+            TEST_VERIFY(zip.Compress(in, compressedDeflate));
+
+            TEST_VERIFY(in.size() > compressedDeflate.size());
+
+            Vector<uint8> uncompressedZip(inSize, '\0');
+
+            TEST_VERIFY(zip.Decompress(compressedDeflate, uncompressedZip));
+
+            TEST_VERIFY(uncompressedZip == in);
+        }
+    }
 };
-};
-
-
-#endif // __DAVAENGINE_ANDROID__
-
-#endif //__DAVAENGINE_APK_FILE_H__
