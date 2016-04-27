@@ -29,6 +29,7 @@
 
 #include "UI/UITextField.h"
 #include "Input/KeyboardDevice.h"
+#include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 
@@ -83,9 +84,19 @@ public:
     }
     void OpenKeyboard()
     {
+        if (!isEditing)
+        {
+            isEditing = true;
+            control_->OnKeyboardShown(Rect());
+        }
     }
     void CloseKeyboard()
     {
+        if (isEditing)
+        {
+            isEditing = false;
+            control_->OnKeyboardHidden();
+        }
     }
     void SetRenderToTexture(bool)
     {
@@ -112,7 +123,7 @@ public:
     {
         // see comment for TextFieldPlatformImpl class above
 
-        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
         {
             float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
             cursorTime += timeElapsed;
@@ -265,6 +276,7 @@ private:
     float32 cursorTime = 0.0f;
     bool needRedraw = true;
     bool showCursor = true;
+    bool isEditing = false;
 };
 } // end namespace DAVA
 #endif
@@ -315,14 +327,31 @@ UITextField::~UITextField()
     UIControl::RemoveAllControls();
 }
 
-void UITextField::OpenKeyboard()
+bool UITextField::IsEditing() const
 {
-    textFieldImpl->OpenKeyboard();
+    return isEditing;
 }
 
-void UITextField::CloseKeyboard()
+void UITextField::StartEdit()
 {
-    textFieldImpl->CloseKeyboard();
+    if (!isEditing)
+    {
+        isEditing = true;
+        OnStartEditing();
+        SetRenderToTexture(false);
+        textFieldImpl->OpenKeyboard();
+    }
+}
+
+void UITextField::StopEdit()
+{
+    if (isEditing)
+    {
+        isEditing = false;
+        SetRenderToTexture(true);
+        textFieldImpl->CloseKeyboard();
+        OnStopEditing();
+    }
 }
 
 void UITextField::Update(float32 timeElapsed)
@@ -332,11 +361,6 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::OnActive()
 {
-    if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
-    {
-        UIControlSystem::Instance()->SetFocusedControl(this, false);
-    }
-
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->ShowField();
     textFieldImpl->SetVisible(IsVisible());
@@ -352,20 +376,20 @@ void UITextField::OnInactive()
 
 void UITextField::OnFocused()
 {
-    SetRenderToTexture(false);
-    textFieldImpl->OpenKeyboard();
+    if (startEditPolicy == START_EDIT_WHEN_FOCUSED)
+    {
+        StartEdit();
+    }
 }
 
 void UITextField::SetFocused()
 {
-    UIControlSystem::Instance()->SetFocusedControl(this, true);
+    UIControlSystem::Instance()->SetFocusedControl(this);
 }
 
-void UITextField::OnFocusLost(UIControl* newFocus)
+void UITextField::OnFocusLost()
 {
-    SetRenderToTexture(true);
-
-    textFieldImpl->CloseKeyboard();
+    StopEdit();
 
     if (delegate != nullptr)
     {
@@ -373,21 +397,17 @@ void UITextField::OnFocusLost(UIControl* newFocus)
     }
 }
 
-bool UITextField::IsLostFocusAllowed(UIControl* newFocus)
+void UITextField::OnTouchOutsideFocus()
 {
-    if (delegate != nullptr)
+    if (stopEditPolicy == STOP_EDIT_BY_USER_REQUEST)
     {
-        return delegate->IsTextFieldCanLostFocus(this);
+        StopEdit();
     }
-    return true;
 }
 
-void UITextField::ReleaseFocus()
+void UITextField::ReleaseFocus() // TODO: rename method
 {
-    if (this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        UIControlSystem::Instance()->SetFocusedControl(nullptr, true);
-    }
+    StopEdit();
 }
 
 void UITextField::SetFont(Font* font)
@@ -554,7 +574,20 @@ int32 UITextField::GetTextAlign() const
 
 void UITextField::Input(UIEvent* currentInput)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_NATIVE)
+    if (this != UIControlSystem::Instance()->GetFocusedControl())
+        return;
+
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
+        {
+            StartEdit();
+        }
+    }
+    
+    
+#else // !defined(DAVA_TEXTFIELD_USE_NATIVE)
     if (nullptr == delegate)
     {
         return;
@@ -575,7 +608,7 @@ void UITextField::Input(UIEvent* currentInput)
                 SetText(GetAppliedChanges(length, 1, str));
             }
         }
-        else if (currentInput->key == Key::ENTER)
+        else if (currentInput->key == Key::ENTER && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) == false && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::RALT) == false)
         {
             delegate->TextFieldShouldReturn(this);
         }
@@ -608,6 +641,13 @@ void UITextField::Input(UIEvent* currentInput)
             {
                 SetText(GetAppliedChanges(length, 0, str));
             }
+        }
+    }
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
+        {
+            StartEdit();
         }
     }
 
@@ -761,6 +801,26 @@ void UITextField::SetReturnKeyType(int32 value)
     textFieldImpl->SetReturnKeyType(value);
 }
 
+UITextField::eStartEditPolicy UITextField::GetStartEditPolicy() const
+{
+    return startEditPolicy;
+}
+
+void UITextField::SetStartEditPolicy(eStartEditPolicy policy)
+{
+    startEditPolicy = policy;
+}
+
+UITextField::eStopEditPolicy UITextField::GetStopEditPolicy() const
+{
+    return stopEditPolicy;
+}
+
+void UITextField::SetStopEditPolicy(eStopEditPolicy policy)
+{
+    stopEditPolicy = policy;
+}
+
 bool UITextField::IsEnableReturnKeyAutomatically() const
 {
     return enableReturnKeyAutomatically;
@@ -816,6 +876,38 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
+void UITextField::OnStartEditing()
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnStartEditing();
+    }
+}
+
+void UITextField::OnStopEditing()
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnStopEditing();
+    }
+}
+
+void UITextField::OnKeyboardShown(const Rect& keyboardRect)
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnKeyboardShown(keyboardRect);
+    }
+}
+
+void UITextField::OnKeyboardHidden()
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnKeyboardHidden();
+    }
+}
+
 void UITextField::OnVisible()
 {
     UIControl::OnVisible();
@@ -861,6 +953,26 @@ void UITextField::SystemDraw(const UIGeometricData& geometricData)
     UIGeometricData localData = GetLocalGeometricData();
     localData.AddGeometricData(geometricData);
     textFieldImpl->SystemDraw(localData);
+}
+
+int32 UITextField::GetStartEditPolicyAsInt() const
+{
+    return GetStartEditPolicy();
+}
+
+void UITextField::SetStartEditPolicyFromInt(int32 policy)
+{
+    SetStartEditPolicy(static_cast<eStartEditPolicy>(policy));
+}
+
+int32 UITextField::GetStopEditPolicyAsInt() const
+{
+    return GetStopEditPolicy();
+}
+
+void UITextField::SetStopEditPolicyFromInt(int32 policy)
+{
+    SetStopEditPolicy(static_cast<eStopEditPolicy>(policy));
 }
 
 } // namespace DAVA
