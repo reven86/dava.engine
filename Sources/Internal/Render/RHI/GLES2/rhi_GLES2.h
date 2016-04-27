@@ -79,6 +79,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
 Size2i Size(Handle tex);
 void ReCreateAll();
 unsigned NeedRestoreCount();
+void InvalidateCache();
 }
 
 namespace SamplerStateGLES2
@@ -105,6 +106,7 @@ namespace DepthStencilStateGLES2
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle hstate);
+void InvalidateCache();
 }
 namespace ConstBufferGLES2
 {

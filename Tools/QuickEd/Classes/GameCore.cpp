@@ -129,16 +129,20 @@ void GameCore::UnpackHelp()
     FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
     if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
-        ResourceArchive* helpRA = new ResourceArchive();
-        if (helpRA->Open("~res:/Help.docs"))
+        try
         {
+            ResourceArchive helpRA("~res:/Help.docs");
+
             FileSystem::Instance()->DeleteDirectory(docsPath);
             FileSystem::Instance()->CreateDirectory(docsPath, true);
 
-            helpRA->UnpackToFolder(docsPath);
+            helpRA.UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
-
-        SafeRelease(helpRA);
+        catch (std::exception& ex)
+        {
+            Logger::Error("%s", ex.what());
+            DVASSERT(false && "can't unpack help docs to documents dir");
+        }
     }
 }

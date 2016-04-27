@@ -209,6 +209,9 @@ T WaitAsync(Windows::Foundation::IAsyncOperation<T> ^ async_operation)
     return concurrency::create_task(async_operation).get();
 }
 #endif
+#ifdef __DAVAENGINE_WIN32__
+Vector<String> GetCommandLineArgs();
+#endif // __DAVAENGINE_WIN32__
 };
 
 #endif // __DAVAENGINE_UTILS_H__

@@ -59,12 +59,22 @@ public:
 
     bool SystemProcessInput(UIEvent* currentInput) override
     {
-        return systemManager->OnInput(currentInput);
+        return SystemProcessInput(currentInput);
     }
 
 private:
     EditorSystemsManager* systemManager = nullptr;
 };
+
+bool EditorSystemsManager::RootControl::SystemProcessInput(UIEvent* currentInput)
+{
+    if (!emulationMode && nullptr != systemManager)
+    {
+        return systemManager->OnInput(currentInput);
+    }
+
+    return UIControl::SystemProcessInput(currentInput);
+}
 
 EditorSystemsManager::EditorSystemsManager()
     : rootControl(new UIControl())

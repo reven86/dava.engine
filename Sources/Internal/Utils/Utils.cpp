@@ -31,6 +31,10 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/YamlParser.h"
 
+#ifdef __DAVAENGINE_WIN32__
+#include "shellapi.h"
+#endif // __DAVAENGINE_WIN32__
+
 namespace DAVA
 {
 WideString WcharToWString(const wchar_t* s)
@@ -173,5 +177,25 @@ void EnableSleepTimer()
 }
     
 #endif
+
+#ifdef __DAVAENGINE_WIN32__
+Vector<String> GetCommandLineArgs()
+{
+    int argc = 0;
+    Vector<String> args;
+    LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+
+    if (argc > 0 && NULL != szArglist)
+    {
+        args.reserve(argc);
+        for (int i = 0; i < argc; ++i)
+        {
+            args.emplace_back(WStringToString(szArglist[i]));
+        }
+    }
+    ::LocalFree(szArglist);
+    return args;
+}
+#endif // __DAVAENGINE_WIN32__
 
 }; // end of namespace DAVA

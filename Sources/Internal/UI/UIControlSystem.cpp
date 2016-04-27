@@ -47,6 +47,7 @@
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -410,6 +411,9 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     {
         return;
     }
+
+    if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
+        return;
 
     if (frameSkip <= 0)
     {

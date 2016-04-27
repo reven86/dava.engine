@@ -38,7 +38,6 @@
 #include <QFileInfo>
 
 #include "UI/UIControl.h"
-#include "UI/Focus/UIFocusSystem.h"
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
