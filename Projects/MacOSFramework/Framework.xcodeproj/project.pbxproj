@@ -1349,12 +1349,6 @@
 		028C149E1BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
 		028C149F1BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
 		028C14A01BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
-		028C14A11BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A21BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A31BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A41BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
-		028C14A51BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
-		028C14A61BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
 		028C14AD1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
 		028C14AE1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
 		028C14AF1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
@@ -2901,6 +2895,12 @@
 		1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */; };
 		1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */; };
 		1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */; };
+		1D1022861CC1119F00AD68BD /* MouseDeviceWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */; };
+		1D1022871CC1119F00AD68BD /* MouseDeviceWinUAP.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */; };
+		1DAA2B311CA595FB00E9E3EE /* MouseDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */; };
+		1DAA2B321CA595FB00E9E3EE /* MouseDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */; };
+		1DAA2B351CA5964D00E9E3EE /* MouseDeviceMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */; };
+		1DAA2B361CA5964D00E9E3EE /* MouseDeviceMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED4A19A23C3300D3869D /* libcurl_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E89CE91116C549D2006BEFF4 /* libcurl_macos.a */; };
 		50C16DDE1A52D8C4003C307A /* libuv_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C16DDD1A52D8C4003C307A /* libuv_macos.a */; };
@@ -3478,8 +3478,6 @@
 		028C0AC71BD66A5E00B2266F /* PolygonGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PolygonGroup.h; sourceTree = "<group>"; };
 		028C0AC81BD66A5E00B2266F /* StaticMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMesh.cpp; sourceTree = "<group>"; };
 		028C0AC91BD66A5E00B2266F /* StaticMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticMesh.h; sourceTree = "<group>"; };
-		028C0ACA1BD66A5E00B2266F /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
-		028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CursorMacOS.mm; sourceTree = "<group>"; };
 		028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBindings.cpp; sourceTree = "<group>"; };
 		028C0ACF1BD66A5E00B2266F /* DynamicBindings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DynamicBindings.h; sourceTree = "<group>"; };
 		028C0AD01BD66A5E00B2266F /* DynamicBufferAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBufferAllocator.cpp; sourceTree = "<group>"; };
@@ -4008,6 +4006,12 @@
 		1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
 		1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
 		1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
+		1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWin32.h; path = TemplateWin32/MouseDeviceWin32.h; sourceTree = "<group>"; };
+		1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWinUAP.h; path = TemplateWin32/MouseDeviceWinUAP.h; sourceTree = "<group>"; };
+		1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MouseDevice.cpp; sourceTree = "<group>"; };
+		1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDevice.h; sourceTree = "<group>"; };
+		1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDeviceMacOS.h; sourceTree = "<group>"; };
+		1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MouseDeviceMacOS.mm; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		50C16DDD1A52D8C4003C307A /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_macos.a; path = ../../Libs/libs/libuv_macos.a; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
@@ -4501,6 +4505,8 @@
 		028C09391BD66A5E00B2266F /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */,
+				1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */,
 				028C093A1BD66A5E00B2266F /* Accelerometer.cpp */,
 				028C093B1BD66A5E00B2266F /* Accelerometer.h */,
 				028C093F1BD66A5E00B2266F /* GamepadDevice.cpp */,
@@ -4749,6 +4755,7 @@
 		028C09EB1BD66A5E00B2266F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				1D1022831CC1116D00AD68BD /* TemplateWin32 */,
 				03C12A921C4FD827002D4636 /* Reachability.h */,
 				03C12A931C4FD827002D4636 /* Reachability.mm */,
 				028C09ED1BD66A5E00B2266F /* DateTime.cpp */,
@@ -4774,6 +4781,8 @@
 		028C0A681BD66A5E00B2266F /* TemplateMacOS */ = {
 			isa = PBXGroup;
 			children = (
+				1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */,
+				1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */,
 				D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */,
 				D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */,
 				028C0A691BD66A5E00B2266F /* AppDelegate.h */,
@@ -4803,8 +4812,6 @@
 			children = (
 				028C0AA41BD66A5E00B2266F /* 2D */,
 				028C0ABF1BD66A5E00B2266F /* 3D */,
-				028C0ACA1BD66A5E00B2266F /* Cursor.h */,
-				028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */,
 				028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */,
 				028C0ACF1BD66A5E00B2266F /* DynamicBindings.h */,
 				028C0AD01BD66A5E00B2266F /* DynamicBufferAllocator.cpp */,
@@ -5675,6 +5682,15 @@
 			name = Command;
 			sourceTree = "<group>";
 		};
+		1D1022831CC1116D00AD68BD /* TemplateWin32 */ = {
+			isa = PBXGroup;
+			children = (
+				1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */,
+				1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */,
+			);
+			name = TemplateWin32;
+			sourceTree = "<group>";
+		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -5932,7 +5948,6 @@
 				028C15421BD66A6000B2266F /* StaticOcclusion.h in Headers */,
 				028C156C1BD66A6000B2266F /* CRCAdditionInterface.h in Headers */,
 				028C139B1BD66A6000B2266F /* CorePlatformMacOS.h in Headers */,
-				028C14A31BD66A6000B2266F /* Cursor.h in Headers */,
 				028C16231BD66A6000B2266F /* internal.h in Headers */,
 				028C158D1BD66A6000B2266F /* LibJpegHelper.h in Headers */,
 				028C0FB41BD66A6000B2266F /* DynamicMemoryFile.h in Headers */,
@@ -6319,6 +6334,7 @@
 				028C17261BD66A6000B2266F /* RuntimeTextures.h in Headers */,
 				03B249891CBCE81700015637 /* PackArchive.h in Headers */,
 				028C14E91BD66A6000B2266F /* Mesh.h in Headers */,
+				1DAA2B351CA5964D00E9E3EE /* MouseDeviceMacOS.h in Headers */,
 				028C117A1BD66A6000B2266F /* NetworkCommon.h in Headers */,
 				028C197E1BD66A6000B2266F /* IMovieViewControl.h in Headers */,
 				028C18011BD66A6000B2266F /* EdgeComponent.h in Headers */,
@@ -6392,6 +6408,7 @@
 				028C15791BD66A6000B2266F /* ImageFormatInterface.h in Headers */,
 				028C0F761BD66A6000B2266F /* DownloadManager.h in Headers */,
 				028C17FB1BD66A6000B2266F /* WaveComponent.h in Headers */,
+				1D1022861CC1119F00AD68BD /* MouseDeviceWin32.h in Headers */,
 				028C11771BD66A6000B2266F /* NetService.h in Headers */,
 				028C0FC41BD66A6000B2266F /* FilePath.h in Headers */,
 				028C18C41BD66A6000B2266F /* WASDControllerSystem.h in Headers */,
@@ -6661,6 +6678,7 @@
 				028C12191BD66A6000B2266F /* Particle.h in Headers */,
 				028C0D361BD66A6000B2266F /* AnimatedObject.h in Headers */,
 				028C1B2B1BD66A6100B2266F /* TestClass.h in Headers */,
+				1DAA2B321CA595FB00E9E3EE /* MouseDevice.h in Headers */,
 				028C11B91BD66A6000B2266F /* ServiceRegistrar.h in Headers */,
 				028C0F401BD66A6000B2266F /* Profiler.h in Headers */,
 				028C15851BD66A6000B2266F /* LibDdsHelper.h in Headers */,
@@ -6729,7 +6747,6 @@
 				321CCA571C6E04490048FAC9 /* UIFocusComponent.h in Headers */,
 				028C13AB1BD66A6000B2266F /* MovieViewControlMacOS.h in Headers */,
 				028C18251BD66A6000B2266F /* TreeToAnimatedTreeConverter.h in Headers */,
-				028C14A11BD66A6000B2266F /* Cursor.h in Headers */,
 				028C15071BD66A6000B2266F /* RenderObject.h in Headers */,
 				028C10751BD66A6000B2266F /* JobManager.h in Headers */,
 				028C17951BD66A6000B2266F /* SnapToLandscapeControllerComponent.h in Headers */,
@@ -6782,6 +6799,7 @@
 				028C0DCF1BD66A6000B2266F /* BaseMath.h in Headers */,
 				028C10691BD66A6000B2266F /* InputSystem.h in Headers */,
 				028C15EE1BD66A6000B2266F /* Renderer.h in Headers */,
+				1D1022871CC1119F00AD68BD /* MouseDeviceWinUAP.h in Headers */,
 				028C16691BD66A6000B2266F /* dbg_Draw.h in Headers */,
 				028C0FB81BD66A6000B2266F /* File.h in Headers */,
 				028C0E501BD66A6000B2266F /* Observable.h in Headers */,
@@ -7002,7 +7020,6 @@
 				028C15411BD66A6000B2266F /* StaticOcclusion.h in Headers */,
 				028C156B1BD66A6000B2266F /* CRCAdditionInterface.h in Headers */,
 				028C139A1BD66A6000B2266F /* CorePlatformMacOS.h in Headers */,
-				028C14A21BD66A6000B2266F /* Cursor.h in Headers */,
 				028C16221BD66A6000B2266F /* internal.h in Headers */,
 				028C158C1BD66A6000B2266F /* LibJpegHelper.h in Headers */,
 				028C0FB31BD66A6000B2266F /* DynamicMemoryFile.h in Headers */,
@@ -7676,7 +7693,6 @@
 				028C19621BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D91BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C15211BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A61BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5D1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7F1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E8B1BD66A6000B2266F /* Collisions.cpp in Sources */,
@@ -7988,6 +8004,7 @@
 				028C15251BD66A6000B2266F /* SkinnedMesh.cpp in Sources */,
 				028C1A0E1BD66A6000B2266F /* UI3DView.cpp in Sources */,
 				028C0D331BD66A6000B2266F /* AnimatedObject.cpp in Sources */,
+				1DAA2B361CA5964D00E9E3EE /* MouseDeviceMacOS.mm in Sources */,
 				028C117D1BD66A6000B2266F /* PeerDesription.cpp in Sources */,
 				028C0FBB1BD66A6000B2266F /* FileList.cpp in Sources */,
 				028C124C1BD66A6000B2266F /* DeviceInfoPrivateBase.cpp in Sources */,
@@ -8137,7 +8154,6 @@
 				028C19601BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D71BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C151F1BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A41BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5B1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7D1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E891BD66A6000B2266F /* Collisions.cpp in Sources */,
@@ -8332,6 +8348,7 @@
 				028C11861BD66A6000B2266F /* Announcer.cpp in Sources */,
 				320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */,
 				028C1A801BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */,
+				1DAA2B311CA595FB00E9E3EE /* MouseDevice.cpp in Sources */,
 				028C157C1BD66A6000B2266F /* ImageSystem.cpp in Sources */,
 				028C15B21BD66A6000B2266F /* NMaterialNames.cpp in Sources */,
 				028C17B61BD66A6000B2266F /* ParticleEffectComponent.cpp in Sources */,
@@ -8602,7 +8619,6 @@
 				028C19611BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D81BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C15201BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A51BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5C1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7E1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E8A1BD66A6000B2266F /* Collisions.cpp in Sources */,
