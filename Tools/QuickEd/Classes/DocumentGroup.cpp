@@ -283,6 +283,8 @@ void DocumentGroup::ReloadDocument(int index)
     };
 
     DVASSERT(index >= 0 && index < documents.size());
+    Document* currentDocument = documents.at(index);
+    DVASSERT(currentDocument != nullptr);
     QString path = documents.at(index)->GetPackageAbsolutePath();
     Document* document = CreateDocument(path);
     if (document != nullptr)
@@ -303,7 +305,7 @@ void DocumentGroup::ReloadDocument(int index)
         QMessageBox::Yes);
         if (ret == QMessageBox::Yes)
         {
-            document->Save();
+            currentDocument->Save();
         }
         else
         {
