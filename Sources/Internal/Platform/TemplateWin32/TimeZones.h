@@ -151,7 +151,7 @@ Map<FastName, FastName> namesMap =
   { FastName("Line Islands Standard Time"), FastName("Pacific/Kiritimati") },
 
   // Handly added records. Taken from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-  { FastName("Pacific Standard Time(Mexico)"), FastName("America/Tijuana") },
+  { FastName("Pacific Standard Time (Mexico)"), FastName("America/Tijuana") },
 };
 
 Map<FastName, FastName> winStdToCommonNamesMap =
