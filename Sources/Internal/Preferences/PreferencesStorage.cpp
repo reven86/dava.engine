@@ -32,20 +32,6 @@
 
 #include "Base/BaseTypes.h"
 
-PreferencesStorage::PreferencesStorageSaver::PreferencesStorageSaver()
-{
-    PreferencesStorage::Instance(); //check that the storage exists
-}
-
-PreferencesStorage::PreferencesStorageSaver::~PreferencesStorageSaver()
-{
-    PreferencesStorage* storage = PreferencesStorage::Instance();
-    if (!storage->editorPreferences->Save(storage->localStorage))
-    {
-        DAVA::Logger::Error("can not save editor preferences!");
-    }
-}
-
 PreferencesStorage::PreferencesStorage()
     : editorPreferences(new DAVA::KeyedArchive())
     , inspPreferencesKey("preferences")
@@ -214,11 +200,13 @@ void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBa
 
     DAVA::String key = GenerateKey(info);
     inspPreferencesArchive->SetArchive(key, archive);
+    Sync();
 }
 
 void PreferencesStorage::SetValue(const DAVA::FastName& key, const DAVA::VariantType& value)
 {
     keyedPreferencesArchive->SetVariant(key.c_str(), value);
+    Sync();
 }
 
 DAVA::VariantType PreferencesStorage::GetValue(const DAVA::FastName& key)
@@ -252,6 +240,7 @@ void PreferencesStorage::SetValue(const DAVA::InspMember* member, const DAVA::Va
     DVASSERT(nullptr != archive);
 
     archive->SetVariant(member->Name().c_str(), value);
+    Sync();
 
     auto findIter = registeredObjects.find(inspInfo);
     if (findIter != registeredObjects.end())
@@ -295,6 +284,15 @@ DAVA::VariantType PreferencesStorage::GetValue(const DAVA::InspMember* member) c
 const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegisteredInsp() const
 {
     return registeredInsp;
+}
+
+bool PreferencesStorage::Sync() const
+{
+    if (!localStorage.IsEmpty())
+    {
+        return editorPreferences->Save(localStorage);
+    }
+    return false;
 }
 
 DAVA::String PreferencesStorage::GenerateKey(const DAVA::InspInfo* inspInfo)

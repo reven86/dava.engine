@@ -74,11 +74,7 @@ public:
     //all registered InspInfo to build model
     const RegisteredIntrospection& GetRegisteredInsp() const;
 
-    struct PreferencesStorageSaver
-    {
-        PreferencesStorageSaver();
-        ~PreferencesStorageSaver();
-    };
+    bool Sync() const; //saves preferences to the storage path
 
     DAVA::Signal<const DAVA::InspMember*, const DAVA::VariantType&> valueChanged;
 

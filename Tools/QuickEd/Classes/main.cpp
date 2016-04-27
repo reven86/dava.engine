@@ -40,7 +40,6 @@
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
-#include "Preferences/PreferencesStorage.h"
 #include <QtGlobal>
 
 void InitPVRTexTool()
@@ -62,7 +61,6 @@ int main(int argc, char* argv[])
     const char* settingsPath = "QuickEdSettings.archive";
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-    PreferencesStorage::PreferencesStorageSaver prefSaver;
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
