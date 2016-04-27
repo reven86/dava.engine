@@ -4031,9 +4031,6 @@
 		321CCA4D1C6E04490048FAC9 /* UIFocusComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusComponent.h; sourceTree = "<group>"; };
 		321CCA4E1C6E04490048FAC9 /* UIFocusSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusSystem.cpp; sourceTree = "<group>"; };
 		321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusSystem.h; sourceTree = "<group>"; };
-		321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIKeyInputSystem.cpp; sourceTree = "<group>"; };
-		321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyInputSystem.h; sourceTree = "<group>"; };
-<<<<<<< HEAD
 		32A8BB331CC4CEA1006E69E3 /* UIActionBindingComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionBindingComponent.cpp; sourceTree = "<group>"; };
 		32A8BB341CC4CEA1006E69E3 /* UIActionBindingComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIActionBindingComponent.h; sourceTree = "<group>"; };
 		32A8BB351CC4CEA1006E69E3 /* UIActionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionComponent.cpp; sourceTree = "<group>"; };
@@ -4052,7 +4049,6 @@
 		32A8BB501CC4CEAB006E69E3 /* UiNavigationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UiNavigationComponent.h; sourceTree = "<group>"; };
 		32A8BB511CC4CEAB006E69E3 /* UITabOrderComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UITabOrderComponent.cpp; sourceTree = "<group>"; };
 		32A8BB521CC4CEAB006E69E3 /* UITabOrderComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITabOrderComponent.h; sourceTree = "<group>"; };
-=======
 		1CE823481C91C93B00D4087C /* ICommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICommand.h; path = Command/ICommand.h; sourceTree = "<group>"; };
 		1CE823491C91C93B00D4087C /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ObjectHandle.cpp; path = Command/ObjectHandle.cpp; sourceTree = "<group>"; };
 		1CE8234A1C91C93B00D4087C /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ObjectHandle.h; path = Command/ObjectHandle.h; sourceTree = "<group>"; };
@@ -4066,7 +4062,6 @@
 		1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDevice.h; sourceTree = "<group>"; };
 		1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDeviceMacOS.h; sourceTree = "<group>"; };
 		1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MouseDeviceMacOS.mm; sourceTree = "<group>"; };
->>>>>>> development
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		50C16DDD1A52D8C4003C307A /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_macos.a; path = ../../Libs/libs/libuv_macos.a; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
@@ -4560,13 +4555,10 @@
 		028C09391BD66A5E00B2266F /* Input */ = {
 			isa = PBXGroup;
 			children = (
-<<<<<<< HEAD
 				321513081CA566A9007D0600 /* KeyboardShortcut.cpp */,
 				321513091CA566A9007D0600 /* KeyboardShortcut.h */,
-=======
 				1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */,
 				1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */,
->>>>>>> development
 				028C093A1BD66A5E00B2266F /* Accelerometer.cpp */,
 				028C093B1BD66A5E00B2266F /* Accelerometer.h */,
 				028C093F1BD66A5E00B2266F /* GamepadDevice.cpp */,
