@@ -419,9 +419,37 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
     descriptor.dataSettings.SetSeparateHDTextures(exportingParams.useHDTextures);
 
     bool exported = true;
-    for (auto& gpu : exportingParams.exportForGPUs)
+    for (DAVA::eGPUFamily gpu : exportingParams.exportForGPUs)
     {
-        if (DAVA::GPUFamilyDescriptor::IsGPUForDevice(gpu))
+        if (gpu == DAVA::GPU_ORIGIN)
+        {
+            DAVA::ImageFormat targetFormat = static_cast<DAVA::ImageFormat>(descriptor.compression[gpu].imageFormat);
+            if (exportingParams.useHDTextures && (targetFormat != DAVA::ImageFormat::IMAGE_FORMAT_DDS && targetFormat != IMAGE_FORMAT_PVR))
+            {
+                Logger::Error("Can't create HD texure for ", descriptor.pathname.GetStringValue().c_str(), GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
+
+                exported = false;
+                continue;
+            }
+
+            if (descriptor.IsCubeMap())
+            {
+                DAVA::Vector<DAVA::FilePath> faceNames;
+                descriptor.GetFacePathnames(faceNames);
+                for (const auto& faceName : faceNames)
+                {
+                    if (faceName.IsEmpty())
+                        continue;
+
+                    exported = exported && CopyFile(faceName);
+                }
+            }
+            else
+            {
+                exported = exported && CopyFile(descriptor.GetSourceTexturePathname());
+            }
+        }
+        else if (DAVA::GPUFamilyDescriptor::IsGPUForDevice(gpu))
         {
             DAVA::PixelFormat format = descriptor.GetPixelFormatForGPU(gpu);
             if (format == DAVA::PixelFormat::FORMAT_INVALID)
@@ -442,26 +470,19 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
             }
 
             DAVA::FilePath compressedName = SceneExporterLocal::CompressTexture(gpu, exportingParams.quality, descriptor);
-            exported = exported && CopyFile(compressedName);
-        }
-        else
-        { //GPU_ORIGIN
-            if (descriptor.IsCubeMap())
+            if (exportingParams.useHDTextures)
             {
-                DAVA::Vector<DAVA::FilePath> faceNames;
-                descriptor.GetFacePathnames(faceNames);
-                for (const auto& faceName : faceNames)
-                {
-                    if (faceName.IsEmpty())
-                        continue;
-
-                    exported = exported && CopyFile(faceName);
-                }
+                exported = exported && SplitHDTexture(descriptor, gpu, compressedName);
             }
             else
             {
-                exported = exported && CopyFile(descriptor.GetSourceTexturePathname());
+                exported = exported && CopyFile(compressedName);
             }
+        }
+        else
+        {
+            Logger::Error("Has no code for GPU %d (%s)", gpu, GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
+            exported = false;
         }
     }
 
@@ -471,6 +492,71 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 void SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const String& heightmapLink)
 {
     CopyFile(heightmapPathname, heightmapLink);
+}
+
+bool SceneExporter::SplitHDTexture(const DAVA::TextureDescriptor& descriptor, DAVA::eGPUFamily gpu, const DAVA::FilePath& compressedTexturePath) const
+{
+    DAVA::Vector<DAVA::Image*> loadedImages;
+    SCOPE_EXIT
+    {
+        for (DAVA::Image* image : loadedImages)
+        {
+            SafeRelease(image);
+        }
+    };
+
+    DAVA::eErrorCode loadError = DAVA::ImageSystem::Instance()->Load(compressedTexturePath, loadedImages, 0, 0);
+    if (loadError != DAVA::eErrorCode::SUCCESS || loadedImages.empty())
+    {
+        Logger::Error("Can't load %s", compressedTexturePath.GetStringValue().c_str());
+        return false;
+    }
+
+    DAVA::PixelFormat targetFormat = descriptor.GetPixelFormatForGPU(gpu);
+    DVASSERT(targetFormat == loadedImages[0]->format);
+
+    auto createOutPathname = [&](const DAVA::FilePath& pathname)
+    {
+        DAVA::String fileLink = pathname.GetRelativePathname(exportingParams.dataSourceFolder);
+        return exportingParams.dataFolder + fileLink;
+    };
+
+    auto saveImages = [&](const DAVA::FilePath& path, const DAVA::Vector<DAVA::Image*> images)
+    {
+        DAVA::eErrorCode saveError = DAVA::ImageSystem::Instance()->Save(path, images, targetFormat);
+        if (saveError != DAVA::eErrorCode::SUCCESS)
+        {
+            Logger::Error("Can't save %s", path.GetStringValue().c_str());
+            return false;
+        }
+        return true;
+    };
+
+    DAVA::Vector<DAVA::FilePath> imagePathnames = descriptor.CreatePathnamesForGPU(gpu);
+    DAVA::size_type mipmapsCount = loadedImages.size();
+    DAVA::size_type imagesCount = imagePathnames.size();
+
+    if (mipmapsCount < imagesCount)
+    {
+        Logger::Error("Can't split HD level for for %s", compressedTexturePath.GetStringValue().c_str());
+        return false;
+    }
+
+    DAVA::size_type multipleImageIndex = imagesCount - 1;
+    for (DAVA::size_type mip = 0; mip < multipleImageIndex; ++mip)
+    {
+        bool saved = saveImages(createOutPathname(imagePathnames[mip]), { loadedImages[mip] });
+        if (!saved)
+        {
+            return false;
+        }
+    }
+
+    auto mipImagesIterator = loadedImages.begin();
+    std::advance(mipImagesIterator, multipleImageIndex);
+
+    DAVA::Vector<DAVA::Image*> multipleMipImages(mipImagesIterator, loadedImages.end());
+    return saveImages(createOutPathname(imagePathnames[multipleImageIndex]), multipleMipImages);
 }
 
 bool SceneExporter::CopyFile(const FilePath& filePath) const

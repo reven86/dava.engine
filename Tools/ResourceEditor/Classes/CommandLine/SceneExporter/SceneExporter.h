@@ -105,6 +105,8 @@ private:
     bool CopyFile(const DAVA::FilePath& filePath) const;
     bool CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const;
 
+    bool SplitHDTexture(const DAVA::TextureDescriptor& descriptor, DAVA::eGPUFamily gpu, const DAVA::FilePath& compressedTexturePath) const;
+
     DAVA::AssetCacheClient* cacheClient = nullptr;
     DAVA::AssetCache::CachedItemValue::Description cacheItemDescription;
 
