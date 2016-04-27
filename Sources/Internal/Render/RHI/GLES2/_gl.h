@@ -202,6 +202,10 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
 #endif
 
+#if !defined(GL_RED)
+#define GL_RED 0x1903
+#endif
+
 #if !defined(GL_RG)
 #define GL_RG 0x8227
 #endif
