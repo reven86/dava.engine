@@ -112,12 +112,9 @@ bool VersionListComparator(const QString& left, const QString& right)
 };
 
 MainWindow::MainWindow(QWidget* parent)
-    :
-    QMainWindow(parent)
-    ,
-    ui(new Ui::MainWindow)
-    ,
-    appManager(0)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , appManager(nullptr)
 {
     ui->setupUi(this);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
