@@ -202,13 +202,65 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
 #endif
 
+#if !defined(GL_RG)
+#define GL_RG 0x8227
+#endif
+
+#if !defined(GL_R8)
+#define GL_R8 0x8229
+#endif
+
+#if !defined(GL_R16)
+#define GL_R16 0x822A
+#endif
+
+#if !defined(GL_RG8)
+#define GL_RG8 0x822B
+#endif
+
+#if !defined(GL_RG16)
+#define GL_RG16 0x822C
+#endif
+
+#if !defined(GL_R16F)
+#define GL_R16F 0x822D
+#endif
+
+#if !defined(GL_R32F)
+#define GL_R32F 0x822E
+#endif
+
+#if !defined(GL_RG16F)
+#define GL_RG16F 0x822F
+#endif
+
+#if !defined(GL_RG32F)
+#define GL_RG32F 0x8230
+#endif
+
+#if !defined(GL_RGBA32F)
+#define GL_RGBA32F 0x8814
+#endif
+
+#if !defined(GL_RGB32F)
+#define GL_RGB32F 0x8815
+#endif
+
+#if !defined(GL_RGBA16F)
+#define GL_RGBA16F 0x881A
+#endif
+
+#if !defined(GL_RGB16F)
+#define GL_RGB16F 0x881B
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \
     expr; \
     int err = glGetError(); \
     if (err != GL_NO_ERROR) \
-        Log::Error("gl", "FAILED  %s (%i) : %s\n", #expr, err, gluErrorString(err)); \
+        Logger::Error("gl", "FAILED  %s (%i)\n", #expr, err); \
 }
 
 #else

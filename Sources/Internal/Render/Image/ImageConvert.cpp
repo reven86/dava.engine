@@ -34,6 +34,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+uint32 ChannelFloatToInt(float32 ch)
+{
+    return static_cast<uint32>(ch / (ch + 1) * UINT8_MAX);
+}
+
+float32 ChannelIntToFloat(uint32 ch)
+{
+    return (static_cast<float32>(ch) / UINT8_MAX);
+}
+
 namespace ImageConvert
 {
 bool Normalize(PixelFormat format, const void* inData, uint32 width, uint32 height, uint32 pitch, void* outData)
@@ -201,6 +211,18 @@ bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         return true;
     }
+    else if (inFormat == FORMAT_RGBA16F && outFormat == FORMAT_RGBA8888)
+    {
+        ConvertDirect<RGBA16161616F, uint32, ConvertRGBA16161616FtoRGBA8888> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
+    else if (inFormat == FORMAT_RGBA32F && outFormat == FORMAT_RGBA8888)
+    {
+        ConvertDirect<RGBA32323232F, uint32, ConvertRGBA32323232FtoRGBA8888> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        return true;
+    }
     else
     {
         Logger::FrameworkDebug("Unsupported image conversion from format %d to %d", inFormat, outFormat);
@@ -318,53 +340,63 @@ void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     {
         if (normalize)
         {
-            ConvertDownscaleTwiceBillinear<uint32, uint32, UnpackRGBA8888, PackNormalizedRGBA8888> convert;
+            ConvertDownscaleTwiceBillinear<uint32, uint32, uint32, UnpackRGBA8888, PackNormalizedRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else
         {
-            ConvertDownscaleTwiceBillinear<uint32, uint32, UnpackRGBA8888, PackRGBA8888> convert;
+            ConvertDownscaleTwiceBillinear<uint32, uint32, uint32, UnpackRGBA8888, PackRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
     }
     else if ((inFormat == FORMAT_RGBA8888) && (outFormat == FORMAT_RGBA4444))
     {
-        ConvertDownscaleTwiceBillinear<uint32, uint16, UnpackRGBA8888, PackRGBA4444> convert;
+        ConvertDownscaleTwiceBillinear<uint32, uint16, uint32, UnpackRGBA8888, PackRGBA4444> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA4444) && (outFormat == FORMAT_RGBA8888))
     {
-        ConvertDownscaleTwiceBillinear<uint16, uint32, UnpackRGBA4444, PackRGBA8888> convert;
+        ConvertDownscaleTwiceBillinear<uint16, uint32, uint32, UnpackRGBA4444, PackRGBA8888> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_A8) && (outFormat == FORMAT_A8))
     {
-        ConvertDownscaleTwiceBillinear<uint8, uint8, UnpackA8, PackA8> convert;
+        ConvertDownscaleTwiceBillinear<uint8, uint8, uint32, UnpackA8, PackA8> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGB888) && (outFormat == FORMAT_RGB888))
     {
-        ConvertDownscaleTwiceBillinear<RGB888, RGB888, UnpackRGB888, PackRGB888> convert;
+        ConvertDownscaleTwiceBillinear<RGB888, RGB888, uint32, UnpackRGB888, PackRGB888> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA5551) && (outFormat == FORMAT_RGBA5551))
     {
-        ConvertDownscaleTwiceBillinear<uint16, uint16, UnpackRGBA5551, PackRGBA5551> convert;
+        ConvertDownscaleTwiceBillinear<uint16, uint16, uint32, UnpackRGBA5551, PackRGBA5551> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA16161616) && (outFormat == FORMAT_RGBA16161616))
     {
-        ConvertDownscaleTwiceBillinear<RGBA16161616, RGBA16161616, UnpackRGBA16161616, PackRGBA16161616> convert;
+        ConvertDownscaleTwiceBillinear<RGBA16161616, RGBA16161616, uint32, UnpackRGBA16161616, PackRGBA16161616> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA32323232) && (outFormat == FORMAT_RGBA32323232))
     {
-        ConvertDownscaleTwiceBillinear<RGBA32323232, RGBA32323232, UnpackRGBA32323232, PackRGBA32323232> convert;
+        ConvertDownscaleTwiceBillinear<RGBA32323232, RGBA32323232, uint32, UnpackRGBA32323232, PackRGBA32323232> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+    }
+    else if ((inFormat == FORMAT_RGBA16F) && (outFormat == FORMAT_RGBA16F))
+    {
+        ConvertDownscaleTwiceBillinear<RGBA16161616F, RGBA16161616F, float32, UnpackRGBA16161616F, PackRGBA16161616F> convert;
+        convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+    }
+    else if ((inFormat == FORMAT_RGBA32F) && (outFormat == FORMAT_RGBA32F))
+    {
+        ConvertDownscaleTwiceBillinear<RGBA32323232F, RGBA32323232F, float32, UnpackRGBA32323232F, PackRGBA32323232F> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else
     {
-        Logger::Debug("Convert function not implemented for %s or %s", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));
+        Logger::Debug("Downscale from %s to %s is not implemented", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));
     }
 }
 
@@ -375,7 +407,7 @@ Image* DownscaleTwiceBillinear(const Image* source)
         Image* destination = Image::Create(source->GetWidth() / 2, source->GetHeight() / 2, source->GetPixelFormat());
         if (destination)
         {
-            ConvertDownscaleTwiceBillinear<uint32, uint32, UnpackRGBA8888, PackRGBA8888> convertFunc;
+            ConvertDownscaleTwiceBillinear<uint32, uint32, uint32, UnpackRGBA8888, PackRGBA8888> convertFunc;
             convertFunc(source->GetData(), source->GetWidth(), source->GetHeight(), source->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(source->GetPixelFormat()),
                         destination->GetData(), destination->GetWidth(), destination->GetHeight(), destination->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(destination->GetPixelFormat()));
         }

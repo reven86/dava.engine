@@ -26,10 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_IMAGE_CONVERTER_H__
-#define __DAVAENGINE_IMAGE_CONVERTER_H__
+#pragma once
 
 #include "Render/PixelFormatDescriptor.h"
+#include "Base/HalfFloat.h"
 
 namespace DAVA
 {
@@ -48,6 +48,8 @@ using RGBA16161616 = RGBA_PIXEL(uint16, r, g, b, a);
 using ABGR16161616 = RGBA_PIXEL(uint16, a, b, g, r);
 using RGBA32323232 = RGBA_PIXEL(uint32, r, g, b, a);
 using ABGR32323232 = RGBA_PIXEL(uint32, a, b, g, r);
+using RGBA16161616F = RGBA_PIXEL(uint16, r, g, b, a);
+using RGBA32323232F = RGBA_PIXEL(float32, r, g, b, a);
 
 #pragma pack(pop)
 
@@ -431,6 +433,36 @@ struct ConvertBGRA32323232toRGBA32323232
     }
 };
 
+uint32 ChannelFloatToInt(float32 ch);
+float32 ChannelIntToFloat(uint32 ch);
+
+struct ConvertRGBA32323232FtoRGBA8888
+{
+    inline void operator()(const RGBA32323232F* input, uint32* output)
+    {
+        RGBA32323232F inp = *input;
+        uint32 r = ChannelFloatToInt(inp.r);
+        uint32 g = ChannelFloatToInt(inp.g);
+        uint32 b = ChannelFloatToInt(inp.b);
+        uint32 a = ChannelFloatToInt(inp.a);
+        *output = (r) | (g << 8) | (b << 16) | (a << 24);
+    }
+};
+
+struct ConvertRGBA16161616FtoRGBA8888
+{
+    inline void operator()(const RGBA16161616F* input, uint32* output)
+    {
+        RGBA32323232F input32;
+        input32.r = Float16Compressor::Decompress(input->r);
+        input32.g = Float16Compressor::Decompress(input->g);
+        input32.b = Float16Compressor::Decompress(input->b);
+        input32.a = Float16Compressor::Decompress(input->a);
+        ConvertRGBA32323232FtoRGBA8888 convert32;
+        convert32(&input32, output);
+    }
+};
+
 struct UnpackRGBA8888
 {
     inline void operator()(const uint32* input, uint32& r, uint32& g, uint32& b, uint32& a)
@@ -566,6 +598,50 @@ struct UnpackRGBA5551
     }
 };
 
+struct PackRGBA16161616F
+{
+    inline void operator()(float32& r, float32& g, float32& b, float32& a, RGBA16161616F* out)
+    {
+        out->r = Float16Compressor::Compress(r);
+        out->g = Float16Compressor::Compress(g);
+        out->b = Float16Compressor::Compress(b);
+        out->a = Float16Compressor::Compress(a);
+    }
+};
+
+struct UnpackRGBA16161616F
+{
+    inline void operator()(const RGBA16161616F* input, float32& r, float32& g, float32& b, float32& a)
+    {
+        r = Float16Compressor::Decompress(input->r);
+        g = Float16Compressor::Decompress(input->g);
+        b = Float16Compressor::Decompress(input->b);
+        a = Float16Compressor::Decompress(input->a);
+    }
+};
+
+struct PackRGBA32323232F
+{
+    inline void operator()(float32& r, float32& g, float32& b, float32& a, RGBA32323232F* out)
+    {
+        out->r = r;
+        out->g = g;
+        out->b = b;
+        out->a = a;
+    }
+};
+
+struct UnpackRGBA32323232F
+{
+    inline void operator()(const RGBA32323232F* input, float32& r, float32& g, float32& b, float32& a)
+    {
+        r = input->r;
+        g = input->g;
+        b = input->b;
+        a = input->a;
+    }
+};
+
 struct PackRGBA5551
 {
     inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint16* output)
@@ -668,7 +744,7 @@ public:
     };
 };
 
-template <class TYPE_IN, class TYPE_OUT, typename UNPACK_FUNC, typename PACK_FUNC>
+template <class TYPE_IN, class TYPE_OUT, class CHANNEL_TYPE, typename UNPACK_FUNC, typename PACK_FUNC>
 class ConvertDownscaleTwiceBillinear
 {
 public:
@@ -687,20 +763,20 @@ public:
 
             for (uint32 x = 0; x < outWidth; ++x)
             {
-                uint32 r00, r01, r10, r11;
-                uint32 g00, g01, g10, g11;
-                uint32 b00, b01, b10, b11;
-                uint32 a00, a01, a10, a11;
+                CHANNEL_TYPE r00, r01, r10, r11;
+                CHANNEL_TYPE g00, g01, g10, g11;
+                CHANNEL_TYPE b00, b01, b10, b11;
+                CHANNEL_TYPE a00, a01, a10, a11;
 
                 unpackFunc(readPtrLine, r00, g00, b00, a00);
                 unpackFunc(readPtrLine + 1, r01, g01, b01, a01);
                 unpackFunc(readPtrLine + inWidth, r10, g10, b10, a10);
                 unpackFunc(readPtrLine + inWidth + 1, r11, g11, b11, a11);
 
-                uint32 r = (r00 + r01 + r10 + r11) >> 2;
-                uint32 g = (g00 + g01 + g10 + g11) >> 2;
-                uint32 b = (b00 + b01 + b10 + b11) >> 2;
-                uint32 a = (a00 + a01 + a10 + a11) >> 2;
+                CHANNEL_TYPE r = (r00 + r01 + r10 + r11) / 4;
+                CHANNEL_TYPE g = (g00 + g01 + g10 + g11) / 4;
+                CHANNEL_TYPE b = (b00 + b01 + b10 + b11) / 4;
+                CHANNEL_TYPE a = (a00 + a01 + a10 + a11) / 4;
 
                 packFunc(r, g, b, a, writePtrLine);
 
@@ -739,5 +815,3 @@ void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
 void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* outPixels, uint32 w2, uint32 h2);
 };
 };
-
-#endif // __DAVAENGINE_IMAGE_CONVERTER_H__
