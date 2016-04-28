@@ -46,8 +46,11 @@ public:
     void SetProperties(const Vector<UIStyleSheetProperty>& properties);
     const Vector<UIStyleSheetProperty>& GetProperties() const;
 
+    const UIStyleSheetPropertySet& GetPropertySet() const;
+
 private:
     Vector<UIStyleSheetProperty> properties;
+    UIStyleSheetPropertySet propertySet;
 };
 };
 

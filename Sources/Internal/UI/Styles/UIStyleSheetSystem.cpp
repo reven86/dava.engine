@@ -119,34 +119,49 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
 
     if (packageContext)
     {
-        UIStyleSheetPropertySet appliedProperties;
-        const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
+        UIStyleSheetPropertySet cascadeProperties;
+        const UIStyleSheetPropertySet localControlProperties = control->GetLocalPropertySet();
         const auto& styleSheets = packageContext->GetSortedStyleSheets();
-        for (const UIPriorityStyleSheet& styleSheet : styleSheets)
+
+        const DAVA::UIStyleSheetProperty* propertySources[UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT];
+
+        for (auto styleSheetIter = styleSheets.rbegin(); styleSheetIter != styleSheets.rend(); ++styleSheetIter)
         {
+            const UIPriorityStyleSheet& styleSheet = *styleSheetIter;
+
             if (StyleSheetMatchesControl(styleSheet.GetStyleSheet(), control))
             {
-                const auto& propertyTable = styleSheet.GetStyleSheet()->GetPropertyTable()->GetProperties();
-                for (const auto& iter : propertyTable)
-                {
-                    if (!appliedProperties.test(iter.propertyIndex) && !localControlProperties.test(iter.propertyIndex))
-                    {
-                        appliedProperties.set(iter.propertyIndex);
+                cascadeProperties |= styleSheet.GetStyleSheet()->GetPropertyTable()->GetPropertySet();
 
-                        if (iter.transition && control->IsStyleSheetInitialized())
-                            DoForAllPropertyInstances(control, iter.propertyIndex, AnimatedPropertySetter{ iter.propertyIndex, iter.value, iter.transitionFunction, iter.transitionTime });
-                        else
-                            DoForAllPropertyInstances(control, iter.propertyIndex, ImmediatePropertySetter{ iter.propertyIndex, iter.value });
-                    }
+                const auto& propertyTable = styleSheet.GetStyleSheet()->GetPropertyTable()->GetProperties();
+                for (const auto& prop : propertyTable)
+                {
+                    propertySources[prop.propertyIndex] = &prop;
                 }
             }
         }
 
-        const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & (~appliedProperties) & (~localControlProperties);
-        if (propertiesToReset.any())
+        const UIStyleSheetPropertySet propertiesToApply = cascadeProperties & (~localControlProperties);
+        const UIStyleSheetPropertySet propertiesToReset = control->GetStyledPropertySet() & (~propertiesToApply) & (~localControlProperties);
+
+        if (propertiesToReset.any() || propertiesToApply.any())
         {
             for (uint32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
             {
+                if (propertiesToApply.test(propertyIndex))
+                {
+                    const DAVA::UIStyleSheetProperty* prop = propertySources[propertyIndex];
+
+                    if (prop->transition && control->IsStyleSheetInitialized())
+                    {
+                        DoForAllPropertyInstances(control, propertyIndex, AnimatedPropertySetter{ propertyIndex, prop->value, prop->transitionFunction, prop->transitionTime });
+                    }
+                    else
+                    {
+                        DoForAllPropertyInstances(control, propertyIndex, ImmediatePropertySetter{ propertyIndex, prop->value });
+                    }
+                }
+
                 if (propertiesToReset.test(propertyIndex))
                 {
                     const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
@@ -155,7 +170,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
             }
         }
 
-        control->SetStyledPropertySet(appliedProperties);
+        control->SetStyledPropertySet(propertiesToApply);
     }
 
     control->ResetStyleSheetDirty();
