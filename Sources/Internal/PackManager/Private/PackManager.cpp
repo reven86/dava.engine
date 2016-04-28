@@ -62,152 +62,9 @@ public:
         return packs[index];
     }
 
-    void AddToDownloadQueue(const String& nextPackName)
-    {
-        uint32 index = GetPackIndex(nextPackName);
-        PackManager::PackState* nextPackState = &packs[index];
-
-        queue.Push(nextPackState);
-
-        if (isProcessingEnabled && !IsDownloading())
-        {
-            StartNextPackDownloading();
-        }
-    }
-
-    void UpdateQueuePriority(const String& packName, float priority)
-    {
-        uint32 index = GetPackIndex(packName);
-        PackManager::PackState* packState = &packs[index];
-        queue.UpdatePriority(packState);
-    }
-
     void UpdateCurrentDownload()
     {
-        if (currentDownload != nullptr)
-        {
-            DownloadManager* dm = DownloadManager::Instance();
-            DownloadStatus status = DL_UNKNOWN;
-            dm->GetStatus(downloadHandler, status);
-            uint64 progress = 0;
-            switch (status)
-            {
-            case DL_IN_PROGRESS:
-                if (dm->GetProgress(downloadHandler, progress))
-                {
-                    uint64 total = 0;
-                    if (dm->GetTotal(downloadHandler, total))
-                    {
-                        currentDownload->downloadProgress = static_cast<float>(progress) / total;
-                        // fire event on update progress
-                        packMngrPublic->onPackStateChanged.Emit(*currentDownload);
-                    }
-                }
-                break;
-            case DL_FINISHED:
-            {
-                // first test error code
-                DownloadError downloadError = DLE_NO_ERROR;
-                if (dm->GetError(downloadHandler, downloadError))
-                {
-                    switch (downloadError)
-                    {
-                    case DLE_CANCELLED: // download was cancelled by our side
-                    case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
-                    case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
-                    case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
-                    case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
-                    case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
-                    case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
-                    case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
-                    case DLE_FILE_ERROR: // file read and write errors
-                    case DLE_UNKNOWN: // we cannot determine the error
-                        // inform user about error
-                        {
-                            PackManager::PackState& pack = *currentDownload;
 
-                            pack.state = PackManager::PackState::ErrorLoading;
-                            pack.downloadError = downloadError;
-
-                            packMngrPublic->onPackStateChanged.Emit(pack);
-                            break;
-                        }
-                    case DLE_NO_ERROR:
-                    {
-                        // check crc32 of just downloaded file
-                        FilePath archivePath = localPacksDir + currentDownload->name;
-                        uint32 crc32 = CRC32::ForFile(archivePath);
-                        if (crc32 != currentDownload->crc32FromMeta)
-                        {
-                            throw std::runtime_error("crc32 not match");
-                        }
-                        // now mount archive
-                        // validate it
-                        FileSystem* fs = FileSystem::Instance();
-                        try
-                        {
-                            fs->Mount(archivePath, "Data/");
-                        }
-                        catch (std::exception& ex)
-                        {
-                            Logger::Error("%s", ex.what());
-                            throw;
-                        }
-
-                        currentDownload->state = PackManager::PackState::Mounted;
-                    }
-                    } // end switch downloadError
-                    currentDownload = nullptr;
-                    queue.Pop();
-                    downloadHandler = 0;
-                }
-                else
-                {
-                    throw std::runtime_error(Format("can't get download error code for download job id: %d", downloadHandler));
-                }
-            }
-            break;
-            default:
-                break;
-            }
-        }
-    }
-
-    bool IsDownloading() const
-    {
-        return currentDownload != nullptr;
-    }
-
-    void StartNextPackDownloading()
-    {
-        if (!queue.Empty())
-        {
-            // leave pack inside queue while downloading not finished
-            currentDownload = queue.Pop();
-            const String& nextPackName = currentDownload->name;
-
-            queue.Push(currentDownload);
-
-            // start downloading
-            auto fullUrl = remotePacksUrl + currentDownload->name;
-
-            FilePath archivePath = localPacksDir + currentDownload->name;
-
-            DownloadManager* dm = DownloadManager::Instance();
-            downloadHandler = dm->Download(fullUrl, archivePath);
-        }
-    }
-
-    void StopDownloading()
-    {
-        if (currentDownload != nullptr)
-        {
-            DownloadManager* dm = DownloadManager::Instance();
-            dm->Cancel(downloadHandler);
-
-            currentDownload->state = PackManager::PackState::NotRequested;
-            queue.Pop();
-        }
     }
 
     void MountDownloadedPacks()
@@ -317,6 +174,7 @@ void PackManager::EnableProcessing()
     if (!impl->isProcessingEnabled)
     {
         impl->isProcessingEnabled = true;
+        impl->queue.Start();
     }
 }
 
@@ -325,7 +183,7 @@ void PackManager::DisableProcessing()
     if (impl->isProcessingEnabled)
     {
         impl->isProcessingEnabled = false;
-        impl->StopDownloading();
+        impl->queue.Stop();
     }
 }
 
@@ -334,12 +192,7 @@ void PackManager::Update()
     // first check if something downloading
     if (impl->isProcessingEnabled)
     {
-        impl->UpdateCurrentDownload();
-
-        if (!impl->IsDownloading())
-        {
-            impl->StartNextPackDownloading();
-        }
+        impl->queue.Update();
     }
 }
 
@@ -370,7 +223,7 @@ const PackManager::PackState& PackManager::RequestPack(const String& packID, flo
     {
         if (impl->queue.IsInQueue(packID))
         {
-            impl->UpdateQueuePriority(packID, priority);
+            impl->queue.UpdatePriority(packID, priority);
         }
     }
     return packState;

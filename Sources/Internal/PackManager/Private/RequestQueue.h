@@ -43,15 +43,6 @@ public:
     void ChangePriority(float32 newPriority);
     void Pause();
 
-    enum Status : uint32
-    {
-        Wait = 0,
-        LoadCRC32File = 1,
-        LoadingPackFile = 2,
-        CheckCRC32 = 3,
-        Mounting = 3,
-    };
-
     bool operator<(const PackRequest& other) const
     {
         return priority < other.priority;
@@ -59,15 +50,22 @@ public:
 
     struct SubRequest
     {
+        enum Status : uint32
+        {
+            Wait = 0,
+            LoadingCRC32File = 1, // download manager thread
+            LoadingPackFile = 2, // download manager thread
+            CheckCRC32 = 3, // on main thread (in future move to job manager)
+            Mounted = 4, // on main thread
+
+            Error = 10
+        };
+
         String packName;
+        String errorMsg;
         uint32 taskId;
         Status status;
     };
-
-    Status GetStatus() const
-    {
-        return status;
-    }
 
     const String& GetPackName() const
     {
@@ -78,15 +76,16 @@ public:
     {
         return priority;
     }
+    bool IsDone() const;
+    bool IsError() const;
+    const SubRequest& GetCurrentSubRequest() const;
 
 private:
     void CollectDownlodbleDependency(const String& packName, Set<const PackManager::PackState*>& dependency);
 
     PackManager* packManager;
-    Status status;
     String packName;
     float32 priority;
-    uint32 currentDependencySubRequestIndex;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
 };
 
@@ -98,14 +97,17 @@ public:
     {
     }
 
-    inline bool IsInQueue(const String& packName) const;
-    inline bool Empty() const;
-    inline uint32 Size() const;
-    inline PackRequest& Top();
-    inline PackRequest& Find(const String& packName);
-    inline void Push(const String& packName, float32 priority);
-    inline void UpdatePriority(const String& packName, float32 newPriority);
-    inline void Pop();
+    void Start();
+    void Stop();
+    void Update();
+    bool IsInQueue(const String& packName) const;
+    bool Empty() const;
+    size_type Size() const;
+    PackRequest& Top();
+    PackRequest& Find(const String& packName);
+    void Push(const String& packName, float32 priority);
+    void UpdatePriority(const String& packName, float32 newPriority);
+    void Pop();
 
 private:
     inline void CheckRestartLoading();
@@ -114,95 +116,4 @@ private:
     String currrentTopLoadingPack;
     Vector<PackRequest> items;
 };
-
-bool RequestQueue::IsInQueue(const String& packName) const
-{
-    auto it = std::find_if(begin(items), end(items), [packName](const PackRequest& r) -> bool
-                           {
-                               return r.GetPackName() == packName;
-                           });
-    return it != end(items);
-}
-
-bool RequestQueue::Empty() const
-{
-    return items.empty();
-}
-
-uint32 RequestQueue::Size() const
-{
-    return static_cast<uint32>(items.size());
-}
-
-PackRequest& RequestQueue::Top()
-{
-    PackRequest& topItem = items.front();
-    return topItem;
-}
-
-PackRequest& RequestQueue::Find(const String& packName)
-{
-    auto it = std::find_if(begin(items), end(items), [packName](const PackRequest& r) -> bool
-                           {
-                               return r.GetPackName() == packName;
-                           });
-    if (it == end(items))
-    {
-        throw std::runtime_error("can't fined pack by name: " + packName);
-    }
-    return *it;
-}
-
-void RequestQueue::CheckRestartLoading()
-{
-    PackRequest& top = Top();
-
-    if (Size() == 1)
-    {
-        currrentTopLoadingPack = top.GetPackName();
-        top.Start();
-    }
-    else if (!currrentTopLoadingPack.empty() && top.GetPackName() != currrentTopLoadingPack)
-    {
-        // we have to cancel current pack request and start new with higher priority
-        PackRequest& prevTopRequest = Find(currrentTopLoadingPack);
-        prevTopRequest.Pause();
-        currrentTopLoadingPack = top.GetPackName();
-        top.Start();
-    }
-}
-
-void RequestQueue::Push(const String& packName, float32 priority)
-{
-    if (IsInQueue(packName))
-    {
-        throw std::runtime_error("second time push same pack in queue, pack: " + packName);
-    }
-
-    items.emplace_back(PackRequest{ packName, priority });
-    std::push_heap(begin(items), end(items));
-
-    CheckRestartLoading();
-}
-
-void RequestQueue::UpdatePriority(const String& packName, float32 newPriority)
-{
-    if (IsInQueue(packName))
-    {
-        PackRequest& packRequest = Find(packName);
-        if (packRequest.GetPriority() != newPriority)
-        {
-            packRequest.ChangePriority(newPriority);
-            std::sort_heap(begin(items), end(items));
-
-            CheckRestartLoading();
-        }
-    }
-}
-
-void RequestQueue::Pop()
-{
-    std::pop_heap(begin(items), end(items));
-    items.pop_back();
-}
 } // end namespace DAVA

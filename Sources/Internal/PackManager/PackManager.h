@@ -45,7 +45,8 @@ public:
             Requested = 1, // поставлен в очередь на загрузку
             Downloading = 2, // загружается на FS
             Mounted = 3, // существует на FS и готов к использованию
-            ErrorLoading = 4 // произошла ошибка при скачивании, конкретная ошибка смотрится по полю downloadError
+            ErrorLoading = 4, // произошла ошибка при скачивании, конкретная ошибка смотрится по полю downloadError
+            OtherError = 5 // ошибка при монтировании, проверке crc32, записи чтении файла и т.д. смотри поле otherErrorMsg
         };
 
         String name = ""; // уникальное имя пака
@@ -56,6 +57,7 @@ public:
         uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (0 - pack is pure virtual)
         uint32 crc32FromDB = 0; // crc32 from filesdb (0 - pack is pure virtual - nothing to download - only dependencies)
         DownloadError downloadError = DLE_NO_ERROR;
+        String otherErrorMsg;
         Vector<String> dependency{}; // names of dependency archive
     };
 
