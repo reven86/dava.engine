@@ -3,6 +3,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <cstdint>
 
 static const uint32_t crc32_tab[256] =
 {
@@ -126,6 +127,7 @@ int main(int argc, const char* argv[])
                     if (file)
                     {
                         std::cout << prefix << path << std::endl;
+                        file.close();
                     }
                 }
             }
@@ -161,6 +163,7 @@ int main(int argc, const char* argv[])
                     }
 
                     crc32 ^= 0xffffffff;
+                    file.close();
                 }
             }
 
@@ -198,7 +201,7 @@ int main(int argc, const char* argv[])
                     std::string pack = packs[0];
 
                     std::cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL);" << std::endl;
-                    std::cout << "CREATE TABLE IF NOT EXISTS dependency (pack TEXT PRIMARY KEY NOT NULL, depends TEXT NOT NULL, FOREIGN KEY(depends) REFERENCES packs(name));" << std::endl;
+                    std::cout << "CREATE TABLE IF NOT EXISTS dependency (key INTEGER PRIMARY KEY, pack TEXT NOT NULL, depends TEXT NOT NULL, FOREIGN KEY(depends) REFERENCES packs(name));" << std::endl;
                     std::cout << "CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, pack TEXT NOT NULL, FOREIGN KEY(pack) REFERENCES packs(name));" << std::endl;
 
                     if (hashpath.empty())
@@ -223,7 +226,7 @@ int main(int argc, const char* argv[])
 
                     for (size_t i = 1; i < packs.size(); ++i)
                     {
-                        std::cout << "INSERT INTO dependency VALUES('" << pack << "', '" << packs[i] << "');" << std::endl;
+                        std::cout << "INSERT INTO dependency VALUES(NULL, '" << pack << "', '" << packs[i] << "');" << std::endl;
                     }
 
                     std::ifstream listfile(listpath);

@@ -3,10 +3,24 @@ require("TupUtil")
 TupPack = {}
 TupPack.__index = TupPack
 
-function TupPack.New(params)
+function TupPack.New(params, gpuVar, gpus)
     local self = setmetatable({}, TupPack)
     self.rules = { } 
 
+    TupPack.CheckInitialParams(params)
+        
+    -- create default TupPack table
+    self.name = params.name
+    self.exclusive = params.exclusive or false
+    self.depends = params.depends or { }
+    
+    -- parse pack rules
+    self:SetRules(params.rules or { }, gpuVar, gpus)
+    
+    return self
+end
+
+function TupPack.CheckInitialParams(params)
     -- check params is a table
     if type(params) ~= "table" then
         error "Pack should be defined as table { name = name, rules = { rules table}, depends = { dependencies }}"
@@ -17,18 +31,10 @@ function TupPack.New(params)
         error "Pack name should be a specified as string"
     end
     
-    -- create default TupPack table
-    self.name = params.name
-    self.exclusive = params.exclusive or false
-    self.depends = params.depends or { }
-    
-    -- parse pack rules
-    self:SetRules(params.rules or { })
-    
-    return self
+    return true
 end
 
-function TupPack.SetRules(self, rules)
+function TupPack.SetRules(self, rules, gpuVar, gpus)
     -- check that rules are defined in table
 	if type(rules) ~= "table" then
         error "Pack rules should be a table"
@@ -39,7 +45,7 @@ function TupPack.SetRules(self, rules)
         -- key type is number
         if type(k) == "number" then
             if type(v) == "table" then
-                if #v < 2 or type(v[1]) ~= "string" or type(v[2]) ~= "string" then
+                if #v ~= 2 or type(v[1]) ~= "string" or type(v[2]) ~= "string" then
                     print("pack = " .. self.name .. ", rule #" .. k)
                     error "Pack rule # table should be defined as { 'dir pattern', 'file pattern' }"
                 end
@@ -60,8 +66,46 @@ function TupPack.SetRules(self, rules)
         end
 	end
     
+    parsedRules = { }
+    
+    -- check for gpus
+    if #rules > 0 and type(gpus) == "table" then
+        for k, rule in pairs(rules) do
+            if type(k) == "number" then
+                local hasGpuPattern = false
+            
+                if type(rule) == "string" then
+                    if rule:find(gpuVar) then
+                        hasGpuPattern = true                
+                        for gpu, gpuPattern in pairs(gpus) do
+                            parsedRules[#parsedRules + 1] = rule:gsub(gpuVar, gpuPattern)
+                        end
+                    end
+                elseif type(rule) == "table" then
+                    local dirRule = rule[1]
+                    local fileRule = rule[2]
+                    
+                    if dirRule:find(gpuVar) or fileRule:find(gpuVar) then
+                        hasGpuPattern = true
+                        for gpu, gpuPattern in pairs(gpus) do
+                            local d = dirRule:gsub(gpuVar, gpuPattern)
+                            local f = fileRule:gsub(gpuVar, gpuPattern)
+                            parsedRules[#parsedRules + 1] = { d, f }
+                        end
+                    end
+                end
+                
+                if hasGpuPattern ~= true then
+                    parsedRules[#parsedRules + 1] = rule
+                end
+            end
+        end
+    else
+        parsedRules = rules
+    end
+    
     -- assign rules
-    self.rules = rules
+    self.rules = parsedRules
 end
 
 function TupPack.Match(self, dir, file)

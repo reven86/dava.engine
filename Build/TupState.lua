@@ -8,6 +8,13 @@ function TupState.New(userConf)
     local userConf = userConf or { }
     local self = setmetatable({ }, TupState)
     
+    -- check for gpus correctness
+    if userConf.gpus ~= nil then
+        if type(userConf.gpus) ~= "table" then
+            error "gpus are defined incorrent. Should be { gpu1 = \"patten1\"}, ...  gpuN = \"pattenN\"} }"
+        end
+    end
+    
     -- can be defined by user
     local conf = { }
     conf.outputDir = userConf.outputDir or "Output"
@@ -21,7 +28,8 @@ function TupState.New(userConf)
     conf.intermediateSqlDir = userConf.intermediateSqlDir or "sql"
     conf.packlistExt = userConf.packlistExt or ".list"
     conf.mergedlistExt = userConf.mergedlistExt or ".mergedlist"
-    conf.gpus = userConf.gpus or { ".pvr", ".mali", ".tegra" }
+    conf.gpus = userConf.gpus or { pvr = "pvr$", mali = "mali$", tegra = "tegra$" }
+    conf.gpuVar = userConf.gpuVar or "${gpu}" 
 
     -- setting up configuration
     self.conf = conf
@@ -81,20 +89,6 @@ function TupState.GetPackGroup(self, packName)
     return self.projectDir .. "/<" .. packName .. ">"
 end
 
-function TupState.GetPackListOutput(self, packName, index)
-    return self.packlistDir .. "/" .. packName .. self.conf.delimiter 
-        .. self.currentDirString .. "-" .. index .. self.conf.packlistExt
-end
-
-function TupState.GetMergedPackListOutput(self, packName)
-    return self.mergeDir .. "/" .. packName .. self.conf.mergedlistExt
-end
-
-function TupState.GetEmptyPackListOutput(self, packName)
-    return self.packlistDir .. "/" .. packName .. self.conf.delimiter 
-        .. "_empty" .. self.conf.packlistExt
-end
-
 function TupState.FindFWPath(self, projectDir)
     -- get lua debug info
     local info = debug.getinfo(1, 'S')
@@ -119,14 +113,9 @@ function TupState.FindFWPath(self, projectDir)
     return fwPath
 end
 
-function TupState.AddPack(self, t)
-    -- TODO:
-    -- check if pack has ${variables}
-    -- ... 
-
-    local pack = TupPack.New(t)
+function TupState.PrivateAddPack(self, pack)
     local packName = pack.name
-    
+
     -- check if pack with such name 
     -- already exists        
     if self.packNames[packName] ~= nil then
@@ -137,6 +126,32 @@ function TupState.AddPack(self, t)
     -- remember created pack and its name
     self.packs[#self.packs + 1] = pack
     self.packNames[packName] = true
+end
+
+function TupState.AddPack(self, t)
+    if TupPack.CheckInitialParams(t) then
+   
+        local packName = t.name
+        local gpuVar = self.conf.gpuVar
+        local gpus = self.conf.gpus
+        
+        -- check if pack has ${gpu}
+        if packName:find(gpuVar) then
+            -- create pack for each gpu
+            for gpu, gpuPattern in pairs(gpus) do
+                -- set name with specific gpu 
+                t.name = packName:gsub(gpuVar, gpu)
+                
+                -- create and add pack with specific gpu
+                local pack = TupPack.New(t, gpuVar, { gpu = gpuPattern })
+                self:PrivateAddPack(pack) 
+            end 
+        else
+            -- create pack with all gpus
+            local pack = TupPack.New(t, gpuVar, gpus)
+            self:PrivateAddPack(pack)
+        end
+    end
 end
 
 function TupState.AddPacks(self, t)
@@ -208,11 +223,12 @@ function TupState.BuildLists(self)
         local packGroup = self:GetPackGroup(pack)
             
         for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
-            local partOutput = self:GetPackListOutput(pack, i)
-            local cmd = self.cmd.fwdep .. " echo -p \"" .. self.currentDir .. "\" %\"f > %o"
-            local cmdText = "^ Gen list " .. i .. " for " .. pack .. "^ "
+            local partCmd = self.cmd.fwdep .. " echo -p \"" .. self.currentDir .. "\" %\"f > %o"
+            local partCmdText = "^ Gen list " .. i .. " for " .. pack .. "^ "
+            local partOutput = self.packlistDir .. "/" .. pack .. self.conf.delimiter 
+                .. self.currentDirString .. "-" .. i .. self.conf.packlistExt
             
-            tup.rule(part, cmdText .. cmd, { partOutput, packGroup })
+            tup.rule(part, partCmdText .. partCmd, { partOutput, packGroup })
         end
     end
 end
@@ -228,7 +244,7 @@ function TupState.BuildPacks(self)
         -- if no lists were generated for pack
         local emptyPackCmd = self.cmd.fwdep .. " echo > %o"
         local emptyPackCmdText = "^ Get empty list for " .. pack.name .. "^ "
-        local emptyPackOutput = self:GetEmptyPackListOutput(pack.name) 
+        local emptyPackOutput = self.packlistDir .. "/" .. pack.name .. self.conf.delimiter .. "_empty" .. self.conf.packlistExt 
         
         tup.rule(emptyPackCmdText .. emptyPackCmd, { emptyPackOutput })
         
@@ -236,7 +252,7 @@ function TupState.BuildPacks(self)
         local mergePackMask = self.packlistDir .. "/" .. pack.name .. self.conf.delimiter .. "*" .. self.conf.packlistExt
         local mergePackCmd = self.cmd.cat .. " " .. mergePackMask .. " > %o"
         local mergePackCmdText = "^ Gen merged list for " .. pack.name .. "^ "
-        local mergePackOutput = self:GetMergedPackListOutput(pack.name)
+        local mergePackOutput = self.mergeDir .. "/" .. pack.name .. self.conf.mergedlistExt
         
         mergePackCmd = UtilConvertToPlatformPath(self.platform, mergePackCmd)
          

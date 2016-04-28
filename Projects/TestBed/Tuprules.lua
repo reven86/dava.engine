@@ -25,12 +25,12 @@ tupState:AddPacks {
             { "Data", "%.sc2" }
         },
     },
-    -- { 
-    --     name = "pack3",
-    --     rules = {
-    --         { "Data", "%.*" }
-    --     }
-    -- },
+    { 
+         name = "gpupack.${gpu}",
+         rules = {
+            { "Data", "%.*${gpu}" }
+         }
+    },
 }
 
 -- UtilDumpTable(tupState)
