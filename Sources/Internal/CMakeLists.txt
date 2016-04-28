@@ -1,3 +1,9 @@
+include ( CMake-common         )
+if( WIN32 AND NOT WINDOWS_UAP  )
+    include( FindWindowsSDK )
+endif()
+include ( DavaLibs             )
+
 set( NAME_MODULE DavaFramework )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 

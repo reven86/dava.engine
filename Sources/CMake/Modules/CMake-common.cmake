@@ -36,10 +36,6 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
 
-if( WIN32 AND NOT WINDOWS_UAP )
-    include( FindWindowsSDK )
-endif()
-
 #
 macro ( set_project_files_properties FILES_LIST )
     if( APPLE )
@@ -579,5 +575,3 @@ function (get_deploy_dependencies OUTPUT_VAR_NAME)
     GET_PROPERTY(DEPENDENT_LIST GLOBAL PROPERTY DEPLOY_DEPENDENCIES)
     SET(${OUTPUT_VAR_NAME} ${DEPENDENT_LIST} PARENT_SCOPE)
 endfunction()
-
-include ( DavaLibs             )
