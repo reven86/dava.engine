@@ -335,7 +335,6 @@ void DocumentGroup::SaveAllDocuments()
 void DocumentGroup::SaveCurrentDocument()
 {
     DVASSERT(nullptr != active);
-    DVASSERT(!active->GetUndoStack()->isClean());
     SaveDocument(active, true);
 }
 
