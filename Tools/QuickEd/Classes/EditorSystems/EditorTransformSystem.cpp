@@ -846,11 +846,11 @@ float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, floa
         {
             nearestTargetAngle += step * (finalAngle >= 0.0f ? 1 : -1);
         }
+        //disable rotate backwards if we move cursor forward
         if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + TRANSFORM_EPSILON) || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - TRANSFORM_EPSILON))
         {
             extraDelta.dx = deltaAngle;
             return originalAngle;
-            //disable ::Rotate backwards if we move cursor forward
         }
         extraDelta.dx = finalAngle - nearestTargetAngle;
         return nearestTargetAngle;
