@@ -31,7 +31,6 @@
 #define __GAMECORE_H__
 
 #include "Base/BaseTypes.h"
-#include "Render/Cursor.h"
 #include "Core/ApplicationCore.h"
 
 namespace DAVA

@@ -1,4 +1,18 @@
 
+macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
+    set(OUTPUT_LIST "")
+    foreach (LIB_FILE ${LIB_LIST})
+        get_filename_component(LIB_NAME ${LIB_FILE} NAME)
+        list (FIND ${EXCLUDE_LIBS} ${LIB_NAME} LIB_INDEX)
+        if (${LIB_INDEX} EQUAL -1)
+            list ( APPEND OUTPUT_LIST ${LIB_FILE}  )
+        endif()
+    endforeach()
+    list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
+    set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
+endmacro()
+
+
 set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_ios_release.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_ios.a
@@ -126,7 +140,8 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/PVRTexLib32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverterD.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak_wind.lib"  )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak_wind.lib"  
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib" )
 
     set( WIN64_RELEASE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/freetype.lib"

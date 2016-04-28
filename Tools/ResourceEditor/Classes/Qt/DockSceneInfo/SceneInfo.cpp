@@ -446,7 +446,7 @@ QtPropertyData* SceneInfo::CreateInfoHeader(const QString& key)
 {
     QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
-    headerData->SetBackground(QBrush(QColor(Qt::lightGray)));
+    ApplyStyle(headerData, HEADER_STYLE);
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
     return headerData;
 }
@@ -466,6 +466,7 @@ void SceneInfo::AddChild(const QString& key, QtPropertyData* parent)
 {
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
+    propData->SetBackground(palette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -474,6 +475,7 @@ void SceneInfo::AddChild(const QString& key, const QString& toolTip, QtPropertyD
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
     propData->SetToolTip(toolTip);
+    propData->SetBackground(palette().base());
     parent->ChildAdd(std::move(propData));
 }
 

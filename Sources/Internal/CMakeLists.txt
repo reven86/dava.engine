@@ -60,6 +60,9 @@ set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_
                                
 set( SOURCE_FOLDERS                 "." )
 
+set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c )
+set( HPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.h )
+                   
 set( ERASE_FOLDERS_IOS              "DX9" "DX11" )
 set( ERASE_FOLDERS_MACOS            "Metal" "DX9" "DX11" )
 set( ERASE_FOLDERS_ANDROID          "Metal" "DX9" "DX11" )

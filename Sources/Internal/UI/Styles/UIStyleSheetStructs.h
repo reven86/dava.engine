@@ -67,13 +67,12 @@ struct UIStyleSheetPropertyDescriptor
 
     FastName name;
     VariantType defaultValue;
-    const InspMember* memberInfo;
+    const InspMember* memberInfo = nullptr;
 
     UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const VariantType& defaultValue_)
         : group(group_)
         , name(name_)
         , defaultValue(defaultValue_)
-        , memberInfo(nullptr)
     {
     }
 
