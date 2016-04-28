@@ -37,7 +37,7 @@
 using namespace DAVA;
 
 ClassProperty::ClassProperty(ControlNode* aControl)
-    : ValueProperty("Class")
+    : ValueProperty("Class", VariantType::TYPE_STRING)
     , control(aControl) // weak
 {
 }
