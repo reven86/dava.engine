@@ -96,6 +96,7 @@ public:
     const Color& GetSelectionColor() const;
     void Input(UIEvent* currentInput);
 
+    void SelectAll();
     bool CutToClipboard();
     bool CopyToClipboard();
     bool PasteFromClipboard();
@@ -115,11 +116,13 @@ private:
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
     StbTextEditBridge* stb = nullptr;
+    WideString text;
     float32 cursorTime = 0.0f;
     int32 maxLength;
     bool needRedraw = true;
     bool showCursor = true;
     bool isEditing = false;
+    bool softwareSet = false;
     Color selectionColor = Color(0.f, 0.f, 0.7f, 0.7f);
     Vector<Rect> selectionRects;
     Rect cursorRect;

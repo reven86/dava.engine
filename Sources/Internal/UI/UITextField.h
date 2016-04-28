@@ -374,7 +374,7 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
 
-    WideString GetVisibleText() const;
+    WideString GetVisibleText();
 
     virtual void OnStartEditing();
     virtual void OnStopEditing();

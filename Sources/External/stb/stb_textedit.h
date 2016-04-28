@@ -672,9 +672,6 @@ static int stb_textedit_paste(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
       state->has_preferred_x = 0;
       return 1;
    }
-   // remove the undo since we didn't actually insert the characters
-   if (state->undostate.undo_point)
-      --state->undostate.undo_point;
    return 0;
 }
 

@@ -423,7 +423,7 @@ void UITextField::CopyDataFrom(UIControl* srcControl)
 #endif
     isPassword = t->isPassword;
     cursorBlinkingTime = t->cursorBlinkingTime;
-    SetText(t->text);
+    SetText(t->GetText());
     SetRect(t->GetRect());
 
     SetAutoCapitalizationType(t->GetAutoCapitalizationType());
@@ -448,14 +448,13 @@ bool UITextField::IsPassword() const
     return isPassword;
 }
 
-WideString UITextField::GetVisibleText() const
+WideString UITextField::GetVisibleText()
 {
     if (!isPassword)
     {
-        return text;
+        return GetText();
     }
-
-    return WideString(text.length(), L'*');
+    return WideString(GetText().length(), L'*');
 }
 
 int32 UITextField::GetAutoCapitalizationType() const

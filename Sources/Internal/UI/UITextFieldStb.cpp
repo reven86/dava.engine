@@ -48,6 +48,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+static float32 TEXT_OFFSET_CHECK_DELTA = 30.f;
+static float32 TEXT_OFFSET_MOVE_DELTA = 60.f;
+static float32 DEFAULT_CURSOR_WIDTH = 1.f;
+
 static Vector2 TransformInputPoint(const Vector2& inputPoint, const Vector2& controlAbsPosition, const Vector2& controlScale)
 {
     return (inputPoint - controlAbsPosition) / controlScale;
@@ -109,17 +113,27 @@ void TextFieldStbImpl::SetIsPassword(bool)
 
 void TextFieldStbImpl::SetFontSize(float32 size)
 {
-    staticText->SetFontSize(size);
+    // Size getting from the Font
 }
 
-void TextFieldStbImpl::SetText(const WideString& text)
+void TextFieldStbImpl::SetText(const WideString& newText)
 {
-    const WideString& prevText = control->GetText();
-    if (control->GetDelegate() && prevText != text)
+    auto prevText = text;
+    if (prevText != newText)
     {
-        control->GetDelegate()->TextFieldOnTextChanged(control, text, prevText);
+        //SelectAll();
+        //softwareSet = true;
+        //stb->Paste(newText);
+        //softwareSet = false;
+
+        text = newText;
+        needRedraw = true;
+        auto delegate = control->GetDelegate();
+        if (delegate)
+        {
+            delegate->TextFieldOnTextChanged(control, text, prevText);
+        }
     }
-    needRedraw = true;
 }
 
 void TextFieldStbImpl::UpdateRect(const Rect&)
@@ -142,7 +156,6 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
         cursorTime = 0;
         showCursor = false;
         needRedraw = true;
-        staticTextOffset = Vector2::Zero;
     }
 
     if (!needRedraw)
@@ -215,8 +228,9 @@ void TextFieldStbImpl::SetMaxLength(int32 _maxLength)
     maxLength = _maxLength;
 }
 
-void TextFieldStbImpl::GetText(WideString&)
+void TextFieldStbImpl::GetText(WideString& output)
 {
+    output = text;
 }
 
 void TextFieldStbImpl::SetInputEnabled(bool, bool hierarchic /*= true*/)
@@ -339,19 +353,6 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     }
 
     RenderSystem2D::Instance()->PopClip();
-
-    //     Rect r;
-    //     r.x = 0;
-    //     r.y = 0;
-    //     r.dx = 3;
-    //     r.dy = 3;
-    //     RenderSystem2D::Instance()->FillRect(r, Color(1, 0, 1, 1));
-    //
-    //     r.x = 1;
-    //     r.y = 1;
-    //     r.dx = 3;
-    //     r.dy = 3;
-    //     RenderSystem2D::Instance()->DrawRect(r, Color(0, 1, 1, 0.5));
 }
 
 void TextFieldStbImpl::SetSelectionColor(const Color& _selectionColor)
@@ -369,13 +370,14 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
     auto insertText = WideString(str, length);
     auto delegate = control->GetDelegate();
     bool apply = true;
-    if (delegate)
+    if (!softwareSet && delegate)
     {
         apply = delegate->TextFieldKeyPressed(control, position, 0, insertText);
     }
     if (apply)
     {
-        auto text = control->GetText();
+        auto prevText = text;
+
         if (control->GetMaxLength() > 0)
         {
             int32 outOfBounds = int32(text.length()) - control->GetMaxLength() + int32(length);
@@ -386,7 +388,11 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
             length -= outOfBounds;
         }
         text.insert(position, str, length);
-        control->SetText(text);
+
+        if (delegate && length > 0)
+        {
+            delegate->TextFieldOnTextChanged(control, text, prevText);
+        }
         return length;
     }
     return 0;
@@ -396,16 +402,19 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
 {
     auto delegate = control->GetDelegate();
     bool apply = true;
-    if (delegate)
+    if (!softwareSet && delegate)
     {
         WideString str;
         apply = delegate->TextFieldKeyPressed(control, position, length, str);
     }
     if (apply)
     {
-        auto text = control->GetText();
+        auto prevText = text;
         text.erase(position, length);
-        control->SetText(text);
+        if (delegate && length > 0)
+        {
+            delegate->TextFieldOnTextChanged(control, text, prevText);
+        }
         return length;
     }
     return 0;
@@ -423,12 +432,12 @@ const Vector<float32>& TextFieldStbImpl::GetCharactersSizes()
 
 uint32 TextFieldStbImpl::GetTextLength()
 {
-    return uint32(control->GetText().length());
+    return uint32(text.length());
 }
 
 WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i)
 {
-    return control->GetText()[i];
+    return text[i];
 }
 
 void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
@@ -492,7 +501,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     r.x = staticTextOffset.x;
     r.y = staticTextOffset.y;
     r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
-    r.dx = 1.f;
+    r.dx = DEFAULT_CURSOR_WIDTH;
 
     if (!linesInfo.empty())
     {
@@ -503,7 +512,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
         if (lineInfoIt != linesInfo.end())
         {
             auto line = *lineInfoIt;
-            r.y = line.yoffset;
+            r.y += line.yoffset;
             r.dy = line.yadvance;
             if (cursorPos != line.offset)
             {
@@ -521,15 +530,15 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
         else
         {
             auto line = *linesInfo.rbegin();
-            r.y = line.yoffset;
+            r.y += line.yoffset;
             r.dy = line.yadvance;
-            r.x = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
+            r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
             r.x += line.xoffset;
         }
 
-        if (r.x + 1.f > control->GetSize().x)
+        if (r.x + DEFAULT_CURSOR_WIDTH > control->GetSize().x)
         {
-            r.dx = 1.0f;
+            r.dx = DEFAULT_CURSOR_WIDTH;
             r.x = control->GetSize().x - r.dx;
         }
         else if (r.x + r.dx > control->GetSize().x)
@@ -572,26 +581,22 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 
 void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
 {
-    static float32 checkDelta = 5.f;
-    static float32 moveDelta = 30.f;
-
     const Vector2& controlSize = control->GetSize();
     const Vector2& textSize = staticText->GetTextSize();
     if (controlSize.dx < textSize.dx)
     {
-        float32 delta = std::min(moveDelta, textSize.dx - controlSize.dx);
-        if (visibleRect.x < checkDelta)
+        float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA, textSize.dx - controlSize.dx);
+        if (visibleRect.x < TEXT_OFFSET_CHECK_DELTA)
         {
             staticTextOffset.x = std::min(0.f, staticTextOffset.x + delta);
         }
-        else if (visibleRect.x > controlSize.dx - checkDelta)
+        else if (visibleRect.x > controlSize.dx - TEXT_OFFSET_CHECK_DELTA)
         {
-            staticTextOffset.x = std::max(controlSize.dx - textSize.dx, staticTextOffset.x - delta);
+            staticTextOffset.x = std::max(controlSize.dx - textSize.dx - visibleRect.dx - 1.0f, staticTextOffset.x - delta - visibleRect.dx - 1.f);
         }
         else if (staticTextOffset.x + textSize.dx < controlSize.dx)
         {
-            staticTextOffset.x = std::min(0.f, controlSize.x - textSize.dx);
-            ;
+            staticTextOffset.x = std::min(0.f, controlSize.x - textSize.dx - visibleRect.dx - 1.0f);
         }
     }
     else
@@ -632,7 +637,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         {
             if (isCtrl)
             {
-                stb->SendKey(StbTextEditBridge::KEY_LEFT);
+                stb->SendKey(StbTextEditBridge::KEY_WORDLEFT | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
             }
             else
             {
@@ -643,18 +648,18 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         {
             if (isCtrl)
             {
-                stb->SendKey(StbTextEditBridge::KEY_WORDRIGHT);
+                stb->SendKey(StbTextEditBridge::KEY_WORDRIGHT | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
             }
             else
             {
                 stb->SendKey(StbTextEditBridge::KEY_RIGHT | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
             }
         }
-        else if (currentInput->key == Key::UP)
+        else if (currentInput->key == Key::UP && !stb->IsSingleLineMode()) // Only in multiline text
         {
             stb->SendKey(StbTextEditBridge::KEY_UP | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
         }
-        else if (currentInput->key == Key::DOWN)
+        else if (currentInput->key == Key::DOWN && !stb->IsSingleLineMode()) // Only in multiline text
         {
             stb->SendKey(StbTextEditBridge::KEY_DOWN | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
         }
@@ -698,6 +703,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         }
         else if (isCtrl && currentInput->key == Key::KEY_A)
         {
+            SelectAll();
         }
 #if ENABLE_CLIPBOARD
         else if (currentInput->key == Key::KEY_X && isCtrl)
@@ -746,6 +752,11 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     {
         auto localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
         stb->Click(localPoint - staticTextOffset);
+        if (currentInput->tapCount > 1)
+        {
+            stb->SendKey(StbTextEditBridge::KEY_WORDLEFT);
+            stb->SendKey(StbTextEditBridge::KEY_WORDRIGHT | StbTextEditBridge::KEY_SHIFT_MASK);
+        }
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
@@ -764,16 +775,26 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 }
 
+void TextFieldStbImpl::SelectAll()
+{
+    stb->SetSelectionStart(0);
+    stb->SetSelectionEnd(GetTextLength());
+    stb->SetCursorPosition(GetTextLength());
+}
+
 bool TextFieldStbImpl::CutToClipboard()
 {
 #if ENABLE_CLIPBOARD
     auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
     auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    auto selectedText = control->GetText().substr(selStart, selEnd - selStart);
-    if (Clipboard().SetText(selectedText))
+    if (selStart < selEnd)
     {
-        stb->Cut();
-        return true;
+        auto selectedText = text.substr(selStart, selEnd - selStart);
+        if (Clipboard().SetText(selectedText))
+        {
+            stb->Cut();
+            return true;
+        }
     }
 #endif
     return false;
@@ -784,9 +805,13 @@ bool TextFieldStbImpl::CopyToClipboard()
 #if ENABLE_CLIPBOARD
     auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
     auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    auto selectedText = control->GetText().substr(selStart, selEnd - selStart);
+    if (selStart < selEnd)
+    {
+        auto selectedText = text.substr(selStart, selEnd - selStart);
+        return Clipboard().SetText(selectedText);
+    }
 #endif
-    return Clipboard().SetText(selectedText);
+    return false;
 }
 
 bool TextFieldStbImpl::PasteFromClipboard()

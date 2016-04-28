@@ -198,7 +198,6 @@ private:
     Vector2 cacheSpriteOffset;
     Vector2 cacheTextSize;
 
-    float32 originalFontSize;
     float32 renderSize;
 
     int32 cacheDx;

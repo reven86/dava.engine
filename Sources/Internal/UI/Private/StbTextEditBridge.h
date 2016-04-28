@@ -172,10 +172,26 @@ public:
     uint32 GetSelectionStart() const;
 
     /**
+     * \brief Move start selection to position
+     *        Cursor equal 0 - cursor before first symbol,
+     *        cursor equal text length - cursor after last symbol
+     * \param[in] position new start selection position
+     */
+    void SetSelectionStart(uint32 position) const;
+
+    /**
      * \brief Returns character index of selection end
      * \return character index
      */
     uint32 GetSelectionEnd() const;
+
+    /**
+     * \brief Move end selection to position
+     *        Cursor equal 0 - cursor before first symbol,
+     *        cursor equal text length - cursor after last symbol
+     * \param[in] position new end selection position
+     */
+    void SetSelectionEnd(uint32 position) const;
 
     /**
      * \brief Returns character index of cursor position. 

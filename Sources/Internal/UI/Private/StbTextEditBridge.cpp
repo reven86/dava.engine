@@ -117,7 +117,7 @@ inline STB_TEXTEDIT_CHARTYPE stb_getchar(STB_TEXTEDIT_STRING* str, int i)
 
 inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 {
-    return isspace(ch) || ch == ',' || ch == ';' || ch == '(' || ch == ')' || ch == '{' || ch == '}' || ch == '[' || ch == ']' || ch == '|';
+    return iswspace(ch) || iswpunct(ch);
 }
 
 #define STB_TEXTEDIT_LAYOUTROW stb_layoutrow
@@ -218,9 +218,19 @@ uint32 StbTextEditBridge::GetSelectionStart() const
     return static_cast<uint32>(stb_state->select_start);
 }
 
+void StbTextEditBridge::SetSelectionStart(uint32 position) const
+{
+    stb_state->select_start = static_cast<int>(position);
+}
+
 uint32 StbTextEditBridge::GetSelectionEnd() const
 {
     return static_cast<uint32>(stb_state->select_end);
+}
+
+void StbTextEditBridge::SetSelectionEnd(uint32 position) const
+{
+    stb_state->select_end = static_cast<int>(position);
 }
 
 uint32 StbTextEditBridge::GetCursorPosition() const

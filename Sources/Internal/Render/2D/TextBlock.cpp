@@ -107,7 +107,6 @@ TextBlock::TextBlock()
     useRtlAlign = RTL_DONT_USE;
     fittingType = FITTING_DISABLED;
 
-    originalFontSize = 0.1f;
     align = ALIGN_HCENTER | ALIGN_VCENTER;
     RegisterTextBlock(this);
 
@@ -187,8 +186,7 @@ void TextBlock::SetFontInternal(Font* _font)
     SafeRelease(font);
     font = SafeRetain(_font);
 
-    originalFontSize = font->GetSize();
-    renderSize = originalFontSize;
+    renderSize = font->GetSize();
 
     SafeRelease(textBlockRender);
     switch (font->GetFontType())
@@ -434,6 +432,7 @@ void TextBlock::PrepareInternal()
     needPrepareInternal = false;
     if (textBlockRender)
     {
+        auto originalFontSize = font->GetSize();
         font->SetSize(renderSize);
         textBlockRender->Prepare();
         font->SetSize(originalFontSize);
@@ -479,6 +478,7 @@ void TextBlock::CalculateCacheParams()
     }
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
 
+    auto originalFontSize = font->GetSize();
     renderSize = originalFontSize * scale.y;
     font->SetSize(renderSize);
 
@@ -999,6 +999,7 @@ void TextBlock::PreDraw()
 
     if (textBlockRender)
     {
+        auto originalFontSize = font->GetSize();
         font->SetSize(renderSize);
         textBlockRender->PreDraw();
         font->SetSize(originalFontSize);
@@ -1009,6 +1010,7 @@ void TextBlock::Draw(const Color& textColor, const Vector2* offset /* = NULL*/)
 {
     if (textBlockRender)
     {
+        auto originalFontSize = font->GetSize();
         font->SetSize(renderSize);
         textBlockRender->Draw(textColor, offset);
         font->SetSize(originalFontSize);
@@ -1038,13 +1040,28 @@ TextBlock* TextBlock::Clone()
 
 DAVA::float32 TextBlock::GetFontSize()
 {
-    return originalFontSize;
+#if 0
+    if (font != nullptr)
+    {
+        return font->GetSize();
+    }
+    return 0.f;
+#else
+    return renderSize;
+#endif
 }
 
 void TextBlock::SetFontSize(float32 newSize)
 {
-    originalFontSize = newSize;
-    renderSize = originalFontSize;
-    NeedPrepare();
+#if 0
+    if (font != nullptr)
+    {
+        font->SetSize(newSize);
+        renderSize = newSize;
+        NeedPrepare();
+    }
+#else
+    renderSize = newSize;
+#endif
 }
 };
