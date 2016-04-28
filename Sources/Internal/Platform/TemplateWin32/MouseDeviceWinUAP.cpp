@@ -26,26 +26,59 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
-#ifndef __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "DAVAEngine.h"
+#include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
+#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+
+using namespace ::Windows::UI::Core;
+using namespace ::Windows::UI::Xaml;
+using namespace ::Windows::UI::Xaml::Controls;
 
 namespace DAVA
 {
-class CoreMacOSPlatformBase : public Core
+void MouseDeviceUWP::SetMode(eCaptureMode newMode)
 {
-public:
-    void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
+    CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+    SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
+    DVASSERT(swapchain);
 
-    // Signal is emitted when window has been miniaturized/deminiaturized or
-    // when application has been hidden/unhidden.
-    // Signal parameter meaning:
-    //  - when true - application/window has been hidden/minimized
-    //  - when false - application/window has been unhidden/restored
-    Signal<bool> signalAppMinimizedRestored;
-};
-};
+    if (eCaptureMode::PINING == newMode)
+    {
+        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+        core->RunOnUIThread([]()
+                            {
+                                Window::Current->CoreWindow->PointerCursor = nullptr;
+                            });
+    }
+    else
+    {
+        core->RunOnUIThread([]()
+                            {
+                                Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+                            });
+    }
+}
 
-#endif // __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
+void MouseDeviceUWP::SetCursorInCenter()
+{
+}
+
+bool MouseDeviceUWP::SkipEvents(const UIEvent* event)
+{
+    if (event->device == UIEvent::Device::MOUSE)
+    {
+        if (skipMouseMoveEvents)
+        {
+            skipMouseMoveEvents--;
+            return true;
+        }
+    }
+    return false;
+}
+
+} // namespace DAVA
+
+#endif //  __DAVAENGINE_WIN_UAP__
