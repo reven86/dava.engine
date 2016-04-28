@@ -5,8 +5,6 @@ if (NOT QT_VERSION)
     set(QT_VERSION "QT5")
 endif()
 
-message("Qt version : " ${QT_VERSION})
-
 if( WIN32 )
 	if( X64_MODE )
 		set (PLATFORM_SPEC "WIN64")
@@ -99,6 +97,7 @@ if (NOT EXISTS ${QT_CMAKE_RULES})
    message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  ) 
 endif()
 
+set ( QT5_LIB_PATH "${QT_ACTUAL_PATH}/lib")
 set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_ACTUAL_PATH}/lib/cmake")
 
 foreach(COMPONENT ${QT5_FIND_COMPONENTS})
