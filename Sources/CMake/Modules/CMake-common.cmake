@@ -368,8 +368,6 @@ macro( save_property  )
 
 endmacro()
 
-include ( DavaLibs             )
-
 macro ( add_content_win_uap_single CONTENT_DIR )
 
     #get all files from it and add to SRC
@@ -581,3 +579,5 @@ function (get_deploy_dependencies OUTPUT_VAR_NAME)
     GET_PROPERTY(DEPENDENT_LIST GLOBAL PROPERTY DEPLOY_DEPENDENCIES)
     SET(${OUTPUT_VAR_NAME} ${DEPENDENT_LIST} PARENT_SCOPE)
 endfunction()
+
+include ( DavaLibs             )
