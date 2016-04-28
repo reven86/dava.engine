@@ -70,7 +70,8 @@ set( ERASE_FOLDERS_WIN32            "Metal" )
 set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
 
 
-set( UNITY_IGNORE_LIST              "Internal/Autotesting" )
+set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
+                                    "Compression/ZipCompressor.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"
