@@ -270,47 +270,18 @@ void DocumentGroup::CloseDocument(Document* document)
 
 void DocumentGroup::ReloadDocument(int index)
 {
-    static bool blocked = false;
-    if (blocked)
-    {
-        return;
-    }
-    blocked = true;
-
-    SCOPE_EXIT
-    {
-        blocked = false;
-    };
-
     DVASSERT(index >= 0 && index < documents.size());
-    Document* currentDocument = documents.at(index);
-    DVASSERT(currentDocument != nullptr);
     QString path = documents.at(index)->GetPackageAbsolutePath();
+    CloseDocument(index);
     Document* document = CreateDocument(path);
     if (document != nullptr)
     {
-        CloseDocument(index);
         InsertDocument(document, index);
         SetActiveDocument(index);
     }
     else
     {
-        QMessageBox::StandardButton ret = QMessageBox::question(
-        qApp->activeWindow(),
-        tr("Close document?"),
-        tr("Can not reopen file %1.\n"
-           "Do you want to restore previous version of document?")
-        .arg(path),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::Yes);
-        if (ret == QMessageBox::Yes)
-        {
-            currentDocument->Save();
-        }
-        else
-        {
-            return; //do nothing
-        }
+        QMessageBox::warning(qApp->activeWindow(), tr("Can not create document"), tr("Can not create document by path:\n%1").arg(path));
     }
 }
 
@@ -409,6 +380,16 @@ void DocumentGroup::OnFileChanged(Document* document)
 
 void DocumentGroup::OnFilesChanged(const QList<Document*>& changedFiles)
 {
+    static bool syncGuard = false;
+    if (syncGuard)
+    {
+        return;
+    }
+    syncGuard = true;
+    SCOPE_EXIT
+    {
+        syncGuard = false;
+    };
     bool yesToAll = false;
     bool noToAll = false;
     int changedCount = std::count_if(changedFiles.begin(), changedFiles.end(), [changedFiles](Document* document) {
