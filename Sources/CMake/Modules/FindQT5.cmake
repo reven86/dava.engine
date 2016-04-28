@@ -5,6 +5,8 @@ if (NOT QT_VERSION)
     set(QT_VERSION "QT5")
 endif()
 
+message("Qt version : " ${QT_VERSION})
+
 if( WIN32 )
 	if( X64_MODE )
 		set (PLATFORM_SPEC "WIN64")
