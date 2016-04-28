@@ -870,7 +870,7 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
         cb->text->Initialize(64 * 1024);
     }
 
-    int len = strlen(text);
+    int len = static_cast<int>(strlen(text));
     char* txt = reinterpret_cast<char*>(cb->text->Alloc(len / sizeof(float) + 2));
 
     memcpy(txt, text, len);

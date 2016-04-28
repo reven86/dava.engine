@@ -44,7 +44,7 @@ class UIControl;
 class VariantTypeProperty : public ValueProperty
 {
 public:
-    VariantTypeProperty(const DAVA::String& name, DAVA::VariantType& variantType);
+    VariantTypeProperty(const DAVA::String& name, const DAVA::InspDesc* desc, DAVA::VariantType& variantType);
 
 protected:
     virtual ~VariantTypeProperty();
@@ -53,10 +53,7 @@ public:
     void Accept(PropertyVisitor* visitor) override;
     bool IsReadOnly() const override;
 
-    ePropertyType GetType() const override;
-
     DAVA::VariantType GetValue() const override;
-    const EnumMap* GetEnumMap() const override;
     void ApplyValue(const DAVA::VariantType& value) override;
 
 private:
