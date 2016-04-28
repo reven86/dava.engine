@@ -36,15 +36,6 @@ class PreferencesIntrospectionProperty : public ValueProperty
 public:
     PreferencesIntrospectionProperty(const DAVA::InspMember* member);
 
-protected:
-    ~PreferencesIntrospectionProperty() override;
-
-public:
-    void Refresh(DAVA::int32 refreshFlags) override;
-    void Accept(PropertyVisitor* visitor) override;
-
-    ePropertyType GetType() const override;
-
     DAVA::VariantType GetValue() const override;
 
     const EnumMap* GetEnumMap() const override;
@@ -55,11 +46,10 @@ public:
 
     bool IsOverriddenLocally() const override;
 
+    void Accept(PropertyVisitor* visitor) override;
+
 protected:
     void ApplyValue(const DAVA::VariantType& value) override;
 
-protected:
     const DAVA::InspMember* member;
-    DAVA::int32 flags;
-    bool isVisible = false;
 };

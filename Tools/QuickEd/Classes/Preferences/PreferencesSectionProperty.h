@@ -30,9 +30,9 @@
 #pragma once
 
 #include "Model/ControlProperties/SectionProperty.h"
+#include "Preferences/PreferencesIntrospectionProperty.h"
 
-template <typename ValueType>
-class PreferencesSectionProperty : public SectionProperty<ValueType>
+class PreferencesSectionProperty : public AbstractProperty
 {
 public:
     PreferencesSectionProperty(const DAVA::String& sectionName);
@@ -41,31 +41,46 @@ protected:
     ~PreferencesSectionProperty() override;
 
 public:
-    void AddSection(SectionProperty<ValueType>* section);
-    void InsertSection(SectionProperty<ValueType>* section, DAVA::int32 index);
-    void RemoveSection(SectionProperty<ValueType>* section);
+    void AddProperty(PreferencesIntrospectionProperty* property);
+    void InsertProperty(PreferencesIntrospectionProperty* property, DAVA::int32 index);
+    void RemoveProperty(PreferencesIntrospectionProperty* property);
+
+    void AddSection(PreferencesSectionProperty* section);
+    void InsertSection(PreferencesSectionProperty* section, DAVA::int32 index);
+    void RemoveSection(PreferencesSectionProperty* section);
 
     DAVA::uint32 GetCount() const override;
-    AbstractProperty* GetChild(DAVA::int32 index) const;
+    AbstractProperty* GetProperty(DAVA::int32 index) const override;
 
     void Refresh(DAVA::int32 refreshFlags) override;
+    void Accept(PropertyVisitor* visitor) override;
 
-    ValueType* FindProperty(const DAVA::InspMember* member) const override;
+    const DAVA::String& GetName() const override;
+
+    ePropertyType GetType() const override;
 
 protected:
-    DAVA::Vector<SectionProperty<ValueType>*> sections;
+    DAVA::Vector<PreferencesIntrospectionProperty*> children;
+    DAVA::Vector<PreferencesSectionProperty*> sections;
+    DAVA::String name;
 };
 
-template <typename ValueType>
-inline PreferencesSectionProperty<ValueType>::PreferencesSectionProperty(const DAVA::String& sectionName)
-    : SectionProperty<ValueType>(sectionName)
+inline PreferencesSectionProperty::PreferencesSectionProperty(const DAVA::String& sectionName)
+    : AbstractProperty()
+    , name(sectionName)
 {
 }
 
-template <typename ValueType>
-inline PreferencesSectionProperty<ValueType>::~PreferencesSectionProperty()
+inline PreferencesSectionProperty::~PreferencesSectionProperty()
 {
-    for (SectionProperty<ValueType>* prop : sections)
+    for (PreferencesIntrospectionProperty* child : children)
+    {
+        DVASSERT(child->GetParent() == this);
+        child->SetParent(nullptr);
+        child->Release();
+    }
+
+    for (PreferencesSectionProperty* prop : sections)
     {
         DVASSERT(prop->GetParent() == this);
         prop->SetParent(nullptr);
@@ -73,16 +88,52 @@ inline PreferencesSectionProperty<ValueType>::~PreferencesSectionProperty()
     }
 }
 
-template <typename ValueType>
-void PreferencesSectionProperty<ValueType>::AddSection(SectionProperty<ValueType>* section)
+inline void PreferencesSectionProperty::AddProperty(PreferencesIntrospectionProperty* property)
+{
+    DVASSERT(property->GetParent() == nullptr);
+    property->SetParent(this);
+    children.push_back(SafeRetain(property));
+}
+
+inline void PreferencesSectionProperty::InsertProperty(PreferencesIntrospectionProperty* property, DAVA::int32 index)
+{
+    DVASSERT(property->GetParent() == nullptr);
+    if (0 <= index && index <= static_cast<DAVA::int32>(children.size()))
+    {
+        property->SetParent(this);
+        children.insert(children.begin() + index, SafeRetain(property));
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+inline void PreferencesSectionProperty::RemoveProperty(PreferencesIntrospectionProperty* property)
+{
+    auto it = std::find(children.begin(), children.end(), property);
+    if (it != children.end())
+    {
+        PreferencesIntrospectionProperty* prop = *it;
+        DVASSERT(prop->GetParent() == this);
+        prop->SetParent(nullptr);
+        prop->Release();
+        children.erase(it);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+inline void PreferencesSectionProperty::AddSection(PreferencesSectionProperty* section)
 {
     DVASSERT(section->GetParent() == nullptr);
     section->SetParent(this);
     sections.push_back(SafeRetain(section));
 }
 
-template <typename ValueType>
-void PreferencesSectionProperty<ValueType>::InsertSection(SectionProperty<ValueType>* section, DAVA::int32 index)
+inline void PreferencesSectionProperty::InsertSection(PreferencesSectionProperty* section, DAVA::int32 index)
 {
     DVASSERT(section->GetParent() == nullptr);
     if (0 <= index && index <= static_cast<DAVA::int32>(sections.size()))
@@ -96,16 +147,15 @@ void PreferencesSectionProperty<ValueType>::InsertSection(SectionProperty<ValueT
     }
 }
 
-template <typename ValueType>
-void PreferencesSectionProperty<ValueType>::RemoveSection(SectionProperty<ValueType>* section)
+inline void PreferencesSectionProperty::RemoveSection(PreferencesSectionProperty* section)
 {
     auto it = std::find(sections.begin(), sections.end(), section);
     if (it != sections.end())
     {
-        ValueType* child = *it;
-        DVASSERT(child->GetParent() == this);
-        child->SetParent(nullptr);
-        child->Release();
+        PreferencesSectionProperty* subSection = *it;
+        DVASSERT(subSection->GetParent() == this);
+        subSection->SetParent(nullptr);
+        subSection->Release();
         sections.erase(it);
     }
     else
@@ -114,14 +164,12 @@ void PreferencesSectionProperty<ValueType>::RemoveSection(SectionProperty<ValueT
     }
 }
 
-template <typename ValueType>
-inline DAVA::uint32 PreferencesSectionProperty<ValueType>::GetCount() const
+inline DAVA::uint32 PreferencesSectionProperty::GetCount() const
 {
-    return SectionProperty<ValueType>::GetCount() + sections.size();
+    return children.size() + sections.size();
 }
 
-template <typename ValueType>
-inline AbstractProperty* PreferencesSectionProperty<ValueType>::GetChild(DAVA::int32 index) const
+inline AbstractProperty* PreferencesSectionProperty::GetProperty(DAVA::int32 index) const
 {
     if (index < 0 || index >= static_cast<DAVA::int32>(GetCount()))
     {
@@ -133,35 +181,33 @@ inline AbstractProperty* PreferencesSectionProperty<ValueType>::GetChild(DAVA::i
     {
         return sections.at(index);
     }
-    return SectionProperty<ValueType>::GetProperty(index - size);
+
+    return children[index - size];
 }
 
-template <typename ValueType>
-inline void PreferencesSectionProperty<ValueType>::Refresh(DAVA::int32 refreshFlags)
+inline void PreferencesSectionProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    for (SectionProperty<ValueType>* prop : sections)
+    for (PreferencesSectionProperty* prop : sections)
     {
         prop->Refresh(refreshFlags);
     }
-    SectionProperty<ValueType>::Refresh(refreshFlags);
+    for (PreferencesIntrospectionProperty* prop : children)
+    {
+        prop->Refresh(refreshFlags);
+    }
 }
 
-template <typename ValueType>
-ValueType* PreferencesSectionProperty<ValueType>::FindProperty(const DAVA::InspMember* member) const
+inline const DAVA::String& PreferencesSectionProperty::GetName() const
 {
-    ValueType* child = SectionProperty<ValueType>::FindProperty(member);
-    if (child != nullptr)
-    {
-        return child;
-    }
+    return name;
+}
 
-    for (SectionProperty<ValueType>* prop : sections)
-    {
-        ValueType* result = prop->FindProperty(member);
-        if (result != nullptr)
-        {
-            return result;
-        }
-    }
-    return nullptr;
+inline void PreferencesSectionProperty::Accept(PropertyVisitor* /*visitor*/)
+{
+    // do nothing
+}
+
+inline PreferencesSectionProperty::ePropertyType PreferencesSectionProperty::GetType() const
+{
+    return TYPE_HEADER;
 }

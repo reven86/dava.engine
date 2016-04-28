@@ -200,13 +200,13 @@ void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBa
 
     DAVA::String key = GenerateKey(info);
     inspPreferencesArchive->SetArchive(key, archive);
-    Sync();
+    Save();
 }
 
 void PreferencesStorage::SetValue(const DAVA::FastName& key, const DAVA::VariantType& value)
 {
     keyedPreferencesArchive->SetVariant(key.c_str(), value);
-    Sync();
+    Save();
 }
 
 DAVA::VariantType PreferencesStorage::GetValue(const DAVA::FastName& key)
@@ -240,7 +240,7 @@ void PreferencesStorage::SetValue(const DAVA::InspMember* member, const DAVA::Va
     DVASSERT(nullptr != archive);
 
     archive->SetVariant(member->Name().c_str(), value);
-    Sync();
+    Save();
 
     auto findIter = registeredObjects.find(inspInfo);
     if (findIter != registeredObjects.end())
@@ -286,7 +286,7 @@ const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegist
     return registeredInsp;
 }
 
-bool PreferencesStorage::Sync() const
+bool PreferencesStorage::Save() const
 {
     if (!localStorage.IsEmpty())
     {

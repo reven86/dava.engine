@@ -43,11 +43,11 @@ struct PreferencesLocation
     DAVA::Vector<const DAVA::InspMember*> members; //leaf insp member
 };
 
-void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, PreferencesSectionProperty<PreferencesIntrospectionProperty>* property)
+void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, PreferencesSectionProperty* property)
 {
     for (const auto& locationAndName : preferencesLocation.locations)
     {
-        ScopedPtr<PreferencesSectionProperty<PreferencesIntrospectionProperty>> section(new PreferencesSectionProperty<PreferencesIntrospectionProperty>(locationAndName.first));
+        ScopedPtr<PreferencesSectionProperty> section(new PreferencesSectionProperty(locationAndName.first));
         property->AddSection(section);
         CreatePropertiesTree(locationAndName.second, section);
     }
@@ -60,7 +60,7 @@ void CreatePropertiesTree(const PreferencesLocation& preferencesLocation, Prefer
 }
 
 PreferencesRootProperty::PreferencesRootProperty()
-    : PreferencesSectionProperty<PreferencesIntrospectionProperty>("PREFERENCES_ROOT_PROPERTY")
+    : PreferencesSectionProperty("PREFERENCES_ROOT_PROPERTY")
 {
     const PreferencesStorage::RegisteredIntrospection& registeredInsp = PreferencesStorage::Instance()->GetRegisteredInsp();
     PreferencesRootProperty_local::PreferencesLocation rootPreferencesLocation;

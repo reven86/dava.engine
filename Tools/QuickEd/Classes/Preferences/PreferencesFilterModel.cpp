@@ -41,13 +41,13 @@ bool IsPropertyVisible(AbstractProperty* property)
         return (inspProp->GetMember()->Flags() & DAVA::I_VIEW) != 0;
     }
 
-    PreferencesSectionProperty<PreferencesIntrospectionProperty>* sectionProp = dynamic_cast<PreferencesSectionProperty<PreferencesIntrospectionProperty>*>(property);
+    PreferencesSectionProperty* sectionProp = dynamic_cast<PreferencesSectionProperty*>(property);
     if (nullptr != sectionProp)
     {
         bool isVisible = false;
         for (int i = sectionProp->GetCount() - 1; i >= 0 && !isVisible; --i)
         {
-            isVisible |= IsPropertyVisible(sectionProp->GetChild(i));
+            isVisible |= IsPropertyVisible(sectionProp->GetProperty(i));
         }
         return isVisible;
     }

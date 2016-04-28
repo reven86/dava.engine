@@ -32,9 +32,8 @@
 #include "Preferences/PreferencesStorage.h"
 
 PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::InspMember* aMember)
-    : ValueProperty(aMember->Desc().text)
+    : ValueProperty(aMember->Desc().text, DAVA::VariantType::TypeFromMetaInfo(aMember->Type()), true, &aMember->Desc())
     , member(aMember)
-    , flags(EF_CAN_RESET)
 {
     DAVA::String name(aMember->Desc().text);
     DAVA::size_type index = name.find_last_of('/');
@@ -48,78 +47,6 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     }
     DAVA::VariantType value = PreferencesStorage::Instance()->GetValue(member);
     ValueProperty::SetValue(value);
-
-    static DAVA::Vector<DAVA::String> vector2ComponentNames = { "X", "Y" };
-    static DAVA::Vector<DAVA::String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
-    static DAVA::Vector<DAVA::String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
-
-    DAVA::Vector<DAVA::String>* componentNames = nullptr;
-    DAVA::Vector<SubValueProperty*> children;
-    switch (value.GetType())
-    {
-    case DAVA::VariantType::TYPE_VECTOR2:
-        componentNames = &vector2ComponentNames;
-        break;
-    case DAVA::VariantType::TYPE_COLOR:
-        componentNames = &colorComponentNames;
-        break;
-    case DAVA::VariantType::TYPE_VECTOR4:
-        componentNames = &marginsComponentNames;
-        break;
-    case DAVA::VariantType::TYPE_INT32:
-        if (member->Desc().type == DAVA::InspDesc::T_FLAGS)
-        {
-            const EnumMap* map = member->Desc().enumMap;
-            for (DAVA::size_type i = 0; i < map->GetCount(); ++i)
-            {
-                int val = 0;
-                map->GetValue(i, val);
-                children.push_back(new SubValueProperty(i, map->ToString(val)));
-            }
-        }
-        break;
-    default:
-        break;
-    }
-
-    if (componentNames != nullptr)
-    {
-        for (DAVA::size_type i = 0; i < componentNames->size(); ++i)
-            children.push_back(new SubValueProperty(i, componentNames->at(i)));
-    }
-
-    for (SubValueProperty* child : children)
-    {
-        child->SetParent(this);
-        AddSubValueProperty(child);
-        SafeRelease(child);
-    }
-    children.clear();
-}
-
-PreferencesIntrospectionProperty::~PreferencesIntrospectionProperty() = default;
-
-void PreferencesIntrospectionProperty::Refresh(DAVA::int32 refreshFlags)
-{
-    ValueProperty::Refresh(refreshFlags);
-}
-
-void PreferencesIntrospectionProperty::Accept(PropertyVisitor*)
-{
-}
-
-PreferencesIntrospectionProperty::ePropertyType PreferencesIntrospectionProperty::GetType() const
-{
-    DAVA::InspDesc::Type type = member->Desc().type;
-    switch (type)
-    {
-    case DAVA::InspDesc::T_ENUM:
-        return TYPE_ENUM;
-    case DAVA::InspDesc::T_FLAGS:
-        return TYPE_FLAGS;
-    default:
-        return TYPE_VARIANT;
-    }
 }
 
 DAVA::VariantType PreferencesIntrospectionProperty::GetValue() const
@@ -158,4 +85,9 @@ bool PreferencesIntrospectionProperty::IsOverriddenLocally() const
 void PreferencesIntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
 {
     PreferencesStorage::Instance()->SetValue(member, value);
+}
+
+void PreferencesIntrospectionProperty::Accept(PropertyVisitor* /*visitor*/)
+{
+    //do nothing here
 }
