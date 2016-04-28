@@ -1,15 +1,22 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if (NOT QT_VERSION)
+    set(QT_VERSION "QT5")
+endif()
+
 if( WIN32 )
 	if( X64_MODE )
-		set (QT_ACTUAL_PATH ${QT5_PATH_WIN64})
+		set (PLATFORM_SPEC "WIN64")
 	else ()
-		set (QT_ACTUAL_PATH ${QT5_PATH_WIN})
+		set (PLATFORM_SPEC "WIN")
 	endif ()	
 elseif ( MACOS )
-	set (QT_ACTUAL_PATH ${QT5_PATH_MAC})
+	set (PLATFORM_SPEC "MAC")
 endif ()
+
+set(VARIABLE_NAME "${QT_VERSION}_PATH_${PLATFORM_SPEC}")
+set(QT_ACTUAL_PATH ${${VARIABLE_NAME}})
 
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
@@ -80,7 +87,7 @@ macro(resolve_qt_pathes)
         if( WIN32 )
             set ( QT_CORE_LIB Qt5Core.lib )
         elseif( MACOS )
-            set ( QT_CORE_LIB QtCore.la )
+            set ( QT_CORE_LIB QtCore.framework )
         endif()
 
         find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
