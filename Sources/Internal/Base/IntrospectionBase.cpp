@@ -77,6 +77,11 @@ void* InspMember::Data(void* object) const
     }
 }
 
+VariantType::eVariantType InspMember::ValueType() const
+{
+    return VariantType::TypeFromMetaInfo(type);
+}
+
 VariantType InspMember::Value(void* object) const
 {
     return VariantType::LoadData(Pointer(object), type);

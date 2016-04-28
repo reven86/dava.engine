@@ -96,6 +96,7 @@ public:
 
     virtual bool IsReadOnly() const;
 
+    virtual DAVA::VariantType::eVariantType GetValueType() const;
     virtual DAVA::VariantType GetValue() const;
     virtual void SetValue(const DAVA::VariantType& newValue);
     virtual DAVA::VariantType GetDefaultValue() const;
@@ -111,7 +112,7 @@ public:
     AbstractProperty* FindPropertyByName(const DAVA::String& name);
 
 private:
-    AbstractProperty* parent;
+    AbstractProperty* parent = nullptr;
 
 public:
     INTROSPECTION_EXTEND(AbstractProperty, DAVA::BaseObject,

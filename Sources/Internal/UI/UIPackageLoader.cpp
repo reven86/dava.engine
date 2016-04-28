@@ -48,6 +48,7 @@ namespace DAVA
 {
 UIPackageLoader::UIPackageLoader()
 {
+    version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
     {
         legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
@@ -112,7 +113,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     }
 
     int32 packageVersion = versionNode->AsInt();
-    if (packageVersion < MIN_SUPPORTED_VERSION || CURRENT_VERSION < packageVersion)
+    if (packageVersion < MIN_SUPPORTED_VERSION || UIPackage::CURRENT_VERSION < packageVersion)
     {
         return false;
     }
@@ -511,7 +512,24 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
                 const InspMember* member = insp->Member(j);
                 VariantType res;
                 if (componentNode)
-                    res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
+                {
+                    if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
+                    {
+                        const YamlNode* valueNode = componentNode->Get(member->Name().c_str());
+                        if (valueNode)
+                        {
+                            if (member->Name() == FastName("spriteModification"))
+                            {
+                                res.SetInt32(valueNode->AsInt32());
+                            }
+                        }
+                    }
+
+                    if (res.GetType() == VariantType::TYPE_NONE)
+                    {
+                        res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
+                    }
+                }
                 builder->ProcessProperty(member, res);
             }
         }

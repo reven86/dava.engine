@@ -253,7 +253,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
+        if (property->GetValueType() == VariantType::TYPE_BOOLEAN)
         {
             VariantType newVal(value != Qt::Unchecked);
             ChangeProperty(property, newVal);
@@ -297,7 +297,8 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex& index) const
 
     AbstractProperty* prop = static_cast<AbstractProperty*>(index.internalPointer());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
-    if (!prop->IsReadOnly() && (prop->GetType() == AbstractProperty::TYPE_ENUM || prop->GetType() == AbstractProperty::TYPE_FLAGS || prop->GetType() == AbstractProperty::TYPE_VARIANT))
+    AbstractProperty::ePropertyType propType = prop->GetType();
+    if (!prop->IsReadOnly() && (propType == AbstractProperty::TYPE_ENUM || propType == AbstractProperty::TYPE_FLAGS || propType == AbstractProperty::TYPE_VARIANT))
         flags |= Qt::ItemIsEditable;
     return flags;
 }

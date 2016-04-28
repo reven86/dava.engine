@@ -37,7 +37,7 @@
 using namespace DAVA;
 
 CustomClassProperty::CustomClassProperty(ControlNode* aControl, const CustomClassProperty* sourceProperty, eCloneType cloneType)
-    : ValueProperty("Custom Class")
+    : ValueProperty("Custom Class", VariantType::TYPE_STRING)
     , control(aControl) // weak
 {
     if (sourceProperty)
