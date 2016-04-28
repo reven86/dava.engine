@@ -42,8 +42,6 @@ class LibPSDHelper : public ImageFormatInterface
 public:
     LibPSDHelper();
 
-    ImageFormat GetImageFormat() const override;
-
     bool CanProcessFile(File* file) const override;
 
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
@@ -57,10 +55,6 @@ public:
     ImageInfo GetImageInfo(File* infile) const override;
 };
 
-inline ImageFormat LibPSDHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_PSD;
-}
 };
 
 #endif // __DAVAENGINE_PSD_HELPER_H__

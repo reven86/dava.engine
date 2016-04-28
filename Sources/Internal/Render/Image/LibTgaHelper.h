@@ -42,8 +42,6 @@ class LibTgaHelper : public ImageFormatInterface
 public:
     LibTgaHelper();
 
-    ImageFormat GetImageFormat() const override;
-
     bool CanProcessFile(File* file) const override;
 
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
@@ -117,10 +115,6 @@ private:
     };
 };
 
-inline ImageFormat LibTgaHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_TGA;
-}
 };
 
 #endif // __DAVAENGINE_TGA_HELPER_H__

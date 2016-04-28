@@ -60,7 +60,7 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
 
     const FilePath sourceImagePath = descriptor->GetSourceTexturePathname();
     const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
-    if (imageInfo.isEmpty())
+    if (imageInfo.IsEmpty())
     {
         Logger::Error("Can't get image info for %s", sourceImagePath.GetAbsolutePathname().c_str());
         return false;

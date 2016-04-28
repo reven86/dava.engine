@@ -38,8 +38,8 @@
 namespace DAVA
 {
 LibPSDHelper::LibPSDHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PSD, "PSD")
 {
-    name.assign("PSD");
     supportedExtensions.emplace_back(".psd");
     supportedFormats = { FORMAT_RGBA8888 };
 }

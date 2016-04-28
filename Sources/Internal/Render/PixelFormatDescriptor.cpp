@@ -149,4 +149,35 @@ PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName& formatNa
 
     return FORMAT_INVALID;
 }
+
+bool PixelFormatDescriptor::IsCompressedFormat(PixelFormat format)
+{
+    switch (format)
+    {
+    case FORMAT_PVR4:
+    case FORMAT_PVR2:
+    case FORMAT_ETC1:
+    case FORMAT_PVR2_2:
+    case FORMAT_PVR4_2:
+    case FORMAT_EAC_R11_UNSIGNED:
+    case FORMAT_EAC_R11_SIGNED:
+    case FORMAT_EAC_RG11_UNSIGNED:
+    case FORMAT_EAC_RG11_SIGNED:
+    case FORMAT_ETC2_RGB:
+    case FORMAT_ETC2_RGBA:
+    case FORMAT_ETC2_RGB_A1:
+    case FORMAT_DXT1:
+    case FORMAT_DXT1A:
+    case FORMAT_DXT3:
+    case FORMAT_DXT5:
+    case FORMAT_DXT5NM:
+    case FORMAT_ATC_RGB:
+    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+        return true;
+
+    default:
+        return false;
+    }
+}
 };

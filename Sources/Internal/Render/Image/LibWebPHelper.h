@@ -42,8 +42,6 @@ class LibWebPHelper : public ImageFormatInterface
 public:
     LibWebPHelper();
 
-    ImageFormat GetImageFormat() const override;
-
     bool CanProcessFile(File* file) const override;
 
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
@@ -57,10 +55,6 @@ public:
     ImageInfo GetImageInfo(File* infile) const override;
 };
 
-inline ImageFormat LibWebPHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_WEBP;
-}
 };
 
 #endif // __DAVAENGINE_WEB_P_HELPER_H__

@@ -34,7 +34,7 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibPVRHelperV2.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
@@ -942,7 +942,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         DVASSERT(false);
         return 0;
 #else
-        LibPVRHelper helper;
+        LibPVRHelperV2 helper;
         uint32 convertedCRC = helper.GetCRCFromFile(filePath);
         if (convertedCRC != 0)
         {

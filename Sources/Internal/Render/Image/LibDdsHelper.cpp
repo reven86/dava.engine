@@ -725,8 +725,8 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, Pixe
 }
 
 LibDdsHelper::LibDdsHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_DDS, "DDS")
 {
-    name.assign("DDS");
     supportedExtensions.push_back(".dds");
     supportedFormats = { { FORMAT_ATC_RGB,
                            FORMAT_ATC_RGBA_EXPLICIT_ALPHA,

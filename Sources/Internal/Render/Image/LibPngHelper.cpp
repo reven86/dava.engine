@@ -91,8 +91,8 @@ void abort_(const char* s, ...)
 }
 
 LibPngHelper::LibPngHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PNG, "PNG")
 {
-    name.assign("PNG");
     supportedExtensions.push_back(".png");
     supportedFormats = { { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 } };
 }

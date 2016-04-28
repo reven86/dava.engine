@@ -27,39 +27,59 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LIBPNG_HELPERS_H__
-#define __DAVAENGINE_LIBPNG_HELPERS_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
-
-#include "Render/Image/Image.h"
 #include "Render/Image/ImageFormatInterface.h"
+#include "FileSystem/File.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
-class Texture;
-class Sprite;
-class Image;
-
-class LibPngHelper : public ImageFormatInterface
+ImageFormatInterface::ImageFormatInterface(ImageFormat imageFormat_, const String& interfaceName_)
+    : imageFormat(imageFormat_)
+    , interfaceName(interfaceName_)
 {
-public:
-    LibPngHelper();
-
-    bool CanProcessFile(File* infile) const override;
-
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
-    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    ImageInfo GetImageInfo(File* infile) const override;
-
-    static eErrorCode ReadPngFile(File* infile, Image* image, PixelFormat targetFormat = FORMAT_INVALID);
-};
-
 }
 
-#endif // __PNG_IMAGE_H__
+ImageFormat ImageFormatInterface::GetImageFormat() const
+{
+    return imageFormat;
+}
+
+ImageInfo ImageFormatInterface::GetImageInfo(const FilePath& path) const
+{
+    ScopedPtr<File> infile(File::Create(path, File::OPEN | File::READ));
+    if (infile)
+    {
+        ImageInfo info = GetImageInfo(infile);
+        return info;
+    }
+    return ImageInfo();
+}
+
+bool ImageFormatInterface::IsFormatSupported(PixelFormat format) const
+{
+    return (std::find(supportedFormats.begin(), supportedFormats.end(), format) != supportedFormats.end());
+}
+
+bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) const
+{
+    for (const String& ext : supportedExtensions)
+    {
+        if (CompareCaseInsensitive(ext, extension) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+const Vector<String>& ImageFormatInterface::Extensions() const
+{
+    return supportedExtensions;
+}
+
+const String& ImageFormatInterface::Name() const
+{
+    return interfaceName;
+}
+};

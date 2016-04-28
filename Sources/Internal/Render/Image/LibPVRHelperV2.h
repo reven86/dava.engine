@@ -27,39 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LIBPNG_HELPERS_H__
-#define __DAVAENGINE_LIBPNG_HELPERS_H__
+#pragma once
 
+#include "Base/Platform.h"
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
 
-#include "Render/Image/Image.h"
 #include "Render/Image/ImageFormatInterface.h"
+#include "Render/Image/Private/CRCAdditionInterface.h"
 
 namespace DAVA
 {
-class Texture;
-class Sprite;
-class Image;
-
-class LibPngHelper : public ImageFormatInterface
+class LibPVRHelperV2 : public ImageFormatInterface, public CRCAdditionInterface
 {
 public:
-    LibPngHelper();
+    LibPVRHelperV2();
 
-    bool CanProcessFile(File* infile) const override;
+    //ImageFormatInterface
+    bool CanProcessFile(File* file) const override;
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const override;
+
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet) const;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const;
+
+    // CRCAdditionInterface
+    bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
+    uint32 GetCRCFromFile(const FilePath& filePathname) const override;
+
+protected:
     ImageInfo GetImageInfo(File* infile) const override;
-
-    static eErrorCode ReadPngFile(File* infile, Image* image, PixelFormat targetFormat = FORMAT_INVALID);
 };
-
-}
-
-#endif // __PNG_IMAGE_H__
+};

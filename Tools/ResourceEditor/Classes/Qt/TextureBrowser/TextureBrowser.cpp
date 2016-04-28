@@ -34,6 +34,7 @@
 #include "TextureBrowser/TextureCache.h"
 #include "Main/QtUtils.h"
 #include "Main/mainwindow.h"
+#include "Render/PixelFormatDescriptor.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Qt/Settings/SettingsManager.h"

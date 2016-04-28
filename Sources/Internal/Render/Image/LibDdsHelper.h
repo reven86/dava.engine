@@ -34,7 +34,7 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "Render/Image/ImageFormatInterface.h"
-#include "Render/Image/CRCAdditionInterface.h"
+#include "Render/Image/Private/CRCAdditionInterface.h"
 
 namespace DAVA
 {
@@ -46,7 +46,6 @@ class LibDdsHelper : public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibDdsHelper();
 
-    ImageFormat GetImageFormat() const override;
     bool CanProcessFile(File* infile) const override;
 
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
@@ -68,10 +67,6 @@ private:
     static bool WriteAtcFileAsCubemap(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat);
 };
 
-inline ImageFormat LibDdsHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_DDS;
-}
 };
 
 #endif // __DAVAENGINE_DXT_HELPER_H__

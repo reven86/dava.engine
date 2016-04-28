@@ -39,8 +39,8 @@
 namespace DAVA
 {
 LibWebPHelper::LibWebPHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_WEBP, "WEBP")
 {
-    name.assign("WEBP");
     supportedExtensions.push_back(".webp");
     supportedFormats = { { FORMAT_RGB888, FORMAT_RGBA8888 } };
 }

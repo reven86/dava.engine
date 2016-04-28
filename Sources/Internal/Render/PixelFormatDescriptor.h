@@ -56,6 +56,8 @@ public:
 
     static const PixelFormatDescriptor& GetPixelFormatDescriptor(const PixelFormat formatID);
 
+    static bool IsCompressedFormat(PixelFormat format);
+
 private:
     static UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> pixelDescriptors;
 

@@ -37,8 +37,8 @@ namespace DAVA
 static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
 LibTgaHelper::LibTgaHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_TGA, "TGA")
 {
-    name.assign("TGA");
     supportedExtensions.emplace_back(".tga");
     supportedExtensions.emplace_back(".tpic");
     supportedFormats = { { FORMAT_RGBA8888,
@@ -54,7 +54,7 @@ LibTgaHelper::LibTgaHelper()
 
 bool LibTgaHelper::CanProcessFile(File* infile) const
 {
-    return !(GetImageInfo(infile).isEmpty());
+    return !(GetImageInfo(infile).IsEmpty());
 }
 
 ImageInfo LibTgaHelper::GetImageInfo(File* infile) const

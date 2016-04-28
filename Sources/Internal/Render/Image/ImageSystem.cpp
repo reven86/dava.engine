@@ -39,7 +39,7 @@
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelper.h"
-#include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibPVRHelperV2.h"
 #include "Render/Image/LibTgaHelper.h"
 #include "Render/Image/LibWebPHelper.h"
 #include "Render/Image/LibPSDHelper.h"
@@ -52,7 +52,7 @@ ImageSystem::ImageSystem()
 {
     wrappers[IMAGE_FORMAT_PNG].reset(new LibPngHelper());
     wrappers[IMAGE_FORMAT_DDS].reset(new LibDdsHelper());
-    wrappers[IMAGE_FORMAT_PVR].reset(new LibPVRHelper());
+    wrappers[IMAGE_FORMAT_PVR].reset(new LibPVRHelperV2());
     wrappers[IMAGE_FORMAT_JPEG].reset(new LibJpegHelper());
     wrappers[IMAGE_FORMAT_TGA].reset(new LibTgaHelper());
     wrappers[IMAGE_FORMAT_WEBP].reset(new LibWebPHelper());

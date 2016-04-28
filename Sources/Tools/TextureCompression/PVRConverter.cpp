@@ -34,7 +34,7 @@
 #include "Platform/Process.h"
 
 #include "Render/GPUFamilyDescriptor.h"
-#include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibPVRHelperV2.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/LibTgaHelper.h"
@@ -141,7 +141,7 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
 
     if (addCRC)
     {
-        LibPVRHelper helper;
+        LibPVRHelperV2 helper;
         helper.AddCRCIntoMetaData(outputName);
     }
     return outputName;
@@ -204,13 +204,16 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
     }
 
     FilePath outputName = GetPVRToolOutput(descriptor, gpuFamily);
-    bool ret = LibPVRHelper::WriteFileFromMipMapFiles(outputName, convertedPVRs);
+
+    //    bool ret = LibPVRHelper::WriteFileFromMipMapFiles(outputName, convertedPVRs);
+    DVASSERT(false && "Need to rewrite code")
 
     FileSystem::Instance()->DeleteDirectory(dirPath, true);
 
+    bool ret = false;
     if (ret)
     {
-        LibPVRHelper helper;
+        LibPVRHelperV2 helper;
         helper.AddCRCIntoMetaData(outputName);
         return outputName;
     }

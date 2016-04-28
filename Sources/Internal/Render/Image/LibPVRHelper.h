@@ -30,6 +30,8 @@
 #ifndef __DAVAENGINE_LIBPVRHELPER_H__
 #define __DAVAENGINE_LIBPVRHELPER_H__
 
+#if 0
+
 #include "Base/Platform.h"
 
 #include "Base/BaseTypes.h"
@@ -40,7 +42,7 @@
 #include "Render/RenderBase.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Image/ImageFormatInterface.h"
-#include "Render/Image/CRCAdditionInterface.h"
+#include "Render/Image/Private/CRCAdditionInterface.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <objc/objc.h>
@@ -145,8 +147,6 @@ class LibPVRHelper : public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibPVRHelper();
 
-    ImageFormat GetImageFormat() const override;
-
     bool CanProcessFile(File* file) const override;
 
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const override;
@@ -202,10 +202,7 @@ protected:
     static bool AllocateImageData(Image* image, uint32 mipMapLevel, const PVRHeaderV3& header);
 };
 
-inline ImageFormat LibPVRHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_PVR;
-}
 };
 
+#endif //if 0
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__

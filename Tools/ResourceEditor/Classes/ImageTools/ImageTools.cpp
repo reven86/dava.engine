@@ -75,7 +75,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, c
     {
         const FilePath& imagePathname = files[i];
         ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePathname);
-        if (!info.isEmpty())
+        if (!info.IsEmpty())
         {
             const auto formatSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
 

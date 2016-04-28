@@ -73,8 +73,8 @@ void jpegErrorExit(j_common_ptr cinfo)
 }
 
 LibJpegHelper::LibJpegHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_JPEG, "JPG")
 {
-    name.assign("JPG");
     supportedExtensions.emplace_back(".jpg");
     supportedExtensions.emplace_back(".jpeg");
     supportedFormats = { { FORMAT_RGB888, FORMAT_A8 } };

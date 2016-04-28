@@ -29,6 +29,9 @@
 
 #include "Base/Platform.h"
 
+#if 0
+
+
 #include "Render/Texture.h"
 #include "Logger/Logger.h"
 #include "FileSystem/FileSystem.h"
@@ -117,8 +120,8 @@ PVRFile::~PVRFile()
 const uint32 PVRTEX3_METADATAIDENT = 0x03525650;
 
 LibPVRHelper::LibPVRHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PVR, "PVR")
 {
-    name.assign("PVR");
     supportedExtensions.push_back(".pvr");
 }
 
@@ -2585,3 +2588,5 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image* image, uint32 mipMapLevel, con
     return true;
 }
 };
+
+#endif //if 0
