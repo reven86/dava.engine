@@ -81,24 +81,6 @@ macro ( qt_deploy )
                     "-a" "${DEPLOY_ARGUMENTS}"
         )
 
-endmacro ()
-
-macro(resolve_qt_pathes)
-    if ( NOT QT5_LIB_PATH)
-
-        if( WIN32 )
-            set ( QT_CORE_LIB Qt5Core.lib )
-        elseif( MACOS )
-            set ( QT_CORE_LIB QtCore.framework )
-        endif()
-
-        find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
-                          PATHS ${QT_ACTUAL_PATH}
-                          PATH_SUFFIXES lib)
-
-        ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")
-    endif()
-    set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT5_LIB_PATH}/cmake")
 endmacro()
 
 #################################################################
@@ -111,7 +93,13 @@ set ( CMAKE_AUTOMOC ON )
 list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick Network)
 list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 
-resolve_qt_pathes()
+set ( QT_CMAKE_RULES "${QT_ACTUAL_PATH}/lib/cmake")
+
+if (NOT EXISTS ${QT_CMAKE_RULES})
+   message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  ) 
+endif()
+
+set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_ACTUAL_PATH}/lib/cmake")
 
 foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     if (NOT Qt5${COMPONENT}_FOUND)
