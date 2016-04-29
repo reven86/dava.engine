@@ -133,7 +133,7 @@ int main(int argc, const char* argv[])
 
                 if (output.is_open())
                 {
-                    std::cout.set_rdbuf(output.rdbuf());
+                    std::cout.rdbuf(output.rdbuf());
                 }
 
                 // process files
@@ -149,7 +149,7 @@ int main(int argc, const char* argv[])
 
                 if (output.is_open())
                 {
-                    std::cout.set_rdbuf(coutbuf);
+                    std::cout.rdbuf(coutbuf);
                     output.close();
                 }
             }
@@ -183,7 +183,7 @@ int main(int argc, const char* argv[])
 
                 if (output.is_open())
                 {
-                    std::cout.set_rdbuf(output.rdbuf());
+                    std::cout.rdbuf(output.rdbuf());
                 }
 
                 file.open(path, std::ios::binary);
@@ -216,7 +216,7 @@ int main(int argc, const char* argv[])
 
             if (output.is_open())
             {
-                std::cout.set_rdbuf(coutbuf);
+                std::cout.rdbuf(coutbuf);
                 output.close();
             }
         }
@@ -255,7 +255,7 @@ int main(int argc, const char* argv[])
 
                 if (output.is_open())
                 {
-                    std::cout.set_rdbuf(output.rdbuf());
+                    std::cout.rdbuf(output.rdbuf());
                 }
 
                 if (packs.size() > 0)
@@ -306,7 +306,7 @@ int main(int argc, const char* argv[])
 
                 if (output.is_open())
                 {
-                    std::cout.set_rdbuf(coutbuf);
+                    std::cout.rdbuf(coutbuf);
                     output.close();
                 }
             }
