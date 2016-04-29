@@ -32,7 +32,7 @@
 #include "filemanager.h"
 #include "ziputils.h"
 #include "processhelper.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include <QProcess>
 
 namespace SelfUpdater_local
@@ -46,7 +46,7 @@ public:
 private:
     void OnError(const ZipError& zipError) override
     {
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
     }
 };
 }
@@ -114,7 +114,7 @@ void SelfUpdater::DownloadFinished()
             FileManager::Instance()->MoveFilesOnlyToDirectory(selfUpdateDirPath, appDirPath);
             FileManager::Instance()->DeleteDirectory(selfUpdateDirPath);
             FileManager::Instance()->ClearTempDirectory();
-            ErrorMessanger::Instance()->ShowNotificationDlg("Launcher was updated. Please, relaunch application.");
+            ErrorMessenger::Instance()->ShowNotificationDlg("Launcher was updated. Please, relaunch application.");
             qApp->exit();
         }
         else
@@ -127,7 +127,7 @@ void SelfUpdater::DownloadFinished()
     else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {
         setResult(QDialog::Rejected);
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
+        ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
         close();
     }
 }

@@ -33,7 +33,7 @@
 #include "defines.h"
 #include <QFile>
 
-class ErrorMessanger
+class ErrorMessenger
 {
 public:
     enum ErrorID
@@ -47,19 +47,20 @@ public:
         ERROR_COUNT
     };
 
-    ~ErrorMessanger();
-    static ErrorMessanger* Instance();
+    ~ErrorMessenger();
+    static ErrorMessenger* Instance();
 
     void ShowErrorMessage(ErrorID id, int errorCode = 0, const QString& addInfo = "");
+    void ShowErrorMessage(ErrorID id, const QString& addInfo);
     int ShowRetryDlg(bool canCancel);
     void ShowNotificationDlg(const QString& info);
 
     void LogMessage(QtMsgType, const QString& msg);
 
 private:
-    ErrorMessanger();
+    ErrorMessenger();
 
-    static ErrorMessanger* instatnce;
+    static ErrorMessenger* instatnce;
 
     QFile logFile;
 };

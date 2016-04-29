@@ -46,8 +46,6 @@ public:
     explicit ApplicationManager(QObject* parent = 0);
     ~ApplicationManager();
 
-    void RefreshRemoteConfig();
-
     QString GetString(const QString& stringID) const;
 
     ConfigParser* GetLocalConfig();

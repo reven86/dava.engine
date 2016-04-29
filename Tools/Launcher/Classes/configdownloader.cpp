@@ -31,7 +31,7 @@
 #include "ui_configdownloader.h"
 #include "filemanager.h"
 #include "processhelper.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "applicationmanager.h"
 #include <QProcess>
 
@@ -58,8 +58,7 @@ ConfigDownloader::~ConfigDownloader()
 
 int ConfigDownloader::exec()
 {
-    QUrl url("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches");
-    QUrl removeUrl(QUrl(appManager->localConfig->GetRemoteConfigURL()));
+    QUrl url(appManager->localConfig->GetRemoteConfigURL());
     downloader->Download(url);
 
     return QDialog::exec();
@@ -71,7 +70,7 @@ void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList<QPair<Q
     {
         if (errorCode != QNetworkReply::OperationCanceledError)
         {
-            ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, errorCode, errorDescr);
+            ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, errorCode, errorDescr);
         }
         reject();
     }

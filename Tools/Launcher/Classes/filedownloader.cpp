@@ -45,7 +45,7 @@ FileDownloader::~FileDownloader()
 {
 }
 
-void FileDownloader::Download(QUrl url)
+void FileDownloader::Download(const QUrl& url)
 {
     Cancel();
 

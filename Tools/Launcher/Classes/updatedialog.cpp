@@ -31,7 +31,7 @@
 #include "ui_updatedialog.h"
 #include "filemanager.h"
 #include "applicationmanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "processhelper.h"
 #include "mainwindow.h"
 #include "defines.h"
@@ -77,7 +77,7 @@ private:
     void OnError(const ZipError& zipError) override
     {
         Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
         dialog->UpdateLastLogValue(errorMessage);
         dialog->BreakLog();
     }
@@ -228,7 +228,7 @@ void UpdateDialog::DownloadFinished()
 
         QString runPath = appDir + task.version.runPath;
         while (ProcessHelper::IsProcessRuning(runPath))
-            ErrorMessanger::Instance()->ShowRetryDlg(false);
+            ErrorMessenger::Instance()->ShowRetryDlg(false);
 
         FileManager::Instance()->DeleteDirectory(appDir);
 
@@ -259,7 +259,7 @@ void UpdateDialog::DownloadFinished()
         UpdateLastLogValue("Download Fail!");
         BreakLog();
 
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
+        ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
     }
     tasks.dequeue();
     StartNextTask();

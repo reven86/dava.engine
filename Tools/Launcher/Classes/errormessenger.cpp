@@ -27,15 +27,15 @@
 =====================================================================================*/
 
 
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "filemanager.h"
 #include <QString>
 #include <QMessageBox>
 #include <QDateTime>
 
-ErrorMessanger* ErrorMessanger::instatnce;
+ErrorMessenger* ErrorMessenger::instatnce;
 
-QString errorsMsg[ErrorMessanger::ERROR_COUNT] = {
+QString errorsMsg[ErrorMessenger::ERROR_COUNT] = {
     "Can't access to documents directory",
     "Network Error",
     "Config parse error",
@@ -43,26 +43,31 @@ QString errorsMsg[ErrorMessanger::ERROR_COUNT] = {
     "Application is running. Please, close it"
 };
 
-ErrorMessanger::ErrorMessanger()
+ErrorMessenger::ErrorMessenger()
 {
     QString logPath = FileManager::Instance()->GetDocumentsDirectory() + "launcher.log";
     logFile.setFileName(logPath);
     logFile.open(QIODevice::WriteOnly | QIODevice::Append);
 }
 
-ErrorMessanger::~ErrorMessanger()
+ErrorMessenger::~ErrorMessenger()
 {
     logFile.close();
 }
 
-ErrorMessanger* ErrorMessanger::Instance()
+ErrorMessenger* ErrorMessenger::Instance()
 {
     if (!instatnce)
-        instatnce = new ErrorMessanger();
+        instatnce = new ErrorMessenger();
     return instatnce;
 }
 
-void ErrorMessanger::ShowErrorMessage(ErrorID id, int errorCode, const QString& addInfo)
+void ErrorMessenger::ShowErrorMessage(ErrorID id, const QString& info)
+{
+    ShowErrorMessage(id, 0, info);
+}
+
+void ErrorMessenger::ShowErrorMessage(ErrorID id, int errorCode, const QString& addInfo)
 {
     QString errorMessage = errorsMsg[(int)id];
 
@@ -70,15 +75,20 @@ void ErrorMessanger::ShowErrorMessage(ErrorID id, int errorCode, const QString& 
         errorMessage += QString("\nError Code: %1").arg(errorCode);
 
     if (!addInfo.isEmpty())
-        errorMessage += "\n" + addInfo;
-
+    {
+        if (!errorMessage.isEmpty())
+        {
+            errorMessage += "\n";
+        }
+        errorMessage += addInfo;
+    }
     LogMessage(QtDebugMsg, errorMessage.toStdString().c_str());
 
     QMessageBox msgBox(QMessageBox::Critical, "Error", errorMessage, QMessageBox::Ok);
     msgBox.exec();
 }
 
-int ErrorMessanger::ShowRetryDlg(bool canCancel)
+int ErrorMessenger::ShowRetryDlg(bool canCancel)
 {
     QFlags<QMessageBox::StandardButton> buts = QMessageBox::Retry;
     if (canCancel)
@@ -89,13 +99,13 @@ int ErrorMessanger::ShowRetryDlg(bool canCancel)
     return msgBox.result();
 }
 
-void ErrorMessanger::ShowNotificationDlg(const QString& info)
+void ErrorMessenger::ShowNotificationDlg(const QString& info)
 {
     QMessageBox msgBox(QMessageBox::Information, "Launcher", info, QMessageBox::Ok);
     msgBox.exec();
 }
 
-void ErrorMessanger::LogMessage(QtMsgType type, const QString& msg)
+void ErrorMessenger::LogMessage(QtMsgType type, const QString& msg)
 {
     QString typeStr;
     switch (type)

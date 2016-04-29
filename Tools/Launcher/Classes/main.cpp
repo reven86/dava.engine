@@ -29,19 +29,19 @@
 
 #include "mainwindow.h"
 #include "filemanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include <QApplication>
 
 void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
-    ErrorMessanger::Instance()->LogMessage(type, msg);
+    ErrorMessenger::Instance()->LogMessage(type, msg);
 }
 
 int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
 
-    ErrorMessanger::Instance();
+    ErrorMessenger::Instance();
     //qInstallMessageHandler(LogMessageHandler);
 
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
