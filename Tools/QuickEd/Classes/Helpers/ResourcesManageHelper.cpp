@@ -28,15 +28,16 @@
 
 
 #include "ResourcesManageHelper.h"
+#include "Core/Core.h"
 #include "EditorSettings.h"
 #include <QString>
 #include <QStringList>
 #include <QDir>
-#include "Core/Core.h"
+
 
 using namespace DAVA;
 
-namespace
+namespace ResourcesManageHelperLocal
 {
 // True type fonts resource folder path
 const String FONTS_RES_PATH("~res:/Fonts/");
@@ -64,6 +65,7 @@ QString ResourcesManageHelper::projectPath;
 
 QString ResourcesManageHelper::GetFontRelativePath(const QString& resourceFileName, bool graphicsFont)
 {
+    using namespace ResourcesManageHelperLocal;
     QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname())
                                       :
                                       QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
@@ -74,6 +76,7 @@ QString ResourcesManageHelper::GetFontRelativePath(const QString& resourceFileNa
 
 QStringList ResourcesManageHelper::GetFontsList()
 {
+    using namespace ResourcesManageHelperLocal;
     QStringList filesNamesList;
     // Get true type fonts
     // Get absoulute path
@@ -87,6 +90,7 @@ QStringList ResourcesManageHelper::GetFontsList()
 
 void ResourcesManageHelper::InitInternalResources()
 {
+    using namespace ResourcesManageHelperLocal;
     // Save project default title
     if (DAVA::Core::Instance())
     {
@@ -103,7 +107,7 @@ void ResourcesManageHelper::InitInternalResources()
 
 QString ResourcesManageHelper::GetDocumentationPath()
 {
-    return DOCUMENTATION_PATH;
+    return ResourcesManageHelperLocal::DOCUMENTATION_PATH;
 }
 
 void ResourcesManageHelper::SetProjectPath(const QString& path)
@@ -158,10 +162,10 @@ QString ResourcesManageHelper::GetResourceRootDirectory()
 
 QString ResourcesManageHelper::GetDataPath(const QString& projectPath)
 {
-    return QString(PROJECT_DATA).arg(projectPath);
+    return QString(ResourcesManageHelperLocal::PROJECT_DATA).arg(projectPath);
 }
 
 QString ResourcesManageHelper::GetProjectFilePath(const QString& projectPath)
 {
-    return QString(PROJECT_FILE_PATH).arg(projectPath);
+    return QString(ResourcesManageHelperLocal::PROJECT_FILE_PATH).arg(projectPath);
 }
