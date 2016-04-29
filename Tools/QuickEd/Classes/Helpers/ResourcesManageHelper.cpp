@@ -34,7 +34,6 @@
 #include <QStringList>
 #include <QDir>
 
-
 using namespace DAVA;
 
 namespace ResourcesManageHelperLocal
