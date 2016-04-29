@@ -44,11 +44,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
-    auto start = static_cast<DAVA::uint32>(start_i);
+    DAVA::uint32 start = static_cast<DAVA::uint32>(start_i);
     if (start >= str->GetDelegate()->GetTextLength())
         return;
 
-    auto linesInfo = str->GetDelegate()->GetMultilineInfo();
+    const DAVA::Vector<DAVA::TextBlock::Line>& linesInfo = str->GetDelegate()->GetMultilineInfo();
     if (linesInfo.empty())
         return;
 
@@ -57,7 +57,7 @@ inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int sta
                                        return l.offset == static_cast<DAVA::uint32>(start);
                                    });
     DVASSERT(lineInfoIt != linesInfo.end());
-    auto line = *lineInfoIt;
+    const DAVA::TextBlock::Line& line = *lineInfoIt;
     row->num_chars = line.length;
     row->x0 = line.xoffset;
     row->x1 = line.xoffset + line.xadvance;
@@ -97,7 +97,7 @@ inline int stb_stringlen(STB_TEXTEDIT_STRING* str)
 
 inline float stb_getwidth(STB_TEXTEDIT_STRING* str, int n, int i)
 {
-    auto charsSizes = str->GetDelegate()->GetCharactersSizes();
+    const DAVA::Vector<DAVA::float32>& charsSizes = str->GetDelegate()->GetCharactersSizes();
     if (static_cast<DAVA::uint32>(charsSizes.size()) > static_cast<DAVA::uint32>(n + i))
     {
         return charsSizes[n + i];

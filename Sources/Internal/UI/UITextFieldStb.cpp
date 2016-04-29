@@ -120,7 +120,7 @@ void TextFieldStbImpl::SetFontSize(float32 size)
 
 void TextFieldStbImpl::SetText(const WideString& newText)
 {
-    auto prevText = text;
+    WideString prevText = text;
     if (prevText != newText)
     {
         SelectAll();
@@ -312,10 +312,10 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->IntersectClipRect(clipRect);
 
-    const auto& scale = d.scale;
-    const auto& offset = d.GetUnrotatedRect().GetPosition();
+    const Vector2& scale = d.scale;
+    const Vector2& offset = d.GetUnrotatedRect().GetPosition();
 
-    for (const auto& r : selectionRects)
+    for (const Rect& r : selectionRects)
     {
         Rect sr = r;
         sr.x *= scale.x;
@@ -355,8 +355,8 @@ const Color& TextFieldStbImpl::GetSelectionColor() const
 
 uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_type* str, uint32 length)
 {
-    auto insertText = WideString(str, length);
-    auto delegate = control->GetDelegate();
+    WideString insertText(str, length);
+    UITextFieldDelegate* delegate = control->GetDelegate();
     bool apply = true;
     if (!ignoreKeyPressedDelegate && delegate)
     {
@@ -364,7 +364,7 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
     }
     if (apply)
     {
-        auto prevText = text;
+        WideString prevText(text);
 
         if (control->GetMaxLength() > 0)
         {
@@ -388,7 +388,7 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
 
 uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
 {
-    auto delegate = control->GetDelegate();
+    UITextFieldDelegate* delegate = control->GetDelegate();
     bool apply = true;
     if (!ignoreKeyPressedDelegate && delegate)
     {
@@ -397,7 +397,7 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
     }
     if (apply)
     {
-        auto prevText = text;
+        WideString prevText(text);
         text.erase(position, length);
         if (delegate && length > 0)
         {
@@ -431,13 +431,13 @@ WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i)
 void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 {
     selectionRects.clear();
-    auto selStart = std::min(start, end);
-    auto selEnd = std::max(start, end);
+    uint32 selStart = std::min(start, end);
+    uint32 selEnd = std::max(start, end);
     if (selStart < selEnd)
     {
-        const auto& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
-        const auto& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
-        for (const auto& line : linesInfo)
+        const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
+        const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
+        for (const TextBlock::Line& line : linesInfo)
         {
             if (selStart >= line.offset + line.length || selEnd <= line.offset)
             {
@@ -482,8 +482,8 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
-    const auto& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
-    const auto& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
+    const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
+    const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
 
     Rect r;
     r.x = staticTextOffset.x;
@@ -499,7 +499,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
                                        });
         if (lineInfoIt != linesInfo.end())
         {
-            auto line = *lineInfoIt;
+            const TextBlock::Line& line = *lineInfoIt;
             r.y += line.yoffset;
             r.dy = line.yadvance;
             if (cursorPos != line.offset)
@@ -517,7 +517,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
         }
         else
         {
-            auto line = *linesInfo.rbegin();
+            const TextBlock::Line& line = *linesInfo.rbegin();
             r.y += line.yoffset;
             r.dy = line.yadvance;
             r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
@@ -574,15 +574,15 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
     if (controlSize.dx < textSize.dx)
     {
         float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA.x, textSize.dx - controlSize.dx);
-        if (visibleRect.x < TEXT_OFFSET_CHECK_DELTA.x)
+        if (visibleRect.x < TEXT_OFFSET_CHECK_DELTA.x && staticTextOffset.x < 0.f) // Left
         {
             staticTextOffset.x = std::min(0.f, staticTextOffset.x + delta);
         }
-        else if (visibleRect.x > controlSize.dx - TEXT_OFFSET_CHECK_DELTA.x)
+        else if (visibleRect.x + visibleRect.dx > controlSize.dx - TEXT_OFFSET_CHECK_DELTA.x) // Right
         {
             staticTextOffset.x = std::max(controlSize.dx - textSize.dx - visibleRect.dx - 1.0f, staticTextOffset.x - delta - visibleRect.dx - 1.f);
         }
-        else if (staticTextOffset.x + textSize.dx < controlSize.dx)
+        else if (staticTextOffset.x + textSize.dx + visibleRect.dx < controlSize.dx) // Delete characters / reduce text width
         {
             staticTextOffset.x = std::min(0.f, controlSize.x - textSize.dx - visibleRect.dx - 1.0f);
         }
@@ -595,15 +595,15 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
     if (controlSize.dy < textSize.dy)
     {
         float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA.y, textSize.dy - controlSize.dy);
-        if (visibleRect.y < TEXT_OFFSET_CHECK_DELTA.y)
+        if (visibleRect.y < TEXT_OFFSET_CHECK_DELTA.y && staticTextOffset.y < 0.f) // Up
         {
             staticTextOffset.y = std::min(0.f, staticTextOffset.y + delta);
         }
-        else if (visibleRect.y > controlSize.dy - TEXT_OFFSET_CHECK_DELTA.y)
+        else if (visibleRect.y + visibleRect.dy > controlSize.dy - TEXT_OFFSET_CHECK_DELTA.y) // Down
         {
             staticTextOffset.y = std::max(controlSize.dy - textSize.dy - visibleRect.dy - 1.0f, staticTextOffset.y - delta - visibleRect.dy - 1.f);
         }
-        else if (staticTextOffset.y + textSize.dy < controlSize.dy)
+        else if (staticTextOffset.y + textSize.dy + visibleRect.dy < controlSize.dy) // Delete line / reduce text height
         {
             staticTextOffset.y = std::min(0.f, controlSize.y - textSize.dy - visibleRect.dy - 1.0f);
         }
@@ -622,11 +622,10 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
         currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        const auto& kDevice = InputSystem::Instance()->GetKeyboard();
-        auto isShift = kDevice.IsKeyPressed(Key::LSHIFT) || kDevice.IsKeyPressed(Key::RSHIFT);
-        auto isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
-        auto isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
-        auto isWin = kDevice.IsKeyPressed(Key::LWIN) || kDevice.IsKeyPressed(Key::RWIN);
+        const KeyboardDevice& kDevice = InputSystem::Instance()->GetKeyboard();
+        bool isShift = kDevice.IsKeyPressed(Key::LSHIFT) || kDevice.IsKeyPressed(Key::RSHIFT);
+        bool isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
+        bool isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
 
         if (currentInput->key == Key::ENTER && !isAlt)
         {
@@ -759,7 +758,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     }
     else if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
-        auto localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
+        Vector2 localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
         stb->Click(localPoint - staticTextOffset);
         if (currentInput->tapCount > 1)
         {
@@ -769,7 +768,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
-        auto localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
+        Vector2 localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
         stb->Drag(localPoint - staticTextOffset);
     }
 
@@ -794,11 +793,11 @@ void TextFieldStbImpl::SelectAll()
 bool TextFieldStbImpl::CutToClipboard()
 {
 #if ENABLE_CLIPBOARD
-    auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    uint32 selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    uint32 selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
     if (selStart < selEnd)
     {
-        auto selectedText = text.substr(selStart, selEnd - selStart);
+        WideString selectedText = text.substr(selStart, selEnd - selStart);
         if (Clipboard().SetText(selectedText))
         {
             stb->Cut();
@@ -812,11 +811,11 @@ bool TextFieldStbImpl::CutToClipboard()
 bool TextFieldStbImpl::CopyToClipboard()
 {
 #if ENABLE_CLIPBOARD
-    auto selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    auto selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    uint32 selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
+    uint32 selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
     if (selStart < selEnd)
     {
-        auto selectedText = text.substr(selStart, selEnd - selStart);
+        WideString selectedText = text.substr(selStart, selEnd - selStart);
         return Clipboard().SetText(selectedText);
     }
 #endif
@@ -826,7 +825,7 @@ bool TextFieldStbImpl::CopyToClipboard()
 bool TextFieldStbImpl::PasteFromClipboard()
 {
 #if ENABLE_CLIPBOARD
-    auto font = control->GetFont();
+    Font* font = control->GetFont();
     // Can't paste any text without font
     if (font != nullptr)
     {
