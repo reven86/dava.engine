@@ -81,6 +81,8 @@ int main(int argc, const char* argv[])
     {
         const char* cmd = argv[1];
 
+        std::streambuf* coutbuf = std::cout.rdbuf();
+
         if (0 == strcmp(cmd, "help") || 0 == strcmp(cmd, "--help"))
         {
             cmdok = true;
@@ -90,12 +92,15 @@ int main(int argc, const char* argv[])
             std::cout << "Commands:" << std::endl;
             std::cout << "    echo [options] [<file>...] - Try to open each file and if success prints it name" << std::endl;
             std::cout << "        -p <prefix>            - add prefix to printed name" << std::endl;
+            std::cout << "        -o <output>            - print into output file" << std::endl;
             std::cout << std::endl;
             std::cout << "    hash <file> - Calculate CRC32 for file" << std::endl;
+            std::cout << "        -o <output>            - print into output file" << std::endl;
             std::cout << std::endl;
             std::cout << "    sql [options] <packname> [dependencies...]" << std::endl;
             std::cout << "        -list <file>           - read file for pack content" << std::endl;
             std::cout << "        -hash <file>           - read file for pack hash" << std::endl;
+            std::cout << "        -o <output>            - print into output file" << std::endl;
         }
         else if (0 == strcmp(cmd, "echo"))
         {
@@ -103,6 +108,7 @@ int main(int argc, const char* argv[])
             if (argc > 2)
             {
                 std::string prefix;
+                std::ofstream output;
                 std::set<std::string> files;
 
                 // collect all files and options
@@ -114,10 +120,20 @@ int main(int argc, const char* argv[])
                         prefix = argv[i];
                         prefix.append("/");
                     }
+                    if (0 == strcmp(argv[i], "-o") && (i + 1) < argc)
+                    {
+                        i++;
+                        output.open(argv[i]);
+                    }
                     else
                     {
                         files.insert(argv[i]);
                     }
+                }
+
+                if (output.is_open())
+                {
+                    std::cout.set_rdbuf(output.rdbuf());
                 }
 
                 // process files
@@ -130,18 +146,47 @@ int main(int argc, const char* argv[])
                         file.close();
                     }
                 }
+
+                if (output.is_open())
+                {
+                    std::cout.set_rdbuf(coutbuf);
+                    output.close();
+                }
             }
         }
         else if (0 == strcmp(cmd, "hash"))
         {
+            std::ofstream output;
             uint32_t crc32 = 0xffffffff;
 
             cmdok = true;
             if (argc > 2)
             {
-                std::string path = argv[2];
-                std::ifstream file(path, std::ios::binary);
+                std::string path;
+                std::ifstream file;
 
+                for (int i = 2; i < argc; ++i)
+                {
+                    if (0 == strcmp(argv[i], "-o") && (i + 1) < argc)
+                    {
+                        i++;
+                        output.open(argv[i]);
+                    }
+                    else
+                    {
+                        if (path.empty())
+                        {
+                            path = argv[i];
+                        }
+                    }
+                }
+
+                if (output.is_open())
+                {
+                    std::cout.set_rdbuf(output.rdbuf());
+                }
+
+                file.open(path, std::ios::binary);
                 if (file)
                 {
                     char buff[2048];
@@ -168,6 +213,12 @@ int main(int argc, const char* argv[])
             }
 
             std::cout << std::uppercase << std::hex << crc32 << std::endl;
+
+            if (output.is_open())
+            {
+                std::cout.set_rdbuf(coutbuf);
+                output.close();
+            }
         }
         else if (0 == strcmp(cmd, "sql"))
         {
@@ -177,6 +228,7 @@ int main(int argc, const char* argv[])
                 std::vector<std::string> packs;
                 std::string listpath;
                 std::string hashpath;
+                std::ofstream output;
 
                 for (int i = 2; i < argc; ++i)
                 {
@@ -190,10 +242,20 @@ int main(int argc, const char* argv[])
                         i++;
                         hashpath = argv[i];
                     }
+                    if (0 == strcmp(argv[i], "-o") && (i + 1) < argc)
+                    {
+                        i++;
+                        output.open(argv[i]);
+                    }
                     else
                     {
                         packs.push_back(argv[i]);
                     }
+                }
+
+                if (output.is_open())
+                {
+                    std::cout.set_rdbuf(output.rdbuf());
                 }
 
                 if (packs.size() > 0)
@@ -240,6 +302,12 @@ int main(int argc, const char* argv[])
 
                         listfile.close();
                     }
+                }
+
+                if (output.is_open())
+                {
+                    std::cout.set_rdbuf(coutbuf);
+                    output.close();
                 }
             }
         }

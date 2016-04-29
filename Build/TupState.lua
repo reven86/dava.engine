@@ -223,7 +223,7 @@ function TupState.BuildLists(self)
         local packGroup = self:GetPackGroup(pack)
             
         for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
-            local partCmd = self.cmd.fwdep .. " echo -p \"" .. self.currentDir .. "\" %\"f > %o"
+            local partCmd = self.cmd.fwdep .. " echo -p \"" .. self.currentDir .. "\" %\"f -o %o"
             local partCmdText = "^ Gen list " .. i .. " for " .. pack .. "^ "
             local partOutput = self.packlistDir .. "/" .. pack .. self.conf.delimiter 
                 .. self.currentDirString .. "-" .. i .. self.conf.packlistExt
@@ -242,7 +242,7 @@ function TupState.BuildPacks(self)
         -- generate emply lists for each pack
         -- this will allow cat/type command not fail
         -- if no lists were generated for pack
-        local emptyPackCmd = self.cmd.fwdep .. " echo > %o"
+        local emptyPackCmd = self.cmd.fwdep .. " echo -o %o"
         local emptyPackCmdText = "^ Get empty list for " .. pack.name .. "^ "
         local emptyPackOutput = self.packlistDir .. "/" .. pack.name .. self.conf.delimiter .. "_empty" .. self.conf.packlistExt 
         
@@ -266,14 +266,14 @@ function TupState.BuildPacks(self)
         tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
 
         -- generate pack hash
-        local hashCmd = self.cmd.fwdep .. " hash %f > %o"
+        local hashCmd = self.cmd.fwdep .. " hash %f -o %o"
         local hashCmdText = "^ Hash for " .. pack.name .. "^ "
         local hashOutput = self.outputDir .. "/" .. pack.name .. ".hash"
         tup.rule(archiveOutput, hashCmdText .. hashCmd, hashOutput)
         
         -- generate pack sql
         local packDepends = table.concat(pack.depends, " ")
-        local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -h " .. hashOutput .. " " .. pack.name .. " " .. packDepends .. " > %o"
+        local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -h " .. hashOutput .. " " .. pack.name .. " " .. packDepends .. " -o %o"
         local sqlCmdText = "^ SQL for " .. pack.name .. "^ "
         local sqlOutput = self.sqlDir .. "/" .. pack.name .. ".sql"
         tup.rule({ mergePackOutput, hashOutput }, sqlCmdText ..sqlCmd, { sqlOutput, sqlGroup })
