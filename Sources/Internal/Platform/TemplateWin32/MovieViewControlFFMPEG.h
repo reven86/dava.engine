@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/UIControl.h"
 #include "Render\PixelFormatDescriptor.h"
 #include "Sound/SoundSystem.h"
+#include "FileSystem/StreamBuffer.h"
 
 namespace AV
 {
@@ -153,11 +154,11 @@ struct DecodedFrameBuffer
 
         const uint8 emptyPixelColor = 255;
 
+        bool audioStarted = false;
         Texture * videoTexture = nullptr;
         float64 videoFramerate = 0.f;
-        float64 lastDecodedVideoPTS = 0.f;
+        float64 frame_last_pts = 0.f;
         float64 frame_last_delay = 40e-3;
-        float64 lastDecodedAudioPTS = -1.f;
         float64 video_clock = 0.f;
 
         uint32 textureWidth = 0;
@@ -228,8 +229,9 @@ struct DecodedFrameBuffer
         Deque<DecodedPCMData*> decodedAudio;
         Mutex decodedAudioMutex;
 
+        StreamBuffer pcmBuffer;
         DecodedPCMData* lastPcmData = nullptr;
-        bool decodeAudioOnCallback = true;
+        bool decodeAudioOnCallback = false;
         void FillBufferByPcmData(uint8* data, uint32 datalen, bool decodeInPlace);
         DecodedPCMData* DequePCMAudio();
 
@@ -260,7 +262,7 @@ struct DecodedFrameBuffer
 
     inline float64 MovieViewControl::GetPlayTime()
     {
-        return frameTimer - SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+        return frameTimer - GetTime();
     }
 
     inline void MovieViewControl::ShiftPlayTime(float64 delta)

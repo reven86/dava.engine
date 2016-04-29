@@ -72,6 +72,31 @@ namespace DAVA
     // Initialize the control.
     void MovieViewControl::Initialize(const Rect& rect)
     {
+        /*
+        StreamBuffer buf;
+        std::array<uint8, 256> readed;
+        std::array<uint8, 200> readed2;
+        std::array<uint8, 56> readed3;
+
+
+        std::array<uint8, 16> data;
+        uint32 entryNo = 0;
+        for (uint8 i = 0; i < 16; i++)
+        {
+            
+            for (uint8 j = 0; j < 16; j++)
+            {
+                data[j] = entryNo++;
+            }
+            buf.Write(data.data(), data.size());
+        }
+
+        buf.Read(readed.data(), readed.size());
+        Logger::Error("%d", Memcmp(readed.data(), data.data(), data.size()));
+        buf.Read(readed2.data(), readed2.size());
+
+        buf.Read(readed3.data(), readed3.size());
+        */
         SetRect(rect);
         if (!isFFMGEGInited)
         {
@@ -113,6 +138,9 @@ namespace DAVA
             return;
 
         isPlaying = true;
+
+        if (fmodChannel)
+            fmodChannel->setPaused(false);
 
         readingDataThread = Thread::Create(Message(this, &MovieViewControl::ReadingThread));
         readingDataThread->Start();
@@ -221,7 +249,7 @@ namespace DAVA
             framesInBuffer = decodedFrames.size();
             decodedFramesMutex.Unlock();
 
-            if (framesInBuffer > 1)
+            if (framesInBuffer > 3)
             {
                 Thread::Sleep(1);
             }
@@ -292,7 +320,9 @@ namespace DAVA
 
     float64 MovieViewControl::GetAudioClock()
     {
+        audioPacketsMutex.Lock();
         float64 pts = audio_clock; /* maintained in the audio thread */
+        audioPacketsMutex.Unlock();
         uint32 hw_buf_size = audio_buf_size;
         uint32 bytes_per_sec = 0;
         uint32 n = audioCodecContext->channels * 2;
@@ -321,13 +351,13 @@ namespace DAVA
                 uint32 dataSizeToWrite = lastPcmData->size - lastPcmData->written;
                 Memcpy(data, lastPcmData->data + lastPcmData->written, dataSizeToWrite);
                 fmodDataWritten += dataSizeToWrite;
+                lastPcmData->written += dataSizeToWrite;
             }
             SafeDelete(lastPcmData);
         }
 
         bool fillRestPartOfData = false;
 
-        bool isFirstPacketInCallback = true;
         do
         {
             // get another PCM Data Packet
@@ -342,20 +372,14 @@ namespace DAVA
             // it means that it was the last decoded packet in the queue
             if (nullptr == lastPcmData)
             {
-                if (hasMoreData)
-                    continue;
-                else
+                if (!hasMoreData)
                     break;
             }
 
-            //if (isFirstPacketInCallback)
-            {
-                lastDecodedAudioPTS = lastPcmData->pts;
-                isFirstPacketInCallback = false;
-            }
             // empty space in the data buffer
             const uint32 dataSizeRestInBuffer = datalen - fmodDataWritten;
             const uint32 dataSizeFromPacketToWrite = lastPcmData->size - lastPcmData->written;
+
             const uint32 sizeToWrite = Min(dataSizeRestInBuffer, dataSizeFromPacketToWrite);
 
             //               |     to write       |to move|
@@ -365,7 +389,7 @@ namespace DAVA
             Memcpy(data + fmodDataWritten, lastPcmData->data + lastPcmData->written, sizeToWrite);
             lastPcmData->written += sizeToWrite;
             fmodDataWritten += sizeToWrite;
-
+            Logger::Error("%d pcm bytes written. Current %d", sizeToWrite, lastPcmData->written);
             if (lastPcmData->written == lastPcmData->size)
             {
                 SafeDelete(lastPcmData);
@@ -390,7 +414,10 @@ namespace DAVA
         if (nullptr == movieControl)
             return FMOD_OK;
 
-        movieControl->FillBufferByPcmData(reinterpret_cast<uint8*>(data), static_cast<uint32>(datalen), movieControl->decodeAudioOnCallback);
+        movieControl->audioStarted = true;
+        uint32 bytesRead = movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
+
+        // movieControl->FillBufferByPcmData(reinterpret_cast<uint8*>(data), static_cast<uint32>(datalen), movieControl->decodeAudioOnCallback);
 
         return FMOD_OK;
     }
@@ -451,6 +478,21 @@ namespace DAVA
 
         SafeRelease(pcmData);
         pcmData = DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE);
+
+        if (audioDecodingThread)
+        {
+            audioDecodingThread->Cancel();
+            audioDecodingThread->Join();
+            SafeRelease(audioDecodingThread);
+        }
+
+        if (!decodeAudioOnCallback)
+        {
+            audioDecodingThread = Thread::Create(Message(this, &MovieViewControl::AudioDecodingThread));
+            audioDecodingThread->Start();
+            Thread::Sleep(100);
+        }
+
         // Init FMOD
         {
             FMOD_CREATESOUNDEXINFO exinfo;
@@ -473,23 +515,8 @@ namespace DAVA
             fmodChannel->setLoopCount(-1);
             fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
             fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
-            fmodChannel->setPaused(false);
         }
 
-        frameTimer = GetTime();
-
-        if (audioDecodingThread)
-        {
-            audioDecodingThread->Cancel();
-            audioDecodingThread->Join();
-            SafeRelease(audioDecodingThread);
-        }
-
-        if (!decodeAudioOnCallback)
-        {
-            audioDecodingThread = Thread::Create(Message(this, &MovieViewControl::AudioDecodingThread));
-            audioDecodingThread->Start();
-        }
         return true;
     }
 
@@ -548,21 +575,12 @@ namespace DAVA
             const uint32 scaledHeight = AV::sws_scale(img_convert_ctx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, rgbDecodedScaledFrame->linesize);
             frameBuffer->textureFormat = textureFormat;
 
-            EnqueueDecodedVideoBuffer(frameBuffer);
-
             float64 effectivePTS = GetPTSForFrame(decodedFrame, packet, videoStreamIndex);
             effectivePTS = synchronize_video(decodedFrame, effectivePTS);
-            lastDecodedVideoPTS = effectivePTS;
+            frame_last_pts = effectivePTS;
             frameBuffer->pts = effectivePTS;
 
-            /* update the video clock */
-            float64 frame_delay = static_cast<float64>(AV::av_q2d(movieContext->streams[videoStreamIndex]->time_base));
-            /* if we are repeating a frame, adjust clock accordingly */
-            frame_delay += decodedFrame->repeat_pict * (frame_delay * 0.5f);
-            uint32 sleepTime = frame_delay * 1000;
-            frameBuffer->sleepAfterPresent = frame_delay;
-
-            pts = effectivePTS;
+            EnqueueDecodedVideoBuffer(frameBuffer);
 
             return true;
         }
@@ -578,7 +596,7 @@ namespace DAVA
             return;
         }
 
-        float64 delay = frameBuffer->pts - lastDecodedVideoPTS; /* the pts from last time */
+        float64 delay = frameBuffer->pts - frame_last_pts; /* the pts from last time */
         if (delay <= 0.0 || delay >= 1.0)
         {
             /* if incorrect delay, use previous one */
@@ -586,19 +604,19 @@ namespace DAVA
         }
         /* save for next time */
         frame_last_delay = delay;
-        lastDecodedVideoPTS = frameBuffer->pts;
+        frame_last_pts = frameBuffer->pts;
 
         /* update delay to sync to audio */
         float64 ref_clock = GetMasterClock();
+
         float64 diff = frameBuffer->pts - ref_clock;
-        Logger::Error("pts %f", frameBuffer->pts);
-        Logger::Error("RefClock %f diff %f", ref_clock, diff);
+        Logger::Error("RefClock %f pts %f diff %f", ref_clock, frameBuffer->pts, diff);
 
         /* Skip or repeat the frame. Take delay into account
         FFPlay still doesn't "know if this is the best guess." */
 
         const float64 AV_SYNC_THRESHOLD = 0.01;
-        const float64 AV_NOSYNC_THRESHOLD = 10.0;
+        const float64 AV_NOSYNC_THRESHOLD = 0.5;
 
         float64 sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
         if (fabs(diff) < AV_NOSYNC_THRESHOLD)
@@ -612,25 +630,17 @@ namespace DAVA
                 delay = 2 * delay;
             }
         }
-        Logger::Error("Delay %f", delay);
-        ShiftPlayTime(delay);
+        frameTimer += delay;
 
         /* computer the REAL delay */
-        float64 actual_delay = GetTime() - frameTimer;
-        Logger::Error("v PlayTime %f", actual_delay);
-        if (actual_delay < 0)
-            actual_delay = 0;
+        float64 actual_delay = frameTimer - GetTime();
         if (actual_delay < 0.010)
         {
             /* Really it should skip the picture instead */
             actual_delay = 0.010;
         }
 
-        uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5);
-
-        Logger::Error("sleep time %d", sleepTime);
-
-        float64 timeBeforePresent = SystemTimer::Instance()->AbsoluteMS();
+        float64 timeBeforePresent = GetTime();
 
         if (nullptr == videoTexture)
         {
@@ -651,10 +661,11 @@ namespace DAVA
         }
         SafeDelete(frameBuffer);
 
-        uint32 sleepLessFor = SystemTimer::Instance()->AbsoluteMS() - timeBeforePresent;
-        uint32 effectiveSleepTime = sleepTime - sleepLessFor;
-        Logger::Error("Frame SLEEP = %d", effectiveSleepTime);
-        Thread::Sleep(effectiveSleepTime);
+        uint32 sleepLessFor = GetTime() - timeBeforePresent;
+
+        uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5) - sleepLessFor;
+        Logger::Error("Frame SLEEP = %d", sleepTime);
+        Thread::Sleep(sleepTime);
     }
 
     float64 MovieViewControl::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream)
@@ -669,7 +680,7 @@ namespace DAVA
             pts = 0;
         }
 
-        float64 effectivePTS = static_cast<float64>(pts * AV::av_q2d(movieContext->streams[stream]->time_base));
+        float64 effectivePTS = static_cast<float64>(pts) * AV::av_q2d(videoCodecContext->time_base);
         return effectivePTS;
     }
 
@@ -716,7 +727,16 @@ namespace DAVA
         DecodedPCMData* data = new DecodedPCMData();
         data->data = outAudioBuffer;
         data->size = outAudioBufferSize;
-        data->pts = GetPTSForFrame(audioFrame, packet, audioStreamIndex);
+        data->pts = packet->pts;
+
+        if (data->pts != AV_NOPTS_VALUE)
+        {
+            audioPacketsMutex.Lock();
+            data->pts = audio_clock;
+            uint32 n = 2 * audioCodecContext->channels;
+            audio_clock += static_cast<float64>(data->size) / static_cast<float64>(n * audioCodecContext->sample_rate);
+            audioPacketsMutex.Unlock();
+        }
 
         return data;
     }
@@ -762,6 +782,14 @@ namespace DAVA
             audio_clock = AV::av_q2d(audioCodecContext->time_base) * data->pts;
         }
 
+        pcmBuffer.Write(static_cast<uint8*>(data->data), data->size);
+
+        /*
+        pcmMutex.Lock();
+        pcmData->Seek(writePos, File::SEEK_FROM_START);
+        writePos += pcmData->Write(data->data, data->size);
+        pcmMutex.Unlock();
+        */
         decodedAudioMutex.Lock();
         decodedAudio.push_back(data);
         decodedAudioMutex.Unlock();
@@ -830,10 +858,13 @@ namespace DAVA
     void MovieViewControl::VideoPresentationThread(BaseObject* caller, void* callerData, void* userData)
     {
         Thread* thread = static_cast<Thread*>(caller);
-        while (lastDecodedAudioPTS < 0)
+
+        while (!audioStarted)
         {
             Thread::Sleep(1);
         }
+
+        frameTimer = GetTime();
 
         do
         {
