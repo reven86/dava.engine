@@ -121,20 +121,20 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
     {
         UIStyleSheetPropertySet cascadeProperties;
         const UIStyleSheetPropertySet localControlProperties = control->GetLocalPropertySet();
-        const auto& styleSheets = packageContext->GetSortedStyleSheets();
+        const Vector<UIPriorityStyleSheet>& styleSheets = packageContext->GetSortedStyleSheets();
 
-        const DAVA::UIStyleSheetProperty* propertySources[UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT];
+        Array<const UIStyleSheetProperty*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources;
 
         for (auto styleSheetIter = styleSheets.rbegin(); styleSheetIter != styleSheets.rend(); ++styleSheetIter)
         {
-            const UIPriorityStyleSheet& styleSheet = *styleSheetIter;
+            const UIStyleSheet* styleSheet = styleSheetIter->GetStyleSheet();
 
-            if (StyleSheetMatchesControl(styleSheet.GetStyleSheet(), control))
+            if (StyleSheetMatchesControl(styleSheet, control))
             {
-                cascadeProperties |= styleSheet.GetStyleSheet()->GetPropertyTable()->GetPropertySet();
+                cascadeProperties |= styleSheet->GetPropertyTable()->GetPropertySet();
 
-                const auto& propertyTable = styleSheet.GetStyleSheet()->GetPropertyTable()->GetProperties();
-                for (const auto& prop : propertyTable)
+                const Vector<UIStyleSheetProperty>& propertyTable = styleSheet->GetPropertyTable()->GetProperties();
+                for (const UIStyleSheetProperty& prop : propertyTable)
                 {
                     propertySources[prop.propertyIndex] = &prop;
                 }
@@ -146,11 +146,11 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
 
         if (propertiesToReset.any() || propertiesToApply.any())
         {
-            for (uint32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
+            for (uint32 propertyIndex = 0; propertyIndex < propertySources.size(); ++propertyIndex)
             {
                 if (propertiesToApply.test(propertyIndex))
                 {
-                    const DAVA::UIStyleSheetProperty* prop = propertySources[propertyIndex];
+                    const UIStyleSheetProperty* prop = propertySources[propertyIndex];
 
                     if (prop->transition && control->IsStyleSheetInitialized())
                     {
@@ -212,9 +212,9 @@ void UIStyleSheetSystem::ClearGlobalClasses()
     globalClasses.RemoveAllClasses();
 }
 
-bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
+bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control)
 {
-    UIControl* currentControl = control;
+    const UIControl* currentControl = control;
 
     auto endIter = styleSheet->GetSelectorChain().rend();
     for (auto selectorIter = styleSheet->GetSelectorChain().rbegin(); selectorIter != endIter; ++selectorIter)
@@ -228,7 +228,7 @@ bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet
     return true;
 }
 
-bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control)
+bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control)
 {
     if (((selector.stateMask & control->GetState()) != selector.stateMask) || (selector.name.IsValid() && selector.name != control->GetName()) || (!selector.className.empty() && selector.className != control->GetClassName()))
         return false;

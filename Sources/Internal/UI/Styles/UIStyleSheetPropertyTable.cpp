@@ -41,7 +41,7 @@ void UIStyleSheetPropertyTable::SetProperties(const Vector<UIStyleSheetProperty>
 
     propertySet.reset();
 
-    for (const auto& prop : properties)
+    for (const UIStyleSheetProperty& prop : properties)
     {
         propertySet[prop.propertyIndex] = true;
     }

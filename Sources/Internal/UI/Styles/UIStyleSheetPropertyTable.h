@@ -33,6 +33,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 namespace DAVA
 {
