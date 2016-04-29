@@ -29,6 +29,7 @@
 
 #include "Render/Image/LibPVRHelperV2.h"
 #include "Render/Image/Private/PVRFormatHelper.h"
+#include "Render/Image/Image.h"
 
 #include "FileSystem/FileSystem.h"
 #include "Logger/Logger.h"
@@ -59,21 +60,46 @@ eErrorCode LibPVRHelperV2::ReadFile(File* infile, Vector<Image*>& imageSet, int3
         return eErrorCode::SUCCESS;
     }
 
+    DVASSERT(imageSet.empty() == false);
     return eErrorCode::ERROR_READ_FAIL;
 }
 
 eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
-    //not implemented due to external tool
-    DVASSERT(0);
-    return eErrorCode::ERROR_WRITE_FAIL;
+    if (imageSet.empty())
+    {
+        return eErrorCode::ERROR_WRITE_FAIL;
+    }
+
+    if (imageSet[0]->format != compressionFormat)
+    {
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    return WriteFile(fileName, imageSet);
 }
 
 eErrorCode LibPVRHelperV2::WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
-    //not implemented due to external tool
-    DVASSERT(0);
-    return eErrorCode::ERROR_WRITE_FAIL;
+    if (imageSet.empty())
+    {
+        return eErrorCode::ERROR_WRITE_FAIL;
+    }
+
+    for (const Vector<Image*>& imgSet : imageSet)
+    {
+        if (imgSet.empty())
+        {
+            return eErrorCode::ERROR_WRITE_FAIL;
+        }
+
+        if (imgSet[0]->format != compressionFormat)
+        {
+            return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
+        }
+    }
+
+    return WriteFileAsCubeMap(fileName, imageSet);
 }
 
 eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet) const

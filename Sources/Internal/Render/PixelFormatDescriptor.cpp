@@ -180,4 +180,47 @@ bool PixelFormatDescriptor::IsCompressedFormat(PixelFormat format)
         return false;
     }
 }
+
+Size2i PixelFormatDescriptor::GetPixelFormatBlockSize(PixelFormat formatID)
+{
+    switch (formatID)
+    {
+    case FORMAT_DXT1:
+    case FORMAT_DXT1A:
+    case FORMAT_DXT3:
+    case FORMAT_DXT5:
+    case FORMAT_DXT5NM:
+    case FORMAT_ETC1:
+    case FORMAT_ETC2_RGB:
+    case FORMAT_ETC2_RGBA:
+    case FORMAT_ETC2_RGB_A1:
+    case FORMAT_EAC_R11_UNSIGNED:
+    case FORMAT_EAC_R11_SIGNED:
+    case FORMAT_EAC_RG11_UNSIGNED:
+    case FORMAT_EAC_RG11_SIGNED:
+        return Size2i(4, 4);
+
+    case FORMAT_PVR4:
+        return Size2i(8, 8);
+    case FORMAT_PVR2:
+        return Size2i(16, 8);
+
+    case FORMAT_PVR4_2:
+        return Size2i(4, 4);
+
+    case FORMAT_PVR2_2:
+        return Size2i(8, 4);
+
+    case FORMAT_ATC_RGB:
+    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+        DVASSERT(false && "Need check minimal block size for ATC")
+        return Size2i(1, 1);
+
+    default:
+        return Size2i(1, 1);
+    }
+
+    return Size2i(1, 1);
+}
 };

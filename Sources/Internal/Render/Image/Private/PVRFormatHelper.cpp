@@ -29,6 +29,7 @@
 
 #include "Render/Image/Private/PVRFormatHelper.h"
 #include "Render/Image/Image.h"
+#include "Render/PixelFormatDescriptor.h"
 
 #include "FileSystem/File.h"
 
@@ -82,193 +83,20 @@ bool DetectIfNeedSwapBytes(const PVRHeaderV3* header)
     return (PVRTEX_CURR_IDENT_REV == header->u32Version);
 }
 
-void ReadMetaData(File* file, PVRFile* pvrFile)
+uint32 GetMipmapDataSize(PixelFormat format, uint32 width, uint32 height)
 {
-    uint32 metaDataSize = pvrFile->header.u32MetaDataSize;
+    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
+    width = Max(1u, width);
+    height = Max(1u, height);
 
-    DVASSERT(pvrFile->metaData == nullptr);
-    pvrFile->metaData = new uint8[metaDataSize];
-    uint32 readSize = file->Read(pvrFile->metaData, metaDataSize);
-    if (readSize != metaDataSize)
+    if (blockSize.dx != 1 || blockSize.dy != 1)
     {
-        SafeDeleteArray(pvrFile->metaData);
-        return;
+        width = width + ((-1 * width) % blockSize.dx);
+        height = height + ((-1 * height) % blockSize.dy);
     }
 
-    uint8* metaDataPtr = pvrFile->metaData;
-    uint32 delta = static_cast<uint32>(metaDataPtr - pvrFile->metaData);
-    while (delta < metaDataSize)
-    {
-        MetaDataBlock* block = new MetaDataBlock();
-        block->DevFOURCC = *reinterpret_cast<uint32*>(metaDataPtr);
-        metaDataPtr += sizeof(uint32);
-
-        block->u32Key = *reinterpret_cast<uint32*>(metaDataPtr);
-        metaDataPtr += sizeof(uint32);
-
-        block->u32DataSize = *reinterpret_cast<uint32*>(metaDataPtr);
-        metaDataPtr += sizeof(uint32);
-
-        block->Data = metaDataPtr;
-        metaDataPtr += block->u32DataSize;
-
-        pvrFile->metaDatablocks.push_back(block);
-
-        delta = static_cast<uint32>(metaDataPtr - pvrFile->metaData);
-    }
-}
-
-std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, bool readData)
-{
-    ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
-    if (file)
-    {
-        return ReadFile(file, readMetaData, readData);
-    }
-
-    return std::unique_ptr<PVRFile>();
-}
-
-std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, bool readData /*= false*/)
-{
-    DVASSERT(file != nullptr);
-    DVASSERT(file->GetPos() == 0);
-
-    std::unique_ptr<PVRFile> pvrFile(new PVRFile());
-
-    uint32 readSize = file->Read(&pvrFile->header, PVRTEX3_HEADERSIZE);
-    if (readSize != PVRTEX3_HEADERSIZE)
-    {
-        Logger::Error("Can't read PVR header from %s", file->GetFilename().GetStringValue().c_str());
-        return std::unique_ptr<PVRFile>();
-    }
-
-    if (DetectIfNeedSwapBytes(&pvrFile->header))
-    {
-        Logger::Error("Can't load PVR with swapped bytes %s", file->GetFilename().GetStringValue().c_str());
-        return std::unique_ptr<PVRFile>();
-    }
-
-    if (readMetaData && pvrFile->header.u32MetaDataSize)
-    {
-        ReadMetaData(file, pvrFile.get());
-    }
-    else if (pvrFile->header.u32MetaDataSize)
-    {
-        file->Seek(pvrFile->header.u32MetaDataSize, File::SEEK_FROM_CURRENT);
-    }
-
-    pvrFile->compressedDataSize = file->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
-    if (readData)
-    {
-        pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];
-        readSize = file->Read(pvrFile->compressedData, pvrFile->compressedDataSize);
-        if (readSize != pvrFile->compressedDataSize)
-        {
-            Logger::Error("Can't read PVR data from %s", file->GetFilename().GetStringValue().c_str());
-            return std::unique_ptr<PVRFile>();
-        }
-    }
-
-    return pvrFile;
-}
-
-bool LoadImages(File* infile, Vector<Image*>& imageSet, int32 fromMipMap, int32 firstMipmapIndex)
-{
-    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(infile, false, false);
-    if (!pvrFile)
-    {
-        return false;
-    }
-
-    PixelFormat pxFormat = GetTextureFormat(pvrFile->header);
-    if (pvrFile->header.u32Height != pvrFile->header.u32Width && (pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4))
-    {
-        Logger::Error("Non-square textures with %s compression are unsupported. Failed to load : %s", GlobalEnumMap<PixelFormat>::Instance()->ToString(pxFormat),
-                      infile->GetFilename().GetStringValue().c_str());
-        return false;
-    }
-
-    // we don't need metadata for loading?
-    if (pvrFile->header.u32MetaDataSize)
-    {
-        infile->Seek(pvrFile->header.u32MetaDataSize, File::SEEK_FROM_CURRENT);
-    }
-
-    uint32 mipmapLevelCount = pvrFile->header.u32MIPMapCount;
-    fromMipMap = Min(fromMipMap, int32(mipmapLevelCount - 1));
-
-    //    bool loadAllPvrData = true;
-    //    for (uint32 i = fromMipMap; i < mipmapLevelCount; ++i)
-    //    {
-    //        loadAllPvrData &= LoadMipMapLevel(pvrFile, i, (i - fromMipMap) + firstMipmapIndex, imageSet);
-    //    }
-    //
-    //    return loadAllPvrData;
-
-    DVASSERT(false);
-
-    return false;
-}
-
-bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)
-{
-    ScopedPtr<File> file(File::Create(pathname, File::CREATE | File::WRITE));
-    if (file)
-    {
-        file->Write(&pvrFile.header);
-        file->Write(pvrFile.metaData, pvrFile.header.u32MetaDataSize);
-        if (pvrFile.compressedData != nullptr)
-        {
-            file->Write(pvrFile.compressedData, pvrFile.compressedDataSize);
-        }
-        return true;
-    }
-
-    Logger::Error("Сanэt open file: %s", pathname.GetStringValue().c_str());
-    return false;
-}
-
-bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC)
-{
-    for (MetaDataBlock* block : pvrFile.metaDatablocks)
-    {
-        if (block->u32Key == METADATA_CRC_KEY)
-        {
-            *outputCRC = *(reinterpret_cast<uint32*>(block->Data));
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc)
-{
-    //reallocate meta data buffer
-    uint8* oldMetaData = pvrFile.metaData;
-    uint32 oldMetaDataSize = pvrFile.header.u32MetaDataSize;
-
-    pvrFile.header.u32MetaDataSize = oldMetaDataSize + METADATA_CRC_SIZE;
-    pvrFile.metaData = new uint8[pvrFile.header.u32MetaDataSize];
-    if (oldMetaData != nullptr)
-    {
-        Memcpy(pvrFile.metaData, oldMetaData, oldMetaDataSize);
-        delete[] oldMetaData;
-    }
-
-    //create metaDataWithCrc
-    MetaDataBlock* crcMetaData = new MetaDataBlock();
-    crcMetaData->DevFOURCC = PVRTEX3_METADATAIDENT;
-    crcMetaData->u32Key = METADATA_CRC_KEY;
-    crcMetaData->u32DataSize = METADATA_CRC_DATA_SIZE;
-    crcMetaData->Data = pvrFile.metaData + oldMetaDataSize + METADATA_DATA_OFFSET;
-    pvrFile.metaDatablocks.push_back(crcMetaData);
-
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_FOURCC_OFFSET)) = crcMetaData->DevFOURCC;
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_KEY_OFFSET)) = crcMetaData->u32Key;
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_DATASIZE_OFFSET)) = crcMetaData->u32DataSize;
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_DATA_OFFSET)) = crc;
+    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    return (bitsPerPixel * width * height / 8);
 }
 
 PixelFormat GetCompressedFormat(const uint64 pixelFormat)
@@ -491,6 +319,314 @@ PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader)
     }
 
     return FORMAT_INVALID;
+}
+
+const MetaDataBlock* GetCubemapMetadata(const PVRFile& pvrFile)
+{
+    for (MetaDataBlock* block : pvrFile.metaDatablocks)
+    {
+        if (block->DevFOURCC == PVRTEX3_METADATAIDENT &&
+            block->u32Key == METADATA_CUBE_KEY &&
+            block->u32DataSize == METADATA_CUBE_SIZE)
+        {
+            return block;
+        }
+    }
+
+    return nullptr;
+}
+
+uint32 GetCubemapLayout(const PVRFile& pvrFile)
+{
+    uint32 layout = 0;
+
+    const MetaDataBlock* cubeMetaData = GetCubemapMetadata(pvrFile);
+    if (cubeMetaData)
+    {
+        for (uint32 index = 0; index < cubeMetaData->u32DataSize; ++index)
+        {
+            switch (cubeMetaData->Data[index])
+            {
+            case 'X':
+            {
+                layout = layout | (rhi::TEXTURE_FACE_POSITIVE_X << (index * 4));
+                break;
+            }
+
+            case 'x':
+            {
+                layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_X << (index * 4));
+                break;
+            }
+
+            case 'Y':
+            {
+                layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Y << (index * 4));
+                break;
+            }
+
+            case 'y':
+            {
+                layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Y << (index * 4));
+                break;
+            }
+
+            case 'Z':
+            {
+                layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Z << (index * 4));
+                break;
+            }
+
+            case 'z':
+            {
+                layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Z << (index * 4));
+                break;
+            }
+            }
+        }
+    }
+    else if (pvrFile.header.u32NumFaces > 1)
+    {
+        static uint32 faces[] = {
+            rhi::TEXTURE_FACE_POSITIVE_X,
+            rhi::TEXTURE_FACE_NEGATIVE_X,
+            rhi::TEXTURE_FACE_POSITIVE_Y,
+            rhi::TEXTURE_FACE_NEGATIVE_Y,
+            rhi::TEXTURE_FACE_POSITIVE_Z,
+            rhi::TEXTURE_FACE_NEGATIVE_Z
+        };
+        for (uint32 i = 0; i < pvrFile.header.u32NumFaces; ++i)
+        {
+            layout = layout | (faces[i] << (i * 4));
+        }
+    }
+
+    return layout;
+}
+
+//external methods
+
+void ReadMetaData(File* file, PVRFile* pvrFile)
+{
+    uint32 metaDataSize = pvrFile->header.u32MetaDataSize;
+
+    DVASSERT(pvrFile->metaData == nullptr);
+    pvrFile->metaData = new uint8[metaDataSize];
+    uint32 readSize = file->Read(pvrFile->metaData, metaDataSize);
+    if (readSize != metaDataSize)
+    {
+        SafeDeleteArray(pvrFile->metaData);
+        return;
+    }
+
+    uint8* metaDataPtr = pvrFile->metaData;
+    uint32 delta = static_cast<uint32>(metaDataPtr - pvrFile->metaData);
+    while (delta < metaDataSize)
+    {
+        MetaDataBlock* block = new MetaDataBlock();
+        block->DevFOURCC = *reinterpret_cast<uint32*>(metaDataPtr);
+        metaDataPtr += sizeof(uint32);
+
+        block->u32Key = *reinterpret_cast<uint32*>(metaDataPtr);
+        metaDataPtr += sizeof(uint32);
+
+        block->u32DataSize = *reinterpret_cast<uint32*>(metaDataPtr);
+        metaDataPtr += sizeof(uint32);
+
+        block->Data = metaDataPtr;
+        metaDataPtr += block->u32DataSize;
+
+        pvrFile->metaDatablocks.push_back(block);
+
+        delta = static_cast<uint32>(metaDataPtr - pvrFile->metaData);
+    }
+}
+
+std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, bool readData)
+{
+    ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
+    if (file)
+    {
+        return ReadFile(file, readMetaData, readData);
+    }
+
+    return std::unique_ptr<PVRFile>();
+}
+
+std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, bool readData /*= false*/)
+{
+    DVASSERT(file != nullptr);
+    DVASSERT(file->GetPos() == 0);
+
+    std::unique_ptr<PVRFile> pvrFile(new PVRFile());
+
+    uint32 readSize = file->Read(&pvrFile->header, PVRTEX3_HEADERSIZE);
+    if (readSize != PVRTEX3_HEADERSIZE)
+    {
+        Logger::Error("Can't read PVR header from %s", file->GetFilename().GetStringValue().c_str());
+        return std::unique_ptr<PVRFile>();
+    }
+
+    if (DetectIfNeedSwapBytes(&pvrFile->header))
+    {
+        Logger::Error("Can't load PVR with swapped bytes %s", file->GetFilename().GetStringValue().c_str());
+        return std::unique_ptr<PVRFile>();
+    }
+
+    if (readMetaData && pvrFile->header.u32MetaDataSize)
+    {
+        ReadMetaData(file, pvrFile.get());
+    }
+    else if (pvrFile->header.u32MetaDataSize)
+    {
+        file->Seek(pvrFile->header.u32MetaDataSize, File::SEEK_FROM_CURRENT);
+    }
+
+    pvrFile->compressedDataSize = file->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
+    if (readData)
+    {
+        pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];
+        readSize = file->Read(pvrFile->compressedData, pvrFile->compressedDataSize);
+        if (readSize != pvrFile->compressedDataSize)
+        {
+            Logger::Error("Can't read PVR data from %s", file->GetFilename().GetStringValue().c_str());
+            return std::unique_ptr<PVRFile>();
+        }
+    }
+
+    return pvrFile;
+}
+
+bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint32 firstMipmapIndex)
+{
+    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(infile, true, false);
+    if (!pvrFile)
+    {
+        return false;
+    }
+
+    DVASSERT(pvrFile->header.u32NumSurfaces == 1);
+
+    PixelFormat pxFormat = GetTextureFormat(pvrFile->header);
+    if (pvrFile->header.u32Height != pvrFile->header.u32Width && (pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4))
+    {
+        Logger::Error("Non-square textures with %s compression are unsupported. Failed to load : %s", GlobalEnumMap<PixelFormat>::Instance()->ToString(pxFormat),
+                      infile->GetFilename().GetStringValue().c_str());
+        return false;
+    }
+
+    if (pvrFile->header.u32MIPMapCount == 0)
+    {
+        Logger::Error("File %s has no mipmaps", infile->GetFilename().GetStringValue().c_str());
+        return false;
+    }
+
+    fromMipMap = Min(fromMipMap, pvrFile->header.u32MIPMapCount - 1);
+
+    uint32 cubemapLayout = GetCubemapLayout(*pvrFile);
+    for (uint32 mip = 0; mip < pvrFile->header.u32MIPMapCount; ++mip)
+    {
+        for (uint32 surface = 0; surface < pvrFile->header.u32NumSurfaces; ++surface)
+        {
+            for (uint32 face = 0; face < pvrFile->header.u32NumFaces; ++face)
+            {
+                uint32 mipWidth = pvrFile->header.u32Width >> mip;
+                uint32 mipHeight = pvrFile->header.u32Height >> mip;
+                uint32 mipDataSize = GetMipmapDataSize(pxFormat, mipWidth, mipHeight);
+
+                if (mip < fromMipMap)
+                {
+                    infile->Seek(mipDataSize, File::SEEK_FROM_CURRENT);
+                }
+                else
+                {
+                    Image* image = new Image();
+                    image->width = mipWidth;
+                    image->height = mipHeight;
+                    image->format = pxFormat;
+                    image->mipmapLevel = (mip - fromMipMap) + firstMipmapIndex;
+                    if (cubemapLayout != 0)
+                    {
+                        image->cubeFaceID = (cubemapLayout & (0x0000000F << (face * 4))) >> (face * 4);
+                    }
+
+                    image->dataSize = mipDataSize;
+                    image->data = new uint8[image->dataSize];
+                    uint32 dz = infile->Read(image->data, image->dataSize);
+                    if (dz != image->dataSize)
+                    {
+                        image->Release();
+                        Logger::Error("Cannot read mip %d, fase %d from file", mip, face, infile->GetFilename().GetStringValue().c_str());
+                        return false;
+                    }
+
+                    imageSet.push_back(image);
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)
+{
+    ScopedPtr<File> file(File::Create(pathname, File::CREATE | File::WRITE));
+    if (file)
+    {
+        file->Write(&pvrFile.header);
+        file->Write(pvrFile.metaData, pvrFile.header.u32MetaDataSize);
+        if (pvrFile.compressedData != nullptr)
+        {
+            file->Write(pvrFile.compressedData, pvrFile.compressedDataSize);
+        }
+        return true;
+    }
+
+    Logger::Error("Сanэt open file: %s", pathname.GetStringValue().c_str());
+    return false;
+}
+
+bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC)
+{
+    for (MetaDataBlock* block : pvrFile.metaDatablocks)
+    {
+        if (block->u32Key == METADATA_CRC_KEY)
+        {
+            *outputCRC = *(reinterpret_cast<uint32*>(block->Data));
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc)
+{
+    //reallocate meta data buffer
+    uint8* oldMetaData = pvrFile.metaData;
+    uint32 oldMetaDataSize = pvrFile.header.u32MetaDataSize;
+
+    pvrFile.header.u32MetaDataSize = oldMetaDataSize + METADATA_CRC_SIZE;
+    pvrFile.metaData = new uint8[pvrFile.header.u32MetaDataSize];
+    if (oldMetaData != nullptr)
+    {
+        Memcpy(pvrFile.metaData, oldMetaData, oldMetaDataSize);
+        delete[] oldMetaData;
+    }
+
+    //create metaDataWithCrc
+    MetaDataBlock* crcMetaData = new MetaDataBlock();
+    crcMetaData->DevFOURCC = PVRTEX3_METADATAIDENT;
+    crcMetaData->u32Key = METADATA_CRC_KEY;
+    crcMetaData->u32DataSize = METADATA_CRC_DATA_SIZE;
+    crcMetaData->Data = pvrFile.metaData + oldMetaDataSize + METADATA_DATA_OFFSET;
+    pvrFile.metaDatablocks.push_back(crcMetaData);
+
+    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_FOURCC_OFFSET)) = crcMetaData->DevFOURCC;
+    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_KEY_OFFSET)) = crcMetaData->u32Key;
+    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_DATASIZE_OFFSET)) = crcMetaData->u32DataSize;
+    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_DATA_OFFSET)) = crc;
 }
 
 } // PVRFormatHelper

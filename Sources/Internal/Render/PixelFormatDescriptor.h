@@ -27,8 +27,7 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
-#define __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
+#pragma once 
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
@@ -48,8 +47,9 @@ class PixelFormatDescriptor
 public:
     static void SetHardwareSupportedFormats();
 
-    static int32 GetPixelFormatSizeInBytes(const PixelFormat formatID);
-    static int32 GetPixelFormatSizeInBits(const PixelFormat formatID);
+    static int32 GetPixelFormatSizeInBytes(PixelFormat formatID);
+    static int32 GetPixelFormatSizeInBits(PixelFormat formatID);
+    static Size2i GetPixelFormatBlockSize(PixelFormat formatID);
 
     static const char* GetPixelFormatString(const PixelFormat format);
     static PixelFormat GetPixelFormatByName(const FastName& formatName);
@@ -73,4 +73,3 @@ public:
 
 #endif //#if defined (__DAVAENGINE_OPENGL__)
 };
-#endif // __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
