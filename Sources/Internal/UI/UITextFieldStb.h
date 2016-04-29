@@ -122,7 +122,7 @@ private:
     bool needRedraw = true;
     bool showCursor = true;
     bool isEditing = false;
-    bool softwareSet = false;
+    bool ignoreKeyPressedDelegate = false;
     Color selectionColor = Color(0.f, 0.f, 0.7f, 0.7f);
     Vector<Rect> selectionRects;
     Rect cursorRect;

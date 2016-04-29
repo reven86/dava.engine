@@ -46,6 +46,14 @@ public:
     // to enable of some kind of static text fitting with staticText control
     // size
     static const Vector2 REQUIRED_CONTROL_SIZE;
+    // Use REQUIRED_CONTROL_WIDTH to notify SetText that we want
+    // to enable limit of text width and not any limits of text
+    // height
+    static const Vector2 REQUIRED_CONTROL_WIDTH;
+    // Use REQUIRED_CONTROL_HEIGHT to notify SetText that we want
+    // to enable limit of text height and not any limits of text
+    // width
+    static const Vector2 REQUIRED_CONTROL_HEIGHT;
 
     enum eMultiline
     {

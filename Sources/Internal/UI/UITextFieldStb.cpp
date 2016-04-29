@@ -48,8 +48,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-static float32 TEXT_OFFSET_CHECK_DELTA = 30.f;
-static float32 TEXT_OFFSET_MOVE_DELTA = 60.f;
+static Vector2 TEXT_OFFSET_CHECK_DELTA = Vector2(30.f, 30.f);
+static Vector2 TEXT_OFFSET_MOVE_DELTA = Vector2(60.f, 60.f);
 static float32 DEFAULT_CURSOR_WIDTH = 1.f;
 
 static Vector2 TransformInputPoint(const Vector2& inputPoint, const Vector2& controlAbsPosition, const Vector2& controlScale)
@@ -65,6 +65,8 @@ TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
+
+    staticText->SetDebugDraw(true);
 }
 
 TextFieldStbImpl::~TextFieldStbImpl()
@@ -121,18 +123,11 @@ void TextFieldStbImpl::SetText(const WideString& newText)
     auto prevText = text;
     if (prevText != newText)
     {
-        //SelectAll();
-        //softwareSet = true;
-        //stb->Paste(newText);
-        //softwareSet = false;
-
-        text = newText;
+        SelectAll();
+        ignoreKeyPressedDelegate = true;
+        stb->Paste(newText);
+        ignoreKeyPressedDelegate = false;
         needRedraw = true;
-        auto delegate = control->GetDelegate();
-        if (delegate)
-        {
-            delegate->TextFieldOnTextChanged(control, text, prevText);
-        }
     }
 }
 
@@ -168,14 +163,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 
     UpdateSelection(stb->GetSelectionStart(), stb->GetSelectionEnd());
     UpdateCursor(stb->GetCursorPosition(), stb->IsInsertMode());
-    if (!staticText->GetMultiline())
-    {
-        UpdateOffset(cursorRect);
-    }
-    else
-    {
-        staticTextOffset = Vector2::Zero;
-    }
+    UpdateOffset(cursorRect);
 
     needRedraw = false;
 }
@@ -370,7 +358,7 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
     auto insertText = WideString(str, length);
     auto delegate = control->GetDelegate();
     bool apply = true;
-    if (!softwareSet && delegate)
+    if (!ignoreKeyPressedDelegate && delegate)
     {
         apply = delegate->TextFieldKeyPressed(control, position, 0, insertText);
     }
@@ -402,7 +390,7 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
 {
     auto delegate = control->GetDelegate();
     bool apply = true;
-    if (!softwareSet && delegate)
+    if (!ignoreKeyPressedDelegate && delegate)
     {
         WideString str;
         apply = delegate->TextFieldKeyPressed(control, position, length, str);
@@ -585,12 +573,12 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
     const Vector2& textSize = staticText->GetTextSize();
     if (controlSize.dx < textSize.dx)
     {
-        float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA, textSize.dx - controlSize.dx);
-        if (visibleRect.x < TEXT_OFFSET_CHECK_DELTA)
+        float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA.x, textSize.dx - controlSize.dx);
+        if (visibleRect.x < TEXT_OFFSET_CHECK_DELTA.x)
         {
             staticTextOffset.x = std::min(0.f, staticTextOffset.x + delta);
         }
-        else if (visibleRect.x > controlSize.dx - TEXT_OFFSET_CHECK_DELTA)
+        else if (visibleRect.x > controlSize.dx - TEXT_OFFSET_CHECK_DELTA.x)
         {
             staticTextOffset.x = std::max(controlSize.dx - textSize.dx - visibleRect.dx - 1.0f, staticTextOffset.x - delta - visibleRect.dx - 1.f);
         }
@@ -601,7 +589,28 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
     }
     else
     {
-        staticTextOffset = Vector2::Zero;
+        staticTextOffset.x = 0.f;
+    }
+
+    if (controlSize.dy < textSize.dy)
+    {
+        float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA.y, textSize.dy - controlSize.dy);
+        if (visibleRect.y < TEXT_OFFSET_CHECK_DELTA.y)
+        {
+            staticTextOffset.y = std::min(0.f, staticTextOffset.y + delta);
+        }
+        else if (visibleRect.y > controlSize.dy - TEXT_OFFSET_CHECK_DELTA.y)
+        {
+            staticTextOffset.y = std::max(controlSize.dy - textSize.dy - visibleRect.dy - 1.0f, staticTextOffset.y - delta - visibleRect.dy - 1.f);
+        }
+        else if (staticTextOffset.y + textSize.dy < controlSize.dy)
+        {
+            staticTextOffset.y = std::min(0.f, controlSize.y - textSize.dy - visibleRect.dy - 1.0f);
+        }
+    }
+    else
+    {
+        staticTextOffset.y = 0.f;
     }
 }
 
