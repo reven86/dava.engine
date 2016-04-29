@@ -34,7 +34,7 @@
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
-#include "Model/EditorUIPackageBuilder.h"
+#include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 
 #include <QUndoGroup>
@@ -560,7 +560,7 @@ void DocumentGroup::InsertDocument(Document* document, int index)
 
 RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
 {
-    EditorUIPackageBuilder builder;
+    QuickEdPackageBuilder builder;
 
     bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
 

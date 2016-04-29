@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __EDITOR_UI_PACKAGE_BUILDER_H__
-#define __EDITOR_UI_PACKAGE_BUILDER_H__
+#ifndef __QUICK_ED_PACKAGE_BUILDER_H__
+#define __QUICK_ED_PACKAGE_BUILDER_H__
 
 #include "UI/AbstractUIPackageBuilder.h"
 #include "FileSystem/FilePath.h"
@@ -41,11 +41,11 @@ class StyleSheetNode;
 class ControlsContainerNode;
 class IntrospectionProperty;
 
-class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
+class QuickEdPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    EditorUIPackageBuilder();
-    virtual ~EditorUIPackageBuilder();
+    QuickEdPackageBuilder();
+    virtual ~QuickEdPackageBuilder();
 
     virtual void BeginPackage(const DAVA::FilePath& packagePath) override;
     virtual void EndPackage() override;
@@ -109,4 +109,4 @@ private:
     SectionProperty<IntrospectionProperty>* currentSection;
 };
 
-#endif // __EDITOR_UI_PACKAGE_BUILDER_H__
+#endif // __QUICK_ED_PACKAGE_BUILDER_H__
