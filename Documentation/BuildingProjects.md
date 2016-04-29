@@ -29,13 +29,13 @@ CMake projects
 
 **Для windows:**
 
--   CMake **3.3 **версии
+-   CMake **3.4 **версии
 
 -   если в терминале не работает команда cmake то нужно установить путь к  &lt;install path&gt;/CMake/bin в переменную окружения PATH
 
 -   Visual Studio 12 (2013)
 
--   Qt 5.4.2 (для сборки эдиторов )
+-   Qt 5.4.2 (для сборки редакторов )
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
@@ -55,7 +55,7 @@ CMake projects
 
 **Для mac:**
 
--   CMake  3.3 версии
+-   CMake  3.4 версии
 
 -   Установить cmake command line tools одним из способов:
 
@@ -69,7 +69,7 @@ CMake projects
 
 -   Eclipse + ADT Plugin
 
--   Qt 5.4.2 (для сборки эдиторов )
+-   Qt 5.4.2 (для сборки редакторов )
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
@@ -79,7 +79,7 @@ CMake projects
 
 ### Установка CMAKE
 
-CMake можно скачать на сайте - <http://www.cmake.org/download/>; (гарантированно работает с версией 3.0.2 )
+CMake можно скачать на сайте - <http://www.cmake.org/download/>; (гарантированно работает с версией 3.4 )
 
 Для windows 10 потребуется так же:
 
@@ -103,17 +103,15 @@ Qt 5 можно установить через online installer (рекомен
 
 Для установки под Windows нужно выбрать следующие компоненты:
 
--   Qt - Qt 5.4 - **msvc2013 32-bit ~~OpenGL ~~** (опционально, чтобы заранее подготовиться к переходу на новую Visual Studio)
+-   Qt - Qt 5.4 - **msvc2013 64-bit** 
 
--   Qt - Qt 5.4 - **msvc2013 64-bit ~~OpenGL ~~** (опционально, чтобы заранее подготовиться к переходу на новую Visual Studio)
-
--   Qt - Qt 5.4 - **Source Components** (выбрать всё)
+-   Qt - Qt 5.4 - **Source Components** (выбрать всё, если в планы воходит дебаг Qt)
 
 Для установки под OS X нужно выбрать следующие компоненты:
 
 -   Qt - Qt 5.4 - **clang 64-bit **
 
--   Qt - Qt 5.4 - **Source Components** (выбрать всё)
+-   Qt - Qt 5.4 - **Source Components** (выбрать всё, если в планы воходит дебаг Qt)
 
  
 
@@ -129,12 +127,10 @@ Qt 5 можно установить через online installer (рекомен
 
  
 
-> QT4\_PATH\_WIN = c:\\Qt4\\4.8.6
 > QT5\_PATH\_WIN = c:\\Qt\\5.4\\msvc2013 
 >
 > QT5\_PATH\_WIN64 = c:\\Qt\\5.4\\msvc2013\_64\_opengl
 >
-> QT4\_PATH\_MAC =
 > QT5\_PATH\_MAC = $ENV{HOME}/Qt/5.4/clang\_64
 >
 > ANDROID\_ANT  = d:\\apache-ant-1.9.4  
@@ -182,7 +178,7 @@ Qt 5 можно установить через online installer (рекомен
 >
 >  
 >
-> для BLITZ
+> для ИГРЫ
 >
 > cmake -G"Xcode" -DCMAKE\_TOOLCHAIN\_FILE=../dava.framework/Sources/CMake/Toolchains/ios.toolchain.cmake ..
 >
@@ -200,7 +196,7 @@ Qt 5 можно установить через online installer (рекомен
 >
 >  
 >
-> для BLITZ
+> для ИГРЫ
 >
 > cmake -G"Unix Makefiles" -DCMAKE\_TOOLCHAIN\_FILE=../dava.framework/Sources/CMake/Toolchains/android.toolchain.cmake ..
 >
@@ -220,7 +216,7 @@ Qt 5 можно установить через online installer (рекомен
 >
 >  
 >
-> для BLITZ
+> для ИГРЫ
 >
 > cmake  -G "Eclipse CDT4 - NMake Makefiles" -DCMAKE\_TOOLCHAIN\_FILE=../dava.framework/Sources/CMake/Toolchains/android.toolchain.cmake ..
 >
@@ -259,5 +255,18 @@ mk\_project.bat выполняет непосредственную генера
 Если есть необходимость собрать проект из командной строки то в папке со сгенерированным проектом (\_build) вызываем следующую команду:
 
 cmake --build .
+
+### Дополнительные опции командной строки
+
+-   **-DUNITY_BUILD=true**: в резульате сгеренируется проект с ипользованием технологии UnityBuild, что позволит ускорить компиляцию
+
+-   **-DEPLOY=true**: используется только для Qt проектов при генерации проекта, который необходимо деплоить на другие машины
+
+-   **-PUBLIC_BUILD=true**: используется только для *ResourceEditor* при сборке проекта с отключеным SpeedTree и Beast
+
+
+
+
+
 
  
