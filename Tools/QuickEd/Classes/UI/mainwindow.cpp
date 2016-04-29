@@ -139,7 +139,10 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
     previewWidget->GetGLWidget()->addAction(actionCloseDocument);
 
     QAction* actionReloadDocument = new QAction("Reload current document", this);
-    actionReloadDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_R));
+    QList<QKeySequence> shortcurs;
+    shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
+              << Qt::Key_F5;
+    actionReloadDocument->setShortcuts(shortcurs);
     actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
     documentGroup->AttachReloadDocumentAction(actionReloadDocument);
     previewWidget->GetGLWidget()->addAction(actionReloadDocument);
