@@ -882,7 +882,6 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
     if (!ddsFile)
     {
-        Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open file %s", filePathname.GetStringValue().c_str());
         return 0;
     }
 
