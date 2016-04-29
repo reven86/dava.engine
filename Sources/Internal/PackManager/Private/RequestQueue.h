@@ -83,6 +83,14 @@ public:
 private:
     void CollectDownlodbleDependency(const String& packName, Set<const PackManager::PackState*>& dependency);
 
+    void StartLoadingCRC32File();
+    bool DoneLoadingCRC32File();
+    void StartLoadingPackFile();
+    bool DoneLoadingPackFile();
+    void StartCheckCRC32();
+    bool DoneCheckingCRC32();
+    void MountPack();
+
     PackManager* packManager;
     String packName;
     float32 priority;

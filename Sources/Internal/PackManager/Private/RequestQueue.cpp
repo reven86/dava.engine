@@ -86,6 +86,241 @@ void PackRequest::CollectDownlodbleDependency(const String& packName, Set<const 
     }
 }
 
+void PackRequest::StartLoadingCRC32File()
+{
+    SubRequest& subRequest = dependencies.at(0);
+
+    // build url to pack_name_crc32_file
+
+    FilePath archiveCrc32Path = packManager->GetLocalPacksDirectory() + subRequest.packName + PackManager::crc32Postfix;
+    String url = packManager->GetRemotePacksUrl() + subRequest.packName + PackManager::crc32Postfix;
+
+    // start downloading file
+
+    DownloadManager* dm = DownloadManager::Instance();
+    subRequest.taskId = dm->Download(url, archiveCrc32Path);
+
+    // set state to LoadingCRC32File
+    subRequest.status = SubRequest::LoadingCRC32File;
+}
+
+bool PackRequest::DoneLoadingCRC32File()
+{
+    bool result = false;
+
+    SubRequest& subRequest = dependencies.at(0);
+
+    DownloadManager* dm = DownloadManager::Instance();
+    DownloadStatus status = DL_UNKNOWN;
+    dm->GetStatus(subRequest.taskId, status);
+    uint64 progress = 0;
+    switch (status)
+    {
+    case DL_IN_PROGRESS:
+        break;
+    case DL_FINISHED:
+    {
+        // first test error code
+        DownloadError downloadError = DLE_NO_ERROR;
+        if (dm->GetError(subRequest.taskId, downloadError))
+        {
+            switch (downloadError)
+            {
+            case DLE_CANCELLED: // download was cancelled by our side
+            case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
+            case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
+            case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
+            case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
+            case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
+            case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
+            case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
+            case DLE_FILE_ERROR: // file read and write errors
+            case DLE_UNKNOWN: // we cannot determine the error
+                // inform user about error
+                {
+                    PackManager::PackState& pack = const_cast<PackManager::PackState&>(packManager->GetPackState(subRequest.packName));
+
+                    pack.state = PackManager::PackState::ErrorLoading;
+                    pack.downloadError = downloadError;
+                    pack.otherErrorMsg = "can't load CRC32 file for pack: " + pack.name;
+
+                    subRequest.status = SubRequest::Error;
+
+                    packManager->onPackStateChanged.Emit(pack);
+                    break;
+                }
+            case DLE_NO_ERROR:
+            {
+                result = true;
+                break;
+            }
+            } // end switch downloadError
+        }
+        else
+        {
+            throw std::runtime_error(Format("can't get download error code for download crc file for pack: %s", subRequest.packName.c_str()));
+        }
+    }
+    break;
+    default:
+        break;
+    }
+    return result;
+}
+
+void PackRequest::StartLoadingPackFile()
+{
+    SubRequest& subRequest = dependencies.at(0);
+
+    // build url to pack file and build filePath to pack file
+
+    FilePath packPath = packManager->GetLocalPacksDirectory() + subRequest.packName;
+    String url = packManager->GetRemotePacksUrl() + subRequest.packName;
+
+    // start downloading
+
+    DownloadManager* dm = DownloadManager::Instance();
+    subRequest.taskId = dm->Download(url, packPath);
+
+    // switch state to LoadingPackFile
+    subRequest.status = SubRequest::LoadingPackFile;
+}
+
+bool PackRequest::DoneLoadingPackFile()
+{
+    bool result = false;
+
+    SubRequest& subRequest = dependencies.at(0);
+
+    PackManager::PackState& pack = const_cast<PackManager::PackState&>(packManager->GetPackState(subRequest.packName));
+
+    DownloadManager* dm = DownloadManager::Instance();
+    DownloadStatus status = DL_UNKNOWN;
+    dm->GetStatus(subRequest.taskId, status);
+    uint64 progress = 0;
+    switch (status)
+    {
+    case DL_IN_PROGRESS:
+        if (dm->GetProgress(subRequest.taskId, progress))
+        {
+            uint64 total = 0;
+            if (dm->GetTotal(subRequest.taskId, total))
+            {
+                pack.downloadProgress = static_cast<float>(progress) / total;
+                // fire event on update progress
+                packManager->onPackStateChanged.Emit(pack);
+            }
+        }
+        break;
+    case DL_FINISHED:
+    {
+        // first test error code
+        DownloadError downloadError = DLE_NO_ERROR;
+        if (dm->GetError(subRequest.taskId, downloadError))
+        {
+            switch (downloadError)
+            {
+            case DLE_CANCELLED: // download was cancelled by our side
+            case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
+            case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
+            case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
+            case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
+            case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
+            case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
+            case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
+            case DLE_FILE_ERROR: // file read and write errors
+            case DLE_UNKNOWN: // we cannot determine the error
+                // inform user about error
+                {
+                    pack.state = PackManager::PackState::ErrorLoading;
+                    pack.downloadError = downloadError;
+                    pack.otherErrorMsg = "can't load pack: " + pack.name;
+
+                    subRequest.status = SubRequest::Error;
+
+                    packManager->onPackStateChanged.Emit(pack);
+                    break;
+                }
+            case DLE_NO_ERROR:
+            {
+                result = true;
+                break;
+            }
+            } // end switch downloadError
+        }
+        else
+        {
+            throw std::runtime_error(Format("can't get download error code for download crc file for pack: %s", subRequest.packName.c_str()));
+        }
+    }
+    break;
+    default:
+        break;
+    }
+    return result;
+}
+
+void PackRequest::StartCheckCRC32()
+{
+    SubRequest& subRequest = dependencies.at(0);
+
+    PackManager::PackState& pack = const_cast<PackManager::PackState&>(packManager->GetPackState(subRequest.packName));
+
+    // build crcMetaFilePath
+    FilePath archiveCrc32Path = packManager->GetLocalPacksDirectory() + subRequest.packName + PackManager::crc32Postfix;
+    // read crc32 from meta file
+    ScopedPtr<File> crcFile(File::Create(archiveCrc32Path, File::OPEN | File::READ));
+    if (!crcFile)
+    {
+        pack.state = PackManager::PackState::OtherError;
+        pack.otherErrorMsg = "can't read crc meta file";
+        throw std::runtime_error("can't open just downloaded crc meta file: " + archiveCrc32Path.GetStringValue());
+    }
+    String fileContent;
+    if (0 < crcFile->ReadString(fileContent))
+    {
+        StringStream ss;
+        ss << std::hex << fileContent;
+        ss >> pack.crc32FromMeta;
+    }
+    // calculate crc32 from PackFile
+    FilePath packPath = packManager->GetLocalPacksDirectory() + subRequest.packName;
+    uint32 realCrc32FromPack = CRC32::ForFile(packPath);
+
+    if (realCrc32FromPack != pack.crc32FromMeta)
+    {
+        pack.state = PackManager::PackState::OtherError;
+        pack.otherErrorMsg = "can't read crc meta file";
+        throw std::runtime_error("just downloaded pack file crc32 not match! can't mount pack: " + pack.name);
+    }
+
+    if (pack.crc32FromMeta != pack.crc32FromDB)
+    {
+        pack.state = PackManager::PackState::OtherError;
+        pack.otherErrorMsg = "can't read crc meta file";
+        throw std::runtime_error("just downloaded pack file crc32 not match! can't mount pack: " + pack.name);
+    }
+
+    subRequest.status = SubRequest::CheckCRC32;
+}
+
+bool PackRequest::DoneCheckingCRC32()
+{
+    return true; // in future
+}
+
+void PackRequest::MountPack()
+{
+    SubRequest& subRequest = dependencies.at(0);
+
+    FilePath packPath = packManager->GetLocalPacksDirectory() + subRequest.packName;
+
+    FileSystem* fs = FileSystem::Instance();
+    fs->Mount(packPath, "Data/");
+
+    subRequest.status = SubRequest::Mounted;
+}
+
 void PackRequest::Start()
 {
     throw std::runtime_error("not implemented");
@@ -244,11 +479,19 @@ void RequestQueue::Start()
 {
     if (packManager.IsProcessingEnabled())
     {
+        if (!Empty())
+        {
+            Top().Start();
+        }
     }
 }
+
 void RequestQueue::Stop()
 {
-    throw std::runtime_error("implement me");
+    if (!Empty())
+    {
+        Top().Pause();
+    }
 }
 
 void RequestQueue::Update()

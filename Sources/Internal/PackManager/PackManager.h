@@ -102,6 +102,11 @@ public:
     // отслеживание статуса запросов
     Signal<const PackState&> onPackStateChanged;
 
+    static const String crc32Postfix;
+
+    const FilePath& GetLocalPacksDirectory() const;
+    const String& GetRemotePacksUrl() const;
+
 private:
     std::unique_ptr<ArchiveManagerImpl> impl;
 };

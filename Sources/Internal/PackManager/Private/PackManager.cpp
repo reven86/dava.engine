@@ -35,6 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+const String PackManager::crc32Postfix = ".hash";
+
 struct PackPriorityComparator
 {
     bool operator()(const PackManager::PackState* lhs, const PackManager::PackState* rhs) const
@@ -259,8 +261,19 @@ void PackManager::DeletePack(const String& packID)
         FilePath archivePath = impl->packsDB + packID;
         fs->Unmount(archivePath);
 
-        FilePath archiveCrc32Path = impl->localPacksDir + packID + ".crc";
+        FilePath archiveCrc32Path = impl->localPacksDir + packID + crc32Postfix;
         fs->Unmount(archiveCrc32Path);
     }
 }
+
+const FilePath& PackManager::GetLocalPacksDirectory() const
+{
+    return impl->localPacksDir;
+}
+
+const String& PackManager::GetRemotePacksUrl() const
+{
+    return impl->remotePacksUrl;
+}
+
 } // end namespace DAVA
