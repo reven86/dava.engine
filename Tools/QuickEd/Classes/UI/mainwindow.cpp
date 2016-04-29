@@ -135,8 +135,14 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
     QAction* actionCloseDocument = new QAction("Close current document", this);
     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
     actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
-    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
     documentGroup->AttachCloseDocumentAction(actionCloseDocument);
+    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+
+    QAction* actionReloadDocument = new QAction("Reload current document", this);
+    actionReloadDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_R));
+    actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
+    documentGroup->AttachReloadDocumentAction(actionReloadDocument);
+    previewWidget->GetGLWidget()->addAction(actionReloadDocument);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)
