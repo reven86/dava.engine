@@ -27,8 +27,7 @@
 =====================================================================================*/
 
 
-#ifndef __QUICK_ED_PACKAGE_BUILDER_H__
-#define __QUICK_ED_PACKAGE_BUILDER_H__
+#pragma once
 
 #include "UI/AbstractUIPackageBuilder.h"
 #include "FileSystem/FilePath.h"
@@ -108,5 +107,3 @@ private:
     DAVA::BaseObject* currentObject;
     SectionProperty<IntrospectionProperty>* currentSection;
 };
-
-#endif // __QUICK_ED_PACKAGE_BUILDER_H__
