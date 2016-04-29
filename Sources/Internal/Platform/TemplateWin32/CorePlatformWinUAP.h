@@ -58,10 +58,6 @@ public:
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
 
-    bool GetCursorVisibility();
-    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
-    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
 

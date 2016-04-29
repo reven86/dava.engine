@@ -29,6 +29,8 @@
 
 #include "Scene/SceneTabWidget.h"
 
+#include "UI/Focus/UIFocusComponent.h"
+
 #include "Main/Request.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
@@ -142,6 +144,7 @@ void SceneTabWidget::InitDAVAUI()
 {
     dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
     dava3DView->SetInputEnabled(true, true);
+    dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
     davaUIScreen = new DAVA::UIScreen();
     davaUIScreen->AddControl(dava3DView);

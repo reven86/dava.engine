@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_FILESYSTEM_H__
 #define __DAVAENGINE_FILESYSTEM_H__
 
@@ -34,16 +33,13 @@
 #include "Base/Singleton.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
+#include "FileSystem/ResourceArchive.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-#include "FileSystem/ZipFile.h"
-#endif //__DAVAENGINE_ANDROID__
 /**
 	\defgroup filesystem File System
  */
 namespace DAVA
 {
-class ResourceArchive;
 /**
 	\ingroup filesystem
 	\brief FileSystem is a wrapper class that allow to perform all basic filesystem operations
@@ -235,8 +231,17 @@ public:
 	
 		\param[in] archiveName pathname or local filename of archive we want to attach
 		\param[in] attachPath path we attach our archive 
+
+        can throw std::runtime_exception in case of error
 	*/
-    virtual void AttachArchive(const String& archiveName, const String& attachPath);
+    virtual void Mount(const FilePath& archiveName, const String& attachPath);
+
+    /**
+    \brief Function to detach ResourceArchive from filesystem
+
+    \param[in] archiveName pathname or local filename of archive we want to attach
+    */
+    virtual void Unmount(const FilePath& arhiveName);
 
     /**
 	 \brief Invokes the command processor to execute a command
@@ -284,8 +289,17 @@ private:
 
     struct ResourceArchiveItem
     {
-        ResourceArchive* archive;
+        ResourceArchiveItem() = default;
+        ResourceArchiveItem(ResourceArchiveItem&& other)
+            : archive(std::move(other.archive))
+            , attachPath(std::move(other.attachPath))
+            , archiveFilePath(std::move(other.archiveFilePath))
+        {
+        }
+
+        std::unique_ptr<ResourceArchive> archive;
         String attachPath;
+        FilePath archiveFilePath;
     };
 
     List<ResourceArchiveItem> resourceArchiveList;
@@ -293,8 +307,6 @@ private:
 
     friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
-    friend class ZipFile;
-
 public:
     void Init();
 

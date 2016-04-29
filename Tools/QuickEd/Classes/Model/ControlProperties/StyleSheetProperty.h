@@ -50,16 +50,11 @@ protected:
     virtual ~StyleSheetProperty();
 
 public:
-    DAVA::uint32 GetCount() const override;
-    AbstractProperty* GetProperty(int index) const override;
-
     void Accept(PropertyVisitor* visitor) override;
 
-    ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
 
     DAVA::VariantType GetValue() const override;
-    const EnumMap* GetEnumMap() const override;
     void ApplyValue(const DAVA::VariantType& value) override;
 
     DAVA::Interpolation::FuncType GetTransitionFunction() const;
@@ -79,7 +74,6 @@ public:
 
 private:
     DAVA::UIStyleSheetProperty property;
-    DAVA::Vector<AbstractProperty*> properties;
 
 public:
     INTROSPECTION_EXTEND(StyleSheetProperty, ValueProperty,

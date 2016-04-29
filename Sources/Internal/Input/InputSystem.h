@@ -36,6 +36,7 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "InputCallback.h"
+#include "Input/MouseDevice.h"
 
 /**
 	\defgroup inputsystem	Input System
@@ -53,13 +54,6 @@ public:
         INPUT_DEVICE_TOUCH = 1,
         INPUT_DEVICE_KEYBOARD = 1 << 1,
         INPUT_DEVICE_JOYSTICK = 1 << 2
-    };
-
-    enum class eMouseCaptureMode
-    {
-        OFF = 0, //!< Disable any capturing (send absolute xy)
-        FRAME, //!< Capture system cursor into window rect (send absolute xy)
-        PINING //!<< Capture system cursor on current position (send xy move delta)
     };
 
     friend void Core::CreateSingletons();
@@ -83,9 +77,7 @@ public:
 
     inline KeyboardDevice& GetKeyboard();
     inline GamepadDevice& GetGamepadDevice();
-
-    eMouseCaptureMode GetMouseCaptureMode();
-    bool SetMouseCaptureMode(eMouseCaptureMode mode);
+    inline MouseDevice& GetMouseDevice();
 
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;
@@ -93,6 +85,7 @@ public:
 protected:
     KeyboardDevice* keyboard;
     GamepadDevice* gamepad;
+    MouseDevice* mouse;
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
@@ -108,6 +101,11 @@ inline KeyboardDevice& InputSystem::GetKeyboard()
 inline GamepadDevice& InputSystem::GetGamepadDevice()
 {
     return *gamepad;
+}
+
+inline MouseDevice& InputSystem::GetMouseDevice()
+{
+    return *mouse;
 }
 
 inline void InputSystem::EnableMultitouch(bool enabled)

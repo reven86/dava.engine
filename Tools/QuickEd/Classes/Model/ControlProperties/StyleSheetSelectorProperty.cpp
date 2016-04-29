@@ -38,7 +38,7 @@
 using namespace DAVA;
 
 StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelectorChain& chain)
-    : ValueProperty("Selector")
+    : ValueProperty("Selector", VariantType::TYPE_STRING)
 {
     styleSheet = new UIStyleSheet();
     styleSheet->SetSelectorChain(chain);
