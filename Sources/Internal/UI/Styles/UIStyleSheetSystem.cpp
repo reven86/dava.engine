@@ -123,7 +123,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         const UIStyleSheetPropertySet localControlProperties = control->GetLocalPropertySet();
         const Vector<UIPriorityStyleSheet>& styleSheets = packageContext->GetSortedStyleSheets();
 
-        Array<const UIStyleSheetProperty*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources;
+        Array<const UIStyleSheetProperty*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources = {};
 
         for (auto styleSheetIter = styleSheets.rbegin(); styleSheetIter != styleSheets.rend(); ++styleSheetIter)
         {
