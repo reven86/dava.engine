@@ -35,7 +35,7 @@ CMake projects
 
 -   Visual Studio 12 (2013)
 
--   Qt 5 (для сборки эдиторов )
+-   Qt 5.4.2 (для сборки эдиторов )
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
@@ -69,7 +69,7 @@ CMake projects
 
 -   Eclipse + ADT Plugin
 
--   Qt 5 (для сборки эдиторов )
+-   Qt 5.4.2 (для сборки эдиторов )
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
