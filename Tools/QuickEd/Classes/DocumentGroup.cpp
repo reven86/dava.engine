@@ -167,7 +167,15 @@ void DocumentGroup::AddDocument(const QString& path)
     {
         index = documents.size();
         Document* document = CreateDocument(path);
-        InsertDocument(document, index);
+        if (nullptr != document)
+        {
+            InsertDocument(document, index);
+        }
+        else
+        {
+            QMessageBox::warning(qApp->activeWindow(), tr("Can not create document"), tr("Can not create document by path:\n%1").arg(path));
+            return;
+        }
     }
     SetActiveDocument(index);
 }
@@ -266,8 +274,15 @@ void DocumentGroup::ReloadDocument(int index)
     QString path = documents.at(index)->GetPackageAbsolutePath();
     CloseDocument(index);
     Document* document = CreateDocument(path);
-    InsertDocument(document, index);
-    SetActiveDocument(index);
+    if (document != nullptr)
+    {
+        InsertDocument(document, index);
+        SetActiveDocument(index);
+    }
+    else
+    {
+        QMessageBox::warning(qApp->activeWindow(), tr("Can not create document"), tr("Can not create document by path:\n%1").arg(path));
+    }
 }
 
 void DocumentGroup::ReloadDocument(Document* document)
@@ -320,7 +335,6 @@ void DocumentGroup::SaveAllDocuments()
 void DocumentGroup::SaveCurrentDocument()
 {
     DVASSERT(nullptr != active);
-    DVASSERT(!active->GetUndoStack()->isClean());
     SaveDocument(active, true);
 }
 
@@ -365,6 +379,16 @@ void DocumentGroup::OnFileChanged(Document* document)
 
 void DocumentGroup::OnFilesChanged(const QList<Document*>& changedFiles)
 {
+    static bool syncGuard = false;
+    if (syncGuard)
+    {
+        return;
+    }
+    syncGuard = true;
+    SCOPE_EXIT
+    {
+        syncGuard = false;
+    };
     bool yesToAll = false;
     bool noToAll = false;
     int changedCount = std::count_if(changedFiles.begin(), changedFiles.end(), [changedFiles](Document* document) {
@@ -504,11 +528,17 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     QString canonicalFilePath = QFileInfo(path).canonicalFilePath();
     FilePath davaPath(canonicalFilePath.toStdString());
     RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
-
-    Document* document = new Document(packageRef, this);
-    connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
-    connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
-    return document;
+    if (packageRef.Get() != nullptr)
+    {
+        Document* document = new Document(packageRef, this);
+        connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
+        connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
+        return document;
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 void DocumentGroup::InsertDocument(Document* document, int index)
