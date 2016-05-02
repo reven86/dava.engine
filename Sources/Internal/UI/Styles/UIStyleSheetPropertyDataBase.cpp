@@ -56,6 +56,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, FastName("angle"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("scale"), VariantType(Vector2(1.0f, 1.0f))),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("visible"), VariantType(true)),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("exclusiveInput"), VariantType(false)),
 
                      UIStyleSheetPropertyDescriptor(&bgGroup, FastName("drawType"), VariantType(UIControlBackground::DRAW_ALIGNED)),
                      UIStyleSheetPropertyDescriptor(&bgGroup, FastName("sprite"), VariantType(FilePath())),
