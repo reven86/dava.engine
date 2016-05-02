@@ -248,7 +248,7 @@ QMimeData* SceneTreeModel::mimeData(const QModelIndexList& indexes) const
                     QVector<DAVA::ParticleEmitterInstance*> data;
                     foreach (QModelIndex index, indexes)
                     {
-                        data.push_back(SceneTreeItemParticleEmitter::GetEmitterStrict(GetItem(index)));
+                        data.push_back(SceneTreeItemParticleEmitter::GetEmitterInstanceStrict(GetItem(index)));
                     }
 
                     ret = MimeDataHelper2<DAVA::ParticleEmitterInstance>::EncodeMimeData(data);
@@ -368,7 +368,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
         if ((parentItem->ItemType() == SceneTreeItem::EIT_Emitter) || (parentItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
         {
-            emitter = static_cast<SceneTreeItemParticleEmitter*>(parentItem)->emitterInstance;
+            emitter = static_cast<SceneTreeItemParticleEmitter*>(parentItem)->GetEmitterInstance();
         }
 
         QVector<DAVA::ParticleLayer*> layersV = MimeDataHelper2<DAVA::ParticleLayer>::DecodeMimeData(data);
@@ -389,7 +389,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
             {
                 layersGroup.push_back((DAVA::ParticleLayer*)layersV[i]);
                 QModelIndex emitterIndex = GetIndex((DAVA::ParticleLayer*)layersV[i]);
-                DAVA::ParticleEmitterInstance* oldEmitter = SceneTreeItemParticleEmitter::GetEmitter(GetItem(emitterIndex.parent()));
+                DAVA::ParticleEmitterInstance* oldEmitter = SceneTreeItemParticleEmitter::GetEmitterInstance(GetItem(emitterIndex.parent()));
                 emittersGroup.push_back(oldEmitter);
             }
 
@@ -599,7 +599,7 @@ void SceneTreeModel::ItemChanged(QStandardItem* item)
             bool isLayerEnabled = (item->checkState() == Qt::Checked);
             SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)treeItem;
 
-            curScene->Exec(Command2::Create<CommandUpdateParticleLayerEnabled>(itemLayer->layer, isLayerEnabled));
+            curScene->Exec(Command2::Create<CommandUpdateParticleLayerEnabled>(itemLayer->GetLayer(), isLayerEnabled));
             curScene->MarkAsChanged();
         }
     }
@@ -788,7 +788,7 @@ QVariant SceneTreeModel::data(const QModelIndex& _index, int role) const
     case Qt::BackgroundRole:
     {
         SceneTreeItem* item = GetItem(_index);
-        DAVA::ParticleEmitterInstance* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+        DAVA::ParticleEmitterInstance* emitter = SceneTreeItemParticleEmitter::GetEmitterInstanceStrict(item);
         if (nullptr != emitter && emitter->GetEmitter()->shortEffect)
         {
             static const QVariant brush(QBrush(QColor(255, 0, 0, 20)));

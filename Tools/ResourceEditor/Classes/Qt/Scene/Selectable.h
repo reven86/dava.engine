@@ -96,6 +96,8 @@ public:
 
     bool TransformDependsOn(const Selectable&) const;
 
+    bool ContainsObject() const;
+
 private:
     static void AddConcreteProxy(DAVA::MetaInfo* classInfo, TransformProxy* proxy);
     static TransformProxy* GetTransformProxyForClass(const DAVA::MetaInfo* classInfo);
@@ -144,6 +146,11 @@ inline void Selectable::AddTransformProxyForClass()
     static_assert(std::is_base_of<Selectable::TransformProxy, PROXY>::value,
                   "Transform proxy should be derived from Selectable::TransformProxy");
     AddConcreteProxy(DAVA::MetaInfo::Instance<CLASS>(), new PROXY());
+}
+
+inline bool Selectable::ContainsObject() const
+{
+    return object != nullptr;
 }
 
 #endif // __SELECTABLE_OBJECT_H__
