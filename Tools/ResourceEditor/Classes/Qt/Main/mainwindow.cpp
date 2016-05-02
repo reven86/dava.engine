@@ -513,7 +513,7 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
             if (shouldClose(static_cast<QCloseEvent*>(event)) == false)
             {
                 event->ignore();
-                return false;
+                return true;
             }
         }
     }
