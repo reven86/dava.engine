@@ -27,13 +27,14 @@
 =====================================================================================*/
 
 
-#include "TextureCache.h"
-#include "TextureConvertor.h"
+#include "TextureBrowser/TextureCache.h"
+#include "TextureBrowser/TextureConvertor.h"
 #include "Main/mainwindow.h"
 
-#include <QPainter>
+#include "ImageTools/ImageTools.h"
 
-#include <QDebug>
+#include <QPainter>
+#include <QFileInfo>
 
 TextureCache::TextureCache()
 {
@@ -140,6 +141,46 @@ QList<QImage> TextureCache::getConverted(const DAVA::TextureDescriptor* descript
 
     return QList<QImage>();
 }
+
+void TextureCache::tryToPreloadConverted(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu)
+{
+    QList<QImage> cachedValue = getConverted(descriptor, gpu);
+    if (cachedValue.empty() && (nullptr != descriptor))
+    {
+        if (descriptor->GetPixelFormatForGPU(gpu) == DAVA::PixelFormat::FORMAT_INVALID)
+        {
+            return;
+        }
+
+        TextureInfo convertedImageInfo;
+        DAVA::Vector<DAVA::Image*> convertedImages;
+
+        DAVA::FilePath compressedTexturePath = descriptor->CreatePathnameForGPU(gpu);
+        DAVA::eErrorCode ret = DAVA::ImageSystem::Instance()->Load(compressedTexturePath, convertedImages);
+        if (ret != DAVA::eErrorCode::SUCCESS || convertedImages.empty())
+        {   // we have no compressed file
+            return;
+        }
+            
+        convertedImageInfo.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
+        convertedImageInfo.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
+        convertedImageInfo.imageSize.setWidth(convertedImages[0]->GetWidth());
+        convertedImageInfo.imageSize.setHeight(convertedImages[0]->GetHeight());
+
+        for (DAVA::Image * image : convertedImages)
+        {
+            QImage img = ImageTools::FromDavaImage(image);
+            image->Release();
+
+            convertedImageInfo.images.push_back(img);
+        }
+        convertedImages.clear();
+
+        setConverted(descriptor, gpu, convertedImageInfo);
+    }
+}
+
+
 
 void TextureCache::ClearCache()
 {

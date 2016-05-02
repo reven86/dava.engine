@@ -27,8 +27,7 @@
 =====================================================================================*/
 
 
-#ifndef __TEXTURE_INFO_H__
-#define __TEXTURE_INFO_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -37,15 +36,12 @@
 
 struct TextureInfo
 {
-    TextureInfo()
-        : dataSize(0)
-        , fileSize(0)
-        , imageSize(0, 0){};
+    TextureInfo(): imageSize(0, 0) {}
+    TextureInfo(const TextureInfo& other) = default;
 
     QList<QImage> images;
-    DAVA::uint32 dataSize;
-    DAVA::uint32 fileSize;
+    DAVA::uint32 dataSize = 0;
+    DAVA::uint32 fileSize = 0;
     QSize imageSize;
 };
 
-#endif // __TEXTURE_INFO_H__
