@@ -4,13 +4,25 @@ set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo"
 
 project               ( QuickEd )
 
+get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
-set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
+set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 include               ( CMake-common )
 include               ( NGTMacro )
+
+if (DEPLOY)
+    set (DEPLOY_ROOT ${DEPLOY_DIR})
+
+    if ( WIN32 )
+        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME})
+    endif()
+    set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
+endif()
 
 configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
@@ -30,6 +42,10 @@ include_directories   ( "Classes/Controllers" )
 include_directories   ( "Classes/Models" )
 
 add_definitions       (
+-DQT_OPENGL_LIB
+-DQT_GUI_LIB
+-DQT_NETWORK_LIB
+-DQT_CORE_LIB
 -DDAVA_QT
 -DQT_HAVE_MMX
 -DQT_HAVE_3DNOW
@@ -45,8 +61,8 @@ qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
-file              ( GLOB QML_LIST "DataQt/*.qml")
-file              ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
+file                          ( GLOB QML_LIST "DataQt/*.qml")
+file                          ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
 
 set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
