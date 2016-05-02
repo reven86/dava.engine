@@ -215,8 +215,8 @@ public slots:
     void RestartParticleEffects();
 
 protected:
-    virtual bool eventFilter(QObject* object, QEvent* event);
-    void closeEvent(QCloseEvent* e);
+    bool eventFilter(QObject* object, QEvent* event) override;
+    bool shouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
     void SetupToolBars();

@@ -506,6 +506,17 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
             }
         }
     }
+    else if (obj == this)
+    {
+        if (eventType == QEvent::Close)
+        {
+            if (shouldClose(static_cast<QCloseEvent*>(event)) == false)
+            {
+                event->ignore();
+                return false;
+            }
+        }
+    }
 
     return QMainWindow::eventFilter(obj, event);
 }
@@ -2710,23 +2721,15 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
     ui->actionModifySnapToLandscape->setChecked(isSpanToLandscape);
 }
 
-void QtMainWindow::closeEvent(QCloseEvent* e)
+bool QtMainWindow::shouldClose(QCloseEvent* e)
 {
-    bool changed = IsAnySceneChanged();
-    if (changed)
-    {
-        int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
-                                           QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if (IsAnySceneChanged() == false)
+        return true;
+    
+    int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
+                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
-        if (answer == QMessageBox::No)
-        {
-            e->ignore();
-            return;
-        }
-    }
-
-    e->accept();
-    QMainWindow::closeEvent(e);
+    return (answer == QMessageBox::Yes);
 }
 
 bool QtMainWindow::IsAnySceneChanged()
