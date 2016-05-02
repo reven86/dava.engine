@@ -31,6 +31,8 @@
 #include "Render/Image/Image.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#include "Render/Texture.h"
+
 #include "FileSystem/File.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
@@ -97,6 +99,18 @@ uint32 GetMipmapDataSize(PixelFormat format, uint32 width, uint32 height)
 
     uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
     return (bitsPerPixel * width * height / 8);
+}
+
+uint32 GetDataSize(const Vector<Image*>& imageSet)
+{
+    uint32 dataSize = 0;
+
+    for (const Image* image : imageSet)
+    {
+        dataSize += GetMipmapDataSize(image->format, image->width, image->height);
+    }
+
+    return dataSize;
 }
 
 uint32 GetDataSize(const Vector<Vector<Image*>>& imageSet)
@@ -217,6 +231,43 @@ uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
     }
 
     return ePVRTPF_NumCompressedPFs;
+}
+
+uint32 GetPVRChannelType(PixelFormat pixelFormat)
+{
+    switch (pixelFormat)
+    {
+    case FORMAT_PVR2:
+    case FORMAT_PVR4:
+    case FORMAT_PVR2_2:
+    case FORMAT_PVR4_2:
+    case FORMAT_ETC1:
+    case FORMAT_EAC_R11_UNSIGNED:
+    case FORMAT_ETC2_RGB:
+    case FORMAT_ETC2_RGB_A1:
+    case FORMAT_EAC_RG11_UNSIGNED:
+    case FORMAT_ETC2_RGBA:
+        return ePVRTVarTypeUnsignedByteNorm;
+
+    case FORMAT_RGBA8888:
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB888:
+    case FORMAT_RGB565:
+    case FORMAT_A8:
+        return ePVRTVarTypeUnsignedByteNorm;
+
+    case FORMAT_A16:
+    case FORMAT_RGBA16161616:
+    case FORMAT_RGBA32323232:
+        return ePVRTVarTypeFloat;
+
+    default:
+        DVASSERT(false);
+        break;
+    }
+
+    return ePVRTVarTypeUnsignedByteNorm;
 }
 
 PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader)
@@ -402,30 +453,37 @@ std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, boo
 
 std::unique_ptr<PVRFile> GeneratePVRHeader(const Vector<Image*>& imageSet)
 {
+    Image* zeroMip = imageSet[0];
+
     std::unique_ptr<PVRFile> pvrFile(new PVRFile());
 
-    Image* zeroMip = imageSet[0];
-    //    if(zeroMip->cubeFaceID != Texture::INVALID_CUBEMAP_FACE)
-    //    {
-    //
-    //    }
-
-    pvrFile->header.u32Version = 0;
+    pvrFile->header.u32Version = PVRTEX3_IDENT;
     pvrFile->header.u32Flags = 0;
     pvrFile->header.u64PixelFormat = GetPVRFormatFromDAVA(zeroMip->format);
-    pvrFile->header.u32ColourSpace = 0;
-    pvrFile->header.u32ChannelType = 0;
+    pvrFile->header.u32ColourSpace = ePVRTCSpacelRGB;
+    pvrFile->header.u32ChannelType = GetPVRChannelType(zeroMip->format);
 
-    //
     pvrFile->header.u32Width = zeroMip->width;
     pvrFile->header.u32Height = zeroMip->height;
     pvrFile->header.u32Depth = 1;
-    //
 
-    pvrFile->header.u32NumSurfaces = 1; // we have only one surface
-    pvrFile->header.u32NumFaces = 0; //1
+    pvrFile->header.u32NumSurfaces = 1;
+    pvrFile->header.u32NumFaces = 1;
+
+    DVASSERT(zeroMip->cubeFaceID == Texture::INVALID_CUBEMAP_FACE);
+
     pvrFile->header.u32MIPMapCount = 0; //1
     pvrFile->header.u32MetaDataSize = 0;
+
+    pvrFile->compressedDataSize = GetDataSize(imageSet);
+    pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];
+
+    uint8* compressedDataPtr = pvrFile->compressedData;
+    for (const Image* image : imageSet)
+    {
+        Memcpy(compressedDataPtr, image->data, image->dataSize);
+        compressedDataPtr += GetMipmapDataSize(image->format, image->width, image->height);
+    }
 
     return pvrFile;
 }
