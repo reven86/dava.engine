@@ -44,10 +44,14 @@ class ImageFormatInterface;
 class ImageSystem : public Singleton<ImageSystem>
 {
 public:
-
     struct LoadingParams
     {
-        LoadingParams(uint32 w = 0, uint32 h = 0, uint32 mipmap = 0) : minimalWidth(w), minimalHeight(h), baseMipmap(mipmap) {}
+        LoadingParams(uint32 w = 0, uint32 h = 0, uint32 mipmap = 0)
+            : minimalWidth(w)
+            , minimalHeight(h)
+            , baseMipmap(mipmap)
+        {
+        }
 
         uint32 minimalWidth = 0;
         uint32 minimalHeight = 0;
@@ -81,13 +85,11 @@ public:
 
     static uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams);
 
-
 private:
     ImageInfo GetImageInfo(File* infile) const;
 
     Array<std::unique_ptr<ImageFormatInterface>, IMAGE_FORMAT_COUNT> wrappers;
 };
-
 };
 
 

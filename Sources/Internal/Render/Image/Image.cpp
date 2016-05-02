@@ -596,5 +596,4 @@ void Image::Rotate90Left()
     SafeDeleteArray(data);
     data = newData;
 }
-
 };

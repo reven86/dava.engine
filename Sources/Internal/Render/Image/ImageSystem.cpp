@@ -266,6 +266,4 @@ const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
 {
     return GetImageFormatInterface(format)->Extensions();
 }
-
-
 };

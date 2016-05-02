@@ -66,9 +66,9 @@ struct ImageInfo
     bool operator==(const ImageInfo& another) const
     {
         return (
-            width == another.width &&
-            height == another.height &&
-            format == another.format);
+        width == another.width &&
+        height == another.height &&
+        format == another.format);
     }
 
     uint32 width = 0;
