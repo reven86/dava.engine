@@ -338,6 +338,8 @@ DAVAFloat32SpinBox::DAVAFloat32SpinBox(QWidget* parent /* = 0 */)
     le->setValidator(vd);
 
     connect(this, SIGNAL(editingFinished()), this, SLOT(textEditingFinished()));
+
+    installEventFilter(this);
 }
 
 DAVAFloat32SpinBox::~DAVAFloat32SpinBox()
@@ -377,6 +379,17 @@ void DAVAFloat32SpinBox::setValue(DAVA::float32 val)
             emit valueChanged();
         }
     }
+}
+
+bool DAVAFloat32SpinBox::eventFilter(QObject* object, QEvent* event)
+{
+    if (event->type() == QEvent::ShortcutOverride || event->type() == QEvent::Shortcut)
+    {
+        event->ignore();
+        return true;
+    }
+
+    return QAbstractSpinBox::eventFilter(object, event);
 }
 
 void DAVAFloat32SpinBox::stepBy(int steps)

@@ -107,27 +107,6 @@ bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
     }
 }
 
-bool CorePlatformWinUAP::GetCursorVisibility()
-{
-    return xamlApp->GetCursorVisible();
-}
-
-InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetMouseCaptureMode()
-{
-    return xamlApp->GetMouseCaptureMode();
-}
-
-bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
-{
-    if (xamlApp->SetMouseCaptureMode(mode))
-    {
-        RunOnUIThread([this, mode]() {
-            xamlApp->SetCursorVisible(mode != InputSystem::eMouseCaptureMode::PINING);
-        });
-    }
-    return GetMouseCaptureMode() == mode;
-}
-
 void CorePlatformWinUAP::SetWindowMinimumSize(float32 width, float32 height)
 {
     xamlApp->SetWindowMinimumSize(width, height);

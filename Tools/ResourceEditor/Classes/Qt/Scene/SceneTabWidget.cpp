@@ -29,6 +29,8 @@
 
 #include "Scene/SceneTabWidget.h"
 
+#include "UI/Focus/UIFocusComponent.h"
+
 #include "Main/Request.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
@@ -47,6 +49,7 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QDebug>
+#include <QTimer>
 
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
@@ -63,7 +66,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     tabBar->setExpanding(false);
 
     // davawidget to display DAVAEngine content
-    davaWidget = new DavaGLWidget(this);
+    davaWidget = new DavaGLWidget();
     tabBar->setMinimumWidth(davaWidget->minimumWidth());
     setMinimumWidth(davaWidget->minimumWidth());
     setMinimumHeight(davaWidget->minimumHeight() + tabBar->sizeHint().height());
@@ -71,7 +74,11 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     // put tab bar and davawidget into vertical layout
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(tabBar);
-    layout->addWidget(davaWidget);
+    QTimer::singleShot(100, [layout, this]
+                       {
+                           davaWidget->setParent(this);
+                           layout->addWidget(davaWidget);
+                       });
     layout->setMargin(0);
     layout->setSpacing(1);
     setLayout(layout);
@@ -137,6 +144,7 @@ void SceneTabWidget::InitDAVAUI()
 {
     dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
     dava3DView->SetInputEnabled(true, true);
+    dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
     davaUIScreen = new DAVA::UIScreen();
     davaUIScreen->AddControl(dava3DView);

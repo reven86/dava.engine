@@ -45,8 +45,7 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
     , nameFont("Courier", 12, QFont::Normal)
 #endif
 {
-    backgroundBrush.setColor(Qt::white);
-    backgroundBrush.setStyle(Qt::SolidPattern);
+    backgroundBrush = palette().window();
 
     gridStyle = GRID_STYLE_LIMITS;
 
@@ -78,8 +77,7 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
     infoColumns.push_back(new ParticlesAverageAreaColumn(this, this));
     infoColumns.push_back(new ParticlesMaxAreaColumn(this, this));
 
-    connect(&updateTimer, SIGNAL(timeout()),
-            this, SLOT(OnUpdateLayersExtraInfoNeeded()));
+    connect(&updateTimer, &QTimer::timeout, this, &ParticleTimeLineWidget::OnUpdateLayersExtraInfoNeeded);
     updateTimer.start(UPDATE_LAYERS_EXTRA_INFO_PERIOD);
 }
 

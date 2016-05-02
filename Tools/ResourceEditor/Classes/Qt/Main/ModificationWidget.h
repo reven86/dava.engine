@@ -113,6 +113,8 @@ protected slots:
     void textEditingFinished();
 
 protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
+
     DAVA::float32 originalValue;
     QString originalString;
 

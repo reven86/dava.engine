@@ -728,6 +728,7 @@ void resize_swapchain(int32 width, int32 height, float32 scaleX, float32 scaleY)
                       Windows::Foundation::Size(scaleX, scaleY));
 
     rhi::CommandBufferDX11::DiscardAll();
+    rhi::ConstBufferDX11::InvalidateAll();
     CreateWindowSizeDependentResources();
 
     _D3D11_SwapChain = m_swapChain.Get();

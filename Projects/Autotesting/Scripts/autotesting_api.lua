@@ -2,6 +2,7 @@ SMALL_TIMEOUT = 3.0
 BIG_TIMEOUT = 30.0 -- Big time out for waiting
 TIMEOUT = 10.0 -- DEFAULT TIMEOUT
 TIMECLICK = 0.2 -- time for simple action
+DOUBLETAP_DELAY = 0.05 --time between two taps
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
@@ -793,7 +794,7 @@ function DoubleClick(name, waitTime, touchId)
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
     if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, TIMECLICK, touchId)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
         ClickPosition(position, TIMECLICK, touchId)
         return true
     end

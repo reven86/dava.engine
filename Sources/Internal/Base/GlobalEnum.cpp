@@ -42,6 +42,7 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Focus/UIFocusComponent.h"
 #include "Logger/Logger.h"
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
@@ -215,6 +216,12 @@ ENUM_DECLARE(UIControlBackground::ePerPixelAccuracyType)
     ENUM_ADD_DESCR(UIControlBackground::PER_PIXEL_ACCURACY_FORCED, "PER_PIXEL_ACCURACY_FORCED");
 };
 
+ENUM_DECLARE(eSpriteModification)
+{
+    ENUM_ADD_DESCR(eSpriteModification::ESM_HFLIP, "FLIP_HORIZONTAL");
+    ENUM_ADD_DESCR(eSpriteModification::ESM_VFLIP, "FLIP_VERTICAL");
+};
+
 ENUM_DECLARE(UIStaticText::eMultiline)
 {
     ENUM_ADD_DESCR(UIStaticText::MULTILINE_DISABLED, "MULTILINE_DISABLED");
@@ -306,6 +313,18 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_EMERGENCY_CALL, "RETURN_KEY_EMERGENCY_CALL");
 };
 
+ENUM_DECLARE(UITextField::eStartEditPolicy)
+{
+    ENUM_ADD_DESCR(UITextField::START_EDIT_WHEN_FOCUSED, "WhenFocused");
+    ENUM_ADD_DESCR(UITextField::START_EDIT_BY_USER_REQUEST, "ByUserRequest");
+};
+
+ENUM_DECLARE(UITextField::eStopEditPolicy)
+{
+    ENUM_ADD_DESCR(UITextField::STOP_EDIT_WHEN_FOCUS_LOST, "WhenFocusLost");
+    ENUM_ADD_DESCR(UITextField::STOP_EDIT_BY_USER_REQUEST, "ByUserRequest");
+};
+
 ENUM_DECLARE(UIComponent::eType)
 {
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
@@ -314,6 +333,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
+    ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
@@ -340,6 +360,12 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
 {
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT, "LeftToRight");
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
+};
+
+ENUM_DECLARE(UIFocusComponent::ePolicy)
+{
+    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE, "Focusable");
+    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE_GROUP, "FocusableGroup");
 };
 
 ENUM_DECLARE(rhi::TextureAddrMode)
