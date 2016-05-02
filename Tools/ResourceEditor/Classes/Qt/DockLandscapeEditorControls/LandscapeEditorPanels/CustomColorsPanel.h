@@ -34,8 +34,6 @@
 #include "DAVAEngine.h"
 #include "Main/Request.h"
 
-using namespace DAVA;
-
 class QComboBox;
 class QPushButton;
 class SliderWidget;
@@ -84,8 +82,9 @@ protected:
 
 private:
     void InitColors();
-    int32 BrushSizeUIToSystem(int32 uiValue);
-    int32 BrushSizeSystemToUI(int32 systemValue);
+
+    DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
+    DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
 
 private:
     QComboBox* comboColor = nullptr;

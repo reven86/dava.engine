@@ -45,7 +45,7 @@ class ModificationWidget
     Q_OBJECT
 
 public:
-    enum PivotMode : uint32
+    enum PivotMode : DAVA::uint32
     {
         PivotAbsolute,
         PivotRelative,
@@ -113,6 +113,8 @@ protected slots:
     void textEditingFinished();
 
 protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
+
     DAVA::float32 originalValue;
     QString originalString;
 

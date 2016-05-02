@@ -60,7 +60,6 @@ LibraryModel::LibraryModel(QObject* parent)
     Vector<std::pair<String, bool>> controlDescrs =
     {
       { "UIControl", false },
-      { "UIButton", false },
       { "UIStaticText", false },
       { "UITextField", false },
       { "UISlider", true },

@@ -39,6 +39,7 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UITextField.h"
+#include "UI/Focus/FocusHelpers.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/ImageConvert.h"
@@ -632,6 +633,8 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
+    core->XamlApplication()->CaptureTextBox(nativeControl);
+
     SetNativeCaretPosition(GetNativeText()->Length());
 
     Windows::Foundation::Rect nativeKeyboardRect = InputPane::GetForCurrentView()->OccludedRect;
@@ -655,15 +658,21 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             // 1. click on text field in multiline mode as it is always shown on screen
             // 2. tab navigation
             UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-            if (curFocused != uiTextField)
+            if (curFocused != uiTextField && FocusHelpers::CanFocusControl(uiTextField))
+            {
                 uiTextField->SetFocused();
+            }
+            if (!uiTextField->IsEditing())
+            {
+                uiTextField->StartEdit();
+            }
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
             // If keyboard rect is not empty so manually notify delegate about keyboard size and position
             if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
             {
                 Rect rect = WindowToVirtual(keyboardRect);
-                textFieldDelegate->OnKeyboardShown(rect);
+                uiTextField->OnKeyboardShown(rect);
             }
         }
     });
@@ -681,9 +690,8 @@ void PrivateTextFieldWinUAP::OnLostFocus()
     core->RunOnMainThread([this, self]() {
         if (uiTextField != nullptr)
         {
+            uiTextField->OnKeyboardHidden();
             uiTextField->ReleaseFocus();
-            if (textFieldDelegate)
-                textFieldDelegate->OnKeyboardHidden();
         }
     });
 }
@@ -879,8 +887,8 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
         xOffset = rect.x + rect.dx + 1000.0f;
         yOffset = rect.y + rect.dy + 1000.0f;
     }
-    nativeControlHolder->Width = rect.dx;
-    nativeControlHolder->Height = rect.dy;
+    nativeControlHolder->Width = std::max(0.0f, rect.dx);
+    nativeControlHolder->Height = std::max(0.0f, rect.dy);
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 }
 
@@ -1128,8 +1136,9 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
                 UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-                if (curFocused != uiTextField)
-                { // Do not set rendered texture if control has focus
+                if (!uiTextField->IsEditing())
+                {
+                    // Do not set rendered texture if control has focus
                     uiTextField->SetSprite(sprite.Get(), 0);
                 }
             }

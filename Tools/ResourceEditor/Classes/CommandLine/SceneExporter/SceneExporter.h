@@ -30,51 +30,83 @@
 #ifndef __SCENE_EXPORTER_H__
 #define __SCENE_EXPORTER_H__
 
+#include "Utils/StringFormat.h"
+
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
+#include "AssetCache/AssetCache.h"
 
-using namespace DAVA;
+namespace DAVA
+{
+class TextureDescriptor;
+class Scene;
+class AssetCacheClient;
+}
 
-class SceneExporter
+class SceneExporter final
 {
 public:
-    SceneExporter();
-    virtual ~SceneExporter();
+    enum eExportedObjectType : DAVA::int32
+    {
+        OBJECT_NONE = -1,
 
-    void SetGPUForExporting(const eGPUFamily newGPU);
+        OBJECT_SCENE = 0,
+        OBJECT_TEXTURE,
+        OBJECT_HEIGHTMAP,
 
-    void SetCompressionQuality(TextureConverter::eConvertQuality quality);
+        OBJECT_COUNT
+    };
 
-    void SetInFolder(const FilePath& folderPathname);
-    void SetOutFolder(const FilePath& folderPathname);
+    struct ExportedObject
+    {
+        ExportedObject(eExportedObjectType type_, DAVA::String path)
+            : type(type_)
+            , relativePathname(std::move(path))
+        {
+        }
 
+        eExportedObjectType type = OBJECT_NONE;
+        DAVA::String relativePathname;
+    };
+
+    SceneExporter() = default;
+    ~SceneExporter();
+
+    using ExportedObjectCollection = DAVA::Vector<ExportedObject>;
+
+    void SetFolders(const DAVA::FilePath& dataFolder, const DAVA::FilePath& dataSourceFolder);
+    void SetCompressionParams(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality);
     void EnableOptimizations(bool enable);
 
-    void ExportSceneFile(const String& fileName, Set<String>& errorLog);
-    void ExportTextureFile(const String& fileName, Set<String>& errorLog);
+    bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
+    void ExportObjects(const ExportedObjectCollection& exportedObjects);
 
-    void ExportSceneFolder(const String& folderName, Set<String>& errorLog);
-    void ExportTextureFolder(const String& folderName, Set<String>& errorLog);
-
-    void ExportScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
+    void SetCacheClient(DAVA::AssetCacheClient* cacheClient, DAVA::String machineName, DAVA::String runDate, DAVA::String comment);
 
 private:
-    void RemoveEditorNodes(Entity* rootNode);
-    void RemoveEditorCustomProperties(Entity* rootNode);
+    void ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
+    void ExportTextureFile(const DAVA::FilePath& descriptorPathname, const DAVA::String& descriptorLink);
+    void ExportHeightmapFile(const DAVA::FilePath& heightmapPathname, const DAVA::String& heightmapLink);
 
-    bool ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog);
-    bool ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog);
-    bool ExportTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
-    void CompressTextureIfNeed(const TextureDescriptor* descriptor, Set<String>& errorLog);
+    void ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
 
-    bool ExportLandscape(Scene* scene, Set<String>& errorLog);
+    DAVA::FilePath CompressTexture(DAVA::TextureDescriptor& descriptor) const;
+    void CopySourceTexture(DAVA::TextureDescriptor& descriptor) const;
 
-    SceneUtils sceneUtils;
-    eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
-    TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
+    bool CopyFile(const DAVA::FilePath& filePath) const;
+    bool CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const;
+
+    DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
+    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
+
     bool optimizeOnExport = false;
-};
 
+    DAVA::FilePath dataFolder;
+    DAVA::FilePath dataSourceFolder;
+
+    DAVA::AssetCacheClient* cacheClient = nullptr;
+    DAVA::AssetCache::CachedItemValue::Description cacheItemDescription;
+};
 
 
 #endif // __SCENE_EXPORTER_H__

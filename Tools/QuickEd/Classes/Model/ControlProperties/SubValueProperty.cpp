@@ -33,8 +33,9 @@
 
 using namespace DAVA;
 
-SubValueProperty::SubValueProperty(int anIndex, const DAVA::String& propName)
-    : index(anIndex)
+SubValueProperty::SubValueProperty(int32 anIndex, const DAVA::String& propName)
+    : AbstractProperty()
+    , index(anIndex)
     , name(propName)
 {
 }
@@ -66,6 +67,11 @@ const DAVA::String& SubValueProperty::GetName() const
 SubValueProperty::ePropertyType SubValueProperty::GetType() const
 {
     return TYPE_VARIANT;
+}
+
+DAVA::VariantType::eVariantType SubValueProperty::GetValueType() const
+{
+    return GetValueProperty()->GetSubValueType(index);
 }
 
 VariantType SubValueProperty::GetValue() const

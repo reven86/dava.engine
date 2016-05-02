@@ -30,8 +30,8 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
-#include "Debug/Profiler.h"
 
+#include "WinSystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/InputSystem.h"
@@ -43,6 +43,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "Debug/Profiler.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -51,8 +52,17 @@ extern void FrameworkWillTerminate();
 
 namespace DAVA
 {
+const UINT MSG_ALREADY_RUNNING = ::RegisterWindowMessage(L"MSG_ALREADY_RUNNING");
+bool AlreadyRunning();
+void ShowRunningApplication();
+
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    if (AlreadyRunning())
+    {
+        ShowRunningApplication();
+        return 0;
+    }
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
@@ -175,7 +185,20 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     KeyedArchive* options = Core::GetOptions();
 
     bool shouldEnableFullscreen = false;
-    fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
+
+    DWORD iModeNum = 0;
+    DEVMODE dmi;
+    ZeroMemory(&dmi, sizeof(dmi));
+    dmi.dmSize = sizeof(dmi);
+    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
+    {
+        fullscreenMode.width = dmi.dmPelsWidth;
+        fullscreenMode.height = dmi.dmPelsHeight;
+        fullscreenMode.bpp = dmi.dmBitsPerPel;
+        fullscreenMode.refreshRate = dmi.dmDisplayFrequency;
+        ZeroMemory(&dmi, sizeof(dmi));
+    }
+
     if (options)
     {
         windowedMode.width = options->GetInt32("width");
@@ -446,26 +469,6 @@ void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDis
     }
 }
 
-DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
-{
-    DWORD iModeNum = 0;
-    DEVMODE dmi;
-    ZeroMemory(&dmi, sizeof(dmi));
-    dmi.dmSize = sizeof(dmi);
-
-    DisplayMode mode;
-    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
-    {
-        mode.width = dmi.dmPelsWidth;
-        mode.height = dmi.dmPelsHeight;
-        mode.bpp = dmi.dmBitsPerPel;
-        mode.refreshRate = dmi.dmDisplayFrequency;
-        ZeroMemory(&dmi, sizeof(dmi));
-    }
-
-    return mode;
-}
-
 void CoreWin32Platform::SetIcon(int32 iconId)
 {
     HWND hWindow = static_cast<HWND>(GetNativeView());
@@ -633,7 +636,7 @@ bool IsMouseInputEvent(UINT message)
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
 {
-    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         return true;
     }
@@ -755,9 +758,8 @@ bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wP
         bool isMove = xPos || yPos;
         bool isInside = false;
 
-        if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+        if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
         {
-            SetCursorPosCenterInternal(hWnd);
             isInside = true;
         }
         else
@@ -846,7 +848,10 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             return 0;
         }
     }
-
+    if (message == MSG_ALREADY_RUNNING)
+    {
+        return MSG_ALREADY_RUNNING;
+    }
     switch (message)
     {
     case WM_SIZE:
@@ -990,6 +995,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         if (!loWord || hiWord)
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
+            Core::Instance()->FocusLost();
+            EnableHighResolutionTimer(false);
 
             if (appCore)
             {
@@ -1006,6 +1013,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         else
         {
             Logger::FrameworkDebug("[PlatformWin32] activate application");
+
+            //We need to activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
+            EnableHighResolutionTimer(true);
+
+            Core::Instance()->FocusReceived();
             if (appCore)
             {
                 appCore->OnResume();
@@ -1029,5 +1042,55 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+void CoreWin32Platform::InitArgs()
+{
+    SetCommandLine(GetCommandLineArgs());
+}
+
+void CoreWin32Platform::Quit()
+{
+    PostQuitMessage(0);
+}
+
+bool AlreadyRunning()
+{
+    static const wchar_t* UID_MYAPP_ALREADY_RUNNING = L"ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
+    HANDLE hMutexOneInstance = ::CreateMutex(nullptr, FALSE, UID_MYAPP_ALREADY_RUNNING);
+    // return ERROR_ACCESS_DENIED, if mutex created
+    // in other session, as SECURITY_ATTRIBUTES == NULL
+    return (::GetLastError() == ERROR_ALREADY_EXISTS || ::GetLastError() == ERROR_ACCESS_DENIED);
+}
+
+void ShowRunningApplication()
+{
+    HWND hOther = nullptr;
+    auto enumWindowsCallback = [](HWND hWnd, LPARAM lParam) -> BOOL
+    {
+        ULONG_PTR result;
+        LRESULT ok = ::SendMessageTimeout(hWnd, MSG_ALREADY_RUNNING, 0, 0, SMTO_BLOCK | SMTO_ABORTIFHUNG, 200, &result);
+        if (ok == 0)
+        {
+            return true; // ignore & continue
+        }
+        if (result == MSG_ALREADY_RUNNING)
+        {
+            HWND* target = reinterpret_cast<HWND*>(lParam);
+            *target = hWnd;
+            return false; // if find
+        }
+        return true; // continue
+    };
+    EnumWindows(enumWindowsCallback, (LPARAM)&hOther);
+    if (hOther != nullptr)
+    {
+        ::SetForegroundWindow(hOther);
+        if (IsIconic(hOther))
+        {
+            ::ShowWindow(hOther, SW_RESTORE);
+        }
+    }
+}
+
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)

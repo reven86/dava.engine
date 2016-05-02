@@ -41,8 +41,6 @@
 class EmitterLayerWidget;
 class LayerForceWidget;
 
-using namespace DAVA;
-
 class ParticleEditorWidget : public QScrollArea
 {
     Q_OBJECT
@@ -57,7 +55,7 @@ protected slots:
     void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
     void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
     void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
+    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, int forceIndex);
 
     void OnUpdate();
     void OnValueChanged();
@@ -84,7 +82,7 @@ private:
     void UpdateParticleEditorWidgets();
 
     // Handle the "Emitter Selected" notification for different cases.
-    void HandleEmitterSelected(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, bool forceUpdate);
+    void HandleEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, bool forceUpdate);
 
     // Update the visible timelines for the particular Particle Emitter elements.
     void UpdateVisibleTimelinesForParticleEmitter();
@@ -100,9 +98,9 @@ private:
     void DeleteInnerWidgets();
 
     // Switch editor to the particular mode.
-    void SwitchEditorToEffectMode(SceneEditor2* scene, ParticleEffectComponent* effect);
-    void SwitchEditorToEmitterMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
+    void SwitchEditorToEffectMode(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
+    void SwitchEditorToEmitterMode(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
+    void SwitchEditorToLayerMode(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
     void SwitchEditorToForceMode(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
     // Reset the editor mode, hide/disconnect appropriate widgets.

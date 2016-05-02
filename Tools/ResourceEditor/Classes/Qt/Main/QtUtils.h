@@ -37,9 +37,6 @@
 #include <QAction>
 #include <QMessageBox>
 
-
-#define QSTRING_TO_DAVASTRING(str) (str).toStdString().data()
-
 DAVA::FilePath PathnameToDAVAStyle(const QString& convertedPathname);
 
 DAVA::FilePath GetOpenFileName(const DAVA::String& title, const DAVA::FilePath& pathname, const DAVA::String& filter);

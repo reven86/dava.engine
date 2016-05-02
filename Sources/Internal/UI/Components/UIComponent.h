@@ -47,6 +47,7 @@ public:
         IGNORE_LAYOUT_COMPONENT,
         SIZE_POLICY_COMPONENT,
         ANCHOR_COMPONENT,
+        FOCUS_COMPONENT,
 
         COMPONENT_COUNT
     };
@@ -72,9 +73,17 @@ private:
     UIControl* control;
 };
 
-#define IMPLEMENT_UI_COMPONENT_TYPE(TYPE) \
-    virtual uint32 GetType() const override { return TYPE; } \
+template <uint32 TYPE>
+class UIBaseComponent : public UIComponent
+{
+public:
     static const uint32 C_TYPE = TYPE;
+
+    uint32 GetType() const override
+    {
+        return TYPE;
+    }
+};
 
 inline void UIComponent::SetControl(UIControl* _control)
 {

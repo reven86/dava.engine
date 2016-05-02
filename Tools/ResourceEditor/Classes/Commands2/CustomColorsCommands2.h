@@ -39,27 +39,25 @@
 class CustomColorsProxy;
 class SceneEditor2;
 
-using namespace DAVA;
-
 class ModifyCustomColorsCommand : public Command2
 {
 public:
-    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* customColorsProxy,
-                              const Rect& updatedRect, bool clearTexture);
+    ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy,
+                              const DAVA::Rect& updatedRect, bool clearTexture);
     ~ModifyCustomColorsCommand() override;
 
     void Undo() override;
     void Redo() override;
-    Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const override;
 
 private:
-    void ApplyImage(Image* image, bool disableBlend);
+    void ApplyImage(DAVA::Image* image, bool disableBlend);
 
 private:
     CustomColorsProxy* customColorsProxy = nullptr;
-    Image* undoImage = nullptr;
-    Image* redoImage = nullptr;
-    Rect updatedRect;
+    DAVA::Image* undoImage = nullptr;
+    DAVA::Image* redoImage = nullptr;
+    DAVA::Rect updatedRect;
     bool shouldClearTexture = false;
 };
 

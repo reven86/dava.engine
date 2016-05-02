@@ -63,21 +63,6 @@ int GetBPPFromMode(CGDisplayModeRef displayMode)
     return depth;
 }
 
-DisplayMode CoreMacOSPlatformBase::GetCurrentDisplayMode()
-{
-    CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(kCGDirectMainDisplay);
-
-    DisplayMode mode;
-    mode.width = CGDisplayModeGetWidth(currentMode);
-    mode.height = CGDisplayModeGetHeight(currentMode);
-    mode.refreshRate = CGDisplayModeGetRefreshRate(currentMode);
-    mode.bpp = GetBPPFromMode(currentMode);
-
-    CGDisplayModeRelease(currentMode);
-
-    return mode;
-}
-
 void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode>& availableModes)
 {
     CFArrayRef availableModesSystem = CGDisplayCopyAllDisplayModes(kCGDirectMainDisplay, nullptr);

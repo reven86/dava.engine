@@ -35,6 +35,7 @@
 #include "Render/Texture.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Renderer.h"
+
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
 
@@ -882,14 +883,14 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     if (!ddsFile)
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open file %s", filePathname.GetStringValue().c_str());
-        return false;
+        return 0;
     }
 
     DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
     if (!header.IsValid())
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] is not DDS file %s", filePathname.GetStringValue().c_str());
-        return false;
+        return 0;
     }
 
     if (header.formatHeader.metadata.crcTag == METADATA_CRC_TAG)
@@ -1091,6 +1092,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     }
 
     return res;
+
 #endif
 }
 
@@ -1106,6 +1108,7 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     return false;
     
 #else
+
     if (!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM) || (compressionFormat == FORMAT_RGBA8888)))
     {
         Logger::Error("[LibDdsHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
@@ -1203,7 +1206,7 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
     outputOptions.setFileName(fileName.GetAbsolutePathname().c_str());
 
-    Compressor compressor;
+    nvtt::Compressor compressor;
     bool ret = compressor.process(inputOptions, compressionOptions, outputOptions);
     if (ret)
     {
@@ -1232,6 +1235,7 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     }
 
     return ret;
+
 #endif //__DAVAENGINE_IPHONE__
 }
 
@@ -1382,6 +1386,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     }
 
     return res;
+
 #endif
 }
 };
