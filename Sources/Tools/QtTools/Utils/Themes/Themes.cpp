@@ -43,8 +43,6 @@ const QString themeSettingsKey = "ThemeName";
 
 namespace Themes
 {
-QPalette defaultPalette;
-QString defaultStyleSheet;
 eTheme currentTheme;
 bool themesInitialized = false;
 QStringList themesNames = { "classic", "dark" };
@@ -58,8 +56,6 @@ void SetupDarkTheme();
 void InitFromQApplication()
 {
     themesInitialized = true;
-    defaultStyleSheet = qApp->styleSheet();
-    defaultPalette = QGuiApplication::palette();
     qAddPostRoutine([]() {
         QSettings settings(QApplication::organizationName(), QApplication::applicationName());
         settings.beginGroup(Themes_namespace::themeSettingsGroup);
@@ -127,9 +123,9 @@ void SetupClassicTheme()
 #else
     QString styleName = "windowsVista";
 #endif //Q_OS_MAC
-    qApp->setStyle(QStyleFactory::create(styleName));
-    qApp->setPalette(defaultPalette);
-    qApp->setStyleSheet(defaultStyleSheet);
+    QStyle* style = QStyleFactory::create(styleName);
+    qApp->setPalette(style->standardPalette());
+    qApp->setStyleSheet("");
 }
 
 void SetupDarkTheme()
