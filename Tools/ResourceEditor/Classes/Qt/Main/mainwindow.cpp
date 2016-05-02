@@ -2725,7 +2725,7 @@ bool QtMainWindow::shouldClose(QCloseEvent* e)
 {
     if (IsAnySceneChanged() == false)
         return true;
-    
+
     int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
