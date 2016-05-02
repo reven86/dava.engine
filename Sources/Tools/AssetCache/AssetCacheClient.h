@@ -61,7 +61,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
         }
 
         AssetCache::CacheItemKey key;
-        AssetCache::CachedItemValue* value;
+        AssetCache::CachedItemValue* value = nullptr;
 
         AssetCache::ePacketID requestID = AssetCache::PACKET_UNKNOWN;
         AssetCache::Error result = AssetCache::Error::NO_ERRORS;

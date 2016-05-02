@@ -99,7 +99,6 @@ public:
     static void ForData(const uint8* data, uint32 dataSize, MD5Digest& digest);
     static void ForFile(const FilePath& pathName, MD5Digest& digest);
     static void ForDirectory(const FilePath& pathName, MD5Digest& digest, bool isRecursive, bool includeHidden);
-    static void RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden);
 
     static void HashToChar(const MD5Digest& digest, char8* buffer, uint32 bufferSize);
     static void HashToChar(const uint8* hash, uint32 hashSize, char8* buffer, uint32 bufferSize);
@@ -116,6 +115,7 @@ public:
     }
 
 private:
+    static void CalculateDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden);
     static uint8 GetNumberFromCharacter(char8 character);
     static char8 GetCharacterFromNumber(uint8 number);
 

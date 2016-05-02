@@ -37,11 +37,17 @@ class AssetCacheClient;
 
 namespace ResourceArchiver
 {
-bool StringToCompressType(const DAVA::String& compressionStr, DAVA::Compressor::Type& type);
-DAVA::String CompressTypeToString(DAVA::Compressor::Type packType);
+struct Params
+{
+    Vector<String> sourcesList;
+    bool addHiddenFiles = false;
+    DAVA::Compressor::Type compressionType = Compressor::Type::Lz4HC;
+    FilePath archivePath;
+    FilePath logPath;
+    AssetCacheClient* assetCacheClient = nullptr;
+};
 
-bool CreateArchive(const Vector<String>& sourcesList, bool addHiddenFiles, DAVA::Compressor::Type compressType,
-                   const FilePath& archivePath, const FilePath& logPath, AssetCacheClient* client);
+bool CreateArchive(const Params& params);
 
 } // namespace Archive
 } // namespace DAVA

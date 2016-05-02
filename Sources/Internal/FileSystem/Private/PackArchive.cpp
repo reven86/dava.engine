@@ -62,7 +62,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
     {
         throw std::runtime_error("error in header of packfile start position for file names incorrect");
     }
-    ;
+
     Vector<uint8>& compressedNamesBuffer = packFile.names.sortedNamesLz4hc;
     compressedNamesBuffer.resize(headerBlock.namesBlockSizeCompressedLZ4HC, '\0');
 

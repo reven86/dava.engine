@@ -26,13 +26,13 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/UniquePtr.h"
 #include "FileSystem/FileSystem.h"
 #include "ResourceArchiver/ResourceArchiver.h"
 
 #include "AssetCache/AssetCacheClient.h"
 
 #include "ArchivePackTool.h"
+#include "ResultCodes.h"
 
 using namespace DAVA;
 
@@ -52,12 +52,14 @@ const DAVA::String ListFile = "-listfile";
 ArchivePackTool::ArchivePackTool()
     : CommandLineTool("-pack")
 {
+    static const uint32 defaultPort = static_cast<uint32>(AssetCache::ASSET_SERVER_PORT);
+    static const uint64 defaultTimeout = 1000ul;
     options.AddOption(OptionNames::Compression, VariantType(String("lz4hc")), "default compression method, lz4hc - default");
     options.AddOption(OptionNames::AddHidden, VariantType(false), "add hidden files to pack list");
     options.AddOption(OptionNames::UseCache, VariantType(false), "use asset cache");
     options.AddOption(OptionNames::Ip, VariantType(AssetCache::LOCALHOST), "asset cache ip");
-    options.AddOption(OptionNames::Port, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "asset cache port");
-    options.AddOption(OptionNames::Timeout, VariantType(1000u), "asset cache timeout");
+    options.AddOption(OptionNames::Port, VariantType(defaultPort), "asset cache port");
+    options.AddOption(OptionNames::Timeout, VariantType(defaultTimeout), "asset cache timeout");
     options.AddOption(OptionNames::LogFile, VariantType(String("")), "package process log file");
     options.AddOption(OptionNames::Src, VariantType(String("")), "source files directory", true);
     options.AddOption(OptionNames::ListFile, VariantType(String("")), "text files containing list of source files", true);
@@ -67,17 +69,20 @@ ArchivePackTool::ArchivePackTool()
 bool ArchivePackTool::ConvertOptionsToParamsInternal()
 {
     compressionStr = options.GetOption(OptionNames::Compression).AsString();
-    if (!ResourceArchiver::StringToCompressType(compressionStr, compressionType))
+
+    int type;
+    if (!GlobalEnumMap<Compressor::Type>::Instance()->ToValue(compressionStr.c_str(), type))
     {
         Logger::Error("Invalid compression type: '%s'", compressionStr.c_str());
         return false;
     }
+    compressionType = static_cast<Compressor::Type>(type);
 
     addHidden = options.GetOption(OptionNames::AddHidden).AsBool();
     useCache = options.GetOption(OptionNames::UseCache).AsBool();
     assetCacheParams.ip = options.GetOption(OptionNames::Ip).AsString();
-    assetCacheParams.port = options.GetOption(OptionNames::Port).AsUInt32();
-    assetCacheParams.timeoutms = options.GetOption(OptionNames::Timeout).AsUInt32();
+    assetCacheParams.port = static_cast<uint16>(options.GetOption(OptionNames::Port).AsUInt32());
+    assetCacheParams.timeoutms = options.GetOption(OptionNames::Timeout).AsUInt64();
     logFileName = options.GetOption(OptionNames::LogFile).AsString();
 
     source = Source::Unknown;
@@ -126,7 +131,7 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
     return true;
 }
 
-void ArchivePackTool::ProcessInternal()
+int ArchivePackTool::ProcessInternal()
 {
     Vector<String> sources;
 
@@ -136,7 +141,7 @@ void ArchivePackTool::ProcessInternal()
     {
         for (const String& filename : listFiles)
         {
-            UniquePtr<File> listFile(File::Create(filename, File::OPEN | File::READ));
+            ScopedPtr<File> listFile(File::Create(filename, File::OPEN | File::READ));
             if (listFile)
             {
                 while (!listFile->IsEof())
@@ -151,7 +156,7 @@ void ArchivePackTool::ProcessInternal()
             else
             {
                 Logger::Error("Can't open listfile %s", filename.c_str());
-                return;
+                return ResourceArchiverResult::ERROR_CANT_OPEN_FILE;
             }
         }
         break;
@@ -163,15 +168,15 @@ void ArchivePackTool::ProcessInternal()
     }
     default:
     {
-        DVASSERT_MSG(false, Format("Incorrect source type: %d", source));
-        return;
+        DVASSERT_MSG(false, Format("Incorrect source type: %d", source).c_str());
+        return ResourceArchiverResult::ERROR_INTERNAL;
     }
     }
 
     if (sources.empty())
     {
-        LOG_ERROR("No sources specified");
-        return;
+        Logger::Error("No sources specified");
+        return ResourceArchiverResult::ERROR_WRONG_COMMAND_LINE;
     }
 
     FilePath logFilePath(logFileName);
@@ -188,15 +193,25 @@ void ArchivePackTool::ProcessInternal()
         AssetCache::Error result = assetCache->ConnectSynchronously(assetCacheParams);
         if (result != AssetCache::Error::NO_ERRORS)
         {
-            LOG_ERROR("Can't connect to asset cache server %s:%u, reason is %s", assetCacheParams.ip, assetCacheParams.port, AssetCache::ErrorToString(result).c_str());
+            Logger::Error("Can't connect to asset cache server %s:%u, reason is %s", assetCacheParams.ip.c_str(), assetCacheParams.port, AssetCache::ErrorToString(result).c_str());
             assetCache.reset();
         }
     }
 
-    ResourceArchiver::CreateArchive(sources, addHidden, compressionType, packFileName, logFilePath, assetCache.get());
+    ResourceArchiver::Params params;
+    params.sourcesList.swap(sources);
+    params.addHiddenFiles = addHidden;
+    params.compressionType = compressionType;
+    params.archivePath = packFileName;
+    params.logPath = logFilePath;
+    params.assetCacheClient = assetCache.get();
+
+    ResourceArchiver::CreateArchive(params);
 
     if (assetCache)
     {
         assetCache->Disconnect();
     }
+
+    return ResourceArchiverResult::OK;
 }

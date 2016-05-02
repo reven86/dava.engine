@@ -230,7 +230,7 @@ void MallocHook::Install()
     }
     if (nullptr == RealMallocSize)
     { // DAVA::Logger in not available yet
-        __android_log_print(ANDROID_LOG_ERROR, "DAVA", "!!! malloc_usable_size is not available");
+        __android_log_print(ANDROID_Logger::Error, "DAVA", "!!! malloc_usable_size is not available");
     }
 #endif
 

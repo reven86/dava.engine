@@ -41,9 +41,19 @@ CommandLineTool::CommandLineTool(const DAVA::String& toolName)
     options.AddOption("-teamcity", VariantType(false), "Extra output in teamcity format");
 }
 
-bool CommandLineTool::ParseOptions(const Vector<String>& commandLine)
+void CommandLineTool::SetParseErrorCode(int code)
 {
-    return options.Parse(commandLine);
+    codeParseError = code;
+}
+
+void CommandLineTool::SetOkCode(int code)
+{
+    codeOk = code;
+}
+
+bool CommandLineTool::ParseOptions(uint32 argc, char* argv[])
+{
+    return options.Parse(argc, argv);
 }
 
 void CommandLineTool::PrintUsage() const
@@ -51,29 +61,35 @@ void CommandLineTool::PrintUsage() const
     options.PrintUsage();
 }
 
+String CommandLineTool::GetUsageString() const
+{
+    return options.GetUsageString();
+}
+
 DAVA::String CommandLineTool::GetToolKey() const
 {
     return options.GetCommand();
 }
 
-void CommandLineTool::Process()
+int CommandLineTool::Process()
 {
     const bool printUsage = options.GetOption("-h").AsBool();
     if (printUsage)
     {
         PrintUsage();
-        return;
+        return codeOk;
     }
 
     PrepareEnvironment();
 
     if (ConvertOptionsToParamsInternal())
     {
-        ProcessInternal();
+        return ProcessInternal();
     }
     else
     {
         PrintUsage();
+        return codeParseError;
     }
 }
 

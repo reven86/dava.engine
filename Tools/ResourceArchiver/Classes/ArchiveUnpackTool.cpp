@@ -26,12 +26,13 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/UniquePtr.h"
+#include "Base/GlobalEnum.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "ResourceArchiver/ResourceArchiver.h"
 
 #include "ArchiveUnpackTool.h"
+#include "ResultCodes.h"
 
 using namespace DAVA;
 
@@ -47,22 +48,22 @@ bool ArchiveUnpackTool::ConvertOptionsToParamsInternal()
     packFilename = options.GetArgument("packfile");
     if (packFilename.IsEmpty())
     {
-        LOG_ERROR("packfile param is not specified");
+        Logger::Error("packfile param is not specified");
         return false;
     }
 
     dstDir = options.GetArgument("directory");
-    dstDir.MakeDirectoryPathname();
     if (dstDir.IsEmpty())
     {
-        LOG_ERROR("directory param is not specified");
+        Logger::Error("directory param is not specified");
         return false;
     }
+    dstDir.MakeDirectoryPathname();
 
     return true;
 }
 
-void ArchiveUnpackTool::ProcessInternal()
+int ArchiveUnpackTool::ProcessInternal()
 {
     Logger::Info("Unpacking %s into %s", packFilename.GetFilename().c_str(), dstDir.GetAbsolutePathname().c_str());
 
@@ -74,45 +75,48 @@ void ArchiveUnpackTool::ProcessInternal()
 
     if (FileSystem::Instance()->CreateDirectory(dstDir) == FileSystem::DIRECTORY_CANT_CREATE)
     {
-        LOG_ERROR("Can't create dir '%s'", dstDir.GetAbsolutePathname().c_str());
-        return;
+        Logger::Error("Can't create dir '%s'", dstDir.GetAbsolutePathname().c_str());
+        return ResourceArchiverResult::ERROR_CANT_CREATE_DIR;
     }
 
     if (FileSystem::Instance()->SetCurrentWorkingDirectory(dstDir) == false)
     {
-        LOG_ERROR("Can't change current dir to '%s'", dstDir.GetAbsolutePathname().c_str());
-        return;
+        Logger::Error("Can't change current dir to '%s'", dstDir.GetAbsolutePathname().c_str());
+        return ResourceArchiverResult::ERROR_CANT_CHANGE_DIR;
     }
 
     try
     {
         ResourceArchive resourceArchive(packFilename);
 
+        int unpackResult = ERROR_EMPTY_ARCHIVE;
         for (const ResourceArchive::FileInfo& fileInfo : resourceArchive.GetFilesInfo())
         {
             Logger::Info("Unpacking %s, compressed size %u, orig size %u, pack type %s",
                          fileInfo.relativeFilePath.c_str(), fileInfo.compressedSize, fileInfo.originalSize,
-                         ResourceArchiver::CompressTypeToString(fileInfo.compressionType).c_str());
-            if (!UnpackFile(resourceArchive, fileInfo))
-            {
-                return;
-            }
+                         GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(fileInfo.compressionType)));
+
+            unpackResult = UnpackFile(resourceArchive, fileInfo);
+            if (unpackResult != ResourceArchiverResult::OK)
+                break;
         }
-        Logger::Info("done");
+
+        return unpackResult;
     }
     catch (std::exception ex)
     {
-        LOG_ERROR("Can't open archive %s: %s", packFilename.GetAbsolutePathname().c_str(), ex.what());
+        Logger::Error("Can't open archive %s: %s", packFilename.GetAbsolutePathname().c_str(), ex.what());
+        return ResourceArchiverResult::ERROR_CANT_OPEN_ARCHIVE;
     }
 }
 
-bool ArchiveUnpackTool::UnpackFile(const ResourceArchive& archive, const ResourceArchive::FileInfo& fileInfo)
+int ArchiveUnpackTool::UnpackFile(const ResourceArchive& archive, const ResourceArchive::FileInfo& fileInfo)
 {
     Vector<uint8> content;
     if (!archive.LoadFile(fileInfo.relativeFilePath, content))
     {
-        LOG_ERROR("Can't load file %s from archive", fileInfo.relativeFilePath);
-        return false;
+        Logger::Error("Can't load file %s from archive", fileInfo.relativeFilePath.c_str());
+        return ResourceArchiverResult::ERROR_CANT_EXTRACT_FILE;
     }
 
     FilePath fullPath(fileInfo.relativeFilePath);
@@ -120,27 +124,27 @@ bool ArchiveUnpackTool::UnpackFile(const ResourceArchive& archive, const Resourc
     FileSystem::eCreateDirectoryResult result = FileSystem::Instance()->CreateDirectory(dirPath, true);
     if (FileSystem::DIRECTORY_CANT_CREATE == result)
     {
-        LOG_ERROR("Can't create unpack path dir %s", dirPath.GetAbsolutePathname().c_str());
-        return false;
+        Logger::Error("Can't create unpack path dir %s", dirPath.GetAbsolutePathname().c_str());
+        return ResourceArchiverResult::ERROR_CANT_CREATE_DIR;
     }
 
     if (!fullPath.IsDirectoryPathname())
     {
-        UniquePtr<File> file(File::Create(fullPath, File::CREATE | File::WRITE));
+        ScopedPtr<File> file(File::Create(fullPath, File::CREATE | File::WRITE));
         if (!file)
         {
-            LOG_ERROR("Can't create file %s", fullPath.GetAbsolutePathname().c_str());
-            return false;
+            Logger::Error("Can't create file %s", fullPath.GetAbsolutePathname().c_str());
+            return ResourceArchiverResult::ERROR_CANT_WRITE_FILE;
         }
 
         uint32 dataSize = static_cast<uint32>(content.size());
         uint32 written = file->Write(content.data(), dataSize);
         if (written != dataSize)
         {
-            LOG_ERROR("Can't write into %s", fullPath.GetAbsolutePathname().c_str());
-            return false;
+            Logger::Error("Can't write into %s", fullPath.GetAbsolutePathname().c_str());
+            return ResourceArchiverResult::ERROR_CANT_WRITE_FILE;
         }
     }
 
-    return true;
+    return ResourceArchiverResult::OK;
 }

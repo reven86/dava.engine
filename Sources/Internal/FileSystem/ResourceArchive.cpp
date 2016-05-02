@@ -120,7 +120,7 @@ bool ResourceArchive::UnpackToFolder(const FilePath& dir) const
 
         if (!LoadFile(res.relativeFilePath, content))
         {
-            Logger::Error("can't unpack file: %s", res.relativeFilePath);
+            Logger::Error("can't unpack file: %s", res.relativeFilePath.c_str());
             return false;
         }
 
@@ -133,7 +133,7 @@ bool ResourceArchive::UnpackToFolder(const FilePath& dir) const
         uint32 bytesInFile = file->Write(content.data(), static_cast<uint32>(content.size()));
         if (bytesInFile != content.size())
         {
-            Logger::Error("can't write file: %s", res.relativeFilePath);
+            Logger::Error("can't write file: %s", res.relativeFilePath.c_str());
             return false;
         }
     }

@@ -236,16 +236,11 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
                 request.result = AssetCache::Error::NO_ERRORS;
                 request.recieved = true;
                 request.processingRequest = true;
+
+                DVASSERT_MSG(request.value != nullptr, "Request object that waits for response of data, should have valid pointer to AssetCacheValue");
                 *(request.value) = value;
-                //            }
 
-            DumpInfo(key, value);
-
-            //             FileSystem::Instance()->CreateDirectory(currentRequest.outputFolder, true);
-            //             value.Export(currentRequest.outputFolder);
-
-            //             { // mark request as processed
-            //                 LockGuard<Mutex> guard(requestLocker);
+                DumpInfo(key, value);
                 request.processingRequest = false;
             }
         }

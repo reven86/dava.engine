@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackFormatSpec.h"
-#include "Base/UniquePtr.h"
 #include "Utils/Utils.h"
 #include "Compression/LZ4Compressor.h"
 #include "Compression/ZipCompressor.h"
@@ -46,42 +45,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
 
+ENUM_DECLARE(DAVA::Compressor::Type)
+{
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Compressor::Type::Lz4), "lz4");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Compressor::Type::Lz4HC), "lz4hc");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Compressor::Type::RFC1951), "rfc1951");
+    ENUM_ADD_DESCR(static_cast<int>(DAVA::Compressor::Type::None), "none");
+};
+
 namespace DAVA
 {
 namespace ResourceArchiver
 {
-const UnorderedMap<String, Compressor::Type> packTypes =
-{ { "lz4", Compressor::Type::Lz4 },
-  { "lz4hc", Compressor::Type::Lz4HC },
-  { "rfc1951", Compressor::Type::RFC1951 },
-  { "none", Compressor::Type::None } };
-
-bool StringToCompressType(const String& compressionStr, Compressor::Type& type)
-{
-    const auto& found = packTypes.find(compressionStr);
-    if (found != packTypes.end())
-    {
-        type = found->second;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-String CompressTypeToString(Compressor::Type packType)
-{
-    for (const auto& type : packTypes)
-    {
-        if (type.second == packType)
-        {
-            return type.first;
-        }
-    }
-    return String();
-}
-
 struct CollectedFile
 {
     FilePath absPath;
@@ -92,7 +67,7 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
 {
     bool fileOrDirAdded = false;
 
-    UniquePtr<FileList> fileList(new FileList(dirPath, addHidden));
+    ScopedPtr<FileList> fileList(new FileList(dirPath, addHidden));
     for (auto file = 0; file < fileList->GetCount(); ++file)
     {
         if (fileList->IsNavigationDirectory(file))
@@ -140,7 +115,7 @@ bool WriteHeaderBlock(File* outputFile, const PackFormat::PackFile::HeaderBlock&
     uint32 written = outputFile->Write(&headerBlock, sizeToWrite);
     if (written != sizeToWrite)
     {
-        LOG_ERROR("Can't write header block to archive");
+        Logger::Error("Can't write header block to archive");
         return false;
     }
 
@@ -155,7 +130,7 @@ bool WriteNamesBlock(File* outputFile, const PackFormat::PackFile::NamesBlock& n
     uint32 written = outputFile->Write(namesBlock.sortedNamesLz4hc.data(), sizeToWrite);
     if (written != sizeToWrite)
     {
-        LOG_ERROR("Can't write filenames block to archive");
+        Logger::Error("Can't write filenames block to archive");
         return false;
     }
 
@@ -165,12 +140,13 @@ bool WriteNamesBlock(File* outputFile, const PackFormat::PackFile::NamesBlock& n
 bool WriteFilesDataBlock(File* outputFile, const PackFormat::PackFile::FilesDataBlock& filesDataBlock)
 {
     DVASSERT(outputFile != nullptr);
+    DVASSERT(filesDataBlock.files.empty() == false);
 
     uint32 sizeToWrite = static_cast<uint32>(filesDataBlock.files.size() * sizeof(filesDataBlock.files[0]));
     uint32 written = outputFile->Write(filesDataBlock.files.data(), sizeToWrite);
     if (written != sizeToWrite)
     {
-        LOG_ERROR("Can't write file table block to archive");
+        Logger::Error("Can't write file table block to archive");
         return false;
     }
 
@@ -185,7 +161,7 @@ bool WriteRawData(File* outputFile, const Vector<uint8>& srcBuffer)
     uint32 written = outputFile->Write(srcBuffer.data(), sizeToWrite);
     if (written != sizeToWrite)
     {
-        LOG_ERROR("Can't write data block to archive");
+        Logger::Error("Can't write data block to archive");
         return false;
     }
 
@@ -265,7 +241,7 @@ bool RetrieveFileFromCache(AssetCacheClient* assetCacheClient, const AssetCache:
         }
         else
         {
-            LOG_ERROR("Can't export retrieved data to file %s", outputFile.GetAbsolutePathname().c_str());
+            Logger::Error("Can't export retrieved data to file %s", outputFile.GetAbsolutePathname().c_str());
             return false;
         }
     }
@@ -331,9 +307,7 @@ Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHidden
 
     for (String source : sources)
     {
-        source = FilePath::NormalizePathname(source);
         FilePath sourcePath(source);
-
         if (sourcePath.IsDirectoryPathname())
         {
             CollectAllFilesInDirectory(sourcePath, sourcePath.GetLastDirectoryName() + '/', addHiddenFiles, collectedFiles);
@@ -355,6 +329,28 @@ Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHidden
     return collectedFiles;
 }
 
+const Compressor* GetCompressor(Compressor::Type compressorType)
+{
+    static const std::unique_ptr<Compressor> lz4Compressor(new LZ4Compressor);
+    static const std::unique_ptr<Compressor> lz4HCCompressor(new LZ4HCCompressor);
+    static const std::unique_ptr<Compressor> zipCompressor(new ZipCompressor);
+
+    switch (compressorType)
+    {
+    case Compressor::Type::Lz4:
+        return lz4Compressor.get();
+    case Compressor::Type::Lz4HC:
+        return lz4HCCompressor.get();
+    case Compressor::Type::RFC1951:
+        return zipCompressor.get();
+    default:
+    {
+        DVASSERT_MSG(false, Format("Unexpected compressor type: %u", compressorType).c_str());
+        return nullptr;
+    }
+    }
+}
+
 bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath)
 {
     PackFormat::PackFile packFile;
@@ -371,9 +367,9 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     Vector<uint8> sortedNamesOriginal = SpliceFileNames(collectedFiles);
     namesBlock.sortedNamesLz4hc.reserve(sortedNamesOriginal.size());
 
-    if (!Compressor::GetCompressor(Compressor::Type::Lz4HC)->Compress(sortedNamesOriginal, namesBlock.sortedNamesLz4hc))
+    if (!GetCompressor(Compressor::Type::Lz4HC)->Compress(sortedNamesOriginal, namesBlock.sortedNamesLz4hc))
     {
-        LOG_ERROR("Can't compress names block");
+        Logger::Error("Can't compress names block");
         return false;
     }
 
@@ -386,10 +382,10 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     headerBlock.filesTableBlockSize = static_cast<uint32>(fileTable.size() * sizeof(PackFormat::PackFile::FilesDataBlock::Data));
     headerBlock.startPackedFilesBlockPosition = headerBlock.startFilesDataBlockPosition + headerBlock.filesTableBlockSize;
 
-    UniquePtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
+    ScopedPtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
     if (!outputFile)
     {
-        LOG_ERROR("Can't create %s", archivePath.GetAbsolutePathname().c_str());
+        Logger::Error("Can't create %s", archivePath.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -403,11 +399,11 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     Vector<uint8> origFileBuffer;
     Vector<uint8> compressedFileBuffer;
 
-    std::unique_ptr<Compressor> compressor;
+    const Compressor* compressor = nullptr;
     if (compressionType != Compressor::Type::None)
     {
-        compressor = Compressor::GetCompressor(compressionType);
-        DVASSERT_MSG(compressor, Format("Can't get '%s' compressor", CompressTypeToString(compressionType).c_str()));
+        compressor = GetCompressor(compressionType);
+        DVASSERT_MSG(compressor, Format("Can't get '%s' compressor", GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(compressionType))).c_str());
     }
 
     for (size_t i = 0, filesSize = collectedFiles.size(); i < filesSize; ++i)
@@ -424,7 +420,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
         {
             if (FileSystem::Instance()->ReadFileContents(collectedFile.absPath, origFileBuffer) == false)
             {
-                LOG_ERROR("Can't read contents of %s", collectedFile.absPath.GetAbsolutePathname().c_str());
+                Logger::Error("Can't read contents of %s", collectedFile.absPath.GetAbsolutePathname().c_str());
                 return false;
             }
 
@@ -433,19 +429,19 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
             {
                 if (!compressor->Compress(origFileBuffer, compressedFileBuffer))
                 {
-                    LOG_ERROR("Can't compress contents of %s", collectedFile.absPath.GetAbsolutePathname().c_str());
+                    Logger::Error("Can't compress contents of %s", collectedFile.absPath.GetAbsolutePathname().c_str());
                     return false;
                 }
                 useCompressedBuffer = (compressedFileBuffer.size() < origFileBuffer.size());
             }
 
             fileEntry.startPositionInPackedFilesBlock = dataOffset;
-            fileEntry.original = origFileBuffer.size();
-            fileEntry.compressed = compressedFileBuffer.size();
+            fileEntry.original = static_cast<uint32>(origFileBuffer.size());
+            fileEntry.compressed = static_cast<uint32>(compressedFileBuffer.size());
             fileEntry.packType = (useCompressedBuffer ? compressionType : Compressor::Type::None);
 
             Vector<uint8>& srcBuffer = (useCompressedBuffer ? compressedFileBuffer : origFileBuffer);
-            dataOffset += srcBuffer.size();
+            dataOffset += static_cast<uint32>(srcBuffer.size());
 
             if (!WriteRawData(outputFile, srcBuffer))
             {
@@ -460,7 +456,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
         Logger::Info("%s | %s %s | Packed %s, orig size %u, compressed size %u, compression: %s",
                      deviceName.c_str(), date.c_str(), time.c_str(),
                      collectedFile.archivePath.c_str(), fileEntry.original, fileEntry.compressed,
-                     CompressTypeToString(fileEntry.packType).c_str());
+                     GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(fileEntry.packType)));
     }
 
     outputFile->Seek(headerBlock.startFilesDataBlockPosition, File::SEEK_FROM_START);
@@ -472,41 +468,41 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     return true;
 }
 
-bool CreateArchive(const Vector<String>& sources, bool addHiddenFiles, DAVA::Compressor::Type compressionType,
-                   const FilePath& archivePath, const FilePath& logPath, AssetCacheClient* assetCacheClient)
+bool CreateArchive(const Params& params)
 {
-    Vector<CollectedFile> collectedFiles = CollectFiles(sources, addHiddenFiles);
+    Vector<CollectedFile> collectedFiles = CollectFiles(params.sourcesList, params.addHiddenFiles);
     if (collectedFiles.empty())
     {
-        LOG_ERROR("No input files for pack");
+        Logger::Error("No input files for pack");
         return false;
     }
 
-    if (archivePath.IsEmpty())
+    if (params.archivePath.IsEmpty())
     {
-        LOG_ERROR("Archive path is not set");
+        Logger::Error("Archive path is not set");
         return false;
     }
 
     AssetCache::CacheItemKey keyForArchive;
     AssetCache::CacheItemKey keyForLog;
-    if (assetCacheClient != nullptr)
+    if (params.assetCacheClient != nullptr)
     {
-        ConstructCacheKeys(keyForArchive, keyForLog, collectedFiles, CompressTypeToString(compressionType));
+        const char* compressionStr = GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(params.compressionType));
+        ConstructCacheKeys(keyForArchive, keyForLog, collectedFiles, compressionStr);
 
-        if (true == RetrieveFromCache(assetCacheClient, keyForArchive, keyForLog, archivePath, logPath))
+        if (true == RetrieveFromCache(params.assetCacheClient, keyForArchive, keyForLog, params.archivePath, params.logPath))
         {
             return true;
         }
     }
 
-    if (Pack(collectedFiles, compressionType, archivePath))
+    if (Pack(collectedFiles, params.compressionType, params.archivePath))
     {
         Logger::Info("packing done");
 
-        if (assetCacheClient != nullptr)
+        if (params.assetCacheClient != nullptr)
         {
-            AddToCache(assetCacheClient, keyForArchive, keyForLog, archivePath, logPath);
+            AddToCache(params.assetCacheClient, keyForArchive, keyForLog, params.archivePath, params.logPath);
         }
         return true;
     }

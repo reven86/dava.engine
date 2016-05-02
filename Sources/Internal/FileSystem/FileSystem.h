@@ -206,7 +206,7 @@ public:
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-    virtual bool CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
+    virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
         \brief Read whole file contents into new buffer. 
@@ -284,7 +284,7 @@ public:
     /**
     \brief Copies one folder into another recursively
     */
-    void RecursiveCopy(const FilePath& src, const FilePath& dst);
+    bool RecursiveCopy(const FilePath& src, const FilePath& dst);
 
 private:
     bool HasLineEnding(File* f);

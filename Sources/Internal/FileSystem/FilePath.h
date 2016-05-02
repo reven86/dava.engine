@@ -205,7 +205,6 @@ public:
         \brief Function to modify absolute to be path to folder. For example "Users/Document" after function call will be "Users/Document/"
         */
     FilePath& MakeDirectoryPathname();
-    static String MakeDirectory(const String& pathname);
 
     /**
         \brief Function to truncate extension from path
@@ -272,9 +271,6 @@ public:
         */
     inline ePathType GetType() const;
 
-    static bool IsAbsolutePathname(const String& pathname);
-    static String NormalizePathname(const String& pathname);
-
     static bool ContainPath(const FilePath& basePath, const FilePath& partPath);
     static bool ContainPath(const FilePath& basePath, const String& partPath);
     static bool ContainPath(const FilePath& basePath, const char8* partPath);
@@ -296,12 +292,18 @@ protected:
 
     String ResolveResourcesPath() const;
 
+    static String NormalizePathname(const String& pathname);
+
+    static String MakeDirectory(const String& pathname);
+
     static String AbsoluteToRelative(const FilePath& directoryPathname, const FilePath& absolutePathname);
 
     static String GetFilename(const String& pathname);
 
     static String GetSystemPathname(const String& pathname, const ePathType pType);
     String GetFrameworkPathForPrefix(const String& typePrefix, const ePathType pType) const;
+
+    static bool IsAbsolutePathname(const String& pathname);
 
     static ePathType GetPathType(const String& pathname);
 

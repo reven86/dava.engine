@@ -40,7 +40,7 @@ public:
 
 private:
     bool ConvertOptionsToParamsInternal() override;
-    void ProcessInternal() override;
+    int ProcessInternal() override;
 
     DAVA::FilePath outFilePath;
     DAVA::FilePath packFilePath;

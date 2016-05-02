@@ -39,7 +39,6 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
-#include "Base/UniquePtr.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>
@@ -241,9 +240,8 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
     return !error;
 }
 
-bool FileSystem::CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
+bool FileSystem::CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
 {
-    DVASSERT(destinationDirectory.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
 
     bool ret = true;
@@ -780,10 +778,10 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
 
 bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer)
 {
-    UniquePtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
     if (!fp)
     {
-        LOG_ERROR("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+        Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -793,7 +791,7 @@ bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffe
 
     if (dataRead != fileSize)
     {
-        LOG_ERROR("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+        Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -1037,20 +1035,33 @@ bool FileSystem::Exists(const FilePath& filePath) const
     return IsFile(filePath);
 }
 
-void FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
+bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
 {
     DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
+    DVASSERT(dst.GetType() != FilePath::PATH_IN_RESOURCES);
 
     CreateDirectory(dst, true);
-    CopyDirectory(src, dst);
 
-    UniquePtr<FileList> fileList(new FileList(src));
+    bool retCode = true;
+    ScopedPtr<FileList> fileList(new FileList(src));
     for (int32 i = 0; i < fileList->GetCount(); ++i)
     {
-        if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
+        if (fileList->IsDirectory(i))
         {
-            RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                retCode &= RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+            }
+        }
+        else
+        {
+            const FilePath destinationPath = dst + fileList->GetFilename(i);
+            if (!CopyFile(fileList->GetPathname(i), destinationPath, false))
+            {
+                retCode = false;
+            }
         }
     }
+    return retCode;
 }
 }

@@ -28,10 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Logger/Logger.h"
 #include "ResourceArchiver/ResourceArchiver.h"
-#include "Base/UniquePtr.h"
 #include "FileSystem/File.h"
 
 #include "ArchiveListTool.h"
+#include "ResultCodes.h"
 
 using namespace DAVA;
 
@@ -53,18 +53,18 @@ bool ArchiveListTool::ConvertOptionsToParamsInternal()
     packFilePath = options.GetArgument("packfile");
     if (packFilePath.IsEmpty())
     {
-        LOG_ERROR("packfile param is not specified");
+        Logger::Error("packfile param is not specified");
         return false;
     }
 
     return true;
 }
 
-void ArchiveListTool::ProcessInternal()
+int ArchiveListTool::ProcessInternal()
 {
     try
     {
-        UniquePtr<File> outFile(nullptr);
+        ScopedPtr<File> outFile(nullptr);
         if (!outFilePath.IsEmpty())
         {
             outFile.reset(File::Create(outFilePath, File::CREATE | File::WRITE));
@@ -81,9 +81,9 @@ void ArchiveListTool::ProcessInternal()
 
         for (const ResourceArchive::FileInfo& info : archive.GetFilesInfo())
         {
-            out = Format("%s: compressed size %u, orig size %u, type %s",
-                         info.relativeFilePath.c_str(), info.compressedSize, info.originalSize,
-                         ResourceArchiver::CompressTypeToString(info.compressionType).c_str());
+            String compressionStr = GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(info.compressionType));
+            out = Format("%s: orig size %u, compressed size %u, type %s",
+                         info.relativeFilePath.c_str(), info.originalSize, info.compressedSize, compressionStr.c_str());
 
             Logger::Info("%s", out.c_str());
             if (outFile)
@@ -91,9 +91,12 @@ void ArchiveListTool::ProcessInternal()
                 outFile->WriteLine(out);
             }
         }
+
+        return ResourceArchiverResult::OK;
     }
     catch (std::exception ex)
     {
-        LOG_ERROR("Can't open archive %s: %s", packFilePath.GetAbsolutePathname().c_str(), ex.what());
+        Logger::Error("Can't open archive %s: %s", packFilePath.GetAbsolutePathname().c_str(), ex.what());
+        return ResourceArchiverResult::ERROR_CANT_OPEN_ARCHIVE;
     }
 }

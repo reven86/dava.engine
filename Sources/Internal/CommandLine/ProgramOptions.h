@@ -50,12 +50,12 @@ public:
 
     bool Parse(uint32 argc, char* argv[]);
     bool Parse(const Vector<String>& commandLine);
+    String GetUsageString() const;
     void PrintUsage() const;
 
 private:
-    bool ParseOption(uint32& argIndex, const Vector<String>& commandLine);
+    bool ParseOption(size_type& argIndex, const Vector<String>& commandLine);
 
-private:
     struct Option
     {
         void SetValue(const VariantType& value);

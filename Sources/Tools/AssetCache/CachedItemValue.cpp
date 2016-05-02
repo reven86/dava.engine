@@ -407,7 +407,7 @@ void CachedItemValue::ExportToFolder(const FilePath& folder) const
     }
 }
 
-size_t CachedItemValue::GetItemCount() const
+size_type CachedItemValue::GetItemCount() const
 {
     return dataContainer.size();
 }
@@ -416,7 +416,7 @@ bool CachedItemValue::ExportToFile(const FilePath& exportToPath) const
 {
     if (GetItemCount() != 1)
     {
-        LOG_ERROR("Item count is %u, expected is 1", GetItemCount());
+        Logger::Error("Item count is %u, expected is 1", GetItemCount());
         return false;
     }
 
@@ -424,7 +424,7 @@ bool CachedItemValue::ExportToFile(const FilePath& exportToPath) const
     const CachedItemValue::ValueData& itemData = dataContainer.begin()->second;
     if (IsDataLoaded(itemData) == false)
     {
-        LOG_WARNING("File(%s) is not loaded", itemName.c_str());
+        Logger::Warning("File(%s) is not loaded", itemName.c_str());
         return false;
     }
 
@@ -438,7 +438,7 @@ bool CachedItemValue::ExportToFile(const FilePath& exportToPath) const
     }
     else
     {
-        LOG_ERROR("Cannot create file %s", exportToPath.GetStringValue().c_str());
+        Logger::Error("Cannot create file %s", exportToPath.GetStringValue().c_str());
         return false;
     }
 }

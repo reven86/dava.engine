@@ -49,7 +49,7 @@ private:
     };
 
     bool ConvertOptionsToParamsInternal() override;
-    void ProcessInternal() override;
+    int ProcessInternal() override;
 
     void CollectAllFilesInDirectory(const DAVA::String& pathDirName, DAVA::Vector<DAVA::String>& output);
 
@@ -61,7 +61,7 @@ private:
     DAVA::Compressor::Type compressionType;
     bool addHidden = false;
     bool useCache = false;
-    AssetCacheClient::ConnectionParams assetCacheParams;
+    DAVA::AssetCacheClient::ConnectionParams assetCacheParams;
     DAVA::String logFileName;
     DAVA::String srcDir;
     DAVA::List<DAVA::String> listFiles;

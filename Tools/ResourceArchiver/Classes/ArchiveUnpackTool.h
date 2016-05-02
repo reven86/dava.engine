@@ -42,9 +42,9 @@ public:
 
 private:
     bool ConvertOptionsToParamsInternal() override;
-    void ProcessInternal() override;
+    int ProcessInternal() override;
 
-    bool ArchiveUnpackTool::UnpackFile(const DAVA::ResourceArchive& ra, const DAVA::ResourceArchive::FileInfo& fileInfo);
+    int UnpackFile(const DAVA::ResourceArchive& ra, const DAVA::ResourceArchive::FileInfo& fileInfo);
 
     DAVA::FilePath dstDir;
     DAVA::FilePath packFilename;
