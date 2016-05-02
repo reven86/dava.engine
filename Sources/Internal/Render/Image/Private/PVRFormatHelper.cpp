@@ -99,159 +99,68 @@ uint32 GetMipmapDataSize(PixelFormat format, uint32 width, uint32 height)
     return (bitsPerPixel * width * height / 8);
 }
 
-PixelFormat GetCompressedFormat(const uint64 pixelFormat)
+uint32 GetDataSize(const Vector<Vector<Image*>>& imageSet)
+{
+    uint32 dataSize = 0;
+
+    for (const Vector<Image*>& faceImages : imageSet)
+    {
+        for (const Image* image : faceImages)
+        {
+            dataSize += GetMipmapDataSize(image->format, image->width, image->height);
+        }
+    }
+
+    return dataSize;
+}
+
+PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
 {
     switch (pixelFormat)
     {
     case ePVRTPF_PVRTCI_2bpp_RGB:
-    {
         return FORMAT_PVR2;
-    }
     case ePVRTPF_PVRTCI_2bpp_RGBA:
-    {
         return FORMAT_PVR2;
-    }
     case ePVRTPF_PVRTCI_4bpp_RGB:
-    {
         return FORMAT_PVR4;
-    }
     case ePVRTPF_PVRTCI_4bpp_RGBA:
-    {
         return FORMAT_PVR4;
-    }
     case ePVRTPF_PVRTCII_2bpp:
-    {
         return FORMAT_PVR2_2;
-    }
     case ePVRTPF_PVRTCII_4bpp:
-    {
         return FORMAT_PVR4_2;
-    }
     case ePVRTPF_ETC1:
-    {
         return FORMAT_ETC1;
-    }
     case ePVRTPF_EAC_R11:
-    {
         return FORMAT_EAC_R11_UNSIGNED;
-    }
     case ePVRTPF_ETC2_RGB:
-    {
         return FORMAT_ETC2_RGB;
-    }
     case ePVRTPF_ETC2_RGB_A1:
-    {
         return FORMAT_ETC2_RGB_A1;
-    }
     case ePVRTPF_EAC_RG11:
-    {
         return FORMAT_EAC_RG11_UNSIGNED;
-    }
     case ePVRTPF_ETC2_RGBA:
-    {
         return FORMAT_ETC2_RGBA;
-    }
-
-    default:
-        break;
-    }
-
-    return FORMAT_INVALID;
-}
-
-PixelFormat GetFloatTypeFormat(const uint64 pixelFormat)
-{
-    switch (pixelFormat)
-    {
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16):
-    {
-        return FORMAT_RGBA16161616;
-    }
-    case PVRTGENPIXELID3('r', 'g', 'b', 16, 16, 16):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID2('l', 'a', 16, 16):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID1('l', 16):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID1('a', 16):
-    {
-        return FORMAT_A16;
-    }
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32):
-    {
-        return FORMAT_RGBA32323232;
-    }
-    case PVRTGENPIXELID3('r', 'g', 'b', 32, 32, 32):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID2('l', 'a', 32, 32):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID1('l', 32):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID1('a', 32):
-    {
-        return FORMAT_INVALID;
-    }
-
-    default:
-        break;
-    }
-
-    return FORMAT_INVALID;
-}
-
-PixelFormat GetUnsignedByteFormat(const uint64 pixelFormat)
-{
-    switch (pixelFormat)
-    {
     case PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8):
-    {
         return FORMAT_RGBA8888;
-    }
-    case PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8):
-    {
-        return FORMAT_RGB888;
-    }
-    case PVRTGENPIXELID2('l', 'a', 8, 8):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID1('l', 8):
-    {
-        return FORMAT_A8;
-    }
-    case PVRTGENPIXELID1('a', 8):
-    {
-        return FORMAT_A8;
-    }
-    case PVRTGENPIXELID4('b', 'g', 'r', 'a', 8, 8, 8, 8):
-    {
-        return FORMAT_INVALID;
-    }
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4):
-    {
-        return FORMAT_RGBA4444;
-    }
     case PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1):
-    {
         return FORMAT_RGBA5551;
-    }
+    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4):
+        return FORMAT_RGBA4444;
+    case PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8):
+        return FORMAT_RGB888;
     case PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5):
-    {
         return FORMAT_RGB565;
-    }
-
+    case PVRTGENPIXELID1('l', 8):
+    case PVRTGENPIXELID1('a', 8):
+        return FORMAT_A8;
+    case PVRTGENPIXELID1('a', 16):
+        return FORMAT_A16;
+    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16):
+        return FORMAT_RGBA16161616;
+    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32):
+        return FORMAT_RGBA32323232;
     default:
         break;
     }
@@ -259,66 +168,60 @@ PixelFormat GetUnsignedByteFormat(const uint64 pixelFormat)
     return FORMAT_INVALID;
 }
 
-PixelFormat GetUnsignedShortFormat(const uint64 pixelFormat)
+uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
 {
     switch (pixelFormat)
     {
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4):
-    {
-        return FORMAT_RGBA4444;
-    }
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1):
-    {
-        return FORMAT_RGBA5551;
-    }
-    case PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5):
-    {
-        return FORMAT_RGB565;
-    }
+    case FORMAT_PVR2:
+        return ePVRTPF_PVRTCI_2bpp_RGBA; //ePVRTPF_PVRTCI_2bpp_RGB;
+    case FORMAT_PVR4:
+        return ePVRTPF_PVRTCI_4bpp_RGBA; //ePVRTPF_PVRTCI_4bpp_RGB
+    case FORMAT_PVR2_2:
+        return ePVRTPF_PVRTCII_2bpp;
+    case FORMAT_PVR4_2:
+        return ePVRTPF_PVRTCII_4bpp;
+    case FORMAT_ETC1:
+        return ePVRTPF_ETC1;
+    case FORMAT_EAC_R11_UNSIGNED:
+        return ePVRTPF_EAC_R11;
+    case FORMAT_ETC2_RGB:
+        return ePVRTPF_ETC2_RGB;
+    case FORMAT_ETC2_RGB_A1:
+        return ePVRTPF_ETC2_RGB_A1;
+    case FORMAT_EAC_RG11_UNSIGNED:
+        return ePVRTPF_EAC_RG11;
+    case FORMAT_ETC2_RGBA:
+        return ePVRTPF_ETC2_RGBA;
+    case FORMAT_RGBA8888:
+        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8);
+    case FORMAT_RGBA5551:
+        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1);
+    case FORMAT_RGBA4444:
+        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4);
+    case FORMAT_RGB888:
+        return PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8);
+    case FORMAT_RGB565:
+        return PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5);
+    case FORMAT_A8:
+        return PVRTGENPIXELID1('a', 8);
+    case FORMAT_A16:
+        return PVRTGENPIXELID1('a', 16);
+    case FORMAT_RGBA16161616:
+        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16);
+    case FORMAT_RGBA32323232:
+        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32);
 
     default:
+        DVASSERT(false);
         break;
     }
 
-    return FORMAT_INVALID;
+    return ePVRTPF_NumCompressedPFs;
 }
 
 PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader)
 {
-    uint64 pixelFormat = textureHeader.u64PixelFormat;
-
-    //Get the last 32 bits of the pixel format.
-    uint64 pixelFormatPartHigh = pixelFormat & PVRTEX_PFHIGHMASK;
-
-    //Check for a compressed format (The first 8 bytes will be 0, so the whole thing will be equal to the last 32 bits).
-    if (pixelFormatPartHigh == 0)
-    {
-        //Format and type == 0 for compressed textures.
-        return GetCompressedFormat(pixelFormat);
-    }
-    else
-    {
-        EPVRTVariableType channelType = EPVRTVariableType(textureHeader.u32ChannelType);
-        switch (channelType)
-        {
-        case ePVRTVarTypeFloat:
-        {
-            return GetFloatTypeFormat(pixelFormat);
-        }
-        case ePVRTVarTypeUnsignedByteNorm:
-        {
-            return GetUnsignedByteFormat(pixelFormat);
-        }
-        case ePVRTVarTypeUnsignedShortNorm:
-        {
-            return GetUnsignedShortFormat(pixelFormat);
-        }
-        default:
-            break;
-        }
-    }
-
-    return FORMAT_INVALID;
+    return GetDAVAFormatFromPVR(textureHeader.u64PixelFormat);
 }
 
 const MetaDataBlock* GetCubemapMetadata(const PVRFile& pvrFile)
@@ -497,6 +400,36 @@ std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, boo
     return pvrFile;
 }
 
+std::unique_ptr<PVRFile> GeneratePVRHeader(const Vector<Image*>& imageSet)
+{
+    std::unique_ptr<PVRFile> pvrFile(new PVRFile());
+
+    Image* zeroMip = imageSet[0];
+    //    if(zeroMip->cubeFaceID != Texture::INVALID_CUBEMAP_FACE)
+    //    {
+    //
+    //    }
+
+    pvrFile->header.u32Version = 0;
+    pvrFile->header.u32Flags = 0;
+    pvrFile->header.u64PixelFormat = GetPVRFormatFromDAVA(zeroMip->format);
+    pvrFile->header.u32ColourSpace = 0;
+    pvrFile->header.u32ChannelType = 0;
+
+    //
+    pvrFile->header.u32Width = zeroMip->width;
+    pvrFile->header.u32Height = zeroMip->height;
+    pvrFile->header.u32Depth = 1;
+    //
+
+    pvrFile->header.u32NumSurfaces = 1; // we have only one surface
+    pvrFile->header.u32NumFaces = 0; //1
+    pvrFile->header.u32MIPMapCount = 0; //1
+    pvrFile->header.u32MetaDataSize = 0;
+
+    return pvrFile;
+}
+
 bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint32 firstMipmapIndex)
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(infile, true, false);
@@ -567,6 +500,36 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint3
     }
 
     return true;
+}
+
+Image* DecodeToRGBA8888(Image* encodedImage)
+{
+    Image* decodedImage = Image::Create(encodedImage->width, encodedImage->height, PixelFormat::FORMAT_RGBA8888);
+    decodedImage->mipmapLevel = encodedImage->mipmapLevel;
+    decodedImage->cubeFaceID = encodedImage->cubeFaceID;
+
+    if (encodedImage->format == PixelFormat::FORMAT_PVR2)
+    {
+        int retCode = PVRTDecompressPVRTC(encodedImage->data, 1, encodedImage->width, encodedImage->height, decodedImage->data);
+        DVVERIFY(retCode == encodedImage->dataSize);
+    }
+    else if (encodedImage->format == PixelFormat::FORMAT_PVR4)
+    {
+        int retCode = PVRTDecompressPVRTC(encodedImage->data, 0, encodedImage->width, encodedImage->height, decodedImage->data);
+        DVVERIFY(retCode == encodedImage->dataSize);
+    }
+    else if (encodedImage->format == PixelFormat::FORMAT_ETC1)
+    {
+        int retCode = PVRTDecompressETC(encodedImage->data, encodedImage->width, encodedImage->height, decodedImage->data, 0);
+        DVVERIFY(retCode == encodedImage->dataSize);
+    }
+    else
+    {
+        Logger::Error("Can't decode PVR: source Image has unknown format %s", GlobalEnumMap<PixelFormat>::Instance()->ToString(encodedImage->format));
+        SafeRelease(decodedImage);
+    }
+
+    return decodedImage;
 }
 
 bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)

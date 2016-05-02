@@ -94,12 +94,16 @@ namespace PVRFormatHelper
 std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, bool readData);
 std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData, bool readData);
 
+std::unique_ptr<PVRFile> GeneratePVRHeader(const Vector<Image*>& imageSet);
+
 bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile);
 
 bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC);
 void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc);
 
 bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint32 firstMipmapIndex);
+
+Image* DecodeToRGBA8888(Image* encodedImage);
 
 PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader);
 }

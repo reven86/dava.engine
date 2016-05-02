@@ -30,6 +30,7 @@
 #include "Render/Image/LibPVRHelperV2.h"
 #include "Render/Image/Private/PVRFormatHelper.h"
 #include "Render/Image/Image.h"
+#include "Render/PixelFormatDescriptor.h"
 
 #include "FileSystem/FileSystem.h"
 #include "Logger/Logger.h"
@@ -55,13 +56,33 @@ bool LibPVRHelperV2::CanProcessFile(File* file) const
 
 eErrorCode LibPVRHelperV2::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const
 {
-    if (PVRFormatHelper::LoadImages(infile, imageSet, fromMipmap, firstMipmapIndex))
+    if (false == PVRFormatHelper::LoadImages(infile, imageSet, fromMipmap, firstMipmapIndex))
     {
-        return eErrorCode::SUCCESS;
+        return eErrorCode::ERROR_READ_FAIL;
+    }
+    DVASSERT(imageSet.empty() == false);
+
+    const PixelFormatDescriptor& pixelDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(imageSet[0]->format);
+    if (!pixelDescriptor.isHardwareSupported)
+    {
+        size_type count = imageSet.size();
+        for (size_type i = 0; i < count; ++i)
+        {
+            Image* encodedImage = imageSet[i];
+            Image* decodedImage = PVRFormatHelper::DecodeToRGBA8888(encodedImage);
+            if (decodedImage != nullptr)
+            {
+                imageSet[i] = decodedImage;
+                SafeRelease(encodedImage);
+            }
+            else
+            {
+                return eErrorCode::ERROR_DECODE_FAIL;
+            }
+        }
     }
 
-    DVASSERT(imageSet.empty() == false);
-    return eErrorCode::ERROR_READ_FAIL;
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
@@ -104,7 +125,21 @@ eErrorCode LibPVRHelperV2::WriteFileAsCubeMap(const FilePath& fileName, const Ve
 
 eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet) const
 {
-    DVASSERT(0);
+    if (imageSet.empty())
+    {
+        Logger::Error("Can't save empty images vector");
+        return eErrorCode::ERROR_WRITE_FAIL;
+    }
+
+    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::GeneratePVRHeader(imageSet);
+    if (pvrFile)
+    {
+        if (PVRFormatHelper::WriteFile(fileName, *pvrFile))
+        {
+            return eErrorCode::SUCCESS;
+        }
+    }
+
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
