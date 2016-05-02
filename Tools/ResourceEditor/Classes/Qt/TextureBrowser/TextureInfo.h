@@ -36,9 +36,6 @@
 
 struct TextureInfo
 {
-    TextureInfo() = default;
-    TextureInfo(const TextureInfo& other) = default;
-
     QList<QImage> images;
     DAVA::uint32 dataSize = 0;
     DAVA::uint32 fileSize = 0;
