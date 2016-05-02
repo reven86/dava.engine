@@ -146,6 +146,7 @@ public:
     //
     virtual void* Data(void* object) const;
 
+    virtual VariantType::eVariantType ValueType() const;
     // Возвращает вариант данных члена интроспекции. Имлементация варианта должна поддерживать
     // создание из данных, определяемыт мета-типом данного члена интроспекции.
     virtual VariantType Value(void* object) const;

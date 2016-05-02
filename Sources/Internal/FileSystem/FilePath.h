@@ -54,7 +54,7 @@ public:
 public:
     FilePath();
     FilePath(const FilePath& path);
-    FilePath(FilePath&& path) DAVA_NOEXCEPT;
+    FilePath(FilePath&& path);
 
     FilePath(const String& sourcePath);
     FilePath(const WideString& sourcePath);
@@ -82,7 +82,7 @@ public:
     static FilePath CreateWithNewExtension(const FilePath& pathname, const String& extension);
 
     FilePath& operator=(const FilePath& path);
-    FilePath& operator=(FilePath&& path) DAVA_NOEXCEPT;
+    FilePath& operator=(FilePath&& path);
     FilePath operator+(const String& path) const;
     FilePath& operator+=(const String& path);
 
@@ -278,7 +278,8 @@ public:
     static void AddResourcesFolder(const FilePath& folder);
     static void AddTopResourcesFolder(const FilePath& folder);
     static void RemoveResourcesFolder(const FilePath& folder);
-    static const List<FilePath>& GetResourcesFolders();
+    static const Vector<FilePath>& GetResFolders();
+    DAVA_DEPRECATED(static const List<FilePath>& GetResourcesFolders());
 
     DAVA_DEPRECATED(bool Exists() const);
 
@@ -316,7 +317,7 @@ protected:
     String absolutePathname;
     ePathType pathType;
 
-    static List<FilePath> resourceFolders;
+    static Vector<FilePath> resourceFolders;
 };
 
 bool operator<(const FilePath& left, const FilePath& right);

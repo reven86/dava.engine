@@ -36,7 +36,7 @@
 using namespace DAVA;
 
 PrototypeNameProperty::PrototypeNameProperty(ControlNode* aNode, const PrototypeNameProperty* sourceProperty, eCloneType cloneType)
-    : ValueProperty("Prototype")
+    : ValueProperty("Prototype", VariantType::TYPE_STRING)
     , node(aNode) // weak
 {
 }

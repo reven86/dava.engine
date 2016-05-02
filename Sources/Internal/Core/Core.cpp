@@ -527,9 +527,9 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
     return bestMatchMode;
 }
 
-DisplayMode Core::GetCurrentDisplayMode()
+Vector2 Core::GetWindowSize()
 {
-    return DisplayMode(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+    return Vector2(screenMetrics.width, screenMetrics.height);
 }
 
 void Core::Quit()
@@ -676,7 +676,7 @@ void Core::SystemProcessFrame()
 
 //#endif
 // delete after change resize in Android and IOS (Core::WindowSizeChanged)
-#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
+#if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
         VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
         if (vsc->WasScreenSizeChanged())
@@ -747,12 +747,12 @@ void Core::SystemProcessFrame()
     profiler::DumpAverage();
     #endif
 
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
     if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
     {
         ApplyWindowSize();
     }
-#endif // defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
+#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
 }
 
 void Core::GoBackground(bool isLock)
@@ -786,6 +786,8 @@ void Core::FocusLost()
     {
         core->OnFocusLost();
     }
+    isFocused = false;
+    focusChanged.Emit(isFocused);
 }
 
 void Core::FocusReceived()
@@ -794,6 +796,8 @@ void Core::FocusReceived()
     {
         core->OnFocusReceived();
     }
+    isFocused = true;
+    focusChanged.Emit(isFocused);
 }
 
 uint32 Core::GetGlobalFrameIndex()
@@ -920,6 +924,7 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
 void Core::ApplyWindowSize()
 {
+    screenMetrics.screenMetricsModified = false;
     DVASSERT(Renderer::IsInitialized());
     screenMetrics.screenMetricsModified = false;
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
@@ -944,6 +949,11 @@ void Core::SetIsActive(bool _isActive)
 {
     isActive = _isActive;
     Logger::Info("Core::SetIsActive %s", (_isActive) ? "TRUE" : "FALSE");
+}
+
+bool Core::IsFocused()
+{
+    return isFocused;
 }
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)

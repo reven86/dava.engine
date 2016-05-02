@@ -63,6 +63,8 @@ bool Project::Open(const QString& path)
 
 void Project::Close()
 {
+    FilePath::RemoveResourcesFolder(projectPath + "Data/");
+
     SetProjectName("");
     SetProjectPath("");
     SetIsOpen(false);
@@ -84,7 +86,6 @@ bool Project::OpenInternal(const QString& path)
     }
     SetProjectName(fileInfo.fileName());
 
-    FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
     QDir projectDir = fileInfo.absoluteDir();
@@ -92,6 +93,8 @@ bool Project::OpenInternal(const QString& path)
     {
         return false;
     }
+
+    editorLocalizationSystem->Cleanup();
 
     SetProjectPath(fileInfo.absolutePath());
 
@@ -245,12 +248,15 @@ void Project::SetProjectPath(QString arg)
 {
     if (GetProjectPath() != arg)
     {
-        FilePath::RemoveResourcesFolder(projectPath);
+        if (!projectPath.IsEmpty())
+        {
+            FilePath::RemoveResourcesFolder(projectPath + "Data/");
+        }
         projectPath = arg.toStdString().c_str();
         if (!projectPath.IsEmpty())
         {
             projectPath.MakeDirectoryPathname();
-            FilePath::AddResourcesFolder(projectPath);
+            FilePath::AddResourcesFolder(projectPath + "Data/");
         }
         emit ProjectPathChanged(arg);
     }
