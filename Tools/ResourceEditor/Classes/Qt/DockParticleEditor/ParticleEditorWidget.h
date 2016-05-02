@@ -51,11 +51,7 @@ public:
 
 protected slots:
     // SceneTree-specific slots.
-    void OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-    void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
-    void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
-    void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
+    void OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void OnUpdate();
     void OnValueChanged();

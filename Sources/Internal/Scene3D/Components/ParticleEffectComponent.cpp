@@ -462,9 +462,10 @@ void ParticleEffectComponent::AddEmitterInstance(ParticleEmitter* emitter)
     emitterInstances.emplace_back(new ParticleEmitterInstance(this, emitter));
 }
 
-void ParticleEffectComponent::AddEmitterInstance(ParticleEmitterInstance* emitter)
+void ParticleEffectComponent::AddEmitterInstance(ParticleEmitterInstance* instance)
 {
-    emitterInstances.emplace_back(SafeRetain(emitter));
+    instance->SetOwner(this);
+    emitterInstances.emplace_back(SafeRetain(instance));
 }
 
 int32 ParticleEffectComponent::GetEmitterInstanceIndex(ParticleEmitterInstance* emitter) const

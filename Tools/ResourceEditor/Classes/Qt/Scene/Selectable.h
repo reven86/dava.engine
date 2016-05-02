@@ -93,7 +93,7 @@ public:
     const DAVA::Matrix4& GetLocalTransform() const;
     const DAVA::Matrix4& GetWorldTransform() const;
     void SetLocalTransform(const DAVA::Matrix4& transform);
-    
+
     bool TransformDependsOn(const Selectable&) const;
 
 private:

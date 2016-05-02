@@ -761,7 +761,7 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
-    
+
     setModel(filteringProxyModel);
 
     treeDelegate = new SceneTreeDelegate();
@@ -937,7 +937,7 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
         filteringProxyModel->invalidate();
 
         SyncSelectionToTree();
-        EmitParticleSignals(QItemSelection());
+        EmitParticleSignals();
 
         if (treeModel->IsFilterSet())
         {
@@ -983,9 +983,7 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
         return;
 
     SyncSelectionFromTree();
-
-    // emit some signal about particles
-    EmitParticleSignals(selected);
+    EmitParticleSignals();
 }
 
 void SceneTree::TreeItemClicked(const QModelIndex& index)
@@ -1242,122 +1240,59 @@ void SceneTree::SyncSelectionToTree()
 
 void SceneTree::SyncSelectionFromTree()
 {
-    if (!isInSync)
+    if (isInSync)
+        return;
+
+    Guard::ScopedBoolGuard guard(isInSync, true);
+
+    SceneEditor2* curScene = treeModel->GetScene();
+    if (nullptr != curScene)
     {
-        Guard::ScopedBoolGuard guard(isInSync, true);
-
-        SceneEditor2* curScene = treeModel->GetScene();
-        if (nullptr != curScene)
+        // select items in scene
+        SelectableGroup group;
+        QModelIndexList indexList = selectionModel()->selection().indexes();
+        for (int i = 0; i < indexList.size(); ++i)
         {
-            // select items in scene
-            SelectableGroup group;
-
-            QModelIndexList indexList = selectionModel()->selection().indexes();
-            for (int i = 0; i < indexList.size(); ++i)
-            {
-                DAVA::InspBase* objectToAdd = nullptr;
-                auto item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i]));
-                if (item->ItemType() == SceneTreeItem::eItemType::EIT_Entity)
-                {
-                    objectToAdd = SceneTreeItemEntity::GetEntity(item);
-                }
-                else if (item->ItemType() == SceneTreeItem::eItemType::EIT_Emitter)
-                {
-                    objectToAdd = SceneTreeItemParticleEmitter::GetEmitter(item);
-                }
-                else if (item->ItemType() == SceneTreeItem::eItemType::EIT_InnerEmitter)
-                {
-                    objectToAdd = SceneTreeItemParticleInnerEmitter::GetEmitter(item);
-                }
-                else if (item->ItemType() == SceneTreeItem::eItemType::EIT_Layer)
-                {
-                    objectToAdd = SceneTreeItemParticleLayer::GetLayer(item);
-                }
-                else if (item->ItemType() == SceneTreeItem::eItemType::EIT_Force)
-                {
-                    objectToAdd = SceneTreeItemParticleForce::GetForce(item);
-                }
-                else
-                {
-                    DVASSERT_MSG(0, "Invalid SceneTreeItem type");
-                }
-                DVASSERT(objectToAdd != nullptr);
-                group.Add(objectToAdd, curScene->selectionSystem->GetUntransformedBoundingBox(objectToAdd));
-            }
-            curScene->selectionSystem->SetSelection(group);
-
-            // force selection system emit signals about new selection
-            // this should be done until we are inSync mode, to prevent unnecessary updates
-            // when signals from selection system will be emitted on next frame
-            curScene->selectionSystem->ForceEmitSignals();
+            auto item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i]));
+            group.Add(item->GetItemObject(), curScene->selectionSystem->GetUntransformedBoundingBox(item->GetItemObject()));
         }
+        curScene->selectionSystem->SetSelection(group);
+        // force selection system emit signals about new selection
+        // this should be done until we are inSync mode, to prevent unnecessary updates
+        // when signals from selection system will be emitted on next frame
+        curScene->selectionSystem->ForceEmitSignals();
     }
 }
 
-void SceneTree::EmitParticleSignals(const QItemSelection& selected)
+void SceneTree::EmitParticleSignals()
 {
-    SceneEditor2* curScene = treeModel->GetScene();
-    bool emitterSelected = false;
+    QModelIndexList indexList = selectionModel()->selection().indexes();
+    if (indexList.size() != 1)
+        return;
 
-    // allow only single selected entities
-    if (selected.size() == 1)
+    SceneTreeItem* item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
+    if (item != nullptr)
     {
-        QModelIndexList indexList = selectionModel()->selection().indexes();
-        if (indexList.size())
+        if (item->ItemType() == SceneTreeItem::eItemType::EIT_Layer)
         {
-            SceneTreeItem* item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
-            if (nullptr != item)
-            {
-                switch (item->ItemType())
-                {
-                case SceneTreeItem::EIT_Entity:
-                {
-                    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
-                    if (nullptr != DAVA::GetEffectComponent(entity))
-                    {
-                        SceneSignals::Instance()->EmitEffectSelected(curScene, GetEffectComponent(entity));
-                    }
-                }
-                break;
-                        
-                case SceneTreeItem::EIT_Emitter:
-                case SceneTreeItem::EIT_InnerEmitter:
-                {
-                    emitterSelected = true;
-                    SceneSignals::Instance()->EmitEmitterSelected(curScene, ((SceneTreeItemParticleEmitter*)item)->effect, ((SceneTreeItemParticleEmitter*)item)->emitterInstance);
-                }
-                break;
-                        
-                case SceneTreeItem::EIT_Layer:
-                {
-                    SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)item;
-                    if (nullptr != itemLayer->emitterInstance && nullptr != itemLayer->layer)
-                    {
-                        SceneSignals::Instance()->EmitLayerSelected(curScene, itemLayer->effect, itemLayer->emitterInstance, itemLayer->layer, false);
-                    }
-                }
-                break;
-                        
-                case SceneTreeItem::EIT_Force:
-                {
-                    SceneTreeItemParticleForce* itemForce = (SceneTreeItemParticleForce*)item;
-                    DAVA::ParticleLayer* layer = itemForce->layer;
-                    if (nullptr != layer)
-                    {
-                        for (int i = 0; i < (int)layer->forces.size(); ++i)
-                        {
-                            if (layer->forces[i] == itemForce->force)
-                            {
-                                SceneSignals::Instance()->EmitForceSelected(curScene, layer, i);
-                                break;
-                            }
-                        }
-                    }
-                }
-                break;
-                }
-            }
+            // hack for widgets: select emitter instance first and then select layer
+            // emitter instance will be in "deselected" -> can handle in widgets
+            SelectableGroup selection;
+            selection.Add(static_cast<SceneTreeItemParticleLayer*>(item)->emitterInstance);
+            treeModel->GetScene()->selectionSystem->SetSelection(selection);
         }
+        else if (item->ItemType() == SceneTreeItem::eItemType::EIT_Force)
+        {
+            // same hack here, but selecting layer
+            SelectableGroup selection;
+            selection.Add(static_cast<SceneTreeItemParticleForce*>(item)->layer);
+            treeModel->GetScene()->selectionSystem->SetSelection(selection);
+        }
+
+        SelectableGroup selection;
+        selection.Add(item->GetItemObject());
+        treeModel->GetScene()->selectionSystem->SetSelection(selection);
+        treeModel->GetScene()->selectionSystem->ForceEmitSignals();
     }
 }
 

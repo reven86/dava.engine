@@ -77,8 +77,8 @@ public:
 
     bool IsUsingAssetCache() const;
     DAVA::String GetAssetCacheIp() const;
-    DAVA::String GetAssetCachePort() const;
-    DAVA::String GetAssetCacheTimeoutSec() const;
+    DAVA::uint32 GetAssetCachePort() const;
+    DAVA::uint64 GetAssetCacheTimeoutSec() const;
 
 protected:
     DAVA::Color GetColor(const DAVA::String& colorName, const DAVA::Color& defaultColor) const;

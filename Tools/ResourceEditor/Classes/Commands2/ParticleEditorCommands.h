@@ -227,20 +227,6 @@ protected:
     bool isShortEffect = false;
 };
 
-class CommandUpdateEmitterPosition : public CommandAction
-{
-public:
-    CommandUpdateEmitterPosition(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
-
-    void Init(const DAVA::Vector3& position);
-    void Redo() override;
-
-protected:
-    DAVA::ParticleEmitterInstance* emitter = nullptr;
-    DAVA::ParticleEffectComponent* effect = nullptr;
-    DAVA::Vector3 position;
-};
-
 class CommandUpdateParticleLayerBase : public CommandAction
 {
 public:

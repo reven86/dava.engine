@@ -105,25 +105,6 @@ void CommandUpdateEmitter::Redo()
     emitter->shortEffect = isShortEffect;
 }
 
-CommandUpdateEmitterPosition::CommandUpdateEmitterPosition(ParticleEffectComponent* effect_, ParticleEmitterInstance* emitter_)
-    : CommandAction(CMDID_PARTICLE_EMITTER_POSITION_UPDATE)
-    , emitter(emitter_)
-    , effect(effect_)
-{
-}
-
-void CommandUpdateEmitterPosition::Init(const Vector3& position)
-{
-    this->position = position;
-}
-
-void CommandUpdateEmitterPosition::Redo()
-{
-    int32 id = effect->GetEmitterInstanceIndex(emitter);
-    if (id >= 0)
-        effect->SetSpawnPosition(id, position);
-}
-
 CommandUpdateParticleLayer::CommandUpdateParticleLayer(ParticleEmitterInstance* emitter, ParticleLayer* layer)
     : CommandUpdateParticleLayerBase(CMDID_PARTICLE_LAYER_UPDATE)
 {

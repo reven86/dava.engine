@@ -90,6 +90,7 @@ public:
     void RemoveLayer(ParticleLayer* layer);
     void RemoveLayer(int32 index);
     void MoveLayer(ParticleLayer* layer, ParticleLayer* beforeLayer);
+    bool ContainsLayer(ParticleLayer* layer);
 
     void UpdateEmptyLayerNames();
     void UpdateLayerNameIfEmpty(ParticleLayer* layer, int32 index);

@@ -235,6 +235,11 @@ void ParticleEmitter::MoveLayer(ParticleLayer* layer, ParticleLayer* beforeLayer
     layers.insert(beforeLayerIter, layer);
 }
 
+bool ParticleEmitter::ContainsLayer(ParticleLayer* layer)
+{
+    return std::find(layers.begin(), layers.end(), layer) != layers.end();
+}
+
 ParticleEmitter::EmitterCacheMap ParticleEmitter::emitterCache;
 
 void ParticleEmitter::ReleaseFromCache(const FilePath& name)

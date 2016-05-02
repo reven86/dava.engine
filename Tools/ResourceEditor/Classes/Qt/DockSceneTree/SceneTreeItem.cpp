@@ -34,9 +34,15 @@ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
 #include "Scene3d/Components/ComponentHelpers.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-SceneTreeItem::SceneTreeItem(eItemType _type)
-    : type(_type)
+SceneTreeItem::SceneTreeItem(eItemType _type, DAVA::BaseObject* object_)
+    : object(object_)
+    , type(_type)
 {
+}
+
+DAVA::BaseObject* SceneTreeItem::GetItemObject() const
+{
+    return object;
 }
 
 QVariant SceneTreeItem::data(int role) const
@@ -72,7 +78,7 @@ QVariant SceneTreeItem::data(int role) const
     return v;
 }
 
-int SceneTreeItem::ItemType() const
+DAVA::uint32 SceneTreeItem::ItemType() const
 {
     return type;
 }
@@ -107,7 +113,7 @@ void SceneTreeItem::SetHighlight(bool state)
 // =========================================================================================
 
 SceneTreeItemEntity::SceneTreeItemEntity(DAVA::Entity* _entity)
-    : SceneTreeItem(SceneTreeItem::EIT_Entity)
+    : SceneTreeItem(SceneTreeItem::EIT_Entity, _entity)
     , entity(_entity)
 {
     DoSync(this, entity);
@@ -421,7 +427,7 @@ void SceneTreeItemEntity::DoSync(QStandardItem* rootItem, DAVA::Entity* entity)
 }
 
 SceneTreeItemParticleEmitter::SceneTreeItemParticleEmitter(DAVA::ParticleEffectComponent* _effect, DAVA::ParticleEmitterInstance* _emitter)
-    : SceneTreeItem(SceneTreeItem::EIT_Emitter)
+    : SceneTreeItem(SceneTreeItem::EIT_Emitter, _emitter)
     , effect(_effect)
     , emitterInstance(_emitter)
 {
@@ -491,7 +497,7 @@ const QIcon& SceneTreeItemParticleEmitter::ItemIcon() const
 
 SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent* effect_,
                                                        DAVA::ParticleEmitterInstance* instance_, DAVA::ParticleLayer* layer_)
-    : SceneTreeItem(SceneTreeItem::EIT_Layer)
+    : SceneTreeItem(SceneTreeItem::EIT_Layer, layer_)
     , effect(effect_)
     , emitterInstance(instance_)
     , layer(layer_)
@@ -602,7 +608,7 @@ const QIcon& SceneTreeItemParticleLayer::ItemIcon() const
 // =========================================================================================
 
 SceneTreeItemParticleForce::SceneTreeItemParticleForce(DAVA::ParticleLayer* _layer, DAVA::ParticleForce* _force)
-    : SceneTreeItem(SceneTreeItem::EIT_Force)
+    : SceneTreeItem(SceneTreeItem::EIT_Force, _force)
     , layer(_layer)
     , force(_force)
 {

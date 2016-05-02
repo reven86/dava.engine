@@ -29,6 +29,7 @@
 
 #include "ParticleEmitterPropertiesWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
+#include "Commands2/TransformCommand.h"
 #include "Qt/Scene/SceneSignals.h"
 #include <QLineEdit>
 #include <QEvent>
@@ -176,6 +177,7 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     if (blockSignals)
         return;
 
+    DVASSERT(activeScene != 0);
     DVASSERT(instance != 0);
     DVASSERT(effect != 0);
 
@@ -183,13 +185,10 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     position.x = positionXSpinBox->value();
     position.y = positionYSpinBox->value();
     position.z = positionZSpinBox->value();
+    auto newTransform = DAVA::Matrix4::MakeTranslation(position);
 
-    auto commandUpdateEmitter = Command2::Create<CommandUpdateEmitterPosition>(effect, instance);
-    commandUpdateEmitter->Init(position);
-
-    DVASSERT(activeScene != 0);
-    activeScene->Exec(std::move(commandUpdateEmitter));
-    activeScene->MarkAsChanged();
+    Selectable wrapper(instance);
+    activeScene->Exec(Command2::Create<TransformCommand>(wrapper, wrapper.GetLocalTransform(), newTransform));
 
     Init(activeScene, effect, instance, false, false);
     emit ValueChanged();
@@ -338,9 +337,15 @@ void ParticleEmitterPropertiesWidget::UpdateProperties()
 
     DAVA::int32 emitterId = effect->GetEmitterInstanceIndex(instance);
     DAVA::Vector3 position = (emitterId == -1) ? DAVA::Vector3(0, 0, 0) : effect->GetSpawnPosition(emitterId);
-    positionXSpinBox->setValue((double)position.x);
-    positionYSpinBox->setValue((double)position.y);
-    positionZSpinBox->setValue((double)position.z);
+
+    {
+        QSignalBlocker lockX(positionXSpinBox);
+        QSignalBlocker lockY(positionYSpinBox);
+        QSignalBlocker lockZ(positionZSpinBox);
+        positionXSpinBox->setValue(position.x);
+        positionYSpinBox->setValue(position.y);
+        positionZSpinBox->setValue(position.z);
+    }
 
     if (!needUpdateTimeLimits)
     {

@@ -80,7 +80,7 @@ private slots:
 private:
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
 
-    void EmitParticleSignals(const QItemSelection& selected);
+    void EmitParticleSignals();
 
     void ExpandFilteredItems();
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
@@ -88,14 +88,14 @@ private:
     void UpdateTree();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
-    
+
     class BaseContextMenu;
     class EntityContextMenu;
     class ParticleLayerContextMenu;
     class ParticleForceContextMenu;
     class ParticleEmitterContextMenu;
     class ParticleInnerEmitterContextMenu;
-    
+
 private:
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;

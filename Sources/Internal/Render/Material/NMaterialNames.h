@@ -44,6 +44,7 @@ public:
     static const FastName PIXELLIT_SPECULARMAP_OPAQUE;
     static const FastName TEXTURED_ALPHATEST;
     static const FastName TEXTURED_VERTEXCOLOR_ALPHATEST;
+    static const FastName TEXTURED_VERTEXCOLOR_ALPHABLEND;
     static const FastName DECAL_OPAQUE;
     static const FastName TEXTURED_OPAQUE;
     static const FastName TEXTURED_VERTEXCOLOR_OPAQUE;

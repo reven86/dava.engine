@@ -456,8 +456,8 @@ void SceneSelectionSystem::Draw()
             if (item.SupportsTransformType(Selectable::TransformType::Disabled))
             {
                 DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
+            }
         }
-    }
     }
 
     DAVA::Color drawColor = DAVA::Color::White;
@@ -519,6 +519,7 @@ void SceneSelectionSystem::SetSelection(SelectableGroup& newSelection)
     /*
 	 * Actually change selection
 	 */
+    recentlySelectedEntities.Clear();
     for (const auto& i : currentSelection.GetContent())
     {
         objectsToSelect.Remove(i.GetContainedObject());

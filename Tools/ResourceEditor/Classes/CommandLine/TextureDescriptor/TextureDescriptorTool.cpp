@@ -31,6 +31,7 @@
 #include "CommandLine/OptionName.h"
 
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/GPUFamilyDescriptor.h"
 
 using namespace DAVA;
 
@@ -152,7 +153,7 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
 
                     if (compression.compressToWidth < 0 || compression.compressToHeight < 0)
                     {
-                        AddError(Format("Wrong size parameters for gpu: %s", optionName.c_str()));
+                        Logger::Error("Wrong size parameters for gpu: %s", optionName.c_str());
                         compression.compressToWidth = compression.compressToHeight = 0;
                     }
                 }
@@ -167,7 +168,7 @@ bool TextureDescriptorTool::InitializeInternal()
 {
     if (commandAction == TextureDescriptorTool::ACTION_NONE)
     {
-        AddError("Action was not specified");
+        Logger::Error("Action was not specified");
         return false;
     }
 
@@ -175,12 +176,12 @@ bool TextureDescriptorTool::InitializeInternal()
     {
         if ((!filePathname.IsEmpty() && presetPath.IsEmpty()) || (filePathname.IsEmpty() && !presetPath.IsEmpty()))
         {
-            AddError("File or preset parameter was not specified");
+            Logger::Error("File or preset parameter was not specified");
             return false;
         }
         else if ((!filesList.IsEmpty() && presetsList.IsEmpty()) || (filesList.IsEmpty() && !presetsList.IsEmpty()))
         {
-            AddError("FilesList or presetsList parameter was not specified");
+            Logger::Error("FilesList or presetsList parameter was not specified");
             return false;
         }
     }
@@ -188,7 +189,7 @@ bool TextureDescriptorTool::InitializeInternal()
     {
         if (filePathname.IsEmpty() && folderPathname.IsEmpty())
         {
-            AddError("File or folder parameter was not specified");
+            Logger::Error("File or folder parameter was not specified");
             return false;
         }
 
@@ -199,12 +200,12 @@ bool TextureDescriptorTool::InitializeInternal()
 
         if ((commandAction == TextureDescriptorTool::ACTION_SET_COMPRESSION) && compressionParams.empty())
         {
-            AddError("GPU params were not specified");
+            Logger::Error("GPU params were not specified");
             return false;
         }
         else if ((commandAction == TextureDescriptorTool::ACTION_SET_PRESET) && presetPath.IsEmpty())
         {
-            AddError("Preset was not specified");
+            Logger::Error("Preset was not specified");
             return false;
         }
     }

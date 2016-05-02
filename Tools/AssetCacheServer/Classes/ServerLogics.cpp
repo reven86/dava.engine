@@ -50,23 +50,37 @@ ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey& _key,
 {
 }
 
-void ServerLogics::Init(DAVA::AssetCache::ServerNetProxy* _server, DAVA::AssetCache::ClientNetProxy* _client, DAVA::AssetCache::CacheDB* _dataBase)
+void ServerLogics::Init(DAVA::AssetCache::ServerNetProxy* server_, const DAVA::String& serverName_, DAVA::AssetCache::ClientNetProxy* client_, DAVA::AssetCache::CacheDB* dataBase_)
 {
-    server = _server;
-    client = _client;
+    server = server_;
+    serverName = serverName_;
 
-    dataBase = _dataBase;
+    client = client_;
+
+    dataBase = dataBase_;
 }
 
 void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value)
 {
     if ((nullptr != server) && (nullptr != channel))
     {
-        dataBase->Insert(key, value);
-        server->AddedToCache(channel, key, true);
+        DAVA::AssetCache::CachedItemValue::Description description = value.GetDescription();
+        description.addingChain += "/" + serverName;
+        value.SetDescription(description);
 
-        { //add task for lazy sending of files;
-            serverTasks.emplace_back(ServerTask(key, std::forward<DAVA::AssetCache::CachedItemValue>(value), DAVA::AssetCache::PACKET_ADD_REQUEST));
+        bool isValid = value.IsValid();
+        server->AddedToCache(channel, key, isValid);
+
+        if (isValid)
+        {
+            dataBase->Insert(key, value);
+
+            //add task for lazy sending of files;
+            serverTasks.emplace_back(key, std::forward<DAVA::AssetCache::CachedItemValue>(value), DAVA::AssetCache::PACKET_ADD_REQUEST);
+        }
+        else
+        {
+            DAVA::Logger::Error("[%s] Received invalid data from %s at %s", __FUNCTION__, description.machineName.c_str(), description.creationDate.c_str());
         }
     }
 }
@@ -78,15 +92,20 @@ void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel* channel, const DAVA
         auto entry = dataBase->Get(key);
         if (nullptr != entry)
         { // Found in db.
-            server->Send(channel, key, entry->GetValue());
+            DAVA::AssetCache::CachedItemValue value = entry->GetValue();
+            DAVA::AssetCache::CachedItemValue::Description description = value.GetDescription();
+            description.receivingChain += "/" + serverName;
+            value.SetDescription(description);
+
+            server->Send(channel, key, value);
 
             { //add task for lazy sending of files;
-                serverTasks.emplace_back(ServerTask(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST));
+                serverTasks.emplace_back(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST);
             }
         }
         else if (client->RequestFromCache(key))
         { // Not found in db. Ask from remote cache.
-            waitedRequests.emplace_back(RequestDescription(channel, key, DAVA::AssetCache::PACKET_GET_REQUEST));
+            waitedRequests.emplace_back(channel, key, DAVA::AssetCache::PACKET_GET_REQUEST);
         }
         else
         { // Not found in db. Remote server isn't connected.
@@ -119,9 +138,9 @@ void ServerLogics::OnChannelClosed(DAVA::Net::IChannel* channel, const DAVA::cha
     }
 }
 
-void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value)
+void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value)
 {
-    if (nullptr != dataBase && !value.IsEmpty())
+    if (nullptr != dataBase && !value.IsEmpty() && value.IsValid())
     {
         dataBase->Insert(key, value);
     }
@@ -138,7 +157,11 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
             RequestDescription& description = (*iter);
             if (nullptr != description.clientChannel)
             {
-                server->Send(description.clientChannel, key, value);
+                DAVA::AssetCache::CachedItemValue sendValue = value;
+                DAVA::AssetCache::CachedItemValue::Description descr = sendValue.GetDescription();
+                descr.receivingChain += "/" + serverName;
+                sendValue.SetDescription(descr);
+                server->Send(description.clientChannel, key, sendValue);
             }
             waitedRequests.erase(iter);
         }

@@ -118,17 +118,17 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     sceneEditor->BeginBatch("Remove entities", objects.size());
     for (auto entity : objects)
+    {
+        for (auto delegate : delegates)
         {
-            for (auto delegate : delegates)
-            {
-                delegate->WillRemove(entity);
-            }
-            sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(entity));
-            for (auto delegate : delegates)
-            {
-                delegate->DidRemoved(entity);
-            }
+            delegate->WillRemove(entity);
         }
+        sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(entity));
+        for (auto delegate : delegates)
+        {
+            delegate->DidRemoved(entity);
+        }
+    }
     sceneEditor->EndBatch();
 }
 
@@ -161,7 +161,7 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstan
     }
     sceneEditor->EndBatch();
     EmitChanged();
-    }
+}
 
 void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitterInstance*>& oldEmitters, DAVA::ParticleEmitterInstance* newEmitter, DAVA::ParticleLayer* newBefore)
 {
@@ -176,7 +176,7 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers
     }
     sceneEditor->EndBatch();
     EmitChanged();
-    }
+}
 
 void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer)
 {
@@ -191,7 +191,7 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     }
     sceneEditor->EndBatch();
     EmitChanged();
-    }
+}
 
 SelectableGroup StructureSystem::ReloadEntities(const SelectableGroup& objects, bool saveLightmapSettings)
 {
@@ -201,19 +201,19 @@ SelectableGroup StructureSystem::ReloadEntities(const SelectableGroup& objects, 
     DAVA::Set<DAVA::FilePath> refsToReload;
 
     for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
+    {
+        DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(entity);
+        if (props != nullptr)
         {
-            DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(entity);
-            if (props != nullptr)
+            DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
+            if (!pathToReload.IsEmpty())
             {
-                DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-                if (!pathToReload.IsEmpty())
-                {
-                    refsToReload.insert(pathToReload);
-                }
+                refsToReload.insert(pathToReload);
             }
         }
+    }
 
-        DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
+    DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
     InternalMapping groupMapping;
     for (; it != refsToReload.end(); ++it)
     {
