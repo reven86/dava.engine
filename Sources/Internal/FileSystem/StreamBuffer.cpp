@@ -110,7 +110,13 @@ uint32 StreamBuffer::Read(uint8* dataOut, uint32 len)
         bytesRead += readSize;
     }
 
+    size -= bytesRead;
     return bytesRead;
+}
+
+uint32 StreamBuffer::GetSize()
+{
+    return size;
 }
 
 void StreamBuffer::WriteInternal(uint8* dataIn, uint32 len)
@@ -118,6 +124,7 @@ void StreamBuffer::WriteInternal(uint8* dataIn, uint32 len)
     writePage = new OneBuffer();
     pages.push_back(writePage);
     uint32 written = writePage->Write(dataIn, len);
+    size += written;
 }
 
 uint32 StreamBuffer::ReadInternal(uint8* dataOut, uint32 len)

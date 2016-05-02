@@ -74,6 +74,8 @@ public:
 
     uint32 Read(uint8* dataOut, uint32 len);
 
+    uint32 GetSize();
+
 private:
     void WriteInternal(uint8* dataIn, uint32 len);
 
@@ -83,6 +85,7 @@ private:
     List<OneBuffer*> pages;
     OneBuffer* readPage = nullptr;
     OneBuffer* writePage = nullptr;
+    uint32 size = 0;
 
     Mutex interactionsLock;
 };

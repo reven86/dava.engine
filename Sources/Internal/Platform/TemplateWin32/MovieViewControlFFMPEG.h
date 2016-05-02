@@ -139,7 +139,7 @@ struct DecodedFrameBuffer
 
         float64 videoPlayTime = 0.f;
         static bool isFFMGEGInited;
-        bool isPlaying = false;
+        bool isPlaying = true;
         bool isAudioVideoStreamsInited = false;
 
         FMOD_CREATESOUNDEXINFO exinfo;
@@ -187,10 +187,11 @@ struct DecodedFrameBuffer
         unsigned int audioStreamIndex = -1;
         AV::AVCodecContext* audioCodecContext = nullptr;
         AV::AVCodec* audioCodec = nullptr;
-        AV::AVFrame* audioFrame = nullptr;
+
         AV::SwrContext* audioConvertContext = nullptr;
         uint32 outAudioBufferSize = 0;
         FMOD::Channel* fmodChannel = nullptr;
+        StreamBuffer pcmBuffer;
 
         Deque<AV::AVPacket*> audioPackets;
         Mutex audioPacketsMutex;
@@ -229,7 +230,6 @@ struct DecodedFrameBuffer
         Deque<DecodedPCMData*> decodedAudio;
         Mutex decodedAudioMutex;
 
-        StreamBuffer pcmBuffer;
         DecodedPCMData* lastPcmData = nullptr;
         bool decodeAudioOnCallback = false;
         void FillBufferByPcmData(uint8* data, uint32 datalen, bool decodeInPlace);
