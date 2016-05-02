@@ -87,8 +87,6 @@ else ()
 	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 endif ()
 
-DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
-                           COPY_DIR    ${DEPLOY_DIR})
 setup_main_executable()
 
 execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
