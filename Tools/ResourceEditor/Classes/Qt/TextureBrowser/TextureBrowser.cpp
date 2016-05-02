@@ -255,6 +255,7 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
             infoConvertedIsUpToDate = true;
             TextureCache::Instance()->tryToPreloadConverted(curDescriptor, view);
         }
+
         if (!cacheCleared)
         {
             // try to find image in cache

@@ -174,8 +174,6 @@ void TextureCache::tryToPreloadConverted(const DAVA::TextureDescriptor* descript
 
             convertedImageInfo.images.push_back(img);
         }
-        convertedImages.clear();
-
         setConverted(descriptor, gpu, convertedImageInfo);
     }
 }
