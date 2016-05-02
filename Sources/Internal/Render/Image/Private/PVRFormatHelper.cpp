@@ -472,7 +472,7 @@ std::unique_ptr<PVRFile> GeneratePVRHeader(const Vector<Image*>& imageSet)
 
     DVASSERT(zeroMip->cubeFaceID == Texture::INVALID_CUBEMAP_FACE);
 
-    pvrFile->header.u32MIPMapCount = 0; //1
+    pvrFile->header.u32MIPMapCount = static_cast<uint32>(imageSet.size());
     pvrFile->header.u32MetaDataSize = 0;
 
     pvrFile->compressedDataSize = GetDataSize(imageSet);
