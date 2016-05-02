@@ -158,16 +158,16 @@ void TextureCache::tryToPreloadConverted(const DAVA::TextureDescriptor* descript
         DAVA::FilePath compressedTexturePath = descriptor->CreatePathnameForGPU(gpu);
         DAVA::eErrorCode ret = DAVA::ImageSystem::Instance()->Load(compressedTexturePath, convertedImages);
         if (ret != DAVA::eErrorCode::SUCCESS || convertedImages.empty())
-        {   // we have no compressed file
+        { // we have no compressed file
             return;
         }
-            
+
         convertedImageInfo.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
         convertedImageInfo.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
         convertedImageInfo.imageSize.setWidth(convertedImages[0]->GetWidth());
         convertedImageInfo.imageSize.setHeight(convertedImages[0]->GetHeight());
 
-        for (DAVA::Image * image : convertedImages)
+        for (DAVA::Image* image : convertedImages)
         {
             QImage img = ImageTools::FromDavaImage(image);
             image->Release();
@@ -177,8 +177,6 @@ void TextureCache::tryToPreloadConverted(const DAVA::TextureDescriptor* descript
         setConverted(descriptor, gpu, convertedImageInfo);
     }
 }
-
-
 
 void TextureCache::ClearCache()
 {
