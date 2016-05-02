@@ -36,6 +36,7 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/ImageConvert.h"
 #include "FileSystem/FileSystem.h"
 #include "TextureCompression/TextureConverter.h"

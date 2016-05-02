@@ -86,7 +86,6 @@ bool Project::OpenInternal(const QString& path)
     }
     SetProjectName(fileInfo.fileName());
 
-    FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
     QDir projectDir = fileInfo.absoluteDir();
@@ -95,22 +94,9 @@ bool Project::OpenInternal(const QString& path)
         return false;
     }
 
-    if (!projectPath.IsEmpty())
-    {
-        // if projectPath is empty projectPath + "Data/" -> currentWorkingDir + "Data\"
-        FilePath::RemoveResourcesFolder(projectPath + "Data/");
-    }
     editorLocalizationSystem->Cleanup();
 
     SetProjectPath(fileInfo.absolutePath());
-
-    const auto& resFolders = FilePath::GetResourcesFolders();
-    const auto& searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
-
-    if (searchIt == resFolders.end())
-    {
-        FilePath::AddResourcesFolder(projectPath + "Data/");
-    }
 
     YamlNode* projectRoot = parser->GetRootNode();
     if (nullptr != projectRoot)
@@ -262,12 +248,15 @@ void Project::SetProjectPath(QString arg)
 {
     if (GetProjectPath() != arg)
     {
-        FilePath::RemoveResourcesFolder(projectPath);
+        if (!projectPath.IsEmpty())
+        {
+            FilePath::RemoveResourcesFolder(projectPath + "Data/");
+        }
         projectPath = arg.toStdString().c_str();
         if (!projectPath.IsEmpty())
         {
             projectPath.MakeDirectoryPathname();
-            FilePath::AddResourcesFolder(projectPath);
+            FilePath::AddResourcesFolder(projectPath + "Data/");
         }
         emit ProjectPathChanged(arg);
     }

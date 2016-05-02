@@ -43,7 +43,7 @@ struct DDSReader
 {
     virtual ~DDSReader() = default;
     virtual ImageInfo GetImageInfo() = 0;
-    virtual bool GetImages(Vector<Image*>& images, uint32 firstMip) = 0;
+    virtual bool GetImages(Vector<Image*>& images, const ImageSystem::LoadingParams& loadingParams) = 0;
     virtual bool GetCRC(uint32& crc) const = 0;
     virtual bool AddCRC() = 0;
 

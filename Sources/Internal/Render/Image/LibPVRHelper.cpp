@@ -142,9 +142,9 @@ bool LibPVRHelper::CanProcessFile(const ScopedPtr<File>& file) const
     return isPvrFile;
 }
 
-eErrorCode LibPVRHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const
+eErrorCode LibPVRHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
-    if (LoadImages(infile, imageSet, fromMipmap))
+    if (LoadImages(infile, imageSet, loadingParams))
     {
         return eErrorCode::SUCCESS;
     }
@@ -389,7 +389,7 @@ PVRFile* LibPVRHelper::ReadFile(File* file, bool readMetaData /*= false*/, bool 
     return pvrFile;
 }
 
-bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, int32 fromMipMap)
+bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
     PVRFile* pvrFile = ReadFile(infile, true, true);
     SCOPE_EXIT
@@ -411,9 +411,8 @@ bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, int32 from
         return false;
     }
 
-    const uint32& mipmapLevelCount = pvrFile->header.u32MIPMapCount;
-
-    fromMipMap = Min(fromMipMap, int32(mipmapLevelCount - 1));
+    uint32 mipmapLevelCount = pvrFile->header.u32MIPMapCount;
+    uint32 fromMipMap = ImageSystem::GetBaseMipmap({ pvrFile->header.u32Width, pvrFile->header.u32Height, Min(loadingParams.baseMipmap, mipmapLevelCount - 1) }, loadingParams);
 
     bool loadAllPvrData = true;
     for (uint32 i = fromMipMap; i < mipmapLevelCount; ++i)

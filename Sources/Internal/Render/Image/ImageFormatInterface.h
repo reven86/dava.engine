@@ -36,38 +36,11 @@
 #include "FileSystem/File.h"
 #include "Utils/Utils.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Image/ImageSystem.h"
 
 namespace DAVA
 {
 class Image;
-
-struct ImageInfo
-{
-    bool isEmpty() const
-    {
-        return (0 == width || 0 == height);
-    }
-
-    Size2i GetImageSize() const
-    {
-        return Size2i(width, height);
-    }
-
-    bool operator==(const ImageInfo& another) const
-    {
-        return (
-        width == another.width &&
-        height == another.height &&
-        format == another.format);
-    }
-
-    uint32 width = 0;
-    uint32 height = 0;
-    PixelFormat format = FORMAT_INVALID;
-    uint32 dataSize = 0;
-    uint32 mipmapsCount = 0;
-    uint32 faceCount = 0;
-};
 
 class ImageFormatInterface
 {
@@ -85,7 +58,7 @@ public:
     inline bool IsFormatSupported(PixelFormat format) const;
     inline bool IsFileExtensionSupported(const String& extension) const;
 
-    virtual eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const = 0;
+    virtual eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const = 0;
 
     virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;

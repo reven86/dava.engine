@@ -99,6 +99,12 @@ bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
         return false;
     }
 
+    if (imageSet[0]->width < Texture::MINIMAL_WIDTH || imageSet[0]->height < Texture::MINIMAL_HEIGHT)
+    {
+        Logger::Error("[TextureValidator] Loaded images size is too small. Minimal size for texture is 8x8");
+        return false;
+    }
+
     bool isSizeCorrect = Validator::AreImagesSquare(imageSet);
     if (!isSizeCorrect)
     {
@@ -327,6 +333,11 @@ Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    if ((_width < Texture::MINIMAL_WIDTH || _height < Texture::MINIMAL_HEIGHT) && (_format == FORMAT_PVR2 || _format == FORMAT_PVR4))
+    {
+        return nullptr;
+    }
+
     Image* image = Image::CreateFromData(_width, _height, _format, _data);
     if (nullptr == image)
         return nullptr;
@@ -348,6 +359,11 @@ Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32
 Texture* Texture::CreateFromData(Image* image, bool generateMipMaps)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    if ((image->width < Texture::MINIMAL_WIDTH || image->height < Texture::MINIMAL_HEIGHT) && (image->format == FORMAT_PVR2 || image->format == FORMAT_PVR4))
+    {
+        return nullptr;
+    }
 
     Texture* texture = new Texture();
     texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
@@ -427,7 +443,11 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
         return false;
     }
 
-    const uint32 baseMipMap = GetBaseMipMap();
+    ImageSystem::LoadingParams params;
+    params.baseMipmap = GetBaseMipMap();
+    params.minimalWidth = Texture::MINIMAL_WIDTH;
+    params.minimalHeight = Texture::MINIMAL_HEIGHT;
+
     if (texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
     {
         Vector<FilePath> facePathes;
@@ -441,7 +461,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 continue;
 
             Vector<Image*> faceImage;
-            ImageSystem::Load(currentfacePath, faceImage, baseMipMap);
+            ImageSystem::Load(currentfacePath, faceImage, params);
             if (faceImage.size() == 0)
             {
                 Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
@@ -485,7 +505,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     {
         FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
 
-        ImageSystem::Load(imagePathname, *images, baseMipMap);
+        ImageSystem::Load(imagePathname, *images, params);
         ImageSystem::EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {

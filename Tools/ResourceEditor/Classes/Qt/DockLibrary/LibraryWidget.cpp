@@ -155,7 +155,7 @@ void LibraryWidget::SetupFileTypes()
 
     for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
-        auto formatHelper = DAVA::ImageSystem::GetImageFormatInterface(formatType);
+        DAVA::ImageFormatInterface* formatHelper = DAVA::ImageSystem::GetImageFormatInterface(formatType);
         fileTypeValues.push_back(FileType(formatHelper->GetFormatName().c_str(), GetExtensions(formatType)));
     }
 }

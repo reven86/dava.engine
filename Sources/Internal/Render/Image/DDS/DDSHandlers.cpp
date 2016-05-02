@@ -981,7 +981,7 @@ struct DDSReaderImpl : public DDSReader, public DDSHandler
 
     // from DDSReader
     ImageInfo GetImageInfo() override;
-    bool GetImages(Vector<Image*>& images, uint32 firstMip) override;
+    bool GetImages(Vector<Image*>& images, const ImageSystem::LoadingParams& loadingParams) override;
     bool GetCRC(uint32& crc) const override;
     bool AddCRC() override;
 };
@@ -1074,7 +1074,7 @@ bool DDSReaderImpl::GetCRC(uint32& crc) const
     }
 }
 
-bool DDSReaderImpl::GetImages(Vector<Image*>& images, uint32 baseMipMap)
+bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::LoadingParams& loadingParams)
 {
     ImageInfo info = GetImageInfo();
     if (info.format == FORMAT_INVALID)
@@ -1088,7 +1088,8 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, uint32 baseMipMap)
         return false;
     }
 
-    baseMipMap = Min(baseMipMap, (info.mipmapsCount - 1));
+    ImageSystem::LoadingParams ddsLoadingParams = { info.width, info.height, Min(loadingParams.baseMipmap, info.mipmapsCount - 1) };
+    uint32 baseMipMap = ImageSystem::GetBaseMipmap(ddsLoadingParams, loadingParams);
 
     const uint32 bitsPerPixel = needDirectConvert ? D3DUtils::GetFormatSizeInBits(d3dPixelFormat) : PixelFormatDescriptor::GetPixelFormatSizeInBits(davaPixelFormat);
 

@@ -66,12 +66,12 @@ bool LibDdsHelper::CanProcessFile(const ScopedPtr<File>& infile) const
     return (reader.get() != nullptr);
 }
 
-eErrorCode LibDdsHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
+eErrorCode LibDdsHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
     std::unique_ptr<DDSReader> reader = DDSReader::CreateReader(infile);
-    if (reader && reader->GetImages(imageSet, baseMipMap))
+    if (reader && reader->GetImages(imageSet, loadingParams))
     {
         return eErrorCode::SUCCESS;
     }

@@ -72,6 +72,9 @@ public:
         STATE_VALID
     };
 
+    const static uint32 MINIMAL_WIDTH = 8;
+    const static uint32 MINIMAL_HEIGHT = 8;
+
     const static uint32 INVALID_CUBEMAP_FACE = -1;
     const static uint32 CUBE_FACE_COUNT = 6;
 

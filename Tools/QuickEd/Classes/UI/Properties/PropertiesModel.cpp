@@ -29,6 +29,8 @@
 
 #include "PropertiesModel.h"
 
+#include "Platform/SystemTimer.h"
+
 #include <QPoint>
 #include <QColor>
 #include <QFont>
@@ -53,14 +55,11 @@
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-#include <chrono>
-
-using namespace std::chrono;
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 500))
+    , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 500))
 {
 }
 
@@ -148,7 +147,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
+        if (property->GetValueType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
             return property->GetValue().AsBool() ? Qt::Checked : Qt::Unchecked;
     }
     break;
@@ -186,7 +185,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         QVariant var;
         if (index.column() != 0)
         {
-            var.setValue<DAVA::VariantType>(property->GetValue());
+            var.setValue<VariantType>(property->GetValue());
         }
         return var;
     }
@@ -252,7 +251,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
+        if (property->GetValueType() == VariantType::TYPE_BOOLEAN)
         {
             VariantType newVal(value != Qt::Unchecked);
             ChangeProperty(property, newVal);
@@ -296,7 +295,8 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex& index) const
 
     AbstractProperty* prop = static_cast<AbstractProperty*>(index.internalPointer());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
-    if (!prop->IsReadOnly() && (prop->GetType() == AbstractProperty::TYPE_ENUM || prop->GetType() == AbstractProperty::TYPE_FLAGS || prop->GetType() == AbstractProperty::TYPE_VARIANT))
+    AbstractProperty::ePropertyType propType = prop->GetType();
+    if (!prop->IsReadOnly() && (propType == AbstractProperty::TYPE_ENUM || propType == AbstractProperty::TYPE_FLAGS || propType == AbstractProperty::TYPE_VARIANT))
         flags |= Qt::ItemIsEditable;
     return flags;
 }
@@ -396,15 +396,14 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* sectio
     endRemoveRows();
 }
 
-void PropertiesModel::ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value)
+void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantType& value)
 {
     DVASSERT(nullptr != commandExecutor);
     if (nullptr != commandExecutor)
     {
         if (nullptr != controlNode)
         {
-            microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-            size_t usCount = static_cast<size_t>(us.count());
+            size_type usCount = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
             commandExecutor->ChangeProperty(controlNode, property, value, usCount);
         }
         else if (styleSheet)
@@ -532,7 +531,7 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     return QString();
 }
 
-void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& val) const
+void PropertiesModel::initVariantType(VariantType& var, const QVariant& val) const
 {
     switch (var.GetType())
     {
@@ -571,7 +570,7 @@ void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& va
     case VariantType::TYPE_VECTOR2:
     {
         QVector2D vector = val.value<QVector2D>();
-        var.SetVector2(DAVA::Vector2(vector.x(), vector.y()));
+        var.SetVector2(Vector2(vector.x(), vector.y()));
     }
     break;
 
@@ -585,7 +584,7 @@ void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& va
     case VariantType::TYPE_VECTOR4:
     {
         QVector4D vector = val.value<QVector4D>();
-        var.SetVector4(DAVA::Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
+        var.SetVector4(Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
     }
     break;
 

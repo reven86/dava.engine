@@ -43,7 +43,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
     FilePath fileToConvert = descriptor.GetSourceTexturePathname();
 
     Vector<Image*> inputImages;
-    auto loadResult = ImageSystem::Load(fileToConvert, inputImages, 0);
+    auto loadResult = ImageSystem::Load(fileToConvert, inputImages);
 
     if (loadResult != eErrorCode::SUCCESS || inputImages.empty())
     {

@@ -33,15 +33,31 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/File.h"
-#include "ImageFormatInterface.h"
+#include "Render/Image/Image.h"
 #include "Functional/Function.h"
 
 namespace DAVA
 {
+class ImageFormatInterface;
+
 namespace ImageSystem
 {
-eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseMipmap = 0);
-eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, uint32 baseMipmap = 0);
+struct LoadingParams
+{
+    LoadingParams(uint32 w = 0, uint32 h = 0, uint32 mipmap = 0)
+        : minimalWidth(w)
+        , minimalHeight(h)
+        , baseMipmap(mipmap)
+    {
+    }
+
+    uint32 minimalWidth = 0;
+    uint32 minimalHeight = 0;
+    uint32 baseMipmap = 0;
+};
+
+eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
+eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
 
 Image* EnsurePowerOf2Image(Image* image);
 void EnsurePowerOf2Images(Vector<Image*>& images);
@@ -62,6 +78,8 @@ ImageFormat GetImageFormatForExtension(const String& extension);
 ImageFormat GetImageFormatForExtension(const FilePath& pathname);
 
 ImageFormat GetImageFormatByName(const String& name);
+
+uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams);
 }
 }
 

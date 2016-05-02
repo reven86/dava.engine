@@ -36,6 +36,7 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
+#include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelper.h"
@@ -59,7 +60,7 @@ static UnorderedMap<ImageFormat, std::shared_ptr<ImageFormatInterface>, std::has
     { IMAGE_FORMAT_WEBP, std::shared_ptr<ImageFormatInterface>(new LibWebPHelper) }
 };
 
-eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseMipmap)
+eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -67,11 +68,11 @@ eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseM
         return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
-    eErrorCode result = Load(fileRead, imageSet, baseMipmap);
+    eErrorCode result = Load(fileRead, imageSet, loadingParams);
     return result;
 }
 
-eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, uint32 baseMipmap)
+eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -85,7 +86,7 @@ eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, uint32 ba
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    return properWrapper->ReadFile(file, imageSet, baseMipmap);
+    return properWrapper->ReadFile(file, imageSet, loadingParams);
 }
 
 Image* EnsurePowerOf2Image(Image* image)
@@ -222,6 +223,25 @@ ImageInfo GetImageInfo(const FilePath& pathName)
         }
     }
     return ImageInfo();
+}
+
+uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams)
+{
+    if (sourceImageParams.minimalWidth != 0 || sourceImageParams.minimalHeight != 0)
+    {
+        uint32 width = sourceImageParams.minimalWidth;
+        uint32 height = sourceImageParams.minimalHeight;
+        uint32 fromMipMap = sourceImageParams.baseMipmap;
+
+        while ((((width >> fromMipMap) < loadingParams.minimalWidth) || ((height >> fromMipMap) < loadingParams.minimalHeight)) && fromMipMap != 0)
+        {
+            --fromMipMap;
+        }
+
+        return fromMipMap;
+    }
+
+    return sourceImageParams.baseMipmap;
 }
 
 ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat)

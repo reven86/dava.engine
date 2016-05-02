@@ -52,7 +52,7 @@ bool LibWebPHelper::CanProcessFile(const ScopedPtr<File>& infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
+eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 

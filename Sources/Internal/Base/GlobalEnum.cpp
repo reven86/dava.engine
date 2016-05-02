@@ -224,6 +224,12 @@ ENUM_DECLARE(UIControlBackground::ePerPixelAccuracyType)
     ENUM_ADD_DESCR(UIControlBackground::PER_PIXEL_ACCURACY_FORCED, "PER_PIXEL_ACCURACY_FORCED");
 };
 
+ENUM_DECLARE(eSpriteModification)
+{
+    ENUM_ADD_DESCR(eSpriteModification::ESM_HFLIP, "FLIP_HORIZONTAL");
+    ENUM_ADD_DESCR(eSpriteModification::ESM_VFLIP, "FLIP_VERTICAL");
+};
+
 ENUM_DECLARE(UIStaticText::eMultiline)
 {
     ENUM_ADD_DESCR(UIStaticText::MULTILINE_DISABLED, "MULTILINE_DISABLED");

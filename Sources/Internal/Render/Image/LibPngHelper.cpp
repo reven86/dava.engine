@@ -115,7 +115,7 @@ bool LibPngHelper::CanProcessFile(const ScopedPtr<File>& infile) const
     }
 }
 
-eErrorCode LibPngHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
+eErrorCode LibPngHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);

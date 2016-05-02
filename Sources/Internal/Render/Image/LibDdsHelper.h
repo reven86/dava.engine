@@ -34,6 +34,7 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "Render/Image/ImageFormatInterface.h"
+#include "Render/Image/ImageSystem.h"
 #include "Render/Image/CRCAdditionInterface.h"
 
 namespace DAVA
@@ -48,7 +49,7 @@ public:
 
     // ImageFormatInterface
     bool CanProcessFile(const ScopedPtr<File>& infile) const override;
-    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
+    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
