@@ -41,15 +41,26 @@ public:
     {
         sigConnection = packManager.onPackStateChanged.Connect(this, &GameClient::OnPackStateChange);
     }
-    void OnPackStateChange(const DAVA::PackManager::PackState& packState)
+    void OnPackStateChange(const DAVA::PackManager::Pack& packState, DAVA::PackManager::Pack::Change change)
     {
-        if (packState.name == "virtual_test_pack.pak")
+        DAVA::StringStream ss;
+
+        ss << "pack: " << packState.name << " change: ";
+
+        switch (change)
         {
-            if (packState.state == DAVA::PackManager::PackState::ErrorLoading)
-            {
-                // TODO request next pack
-            }
+        case DAVA::PackManager::Pack::Change::State:
+            ss << "new state - " << static_cast<unsigned>(change);
+            break;
+        case DAVA::PackManager::Pack::Change::DownloadProgress:
+            ss << "download progress - " << packState.downloadProgress;
+            break;
+        case DAVA::PackManager::Pack::Change::Priority:
+            ss << "new priority - " << packState.priority;
+            break;
         }
+
+        DAVA::Logger::Debug("%s", ss.str().c_str());
     }
     DAVA::SigConnectionID sigConnection;
     DAVA::PackManager& packManager;
@@ -88,19 +99,22 @@ DAVA_TESTCLASS (PackManagerTest)
 
         try
         {
-            packName = "virtual_test_pack.pak";
-            const PackManager::PackState& packState = packManager.GetPackState(packName);
+            packName = "unit_test.pak";
+            const PackManager::Pack& packState = packManager.GetPack(packName);
             TEST_VERIFY(packState.name == packName);
-            TEST_VERIFY(packState.crc32FromDB == 0); // virtual pack no files
-            TEST_VERIFY(packState.crc32FromMeta == 0); // virtual pack no files
-            TEST_VERIFY(packState.state == PackManager::PackState::NotRequested);
+            //TEST_VERIFY(packState.crc32FromDB == 0); // virtual pack no files
+            //TEST_VERIFY(packState.crc32FromMeta == 0); // virtual pack no files
+            //TEST_VERIFY(packState.state == PackManager::Pack::NotRequested);
 
             auto& nextState = packManager.RequestPack(packName, 0.1f);
-            TEST_VERIFY(nextState.state == PackManager::PackState::Downloading || nextState.state == PackManager::PackState::Requested);
+            if (nextState.state != PackManager::Pack::Mounted)
+            {
+                TEST_VERIFY(nextState.state == PackManager::Pack::Downloading || nextState.state == PackManager::Pack::Requested);
+            }
 
             uint32 maxIter = 30;
 
-            while ((nextState.state == PackManager::PackState::Requested || nextState.state == PackManager::PackState::Downloading) && maxIter-- > 0)
+            while ((nextState.state == PackManager::Pack::Requested || nextState.state == PackManager::Pack::Downloading) && maxIter-- > 0)
             {
                 // wait
                 Thread::Sleep(500);
@@ -110,7 +124,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 Logger::Info("download progress: %d", static_cast<int32>(nextState.downloadProgress * 100));
             }
 
-            TEST_VERIFY(nextState.state == PackManager::PackState::Mounted);
+            TEST_VERIFY(nextState.state == PackManager::Pack::Mounted);
 
             ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
             TEST_VERIFY(file);

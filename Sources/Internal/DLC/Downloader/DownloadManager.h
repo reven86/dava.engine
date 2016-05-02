@@ -48,7 +48,6 @@ class DownloadManager : public Singleton<DownloadManager>
 public:
     using NotifyFunctor = Function<void(const uint32&, const DownloadStatus&)>;
 
-public:
     DownloadManager() = default;
     virtual ~DownloadManager();
 
@@ -104,7 +103,6 @@ private:
         DownloadStatus status;
     };
 
-private:
     void SetTaskStatus(DownloadTaskDescription* task, const DownloadStatus& status);
 
     void StartProcessingThread();
@@ -131,7 +129,6 @@ private:
     void ResetRetriesCount();
     void OnCurrentTaskProgressChanged(uint64 progressDelta);
 
-private:
     Thread* thisThread = nullptr;
     bool isThreadStarted = false;
 

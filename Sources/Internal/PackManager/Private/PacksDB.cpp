@@ -128,7 +128,14 @@ public:
         };
         int32 result = sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
 #endif // DAVA_MEMORY_PROFILING_ENABLE
-        db.reset(new sqlite::database(dbPath));
+        if (FileSystem::Instance()->IsFile(dbPath))
+        {
+            db.reset(new sqlite::database(dbPath));
+        }
+        else
+        {
+            throw std::runtime_error("can't find db file: " + dbPath);
+        }
     }
     sqlite::database& GetDB()
     {
@@ -152,7 +159,7 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
 {
     static String result;
     String relativePath = relativeFilePath.GetRelativePathname("~res:/");
-    data->GetDB() << "SELECT pack_name FROM files WHERE path=?"
+    data->GetDB() << "SELECT pack FROM files WHERE path=?"
                   << relativePath
     >> [&](std::string packName)
     {
@@ -162,7 +169,7 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
     return result;
 }
 
-void PacksDB::GetAllPacksState(Vector<PackManager::PackState>& out) const
+void PacksDB::GetAllPacksState(Vector<PackManager::Pack>& out) const
 {
     out.clear();
 
@@ -170,9 +177,9 @@ void PacksDB::GetAllPacksState(Vector<PackManager::PackState>& out) const
 
     selectQuery >> [&](String name, String hash)
     {
-        PackManager::PackState state;
+        PackManager::Pack state;
         state.name = name;
-        state.state = PackManager::PackState::NotRequested;
+        state.state = PackManager::Pack::NotRequested;
 
         unsigned int crc32 = 0;
         if (!hash.empty())
@@ -187,7 +194,7 @@ void PacksDB::GetAllPacksState(Vector<PackManager::PackState>& out) const
         out.push_back(state);
     };
 
-    auto selectDependency = data->GetDB() << "SELECT depends_name FROM dependency WHERE pack_name = ?";
+    auto selectDependency = data->GetDB() << "SELECT depends FROM dependency WHERE pack = ?";
 
     for (auto& pack : out)
     {
@@ -201,24 +208,24 @@ void PacksDB::GetAllPacksState(Vector<PackManager::PackState>& out) const
     }
 }
 
-void PacksDB::UpdatePackState(const PackManager::PackState& state)
+void PacksDB::UpdatePackState(const PackManager::Pack& state)
 {
-    try
-    {
-        data->GetDB() << "begin;";
-        // TODO update properties
-        data->GetDB() << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?;"
-                      << static_cast<int32>(state.state)
-                      << state.name;
+    //try
+    //{
+    //    data->GetDB() << "begin;";
+    //    // TODO update properties
+    //    data->GetDB() << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?;"
+    //                  << static_cast<int32>(state.state)
+    //                  << state.name;
 
-        data->GetDB() << "commit;";
-    }
-    catch (std::exception&)
-    {
-        data->GetDB() << "rollback;";
+    //    data->GetDB() << "commit;";
+    //}
+    //catch (std::exception&)
+    //{
+    //    data->GetDB() << "rollback;";
 
-        throw; // rethrow current exception
-    }
+    //    throw; // rethrow current exception
+    //}
 }
 
 } // end namespace DAVA

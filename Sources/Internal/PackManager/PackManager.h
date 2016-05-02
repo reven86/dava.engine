@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
 Copyright (c) 2008, binaryzebra
 All rights reserved.
 
@@ -32,12 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-class ArchiveManagerImpl;
+class PackManagerImpl;
 
 class PackManager final
 {
 public:
-    struct PackState
+    struct Pack
     {
         enum Status : uint32
         {
@@ -49,16 +49,23 @@ public:
             OtherError = 5 // ошибка при монтировании, проверке crc32, записи чтении файла и т.д. смотри поле otherErrorMsg
         };
 
-        String name = ""; // уникальное имя пака
+        enum class Change : uint32
+        {
+            State = 1,
+            DownloadProgress = 2,
+            Priority = 4,
+        };
+
+        String name; // уникальное имя пака
         Status state = NotRequested; // NotRequested default;
-        String remoteUrl = ""; // url used for download archive or empty
+        String remoteUrl; // url used for download archive or empty
         float32 downloadProgress = 0.f; // 0.0f to 1.0f
         float32 priority = 0.f; // 0.0f to 1.0f
         uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (0 - pack is pure virtual)
         uint32 crc32FromDB = 0; // crc32 from filesdb (0 - pack is pure virtual - nothing to download - only dependencies)
         DownloadError downloadError = DLE_NO_ERROR;
         String otherErrorMsg;
-        Vector<String> dependency{}; // names of dependency archive
+        Vector<String> dependency; // names of dependency archive
     };
 
     // 1. вычитываю данные по всем пакам из бызы
@@ -77,38 +84,36 @@ public:
     // отключаем обработку запросов и останавливаем закачку если она была
     void DisableProcessing();
 
-    // обновление состояния, всех паков, и т.д. должно вызываться каждый кадр
+    // обновление состояния, всех паков, и т.д. должно вызываться каждый кадр и только из главного потока
     void Update();
 
     // получение имени пака по относительному имени файла внтутри пака (если файл не принадлежит ни одному паку исключение)
     const String& FindPack(const FilePath& relativePathInArchive) const;
 
     // получение статуса пака (исключение если неверный айдишник пака?)
-    const PackState& GetPackState(const String& packID) const;
+    const Pack& GetPack(const String& packName) const;
 
     // запрос пака
     // 1. Важно! Если мы уже качаем один пак, и тут приходит заброс с более высоким приоритетом
     // 2. то мы останавливаем закачку прошлого пака и переключаемся на новый, т.к. это могут быть виртуальные паки
     // 3. но дополнительно мы проверяем зависимые паки, что бы не переключиться с него, если он нужен в новом запрошеном
-    const PackState& RequestPack(const String& packID, float priority = 0.5f);
+    const Pack& RequestPack(const String& packName, float priority = 0.0f);
 
-    // получение всех паков их состояний
-    const Vector<PackState*>& GetAllState() const;
+    // получение всех паков их состояний, валидно до следующего вызова Update()
+    const Vector<Pack>& GetPacks() const;
 
     // возможность освободить место на устройстве пользователя
     // удалив скаченный пак (так же отмонтирует его от FS)
-    void DeletePack(const String& packID);
+    void Delete(const String& packID);
 
     // отслеживание статуса запросов
-    Signal<const PackState&> onPackStateChanged;
-
-    static const String crc32Postfix;
+    Signal<const Pack&, Pack::Change> onPackStateChanged;
 
     const FilePath& GetLocalPacksDirectory() const;
     const String& GetRemotePacksUrl() const;
 
 private:
-    std::unique_ptr<ArchiveManagerImpl> impl;
+    std::unique_ptr<PackManagerImpl> impl;
 };
 
 } // end namespace DAVA

@@ -81,7 +81,7 @@ public:
     const SubRequest& GetCurrentSubRequest() const;
 
 private:
-    void CollectDownlodbleDependency(const String& packName, Set<const PackManager::PackState*>& dependency);
+    void CollectDownlodbleDependency(const String& packName, Set<const PackManager::Pack*>& dependency);
 
     void StartLoadingCRC32File();
     bool DoneLoadingCRC32File();
@@ -90,6 +90,7 @@ private:
     void StartCheckCRC32();
     bool DoneCheckingCRC32();
     void MountPack();
+    void GoToNextSubRequest();
 
     PackManager* packManager;
     String packName;
@@ -116,6 +117,8 @@ public:
     void Push(const String& packName, float32 priority);
     void UpdatePriority(const String& packName, float32 newPriority);
     void Pop();
+
+    static const String crc32Postfix;
 
 private:
     inline void CheckRestartLoading();

@@ -43,9 +43,9 @@ public:
 
     const String& FindPack(const FilePath& relativeFilePath) const;
 
-    void GetAllPacksState(Vector<PackManager::PackState>& out) const;
+    void GetAllPacksState(Vector<PackManager::Pack>& out) const;
 
-    void UpdatePackState(const PackManager::PackState& state);
+    void UpdatePackState(const PackManager::Pack& state);
 
 private:
     std::unique_ptr<PacksDBData> data;

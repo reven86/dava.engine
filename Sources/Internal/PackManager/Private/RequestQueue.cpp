@@ -30,25 +30,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-PackRequest::PackRequest(PackManager& packManager_, const String& name, float32 priority)
+const String RequestQueue::crc32Postfix = ".hash";
+
+PackRequest::PackRequest(PackManager& packManager_, const String& name, float32 priority_)
     : packManager(&packManager_)
+    , packName(name)
+    , priority(priority_)
 {
     // find all dependenciec
     // put it all into vector and put final pack into vector too
 
-    const PackManager::PackState& rootPack = packManager->GetPackState(name);
+    const PackManager::Pack& rootPack = packManager->GetPack(name);
 
     // теперь нужно узнать виртуальный ли это пакет, и первыми поставить на закачку
     // так как у нас может быть несколько зависимых паков, тоже виртуальными, то
     // мы должны сначала сделать плоскую структуру всех зависимых паков, всем им
     // выставить одинаковый приоритет - текущего виртуального пака и добавить
     // в очередь на скачку в порядке, зависимостей
-    Set<const PackManager::PackState*> dependency;
+    Set<const PackManager::Pack*> dependency;
     CollectDownlodbleDependency(name, dependency);
 
     dependencies.reserve(dependency.size() + 1);
 
-    for (const PackManager::PackState* pack : dependency)
+    for (const PackManager::Pack* pack : dependency)
     {
         SubRequest subRequest;
 
@@ -71,13 +75,13 @@ PackRequest::PackRequest(PackManager& packManager_, const String& name, float32 
     }
 }
 
-void PackRequest::CollectDownlodbleDependency(const String& packName, Set<const PackManager::PackState*>& dependency)
+void PackRequest::CollectDownlodbleDependency(const String& packName, Set<const PackManager::Pack*>& dependency)
 {
-    const PackManager::PackState& packState = packManager->GetPackState(packName);
+    const PackManager::Pack& packState = packManager->GetPack(packName);
     for (const String& dependName : packState.dependency)
     {
-        const PackManager::PackState& dependPack = packManager->GetPackState(dependName);
-        if (dependPack.crc32FromDB != 0 && dependPack.state != PackManager::PackState::Mounted)
+        const PackManager::Pack& dependPack = packManager->GetPack(dependName);
+        if (dependPack.crc32FromDB != 0 && dependPack.state != PackManager::Pack::Mounted)
         {
             dependency.insert(&dependPack);
         }
@@ -92,8 +96,8 @@ void PackRequest::StartLoadingCRC32File()
 
     // build url to pack_name_crc32_file
 
-    FilePath archiveCrc32Path = packManager->GetLocalPacksDirectory() + subRequest.packName + PackManager::crc32Postfix;
-    String url = packManager->GetRemotePacksUrl() + subRequest.packName + PackManager::crc32Postfix;
+    FilePath archiveCrc32Path = packManager->GetLocalPacksDirectory() + subRequest.packName + RequestQueue::crc32Postfix;
+    String url = packManager->GetRemotePacksUrl() + subRequest.packName + RequestQueue::crc32Postfix;
 
     // start downloading file
 
@@ -138,15 +142,15 @@ bool PackRequest::DoneLoadingCRC32File()
             case DLE_UNKNOWN: // we cannot determine the error
                 // inform user about error
                 {
-                    PackManager::PackState& pack = const_cast<PackManager::PackState&>(packManager->GetPackState(subRequest.packName));
+                    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
 
-                    pack.state = PackManager::PackState::ErrorLoading;
+                    pack.state = PackManager::Pack::ErrorLoading;
                     pack.downloadError = downloadError;
                     pack.otherErrorMsg = "can't load CRC32 file for pack: " + pack.name;
 
                     subRequest.status = SubRequest::Error;
 
-                    packManager->onPackStateChanged.Emit(pack);
+                    packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::State);
                     break;
                 }
             case DLE_NO_ERROR:
@@ -192,7 +196,7 @@ bool PackRequest::DoneLoadingPackFile()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::PackState& pack = const_cast<PackManager::PackState&>(packManager->GetPackState(subRequest.packName));
+    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
 
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
@@ -208,7 +212,7 @@ bool PackRequest::DoneLoadingPackFile()
             {
                 pack.downloadProgress = static_cast<float>(progress) / total;
                 // fire event on update progress
-                packManager->onPackStateChanged.Emit(pack);
+                packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::DownloadProgress);
             }
         }
         break;
@@ -232,13 +236,13 @@ bool PackRequest::DoneLoadingPackFile()
             case DLE_UNKNOWN: // we cannot determine the error
                 // inform user about error
                 {
-                    pack.state = PackManager::PackState::ErrorLoading;
+                    pack.state = PackManager::Pack::ErrorLoading;
                     pack.downloadError = downloadError;
                     pack.otherErrorMsg = "can't load pack: " + pack.name;
 
                     subRequest.status = SubRequest::Error;
 
-                    packManager->onPackStateChanged.Emit(pack);
+                    packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::State);
                     break;
                 }
             case DLE_NO_ERROR:
@@ -264,15 +268,15 @@ void PackRequest::StartCheckCRC32()
 {
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::PackState& pack = const_cast<PackManager::PackState&>(packManager->GetPackState(subRequest.packName));
+    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
 
     // build crcMetaFilePath
-    FilePath archiveCrc32Path = packManager->GetLocalPacksDirectory() + subRequest.packName + PackManager::crc32Postfix;
+    FilePath archiveCrc32Path = packManager->GetLocalPacksDirectory() + subRequest.packName + RequestQueue::crc32Postfix;
     // read crc32 from meta file
     ScopedPtr<File> crcFile(File::Create(archiveCrc32Path, File::OPEN | File::READ));
     if (!crcFile)
     {
-        pack.state = PackManager::PackState::OtherError;
+        pack.state = PackManager::Pack::OtherError;
         pack.otherErrorMsg = "can't read crc meta file";
         throw std::runtime_error("can't open just downloaded crc meta file: " + archiveCrc32Path.GetStringValue());
     }
@@ -289,14 +293,14 @@ void PackRequest::StartCheckCRC32()
 
     if (realCrc32FromPack != pack.crc32FromMeta)
     {
-        pack.state = PackManager::PackState::OtherError;
+        pack.state = PackManager::Pack::OtherError;
         pack.otherErrorMsg = "can't read crc meta file";
         throw std::runtime_error("just downloaded pack file crc32 not match! can't mount pack: " + pack.name);
     }
 
     if (pack.crc32FromMeta != pack.crc32FromDB)
     {
-        pack.state = PackManager::PackState::OtherError;
+        pack.state = PackManager::Pack::OtherError;
         pack.otherErrorMsg = "can't read crc meta file";
         throw std::runtime_error("just downloaded pack file crc32 not match! can't mount pack: " + pack.name);
     }
@@ -319,11 +323,49 @@ void PackRequest::MountPack()
     fs->Mount(packPath, "Data/");
 
     subRequest.status = SubRequest::Mounted;
+
+    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+    pack.state = PackManager::Pack::Mounted;
+
+    packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::State);
+}
+
+void PackRequest::GoToNextSubRequest()
+{
+    if (!dependencies.empty())
+    {
+        dependencies.erase(begin(dependencies));
+    }
 }
 
 void PackRequest::Start()
 {
-    throw std::runtime_error("not implemented");
+    // do nothing
+}
+
+void PackRequest::Pause()
+{
+    if (!dependencies.empty())
+    {
+        if (!IsDone() && !IsError())
+        {
+            SubRequest& subRequest = dependencies.at(0);
+            switch (subRequest.status)
+            {
+            case SubRequest::LoadingCRC32File:
+            case SubRequest::LoadingPackFile:
+            {
+                DownloadManager* dm = DownloadManager::Instance();
+                dm->Cancel(subRequest.taskId);
+
+                // start loading again this subRequest on resume
+
+                subRequest.status = SubRequest::Wait;
+            }
+            break;
+            }
+        }
+    }
 }
 
 void PackRequest::Update(PackManager& packManager)
@@ -358,102 +400,23 @@ void PackRequest::Update(PackManager& packManager)
         case SubRequest::Mounted:
             GoToNextSubRequest();
             break;
+        default:
+            break;
         } // end switch status
     }
-    //DownloadManager* dm = DownloadManager::Instance();
-    //DownloadStatus status = DL_UNKNOWN;
-    //dm->GetStatus(downloadHandler, status);
-    //uint64 progress = 0;
-    //switch (status)
-    //{
-    //case DL_IN_PROGRESS:
-    //	if (dm->GetProgress(downloadHandler, progress))
-    //	{
-    //		uint64 total = 0;
-    //		if (dm->GetTotal(downloadHandler, total))
-    //		{
-    //			currentDownload->downloadProgress = static_cast<float>(progress) / total;
-    //			// fire event on update progress
-    //			packMngrPublic->onPackStateChanged.Emit(*currentDownload);
-    //		}
-    //	}
-    //	break;
-    //case DL_FINISHED:
-    //{
-    //	// first test error code
-    //	DownloadError downloadError = DLE_NO_ERROR;
-    //	if (dm->GetError(downloadHandler, downloadError))
-    //	{
-    //		switch (downloadError)
-    //		{
-    //		case DLE_CANCELLED: // download was cancelled by our side
-    //		case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
-    //		case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
-    //		case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
-    //		case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
-    //		case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
-    //		case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
-    //		case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
-    //		case DLE_FILE_ERROR: // file read and write errors
-    //		case DLE_UNKNOWN: // we cannot determine the error
-    //						  // inform user about error
-    //		{
-    //			PackManager::PackState& pack = *currentDownload;
-
-    //			pack.state = PackManager::PackState::ErrorLoading;
-    //			pack.downloadError = downloadError;
-
-    //			packMngrPublic->onPackStateChanged.Emit(pack);
-    //			break;
-    //		}
-    //		case DLE_NO_ERROR:
-    //		{
-    //			// check crc32 of just downloaded file
-    //			FilePath archivePath = localPacksDir + currentDownload->name;
-    //			uint32 crc32 = CRC32::ForFile(archivePath);
-    //			if (crc32 != currentDownload->crc32FromMeta)
-    //			{
-    //				throw std::runtime_error("crc32 not match");
-    //			}
-    //			// now mount archive
-    //			// validate it
-    //			FileSystem* fs = FileSystem::Instance();
-    //			try
-    //			{
-    //				fs->Mount(archivePath, "Data/");
-    //			}
-    //			catch (std::exception& ex)
-    //			{
-    //				Logger::Error("%s", ex.what());
-    //				throw;
-    //			}
-
-    //			currentDownload->state = PackManager::PackState::Mounted;
-    //		}
-    //		} // end switch downloadError
-    //		currentDownload = nullptr;
-    //		queue.Pop();
-    //		downloadHandler = 0;
-    //	}
-    //	else
-    //	{
-    //		throw std::runtime_error(Format("can't get download error code for download job id: %d", downloadHandler));
-    //	}
-    //}
-    //break;
-    //default:
-    //	break;
-    //}
 }
 
 void PackRequest::ChangePriority(float32 newPriority)
 {
-    throw std::runtime_error("not implemented");
-}
-
-void PackRequest::Pause()
-{
-    throw std::runtime_error("not implemented");
+    for (auto& subRequest : dependencies)
+    {
+        PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+        if (pack.priority < newPriority)
+        {
+            pack.priority = newPriority;
+            packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::Priority);
+        }
+    }
 }
 
 bool PackRequest::IsDone() const
@@ -507,16 +470,16 @@ void RequestQueue::Update()
         else if (request.IsError())
         {
             const PackRequest::SubRequest& subRequest = request.GetCurrentSubRequest();
-            PackManager::PackState& rootPack = const_cast<PackManager::PackState&>(packManager.GetPackState(request.GetPackName()));
+            PackManager::Pack& rootPack = const_cast<PackManager::Pack&>(packManager.GetPack(request.GetPackName()));
             if (rootPack.name != subRequest.packName)
             {
-                rootPack.state = PackManager::PackState::OtherError;
+                rootPack.state = PackManager::Pack::OtherError;
                 rootPack.otherErrorMsg = Format("can't load (%s) pack becouse dependent (%s) pack error: %s",
                                                 rootPack.name.c_str(), subRequest.packName.c_str(), subRequest.errorMsg.c_str());
 
                 Pop(); // first pop current request and only then inform user
 
-                packManager.onPackStateChanged.Emit(rootPack);
+                packManager.onPackStateChanged.Emit(rootPack, PackManager::Pack::Change::State);
             }
             else
             {
@@ -590,7 +553,7 @@ void RequestQueue::Push(const String& packName, float32 priority)
         throw std::runtime_error("second time push same pack in queue, pack: " + packName);
     }
 
-    items.emplace_back(PackRequest{ packManager, packName, priority });
+    items.emplace_back(packManager, packName, priority);
     std::push_heap(begin(items), end(items));
 
     CheckRestartLoading();
