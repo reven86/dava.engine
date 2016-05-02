@@ -26,7 +26,11 @@ endif()
 
 configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
-add_definitions       ( -DDISABLE_NATIVE_WEBVIEW -DDISABLE_NATIVE_TEXTFIELD -DQT_QML_DEBUG_NO_WARNING)
+add_definitions       ( 
+-DDISABLE_NATIVE_WEBVIEW 
+-DDISABLE_NATIVE_TEXTFIELD 
+-DQT_QML_DEBUG_NO_WARNING
+)
 
 find_package          ( NgtTools      REQUIRED )
 find_package          ( QT5           REQUIRED )
@@ -67,23 +71,24 @@ file                          ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
 set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
-
 define_source_folders         ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build"    )
 generate_source_groups_project( SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
-set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
+set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 set( LIBRARIES                  NgtTools)
 
-if ( X64_MODE )
+if ( WIN32 AND X64_MODE )
 	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
 else ()
 	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 endif ()
 
+DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
+                           COPY_DIR    ${DEPLOY_DIR})
 setup_main_executable()
 
 execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
