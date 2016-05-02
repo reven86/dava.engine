@@ -36,6 +36,7 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
+#include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelper.h"
@@ -59,7 +60,7 @@ ImageSystem::ImageSystem()
     wrappers[IMAGE_FORMAT_PSD].reset(new LibPSDHelper());
 }
 
-eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams) const
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -67,11 +68,11 @@ eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet,
         return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
-    eErrorCode result = Load(fileRead, imageSet, baseMipmap);
+    eErrorCode result = Load(fileRead, imageSet, loadingParams);
     return result;
 }
 
-eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -85,7 +86,7 @@ eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMip
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    return properWrapper->ReadFile(file, imageSet, baseMipmap);
+    return properWrapper->ReadFile(file, imageSet, loadingParams);
 }
 
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
@@ -234,5 +235,35 @@ ImageInfo ImageSystem::GetImageInfo(File* infile) const
     }
 
     return ImageInfo();
+}
+
+uint32 ImageSystem::GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams)
+{
+    if (sourceImageParams.minimalWidth != 0 || sourceImageParams.minimalHeight != 0)
+    {
+        uint32 width = sourceImageParams.minimalWidth;
+        uint32 height = sourceImageParams.minimalHeight;
+        uint32 fromMipMap = sourceImageParams.baseMipmap;
+
+        while ((((width >> fromMipMap) < loadingParams.minimalWidth) || ((height >> fromMipMap) < loadingParams.minimalHeight)) && fromMipMap != 0)
+        {
+            --fromMipMap;
+        }
+
+        return fromMipMap;
+    }
+
+    return sourceImageParams.baseMipmap;
+}
+
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
+{
+    DVASSERT(fileFormat < IMAGE_FORMAT_COUNT);
+    return wrappers[fileFormat].get();
+}
+
+const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
+{
+    return GetImageFormatInterface(format)->Extensions();
 }
 };
