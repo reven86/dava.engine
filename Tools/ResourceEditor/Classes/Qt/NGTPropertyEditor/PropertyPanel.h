@@ -45,7 +45,7 @@ class InspInfo;
 }
 
 class SceneEditor2;
-class EntityGroup;
+class SelectableGroup;
 
 class PropertyPanel : public QObject, public IViewEventListener
 {
