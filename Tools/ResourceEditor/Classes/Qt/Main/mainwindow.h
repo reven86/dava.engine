@@ -216,7 +216,7 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    bool shouldClose(QCloseEvent* e);
+    bool ShouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
     void SetupToolBars();
