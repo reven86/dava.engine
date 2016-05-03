@@ -145,17 +145,15 @@ struct DecodedFrameBuffer
         FMOD_CREATESOUNDEXINFO exinfo;
         AV::AVFormatContext* movieContext = nullptr;
 
+        Thread* readingPacketsThread = nullptr;
         Thread* audioDecodingThread = nullptr;
         Thread* videoDecodingThread = nullptr;
         Thread* videoPresentationThread = nullptr;
-        Thread* readingDataThread = nullptr;
-
-        float64 lastUpdateTime = 0.f;
 
         const uint8 emptyPixelColor = 255;
 
         bool audioStarted = false;
-        Texture * videoTexture = nullptr;
+        Texture* videoTexture = nullptr;
         float64 videoFramerate = 0.f;
         float64 frame_last_pts = 0.f;
         float64 frame_last_delay = 40e-3;
@@ -196,11 +194,6 @@ struct DecodedFrameBuffer
         Deque<AV::AVPacket*> audioPackets;
         Mutex audioPacketsMutex;
 
-        Mutex pcmMutex;
-        DynamicMemoryFile* pcmData = nullptr;
-        uint32 writePos = 0;
-        uint32 readPos = 0;
-
         Deque<AV::AVPacket*> videoPackets;
         Mutex videoPacketsMutex;
 
@@ -231,9 +224,8 @@ struct DecodedFrameBuffer
         Mutex decodedAudioMutex;
 
         DecodedPCMData* lastPcmData = nullptr;
-        bool decodeAudioOnCallback = false;
-        void FillBufferByPcmData(uint8* data, uint32 datalen, bool decodeInPlace);
-        DecodedPCMData* DequePCMAudio();
+
+        void FillBufferByPcmData(uint32 datalen, bool decodeInPlace);
 
         uint32 playTime = 0;
         float64 frameTimer = 0.f;
@@ -243,12 +235,14 @@ struct DecodedFrameBuffer
         float64 GetAudioClock();
 
         uint32 audio_buf_size = 0;
-
         float64 audio_clock = 0.f;
 
         bool hasMoreData = false;
 
         float64 GetTime();
+
+        bool decodeAudioOnCallback = false;
+        bool decodeVideoInOtherThread = false;
     };
 
     inline float64 MovieViewControl::GetTime()

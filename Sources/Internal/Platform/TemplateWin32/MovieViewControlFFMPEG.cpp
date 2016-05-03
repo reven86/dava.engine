@@ -60,10 +60,6 @@ namespace DAVA
                 sws_freeContext(img_convert_ctx);
             }
 
-            pcmMutex.Lock();
-            SafeRelease(pcmData);
-            pcmMutex.Unlock();
-
             isFFMGEGInited = false;
         }
 
@@ -72,31 +68,6 @@ namespace DAVA
     // Initialize the control.
     void MovieViewControl::Initialize(const Rect& rect)
     {
-        /*
-        StreamBuffer buf;
-        std::array<uint8, 256> readed;
-        std::array<uint8, 200> readed2;
-        std::array<uint8, 56> readed3;
-
-
-        std::array<uint8, 16> data;
-        uint32 entryNo = 0;
-        for (uint8 i = 0; i < 16; i++)
-        {
-            
-            for (uint8 j = 0; j < 16; j++)
-            {
-                data[j] = entryNo++;
-            }
-            buf.Write(data.data(), data.size());
-        }
-
-        buf.Read(readed.data(), readed.size());
-        Logger::Error("%d", Memcmp(readed.data(), data.data(), data.size()));
-        buf.Read(readed2.data(), readed2.size());
-
-        buf.Read(readed3.data(), readed3.size());
-        */
         SetRect(rect);
         if (!isFFMGEGInited)
         {
@@ -154,8 +125,6 @@ namespace DAVA
             Logger::Error("Can't Open video.");
         }
 
-        readingDataThread = Thread::Create(Message(this, &MovieViewControl::ReadingThread));
-        readingDataThread->Start();
 
         bool isVideoSubsystemInited = InitVideo();
         if (!isVideoSubsystemInited)
@@ -245,13 +214,16 @@ namespace DAVA
 
         do
         {
-            decodedFramesMutex.Lock();
-            framesInBuffer = decodedFrames.size();
-            decodedFramesMutex.Unlock();
 
             if (framesInBuffer > 3)
             {
                 Thread::Sleep(1);
+            }
+            else
+            {
+                decodedFramesMutex.Lock();
+                framesInBuffer = decodedFrames.size();
+                decodedFramesMutex.Unlock();
             }
 
         } while (framesInBuffer > 1);
@@ -280,8 +252,9 @@ namespace DAVA
         return frameBuffer;
     }
 
-    void MovieViewControl::SotrPacketsByVideoAndAudio(AV::AVPacket* packet)
+    void MovieViewControl::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
     {
+        DVASSERT(packet != nullptr);
         if (packet->stream_index == videoStreamIndex)
         {
             LockGuard<Mutex> locker(videoPacketsMutex);
@@ -290,32 +263,14 @@ namespace DAVA
         else
         if (packet->stream_index == audioStreamIndex)
         {
-            LockGuard<Mutex> locker(audioPacketsMutex);
-            audioPackets.push_back(packet);
+            DecodeAudio(packet, 0);
+            //LockGuard<Mutex> locker(audioPacketsMutex);
+            //audioPackets.push_back(packet);
         }
         else
         {
             AV::av_packet_unref(packet);
         }
-    }
-
-    MovieViewControl::DecodedPCMData* MovieViewControl::DequePCMAudio()
-    {
-        decodedAudioMutex.Lock();
-        uint32 size = decodedAudio.size();
-        decodedAudioMutex.Unlock();
-
-        if (size == 0)
-        {
-            return nullptr;
-        }
-
-        decodedAudioMutex.Lock();
-        DecodedPCMData* data = decodedAudio.front();
-        decodedAudio.pop_front();
-        decodedAudioMutex.Unlock();
-
-        return data;
     }
 
     float64 MovieViewControl::GetAudioClock()
@@ -337,29 +292,20 @@ namespace DAVA
         return pts;
     }
 
-    void MovieViewControl::FillBufferByPcmData(uint8* data, uint32 datalen, bool decodeInPlace)
+    void MovieViewControl::FillBufferByPcmData(uint32 datalen, bool decodeInPlace)
     {
-        DecodedPCMData* decodedData = nullptr;
-        bool isEof = false;
-        do
+        if (decodeInPlace)
         {
-            // get another PCM Data Packet
-            if (decodeInPlace)
+            DecodedPCMData* decodedData = nullptr;
+            bool isEof = false;
+            do
             {
+                // get another PCM Data Packet
                 decodedData = DecodeAudioInPlace();
-            }
-            else
-            {
-                decodedData = DequePCMAudio();
-            }
-
-            pcmBuffer.Write(static_cast<uint8*>(decodedData->data), decodedData->size);
-
-            SafeDelete(decodedData);
-        } while (hasMoreData || pcmBuffer.GetSize() < datalen);
-
-        uint32 s = pcmBuffer.Read(static_cast<uint8*>(data), datalen);
-        Logger::Error("%d written of %d", s, datalen);
+                pcmBuffer.Write(static_cast<uint8*>(decodedData->data), decodedData->size);
+                SafeDelete(decodedData);
+            } while (hasMoreData || pcmBuffer.GetSize() < datalen);
+        }
     }
 
     FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
@@ -374,8 +320,9 @@ namespace DAVA
         if (nullptr != movieControl)
         {
             movieControl->audioStarted = true;
-            uint32 s = movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
-            //movieControl->FillBufferByPcmData(reinterpret_cast<uint8*>(data), static_cast<uint32>(datalen), movieControl->decodeAudioOnCallback);
+            movieControl->FillBufferByPcmData(static_cast<uint32>(datalen), movieControl->decodeAudioOnCallback);
+
+            movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
         }
 
         return FMOD_OK;
@@ -537,6 +484,9 @@ namespace DAVA
 
             EnqueueDecodedVideoBuffer(frameBuffer);
 
+            if (!decodeVideoInOtherThread)
+                UpdateVideo();
+
             return true;
         }
         return false;
@@ -592,7 +542,7 @@ namespace DAVA
         if (actual_delay < 0.010)
         {
             /* Really it should skip the picture instead */
-            actual_delay = 0.010;
+            actual_delay = 0.005;
         }
 
         float64 timeBeforePresent = GetTime();
@@ -601,7 +551,7 @@ namespace DAVA
         {
             // rgbTextureBuffer is a rgbTextureBufferHolder[0]
             videoTexture = Texture::CreateFromData(frameBuffer->textureFormat, frameBuffer->data, textureWidth, textureHeight, false);
-            Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, static_cast<int32>(frameWidth), static_cast<int32>(frameHeight), static_cast<float64>(frameWidth), static_cast<float64>(frameHeight));
+            Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, static_cast<int32>(frameWidth), static_cast<int32>(frameHeight), static_cast<float32>(frameWidth), static_cast<float32>(frameHeight));
             auto back = GetBackground();
             if (back)
             {
@@ -616,7 +566,7 @@ namespace DAVA
         }
         SafeDelete(frameBuffer);
 
-        uint32 sleepLessFor = GetTime() - timeBeforePresent;
+        uint32 sleepLessFor = static_cast<uint32>(GetTime() - timeBeforePresent);
 
         uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5) - sleepLessFor;
         Logger::Error("Frame SLEEP = %d", sleepTime);
@@ -740,17 +690,12 @@ namespace DAVA
         }
 
         pcmBuffer.Write(static_cast<uint8*>(data->data), data->size);
-
-        decodedAudioMutex.Lock();
-        decodedAudio.push_back(data);
-        decodedAudioMutex.Unlock();
     }
 
     void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
     {
         Thread* thread = static_cast<Thread*>(caller);
 
-        bool isFmodTuned = false;
         //return;
         AV::AVPacket* audioPacket = nullptr;
         do
@@ -821,7 +766,9 @@ namespace DAVA
 
         do
         {
-            UpdateVideo();
+            Thread::Sleep(1);
+            if (decodeVideoInOtherThread)
+                UpdateVideo();
         } while (thread && !thread->IsCancelling());
     }
 
@@ -832,7 +779,7 @@ namespace DAVA
         int retRead = 0;
         do
         {
-            if (!isPlaying)
+            if (!isPlaying) // || !isAudioVideoStreamsInited)
             {
                 Thread::Sleep(0);
                 continue;
@@ -840,12 +787,19 @@ namespace DAVA
 
             AV::AVPacket* packet = static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
             av_init_packet(packet);
-
             retRead = AV::av_read_frame(movieContext, packet);
 
             hasMoreData = retRead >= 0;
 
-            SotrPacketsByVideoAndAudio(packet);
+            if (!hasMoreData)
+            {
+                AV::av_packet_unref(packet);
+                isPlaying = false;
+            }
+            else
+            {
+                SortPacketsByVideoAndAudio(packet);
+            }
         } while (retRead >= 0 && thread && !thread->IsCancelling());
     }
 
@@ -854,12 +808,6 @@ namespace DAVA
     {
         if (!isAudioVideoStreamsInited)
             return;
-
-        if (!isPlaying)
-            return;
-
-        lastUpdateTime += timeElapsed;
-        // UpdateVideo(timeElapsed);
     }
 
     void MovieViewControl::Stop()
@@ -869,10 +817,10 @@ namespace DAVA
 
         isPlaying = false;
         fmodChannel->setPaused(isPlaying);
-        readingDataThread->Cancel();
+        readingPacketsThread->Cancel();
         videoDecodingThread->Cancel();
         videoPresentationThread->Cancel();
-        SafeRelease(readingDataThread);
+        SafeRelease(readingPacketsThread);
         SafeRelease(videoDecodingThread);
         SafeRelease(videoPresentationThread);
 
