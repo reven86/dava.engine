@@ -39,6 +39,8 @@
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleForce.h"
 
+#include "Scene/Selectable.h"
+
 Q_DECLARE_METATYPE(DAVA::Entity*);
 Q_DECLARE_METATYPE(DAVA::ParticleLayer*);
 Q_DECLARE_METATYPE(DAVA::ParticleForce*);
@@ -167,6 +169,7 @@ class SceneTreeItemParticleInnerEmitter : public SceneTreeItemParticleEmitter
 {
 public:
     SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* parentLayer);
+    ~SceneTreeItemParticleInnerEmitter();
 
     QString ItemName() const override;
 

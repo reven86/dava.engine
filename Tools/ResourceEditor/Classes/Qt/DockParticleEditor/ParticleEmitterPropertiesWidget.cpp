@@ -296,7 +296,8 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
                                            bool updateMinimize_, bool needUpdateTimeLimits_)
 {
     DVASSERT(instance_ != nullptr);
-
+    // DVASSERT(instance_->GetEmitter() != nullptr);
+    
     instance = instance_;
     effect = effect_;
     updateMinimize = updateMinimize_;
