@@ -6,7 +6,7 @@ import Cpp.Utils 1.0
 Item {
     id: wrapper
     property alias outputText: textField_output.text
-    Layout.minimumHeight: label.height +  textField_output.height + rowLayout.height + rowLayout_output.spacing * 2
+    Layout.minimumHeight: label.height +  textField_output.height + rowLayout.minimumHeight + rowLayout_output.spacing * 2
     property var outputComplete;
     signal cmakeLaunched();
     property alias needClean: checkBox_clean.checked
@@ -27,6 +27,7 @@ Item {
 
         RowLayout {
             id: rowLayout
+            property int minimumHeight: Math.max(button_runCmake.height, checkBox_clean.height)
             Button {
                 id: button_runCmake
                 iconSource: "qrc:///Icons/run.png"

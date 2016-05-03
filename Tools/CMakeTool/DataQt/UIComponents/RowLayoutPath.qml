@@ -44,6 +44,7 @@ RowLayout {
         onAccepted: {
             var url = fileDialog.fileUrls[0].toString()
             url = fileSystemHelper.ResolveUrl(url);
+            //workaround to update icon if path is the same
             loader.item.text = "";
             loader.item.text = url;
         }
@@ -60,6 +61,7 @@ RowLayout {
                 }
                 fileDialog.folder = "file:///" + folder
             }
+
             fileDialog.open();
         }
     }

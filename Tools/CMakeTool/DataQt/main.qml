@@ -12,9 +12,10 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
+    property int historyVersion: 1
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
-    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2
+    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
     menuBar: MenuBar {
         Menu {
@@ -26,7 +27,6 @@ ApplicationWindow {
             }
         }
     }
-
     Settings {
         id: settings
         property int mainWrapperWidth: 400
@@ -35,11 +35,17 @@ ApplicationWindow {
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
         property string historyStr;
-        Component.onDestruction: historyStr = JSON.stringify(historyToSave)
+        property var sourceFolderCurrentIndex;
+        Component.onDestruction: {
+            historyStr = JSON.stringify(historyToSave)
+            sourceFolderCurrentIndex = rowLayout_sourceFolder.item.currentIndex;
+            historyVersion = applicationWindow.historyVersion;
+        }
+        property int historyVersion: -1
     }
     property var history;
     property var historyToSave; //we need this because combobox with sources and history can be different
-    function applyProjectSettings(buildSettings) {       
+    function applyProjectSettings(buildSettings) {
         columnLayoutOutput.needClean = buildSettings.needClean;
         rowLayout_buildFolder.path = buildSettings.buildFolder;
         rowLayout_cmakeFolder.path = buildSettings.cmakePath;
@@ -49,11 +55,16 @@ ApplicationWindow {
     }
 
     function loadHistory() {
-        try {
-            history = JSON.parse(settings.historyStr);
-        } catch(e) {
+        if(settings.historyVersion === historyVersion) {
+            try {
+                history = JSON.parse(settings.historyStr);
+            } catch(e) {
+                history = [];
+            }
+        } else {
             history = [];
         }
+
         historyToSave = [];
         if(history && Array.isArray(history) && history.length > 0) {
             for(var i = 0, length = history.length; i < length; ++i) {
@@ -64,14 +75,15 @@ ApplicationWindow {
                     return;
                 }
             }
-            applyProjectSettings(history[0])
+            //make a deep copy
             historyToSave = JSON.parse(JSON.stringify(history));
         }
     }
 
     function onCurrentProjectChaged(index) {
         if(history && Array.isArray(history) && history.length > index) {
-            applyProjectSettings(history[index])
+            var historyItem = history[index];
+            applyProjectSettings(historyItem)
         }
     }
 
@@ -95,7 +107,7 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
-        historyToSave.unshift(newItem);
+        historyToSave.push(newItem);
         if(found) {
             historyToSave.splice(i, 1);
         }
@@ -104,7 +116,7 @@ ApplicationWindow {
             rowLayout_sourceFolder.item.addString(source)
         }
         if(historyToSave.length > maxHistoryLength) {
-            historyToSave = historyToSave.slice(0, maxHistoryLength);
+            historyToSave = historyToSave.slice(historyToSave.length, maxHistoryLength);
         }
     }
 
@@ -162,6 +174,13 @@ ApplicationWindow {
             configuration = JSON.parse(configStorage.GetJSONTextFromConfigFile());
             mutableContent.processConfiguration(configuration);
             loadHistory();
+            var currentIndex = settings.sourceFolderCurrentIndex;
+            if(currentIndex !== undefined)
+            {
+                rowLayout_sourceFolder.item.currentIndex = currentIndex;
+                onCurrentProjectChaged(currentIndex)
+            }
+
         }
         catch(error) {
             errorDialog.informativeText = error.message;
@@ -208,7 +227,10 @@ ApplicationWindow {
                         onTextChanged: {
                             updateOutputString()
                         }
-                        onCurrentIndexChanged: onCurrentProjectChaged(currentIndex);
+                        onCurrentIndexChanged: {
+                            onCurrentProjectChaged(currentIndex);
+                        }
+
                     }
                 }
 
@@ -228,7 +250,6 @@ ApplicationWindow {
                         target: rowLayout_sourceFolder
                         onPathChanged: {
                             var path = fileSystemHelper.FindBuildFolder(rowLayout_sourceFolder.path);
-                            console.log(path);
                             rowLayout_buildFolder.path = path;
                         }
                     }
@@ -291,7 +312,10 @@ ApplicationWindow {
 
                 MutableContentItem {
                     id: mutableContent
-                    onDataUpdated: updateOutputString()
+                    onDataUpdated: {
+                        updateOutputString()
+
+                    }
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                 }
@@ -320,7 +344,6 @@ ApplicationWindow {
                         textArea_processText.text = "";
                     }
                 }
-
             }
         }
 

@@ -33,7 +33,7 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
         outputText = outputText.arg(substrings[i])
     }
     
-    var globalOptions = configuration.globalOptions;
+    var globalOptions = configuration.checkedGlobalOptions;
     if(globalOptions && Array.isArray(globalOptions)) {
         for(var i = 0, length = globalOptions.length; i < length; ++i) {
             outputText += " " + globalOptions[i].value;
