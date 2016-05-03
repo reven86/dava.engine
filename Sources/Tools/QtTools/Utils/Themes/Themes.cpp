@@ -51,9 +51,9 @@ QColor lightTextColor(0, 0, 0);
 QColor lightDisabledTextColor(0, 0, 0, 80);
 QColor lightWindowColor(0xf0, 0xf0, 0xf0);
 
-QColor darkTextColor(192, 192, 192);
+QColor darkTextColor(225, 225, 225);
 QColor darkDisabledTextColor(100, 100, 100);
-QColor darkWindowColor(53, 53, 53);
+QColor darkWindowColor(50, 50, 50);
 
 void SetupClassicTheme();
 void SetupDarkTheme();
@@ -127,7 +127,7 @@ void SetupClassicTheme()
 
     QPalette lightPalette;
     lightPalette.setColor(QPalette::Window, lightWindowColor);
-    lightPalette.setColor(QPalette::WindowText, lightTextColor.lighter(130));
+    lightPalette.setColor(QPalette::WindowText, QColor(37, 37, 37));
     lightPalette.setColor(QPalette::Disabled, QPalette::WindowText, lightDisabledTextColor);
 
     lightPalette.setColor(QPalette::Base, Qt::white);
@@ -168,7 +168,7 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::Window, darkWindowColor);
     darkPalette.setColor(QPalette::WindowText, darkTextColor);
 
-    darkPalette.setColor(QPalette::Base, darkWindowColor);
+    darkPalette.setColor(QPalette::Base, darkWindowColor.darker(130));
     darkPalette.setColor(QPalette::AlternateBase, darkWindowColor);
     darkPalette.setColor(QPalette::ToolTipBase, darkTextColor);
     darkPalette.setColor(QPalette::ToolTipText, darkTextColor);
@@ -193,7 +193,7 @@ void SetupDarkTheme()
 
     qApp->setPalette(darkPalette);
 
-    qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }");
+    qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  } QTabBar::close-button { image: url(:/Icons/close.png); }");
 }
 
 const QString& GetCurrentThemeStr()
