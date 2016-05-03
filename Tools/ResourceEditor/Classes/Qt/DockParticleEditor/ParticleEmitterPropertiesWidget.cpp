@@ -178,8 +178,8 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
         return;
 
     DVASSERT(activeScene != 0);
-    DVASSERT(instance != 0);
     DVASSERT(effect != 0);
+    DVASSERT(GetEmitterInstance() != 0);
 
     DAVA::Vector3 position;
     position.x = positionXSpinBox->value();
@@ -187,10 +187,10 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     position.z = positionZSpinBox->value();
     auto newTransform = DAVA::Matrix4::MakeTranslation(position);
 
-    Selectable wrapper(instance);
+    Selectable wrapper(GetEmitterInstance());
     activeScene->Exec(Command2::Create<TransformCommand>(wrapper, wrapper.GetLocalTransform(), newTransform));
 
-    Init(activeScene, effect, instance, false, false);
+    Init(activeScene, effect, GetEmitterInstance(), false, false);
     emit ValueChanged();
 }
 
@@ -203,9 +203,9 @@ void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Comma
         if (inCommand->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
         {
             auto cmd = static_cast<const CommandRemoveParticleEmitter*>(inCommand);
-            if (cmd->GetEmitterInstance() == instance)
+            if (cmd->GetEmitterInstance() == GetEmitterInstance())
             {
-                instance = nullptr;
+                SetEmitterInstance(nullptr);
                 effect = nullptr;
             }
         }
@@ -224,7 +224,7 @@ void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Comma
         tryRemoveSelectedEmitter(command);
     }
 
-    if ((instance != nullptr) && (effect != nullptr))
+    if ((GetEmitterInstance() != nullptr) && (effect != nullptr))
     {
         UpdateProperties();
     }
@@ -235,7 +235,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     if (blockSignals)
         return;
 
-    DVASSERT(instance != 0);
+    DVASSERT(GetEmitterInstance() != nullptr);
 
     DVASSERT(emitterType->currentIndex() != -1);
     DAVA::ParticleEmitter::eType type = static_cast<DAVA::ParticleEmitter::eType>(emitterType->currentIndex());
@@ -261,7 +261,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
         return;
 
     DAVA::float32 life = emitterLife->value();
-    DAVA::float32 currentLifeTime = instance->GetEmitter()->lifeTime;
+    DAVA::float32 currentLifeTime = GetEmitterInstance()->GetEmitter()->lifeTime;
     bool initEmittersByDef = FLOAT_EQUAL(life, currentLifeTime) ? false : true;
 
     bool isShortEffect = shortEffectCheckBox->isChecked();
@@ -271,7 +271,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     emitterAngle->GetValue(0, propAngle.GetPropsPtr());
     emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 
-    auto commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(instance);
+    auto commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(GetEmitterInstance());
     commandUpdateEmitter->Init(DAVA::FastName(emitterNameLineEdit->text().toStdString().c_str()),
                                type,
                                emissionRange.GetPropLine(),
@@ -288,7 +288,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     activeScene->Exec(std::move(commandUpdateEmitter));
     activeScene->MarkAsChanged();
 
-    Init(activeScene, effect, instance, false, initEmittersByDef);
+    Init(activeScene, effect, GetEmitterInstance(), false, initEmittersByDef);
     emit ValueChanged();
 }
 
@@ -296,12 +296,11 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
                                            bool updateMinimize_, bool needUpdateTimeLimits_)
 {
     DVASSERT(instance_ != nullptr);
-    DVASSERT(instance_->GetEmitter() != nullptr);
-    
-    instance = instance_;
+
     effect = effect_;
     updateMinimize = updateMinimize_;
     needUpdateTimeLimits = needUpdateTimeLimits_;
+    SetEmitterInstance(instance_);
     SetActiveScene(scene);
 
     blockSignals = true;
@@ -310,7 +309,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 
 void ParticleEmitterPropertiesWidget::UpdateProperties()
 {
-    auto emitter = instance->GetEmitter();
+    auto emitter = GetEmitterInstance()->GetEmitter();
     emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
     shortEffectCheckBox->setChecked(emitter->shortEffect);
 
@@ -321,13 +320,13 @@ void ParticleEmitterPropertiesWidget::UpdateProperties()
     DAVA::float32 maxTimeLimit = emitterLifeTime;
 
     QString originalYamlPath;
-    if (instance->IsInnerEmitter())
+    if (GetEmitterInstance()->IsInnerEmitter())
     {
         originalYamlPath = QString::fromStdString(emitter->configPath.GetAbsolutePathname());
     }
     else
     {
-        DAVA::int32 emitterId = effect->GetEmitterInstanceIndex(instance);
+        DAVA::int32 emitterId = effect->GetEmitterInstanceIndex(GetEmitterInstance());
         originalYamlPath = QString::fromStdString(effect->GetEmitterInstance(emitterId)->GetFilePath().GetAbsolutePathname());
     }
 
@@ -336,7 +335,7 @@ void ParticleEmitterPropertiesWidget::UpdateProperties()
     emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
     emitterType->setCurrentIndex(emitter->emitterType);
 
-    DAVA::int32 emitterId = effect->GetEmitterInstanceIndex(instance);
+    DAVA::int32 emitterId = effect->GetEmitterInstanceIndex(GetEmitterInstance());
     DAVA::Vector3 position = (emitterId == -1) ? DAVA::Vector3(0, 0, 0) : effect->GetSpawnPosition(emitterId);
 
     {
@@ -470,7 +469,7 @@ void ParticleEmitterPropertiesWidget::StoreVisualState(DAVA::KeyedArchive* visua
 
 void ParticleEmitterPropertiesWidget::Update()
 {
-    Init(activeScene, effect, instance, false);
+    Init(activeScene, effect, GetEmitterInstance(), false);
 }
 
 bool ParticleEmitterPropertiesWidget::eventFilter(QObject* o, QEvent* e)

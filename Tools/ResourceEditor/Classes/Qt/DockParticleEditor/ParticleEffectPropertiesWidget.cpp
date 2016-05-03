@@ -426,7 +426,7 @@ void ParticleEffectPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEff
 {
     DVASSERT(effect != nullptr);
     particleEffect = effect;
-    instance = nullptr;
+    SetEmitterInstance(nullptr);
     SetActiveScene(scene);
 
     blockSignals = true;

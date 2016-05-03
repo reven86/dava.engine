@@ -169,7 +169,6 @@ class SceneTreeItemParticleInnerEmitter : public SceneTreeItemParticleEmitter
 {
 public:
     SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* parentLayer);
-    ~SceneTreeItemParticleInnerEmitter();
 
     QString ItemName() const override;
 

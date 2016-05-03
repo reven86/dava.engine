@@ -664,11 +664,6 @@ SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::Parti
     DoSync(this, localInstance);
 }
 
-SceneTreeItemParticleInnerEmitter::~SceneTreeItemParticleInnerEmitter()
-{
-    DAVA::Logger::Info("Gotcha!");
-}
-
 QString SceneTreeItemParticleInnerEmitter::ItemName() const
 {
     return "innerEmmiter";

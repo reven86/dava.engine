@@ -44,6 +44,8 @@ public:
     virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
 
     DAVA::ParticleEmitterInstance* GetEmitterInstance() const;
+    void SetEmitterInstance(DAVA::ParticleEmitterInstance*);
+
     DAVA::ParticleEffectComponent* GetEffect() const;
 
     void SetActiveScene(SceneEditor2* scene);
@@ -58,14 +60,21 @@ protected:
     float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
 protected:
-    DAVA::ParticleEmitterInstance* instance = nullptr;
     DAVA::ParticleEffectComponent* effect = nullptr;
     SceneEditor2* activeScene = nullptr;
+
+private:
+    DAVA::RefPtr<DAVA::ParticleEmitterInstance> instance;
 };
+
+inline void BaseParticleEditorContentWidget::SetEmitterInstance(DAVA::ParticleEmitterInstance* i)
+{
+    instance.Set(SafeRetain(i));
+}
 
 inline DAVA::ParticleEmitterInstance* BaseParticleEditorContentWidget::GetEmitterInstance() const
 {
-    return instance;
+    return instance.Get();
 };
 
 inline DAVA::ParticleEffectComponent* BaseParticleEditorContentWidget::GetEffect() const
