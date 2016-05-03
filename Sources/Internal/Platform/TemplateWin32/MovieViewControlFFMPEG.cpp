@@ -117,14 +117,41 @@ namespace DAVA
     // Open the Movie.
     void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
     {
-        isAudioVideoStreamsInited = false;
-
         movieContext = CreateContext(moviePath);
         if (nullptr == movieContext)
         {
             Logger::Error("Can't Open video.");
         }
 
+        for (unsigned int i = 0; i < movieContext->nb_streams; i++)
+        {
+            if (movieContext->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_AUDIO)
+            {
+                audioStreamIndex = i;
+                break;
+            }
+        }
+        if (audioStreamIndex == -1)
+        {
+            Logger::Error("Didn't find an audio stream.\n");
+            return; // false;
+        }
+
+        for (unsigned int i = 0; i < movieContext->nb_streams; i++)
+        {
+            if (movieContext->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_VIDEO)
+            {
+                videoStreamIndex = i;
+                break;
+            }
+        }
+        if (videoStreamIndex == -1)
+        {
+            Logger::Error("Didn't find a video stream.\n");
+            return; // false;
+        }
+
+        isAudioVideoStreamsInited = false;
 
         bool isVideoSubsystemInited = InitVideo();
         if (!isVideoSubsystemInited)
@@ -138,25 +165,18 @@ namespace DAVA
             Logger::Error("Can't init audio decoder.");
         }
 
-        isAudioVideoStreamsInited = isVideoSubsystemInited && isAudioSubsystemInited;
+        PrefetchData(500);
+
+        readingDataThread = Thread::Create(Message(this, &MovieViewControl::ReadingThread));
+        readingDataThread->Start();
+
+        InitFmod();
+
+        isAudioVideoStreamsInited = true; // isVideoSubsystemInited && isAudioSubsystemInited;
     }
 
     bool MovieViewControl::InitVideo()
     {
-        for (unsigned int i = 0; i < movieContext->nb_streams; i++)
-        {
-            if (movieContext->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_VIDEO)
-            {
-                videoStreamIndex = i;
-                break;
-            }
-        }
-        if (videoStreamIndex == -1)
-        {
-            Logger::Error("Didn't find a video stream.\n");
-            return false;
-        }
-
         AV::AVRational avfps = movieContext->streams[videoStreamIndex]->avg_frame_rate;
         videoFramerate = avfps.num / static_cast<float64>(avfps.den);
         Renderer::SetDesiredFPS(60);
@@ -263,9 +283,9 @@ namespace DAVA
         else
         if (packet->stream_index == audioStreamIndex)
         {
-            DecodeAudio(packet, 0);
-            //LockGuard<Mutex> locker(audioPacketsMutex);
-            //audioPackets.push_back(packet);
+            /*DecodeAudio(packet, 0);*/
+            LockGuard<Mutex> locker(audioPacketsMutex);
+            audioPackets.push_back(packet);
         }
         else
         {
@@ -331,19 +351,6 @@ namespace DAVA
 
     bool MovieViewControl::InitAudio()
     {
-        for (unsigned int i = 0; i < movieContext->nb_streams; i++)
-        {
-            if (movieContext->streams[i]->codec->codec_type == AV::AVMEDIA_TYPE_AUDIO)
-            {
-                audioStreamIndex = i;
-                break;
-            }
-        }
-        if (audioStreamIndex == -1)
-        {
-            Logger::Error("Didn't find an audio stream.\n");
-            return false;
-        }
 
         // Get a pointer to the codec context for the audio stream
         audioCodecContext = movieContext->streams[audioStreamIndex]->codec;
@@ -353,14 +360,14 @@ namespace DAVA
         if (audioCodec == nullptr)
         {
             printf("Codec not found.\n");
-            return false;
+            //return false;
         }
 
         // Open codec
         if (avcodec_open2(audioCodecContext, audioCodec, nullptr) < 0)
         {
             printf("Could not open codec.\n");
-            return false;
+            // return false;
         }
 
         //Out Audio Param
@@ -368,9 +375,9 @@ namespace DAVA
         //nb_samples: AAC-1024 MP3-1152
         int out_nb_samples = audioCodecContext->frame_size;
         AV::AVSampleFormat out_sample_fmt = AV::AV_SAMPLE_FMT_S16;
-        int out_sample_rate = 44100;
+
         audio_buf_size = out_sample_rate;
-        int out_channels = AV::av_get_channel_layout_nb_channels(out_channel_layout);
+        out_channels = AV::av_get_channel_layout_nb_channels(out_channel_layout);
         //Out Buffer Size
         outAudioBufferSize = static_cast<uint32>(av_samples_get_buffer_size(nullptr, out_channels, out_nb_samples, out_sample_fmt, 1));
 
@@ -381,29 +388,6 @@ namespace DAVA
         AV::swr_init(audioConvertContext);
 
 
-        // Init FMOD
-        {
-            FMOD_CREATESOUNDEXINFO exinfo;
-            memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
-
-            exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
-            exinfo.decodebuffersize = out_sample_rate; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
-            exinfo.length = out_sample_rate * out_channels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
-            exinfo.numchannels = out_channels; /* Number of channels in the sound. */
-            exinfo.defaultfrequency = out_sample_rate; /* Default playback rate of sound. */
-            exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
-            exinfo.pcmreadcallback = &MovieViewControl::PcmReadDecodeCallback; /* User callback for reading. */
-
-            FMOD::Sound* sound = nullptr;
-            FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
-            FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
-            sound->setUserData(this);
-
-            system->playSound(FMOD_CHANNEL_FREE, sound, false, &fmodChannel);
-            fmodChannel->setLoopCount(-1);
-            fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
-            fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
-        }
 
         if (audioDecodingThread)
         {
@@ -416,7 +400,6 @@ namespace DAVA
         {
             audioDecodingThread = Thread::Create(Message(this, &MovieViewControl::AudioDecodingThread));
             audioDecodingThread->Start();
-            Thread::Sleep(100);
         }
 
         return true;
@@ -589,6 +572,30 @@ namespace DAVA
         return effectivePTS;
     }
 
+    void MovieViewControl::InitFmod()
+    {
+        FMOD_CREATESOUNDEXINFO exinfo;
+        memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
+
+        exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
+        exinfo.decodebuffersize = out_sample_rate; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
+        exinfo.length = out_sample_rate * out_channels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
+        exinfo.numchannels = out_channels; /* Number of channels in the sound. */
+        exinfo.defaultfrequency = out_sample_rate; /* Default playback rate of sound. */
+        exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
+        exinfo.pcmreadcallback = &MovieViewControl::PcmReadDecodeCallback; /* User callback for reading. */
+
+        FMOD::Sound* sound = nullptr;
+        FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
+        FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
+        sound->setUserData(this);
+
+        system->playSound(FMOD_CHANNEL_FREE, sound, false, &fmodChannel);
+        fmodChannel->setLoopCount(-1);
+        fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
+        fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
+    }
+
     MovieViewControl::DecodedPCMData* MovieViewControl::DecodeAudioInPlace()
     {
         audioPacketsMutex.Lock();
@@ -709,6 +716,7 @@ namespace DAVA
                 audioPacketsMutex.Lock();
                 audioPacket = audioPackets.front();
                 audioPackets.pop_front();
+                currentPrefetchedPacketsCount--;
                 audioPacketsMutex.Unlock();
 
                 DecodeAudio(audioPacket, 0);
@@ -739,6 +747,7 @@ namespace DAVA
                 videoPacketsMutex.Lock();
                 videoPacket = videoPackets.front();
                 videoPackets.pop_front();
+                currentPrefetchedPacketsCount--;
                 videoPacketsMutex.Unlock();
 
                 float64 pts;
@@ -766,25 +775,19 @@ namespace DAVA
 
         do
         {
-            Thread::Sleep(1);
             if (decodeVideoInOtherThread)
                 UpdateVideo();
+            else
+                Thread::Sleep(1);
         } while (thread && !thread->IsCancelling());
     }
 
-    void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void* userData)
+    void MovieViewControl::PrefetchData(uint32 dataSize)
     {
-        Thread* thread = static_cast<Thread*>(caller);
-        hasMoreData = true;
         int retRead = 0;
+        uint32 readDataSize = 0;
         do
         {
-            if (!isPlaying) // || !isAudioVideoStreamsInited)
-            {
-                Thread::Sleep(0);
-                continue;
-            }
-
             AV::AVPacket* packet = static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
             av_init_packet(packet);
             retRead = AV::av_read_frame(movieContext, packet);
@@ -799,8 +802,32 @@ namespace DAVA
             else
             {
                 SortPacketsByVideoAndAudio(packet);
+                readDataSize++;
+                currentPrefetchedPacketsCount++;
             }
-        } while (retRead >= 0 && thread && !thread->IsCancelling());
+        } while (retRead >= 0 && readDataSize <= dataSize);
+    }
+
+    void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void* userData)
+    {
+        Thread* thread = static_cast<Thread*>(caller);
+
+        do
+        {
+            if (!isPlaying)
+            {
+                Thread::Sleep(0);
+                continue;
+            }
+
+            while (currentPrefetchedPacketsCount >= maxPacketsPrefetchedCount - 30)
+            {
+                Thread::Sleep(0);
+            }
+
+            PrefetchData(1);
+
+        } while (thread && !thread->IsCancelling());
     }
 
     // UIControl update and draw implementation

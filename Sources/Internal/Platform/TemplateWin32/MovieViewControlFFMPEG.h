@@ -134,8 +134,16 @@ struct DecodedFrameBuffer
         void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void ReadingThread(BaseObject* caller, void* callerData, void* userData);
 
+        const uint32 maxPacketsPrefetchedCount = 100;
+        uint32 currentPrefetchedPacketsCount = 0;
+        void PrefetchData(uint32 dataSize);
+
         float64 synchronize_video(AV::AVFrame* src_frame, float64 pts);
         float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
+
+        int out_channels = -1;
+        const int out_sample_rate = 44100;
+        void InitFmod();
 
         float64 videoPlayTime = 0.f;
         static bool isFFMGEGInited;
@@ -149,6 +157,7 @@ struct DecodedFrameBuffer
         Thread* audioDecodingThread = nullptr;
         Thread* videoDecodingThread = nullptr;
         Thread* videoPresentationThread = nullptr;
+        Thread* readingDataThread = nullptr;
 
         const uint8 emptyPixelColor = 255;
 
@@ -203,7 +212,7 @@ struct DecodedFrameBuffer
         void EnqueueDecodedVideoBuffer(DecodedFrameBuffer* buf);
         DecodedFrameBuffer* DequeueDecodedVideoBuffer();
 
-        void SotrPacketsByVideoAndAudio(AV::AVPacket* packet);
+        void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
 
         struct DecodedPCMData
         {
