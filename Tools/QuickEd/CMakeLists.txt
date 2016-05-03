@@ -14,16 +14,6 @@ set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG
 include               ( CMake-common )
 include               ( NGTMacro )
 
-if (DEPLOY)
-    set (DEPLOY_ROOT ${DEPLOY_DIR})
-
-    if ( WIN32 )
-        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
-        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME})
-    endif()
-    set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
-endif()
-
 configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
 add_definitions       ( 
