@@ -147,7 +147,7 @@ struct DecodedFrameBuffer
 
         float64 videoPlayTime = 0.f;
         static bool isFFMGEGInited;
-        bool isPlaying = true;
+        bool isPlaying = false;
         bool isAudioVideoStreamsInited = false;
 
         FMOD_CREATESOUNDEXINFO exinfo;

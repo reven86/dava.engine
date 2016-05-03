@@ -112,6 +112,7 @@ namespace DAVA
 
         if (fmodChannel)
             fmodChannel->setPaused(false);
+        frameTimer = GetTime();
     }
 
     // Open the Movie.
@@ -525,7 +526,7 @@ namespace DAVA
         if (actual_delay < 0.010)
         {
             /* Really it should skip the picture instead */
-            actual_delay = 0.005;
+            actual_delay = 0.001;
         }
 
         float64 timeBeforePresent = GetTime();
@@ -590,7 +591,7 @@ namespace DAVA
         FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
         sound->setUserData(this);
 
-        system->playSound(FMOD_CHANNEL_FREE, sound, false, &fmodChannel);
+        system->playSound(FMOD_CHANNEL_FREE, sound, !isPlaying, &fmodChannel);
         fmodChannel->setLoopCount(-1);
         fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
         fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
@@ -707,6 +708,10 @@ namespace DAVA
         AV::AVPacket* audioPacket = nullptr;
         do
         {
+            if (!isPlaying)
+            {
+                Thread::Sleep(0);
+            }
             audioPacketsMutex.Lock();
             auto size = audioPackets.size();
             audioPacketsMutex.Unlock();
@@ -738,6 +743,12 @@ namespace DAVA
         AV::AVPacket* videoPacket = nullptr;
         do
         {
+            if (!isPlaying)
+            {
+                Thread::Sleep(0);
+                continue;
+            }
+
             videoPacketsMutex.Lock();
             auto size = videoPackets.size();
             videoPacketsMutex.Unlock();
@@ -765,13 +776,11 @@ namespace DAVA
     void MovieViewControl::VideoPresentationThread(BaseObject* caller, void* callerData, void* userData)
     {
         Thread* thread = static_cast<Thread*>(caller);
-
+        return;
         while (!audioStarted)
         {
             Thread::Sleep(1);
         }
-
-        frameTimer = GetTime();
 
         do
         {
@@ -797,7 +806,6 @@ namespace DAVA
             if (!hasMoreData)
             {
                 AV::av_packet_unref(packet);
-                isPlaying = false;
             }
             else
             {
@@ -820,9 +828,10 @@ namespace DAVA
                 continue;
             }
 
-            while (currentPrefetchedPacketsCount >= maxPacketsPrefetchedCount - 30)
+            if (currentPrefetchedPacketsCount >= maxPacketsPrefetchedCount - 30)
             {
                 Thread::Sleep(0);
+                continue;
             }
 
             PrefetchData(1);

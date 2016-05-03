@@ -97,7 +97,7 @@ void UIMovieTest::UnloadResources()
 
 void UIMovieTest::OnActive()
 {
-    movieView->Play();
+    //movieView->Play();
 }
 
 void UIMovieTest::Update(float32 timeElapsed)
