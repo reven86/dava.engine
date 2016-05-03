@@ -18,7 +18,7 @@ if (DEPLOY)
     set (DEPLOY_ROOT ${DEPLOY_DIR})
 
     if ( WIN32 )
-        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+        set(DEPLOY_ROOT ${DEPLOY_ROOT})
         set(DEPLOY_DIR ${DEPLOY_ROOT})
     endif()
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
