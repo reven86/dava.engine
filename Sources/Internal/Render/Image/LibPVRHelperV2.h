@@ -43,8 +43,6 @@ public:
     LibPVRHelperV2();
 
     //ImageFormatInterface
-    bool CanProcessFile(File* file) const override;
-
     eErrorCode Load(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const;
     eErrorCode Save(const FilePath& fileName, const Vector<Image*>& imageSet) const;
     eErrorCode SaveCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const;
@@ -58,6 +56,7 @@ public:
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
 protected:
+    bool CanProcessFileInternal(File* infile) const override;
     ImageInfo GetImageInfo(File* infile) const override;
 };
 };

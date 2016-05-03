@@ -44,7 +44,7 @@ LibPSDHelper::LibPSDHelper()
     supportedFormats = { FORMAT_RGBA8888 };
 }
 
-bool LibPSDHelper::CanProcessFile(File* infile) const
+bool LibPSDHelper::CanProcessFileInternal(File* infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }

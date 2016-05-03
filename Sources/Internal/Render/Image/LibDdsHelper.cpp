@@ -740,7 +740,7 @@ LibDdsHelper::LibDdsHelper()
                            FORMAT_RGBA8888 } };
 }
 
-bool LibDdsHelper::CanProcessFile(File* infile) const
+bool LibDdsHelper::CanProcessFileInternal(File* infile) const
 {
     DDSFile::FileHeader header = DDSFile::ReadHeader(infile);
     return header.IsValid();

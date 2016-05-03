@@ -46,7 +46,6 @@ class LibDdsHelper : public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibDdsHelper();
 
-    bool CanProcessFile(File* infile) const override;
 
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
 
@@ -60,6 +59,9 @@ public:
 
     static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex, bool forceSoftwareConvertation = false);
     static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
+
+protected:
+    bool CanProcessFileInternal(File* infile) const override;
 
 private:
     static bool WriteDxtFile(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSets, PixelFormat compressionFormat, bool isCubemap);

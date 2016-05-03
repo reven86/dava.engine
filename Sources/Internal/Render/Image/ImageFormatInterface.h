@@ -77,7 +77,7 @@ public:
 
     const Vector<String>& Extensions() const;
 
-    virtual bool CanProcessFile(File* file) const = 0;
+    bool CanProcessFile(File* file) const;
     virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const = 0;
 
     virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
@@ -86,6 +86,8 @@ public:
     const String& Name() const;
 
 protected:
+    virtual bool CanProcessFileInternal(File* file) const = 0;
+
     Vector<PixelFormat> supportedFormats;
     Vector<String> supportedExtensions;
 

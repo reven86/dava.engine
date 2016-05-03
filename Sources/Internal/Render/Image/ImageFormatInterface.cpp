@@ -82,4 +82,18 @@ const String& ImageFormatInterface::Name() const
 {
     return interfaceName;
 }
+
+bool ImageFormatInterface::CanProcessFile(File* file) const
+{
+    if (file == nullptr)
+    {
+        return false;
+    }
+
+    DVASSERT(file->GetPos() == 0);
+
+    bool canProcess = CanProcessFileInternal(file);
+    file->Seek(0, File::SEEK_FROM_START);
+    return canProcess;
+}
 };

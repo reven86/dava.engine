@@ -80,7 +80,7 @@ LibJpegHelper::LibJpegHelper()
     supportedFormats = { { FORMAT_RGB888, FORMAT_A8 } };
 }
 
-bool LibJpegHelper::CanProcessFile(File* infile) const
+bool LibJpegHelper::CanProcessFileInternal(File* infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }

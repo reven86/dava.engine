@@ -45,7 +45,7 @@ LibWebPHelper::LibWebPHelper()
     supportedFormats = { { FORMAT_RGB888, FORMAT_RGBA8888 } };
 }
 
-bool LibWebPHelper::CanProcessFile(File* infile) const
+bool LibWebPHelper::CanProcessFileInternal(File* infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }

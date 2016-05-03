@@ -27,8 +27,9 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
-#include "UnitTests/UnitTests.h"
+#include "Render/PixelFormatDescriptor.h"
 
+#include "UnitTests/UnitTests.h"
 #include "Infrastructure/TextureUtils.h"
 
 using namespace DAVA;
@@ -99,10 +100,10 @@ DAVA_TESTCLASS (FormatsTest)
 
             DAVA::Vector<DAVA::Image*> pngImages;
             DAVA::Vector<DAVA::Image*> compressedImages;
-            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
+            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages, 0, 0);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
-            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
+            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages, 0, 0);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
             if (pngImages.empty() || compressedImages.empty())
@@ -161,10 +162,10 @@ DAVA_TESTCLASS (FormatsTest)
 
             DAVA::Vector<DAVA::Image*> pngImages;
             DAVA::Vector<DAVA::Image*> compressedImages;
-            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
+            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages, 0, 0);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
-            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
+            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages, 0, 0);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
             if (pngImages.empty() || compressedImages.empty())

@@ -52,7 +52,7 @@ LibTgaHelper::LibTgaHelper()
                            FORMAT_A16 } };
 }
 
-bool LibTgaHelper::CanProcessFile(File* infile) const
+bool LibTgaHelper::CanProcessFileInternal(File* infile) const
 {
     return !(GetImageInfo(infile).IsEmpty());
 }

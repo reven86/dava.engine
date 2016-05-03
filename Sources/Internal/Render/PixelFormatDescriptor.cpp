@@ -60,7 +60,7 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     { FORMAT_DXT5, { FORMAT_DXT5, FastName("DXT5"), 8, rhi::TEXTURE_FORMAT_DXT5, false } },
     { FORMAT_DXT5NM, { FORMAT_DXT5NM, FastName("DXT5nm"), 8, TEXTURE_FORMAT_INVALID, false } },
 
-    { FORMAT_ETC1, { FORMAT_ETC1, FastName("ETC1"), 8, rhi::TEXTURE_FORMAT_ETC1, false } },
+    { FORMAT_ETC1, { FORMAT_ETC1, FastName("ETC1"), 4, rhi::TEXTURE_FORMAT_ETC1, false } },
 
     { FORMAT_ATC_RGB, { FORMAT_ATC_RGB, FastName("ATC_RGB"), 4, rhi::TEXTURE_FORMAT_ATC_RGB, false } },
     { FORMAT_ATC_RGBA_EXPLICIT_ALPHA, { FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FastName("ATC_RGBA_EXPLICIT_ALPHA"), 8, rhi::TEXTURE_FORMAT_ATC_RGBA_EXPLICIT, false } },

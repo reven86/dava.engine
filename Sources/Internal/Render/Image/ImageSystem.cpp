@@ -168,7 +168,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File* file) const
 {
     for (auto& wrapper : wrappers)
     {
-        if (wrapper && wrapper->CanProcessFile(file))
+        if (wrapper->CanProcessFile(file))
         {
             return wrapper.get();
         }

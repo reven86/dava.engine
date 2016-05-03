@@ -44,7 +44,7 @@ LibPVRHelperV2::LibPVRHelperV2()
     supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelperV2::CanProcessFile(File* file) const
+bool LibPVRHelperV2::CanProcessFileInternal(File* file) const
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(file, false, false);
     if (pvrFile)
@@ -228,7 +228,7 @@ bool LibPVRHelperV2::AddCRCIntoMetaData(const FilePath& filePathname) const
 
 uint32 LibPVRHelperV2::GetCRCFromFile(const FilePath& filePathname) const
 {
-    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(filePathname, false, false);
+    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(filePathname, true, false);
     if (pvrFile)
     {
         uint32 presentCRC = 0;

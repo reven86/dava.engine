@@ -42,8 +42,6 @@ class LibTgaHelper : public ImageFormatInterface
 public:
     LibTgaHelper();
 
-    bool CanProcessFile(File* file) const override;
-
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
@@ -78,6 +76,9 @@ public:
     };
 
     eErrorCode ReadTgaHeader(const FilePath& filepath, TgaInfo& tgaHeader) const;
+
+protected:
+    bool CanProcessFileInternal(File* infile) const override;
 
 private:
     eErrorCode ReadTgaHeader(File* infile, TgaInfo& tgaHeader) const;

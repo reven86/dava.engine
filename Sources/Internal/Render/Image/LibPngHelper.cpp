@@ -97,17 +97,11 @@ LibPngHelper::LibPngHelper()
     supportedFormats = { { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 } };
 }
 
-bool LibPngHelper::CanProcessFile(File* infile) const
+bool LibPngHelper::CanProcessFileInternal(File* infile) const
 {
-    if (nullptr == infile)
-    {
-        return false;
-    }
-
     unsigned char sig[8];
     infile->Read(sig, 8);
     bool retValue = (0 != png_check_sig(sig, 8));
-    infile->Seek(0, File::SEEK_FROM_START);
     return retValue;
 }
 

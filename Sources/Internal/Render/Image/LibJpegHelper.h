@@ -42,8 +42,6 @@ class LibJpegHelper : public ImageFormatInterface
 public:
     LibJpegHelper();
 
-    bool CanProcessFile(File* file) const override;
-
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
 
     //only RGB888 or A8
@@ -53,6 +51,9 @@ public:
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
     ImageInfo GetImageInfo(File* infile) const override;
+
+protected:
+    bool CanProcessFileInternal(File* infile) const override;
 };
 
 };
