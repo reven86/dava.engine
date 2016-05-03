@@ -157,6 +157,8 @@ macro (define_source_folders )
         ELSE()
             list ( APPEND DAVA_FOLDERS ${CMAKE_CURRENT_SOURCE_DIR} )
         ENDIF()
+        
+        set( DAVA_FOLDERS ${DAVA_FOLDERS} PARENT_SCOPE )
 
     ENDIF()
 

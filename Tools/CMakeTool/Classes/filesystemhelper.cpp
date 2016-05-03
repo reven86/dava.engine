@@ -29,6 +29,7 @@
 
 #include "filesystemhelper.h"
 #include <QDir>
+#include <QDirIterator>
 #include <QRegularExpression>
 
 FileSystemHelper::FileSystemHelper(QObject* parent)
@@ -107,7 +108,29 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     {
         return "";
     }
-    return QDir::toNativeSeparators(cmakePath);
+    return QDir::fromNativeSeparators(cmakePath);
+}
+
+QString FileSystemHelper::FindBuildFolder(const QString& sourceFolder) const
+{
+    if (sourceFolder.isEmpty())
+    {
+        return "";
+    }
+    QDir sourceFolderDir(sourceFolder);
+    QDirIterator it(sourceFolder);
+    while (it.hasNext())
+    {
+        it.next();
+        QFileInfo fileInfo(it.fileInfo());
+        if (fileInfo.isDir())
+        {
+            if (fileInfo.fileName().contains("build", Qt::CaseInsensitive))
+            {
+                return fileInfo.absoluteFilePath();
+            }
+        }
+    }
 }
 
 FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString& keyFile)
