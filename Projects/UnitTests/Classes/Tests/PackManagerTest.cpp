@@ -28,8 +28,10 @@
 
 #include <PackManager/PackManager.h>
 #include <FileSystem/File.h>
+#include <FileSystem/FileSystem.h>
 #include <Utils/CRC32.h>
 #include <DLC/Downloader/DownloadManager.h>
+#include <Core/Core.h>
 
 #include "UnitTests/UnitTests.h"
 
@@ -41,22 +43,22 @@ public:
     {
         sigConnection = packManager.onPackStateChanged.Connect(this, &GameClient::OnPackStateChange);
     }
-    void OnPackStateChange(const DAVA::PackManager::Pack& packState, DAVA::PackManager::Pack::Change change)
+    void OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change)
     {
         DAVA::StringStream ss;
 
-        ss << "pack: " << packState.name << " change: ";
+        ss << "pack: " << pack.name << " change: ";
 
         switch (change)
         {
         case DAVA::PackManager::Pack::Change::State:
-            ss << "new state - " << static_cast<unsigned>(change);
+            ss << "new state - " << static_cast<unsigned>(pack.state);
             break;
         case DAVA::PackManager::Pack::Change::DownloadProgress:
-            ss << "download progress - " << packState.downloadProgress;
+            ss << "download progress - " << pack.downloadProgress;
             break;
         case DAVA::PackManager::Pack::Change::Priority:
-            ss << "new priority - " << packState.priority;
+            ss << "new priority - " << pack.priority;
             break;
         }
 
@@ -64,8 +66,6 @@ public:
     }
     DAVA::SigConnectionID sigConnection;
     DAVA::PackManager& packManager;
-    //Vector<String> packsToRequest = {"no_such_pack.pak", "virtual_test_pack.pak", "unit_test.pak" };
-    //Vector<bool> requestSuccess = { false, true };
 };
 
 DAVA_TESTCLASS (PackManagerTest)
@@ -75,10 +75,14 @@ DAVA_TESTCLASS (PackManagerTest)
         using namespace DAVA;
 
         FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/test.db");
-        FilePath folderWithDownloadedPacks("~doc:/SmartDlcTest/packs/");
+        FilePath folderWithDownloadedPacks("~doc:/PackManagerTest/packs/");
+
+        FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
+
         String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/");
 
-        PackManager packManager(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
+        PackManager& packManager = Core::Instance()->GetPackManager();
+        packManager.Initialize(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
 
         GameClient client(packManager);
 
@@ -102,9 +106,6 @@ DAVA_TESTCLASS (PackManagerTest)
             packName = "unit_test.pak";
             const PackManager::Pack& packState = packManager.GetPack(packName);
             TEST_VERIFY(packState.name == packName);
-            //TEST_VERIFY(packState.crc32FromDB == 0); // virtual pack no files
-            //TEST_VERIFY(packState.crc32FromMeta == 0); // virtual pack no files
-            //TEST_VERIFY(packState.state == PackManager::Pack::NotRequested);
 
             auto& nextState = packManager.RequestPack(packName, 0.1f);
             if (nextState.state != PackManager::Pack::Mounted)
@@ -117,11 +118,10 @@ DAVA_TESTCLASS (PackManagerTest)
             while ((nextState.state == PackManager::Pack::Requested || nextState.state == PackManager::Pack::Downloading) && maxIter-- > 0)
             {
                 // wait
-                Thread::Sleep(500);
-                DownloadManager* dm = DownloadManager::Instance();
-                dm->Update();
+                Thread::Sleep(100);
+                // we have to call Update() for downloadManager and packManager cause we in main thread
+                DownloadManager::Instance()->Update();
                 packManager.Update();
-                Logger::Info("download progress: %d", static_cast<int32>(nextState.downloadProgress * 100));
             }
 
             TEST_VERIFY(nextState.state == PackManager::Pack::Mounted);

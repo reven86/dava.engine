@@ -46,13 +46,18 @@ struct PackPriorityComparator
 class PackManagerImpl
 {
 public:
-    PackManagerImpl(PackManager* packManager_, const FilePath& dbFile_, const FilePath& localPacksDir_, const String& remotePacksURL_)
-        : dbFile(dbFile_)
-        , localPacksDir(localPacksDir_)
-        , remotePacksUrl(remotePacksURL_)
-        , packManager(*packManager_)
-        , queue(packManager)
+    PackManagerImpl()
     {
+    }
+
+    void Initialize(PackManager* packManager_, const FilePath& dbFile_, const FilePath& localPacksDir_, const String& remotePacksURL_)
+    {
+        dbFile = dbFile_;
+        localPacksDir = localPacksDir_;
+        remotePacksUrl = remotePacksURL_;
+        packManager = packManager_;
+        queue.reset(new RequestQueue(*packManager));
+
         // open DB and load packs state then mount all archives to FileSystem
         db.reset(new PacksDB(dbFile));
         db->GetAllPacksState(packs);
@@ -69,7 +74,7 @@ public:
         if (!isProcessingEnabled)
         {
             isProcessingEnabled = true;
-            queue.Start();
+            queue->Start();
         }
     }
 
@@ -78,7 +83,7 @@ public:
         if (isProcessingEnabled)
         {
             isProcessingEnabled = false;
-            queue.Stop();
+            queue->Stop();
         }
     }
 
@@ -86,7 +91,7 @@ public:
     {
         if (isProcessingEnabled)
         {
-            queue.Update();
+            queue->Update();
         }
     }
 
@@ -100,22 +105,19 @@ public:
         priority = std::max(0.f, priority);
         priority = std::min(1.f, priority);
 
-        auto& packState = GetPackState(packID);
-        if (packState.state == PackManager::Pack::NotRequested)
+        auto& pack = GetPackState(packID);
+        if (pack.state == PackManager::Pack::NotRequested)
         {
-            packState.state = PackManager::Pack::Requested;
-            packState.priority = priority;
-
-            queue.Push(packID, priority);
+            queue->Push(packID, priority);
         }
         else
         {
-            if (queue.IsInQueue(packID))
+            if (queue->IsInQueue(packID))
             {
-                queue.UpdatePriority(packID, priority);
+                queue->UpdatePriority(packID, priority);
             }
         }
-        return packState;
+        return pack;
     }
 
     uint32 GetPackIndex(const String& packName)
@@ -243,24 +245,27 @@ private:
     FilePath localPacksDir;
     String remotePacksUrl;
     bool isProcessingEnabled = false;
-    PackManager& packManager;
+    PackManager* packManager = nullptr;
     UnorderedMap<String, uint32> packsIndex;
     Vector<PackManager::Pack> packs;
-    RequestQueue queue;
+    std::unique_ptr<RequestQueue> queue;
     std::unique_ptr<PacksDB> db;
 };
 
-PackManager::PackManager(const FilePath& packsDB, const FilePath& localPacksDir, const String& remotePacksUrl)
+PackManager::PackManager()
 {
-    if (!localPacksDir.IsDirectoryPathname())
-    {
-        throw std::runtime_error("not directory path_name:" + localPacksDir.GetStringValue());
-    }
-
-    impl.reset(new PackManagerImpl(this, packsDB, localPacksDir, remotePacksUrl));
-}
+    impl.reset(new PackManagerImpl());
+};
 
 PackManager::~PackManager() = default;
+
+void PackManager::Initialize(const FilePath& filesDB_, const FilePath& localPacksDir_, const String& remotePacksUrl)
+{
+    DVASSERT(FileSystem::Instance()->IsFile(filesDB_));
+    DVASSERT(FileSystem::Instance()->IsDirectory(localPacksDir_));
+
+    impl->Initialize(this, filesDB_, localPacksDir_, remotePacksUrl);
+}
 
 bool PackManager::IsProcessingEnabled() const
 {

@@ -102,7 +102,7 @@ void PackRequest::StartLoadingCRC32File()
     // start downloading file
 
     DownloadManager* dm = DownloadManager::Instance();
-    subRequest.taskId = dm->Download(url, archiveCrc32Path);
+    subRequest.taskId = dm->Download(url, archiveCrc32Path, RESUMED, 1);
 
     // set state to LoadingCRC32File
     subRequest.status = SubRequest::LoadingCRC32File;
@@ -188,6 +188,11 @@ void PackRequest::StartLoadingPackFile()
 
     // switch state to LoadingPackFile
     subRequest.status = SubRequest::LoadingPackFile;
+
+    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+    pack.state = PackManager::Pack::Downloading;
+
+    packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::State);
 }
 
 bool PackRequest::DoneLoadingPackFile()
@@ -210,7 +215,14 @@ bool PackRequest::DoneLoadingPackFile()
             uint64 total = 0;
             if (dm->GetTotal(subRequest.taskId, total))
             {
-                pack.downloadProgress = static_cast<float>(progress) / total;
+                if (total == 0) // empty file pack (never be)
+                {
+                    pack.downloadProgress = 1.0f;
+                }
+                else
+                {
+                    pack.downloadProgress = std::min(1.0f, static_cast<float>(progress) / total);
+                }
                 // fire event on update progress
                 packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::DownloadProgress);
             }
@@ -248,13 +260,16 @@ bool PackRequest::DoneLoadingPackFile()
             case DLE_NO_ERROR:
             {
                 result = true;
+
+                pack.downloadProgress = 1.0f;
+                packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::DownloadProgress);
                 break;
             }
             } // end switch downloadError
         }
         else
         {
-            throw std::runtime_error(Format("can't get download error code for download crc file for pack: %s", subRequest.packName.c_str()));
+            throw std::runtime_error(Format("can't get download error code for pack file for pack: %s", subRequest.packName.c_str()));
         }
     }
     break;
@@ -555,6 +570,14 @@ void RequestQueue::Push(const String& packName, float32 priority)
 
     items.emplace_back(packManager, packName, priority);
     std::push_heap(begin(items), end(items));
+
+    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager.GetPack(packName));
+
+    pack.state = PackManager::Pack::Requested;
+    pack.priority = priority;
+
+    packManager.onPackStateChanged.Emit(pack, PackManager::Pack::Change::State);
+    packManager.onPackStateChanged.Emit(pack, PackManager::Pack::Change::Priority);
 
     CheckRestartLoading();
 }
