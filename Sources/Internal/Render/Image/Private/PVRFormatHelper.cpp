@@ -43,18 +43,6 @@
 #include "libpvr/PVRTexture.h"
 #endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 
-#define METADATA_FOURCC_OFFSET 0
-#define METADATA_KEY_OFFSET 4
-#define METADATA_DATASIZE_OFFSET 8
-#define METADATA_DATA_OFFSET 12
-
-#define METADATA_CRC_DATA_SIZE 4 //size for CRC32
-#define METADATA_CRC_SIZE (METADATA_DATA_OFFSET + METADATA_CRC_DATA_SIZE) //size for meta data with CRC32
-#define METADATA_CRC_KEY 0x5f435243 // equivalent of 'C''R''C''_'
-
-#define METADATA_CUBE_KEY 2
-#define METADATA_CUBE_SIZE 6
-
 namespace DAVA
 {
 PVRFile::~PVRFile()
@@ -66,7 +54,6 @@ PVRFile::~PVRFile()
     }
     metaDatablocks.clear();
 
-    SafeDeleteArray(metaData);
     SafeDeleteArray(compressedData);
     compressedDataSize = 0;
 }
@@ -74,6 +61,18 @@ PVRFile::~PVRFile()
 namespace PVRFormatHelper
 {
 const uint32 PVRTEX3_METADATAIDENT = 0x03525650;
+
+const uint32 METADATA_FOURCC_OFFSET = 0;
+const uint32 METADATA_KEY_OFFSET = 4;
+const uint32 METADATA_DATASIZE_OFFSET = 8;
+const uint32 METADATA_DATA_OFFSET = 12;
+
+const uint32 METADATA_CRC_DATA_SIZE = 4; //size for CRC32
+const uint32 METADATA_CRC_SIZE = (METADATA_DATA_OFFSET + METADATA_CRC_DATA_SIZE); //size for meta data with CRC32
+const uint32 METADATA_CRC_KEY = 0x5f435243; // equivalent of 'C''R''C''_'
+
+const uint32 METADATA_CUBE_KEY = 2;
+const uint32 METADATA_CUBE_SIZE = 6;
 
 bool DetectIfNeedSwapBytes(const PVRHeaderV3* header)
 {
@@ -290,6 +289,51 @@ const MetaDataBlock* GetCubemapMetadata(const PVRFile& pvrFile)
     return nullptr;
 }
 
+void AddMetaData(PVRFile& pvrFile, MetaDataBlock* block)
+{
+    uint32 oldMetaDataSize = pvrFile.header.u32MetaDataSize;
+
+    pvrFile.header.u32MetaDataSize = oldMetaDataSize + (METADATA_DATA_OFFSET + block->u32DataSize);
+    pvrFile.metaData.resize(pvrFile.header.u32MetaDataSize);
+
+    uint8* metaDataPtr = pvrFile.metaData.data() + oldMetaDataSize;
+
+    *(reinterpret_cast<uint32*>(metaDataPtr + METADATA_FOURCC_OFFSET)) = block->DevFOURCC;
+    *(reinterpret_cast<uint32*>(metaDataPtr + METADATA_KEY_OFFSET)) = block->u32Key;
+    *(reinterpret_cast<uint32*>(metaDataPtr + METADATA_DATASIZE_OFFSET)) = block->u32DataSize;
+
+    Memcpy(metaDataPtr + METADATA_DATA_OFFSET, block->Data, block->u32DataSize);
+    SafeDelete(block->Data); //because it will be released in PVRFile::~PVRFile
+    pvrFile.metaDatablocks.push_back(block);
+}
+
+void ReadMetaData(File* file, PVRFile* pvrFile)
+{
+    uint32 metaDataSize = pvrFile->header.u32MetaDataSize;
+    pvrFile->metaData.resize(metaDataSize);
+
+    uint32 readSize = file->Read(pvrFile->metaData.data(), metaDataSize);
+    if (readSize != metaDataSize)
+    {
+        pvrFile->metaData.clear();
+        return;
+    }
+
+    uint8* metaDataPtr = pvrFile->metaData.data();
+    const uint8* metaDataEndPtr = metaDataPtr + metaDataSize;
+    while (metaDataPtr < metaDataEndPtr)
+    {
+        MetaDataBlock* block = new MetaDataBlock();
+        block->DevFOURCC = *reinterpret_cast<uint32*>(metaDataPtr + METADATA_FOURCC_OFFSET);
+        block->u32Key = *reinterpret_cast<uint32*>(metaDataPtr + METADATA_KEY_OFFSET);
+        block->u32DataSize = *reinterpret_cast<uint32*>(metaDataPtr + METADATA_DATASIZE_OFFSET);
+        block->Data = metaDataPtr + METADATA_DATA_OFFSET;
+        metaDataPtr += (METADATA_DATA_OFFSET + block->u32DataSize);
+
+        pvrFile->metaDatablocks.push_back(block);
+    }
+}
+
 uint32 GetCubemapLayout(const PVRFile& pvrFile)
 {
     uint32 layout = 0;
@@ -360,42 +404,6 @@ uint32 GetCubemapLayout(const PVRFile& pvrFile)
 
 //external methods
 
-void ReadMetaData(File* file, PVRFile* pvrFile)
-{
-    uint32 metaDataSize = pvrFile->header.u32MetaDataSize;
-
-    DVASSERT(pvrFile->metaData == nullptr);
-    pvrFile->metaData = new uint8[metaDataSize];
-    uint32 readSize = file->Read(pvrFile->metaData, metaDataSize);
-    if (readSize != metaDataSize)
-    {
-        SafeDeleteArray(pvrFile->metaData);
-        return;
-    }
-
-    uint8* metaDataPtr = pvrFile->metaData;
-    uint32 delta = static_cast<uint32>(metaDataPtr - pvrFile->metaData);
-    while (delta < metaDataSize)
-    {
-        MetaDataBlock* block = new MetaDataBlock();
-        block->DevFOURCC = *reinterpret_cast<uint32*>(metaDataPtr);
-        metaDataPtr += sizeof(uint32);
-
-        block->u32Key = *reinterpret_cast<uint32*>(metaDataPtr);
-        metaDataPtr += sizeof(uint32);
-
-        block->u32DataSize = *reinterpret_cast<uint32*>(metaDataPtr);
-        metaDataPtr += sizeof(uint32);
-
-        block->Data = metaDataPtr;
-        metaDataPtr += block->u32DataSize;
-
-        pvrFile->metaDatablocks.push_back(block);
-
-        delta = static_cast<uint32>(metaDataPtr - pvrFile->metaData);
-    }
-}
-
 std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, bool readData)
 {
     ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
@@ -451,29 +459,23 @@ std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, boo
     return pvrFile;
 }
 
-std::unique_ptr<PVRFile> GeneratePVRHeader(const Vector<Image*>& imageSet)
+std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet)
 {
     Image* zeroMip = imageSet[0];
 
     std::unique_ptr<PVRFile> pvrFile(new PVRFile());
 
-    pvrFile->header.u32Version = PVRTEX3_IDENT;
-    pvrFile->header.u32Flags = 0;
     pvrFile->header.u64PixelFormat = GetPVRFormatFromDAVA(zeroMip->format);
-    pvrFile->header.u32ColourSpace = ePVRTCSpacelRGB;
     pvrFile->header.u32ChannelType = GetPVRChannelType(zeroMip->format);
 
     pvrFile->header.u32Width = zeroMip->width;
     pvrFile->header.u32Height = zeroMip->height;
-    pvrFile->header.u32Depth = 1;
 
-    pvrFile->header.u32NumSurfaces = 1;
     pvrFile->header.u32NumFaces = 1;
 
     DVASSERT(zeroMip->cubeFaceID == Texture::INVALID_CUBEMAP_FACE);
 
     pvrFile->header.u32MIPMapCount = static_cast<uint32>(imageSet.size());
-    pvrFile->header.u32MetaDataSize = 0;
 
     pvrFile->compressedDataSize = GetDataSize(imageSet);
     pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];
@@ -483,6 +485,49 @@ std::unique_ptr<PVRFile> GeneratePVRHeader(const Vector<Image*>& imageSet)
     {
         Memcpy(compressedDataPtr, image->data, image->dataSize);
         compressedDataPtr += GetMipmapDataSize(image->format, image->width, image->height);
+    }
+
+    return pvrFile;
+}
+
+std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageSet)
+{
+    const Vector<Image*>& zeroFaceImageSet = imageSet[0];
+    Image* zeroMip = zeroFaceImageSet[0];
+
+    std::unique_ptr<PVRFile> pvrFile(new PVRFile());
+
+    pvrFile->header.u64PixelFormat = GetPVRFormatFromDAVA(zeroMip->format);
+    pvrFile->header.u32ChannelType = GetPVRChannelType(zeroMip->format);
+
+    pvrFile->header.u32Width = zeroMip->width;
+    pvrFile->header.u32Height = zeroMip->height;
+
+    pvrFile->header.u32NumFaces = imageSet.size();
+    pvrFile->header.u32MIPMapCount = static_cast<uint32>(zeroFaceImageSet.size());
+
+    pvrFile->compressedDataSize = GetDataSize(imageSet);
+    pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];
+    uint8* compressedDataPtr = pvrFile->compressedData;
+    for (uint32 mip = 0; mip < pvrFile->header.u32MIPMapCount; ++mip)
+    {
+        for (const Vector<Image*>& faceImageSet : imageSet)
+        {
+            Image* image = faceImageSet[mip];
+            Memcpy(compressedDataPtr, image->data, image->dataSize);
+            compressedDataPtr += GetMipmapDataSize(image->format, image->width, image->height);
+        }
+    }
+
+    //    if(pvrFile->header.u32NumFaces > 1)
+    {
+        MetaDataBlock* cubeMetaBlock = new MetaDataBlock();
+        cubeMetaBlock->DevFOURCC = PVRTEX3_METADATAIDENT;
+        cubeMetaBlock->u32Key = METADATA_CUBE_KEY;
+        cubeMetaBlock->u32DataSize = METADATA_CUBE_SIZE;
+        cubeMetaBlock->Data = new uint8[METADATA_CUBE_SIZE];
+        Memcpy(cubeMetaBlock->Data, "XxYyZz", METADATA_CUBE_SIZE);
+        AddMetaData(*pvrFile, cubeMetaBlock);
     }
 
     return pvrFile;
@@ -596,7 +641,7 @@ bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)
     if (file)
     {
         file->Write(&pvrFile.header);
-        file->Write(pvrFile.metaData, pvrFile.header.u32MetaDataSize);
+        file->Write(pvrFile.metaData.data(), pvrFile.header.u32MetaDataSize);
         if (pvrFile.compressedData != nullptr)
         {
             file->Write(pvrFile.compressedData, pvrFile.compressedDataSize);
@@ -625,29 +670,14 @@ bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC)
 void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc)
 {
     //reallocate meta data buffer
-    uint8* oldMetaData = pvrFile.metaData;
-    uint32 oldMetaDataSize = pvrFile.header.u32MetaDataSize;
-
-    pvrFile.header.u32MetaDataSize = oldMetaDataSize + METADATA_CRC_SIZE;
-    pvrFile.metaData = new uint8[pvrFile.header.u32MetaDataSize];
-    if (oldMetaData != nullptr)
-    {
-        Memcpy(pvrFile.metaData, oldMetaData, oldMetaDataSize);
-        delete[] oldMetaData;
-    }
-
-    //create metaDataWithCrc
     MetaDataBlock* crcMetaData = new MetaDataBlock();
     crcMetaData->DevFOURCC = PVRTEX3_METADATAIDENT;
     crcMetaData->u32Key = METADATA_CRC_KEY;
     crcMetaData->u32DataSize = METADATA_CRC_DATA_SIZE;
-    crcMetaData->Data = pvrFile.metaData + oldMetaDataSize + METADATA_DATA_OFFSET;
-    pvrFile.metaDatablocks.push_back(crcMetaData);
+    crcMetaData->Data = new uint8[sizeof(uint32)];
+    *(reinterpret_cast<uint32*>(crcMetaData->Data)) = crc;
 
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_FOURCC_OFFSET)) = crcMetaData->DevFOURCC;
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_KEY_OFFSET)) = crcMetaData->u32Key;
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_DATASIZE_OFFSET)) = crcMetaData->u32DataSize;
-    *(reinterpret_cast<uint32*>(pvrFile.metaData + oldMetaDataSize + METADATA_DATA_OFFSET)) = crc;
+    AddMetaData(pvrFile, crcMetaData);
 }
 
 } // PVRFormatHelper

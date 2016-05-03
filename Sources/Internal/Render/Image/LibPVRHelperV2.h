@@ -45,13 +45,13 @@ public:
     //ImageFormatInterface
     bool CanProcessFile(File* file) const override;
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const override;
+    eErrorCode Load(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const;
+    eErrorCode Save(const FilePath& fileName, const Vector<Image*>& imageSet) const;
+    eErrorCode SaveCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const;
 
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const override;
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet) const;
-    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const;
 
     // CRCAdditionInterface
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;

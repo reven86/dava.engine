@@ -58,10 +58,10 @@ namespace DAVA
 #pragma pack(push, 4)
 struct PVRHeaderV3
 {
-    uint32 u32Version = 0; //Version of the file header, used to identify it.
+    uint32 u32Version = PVRTEX3_IDENT; //Version of the file header, used to identify it.
     uint32 u32Flags = 0; //Various format flags.
     uint64 u64PixelFormat = ePVRTPF_NumCompressedPFs; //The pixel format, 8cc value storing the 4 channel identifiers and their respective sizes.
-    uint32 u32ColourSpace = 0; //The Colour Space of the texture, currently either linear RGB or sRGB.
+    uint32 u32ColourSpace = ePVRTCSpacelRGB; //The Colour Space of the texture, currently either linear RGB or sRGB.
     uint32 u32ChannelType = 0; //Variable type that the channel is stored in. Supports signed/unsigned int/short/byte or float for now.
     uint32 u32Height = 1; //Height of the texture.
     uint32 u32Width = 1; //Width of the texture.
@@ -80,7 +80,7 @@ public:
 
     PVRHeaderV3 header;
     Vector<MetaDataBlock*> metaDatablocks;
-    uint8* metaData = nullptr;
+    Vector<uint8> metaData;
 
     uint32 compressedDataSize = 0;
     uint8* compressedData = nullptr;
@@ -94,7 +94,8 @@ namespace PVRFormatHelper
 std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, bool readData);
 std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData, bool readData);
 
-std::unique_ptr<PVRFile> GeneratePVRHeader(const Vector<Image*>& imageSet);
+std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet);
+std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageSet);
 
 bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile);
 

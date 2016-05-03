@@ -54,13 +54,24 @@ bool LibPVRHelperV2::CanProcessFile(File* file) const
     return false;
 }
 
+eErrorCode LibPVRHelperV2::Load(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const
+{
+    if (PVRFormatHelper::LoadImages(infile, imageSet, fromMipmap, firstMipmapIndex))
+    {
+        DVASSERT(imageSet.empty() == false);
+        return eErrorCode::SUCCESS;
+    }
+
+    return eErrorCode::ERROR_READ_FAIL;
+}
+
 eErrorCode LibPVRHelperV2::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const
 {
-    if (false == PVRFormatHelper::LoadImages(infile, imageSet, fromMipmap, firstMipmapIndex))
+    eErrorCode loadResult = Load(infile, imageSet, fromMipmap, firstMipmapIndex);
+    if (eErrorCode::SUCCESS != loadResult || imageSet.empty())
     {
-        return eErrorCode::ERROR_READ_FAIL;
+        return loadResult;
     }
-    DVASSERT(imageSet.empty() == false);
 
     const PixelFormatDescriptor& pixelDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(imageSet[0]->format);
     if (!pixelDescriptor.isHardwareSupported)
@@ -97,7 +108,7 @@ eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Imag
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    return WriteFile(fileName, imageSet);
+    return Save(fileName, imageSet);
 }
 
 eErrorCode LibPVRHelperV2::WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
@@ -120,10 +131,10 @@ eErrorCode LibPVRHelperV2::WriteFileAsCubeMap(const FilePath& fileName, const Ve
         }
     }
 
-    return WriteFileAsCubeMap(fileName, imageSet);
+    return SaveCubeMap(fileName, imageSet);
 }
 
-eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet) const
+eErrorCode LibPVRHelperV2::Save(const FilePath& fileName, const Vector<Image*>& imageSet) const
 {
     if (imageSet.empty())
     {
@@ -131,7 +142,7 @@ eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Imag
         return eErrorCode::ERROR_WRITE_FAIL;
     }
 
-    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::GeneratePVRHeader(imageSet);
+    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::GenerateHeader(imageSet);
     if (pvrFile)
     {
         if (PVRFormatHelper::WriteFile(fileName, *pvrFile))
@@ -143,9 +154,35 @@ eErrorCode LibPVRHelperV2::WriteFile(const FilePath& fileName, const Vector<Imag
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-eErrorCode LibPVRHelperV2::WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const
+eErrorCode LibPVRHelperV2::SaveCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const
 {
-    DVASSERT(0);
+    uint32 faceCount = static_cast<uint32>(imageSet.size());
+    if (faceCount != Texture::CUBE_FACE_COUNT)
+    {
+        Logger::Error("Can't save cube images vector due wrong face count: %u of %u", faceCount, Texture::CUBE_FACE_COUNT);
+        return eErrorCode::ERROR_WRITE_FAIL;
+    }
+
+    uint32 mipmapsCount = static_cast<uint32>(imageSet[0].size());
+    for (const Vector<Image*>& faceImageSet : imageSet)
+    {
+        uint32 faceMipmpsCount = static_cast<uint32>(faceImageSet.size());
+        if (faceMipmpsCount == 0 || faceMipmpsCount != mipmapsCount)
+        {
+            Logger::Error("Can't save cube images vector due wrong mip count: %u of %u", faceMipmpsCount, mipmapsCount);
+            return eErrorCode::ERROR_WRITE_FAIL;
+        }
+    }
+
+    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::GenerateCubeHeader(imageSet);
+    if (pvrFile)
+    {
+        if (PVRFormatHelper::WriteFile(fileName, *pvrFile))
+        {
+            return eErrorCode::SUCCESS;
+        }
+    }
+
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
