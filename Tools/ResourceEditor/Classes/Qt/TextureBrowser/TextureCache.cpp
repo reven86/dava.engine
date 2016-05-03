@@ -169,11 +169,15 @@ void TextureCache::tryToPreloadConverted(const DAVA::TextureDescriptor* descript
 
         for (DAVA::Image* image : convertedImages)
         {
-            QImage img = ImageTools::FromDavaImage(image);
-            image->Release();
+            if (image->mipmapLevel == 0)
+            {
+                QImage img = ImageTools::FromDavaImage(image);
+                convertedImageInfo.images.push_back(img);
+            }
 
-            convertedImageInfo.images.push_back(img);
+            image->Release();
         }
+
         setConverted(descriptor, gpu, convertedImageInfo);
     }
 }
