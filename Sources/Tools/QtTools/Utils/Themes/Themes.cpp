@@ -45,10 +45,15 @@ namespace Themes
 {
 eTheme currentTheme;
 bool themesInitialized = false;
-QStringList themesNames = { "classic", "dark" };
-QColor textColor(192, 192, 192);
-QColor disabledTextColor(100, 100, 100);
-QColor windowColor(53, 53, 53);
+QStringList themesNames = { "light", "dark" };
+
+QColor lightTextColor(0, 0, 0);
+QColor lightDisabledTextColor(0, 0, 0, 80);
+QColor lightWindowColor(0xf0, 0xf0, 0xf0);
+
+QColor darkTextColor(192, 192, 192);
+QColor darkDisabledTextColor(100, 100, 100);
+QColor darkWindowColor(53, 53, 53);
 
 void SetupClassicTheme();
 void SetupDarkTheme();
@@ -73,7 +78,7 @@ void InitFromQApplication()
     }
     else
     {
-        currentTheme = Classic;
+        currentTheme = Light;
     }
     SetCurrentTheme(currentTheme);
 }
@@ -104,7 +109,7 @@ void SetCurrentTheme(eTheme theme)
     currentTheme = theme;
     switch (theme)
     {
-    case Classic:
+    case Light:
         SetupClassicTheme();
         break;
     case Dark:
@@ -118,13 +123,40 @@ void SetCurrentTheme(eTheme theme)
 
 void SetupClassicTheme()
 {
-#ifdef Q_OS_MAC
-    QString styleName = "macintosh";
-#else
-    QString styleName = "windowsVista";
-#endif //Q_OS_MAC
-    QStyle* style = QStyleFactory::create(styleName);
-    qApp->setPalette(style->standardPalette());
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
+    QPalette lightPalette;
+    lightPalette.setColor(QPalette::Window, lightWindowColor);
+    lightPalette.setColor(QPalette::WindowText, lightTextColor.lighter(130));
+    lightPalette.setColor(QPalette::Disabled, QPalette::WindowText, lightDisabledTextColor);
+
+    lightPalette.setColor(QPalette::Base, Qt::white);
+    lightPalette.setColor(QPalette::Disabled, QPalette::Base, lightWindowColor);
+
+    lightPalette.setColor(QPalette::AlternateBase, lightWindowColor);
+    lightPalette.setColor(QPalette::ToolTipBase, lightTextColor);
+    lightPalette.setColor(QPalette::ToolTipText, lightTextColor);
+
+    lightPalette.setColor(QPalette::Text, lightTextColor);
+    lightPalette.setColor(QPalette::Disabled, QPalette::Text, lightDisabledTextColor);
+
+    lightPalette.setColor(QPalette::Button, lightWindowColor);
+    lightPalette.setColor(QPalette::ButtonText, lightTextColor.lighter(130));
+    lightPalette.setColor(QPalette::Disabled, QPalette::ButtonText, lightDisabledTextColor);
+
+    lightPalette.setColor(QPalette::BrightText, Qt::red);
+    lightPalette.setColor(QPalette::Link, Qt::blue);
+    lightPalette.setColor(QPalette::Disabled, QPalette::Link, lightDisabledTextColor);
+
+    lightPalette.setColor(QPalette::Highlight, QColor(0x43, 0x8b, 0xbf));
+    lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor);
+    lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, lightWindowColor);
+
+    lightPalette.setColor(QPalette::HighlightedText, lightTextColor);
+    lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
+
+    qApp->setPalette(lightPalette);
+
     qApp->setStyleSheet("");
 }
 
@@ -133,28 +165,28 @@ void SetupDarkTheme()
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
     QPalette darkPalette;
-    darkPalette.setColor(QPalette::Window, windowColor);
-    darkPalette.setColor(QPalette::WindowText, textColor);
+    darkPalette.setColor(QPalette::Window, darkWindowColor);
+    darkPalette.setColor(QPalette::WindowText, darkTextColor);
 
-    darkPalette.setColor(QPalette::Base, windowColor);
-    darkPalette.setColor(QPalette::AlternateBase, windowColor);
-    darkPalette.setColor(QPalette::ToolTipBase, textColor);
-    darkPalette.setColor(QPalette::ToolTipText, textColor);
+    darkPalette.setColor(QPalette::Base, darkWindowColor);
+    darkPalette.setColor(QPalette::AlternateBase, darkWindowColor);
+    darkPalette.setColor(QPalette::ToolTipBase, darkTextColor);
+    darkPalette.setColor(QPalette::ToolTipText, darkTextColor);
 
-    darkPalette.setColor(QPalette::Text, textColor);
-    darkPalette.setColor(QPalette::Disabled, QPalette::Text, disabledTextColor);
+    darkPalette.setColor(QPalette::Text, darkTextColor);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, darkDisabledTextColor);
 
-    darkPalette.setColor(QPalette::Button, windowColor);
-    darkPalette.setColor(QPalette::ButtonText, textColor);
-    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledTextColor);
+    darkPalette.setColor(QPalette::Button, darkWindowColor);
+    darkPalette.setColor(QPalette::ButtonText, darkTextColor);
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkDisabledTextColor);
 
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
-    darkPalette.setColor(QPalette::Disabled, QPalette::Light, windowColor);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkWindowColor);
 
     darkPalette.setColor(QPalette::Highlight, QColor(0x37, 0x63, 0xAD));
-    darkPalette.setColor(QPalette::Inactive, QPalette::Highlight, disabledTextColor);
-    darkPalette.setColor(QPalette::Disabled, QPalette::Highlight, disabledTextColor);
+    darkPalette.setColor(QPalette::Inactive, QPalette::Highlight, darkDisabledTextColor);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Highlight, darkDisabledTextColor);
 
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xc0, 0xc0, 0xc0));
@@ -176,26 +208,26 @@ eTheme GetCurrentTheme()
 
 QColor GetViewLineAlternateColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::lightGray) : QColor(0x3f, 0x3f, 0x46);
+    return currentTheme == Light ? Qt::lightGray : QColor(0x3f, 0x3f, 0x46);
 }
 
 QColor GetChangedPropertyColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::black) : QColor(225, 225, 225);
+    return currentTheme == Light ? Qt::black : Qt::white;
 }
 
 QColor GetPrototypeColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::blue) : QColor("CadetBlue");
+    return currentTheme == Light ? QColor(Qt::blue) : QColor("CadetBlue");
 }
 
 QColor GetStyleSheetNodeColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::darkGreen) : QColor("light green");
+    return currentTheme == Light ? QColor(Qt::darkGreen) : QColor("light green");
 }
 
 QColor GetRulerWidgetBackgroungColor()
 {
-    return currentTheme == Themes::Classic ? QColor(Qt::white) : windowColor;
+    return currentTheme == Light ? lightWindowColor : darkWindowColor;
 }
 };
