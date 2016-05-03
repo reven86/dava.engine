@@ -39,7 +39,7 @@ ApplicationWindow {
     }
     property var history;
     property var historyToSave; //we need this because combobox with sources and history can be different
-    function applyProjectSettings(buildSettings) {
+    function applyProjectSettings(buildSettings) {       
         columnLayoutOutput.needClean = buildSettings.needClean;
         rowLayout_buildFolder.path = buildSettings.buildFolder;
         rowLayout_cmakeFolder.path = buildSettings.cmakePath;
@@ -87,10 +87,6 @@ ApplicationWindow {
             }
         }
 
-        if(!found) {
-            rowLayout_sourceFolder.item.addString(source)
-        }
-
         var newItem = {};
         newItem.source = source
         newItem.needClean = columnLayoutOutput.needClean
@@ -102,6 +98,10 @@ ApplicationWindow {
         historyToSave.unshift(newItem);
         if(found) {
             historyToSave.splice(i, 1);
+        }
+        else{
+            history.push(newItem)
+            rowLayout_sourceFolder.item.addString(source)
         }
         if(historyToSave.length > maxHistoryLength) {
             historyToSave = historyToSave.slice(0, maxHistoryLength);
@@ -222,6 +222,14 @@ ApplicationWindow {
                         placeholderText: qsTr("path to source folder")
                         onTextChanged: {
                             updateOutputString();
+                        }
+                    }
+                    Connections {
+                        target: rowLayout_sourceFolder
+                        onPathChanged: {
+                            var path = fileSystemHelper.FindBuildFolder(rowLayout_sourceFolder.path);
+                            console.log(path);
+                            rowLayout_buildFolder.path = path;
                         }
                     }
                 }

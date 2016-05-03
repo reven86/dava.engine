@@ -565,8 +565,14 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
+set( DAVA_FOLDERS PARENT_SCOPE )
+
 if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
+
+    if( DAVA_FOUND )
+        add_dependencies(  ${DAVA_LIBRARY} FILE_TREE_${PROJECT_NAME} )
+    endif()
 
 endif()
 
