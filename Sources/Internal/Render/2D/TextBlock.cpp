@@ -1040,28 +1040,11 @@ TextBlock* TextBlock::Clone()
 
 DAVA::float32 TextBlock::GetFontSize()
 {
-#if 0
-    if (font != nullptr)
-    {
-        return font->GetSize();
-    }
-    return 0.f;
-#else
     return renderSize;
-#endif
 }
 
 void TextBlock::SetFontSize(float32 newSize)
 {
-#if 0
-    if (font != nullptr)
-    {
-        font->SetSize(newSize);
-        renderSize = newSize;
-        NeedPrepare();
-    }
-#else
     renderSize = newSize;
-#endif
 }
 };
