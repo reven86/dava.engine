@@ -126,7 +126,14 @@ void TextFieldStbImpl::SetText(const WideString& newText)
     {
         SelectAll();
         ignoreKeyPressedDelegate = true;
-        stb->Paste(newText);
+        if (newText.empty())
+        {
+            stb->Cut();
+        }
+        else
+        {
+            stb->Paste(newText);
+        }
         ignoreKeyPressedDelegate = false;
         needRedraw = true;
     }
@@ -770,10 +777,17 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     {
         Vector2 localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
         stb->Click(localPoint - staticTextOffset);
-        if (currentInput->tapCount > 1)
+        if (currentInput->tapCount == 2)
         {
             stb->SendKey(StbTextEditBridge::KEY_WORDLEFT);
             stb->SendKey(StbTextEditBridge::KEY_WORDRIGHT | StbTextEditBridge::KEY_SHIFT_MASK);
+        }
+        else if (currentInput->tapCount > 2)
+        {
+            uint32 length = GetTextLength();
+            stb->SetSelectionStart(0);
+            stb->SetSelectionEnd(length);
+            SetCursorPos(length);
         }
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
