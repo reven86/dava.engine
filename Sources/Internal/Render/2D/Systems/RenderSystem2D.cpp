@@ -184,20 +184,39 @@ void RenderSystem2D::BeginFrame()
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
     currentPacketListHandle = packetList2DHandle;
 
-    rhi::BeginRenderPass(pass2DHandle);
-    rhi::BeginPacketList(currentPacketListHandle);
+    if (pass2DHandle != rhi::InvalidHandle)
+    {
+        rhi::BeginRenderPass(pass2DHandle);
+        rhi::BeginPacketList(currentPacketListHandle);
+    }
+    else
+    {
+        pass2DHandle = rhi::HRenderPass(rhi::InvalidHandle);
+        packetList2DHandle = rhi::HPacketList(rhi::InvalidHandle);
+        currentPacketListHandle = rhi::HPacketList(rhi::InvalidHandle);
+    }
 
     Setup2DMatrices();
 }
 
 void RenderSystem2D::EndFrame()
 {
-    Flush();
+    if (pass2DHandle != rhi::InvalidHandle)
+    {
+        Flush();
+        prevFrameErrorsFlags = currFrameErrorsFlags;
+        currFrameErrorsFlags = 0;
+
+        rhi::EndPacketList(currentPacketListHandle);
+        rhi::EndRenderPass(pass2DHandle);
+    }
+
     prevFrameErrorsFlags = currFrameErrorsFlags;
     currFrameErrorsFlags = 0;
 
-    rhi::EndPacketList(currentPacketListHandle);
-    rhi::EndRenderPass(pass2DHandle);
+    pass2DHandle = rhi::HRenderPass(rhi::InvalidHandle);
+    packetList2DHandle = rhi::HPacketList(rhi::InvalidHandle);
+    currentPacketListHandle = rhi::HPacketList(rhi::InvalidHandle);
 }
 
 const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetActiveTargetDescriptor()
@@ -450,7 +469,7 @@ void RenderSystem2D::Flush()
         return;
     }
 
-    if (currentPacket.primitiveCount > 0)
+    if (currentPacketListHandle != rhi::InvalidHandle && currentPacket.primitiveCount > 0)
     {
         rhi::AddPacket(currentPacketListHandle, currentPacket);
 
@@ -491,7 +510,9 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
         packet.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
         packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
     }
-    rhi::AddPacket(currentPacketListHandle, packet);
+
+    if (currentPacketListHandle != rhi::InvalidHandle)
+        rhi::AddPacket(currentPacketListHandle, packet);
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
     ++Renderer::GetRenderStats().packets2d;
@@ -689,7 +710,8 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     {
         if (currentPacket.primitiveCount > 0)
         {
-            rhi::AddPacket(currentPacketListHandle, currentPacket);
+            if (currentPacketListHandle != rhi::InvalidHandle)
+                rhi::AddPacket(currentPacketListHandle, currentPacket);
             currentPacket.primitiveCount = 0;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)

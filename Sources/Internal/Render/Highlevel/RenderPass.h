@@ -73,7 +73,7 @@ protected:
     void DrawLayers(Camera* camera);
     void DrawDebug(Camera* camera, RenderSystem* renderSystem);
 
-    void BeginRenderPass();
+    bool BeginRenderPass();
     void EndRenderPass();
 
     Vector<RenderLayer*> renderLayers;
