@@ -77,6 +77,8 @@ DAVA_TESTCLASS (PackManagerTest)
         FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/test.db");
         FilePath folderWithDownloadedPacks("~doc:/PackManagerTest/packs/");
 
+        // every time clear directory to download once again
+        FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
         FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
         String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/");
