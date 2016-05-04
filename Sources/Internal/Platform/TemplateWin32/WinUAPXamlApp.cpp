@@ -247,6 +247,7 @@ void WinUAPXamlApp::CaptureTextBox(Windows::UI::Xaml::Controls::Control ^ contro
     if (pressedEventArgs && control->CapturePointer(pressedEventArgs->Pointer))
     {
         OnSwapChainPanelPointerReleased(this, pressedEventArgs); // send pointer release event because we will'not receive this event after capturing
+        mousePointer = nullptr;
     }
 }
 
