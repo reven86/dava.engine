@@ -152,7 +152,7 @@ SceneEditor2::SceneEditor2()
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(DAVA::Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     editorStatisticsSystem = new EditorStatisticsSystem(this);
-    AddSystem(editorStatisticsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
+    AddSystem(editorStatisticsSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
@@ -193,12 +193,7 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         commandStack->SetClean(true);
     }
 
-    auto removedObjectsCallback = [this](DAVA::Entity* entity, DAVA::RenderObject* ro)
-    {
-        editorStatisticsSystem->RemoveComponent(entity, GetRenderComponent(entity));
-    };
-
-    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this, removedObjectsCallback);
+    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);

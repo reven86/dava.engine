@@ -509,11 +509,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
             CheckAndMarkSolid(loadedEntity);
 
-            auto removedObjectsCallback = [sceneEditor](DAVA::Entity* entity, DAVA::RenderObject* ro)
-            {
-                sceneEditor->editorStatisticsSystem->RemoveComponent(entity, GetRenderComponent(entity));
-            };
-            SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(loadedEntity, removedObjectsCallback);
+            SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(loadedEntity);
         }
     }
     else
