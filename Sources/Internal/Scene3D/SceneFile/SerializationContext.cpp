@@ -104,19 +104,21 @@ void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup* group, i
     foundGroup->second.onScene = true;
 }
 
-void SerializationContext::LoadPolygonGroupData(File* file)
+bool SerializationContext::LoadPolygonGroupData(File* file)
 {
+    bool resultLoaded = true;
     bool cutUnusedStreams = QualitySettingsSystem::Instance()->GetAllowCutUnusedVertexStreams();
     for (Map<PolygonGroup *, PolygonGroupLoadInfo>::iterator it = loadedPolygonGroups.begin(), e = loadedPolygonGroups.end(); it != e; ++it)
     {
         if (it->second.onScene || !cutUnusedStreams)
         {
-            file->Seek(it->second.filePos, File::SEEK_FROM_START);
+            resultLoaded &= file->Seek(it->second.filePos, File::SEEK_FROM_START);
             KeyedArchive* archive = new KeyedArchive();
-            archive->Load(file);
+            resultLoaded &= archive->Load(file);
             it->first->LoadPolygonData(archive, this, it->second.requestedFormat, cutUnusedStreams);
             SafeRelease(archive);
         }
     }
+    return resultLoaded;
 }
 }

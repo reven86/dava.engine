@@ -54,6 +54,7 @@ public:
     static Q_INVOKABLE bool IsDirExists(const QString& dirPath);
     Q_INVOKABLE bool IsFileExists(const QString& filePath) const;
     Q_INVOKABLE QString FindCMakeBin(const QString& pathToDavaFramework, const QString& frameworkDirName) const;
+    Q_INVOKABLE QString FindBuildFolder(const QString& sourceFolder) const;
     Q_INVOKABLE QString GetAdditionalCMakePath() const;
     static eErrorCode ClearFolderIfKeyFileExists(const QString& buildFolder, const QString& keyFile);
 };
