@@ -48,7 +48,6 @@ include_directories   ( "Classes/Models" )
 add_definitions       (
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
--DQT_NETWORK_LIB
 -DQT_CORE_LIB
 -DDAVA_QT
 -DQT_HAVE_MMX

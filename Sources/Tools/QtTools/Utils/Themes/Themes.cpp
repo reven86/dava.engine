@@ -34,6 +34,7 @@
 #include <QApplication>
 #include <QStyleFactory>
 #include <QSettings>
+#include <QFont>
 
 namespace Themes_namespace
 {
@@ -47,19 +48,27 @@ eTheme currentTheme;
 bool themesInitialized = false;
 QStringList themesNames = { "light", "dark" };
 
-QColor lightTextColor(0, 0, 0);
-QColor lightDisabledTextColor(0, 0, 0, 80);
-QColor lightWindowColor(0xf0, 0xf0, 0xf0);
+QColor lightTextColor(Qt::black);
+QColor lightDisabledTextColor(0x0, 0x0, 0x0, 0x50);
+QColor lightWindowColor(0xF0, 0xF0, 0xF0);
 
-QColor darkTextColor(225, 225, 225);
-QColor darkDisabledTextColor(100, 100, 100);
-QColor darkWindowColor(50, 50, 50);
+QColor darkTextColor(0xF2, 0xF2, 0xF2);
+QColor darkDisabledTextColor(0x75, 0x75, 0x75);
+QColor darkWindowColor(0x32, 0x32, 0x32);
 
 void SetupClassicTheme();
 void SetupDarkTheme();
 
 void InitFromQApplication()
 {
+#ifdef Q_OS_MAC
+    //this is default font on MAC OS X
+    qApp->setFont(QFont(".SF NS Text", 13));
+#elif Q_OS_WIN
+    qApp->setFont(QFont("helvetica", 13));
+#else
+#error "unsupported OS"
+#endif //platform
     themesInitialized = true;
     qAddPostRoutine([]() {
         QSettings settings(QApplication::organizationName(), QApplication::applicationName());
@@ -127,7 +136,7 @@ void SetupClassicTheme()
 
     QPalette lightPalette;
     lightPalette.setColor(QPalette::Window, lightWindowColor);
-    lightPalette.setColor(QPalette::WindowText, QColor(37, 37, 37));
+    lightPalette.setColor(QPalette::WindowText, QColor(0x25, 0x25, 0x25));
     lightPalette.setColor(QPalette::Disabled, QPalette::WindowText, lightDisabledTextColor);
 
     lightPalette.setColor(QPalette::Base, Qt::white);
@@ -148,7 +157,7 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::Link, Qt::blue);
     lightPalette.setColor(QPalette::Disabled, QPalette::Link, lightDisabledTextColor);
 
-    lightPalette.setColor(QPalette::Highlight, QColor(0x43, 0x8b, 0xbf));
+    lightPalette.setColor(QPalette::Highlight, QColor(0x43, 0x8B, 0xBF));
     lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor);
     lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, lightWindowColor);
 
@@ -181,7 +190,7 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkDisabledTextColor);
 
     darkPalette.setColor(QPalette::BrightText, Qt::red);
-    darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
+    darkPalette.setColor(QPalette::Link, QColor(0x2A, 0x82, 0xDA));
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkWindowColor);
 
     darkPalette.setColor(QPalette::Highlight, QColor(0x37, 0x63, 0xAD));
@@ -189,7 +198,7 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::Disabled, QPalette::Highlight, darkDisabledTextColor);
 
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
-    darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xc0, 0xc0, 0xc0));
+    darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xC0, 0xC0, 0xC0));
 
     qApp->setPalette(darkPalette);
 
@@ -208,12 +217,12 @@ eTheme GetCurrentTheme()
 
 QColor GetViewLineAlternateColor()
 {
-    return currentTheme == Light ? Qt::lightGray : QColor(0x3f, 0x3f, 0x46);
+    return currentTheme == Light ? Qt::lightGray : QColor(0x3F, 0x3F, 0x46);
 }
 
 QColor GetChangedPropertyColor()
 {
-    return currentTheme == Light ? Qt::black : Qt::white;
+    return currentTheme == Light ? Qt::black : QColor(0xE3, 0xE1, 0x8A);
 }
 
 QColor GetPrototypeColor()
