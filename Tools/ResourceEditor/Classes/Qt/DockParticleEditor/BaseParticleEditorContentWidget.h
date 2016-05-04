@@ -63,8 +63,6 @@ protected:
     int ConvertFromPlaybackSpeedToSliderValue(DAVA::float32 playbackSpeed);
     float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
-    void hideEvent(QHideEvent*) override;
-
 private:
     SceneEditor2* activeScene = nullptr;
     DAVA::ParticleEffectComponent* effect = nullptr;

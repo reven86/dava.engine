@@ -60,10 +60,3 @@ float BaseParticleEditorContentWidget::ConvertFromSliderValueToPlaybackSpeed(int
     uint scaleFactor = (1 << sliderValue);
     return PARTICLE_EMITTER_MIN_PLAYBACK_SPEED * scaleFactor;
 }
-
-void BaseParticleEditorContentWidget::hideEvent(QHideEvent*)
-{
-    SetEmitterInstance(nullptr);
-    SetEffect(nullptr);
-    SetActiveScene(nullptr);
-}
