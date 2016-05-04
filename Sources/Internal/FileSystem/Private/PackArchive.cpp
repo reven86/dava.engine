@@ -145,7 +145,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
                                  [](const ResourceArchive::FileInfo& first,
                                     const ResourceArchive::FileInfo& second)
                                  {
-                                     return CompareCaseInsensitive(first.relativeFilePath, second.relativeFilePath) < 0;
+                                     return std::strcmp(first.relativeFilePath.c_str(), second.relativeFilePath.c_str()) < 0;
                                  });
     if (!result)
     {
