@@ -42,10 +42,11 @@ class ProcessWrapper : public QObject
 
 public:
     explicit ProcessWrapper(QObject* parent = 0);
-    ~ProcessWrapper();
 
     Q_INVOKABLE void LaunchCmake(const QString& command, bool needClean, const QString& buildFolder);
+    Q_INVOKABLE void FindAndOpenProjectFile(const QString& buildFolder);
     Q_INVOKABLE void BlockingStopAllTasks();
+    Q_INVOKABLE void KillProcess();
     bool IsRunning() const;
 
 signals:

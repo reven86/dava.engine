@@ -17,13 +17,9 @@ RowLayout {
     onPathChanged: loader.item.text = path
     Layout.minimumWidth: label.width + button.width + image.width + spacing * 3 + 50
     Layout.minimumHeight: Math.max(label.height, button.height, image.height, loader.item.height)
-    function isPathValid(path) {
-        if(selectFolders) {
-            return fileSystemHelper.IsDirExists(path);
-        } else {
-            return fileSystemHelper.IsFileExists(path);
-        }
-    }
+    property bool pathIsValid: selectFolders
+                               ? fileSystemHelper.IsDirExists(loader.item.text)
+                               : fileSystemHelper.IsFileExists(loader.item.text)
 
     Label {
         id: label
@@ -70,6 +66,6 @@ RowLayout {
         id: image
         width: height
         height: parent.height
-        source: "qrc:///Icons/" + (isPathValid(loader.item.text) ? "ok" : "error") + ".png"
+        source: "qrc:///Icons/" + (pathIsValid ? "ok" : "error") + ".png"
     }
 }

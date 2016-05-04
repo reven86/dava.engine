@@ -33,6 +33,9 @@
 #include <QTimer>
 #include <QRegularExpression>
 #include <QDir>
+#include <QUrl>
+#include <QDesktopServices>
+#include <QDebug>
 
 ProcessWrapper::ProcessWrapper(QObject* parent)
     : QObject(parent)
@@ -41,10 +44,6 @@ ProcessWrapper::ProcessWrapper(QObject* parent)
     connect(&process, &QProcess::readyReadStandardError, this, &ProcessWrapper::OnReadyReadStandardError);
     connect(&process, &QProcess::stateChanged, this, &ProcessWrapper::OnProcessStateChanged);
     connect(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error), this, &ProcessWrapper::OnProcessError);
-}
-
-ProcessWrapper::~ProcessWrapper()
-{
 }
 
 void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const QString& buildFolder)
@@ -56,36 +55,64 @@ void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const Q
     }
 }
 
+void ProcessWrapper::FindAndOpenProjectFile(const QString& buildFolder)
+{
+    QString projectExt =
+#if defined(Q_OS_WIN)
+    ".sln";
+#elif defined(Q_OS_MAC)
+    ".xcodeproj";
+#else 
+#error "unsupported platform"
+#endif //platform
+    QString path = FileSystemHelper::FindFileOrFolder(buildFolder, projectExt);
+    if (path.startsWith('/'))
+    {
+        path.remove(0, 1);
+    }
+    path.prepend("file:///");
+    if (path.isEmpty())
+    {
+        emit processStandardError(tr("Can not find project file!"));
+    }
+    if (!QDesktopServices::openUrl(QUrl(path)))
+    {
+        emit processStandardError(tr("Can not open project file!"));
+    }
+}
+
 void ProcessWrapper::BlockingStopAllTasks()
 {
-    int startTasksSize = taskQueue.size();
+    taskQueue.clear();
+    KillProcess();
     QTimer performTimer;
     performTimer.setInterval(100);
     performTimer.setSingleShot(false);
-    QProgressDialog progressDialog(tr("Finishing tasks: %1").arg(startTasksSize + 1), tr("Cancel"), 0, startTasksSize);
-    connect(this, &ProcessWrapper::processStandardOutput, &progressDialog, &QProgressDialog::setLabelText);
-    connect(this, &ProcessWrapper::processStandardError, &progressDialog, &QProgressDialog::setLabelText);
-    connect(&performTimer, &QTimer::timeout, [&progressDialog, this, startTasksSize]() {
-        if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
+    QProgressDialog progressDialog(tr("Finishing tasks"), tr("Exit"), 0, 0);
+    connect(&performTimer, &QTimer::timeout, [&progressDialog, this]() {
+        if (process.state() == QProcess::NotRunning)
         {
             progressDialog.accept();
         }
         else
         {
-            progressDialog.setValue(startTasksSize - taskQueue.size());
             if (progressDialog.wasCanceled())
             {
-                taskQueue.clear();
-                process.kill();
+                exit(0);
             }
         }
     });
-    if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
+    if (process.state() == QProcess::NotRunning)
     {
         return;
     }
     performTimer.start();
     progressDialog.exec();
+}
+
+void ProcessWrapper::KillProcess()
+{
+    process.kill();
 }
 
 bool ProcessWrapper::IsRunning() const
@@ -96,6 +123,20 @@ bool ProcessWrapper::IsRunning() const
 void ProcessWrapper::OnReadyReadStandardOutput()
 {
     QString text = process.readAllStandardOutput();
+    //    QStringList lines = text.split('\n');
+    //    for(QStringList::iterator iter = lines.begin(); iter != lines.end(); ++iter)
+    //    {
+    //        QString &subStr = *iter;
+    //        int index = subStr.indexOf('\n');
+    //        const int maxStrLen = 200;
+    //        const int size = subStr.size();
+    //
+    //        if(index > maxStrLen || (index == -1 && size > maxStrLen))
+    //        {
+    //            subStr.replace(maxStrLen, size - maxStrLen, "...");
+    //        }
+    //    }
+    //    text = lines.join('\n');
     emit processStandardOutput(text);
 }
 
@@ -164,22 +205,25 @@ void ProcessWrapper::StartNextCommand()
     }
     const Task& task = taskQueue.dequeue();
     const auto& buildFolder = task.buildFolder;
-    if (!FileSystemHelper::IsDirExists(buildFolder))
+    if (!buildFolder.isEmpty())
     {
-        if (FileSystemHelper::MkPath(buildFolder))
+        if (!FileSystemHelper::IsDirExists(buildFolder))
         {
-            emit processStandardOutput(tr("created build folder %1").arg(buildFolder));
+            if (FileSystemHelper::MkPath(buildFolder))
+            {
+                emit processStandardOutput(tr("created build folder %1").arg(buildFolder));
+            }
+            else
+            {
+                emit processStandardError(tr("can not create build folder %1").arg(buildFolder));
+                QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
+                return;
+            }
         }
-        else
+        if (task.needClean)
         {
-            emit processStandardError(tr("can not create build folder %1").arg(buildFolder));
-            QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
-            return;
+            CleanBuildFolder(task.buildFolder);
         }
-    }
-    if (task.needClean)
-    {
-        CleanBuildFolder(task.buildFolder);
     }
     Q_ASSERT(process.state() == QProcess::NotRunning);
     process.start(task.command);

@@ -27,6 +27,10 @@ ApplicationWindow {
             }
         }
     }
+    function processText(text) {
+        return text.replace(/(\r\n|\r|\n)+$/g, "").replace(/(\r\n|\r|\n)+/g, displayHtmlFormat ? "<br>" : "\n");
+    }
+    property bool displayHtmlFormat: true
     Settings {
         id: settings
         property int mainWrapperWidth: 400
@@ -249,7 +253,7 @@ ApplicationWindow {
                     Connections {
                         target: rowLayout_sourceFolder
                         onPathChanged: {
-                            var path = fileSystemHelper.FindBuildFolder(rowLayout_sourceFolder.path);
+                            var path = fileSystemHelper.FindFileOrFolder(rowLayout_sourceFolder.path, "build");
                             rowLayout_buildFolder.path = path;
                         }
                     }
@@ -340,7 +344,12 @@ ApplicationWindow {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
                     onCmakeLaunched: {
+                        displayHtmlFormat = true;
                         addProjectToHistory();
+                        textArea_processText.text = "";
+                    }
+                    onBuildStarted: {
+                        displayHtmlFormat = false;
                         textArea_processText.text = "";
                     }
                 }
@@ -349,17 +358,28 @@ ApplicationWindow {
 
         TextArea {
             id: textArea_processText
-            textFormat: TextEdit.RichText
+            textFormat: displayHtmlFormat ? TextEdit.RichText : TextEdit.PlainText
             readOnly: true
-            function toHTML(text) {
-                return text.replace(/(\r\n|\r|\n)+$/g, "").replace(/(\r\n|\r|\n)+/g, "<br>");
-            }
+
             Connections {
                 target: processWrapper
-                onProcessStateChanged: textArea_processText.append("<font color=\"DarkGreen\">" + text + "</font>");
-                onProcessErrorChanged: textArea_processText.append("<font color=\"DarkRed\">" + text + "</font>");
-                onProcessStandardOutput: textArea_processText.append(textArea_processText.toHTML(text));
-                onProcessStandardError: textArea_processText.append("<font color=\"DarkRed\">" + textArea_processText.toHTML(text) + "</font>");
+                onProcessStateChanged: textArea_processText.append(displayHtmlFormat
+                                                                   ? "<font color=\"DarkGreen\">" + text + "</font>"
+                                                                   : "****new process state: " + text + " ****");
+                onProcessErrorChanged: textArea_processText.append(displayHtmlFormat
+                                                                   ? "<font color=\"DarkRed\">" + text + "</font>"
+                                                                   : "****process error occurred!: " + text + " ****");
+                onProcessStandardOutput: {
+                    var maxLen = 150;
+                    if(!displayHtmlFormat && text.length > maxLen) {
+                        textArea_processText.append(processText(text.substring(0, maxLen) + "...\n"));
+                    } else {
+                        textArea_processText.append(processText(text));
+                    }
+                }
+                onProcessStandardError: textArea_processText.append(displayHtmlFormat
+                                                                    ? "<font color=\"DarkRed\">" + processText(text) + "</font>"
+                                                                    : processText(text));
             }
         }
     }

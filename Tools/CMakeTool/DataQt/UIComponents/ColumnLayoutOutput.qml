@@ -6,9 +6,11 @@ import Cpp.Utils 1.0
 Item {
     id: wrapper
     property alias outputText: textField_output.text
-    Layout.minimumHeight: label.height +  textField_output.height + rowLayout.minimumHeight + rowLayout_output.spacing * 2
+    Layout.minimumHeight: label.height +  textField_output.height + rowLayout.minimumHeight + rowLayout_output.spacing * 3 + openProjectButton.height
+    Layout.minimumWidth: rowLayout.minimumWidth
     property var outputComplete;
     signal cmakeLaunched();
+    signal buildStarted();
     property alias needClean: checkBox_clean.checked
 
     ColumnLayout {
@@ -28,6 +30,11 @@ Item {
         RowLayout {
             id: rowLayout
             property int minimumHeight: Math.max(button_runCmake.height, checkBox_clean.height)
+            property int minimumWidth: checkBox_clean.width + button_runCmake.width + button_runBuild.width + stopButton.width + spacing * 4
+            CheckBox {
+                id: checkBox_clean
+                text: qsTr("clean build folder");
+            }
             Button {
                 id: button_runCmake
                 iconSource: "qrc:///Icons/run.png"
@@ -38,11 +45,40 @@ Item {
                     processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))
                 }
             }
-            CheckBox {
-                id: checkBox_clean
-                text: qsTr("clean build folder");
+            Button {
+                id: button_runBuild
+                iconSource: "qrc:///Icons/build.png"
+                text: qsTr("run build")
+                enabled: !processWrapper.running
+                onClicked: {
+                    buildStarted()
+                    var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
+                    var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
+                    processWrapper.LaunchCmake(cmakePath + " --build " + buildPath, false, "")
+                }
+            }
+            Button {
+                id: stopButton
+                iconSource: "qrc:///Icons/stop.png"
+                tooltip: qsTr("stop process");
+                enabled: processWrapper.running
+                onClicked: {
+                    processWrapper.KillProcess();
+                }
             }
         }
+        Button {
+            id: openProjectButton
+            iconSource: "qrc:///Icons/openfolder.png"
+            tooltip: qsTr("open project file")
+            enabled: rowLayout_buildFolder.pathIsValid
+            text: qsTr("Open project file");
+            onClicked:  {
+                processWrapper.FindAndOpenProjectFile(rowLayout_buildFolder.path);
+            }
+        }
+
+
         FileSystemHelper {
             id: fileSystemHelper
         }

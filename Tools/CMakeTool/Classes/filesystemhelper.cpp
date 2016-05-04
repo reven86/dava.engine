@@ -111,9 +111,9 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     return QDir::fromNativeSeparators(cmakePath);
 }
 
-QString FileSystemHelper::FindBuildFolder(const QString& sourceFolder) const
+QString FileSystemHelper::FindFileOrFolder(const QString& sourceFolder, const QString& target)
 {
-    if (sourceFolder.isEmpty())
+    if (sourceFolder.isEmpty() || target.isEmpty())
     {
         return "";
     }
@@ -125,12 +125,13 @@ QString FileSystemHelper::FindBuildFolder(const QString& sourceFolder) const
         QFileInfo fileInfo(it.fileInfo());
         if (fileInfo.isDir())
         {
-            if (fileInfo.fileName().contains("build", Qt::CaseInsensitive))
+            if (fileInfo.fileName().contains(target, Qt::CaseInsensitive))
             {
                 return fileInfo.absoluteFilePath();
             }
         }
     }
+    return "";
 }
 
 FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString& keyFile)
@@ -144,6 +145,11 @@ FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const 
     {
         return FOLDER_NOT_EXISTS;
     }
+    if (dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries).count() == 0)
+    {
+        return NO_ERRORS;
+    }
+
     if (!dir.exists(keyFile))
     {
         return FOLDER_NOT_CONTAIN_KEY_FILE;
