@@ -61,11 +61,12 @@ void SetupDarkTheme();
 
 void InitFromQApplication()
 {
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC)
     //this is default font on MAC OS X
     qApp->setFont(QFont(".SF NS Text", 13));
-#elif Q_OS_WIN
-    qApp->setFont(QFont("helvetica", 13));
+#elif defined(Q_OS_WIN)
+    //this is default font on Windows
+    qApp->setFont(QFont("MS Shell Dlg 2", 8));
 #else
 #error "unsupported OS"
 #endif //platform
