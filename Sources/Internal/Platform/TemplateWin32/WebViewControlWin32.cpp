@@ -1093,7 +1093,7 @@ void WebViewControl::SetRenderToTexture(bool value)
 
 void WebViewControl::Initialize(const Rect& rect)
 {
-    CoreWin32PlatformBase* core = static_cast<CoreWin32PlatformBase*>(Core::Instance());
+    CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     DVASSERT(core);
 
     int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;
