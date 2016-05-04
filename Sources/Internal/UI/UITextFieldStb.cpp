@@ -48,8 +48,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-static Vector2 TEXT_OFFSET_CHECK_DELTA = Vector2(30.f, 30.f);
-static Vector2 TEXT_OFFSET_MOVE_DELTA = Vector2(60.f, 60.f);
 static float32 DEFAULT_CURSOR_WIDTH = 1.f;
 
 static Vector2 TransformInputPoint(const Vector2& inputPoint, const Vector2& controlAbsPosition, const Vector2& controlScale)
@@ -157,6 +155,22 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
         UpdateSelection(stb->GetSelectionStart(), stb->GetSelectionEnd());
         UpdateCursor(stb->GetCursorPosition(), stb->IsInsertMode());
         UpdateOffset(cursorRect);
+
+        // Fix cursor position for multiline if end of some line contains many
+        // spaces over control size (same behavior in MS Word)
+        if (!stb->IsSingleLineMode())
+        {
+            const Vector2& controlSize = control->GetSize();
+            if (cursorRect.x + DEFAULT_CURSOR_WIDTH > controlSize.x)
+            {
+                cursorRect.dx = DEFAULT_CURSOR_WIDTH;
+                cursorRect.x = controlSize.x - cursorRect.dx - 1.f;
+            }
+            else if (cursorRect.x + cursorRect.dx > controlSize.x)
+            {
+                cursorRect.dx = controlSize.x - cursorRect.x - 1.f;
+            }
+        }
     }
     else if (showCursor)
     {
@@ -529,16 +543,6 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
             r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
             r.x += line.xoffset;
         }
-
-        if (r.x + DEFAULT_CURSOR_WIDTH > control->GetSize().x)
-        {
-            r.dx = DEFAULT_CURSOR_WIDTH;
-            r.x = control->GetSize().x - r.dx;
-        }
-        else if (r.x + r.dx > control->GetSize().x)
-        {
-            r.dx = control->GetSize().x - r.x;
-        }
     }
     else
     {
@@ -577,21 +581,19 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
 {
     const Vector2& controlSize = control->GetSize();
     const Vector2& textSize = staticText->GetTextSize();
+    const Vector2 offsetMoveDelta = controlSize * 0.25f;
+
     if (controlSize.dx < textSize.dx)
     {
-        float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA.x, textSize.dx - controlSize.dx);
-        if (visibleRect.x < TEXT_OFFSET_CHECK_DELTA.x && staticTextOffset.x < 0.f) // Left
+        if (visibleRect.x < 0.f)
         {
-            staticTextOffset.x = std::min(0.f, staticTextOffset.x + delta);
+            staticTextOffset.x += -visibleRect.x + offsetMoveDelta.x;
         }
-        else if (visibleRect.x + visibleRect.dx > controlSize.dx - TEXT_OFFSET_CHECK_DELTA.x) // Right
+        else if (visibleRect.x + visibleRect.dx > controlSize.dx)
         {
-            staticTextOffset.x = std::max(controlSize.dx - textSize.dx - visibleRect.dx - 1.0f, staticTextOffset.x - delta - visibleRect.dx - 1.f);
+            staticTextOffset.x += controlSize.dx - visibleRect.x - visibleRect.dx - offsetMoveDelta.x;
         }
-        else if (staticTextOffset.x + textSize.dx + visibleRect.dx < controlSize.dx) // Delete characters / reduce text width
-        {
-            staticTextOffset.x = std::min(0.f, controlSize.x - textSize.dx - visibleRect.dx - 1.0f);
-        }
+        staticTextOffset.x = std::max(std::min(0.f, staticTextOffset.x), controlSize.dx - textSize.dx - visibleRect.dx - 1.f);
     }
     else
     {
@@ -600,19 +602,15 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
 
     if (controlSize.dy < textSize.dy)
     {
-        float32 delta = std::min(TEXT_OFFSET_MOVE_DELTA.y, textSize.dy - controlSize.dy);
-        if (visibleRect.y < TEXT_OFFSET_CHECK_DELTA.y && staticTextOffset.y < 0.f) // Up
+        if (visibleRect.y < 0.f)
         {
-            staticTextOffset.y = std::min(0.f, staticTextOffset.y + delta);
+            staticTextOffset.y += -visibleRect.y + offsetMoveDelta.y;
         }
-        else if (visibleRect.y + visibleRect.dy > controlSize.dy - TEXT_OFFSET_CHECK_DELTA.y) // Down
+        else if (visibleRect.y + visibleRect.dy > controlSize.dy)
         {
-            staticTextOffset.y = std::max(controlSize.dy - textSize.dy - visibleRect.dy - 1.0f, staticTextOffset.y - delta - visibleRect.dy - 1.f);
+            staticTextOffset.y += controlSize.dy - visibleRect.y - visibleRect.dy - offsetMoveDelta.y;
         }
-        else if (staticTextOffset.y + textSize.dy + visibleRect.dy < controlSize.dy) // Delete line / reduce text height
-        {
-            staticTextOffset.y = std::min(0.f, controlSize.y - textSize.dy - visibleRect.dy - 1.0f);
-        }
+        staticTextOffset.y = std::max(std::min(0.f, staticTextOffset.y), controlSize.dy - textSize.dy - 1.f);
     }
     else
     {
@@ -644,7 +642,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         bool isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
         bool isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
 
-        if (currentInput->key == Key::ENTER && !isAlt)
+        if ((currentInput->key == Key::ENTER || currentInput->key == Key::NUMPADENTER) && !isAlt)
         {
             if (control->GetDelegate())
             {
