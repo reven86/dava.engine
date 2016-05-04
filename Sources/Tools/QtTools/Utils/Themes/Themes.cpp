@@ -144,7 +144,7 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::Disabled, QPalette::Base, lightWindowColor);
 
     lightPalette.setColor(QPalette::AlternateBase, lightWindowColor);
-    lightPalette.setColor(QPalette::ToolTipBase, lightTextColor);
+    lightPalette.setColor(QPalette::ToolTipBase, lightWindowColor);
     lightPalette.setColor(QPalette::ToolTipText, lightTextColor);
 
     lightPalette.setColor(QPalette::Text, lightTextColor);
@@ -180,7 +180,7 @@ void SetupDarkTheme()
 
     darkPalette.setColor(QPalette::Base, darkWindowColor.darker(130));
     darkPalette.setColor(QPalette::AlternateBase, darkWindowColor);
-    darkPalette.setColor(QPalette::ToolTipBase, darkTextColor);
+    darkPalette.setColor(QPalette::ToolTipBase, darkWindowColor);
     darkPalette.setColor(QPalette::ToolTipText, darkTextColor);
 
     darkPalette.setColor(QPalette::Text, darkTextColor);
