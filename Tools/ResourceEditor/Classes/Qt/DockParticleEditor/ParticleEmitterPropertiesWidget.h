@@ -42,7 +42,7 @@
 #include <QSlider>
 #include <QCheckBox>
 
-class ParticleEmitterPropertiesWidget : public QWidget, public BaseParticleEditorContentWidget
+class ParticleEmitterPropertiesWidget : public BaseParticleEditorContentWidget
 {
     Q_OBJECT
 
@@ -53,10 +53,10 @@ public:
               bool updateMinimize, bool needUpdateTimeLimits = true);
     void Update();
 
-    virtual bool eventFilter(QObject* o, QEvent* e);
+    bool eventFilter(QObject* o, QEvent* e) override;
 
-    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps);
+    void StoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
+    void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
 
     // Accessors to timelines.
     TimeLineWidget* GetEmitterRadiusTimeline()

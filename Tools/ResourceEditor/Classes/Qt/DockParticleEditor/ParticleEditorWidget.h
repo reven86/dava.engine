@@ -74,7 +74,6 @@ private:
         MODE_FORCE
     };
 
-    void DeleteOldWidget();
     void UpdateParticleEditorWidgets();
 
     // Handle the "Emitter Selected" notification for different cases.

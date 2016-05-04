@@ -66,8 +66,7 @@ const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[] =
 };
 
 EmitterLayerWidget::EmitterLayerWidget(QWidget* parent)
-    : QWidget(parent)
-    , BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainBox = new QVBoxLayout;
     this->setLayout(mainBox);
@@ -460,8 +459,8 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent
         return;
 
     layer = layer_;
-    effect = effect_;
 
+    SetEffect(effect_);
     SetEmitterInstance(instance_);
     SetActiveScene(scene);
     Update(updateMinimized);
@@ -715,15 +714,15 @@ void EmitterLayerWidget::OnValueChanged()
                          static_cast<DAVA::float32>(pivotPointXSpinBox->value()),
                          static_cast<DAVA::float32>(pivotPointYSpinBox->value()));
 
-    DVASSERT(activeScene);
-    activeScene->Exec(std::move(updateLayerCmd));
-    activeScene->MarkAsChanged();
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(std::move(updateLayerCmd));
+    GetActiveScene()->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
     {
-        if (!effect->IsStopped())
-            effect->Restart(true);
+        if (!GetEffect()->IsStopped())
+            GetEffect()->Restart(true);
     }
     emit ValueChanged();
 }
@@ -736,8 +735,8 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     const DAVA::eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
     const DAVA::FilePath spritePath(spritePathLabel->text().toStdString());
 
-    DVASSERT(activeScene);
-    activeScene->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
 
     UpdateLayerSprite();
 
@@ -748,6 +747,7 @@ void EmitterLayerWidget::OnLodsChanged()
 {
     if (blockSignals)
         return;
+
     DAVA::Vector<bool> lods;
     lods.resize(DAVA::LodComponent::MAX_LOD_LAYERS, true);
     for (DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
@@ -755,8 +755,8 @@ void EmitterLayerWidget::OnLodsChanged()
         lods[i] = layerLodsCheckBox[i]->isChecked();
     }
 
-    activeScene->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
-    activeScene->MarkAsChanged();
+    GetActiveScene()->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
+    GetActiveScene()->MarkAsChanged();
     emit ValueChanged();
 }
 

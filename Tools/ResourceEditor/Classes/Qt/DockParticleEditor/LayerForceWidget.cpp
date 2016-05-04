@@ -36,10 +36,7 @@
 #include <QSizePolicy>
 
 LayerForceWidget::LayerForceWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainBox = new QVBoxLayout;
     this->setLayout(mainBox);
@@ -143,15 +140,15 @@ void LayerForceWidget::OnValueChanged()
     std::unique_ptr<CommandUpdateParticleForce> updateForceCmd = Command2::Create<CommandUpdateParticleForce>(layer, forceIndex);
     updateForceCmd->Init(propForce.GetPropLine(), propForceOverLife.GetPropLine());
 
-    DVASSERT(activeScene);
-    activeScene->Exec(std::move(updateForceCmd));
-    activeScene->MarkAsChanged();
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(std::move(updateForceCmd));
+    GetActiveScene()->MarkAsChanged();
 
-    Init(activeScene, layer, forceIndex, false);
+    Init(GetActiveScene(), layer, forceIndex, false);
     emit ValueChanged();
 }
 
 void LayerForceWidget::Update()
 {
-    Init(activeScene, layer, forceIndex, false);
+    Init(GetActiveScene(), layer, forceIndex, false);
 }

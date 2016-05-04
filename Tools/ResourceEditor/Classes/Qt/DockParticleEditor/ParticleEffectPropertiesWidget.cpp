@@ -45,10 +45,7 @@ static const int TreeItemTypeForce = QTreeWidgetItem::UserType + 3;
 static const int TreeItemTypeExternal = QTreeWidgetItem::UserType + 4;
 
 ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainLayout = new QVBoxLayout();
     mainLayout->setAlignment(Qt::AlignTop);
@@ -146,10 +143,6 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent)
     particleEffect = NULL;
     blockSignals = false;
     blockTables = false;
-}
-
-ParticleEffectPropertiesWidget::~ParticleEffectPropertiesWidget()
-{
 }
 
 void ParticleEffectPropertiesWidget::InitWidget(QWidget* widget, bool connectWidget)
@@ -383,11 +376,11 @@ void ParticleEffectPropertiesWidget::OnValueChanged()
     std::unique_ptr<CommandUpdateEffect> commandUpdateEffect = Command2::Create<CommandUpdateEffect>(particleEffect);
     commandUpdateEffect->Init(playbackSpeed);
 
-    DVASSERT(activeScene != 0);
-    activeScene->Exec(std::move(commandUpdateEffect));
-    activeScene->MarkAsChanged();
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(std::move(commandUpdateEffect));
+    GetActiveScene()->MarkAsChanged();
 
-    Init(activeScene, particleEffect);
+    Init(GetActiveScene(), particleEffect);
 }
 
 void ParticleEffectPropertiesWidget::OnPlay()

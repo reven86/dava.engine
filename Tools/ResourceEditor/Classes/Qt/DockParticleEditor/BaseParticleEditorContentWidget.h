@@ -35,9 +35,12 @@
 
 #include "Scene/SceneEditor2.h"
 
-class BaseParticleEditorContentWidget
+class BaseParticleEditorContentWidget : public QWidget
 {
+    Q_OBJECT
+
 public:
+    explicit BaseParticleEditorContentWidget(QWidget* parent);
     virtual ~BaseParticleEditorContentWidget() = default;
 
     virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
@@ -46,6 +49,7 @@ public:
     DAVA::ParticleEmitterInstance* GetEmitterInstance() const;
     void SetEmitterInstance(DAVA::ParticleEmitterInstance*);
 
+    void SetEffect(DAVA::ParticleEffectComponent* effect);
     DAVA::ParticleEffectComponent* GetEffect() const;
 
     void SetActiveScene(SceneEditor2* scene);
@@ -59,11 +63,11 @@ protected:
     int ConvertFromPlaybackSpeedToSliderValue(DAVA::float32 playbackSpeed);
     float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
-protected:
-    DAVA::ParticleEffectComponent* effect = nullptr;
-    SceneEditor2* activeScene = nullptr;
+    void hideEvent(QHideEvent*) override;
 
 private:
+    SceneEditor2* activeScene = nullptr;
+    DAVA::ParticleEffectComponent* effect = nullptr;
     DAVA::RefPtr<DAVA::ParticleEmitterInstance> instance;
 };
 
@@ -76,6 +80,11 @@ inline DAVA::ParticleEmitterInstance* BaseParticleEditorContentWidget::GetEmitte
 {
     return instance.Get();
 };
+
+inline void BaseParticleEditorContentWidget::SetEffect(DAVA::ParticleEffectComponent* e)
+{
+    effect = e;
+}
 
 inline DAVA::ParticleEffectComponent* BaseParticleEditorContentWidget::GetEffect() const
 {

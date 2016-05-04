@@ -131,7 +131,7 @@ protected:
     QTableWidget* editTable;
 };
 
-class ParticleEffectPropertiesWidget : public QWidget, public BaseParticleEditorContentWidget
+class ParticleEffectPropertiesWidget : public BaseParticleEditorContentWidget
 {
     Q_OBJECT
 
@@ -176,8 +176,7 @@ public:
         EF_TOTAL
     };
 
-    explicit ParticleEffectPropertiesWidget(QWidget* parent = 0);
-    ~ParticleEffectPropertiesWidget();
+    explicit ParticleEffectPropertiesWidget(QWidget* parent = nullptr);
 
     void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
     DAVA::ParticleEffectComponent* GetEffect()
@@ -185,8 +184,8 @@ public:
         return particleEffect;
     };
 
-    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps);
+    void StoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
+    void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
 
 public slots:
     void OnValueChanged();
