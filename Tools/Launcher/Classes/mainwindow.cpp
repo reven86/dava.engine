@@ -114,7 +114,6 @@ bool VersionListComparator(const QString& left, const QString& right)
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , appManager(nullptr)
 {
     ui->setupUi(this);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
@@ -127,9 +126,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->setUrlButton, SIGNAL(clicked()), this, SLOT(OnURLClicked()));
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
-    appManager = new ApplicationManager();
-    networkManager = new QNetworkAccessManager(this);
-    newsDownloader = new FileDownloader(networkManager);
+    appManager = new ApplicationManager(this);
+    newsDownloader = new FileDownloader(this);
 
     connect(appManager, SIGNAL(Refresh()), this, SLOT(RefreshApps()));
     connect(newsDownloader, SIGNAL(Finished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)),
@@ -149,9 +147,6 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
     SafeDelete(ui);
-    SafeDelete(appManager);
-    SafeDelete(newsDownloader);
-    SafeDelete(networkManager);
 }
 
 void MainWindow::OnURLClicked()

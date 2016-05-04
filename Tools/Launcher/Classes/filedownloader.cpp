@@ -31,17 +31,9 @@
 #include "filedownloader.h"
 #include <QObject>
 
-FileDownloader::FileDownloader(QNetworkAccessManager* accessManager)
-    :
-    networkManager(accessManager)
-    ,
-    currentDownload(0)
-    ,
-    lastErrorCode(0)
-{
-}
-
-FileDownloader::~FileDownloader()
+FileDownloader::FileDownloader(QObject* parent)
+    : QObject(parent)
+    , networkManager(new QNetworkAccessManager(this))
 {
 }
 
