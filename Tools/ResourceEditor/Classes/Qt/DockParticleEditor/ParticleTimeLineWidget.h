@@ -35,7 +35,7 @@
 #include <QLabel>
 #include <QTimer>
 
-#include <DAVAEngine.h>
+#include "DAVAEngine.h"
 #include "ScrollZoomWidget.h"
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
 #include "Scene/SceneEditor2.h"
@@ -88,7 +88,7 @@ protected slots:
     void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
     void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
     void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
+    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, int forceIndex);
 
     // Scene Tree signals - values are changed for Particles.
     void OnParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
