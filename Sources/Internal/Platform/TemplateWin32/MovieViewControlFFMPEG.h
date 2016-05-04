@@ -122,14 +122,15 @@ struct DecodedFrameBuffer
 
         float64 GetMasterClock();
         bool InitVideo();
-        bool DecodeVideoPacket(AV::AVPacket* packet);
-        void UpdateVideo();
+        DecodedFrameBuffer* DecodeVideoPacket(AV::AVPacket* packet);
+        void UpdateVideo(DecodedFrameBuffer* frameBuffer);
         bool InitAudio();
         void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
 
         void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void ReadingThread(BaseObject* caller, void* callerData, void* userData);
+        void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
 
         const uint32 maxAudioPacketsPrefetchedCount = 100;
         std::atomic<uint32> currentPrefetchedPacketsCount = 0;
@@ -139,12 +140,11 @@ struct DecodedFrameBuffer
         float64 synchronize_video(AV::AVFrame* src_frame, float64 pts);
         float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
 
+        static bool isFFMGEGInited;
         int out_channels = -1;
         const int out_sample_rate = 44100;
         void InitFmod();
 
-        float64 videoPlayTime = 0.f;
-        static bool isFFMGEGInited;
         bool isPlaying = false;
         bool isAudioVideoStreamsInited = false;
 
@@ -157,7 +157,6 @@ struct DecodedFrameBuffer
 
         const uint8 emptyPixelColor = 255;
 
-        bool audioStarted = false;
         Texture* videoTexture = nullptr;
         float64 videoFramerate = 0.f;
         float64 frame_last_pts = 0.f;
@@ -172,24 +171,13 @@ struct DecodedFrameBuffer
         const PixelFormat textureFormat = PixelFormat::FORMAT_RGBA8888;
         uint32 textureBufferSize = 0;
 
-        uint32_t len = 0;
-        int32 index = 0;
-        int64_t in_channel_layout = -1;
-        struct SwrContext* videoConvertContext = nullptr;
-
-        // AV::AVPacket* packet = nullptr;
         unsigned int videoStreamIndex = -1;
         AV::AVCodecContext* videoCodecContext = nullptr;
-        AV::AVCodec* videoCodec = nullptr;
-        AV::AVFrame * decodedFrame = nullptr;
         AV::AVFrame* rgbDecodedScaledFrame = nullptr;
-        uint8 * out_buffer = nullptr;
-        AV::SwsContext * img_convert_ctx = nullptr;
 
         const uint32 maxAudioFrameSize = 192000; // 1 second of 48khz 32bit audio
         unsigned int audioStreamIndex = -1;
         AV::AVCodecContext* audioCodecContext = nullptr;
-        AV::AVCodec* audioCodec = nullptr;
 
         AV::SwrContext* audioConvertContext = nullptr;
         uint32 outAudioBufferSize = 0;
@@ -202,19 +190,8 @@ struct DecodedFrameBuffer
         Deque<AV::AVPacket*> videoPackets;
         Mutex videoPacketsMutex;
 
-        Deque<DecodedFrameBuffer*> decodedFrames;
-        Mutex decodedFramesMutex;
-
-        void EnqueueDecodedVideoBuffer(DecodedFrameBuffer* buf);
-        DecodedFrameBuffer* DequeueDecodedVideoBuffer();
-
-        void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
-
         uint32 playTime = 0;
         float64 frameTimer = 0.f;
-        void StartPlayingTimer();
-        float64 GetPlayTime();
-        void ShiftPlayTime(float64 delta);
         float64 GetAudioClock();
 
         uint32 audio_buf_size = 0;
@@ -223,25 +200,13 @@ struct DecodedFrameBuffer
         bool eof = false;
 
         float64 GetTime();
+
+        void FlushBuffers();
     };
 
     inline float64 MovieViewControl::GetTime()
     {
         return (AV::av_gettime() / 1000000.0);
-    }
-    inline void MovieViewControl::StartPlayingTimer()
-    {
-        frameTimer = GetTime();
-    }
-
-    inline float64 MovieViewControl::GetPlayTime()
-    {
-        return frameTimer - GetTime();
-    }
-
-    inline void MovieViewControl::ShiftPlayTime(float64 delta)
-    {
-        frameTimer += delta;
     }
 
     // Pause/resume the playback.

@@ -90,6 +90,8 @@ void StreamBuffer::Flush()
     }
 
     pages.clear();
+
+    readPage = 0;
 }
 
 void StreamBuffer::Write(uint8* dataIn, uint32 len)

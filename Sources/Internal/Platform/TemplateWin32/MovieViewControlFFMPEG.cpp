@@ -63,10 +63,7 @@ namespace DAVA
             {
                 av_frame_free(&rgbDecodedScaledFrame);
             }
-            if (decodedFrame)
-            {
-                av_frame_free(&decodedFrame);
-            }
+
             if (videoCodecContext)
             {
                 avcodec_close(videoCodecContext);
@@ -74,10 +71,6 @@ namespace DAVA
             if (movieContext)
             {
                 avformat_close_input(&movieContext);
-            }
-            if (img_convert_ctx)
-            {
-                sws_freeContext(img_convert_ctx);
             }
 
             isFFMGEGInited = false;
@@ -208,7 +201,7 @@ namespace DAVA
         Renderer::SetDesiredFPS(60);
 
         videoCodecContext = movieContext->streams[videoStreamIndex]->codec;
-        videoCodec = AV::avcodec_find_decoder(videoCodecContext->codec_id);
+        AV::AVCodec* videoCodec = AV::avcodec_find_decoder(videoCodecContext->codec_id);
         if (videoCodec == nullptr)
         {
             Logger::Error("Codec not found.\n");
@@ -219,13 +212,6 @@ namespace DAVA
             Logger::Error("Could not open codec.\n");
             return false;
         }
-
-        decodedFrame = AV::av_frame_alloc();
-        rgbDecodedScaledFrame = AV::av_frame_alloc();
-        out_buffer = (uint8_t*)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, videoCodecContext->width, videoCodecContext->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
-        AV::avpicture_fill((AV::AVPicture*)rgbDecodedScaledFrame, out_buffer, avPixelFormat, videoCodecContext->width, videoCodecContext->height);
-
-        img_convert_ctx = AV::sws_getContext(videoCodecContext->width, videoCodecContext->height, videoCodecContext->pix_fmt, videoCodecContext->width, videoCodecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
         textureWidth = NextPowerOf2(videoCodecContext->width);
         textureHeight = NextPowerOf2(videoCodecContext->height);
@@ -243,50 +229,6 @@ namespace DAVA
         videoDecodingThread->Start();
 
         return true;
-    }
-
-    void MovieViewControl::EnqueueDecodedVideoBuffer(DecodedFrameBuffer* buf)
-    {
-        uint32 framesInBuffer = 0;
-
-        do
-        {
-
-            if (framesInBuffer > 3)
-            {
-                Thread::Sleep(1);
-            }
-            else
-            {
-                decodedFramesMutex.Lock();
-                framesInBuffer = decodedFrames.size();
-                decodedFramesMutex.Unlock();
-            }
-
-        } while (framesInBuffer > 1);
-
-        decodedFramesMutex.Lock();
-        decodedFrames.push_back(buf);
-        decodedFramesMutex.Unlock();
-    }
-
-    DecodedFrameBuffer* MovieViewControl::DequeueDecodedVideoBuffer()
-    {
-        decodedFramesMutex.Lock();
-        uint32 size = decodedFrames.size();
-        decodedFramesMutex.Unlock();
-
-        if (size == 0)
-        {
-            return nullptr;
-        }
-
-        decodedFramesMutex.Lock();
-        DecodedFrameBuffer* frameBuffer = decodedFrames.front();
-        decodedFrames.pop_front();
-        decodedFramesMutex.Unlock();
-
-        return frameBuffer;
     }
 
     void MovieViewControl::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
@@ -330,6 +272,27 @@ namespace DAVA
         return pts;
     }
 
+    void MovieViewControl::FlushBuffers()
+    {
+        {
+            LockGuard<Mutex> audioLock(audioPacketsMutex);
+            for (auto packet : audioPackets)
+            {
+                AV::av_packet_unref(packet);
+            }
+            audioPackets.clear();
+        }
+        {
+            LockGuard<Mutex> videoLock(videoPacketsMutex);
+            for (auto packet : videoPackets)
+            {
+                AV::av_packet_unref(packet);
+            }
+            videoPackets.clear();
+        }
+        pcmBuffer.Flush();
+    }
+
     FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
     {
         Memset(data, 0, datalen);
@@ -341,14 +304,7 @@ namespace DAVA
         MovieViewControl* movieControl = reinterpret_cast<MovieViewControl*>(soundData);
         if (nullptr != movieControl)
         {
-            movieControl->audioStarted = true;
-            // movieControl->FillBufferByPcmData(static_cast<uint32>(datalen), movieControl->decodeAudioOnCallback);
-
-            uint32 readen = movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
-            if (readen < datalen)
-            {
-                Logger::Error("NOT ENOUGHT BUFFERS");
-            }
+            movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
         }
 
         return FMOD_OK;
@@ -362,7 +318,7 @@ namespace DAVA
         audioCodecContext = movieContext->streams[audioStreamIndex]->codec;
 
         // Find the decoder for the audio stream
-        audioCodec = avcodec_find_decoder(audioCodecContext->codec_id);
+        AV::AVCodec* audioCodec = avcodec_find_decoder(audioCodecContext->codec_id);
         if (audioCodec == nullptr)
         {
             printf("Codec not found.\n");
@@ -388,7 +344,7 @@ namespace DAVA
         outAudioBufferSize = static_cast<uint32>(av_samples_get_buffer_size(nullptr, out_channels, out_nb_samples, out_sample_fmt, 1));
 
         //FIX:Some Codec's Context Information is missing
-        in_channel_layout = AV::av_get_default_channel_layout(audioCodecContext->channels);
+        int64_t in_channel_layout = AV::av_get_default_channel_layout(audioCodecContext->channels);
 
         audioConvertContext = AV::swr_alloc_set_opts(audioConvertContext, out_channel_layout, out_sample_fmt, out_sample_rate, in_channel_layout, audioCodecContext->sample_fmt, audioCodecContext->sample_rate, 0, nullptr);
         AV::swr_init(audioConvertContext);
@@ -436,20 +392,16 @@ namespace DAVA
         return pts;
     }
 
-    bool MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
+    DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
     {
         int32 got_picture;
+        AV::AVFrame* decodedFrame = AV::av_frame_alloc();
         int32 ret = AV::avcodec_decode_video2(videoCodecContext, decodedFrame, &got_picture, packet);
 
-        if (ret < 0)
+        DecodedFrameBuffer* frameBuffer = nullptr;
+        if (ret >= 0 && got_picture)
         {
-            Logger::Error("Video Decode Error. %d", ret);
-            return false;
-        }
-
-        if (got_picture)
-        {
-            DecodedFrameBuffer* frameBuffer = new DecodedFrameBuffer();
+            frameBuffer = new DecodedFrameBuffer();
             frameBuffer->data = new uint8[textureBufferSize];
             // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
             uint8* rgbTextureBufferHolder[1];
@@ -459,24 +411,33 @@ namespace DAVA
             Memset(frameBuffer->data, emptyPixelColor, textureBufferSize);
 
             // rgbTextureBufferHolder is a pointer to pointer to uint8. Used to obtain data directly to our rgbTextureBuffer
+            AV::SwsContext* img_convert_ctx = AV::sws_getContext(videoCodecContext->width, videoCodecContext->height, videoCodecContext->pix_fmt, videoCodecContext->width, videoCodecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
+
+            rgbDecodedScaledFrame = AV::av_frame_alloc();
+            uint8* out_buffer = nullptr;
+            out_buffer = (uint8_t*)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, videoCodecContext->width, videoCodecContext->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
+            AV::avpicture_fill((AV::AVPicture*)rgbDecodedScaledFrame, out_buffer, avPixelFormat, videoCodecContext->width, videoCodecContext->height);
+            AV::av_free(out_buffer);
+
             const uint32 scaledHeight = AV::sws_scale(img_convert_ctx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, rgbDecodedScaledFrame->linesize);
+
+            sws_freeContext(img_convert_ctx);
+
             frameBuffer->textureFormat = textureFormat;
 
             float64 effectivePTS = GetPTSForFrame(decodedFrame, packet, videoStreamIndex);
             effectivePTS = synchronize_video(decodedFrame, effectivePTS);
             frame_last_pts = effectivePTS;
             frameBuffer->pts = effectivePTS;
-
-            EnqueueDecodedVideoBuffer(frameBuffer);
-
-            return true;
         }
-        return false;
+
+        av_frame_free(&decodedFrame);
+
+        return frameBuffer;
     }
 
-    void MovieViewControl::UpdateVideo()
+    void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
     {
-        DecodedFrameBuffer* frameBuffer = DequeueDecodedVideoBuffer();
         if (nullptr == frameBuffer)
         {
             Thread::Sleep(1);
@@ -696,10 +657,10 @@ namespace DAVA
                 videoPackets.pop_front();
                 videoPacketsMutex.Unlock();
 
-                DecodeVideoPacket(videoPacket);
+                auto frameBuffer = DecodeVideoPacket(videoPacket);
                 AV::av_packet_unref(videoPacket);
 
-                UpdateVideo();
+                UpdateVideo(frameBuffer);
             }
             else
             {
@@ -767,6 +728,18 @@ namespace DAVA
             return;
 
         Pause();
+
+        fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS);
+        AV::av_seek_frame(movieContext, audioStreamIndex, 0, AVSEEK_FLAG_FRAME);
+        AV::av_seek_frame(movieContext, videoStreamIndex, 0, AVSEEK_FLAG_FRAME);
+
+        FlushBuffers();
+
+        audio_clock = 0;
+        frame_last_pts = 0.f;
+        frame_last_delay = 40e-3;
+        video_clock = 0.f;
+        eof = false;
     }
 
 }
