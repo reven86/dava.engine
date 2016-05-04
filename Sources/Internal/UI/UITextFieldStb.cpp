@@ -65,8 +65,6 @@ TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
-
-    staticText->SetDebugDraw(true);
 }
 
 TextFieldStbImpl::~TextFieldStbImpl()
@@ -90,6 +88,8 @@ void TextFieldStbImpl::OpenKeyboard()
     if (!isEditing)
     {
         SetCursorPos(GetTextLength());
+        stb->SetSelectionStart(0);
+        stb->SetSelectionEnd(0);
         isEditing = true;
         control->OnKeyboardShown(Rect());
     }
@@ -101,6 +101,7 @@ void TextFieldStbImpl::CloseKeyboard()
     {
         isEditing = false;
         control->OnKeyboardHidden();
+        selectionRects.clear();
     }
 }
 
@@ -145,6 +146,10 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
             showCursor = !showCursor;
         }
         needRedraw = true;
+
+        UpdateSelection(stb->GetSelectionStart(), stb->GetSelectionEnd());
+        UpdateCursor(stb->GetCursorPosition(), stb->IsInsertMode());
+        UpdateOffset(cursorRect);
     }
     else if (showCursor)
     {
@@ -160,11 +165,6 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 
     const WideString& txt = control->GetVisibleText();
     staticText->SetText(txt, UIStaticText::NO_REQUIRED_SIZE);
-
-    UpdateSelection(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    UpdateCursor(stb->GetCursorPosition(), stb->IsInsertMode());
-    UpdateOffset(cursorRect);
-
     needRedraw = false;
 }
 
@@ -298,7 +298,7 @@ Color TextFieldStbImpl::GetShadowColor()
 
 rhi::int32 TextFieldStbImpl::GetTextAlign()
 {
-    return staticText->GetTextAlign();
+    return staticText->GetTextVisualAlign();
 }
 
 void TextFieldStbImpl::SetRect(const Rect& rect)
@@ -365,6 +365,10 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
     if (apply)
     {
         WideString prevText(text);
+
+        // Additional check if somebody in delegate TextFieldKeyPressed change text manually
+        if (position > text.length())
+            position = text.length();
 
         if (control->GetMaxLength() > 0)
         {
@@ -619,6 +623,17 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     if (control != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (control->GetStartEditPolicy() == UITextField::START_EDIT_BY_USER_REQUEST)
+        {
+            control->StartEdit();
+        }
+    }
+
+    if (!control->IsEditing())
+        return;
+
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
         currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
@@ -770,14 +785,6 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     {
         Vector2 localPoint = TransformInputPoint(currentInput->point, control->GetAbsolutePosition(), control->GetGeometricData().scale);
         stb->Drag(localPoint - staticTextOffset);
-    }
-
-    if (currentInput->phase == UIEvent::Phase::ENDED)
-    {
-        if (control->GetStartEditPolicy() == UITextField::START_EDIT_BY_USER_REQUEST)
-        {
-            control->StartEdit();
-        }
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
