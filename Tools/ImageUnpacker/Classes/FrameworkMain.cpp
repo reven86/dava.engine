@@ -66,10 +66,22 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
     }
 }
 
+void GenerateFacePathnames(const FilePath& filePath, Vector<FilePath>& faceNames, const String& extension)
+{
+    faceNames.resize(Texture::CUBE_FACE_COUNT, FilePath());
+
+    String baseName = filePath.GetBasename();
+    for (auto face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
+    {
+        faceNames[face] = filePath;
+        faceNames[face].ReplaceFilename(baseName + Texture::FACE_NAME_SUFFIX[face] + extension);
+    }
+}
+
 void SaveCubemap(const FilePath& newImagePath, const Vector<Image*>& images)
 {
     Vector<FilePath> faceNames;
-    TextureDescriptor::GenerateFacePathnames(newImagePath, faceNames, ".png");
+    GenerateFacePathnames(newImagePath, faceNames, ".png");
 
     for (auto image : images)
     {
@@ -83,7 +95,7 @@ void SaveCubemap(const FilePath& newImagePath, const Vector<Image*>& images)
 void UnpackFile(const FilePath& sourceImagePath)
 {
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(sourceImagePath, images);
+    ImageSystem::Instance()->Load(sourceImagePath, images, 0, 0);
 
     if (images.size() != 0)
     {
@@ -144,7 +156,7 @@ void ResavePNG(const FilePath& folderPath, const String& extension)
             if (pathname.IsEqualToExtension(".png"))
             {
                 Vector<Image*> images;
-                ImageSystem::Instance()->Load(pathname, images);
+                ImageSystem::Instance()->Load(pathname, images, 0, 0);
 
                 FilePath tgaPathname = FilePath::CreateWithNewExtension(pathname, extension);
                 ImageSystem::Instance()->Save(tgaPathname, images);

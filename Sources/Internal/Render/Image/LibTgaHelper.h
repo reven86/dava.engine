@@ -42,13 +42,6 @@ class LibTgaHelper : public ImageFormatInterface
 public:
     LibTgaHelper();
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
-
-    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    ImageInfo GetImageInfo(File* infile) const override;
-
     struct TgaInfo
     {
         enum IMAGE_TYPE : uint8
@@ -78,6 +71,13 @@ public:
     eErrorCode ReadTgaHeader(const FilePath& filepath, TgaInfo& tgaHeader) const;
 
 protected:
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
+
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+
+    ImageInfo GetImageInfo(File* infile) const override;
+
     bool CanProcessFileInternal(File* infile) const override;
 
 private:

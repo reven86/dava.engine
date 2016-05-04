@@ -63,34 +63,39 @@ struct ImageInfo
 
 class ImageFormatInterface
 {
+    friend class ImageSystem;
+
 public:
     ImageFormatInterface(ImageFormat imageFormat, const String& interfaceName);
     virtual ~ImageFormatInterface() = default;
 
-    ImageFormat GetImageFormat() const;
-
+    const String& Name() const;
     ImageInfo GetImageInfo(const FilePath& path) const;
-    virtual ImageInfo GetImageInfo(File* infile) const = 0;
 
+protected:
     bool IsFormatSupported(PixelFormat format) const;
     bool IsFileExtensionSupported(const String& extension) const;
 
     const Vector<String>& Extensions() const;
 
-    bool CanProcessFile(File* file) const;
-    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const = 0;
+    ImageFormat GetImageFormat() const;
 
+    bool CanProcessFile(File* file) const;
+    virtual bool CanProcessFileInternal(File* file) const = 0;
+
+    virtual ImageInfo GetImageInfo(File* infile) const = 0;
+
+    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const = 0;
     virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
 
-    const String& Name() const;
+    virtual Image* DecodeToRGBA8888(Image* encodedImage) const;
 
 protected:
-    virtual bool CanProcessFileInternal(File* file) const = 0;
-
     Vector<PixelFormat> supportedFormats;
     Vector<String> supportedExtensions;
 
+private:
     String interfaceName;
     ImageFormat imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
 };

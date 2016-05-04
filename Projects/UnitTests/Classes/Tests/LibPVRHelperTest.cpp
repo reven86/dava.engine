@@ -27,11 +27,11 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
+#include "Render/Image/LibPVRHelper.h"
 #include "UnitTests/UnitTests.h"
 #include "Infrastructure/TextureUtils.h"
 #include "Utils/CRC32.h"
 
-#include "Render/Image/LibPVRHelperV2.h"
 
 using namespace DAVA;
 
@@ -93,14 +93,13 @@ DAVA_TESTCLASS (LibPVRHelperTest)
           { "~res:/TestData/LibPVRHelperTest/pvr4_zeroMip.pvr", 32, 32, 1, 0, PixelFormat::FORMAT_PVR4 },
         };
 
-        LibPVRHelperV2 helper;
         for (const LibPVRHelperTestLocal::TestData& td : testData)
         {
             Vector<Image*> imageSet;
 
             { // Load
                 ScopedPtr<File> infile(File::Create(td.path, File::OPEN | File::READ));
-                eErrorCode loadCode = helper.Load(infile, imageSet, td.fromMipmap, 0);
+                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, td.fromMipmap, 0);
                 TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
 
                 bool loaded = imageSet.size() == td.mipmapsCount;
@@ -125,13 +124,13 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 FilePath savePath(td.path);
                 savePath.ReplaceDirectory(outFolderPathname);
 
-                eErrorCode saveCode = helper.Save(savePath, imageSet);
+                eErrorCode saveCode = ImageSystem::Instance()->Save(savePath, imageSet);
                 TEST_VERIFY(eErrorCode::SUCCESS == saveCode);
 
                 Vector<Image*> reLoadedImageSet;
                 { // Load saved images
                     ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
-                    eErrorCode loadCode = helper.Load(infile, reLoadedImageSet, 0, 0);
+                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet, 0, 0);
                     TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
                 }
 
@@ -168,7 +167,6 @@ DAVA_TESTCLASS (LibPVRHelperTest)
           { "~res:/TestData/LibPVRHelperTest/pvr2_cube.pvr", 32, 32, 6, 0, PixelFormat::FORMAT_PVR2 },
         };
 
-        LibPVRHelperV2 helper;
         for (const LibPVRHelperTestLocal::TestData& td : testData)
         {
             Vector<Image*> imageSet;
@@ -176,7 +174,7 @@ DAVA_TESTCLASS (LibPVRHelperTest)
 
             { // Load
                 ScopedPtr<File> infile(File::Create(td.path, File::OPEN | File::READ));
-                eErrorCode loadCode = helper.Load(infile, imageSet, td.fromMipmap, 0);
+                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, td.fromMipmap, 0);
                 TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
 
                 bool loaded = imageSet.size() == td.mipmapsCount * Texture::CUBE_FACE_COUNT;
@@ -206,13 +204,13 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 FilePath savePath(td.path);
                 savePath.ReplaceDirectory(outFolderPathname);
 
-                eErrorCode saveCode = helper.SaveCubeMap(savePath, cubeImageSet);
+                eErrorCode saveCode = ImageSystem::Instance()->SaveAsCubeMap(savePath, cubeImageSet, td.format);
                 TEST_VERIFY(eErrorCode::SUCCESS == saveCode);
 
                 Vector<Image*> reLoadedImageSet;
                 { // Load saved images
                     ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
-                    eErrorCode loadCode = helper.Load(infile, reLoadedImageSet, 0, 0);
+                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet, 0, 0);
                     TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
                 }
 
@@ -251,7 +249,7 @@ DAVA_TESTCLASS (LibPVRHelperTest)
 
         TEST_VERIFY(FileSystem::Instance()->CopyFile(sourceImagePath, savePath));
 
-        LibPVRHelperV2 helper;
+        LibPVRHelper helper;
         uint32 crc = helper.GetCRCFromFile(savePath);
         TEST_VERIFY(crc == 0);
 

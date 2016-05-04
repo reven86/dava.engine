@@ -28,7 +28,6 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
-#include "Render/Image/LibJpegHelper.h"
 
 using namespace DAVA;
 
@@ -36,13 +35,11 @@ DAVA_TESTCLASS (LoadImageTest)
 {
     DAVA_TEST (JpegExifTest)
     {
-        LibJpegHelper helper;
-
         Vector<Image*> set;
 
         ScopedPtr<File> imgFile(File::Create("~res:/TestData/LoadImageTest/EXIF.jpg", File::OPEN | File::READ));
 
-        eErrorCode res = helper.ReadFile(imgFile, set, 0, 0);
+        eErrorCode res = ImageSystem::Instance()->LoadWithoutDecompession(imgFile, set, 0, 0);
         TEST_VERIFY(eErrorCode::SUCCESS == res);
 
         for (auto item : set)

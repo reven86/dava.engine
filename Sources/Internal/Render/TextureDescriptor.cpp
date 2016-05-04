@@ -34,7 +34,7 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/Image/LibPVRHelperV2.h"
+#include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
@@ -942,7 +942,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         DVASSERT(false);
         return 0;
 #else
-        LibPVRHelperV2 helper;
+        LibPVRHelper helper;
         uint32 convertedCRC = helper.GetCRCFromFile(filePath);
         if (convertedCRC != 0)
         {
@@ -969,7 +969,19 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     }
 }
 
-Vector<FilePath> TextureDescriptor::CreatePathnamesForGPU(const eGPUFamily gpuFamily) const
+FilePath TextureDescriptor::CreateSavePathnameForGPU(const eGPUFamily gpuFamily) const
+{
+    ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
+    if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
+    {
+        String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
+        return FilePath::CreateWithNewExtension(pathname, postfix);
+    }
+
+    return GetSourceTexturePathname();
+}
+
+Vector<FilePath> TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily) const
 {
     Vector<FilePath> pathes;
 
@@ -979,7 +991,7 @@ Vector<FilePath> TextureDescriptor::CreatePathnamesForGPU(const eGPUFamily gpuFa
         String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
         if (dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_MIP)
         {
-            pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, "hd." + postfix));
+            pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, ".hd" + postfix));
         }
         pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, postfix));
     }

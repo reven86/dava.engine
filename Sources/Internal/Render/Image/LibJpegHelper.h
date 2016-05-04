@@ -42,6 +42,7 @@ class LibJpegHelper : public ImageFormatInterface
 public:
     LibJpegHelper();
 
+protected:
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
 
     //only RGB888 or A8
@@ -52,7 +53,6 @@ public:
 
     ImageInfo GetImageInfo(File* infile) const override;
 
-protected:
     bool CanProcessFileInternal(File* infile) const override;
 };
 

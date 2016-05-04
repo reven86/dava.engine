@@ -196,7 +196,8 @@ public:
 
     static FilePath GetDescriptorPathname(const FilePath& texturePathname);
 
-    Vector<FilePath> CreatePathnamesForGPU(const eGPUFamily forGPU) const;
+    FilePath CreateSavePathnameForGPU(const eGPUFamily forGPU) const;
+    Vector<FilePath> CreateLoadPathnamesForGPU(const eGPUFamily forGPU) const;
 
     PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
 

@@ -34,7 +34,7 @@
 #include "Platform/Process.h"
 
 #include "Render/GPUFamilyDescriptor.h"
-#include "Render/Image/LibPVRHelperV2.h"
+#include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/LibTgaHelper.h"
@@ -141,7 +141,7 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
 
     if (addCRC)
     {
-        LibPVRHelperV2 helper;
+        LibPVRHelper helper;
         helper.AddCRCIntoMetaData(outputName);
     }
     return outputName;
@@ -213,7 +213,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
     bool ret = false;
     if (ret)
     {
-        LibPVRHelperV2 helper;
+        LibPVRHelper helper;
         helper.AddCRCIntoMetaData(outputName);
         return outputName;
     }
@@ -323,10 +323,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const
 
 FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    Vector<FilePath> pathes = descriptor.CreatePathnamesForGPU(gpuFamily);
-    if (pathes.empty())
-        return FilePath();
-    return pathes[0];
+    return descriptor.CreateSavePathnameForGPU(gpuFamily);
 }
 
 void PVRConverter::SetPVRTexTool(const FilePath& textToolPathname)

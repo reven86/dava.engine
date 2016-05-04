@@ -513,15 +513,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
 
             result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
 
-            DAVA::Vector<DAVA::FilePath> compressedTexturePathes = descriptor->CreatePathnamesForGPU(gpu);
-            if (compressedTexturePathes.empty())
-            {
-                result.fileSize = 0;
-            }
-            else
-            {
-                result.fileSize = QFileInfo(compressedTexturePathes[0].GetAbsolutePathname().c_str()).size();
-            }
+            result.fileSize = QFileInfo(descriptor->CreateSavePathnameForGPU(gpu).GetAbsolutePathname().c_str()).size();
 
             if (convertedImages.size() && convertedImages[0])
             {

@@ -27,24 +27,23 @@
 =====================================================================================*/
 
 
-#include "ImageSystem.h"
-
-#include "FileSystem/File.h"
-#include "FileSystem/FileSystem.h"
-#include "Render/RenderBase.h"
-
-#include "Platform/SystemTimer.h"
-#include "Utils/Utils.h"
-
+#include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelper.h"
-#include "Render/Image/LibPVRHelperV2.h"
+#include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibTgaHelper.h"
 #include "Render/Image/LibWebPHelper.h"
 #include "Render/Image/LibPSDHelper.h"
+#include "Render/PixelFormatDescriptor.h"
+#include "Render/RenderBase.h"
 
 #include "Base/ScopedPtr.h"
+#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
+
+#include "Platform/SystemTimer.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -52,14 +51,14 @@ ImageSystem::ImageSystem()
 {
     wrappers[IMAGE_FORMAT_PNG].reset(new LibPngHelper());
     wrappers[IMAGE_FORMAT_DDS].reset(new LibDdsHelper());
-    wrappers[IMAGE_FORMAT_PVR].reset(new LibPVRHelperV2());
+    wrappers[IMAGE_FORMAT_PVR].reset(new LibPVRHelper());
     wrappers[IMAGE_FORMAT_JPEG].reset(new LibJpegHelper());
     wrappers[IMAGE_FORMAT_TGA].reset(new LibTgaHelper());
     wrappers[IMAGE_FORMAT_WEBP].reset(new LibWebPHelper());
     wrappers[IMAGE_FORMAT_PSD].reset(new LibPSDHelper());
 }
 
-eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+eErrorCode ImageSystem::LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -67,11 +66,11 @@ eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet,
         return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
-    eErrorCode result = Load(fileRead, imageSet, baseMipmap, firstMipmapIndex);
+    eErrorCode result = LoadWithoutDecompession(fileRead, imageSet, baseMipmap, firstMipmapIndex);
     return result;
 }
 
-eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+eErrorCode ImageSystem::LoadWithoutDecompession(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -86,6 +85,71 @@ eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMip
     }
 
     return properWrapper->ReadFile(file, imageSet, baseMipmap, firstMipmapIndex);
+}
+
+eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+{
+    eErrorCode loaded = LoadWithoutDecompession(pathname, imageSet, baseMipmap, firstMipmapIndex);
+    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+    if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
+    {
+        loaded = TryToDecompressImages(imageSet);
+    }
+    
+#endif //defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+
+    return loaded;
+}
+
+eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+{
+    eErrorCode loaded = LoadWithoutDecompession(file, imageSet, baseMipmap, firstMipmapIndex);
+    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+    if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
+    {
+        loaded = TryToDecompressImages(imageSet);
+    }
+#endif //defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+
+    return loaded;
+}
+
+eErrorCode ImageSystem::TryToDecompressImages(Vector<Image*>& imageSet) const
+{
+    size_type count = imageSet.size();
+    for (size_type i = 0; i < count; ++i)
+    {
+        Image* encodedImage = imageSet[i];
+
+        const PixelFormatDescriptor& pixelDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(encodedImage->format);
+        if (!pixelDescriptor.isHardwareSupported)
+        {
+            Image* decodedImage = nullptr;
+            if (PixelFormatDescriptor::IsCompressedFormat(encodedImage->format))
+            {
+                ImageFormatInterface* properWrapper = GetDecoder(encodedImage->format);
+                DVASSERT(properWrapper != nullptr);
+
+                decodedImage = properWrapper->DecodeToRGBA8888(encodedImage);
+                if (decodedImage == nullptr)
+                {
+                    return eErrorCode::ERROR_DECODE_FAIL;
+                }
+            }
+            else
+            {
+                decodedImage = Image::Create(encodedImage->width, encodedImage->height, PixelFormat::FORMAT_RGBA8888);
+                ImageConvert::ConvertImageDirect(encodedImage, encodedImage);
+            }
+
+            imageSet[i] = decodedImage;
+            encodedImage->Release();
+        }
+    }
+
+    return eErrorCode::SUCCESS;
 }
 
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
@@ -174,6 +238,41 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File* file) const
         }
     }
     DVASSERT(false);
+
+    return nullptr;
+}
+
+ImageFormatInterface* ImageSystem::GetDecoder(PixelFormat format) const
+{
+    switch (format)
+    {
+    case PixelFormat::FORMAT_PVR2:
+    case PixelFormat::FORMAT_PVR4:
+    case PixelFormat::FORMAT_ETC1:
+    case PixelFormat::FORMAT_PVR2_2:
+    case PixelFormat::FORMAT_PVR4_2:
+    case PixelFormat::FORMAT_EAC_R11_UNSIGNED:
+    case PixelFormat::FORMAT_EAC_R11_SIGNED:
+    case PixelFormat::FORMAT_EAC_RG11_UNSIGNED:
+    case PixelFormat::FORMAT_EAC_RG11_SIGNED:
+    case PixelFormat::FORMAT_ETC2_RGB:
+    case PixelFormat::FORMAT_ETC2_RGBA:
+    case PixelFormat::FORMAT_ETC2_RGB_A1:
+        return GetImageFormatInterface(ImageFormat::IMAGE_FORMAT_PVR);
+
+    case PixelFormat::FORMAT_DXT1:
+    case PixelFormat::FORMAT_DXT1A:
+    case PixelFormat::FORMAT_DXT3:
+    case PixelFormat::FORMAT_DXT5:
+    case PixelFormat::FORMAT_DXT5NM:
+    case PixelFormat::FORMAT_ATC_RGB:
+    case PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+    case PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+        return GetImageFormatInterface(ImageFormat::IMAGE_FORMAT_DDS);
+
+    default:
+        break;
+    }
 
     return nullptr;
 }

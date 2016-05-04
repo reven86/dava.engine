@@ -34,8 +34,8 @@
 namespace DAVA
 {
 ImageFormatInterface::ImageFormatInterface(ImageFormat imageFormat_, const String& interfaceName_)
-    : imageFormat(imageFormat_)
-    , interfaceName(interfaceName_)
+    : interfaceName(interfaceName_)
+    , imageFormat(imageFormat_)
 {
 }
 
@@ -96,4 +96,9 @@ bool ImageFormatInterface::CanProcessFile(File* file) const
     file->Seek(0, File::SEEK_FROM_START);
     return canProcess;
 }
-};
+
+Image* ImageFormatInterface::DecodeToRGBA8888(Image* encodedImage) const
+{
+    return nullptr;
+}
+}

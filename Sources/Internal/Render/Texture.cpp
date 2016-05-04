@@ -476,10 +476,16 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     }
     else
     {
-        Vector<FilePath> imagePathnames = texDescriptor->CreatePathnamesForGPU(gpu);
-        for (auto& path : imagePathnames)
         {
-            ImageSystem::Instance()->Load(path, *images, baseMipMap, images->size());
+            Vector<FilePath> imagePathnames = texDescriptor->CreateLoadPathnamesForGPU(gpu);
+            int32 singleMipCount = static_cast<int32>(imagePathnames.size() - 1);
+            for (int32 i = baseMipMap; i < singleMipCount; ++i)
+            {
+                ImageSystem::Instance()->Load(imagePathnames[i], *images, 0, static_cast<int32>(images->size()));
+            }
+
+            int newBaseMip = Max(baseMipMap - singleMipCount, 0);
+            ImageSystem::Instance()->Load(imagePathnames[singleMipCount], *images, newBaseMip, static_cast<int32>(images->size()));
         }
 
         ImageSystem::Instance()->EnsurePowerOf2Images(*images);

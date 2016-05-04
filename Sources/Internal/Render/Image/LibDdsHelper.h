@@ -46,7 +46,12 @@ class LibDdsHelper : public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibDdsHelper();
 
+    bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
+    uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
+    static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
+
+protected:
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
@@ -54,13 +59,8 @@ public:
 
     ImageInfo GetImageInfo(File* infile) const override;
 
-    bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
-    uint32 GetCRCFromFile(const FilePath& filePathname) const override;
-
     static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex, bool forceSoftwareConvertation = false);
-    static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
 
-protected:
     bool CanProcessFileInternal(File* infile) const override;
 
 private:

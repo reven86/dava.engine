@@ -230,7 +230,7 @@ void SceneSaver::CopyTexture(const FilePath& texturePathname)
                 continue;
             }
 
-            Vector<FilePath> imagePathnames = desc->CreatePathnamesForGPU(gpu);
+            Vector<FilePath> imagePathnames = desc->CreateLoadPathnamesForGPU(gpu);
             for (auto& path : imagePathnames)
             {
                 sceneUtils.AddFile(path);

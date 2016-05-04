@@ -46,6 +46,8 @@ class ImageSystem : public Singleton<ImageSystem>
 public:
     ImageSystem();
 
+    eErrorCode LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
+    eErrorCode LoadWithoutDecompession(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
     eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
     eErrorCode Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
 
@@ -56,20 +58,24 @@ public:
     eErrorCode SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
     eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
 
-    inline ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
-    ImageFormatInterface* GetImageFormatInterface(const FilePath& pathName) const;
-    ImageFormatInterface* GetImageFormatInterface(File* file) const;
-
     ImageInfo GetImageInfo(const FilePath& pathName) const;
 
-    inline const Vector<String>& GetExtensionsFor(ImageFormat format) const;
+    const Vector<String>& GetExtensionsFor(ImageFormat format) const;
 
     ImageFormat GetImageFormatForExtension(const String& extension) const;
     ImageFormat GetImageFormatForExtension(const FilePath& pathname) const;
 
     ImageFormat GetImageFormatByName(const String& name) const;
 
+    ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
+    ImageFormatInterface* GetImageFormatInterface(const FilePath& pathName) const;
+
 private:
+    ImageFormatInterface* GetImageFormatInterface(File* file) const;
+    ImageFormatInterface* GetDecoder(PixelFormat format) const;
+
+    eErrorCode TryToDecompressImages(Vector<Image*>& imageSet) const;
+
     ImageInfo GetImageInfo(File* infile) const;
 
     Array<std::unique_ptr<ImageFormatInterface>, IMAGE_FORMAT_COUNT> wrappers;

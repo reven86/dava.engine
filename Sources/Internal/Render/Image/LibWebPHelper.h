@@ -42,6 +42,7 @@ class LibWebPHelper : public ImageFormatInterface
 public:
     LibWebPHelper();
 
+protected:
     eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
 
     //only RGBA8888 or RGB888
@@ -52,7 +53,6 @@ public:
 
     ImageInfo GetImageInfo(File* infile) const override;
 
-protected:
     bool CanProcessFileInternal(File* infile) const override;
 };
 

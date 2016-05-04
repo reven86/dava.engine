@@ -68,7 +68,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, c
     }
     else
     {
-        files = descriptor->CreatePathnamesForGPU(forGPU);
+        files = descriptor->CreateLoadPathnamesForGPU(forGPU);
     }
 
     for (size_t i = 0; i < files.size(); ++i)

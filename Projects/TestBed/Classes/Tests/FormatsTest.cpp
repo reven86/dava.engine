@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "Tests/FormatsTest.h"
+#include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
 
