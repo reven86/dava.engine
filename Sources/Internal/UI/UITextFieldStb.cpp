@@ -367,8 +367,10 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
         WideString prevText(text);
 
         // Additional check if somebody in delegate TextFieldKeyPressed change text manually
-        if (position > text.length())
-            position = text.length();
+        if (position > uint32(text.length()))
+        {
+            position = uint32(text.length());
+        }
 
         if (control->GetMaxLength() > 0)
         {
@@ -511,13 +513,6 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
                 r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
             }
             r.x += line.xoffset;
-
-#if 0 // Set cursor width like current replacing character
-            if (insertMode != 0)
-            {
-                r.dx = charsSizes[cursorPos];
-            }
-#endif
         }
         else
         {
