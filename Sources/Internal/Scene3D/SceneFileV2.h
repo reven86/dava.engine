@@ -102,7 +102,7 @@ public:
         KeyedArchive* archive;
         Vector<SceneArchiveHierarchyNode*> children;
         SceneArchiveHierarchyNode();
-        void LoadHierarchy(File* file);
+        bool LoadHierarchy(File* file);
 
     protected:
         ~SceneArchiveHierarchyNode();
@@ -140,6 +140,7 @@ public:
         ERROR_VERSION_IS_TOO_OLD,
         ERROR_FAILED_TO_CREATE_FILE,
         ERROR_FILE_WRITE_ERROR,
+        ERROR_FILE_READ_ERROR,
         ERROR_VERSION_TAGS_INVALID,
     };
 
@@ -198,7 +199,7 @@ private:
     bool SaveDataHierarchy(DataNode* node, File* file, int32 level);
     void LoadDataHierarchy(Scene* scene, DataNode* node, File* file, int32 level);
     bool SaveDataNode(DataNode* node, File* file);
-    void LoadDataNode(Scene* scene, DataNode* parent, File* file);
+    bool LoadDataNode(Scene* scene, DataNode* parent, File* file);
 
     inline bool IsDataNodeSerializable(DataNode* node)
     {
@@ -207,7 +208,7 @@ private:
     }
 
     bool SaveHierarchy(Entity* node, File* file, int32 level);
-    void LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
+    bool LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
     Entity* LoadEntity(Scene* scene, KeyedArchive* archive);
     Entity* LoadLandscape(Scene* scene, KeyedArchive* archive);
@@ -217,7 +218,7 @@ private:
     void ApplyFogQuality();
 
     void WriteDescriptor(File* file, const Descriptor& descriptor) const;
-    void ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
+    bool ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
 
     bool isDebugLogEnabled;
     bool isSaveForGame;
