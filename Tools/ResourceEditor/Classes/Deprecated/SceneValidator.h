@@ -121,8 +121,9 @@ public:
     DAVA_DEPRECATED(static bool IsEntityHasDifferentLODsCount(DAVA::Entity* entity));
     DAVA_DEPRECATED(static bool IsObjectHasDifferentLODsCount(DAVA::RenderObject* renderObject));
 
-    static void ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity* entity);
-    static void ExtractEmptyRenderObjects(DAVA::Entity* entity, DAVA::Set<DAVA::String>& errorsLog);
+    using EmptyRenderObjectCallback = DAVA::Function<void(DAVA::Entity*, DAVA::RenderObject*)>;
+    static void ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity* entity, const EmptyRenderObjectCallback& callback);
+    static void ExtractEmptyRenderObjects(DAVA::Entity* entity, DAVA::Set<DAVA::String>& errorsLog, const EmptyRenderObjectCallback& callback);
 
 protected:
     void ValidateRenderComponent(DAVA::Entity* ownerNode, DAVA::Set<DAVA::String>& errorsLog);

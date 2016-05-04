@@ -193,7 +193,12 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         commandStack->SetClean(true);
     }
 
-    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
+    auto removedObjectsCallback = [this](DAVA::Entity* entity, DAVA::RenderObject* ro)
+    {
+        editorStatisticsSystem->RemoveComponent(entity, GetRenderComponent(entity));
+    };
+
+    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this, removedObjectsCallback);
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);

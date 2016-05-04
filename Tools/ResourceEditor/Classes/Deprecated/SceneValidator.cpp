@@ -800,21 +800,22 @@ bool SceneValidator::IsObjectHasDifferentLODsCount(DAVA::RenderObject* renderObj
     return ((maxLod[0] != maxLod[1]) && (maxLod[0] != -1 && maxLod[1] != -1));
 }
 
-void SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity* entity)
+void SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity* entity, const EmptyRenderObjectCallback& callback)
 {
     DAVA::Set<DAVA::String> errors;
-    SceneValidator::ExtractEmptyRenderObjects(entity, errors);
+    SceneValidator::ExtractEmptyRenderObjects(entity, errors, callback);
     if (!errors.empty())
     {
         ShowErrorDialog(errors);
     }
 }
 
-void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity* entity, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity* entity, DAVA::Set<DAVA::String>& errorsLog, const EmptyRenderObjectCallback& callback)
 {
     auto renderObject = GetRenderObject(entity);
     if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()) && DAVA::RenderObject::TYPE_MESH == renderObject->GetType())
     {
+        callback(entity, renderObject);
         entity->RemoveComponent(DAVA::Component::RENDER_COMPONENT);
         PushLogMessage(errorsLog, entity, "Entity %s has empty render object", entity->GetName().c_str());
     }
@@ -822,6 +823,6 @@ void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity* entity, DAVA::Set<D
     const DAVA::uint32 count = entity->GetChildrenCount();
     for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        ExtractEmptyRenderObjects(entity->GetChild(i), errorsLog);
+        ExtractEmptyRenderObjects(entity->GetChild(i), errorsLog, callback);
     }
 }
