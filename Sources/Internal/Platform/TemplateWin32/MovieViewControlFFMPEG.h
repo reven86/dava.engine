@@ -34,6 +34,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render\PixelFormatDescriptor.h"
 #include "Sound/SoundSystem.h"
 #include "FileSystem/StreamBuffer.h"
+#include "Sound/FMODUtils.h"
+#include "fmod.h"
+#include "Concurrency/ConditionVariable.h"
 
 namespace AV
 {
@@ -53,12 +56,7 @@ extern "C"
 #endif
 }
 
-#include "Sound/FMODUtils.h"
-#include "fmod.h"
-
-#include "FileSystem/DynamicMemoryFile.h"
-
-#include <queue>
+#include <atomic>
 
 namespace DAVA
 {
@@ -124,19 +122,19 @@ struct DecodedFrameBuffer
 
         float64 GetMasterClock();
         bool InitVideo();
-        bool DecodeVideoPacket(AV::AVPacket* packet, float64& pts);
+        bool DecodeVideoPacket(AV::AVPacket* packet);
         void UpdateVideo();
         bool InitAudio();
         void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
 
         void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
-        void VideoPresentationThread(BaseObject* caller, void* callerData, void* userData);
         void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
         void ReadingThread(BaseObject* caller, void* callerData, void* userData);
 
-        const uint32 maxPacketsPrefetchedCount = 100;
-        uint32 currentPrefetchedPacketsCount = 0;
+        const uint32 maxAudioPacketsPrefetchedCount = 100;
+        std::atomic<uint32> currentPrefetchedPacketsCount = 0;
         void PrefetchData(uint32 dataSize);
+        ConditionVariable prefetchCV;
 
         float64 synchronize_video(AV::AVFrame* src_frame, float64 pts);
         float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
@@ -153,10 +151,8 @@ struct DecodedFrameBuffer
         FMOD_CREATESOUNDEXINFO exinfo;
         AV::AVFormatContext* movieContext = nullptr;
 
-        Thread* readingPacketsThread = nullptr;
         Thread* audioDecodingThread = nullptr;
         Thread* videoDecodingThread = nullptr;
-        Thread* videoPresentationThread = nullptr;
         Thread* readingDataThread = nullptr;
 
         const uint8 emptyPixelColor = 255;
@@ -214,28 +210,6 @@ struct DecodedFrameBuffer
 
         void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
 
-        struct DecodedPCMData
-        {
-            ~DecodedPCMData()
-            {
-                SafeDeleteArray(data);
-            }
-
-            float64 pts = 0.f;
-            uint8* data;
-            uint32 size = 0;
-            uint32 written = 0;
-        };
-
-        DecodedPCMData* DecodeAudioInPlace();
-
-        Deque<DecodedPCMData*> decodedAudio;
-        Mutex decodedAudioMutex;
-
-        DecodedPCMData* lastPcmData = nullptr;
-
-        void FillBufferByPcmData(uint32 datalen, bool decodeInPlace);
-
         uint32 playTime = 0;
         float64 frameTimer = 0.f;
         void StartPlayingTimer();
@@ -246,12 +220,9 @@ struct DecodedFrameBuffer
         uint32 audio_buf_size = 0;
         float64 audio_clock = 0.f;
 
-        bool hasMoreData = false;
+        bool eof = false;
 
         float64 GetTime();
-
-        bool decodeAudioOnCallback = false;
-        bool decodeVideoInOtherThread = false;
     };
 
     inline float64 MovieViewControl::GetTime()
