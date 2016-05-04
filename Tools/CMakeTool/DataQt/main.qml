@@ -184,12 +184,17 @@ ApplicationWindow {
                 rowLayout_sourceFolder.item.currentIndex = currentIndex;
                 onCurrentProjectChaged(currentIndex)
             }
-
         }
         catch(error) {
             errorDialog.informativeText = error.message;
             errorDialog.critical = true;
             errorDialog.open();
+        }
+        if(applicationWindow.width < applicationWindow.minimumWidth) {
+            applicationWindow.width = applicationWindow.minimumWidth
+        }
+        if(applicationWindow.height < applicationWindow.minimumHeight) {
+            applicationWindow.height = applicationWindow.minimumHeight
         }
     }
 
