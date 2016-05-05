@@ -35,7 +35,7 @@
 #include <QDir>
 #include <QUrl>
 #include <QDesktopServices>
-#include <QDebug>
+#include <QDirIterator>
 
 ProcessWrapper::ProcessWrapper(QObject* parent)
     : QObject(parent)
@@ -57,28 +57,39 @@ void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const Q
 
 void ProcessWrapper::FindAndOpenProjectFile(const QString& buildFolder)
 {
-    QString projectExt =
+    QString suffix =
 #if defined(Q_OS_WIN)
-    ".sln";
+    "sln";
 #elif defined(Q_OS_MAC)
-    ".xcodeproj";
+    "xcodeproj";
 #else 
 #error "unsupported platform"
 #endif //platform
-    QString path = FileSystemHelper::FindFileOrFolder(buildFolder, projectExt);
-    if (path.startsWith('/'))
+    QDir sourceFolderDir(buildFolder);
+    QDirIterator it(buildFolder);
+    while (it.hasNext())
     {
-        path.remove(0, 1);
+        it.next();
+        QFileInfo fileInfo(it.fileInfo());
+#if defined(Q_OS_WIN)
+        if (fileInfo.isFile())
+#elif defined(Q_OS_MAC)
+        if (fileInfo.isDir()) //xcodeproj is a directory
+#else
+#error "unsupported platform"
+#endif //platform
+        {
+            if (fileInfo.suffix() == suffix)
+            {
+                if (!QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absoluteFilePath())))
+                {
+                    emit processStandardError(tr("Can not open project file!"));
+                }
+                return;
+            }
+        }
     }
-    path.prepend("file:///");
-    if (path.isEmpty())
-    {
-        emit processStandardError(tr("Can not find project file!"));
-    }
-    if (!QDesktopServices::openUrl(QUrl(path)))
-    {
-        emit processStandardError(tr("Can not open project file!"));
-    }
+    emit processStandardError(tr("Can not find project file!"));
 }
 
 void ProcessWrapper::BlockingStopAllTasks()
@@ -123,20 +134,6 @@ bool ProcessWrapper::IsRunning() const
 void ProcessWrapper::OnReadyReadStandardOutput()
 {
     QString text = process.readAllStandardOutput();
-    //    QStringList lines = text.split('\n');
-    //    for(QStringList::iterator iter = lines.begin(); iter != lines.end(); ++iter)
-    //    {
-    //        QString &subStr = *iter;
-    //        int index = subStr.indexOf('\n');
-    //        const int maxStrLen = 200;
-    //        const int size = subStr.size();
-    //
-    //        if(index > maxStrLen || (index == -1 && size > maxStrLen))
-    //        {
-    //            subStr.replace(maxStrLen, size - maxStrLen, "...");
-    //        }
-    //    }
-    //    text = lines.join('\n');
     emit processStandardOutput(text);
 }
 
@@ -204,7 +201,7 @@ void ProcessWrapper::StartNextCommand()
         return;
     }
     const Task& task = taskQueue.dequeue();
-    const auto& buildFolder = task.buildFolder;
+    const QString& buildFolder = task.buildFolder;
     if (!buildFolder.isEmpty())
     {
         if (!FileSystemHelper::IsDirExists(buildFolder))

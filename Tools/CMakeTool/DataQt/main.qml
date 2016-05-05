@@ -190,12 +190,8 @@ ApplicationWindow {
             errorDialog.critical = true;
             errorDialog.open();
         }
-        if(applicationWindow.width < applicationWindow.minimumWidth) {
-            applicationWindow.width = applicationWindow.minimumWidth
-        }
-        if(applicationWindow.height < applicationWindow.minimumHeight) {
-            applicationWindow.height = applicationWindow.minimumHeight
-        }
+        applicationWindow.width = Math.max(applicationWindow.width, applicationWindow.minimumWidth)
+        applicationWindow.height = Math.max(applicationWindow.height, applicationWindow.minimumHeight)
     }
 
     MessageDialog {

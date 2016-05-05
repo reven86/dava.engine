@@ -111,29 +111,6 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     return QDir::fromNativeSeparators(cmakePath);
 }
 
-QString FileSystemHelper::FindFileOrFolder(const QString& sourceFolder, const QString& target)
-{
-    if (sourceFolder.isEmpty() || target.isEmpty())
-    {
-        return "";
-    }
-    QDir sourceFolderDir(sourceFolder);
-    QDirIterator it(sourceFolder);
-    while (it.hasNext())
-    {
-        it.next();
-        QFileInfo fileInfo(it.fileInfo());
-        if (fileInfo.isDir())
-        {
-            if (fileInfo.fileName().contains(target, Qt::CaseInsensitive))
-            {
-                return fileInfo.absoluteFilePath();
-            }
-        }
-    }
-    return "";
-}
-
 FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString& keyFile)
 {
     if (folderPath.isEmpty())
