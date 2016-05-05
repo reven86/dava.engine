@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "Tests/StaticTextTest.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
 
@@ -65,12 +66,15 @@ static const ButtonInfo alignButtonsInfo[] = {
     { L"Top left", ALIGN_TOP | ALIGN_LEFT, Rect(450, 30, 100, 20) },
     { L"Top center", ALIGN_TOP | ALIGN_HCENTER, Rect(560, 30, 100, 20) },
     { L"Top right", ALIGN_TOP | ALIGN_RIGHT, Rect(670, 30, 100, 20) },
+    { L"Top justify", ALIGN_TOP | ALIGN_HJUSTIFY, Rect(780, 30, 100, 20) },
     { L"Middle left", ALIGN_VCENTER | ALIGN_LEFT, Rect(450, 55, 100, 20) },
     { L"Middle center", ALIGN_VCENTER | ALIGN_HCENTER, Rect(560, 55, 100, 20) },
     { L"Middle right", ALIGN_VCENTER | ALIGN_RIGHT, Rect(670, 55, 100, 20) },
+    { L"Middle justify", ALIGN_VCENTER | ALIGN_HJUSTIFY, Rect(780, 55, 100, 20) },
     { L"Bottom left", ALIGN_BOTTOM | ALIGN_LEFT, Rect(450, 80, 100, 20) },
     { L"Bottom center", ALIGN_BOTTOM | ALIGN_HCENTER, Rect(560, 80, 100, 20) },
     { L"Bottom right", ALIGN_BOTTOM | ALIGN_RIGHT, Rect(670, 80, 100, 20) },
+    { L"Bottom justify", ALIGN_BOTTOM | ALIGN_HJUSTIFY, Rect(780, 80, 100, 20) },
 };
 
 static const ButtonInfo fittingButtonsInfo[] = {
@@ -131,6 +135,7 @@ void StaticTextTest::LoadResources()
     inputDelegate = new InputDelegate(this);
     inputText->SetDelegate(inputDelegate);
     inputText->SetMultiline(true);
+    inputText->GetOrCreateComponent<UIFocusComponent>();
     AddControl(inputText);
 
     label = new UIStaticText(Rect(450, 5, 200, 20));
@@ -196,7 +201,8 @@ void StaticTextTest::LoadResources()
 
 void StaticTextTest::UnloadResources()
 {
-    inputText->SetDelegate(nullptr);
+    if (inputText)
+        inputText->SetDelegate(nullptr);
     SafeDelete(inputDelegate);
     SafeRelease(previewText);
     SafeRelease(inputText);

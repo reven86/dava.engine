@@ -43,6 +43,11 @@
 
 namespace DAVA
 {
+const Vector2 UIStaticText::NO_REQUIRED_SIZE = Vector2(-1.f, -1.f);
+const Vector2 UIStaticText::REQUIRED_CONTROL_SIZE = Vector2::Zero;
+const Vector2 UIStaticText::REQUIRED_CONTROL_WIDTH = Vector2(0.f, -1.f);
+const Vector2 UIStaticText::REQUIRED_CONTROL_HEIGHT = Vector2(-1.f, 0.f);
+
 #if defined(LOCALIZATION_DEBUG)
 const float32 UIStaticText::LOCALIZATION_RESERVED_PORTION = 0.6f;
 const Color UIStaticText::HIGHLIGHT_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0.4f),
@@ -612,5 +617,21 @@ void UIStaticText::RecalculateDebugColoring()
         }
     }
 }
+
 #endif
+
+DAVA::Font* UIStaticText::GetFont() const
+{
+    return textBlock->GetFont();
+}
+
+DAVA::float32 UIStaticText::GetFontSize() const
+{
+    return textBlock->GetFontSize();
+}
+
+void UIStaticText::SetFontSize(float32 newSize)
+{
+    textBlock->SetFontSize(newSize);
+}
 };
