@@ -503,7 +503,7 @@ std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageS
     pvrFile->header.u32Width = zeroMip->width;
     pvrFile->header.u32Height = zeroMip->height;
 
-    pvrFile->header.u32NumFaces = imageSet.size();
+    pvrFile->header.u32NumFaces = static_cast<uint32>(imageSet.size());
     pvrFile->header.u32MIPMapCount = static_cast<uint32>(zeroFaceImageSet.size());
 
     pvrFile->compressedDataSize = GetDataSize(imageSet);
@@ -607,6 +607,7 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint3
 
 Image* DecodeToRGBA8888(Image* encodedImage)
 {
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     Image* decodedImage = Image::Create(encodedImage->width, encodedImage->height, PixelFormat::FORMAT_RGBA8888);
     decodedImage->mipmapLevel = encodedImage->mipmapLevel;
     decodedImage->cubeFaceID = encodedImage->cubeFaceID;
@@ -633,6 +634,9 @@ Image* DecodeToRGBA8888(Image* encodedImage)
     }
 
     return decodedImage;
+#else //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+    return nullptr;
+#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 }
 
 bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)
