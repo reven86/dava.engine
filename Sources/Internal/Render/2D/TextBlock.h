@@ -53,14 +53,23 @@ class TextBlockGraphicRender;
 class TextBlock : public BaseObject
 {
 public:
+    struct Line
+    {
+        uint32 number = 0;
+        uint32 offset = 0;
+        uint32 length = 0;
+        float32 xadvance = 0.f;
+        float32 yadvance = 0.f;
+        float32 visibleadvance = 0.f;
+        float32 xoffset = 0.f;
+        float32 yoffset = 0.f;
+    };
+
     enum eFitType
     {
-        FITTING_DISABLED = 0
-        ,
-        FITTING_ENLARGE = 1
-        ,
-        FITTING_REDUCE = 2
-        ,
+        FITTING_DISABLED = 0,
+        FITTING_ENLARGE = 1,
+        FITTING_REDUCE = 2,
         FITTING_POINTS = 4
     };
 
@@ -87,6 +96,7 @@ public:
     static TextBlock* Create(const Vector2& size);
 
     virtual void SetFont(Font* font);
+    virtual void SetFontSize(float32 newSize);
     virtual void SetScale(const Vector2& scale);
     virtual void SetRectSize(const Vector2& size);
     virtual void SetPosition(const Vector2& position);
@@ -107,9 +117,12 @@ public:
     Vector2 GetPreferredSizeForWidth(float32 width);
 
     virtual Font* GetFont();
+    virtual float32 GetFontSize();
     virtual const WideString& GetText();
     virtual const WideString& GetVisualText();
     virtual const Vector<WideString>& GetMultilineStrings();
+    virtual const Vector<Line>& GetMultilineInfo();
+    virtual const Vector<float32>& GetCharactersSize();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
@@ -185,7 +198,6 @@ private:
     Vector2 cacheSpriteOffset;
     Vector2 cacheTextSize;
 
-    float32 originalFontSize;
     float32 renderSize;
 
     int32 cacheDx;
@@ -206,6 +218,8 @@ private:
     WideString logicalText;
     WideString visualText;
     Vector<WideString> multilineStrings;
+    Vector<Line> multitlineInfo;
+    Vector<float32> charactersSizes;
     Vector<int32> stringSizes;
 
     bool isMultilineEnabled : 1;
@@ -230,6 +244,8 @@ private:
 
     float angle;
     Vector2 pivot;
+
+public:
 };
 
 inline void TextBlock::CalculateCacheParamsIfNeed()

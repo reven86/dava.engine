@@ -45,6 +45,7 @@
 #if __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wheader-hygiene"
+    #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
 #include <unicode/ubidi.h>
 #include <unicode/ushape.h>
