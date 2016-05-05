@@ -124,7 +124,7 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 FilePath savePath(td.path);
                 savePath.ReplaceDirectory(outFolderPathname);
 
-                eErrorCode saveCode = ImageSystem::Instance()->Save(savePath, imageSet);
+                eErrorCode saveCode = ImageSystem::Instance()->Save(savePath, imageSet, td.format);
                 TEST_VERIFY(eErrorCode::SUCCESS == saveCode);
 
                 Vector<Image*> reLoadedImageSet;
