@@ -258,8 +258,9 @@ ApplicationWindow {
                     Connections {
                         target: rowLayout_sourceFolder
                         onPathChanged: {
-                            var path = fileSystemHelper.FindFileOrFolder(rowLayout_sourceFolder.path, "build");
-                            rowLayout_buildFolder.path = path;
+                        	var path = rowLayout_sourceFolder.path;
+                        	path = path.replace(/(\/|\\)+$/, "");
+                        	rowLayout_buildFolder.path = path + "/_build" ;
                         }
                     }
                 }
