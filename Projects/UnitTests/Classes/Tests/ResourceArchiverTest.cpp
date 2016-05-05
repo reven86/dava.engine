@@ -57,14 +57,6 @@ DAVA_TESTCLASS (ResourceArchiverTest)
         params.compressionType = Compressor::Type::Lz4;
         TEST_VERIFY(true == ResourceArchiver::CreateArchive(params));
 
-        uint32 s = 0;
-        FileSystem::Instance()->GetFileSize(params.archivePath, s);
-        Logger::Debug("New archive is %s, size is %u", params.archivePath.GetAbsolutePathname().c_str(), s);
-        FilePath sm("~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4.archive");
-        s = 0;
-        FileSystem::Instance()->GetFileSize(sm, s);
-        Logger::Debug("Sample archive is %s, size is %u", sm.GetAbsolutePathname().c_str(), s);
-
         TEST_VERIFY(true == FileSystem::Instance()->CompareBinaryFiles(params.archivePath, "~res:/TestData/ResourceArchiverTest/SampleArchives/result_lz4.archive"));
         VerifyCompression(params.archivePath, Compressor::Type::Lz4);
 
