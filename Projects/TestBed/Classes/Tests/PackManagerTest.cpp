@@ -137,16 +137,18 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 {
     PackManager& packManager = Core::Instance()->GetPackManager();
 
+    const Vector<PackManager::Pack>& packs = packManager.GetPacks();
+
+    std::for_each(begin(packs), end(packs), [&packManager](const PackManager::Pack& pack)
+                  {
+                      if (pack.state == PackManager::Pack::Mounted)
+                      {
+                          packManager.Delete(pack.name);
+                      }
+                  });
+
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
-
-    for (auto& pack : packManager.GetPacks())
-    {
-        if (pack.state == PackManager::Pack::Mounted)
-        {
-            packManager.Delete(pack.name);
-        }
-    }
 
     // clear and renew all packs state
     packManager.Initialize(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
