@@ -47,18 +47,18 @@ class ConfigDownloader : public QDialog
     Q_OBJECT
 
 public:
-    explicit ConfigDownloader(ApplicationManager* manager, QNetworkAccessManager* accessManager, QWidget* parent = 0);
+    explicit ConfigDownloader(ApplicationManager* manager, QWidget* parent = 0);
     ~ConfigDownloader();
 
-    virtual int exec();
+    int exec() override;
 
 private slots:
     void DownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 private:
-    Ui::ConfigDownloader* ui;
+    void CreateDownloaderAndLaunch(const QUrl& url);
 
-    FileDownloader* downloader;
+    Ui::ConfigDownloader* ui;
 
     ApplicationManager* appManager;
 };

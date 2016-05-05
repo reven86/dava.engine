@@ -35,32 +35,24 @@
 #include "applicationmanager.h"
 #include <QProcess>
 
-ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QNetworkAccessManager* accessManager, QWidget* parent)
+ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::ConfigDownloader)
-    , downloader(nullptr)
     , appManager(manager)
 {
     ui->setupUi(this);
-
-    downloader = new FileDownloader(accessManager);
-    connect(ui->cancelButton, SIGNAL(clicked()), downloader, SLOT(Cancel()));
-
-    connect(downloader, SIGNAL(Finished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)),
-            this, SLOT(DownloadFinished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)));
 }
 
 ConfigDownloader::~ConfigDownloader()
 {
     SafeDelete(ui);
-    SafeDelete(downloader);
 }
 
 int ConfigDownloader::exec()
 {
-    QUrl url(appManager->localConfig->GetRemoteConfigURL());
-    downloader->Download(url);
-
+    CreateDownloaderAndLaunch(QUrl("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds"));
+    CreateDownloaderAndLaunch(QUrl("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches "));
+    CreateDownloaderAndLaunch(QUrl("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher"));
     return QDialog::exec();
 }
 
@@ -82,10 +74,19 @@ void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList<QPair<Q
             const QPair<QByteArray, QByteArray>& pair = *it;
             if (pair.first == contentTypeConst)
             {
-                appManager->ParseRemoteConfigData(downloadedData);
+                //appManager->ParseRemoteConfigData(downloadedData);
             }
         }
 
         accept();
     }
+}
+
+void ConfigDownloader::CreateDownloaderAndLaunch(const QUrl& url)
+{
+    FileDownloader* downloader = new FileDownloader(this);
+    connect(ui->cancelButton, &QPushButton::clicked, downloader, &FileDownloader::Cancel);
+    connect(downloader, &FileDownloader::Finished, this, &ConfigDownloader::DownloadFinished);
+
+    downloader->Download(url);
 }

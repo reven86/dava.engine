@@ -224,7 +224,7 @@ void MainWindow::OnRefreshClicked()
 
     FileManager::Instance()->ClearTempDirectory();
 
-    ConfigDownloader downloader(appManager, networkManager, this);
+    ConfigDownloader downloader(appManager, this);
     downloader.exec();
 
     RefreshApps();
@@ -404,7 +404,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            SelfUpdater updater(tasks.front().version.url, networkManager);
+            SelfUpdater updater(tasks.front().version.url);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if (updater.result() != QDialog::Rejected)
@@ -415,7 +415,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         if (!tasks.isEmpty())
         {
             //application update
-            UpdateDialog dialog(tasks, appManager, networkManager, this);
+            UpdateDialog dialog(tasks, appManager, this);
             connect(&dialog, SIGNAL(AppInstalled(QString, QString, AppVersion)),
                     appManager, SLOT(OnAppInstalled(QString, QString, AppVersion)));
             dialog.exec();

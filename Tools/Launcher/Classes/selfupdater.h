@@ -46,7 +46,7 @@ class SelfUpdater final : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent = 0);
+    explicit SelfUpdater(const QString& arcUrl, QWidget* parent = nullptr);
     ~SelfUpdater() override;
 
 signals:
