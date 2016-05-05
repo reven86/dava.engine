@@ -78,7 +78,7 @@ static const ButtonInfo alignButtonsInfo[] = {
 };
 
 static const ButtonInfo fittingButtonsInfo[] = {
-    { L"Disable", TextBlock::FITTING_DISABLED, Rect(450, 130, 100, 20) },
+    { L"Disable", 0, Rect(450, 130, 100, 20) },
     { L"Points", TextBlock::FITTING_POINTS, Rect(560, 130, 100, 20) },
     { L"Enlarge", TextBlock::FITTING_ENLARGE, Rect(450, 155, 100, 20) },
     { L"Reduce", TextBlock::FITTING_REDUCE, Rect(560, 155, 100, 20) },

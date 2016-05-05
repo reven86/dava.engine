@@ -67,10 +67,9 @@ public:
 
     enum eFitType
     {
-        FITTING_DISABLED = 0,
-        FITTING_ENLARGE = 1,
-        FITTING_REDUCE = 2,
-        FITTING_POINTS = 4
+        FITTING_ENLARGE = 0x1,
+        FITTING_REDUCE = 0x2,
+        FITTING_POINTS = 0x4,
     };
 
     enum eUseRtlAlign
@@ -112,7 +111,7 @@ public:
     //if requested size in <0 - rect creates for the all text size
     virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2(0, 0));
     virtual void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
-    virtual void SetFittingOption(int32 fittingType); //may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE, FITTING_POINTS
+    virtual void SetFittingOption(int32 fittingType); //may be FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE, FITTING_POINTS
 
     Vector2 GetPreferredSizeForWidth(float32 width);
 
@@ -206,10 +205,10 @@ private:
     int32 cacheOx;
     int32 cacheOy;
 
-    int32 fittingType;
+    int32 fittingType = 0;
 #if defined(LOCALIZATION_DEBUG)
-    int32 fittingTypeUsed;
-    bool visualTextCroped;
+    int32 fittingTypeUsed = 0;
+    bool visualTextCroped = false;
 #endif //LOCALIZATION_DEBUG
     int32 align;
     eUseRtlAlign useRtlAlign;
