@@ -323,7 +323,7 @@ Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHidden
 
     std::stable_sort(collectedFiles.begin(), collectedFiles.end(), [](const CollectedFile& left, const CollectedFile& right) -> bool
                      {
-                         return CompareCaseInsensitive(left.archivePath, right.archivePath) < 0;
+                         return std::strcmp(left.archivePath.c_str(), right.archivePath.c_str()) < 0;
                      });
 
     return collectedFiles;
