@@ -27,41 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_VEGETATIONPROPERTYNAMES_H__
-#define __DAVAENGINE_VEGETATIONPROPERTYNAMES_H__
+#ifndef __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
+#define __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/FastName.h"
-#include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
+#include "Entity/SceneSystem.h"
 
 namespace DAVA
 {
-/**
- \brief Different uniform and shader flag names
- */
-class VegetationPropertyNames
+class Entity;
+class Landscape;
+
+class LandscapeSystem : public SceneSystem
 {
 public:
-    static const FastName UNIFORM_TILEPOS;
-    static const FastName UNIFORM_WORLD_SIZE;
-    static const FastName UNIFORM_SWITCH_LOD_SCALE;
-    static const FastName UNIFORM_PERTURBATION_FORCE;
-    static const FastName UNIFORM_PERTURBATION_POINT;
-    static const FastName UNIFORM_PERTURBATION_FORCE_DISTANCE;
+    LandscapeSystem(Scene* scene);
+    virtual ~LandscapeSystem();
 
-    static const FastName FLAG_LOD_COLOR;
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
 
-    static const FastName VEGETATION_QUALITY_NAME_HIGH;
-    static const FastName VEGETATION_QUALITY_NAME_LOW;
-    static const FastName VEGETATION_QUALITY_GROUP_NAME;
+    Vector<Landscape*> GetLandscapeObjects();
+    const Vector<Entity*>& GetLandscapeEntities();
 
-    static const FastName UNIFORM_SAMPLER_VEGETATIONMAP;
+protected:
+    void DrawPatchMetrics(Landscape* landscape, uint32 subdivLevel, uint32 x, uint32 y);
 
-    static const FastName UNIFORM_VEGWAVEOFFSET_X;
-    static const FastName UNIFORM_VEGWAVEOFFSET_Y;
-};
+    Vector<Entity*> landscapeEntities;
 };
 
-#endif /* defined(__DAVAENGINE_VEGETATIONPROPERTYNAMES_H__) */
+} // ns
+
+#endif /* __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__ */
