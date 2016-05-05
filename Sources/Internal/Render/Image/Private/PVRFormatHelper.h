@@ -39,18 +39,14 @@
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-#include "Render/PVRDefines.h"
+#include "Render/Image/Private/PVRDefines.h"
 #else //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-//    #include "libpvr/PVRTError.h"
-//    #include "libpvr/PVRTDecompress.h"
-//    #include "libpvr/PVRTMap.h"
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include "libpvr/PVRTextureDefines.h"
 #else
 #include "libpvr/PVRTextureHeader.h"
 #endif
 
-//    #include "libpvr/PVRTexture.h"
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
 namespace DAVA

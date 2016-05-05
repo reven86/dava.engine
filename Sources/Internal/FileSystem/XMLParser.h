@@ -43,6 +43,8 @@ namespace DAVA
 class XMLParserDelegate
 {
 public:
+    virtual ~XMLParserDelegate() = default;
+
     virtual void OnElementStarted(const String& elementName, const String& namespaceURI
                                   ,
                                   const String& qualifedName, const Map<String, String>& attributes) = 0;
