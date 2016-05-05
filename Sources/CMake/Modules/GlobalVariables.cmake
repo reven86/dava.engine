@@ -52,8 +52,10 @@ if (WIN32)
 
 	if( ${X64_PROJECT} EQUAL -1 )
 		set ( X64_MODE false )
+                set( DAVA_PROJECT_BIT 32 )
 	else ()
 		set ( X64_MODE true )
+                set( DAVA_PROJECT_BIT 64 )
 	endif ()
 
 	if( X64_MODE )
@@ -67,12 +69,26 @@ else ()
 	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
 endif()
 
-set( DAVA_PLATFORM_LIST IOS MACOS ANDROID WIN32 )
-foreach( PLATFORM  ${DAVA_PLATFORM_LIST} )
-    if( ${PLATFORM} )
-        set( DAVA_PLATFORM_CURENT ${PLATFORM} )
-    endif()
-endforeach()
+set( DAVA_PLATFORM_LIST IOS 
+                        MACOS 
+                        ANDROID 
+                        WIN 
+                        WINUAP
+                        )
+
+if( IOS )
+    set( DAVA_PLATFORM_CURENT IOS )
+elseif( MACOS )
+    set( DAVA_PLATFORM_CURENT MACOS )
+elseif( ANDROID )
+    set( DAVA_PLATFORM_CURENT ANDROID )
+elseif( WIN32 AND NOT WINDOWS_UAP )
+    set( DAVA_PLATFORM_CURENT WIN )
+    set( WIN true )
+elseif( WIN32 AND WINDOWS_UAP )
+    set( DAVA_PLATFORM_CURENT WINUAP )
+    set( WINUAP true )
+endif()
 
 
 set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )

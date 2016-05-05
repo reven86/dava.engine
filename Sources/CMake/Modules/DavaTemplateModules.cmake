@@ -100,13 +100,13 @@ macro( setup_main_module )
             list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}}  )
         endif()
         
-        if( WINDOWS_UAP )
-            foreach( VALUE ${MAIN_MODULE_VALUES} )
-                string(REPLACE "WIN32" "WINUAP" VALUE_UAP ${VALUE})
-                set( ${VALUE} ${${VALUE_UAP}} )
-            endforeach()
-        endif()
-
+        if( WIN )
+            list( APPEND STATIC_LIBRARIES_WIN         ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}} )
+            list( APPEND STATIC_LIBRARIES_WIN_RELEASE ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_RELEASE} ) 
+            list( APPEND STATIC_LIBRARIES_WIN_DEBUG   ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_DEBUG} )
+            list( APPEND DYNAMIC_LIBRARIES_WIN        ${DYNAMIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}} )
+        endif()      
+       
         #"FIND LIBRARY"
         foreach( NAME ${FIND_SYSTEM_LIBRARY} ${FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}} )
             FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
@@ -127,7 +127,6 @@ macro( setup_main_module )
         endforeach()
         if( ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT} AND ERASE_FILES )
              list(REMOVE_ITEM ERASE_FILES ${ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT}} )
-
         endif()
 
         if( SOURCE_FOLDERS )
