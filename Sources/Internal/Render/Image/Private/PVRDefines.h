@@ -35,7 +35,7 @@ namespace DAVA
 {
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    
+
 /*****************************************************************************
 * Texture related constants and enumerations. 
 *****************************************************************************/
@@ -120,7 +120,6 @@ enum EPVRTVariableType
     ePVRTVarTypeNumVarTypes
 };
 
-
 //Generate a 4 channel PixelID.
 #define PVRTGENPIXELID4(C1Name, C2Name, C3Name, C4Name, C1Bits, C2Bits, C3Bits, C4Bits) \
     ((static_cast<uint64>(C1Name)) + \
@@ -141,7 +140,6 @@ enum EPVRTVariableType
 //Generate a 3 channel PixelID.
 #define PVRTGENPIXELID1(C1Name, C1Bits) (PVRTGENPIXELID4(C1Name, 0, 0, 0, C1Bits, 0, 0, 0))
 
-   
 /*!***************************************************************************
  @Function		PVRTIsLittleEndian
  @Returns		True if the platform the code is ran on is little endian
@@ -212,4 +210,3 @@ struct MetaDataBlock
 
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 };
-
