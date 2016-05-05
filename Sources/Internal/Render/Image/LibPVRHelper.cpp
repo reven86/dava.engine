@@ -226,5 +226,4 @@ Image* LibPVRHelper::DecodeToRGBA8888(Image* encodedImage) const
 {
     return PVRFormatHelper::DecodeToRGBA8888(encodedImage);
 }
-
 }

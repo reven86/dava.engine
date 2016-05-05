@@ -32,7 +32,6 @@
 #include "Infrastructure/TextureUtils.h"
 #include "Utils/CRC32.h"
 
-
 using namespace DAVA;
 
 namespace LibPVRHelperTestLocal

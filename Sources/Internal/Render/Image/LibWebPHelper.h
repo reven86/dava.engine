@@ -55,7 +55,6 @@ protected:
 
     bool CanProcessFileInternal(File* infile) const override;
 };
-
 };
 
 #endif // __DAVAENGINE_WEB_P_HELPER_H__

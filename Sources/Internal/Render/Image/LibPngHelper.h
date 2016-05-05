@@ -60,7 +60,6 @@ protected:
 
     bool CanProcessFileInternal(File* infile) const override;
 };
-
 }
 
 #endif // __PNG_IMAGE_H__

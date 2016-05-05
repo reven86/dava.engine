@@ -264,7 +264,6 @@ void SceneExporter::SetExportingParams(const SceneExporter::Params& exportingPar
     DVASSERT(exportingParams.dataSourceFolder.IsDirectoryPathname());
 }
 
-
 void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_, String machineName, String runDate, String comment)
 {
     cacheClient = cacheClient_;

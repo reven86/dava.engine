@@ -99,6 +99,4 @@ private:
     String interfaceName;
     ImageFormat imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
 };
-
 }
-

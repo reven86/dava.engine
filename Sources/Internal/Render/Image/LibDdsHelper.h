@@ -68,7 +68,6 @@ private:
     static bool WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat);
     static bool WriteAtcFileAsCubemap(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat);
 };
-
 };
 
 #endif // __DAVAENGINE_DXT_HELPER_H__

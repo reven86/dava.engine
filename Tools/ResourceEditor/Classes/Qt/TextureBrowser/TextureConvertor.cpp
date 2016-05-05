@@ -494,7 +494,6 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
             gpu >= 0 && gpu < DAVA::GPU_FAMILY_COUNT &&
             descriptor->compression[gpu].format > DAVA::FORMAT_INVALID && descriptor->compression[gpu].format < DAVA::FORMAT_COUNT)
         {
-
             DAVA::ImageFormat compressedFormat = DAVA::GPUFamilyDescriptor::GetCompressedFileFormat(gpu, (DAVA::PixelFormat)descriptor->compression[gpu].format);
             if (compressedFormat == DAVA::IMAGE_FORMAT_PVR || compressedFormat == DAVA::IMAGE_FORMAT_DDS)
             {
