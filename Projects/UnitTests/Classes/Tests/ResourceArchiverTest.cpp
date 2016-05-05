@@ -26,10 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 
 #include "ResourceArchiver/ResourceArchiver.h"
 
