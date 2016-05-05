@@ -53,14 +53,14 @@ public:
     int exec() override;
 
 private slots:
-    void DownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
+    void DownloadFinished(QNetworkReply* reply);
 
 private:
-    void CreateDownloaderAndLaunch(const QUrl& url);
+    Ui::ConfigDownloader* ui = nullptr;
 
-    Ui::ConfigDownloader* ui;
-
-    ApplicationManager* appManager;
+    ApplicationManager* appManager = nullptr;
+    QNetworkAccessManager* networkManager = nullptr;
+    QStringList requests;
 };
 
 #endif // CONFIGDOWNLOADER_H

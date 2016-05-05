@@ -39,8 +39,14 @@ ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::ConfigDownloader)
     , appManager(manager)
+    , networkManager(new QNetworkAccessManager(this))
 {
     ui->setupUi(this);
+    connect(networkManager, &QNetworkAccessManager::finished, this, &ConfigDownloader::DownloadFinished);
+    requests << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds"
+    // << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches"
+    // << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher"
+    ;
 }
 
 ConfigDownloader::~ConfigDownloader()
@@ -50,43 +56,30 @@ ConfigDownloader::~ConfigDownloader()
 
 int ConfigDownloader::exec()
 {
-    CreateDownloaderAndLaunch(QUrl("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds"));
-    CreateDownloaderAndLaunch(QUrl("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches "));
-    CreateDownloaderAndLaunch(QUrl("http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher"));
+    for (const QString& str : requests)
+    {
+        networkManager->get(QNetworkRequest(QUrl(str)));
+    }
     return QDialog::exec();
 }
 
-void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr)
+void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
 {
-    if (errorCode)
+    QNetworkReply::NetworkError error = reply->error();
+
+    if (error != QNetworkReply::NoError && error != QNetworkReply::OperationCanceledError)
     {
-        if (errorCode != QNetworkReply::OperationCanceledError)
-        {
-            ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, errorCode, errorDescr);
-        }
+        ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, reply->errorString());
         reject();
     }
     else
     {
-        const QByteArray contentTypeConst("Content-Type");
-        for (QList<QPair<QByteArray, QByteArray>>::ConstIterator it = rawHeaderList.begin(); it != rawHeaderList.end(); ++it)
-        {
-            const QPair<QByteArray, QByteArray>& pair = *it;
-            if (pair.first == contentTypeConst)
-            {
-                //appManager->ParseRemoteConfigData(downloadedData);
-            }
-        }
-
+        qDebug() << reply->readAll();
+        //appManager->ParseRemoteConfigData(reply->readAll());
+    }
+    requests.pop_back();
+    if (requests.isEmpty())
+    {
         accept();
     }
-}
-
-void ConfigDownloader::CreateDownloaderAndLaunch(const QUrl& url)
-{
-    FileDownloader* downloader = new FileDownloader(this);
-    connect(ui->cancelButton, &QPushButton::clicked, downloader, &FileDownloader::Cancel);
-    connect(downloader, &FileDownloader::Finished, this, &ConfigDownloader::DownloadFinished);
-
-    downloader->Download(url);
 }
