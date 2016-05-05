@@ -131,7 +131,6 @@ namespace DAVA
     {
         Stop();
         this->moviePath = moviePath;
-        isAudioVideoStreamsInited = false;
     }
 
     void MovieViewControl::CloseMovie()
@@ -204,7 +203,7 @@ namespace DAVA
                 break;
             }
         }
-        if (videoStreamIndex == -1)
+        if (-1 == videoStreamIndex)
         {
             Logger::Error("Didn't find a video stream.\n");
             return false; // false;
@@ -215,7 +214,7 @@ namespace DAVA
 
         videoCodecContext = movieContext->streams[videoStreamIndex]->codec;
         AV::AVCodec* videoCodec = AV::avcodec_find_decoder(videoCodecContext->codec_id);
-        if (videoCodec == nullptr)
+        if (nullptr == videoCodec)
         {
             Logger::Error("Codec not found.\n");
             return false;
@@ -232,12 +231,8 @@ namespace DAVA
         frameHeight = videoCodecContext->height;
         frameWidth = videoCodecContext->width;
 
-        if (videoDecodingThread)
-        {
-            videoDecodingThread->Cancel();
-            videoDecodingThread->Join();
-            SafeRelease(videoDecodingThread);
-        }
+        DVASSERT(nullptr == videoDecodingThread)
+
         videoDecodingThread = Thread::Create(Message(this, &MovieViewControl::VideoDecodingThread));
         videoDecodingThread->Start();
 
@@ -255,7 +250,6 @@ namespace DAVA
         else
         if (packet->stream_index == audioStreamIndex)
         {
-            /*DecodeAudio(packet, 0);*/
             LockGuard<Mutex> locker(audioPacketsMutex);
             currentPrefetchedPacketsCount++;
             audioPackets.push_back(packet);
@@ -268,10 +262,7 @@ namespace DAVA
 
     float64 MovieViewControl::GetAudioClock()
     {
-        audioPacketsMutex.Lock();
         float64 pts = audio_clock; /* maintained in the audio thread */
-        audioPacketsMutex.Unlock();
-        uint32 hw_buf_size = audio_buf_size;
         uint32 bytes_per_sec = 0;
         uint32 n = audioCodecContext->channels * 2;
         if (movieContext->streams[audioStreamIndex])
@@ -280,7 +271,7 @@ namespace DAVA
         }
         if (bytes_per_sec)
         {
-            pts -= static_cast<float64>(hw_buf_size) / bytes_per_sec;
+            pts -= static_cast<float64>(audio_buf_size) / bytes_per_sec;
         }
         return pts;
     }
@@ -290,7 +281,7 @@ namespace DAVA
         DVASSERT(PLAYING != state);
         {
             LockGuard<Mutex> audioLock(audioPacketsMutex);
-            for (auto packet : audioPackets)
+            for (AV::AVPacket* packet : audioPackets)
             {
                 AV::av_packet_free(&packet);
             }
@@ -298,7 +289,7 @@ namespace DAVA
         }
         {
             LockGuard<Mutex> videoLock(videoPacketsMutex);
-            for (auto packet : videoPackets)
+            for (AV::AVPacket* packet : videoPackets)
             {
                 AV::av_packet_free(&packet);
             }
@@ -310,6 +301,9 @@ namespace DAVA
     FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
     {
         Memset(data, 0, datalen);
+
+        if (nullptr == sound)
+            return FMOD_OK;
 
         // Read from your buffer here...
         void* soundData;

@@ -207,7 +207,7 @@ struct DecodedFrameBuffer
         float64 GetAudioClock();
 
         uint32 audio_buf_size = 0;
-        float64 audio_clock = 0.f;
+        std::atomic<float64> audio_clock = 0.f;
 
         bool eof = false;
 
