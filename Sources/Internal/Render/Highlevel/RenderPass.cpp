@@ -205,11 +205,19 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
     }
 }
 
-void RenderPass::BeginRenderPass()
+bool RenderPass::BeginRenderPass()
 {
+    bool success = false;
+
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    if (renderPass != rhi::InvalidHandle)
+    {
     rhi::BeginRenderPass(renderPass);
     rhi::BeginPacketList(packetList);
+    success = true;
+    }
+
+    return success;
 }
 
 void RenderPass::EndRenderPass()
@@ -312,18 +320,20 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 
     passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
     passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
-    BeginRenderPass();
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
-    DrawLayers(mainCamera);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+    if (BeginRenderPass())
+    {
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+        DrawLayers(mainCamera);
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
 
-    if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
-        PrepareReflectionRefractionTextures(renderSystem);
+        if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
+            PrepareReflectionRefractionTextures(renderSystem);
 
-    DrawDebug(drawCamera, renderSystem);
+        DrawDebug(drawCamera, renderSystem);
 
-    EndRenderPass();
+        EndRenderPass();
+    }
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()

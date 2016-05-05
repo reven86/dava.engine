@@ -1327,6 +1327,7 @@ public:
     inline bool GetEnabled() const;
     inline void SetEnabledNotHierarchic(bool enabled);
     inline void SetSelectedNotHierarchic(bool enabled);
+    inline void SetExclusiveInputNotHierarchic(bool enabled);
     inline bool GetNoInput() const;
     inline void SetNoInput(bool noInput);
     inline bool GetDebugDraw() const;
@@ -1343,6 +1344,7 @@ public:
                          PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("exclusiveInput", "Exclusive Input", GetExclusiveInput, SetExclusiveInputNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("wheelSensitivity", "Wheel Sensitivity", GetWheelSensitivity, SetWheelSensitivity, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
@@ -1449,6 +1451,11 @@ void UIControl::SetEnabledNotHierarchic(bool enabled)
 void UIControl::SetSelectedNotHierarchic(bool selected)
 {
     SetSelected(selected, false);
+}
+
+void UIControl::SetExclusiveInputNotHierarchic(bool enabled)
+{
+    SetExclusiveInput(enabled, false);
 }
 
 bool UIControl::GetNoInput() const

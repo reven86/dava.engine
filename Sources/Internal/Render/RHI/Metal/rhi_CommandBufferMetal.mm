@@ -139,6 +139,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         for (unsigned i = 0; i != cmdBufCount; ++i)
             cmdBuf[i] = InvalidHandle;
 
+        MTL_TRACE("-rp.alloc InvalidHande (suspended)");
         return InvalidHandle;
     }
 
@@ -166,6 +167,8 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         for (unsigned i = 0; i != cmdBufCount; ++i)
             cmdBuf[i] = InvalidHandle;
 
+        MTL_TRACE("-rp.alloc InvalidHande (no drawable)");
+        _Metal_NewFramePending = true;
         return InvalidHandle;
     }
 
@@ -868,6 +871,19 @@ metal_Present(Handle syncObject)
     MTL_TRACE("--present %u", ++frame_n);
     SCOPED_NAMED_TIMING("rhi.draw-present");
 
+    if (_Metal_Frame.size() == 0)
+    {
+        if (syncObject != InvalidHandle)
+        {
+            SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+            sync->is_signaled = true;
+        }
+
+        _Metal_NewFramePending = true;
+        MTL_TRACE("  no-frames");
+        return;
+    }
+
     bool do_discard = false;
 
     _Metal_ScreenshotCallbackSync.Lock();
@@ -881,6 +897,41 @@ metal_Present(Handle syncObject)
     if (do_discard)
     {
         MTL_TRACE("  discard-frame %u", ++frame_n);
+
+        for (unsigned i = 0; i != _Metal_Frame.back().pass.size(); ++i)
+        {
+            RenderPassMetal_t* rp = RenderPassPool::Get(_Metal_Frame.back().pass[i]);
+
+            for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
+            {
+                Handle cbh = rp->cmdBuf[b];
+                CommandBufferMetal_t* cb = CommandBufferPool::Get(cbh);
+
+                cb->buf = nil;
+                [cb->encoder release];
+                cb->encoder = nil;
+                cb->rt = nil;
+
+                CommandBufferPool::Free(cbh);
+            }
+
+            rp->desc = nullptr;
+
+            [rp->blit_encoder endEncoding];
+
+            [rp->buf release];
+            rp->buf = nil;
+            [rp->encoder release];
+            rp->encoder = nil;
+
+            [rp->blit_encoder release];
+            rp->blit_encoder = nil;
+            [rp->blit_buf release];
+            rp->blit_buf = nil;
+
+            rp->cmdBuf.clear();
+        }
+
         _Metal_Frame.back().drawable = nil;
         _Metal_NewFramePending = true;
         _Metal_Frame.clear();

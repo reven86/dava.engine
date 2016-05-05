@@ -39,6 +39,8 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
+    #define MTL_SHOW_SHADER_WARNINGS 0
+
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
 namespace rhi
@@ -580,8 +582,10 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
         DumpShaderText( (const char*)(&vprog_bin[0]), vprog_bin.size() );
     }
 
+    #if MTL_SHOW_SHADER_WARNINGS
     if (vp_err != nil)
         Logger::Warning("vprog warnings:\n %s ", vp_err.localizedDescription.UTF8String);
+    #endif
 
     // compile fprog
 
@@ -607,8 +611,10 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
         DumpShaderText( (const char*)(&fprog_bin[0]), fprog_bin.size() );
     }
     
+    #if MTL_SHOW_SHADER_WARNINGS
     if (fp_err != nil)
         Logger::Warning("fprog warnings:\n %s ", fp_err.localizedDescription.UTF8String);
+    #endif
 
     // create render-state
 
