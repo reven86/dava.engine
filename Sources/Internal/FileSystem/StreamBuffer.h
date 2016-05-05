@@ -37,7 +37,7 @@ namespace DAVA
 {
 class DynamicMemoryFile;
 
-class StreamBuffer
+class StreamBuffer : public BaseObject
 {
 private:
     class OneBuffer : public BaseObject

@@ -116,6 +116,16 @@ struct DecodedFrameBuffer
         void Update(float32 timeElapsed) override;
 
     private:
+        enum PlayState : uint32
+        {
+            PLAYING = 0,
+            PREFETCHING,
+            PAUSED,
+            STOPPED,
+        };
+
+        PlayState state = STOPPED;
+
         AV::AVFormatContext* CreateContext(const FilePath& path);
 
         static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
@@ -132,6 +142,8 @@ struct DecodedFrameBuffer
         void ReadingThread(BaseObject* caller, void* callerData, void* userData);
         void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
 
+        FilePath moviePath;
+
         const uint32 maxAudioPacketsPrefetchedCount = 100;
         std::atomic<uint32> currentPrefetchedPacketsCount = 0;
         void PrefetchData(uint32 dataSize);
@@ -140,12 +152,6 @@ struct DecodedFrameBuffer
         float64 synchronize_video(AV::AVFrame* src_frame, float64 pts);
         float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
 
-        static bool isFFMGEGInited;
-        int out_channels = -1;
-        const int out_sample_rate = 44100;
-        void InitFmod();
-
-        bool isPlaying = false;
         bool isAudioVideoStreamsInited = false;
 
         FMOD_CREATESOUNDEXINFO exinfo;
@@ -181,8 +187,14 @@ struct DecodedFrameBuffer
 
         AV::SwrContext* audioConvertContext = nullptr;
         uint32 outAudioBufferSize = 0;
+
+        static bool isFFMGEGInited;
+        int out_channels = -1;
+        const int out_sample_rate = 44100;
+        FMOD::Sound* sound = nullptr;
         FMOD::Channel* fmodChannel = nullptr;
-        StreamBuffer pcmBuffer;
+        StreamBuffer* pcmBuffer = nullptr;
+        void InitFmod();
 
         Deque<AV::AVPacket*> audioPackets;
         Mutex audioPacketsMutex;
@@ -202,37 +214,8 @@ struct DecodedFrameBuffer
         float64 GetTime();
 
         void FlushBuffers();
+        void CloseMovie();
     };
-
-    inline float64 MovieViewControl::GetTime()
-    {
-        return (AV::av_gettime() / 1000000.0);
-    }
-
-    // Pause/resume the playback.
-    inline void MovieViewControl::Pause()
-    {
-        if (!isAudioVideoStreamsInited)
-            return;
-
-        isPlaying = false;
-        fmodChannel->setPaused(!isPlaying);
-    }
-
-    inline void MovieViewControl::Resume()
-    {
-        if (!isAudioVideoStreamsInited)
-            return;
-
-        isPlaying = true;
-        fmodChannel->setPaused(!isPlaying);
-    }
-
-    // Whether the movie is being played?
-    inline bool MovieViewControl::IsPlaying() const
-    {
-        return isPlaying;
-    }
 }
 
 

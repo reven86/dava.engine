@@ -134,8 +134,7 @@ uint32 StreamBuffer::ReadInternal(uint8* dataOut, uint32 len)
     if (nullptr == readPage)
         readPage = pages.front();
 
-    OneBuffer* page = readPage;
-    uint32 read = page->Read(dataOut, len);
+    uint32 read = readPage->Read(dataOut, len);
     if (readPage->GetRemainSize() == 0)
     {
         pages.remove(readPage);
