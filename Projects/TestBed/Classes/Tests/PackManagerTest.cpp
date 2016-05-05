@@ -81,6 +81,19 @@ void PackManagerTest::LoadResources()
     greenControl->SetDebugDrawColor(Color(0.f, 1.f, 0.f, 1.f));
     greenControl->SetDebugDraw(true);
     AddControl(greenControl);
+
+    description = new UIStaticText(Rect(5, 40, 400, 200));
+    description->SetFont(font);
+    description->SetTextColor(Color::White);
+    description->SetMultiline(true);
+    description->SetDebugDraw(true);
+    description->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    String message = DAVA::Format("type name of pack you want to download\n"
+                                  "Directory to downloaded packs: \"%s\"\nUrl to packs: \"%s\"\n"
+                                  "When you press \"start loading\" full reinitializetion begins",
+                                  folderWithDownloadedPacks.GetAbsolutePathname().c_str(), urlToServerWithPacks.c_str());
+    description->SetText(UTF8Utils::EncodeToWideString(message));
+    AddControl(description);
 }
 
 void PackManagerTest::UnloadResources()
@@ -95,6 +108,8 @@ void PackManagerTest::UnloadResources()
     SafeRelease(redControl);
     RemoveControl(greenControl);
     SafeRelease(greenControl);
+    RemoveControl(description);
+    SafeRelease(description);
 
     BaseScreen::UnloadResources();
 }
@@ -122,13 +137,18 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 {
     PackManager& packManager = Core::Instance()->GetPackManager();
 
-    FilePath sqliteDbFile("~res:/TestData/PackManagerTest/test.db");
-    FilePath folderWithDownloadedPacks("~doc:/PackManagerTest/packs/");
-    String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/");
-
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
+    for (auto& pack : packManager.GetPacks())
+    {
+        if (pack.state == PackManager::Pack::Mounted)
+        {
+            packManager.Delete(pack.name);
+        }
+    }
+
+    // clear and renew all packs state
     packManager.Initialize(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
     packManager.EnableProcessing();
 

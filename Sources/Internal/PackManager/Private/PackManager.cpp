@@ -220,6 +220,7 @@ public:
             FilePath archivePath = localPacksDir + packName;
             fs->Unmount(archivePath);
 
+            fs->DeleteFile(archivePath);
             FilePath archiveCrc32Path = archivePath + RequestQueue::crc32Postfix;
             fs->DeleteFile(archiveCrc32Path);
         }

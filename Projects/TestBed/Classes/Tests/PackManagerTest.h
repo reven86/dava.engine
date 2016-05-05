@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __PACKMANAGERTEST_TEST_H__
 
 #include "Infrastructure/BaseScreen.h"
+#include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
 
 class PackManagerTest : public BaseScreen
@@ -46,12 +47,17 @@ private:
 
     void OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change);
 
+    DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/test.db";
+    DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
+    DAVA::String urlToServerWithPacks = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/";
+
     DAVA::UIStaticText* packNameLoading = nullptr;
     DAVA::UIButton* startLoadingButton = nullptr;
     DAVA::UIControl* progressBar = nullptr;
     DAVA::UITextField* packInput = nullptr;
     DAVA::UIControl* redControl = nullptr;
     DAVA::UIControl* greenControl = nullptr;
+    DAVA::UIStaticText* description = nullptr;
 };
 
 #endif //__PACKMANAGERTEST_TEST_H__
