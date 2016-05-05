@@ -244,6 +244,9 @@ public:
 
     void ReleaseFocus();
 
+    void SetSelectionColor(const Color& selectionColor);
+    const Color& GetSelectionColor() const;
+
     /**
      \brief Sets the font of the control text.
      \param[in] font font used for text draw of the states.
@@ -371,7 +374,7 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
 
-    WideString GetVisibleText() const;
+    WideString GetVisibleText();
 
     virtual void OnStartEditing();
     virtual void OnStopEditing();
@@ -416,7 +419,7 @@ private:
     // All Boolean variables are grouped together because of DF-2149.
     bool isPassword;
     bool enableReturnKeyAutomatically;
-    bool isMultiline_ = false;
+    bool isMultiline = false;
     bool isEditing = false;
 
     TextFieldPlatformImpl* textFieldImpl = nullptr;
@@ -427,6 +430,7 @@ public:
                          PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("selectioncolor", "Selection color", GetSelectionColor, SetSelectionColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
