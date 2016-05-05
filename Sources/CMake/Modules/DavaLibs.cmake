@@ -83,9 +83,10 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_a
 
 
 
-if( WIN32 AND NOT WINDOWS_UAP ) 
+if( WIN ) 
 
-    set( WIN32_RELEASE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/detours.lib"
+    set( DAVA_STATIC_LIBRARIES_WIN32_RELEASE
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/detours.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/freetype246MT.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/glew32.lib"
@@ -114,7 +115,8 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/unibreak_win.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/zlib.lib"   )
 
-    set( WIN32_DEBUG   "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/detours.lib"
+    set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG
+                      "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/detours.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/freetype246MT_D.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glew32.lib"
@@ -143,7 +145,8 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak_wind.lib"  
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib" )
 
-    set( WIN64_RELEASE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
+    set( DAVA_STATIC_LIBRARIES_WIN64_RELEASE
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/freetype.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/glew32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/glut32.lib"
@@ -171,7 +174,8 @@ if( WIN32 AND NOT WINDOWS_UAP )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/uv.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/z.lib" )
 
-    set( WIN64_DEBUG   "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
+    set( DAVA_STATIC_LIBRARIES_WIN64_DEBUG
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/freetype.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glew32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glut32.lib"
@@ -211,38 +215,34 @@ if( WIN32 AND NOT WINDOWS_UAP )
                                      "delayimp.lib"
                                      "dxgi.lib" )
 
-    if( X64_MODE )
-        set( DAVA_STATIC_LIBRARIES_WIN32_RELEASE ${WIN64_RELEASE} )
-        set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG   ${WIN64_DEBUG} )
+    set ( DAVA_STATIC_LIBRARIES_WIN64 ${DAVA_STATIC_LIBRARIES_WIN32} )
 
-        list ( APPEND DAVA_STATIC_LIBRARIES_WIN32
-            "$ENV{DXSDK_DIR}/lib/x64/d3dx9.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d9.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d11.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3dcompiler.lib"
-            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
-        )
-    else ()
-        set( DAVA_STATIC_LIBRARIES_WIN32_RELEASE ${WIN32_RELEASE} )
-        set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG   ${WIN32_DEBUG} )
-
-        list ( APPEND DAVA_STATIC_LIBRARIES_WIN32
-
+    list ( APPEND DAVA_STATIC_LIBRARIES_WIN32
             "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib"
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib"
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
         )
-    endif ()
 
-    list ( APPEND DAVA_STATIC_LIBRARIES_WIN32_RELEASE "msvcrt.lib"  )
-    list ( APPEND DAVA_STATIC_LIBRARIES_WIN32_DEBUG   "msvcrtd.lib" )
+    list ( APPEND DAVA_STATIC_LIBRARIES_WIN64
+            "$ENV{DXSDK_DIR}/lib/x64/d3dx9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d11.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3dcompiler.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/dxguid.lib"
+        )
+
+    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_RELEASE "msvcrt.lib"  )
+    list( APPEND DAVA_STATIC_LIBRARIES_WIN32_DEBUG   "msvcrtd.lib" )
+
+    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_RELEASE "msvcrt.lib"  )
+    list( APPEND DAVA_STATIC_LIBRARIES_WIN64_DEBUG   "msvcrtd.lib" )
 
 endif()
 
 
-if( WINDOWS_UAP ) 
+if( WINUAP ) 
     add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
 
     set( DAVA_STATIC_LIBRARIES_WINUAP   "d2d1.lib"
