@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "EditorUIPackageBuilder.h"
+#include "QuickEdPackageBuilder.h"
 
 #include "PackageHierarchy/PackageNode.h"
 #include "PackageHierarchy/ImportedPackagesNode.h"
@@ -56,13 +56,13 @@ using namespace DAVA;
 const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
-EditorUIPackageBuilder::EditorUIPackageBuilder()
+QuickEdPackageBuilder::QuickEdPackageBuilder()
     : currentObject(nullptr)
     , currentSection(nullptr)
 {
 }
 
-EditorUIPackageBuilder::~EditorUIPackageBuilder()
+QuickEdPackageBuilder::~QuickEdPackageBuilder()
 {
     for (PackageNode* importedPackage : importedPackages)
         importedPackage->Release();
@@ -77,17 +77,17 @@ EditorUIPackageBuilder::~EditorUIPackageBuilder()
     styleSheets.clear();
 }
 
-void EditorUIPackageBuilder::BeginPackage(const FilePath& aPackagePath)
+void QuickEdPackageBuilder::BeginPackage(const FilePath& aPackagePath)
 {
     DVASSERT(packagePath.IsEmpty());
     packagePath = aPackagePath;
 }
 
-void EditorUIPackageBuilder::EndPackage()
+void QuickEdPackageBuilder::EndPackage()
 {
 }
 
-bool EditorUIPackageBuilder::ProcessImportedPackage(const String& packagePathStr, AbstractUIPackageLoader* loader)
+bool QuickEdPackageBuilder::ProcessImportedPackage(const String& packagePathStr, AbstractUIPackageLoader* loader)
 {
     FilePath packagePath(packagePathStr);
     for (PackageNode* package : importedPackages)
@@ -102,7 +102,7 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String& packagePathStr
         return false;
     }
 
-    EditorUIPackageBuilder builder;
+    QuickEdPackageBuilder builder;
     builder.declinedPackages.insert(builder.declinedPackages.end(), declinedPackages.begin(), declinedPackages.end());
     builder.declinedPackages.push_back(packagePath);
 
@@ -116,13 +116,13 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String& packagePathStr
     return false;
 }
 
-void EditorUIPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
+void QuickEdPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
 {
     StyleSheetNode* node = new StyleSheetNode(selectorChains, properties);
     styleSheets.push_back(node);
 }
 
-UIControl* EditorUIPackageBuilder::BeginControlWithClass(const String& className)
+UIControl* QuickEdPackageBuilder::BeginControlWithClass(const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
@@ -135,7 +135,7 @@ UIControl* EditorUIPackageBuilder::BeginControlWithClass(const String& className
     return control.Get();
 }
 
-UIControl* EditorUIPackageBuilder::BeginControlWithCustomClass(const String& customClassName, const String& className)
+UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
@@ -151,7 +151,7 @@ UIControl* EditorUIPackageBuilder::BeginControlWithCustomClass(const String& cus
     return control.Get();
 }
 
-UIControl* EditorUIPackageBuilder::BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
+UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     ControlNode* prototypeNode = nullptr;
     if (packageName.empty())
@@ -184,7 +184,7 @@ UIControl* EditorUIPackageBuilder::BeginControlWithPrototype(const String& packa
     return node->GetControl();
 }
 
-UIControl* EditorUIPackageBuilder::BeginControlWithPath(const String& pathName)
+UIControl* QuickEdPackageBuilder::BeginControlWithPath(const String& pathName)
 {
     ControlNode* control = nullptr;
     if (!controlsStack.empty())
@@ -208,13 +208,13 @@ UIControl* EditorUIPackageBuilder::BeginControlWithPath(const String& pathName)
     return control->GetControl();
 }
 
-UIControl* EditorUIPackageBuilder::BeginUnknownControl(const YamlNode* node)
+UIControl* QuickEdPackageBuilder::BeginUnknownControl(const YamlNode* node)
 {
     DVASSERT(false);
     return nullptr;
 }
 
-void EditorUIPackageBuilder::EndControl(bool isRoot)
+void QuickEdPackageBuilder::EndControl(bool isRoot)
 {
     ControlNode* lastControl = SafeRetain(controlsStack.back().node);
     bool addToParent = controlsStack.back().addToParent;
@@ -233,19 +233,19 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
     SafeRelease(lastControl);
 }
 
-void EditorUIPackageBuilder::BeginControlPropertiesSection(const String& name)
+void QuickEdPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
     currentSection = controlsStack.back().node->GetRootProperty()->GetControlPropertiesSection(name);
     currentObject = controlsStack.back().node->GetControl();
 }
 
-void EditorUIPackageBuilder::EndControlPropertiesSection()
+void QuickEdPackageBuilder::EndControlPropertiesSection()
 {
     currentSection = nullptr;
     currentObject = nullptr;
 }
 
-UIComponent* EditorUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
+UIComponent* QuickEdPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
 {
     ControlNode* node = controlsStack.back().node;
     ComponentPropertiesSection* section;
@@ -257,13 +257,13 @@ UIComponent* EditorUIPackageBuilder::BeginComponentPropertiesSection(uint32 comp
     return section->GetComponent();
 }
 
-void EditorUIPackageBuilder::EndComponentPropertiesSection()
+void QuickEdPackageBuilder::EndComponentPropertiesSection()
 {
     currentSection = nullptr;
     currentObject = nullptr;
 }
 
-UIControlBackground* EditorUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
+UIControlBackground* QuickEdPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
 {
     ControlNode* node = controlsStack.back().node;
     BackgroundPropertiesSection* section = node->GetRootProperty()->GetBackgroundPropertiesSection(index);
@@ -283,13 +283,13 @@ UIControlBackground* EditorUIPackageBuilder::BeginBgPropertiesSection(int index,
     return nullptr;
 }
 
-void EditorUIPackageBuilder::EndBgPropertiesSection()
+void QuickEdPackageBuilder::EndBgPropertiesSection()
 {
     currentSection = nullptr;
     currentObject = nullptr;
 }
 
-UIControl* EditorUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
+UIControl* QuickEdPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
 {
     ControlNode* node = controlsStack.back().node;
     InternalControlPropertiesSection* section = node->GetRootProperty()->GetInternalControlPropertiesSection(index);
@@ -309,13 +309,13 @@ UIControl* EditorUIPackageBuilder::BeginInternalControlSection(int index, bool s
     return nullptr;
 }
 
-void EditorUIPackageBuilder::EndInternalControlSection()
+void QuickEdPackageBuilder::EndInternalControlSection()
 {
     currentSection = nullptr;
     currentObject = nullptr;
 }
 
-void EditorUIPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
+void QuickEdPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
 {
     if (currentObject && currentSection && (member->Flags() & I_EDIT))
     {
@@ -330,7 +330,7 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember* member, const Var
     }
 }
 
-RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
+RefPtr<PackageNode> QuickEdPackageBuilder::BuildPackage() const
 {
     DVASSERT(!packagePath.IsEmpty());
     RefPtr<PackageNode> package(new PackageNode(packagePath));
@@ -375,27 +375,27 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     return package;
 }
 
-const Vector<ControlNode*>& EditorUIPackageBuilder::GetRootControls() const
+const Vector<ControlNode*>& QuickEdPackageBuilder::GetRootControls() const
 {
     return rootControls;
 }
 
-const Vector<PackageNode*>& EditorUIPackageBuilder::GetImportedPackages() const
+const Vector<PackageNode*>& QuickEdPackageBuilder::GetImportedPackages() const
 {
     return importedPackages;
 }
 
-const Vector<StyleSheetNode*>& EditorUIPackageBuilder::GetStyles() const
+const Vector<StyleSheetNode*>& QuickEdPackageBuilder::GetStyles() const
 {
     return styleSheets;
 }
 
-void EditorUIPackageBuilder::AddImportedPackage(PackageNode* node)
+void QuickEdPackageBuilder::AddImportedPackage(PackageNode* node)
 {
     importedPackages.push_back(SafeRetain(node));
 }
 
-ControlNode* EditorUIPackageBuilder::FindRootControl(const DAVA::String& name) const
+ControlNode* QuickEdPackageBuilder::FindRootControl(const DAVA::String& name) const
 {
     for (ControlNode* control : rootControls)
     {
@@ -408,30 +408,30 @@ ControlNode* EditorUIPackageBuilder::FindRootControl(const DAVA::String& name) c
 ////////////////////////////////////////////////////////////////////////////////
 // ControlDescr
 ////////////////////////////////////////////////////////////////////////////////
-EditorUIPackageBuilder::ControlDescr::ControlDescr()
+QuickEdPackageBuilder::ControlDescr::ControlDescr()
     : node(nullptr)
     , addToParent(false)
 {
 }
 
-EditorUIPackageBuilder::ControlDescr::ControlDescr(ControlNode* node, bool addToParent)
+QuickEdPackageBuilder::ControlDescr::ControlDescr(ControlNode* node, bool addToParent)
     : node(node)
     , addToParent(addToParent)
 {
 }
 
-EditorUIPackageBuilder::ControlDescr::ControlDescr(const ControlDescr& descr)
+QuickEdPackageBuilder::ControlDescr::ControlDescr(const ControlDescr& descr)
 {
     node = DAVA::SafeRetain(descr.node);
     addToParent = descr.addToParent;
 }
 
-EditorUIPackageBuilder::ControlDescr::~ControlDescr()
+QuickEdPackageBuilder::ControlDescr::~ControlDescr()
 {
     DAVA::SafeRelease(node);
 }
 
-EditorUIPackageBuilder::ControlDescr& EditorUIPackageBuilder::ControlDescr::operator=(const ControlDescr& descr)
+QuickEdPackageBuilder::ControlDescr& QuickEdPackageBuilder::ControlDescr::operator=(const ControlDescr& descr)
 {
     DAVA::SafeRetain(descr.node);
     DAVA::SafeRelease(node);
