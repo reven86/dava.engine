@@ -40,23 +40,31 @@ PackRequest::PackRequest(PackManager& packManager_, const String& name, float32 
     // find all dependenciec
     // put it all into vector and put final pack into vector too
 
-    const PackManager::Pack& rootPack = packManager->GetPack(name);
+    const PackManager::Pack& pack = packManager->GetPack(name);
 
     // теперь нужно узнать виртуальный ли это пакет, и первыми поставить на закачку
     // так как у нас может быть несколько зависимых паков, тоже виртуальными, то
     // мы должны сначала сделать плоскую структуру всех зависимых паков, всем им
     // выставить одинаковый приоритет - текущего виртуального пака и добавить
     // в очередь на скачку в порядке, зависимостей
-    Set<const PackManager::Pack*> dependency;
-    CollectDownlodbleDependency(name, dependency);
+    // используем множество, что бы не было дублированых паков, если такие зависимости могут быть
+    Set<const PackManager::Pack*> dependencySet;
+    CollectDownlodbleDependency(name, dependencySet);
 
-    dependencies.reserve(dependency.size() + 1);
+    if (pack.crc32FromDB != 0) // not fully virtual pack
+    {
+        dependencies.reserve(dependencySet.size() + 1);
+    }
+    else
+    {
+        dependencies.reserve(dependencySet.size());
+    }
 
-    for (const PackManager::Pack* pack : dependency)
+    for (const PackManager::Pack* depPack : dependencySet)
     {
         SubRequest subRequest;
 
-        subRequest.packName = pack->name;
+        subRequest.packName = depPack->name;
         subRequest.status = SubRequest::Wait;
         subRequest.taskId = 0;
 
@@ -64,11 +72,11 @@ PackRequest::PackRequest(PackManager& packManager_, const String& name, float32 
     }
 
     // last step download pack itself (if it not virtual)
-    if (rootPack.crc32FromDB != 0)
+    if (pack.crc32FromDB != 0)
     {
         SubRequest subRequest;
 
-        subRequest.packName = rootPack.name;
+        subRequest.packName = pack.name;
         subRequest.status = SubRequest::Wait;
         subRequest.taskId = 0;
         dependencies.push_back(subRequest);
@@ -92,6 +100,8 @@ void PackRequest::CollectDownlodbleDependency(const String& packName, Set<const 
 
 void PackRequest::StartLoadingCRC32File()
 {
+    DVASSERT(!dependencies.empty());
+
     SubRequest& subRequest = dependencies.at(0);
 
     // build url to pack_name_crc32_file
@@ -111,6 +121,8 @@ void PackRequest::StartLoadingCRC32File()
 bool PackRequest::DoneLoadingCRC32File()
 {
     bool result = false;
+
+    DVASSERT(!dependencies.empty());
 
     SubRequest& subRequest = dependencies.at(0);
 
@@ -174,6 +186,8 @@ bool PackRequest::DoneLoadingCRC32File()
 
 void PackRequest::StartLoadingPackFile()
 {
+    DVASSERT(!dependencies.empty());
+
     SubRequest& subRequest = dependencies.at(0);
 
     // build url to pack file and build filePath to pack file
@@ -198,6 +212,8 @@ void PackRequest::StartLoadingPackFile()
 bool PackRequest::DoneLoadingPackFile()
 {
     bool result = false;
+
+    DVASSERT(!dependencies.empty());
 
     SubRequest& subRequest = dependencies.at(0);
 
@@ -281,6 +297,8 @@ bool PackRequest::DoneLoadingPackFile()
 
 void PackRequest::StartCheckCRC32()
 {
+    DVASSERT(!dependencies.empty());
+
     SubRequest& subRequest = dependencies.at(0);
 
     PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
@@ -304,23 +322,28 @@ void PackRequest::StartCheckCRC32()
     }
     // calculate crc32 from PackFile
     FilePath packPath = packManager->GetLocalPacksDirectory() + subRequest.packName;
+    // TODO if it take lot of time move to job on other thread and wait
     uint32 realCrc32FromPack = CRC32::ForFile(packPath);
 
     if (realCrc32FromPack != pack.crc32FromMeta)
     {
         pack.state = PackManager::Pack::OtherError;
-        pack.otherErrorMsg = "can't read crc meta file";
-        throw std::runtime_error("just downloaded pack file crc32 not match! can't mount pack: " + pack.name);
+        pack.otherErrorMsg = "calculated pack crc32 not match with crc32 from meta";
+        // inform user about problem with pack
+        packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::State);
     }
-
-    if (pack.crc32FromMeta != pack.crc32FromDB)
+    else if (pack.crc32FromMeta != pack.crc32FromDB)
     {
         pack.state = PackManager::Pack::OtherError;
-        pack.otherErrorMsg = "can't read crc meta file";
-        throw std::runtime_error("just downloaded pack file crc32 not match! can't mount pack: " + pack.name);
-    }
+        pack.otherErrorMsg = "pack crc32 from meta not match crc32 from local DB";
 
-    subRequest.status = SubRequest::CheckCRC32;
+        // inform user about problem with pack
+        packManager->onPackStateChanged.Emit(pack, PackManager::Pack::Change::State);
+    }
+    else
+    {
+        subRequest.status = SubRequest::CheckCRC32;
+    }
 }
 
 bool PackRequest::DoneCheckingCRC32()
@@ -330,6 +353,8 @@ bool PackRequest::DoneCheckingCRC32()
 
 void PackRequest::MountPack()
 {
+    DVASSERT(!dependencies.empty());
+
     SubRequest& subRequest = dependencies.at(0);
 
     FilePath packPath = packManager->GetLocalPacksDirectory() + subRequest.packName;
@@ -423,7 +448,7 @@ void PackRequest::Update(PackManager& packManager)
 
 void PackRequest::ChangePriority(float32 newPriority)
 {
-    for (auto& subRequest : dependencies)
+    for (SubRequest& subRequest : dependencies)
     {
         PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
         if (pack.priority < newPriority)
@@ -443,13 +468,15 @@ bool PackRequest::IsError() const
 {
     if (!dependencies.empty())
     {
-        return GetCurrentSubRequest().status == SubRequest::Error;
+        const SubRequest& subRequest = GetCurrentSubRequest();
+        return subRequest.status == SubRequest::Error;
     }
     return false;
 }
 
 const PackRequest::SubRequest& PackRequest::GetCurrentSubRequest() const
 {
+    DVASSERT(!dependencies.empty());
     return dependencies.at(0); // at check index
 }
 
@@ -518,13 +545,15 @@ bool RequestQueue::Empty() const
     return items.empty();
 }
 
-uint32 RequestQueue::Size() const
+size_type RequestQueue::Size() const
 {
-    return static_cast<uint32>(items.size());
+    return static_cast<size_type>(items.size());
 }
 
 PackRequest& RequestQueue::Top()
 {
+    DVASSERT(!items.empty());
+
     PackRequest& topItem = items.front();
     return topItem;
 }
@@ -544,6 +573,8 @@ PackRequest& RequestQueue::Find(const String& packName)
 
 void RequestQueue::CheckRestartLoading()
 {
+    DVASSERT(!items.empty());
+
     PackRequest& top = Top();
 
     if (Size() == 1)
@@ -599,6 +630,8 @@ void RequestQueue::UpdatePriority(const String& packName, float32 newPriority)
 
 void RequestQueue::Pop()
 {
+    DVASSERT(!items.empty());
+
     std::pop_heap(begin(items), end(items));
     items.pop_back();
 }

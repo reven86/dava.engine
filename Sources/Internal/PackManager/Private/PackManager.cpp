@@ -60,7 +60,7 @@ public:
 
         // open DB and load packs state then mount all archives to FileSystem
         db.reset(new PacksDB(dbFile));
-        db->GetAllPacksState(packs);
+        db->InitializePacks(packs);
         MountDownloadedPacks();
     }
 
@@ -105,7 +105,7 @@ public:
         priority = std::max(0.f, priority);
         priority = std::min(1.f, priority);
 
-        auto& pack = GetPackState(packID);
+        auto& pack = GetPack(packID);
         if (pack.state == PackManager::Pack::NotRequested)
         {
             queue->Push(packID, priority);
@@ -130,7 +130,7 @@ public:
         throw std::runtime_error("can't find pack with name: " + packName);
     }
 
-    PackManager::Pack& GetPackState(const String& packName)
+    PackManager::Pack& GetPack(const String& packName)
     {
         uint32 index = GetPackIndex(packName);
         return packs[index];
@@ -207,13 +207,13 @@ public:
 
     void DeletePack(const String& packName)
     {
-        auto& state = GetPackState(packName);
-        if (state.state == PackManager::Pack::Mounted)
+        auto& pack = GetPack(packName);
+        if (pack.state == PackManager::Pack::Mounted)
         {
             // first modify DB
-            state.state = PackManager::Pack::NotRequested;
-            state.priority = 0.0f;
-            state.downloadProgress = 0.f;
+            pack.state = PackManager::Pack::NotRequested;
+            pack.priority = 0.0f;
+            pack.downloadProgress = 0.f;
 
             // now remove archive from filesystem
             FileSystem* fs = FileSystem::Instance();
@@ -296,7 +296,7 @@ const String& PackManager::FindPack(const FilePath& relativePathInPack) const
 
 const PackManager::Pack& PackManager::GetPack(const String& packID) const
 {
-    return impl->GetPackState(packID);
+    return impl->GetPack(packID);
 }
 
 const PackManager::Pack& PackManager::RequestPack(const String& packID, float priority)

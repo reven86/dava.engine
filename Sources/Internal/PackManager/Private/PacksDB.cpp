@@ -26,36 +26,49 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+// Next python 2.7 code generate test.db
+
 //import sqlite3
 //import os
-//
-//action = "read"
+
+//action = "create"
 //if action == "create":
 //os.remove('test.db')
-//
+
 //conn = sqlite3.connect('test.db')
 //c = conn.cursor()
 //c.execute(
-//    '''CREATE TABLE packs (
-//    name TEXT PRIMARY KEY NOT NULL,
-//    status INTEGER,
-//    priority REAL,
-//    download REAL,
-//    hash text
-//    )''')
-//    pack_name = 'unit_test.pak'
-//    c.execute("INSERT INTO packs VALUES (?, 0, 0.5, 0.0, '0x12345678')", (pack_name, ))
-//    conn.commit()
-//    c.execute(
-//        '''CREATE TABLE files (
-//        path TEXT PRIMARY KEY,
-//        pack_name TEXT,
-//        FOREIGN KEY(pack_name) REFERENCES packs(name)
-//        )''')
-//    #path_to_test_bed = "d:/Users/l_chayka/job/dava.framework/Projects/UnitTests/Data"
-//    path_to_test_bed = "d:/Users/l_chayka/job/wot.blitz/Data"
-//    for path, subdirs, files in os.walk(path_to_test_bed) :
-//        for name in files :
+//	'''CREATE TABLE packs (
+//	name TEXT PRIMARY KEY NOT NULL,
+//	hash text NOT NULL
+//)''')
+//pack_name = 'unit_test.pak'
+//c.execute("INSERT INTO packs VALUES (?, '9bec4b20')", (pack_name, ))
+//c.execute("INSERT INTO packs VALUES (?, '0')", ("virtual_test_pack.pak", ))  # empty hash for virtual pack
+//conn.commit()
+//c.execute(
+//	'''CREATE TABLE dependency (
+//	key INTEGER PRIMARY KEY, /* autoincrement if NULL inserted */
+//	pack TEXT NOT NULL,
+//	depends TEXT NOT NULL,
+//	FOREIGN KEY(pack) REFERENCES packs(name),
+//	FOREIGN KEY(depends) REFERENCES packs(name)
+//)''')
+//conn.commit()
+//c.execute(
+//	'''INSERT INTO dependency VALUES (NULL, "virtual_test_pack.pak", "unit_test.pak")'''
+//)
+//conn.commit()
+//c.execute(
+//	'''CREATE TABLE files (
+//	path TEXT PRIMARY KEY,
+//	pack TEXT NOT NULL,
+//	FOREIGN KEY(pack) REFERENCES packs(name)
+//)''')
+//path_to_test_bed = "d:/Users/l_chayka/job/dava.framework/Projects/UnitTests/Data"
+//#path_to_test_bed = "d:/Users/l_chayka/job/wot.blitz/Data"
+//for path, subdirs, files in os.walk(path_to_test_bed) :
+//	for name in files :
 //print("name: " + name + " path: " + path + " subdirs: ")
 //rel_path = os.path.relpath(os.path.join(path, name), path_to_test_bed)
 //rel_path = rel_path.replace("\\", "/")
@@ -66,11 +79,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //c = conn.cursor()
 //print("----packs-------------")
 //for row in c.execute("SELECT * FROM packs ORDER BY name") :
-//    print(row)
-//    print("----files-------------")
-//    for row in c.execute("SELECT * FROM files ORDER BY path") :
-//        print(row)
-//        conn.close()
+//	print(row)
+//	print("----files-------------")
+//	for row in c.execute("SELECT * FROM files ORDER BY path") :
+//		print(row)
+//		conn.close()
 
 
 
@@ -157,31 +170,34 @@ PacksDB::~PacksDB()
 
 const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
 {
-    static String result;
+    static String result; // I want return const String, reuse same memory
+
+    result.clear(); // empty string if nothing found
+
     String relativePath = relativeFilePath.GetRelativePathname("~res:/");
-    data->GetDB() << "SELECT pack FROM files WHERE path=?"
+    data->GetDB() << "SELECT pack FROM files WHERE path = ?"
                   << relativePath
     >> [&](std::string packName)
     {
-        result = std::move(packName);
+        result = packName;
     };
 
     return result;
 }
 
-void PacksDB::GetAllPacksState(Vector<PackManager::Pack>& out) const
+void PacksDB::InitializePacks(Vector<PackManager::Pack>& packs) const
 {
-    out.clear();
+    packs.clear();
 
     auto selectQuery = data->GetDB() << "SELECT name, hash FROM packs";
 
     selectQuery >> [&](String name, String hash)
     {
-        PackManager::Pack state;
-        state.name = name;
-        state.state = PackManager::Pack::NotRequested;
+        PackManager::Pack pack;
+        pack.name = name;
+        pack.state = PackManager::Pack::NotRequested;
 
-        unsigned int crc32 = 0;
+        uint32 crc32 = 0;
         if (!hash.empty())
         {
             StringStream ss;
@@ -189,14 +205,14 @@ void PacksDB::GetAllPacksState(Vector<PackManager::Pack>& out) const
             ss >> crc32;
         }
 
-        state.crc32FromDB = crc32;
+        pack.crc32FromDB = crc32;
 
-        out.push_back(state);
+        packs.push_back(pack);
     };
 
     auto selectDependency = data->GetDB() << "SELECT depends FROM dependency WHERE pack = ?";
 
-    for (auto& pack : out)
+    for (PackManager::Pack& pack : packs)
     {
         selectDependency << pack.name;
         selectDependency >> [&](String depends_name)
@@ -206,26 +222,6 @@ void PacksDB::GetAllPacksState(Vector<PackManager::Pack>& out) const
 
         selectDependency->reset();
     }
-}
-
-void PacksDB::UpdatePackState(const PackManager::Pack& state)
-{
-    //try
-    //{
-    //    data->GetDB() << "begin;";
-    //    // TODO update properties
-    //    data->GetDB() << "UPDATE packs SET status = ?, priority = ?, progress = ? WHERE name = ?;"
-    //                  << static_cast<int32>(state.state)
-    //                  << state.name;
-
-    //    data->GetDB() << "commit;";
-    //}
-    //catch (std::exception&)
-    //{
-    //    data->GetDB() << "rollback;";
-
-    //    throw; // rethrow current exception
-    //}
 }
 
 } // end namespace DAVA

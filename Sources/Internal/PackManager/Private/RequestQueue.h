@@ -53,8 +53,8 @@ public:
         enum Status : uint32
         {
             Wait = 0,
-            LoadingCRC32File = 1, // download manager thread
-            LoadingPackFile = 2, // download manager thread
+            LoadingCRC32File = 1, // download manager thread, wait on main thread
+            LoadingPackFile = 2, // download manager thread, wait on main thread
             CheckCRC32 = 3, // on main thread (in future move to job manager)
             Mounted = 4, // on main thread
 
@@ -63,8 +63,8 @@ public:
 
         String packName;
         String errorMsg;
-        uint32 taskId;
-        Status status;
+        uint32 taskId = 0;
+        Status status = SubRequest::Wait;
     };
 
     const String& GetPackName() const
@@ -121,7 +121,7 @@ public:
     static const String crc32Postfix;
 
 private:
-    inline void CheckRestartLoading();
+    void CheckRestartLoading();
 
     PackManager& packManager;
     String currrentTopLoadingPack;

@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "Functional/Signal.h"
-#include "DLC/Downloader/DownloadManager.h"
+#include "DLC/Downloader/DownloaderCommon.h"
 
 namespace DAVA
 {
@@ -95,7 +95,7 @@ public:
     // получение статуса пака (исключение если неверный айдишник пака?)
     const Pack& GetPack(const String& packName) const;
 
-    // запрос пака
+    // запрос пака (в случае неверного имени - исключение)
     // 1. Важно! Если мы уже качаем один пак, и тут приходит заброс с более высоким приоритетом
     // 2. то мы останавливаем закачку прошлого пака и переключаемся на новый, т.к. это могут быть виртуальные паки
     // 3. но дополнительно мы проверяем зависимые паки, что бы не переключиться с него, если он нужен в новом запрошеном
@@ -106,7 +106,7 @@ public:
 
     // возможность освободить место на устройстве пользователя
     // удалив скаченный пак (так же отмонтирует его от FS)
-    void Delete(const String& packID);
+    void Delete(const String& packName);
 
     // отслеживание статуса запросов
     Signal<const Pack&, Pack::Change> onPackStateChanged;
