@@ -1037,7 +1037,7 @@ bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& 
         {
             if (!fileList->IsNavigationDirectory(i))
             {
-                retCode &= RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+                retCode = retCode && RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
             }
         }
         else
