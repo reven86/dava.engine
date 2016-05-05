@@ -711,8 +711,8 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
             const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
-            currentPacket.scissorRect.x = static_cast<int16>(transformedClipRect.x + 0.5f);
-            currentPacket.scissorRect.y = static_cast<int16>(transformedClipRect.y + 0.5f);
+            currentPacket.scissorRect.x = static_cast<int16>(floorf(transformedClipRect.x));
+            currentPacket.scissorRect.y = static_cast<int16>(floorf(transformedClipRect.y));
             currentPacket.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
             currentPacket.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
             currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;

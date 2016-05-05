@@ -26,27 +26,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_CLIPBOARD_H__
+#define __DAVAENGINE_CLIPBOARD_H__
 
-#include "Vector.h"
-#include "Matrix3.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-const Vector2 Vector2::Zero(0.0f, 0.0f);
-const Vector2 Vector2::UnitX(1.0f, 0.0f);
-const Vector2 Vector2::UnitY(0.0f, 1.0f);
+class IClipboardImpl;
 
-const Vector3 Vector3::Zero(0.0f, 0.0f, 0.0f);
-const Vector3 Vector3::UnitX(1.0f, 0.0f, 0.0f);
-const Vector3 Vector3::UnitY(0.0f, 1.0f, 0.0f);
-const Vector3 Vector3::UnitZ(0.0f, 0.0f, 1.0f);
-
-const Vector4 Vector4::Zero(0.0f, 0.0f, 0.0f, 0.0f);
-
-Vector2 Rotate(const Vector2& in, float32 angleRad)
+/**
+ * \brief Helper to work with system clipboard
+ */
+class Clipboard
 {
-    DAVA::Matrix3 rotateMatrix;
-    rotateMatrix.BuildRotation(angleRad);
-    return in * rotateMatrix;
+public:
+    /**
+     * \brief Constructor
+     */
+    Clipboard();
+
+    /**
+     * \brief Destructor
+     */
+    ~Clipboard();
+
+    /**
+     * \brief Return status of clipboard helper
+     * \return true if helper ready to work with clipboard
+     */
+    bool IsReadyToUse() const;
+
+    /**
+     * \brief Clear system clipboard
+     * \return true if successful
+     */
+    bool ClearClipboard() const;
+
+    /**
+     * \brief Check that system clipboard contains Unicode text
+     * \return true if system clipboard contains Unicode text
+     */
+    bool HasText() const;
+
+    /**
+     * \brief Copy to system clipboard WideString as Unicode string
+     * \param[in] str input string
+     * \return true if successful
+     */
+    bool SetText(const WideString& str);
+
+    /**
+     * \brief Get from system clipboard Unicode text data as WideString
+     * \return WideString with clipboard content
+     */
+    WideString GetText() const;
+
+private:
+    IClipboardImpl* pImpl;
+};
 }
-}
+
+#endif //__DAVAENGINE_CLIPBOARD_H__
