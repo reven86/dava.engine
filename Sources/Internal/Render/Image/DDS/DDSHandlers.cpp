@@ -502,7 +502,7 @@ public:
     ScopedPtr<File> file;
     dds::DDS_HEADER mainHeader;
     dds::DDS_HEADER_DXT10 extHeader;
-    bool needDirectConvert = false;
+    bool fileStoresTextureInD3DFormat = false;
     dds::D3D_FORMAT d3dPixelFormat;
     PixelFormat davaPixelFormat = FORMAT_INVALID;
     uint32 faceCount = 1;
@@ -636,7 +636,7 @@ bool DDSHandler::SetFormatInfo()
 
     mainHeader.format.size = sizeof(dds::DDS_PIXELFORMAT);
 
-    needDirectConvert = false;
+    fileStoresTextureInD3DFormat = false;
 
     switch (davaPixelFormat)
     {
@@ -659,7 +659,7 @@ bool DDSHandler::SetFormatInfo()
         aMask = 0x8000;
         bitCount = 16;
         d3dPixelFormat = dds::D3DFMT_A1R5G5B5;
-        needDirectConvert = true;
+        fileStoresTextureInD3DFormat = true;
         break;
     }
     case FORMAT_RGBA4444:
@@ -671,7 +671,7 @@ bool DDSHandler::SetFormatInfo()
         aMask = 0xf000;
         bitCount = 16;
         d3dPixelFormat = dds::D3DFMT_A4R4G4B4;
-        needDirectConvert = true;
+        fileStoresTextureInD3DFormat = true;
         break;
     }
     case FORMAT_RGB565:
@@ -804,7 +804,7 @@ void DDSHandler::FetchPixelFormats()
     bool flagAlpha = (flags & dds::DDPF_ALPHA) != 0;
     bool flagFourCC = (flags & dds::DDPF_FOURCC) != 0;
 
-    needDirectConvert = false;
+    fileStoresTextureInD3DFormat = false;
     davaPixelFormat = FORMAT_INVALID;
 
     if (flagRGBA)
@@ -815,19 +815,19 @@ void DDSHandler::FetchPixelFormats()
         }
         else if (rMask == 0x7c00 && gMask == 0x3e0 && bMask == 0x1f && aMask == 0x8000)
         {
-            needDirectConvert = true;
+            fileStoresTextureInD3DFormat = true;
             d3dPixelFormat = dds::D3DFMT_A1R5G5B5;
             davaPixelFormat = FORMAT_RGBA5551;
         }
         else if (rMask == 0xff0000 && gMask == 0xff00 && bMask == 0xff && aMask == 0xff000000)
         {
-            needDirectConvert = true;
+            fileStoresTextureInD3DFormat = true;
             d3dPixelFormat = dds::D3DFMT_A8R8G8B8;
             davaPixelFormat = FORMAT_RGBA8888;
         }
         else if (rMask == 0xf00 && gMask == 0xf0 && bMask == 0xf && aMask == 0xf000)
         {
-            needDirectConvert = true;
+            fileStoresTextureInD3DFormat = true;
             d3dPixelFormat = dds::D3DFMT_A4R4G4B4;
             davaPixelFormat = FORMAT_RGBA4444;
         }
@@ -846,7 +846,7 @@ void DDSHandler::FetchPixelFormats()
             }
             else if (bitCount == 32)
             {
-                needDirectConvert = true;
+                fileStoresTextureInD3DFormat = true;
                 d3dPixelFormat = dds::D3DFMT_X8R8G8B8;
                 davaPixelFormat = FORMAT_RGB888;
             }
@@ -869,7 +869,7 @@ void DDSHandler::FetchPixelFormats()
             }
             case dds::DXGI_FORMAT_B5G5R5A1_UNORM:
             {
-                needDirectConvert = true;
+                fileStoresTextureInD3DFormat = true;
                 d3dPixelFormat = dds::D3DFMT_A1R5G5B5;
                 davaPixelFormat = FORMAT_RGBA5551;
                 break;
@@ -1091,9 +1091,24 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
     ImageSystem::LoadingParams ddsLoadingParams = { info.width, info.height, Min(loadingParams.baseMipmap, info.mipmapsCount - 1) };
     uint32 baseMipMap = ImageSystem::GetBaseMipmap(ddsLoadingParams, loadingParams);
 
-    const uint32 bitsPerPixel = needDirectConvert ? D3DUtils::GetFormatSizeInBits(d3dPixelFormat) : PixelFormatDescriptor::GetPixelFormatSizeInBits(davaPixelFormat);
+    const bool d3dUsed = fileStoresTextureInD3DFormat;
+    const uint32 d3dBitsPerPixel = d3dUsed ? D3DUtils::GetFormatSizeInBits(d3dPixelFormat) : 0;
+    const PixelFormat davaFormat = davaPixelFormat;
 
-    const uint32 largestImageSize = info.width * info.height * bitsPerPixel / 8;
+    auto MipSizeD3D = [d3dBitsPerPixel](uint32 w, uint32 h)
+    {
+        return w * h * d3dBitsPerPixel / 8;
+    };
+    auto MipSizeDava = [davaFormat](uint32 w, uint32 h)
+    {
+        return Image::GetSizeInBytes(w, h, davaFormat);
+    };
+    auto MipSize = [d3dUsed, &MipSizeD3D, &MipSizeDava](uint32 w, uint32 h)
+    {
+        return d3dUsed ? MipSizeD3D(w, h) : MipSizeDava(w, h);
+    };
+
+    const uint32 largestImageSize = MipSize(info.width, info.height);
     Vector<uint8> dataBuffer(largestImageSize);
 
     for (uint32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
@@ -1105,8 +1120,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
         {
             uint32 mipWidth = info.width >> mip;
             uint32 mipHeight = info.height >> mip;
-            uint32 bytesInMip = mipWidth * mipHeight * bitsPerPixel / 8;
-            bytesToSkip += bytesInMip;
+            bytesToSkip += MipSize(mipWidth, mipHeight);
         }
         if (bytesToSkip > 0 && (file->Seek(File::SEEK_FROM_CURRENT, bytesToSkip) == false))
         {
@@ -1118,8 +1132,9 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
         {
             uint32 mipWidth = info.width >> mip;
             uint32 mipHeight = info.height >> mip;
-            uint32 bytesInMip = mipWidth * mipHeight * bitsPerPixel / 8;
+            uint32 bytesInMip = MipSize(mipWidth, mipHeight);
 
+            Logger::Info("mip %u-%u : %u x %u, reading %u bytes starting from %u", faceIndex, mip, mipWidth, mipHeight, bytesToSkip, file->GetPos());
             auto readSize = file->Read(dataBuffer.data(), bytesInMip);
             if (readSize != bytesInMip)
             {
@@ -1130,7 +1145,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
             Image* fetchedImage = Image::Create(mipWidth, mipHeight, info.format);
             DVASSERT(fetchedImage);
 
-            if (needDirectConvert)
+            if (fileStoresTextureInD3DFormat)
             {
                 D3DUtils::DirectConvertFromD3D(dataBuffer.data(), fetchedImage, d3dPixelFormat, davaPixelFormat);
             }
@@ -1230,6 +1245,7 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
 
     for (const Vector<Image*>& mips : images)
     {
+        Logger::Info("next face, %u mips", mips.size());
         for (const Image* srcImage : mips)
         {
             uint32 w = srcImage->width;
@@ -1255,7 +1271,7 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
                 dataToCopySize = dstDavaImage->dataSize;
             }
 
-            if (needDirectConvert)
+            if (fileStoresTextureInD3DFormat)
             {
                 uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBits(d3dPixelFormat) / 8;
                 Vector<uint8> d3dData(d3dSize); // todo: use single buffer for all mips
@@ -1264,6 +1280,7 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
                 dataToCopySize = d3dSize;
             }
 
+            Logger::Info("next mip %u x %u, writing %u bytes starting from %u", w, h, dataToCopySize, file->GetPos());
             if (WriteDataChunk(dataToCopy, dataToCopySize) == false)
             {
                 Logger::Error("Can't add data chunk to %s", file->GetFilename().GetStringValue().c_str());

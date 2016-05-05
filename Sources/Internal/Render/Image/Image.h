@@ -91,6 +91,7 @@ public:
 
     static Image* Create(uint32 width, uint32 height, PixelFormat format);
     static Image* CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data);
+    static uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format);
 
     static Image* CreatePinkPlaceholder(bool checkers = true);
     void MakePink(bool checkers = true);
