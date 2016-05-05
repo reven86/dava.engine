@@ -97,7 +97,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     {
         return "";
     }
-    QString davaPath = path.left(path.indexOf(index + frameworkDirName.length()));
+    QString davaPath = path.left(index + frameworkDirName.length());
     QString cmakePath = davaPath + "/Tools/Bin" +
 #ifdef Q_OS_MAC
     "/CMake.app" + GetAdditionalCMakePath();
