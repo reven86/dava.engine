@@ -105,14 +105,14 @@ bool LibPngHelper::CanProcessFileInternal(File* infile) const
     return retValue;
 }
 
-eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const
+eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
 
     if (innerRetCode == eErrorCode::SUCCESS)
     {
-        image->mipmapLevel = firstMipmapIndex;
+        image->mipmapLevel = loadingParams.firstMipmapIndex;
         imageSet.push_back(image);
     }
     else

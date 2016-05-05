@@ -335,7 +335,7 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
         return false;
 
     DAVA::Vector<DAVA::Image*> images;
-    DAVA::ImageSystem::Instance()->Load(filePath, images, 0, 0);
+    DAVA::ImageSystem::Instance()->Load(filePath, images);
     if (images.empty())
         return false;
 

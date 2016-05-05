@@ -48,11 +48,11 @@ public:
 
 protected:
     //ImageFormatInterface
-    eErrorCode Load(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const;
+    eErrorCode Load(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const;
     eErrorCode Save(const FilePath& fileName, const Vector<Image*>& imageSet) const;
     eErrorCode SaveCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const;
 
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 

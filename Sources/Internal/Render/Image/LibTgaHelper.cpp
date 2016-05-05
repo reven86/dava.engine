@@ -209,7 +209,7 @@ struct Convert_RGBA5551_to_TgaARGB1555
     }
 };
 
-eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const
+eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -247,7 +247,7 @@ eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 
         }
 
         SafeRetain(pImage);
-        pImage->mipmapLevel = firstMipmapIndex;
+        pImage->mipmapLevel = loadingParams.firstMipmapIndex;
         imageSet.push_back(pImage);
         return eErrorCode::SUCCESS;
     }

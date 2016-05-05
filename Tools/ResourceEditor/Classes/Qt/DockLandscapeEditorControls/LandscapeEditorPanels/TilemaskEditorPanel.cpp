@@ -335,7 +335,7 @@ void TilemaskEditorPanel::UpdateTileTextures()
     DAVA::FilePath tileTexturePath = sceneEditor->tilemaskEditorSystem->GetTileTexture()->GetDescriptor()->GetSourceTexturePathname();
 
     DAVA::Vector<DAVA::Image*> imgs;
-    DAVA::ImageSystem::Instance()->Load(tileTexturePath, imgs, 0, 0);
+    DAVA::ImageSystem::Instance()->Load(tileTexturePath, imgs);
     DVASSERT(imgs.size() == 1);
 
     imgs[0]->ResizeCanvas(iconSize.width(), iconSize.height());

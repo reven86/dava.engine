@@ -99,7 +99,7 @@ bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile);
 bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC);
 void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc);
 
-bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint32 firstMipmapIndex);
+bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
 
 Image* DecodeToRGBA8888(Image* encodedImage);
 

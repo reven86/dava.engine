@@ -34,22 +34,38 @@
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/File.h"
-#include "ImageFormatInterface.h"
+#include "Render/Image/Image.h"
 #include <memory>
 
 namespace DAVA
 {
-class Image;
+class ImageFormatInterface;
 
 class ImageSystem : public Singleton<ImageSystem>
 {
 public:
+    struct LoadingParams
+    {
+        LoadingParams(uint32 w = 0, uint32 h = 0, uint32 mipmap = 0)
+            : minimalWidth(w)
+            , minimalHeight(h)
+            , baseMipmap(mipmap)
+            , firstMipmapIndex(0)
+        {
+        }
+
+        uint32 minimalWidth = 0;
+        uint32 minimalHeight = 0;
+        uint32 baseMipmap = 0;
+        uint32 firstMipmapIndex = 0;
+    };
+
     ImageSystem();
 
-    eErrorCode LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
-    eErrorCode LoadWithoutDecompession(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
-    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
-    eErrorCode Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const;
+    eErrorCode LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams()) const;
+    eErrorCode LoadWithoutDecompession(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams()) const;
+    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams()) const;
+    eErrorCode Load(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams()) const;
 
     Image* EnsurePowerOf2Image(Image* image) const;
     void EnsurePowerOf2Images(Vector<Image*>& images) const;
@@ -70,6 +86,8 @@ public:
     ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
     ImageFormatInterface* GetImageFormatInterface(const FilePath& pathName) const;
 
+    static uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams);
+
 private:
     ImageFormatInterface* GetImageFormatInterface(File* file) const;
     ImageFormatInterface* GetDecoder(PixelFormat format) const;
@@ -80,17 +98,6 @@ private:
 
     Array<std::unique_ptr<ImageFormatInterface>, IMAGE_FORMAT_COUNT> wrappers;
 };
-
-inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
-{
-    DVASSERT(fileFormat < IMAGE_FORMAT_COUNT);
-    return wrappers[fileFormat].get();
-}
-
-inline const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
-{
-    return GetImageFormatInterface(format)->Extensions();
-}
 };
 
 

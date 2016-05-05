@@ -153,7 +153,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
     FilePath filePath = descriptor.GetSourceTexturePathname();
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(filePath, images, 0, 0);
+    ImageSystem::Instance()->Load(filePath, images);
 
     if (!images.size())
     {

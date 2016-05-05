@@ -51,6 +51,31 @@ public:
     
 #endif
 
+struct ImageInfo
+{
+    bool IsEmpty() const
+    {
+        return (0 == width * height);
+    }
+
+    Size2i GetImageSize() const
+    {
+        return Size2i(width, height);
+    }
+
+    bool operator==(const ImageInfo& another) const
+    {
+        return (width == another.width && height == another.height && format == another.format
+                && dataSize == another.dataSize && mipmapsCount == another.mipmapsCount);
+    }
+
+    uint32 width = 0;
+    uint32 height = 0;
+    PixelFormat format = PixelFormat::FORMAT_INVALID;
+    uint32 dataSize = 0;
+    uint32 mipmapsCount = 0;
+};
+
 class Image : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_IMAGE)

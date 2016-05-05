@@ -97,7 +97,7 @@ Image* CreateTopLevelImage(const FilePath& imagePathname)
 {
     Image* image = NULL;
     Vector<Image*> imageSet;
-    ImageSystem::Instance()->Load(imagePathname, imageSet, 0, 0);
+    ImageSystem::Instance()->Load(imagePathname, imageSet);
     if (0 != imageSet.size())
     {
         image = SafeRetain(imageSet[0]);

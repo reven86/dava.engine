@@ -31,35 +31,11 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
+#include "Render/Image/ImageSystem.h"
 
 namespace DAVA
 {
 class Image;
-
-struct ImageInfo
-{
-    bool IsEmpty() const
-    {
-        return (0 == width || 0 == height);
-    }
-
-    Size2i GetImageSize() const
-    {
-        return Size2i(width, height);
-    }
-
-    bool operator==(const ImageInfo& another) const
-    {
-        return (width == another.width && height == another.height && format == another.format
-                && dataSize == another.dataSize && mipmapsCount == another.mipmapsCount);
-    }
-
-    uint32 width = 0;
-    uint32 height = 0;
-    PixelFormat format = PixelFormat::FORMAT_INVALID;
-    uint32 dataSize = 0;
-    uint32 mipmapsCount = 0;
-};
 
 class ImageFormatInterface
 {
@@ -85,7 +61,7 @@ protected:
 
     virtual ImageInfo GetImageInfo(File* infile) const = 0;
 
-    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const = 0;
+    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const = 0;
     virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
 

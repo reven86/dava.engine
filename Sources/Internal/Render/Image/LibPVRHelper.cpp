@@ -54,9 +54,9 @@ bool LibPVRHelper::CanProcessFileInternal(File* file) const
     return false;
 }
 
-eErrorCode LibPVRHelper::Load(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const
+eErrorCode LibPVRHelper::Load(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
-    if (PVRFormatHelper::LoadImages(infile, imageSet, fromMipmap, firstMipmapIndex))
+    if (PVRFormatHelper::LoadImages(infile, imageSet, loadingParams))
     {
         DVASSERT(imageSet.empty() == false);
         return eErrorCode::SUCCESS;
@@ -65,9 +65,9 @@ eErrorCode LibPVRHelper::Load(File* infile, Vector<Image*>& imageSet, int32 from
     return eErrorCode::ERROR_READ_FAIL;
 }
 
-eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap, int32 firstMipmapIndex) const
+eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
-    eErrorCode loadResult = Load(infile, imageSet, fromMipmap, firstMipmapIndex);
+    eErrorCode loadResult = Load(infile, imageSet, loadingParams);
     if (eErrorCode::SUCCESS != loadResult || imageSet.empty())
     {
         return loadResult;

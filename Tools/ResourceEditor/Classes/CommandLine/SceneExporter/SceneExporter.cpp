@@ -411,6 +411,35 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 
     DAVA::Map<DAVA::eGPUFamily, bool> exportedStatus;
 
+    //    Vector<FilePath> imagePathnames;
+    //    if (descriptor->IsCubeMap())
+    //    {
+    //        descriptor->GetFacePathnames(imagePathnames);
+    //    }
+    //    else
+    //    {
+    //        imagePathnames.push_back(descriptor->GetSourceTexturePathname());
+    //    }
+    //
+    //    for (FilePath& path : imagePathnames)
+    //    {
+    //        DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(path);
+    //        if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
+    //        {
+    //            Logger::Error("Can't export non-square image %s into compression format %s",
+    //                          path.GetStringValue().c_str(),
+    //                          GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format));
+    //            return;
+    //        }
+    //        else if (imgInfo.width < DAVA::Texture::MINIMAL_WIDTH || imgInfo.height < DAVA::Texture::MINIMAL_HEIGHT)
+    //        {
+    //            Logger::Error("Can't export image %s because of small size(%dx%d) of source image", path.GetStringValue().c_str(), imgInfo.width, imgInfo.height);
+    //            return;
+    //        }
+    //    }
+
+    DVASSERT(false && "Check cube");
+
     { // compress images
         for (DAVA::eGPUFamily gpu : exportingParams.exportForGPUs)
         {
@@ -525,7 +554,7 @@ bool SceneExporter::SplitHDTexture(const DAVA::TextureDescriptor& descriptor, DA
         }
     };
 
-    DAVA::eErrorCode loadError = DAVA::ImageSystem::Instance()->LoadWithoutDecompession(compressedTexturePath, loadedImages, 0, 0);
+    DAVA::eErrorCode loadError = DAVA::ImageSystem::Instance()->LoadWithoutDecompession(compressedTexturePath, loadedImages);
     if (loadError != DAVA::eErrorCode::SUCCESS || loadedImages.empty())
     {
         Logger::Error("Can't load %s", compressedTexturePath.GetStringValue().c_str());

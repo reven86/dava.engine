@@ -533,7 +533,7 @@ std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageS
     return pvrFile;
 }
 
-bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint32 firstMipmapIndex)
+bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(infile, true, false);
     if (!pvrFile)
@@ -557,7 +557,7 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint3
         return false;
     }
 
-    fromMipMap = Min(fromMipMap, pvrFile->header.u32MIPMapCount - 1);
+    uint32 fromMipMap = Min(loadingParams.baseMipmap, pvrFile->header.u32MIPMapCount - 1);
 
     uint32 cubemapLayout = GetCubemapLayout(*pvrFile);
     for (uint32 mip = 0; mip < pvrFile->header.u32MIPMapCount; ++mip)
@@ -580,7 +580,7 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, uint32 fromMipMap, uint3
                     image->width = mipWidth;
                     image->height = mipHeight;
                     image->format = pxFormat;
-                    image->mipmapLevel = (mip - fromMipMap) + firstMipmapIndex;
+                    image->mipmapLevel = (mip - fromMipMap) + loadingParams.firstMipmapIndex;
                     if (cubemapLayout != 0)
                     {
                         image->cubeFaceID = (cubemapLayout & (0x0000000F << (face * 4))) >> (face * 4);

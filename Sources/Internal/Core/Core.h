@@ -37,6 +37,7 @@
 #include "Core/DisplayMode.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Functional/Signal.h"
 
 /**
 	\defgroup core Core
@@ -165,9 +166,9 @@ public:
     virtual DisplayMode FindBestMode(const DisplayMode& requestedMode);
 
     /**
-		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
+		\brief Get current size nativeView(it's virtual size, not physical!). Now is only for Win32, WinUAP, MacOS.
 	*/
-    virtual DisplayMode GetCurrentDisplayMode();
+    Vector2 GetWindowSize();
 
     /**
 		\brief Quit from application & release all subsystems
@@ -266,7 +267,9 @@ public:
     void InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
     void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
 
+    bool IsFocused();
     rhi::InitParam rendererParams;
+    Signal<bool> focusChanged;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -281,6 +284,7 @@ private:
 
     KeyedArchive* options;
 
+    bool isFocused = false;
     bool isActive;
 
     uint32 globalFrameIndex;

@@ -26,72 +26,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/Platform.h"
-#if defined(__DAVAENGINE_WIN32__)
+#ifndef __DAVAENGINE_CLIPBOARD_H__
+#define __DAVAENGINE_CLIPBOARD_H__
 
-#include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Concurrency/Thread.h"
-#include "Utils/Utils.h"
-#include "Utils/UTF8Utils.h"
-
-#include <shellapi.h>
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-CoreWin32PlatformBase::CoreWin32PlatformBase()
+class IClipboardImpl;
+
+/**
+ * \brief Helper to work with system clipboard
+ */
+class Clipboard
 {
+public:
+    /**
+     * \brief Constructor
+     */
+    Clipboard();
+
+    /**
+     * \brief Destructor
+     */
+    ~Clipboard();
+
+    /**
+     * \brief Return status of clipboard helper
+     * \return true if helper ready to work with clipboard
+     */
+    bool IsReadyToUse() const;
+
+    /**
+     * \brief Clear system clipboard
+     * \return true if successful
+     */
+    bool ClearClipboard() const;
+
+    /**
+     * \brief Check that system clipboard contains Unicode text
+     * \return true if system clipboard contains Unicode text
+     */
+    bool HasText() const;
+
+    /**
+     * \brief Copy to system clipboard WideString as Unicode string
+     * \param[in] str input string
+     * \return true if successful
+     */
+    bool SetText(const WideString& str);
+
+    /**
+     * \brief Get from system clipboard Unicode text data as WideString
+     * \return WideString with clipboard content
+     */
+    WideString GetText() const;
+
+private:
+    IClipboardImpl* pImpl;
+};
 }
 
-void CoreWin32PlatformBase::InitArgs()
-{
-    int argc = 0;
-    LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
-
-    if (argc > 0 && NULL != szArglist)
-    {
-        Vector<String> args;
-        args.reserve(argc);
-        for (int i = 0; i < argc; ++i)
-        {
-            args.emplace_back(WStringToString(szArglist[i]));
-        }
-
-        SetCommandLine(std::move(args));
-    }
-
-    ::LocalFree(szArglist);
-}
-
-void CoreWin32PlatformBase::Quit()
-{
-    PostQuitMessage(0);
-}
-
-void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
-{
-    RECT wndRect;
-    GetWindowRect(hWnd, &wndRect);
-    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
-    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
-    SetCursorPos(centerX, centerY);
-}
-
-void CoreWin32PlatformBase::SetCursorPositionCenter()
-{
-    SetCursorPosCenterInternal((HWND)GetNativeView());
-}
-
-void CoreWin32PlatformBase::SetCursorPosition(Point2i position)
-{
-    SetCursorPos(position.x, position.y);
-}
-
-Point2i CoreWin32PlatformBase::GetCursorPosition()
-{
-    POINT p;
-    GetCursorPos(&p);
-    return Point2i(p.x, p.y);
-}
-}
-
-#endif // #if defined(__DAVAENGINE_WIN32__)
+#endif //__DAVAENGINE_CLIPBOARD_H__

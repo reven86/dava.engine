@@ -31,6 +31,7 @@
 #define __DAVAENGINE_PSD_HELPER_H__
 
 #include "Render/Image/ImageFormatInterface.h"
+#include "Render/Image/Image.h"
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
@@ -43,7 +44,7 @@ public:
     LibPSDHelper();
 
 protected:
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
 
     //only RGBA8888 or RGB888
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;

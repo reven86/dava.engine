@@ -215,7 +215,7 @@ void HeightmapEditorSystem::UpdateToolImage()
         SafeRelease(curToolImage);
 
         DAVA::Vector<DAVA::Image*> images;
-        DAVA::ImageSystem::Instance()->Load(toolImagePath, images, 0, 0);
+        DAVA::ImageSystem::Instance()->Load(toolImagePath, images);
         if (images.size())
         {
             DVASSERT(images.size() == 1);

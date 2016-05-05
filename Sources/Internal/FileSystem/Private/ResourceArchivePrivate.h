@@ -26,40 +26,21 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#pragma once
 
-#include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-
-#include "FileSystem/FileSystem.h"
-#include "Render/Cursor.h"
-#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "FileSystem/ResourceArchive.h"
 
 namespace DAVA
 {
-InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
+class ResourceArchiveImpl
 {
-    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->GetMouseCaptureMode();
-}
+public:
+    virtual ~ResourceArchiveImpl() = default;
 
-bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
-{
-    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->SetMouseCaptureMode(mode);
-}
-
-bool Cursor::GetSystemCursorVisibility()
-{
-    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->GetCursorVisibility();
-}
-
-bool Cursor::SetSystemCursorVisibility(bool show)
-{
-    DVASSERT("Cursor::SetSystemCursorVisibility not implemented");
-    return false;
-}
+    virtual const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const = 0;
+    virtual const ResourceArchive::FileInfo* GetFileInfo(const String& relativeFilePath) const = 0;
+    virtual bool HasFile(const String& relativeFilePath) const = 0;
+    virtual bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const = 0;
 };
 
-#endif //  (__DAVAENGINE_WIN_UAP__)
+} // end namespace DAVA

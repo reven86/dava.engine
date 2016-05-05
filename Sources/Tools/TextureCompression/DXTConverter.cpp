@@ -43,7 +43,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
     FilePath fileToConvert = descriptor.GetSourceTexturePathname();
 
     Vector<Image*> inputImages;
-    auto loadResult = ImageSystem::Instance()->Load(fileToConvert, inputImages, 0, 0);
+    auto loadResult = ImageSystem::Instance()->Load(fileToConvert, inputImages);
 
     if (loadResult != eErrorCode::SUCCESS || inputImages.empty())
     {
@@ -152,7 +152,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
     for (uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
     {
         if (faceNames[i].IsEmpty() ||
-            ImageSystem::Instance()->Load(faceNames[i], imageSets[i], 0, 0) != DAVA::eErrorCode::SUCCESS ||
+            ImageSystem::Instance()->Load(faceNames[i], imageSets[i]) != DAVA::eErrorCode::SUCCESS ||
             imageSets[i].empty())
         {
             Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't load %s", fileToConvert.GetAbsolutePathname().c_str());

@@ -95,7 +95,7 @@ void SaveCubemap(const FilePath& newImagePath, const Vector<Image*>& images)
 void UnpackFile(const FilePath& sourceImagePath)
 {
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(sourceImagePath, images, 0, 0);
+    ImageSystem::Instance()->Load(sourceImagePath, images);
 
     if (images.size() != 0)
     {
@@ -156,7 +156,7 @@ void ResavePNG(const FilePath& folderPath, const String& extension)
             if (pathname.IsEqualToExtension(".png"))
             {
                 Vector<Image*> images;
-                ImageSystem::Instance()->Load(pathname, images, 0, 0);
+                ImageSystem::Instance()->Load(pathname, images);
 
                 FilePath tgaPathname = FilePath::CreateWithNewExtension(pathname, extension);
                 ImageSystem::Instance()->Save(tgaPathname, images);

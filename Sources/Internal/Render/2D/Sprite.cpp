@@ -369,7 +369,7 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
     DVASSERT(file);
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(file, images, 0, 0);
+    ImageSystem::Instance()->Load(file, images);
     if (images.size() == 0)
     {
         return nullptr;
@@ -407,7 +407,7 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
     }
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(path, images, 0, 0);
+    ImageSystem::Instance()->Load(path, images);
     if (images.size() == 0)
     {
         return nullptr;

@@ -50,7 +50,7 @@ bool LibWebPHelper::CanProcessFileInternal(File* infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap, int32 firstMipmapIndex) const
+eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     WebPDecoderConfig config;
     WebPBitstreamFeatures* bitstream = &config.input;
@@ -114,7 +114,7 @@ eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32
     image->data = newData;
     image->customDeleter = ::free;
     image->dataSize = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
-    image->mipmapLevel = firstMipmapIndex;
+    image->mipmapLevel = loadingParams.firstMipmapIndex;
 
     imageSet.push_back(image);
 

@@ -58,7 +58,7 @@ ImageSystem::ImageSystem()
     wrappers[IMAGE_FORMAT_PSD].reset(new LibPSDHelper());
 }
 
-eErrorCode ImageSystem::LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+eErrorCode ImageSystem::LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams) const
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -66,11 +66,11 @@ eErrorCode ImageSystem::LoadWithoutDecompession(const FilePath& pathname, Vector
         return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
-    eErrorCode result = LoadWithoutDecompession(fileRead, imageSet, baseMipmap, firstMipmapIndex);
+    eErrorCode result = LoadWithoutDecompession(fileRead, imageSet, loadingParams);
     return result;
 }
 
-eErrorCode ImageSystem::LoadWithoutDecompession(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+eErrorCode ImageSystem::LoadWithoutDecompession(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -84,12 +84,12 @@ eErrorCode ImageSystem::LoadWithoutDecompession(File* file, Vector<Image*>& imag
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    return properWrapper->ReadFile(file, imageSet, baseMipmap, firstMipmapIndex);
+    return properWrapper->ReadFile(file, imageSet, loadingParams);
 }
 
-eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams) const
 {
-    eErrorCode loaded = LoadWithoutDecompession(pathname, imageSet, baseMipmap, firstMipmapIndex);
+    eErrorCode loaded = LoadWithoutDecompession(pathname, imageSet, loadingParams);
     
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
@@ -102,9 +102,9 @@ eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet,
     return loaded;
 }
 
-eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap, int32 firstMipmapIndex) const
+eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams) const
 {
-    eErrorCode loaded = LoadWithoutDecompession(file, imageSet, baseMipmap, firstMipmapIndex);
+    eErrorCode loaded = LoadWithoutDecompession(file, imageSet, loadingParams);
     
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
@@ -333,5 +333,35 @@ ImageInfo ImageSystem::GetImageInfo(File* infile) const
     }
 
     return ImageInfo();
+}
+
+uint32 ImageSystem::GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams)
+{
+    if (sourceImageParams.minimalWidth != 0 || sourceImageParams.minimalHeight != 0)
+    {
+        uint32 width = sourceImageParams.minimalWidth;
+        uint32 height = sourceImageParams.minimalHeight;
+        uint32 fromMipMap = sourceImageParams.baseMipmap;
+
+        while ((((width >> fromMipMap) < loadingParams.minimalWidth) || ((height >> fromMipMap) < loadingParams.minimalHeight)) && fromMipMap != 0)
+        {
+            --fromMipMap;
+        }
+
+        return fromMipMap;
+    }
+
+    return sourceImageParams.baseMipmap;
+}
+
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
+{
+    DVASSERT(fileFormat < IMAGE_FORMAT_COUNT);
+    return wrappers[fileFormat].get();
+}
+
+const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
+{
+    return GetImageFormatInterface(format)->Extensions();
 }
 };

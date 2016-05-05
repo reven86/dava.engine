@@ -223,7 +223,7 @@ void LandscapeProxy::InitTilemaskImageCopy()
     SafeRelease(tilemaskImageCopy);
 
     DAVA::Vector<DAVA::Image*> imgs;
-    DAVA::ImageSystem::Instance()->Load(sourceTilemaskPath, imgs, 0, 0);
+    DAVA::ImageSystem::Instance()->Load(sourceTilemaskPath, imgs);
 
     DVASSERT(imgs.size() == 1);
     tilemaskImageCopy = imgs[0];

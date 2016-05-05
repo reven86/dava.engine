@@ -1371,11 +1371,10 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
 Image* VegetationRenderObject::LoadSingleImage(const FilePath& path) const
 {
     Vector<Image*> images;
-
-    ImageSystem::Instance()->Load(path, images, 0, 0);
+    ImageSystem::Instance()->Load(path, images);
 
     Image* image = nullptr;
-    if (images.size() > 0)
+    if (images.empty() == false)
     {
         image = SafeRetain(images[0]);
         size_t imageCount = images.size();

@@ -26,49 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __FRAMEWORK__MOUSECAPTURE_H__
+#define __FRAMEWORK__MOUSECAPTURE_H__
 
-#ifndef __DAVAENGINE_APK_FILE_H__
-#define __DAVAENGINE_APK_FILE_H__
-
-#include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "Concurrency/Mutex.h"
-#include "FileSystem/DynamicMemoryFile.h"
+#include <memory>
+#include "Base/BaseObject.h"
 
 namespace DAVA
 {
-class ZipFile : public DynamicMemoryFile
+class UIEvent;
+struct MouseDeviceContext;
+class MouseDeviceInterface;
+
+enum class eCaptureMode
+{
+    OFF = 0, //!< Disable any capturing (send absolute xy)
+    FRAME, //!< Capture system cursor into window rect (send absolute xy)
+    PINING //!<< Capture system cursor on current position (send xy move delta)
+};
+
+class MouseDevice final : public BaseObject
 {
 public:
-    static File* CreateFromAPK(const FilePath& filePath, uint32 attributes);
-#ifdef USE_LOCAL_RESOURCES
-    static File* CreateFromZip(const FilePath& filePath, uint32 attributes);
-    static void SetZipFileName(const String& fileName);
-    static const String& GetZipFileName()
-    {
-        return zipFileName;
-    };
-#endif
+    MouseDevice();
+    ~MouseDevice();
+    MouseDevice(const MouseDevice&) = delete;
+    MouseDevice& operator=(const MouseDevice&) = delete;
+
+    void SetMode(eCaptureMode newMode);
+    eCaptureMode GetMode() const;
+    bool IsPinningEnabled() const;
+    // Deprecated, only for UIControlSystem internal using
+    DAVA_DEPRECATED(bool SkipEvents(const UIEvent* event));
 
 private:
-    ZipFile();
-    virtual ~ZipFile();
-
-    static ZipFile* CreateFromPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes);
-    static ZipFile* CreateFromData(const FilePath& filePath, const uint8* data, int32 dataSize, uint32 attributes);
-
-    static Mutex mutex;
-
-#ifdef USE_LOCAL_RESOURCES
-    static zip* exZipPackage;
-    static String zipFileName;
-#endif
-};
+    void SetSystemMode(eCaptureMode sysMode);
+    MouseDeviceContext* context;
+    MouseDeviceInterface* privateImpl;
 };
 
+class MouseDeviceInterface
+{
+public:
+    virtual void SetMode(eCaptureMode newMode) = 0;
+    virtual void SetCursorInCenter() = 0;
+    virtual bool SkipEvents(const UIEvent* event) = 0;
+    virtual ~MouseDeviceInterface() = default;
+};
 
-#endif // __DAVAENGINE_ANDROID__
+} //  namespace DAVA
 
-#endif //__DAVAENGINE_APK_FILE_H__
+#endif //  __FRAMEWORK__MOUSECAPTURE_H__

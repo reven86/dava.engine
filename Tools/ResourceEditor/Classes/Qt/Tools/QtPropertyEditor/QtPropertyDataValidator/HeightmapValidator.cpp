@@ -81,7 +81,7 @@ bool HeightMapValidator::ValidateInternal(const QVariant& v)
             }
 
             DAVA::Vector<DAVA::Image*> imageVector;
-            DAVA::ImageSystem::Instance()->Load(path, imageVector, 0, 0);
+            DAVA::ImageSystem::Instance()->Load(path, imageVector);
             DVASSERT(imageVector.size());
 
             DAVA::PixelFormat format = imageVector[0]->GetPixelFormat();

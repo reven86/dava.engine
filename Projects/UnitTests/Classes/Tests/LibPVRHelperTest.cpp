@@ -92,13 +92,18 @@ DAVA_TESTCLASS (LibPVRHelperTest)
           { "~res:/TestData/LibPVRHelperTest/pvr4_zeroMip.pvr", 32, 32, 1, 0, PixelFormat::FORMAT_PVR4 },
         };
 
+        ImageSystem::LoadingParams params;
+        params.minimalWidth = Texture::MINIMAL_WIDTH;
+        params.minimalHeight = Texture::MINIMAL_HEIGHT;
         for (const LibPVRHelperTestLocal::TestData& td : testData)
         {
             Vector<Image*> imageSet;
 
             { // Load
                 ScopedPtr<File> infile(File::Create(td.path, File::OPEN | File::READ));
-                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, td.fromMipmap, 0);
+                params.baseMipmap = td.fromMipmap;
+                params.firstMipmapIndex = 0;
+                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, params);
                 TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
 
                 bool loaded = imageSet.size() == td.mipmapsCount;
@@ -129,7 +134,7 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 Vector<Image*> reLoadedImageSet;
                 { // Load saved images
                     ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
-                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet, 0, 0);
+                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet);
                     TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
                 }
 
@@ -166,6 +171,9 @@ DAVA_TESTCLASS (LibPVRHelperTest)
           { "~res:/TestData/LibPVRHelperTest/pvr2_cube.pvr", 32, 32, 6, 0, PixelFormat::FORMAT_PVR2 },
         };
 
+        ImageSystem::LoadingParams params;
+        params.minimalWidth = Texture::MINIMAL_WIDTH;
+        params.minimalHeight = Texture::MINIMAL_HEIGHT;
         for (const LibPVRHelperTestLocal::TestData& td : testData)
         {
             Vector<Image*> imageSet;
@@ -173,7 +181,10 @@ DAVA_TESTCLASS (LibPVRHelperTest)
 
             { // Load
                 ScopedPtr<File> infile(File::Create(td.path, File::OPEN | File::READ));
-                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, td.fromMipmap, 0);
+                params.baseMipmap = td.fromMipmap;
+                params.firstMipmapIndex = 0;
+
+                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, params);
                 TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
 
                 bool loaded = imageSet.size() == td.mipmapsCount * Texture::CUBE_FACE_COUNT;
@@ -209,7 +220,7 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 Vector<Image*> reLoadedImageSet;
                 { // Load saved images
                     ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
-                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet, 0, 0);
+                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet);
                     TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
                 }
 
