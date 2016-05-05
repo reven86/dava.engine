@@ -51,6 +51,25 @@ struct MaterialQuality
     size_t weight;
 };
 
+struct LandscapeQuality
+{
+    union
+    {
+        struct
+        {
+            float32 normalMaxHeightError;
+            float32 normalMaxPatchRadiusError;
+            float32 normalMaxAbsoluteHeightError;
+
+            float32 zoomMaxHeightError;
+            float32 zoomMaxPatchRadiusError;
+            float32 zoomMaxAbsoluteHeightError;
+        };
+        std::array<float32, 6> metricsArray;
+    };
+    bool morphing;
+};
+
 class QualitySettingsComponent;
 class QualitySettingsSystem : public StaticSingleton<QualitySettingsSystem>
 {
@@ -101,6 +120,16 @@ public:
     FilePath GetSFXQualityConfigPath(const FastName& name) const;
     FilePath GetSFXQualityConfigPath(size_t index) const;
 
+    // landscape
+    size_t GetLandscapeQualityCount() const;
+    FastName GetLandscapeQualityName(size_t index) const;
+
+    FastName GetCurLandscapeQuality() const;
+    void SetCurLandscapeQuality(const FastName& name);
+
+    const LandscapeQuality* GetLandscapeQuality(const FastName& name) const;
+
+    // particles
     const ParticlesQualitySettings& GetParticlesQualitySettings() const;
     ParticlesQualitySettings& GetParticlesQualitySettings();
 
@@ -145,6 +174,12 @@ protected:
         FilePath configPath;
     };
 
+    struct LCQ
+    {
+        FastName name;
+        LandscapeQuality quality;
+    };
+
     // textures
     int32 curTextureQuality;
     Vector<TXQ> textureQualities;
@@ -155,6 +190,10 @@ protected:
     //sounds
     int32 curSoundQuality;
     Vector<SFXQ> soundQualities;
+
+    //landscape
+    int32 curLandscapeQuality;
+    Vector<LCQ> landscapeQualities;
 
     FastNameMap<bool> qualityOptions;
 

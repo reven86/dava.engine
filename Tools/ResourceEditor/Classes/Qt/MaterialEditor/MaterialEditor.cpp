@@ -151,7 +151,8 @@ struct InvalidTexturesCollector
             const TTexturesMap& localTextures = material->GetLocalTextures();
             for (const TTextureItem& lc : localTextures)
             {
-                if (validTextures.count(lc.first) == 0)
+                // DF-10204, we don't allow change heightmap in material for new Landscape.
+                if (validTextures.count(lc.first) == 0 && lc.first != NMaterialTextureName::TEXTURE_HEIGHTMAP)
                 {
                     invalidTextures[lc.first].push_back(lc.second->path);
                 }

@@ -602,7 +602,7 @@ bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForVali
             return false;
         }
 
-        pathIsCorrect = DAVA::IsPowerOf2(heightmap->Size() - 1);
+        pathIsCorrect = DAVA::IsPowerOf2(heightmap->Size());
         if (!pathIsCorrect)
         {
             PushLogMessage(errorsLog, nullptr, "Heightmap %s has wrong size. Scene: %s",
