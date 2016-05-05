@@ -422,8 +422,8 @@ std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, boo
 
     std::unique_ptr<PVRFile> pvrFile(new PVRFile());
 
-    uint32 readSize = file->Read(&pvrFile->header, PVRTEX3_HEADERSIZE);
-    if (readSize != PVRTEX3_HEADERSIZE)
+    uint32 readSize = file->Read(&pvrFile->header, PVRFile::HEADER_SIZE);
+    if (readSize != PVRFile::HEADER_SIZE)
     {
         Logger::Error("Can't read PVR header from %s", file->GetFilename().GetStringValue().c_str());
         return std::unique_ptr<PVRFile>();
@@ -444,7 +444,7 @@ std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, boo
         file->Seek(pvrFile->header.u32MetaDataSize, File::SEEK_FROM_CURRENT);
     }
 
-    pvrFile->compressedDataSize = file->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
+    pvrFile->compressedDataSize = file->GetSize() - (PVRFile::HEADER_SIZE + pvrFile->header.u32MetaDataSize);
     if (readData)
     {
         pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];

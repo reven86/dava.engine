@@ -1135,7 +1135,7 @@ public:
 
     virtual void OnTouchOutsideFocus();
 
-    virtual void OnAllAnimationsFinished();
+    void OnAllAnimationsFinished() override;
 
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);

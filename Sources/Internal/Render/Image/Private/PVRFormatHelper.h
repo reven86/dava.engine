@@ -72,6 +72,7 @@ struct PVRHeaderV3
 class PVRFile
 {
 public:
+    static const uint32 HEADER_SIZE = 52;
     ~PVRFile();
 
     PVRHeaderV3 header;
