@@ -225,7 +225,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
         {
             if (baseLandscape->IsUpdatable())
             {
-                baseLandscape->UpdatePart(heightmapProxy, updateRect);
+                baseLandscape->UpdatePart(updateRect);
             }
             else
             {

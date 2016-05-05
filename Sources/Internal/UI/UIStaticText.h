@@ -39,6 +39,22 @@ namespace DAVA
 class UIStaticText : public UIControl
 {
 public:
+    // Use NO_REQUIRED_SIZE to notify SetText that we don't want
+    // to enable of any kind of static text fitting
+    static const Vector2 NO_REQUIRED_SIZE;
+    // Use REQUIRED_CONTROL_SIZE to notify SetText that we want
+    // to enable of some kind of static text fitting with staticText control
+    // size
+    static const Vector2 REQUIRED_CONTROL_SIZE;
+    // Use REQUIRED_CONTROL_WIDTH to notify SetText that we want
+    // to enable limit of text width and not any limits of text
+    // height
+    static const Vector2 REQUIRED_CONTROL_WIDTH;
+    // Use REQUIRED_CONTROL_HEIGHT to notify SetText that we want
+    // to enable limit of text height and not any limits of text
+    // width
+    static const Vector2 REQUIRED_CONTROL_HEIGHT;
+
     enum eMultiline
     {
         MULTILINE_DISABLED = 0,
@@ -71,10 +87,11 @@ public:
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
-    virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2(0, 0));
+    virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2::Zero);
     void SetTextWithoutRect(const WideString& text);
 
     void SetFont(Font* font);
+    void SetFontSize(float32 newSize);
     void SetTextColor(const Color& color);
 
     void SetShadowColor(const Color& color);
@@ -115,10 +132,8 @@ public:
     const WideString& GetText() const;
     const Vector<WideString>& GetMultilineStrings() const;
 
-    Font* GetFont() const
-    {
-        return textBlock->GetFont();
-    }
+    Font* GetFont() const;
+    float32 GetFontSize() const;
 
     virtual UIStaticText* Clone() override;
     virtual void CopyDataFrom(UIControl* srcControl) override;

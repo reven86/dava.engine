@@ -51,6 +51,7 @@ public:
     static const FastName DETAIL_ALPHABLEND;
     static const FastName SHADOWRECT;
     static const FastName TILE_MASK;
+    static const FastName TILE_MASK_DEBUG;
     static const FastName DETAIL_ALPHATEST;
     static const FastName SHADOW_VOLUME;
     static const FastName VERTEXCOLOR_ALPHABLEND;
@@ -102,11 +103,14 @@ public:
     static const FastName TEXTURE_DECAL;
     static const FastName TEXTURE_CUBEMAP;
     static const FastName TEXTURE_HEIGHTMAP;
+    static const FastName TEXTURE_TANGENTSPACE;
     static const FastName TEXTURE_DECALMASK;
     static const FastName TEXTURE_DECALTEXTURE;
 
     static const FastName TEXTURE_DYNAMIC_REFLECTION;
     static const FastName TEXTURE_DYNAMIC_REFRACTION;
+
+    static bool IsRuntimeTexture(const FastName& texture);
 };
 
 class NMaterialParamName
@@ -196,6 +200,11 @@ public:
     static const FastName FLAG_FORCE_2D_MODE;
 
     static const FastName FLAG_ALPHATESTVALUE;
+
+    static const FastName FLAG_LANDSCAPE_USE_INSTANCING;
+    static const FastName FLAG_LANDSCAPE_LOD_MORPHING;
+    static const FastName FLAG_LANDSCAPE_MORPHING_COLOR;
+    static const FastName FLAG_LANDSCAPE_SPECULAR;
 
     //Illumination params
     static const FastName FLAG_ILLUMINATION_USED;

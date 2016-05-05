@@ -13,6 +13,12 @@
 		0224B7341598AC2800CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7321598AC2800CDEF9E /* libtheora_macos.a */; };
 		0224B74A1598B40100CDEF9E /* libogg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7481598B40100CDEF9E /* libogg_ios.a */; };
 		0224B74B1598B40100CDEF9E /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7491598B40100CDEF9E /* libogg_macos.a */; };
+		0249EF241CB563C50018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF221CB563C50018A5FC /* LandscapeSubdivision.cpp */; };
+		0249EF251CB563C50018A5FC /* LandscapeSubdivision.h in Headers */ = {isa = PBXBuildFile; fileRef = 0249EF231CB563C50018A5FC /* LandscapeSubdivision.h */; };
+		0249EF261CB563CE0018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF221CB563C50018A5FC /* LandscapeSubdivision.cpp */; };
+		02DC4BC01CA2D74D00F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BBE1CA2D74D00F6822D /* LandscapeSystem.cpp */; };
+		02DC4BC11CA2D74D00F6822D /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC4BBF1CA2D74D00F6822D /* LandscapeSystem.h */; };
+		02DC4BCC1CA3DD0400F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BBE1CA2D74D00F6822D /* LandscapeSystem.cpp */; };
 		02E7C0F21BD6248E002F026D /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C0DD1BD6248D002F026D /* BiDiHelper.cpp */; };
 		02E7C0F31BD6248E002F026D /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C0DD1BD6248D002F026D /* BiDiHelper.cpp */; };
 		02E7C0F41BD6248E002F026D /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C0DE1BD6248D002F026D /* BiDiHelper.h */; };
@@ -2114,6 +2120,10 @@
 		0224B7321598AC2800CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
 		0224B7481598B40100CDEF9E /* libogg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_ios.a; path = ../../Libs/libs/libogg_ios.a; sourceTree = "<group>"; };
 		0224B7491598B40100CDEF9E /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/libs/libogg_macos.a; sourceTree = "<group>"; };
+		0249EF221CB563C50018A5FC /* LandscapeSubdivision.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeSubdivision.cpp; sourceTree = "<group>"; };
+		0249EF231CB563C50018A5FC /* LandscapeSubdivision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeSubdivision.h; sourceTree = "<group>"; };
+		02DC4BBE1CA2D74D00F6822D /* LandscapeSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeSystem.cpp; sourceTree = "<group>"; };
+		02DC4BBF1CA2D74D00F6822D /* LandscapeSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeSystem.h; sourceTree = "<group>"; };
 		02E7C0DD1BD6248D002F026D /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
 		02E7C0DE1BD6248D002F026D /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		02E7C0DF1BD6248D002F026D /* CRC32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CRC32.cpp; sourceTree = "<group>"; };
@@ -3984,6 +3994,8 @@
 		02E7C3AA1BD624A5002F026D /* Highlevel */ = {
 			isa = PBXGroup;
 			children = (
+				0249EF221CB563C50018A5FC /* LandscapeSubdivision.cpp */,
+				0249EF231CB563C50018A5FC /* LandscapeSubdivision.h */,
 				02E7C3AB1BD624A5002F026D /* Camera.cpp */,
 				02E7C3AC1BD624A5002F026D /* Camera.h */,
 				02E7C3AD1BD624A5002F026D /* CullingSystem.cpp */,
@@ -4366,6 +4378,8 @@
 		02E7C50A1BD624A6002F026D /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				02DC4BBE1CA2D74D00F6822D /* LandscapeSystem.cpp */,
+				02DC4BBF1CA2D74D00F6822D /* LandscapeSystem.h */,
 				15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */,
 				15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */,
 				02E7C50B1BD624A6002F026D /* ActionUpdateSystem.cpp */,
@@ -5560,6 +5574,7 @@
 				02E7CB991BD624A7002F026D /* internal.h in Headers */,
 				02E7C8BD1BD624A7002F026D /* SimpleEchoServer.h in Headers */,
 				15373F2F1C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */,
+				02DC4BC11CA2D74D00F6822D /* LandscapeSystem.h in Headers */,
 				02E7C6E91BD624A7002F026D /* LockGuard.h in Headers */,
 				03730F7F1CBCFB1900DDDBC7 /* ZipCompressor.h in Headers */,
 				02E7C7AF1BD624A7002F026D /* Signal.h in Headers */,
@@ -6020,6 +6035,7 @@
 				02E7CCE91BD624A7002F026D /* LodToLod2Converter.h in Headers */,
 				02E7CAAF1BD624A7002F026D /* Camera.h in Headers */,
 				02E7C65B1BD624A6002F026D /* BaseMath.h in Headers */,
+				0249EF251CB563C50018A5FC /* LandscapeSubdivision.h in Headers */,
 				02E7CC691BD624A7002F026D /* TextGameObject.h in Headers */,
 				02E7C7211BD624A7002F026D /* MongodbObject.h in Headers */,
 				02E7C7EB1BD624A7002F026D /* Math2D.h in Headers */,
@@ -6454,6 +6470,7 @@
 				02E7CF881BD639E1002F026D /* BSDiff.cpp in Sources */,
 				02E7C6FE1BD624A7002F026D /* ThreadPosix.cpp in Sources */,
 				02E7CD321BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */,
+				02DC4BCC1CA3DD0400F6822D /* LandscapeSystem.cpp in Sources */,
 				02E7C7041BD624A7002F026D /* ApplicationCore.cpp in Sources */,
 				02E7CCEC1BD624A7002F026D /* SwitchToRenerObjectConverter.cpp in Sources */,
 				02E7CC561BD624A7002F026D /* TextureDescriptor.cpp in Sources */,
@@ -6464,6 +6481,7 @@
 				02E7CB341BD624A7002F026D /* LibJpegHelper.cpp in Sources */,
 				02E7C8921BD624A7002F026D /* ProtoDecoder.cpp in Sources */,
 				02E7CE141BD624A7002F026D /* UIPriorityStyleSheet.cpp in Sources */,
+				0249EF261CB563CE0018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				02E7C7CC1BD624A7002F026D /* JobManager.cpp in Sources */,
 				02E7CEE61BD624A7002F026D /* UITextFieldWinUAP.cpp in Sources */,
 				02E7CDA21BD624A7002F026D /* WaveSystem.cpp in Sources */,
@@ -6761,6 +6779,7 @@
 				02E7CC391BD624A7002F026D /* rhi_TextureMetal.mm in Sources */,
 				02E7CE071BD624A7002F026D /* UILinearLayoutComponent.cpp in Sources */,
 				02E7C8831BD624A7002F026D /* Announcer.cpp in Sources */,
+				0249EF241CB563C50018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				02E7CE7B1BD624A7002F026D /* UIListCell.cpp in Sources */,
 				02E7CBC31BD624A7002F026D /* rhi_ShaderCache.cpp in Sources */,
 				02E7CF2E1BD639A4002F026D /* DVAssertMessage.cpp in Sources */,
@@ -6953,6 +6972,7 @@
 				02E7CDF31BD624A7002F026D /* UIAnchorComponent.cpp in Sources */,
 				02E7C6D71BD624A6002F026D /* Collisions.cpp in Sources */,
 				02E7CB331BD624A7002F026D /* LibJpegHelper.cpp in Sources */,
+				02DC4BC01CA2D74D00F6822D /* LandscapeSystem.cpp in Sources */,
 				02E7C8911BD624A7002F026D /* ProtoDecoder.cpp in Sources */,
 				7C41FCDC1C774EBF00B61435 /* TeamCityTestsOutput.cpp in Sources */,
 				02E7CE131BD624A7002F026D /* UIPriorityStyleSheet.cpp in Sources */,
