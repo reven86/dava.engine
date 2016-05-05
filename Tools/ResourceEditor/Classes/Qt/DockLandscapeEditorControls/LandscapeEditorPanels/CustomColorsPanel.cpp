@@ -264,8 +264,8 @@ void CustomColorsPanel::LoadTexture()
         currentPath = sceneEditor->GetScenePath().GetDirectory();
     }
 
-    FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION, currentPath,
-                                                PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
+    DAVA::FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION, currentPath,
+                                                      PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
     if (!selectedPathname.IsEmpty())
     {
         sceneEditor->customColorsSystem->LoadTexture(selectedPathname, true);

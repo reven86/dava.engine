@@ -39,6 +39,7 @@
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
+#include "Commands2/InspMemberModifyCommand.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
 
 EditorMaterialSystem::MaterialMapping::MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_)
@@ -366,10 +367,10 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
         {
             const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
 
-            const Vector<Entity*>& landscapes = GetScene()->landscapeSystem->GetLandscapeEntities();
-            for (Entity* landEntity : landscapes)
+            const DAVA::Vector<DAVA::Entity*>& landscapes = GetScene()->landscapeSystem->GetLandscapeEntities();
+            for (DAVA::Entity* landEntity : landscapes)
             {
-                Landscape* landObject = GetLandscape(landEntity);
+                DAVA::Landscape* landObject = GetLandscape(landEntity);
                 if (landObject == cmd->object)
                 {
                     RemoveMaterial(landObject->GetMaterial());
