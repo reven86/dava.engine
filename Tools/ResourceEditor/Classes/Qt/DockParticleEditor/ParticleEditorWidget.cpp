@@ -119,7 +119,7 @@ void ParticleEditorWidget::OnValueChanged()
 
 void ParticleEditorWidget::UpdateParticleEditorWidgets()
 {
-    if (MODE_EMITTER == widgetMode && emitterPropertiesWidget->GetEmitterInstance())
+    if (MODE_EMITTER == widgetMode && emitterPropertiesWidget->GetEmitterInstance(emitterPropertiesWidget->GetActiveScene()))
     {
         UpdateVisibleTimelinesForParticleEmitter();
         return;
@@ -135,7 +135,7 @@ void ParticleEditorWidget::UpdateParticleEditorWidgets()
 void ParticleEditorWidget::UpdateVisibleTimelinesForParticleEmitter()
 {
     // Safety check.
-    if (MODE_EMITTER != widgetMode || !emitterPropertiesWidget->GetEmitterInstance())
+    if (MODE_EMITTER != widgetMode || !emitterPropertiesWidget->GetEmitterInstance(emitterPropertiesWidget->GetActiveScene()))
     {
         return;
     }
@@ -145,7 +145,8 @@ void ParticleEditorWidget::UpdateVisibleTimelinesForParticleEmitter()
     bool angleTimeLineVisible = false;
     bool sizeTimeLineVisible = false;
 
-    switch (emitterPropertiesWidget->GetEmitterInstance()->GetEmitter()->emitterType)
+    auto emitterInstance = emitterPropertiesWidget->GetEmitterInstance(emitterPropertiesWidget->GetActiveScene());
+    switch (emitterInstance->GetEmitter()->emitterType)
     {
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
     case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
@@ -185,7 +186,7 @@ void ParticleEditorWidget::UpdateWidgetsForLayer()
 
 void ParticleEditorWidget::HandleEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, bool forceUpdate)
 {
-    auto widgetInstance = emitterPropertiesWidget->GetEmitterInstance();
+    auto widgetInstance = emitterPropertiesWidget->GetEmitterInstance(scene);
     auto sameEmitter = (widgetInstance != nullptr) && (widgetInstance->GetEmitter() == emitter->GetEmitter());
     if ((emitter != nullptr) && (MODE_EMITTER == widgetMode) && (!forceUpdate && sameEmitter))
     {
@@ -269,15 +270,15 @@ void ParticleEditorWidget::OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::Pa
 {
     // Handle in the same way emitter is selected to update the values. However
     // cause widget to be force updated.
-    HandleEmitterSelected(scene, emitterPropertiesWidget->GetEffect(), emitter, true);
+    HandleEmitterSelected(scene, emitterPropertiesWidget->GetEffect(scene), emitter, true);
 }
 
 void ParticleEditorWidget::OnParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
 {
     // Handle in the same way emitter is selected to update the values. However
     // cause widget to be force updated.
-    DAVA::ParticleEffectComponent* currEffect = emitterPropertiesWidget->GetEffect();
-    DAVA::ParticleEmitterInstance* currEmitter = emitterPropertiesWidget->GetEmitterInstance();
+    DAVA::ParticleEffectComponent* currEffect = emitterPropertiesWidget->GetEffect(scene);
+    DAVA::ParticleEmitterInstance* currEmitter = emitterPropertiesWidget->GetEmitterInstance(scene);
     if (currEffect && (currEmitter->GetEmitter() == emitter->GetEmitter()))
     {
         HandleEmitterSelected(scene, currEffect, emitter, true);

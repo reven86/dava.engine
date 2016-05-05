@@ -32,7 +32,7 @@
 
 #include "DAVAEngine.h"
 #include <QChar>
-
+#include <QWidget>
 #include "Scene/SceneEditor2.h"
 
 class BaseParticleEditorContentWidget : public QWidget
@@ -45,15 +45,20 @@ public:
 
     virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
     virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
-
-    DAVA::ParticleEmitterInstance* GetEmitterInstance() const;
-    void SetEmitterInstance(DAVA::ParticleEmitterInstance*);
-
-    void SetEffect(DAVA::ParticleEffectComponent* effect);
-    DAVA::ParticleEffectComponent* GetEffect() const;
-
-    void SetActiveScene(SceneEditor2* scene);
+    
+    struct Objects
+    {
+        DAVA::ParticleEffectComponent* effect = nullptr;
+        DAVA::RefPtr<DAVA::ParticleEmitterInstance> instance;
+    };
+    
+    Objects GetCurrentObjectsForScene(SceneEditor2* scene) const;
+    
     SceneEditor2* GetActiveScene() const;
+    DAVA::ParticleEffectComponent* GetEffect(SceneEditor2* scene);
+    DAVA::ParticleEmitterInstance* GetEmitterInstance(SceneEditor2* scene);
+    void SetObjectsForScene(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect,
+                            DAVA::ParticleEmitterInstance* instance);
 
 protected:
     // "Degree mark" character needed for some widgets.
@@ -63,41 +68,13 @@ protected:
     int ConvertFromPlaybackSpeedToSliderValue(DAVA::float32 playbackSpeed);
     float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
+    void OnSceneActivated(SceneEditor2*);
+    void OnSceneClosed(SceneEditor2*);
+    
 private:
+    Objects emptyObjects;
     SceneEditor2* activeScene = nullptr;
-    DAVA::ParticleEffectComponent* effect = nullptr;
-    DAVA::RefPtr<DAVA::ParticleEmitterInstance> instance;
-};
-
-inline void BaseParticleEditorContentWidget::SetEmitterInstance(DAVA::ParticleEmitterInstance* i)
-{
-    instance.Set(SafeRetain(i));
-}
-
-inline DAVA::ParticleEmitterInstance* BaseParticleEditorContentWidget::GetEmitterInstance() const
-{
-    return instance.Get();
-};
-
-inline void BaseParticleEditorContentWidget::SetEffect(DAVA::ParticleEffectComponent* e)
-{
-    effect = e;
-}
-
-inline DAVA::ParticleEffectComponent* BaseParticleEditorContentWidget::GetEffect() const
-{
-    return effect;
-};
-
-// Get/set the active scene.
-inline void BaseParticleEditorContentWidget::SetActiveScene(SceneEditor2* scene)
-{
-    activeScene = scene;
-};
-
-inline SceneEditor2* BaseParticleEditorContentWidget::GetActiveScene() const
-{
-    return activeScene;
+    DAVA::Map<SceneEditor2*, Objects> objectsForScene;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__BASEPARTICLEEDITORCONTENTWIDGET__) */

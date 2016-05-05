@@ -459,10 +459,7 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent
         return;
 
     layer = layer_;
-
-    SetEffect(effect_);
-    SetEmitterInstance(instance_);
-    SetActiveScene(scene);
+    SetObjectsForScene(scene, effect_, instance_);
     Update(updateMinimized);
 }
 
@@ -668,7 +665,8 @@ void EmitterLayerWidget::OnValueChanged()
     DAVA::ParticleLayer::eDegradeStrategy degradeStrategy = DAVA::ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    auto updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(GetEmitterInstance(), layer);
+    SceneEditor2* activeScene = GetActiveScene();
+    auto updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(GetEmitterInstance(activeScene), layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,
@@ -721,8 +719,8 @@ void EmitterLayerWidget::OnValueChanged()
     Update(false);
     if (superemitterStatusChanged)
     {
-        if (!GetEffect()->IsStopped())
-            GetEffect()->Restart(true);
+        if (!GetEffect(activeScene)->IsStopped())
+            GetEffect(activeScene)->Restart(true);
     }
     emit ValueChanged();
 }

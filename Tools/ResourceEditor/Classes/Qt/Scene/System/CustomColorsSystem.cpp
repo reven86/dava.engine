@@ -305,7 +305,7 @@ void CustomColorsSystem::CreateUndoPoint()
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);
 
-        ScopedPtr<Image> image(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory());
+        DAVA::ScopedPtr<DAVA::Image> image(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory());
         scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, image, drawSystem->GetCustomColorsProxy(), updatedRect, false));
     }
 
@@ -372,9 +372,9 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
             desc.height = target->GetHeight();
             desc.clearTarget = false;
             desc.transformVirtualToPhysical = false;
-            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-            RenderSystem2D::Instance()->DrawTexture(loadedTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
-            RenderSystem2D::Instance()->EndRenderTargetPass();
+            DAVA::RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+            DAVA::RenderSystem2D::Instance()->DrawTexture(loadedTexture, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, DAVA::Color::White);
+            DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
         }
     }
 

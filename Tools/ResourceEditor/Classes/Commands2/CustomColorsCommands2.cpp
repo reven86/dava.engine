@@ -33,8 +33,9 @@
 #include "../Qt/Scene/SceneSignals.h"
 #include "../Qt/Main/QtUtils.h"
 
-ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* customColorsProxy_,
-                                                     const Rect& updatedRect_, bool shouldClear)
+ModifyCustomColorsCommand::ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage,
+                                                     CustomColorsProxy* customColorsProxy_,
+                                                     const DAVA::Rect& updatedRect_, bool shouldClear)
     : Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
     , shouldClearTexture(shouldClear)
 {
@@ -74,9 +75,9 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image, bool disableBlend
 
     DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
 
-    auto material = disableBlend ? RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL : customColorsProxy->GetBrushMaterial();
+    auto material = disableBlend ? DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL : customColorsProxy->GetBrushMaterial();
 
-    Texture* proxy = customColorsProxy->GetTexture();
+    DAVA::Texture* proxy = customColorsProxy->GetTexture();
     desc.colorAttachment = proxy->handle;
     desc.depthAttachment = proxy->handleDepthStencil;
     desc.width = proxy->GetWidth();
@@ -84,9 +85,9 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image, bool disableBlend
     desc.clearTarget = shouldClearTexture;
     desc.transformVirtualToPhysical = false;
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    RenderSystem2D::Instance()->DrawTexture(fboTexture, material, Color::White, updatedRect);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    DAVA::RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+    DAVA::RenderSystem2D::Instance()->DrawTexture(fboTexture, material, DAVA::Color::White, updatedRect);
+    DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
 
     customColorsProxy->UpdateRect(updatedRect);
 }

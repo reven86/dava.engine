@@ -71,7 +71,6 @@ void LayerForceWidget::Init(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAV
 
     this->layer = layer;
     this->forceIndex = forceIndex;
-    SetActiveScene(scene);
 
     blockSignals = true;
 
@@ -140,11 +139,12 @@ void LayerForceWidget::OnValueChanged()
     std::unique_ptr<CommandUpdateParticleForce> updateForceCmd = Command2::Create<CommandUpdateParticleForce>(layer, forceIndex);
     updateForceCmd->Init(propForce.GetPropLine(), propForceOverLife.GetPropLine());
 
-    DVASSERT(GetActiveScene() != nullptr);
-    GetActiveScene()->Exec(std::move(updateForceCmd));
-    GetActiveScene()->MarkAsChanged();
+    SceneEditor2* activeScene = GetActiveScene();
+    DVASSERT(activeScene != nullptr);
+    activeScene->Exec(std::move(updateForceCmd));
+    activeScene->MarkAsChanged();
 
-    Init(GetActiveScene(), layer, forceIndex, false);
+    Init(activeScene, layer, forceIndex, false);
     emit ValueChanged();
 }
 
