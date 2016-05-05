@@ -492,11 +492,11 @@ elseif( MACOS )
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
 
     if( DAVA_FOUND )
-        set(LD_RUNPATHES "@executable_path @executable_path/../Resources @executable_path/../Frameworks")
+        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Frameworks")
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
-    if (QT5_FOUND AND NOT DEPLOY AND NOT TEAMCITY_DEPLOY)
+    if (QT5_FOUND)
         set(LD_RUNPATHES "${LD_RUNPATHES} ${QT5_LIB_PATH}")
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
