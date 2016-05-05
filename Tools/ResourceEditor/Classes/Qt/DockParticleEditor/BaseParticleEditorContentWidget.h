@@ -45,15 +45,15 @@ public:
 
     virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
     virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) = 0;
-    
+
     struct Objects
     {
         DAVA::ParticleEffectComponent* effect = nullptr;
         DAVA::RefPtr<DAVA::ParticleEmitterInstance> instance;
     };
-    
+
     Objects GetCurrentObjectsForScene(SceneEditor2* scene) const;
-    
+
     SceneEditor2* GetActiveScene() const;
     DAVA::ParticleEffectComponent* GetEffect(SceneEditor2* scene);
     DAVA::ParticleEmitterInstance* GetEmitterInstance(SceneEditor2* scene);
@@ -70,7 +70,7 @@ protected:
 
     void OnSceneActivated(SceneEditor2*);
     void OnSceneClosed(SceneEditor2*);
-    
+
 private:
     Objects emptyObjects;
     SceneEditor2* activeScene = nullptr;

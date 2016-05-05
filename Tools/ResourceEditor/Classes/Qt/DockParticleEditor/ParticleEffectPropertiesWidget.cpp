@@ -284,7 +284,7 @@ void ParticleEffectPropertiesWidget::OnTreeItemDoubleClck(QTreeWidgetItem* treeI
 void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction* action)
 {
     DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
-    
+
     int commandId = action->data().toInt();
     if (commandId == -1)
     {
@@ -373,7 +373,7 @@ void ParticleEffectPropertiesWidget::OnValueChanged()
         return;
 
     DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
-    
+
     DVASSERT(effect != nullptr);
     DAVA::float32 playbackSpeed = ConvertFromSliderValueToPlaybackSpeed(effectPlaybackSpeed->value());
 
@@ -849,7 +849,7 @@ bool ParticleEffectPropertiesWidget::EditForceModifiable(DAVA::ParticleForce* fo
 void ParticleEffectPropertiesWidget::BuildEffectTree()
 {
     DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
-    
+
     currSelectedTreeItem = nullptr;
     effectTree->clear();
     effectTree->setHeaderLabel(QString(effect->GetEntity()->GetName().c_str()));

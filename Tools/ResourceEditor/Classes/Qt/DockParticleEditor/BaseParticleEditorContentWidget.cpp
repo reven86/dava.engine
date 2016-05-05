@@ -50,7 +50,7 @@ void BaseParticleEditorContentWidget::OnSceneClosed(SceneEditor2* editor)
 {
     if (editor == activeScene)
         activeScene = nullptr;
-    
+
     objectsForScene.erase(editor);
 }
 

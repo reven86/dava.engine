@@ -236,7 +236,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 
     SceneEditor2* activeScene = GetActiveScene();
     DVASSERT(activeScene != 0);
-    
+
     DAVA::ParticleEmitterInstance* instance = GetEmitterInstance(activeScene);
     DVASSERT(instance != nullptr);
 
@@ -311,10 +311,10 @@ void ParticleEmitterPropertiesWidget::UpdateProperties()
 {
     SceneEditor2* activeScene = GetActiveScene();
     DVASSERT(activeScene != 0);
-    
+
     DAVA::ParticleEffectComponent* effect = GetEffect(activeScene);
     DAVA::ParticleEmitter* emitter = GetEmitterInstance(activeScene)->GetEmitter();
-    
+
     emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
     shortEffectCheckBox->setChecked(emitter->shortEffect);
 
