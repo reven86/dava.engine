@@ -15,7 +15,7 @@ ApplicationWindow {
     property int historyVersion: 1
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
-    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2
+    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 + wrapper.spacing * 4
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
     menuBar: MenuBar {
         Menu {
