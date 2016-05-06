@@ -32,35 +32,26 @@
 #include "CommandLine/ProgramOptions.h"
 #include "AssetCache/AssetCache.h"
 
-struct RequestResult
+namespace DAVA
 {
-    bool succeed = false;
-    bool recieved = false;
-};
+class AssetCacheClient;
+}
 
-class CacheRequest : public DAVA::AssetCache::ClientNetProxyListener
+class CacheRequest
 {
 public:
     CacheRequest(const DAVA::String& commandLineOptionName);
     virtual ~CacheRequest() = default;
 
-    int Process();
-    int CheckOptions() const;
+    DAVA::AssetCache::Error Process(DAVA::AssetCacheClient& cacheClient);
+    DAVA::AssetCache::Error CheckOptions() const;
 
 protected:
-    int Connect();
-    int Disconnect();
-
-    int WaitRequest();
-
-    virtual int SendRequest() = 0;
-    virtual int CheckOptionsInternal() const = 0;
+    virtual DAVA::AssetCache::Error SendRequest(DAVA::AssetCacheClient& cacheClient) = 0;
+    virtual DAVA::AssetCache::Error CheckOptionsInternal() const = 0;
 
 public:
     DAVA::ProgramOptions options;
-
-    DAVA::AssetCache::ClientNetProxy client;
-    RequestResult requestResult;
 };
 
 #endif //__CACHE_REQUEST_H__

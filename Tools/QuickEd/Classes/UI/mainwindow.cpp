@@ -95,6 +95,7 @@ MainWindow::MainWindow(QWidget* parent)
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+    connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
     RestoreMainWindowState();
 
@@ -134,8 +135,17 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
     QAction* actionCloseDocument = new QAction("Close current document", this);
     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
     actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
-    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
     documentGroup->AttachCloseDocumentAction(actionCloseDocument);
+    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+
+    QAction* actionReloadDocument = new QAction("Reload current document", this);
+    QList<QKeySequence> shortcurs;
+    shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
+              << Qt::Key_F5;
+    actionReloadDocument->setShortcuts(shortcurs);
+    actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
+    documentGroup->AttachReloadDocumentAction(actionReloadDocument);
+    previewWidget->GetGLWidget()->addAction(actionReloadDocument);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)

@@ -40,24 +40,24 @@ ScenePreviewDialog::ScenePreviewDialog()
     , clickableBackgound(nullptr)
 {
     UpdateSize();
-    GetBackground()->color = Color(2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f, 1.0f);
+    GetBackground()->color = DAVA::Color(2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f, 1.0f);
 
-    clickableBackgound.reset(new UIControl());
+    clickableBackgound.reset(new DAVA::UIControl());
     clickableBackgound->SetInputEnabled(true, true);
-    clickableBackgound->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
+    clickableBackgound->AddEvent(DAVA::UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ScenePreviewDialog::OnClose));
 
-    preview.reset(new ScenePreviewControl(Rect(0, 0, ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::PREVIEW_PANEL_HEIGHT)));
+    preview.reset(new ScenePreviewControl(DAVA::Rect(0, 0, ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::PREVIEW_PANEL_HEIGHT)));
 
-    errorMessage.reset(new UIStaticText(preview->GetRect()));
+    errorMessage.reset(new DAVA::UIStaticText(preview->GetRect()));
     errorMessage->SetMultiline(true);
-    errorMessage->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    errorMessage->SetSpriteAlign(DAVA::ALIGN_HCENTER | DAVA::ALIGN_VCENTER);
     errorMessage->SetTextColor(ControlsFactory::GetColorError());
     errorMessage->SetFont(ControlsFactory::GetFont20());
 
-    ScopedPtr<UIButton> button(ControlsFactory::CreateButton(Rect(0, ControlsFactory::PREVIEW_PANEL_HEIGHT,
-                                                                  ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::BUTTON_HEIGHT),
-                                                             LocalizedString(L"dialog.close")));
-    button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
+    DAVA::ScopedPtr<DAVA::UIButton> button(ControlsFactory::CreateButton(DAVA::Rect(0, ControlsFactory::PREVIEW_PANEL_HEIGHT,
+                                                                                    ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::BUTTON_HEIGHT),
+                                                                         DAVA::LocalizedString(L"dialog.close")));
+    button->AddEvent(DAVA::UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ScenePreviewDialog::OnClose));
     draggableDialog->AddControl(button);
 }
 
@@ -69,7 +69,7 @@ ScenePreviewDialog::~ScenePreviewDialog()
     }
 }
 
-void ScenePreviewDialog::Show(const FilePath& scenePathname)
+void ScenePreviewDialog::Show(const DAVA::FilePath& scenePathname)
 {
     bool enabled = SettingsManager::GetValue(Settings::General_PreviewEnabled).AsBool();
     if (!enabled)
@@ -77,13 +77,13 @@ void ScenePreviewDialog::Show(const FilePath& scenePathname)
 
     if (!GetParent())
     {
-        UIScreen* screen = UIScreenManager::Instance()->GetScreen();
+        DAVA::UIScreen* screen = DAVA::UIScreenManager::Instance()->GetScreen();
         clickableBackgound->SetSize(screen->GetSize());
-        clickableBackgound->SetPosition(Vector2(0, 0));
+        clickableBackgound->SetPosition(DAVA::Vector2(0, 0));
         screen->AddControl(clickableBackgound);
         screen->AddControl(this);
 
-        screen->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
+        screen->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ScenePreviewDialog::OnClose));
     }
 
     //show preview
@@ -92,8 +92,8 @@ void ScenePreviewDialog::Show(const FilePath& scenePathname)
         draggableDialog->RemoveControl(errorMessage);
     }
 
-    int32 error = preview->OpenScene(scenePathname);
-    if (SceneFileV2::ERROR_NO_ERROR == error)
+    DAVA::int32 error = preview->OpenScene(scenePathname);
+    if (DAVA::SceneFileV2::ERROR_NO_ERROR == error)
     {
         if (!preview->GetParent())
         {
@@ -104,38 +104,38 @@ void ScenePreviewDialog::Show(const FilePath& scenePathname)
     {
         switch (error)
         {
-        case SceneFileV2::ERROR_FAILED_TO_CREATE_FILE:
+        case DAVA::SceneFileV2::ERROR_FAILED_TO_CREATE_FILE:
         {
-            errorMessage->SetText(LocalizedString(L"library.errormessage.failedtocreeatefile"));
+            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.failedtocreeatefile"));
             break;
         }
 
-        case SceneFileV2::ERROR_FILE_WRITE_ERROR:
+        case DAVA::SceneFileV2::ERROR_FILE_WRITE_ERROR:
         {
-            errorMessage->SetText(LocalizedString(L"library.errormessage.filewriteerror"));
+            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.filewriteerror"));
             break;
         }
 
-        case SceneFileV2::ERROR_VERSION_IS_TOO_OLD:
+        case DAVA::SceneFileV2::ERROR_VERSION_IS_TOO_OLD:
         {
-            errorMessage->SetText(LocalizedString(L"library.errormessage.versionistooold"));
+            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.versionistooold"));
             break;
         }
 
         case ScenePreviewControl::ERROR_CANNOT_OPEN_FILE:
         {
-            errorMessage->SetText(LocalizedString(L"library.errormessage.cannotopenfile"));
+            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.cannotopenfile"));
             break;
         }
 
         case ScenePreviewControl::ERROR_WRONG_EXTENSION:
         {
-            errorMessage->SetText(LocalizedString(L"library.errormessage.wrongextension"));
+            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.wrongextension"));
             break;
         }
 
         default:
-            errorMessage->SetText(LocalizedString(L"library.errormessage.unknownerror"));
+            errorMessage->SetText(DAVA::LocalizedString(L"library.errormessage.unknownerror"));
             break;
         }
 
@@ -163,20 +163,20 @@ void ScenePreviewDialog::Close()
     ExtendedDialog::Close();
 }
 
-const Rect ScenePreviewDialog::GetDialogRect() const
+const DAVA::Rect ScenePreviewDialog::GetDialogRect() const
 {
-    Rect screenRect = GetScreenRect();
+    DAVA::Rect screenRect = GetScreenRect();
 
-    float32 x = (screenRect.dx - ControlsFactory::PREVIEW_PANEL_HEIGHT);
-    float32 h = ControlsFactory::PREVIEW_PANEL_HEIGHT + ControlsFactory::BUTTON_HEIGHT;
-    float32 y = (screenRect.dy - h) / 2;
+    DAVA::float32 x = (screenRect.dx - ControlsFactory::PREVIEW_PANEL_HEIGHT);
+    DAVA::float32 h = ControlsFactory::PREVIEW_PANEL_HEIGHT + ControlsFactory::BUTTON_HEIGHT;
+    DAVA::float32 y = (screenRect.dy - h) / 2;
 
-    return Rect(x, y, ControlsFactory::PREVIEW_PANEL_HEIGHT, h);
+    return DAVA::Rect(x, y, ControlsFactory::PREVIEW_PANEL_HEIGHT, h);
 }
 
 void ScenePreviewDialog::UpdateSize()
 {
-    Rect dialogRect = GetDialogRect();
+    DAVA::Rect dialogRect = GetDialogRect();
     SetRect(dialogRect);
 
     dialogRect.x = dialogRect.y = 0;

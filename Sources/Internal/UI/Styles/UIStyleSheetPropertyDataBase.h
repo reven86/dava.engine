@@ -44,7 +44,7 @@ public StaticSingleton<UIStyleSheetPropertyDataBase>
 {
 public:
     virtual ~UIStyleSheetPropertyDataBase();
-    static const int32 STYLE_SHEET_PROPERTY_COUNT = 58;
+    static const int32 STYLE_SHEET_PROPERTY_COUNT = 66;
 
     UIStyleSheetPropertyDataBase();
 

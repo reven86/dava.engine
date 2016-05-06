@@ -60,6 +60,7 @@ public:
         virtual const DAVA::Matrix4& GetLocalTransform(Object* object) = 0;
         virtual void SetLocalTransform(Object* object, const DAVA::Matrix4& matrix) = 0;
         virtual bool SupportsTransformType(Object* object, TransformType transformType) const = 0;
+        virtual bool TransformDependsFromObject(Object* dependant, Object* dependsOn) const = 0;
     };
 
     template <typename CLASS, typename PROXY>
@@ -98,6 +99,10 @@ public:
     const DAVA::Matrix4& GetLocalTransform() const;
     const DAVA::Matrix4& GetWorldTransform() const;
     void SetLocalTransform(const DAVA::Matrix4& transform);
+
+    bool TransformDependsOn(const Selectable&) const;
+
+    bool ContainsObject() const;
 
 private:
     static void AddConcreteProxy(DAVA::MetaInfo* classInfo, TransformProxy* proxy);
@@ -147,6 +152,11 @@ inline void Selectable::AddTransformProxyForClass()
     static_assert(std::is_base_of<Selectable::TransformProxy, PROXY>::value,
                   "Transform proxy should be derived from Selectable::TransformProxy");
     AddConcreteProxy(DAVA::MetaInfo::Instance<CLASS>(), new PROXY());
+}
+
+inline bool Selectable::ContainsObject() const
+{
+    return object != nullptr;
 }
 
 #endif // __SELECTABLE_OBJECT_H__

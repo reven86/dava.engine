@@ -36,7 +36,7 @@
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
-ScenePreviewControl::ScenePreviewControl(const Rect& rect)
+ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
     : UI3DView(rect)
 {
     SetInputEnabled(true, true);
@@ -60,13 +60,13 @@ void ScenePreviewControl::RecreateScene()
 {
     DVASSERT(editorScene == nullptr);
 
-    editorScene = new Scene();
+    editorScene = new DAVA::Scene();
     editorScene->GetMainPassConfig().priority = DAVA::PRIORITY_MAIN_2D - 5;
 
-    rotationSystem = new RotationControllerSystem(editorScene);
+    rotationSystem = new DAVA::RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);
-    editorScene->AddSystem(rotationSystem, (MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT)),
-                           Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+    editorScene->AddSystem(rotationSystem, (MAKE_COMPONENT_MASK(DAVA::Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(DAVA::Component::ROTATION_CONTROLLER_COMPONENT)),
+                           DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS | DAVA::Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
     SetScene(editorScene);
 }
@@ -74,19 +74,19 @@ void ScenePreviewControl::RecreateScene()
 void ScenePreviewControl::ReleaseScene()
 {
     SafeRelease(editorScene);
-    currentScenePath = FilePath();
+    currentScenePath = DAVA::FilePath();
 }
 
-int32 ScenePreviewControl::OpenScene(const FilePath& pathToFile)
+DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
 {
     ReleaseScene();
     RecreateScene();
 
-    int32 retError = SceneFileV2::ERROR_NO_ERROR;
+    DAVA::int32 retError = DAVA::SceneFileV2::ERROR_NO_ERROR;
 
     if (pathToFile.IsEqualToExtension(".sc2"))
     {
-        SceneFileV2* file = new SceneFileV2();
+        DAVA::SceneFileV2* file = new DAVA::SceneFileV2();
         file->EnableDebugLog(false);
         retError = file->LoadScene(pathToFile, editorScene);
         SafeRelease(file);
@@ -98,13 +98,13 @@ int32 ScenePreviewControl::OpenScene(const FilePath& pathToFile)
 
     CreateCamera();
 
-    Set<String> errorsLogToHideDialog;
+    DAVA::Set<DAVA::String> errorsLogToHideDialog;
     SceneValidator::Instance()->ValidateScene(editorScene, pathToFile, errorsLogToHideDialog);
 
     return retError;
 }
 
-void ScenePreviewControl::Update(float32 timeElapsed)
+void ScenePreviewControl::Update(DAVA::float32 timeElapsed)
 {
     UI3DView::Update(timeElapsed);
 
@@ -119,28 +119,28 @@ void ScenePreviewControl::CreateCamera()
 {
     auto sceneBox = editorScene->GetWTMaximumBoundingBoxSlow();
 
-    ScopedPtr<Camera> camera(new Camera());
-    ScopedPtr<Entity> cameraNode(new Entity());
-    camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
+    DAVA::ScopedPtr<DAVA::Camera> camera(new DAVA::Camera());
+    DAVA::ScopedPtr<DAVA::Entity> cameraNode(new DAVA::Entity());
+    camera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
     camera->SetPosition(sceneBox.max * std::sqrt(3.0f));
     camera->SetTarget(sceneBox.min);
     camera->SetupPerspective(70.0f, 1.0f, 1.0f, 5000.0f);
     cameraNode->SetName("preview-camera");
-    cameraNode->AddComponent(new CameraComponent(camera));
-    cameraNode->AddComponent(new RotationControllerComponent());
+    cameraNode->AddComponent(new DAVA::CameraComponent(camera));
+    cameraNode->AddComponent(new DAVA::RotationControllerComponent());
 
-    ScopedPtr<Light> light(new Light());
-    ScopedPtr<Entity> lightNode(new Entity());
+    DAVA::ScopedPtr<DAVA::Light> light(new DAVA::Light());
+    DAVA::ScopedPtr<DAVA::Entity> lightNode(new DAVA::Entity());
     light->SetIntensity(300.0f);
-    light->SetDiffuseColor(Color::White);
-    light->SetAmbientColor(Color::White);
-    light->SetPosition(Vector3(0.0f, 0.0f, sceneBox.max.z + std::abs(sceneBox.max.z)));
-    light->SetType(Light::TYPE_POINT);
-    light->AddFlag(Light::IS_DYNAMIC);
-    light->AddFlag(Light::CAST_SHADOW);
+    light->SetDiffuseColor(DAVA::Color::White);
+    light->SetAmbientColor(DAVA::Color::White);
+    light->SetPosition(DAVA::Vector3(0.0f, 0.0f, sceneBox.max.z + std::abs(sceneBox.max.z)));
+    light->SetType(DAVA::Light::TYPE_POINT);
+    light->AddFlag(DAVA::Light::IS_DYNAMIC);
+    light->AddFlag(DAVA::Light::CAST_SHADOW);
     lightNode->SetName("preview-light");
-    lightNode->AddComponent(new LightComponent(light));
-    lightNode->SetLocalTransform(Matrix4::MakeTranslation(light->GetPosition()));
+    lightNode->AddComponent(new DAVA::LightComponent(light));
+    lightNode->SetLocalTransform(DAVA::Matrix4::MakeTranslation(light->GetPosition()));
 
     editorScene->AddNode(cameraNode);
     editorScene->AddNode(lightNode);
@@ -152,13 +152,13 @@ void ScenePreviewControl::CreateCamera()
 
 void ScenePreviewControl::SetupCamera()
 {
-    Camera* camera = editorScene->GetCurrentCamera();
+    DAVA::Camera* camera = editorScene->GetCurrentCamera();
     if (camera && editorScene)
     {
-        AABBox3 sceneBox = editorScene->GetWTMaximumBoundingBoxSlow();
-        Vector3 target = sceneBox.GetCenter();
+        DAVA::AABBox3 sceneBox = editorScene->GetWTMaximumBoundingBoxSlow();
+        DAVA::Vector3 target = sceneBox.GetCenter();
         camera->SetTarget(target);
-        Vector3 dir = (sceneBox.max - sceneBox.min);
+        DAVA::Vector3 dir = (sceneBox.max - sceneBox.min);
         camera->SetPosition(target + dir);
 
         editorScene->SetCurrentCamera(camera);

@@ -109,7 +109,11 @@
     {
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
+        }
+        if (!cppTextField->IsEditing())
+        {
+            cppTextField->StartEdit();
         }
     }
 }
@@ -130,7 +134,11 @@
     {
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
+        }
+        if (!cppTextField->IsEditing())
+        {
+            cppTextField->StartEdit();
         }
     }
 }
@@ -652,22 +660,16 @@
 
 - (void)keyboardWillHide:(NSNotification*)notification
 {
-    if (cppTextField && cppTextField->GetDelegate())
+    if (cppTextField)
     {
-        cppTextField->GetDelegate()->OnKeyboardHidden();
+        cppTextField->OnKeyboardHidden();
+        cppTextField->StopEdit();
     }
 }
 
 - (void)keyboardDidShow:(NSNotification*)notification
 {
     if (nullptr == cppTextField)
-    {
-        return;
-    }
-
-    auto* delegate = cppTextField->GetDelegate();
-
-    if (nullptr == delegate)
     {
         return;
     }
@@ -688,7 +690,7 @@
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
     keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-    delegate->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
+    cppTextField->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
 @end

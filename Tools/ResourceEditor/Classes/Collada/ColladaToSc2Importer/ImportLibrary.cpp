@@ -41,6 +41,7 @@
 #include "Render/3D/MeshUtils.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/Image/ImageSystem.h"
 #include "Collada/ColladaPolygonGroup.h"
 #include "Collada/ColladaMeshInstance.h"
 #include "Collada/ColladaSceneNode.h"
@@ -188,7 +189,7 @@ AnimationData* ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation* colladaAn
         animation->SetDuration(colladaAnimation->duration);
         if (nullptr != colladaAnimation->keys)
         {
-            for (int32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
+            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
             {
                 SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
                 animation->AddKey(key);

@@ -222,7 +222,7 @@ void DisableFloatingPointExceptions()
 void Core::CreateSingletons()
 {
     new Logger();
-    
+
 #ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
     fpu_exceptions::EnableFloatingPointExceptions();
 #else
@@ -255,6 +255,8 @@ void Core::CreateSingletons()
          */
         Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
     }
+
+    DeviceInfo::InitializeScreenInfo();
 
     new LocalizationSystem();
 
@@ -290,8 +292,6 @@ void Core::CreateSingletons()
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
     new LocalNotificationController();
-
-    DeviceInfo::InitializeScreenInfo();
 
     RegisterDAVAClasses();
 
@@ -527,9 +527,9 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
     return bestMatchMode;
 }
 
-DisplayMode Core::GetCurrentDisplayMode()
+Vector2 Core::GetWindowSize()
 {
-    return DisplayMode(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+    return Vector2(screenMetrics.width, screenMetrics.height);
 }
 
 void Core::Quit()
@@ -675,8 +675,8 @@ void Core::SystemProcessFrame()
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
 
 //#endif
-
-#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
+// delete after change resize in Android and IOS (Core::WindowSizeChanged)
+#if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
         VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
         if (vsc->WasScreenSizeChanged())
@@ -747,12 +747,12 @@ void Core::SystemProcessFrame()
     profiler::DumpAverage();
     #endif
 
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
     if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
     {
         ApplyWindowSize();
     }
-#endif // defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
+#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
 }
 
 void Core::GoBackground(bool isLock)
@@ -786,6 +786,8 @@ void Core::FocusLost()
     {
         core->OnFocusLost();
     }
+    isFocused = false;
+    focusChanged.Emit(isFocused);
 }
 
 void Core::FocusReceived()
@@ -794,6 +796,8 @@ void Core::FocusReceived()
     {
         core->OnFocusReceived();
     }
+    isFocused = true;
+    focusChanged.Emit(isFocused);
 }
 
 uint32 Core::GetGlobalFrameIndex()
@@ -861,7 +865,6 @@ void Core::SetNativeView(void* newNativeView)
     DVASSERT(nullptr != newNativeView);
     if (screenMetrics.nativeView != newNativeView)
     {
-        screenMetrics.nativeViewModified = true;
         screenMetrics.nativeView = newNativeView;
     }
 }
@@ -881,13 +884,14 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
     screenMetrics.height = height;
     screenMetrics.scaleX = scaleX;
     screenMetrics.scaleY = scaleY;
-    screenMetrics.nativeViewModified = false;
     screenMetrics.screenMetricsModified = false;
     screenMetrics.initialized = true;
 
     rendererParams.window = screenMetrics.nativeView;
     rendererParams.width = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
     rendererParams.height = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
+    rendererParams.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
+    rendererParams.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
 
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
@@ -897,15 +901,17 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
 
 void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    DVASSERT(scaleX * scaleY);
-    bool doChange = false;
-    doChange |= FLOAT_EQUAL(width, screenMetrics.width);
-    doChange |= FLOAT_EQUAL(width, screenMetrics.width);
-    doChange |= FLOAT_EQUAL(height, screenMetrics.height);
-    doChange |= FLOAT_EQUAL(scaleX, screenMetrics.scaleX);
-    doChange |= FLOAT_EQUAL(scaleY, screenMetrics.scaleY);
+    if ((width == 0.f) || (height == 0.f) || (scaleX == 0.f) || (scaleY == 0.f))
+    {
+        return;
+    }
+    bool equal = true;
+    equal &= FLOAT_EQUAL(width, screenMetrics.width);
+    equal &= FLOAT_EQUAL(height, screenMetrics.height);
+    equal &= FLOAT_EQUAL(scaleX, screenMetrics.scaleX);
+    equal &= FLOAT_EQUAL(scaleY, screenMetrics.scaleY);
 
-    if (doChange)
+    if (!equal)
     {
         screenMetrics.width = width;
         screenMetrics.height = height;
@@ -918,7 +924,9 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
 void Core::ApplyWindowSize()
 {
+    screenMetrics.screenMetricsModified = false;
     DVASSERT(Renderer::IsInitialized());
+    screenMetrics.screenMetricsModified = false;
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
     int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
 
@@ -926,12 +934,9 @@ void Core::ApplyWindowSize()
     rhi::ResetParam params;
     params.width = physicalWidth;
     params.height = physicalHeight;
-    screenMetrics.screenMetricsModified = false;
-    if (screenMetrics.nativeViewModified)
-    {
-        screenMetrics.nativeViewModified = false;
-        params.window = screenMetrics.nativeView;
-    }
+    params.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
+    params.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
+    params.window = screenMetrics.nativeView;
     Renderer::Reset(params);
 
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
@@ -944,6 +949,11 @@ void Core::SetIsActive(bool _isActive)
 {
     isActive = _isActive;
     Logger::Info("Core::SetIsActive %s", (_isActive) ? "TRUE" : "FALSE");
+}
+
+bool Core::IsFocused()
+{
+    return isFocused;
 }
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)

@@ -38,12 +38,13 @@
 #include "Logger/Logger.h"
 
 using DAVA::Logger;
-#include "Concurrency/Thread.h"
-#include "Concurrency/Semaphore.h"
-#include "Concurrency/ConditionVariable.h"
-#include "Concurrency/LockGuard.h"
-#include "Concurrency/AutoResetEvent.h"
-#include "Debug/Profiler.h"
+    #include "Concurrency/Thread.h"
+    #include "Concurrency/Semaphore.h"
+    #include "Concurrency/ConditionVariable.h"
+    #include "Concurrency/LockGuard.h"
+    #include "Concurrency/AutoResetEvent.h"
+    #include "Concurrency/ManualResetEvent.h"
+    #include "Debug/Profiler.h"
 
 #include "_gl.h"
 
@@ -374,11 +375,15 @@ static bool _GLES2_RenderThreadExitPending = false;
 static DAVA::Spinlock _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
-static DAVA::Mutex _GLES2_RenderThreadSuspendSync;
+static DAVA::Semaphore _GLES2_RenderThreadSuspendSync;
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
 
+static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
+
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
-static unsigned _GLES2_RenderThreadFrameCount = 0;
+static uint32 _GLES2_RenderThreadFrameCount = 0;
+
+static DAVA::Mutex _GLES2_SyncObjectsSync;
 
 struct
 FrameGLES2
@@ -867,7 +872,7 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
         cb->text->Initialize(64 * 1024);
     }
 
-    int len = strlen(text);
+    int len = static_cast<int>(strlen(text));
     char* txt = reinterpret_cast<char*>(cb->text->Alloc(len / sizeof(float) + 2));
 
     memcpy(txt, text, len);
@@ -889,11 +894,15 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 static Handle
 gles2_SyncObject_Create()
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     Handle handle = SyncObjectPoolGLES2::Alloc();
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(handle);
 
     sync->is_signaled = false;
     sync->is_used = false;
+
+    _GLES2_SyncObjectsSync.Unlock();
 
     return handle;
 }
@@ -903,7 +912,11 @@ gles2_SyncObject_Create()
 static void
 gles2_SyncObject_Delete(Handle obj)
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     SyncObjectPoolGLES2::Free(obj);
+
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -911,6 +924,11 @@ gles2_SyncObject_Delete(Handle obj)
 static bool
 gles2_SyncObject_IsSignaled(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
+
+    if (!SyncObjectPoolGLES2::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
 
@@ -1712,7 +1730,10 @@ void CommandBufferGLES2_t::Execute()
             #if defined(__DAVAENGINE_IPHONE__)
             GL_CALL(glDrawArraysInstancedEXT(mode, 0, v_cnt, instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
-            GL_CALL(glDrawArraysInstanced_EXT(mode, 0, v_cnt, instCount));
+            if (glDrawArraysInstanced)
+            {
+                GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            }
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
             #else
@@ -1801,7 +1822,10 @@ void CommandBufferGLES2_t::Execute()
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
             DVASSERT(baseInst == 0) // it's not supported in GLES
-            GL_CALL(glDrawElementsInstanced_EXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            if (glDrawElementsInstanced)
+            {
+                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            }
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(uint64(i_off)), instCount, baseInst));
             #else
@@ -2085,11 +2109,13 @@ _GLES2_ExecuteQueuedCommands()
 
     // update sync-objects
 
+    _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -2122,12 +2148,12 @@ gles2_Present(Handle sync)
             _GLES2_FramePreparedEvent.Signal();
         }
 
-        unsigned frame_cnt = 0;
+        uint32 frame_cnt = 0;
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
             _GLES2_FrameSync.Lock();
-            frame_cnt = _GLES2_Frame.size();
+            frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
             _GLES2_FrameSync.Unlock();
 
             if (frame_cnt >= _GLES2_RenderThreadFrameCount)
@@ -2174,7 +2200,13 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
         {
-            DAVA::LockGuard<DAVA::Mutex> suspendGuard(_GLES2_RenderThreadSuspendSync);
+            if (_GLES2_RenderThreadSuspended.Get())
+            {
+                GL_CALL(glFinish());
+                _GLES2_RenderThreadSuspendSyncReached = true;
+                _GLES2_RenderThreadSuspendSync.Wait();
+            }
+            
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
@@ -2284,18 +2316,22 @@ void UninitializeRenderThreadGLES2()
 void SuspendGLES2()
 {
     _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_FramePreparedEvent.Signal();
-    _GLES2_FrameDoneEvent.Wait();
-    GL_CALL(glFinish());
-    Logger::Info("Render GLES Suspended");
+    while (!_GLES2_RenderThreadSuspendSyncReached)
+    {
+        _GLES2_FramePreparedEvent.Signal(); //avoid stall
+    }
+    _GLES2_RenderThreadSuspendSyncReached = false;
+
+    Logger::Error("Render GLES Suspended");
 }
 
 //------------------------------------------------------------------------------
 
 void ResumeGLES2()
 {
+    Logger::Error("Render GLES Resumed");
     _GLES2_RenderThreadSuspended.Set(false);
-    Logger::Info("Render GLES Resumed");
+    _GLES2_RenderThreadSuspendSync.Post();
 }
 
 //------------------------------------------------------------------------------
@@ -2317,13 +2353,22 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 {
     int err = GL_NO_ERROR;
 
-/*
+#if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
+    #define ACQUIRE_CONTEXT() _GLES2_AcquireContext()
+    #define RELEASE_CONTEXT() _GLES2_ReleaseContext()
+#else
+    #define ACQUIRE_CONTEXT()
+    #define RELEASE_CONTEXT()
+#endif
+
+    /*
     do 
     {
         err = glGetError();
     } 
     while ( err != GL_NO_ERROR );
 */
+    ACQUIRE_CONTEXT();
 
 #if 0
 
@@ -2660,6 +2705,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         }
     }
+    RELEASE_CONTEXT();
 #undef EXEC_GL
 }
 

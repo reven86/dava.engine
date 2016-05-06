@@ -39,6 +39,7 @@
 #include "Base/GlobalEnum.h"
 #include "winsock2.h"
 #include "Iphlpapi.h"
+#include "TimeZones.h"
 
 #include <VersionHelpers.h>
 
@@ -151,27 +152,14 @@ String DeviceInfoPrivate::GetRegion()
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    return "Not yet implemented";
-
     /*don't remove that code please. it is needed for the nex task*/
-    TIME_ZONE_INFORMATION timeZoneInformation;
-    DWORD ret = GetTimeZoneInformation(&timeZoneInformation);
+    DYNAMIC_TIME_ZONE_INFORMATION timeZoneInformation;
+    DWORD ret = GetDynamicTimeZoneInformation(&timeZoneInformation);
 
-    WCHAR* name;
-    switch (ret)
-    {
-    case TIME_ZONE_ID_DAYLIGHT:
-        name = timeZoneInformation.DaylightName;
-        break;
-    case TIME_ZONE_ID_STANDARD:
-    case TIME_ZONE_ID_UNKNOWN:
-    default:
-        name = timeZoneInformation.StandardName;
-        break;
-    }
+    String generalName = TimeZoneHelper::GetGeneralNameByStdName(timeZoneInformation.TimeZoneKeyName);
+    DVASSERT_MSG(!generalName.empty(), Format("No &s timezone found! Check time zones map", generalName.c_str()).c_str());
 
-    String timeZone = WStringToString(name);
-    return timeZone;
+    return generalName;
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {

@@ -201,11 +201,22 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
 
         if (vb_elem_i != DAVA::InvalidIndex)
         {
+            unsigned stream_i = vprogLayout.ElementStreamIndex(i);
+
             elem[elemCount].AlignedByteOffset = (UINT)(vbLayout.ElementOffset(vb_elem_i));
             elem[elemCount].SemanticIndex = vprogLayout.ElementSemanticsIndex(i);
-            elem[elemCount].InputSlot = 0;
-            elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-            elem[elemCount].InstanceDataStepRate = 0;
+            elem[elemCount].InputSlot = stream_i;
+
+            if (vprogLayout.StreamFrequency(stream_i) == VDF_PER_INSTANCE)
+            {
+                elem[elemCount].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+                elem[elemCount].InstanceDataStepRate = 1;
+            }
+            else
+            {
+                elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                elem[elemCount].InstanceDataStepRate = 0;
+            }
 
             switch (vbLayout.ElementSemantics(vb_elem_i))
             {
@@ -346,6 +357,7 @@ public:
     bool SetConst(unsigned const_i, unsigned count, const float* data);
     bool SetConst(unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount);
     void SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const;
+    void Invalidate();
 #if !RHI_DX11__USE_DEFERRED_CONTEXTS
     void SetToRHI(const void* instData) const;
     const void* Instance() const;
@@ -566,6 +578,11 @@ const void* ConstBufDX11::Instance() const
     return inst;
 }
 #endif
+
+void ConstBufDX11::Invalidate()
+{
+    updatePending = true;
+}
 
 //==============================================================================
 
@@ -1068,6 +1085,14 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_SetConst = &dx11_ConstBuffer_SetConst;
     dispatch->impl_ConstBuffer_SetConst1fv = &dx11_ConstBuffer_SetConst1fv;
     dispatch->impl_ConstBuffer_Delete = &dx11_ConstBuffer_Delete;
+}
+
+void InvalidateAll()
+{
+    for (ConstBufDX11Pool::Iterator cb = ConstBufDX11Pool::Begin(), cb_end = ConstBufDX11Pool::End(); cb != cb_end; ++cb)
+    {
+        cb->Invalidate();
+    }
 }
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS

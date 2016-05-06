@@ -34,7 +34,6 @@
 extern void FrameworkMain(int argc, char* argv[]);
 
 @implementation OpenGLView
-@synthesize willQuit;
 
 - (id)initWithFrame:(NSRect)frameRect
 {
@@ -77,8 +76,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     trackingArea = nil;
     [self enableTrackingArea];
-    isFirstDraw = true;
-    willQuit = false;
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
@@ -141,26 +138,14 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        rhi::ResetParam params;
-        params.window = self;
-        params.width = backingSize[0];
-        params.height = backingSize[1];
-        Renderer::Reset(params);
+        float32 scale = DeviceInfo::GetScreenInfo().scale;
+        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
+        Core::Instance()->SetNativeView(self);
 
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        Core::Instance()->SystemProcessFrame();
     }
 
     [super reshape];
-}
-
-- (void)drawRect:(NSRect)theRect
-{
-    if (willQuit)
-        return;
-
-    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (BOOL)acceptsFirstResponder
@@ -185,7 +170,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
 
-    if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
@@ -227,18 +212,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
             // simple mouse - sends float values from 0.1 for one wheel tick
             event.wheelDelta.x = rawScrollDeltaX * rawScrollCoefficient;
             event.wheelDelta.y = rawScrollDeltaY * rawScrollCoefficient;
-        }
-    }
-    else
-    {
-        @try
-        {
-            event.tapCount = [curEvent clickCount];
-        }
-        @catch (NSException* exception)
-        {
-            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
-            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
         }
     }
 }
@@ -326,27 +299,8 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     }
 }
 
-// For explanation of mouseMoveSkipCounter see CursorMacOS.mm file, Cursor::SetMouseCaptureMode method
-extern int mouseMoveSkipCounter;
-
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
-    NSEventType type = [touch type];
-    switch (type)
-    {
-    case NSMouseMoved:
-    case NSLeftMouseDragged:
-    case NSRightMouseDragged:
-    case NSOtherMouseDragged:
-        if (mouseMoveSkipCounter > 0)
-        {
-            mouseMoveSkipCounter -= 1;
-            return;
-        }
-        break;
-    default:
-        break;
-    }
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
@@ -430,19 +384,6 @@ extern int mouseMoveSkipCounter;
 - (void)mouseDragged:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
-}
-
-void OSXShowCursor();
-
-- (void)mouseExited:(NSEvent*)theEvent
-{
-    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-    if (captureMode != InputSystem::eMouseCaptureMode::PINING)
-    {
-        // This event is sometimes delivered when mouse pinning is on
-        // So do not show cursor while pinning is on
-        OSXShowCursor();
-    }
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent

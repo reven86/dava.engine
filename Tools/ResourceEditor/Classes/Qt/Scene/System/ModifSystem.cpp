@@ -1,30 +1,30 @@
 /*==================================================================================
-	Copyright (c) 2008, binaryzebra
-	All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-	* Redistributions of source code must retain the above copyright
-	notice, this list of conditions and the following disclaimer.
-	* Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
-	* Neither the name of the binaryzebra nor the
-	names of its contributors may be used to endorse or promote products
-	derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	=====================================================================================*/
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
 
 #include "Qt/Scene/System/ModifSystem.h"
@@ -54,8 +54,6 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene* scene, SceneColl
     SetTransformType(Selectable::TransformType::Disabled);
     SetModifAxis(ST_AXIS_Z);
 }
-
-EntityModificationSystem::~EntityModificationSystem() = default;
 
 void EntityModificationSystem::SetModifAxis(ST_Axis axis)
 {
@@ -306,11 +304,7 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
         return inputEntities;
 
     SelectableGroup result = inputEntities;
-    // remove children to prevent double transformation
-    result.RemoveIf([&result](const Selectable& obj) {
-        auto entity = obj.AsEntity();
-        return (entity == nullptr) ? false : result.ContainsObject(entity->GetParent());
-    });
+    result.RemoveObjectsWithDependantTransform();
 
     DAVA::AABBox3 localBox;
     for (const auto& item : result.GetContent())
@@ -398,9 +392,9 @@ SelectableGroup EntityModificationSystem::BeginModification(const SelectableGrou
     DAVA::Vector2 vy = yPos - zeroPos;
     DAVA::Vector2 vz = zPos - zeroPos;
 
-    crossXY = Abs(vx.CrossProduct(vy));
-    crossXZ = Abs(vx.CrossProduct(vz));
-    crossYZ = Abs(vy.CrossProduct(vz));
+    crossXY = DAVA::Abs(vx.CrossProduct(vy));
+    crossXZ = DAVA::Abs(vx.CrossProduct(vz));
+    crossYZ = DAVA::Abs(vy.CrossProduct(vz));
 
     // real rotate should be done in direction of 2dAxis normal,
     // so calculate this normal
@@ -479,8 +473,8 @@ void EntityModificationSystem::ApplyModification()
         return;
 
     bool transformChanged = false;
-    uint32 count = static_cast<uint32>(modifEntities.size());
-    for (uint32 i = 0; i < count; ++i)
+    DAVA::uint32 count = static_cast<DAVA::uint32>(modifEntities.size());
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
         if (modifEntities[i].originalTransform != modifEntities[i].object.GetLocalTransform())
         {
@@ -729,10 +723,10 @@ bool EntityModificationSystem::IsEntityContainRecursive(const DAVA::Entity* enti
 void EntityModificationSystem::CloneBegin()
 {
     // remove modif entities that are children for other modif entities
-    for (uint32 i = 0; i < modifEntities.size(); ++i)
+    for (DAVA::uint32 i = 0; i < modifEntities.size(); ++i)
     {
         auto iEntity = modifEntities[i].object.AsEntity();
-        for (uint32 j = 0; (iEntity != nullptr) && (j < modifEntities.size()); ++j)
+        for (DAVA::uint32 j = 0; (iEntity != nullptr) && (j < modifEntities.size()); ++j)
         {
             if (i == j)
                 continue;
@@ -740,7 +734,7 @@ void EntityModificationSystem::CloneBegin()
             auto jEntity = modifEntities[j].object.AsEntity();
             if ((jEntity != nullptr) && jEntity->IsMyChildRecursive(iEntity))
             {
-                RemoveExchangingWithLast(modifEntities, i);
+                DAVA::RemoveExchangingWithLast(modifEntities, i);
                 --i;
                 break;
             }
@@ -769,10 +763,10 @@ void EntityModificationSystem::CloneBegin()
 
         newEntity->SetLocalTransform(item.originalTransform);
 
-        Scene* scene = origEntity->GetScene();
+        DAVA::Scene* scene = origEntity->GetScene();
         if (scene != nullptr)
         {
-            StaticOcclusionSystem* occlusionSystem = scene->staticOcclusionSystem;
+            DAVA::StaticOcclusionSystem* occlusionSystem = scene->staticOcclusionSystem;
             DVASSERT(occlusionSystem);
             occlusionSystem->InvalidateOcclusionIndicesRecursively(newEntity);
         }
@@ -788,16 +782,16 @@ void EntityModificationSystem::CloneEnd()
     {
         SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
 
-        uint32 count = static_cast<uint32>(modifEntities.size());
+        DAVA::uint32 count = static_cast<DAVA::uint32>(modifEntities.size());
         sceneEditor->BeginBatch("Clone", count);
 
         // we just moved original objects. Now we should return them back
         // to there original positions and move cloned object to the new positions
         // and only after that perform "add cloned entities to scene" commands
-        for (uint32 i = 0; i < count; ++i)
+        for (DAVA::uint32 i = 0; i < count; ++i)
         {
             // remember new transform
-            Matrix4 newLocalTransform = modifEntities[i].object.GetLocalTransform();
+            DAVA::Matrix4 newLocalTransform = modifEntities[i].object.GetLocalTransform();
 
             // return original entity to original pos
             modifEntities[i].object.SetLocalTransform(modifEntities[i].originalTransform);
@@ -860,7 +854,7 @@ void EntityModificationSystem::LockTransform(const SelectableGroup& entities, bo
         return;
     }
 
-    uint32 count = static_cast<uint32>(entities.GetSize());
+    DAVA::uint32 count = static_cast<DAVA::uint32>(entities.GetSize());
     sceneEditor->BeginBatch("Lock entities", count);
     for (auto entity : entities.ObjectsOfType<DAVA::Entity>())
     {
@@ -935,7 +929,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
 
                 // also modify childs transform to make them be at
                 // right position after parent entity changed
-                for (size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
+                for (DAVA::int32 i = 0; i < en->GetChildrenCount(); ++i)
                 {
                     DAVA::Entity* childEntity = en->GetChild(i);
 
@@ -959,7 +953,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
             newPivotPos = selectionSystem->GetUntransformedBoundingBox(entity).GetCenter();
         }
 
-        uint32 count = static_cast<uint32>(entity->GetChildrenCount());
+        DAVA::uint32 count = static_cast<DAVA::uint32>(entity->GetChildrenCount());
         sceneEditor->BeginBatch(commandMessage, count + 1);
 
         // transform parent entity
@@ -969,7 +963,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
 
         // transform child entities with inversed parent transformation
         transform.Inverse();
-        for (uint32 i = 0; i < count; ++i)
+        for (DAVA::uint32 i = 0; i < count; ++i)
         {
             DAVA::Entity* childEntity = entity->GetChild(i);
             sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
@@ -995,7 +989,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
                 // if renderObjects has same number of render batches we also should
                 // check if polygon groups used inside that render batches are completely identical
                 // but we should deal with the fact, that polygon groups order can differ
-                for (size_t j = 0; j < enRenderObject->GetRenderBatchCount(); ++j)
+                for (DAVA::uint32 j = 0; j < enRenderObject->GetRenderBatchCount(); ++j)
                 {
                     bool found = false;
                     DAVA::PolygonGroup* pg = enRenderObject->GetRenderBatch(j)->GetPolygonGroup();

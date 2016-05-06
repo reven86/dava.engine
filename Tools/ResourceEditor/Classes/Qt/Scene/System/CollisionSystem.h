@@ -84,7 +84,7 @@ public:
 
     DAVA::Landscape* GetLandscape() const;
 
-    void UpdateCollisionObject(DAVA::Entity* entity);
+    void UpdateCollisionObject(const Selectable& object);
 
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;

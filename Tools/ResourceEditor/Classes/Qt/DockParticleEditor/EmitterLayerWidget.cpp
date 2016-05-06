@@ -43,33 +43,30 @@
 #include <QFile>
 #include <QMessageBox>
 
-static const uint32 SPRITE_SIZE = 60;
+static const DAVA::uint32 SPRITE_SIZE = 60;
 
-static const float32 ANGLE_MIN_LIMIT_DEGREES = -360.0f;
-static const float32 ANGLE_MAX_LIMIT_DEGREES = 360.0f;
+static const DAVA::float32 ANGLE_MIN_LIMIT_DEGREES = -360.0f;
+static const DAVA::float32 ANGLE_MAX_LIMIT_DEGREES = 360.0f;
 
 const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 {
-  { ParticleLayer::TYPE_SINGLE_PARTICLE, "Single Particle" },
-  { ParticleLayer::TYPE_PARTICLES, "Particles" },
-  { ParticleLayer::TYPE_SUPEREMITTER_PARTICLES, "SuperEmitter" }
+  { DAVA::ParticleLayer::TYPE_SINGLE_PARTICLE, "Single Particle" },
+  { DAVA::ParticleLayer::TYPE_PARTICLES, "Particles" },
+  { DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES, "SuperEmitter" }
 };
 
 const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[] =
 {
-  { BLENDING_ALPHABLEND, "Alpha blend" },
-  { BLENDING_ADDITIVE, "Additive" },
-  { BLENDING_ALPHA_ADDITIVE, "Alpha additive" },
-  { BLENDING_SOFT_ADDITIVE, "Soft additive" },
+  { DAVA::BLENDING_ALPHABLEND, "Alpha blend" },
+  { DAVA::BLENDING_ADDITIVE, "Additive" },
+  { DAVA::BLENDING_ALPHA_ADDITIVE, "Alpha additive" },
+  { DAVA::BLENDING_SOFT_ADDITIVE, "Soft additive" },
   /*{BLEND_DST_COLOR, BLEND_ZERO, "Multiplicative"},
 	{BLEND_DST_COLOR, BLEND_SRC_COLOR, "2x Multiplicative"}*/
 };
 
 EmitterLayerWidget::EmitterLayerWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainBox = new QVBoxLayout;
     this->setLayout(mainBox);
@@ -83,7 +80,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget* parent)
     lodsLayout->addWidget(lodsLabel);
     QHBoxLayout* lodsInnerLayout = new QHBoxLayout();
 
-    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    for (DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
         layerLodsCheckBox[i] = new QCheckBox(QString("LOD") + QString::number(i));
         lodsInnerLayout->addWidget(layerLodsCheckBox[i]);
@@ -265,8 +262,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget* parent)
     presetLabel = new QLabel("Preset");
 
     presetComboBox = new QComboBox();
-    int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
-    for (int32 i = 0; i < presetsCount; i++)
+    DAVA::int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
+    for (DAVA::int32 i = 0; i < presetsCount; i++)
     {
         presetComboBox->addItem(blendPresetsMap[i].presetName);
     }
@@ -455,21 +452,18 @@ void EmitterLayerWidget::InitWidget(QWidget* widget)
             SLOT(OnValueChanged()));
 }
 
-void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effect_, ParticleEmitterInstance* emitter_,
+void EmitterLayerWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect_, DAVA::ParticleEmitterInstance* instance_,
                               DAVA::ParticleLayer* layer_, bool updateMinimized)
 {
-    if ((emitter_ == nullptr) || (layer_ == nullptr))
+    if ((instance_ == nullptr) || (layer_ == nullptr))
         return;
 
-    instance = emitter_;
     layer = layer_;
-    effect = effect_;
-
-    SetActiveScene(scene);
+    SetObjectsForScene(scene, effect_, instance_);
     Update(updateMinimized);
 }
 
-void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
+void EmitterLayerWidget::RestoreVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
@@ -488,12 +482,12 @@ void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
     angleTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_ANGLE"));
 }
 
-void EmitterLayerWidget::StoreVisualState(KeyedArchive* visualStateProps)
+void EmitterLayerWidget::StoreVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
 
-    KeyedArchive* props = new KeyedArchive();
+    DAVA::KeyedArchive* props = new DAVA::KeyedArchive();
 
     lifeTimeLine->GetVisualState(props);
     visualStateProps->SetArchive("LAYER_LIFE_PROPS", props);
@@ -602,76 +596,77 @@ void EmitterLayerWidget::OnValueChanged()
     if (blockSignals)
         return;
 
-    PropLineWrapper<float32> propLife;
-    PropLineWrapper<float32> propLifeVariation;
+    DAVA::PropLineWrapper<DAVA::float32> propLife;
+    DAVA::PropLineWrapper<DAVA::float32> propLifeVariation;
     lifeTimeLine->GetValue(0, propLife.GetPropsPtr());
     lifeTimeLine->GetValue(1, propLifeVariation.GetPropsPtr());
 
-    PropLineWrapper<float32> propNumber;
-    PropLineWrapper<float32> propNumberVariation;
+    DAVA::PropLineWrapper<DAVA::float32> propNumber;
+    DAVA::PropLineWrapper<DAVA::float32> propNumberVariation;
     numberTimeLine->GetValue(0, propNumber.GetPropsPtr());
     numberTimeLine->GetValue(1, propNumberVariation.GetPropsPtr());
 
-    PropLineWrapper<Vector2> propSize;
+    DAVA::PropLineWrapper<DAVA::Vector2> propSize;
     sizeTimeLine->GetValues(propSize.GetPropsPtr());
 
-    PropLineWrapper<Vector2> propSizeVariation;
+    DAVA::PropLineWrapper<DAVA::Vector2> propSizeVariation;
     sizeVariationTimeLine->GetValues(propSizeVariation.GetPropsPtr());
 
-    PropLineWrapper<Vector2> propsizeOverLife;
+    DAVA::PropLineWrapper<DAVA::Vector2> propsizeOverLife;
     sizeOverLifeTimeLine->GetValues(propsizeOverLife.GetPropsPtr());
 
-    PropLineWrapper<float32> propVelocity;
-    PropLineWrapper<float32> propVelocityVariation;
+    DAVA::PropLineWrapper<DAVA::float32> propVelocity;
+    DAVA::PropLineWrapper<DAVA::float32> propVelocityVariation;
     velocityTimeLine->GetValue(0, propVelocity.GetPropsPtr());
     velocityTimeLine->GetValue(1, propVelocityVariation.GetPropsPtr());
 
-    PropLineWrapper<float32> propVelocityOverLife;
+    DAVA::PropLineWrapper<DAVA::float32> propVelocityOverLife;
     velocityOverLifeTimeLine->GetValue(0, propVelocityOverLife.GetPropsPtr());
 
-    PropLineWrapper<float32> propSpin;
-    PropLineWrapper<float32> propSpinVariation;
+    DAVA::PropLineWrapper<DAVA::float32> propSpin;
+    DAVA::PropLineWrapper<DAVA::float32> propSpinVariation;
     spinTimeLine->GetValue(0, propSpin.GetPropsPtr());
     spinTimeLine->GetValue(1, propSpinVariation.GetPropsPtr());
 
-    PropLineWrapper<float32> propSpinOverLife;
+    DAVA::PropLineWrapper<DAVA::float32> propSpinOverLife;
     spinOverLifeTimeLine->GetValue(0, propSpinOverLife.GetPropsPtr());
 
-    PropLineWrapper<float32> propAnimSpeedOverLife;
+    DAVA::PropLineWrapper<DAVA::float32> propAnimSpeedOverLife;
     animSpeedOverLifeTimeLine->GetValue(0, propAnimSpeedOverLife.GetPropsPtr());
 
-    PropLineWrapper<Color> propColorRandom;
+    DAVA::PropLineWrapper<DAVA::Color> propColorRandom;
     colorRandomGradient->GetValues(propColorRandom.GetPropsPtr());
 
-    PropLineWrapper<Color> propColorOverLife;
+    DAVA::PropLineWrapper<DAVA::Color> propColorOverLife;
     colorOverLifeGradient->GetValues(propColorOverLife.GetPropsPtr());
 
-    PropLineWrapper<float32> propAlphaOverLife;
+    DAVA::PropLineWrapper<DAVA::float32> propAlphaOverLife;
     alphaOverLifeTimeLine->GetValue(0, propAlphaOverLife.GetPropsPtr());
 
-    PropLineWrapper<float32> propAngle;
-    PropLineWrapper<float32> propAngleVariation;
+    DAVA::PropLineWrapper<DAVA::float32> propAngle;
+    DAVA::PropLineWrapper<DAVA::float32> propAngleVariation;
     angleTimeLine->GetValue(0, propAngle.GetPropsPtr());
     angleTimeLine->GetValue(1, propAngleVariation.GetPropsPtr());
 
-    ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
+    DAVA::ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
 
-    int32 particleOrientation = 0;
+    DAVA::int32 particleOrientation = 0;
     if (cameraFacingCheckBox->isChecked())
-        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
+        particleOrientation += DAVA::ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
     if (xFacingCheckBox->isChecked())
-        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
+        particleOrientation += DAVA::ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
     if (yFacingCheckBox->isChecked())
-        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
+        particleOrientation += DAVA::ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
     if (zFacingCheckBox->isChecked())
-        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
+        particleOrientation += DAVA::ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
     if (worldAlignCheckBox->isChecked())
-        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
+        particleOrientation += DAVA::ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
-    ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
-    bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
+    DAVA::ParticleLayer::eDegradeStrategy degradeStrategy = DAVA::ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
+    bool superemitterStatusChanged = (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    auto updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(instance, layer);
+    SceneEditor2* activeScene = GetActiveScene();
+    auto updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(GetEmitterInstance(activeScene), layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,
@@ -703,29 +698,29 @@ void EmitterLayerWidget::OnValueChanged()
                          propAngle.GetPropLine(),
                          propAngleVariation.GetPropLine(),
 
-                         (float32)startTimeSpin->value(),
-                         (float32)endTimeSpin->value(),
-                         (float32)deltaSpin->value(),
-                         (float32)deltaVariationSpin->value(),
-                         (float32)loopEndSpin->value(),
-                         (float32)loopVariationSpin->value(),
+                         static_cast<DAVA::float32>(startTimeSpin->value()),
+                         static_cast<DAVA::float32>(endTimeSpin->value()),
+                         static_cast<DAVA::float32>(deltaSpin->value()),
+                         static_cast<DAVA::float32>(deltaVariationSpin->value()),
+                         static_cast<DAVA::float32>(loopEndSpin->value()),
+                         static_cast<DAVA::float32>(loopVariationSpin->value()),
                          frameOverlifeCheckBox->isChecked(),
-                         (float32)frameOverlifeFPSSpin->value(),
+                         static_cast<DAVA::float32>(frameOverlifeFPSSpin->value()),
                          randomFrameOnStartCheckBox->isChecked(),
                          loopSpriteAnimationCheckBox->isChecked(),
                          propAnimSpeedOverLife.GetPropLine(),
-                         (float32)pivotPointXSpinBox->value(),
-                         (float32)pivotPointYSpinBox->value());
+                         static_cast<DAVA::float32>(pivotPointXSpinBox->value()),
+                         static_cast<DAVA::float32>(pivotPointYSpinBox->value()));
 
-    DVASSERT(activeScene);
-    activeScene->Exec(std::move(updateLayerCmd));
-    activeScene->MarkAsChanged();
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(std::move(updateLayerCmd));
+    GetActiveScene()->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
     {
-        if (!effect->IsStopped())
-            effect->Restart(true);
+        if (!GetEffect(activeScene)->IsStopped())
+            GetEffect(activeScene)->Restart(true);
     }
     emit ValueChanged();
 }
@@ -735,11 +730,11 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     if (blockSignals)
         return;
 
-    const eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
-    const FilePath spritePath(spritePathLabel->text().toStdString());
+    const DAVA::eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
+    const DAVA::FilePath spritePath(spritePathLabel->text().toStdString());
 
-    DVASSERT(activeScene);
-    activeScene->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
 
     UpdateLayerSprite();
 
@@ -750,15 +745,16 @@ void EmitterLayerWidget::OnLodsChanged()
 {
     if (blockSignals)
         return;
-    Vector<bool> lods;
-    lods.resize(LodComponent::MAX_LOD_LAYERS, true);
-    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+
+    DAVA::Vector<bool> lods;
+    lods.resize(DAVA::LodComponent::MAX_LOD_LAYERS, true);
+    for (DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
         lods[i] = layerLodsCheckBox[i]->isChecked();
     }
 
-    activeScene->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
-    activeScene->MarkAsChanged();
+    GetActiveScene()->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
+    GetActiveScene()->MarkAsChanged();
     emit ValueChanged();
 }
 
@@ -768,7 +764,7 @@ void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
 
     if (rhi::SyncObjectSignaled(spriteUpdateTexturesStack.top().first))
     {
-        ScopedPtr<Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
+        DAVA::ScopedPtr<DAVA::Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
         spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
 
         while (!spriteUpdateTexturesStack.empty())
@@ -784,7 +780,7 @@ void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
 void EmitterLayerWidget::Update(bool updateMinimized)
 {
     blockSignals = true;
-    float32 lifeTime = layer->endTime;
+    DAVA::float32 lifeTime = layer->endTime;
 
     layerNameLineEdit->setText(QString::fromStdString(layer->layerName));
     layerTypeComboBox->setCurrentIndex(LayerTypeToIndex(layer->type));
@@ -804,26 +800,26 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     isLoopedCheckBox->setChecked(layer->isLooped);
 
-    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    for (DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
         layerLodsCheckBox[i]->setChecked(layer->IsLodActive(i));
     }
 
-    degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
+    degradeStrategyComboBox->setCurrentIndex(static_cast<DAVA::int32>(layer->degradeStrategy));
 
     UpdateLayerSprite();
 
     //particle orientation
-    cameraFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
-    xFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_X_FACING);
-    yFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Y_FACING);
-    zFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Z_FACING);
-    worldAlignCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
+    cameraFacingCheckBox->setChecked(layer->particleOrientation & DAVA::ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
+    xFacingCheckBox->setChecked(layer->particleOrientation & DAVA::ParticleLayer::PARTICLE_ORIENTATION_X_FACING);
+    yFacingCheckBox->setChecked(layer->particleOrientation & DAVA::ParticleLayer::PARTICLE_ORIENTATION_Y_FACING);
+    zFacingCheckBox->setChecked(layer->particleOrientation & DAVA::ParticleLayer::PARTICLE_ORIENTATION_Z_FACING);
+    worldAlignCheckBox->setChecked(layer->particleOrientation & DAVA::ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
 
     //blend and fog
 
-    int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
-    int32 presetId;
+    DAVA::int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
+    DAVA::int32 presetId;
     for (presetId = 0; presetId < presetsCount; presetId++)
     {
         if (blendPresetsMap[presetId].blending == layer->blending)
@@ -837,30 +833,30 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     //LAYER_LIFE, LAYER_LIFE_VARIATION,
     lifeTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-    lifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->life)).GetProps(), Qt::blue, "life");
-    lifeTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->lifeVariation)).GetProps(), Qt::darkGreen, "life variation");
+    lifeTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->life)).GetProps(), Qt::blue, "life");
+    lifeTimeLine->AddLine(1, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->lifeVariation)).GetProps(), Qt::darkGreen, "life variation");
     lifeTimeLine->SetMinLimits(0.0f);
 
     //LAYER_NUMBER, LAYER_NUMBER_VARIATION,
     numberTimeLine->Init(layer->startTime, lifeTime, updateMinimized, false, true, true);
     //		void Init(float32 minT, float32 maxT, bool updateSizeState, bool aliasLinePoint = false, bool allowDeleteLine = true, bool integer = false);
     numberTimeLine->SetMinLimits(0);
-    numberTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->number)).GetProps(), Qt::blue, "number");
-    numberTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->numberVariation)).GetProps(), Qt::darkGreen, "number variation");
+    numberTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->number)).GetProps(), Qt::blue, "number");
+    numberTimeLine->AddLine(1, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->numberVariation)).GetProps(), Qt::darkGreen, "number variation");
 
-    ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
-    numberTimeLine->setVisible(propLayerType != ParticleLayer::TYPE_SINGLE_PARTICLE);
+    DAVA::ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
+    numberTimeLine->setVisible(propLayerType != DAVA::ParticleLayer::TYPE_SINGLE_PARTICLE);
 
     //LAYER_SIZE, LAYER_SIZE_VARIATION, LAYER_SIZE_OVER_LIFE,
-    Vector<QColor> colors;
+    DAVA::Vector<QColor> colors;
     colors.push_back(Qt::red);
     colors.push_back(Qt::darkGreen);
-    Vector<QString> legends;
+    DAVA::Vector<QString> legends;
     legends.push_back("size X");
     legends.push_back("size Y");
     sizeTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
     sizeTimeLine->SetMinLimits(0);
-    sizeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->size)).GetProps(), colors, legends);
+    sizeTimeLine->AddLines(DAVA::PropLineWrapper<DAVA::Vector2>(DAVA::PropertyLineHelper::GetValueLine(layer->size)).GetProps(), colors, legends);
     sizeTimeLine->EnableLock(true);
 
     legends.clear();
@@ -868,7 +864,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     legends.push_back("size variation Y");
     sizeVariationTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
     sizeVariationTimeLine->SetMinLimits(0);
-    sizeVariationTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeVariation)).GetProps(), colors, legends);
+    sizeVariationTimeLine->AddLines(DAVA::PropLineWrapper<DAVA::Vector2>(DAVA::PropertyLineHelper::GetValueLine(layer->sizeVariation)).GetProps(), colors, legends);
     sizeVariationTimeLine->EnableLock(true);
 
     legends.clear();
@@ -876,42 +872,42 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     legends.push_back("size over life Y");
     sizeOverLifeTimeLine->Init(0, 1, updateMinimized, true);
     sizeOverLifeTimeLine->SetMinLimits(0);
-    sizeOverLifeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeOverLifeXY)).GetProps(), colors, legends);
+    sizeOverLifeTimeLine->AddLines(DAVA::PropLineWrapper<DAVA::Vector2>(DAVA::PropertyLineHelper::GetValueLine(layer->sizeOverLifeXY)).GetProps(), colors, legends);
     sizeOverLifeTimeLine->EnableLock(true);
 
     //LAYER_VELOCITY, LAYER_VELOCITY_VARIATION,
     velocityTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-    velocityTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocity)).GetProps(), Qt::blue, "velocity");
-    velocityTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocityVariation)).GetProps(), Qt::darkGreen, "velocity variation");
+    velocityTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->velocity)).GetProps(), Qt::blue, "velocity");
+    velocityTimeLine->AddLine(1, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->velocityVariation)).GetProps(), Qt::darkGreen, "velocity variation");
 
     //LAYER_VELOCITY_OVER_LIFE,
     velocityOverLifeTimeLine->Init(0, 1, updateMinimized);
-    velocityOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocityOverLife)).GetProps(), Qt::blue, "velocity over life");
+    velocityOverLifeTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->velocityOverLife)).GetProps(), Qt::blue, "velocity over life");
 
     //LAYER_FORCES, LAYER_FORCES_VARIATION, LAYER_FORCES_OVER_LIFE,
 
     //LAYER_SPIN, LAYER_SPIN_VARIATION,
     spinTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-    spinTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spin)).GetProps(), Qt::blue, "spin");
-    spinTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spinVariation)).GetProps(), Qt::darkGreen, "spin variation");
+    spinTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->spin)).GetProps(), Qt::blue, "spin");
+    spinTimeLine->AddLine(1, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->spinVariation)).GetProps(), Qt::darkGreen, "spin variation");
 
     //LAYER_SPIN_OVER_LIFE,
     spinOverLifeTimeLine->Init(0, 1, updateMinimized);
-    spinOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spinOverLife)).GetProps(), Qt::blue, "spin over life");
+    spinOverLifeTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->spinOverLife)).GetProps(), Qt::blue, "spin over life");
 
     randomSpinDirectionCheckBox->setChecked(layer->randomSpinDirection);
 
     //LAYER_COLOR_RANDOM, LAYER_ALPHA_OVER_LIFE, LAYER_COLOR_OVER_LIFE,
     colorRandomGradient->Init(0, 1, "random color");
-    colorRandomGradient->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(layer->colorRandom)).GetProps());
+    colorRandomGradient->SetValues(DAVA::PropLineWrapper<DAVA::Color>(DAVA::PropertyLineHelper::GetValueLine(layer->colorRandom)).GetProps());
 
     colorOverLifeGradient->Init(0, 1, "color over life");
-    colorOverLifeGradient->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(layer->colorOverLife)).GetProps());
+    colorOverLifeGradient->SetValues(DAVA::PropLineWrapper<DAVA::Color>(DAVA::PropertyLineHelper::GetValueLine(layer->colorOverLife)).GetProps());
 
     alphaOverLifeTimeLine->Init(0, 1, updateMinimized);
     alphaOverLifeTimeLine->SetMinLimits(0);
     alphaOverLifeTimeLine->SetMaxLimits(1.f);
-    alphaOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->alphaOverLife)).GetProps(), Qt::blue, "alpha over life");
+    alphaOverLifeTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->alphaOverLife)).GetProps(), Qt::blue, "alpha over life");
 
     frameOverlifeCheckBox->setChecked(layer->frameOverLifeEnabled);
     frameOverlifeFPSSpin->setValue(layer->frameOverLifeFPS);
@@ -921,11 +917,11 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     animSpeedOverLifeTimeLine->Init(0, 1, updateMinimized);
     animSpeedOverLifeTimeLine->SetMinLimits(0);
-    animSpeedOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->animSpeedOverLife)).GetProps(), Qt::blue, "anim speed over life");
+    animSpeedOverLifeTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->animSpeedOverLife)).GetProps(), Qt::blue, "anim speed over life");
 
     angleTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-    angleTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->angle)).GetProps(), Qt::blue, "angle");
-    angleTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->angleVariation)).GetProps(), Qt::darkGreen, "angle variation");
+    angleTimeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->angle)).GetProps(), Qt::blue, "angle");
+    angleTimeLine->AddLine(1, DAVA::PropLineWrapper<DAVA::float32>(DAVA::PropertyLineHelper::GetValueLine(layer->angleVariation)).GetProps(), Qt::darkGreen, "angle variation");
     angleTimeLine->SetMinLimits(ANGLE_MIN_LIMIT_DEGREES);
     angleTimeLine->SetMaxLimits(ANGLE_MAX_LIMIT_DEGREES);
     angleTimeLine->SetYLegendMark(DEGREE_MARK_CHARACTER);
@@ -959,7 +955,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     loopVariationSpin->setVisible(isLoopedChecked);
     loopVariationSpinLabel->setVisible(isLoopedChecked);
 
-    const Vector2& layerPivotPoint = layer->layerPivotPoint;
+    const DAVA::Vector2& layerPivotPoint = layer->layerPivotPoint;
     pivotPointXSpinBox->setValue((double)layerPivotPoint.x);
     pivotPointYSpinBox->setValue((double)layerPivotPoint.y);
 
@@ -972,22 +968,22 @@ void EmitterLayerWidget::UpdateLayerSprite()
 {
     if (layer->sprite)
     {
-        RenderSystem2D::RenderTargetPassDescriptor desc;
-        Texture* dstTex = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
+        DAVA::Texture* dstTex = DAVA::Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, DAVA::FORMAT_RGBA8888);
         desc.colorAttachment = dstTex->handle;
         desc.depthAttachment = dstTex->handleDepthStencil;
         desc.width = dstTex->GetWidth();
         desc.height = dstTex->GetHeight();
         desc.clearTarget = true;
         desc.transformVirtualToPhysical = false;
-        desc.clearColor = Color::Clear;
-        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+        desc.clearColor = DAVA::Color::Clear;
+        DAVA::RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         {
-            Sprite::DrawState drawState = {};
+            DAVA::Sprite::DrawState drawState = {};
             drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
-            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
+            DAVA::RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, DAVA::Color::White);
         }
-        RenderSystem2D::Instance()->EndRenderTargetPass();
+        DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
         spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), dstTex });
         spriteUpdateTimer->start(0);
         spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
@@ -1037,11 +1033,11 @@ void EmitterLayerWidget::OnSpritePathChanged(const QString& text)
 
 void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
 {
-    const FilePath& particlesDataPath = ProjectManager::Instance()->GetParticlesDataPath();
-    const FilePath spritePath = text.toStdString();
-    const String relativePathForParticlesPath = spritePath.GetRelativePathname(particlesDataPath);
+    const DAVA::FilePath& particlesDataPath = ProjectManager::Instance()->GetParticlesDataPath();
+    const DAVA::FilePath spritePath = text.toStdString();
+    const DAVA::String relativePathForParticlesPath = spritePath.GetRelativePathname(particlesDataPath);
 
-    if (relativePathForParticlesPath.find("../") != String::npos)
+    if (relativePathForParticlesPath.find("../") != DAVA::String::npos)
     {
         QString message = QString("You've opened particle sprite from incorrect path (%1).\n Correct one is %2.").arg(QString::fromStdString(spritePath.GetDirectory().GetAbsolutePathname())).arg(QString::fromStdString(particlesDataPath.GetAbsolutePathname()));
 
@@ -1054,17 +1050,17 @@ void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
 
 void EmitterLayerWidget::FillLayerTypes()
 {
-    int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
-    for (int32 i = 0; i < layerTypes; i++)
+    DAVA::int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
+    for (DAVA::int32 i = 0; i < layerTypes; i++)
     {
         layerTypeComboBox->addItem(layerTypeMap[i].layerName);
     }
 }
 
-int32 EmitterLayerWidget::LayerTypeToIndex(ParticleLayer::eType layerType)
+DAVA::int32 EmitterLayerWidget::LayerTypeToIndex(DAVA::ParticleLayer::eType layerType)
 {
-    int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
-    for (int32 i = 0; i < layerTypes; i++)
+    DAVA::int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
+    for (DAVA::int32 i = 0; i < layerTypes; i++)
     {
         if (layerTypeMap[i].layerType == layerType)
         {

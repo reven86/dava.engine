@@ -189,8 +189,8 @@ bool MaterialFilteringModel::lessThan(const QModelIndex& left, const QModelIndex
     // global material should always be first
     MaterialItem* lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
     MaterialItem* rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
-    NMaterial* mLeft = lhsItem->GetMaterial();
-    NMaterial* mRight = rhsItem->GetMaterial();
+    DAVA::NMaterial* mLeft = lhsItem->GetMaterial();
+    DAVA::NMaterial* mRight = rhsItem->GetMaterial();
 
     if ((mLeft == nullptr) || (mRight == nullptr))
         return QSortFilterProxyModel::lessThan(left, right);

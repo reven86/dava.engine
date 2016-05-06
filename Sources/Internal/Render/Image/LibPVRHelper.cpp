@@ -137,19 +137,13 @@ bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
     return isPvrFile;
 }
 
-eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap) const
+eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
-    PVRFile* pvrFile = ReadFile(infile, true, true);
-    if (pvrFile != nullptr)
+    if (LoadImages(infile, imageSet, loadingParams))
     {
-        bool loaded = LoadImages(pvrFile, imageSet, fromMipmap);
-        delete pvrFile;
-
-        if (loaded)
-        {
-            return eErrorCode::SUCCESS;
-        }
+        return eErrorCode::SUCCESS;
     }
+
     return eErrorCode::ERROR_READ_FAIL;
 }
 
@@ -389,16 +383,30 @@ PVRFile* LibPVRHelper::ReadFile(File* file, bool readMetaData /*= false*/, bool 
     return pvrFile;
 }
 
-bool LibPVRHelper::LoadImages(const PVRFile* pvrFile, Vector<Image*>& imageSet, int32 fromMipMap)
+bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
+    PVRFile* pvrFile = ReadFile(infile, true, true);
+    SCOPE_EXIT
+    {
+        DAVA::SafeDelete(pvrFile);
+    };
+
     if (nullptr == pvrFile || pvrFile->compressedData == NULL)
     {
         return false;
     }
 
-    const uint32& mipmapLevelCount = pvrFile->header.u32MIPMapCount;
+    PixelFormat pxFormat = GetTextureFormat(pvrFile->header);
+    if (pvrFile->header.u32Height != pvrFile->header.u32Width && (pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4))
+    {
+        Logger::Error("[LibPVRHelper::LoadImages]: Non-square textures with %s compression are unsupported. Failed to load : %s",
+                      GlobalEnumMap<PixelFormat>::Instance()->ToString(pxFormat),
+                      infile->GetFilename().GetAbsolutePathname().c_str());
+        return false;
+    }
 
-    fromMipMap = Min(fromMipMap, int32(mipmapLevelCount - 1));
+    uint32 mipmapLevelCount = pvrFile->header.u32MIPMapCount;
+    uint32 fromMipMap = ImageSystem::GetBaseMipmap({ pvrFile->header.u32Width, pvrFile->header.u32Height, Min(loadingParams.baseMipmap, mipmapLevelCount - 1) }, loadingParams);
 
     bool loadAllPvrData = true;
     for (uint32 i = fromMipMap; i < mipmapLevelCount; ++i)

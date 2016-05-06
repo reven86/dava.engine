@@ -36,6 +36,8 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 
+#include "Commands2/TransformCommand.h"
+#include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 
@@ -80,16 +82,16 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene* scene)
     landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
     landCollWorld->setDebugDrawer(landDebugDrawer);
 
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
 {
     if (GetScene())
     {
-        GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+        GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
     }
 
     for (const auto& etc : objectToCollision)
@@ -199,7 +201,7 @@ bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3& from, const DAVA::Ve
     DAVA::Vector3 rayDirection = to - from;
     DAVA::float32 rayLength = rayDirection.Length();
     rayDirection.Normalize();
-    rayDirection *= Min(5.0f, rayLength);
+    rayDirection *= DAVA::Min(5.0f, rayLength);
     float stepSize = rayDirection.Length();
 
     btVector3 btStep(rayDirection.x, rayDirection.y, rayDirection.z);
@@ -247,10 +249,19 @@ DAVA::Landscape* SceneCollisionSystem::GetLandscape() const
     return DAVA::GetLandscape(curLandscapeEntity);
 }
 
-void SceneCollisionSystem::UpdateCollisionObject(DAVA::Entity* entity)
+void SceneCollisionSystem::UpdateCollisionObject(const Selectable& object)
 {
-    RemoveEntity(entity);
-    AddEntity(entity);
+    if (object.CanBeCastedTo<DAVA::Entity>())
+    {
+        auto entity = object.AsEntity();
+        RemoveEntity(entity);
+        AddEntity(entity);
+    }
+    else
+    {
+        objectsToRemove.insert(object.GetContainedObject());
+        objectsToAdd.insert(object.GetContainedObject());
+    }
 }
 
 DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object)
@@ -268,7 +279,7 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object)
             if (wrapper.CanBeCastedTo<DAVA::Entity>())
             {
                 auto entity = wrapper.AsEntity();
-                for (int32 i = 0, e = entity->GetChildrenCount(); i < e; ++i)
+                for (DAVA::int32 i = 0, e = entity->GetChildrenCount(); i < e; ++i)
                 {
                     aabox.AddAABBox(GetBoundingBox(entity->GetChild(i)));
                 }
@@ -336,7 +347,7 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 void SceneCollisionSystem::Input(DAVA::UIEvent* event)
 {
     // don't have to update last mouse pos when event is not from the mouse
-    if (UIEvent::Device::MOUSE == event->device)
+    if (DAVA::UIEvent::Device::MOUSE == event->device)
     {
         lastMousePos = event->point;
     }
@@ -344,7 +355,7 @@ void SceneCollisionSystem::Input(DAVA::UIEvent* event)
 
 void SceneCollisionSystem::Draw()
 {
-    RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    DAVA::RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
     if (drawMode & CS_DRAW_LAND)
     {
@@ -358,7 +369,7 @@ void SceneCollisionSystem::Draw()
 
     if (drawMode & CS_DRAW_LAND_COLLISION)
     {
-        drawer->DrawIcosahedron(lastLandCollision, 0.5f, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
+        drawer->DrawIcosahedron(lastLandCollision, 0.5f, DAVA::Color(0, 1.0f, 0, 1.0f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
     }
 
     if (drawMode & CS_DRAW_OBJECTS)
@@ -402,40 +413,58 @@ void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
 {
     if (command->MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
     {
-        UpdateCollisionObject(curLandscapeEntity);
+        UpdateCollisionObject(Selectable(curLandscapeEntity));
     }
 
-    if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE, CMDID_INSP_MEMBER_MODIFY }))
+    static DAVA::Vector<DAVA::int32> acceptableCommands =
     {
-        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
-            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
-            {
-                static const String HEIGHTMAP_PATH = "heightmapPath";
-                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-                if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
-                {
-                    UpdateCollisionObject(curLandscapeEntity);
-                }
-            }
-            else if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE }))
-            {
-                UpdateCollisionObject(command->GetEntity());
-            }
-        };
+      CMDID_LOD_CREATE_PLANE,
+      CMDID_LOD_DELETE,
+      CMDID_INSP_MEMBER_MODIFY,
+      CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
+      CMDID_TRANSFORM
+    };
 
-        if (command->GetId() == CMDID_BATCH)
+    if (command->MatchCommandIDs(acceptableCommands) == false)
+        return;
+
+    auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+        if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-            uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
+            static const DAVA::String HEIGHTMAP_PATH = "heightmapPath";
+            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+            if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
             {
-                ProcessSingleCommand(batch->GetCommand(i), redo);
+                UpdateCollisionObject(Selectable(curLandscapeEntity));
             }
         }
-        else
+        else if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE }))
         {
-            ProcessSingleCommand(command, redo);
+            UpdateCollisionObject(Selectable(command->GetEntity()));
         }
+        else if (command->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
+        {
+            auto cmd = static_cast<const CommandRemoveParticleEmitter*>(command);
+            (redo ? objectsToRemove : objectsToAdd).insert(cmd->GetEmitterInstance());
+        }
+        else if (command->MatchCommandID(CMDID_TRANSFORM))
+        {
+            auto cmd = static_cast<const TransformCommand*>(command);
+            UpdateCollisionObject(cmd->GetTransformedObject());
+        }
+    };
+
+    if (command->GetId() == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)
+        {
+            ProcessSingleCommand(batch->GetCommand(i), redo);
+        }
+    }
+    else
+    {
+        ProcessSingleCommand(command, redo);
     }
 }
 
@@ -443,11 +472,11 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 {
     switch (event)
     {
-    case EventSystem::SWITCH_CHANGED:
-    case EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case EventSystem::TRANSFORM_PARENT_CHANGED:
+    case DAVA::EventSystem::SWITCH_CHANGED:
+    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
     {
-        UpdateCollisionObject(component->GetEntity());
+        UpdateCollisionObject(Selectable(component->GetEntity()));
         break;
     }
     default:
@@ -526,8 +555,8 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
     DAVA::RenderObject* renderObject = DAVA::GetRenderObject(entity);
     if ((cObj == nullptr) && (renderObject != nullptr) && entity->IsLodMain(0))
     {
-        RenderObject::eType objType = renderObject->GetType();
-        if ((objType != RenderObject::TYPE_SPRITE) && (objType != RenderObject::TYPE_VEGETATION))
+        DAVA::RenderObject::eType objType = renderObject->GetType();
+        if ((objType != DAVA::RenderObject::TYPE_SPRITE) && (objType != DAVA::RenderObject::TYPE_VEGETATION))
         {
             cObj = new CollisionRenderObject(entity, objectsCollWorld, renderObject);
         }
@@ -596,7 +625,7 @@ const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* pl
 // debug draw
 // -----------------------------------------------------------------------------------------------
 
-SceneCollisionDebugDrawer::SceneCollisionDebugDrawer(RenderHelper* _drawer)
+SceneCollisionDebugDrawer::SceneCollisionDebugDrawer(DAVA::RenderHelper* _drawer)
     : dbgMode(0)
     , drawer(_drawer)
 {
@@ -612,13 +641,13 @@ void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3&
     DAVA::Vector3 davaTo(to.x(), to.y(), to.z());
     DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
 
-    drawer->DrawLine(davaFrom, davaTo, davaColor, RenderHelper::DRAW_WIRE_DEPTH);
+    drawer->DrawLine(davaFrom, davaTo, davaColor, DAVA::RenderHelper::DRAW_WIRE_DEPTH);
 }
 
 void SceneCollisionDebugDrawer::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
 {
     DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
-    drawer->DrawIcosahedron(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), distance / 20.f, davaColor, RenderHelper::DRAW_SOLID_DEPTH);
+    drawer->DrawIcosahedron(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), distance / 20.f, davaColor, DAVA::RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void SceneCollisionDebugDrawer::reportErrorWarning(const char* warningString)

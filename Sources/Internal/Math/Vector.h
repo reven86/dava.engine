@@ -49,7 +49,7 @@ public:
         AXIS_Y = 1,
         AXIS_COUNT = 2
     };
-
+    static const Vector2 Zero;
     static const Vector2 UnitX;
     static const Vector2 UnitY;
 
@@ -100,7 +100,7 @@ public:
 
     //! Get operators
     float32& operator[](eAxis axis);
-    float32 operator[](eAxis axis) const;
+    const float32 operator[](eAxis axis) const;
     //! On operations
     inline const Vector2& operator+=(const Vector2& _v);
     inline const Vector2& operator-=(const Vector2& _v);
@@ -261,6 +261,7 @@ inline Vector3 CrossProduct(const Vector3& v1, const Vector3& v2);
 inline float32 DotProduct(const Vector3& v1, const Vector3& v2);
 inline Vector3 Lerp(const Vector3& _v1, const Vector3& _v2, float32 t);
 inline Vector3 Reflect(const Vector3& v, const Vector3& n);
+inline float32 Distance(const Vector3& v1, const Vector3& v2);
 inline Vector3 PerpendicularVector(const Vector3& normal);
 
 /**	
@@ -405,7 +406,7 @@ inline float32& Vector2::operator[](eAxis axis)
     return data[axis];
 }
 
-inline float32 Vector2::operator[](eAxis axis) const
+inline const float32 Vector2::operator[](eAxis axis) const
 {
     return data[axis];
 }
@@ -886,6 +887,14 @@ inline Vector3 Reflect(const Vector3& v, const Vector3& n)
 {
     Vector3 r = v - (2 * DotProduct(v, n)) * n;
     return r;
+}
+
+inline float32 Distance(const Vector3& v1, const Vector3& v2)
+{
+    float32 dx = v1.x - v2.x;
+    float32 dy = v1.y - v2.y;
+    float32 dz = v1.z - v2.z;
+    return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
 inline Vector3 PerpendicularVector(const Vector3& normal)

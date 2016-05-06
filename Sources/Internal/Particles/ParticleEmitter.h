@@ -90,6 +90,7 @@ public:
     void RemoveLayer(ParticleLayer* layer);
     void RemoveLayer(int32 index);
     void MoveLayer(ParticleLayer* layer, ParticleLayer* beforeLayer);
+    bool ContainsLayer(ParticleLayer* layer);
 
     void UpdateEmptyLayerNames();
     void UpdateLayerNameIfEmpty(ParticleLayer* layer, int32 index);
@@ -139,10 +140,7 @@ private:
     static EmitterCacheMap emitterCache;
 
 public:
-    INTROSPECTION_EXTEND(ParticleEmitter, BaseObject,
-                         MEMBER(name, "Name", I_VIEW | I_EDIT | I_SAVE)
-                         COLLECTION(layers, "Layers", I_VIEW)
-                         )
+    INTROSPECTION_EXTEND(ParticleEmitter, BaseObject, nullptr);
 };
 }
 

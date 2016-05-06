@@ -55,12 +55,12 @@ int32 AbstractProperty::GetIndex(AbstractProperty* property) const
     for (uint32 i = 0; i < GetCount(); i++)
     {
         if (GetProperty(i) == property)
-            return (int32)i;
+            return static_cast<int32>(i);
     }
     return -1;
 }
 
-void AbstractProperty::Refresh(DAVA::int32 refreshFlags)
+void AbstractProperty::Refresh(int32 refreshFlags)
 {
 }
 
@@ -100,12 +100,17 @@ bool AbstractProperty::IsReadOnly() const
     return parent ? parent->IsReadOnly() : true;
 }
 
-DAVA::VariantType AbstractProperty::GetValue() const
+VariantType::eVariantType AbstractProperty::GetValueType() const
 {
-    return DAVA::VariantType();
+    return VariantType::TYPE_NONE;
 }
 
-void AbstractProperty::SetValue(const DAVA::VariantType& /*newValue*/)
+VariantType AbstractProperty::GetValue() const
+{
+    return VariantType();
+}
+
+void AbstractProperty::SetValue(const VariantType& /*newValue*/)
 {
     // Do nothing by default
 }
@@ -115,7 +120,7 @@ VariantType AbstractProperty::GetDefaultValue() const
     return VariantType();
 }
 
-void AbstractProperty::SetDefaultValue(const DAVA::VariantType& newValue)
+void AbstractProperty::SetDefaultValue(const VariantType& newValue)
 {
     // Do nothing by default
 }

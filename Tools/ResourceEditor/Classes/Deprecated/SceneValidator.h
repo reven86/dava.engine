@@ -32,9 +32,7 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
-class SceneValidator : public Singleton<SceneValidator>
+class SceneValidator : public DAVA::Singleton<SceneValidator>
 {
 public:
     /*
@@ -42,21 +40,21 @@ public:
      \param[in] scene scene for validation
      \returns true if errors were found
 	 */
-    bool ValidateSceneAndShowErrors(Scene* scene, const DAVA::FilePath& scenePath);
+    bool ValidateSceneAndShowErrors(DAVA::Scene* scene, const DAVA::FilePath& scenePath);
 
     /*
      \brief Function to validate Scene errors
      \param[in] scene scene for validation
      \param[out] errorsLog set for validation errors
 	 */
-    void ValidateScene(Scene* scene, const DAVA::FilePath& scenePath, Set<String>& errorsLog);
+    void ValidateScene(DAVA::Scene* scene, const DAVA::FilePath& scenePath, DAVA::Set<DAVA::String>& errorsLog);
 
     /*
      \brief Function to find Scales in models transformations
      \param[in] scene scene for validation
      \param[out] errorsLog set for validation errors
 	 */
-    void ValidateScales(Scene* scene, Set<String>& errorsLog);
+    void ValidateScales(DAVA::Scene* scene, DAVA::Set<DAVA::String>& errorsLog);
 
     /*
      \brief Function to validate Texture errors
@@ -65,7 +63,7 @@ public:
 
      \param[in] texture texture for validation
 	 */
-    void ValidateTextureAndShowErrors(Texture* texture, const String& validatedObjectName);
+    void ValidateTextureAndShowErrors(DAVA::Texture* texture, const DAVA::String& validatedObjectName);
 
     /*
      \brief Function to validate Texture errors
@@ -73,28 +71,28 @@ public:
      \param[out] errorsLog set for validation errors
 	 */
 
-    void ValidateTexture(Texture* texture, const String& validatedObjectName, Set<String>& errorsLog);
+    void ValidateTexture(DAVA::Texture* texture, const DAVA::String& validatedObjectName, DAVA::Set<DAVA::String>& errorsLog);
 
     /*
      \brief Function to validate LandscapeNode errors
      \param[in] landscape landscape for validation
      \param[out] errorsLog set for validation errors
 	 */
-    void ValidateLandscape(Landscape* landscape, Set<String>& errorsLog);
+    void ValidateLandscape(DAVA::Landscape* landscape, DAVA::Set<DAVA::String>& errorsLog);
 
     /*
      \brief Function to validate Entity errors
      \param[in] sceneNode sceneNode for validation
      \param[out] errorsLog set for validation errors
 	 */
-    void ValidateSceneNode(Entity* sceneNode, Set<String>& errorsLog);
+    void ValidateSceneNode(DAVA::Entity* sceneNode, DAVA::Set<DAVA::String>& errorsLog);
 
     /*
      \brief Function to validate Materials errors
      \param[in] scene that has materials for validation
      \param[out] errorsLog set for validation errors
 	 */
-    void ValidateMaterials(DAVA::Scene* scene, Set<String>& errorsLog);
+    void ValidateMaterials(DAVA::Scene* scene, DAVA::Set<DAVA::String>& errorsLog);
 
     /*
      \brief Function sets 3d folder path for checking texture pathnames
@@ -102,64 +100,64 @@ public:
      \return old path for checking
 	 */
 
-    void ValidateNodeCustomProperties(Entity* sceneNode);
+    void ValidateNodeCustomProperties(DAVA::Entity* sceneNode);
 
-    FilePath SetPathForChecking(const FilePath& pathname);
+    DAVA::FilePath SetPathForChecking(const DAVA::FilePath& pathname);
 
-    void EnumerateNodes(Scene* scene);
+    void EnumerateNodes(DAVA::Scene* scene);
 
-    static bool IsTextureChanged(const TextureDescriptor* descriptor, eGPUFamily forGPU);
-    static bool IsTextureChanged(const FilePath& texturePathname, eGPUFamily forGPU);
+    static bool IsTextureChanged(const DAVA::TextureDescriptor* descriptor, DAVA::eGPUFamily forGPU);
+    static bool IsTextureChanged(const DAVA::FilePath& texturePathname, DAVA::eGPUFamily forGPU);
 
-    bool ValidateTexturePathname(const FilePath& pathForValidation, Set<String>& errorsLog);
-    bool ValidateHeightmapPathname(const FilePath& pathForValidation, Set<String>& errorsLog);
+    bool ValidateTexturePathname(const DAVA::FilePath& pathForValidation, DAVA::Set<DAVA::String>& errorsLog);
+    bool ValidateHeightmapPathname(const DAVA::FilePath& pathForValidation, DAVA::Set<DAVA::String>& errorsLog);
 
-    bool IsPathCorrectForProject(const FilePath& pathname);
+    bool IsPathCorrectForProject(const DAVA::FilePath& pathname);
 
-    DAVA_DEPRECATED(static void FindSwitchesWithDifferentLODs(DAVA::Entity* entity, Set<FastName>& names));
+    DAVA_DEPRECATED(static void FindSwitchesWithDifferentLODs(DAVA::Entity* entity, DAVA::Set<DAVA::FastName>& names));
     DAVA_DEPRECATED(static bool IsEntityHasDifferentLODsCount(DAVA::Entity* entity));
     DAVA_DEPRECATED(static bool IsObjectHasDifferentLODsCount(DAVA::RenderObject* renderObject));
 
     static void ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity* entity);
-    static void ExtractEmptyRenderObjects(DAVA::Entity* entity, Set<String>& errorsLog);
+    static void ExtractEmptyRenderObjects(DAVA::Entity* entity, DAVA::Set<DAVA::String>& errorsLog);
 
 protected:
-    void ValidateRenderComponent(Entity* ownerNode, Set<String>& errorsLog);
-    void ValidateRenderBatch(Entity* ownerNode, RenderBatch* renderBatch, Set<String>& errorsLog);
+    void ValidateRenderComponent(DAVA::Entity* ownerNode, DAVA::Set<DAVA::String>& errorsLog);
+    void ValidateRenderBatch(DAVA::Entity* ownerNode, DAVA::RenderBatch* renderBatch, DAVA::Set<DAVA::String>& errorsLog);
 
-    void ValidateParticleEffectComponent(Entity* ownerNode, Set<String>& errorsLog) const;
-    void ValidateParticleEmitter(ParticleEmitterInstance* emitter, Set<String>& errorsLog, DAVA::Entity* owner) const;
+    void ValidateParticleEffectComponent(DAVA::Entity* ownerNode, DAVA::Set<DAVA::String>& errorsLog) const;
+    void ValidateParticleEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const;
 
-    void ValidateLandscapeTexture(Landscape* landscape, const FastName& texLevel, Set<String>& errorsLog);
-    void ValidateCustomColorsTexture(Entity* landscapeEntity, Set<String>& errorsLog);
+    void ValidateLandscapeTexture(DAVA::Landscape* landscape, const DAVA::FastName& texLevel, DAVA::Set<DAVA::String>& errorsLog);
+    void ValidateCustomColorsTexture(DAVA::Entity* landscapeEntity, DAVA::Set<DAVA::String>& errorsLog);
 
-    void FixIdentityTransform(Entity* ownerNode,
-                              Set<String>& errorsLog,
-                              const String& errorMessage);
+    void FixIdentityTransform(DAVA::Entity* ownerNode,
+                              DAVA::Set<DAVA::String>& errorsLog,
+                              const DAVA::String& errorMessage);
 
-    bool ValidateColor(Color& color);
+    bool ValidateColor(DAVA::Color& color);
 
-    int32 EnumerateSceneNodes(Entity* node);
+    DAVA::int32 EnumerateSceneNodes(DAVA::Entity* node);
 
-    void ValidateScalesInternal(Entity* sceneNode, Set<String>& errorsLog);
+    void ValidateScalesInternal(DAVA::Entity* sceneNode, DAVA::Set<DAVA::String>& errorsLog);
 
-    bool ValidatePathname(const FilePath& pathForValidation, const String& validatedObjectName);
+    bool ValidatePathname(const DAVA::FilePath& pathForValidation, const DAVA::String& validatedObjectName);
 
-    bool NodeRemovingDisabled(Entity* node);
+    bool NodeRemovingDisabled(DAVA::Entity* node);
 
-    bool WasTextureChanged(Texture* texture, eGPUFamily forGPU);
+    bool WasTextureChanged(DAVA::Texture* texture, DAVA::eGPUFamily forGPU);
 
-    bool IsTextureDescriptorPath(const FilePath& path);
+    bool IsTextureDescriptorPath(const DAVA::FilePath& path);
 
-    bool IsFBOTexture(Texture* texture);
+    bool IsFBOTexture(DAVA::Texture* texture);
 
-    VariantType* GetCustomPropertyFromParentsTree(Entity* ownerNode, const String& key);
+    DAVA::VariantType* GetCustomPropertyFromParentsTree(DAVA::Entity* ownerNode, const DAVA::String& key);
 
-    Set<Entity*> emptyNodesForDeletion;
-    Set<String> errorMessages;
+    DAVA::Set<DAVA::Entity*> emptyNodesForDeletion;
+    DAVA::Set<DAVA::String> errorMessages;
 
-    FilePath pathForChecking;
-    String sceneName;
+    DAVA::FilePath pathForChecking;
+    DAVA::String sceneName;
 };
 
 #endif // __SCENE_VALIDATOR_H__

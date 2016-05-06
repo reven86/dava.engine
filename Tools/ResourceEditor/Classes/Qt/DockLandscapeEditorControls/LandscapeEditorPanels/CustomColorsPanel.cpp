@@ -47,18 +47,10 @@
 
 CustomColorsPanel::CustomColorsPanel(QWidget* parent)
     : LandscapeEditorBasePanel(parent)
-    , comboColor(NULL)
-    , sliderWidgetBrushSize(NULL)
-    , buttonSaveTexture(NULL)
-    , buttonLoadTexture(NULL)
 {
     InitUI();
     ConnectToSignals();
     InitColors();
-}
-
-CustomColorsPanel::~CustomColorsPanel()
-{
 }
 
 bool CustomColorsPanel::GetEditorEnabled()
@@ -84,7 +76,7 @@ void CustomColorsPanel::BlockAllSignals(bool block)
 
 void CustomColorsPanel::StoreState()
 {
-    KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    DAVA::KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
     customProperties->SetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MIN, sliderWidgetBrushSize->GetRangeMin());
     customProperties->SetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MAX, sliderWidgetBrushSize->GetRangeMax());
 }
@@ -94,13 +86,13 @@ void CustomColorsPanel::RestoreState()
     SceneEditor2* sceneEditor = GetActiveScene();
 
     bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
-    int32 brushSize = BrushSizeSystemToUI(sceneEditor->customColorsSystem->GetBrushSize());
-    int32 colorIndex = sceneEditor->customColorsSystem->GetColor();
+    DAVA::int32 brushSize = BrushSizeSystemToUI(sceneEditor->customColorsSystem->GetBrushSize());
+    DAVA::int32 colorIndex = sceneEditor->customColorsSystem->GetColor();
 
-    int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
-    int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
+    DAVA::int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
+    DAVA::int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
 
-    KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
+    DAVA::KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
     if (customProperties)
     {
         brushRangeMin = customProperties->GetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MIN, DEF_BRUSH_MIN_SIZE);
@@ -178,8 +170,8 @@ void CustomColorsPanel::InitColors()
     iconSize = iconSize.expandedTo(QSize(100, 0));
     comboColor->setIconSize(iconSize);
 
-    Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_COLORS);
-    Vector<String> customColorsDescription = EditorConfig::Instance()->GetComboPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_DESCRIPTION);
+    DAVA::Vector<DAVA::Color> customColors = EditorConfig::Instance()->GetColorPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_COLORS);
+    DAVA::Vector<DAVA::String> customColorsDescription = EditorConfig::Instance()->GetComboPropertyValues(ResourceEditor::CUSTOM_COLORS_PROPERTY_DESCRIPTION);
     for (size_t i = 0; i < customColors.size(); ++i)
     {
         QColor color = QColor::fromRgbF(customColors[i].r, customColors[i].g, customColors[i].b, customColors[i].a);
@@ -191,22 +183,22 @@ void CustomColorsPanel::InitColors()
         pixmap.convertFromImage(image, Qt::ColorOnly);
 
         QIcon icon(pixmap);
-        String description = (i >= customColorsDescription.size()) ? "" : customColorsDescription[i];
+        DAVA::String description = (i >= customColorsDescription.size()) ? "" : customColorsDescription[i];
         comboColor->addItem(icon, description.c_str());
     }
 }
 
 // these functions are designed to convert values from sliders in ui
 // to the values suitable for custom colors system
-int32 CustomColorsPanel::BrushSizeUIToSystem(int32 uiValue)
+DAVA::int32 CustomColorsPanel::BrushSizeUIToSystem(DAVA::int32 uiValue)
 {
-    int32 systemValue = uiValue * ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
+    DAVA::int32 systemValue = uiValue * ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
     return systemValue;
 }
 
-int32 CustomColorsPanel::BrushSizeSystemToUI(int32 systemValue)
+DAVA::int32 CustomColorsPanel::BrushSizeSystemToUI(DAVA::int32 systemValue)
 {
-    int32 uiValue = systemValue / ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
+    DAVA::int32 uiValue = systemValue / ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
     return uiValue;
 }
 // end of convert functions ==========================
@@ -225,8 +217,8 @@ bool CustomColorsPanel::SaveTexture()
 {
     SceneEditor2* sceneEditor = GetActiveScene();
 
-    FilePath selectedPathname = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
-    if (!FileSystem::Instance()->Exists(selectedPathname))
+    DAVA::FilePath selectedPathname = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
+    if (!DAVA::FileSystem::Instance()->Exists(selectedPathname))
     {
         selectedPathname = sceneEditor->GetScenePath().GetDirectory();
     }
@@ -265,19 +257,18 @@ void CustomColorsPanel::LoadTexture()
 {
     SceneEditor2* sceneEditor = GetActiveScene();
 
-    FilePath currentPath = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
+    DAVA::FilePath currentPath = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
 
-    if (!FileSystem::Instance()->Exists(currentPath))
+    if (!DAVA::FileSystem::Instance()->Exists(currentPath))
     {
         currentPath = sceneEditor->GetScenePath().GetDirectory();
     }
 
-    FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION,
-                                                currentPath,
-                                                PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
+    DAVA::FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION, currentPath,
+                                                      PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
     if (!selectedPathname.IsEmpty())
     {
-        sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
+        sceneEditor->customColorsSystem->LoadTexture(selectedPathname, true);
     }
 }
 
@@ -288,7 +279,7 @@ void CustomColorsPanel::SaveTextureIfNeeded(SceneEditor2* scene)
         return;
     }
 
-    FilePath selectedPathname = scene->customColorsSystem->GetCurrentSaveFileName();
+    DAVA::FilePath selectedPathname = scene->customColorsSystem->GetCurrentSaveFileName();
     if (!selectedPathname.IsEmpty())
     {
         scene->customColorsSystem->SaveTexture(selectedPathname);
@@ -369,7 +360,7 @@ void CustomColorsPanel::DecreaseBrushSizeLarge()
 
 void CustomColorsPanel::PrevTexture()
 {
-    int32 curIndex = comboColor->currentIndex();
+    DAVA::int32 curIndex = comboColor->currentIndex();
     if (curIndex)
     {
         comboColor->setCurrentIndex(curIndex - 1);
@@ -378,7 +369,7 @@ void CustomColorsPanel::PrevTexture()
 
 void CustomColorsPanel::NextTexture()
 {
-    int32 curIndex = comboColor->currentIndex();
+    DAVA::int32 curIndex = comboColor->currentIndex();
     if (curIndex < comboColor->count() - 1)
     {
         comboColor->setCurrentIndex(curIndex + 1);

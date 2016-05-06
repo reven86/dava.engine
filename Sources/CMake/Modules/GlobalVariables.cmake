@@ -9,7 +9,7 @@ function ( load_config CONFIG_FILE )
     file( STRINGS ${CONFIG_FILE} ConfigContents )
     foreach( NameAndValue ${ConfigContents} )
         string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
-        string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
+        string( REGEX MATCH "^[^=]+" Name ${NameAndValue} )
         string( REPLACE "${Name}=" "" Value ${NameAndValue} )
         string( STRIP "${Name}" Name)
         string( STRIP "${Value}" Value)
@@ -47,7 +47,26 @@ set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_TOOLS_BIN_DIR                 "${DAVA_ROOT_DIR}/Tools/Bin" )
+if (WIN32)
+	string ( FIND ${CMAKE_GENERATOR} "Win64" X64_PROJECT )
+
+	if( ${X64_PROJECT} EQUAL -1 )
+		set ( X64_MODE false )
+	else ()
+		set ( X64_MODE true )
+	endif ()
+
+	if( X64_MODE )
+		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
+        set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll fmod_event64.dll glew32.dll TextureConverter.dll )  
+	else ()
+		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
+        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll )  
+	endif ()
+else ()
+	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
+endif()
+
 set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
 set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
@@ -59,10 +78,12 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH     "${DAVA_THIRD_PARTY_ROOT_PATH}/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/icucommon/source/common" 
                                       ) 
 
 set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )                                      
 set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast" ) 
+set( DAVA_FOLDERS )
 
 #additional variables for Windows UAP
 if ( WINDOWS_UAP )

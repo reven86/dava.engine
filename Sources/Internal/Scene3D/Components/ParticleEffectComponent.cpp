@@ -334,11 +334,12 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
         emitterInstances.resize(emittersCount);
         for (uint32 i = 0; i < emittersCount; ++i)
         {
+            emitterInstances[i].ConstructInplace(this);
+
             KeyedArchive* emitterArch = emittersArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
             String filename = emitterArch->GetString("emitter.filename");
             if (!filename.empty())
             {
-                emitterInstances[i] = RefPtr<ParticleEmitterInstance>(new ParticleEmitterInstance(this));
                 emitterInstances[i]->SetFilePath(serializationContext->GetScenePath() + filename);
                 FilePath qualityFilepath = emitterInstances[i]->GetFilePath();
                 const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
@@ -461,9 +462,10 @@ void ParticleEffectComponent::AddEmitterInstance(ParticleEmitter* emitter)
     emitterInstances.emplace_back(new ParticleEmitterInstance(this, emitter));
 }
 
-void ParticleEffectComponent::AddEmitterInstance(ParticleEmitterInstance* emitter)
+void ParticleEffectComponent::AddEmitterInstance(ParticleEmitterInstance* instance)
 {
-    emitterInstances.emplace_back(emitter);
+    instance->SetOwner(this);
+    emitterInstances.emplace_back(SafeRetain(instance));
 }
 
 int32 ParticleEffectComponent::GetEmitterInstanceIndex(ParticleEmitterInstance* emitter) const

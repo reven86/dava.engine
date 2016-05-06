@@ -34,7 +34,7 @@
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
-#include "Model/EditorUIPackageBuilder.h"
+#include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 
 #include <QUndoGroup>
@@ -111,6 +111,13 @@ void DocumentGroup::AttachCloseDocumentAction(QAction* closeDocumentAction) cons
     connect(closeDocumentAction, &QAction::triggered, this, &DocumentGroup::TryCloseCurrentDocument);
 }
 
+void DocumentGroup::AttachReloadDocumentAction(QAction* reloadDocumentAction) const
+{
+    reloadDocumentAction->setEnabled(CanClose());
+    connect(this, &DocumentGroup::CanCloseChanged, reloadDocumentAction, &QAction::setEnabled);
+    connect(reloadDocumentAction, &QAction::triggered, this, &DocumentGroup::ReloadCurrentDocument);
+}
+
 void DocumentGroup::ConnectToTabBar(QTabBar* tabBar)
 {
     QPointer<QTabBar> tabPointer(tabBar);
@@ -167,7 +174,15 @@ void DocumentGroup::AddDocument(const QString& path)
     {
         index = documents.size();
         Document* document = CreateDocument(path);
-        InsertDocument(document, index);
+        if (nullptr != document)
+        {
+            InsertDocument(document, index);
+        }
+        else
+        {
+            QMessageBox::warning(qApp->activeWindow(), tr("Can not create document"), tr("Can not create document by path:\n%1").arg(path));
+            return;
+        }
     }
     SetActiveDocument(index);
 }
@@ -204,7 +219,7 @@ bool DocumentGroup::TryCloseDocument(Document* document)
         QMessageBox::Save);
         if (ret == QMessageBox::Save)
         {
-            SaveDocument(document);
+            SaveDocument(document, false);
         }
         else if (ret == QMessageBox::Cancel)
         {
@@ -231,38 +246,72 @@ void DocumentGroup::CloseDocument(Document* document)
         tabBar->removeTab(index);
         tabBar->blockSignals(signalsWasBlocked);
     }
-    DVVERIFY(documents.removeAll(document) == 1);
-    emit CanSaveAllChanged(!documents.empty());
-
-    undoGroup->removeStack(document->GetUndoStack());
-
     Document* nextDocument = nullptr;
     if (document != active)
     {
         nextDocument = active;
     }
-    else if (!documents.isEmpty())
+    else if (documents.size() > 1)
     {
-        nextDocument = documents.first();
+        DVASSERT(nullptr != active);
+        int activeIndex = documents.indexOf(active);
+        DVASSERT(activeIndex != -1);
+        activeIndex++;
+        if (activeIndex < documents.size())
+        {
+            nextDocument = documents.at(activeIndex);
+        }
+        else
+        {
+            nextDocument = documents.at(documents.size() - 2); //last document will be removed
+        }
     }
+    DVVERIFY(documents.removeAll(document) == 1);
+    emit CanSaveAllChanged(!documents.empty());
+
+    undoGroup->removeStack(document->GetUndoStack());
+
     SetActiveDocument(nextDocument);
     delete document;
 }
 
-void DocumentGroup::ReloadDocument(int index)
+void DocumentGroup::ReloadDocument(int index, bool force)
 {
     DVASSERT(index >= 0 && index < documents.size());
     QString path = documents.at(index)->GetPackageAbsolutePath();
-    CloseDocument(index);
+    if (force)
+    {
+        CloseDocument(index);
+    }
+    else
+    {
+        if (!TryCloseDocument(index))
+        {
+            return;
+        }
+    }
     Document* document = CreateDocument(path);
-    InsertDocument(document, index);
-    SetActiveDocument(index);
+    if (document != nullptr)
+    {
+        InsertDocument(document, index);
+        SetActiveDocument(index);
+    }
+    else
+    {
+        QMessageBox::warning(qApp->activeWindow(), tr("Can not create document"), tr("Can not create document by path:\n%1").arg(path));
+    }
 }
 
-void DocumentGroup::ReloadDocument(Document* document)
+void DocumentGroup::ReloadDocument(Document* document, bool force)
 {
     DVASSERT(nullptr != document);
-    ReloadDocument(documents.indexOf(document));
+    ReloadDocument(documents.indexOf(document), force);
+}
+
+void DocumentGroup::ReloadCurrentDocument()
+{
+    DVASSERT(nullptr != active);
+    ReloadDocument(active, false);
 }
 
 void DocumentGroup::SetActiveDocument(int index)
@@ -277,7 +326,10 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         return;
     }
-    disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+    if (active != nullptr)
+    {
+        disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+    }
 
     active = document;
 
@@ -300,13 +352,13 @@ void DocumentGroup::SaveAllDocuments()
 {
     for (auto& document : documents)
     {
-        SaveDocument(document);
+        SaveDocument(document, true);
     }
 }
 void DocumentGroup::SaveCurrentDocument()
 {
     DVASSERT(nullptr != active);
-    SaveDocument(active);
+    SaveDocument(active, true);
 }
 
 void DocumentGroup::OnCanSaveChanged(bool canSave)
@@ -350,6 +402,16 @@ void DocumentGroup::OnFileChanged(Document* document)
 
 void DocumentGroup::OnFilesChanged(const QList<Document*>& changedFiles)
 {
+    static bool syncGuard = false;
+    if (syncGuard)
+    {
+        return;
+    }
+    syncGuard = true;
+    SCOPE_EXIT
+    {
+        syncGuard = false;
+    };
     bool yesToAll = false;
     bool noToAll = false;
     int changedCount = std::count_if(changedFiles.begin(), changedFiles.end(), [changedFiles](Document* document) {
@@ -384,7 +446,7 @@ void DocumentGroup::OnFilesChanged(const QList<Document*>& changedFiles)
         }
         if (button == QMessageBox::Yes)
         {
-            ReloadDocument(document);
+            ReloadDocument(document, true);
         }
     }
 }
@@ -459,7 +521,7 @@ void DocumentGroup::InsertTab(QTabBar* tabBar, Document* document, int index)
     tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
 }
 
-void DocumentGroup::SaveDocument(Document* document)
+void DocumentGroup::SaveDocument(Document* document, bool force)
 {
     DVASSERT(document != nullptr);
     QFileInfo fileInfo(document->GetPackageAbsolutePath());
@@ -477,7 +539,7 @@ void DocumentGroup::SaveDocument(Document* document)
             return;
         }
     }
-    else if (document->GetUndoStack()->isClean())
+    else if (!force && document->GetUndoStack()->isClean())
     {
         return;
     }
@@ -489,11 +551,17 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     QString canonicalFilePath = QFileInfo(path).canonicalFilePath();
     FilePath davaPath(canonicalFilePath.toStdString());
     RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
-
-    Document* document = new Document(packageRef, this);
-    connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
-    connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
-    return document;
+    if (packageRef.Get() != nullptr)
+    {
+        Document* document = new Document(packageRef, this);
+        connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
+        connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
+        return document;
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 void DocumentGroup::InsertDocument(Document* document, int index)
@@ -515,7 +583,7 @@ void DocumentGroup::InsertDocument(Document* document, int index)
 
 RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
 {
-    EditorUIPackageBuilder builder;
+    QuickEdPackageBuilder builder;
 
     bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
 

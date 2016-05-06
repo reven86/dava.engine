@@ -1,6 +1,16 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if( WIN32 )
+	if( X64_MODE )
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN64})
+	else ()
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN})
+	endif ()	
+elseif ( MACOS )
+	set (QT_ACTUAL_PATH ${QT5_PATH_MAC})
+endif ()
+
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
@@ -12,23 +22,21 @@ macro ( qt_deploy )
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
 
-        foreach(ITEM ${BINARY_ITEMS})
-            string(TOLOWER ${ITEM} ITEM)
-            if (EXISTS ${QT5_PATH_WIN}/bin/Qt5${ITEM}.dll)
-                LIST(APPEND QT_ITEMS_LIST --${ITEM})
-            endif()
-        endforeach()
-
         if (QML_SCAN_DIR)
             set(QML_SCAN_FLAG "--qmldir ${QML_SCAN_DIR}")
         endif()
 
         set(DEPLOY_PLATFORM "WIN")
-        set(DEPLOY_QT_FOLDER ${QT5_PATH_WIN})
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
-        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QT_ITEMS_LIST}")
+        foreach(ITEM ${BINARY_ITEMS})
+            string(TOLOWER ${ITEM} ITEM)
+            if (EXISTS ${QT_ACTUAL_PATH}/bin/Qt5${ITEM}.dll)
+                set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --${ITEM}")
+            endif()
+        endforeach()
 
     elseif( MACOS )
 
@@ -37,12 +45,25 @@ macro ( qt_deploy )
         endif()
 
         set(DEPLOY_PLATFORM "MAC")
-        set(DEPLOY_QT_FOLDER ${QT5_PATH_MAC})
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
 
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+    is_deploy_qt_delayed(IS_DELAYED_DEPLOY)
+    if (${IS_DELAYED_DEPLOY})
+        set(DEPLOY_PROJECT "QT_DEPLOY_${PROJECT_NAME}")
+        ADD_CUSTOM_TARGET ( ${DEPLOY_PROJECT} ALL)
+
+        get_deploy_dependencies(DEPENDENCIES_LIST)
+        foreach(DEPENDENCY ${DEPENDENCIES_LIST})
+            add_dependencies( ${DEPLOY_PROJECT} ${DEPENDENCY} )
+        endforeach()
+    else()
+        set(DEPLOY_PROJECT ${PROJECT_NAME})
+    endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${DEPLOY_PROJECT}  POST_BUILD
             COMMAND "python"
                     ${DEPLOY_SCRIPT_PATH}
                     "-p" "${DEPLOY_PLATFORM}"
@@ -63,17 +84,12 @@ macro(resolve_qt_pathes)
         endif()
 
         find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
-                          PATHS ${QT5_PATH_MAC} ${QT5_PATH_WIN}
+                          PATHS ${QT_ACTUAL_PATH}
                           PATH_SUFFIXES lib)
 
         ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")
-
-        set ( QT5_MODULE_PATH ${QT5_LIB_PATH}/cmake)
-        set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
-
-        message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
-
     endif()
+    set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT5_LIB_PATH}/cmake")
 endmacro()
 
 #################################################################
@@ -94,7 +110,7 @@ foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     endif()
 
     ASSERT(Qt5${COMPONENT}_FOUND "Can't find Qt5 component : ${COMPONENT}")
-    LIST(APPEND DEPLOY_LIST "Qt5${COMPONENT}")
+    LIST(APPEND DEPLOY_LIST "${COMPONENT}")
     LIST(APPEND LINKAGE_LIST "Qt5::${COMPONENT}")
 endforeach()
 

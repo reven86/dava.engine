@@ -42,21 +42,21 @@
 #include <QSlider>
 #include <QCheckBox>
 
-class ParticleEmitterPropertiesWidget : public QWidget, public BaseParticleEditorContentWidget
+class ParticleEmitterPropertiesWidget : public BaseParticleEditorContentWidget
 {
     Q_OBJECT
 
 public:
-    explicit ParticleEmitterPropertiesWidget(QWidget* parent = 0);
-    ~ParticleEmitterPropertiesWidget();
+    explicit ParticleEmitterPropertiesWidget(QWidget* parent = nullptr);
 
-    void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, bool updateMinimize, bool needUpdateTimeLimits = true);
+    void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter,
+              bool updateMinimize, bool needUpdateTimeLimits = true);
     void Update();
 
-    virtual bool eventFilter(QObject* o, QEvent* e);
+    bool eventFilter(QObject* o, QEvent* e) override;
 
-    virtual void StoreVisualState(KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+    void StoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
+    void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
 
     // Accessors to timelines.
     TimeLineWidget* GetEmitterRadiusTimeline()
@@ -83,31 +83,34 @@ public slots:
     void OnValueChanged();
     void OnEmitterYamlPathChanged(const QString& newPath);
     void OnEmitterPositionChanged();
+    void OnCommand(SceneEditor2* scene, const Command2* command, bool redo);
 
 protected:
+    void UpdateProperties();
     void UpdateTooltip();
 
 private:
-    QVBoxLayout* mainLayout;
-    QLineEdit* emitterNameLineEdit;
-
+    QVBoxLayout* mainLayout = nullptr;
+    QLineEdit* emitterNameLineEdit = nullptr;
     QLineEdit* originalEmitterYamlPath = nullptr;
-    QLineEdit* emitterYamlPath;
-    QComboBox* emitterType;
+    QLineEdit* emitterYamlPath = nullptr;
+    QComboBox* emitterType = nullptr;
+    EventFilterDoubleSpinBox* positionXSpinBox = nullptr;
+    EventFilterDoubleSpinBox* positionYSpinBox = nullptr;
+    EventFilterDoubleSpinBox* positionZSpinBox = nullptr;
+    QCheckBox* shortEffectCheckBox = nullptr;
 
-    EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
+    TimeLineWidget* emitterEmissionRange = nullptr;
+    TimeLineWidget* emitterEmissionVector = nullptr;
+    TimeLineWidget* emitterRadius = nullptr;
+    TimeLineWidget* emitterSize = nullptr;
+    TimeLineWidget* emitterAngle = nullptr;
+    EventFilterDoubleSpinBox* emitterLife = nullptr;
+    GradientPickerWidget* emitterColorWidget = nullptr;
 
-    QCheckBox* shortEffectCheckBox;
-
-    TimeLineWidget* emitterEmissionRange;
-    TimeLineWidget* emitterEmissionVector;
-    TimeLineWidget* emitterRadius;
-    TimeLineWidget* emitterSize;
-    TimeLineWidget* emitterAngle;
-    EventFilterDoubleSpinBox* emitterLife;
-    GradientPickerWidget* emitterColorWidget;
-
-    bool blockSignals;
+    bool blockSignals = false;
+    bool updateMinimize = false;
+    bool needUpdateTimeLimits = false;
 
     void InitWidget(QWidget* widget, bool connectWidget = true);
 };

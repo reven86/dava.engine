@@ -135,7 +135,7 @@ DX11_TextureFormat(TextureFormat format)
     case TEXTURE_FORMAT_R8:
         return DXGI_FORMAT_R8_UNORM;
     case TEXTURE_FORMAT_R16:
-        return DXGI_FORMAT_R16_FLOAT;
+        return DXGI_FORMAT_R16_UNORM;
 
     case TEXTURE_FORMAT_DXT1:
         return DXGI_FORMAT_BC1_UNORM;

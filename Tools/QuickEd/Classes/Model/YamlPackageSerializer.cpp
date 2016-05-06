@@ -123,16 +123,16 @@ YamlNode* YamlPackageSerializer::GetYamlNode() const
     return nodesStack.back();
 }
 
-void YamlPackageSerializer::WriteToFile(const FilePath& path)
+bool YamlPackageSerializer::WriteToFile(const FilePath& path)
 {
-    YamlEmitter::SaveToYamlFile(path, GetYamlNode());
+    return YamlEmitter::SaveToYamlFile(path, GetYamlNode());
 }
 
 String YamlPackageSerializer::WriteToString() const
 {
     DynamicMemoryFile* file = DynamicMemoryFile::Create(File::WRITE);
     YamlEmitter::SaveToYamlFile(GetYamlNode(), file);
-    String str((const char*)file->GetData(), file->GetSize());
+    String str(reinterpret_cast<const char*>(file->GetData()), file->GetSize());
     SafeRelease(file);
     return str;
 }

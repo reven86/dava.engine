@@ -30,8 +30,8 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
-#include "Debug/Profiler.h"
 
+#include "WinSystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Input/KeyboardDevice.h"
 #include "Input/InputSystem.h"
@@ -43,6 +43,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "Debug/Profiler.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -51,8 +52,17 @@ extern void FrameworkWillTerminate();
 
 namespace DAVA
 {
+const UINT MSG_ALREADY_RUNNING = ::RegisterWindowMessage(L"MSG_ALREADY_RUNNING");
+bool AlreadyRunning();
+void ShowRunningApplication();
+
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    if (AlreadyRunning())
+    {
+        ShowRunningApplication();
+        return 0;
+    }
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
@@ -163,8 +173,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     }
 
     // create window
-    HWND hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
-                                realWidth, realHeight, NULL, NULL, hInstance, NULL);
+    hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
+                           realWidth, realHeight, NULL, NULL, hInstance, NULL);
 
     SetMenu(hWindow, NULL);
 
@@ -175,7 +185,20 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     KeyedArchive* options = Core::GetOptions();
 
     bool shouldEnableFullscreen = false;
-    fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
+
+    DWORD iModeNum = 0;
+    DEVMODE dmi;
+    ZeroMemory(&dmi, sizeof(dmi));
+    dmi.dmSize = sizeof(dmi);
+    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
+    {
+        fullscreenMode.width = dmi.dmPelsWidth;
+        fullscreenMode.height = dmi.dmPelsHeight;
+        fullscreenMode.bpp = dmi.dmBitsPerPel;
+        fullscreenMode.refreshRate = dmi.dmDisplayFrequency;
+        ZeroMemory(&dmi, sizeof(dmi));
+    }
+
     if (options)
     {
         windowedMode.width = options->GetInt32("width");
@@ -261,6 +284,29 @@ void CoreWin32Platform::LoadWindowMinimumSizeSettings()
     {
         SetWindowMinimumSize(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
     }
+}
+
+void CoreWin32Platform::ClearMouseButtons()
+{
+    UIEvent e;
+
+    e.phase = UIEvent::Phase::ENDED;
+    e.device = UIEvent::Device::MOUSE;
+    e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.f);
+
+    for (uint32 mouseButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
+         mouseButton < static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+         mouseButton += 1)
+    {
+        if (mouseButtonState[mouseButton])
+        {
+            e.mouseButton = static_cast<UIEvent::MouseButton>(mouseButton);
+
+            UIControlSystem::Instance()->OnInput(&e);
+        }
+    }
+
+    mouseButtonState.reset();
 }
 
 void CoreWin32Platform::Run()
@@ -423,26 +469,6 @@ void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDis
     }
 }
 
-DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
-{
-    DWORD iModeNum = 0;
-    DEVMODE dmi;
-    ZeroMemory(&dmi, sizeof(dmi));
-    dmi.dmSize = sizeof(dmi);
-
-    DisplayMode mode;
-    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
-    {
-        mode.width = dmi.dmPelsWidth;
-        mode.height = dmi.dmPelsHeight;
-        mode.bpp = dmi.dmBitsPerPel;
-        mode.refreshRate = dmi.dmDisplayFrequency;
-        ZeroMemory(&dmi, sizeof(dmi));
-    }
-
-    return mode;
-}
-
 void CoreWin32Platform::SetIcon(int32 iconId)
 {
     HWND hWindow = static_cast<HWND>(GetNativeView());
@@ -469,63 +495,10 @@ Vector2 CoreWin32Platform::GetWindowMinimumSize() const
     return Vector2(minWindowWidth, minWindowHeight);
 }
 
-struct MouseButtonChange
-{
-    UIEvent::MouseButton button;
-    UIEvent::Phase beginOrEnd;
-};
-
-static Vector<MouseButtonChange> mouseButtonChanges;
-
-void GetMouseButtonChanges(uint16_t mouseButtonFlags, Vector<MouseButtonChange>& out)
-{
-    out.clear();
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_1_UP)
-    {
-        out.push_back({ UIEvent::MouseButton::LEFT, UIEvent::Phase::ENDED });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_2_UP)
-    {
-        out.push_back({ UIEvent::MouseButton::RIGHT, UIEvent::Phase::ENDED });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_3_UP)
-    {
-        out.push_back({ UIEvent::MouseButton::MIDDLE, UIEvent::Phase::ENDED });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_4_UP)
-    {
-        out.push_back({ UIEvent::MouseButton::EXTENDED1, UIEvent::Phase::ENDED });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_5_UP)
-    {
-        out.push_back({ UIEvent::MouseButton::EXTENDED2, UIEvent::Phase::ENDED });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_1_DOWN)
-    {
-        out.push_back({ UIEvent::MouseButton::LEFT, UIEvent::Phase::BEGAN });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_2_DOWN)
-    {
-        out.push_back({ UIEvent::MouseButton::RIGHT, UIEvent::Phase::BEGAN });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_3_DOWN)
-    {
-        out.push_back({ UIEvent::MouseButton::MIDDLE, UIEvent::Phase::BEGAN });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_4_DOWN)
-    {
-        out.push_back({ UIEvent::MouseButton::EXTENDED1, UIEvent::Phase::BEGAN });
-    }
-    if (mouseButtonFlags & RI_MOUSE_BUTTON_5_DOWN)
-    {
-        out.push_back({ UIEvent::MouseButton::EXTENDED2, UIEvent::Phase::BEGAN });
-    }
-}
-
-void CoreWin32Platform::OnMouseMove(float32 x, float32 y)
+void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
 {
     UIEvent e;
-    e.physPoint = Vector2(x, y);
+    e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
     e.device = UIEvent::Device::MOUSE;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
@@ -552,10 +525,10 @@ void CoreWin32Platform::OnMouseMove(float32 x, float32 y)
     }
 }
 
-void CoreWin32Platform::OnMouseWheel(float32 wheelDelta, float32 x, float32 y)
+void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
 {
     UIEvent e;
-    e.physPoint = Vector2(x, y);
+    e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
     e.device = UIEvent::Device::MOUSE;
     e.phase = UIEvent::Phase::WHEEL;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
@@ -563,37 +536,53 @@ void CoreWin32Platform::OnMouseWheel(float32 wheelDelta, float32 x, float32 y)
     KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
     if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
     {
-        e.wheelDelta = { wheelDelta, 0 };
+        e.wheelDelta = { static_cast<float32>(wheelDelta), 0 };
     }
     else
     {
-        e.wheelDelta = { 0, wheelDelta };
+        e.wheelDelta = { 0, static_cast<float32>(wheelDelta) };
     }
 
     UIControlSystem::Instance()->OnInput(&e);
 }
 
-void CoreWin32Platform::OnMouseButtonChange(UIEvent::Phase phase, UIEvent::MouseButton button, float32 x, float32 y)
+void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton button, int32 x, int32 y)
 {
+    bool isButtonDown = phase == UIEvent::Phase::BEGAN;
+    unsigned buttonIndex = static_cast<unsigned>(button) - 1;
+
+    bool isAnyButtonDownBefore = mouseButtonState.any();
+
+    mouseButtonState[buttonIndex] = isButtonDown;
+
     UIEvent e;
-    e.physPoint = Vector2(x, y);
+    e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
     e.device = UIEvent::Device::MOUSE;
     e.phase = phase;
     e.mouseButton = button;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     UIControlSystem::Instance()->OnInput(&e);
+
+    bool isAnyButtonDownAfter = mouseButtonState.any();
+
+    if (isAnyButtonDownBefore && !isAnyButtonDownAfter)
+    {
+        ReleaseCapture();
+    }
+    else if (!isAnyButtonDownBefore && isAnyButtonDownAfter)
+    {
+        SetCapture(hWindow);
+    }
 }
 
 void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure)
 {
     UIEvent newTouch;
     newTouch.touchId = fingerId;
-    newTouch.physPoint.x = x;
-    newTouch.physPoint.y = y;
+    newTouch.physPoint = Vector2(x, y);
     newTouch.phase = phase;
     newTouch.device = deviceId;
-    newTouch.tapCount = 1;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     UIControlSystem::Instance()->OnInput(&newTouch);
@@ -608,12 +597,238 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
     }
 }
 
-#ifndef WM_MOUSEWHEEL
-#define WM_MOUSEWHEEL 0x020A
-#endif
-#ifndef WHEEL_DELTA
-#define WHEEL_DELTA 120
-#endif
+bool IsMouseClickEvent(UINT message)
+{
+    switch (message)
+    {
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_LBUTTONDBLCLK:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_RBUTTONDBLCLK:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_MBUTTONDBLCLK:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    case WM_XBUTTONDBLCLK:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool IsMouseMoveEvent(UINT message)
+{
+    return message == WM_INPUT;
+}
+
+bool IsMouseWheelEvent(UINT message)
+{
+    return message == WM_MOUSEWHEEL;
+}
+
+bool IsMouseInputEvent(UINT message)
+{
+    return (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST) || message == WM_INPUT;
+}
+
+bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
+{
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
+    {
+        return true;
+    }
+    else
+    {
+        RECT clientRect;
+        GetClientRect(hWnd, &clientRect);
+
+        bool isInside = xPos > clientRect.left && xPos < clientRect.right &&
+        yPos > clientRect.top && yPos < clientRect.bottom;
+
+        return isInside;
+    }
+}
+
+bool CoreWin32Platform::ProcessMouseClickEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPampam)
+{
+    int xPos = GET_X_LPARAM(lPampam);
+    int yPos = GET_Y_LPARAM(lPampam);
+
+    UIEvent::MouseButton button = UIEvent::MouseButton::NONE;
+    UIEvent::MouseButton extButton = UIEvent::MouseButton::NONE;
+    UIEvent::Phase phase = UIEvent::Phase::ERROR;
+
+    if (message == WM_LBUTTONDOWN)
+    {
+        button = UIEvent::MouseButton::LEFT;
+        phase = UIEvent::Phase::BEGAN;
+    }
+    else if (message == WM_LBUTTONUP)
+    {
+        button = UIEvent::MouseButton::LEFT;
+        phase = UIEvent::Phase::ENDED;
+    }
+    else if (message == WM_LBUTTONDBLCLK)
+    {
+        button = UIEvent::MouseButton::LEFT;
+        phase = UIEvent::Phase::ENDED;
+    }
+    else if (message == WM_RBUTTONDOWN)
+    {
+        button = UIEvent::MouseButton::RIGHT;
+        phase = UIEvent::Phase::BEGAN;
+    }
+    else if (message == WM_RBUTTONUP)
+    {
+        button = UIEvent::MouseButton::RIGHT;
+        phase = UIEvent::Phase::ENDED;
+    }
+    else if (message == WM_RBUTTONDBLCLK)
+    {
+        button = UIEvent::MouseButton::RIGHT;
+        phase = UIEvent::Phase::ENDED;
+    }
+    else if (message == WM_MBUTTONDOWN)
+    {
+        button = UIEvent::MouseButton::MIDDLE;
+        phase = UIEvent::Phase::BEGAN;
+    }
+    else if (message == WM_MBUTTONUP)
+    {
+        button = UIEvent::MouseButton::MIDDLE;
+        phase = UIEvent::Phase::ENDED;
+    }
+    else if (message == WM_MBUTTONDBLCLK)
+    {
+        button = UIEvent::MouseButton::MIDDLE;
+        phase = UIEvent::Phase::ENDED;
+    }
+
+    else if (message == WM_XBUTTONDOWN || message == WM_XBUTTONUP || message == WM_XBUTTONDBLCLK)
+    {
+        phase = message == WM_XBUTTONDOWN ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+        int xButton = GET_XBUTTON_WPARAM(wParam);
+
+        if ((xButton & XBUTTON1) != 0)
+        {
+            button = UIEvent::MouseButton::EXTENDED1;
+        }
+
+        if ((xButton & XBUTTON2) != 0)
+        {
+            extButton = UIEvent::MouseButton::EXTENDED2;
+        }
+    }
+
+    if (button != UIEvent::MouseButton::NONE)
+    {
+        OnMouseClick(phase, button, xPos, yPos);
+        return true;
+    }
+    if (extButton != UIEvent::MouseButton::NONE)
+    {
+        OnMouseClick(phase, extButton, xPos, yPos);
+        return true;
+    }
+
+    return false;
+}
+
+bool CoreWin32Platform::ProcessMouseMoveEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (wParam != RIM_INPUT)
+    {
+        return false;
+    }
+
+    HRAWINPUT hRawInput = reinterpret_cast<HRAWINPUT>(lParam);
+    RAWINPUT input;
+    UINT dwSize = sizeof(input);
+
+    GetRawInputData(hRawInput, RID_INPUT, &input, &dwSize, sizeof(RAWINPUTHEADER));
+
+    if (input.header.dwType == RIM_TYPEMOUSE && input.data.mouse.usFlags == 0)
+    {
+        LONG xPos = input.data.mouse.lLastX;
+        LONG yPos = input.data.mouse.lLastY;
+
+        bool isMove = xPos || yPos;
+        bool isInside = false;
+
+        if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
+        {
+            isInside = true;
+        }
+        else
+        {
+            POINT pnt;
+            GetCursorPos(&pnt);
+            ScreenToClient(hWnd, &pnt);
+
+            xPos += pnt.x;
+            yPos += pnt.y;
+
+            RECT clientRect;
+            GetClientRect(hWnd, &clientRect);
+            isInside = xPos > clientRect.left &&
+            xPos < clientRect.right &&
+            yPos > clientRect.top &&
+            yPos < clientRect.bottom;
+        }
+
+        if (isInside)
+        {
+            bool isMouseWheelChanged = (input.data.mouse.usButtonFlags & RI_MOUSE_WHEEL) != 0;
+            bool isMouseButtonsChanged = !isMouseWheelChanged &&
+            (input.data.mouse.usButtonFlags >= RI_MOUSE_BUTTON_1_DOWN);
+
+            if (isMove && !isMouseButtonsChanged)
+            {
+                OnMouseMove(xPos, yPos);
+            }
+        }
+    }
+    return false;
+}
+
+bool CoreWin32Platform::ProcessMouseWheelEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    POINT pos;
+    pos.x = GET_X_LPARAM(lParam);
+    pos.y = GET_Y_LPARAM(lParam);
+    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+
+    if (::ScreenToClient(hWnd, &pos) == FALSE || !IsCursorPointInside(hWnd, pos.x, pos.y))
+    {
+        return false;
+    }
+
+    OnMouseWheel(zDelta, pos.x, pos.y);
+    return true;
+}
+
+bool CoreWin32Platform::ProcessMouseInputEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (IsMouseClickEvent(message))
+    {
+        return ProcessMouseClickEvent(hWnd, message, wParam, lParam);
+    }
+
+    if (IsMouseMoveEvent(message))
+    {
+        return ProcessMouseMoveEvent(hWnd, message, wParam, lParam);
+    }
+
+    if (IsMouseWheelEvent(message))
+    {
+        return ProcessMouseWheelEvent(hWnd, message, wParam, lParam);
+    }
+
+    return false;
+}
 
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -625,6 +840,18 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
     RECT rect;
 
+    if (IsMouseInputEvent(message))
+    {
+        bool interruptProcessing = core->ProcessMouseInputEvent(hWnd, message, wParam, lParam);
+        if (interruptProcessing)
+        {
+            return 0;
+        }
+    }
+    if (message == MSG_ALREADY_RUNNING)
+    {
+        return MSG_ALREADY_RUNNING;
+    }
     switch (message)
     {
     case WM_SIZE:
@@ -714,79 +941,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     }
     break;
 
-    case WM_INPUT:
-    {
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms645590%28v=vs.85%29.aspx
-        bool isApplicationInForeground = (wParam == 0);
-        if (isApplicationInForeground)
-        {
-            HRAWINPUT hRawInput = reinterpret_cast<HRAWINPUT>(lParam);
-            RAWINPUT input;
-            UINT dwSize = sizeof(input);
-
-            GetRawInputData(hRawInput, RID_INPUT, &input, &dwSize, sizeof(RAWINPUTHEADER));
-
-            if (input.header.dwType == RIM_TYPEMOUSE && input.data.mouse.usFlags == 0)
-            {
-                LONG x = input.data.mouse.lLastX;
-                LONG y = input.data.mouse.lLastY;
-
-                bool isMove = x || y;
-                bool isInside = false;
-
-                POINT p;
-                GetCursorPos(&p);
-                ScreenToClient(hWnd, &p);
-
-                if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
-                {
-                    SetCursorPosCenterInternal(hWnd);
-                    isInside = true;
-                }
-                else
-                {
-                    x += p.x;
-                    y += p.y;
-
-                    RECT clientRect;
-                    GetClientRect(hWnd, &clientRect);
-                    isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom);
-                }
-
-                float32 x_pos = static_cast<float32>(x);
-                float32 y_pos = static_cast<float32>(y);
-
-                if (isInside)
-                {
-                    bool isMouseWheelChanged = (input.data.mouse.usButtonFlags & RI_MOUSE_WHEEL) != 0;
-                    bool isMouseButtonsChanged = (!isMouseWheelChanged && (input.data.mouse.usButtonFlags >= RI_MOUSE_BUTTON_1_DOWN));
-
-                    if (isMove && !isMouseButtonsChanged)
-                    {
-                        core->OnMouseMove(x_pos, y_pos);
-                    }
-                    if (isMouseWheelChanged)
-                    {
-                        float32 wheelDelta = static_cast<int16>(input.data.mouse.usButtonData) / static_cast<float32>(WHEEL_DELTA);
-                        core->OnMouseWheel(wheelDelta, x_pos, y_pos);
-                    }
-                    if (isMouseButtonsChanged)
-                    {
-                        GetMouseButtonChanges(input.data.mouse.usButtonFlags, mouseButtonChanges);
-                        for (auto& change : mouseButtonChanges)
-                        {
-                            core->OnMouseButtonChange(change.beginOrEnd, change.button, static_cast<float32>(p.x), static_cast<float32>(p.y));
-                            bool isButtonDown = (change.beginOrEnd == UIEvent::Phase::BEGAN);
-                            unsigned buttonIndex = static_cast<unsigned>(change.button) - 1;
-                            core->mouseButtonState[buttonIndex] = isButtonDown;
-                        }
-                    }
-                    return 0;
-                }
-            }
-        }
-        break;
-    }
     case WM_TOUCH:
     {
         UINT num_inputs = LOWORD(wParam);
@@ -841,9 +995,14 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         if (!loWord || hiWord)
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
+            Core::Instance()->FocusLost();
+            EnableHighResolutionTimer(false);
 
             if (appCore)
             {
+                // unpress all pressed buttons
+                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+                core->ClearMouseButtons();
                 appCore->OnSuspend();
             }
             else
@@ -854,6 +1013,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         else
         {
             Logger::FrameworkDebug("[PlatformWin32] activate application");
+
+            //We need to activate high-resolution timer
+            //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
+            EnableHighResolutionTimer(true);
+
+            Core::Instance()->FocusReceived();
             if (appCore)
             {
                 appCore->OnResume();
@@ -877,5 +1042,55 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+void CoreWin32Platform::InitArgs()
+{
+    SetCommandLine(GetCommandLineArgs());
+}
+
+void CoreWin32Platform::Quit()
+{
+    PostQuitMessage(0);
+}
+
+bool AlreadyRunning()
+{
+    static const wchar_t* UID_MYAPP_ALREADY_RUNNING = L"ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
+    HANDLE hMutexOneInstance = ::CreateMutex(nullptr, FALSE, UID_MYAPP_ALREADY_RUNNING);
+    // return ERROR_ACCESS_DENIED, if mutex created
+    // in other session, as SECURITY_ATTRIBUTES == NULL
+    return (::GetLastError() == ERROR_ALREADY_EXISTS || ::GetLastError() == ERROR_ACCESS_DENIED);
+}
+
+void ShowRunningApplication()
+{
+    HWND hOther = nullptr;
+    auto enumWindowsCallback = [](HWND hWnd, LPARAM lParam) -> BOOL
+    {
+        ULONG_PTR result;
+        LRESULT ok = ::SendMessageTimeout(hWnd, MSG_ALREADY_RUNNING, 0, 0, SMTO_BLOCK | SMTO_ABORTIFHUNG, 200, &result);
+        if (ok == 0)
+        {
+            return true; // ignore & continue
+        }
+        if (result == MSG_ALREADY_RUNNING)
+        {
+            HWND* target = reinterpret_cast<HWND*>(lParam);
+            *target = hWnd;
+            return false; // if find
+        }
+        return true; // continue
+    };
+    EnumWindows(enumWindowsCallback, (LPARAM)&hOther);
+    if (hOther != nullptr)
+    {
+        ::SetForegroundWindow(hOther);
+        if (IsIconic(hOther))
+        {
+            ::ShowWindow(hOther, SW_RESTORE);
+        }
+    }
+}
+
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)

@@ -39,8 +39,11 @@
 #include "EditorSystems/EditorTransformSystem.h"
 
 #include "UI/UIControl.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
+
+const Vector2 minimumSize = Vector2(16.0f, 16.0f);
 
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
@@ -52,6 +55,7 @@ public:
 
 private:
     bool SystemInput(UIEvent* currentInput) override;
+    bool SystemProcessInput(UIEvent* currentInput) override;
 
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
@@ -62,6 +66,7 @@ EditorSystemsManager::RootControl::RootControl(EditorSystemsManager* arg)
     : UIControl()
     , systemManager(arg)
 {
+    GetOrCreateComponent<UIFocusComponent>();
     DVASSERT(nullptr != systemManager);
 }
 
@@ -74,9 +79,19 @@ bool EditorSystemsManager::RootControl::SystemInput(UIEvent* currentInput)
 {
     if (!emulationMode && nullptr != systemManager)
     {
-        return systemManager->OnInput(currentInput);
+        return SystemProcessInput(currentInput);
     }
     return UIControl::SystemInput(currentInput);
+}
+
+bool EditorSystemsManager::RootControl::SystemProcessInput(UIEvent* currentInput)
+{
+    if (!emulationMode && nullptr != systemManager)
+    {
+        return systemManager->OnInput(currentInput);
+    }
+
+    return UIControl::SystemProcessInput(currentInput);
 }
 
 EditorSystemsManager::EditorSystemsManager()
@@ -94,7 +109,8 @@ EditorSystemsManager::EditorSystemsManager()
     canvasSystemPtr = new CanvasSystem(this);
     systems.emplace_back(canvasSystemPtr);
 
-    systems.emplace_back(new SelectionSystem(this));
+    selectionSystemPtr = new SelectionSystem(this);
+    systems.emplace_back(selectionSystemPtr);
     systems.emplace_back(new HUDSystem(this));
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
@@ -165,6 +181,26 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
     DVASSERT(false && "editingRootControls contains nodes not from GetPackageControlsNode");
 
     return 0;
+}
+
+void EditorSystemsManager::SelectAll()
+{
+    selectionSystemPtr->SelectAllControls();
+}
+
+void EditorSystemsManager::FocusNextChild()
+{
+    selectionSystemPtr->FocusNextChild();
+}
+
+void EditorSystemsManager::FocusPreviousChild()
+{
+    selectionSystemPtr->FocusPreviousChild();
+}
+
+void EditorSystemsManager::ClearSelection()
+{
+    selectionSystemPtr->ClearSelection();
 }
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)

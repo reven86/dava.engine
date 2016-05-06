@@ -32,13 +32,31 @@
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringUtils.h"
 
+#define DAVA_FRIBIDI 0
+#define DAVA_ICU 1
+
+#if DAVA_FRIBIDI
 #include "fribidi/fribidi.h"
 #include "fribidi/fribidi-bidi-types.h"
 #include "fribidi/fribidi-unicode.h"
+#elif DAVA_ICU
+#define U_COMMON_IMPLEMENTATION
+#define U_STATIC_IMPLEMENTATION
+#if __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wheader-hygiene"
+    #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+#include <unicode/ubidi.h>
+#include <unicode/ushape.h>
+#if __clang__
+    #pragma clang diagnostic pop
+#endif
+#endif
 
 namespace DAVA
 {
-/** \brief A FriBiDi library wrapper. */
+/** \brief A BiDi library wrapper. */
 class BiDiWrapper
 {
 public:
@@ -47,18 +65,27 @@ public:
 
 private:
     Mutex mutex;
+
+#if DAVA_FRIBIDI
     Vector<FriBidiChar> logicalBuffer;
     Vector<FriBidiChar> visualBuffer;
     Vector<FriBidiCharType> bidiTypes;
     Vector<FriBidiLevel> bidiLevels;
     Vector<FriBidiArabicProp> arabicProps;
     Vector<char8> charBuffer;
+
+#elif DAVA_ICU
+    Vector<UChar> logicalBuffer;
+    Vector<UChar> visualBuffer;
+
+#endif
 };
 
 bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr, bool* isRTL)
 {
     LockGuard<Mutex> guard(mutex);
 
+#if DAVA_FRIBIDI
     static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
 
     FriBidiParType base_dir = FRIBIDI_PAR_ON;
@@ -96,12 +123,62 @@ bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr,
     }
 
     return true;
+
+#elif DAVA_ICU
+
+    logicalBuffer.assign(logicalStr.begin(), logicalStr.end());
+
+    uint32 logicalLength = static_cast<uint32>(logicalBuffer.size());
+    uint32 shapedLength = logicalLength * 2; // Make shaped length bigger than logical
+
+    visualBuffer.resize(shapedLength);
+
+    UErrorCode errorCode = U_ZERO_ERROR;
+    UBiDi* para = ubidi_openSized(logicalLength, 0, &errorCode);
+    if (para == NULL)
+    {
+        return false;
+    }
+    if (errorCode != U_ZERO_ERROR)
+    {
+        ubidi_close(para);
+        return false;
+    }
+
+    ubidi_setPara(para, logicalBuffer.data(), logicalLength, UBIDI_DEFAULT_LTR, nullptr, &errorCode);
+    if (errorCode != U_ZERO_ERROR)
+    {
+        ubidi_close(para);
+        return false;
+    }
+
+    UBiDiDirection direction = ubidi_getDirection(para);
+    if (isRTL)
+    {
+        *isRTL = direction != UBIDI_LTR;
+    }
+
+    ubidi_close(para);
+
+    // Shape Arabic string
+    shapedLength = u_shapeArabic(logicalBuffer.data(), logicalLength, visualBuffer.data(), shapedLength, U_SHAPE_LETTERS_SHAPE, &errorCode);
+
+    visualBuffer.resize(shapedLength);
+    preparedStr.assign(visualBuffer.begin(), visualBuffer.end());
+
+    return true;
+
+#else
+    return false;
+
+#endif
 }
 
 bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedStr, bool const forceRtl)
 {
     LockGuard<Mutex> guard(mutex);
 
+#if DAVA_FRIBIDI
     static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
 
     FriBidiParType base_dir = forceRtl ? (FRIBIDI_PAR_RTL) : (FRIBIDI_PAR_ON);
@@ -133,6 +210,47 @@ bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedSt
     reorderedStr.assign(&visualBuffer[0], &visualBuffer[0] + fribidi_len);
 
     return true;
+
+#elif DAVA_ICU
+
+    logicalBuffer.assign(preparedStr.begin(), preparedStr.end());
+
+    uint32 logicalLength = static_cast<uint32>(logicalBuffer.size());
+    uint32 visualLength = logicalLength * 2; // Make shaped length bigger than logical
+
+    visualBuffer.resize(visualLength);
+
+    UErrorCode errorCode = U_ZERO_ERROR;
+    UBiDi* para = ubidi_openSized(logicalLength, 0, &errorCode);
+    if (para == nullptr)
+    {
+        return false;
+    }
+    if (errorCode != U_ZERO_ERROR)
+    {
+        ubidi_close(para);
+        return false;
+    }
+
+    ubidi_setPara(para, logicalBuffer.data(), logicalLength, (forceRtl ? UBIDI_RTL : UBIDI_DEFAULT_LTR), nullptr, &errorCode);
+
+    visualLength = ubidi_writeReordered(para, visualBuffer.data(), visualLength, UBIDI_DO_MIRRORING | UBIDI_REMOVE_BIDI_CONTROLS, &errorCode);
+    if (errorCode != U_ZERO_ERROR)
+    {
+        ubidi_close(para);
+        return false;
+    }
+
+    ubidi_close(para);
+
+    visualBuffer.resize(visualLength);
+    reorderedStr.assign(visualBuffer.begin(), visualBuffer.end());
+
+    return true;
+#else
+    return false;
+
+#endif
 }
 
 BiDiHelper::BiDiHelper()
@@ -157,8 +275,17 @@ bool BiDiHelper::ReorderString(const WideString& preparedStr, WideString& reorde
 
 bool BiDiHelper::IsBiDiSpecialCharacter(uint32 character) const
 {
+#if DAVA_FRIBIDI
     return FRIBIDI_IS_EXPLICIT_OR_BN(fribidi_get_bidi_type(character))
     || character == FRIBIDI_CHAR_LRM
     || character == FRIBIDI_CHAR_RLM;
+
+#elif DAVA_ICU
+    return false;
+
+#else
+    return false;
+
+#endif
 }
 }

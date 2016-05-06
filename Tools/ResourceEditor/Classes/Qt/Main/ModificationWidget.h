@@ -45,17 +45,18 @@ class ModificationWidget
     Q_OBJECT
 
 public:
-    enum PivotMode : uint32
+    enum PivotMode : DAVA::uint32
     {
         PivotAbsolute,
         PivotRelative,
     };
 
     explicit ModificationWidget(QWidget* parent = nullptr);
-    ~ModificationWidget();
 
     void SetPivotMode(PivotMode pivotMode);
     void SetTransformType(Selectable::TransformType modifMode);
+
+    void ReloadValues();
 
 public slots:
     void OnSnapToLandscapeChanged();
@@ -71,7 +72,6 @@ private slots:
     void OnZChanged();
 
 private:
-    void ReloadValues();
     void ApplyValues(ST_Axis axis);
 
 private:
@@ -113,6 +113,8 @@ protected slots:
     void textEditingFinished();
 
 protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
+
     DAVA::float32 originalValue;
     QString originalString;
 

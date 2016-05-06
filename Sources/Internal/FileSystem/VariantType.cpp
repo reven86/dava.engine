@@ -920,7 +920,7 @@ bool VariantType::Write(File* fp) const
 bool VariantType::Read(File* fp)
 {
     int32 read = fp->Read(&type, 1);
-    if (read == 0)
+    if (read != 1)
     {
         return false;
     }
@@ -1738,6 +1738,24 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
             break;
         }
     }
+}
+
+VariantType::eVariantType VariantType::TypeFromMetaInfo(const MetaInfo* meta)
+{
+    VariantType::eVariantType type = TYPE_NONE;
+
+    DVASSERT(nullptr != meta);
+
+    for (int i = 0; i < TYPES_COUNT; ++i)
+    {
+        if (variantNamesMap[i].variantMeta == meta)
+        {
+            type = variantNamesMap[i].variantType;
+            break;
+        }
+    }
+
+    return type;
 }
 
 VariantType VariantType::FromType(int type)

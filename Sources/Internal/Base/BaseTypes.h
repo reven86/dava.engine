@@ -36,6 +36,7 @@
 #include <array>
 #include <memory>
 #include <string>
+#include <cstring>
 #include <list>
 #include <map>
 #include <vector>
@@ -70,6 +71,7 @@ using int64 = int64_t;
 
 //Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
 using pointer_size = uintptr_t;
+using size_type = size_t;
 
 using char8 = char;
 using char16 = wchar_t;
@@ -216,10 +218,10 @@ inline T Clamp(T val, T a, T b)
 #define Snprintf snprintf
 #endif
 
-#define Memcmp memcmp
-#define Memcpy memcpy
-#define Memset memset
-#define Memmove memmove
+#define Memcmp std::memcmp
+#define Memcpy std::memcpy
+#define Memset std::memset
+#define Memmove std::memmove
 
 template <class TYPE>
 void SafeDelete(TYPE*& d)

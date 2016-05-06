@@ -47,20 +47,6 @@ if( DAVA_DISABLE_AUTOTESTS )
     add_definitions ( -DDISABLE_AUTOTESTS )
 endif()
 
-if( MACOS_DATA )
-    set( APP_DATA ${MACOS_DATA} )
-
-elseif( WIN32_DATA )
-    set( APP_DATA ${WIN32_DATA} )
-
-elseif( IOS_DATA )
-    set( APP_DATA ${IOS_DATA} )
-
-elseif( ANDROID_DATA )
-    set( APP_DATA ${ANDROID_DATA} )
-
-endif()
-
 if ( STEAM_SDK_FOUND )
     add_definitions ( -D__DAVAENGINE_STEAM__ )
     include_directories( ${STEAM_SDK_HEADERS} )
@@ -228,6 +214,7 @@ endif()
 ###
 
 if( DAVA_FOUND )
+
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
@@ -290,6 +277,14 @@ list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                                CUSTOM_PACK_1     ${UNIFIED_CUSTOM_PACK_1}
+                                                CUSTOM_PACK_2     ${UNIFIED_CUSTOM_PACK_2}
+                                                CUSTOM_PACK_3     ${UNIFIED_CUSTOM_PACK_3}
+                                                CUSTOM_PACK_4     ${UNIFIED_CUSTOM_PACK_4}
+                                                CUSTOM_PACK_5     ${UNIFIED_CUSTOM_PACK_5}
+                                                CUSTOM_PACK_6     ${UNIFIED_CUSTOM_PACK_6}
+                                                CUSTOM_PACK_7     ${UNIFIED_CUSTOM_PACK_7}
+
                                                )
 
 if( ANDROID )
@@ -507,14 +502,12 @@ elseif( MACOS )
     endif()
 
 elseif ( WIN32 )
+	
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
     else()
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
     endif()
-
 
     if( DEBUG_INFO )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
@@ -572,8 +565,14 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
+set( DAVA_FOLDERS PARENT_SCOPE )
+
 if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
+
+    if( DAVA_FOUND )
+        add_dependencies(  ${DAVA_LIBRARY} FILE_TREE_${PROJECT_NAME} )
+    endif()
 
 endif()
 
@@ -625,9 +624,14 @@ if( DEPLOY )
 
         endif()
 
-        foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll ${ADDITIONAL_DLL_FILES})
+		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
+
+        foreach ( ITEM ${ADDITIONAL_DLL_FILES})
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
+        endforeach ()
+
 
         set( OUTPUT_DIR "${DEPLOY_DIR}" )
         foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
@@ -676,7 +680,7 @@ endmacro ()
 macro( DEPLOY_SCRIPT )
 
     if( DEPLOY )
-        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
+        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_WIN64;COPY_MACOS;COPY_DIR" ${ARGN})
 
         if( NOT COPY_DIR )
             set( COPY_DIR ${DEPLOY_DIR} )
@@ -689,8 +693,12 @@ macro( DEPLOY_SCRIPT )
             list( APPEND COPY_LIST ${ARG_COPY} )
         endif()
 
-        if( ARG_COPY_WIN32 AND WIN32 )
+        if( ARG_COPY_WIN32 AND WIN32 AND NOT X64_MODE )
             list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+        endif()
+
+        if( ARG_COPY_WIN64 AND WIN32 AND X64_MODE )
+            list( APPEND COPY_LIST ${ARG_COPY_WIN64} )
         endif()
 
         if( ARG_COPY_MACOS AND MACOS )

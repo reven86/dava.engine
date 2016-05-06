@@ -28,16 +28,16 @@
 
 #include "VariantTypeProperty.h"
 
-#include "PropertyVisitor.h"
-#include "IntrospectionProperty.h"
-
+#include "Model/ControlProperties/PropertyVisitor.h"
+#include "Model/ControlProperties/IntrospectionProperty.h"
+#include "Model/ControlProperties/SubValueProperty.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
-VariantTypeProperty::VariantTypeProperty(const String& name, VariantType& vt)
-    : ValueProperty(name)
+VariantTypeProperty::VariantTypeProperty(const String& name, const DAVA::InspDesc* desc, VariantType& vt)
+    : ValueProperty(name, vt.GetType(), true, desc)
     , value(vt)
 {
     SetOverridden(true);
@@ -57,19 +57,9 @@ bool VariantTypeProperty::IsReadOnly() const
     return GetParent() == nullptr ? true : GetParent()->IsReadOnly();
 }
 
-AbstractProperty::ePropertyType VariantTypeProperty::GetType() const
-{
-    return TYPE_VARIANT;
-}
-
 VariantType VariantTypeProperty::GetValue() const
 {
     return value;
-}
-
-const EnumMap* VariantTypeProperty::GetEnumMap() const
-{
-    return nullptr;
 }
 
 void VariantTypeProperty::ApplyValue(const DAVA::VariantType& newValue)

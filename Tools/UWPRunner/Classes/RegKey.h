@@ -35,7 +35,7 @@
 class RegKey
 {
 public:
-    RegKey(HKEY scope, const char* keyName, bool createIfNotExist = false);
+    RegKey(HKEY scope, const wchar_t* keyName, bool createIfNotExist = false);
 
     bool IsExist() const
     {
@@ -47,16 +47,16 @@ public:
     }
 
     //TODO: replace on Optional<String>
-    DAVA::String QueryString(const char* valueName) const;
-    bool SetValue(const DAVA::String& valName, const DAVA::String& val);
+    DAVA::WideString QueryString(const wchar_t* valueName) const;
+    bool SetValue(const DAVA::WideString& valName, const DAVA::WideString& val);
 
     //TODO: replace on Optional<DWORD>
-    DWORD QueryDWORD(const char* valueName) const;
-    bool SetValue(const DAVA::String& valName, DWORD val);
+    DWORD QueryDWORD(const wchar_t* valueName) const;
+    bool SetValue(const DAVA::WideString& valName, DWORD val);
 
     template <typename T>
     //TODO: replace on Optional<T>
-    T QueryValue(const char* valueName);
+    T QueryValue(const wchar_t* valueName);
 
 private:
     bool isExist = false;
@@ -65,13 +65,13 @@ private:
 };
 
 template <>
-inline DAVA::String RegKey::QueryValue<DAVA::String>(const char* valueName)
+inline DAVA::WideString RegKey::QueryValue<DAVA::WideString>(const wchar_t* valueName)
 {
     return QueryString(valueName);
 }
 
 template <>
-inline DWORD RegKey::QueryValue<DWORD>(const char* valueName)
+inline DWORD RegKey::QueryValue<DWORD>(const wchar_t* valueName)
 {
     return QueryDWORD(valueName);
 }

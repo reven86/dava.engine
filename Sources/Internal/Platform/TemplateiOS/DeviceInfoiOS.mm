@@ -139,6 +139,9 @@ String DeviceInfoPrivate::GetModel()
         if ([modelName hasPrefix:@"iPhone8,2"])
             model = "iPhone 6s Plus";
 
+        if ([modelName hasPrefix:@"iPhone8,4"])
+            model = "iPhone SE";
+
         // iPad
         if ([modelName hasPrefix:@"iPad1,1"])
             model = "iPad 1";
@@ -203,6 +206,11 @@ String DeviceInfoPrivate::GetModel()
             model = "iPad 6 WiFi";
         if ([modelName hasPrefix:@"iPad5,4"])
             model = "iPad 6 Cellular";
+
+        if ([modelName hasPrefix:@"iPad6,3"])
+            model = "iPad Pro 9.7 WiFi";
+        if ([modelName hasPrefix:@"iPad6,4"])
+            model = "iPad Pro 9.7 Cellular";
 
         if ([modelName hasPrefix:@"iPad6,7"])
             model = "iPad Pro WiFi";
@@ -404,7 +412,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
     //TODO: remove this empty realization and implement detection of HID connection
-    return false;
+    return DeviceInfo::eHIDType::HID_TOUCH_TYPE == type;
 }
 
 bool DeviceInfoPrivate::IsTouchPresented()

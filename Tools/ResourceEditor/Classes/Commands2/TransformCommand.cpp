@@ -49,6 +49,11 @@ void TransformCommand::Redo()
     object.SetLocalTransform(redoTransform);
 }
 
+const Selectable& TransformCommand::GetTransformedObject() const
+{
+    return object;
+}
+
 DAVA::Entity* TransformCommand::GetEntity() const
 {
     return object.AsEntity();

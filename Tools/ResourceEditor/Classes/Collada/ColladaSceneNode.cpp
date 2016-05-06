@@ -40,7 +40,7 @@ Matrix4 ConvertMatrix(FMMatrix44& matrix)
     for (int k = 0; k < 4; ++k)
         for (int l = 0; l < 4; ++l)
             result._data[k][l] = matrix.m[k][l];
-    ;
+
     return result;
 }
 
@@ -50,7 +50,7 @@ Matrix4 ConvertMatrixT(FMMatrix44& matrix)
     for (int k = 0; k < 4; ++k)
         for (int l = 0; l < 4; ++l)
             result._data[k][l] = matrix.m[l][k];
-    ;
+
     return result;
 }
 
@@ -466,7 +466,7 @@ SceneNodeAnimation* ColladaSceneNode::ExportNodeAnimation(FCDSceneNode* original
     Vector<float32>::iterator last = std::unique(keyTimes.begin(), keyTimes.end(), KeyTimeEqual);
     keyTimes.erase(last, keyTimes.end());
 
-    SceneNodeAnimation* anim = new SceneNodeAnimation(keyTimes.size());
+    SceneNodeAnimation* anim = new SceneNodeAnimation(static_cast<uint32>(keyTimes.size()));
     anim->SetDuration(endTime);
     for (int k = 0; k < (int)keyTimes.size(); ++k)
     {
@@ -478,20 +478,19 @@ SceneNodeAnimation* ColladaSceneNode::ExportNodeAnimation(FCDSceneNode* original
     return anim;
 }
 
-ColladaSceneNode* ColladaSceneNode::FindNode(const fstring& daeId)
+ColladaSceneNode* ColladaSceneNode::FindNode(const fm::string& daeId)
 {
     if (originalNode->GetDaeId() == daeId)
         return this;
-    else
+
+    for (int k = 0; k < (int)childs.size(); ++k)
     {
-        for (int k = 0; k < (int)childs.size(); ++k)
-        {
-            ColladaSceneNode* node = childs[k]->FindNode(daeId);
-            if (node != 0)
-                return node;
-        }
+        ColladaSceneNode* node = childs[k]->FindNode(daeId);
+        if (node != nullptr)
+            return node;
     }
-    return 0;
+
+    return nullptr;
 }
 
 void ColladaSceneNode::SetAnimation(SceneNodeAnimation* _animation, bool recursive)

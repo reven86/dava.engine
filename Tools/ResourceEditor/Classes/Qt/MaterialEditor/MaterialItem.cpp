@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QImage>
 #include <QDebug>
+#include <QPalette>
 #include <QApplication>
 
 #include "MaterialItem.h"
@@ -86,6 +87,15 @@ QVariant MaterialItem::data(int role) const
         else if (GetMaterial()->GetConfigCount() > 1)
         {
             ret = QBrush(QColor(0, 0, 255, 40));
+        }
+    }
+    break;
+    case Qt::ForegroundRole:
+    {
+        ret = QStandardItem::data(role);
+        if (GetFlag(MaterialItem::IS_PART_OF_SELECTION))
+        {
+            ret = QVariant::fromValue(qApp->palette().brush(QPalette::Highlight));
         }
     }
     break;

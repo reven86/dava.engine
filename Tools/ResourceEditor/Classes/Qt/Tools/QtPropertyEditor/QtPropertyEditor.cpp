@@ -242,7 +242,7 @@ void QtPropertyEditor::ApplyStyle(QtPropertyData* data, int style)
             QFont boldFont = data->GetFont();
             boldFont.setBold(true);
             data->SetFont(boldFont);
-            data->SetBackground(QBrush(QColor(Qt::lightGray)));
+            data->SetBackground(palette().alternateBase());
             data->SetEditable(false);
         }
         break;

@@ -141,16 +141,7 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
     {
         DAVA::Texture* curTexture = curModel->getTexture(index);
 
-        QString texturePath = curTextureDescriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str();
-        QString textureName = QFileInfo(texturePath).fileName();
-        QSize textureDimension = QSize();
-        QString textureDataSize = 0;
-
-        if (nullptr != curTexture)
-        {
-            textureDimension = QSize(curTexture->width, curTexture->height);
-            textureDataSize = QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
-        }
+        QString textureName = QString::fromStdString(curTextureDescriptor->GetSourceTexturePathname().GetFilename());
 
         painter->save();
         painter->setClipRect(option.rect);
@@ -197,7 +188,6 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
             painter->drawText(textRect, textureName);
 
             painter->setFont(origFont);
-            painter->setPen(INFO_TEXT_COLOR);
             textRect.adjust(0, nameFontMetrics.height(), 0, 0);
 
             QString infoText = CreateInfoString(index);
@@ -265,7 +255,18 @@ QString TextureListDelegate::CreateInfoString(const QModelIndex& index) const
             QString infoText;
             char dimen[64];
 
-            sprintf(dimen, "Size: %dx%d", curTexture->width, curTexture->height);
+            QSize textureDimension;
+            if (curTexture->IsPinkPlaceholder())
+            {
+                DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(curTextureDescriptor->GetSourceTexturePathname());
+                textureDimension = QSize(imgInfo.width, imgInfo.height);
+            }
+            else
+            {
+                textureDimension = QSize(curTexture->width, curTexture->height);
+            }
+
+            sprintf(dimen, "Size: %dx%d", textureDimension.width(), textureDimension.height());
             infoText += dimen;
             infoText += "\nData size: ";
             infoText += QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));

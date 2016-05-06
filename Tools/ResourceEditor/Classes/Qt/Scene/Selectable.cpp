@@ -114,6 +114,12 @@ bool Selectable::SupportsTransformType(TransformType transformType) const
     return (proxyClass != nullptr) && proxyClass->SupportsTransformType(object, transformType);
 }
 
+bool Selectable::TransformDependsOn(const Selectable& other) const
+{
+    auto proxyClass = GetTransformProxyForClass(object->GetTypeInfo()->Type());
+    return (proxyClass != nullptr) && proxyClass->TransformDependsFromObject(object, other.GetContainedObject());
+}
+
 /*
  * Transform proxy stuff
  */

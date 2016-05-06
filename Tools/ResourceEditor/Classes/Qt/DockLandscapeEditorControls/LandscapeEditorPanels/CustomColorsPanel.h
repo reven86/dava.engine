@@ -34,8 +34,6 @@
 #include "DAVAEngine.h"
 #include "Main/Request.h"
 
-using namespace DAVA;
-
 class QComboBox;
 class QPushButton;
 class SliderWidget;
@@ -49,7 +47,6 @@ public:
     static const int DEF_BRUSH_MAX_SIZE = 40;
 
     explicit CustomColorsPanel(QWidget* parent = 0);
-    ~CustomColorsPanel();
 
 private slots:
     void ProjectOpened(const QString& path);
@@ -69,30 +66,31 @@ private slots:
     void NextTexture();
 
 protected:
-    virtual bool GetEditorEnabled();
+    bool GetEditorEnabled();
 
-    virtual void SetWidgetsState(bool enabled);
-    virtual void BlockAllSignals(bool block);
+    void SetWidgetsState(bool enabled) override;
+    void BlockAllSignals(bool block) override;
 
-    virtual void InitUI();
-    virtual void ConnectToSignals();
+    void InitUI() override;
+    void ConnectToSignals() override;
 
-    virtual void StoreState();
-    virtual void RestoreState();
+    void StoreState() override;
+    void RestoreState() override;
 
-    virtual void ConnectToShortcuts();
-    virtual void DisconnectFromShortcuts();
+    void ConnectToShortcuts() override;
+    void DisconnectFromShortcuts() override;
 
 private:
-    QComboBox* comboColor;
-    SliderWidget* sliderWidgetBrushSize;
-    QPushButton* buttonSaveTexture;
-    QPushButton* buttonLoadTexture;
-
     void InitColors();
 
-    int32 BrushSizeUIToSystem(int32 uiValue);
-    int32 BrushSizeSystemToUI(int32 systemValue);
+    DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
+    DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
+
+private:
+    QComboBox* comboColor = nullptr;
+    SliderWidget* sliderWidgetBrushSize = nullptr;
+    QPushButton* buttonSaveTexture = nullptr;
+    QPushButton* buttonLoadTexture = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSPANEL__) */

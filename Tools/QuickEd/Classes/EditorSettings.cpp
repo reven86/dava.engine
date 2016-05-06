@@ -112,12 +112,12 @@ void EditorSettings::AddLastOpenedFile(const String& pathToFile)
         filesList.erase(filesList.begin() + RECENT_FILES_COUNT, filesList.end());
     }
 
-    for (int32 i = 0; i < (int32)filesList.size(); ++i)
+    for (int32 i = 0; i < static_cast<int32>(filesList.size()); ++i)
     {
         settings->SetString(Format("LastOpenedFile_%d", i), filesList[i]);
     }
 
-    settings->SetInt32("LastOpenedFilesCount", filesList.size());
+    settings->SetInt32("LastOpenedFilesCount", static_cast<int32>(filesList.size()));
 
     Save();
 }
@@ -188,16 +188,15 @@ bool EditorSettings::IsUsingAssetCache() const
 
 String EditorSettings::GetAssetCacheIp() const
 {
-    return settings->GetString("editor.assetCacheIp", "localhost");
+    return settings->GetString("editor.assetCacheIp", DAVA::AssetCache::LOCALHOST);
 }
 
-String EditorSettings::GetAssetCachePort() const
+uint32 EditorSettings::GetAssetCachePort() const
 {
-    static String port = std::to_string(DAVA::AssetCache::ASSET_SERVER_PORT);
-    return settings->GetString("editor.assetCachePort", port);
+    return settings->GetUInt32("editor.assetCachePort", DAVA::AssetCache::ASSET_SERVER_PORT);
 }
 
-String EditorSettings::GetAssetCacheTimeoutSec() const
+uint64 EditorSettings::GetAssetCacheTimeoutSec() const
 {
-    return settings->GetString("editor.assetCacheTimeoutSec", "5");
+    return settings->GetUInt64("editor.assetCacheTimeoutSec", 1);
 }

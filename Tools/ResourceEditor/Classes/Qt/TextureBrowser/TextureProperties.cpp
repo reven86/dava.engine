@@ -31,7 +31,7 @@
 #include "Render/TextureDescriptor.h"
 
 #include "TextureProperties.h"
-#include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 
 namespace PropertyItemName
 {
@@ -104,6 +104,7 @@ void TextureProperties::setOriginalImageSize(const QSize& size)
 
     // Init mipmap sizes based on original image size
     MipMapSizesInit(size.width(), size.height());
+    updater->Update();
 }
 
 const DAVA::TextureDescriptor* TextureProperties::getTextureDescriptor()
@@ -121,30 +122,41 @@ void TextureProperties::Save()
 
 void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
 {
-    int level = 0;
-
-    MipMapSizesReset();
-    while (baseWidth > 1 && baseHeight > 1)
+    auto RegisterMipLevelSize = [&](int mipLevel, int mipWidth, int mipHeight)
     {
-        QSize size(baseWidth, baseHeight);
+        QSize size(mipWidth, mipHeight);
         QString shownKey;
 
-        if (0 == level)
+        if (0 == mipLevel)
         {
             size = QSize(0, 0);
             shownKey = "Original";
         }
         else
         {
-            shownKey.sprintf("%dx%d", baseWidth, baseHeight);
+            shownKey.sprintf("%dx%d", mipWidth, mipHeight);
         }
 
-        enumSizes.Register(level, shownKey.toLatin1());
-        availableSizes[level] = size;
+        enumSizes.Register(mipLevel, shownKey.toLatin1());
+        availableSizes[mipLevel] = size;
+    };
+
+    int level = 0;
+    MipMapSizesReset();
+    while (static_cast<DAVA::uint32>(baseWidth) >= DAVA::Texture::MINIMAL_WIDTH && static_cast<DAVA::uint32>(baseHeight) >= DAVA::Texture::MINIMAL_HEIGHT)
+    {
+        RegisterMipLevelSize(level, baseWidth, baseHeight);
 
         level++;
         baseWidth = baseWidth >> 1;
         baseHeight = baseHeight >> 1;
+    }
+
+    const DAVA::uint32& width = curTextureDescriptor->compression[curGPU].compressToWidth;
+    const DAVA::uint32& height = curTextureDescriptor->compression[curGPU].compressToHeight;
+    if ((width != 0 && height != 0) && (width < DAVA::Texture::MINIMAL_WIDTH || height < DAVA::Texture::MINIMAL_HEIGHT))
+    {
+        RegisterMipLevelSize(level, width, height);
     }
 
     if (enumSizes.GetCount() > 0)
@@ -238,9 +250,22 @@ void TextureProperties::ReloadEnumFormats()
 
     enumFormats.UnregistelAll();
 
+    bool isSquareTexture = origImageSize.width() == origImageSize.height();
+
     const auto& availableFormats = DAVA::GPUFamilyDescriptor::GetAvailableFormatsForGpu(curGPU);
+    DAVA::PixelFormat currentFormat = curTextureDescriptor->GetPixelFormatForGPU(curGPU);
+
     for (auto nextFormat : availableFormats)
     {
+        DAVA::PixelFormat pxFormat = nextFormat.first;
+        bool isOldPVR = pxFormat == DAVA::FORMAT_PVR2 || pxFormat == DAVA::FORMAT_PVR4;
+        if (!isSquareTexture && isOldPVR && pxFormat != currentFormat)
+        {
+            // skip PVR2/4 format for non-square textures.
+            // but if texture has already had PVR2 or PVR4 compression format we have to show it.
+            continue;
+        }
+
         enumFormats.Register(nextFormat.first, globalFormats->ToString(nextFormat.first));
     }
 }
@@ -376,6 +401,9 @@ void TextureProperties::OnItemEdited(const QModelIndex& index)
         {
             emit PropertyChanged(PROP_SIZE);
         }
+
+        // re-Init mipmap sizes based on original image size
+        MipMapSizesInit(origImageSize.width(), origImageSize.height());
     }
 
     Save();
@@ -383,7 +411,7 @@ void TextureProperties::OnItemEdited(const QModelIndex& index)
 
 void TextureProperties::OnPropertyChanged(int type)
 {
-    if (PROP_MIPMAP == type)
+    if (PROP_MIPMAP == type || PROP_FORMAT == type)
     {
         updater->Update();
     }

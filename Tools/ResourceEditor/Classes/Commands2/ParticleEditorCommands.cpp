@@ -105,25 +105,6 @@ void CommandUpdateEmitter::Redo()
     emitter->shortEffect = isShortEffect;
 }
 
-CommandUpdateEmitterPosition::CommandUpdateEmitterPosition(ParticleEffectComponent* effect_, ParticleEmitterInstance* emitter_)
-    : CommandAction(CMDID_PARTICLE_EMITTER_POSITION_UPDATE)
-    , emitter(emitter_)
-    , effect(effect_)
-{
-}
-
-void CommandUpdateEmitterPosition::Init(const Vector3& position)
-{
-    this->position = position;
-}
-
-void CommandUpdateEmitterPosition::Redo()
-{
-    int32 id = effect->GetEmitterInstanceIndex(emitter);
-    if (id >= 0)
-        effect->SetSpawnPosition(id, position);
-}
-
 CommandUpdateParticleLayer::CommandUpdateParticleLayer(ParticleEmitterInstance* emitter, ParticleLayer* layer)
     : CommandUpdateParticleLayerBase(CMDID_PARTICLE_LAYER_UPDATE)
 {
@@ -334,13 +315,12 @@ CommandUpdateParticleLayerLods::CommandUpdateParticleLayerLods(ParticleLayer* la
 
 void CommandUpdateParticleLayerLods::Redo()
 {
-    if (this->layer)
+    if (layer == nullptr)
+        return;
+
+    for (DAVA::size_type i = 0; i < lods.size(); i++)
     {
-        for (size_t i = 0; i < lods.size(); i++)
-        {
-            this->layer->SetLodActive(i, lods[i]);
-        }
-        //ParticlesEditorController::Instance()->RefreshSelectedNode(true); //looks like depricated
+        layer->SetLodActive(static_cast<DAVA::int32>(i), lods[i]);
     }
 }
 
@@ -377,7 +357,7 @@ void CommandAddParticleEmitter::Redo()
 
     ParticleEffectComponent* effectComponent = GetEffectComponent(effectEntity);
     DVASSERT(effectComponent);
-    effectComponent->AddEmitterInstance(new ParticleEmitter());
+    effectComponent->AddEmitterInstance(ScopedPtr<ParticleEmitter>(new ParticleEmitter()));
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart)
@@ -389,10 +369,8 @@ CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* eff
 
 void CommandStartStopParticleEffect::Redo()
 {
-    if (!effectEntity)
-    {
+    if (effectEntity == nullptr)
         return;
-    }
 
     ParticleEffectComponent* effectComponent = cast_if_equal<ParticleEffectComponent*>(effectEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
     DVASSERT(effectComponent);
@@ -435,7 +413,7 @@ DAVA::Entity* CommandRestartParticleEffect::GetEntity() const
     return this->effectEntity;
 }
 
-CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(ParticleEmitterInstance* emitter)
+CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(DAVA::ParticleEmitterInstance* emitter)
     : CommandAction(CMDID_PARTICLE_EMITTER_LAYER_ADD)
     , instance(emitter)
 {
@@ -479,18 +457,27 @@ void CommandRemoveParticleEmitterLayer::Redo()
 }
 
 CommandRemoveParticleEmitter::CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter)
-    : CommandAction(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
+    : Command2(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
     , selectedEffect(effect)
-    , instance(emitter)
+    , instance(SafeRetain(emitter))
 {
+    DVASSERT(selectedEffect != nullptr);
+    DVASSERT(instance != nullptr);
+}
+
+CommandRemoveParticleEmitter::~CommandRemoveParticleEmitter()
+{
+    DAVA::SafeRelease(instance);
 }
 
 void CommandRemoveParticleEmitter::Redo()
 {
-    if ((selectedEffect == nullptr) || (instance == nullptr))
-        return;
-
     selectedEffect->RemoveEmitterInstance(instance);
+}
+
+void CommandRemoveParticleEmitter::Undo()
+{
+    selectedEffect->AddEmitterInstance(instance);
 }
 
 CommandCloneParticleEmitterLayer::CommandCloneParticleEmitterLayer(ParticleEmitterInstance* emitter, ParticleLayer* layer)
@@ -555,7 +542,7 @@ void CommandLoadParticleEmitterFromYaml::Redo()
     if ((instance == nullptr) || (selectedEffect == nullptr))
         return;
 
-    auto emitterIndex = selectedEffect->GetEmitterInstanceIndex(instance.Get());
+    auto emitterIndex = selectedEffect->GetEmitterInstanceIndex(instance);
     if (emitterIndex == -1)
         return;
 
@@ -583,7 +570,7 @@ void CommandSaveParticleEmitterToYaml::Redo()
     if ((instance == nullptr) || (selectedEffect == nullptr))
         return;
 
-    if (selectedEffect->GetEmitterInstanceIndex(instance.Get()) != -1)
+    if (selectedEffect->GetEmitterInstanceIndex(instance) != -1)
     {
         instance->GetEmitter()->SaveToYaml(filePath);
     }
@@ -601,7 +588,7 @@ void CommandLoadInnerParticleEmitterFromYaml::Redo()
     if (instance == nullptr)
         return;
 
-    // TODO: restart effect
+    //TODO: restart effect
     instance->GetEmitter()->LoadFromYaml(filePath);
 }
 

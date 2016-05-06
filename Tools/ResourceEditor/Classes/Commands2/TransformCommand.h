@@ -30,6 +30,7 @@
 #ifndef __TRANSFORM_COMMAND_H__
 #define __TRANSFORM_COMMAND_H__
 
+#include "Qt/Scene/Selectable.h"
 #include "Commands2/Base/Command2.h"
 
 class TransformCommand : public Command2
@@ -39,7 +40,9 @@ public:
 
     void Undo() override;
     void Redo() override;
+
     DAVA::Entity* GetEntity() const override;
+    const Selectable& GetTransformedObject() const;
 
 protected:
     Selectable object;
