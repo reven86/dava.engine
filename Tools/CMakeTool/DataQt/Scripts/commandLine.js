@@ -1,4 +1,4 @@
-function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath) {
+function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath, customOptions) {
     var outputText = ""; //pass by reference
 
     if(configuration["currentPlatform"] === undefined) {
@@ -63,7 +63,6 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
         }
     }
     
-    var customOptions = configuration["customOptions"];
     if(typeof customOptions === "string") {
         outputText += " " + customOptions;
     }

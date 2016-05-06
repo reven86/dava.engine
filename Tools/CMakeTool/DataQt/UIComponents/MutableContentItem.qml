@@ -238,10 +238,14 @@ Item {
                             target: impl
                             onConfigUpdated:  {
                                 var obj = localConfiguration["checkedGlobalOptions"];
+                                if(obj === undefined) {
+                                    return;
+                                }
+
                                 var currentObj = {"value": model.value};
                                 var currentObjStr = JSON.stringify(currentObj);
                                 var found = false;
-                                for(var i = 0, length = obj.length; i < length && !found; ++i) {
+                                for(var i = 0, objLength = obj.length; i < objLength && !found; ++i) {
                                     if(JSON.stringify(obj[i]) === currentObjStr) {
                                         found = true;
                                     }

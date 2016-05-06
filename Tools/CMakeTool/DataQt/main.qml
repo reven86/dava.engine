@@ -15,7 +15,7 @@ ApplicationWindow {
     property int historyVersion: 1
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
-    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 
+    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
     menuBar: MenuBar {
         Menu {
@@ -162,8 +162,15 @@ ApplicationWindow {
             var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
             var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
             var davaPath = fileSystemHelper.NormalizePath(rowLayout_davaFolder.path)
+            var customOptions = textField_customOptions.text
             try {
-                var outputText = JSTools.createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath);
+                var outputText = JSTools.createOutput(configuration,
+                                                      fileSystemHelper,
+                                                      sourcePath,
+                                                      buildPath,
+                                                      cmakePath,
+                                                      davaPath,
+                                                      customOptions);
                 columnLayoutOutput.outputComplete = true;
                 columnLayoutOutput.outputText = outputText;
             } catch(errorText) {
@@ -254,9 +261,9 @@ ApplicationWindow {
                     Connections {
                         target: rowLayout_sourceFolder
                         onPathChanged: {
-                        	var path = rowLayout_sourceFolder.path;
-                        	path = path.replace(/(\/|\\)+$/, "");
-                        	rowLayout_buildFolder.path = path + "/_build" ;
+                            var path = rowLayout_sourceFolder.path;
+                            path = path.replace(/(\/|\\)+$/, "");
+                            rowLayout_buildFolder.path = path + "/_build" ;
                         }
                     }
                 }
@@ -336,7 +343,6 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         placeholderText: qsTr("your custom options")
                         onTextChanged: {
-                            configuration["customOptions"] = text;
                             updateOutputString();
                         }
                     }
