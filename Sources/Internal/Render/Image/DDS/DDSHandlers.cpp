@@ -1099,13 +1099,9 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
     {
         return w * h * d3dBitsPerPixel / 8;
     };
-    auto MipSizeDava = [davaFormat](uint32 w, uint32 h)
+    auto MipSize = [d3dUsed, davaFormat, &MipSizeD3D](uint32 w, uint32 h)
     {
-        return Image::GetSizeInBytes(w, h, davaFormat);
-    };
-    auto MipSize = [d3dUsed, &MipSizeD3D, &MipSizeDava](uint32 w, uint32 h)
-    {
-        return d3dUsed ? MipSizeD3D(w, h) : MipSizeDava(w, h);
+        return d3dUsed ? MipSizeD3D(w, h) : Image::GetSizeInBytes(w, h, davaFormat);
     };
 
     const uint32 largestImageSize = MipSize(info.width, info.height);
@@ -1134,7 +1130,6 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
             uint32 mipHeight = info.height >> mip;
             uint32 bytesInMip = MipSize(mipWidth, mipHeight);
 
-            Logger::Info("mip %u-%u : %u x %u, reading %u bytes starting from %u", faceIndex, mip, mipWidth, mipHeight, bytesToSkip, file->GetPos());
             auto readSize = file->Read(dataBuffer.data(), bytesInMip);
             if (readSize != bytesInMip)
             {
@@ -1245,7 +1240,6 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
 
     for (const Vector<Image*>& mips : images)
     {
-        Logger::Info("next face, %u mips", mips.size());
         for (const Image* srcImage : mips)
         {
             uint32 w = srcImage->width;
@@ -1280,7 +1274,6 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
                 dataToCopySize = d3dSize;
             }
 
-            Logger::Info("next mip %u x %u, writing %u bytes starting from %u", w, h, dataToCopySize, file->GetPos());
             if (WriteDataChunk(dataToCopy, dataToCopySize) == false)
             {
                 Logger::Error("Can't add data chunk to %s", file->GetFilename().GetStringValue().c_str());

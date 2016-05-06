@@ -126,5 +126,54 @@ DAVA_TESTCLASS (LoadImageTest)
         TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
         ClearImgSet();
     }
+
+#if !defined(__DAVAENGINE_IPHONE__)
+    DAVA_TEST (DdsMipsTest)
+    {
+        Vector<Image*> loadedMips;
+        SCOPE_EXIT
+        {
+            for (Image* image : loadedMips)
+            {
+                image->Release();
+            }
+            loadedMips.clear();
+        };
+
+        static const uint32 SAMPLE_MIP_0_WIDTH = 256;
+        static const uint32 SAMPLE_MIP_0_HEIGHT = 256;
+        static const size_type SAMPLE_MIPS_COUNT = 9;
+        static const PixelFormat SAMPLE_MIPS_FORMAT = FORMAT_DXT1;
+
+        TEST_VERIFY(ImageSystem::Load("~res:/TestData/LoadImageTest/dxt1_mips.dds", loadedMips) == eErrorCode::SUCCESS);
+        TEST_VERIFY(loadedMips.size() == SAMPLE_MIPS_COUNT);
+
+        ScopedPtr<File> sampleMipFile(nullptr);
+        for (size_type i = 0; i < SAMPLE_MIPS_COUNT; ++i)
+        {
+            uint32 expectedMipWidth = SAMPLE_MIP_0_WIDTH >> i;
+            uint32 expectedMipHeight = SAMPLE_MIP_0_HEIGHT >> i;
+
+            Image* loadedMip = loadedMips[i];
+            TEST_VERIFY(loadedMip != nullptr);
+            TEST_VERIFY(loadedMip->format == SAMPLE_MIPS_FORMAT);
+            TEST_VERIFY(loadedMip->height == expectedMipHeight);
+            TEST_VERIFY(loadedMip->width == expectedMipWidth);
+
+            uint32 sampleSize = 0;
+            uint8* sampleData = nullptr;
+            FilePath sampleMipPath(Format("~res:/TestData/LoadImageTest/dxt1_mip%u.dat", i));
+            sampleData = FileSystem::Instance()->ReadFileContents(sampleMipPath, sampleSize);
+            TEST_VERIFY(sampleData != nullptr);
+            SCOPE_EXIT
+            {
+                SAFE_DELETE_ARRAY(sampleData);
+            };
+
+            TEST_VERIFY(sampleSize == loadedMip->dataSize);
+            TEST_VERIFY(Memcmp(sampleData, loadedMip->data, loadedMip->dataSize) == 0);
+        }
+    }
+#endif
 }
 ;
