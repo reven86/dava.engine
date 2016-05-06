@@ -1052,6 +1052,11 @@ bool VariantType::Write(File* fp) const
         }
     }
     break;
+    default:
+    {
+        DVASSERT_MSG(false, "Writing wrong variant type");
+        return true;
+    }
     }
     return true;
 }
@@ -1460,6 +1465,10 @@ void VariantType::ReleasePointer()
             delete filepathValue;
         }
         break;
+        default:
+        {
+            break;
+        }
         }
 
         // It is enough to set only pointerValue to nullptr - all other pointers are in union, so
@@ -1470,158 +1479,170 @@ void VariantType::ReleasePointer()
 
 bool VariantType::operator==(const VariantType& other) const
 {
-    bool isEqual = false;
-    if (type == other.type)
+    if (type != other.type)
     {
-        switch (type)
+        return false;
+    }
+    bool isEqual = false;
+
+    switch (type)
+    {
+    case TYPE_BOOLEAN:
+        isEqual = (AsBool() == other.AsBool());
+        break;
+    case TYPE_INT8:
+        isEqual = (AsInt8() == other.AsInt8());
+        break;
+    case TYPE_UINT8:
+        isEqual = (AsUInt8() == other.AsUInt8());
+        break;
+    case TYPE_INT16:
+        isEqual = (AsInt16() == other.AsInt16());
+        break;
+    case TYPE_UINT16:
+        isEqual = (AsUInt16() == other.AsUInt16());
+        break;
+    case TYPE_INT32:
+        isEqual = (AsInt32() == other.AsInt32());
+        break;
+    case TYPE_FLOAT:
+        isEqual = (AsFloat() == other.AsFloat());
+        break;
+    case TYPE_FLOAT64:
+        isEqual = (AsFloat64() == other.AsFloat64());
+        break;
+    case TYPE_STRING:
+        isEqual = (AsString() == other.AsString());
+        break;
+    case TYPE_WIDE_STRING:
+        isEqual = (AsWideString() == other.AsWideString());
+        break;
+    case TYPE_BYTE_ARRAY:
+    {
+        int32 byteArraySize = AsByteArraySize();
+        if (byteArraySize == other.AsByteArraySize())
         {
-        case TYPE_BOOLEAN:
-            isEqual = (AsBool() == other.AsBool());
-            break;
-        case TYPE_INT8:
-            isEqual = (AsInt8() == other.AsInt8());
-            break;
-        case TYPE_UINT8:
-            isEqual = (AsUInt8() == other.AsUInt8());
-            break;
-        case TYPE_INT16:
-            isEqual = (AsInt16() == other.AsInt16());
-            break;
-        case TYPE_UINT16:
-            isEqual = (AsUInt16() == other.AsUInt16());
-            break;
-        case TYPE_INT32:
-            isEqual = (AsInt32() == other.AsInt32());
-            break;
-        case TYPE_FLOAT:
-            isEqual = (AsFloat() == other.AsFloat());
-            break;
-        case TYPE_FLOAT64:
-            isEqual = (AsFloat64() == other.AsFloat64());
-            break;
-        case TYPE_STRING:
-            isEqual = (AsString() == other.AsString());
-            break;
-        case TYPE_WIDE_STRING:
-            isEqual = (AsWideString() == other.AsWideString());
-            break;
-        case TYPE_BYTE_ARRAY:
-        {
-            int32 byteArraySize = AsByteArraySize();
-            if (byteArraySize == other.AsByteArraySize())
+            isEqual = true;
+            const uint8* byteArray = AsByteArray();
+            const uint8* otherByteArray = other.AsByteArray();
+            if (byteArray != otherByteArray)
             {
-                isEqual = true;
-                const uint8* byteArray = AsByteArray();
-                const uint8* otherByteArray = other.AsByteArray();
-                if (byteArray != otherByteArray)
+                for (int32 i = 0; i < byteArraySize; ++i)
                 {
-                    for (int32 i = 0; i < byteArraySize; ++i)
+                    if (byteArray[i] != otherByteArray[i])
                     {
-                        if (byteArray[i] != otherByteArray[i])
-                        {
-                            isEqual = false;
-                            break;
-                        }
+                        isEqual = false;
+                        break;
                     }
                 }
             }
         }
+    }
+    break;
+    case TYPE_UINT32:
+        isEqual = (AsUInt32() == other.AsUInt32());
         break;
-        case TYPE_UINT32:
-            isEqual = (AsUInt32() == other.AsUInt32());
-            break;
-        case TYPE_KEYED_ARCHIVE:
+    case TYPE_KEYED_ARCHIVE:
+    {
+        KeyedArchive* keyedArchive = AsKeyedArchive();
+        KeyedArchive* otherKeyedArchive = other.AsKeyedArchive();
+        if (keyedArchive && otherKeyedArchive)
         {
-            KeyedArchive* keyedArchive = AsKeyedArchive();
-            KeyedArchive* otherKeyedArchive = other.AsKeyedArchive();
-            if (keyedArchive && otherKeyedArchive)
+            isEqual = true;
+            if (keyedArchive != otherKeyedArchive)
             {
-                isEqual = true;
-                if (keyedArchive != otherKeyedArchive)
+                const KeyedArchive::UnderlyingMap& data = keyedArchive->GetArchieveData();
+                const KeyedArchive::UnderlyingMap& otherData = otherKeyedArchive->GetArchieveData();
+                for (const auto& obj : data)
                 {
-                    const KeyedArchive::UnderlyingMap& data = keyedArchive->GetArchieveData();
-                    const KeyedArchive::UnderlyingMap& otherData = otherKeyedArchive->GetArchieveData();
-                    for (const auto& obj : data)
+                    KeyedArchive::UnderlyingMap::const_iterator findIt = otherData.find(obj.first);
+                    if (findIt != otherData.end())
                     {
-                        KeyedArchive::UnderlyingMap::const_iterator findIt = otherData.find(obj.first);
-                        if (findIt != otherData.end())
+                        if (obj.second != findIt->second)
                         {
-                            if (obj.second != findIt->second)
+                            if ((*obj.second) != (*findIt->second))
                             {
-                                if ((*obj.second) != (*findIt->second))
-                                {
-                                    isEqual = false;
-                                    break;
-                                }
+                                isEqual = false;
+                                break;
                             }
                         }
-                        else
-                        {
-                            isEqual = false;
-                            break;
-                        }
+                    }
+                    else
+                    {
+                        isEqual = false;
+                        break;
                     }
                 }
             }
         }
+    }
+    break;
+    case TYPE_INT64:
+        isEqual = (AsInt64() == other.AsInt64());
         break;
-        case TYPE_INT64:
-            isEqual = (AsInt64() == other.AsInt64());
-            break;
-        case TYPE_UINT64:
-            isEqual = (AsUInt64() == other.AsUInt64());
-            break;
-        case TYPE_VECTOR2:
-        {
-            isEqual = (AsVector2() == other.AsVector2());
-        }
+    case TYPE_UINT64:
+        isEqual = (AsUInt64() == other.AsUInt64());
         break;
-        case TYPE_VECTOR3:
-        {
-            isEqual = (AsVector3() == other.AsVector3());
-        }
-        break;
-        case TYPE_VECTOR4:
-        {
-            isEqual = (AsVector4() == other.AsVector4());
-        }
-        break;
-        case TYPE_MATRIX2:
-        {
-            isEqual = (AsMatrix2() == other.AsMatrix2());
-        }
-        break;
-        case TYPE_MATRIX3:
-        {
-            isEqual = (AsMatrix3() == other.AsMatrix3());
-        }
-        break;
-        case TYPE_MATRIX4:
-        {
-            isEqual = (AsMatrix4() == other.AsMatrix4());
-        }
-        break;
-        case TYPE_COLOR:
-        {
-            isEqual = (AsColor() == other.AsColor());
-        }
-        break;
-        case TYPE_FASTNAME:
-        {
-            isEqual = (AsFastName() == other.AsFastName());
-        }
-        break;
-        case TYPE_AABBOX3:
-        {
-            isEqual = (AsAABBox3() == other.AsAABBox3());
-        }
-        break;
-        case TYPE_FILEPATH:
-        {
-            isEqual = (AsFilePath() == other.AsFilePath());
-        }
-        break;
-        }
+    case TYPE_VECTOR2:
+    {
+        isEqual = (AsVector2() == other.AsVector2());
+    }
+    break;
+    case TYPE_VECTOR3:
+    {
+        isEqual = (AsVector3() == other.AsVector3());
+    }
+    break;
+    case TYPE_VECTOR4:
+    {
+        isEqual = (AsVector4() == other.AsVector4());
+    }
+    break;
+    case TYPE_MATRIX2:
+    {
+        isEqual = (AsMatrix2() == other.AsMatrix2());
+    }
+    break;
+    case TYPE_MATRIX3:
+    {
+        isEqual = (AsMatrix3() == other.AsMatrix3());
+    }
+    break;
+    case TYPE_MATRIX4:
+    {
+        isEqual = (AsMatrix4() == other.AsMatrix4());
+    }
+    break;
+    case TYPE_COLOR:
+    {
+        isEqual = (AsColor() == other.AsColor());
+    }
+    break;
+    case TYPE_FASTNAME:
+    {
+        isEqual = (AsFastName() == other.AsFastName());
+    }
+    break;
+    case TYPE_AABBOX3:
+    {
+        isEqual = (AsAABBox3() == other.AsAABBox3());
+    }
+    break;
+    case TYPE_FILEPATH:
+    {
+        isEqual = (AsFilePath() == other.AsFilePath());
+    }
+    break;
+    case TYPE_NONE:
+    {
+        isEqual = true;
+    }
+    //TypE_NONE and TYPES_COUNT
+    default:
+    {
+        DVASSERT_MSG(false, "wrong variant type passed to IsEqual");
+        return true;
+    }
     }
     return isEqual;
 }

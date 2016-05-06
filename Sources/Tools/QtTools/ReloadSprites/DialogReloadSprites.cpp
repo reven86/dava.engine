@@ -116,6 +116,7 @@ DialogReloadSprites::~DialogReloadSprites()
     {
         BlockingStop();
     }
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 void DialogReloadSprites::OnStartClicked()

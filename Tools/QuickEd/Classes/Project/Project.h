@@ -91,6 +91,7 @@ private:
 public:
     INTROSPECTION(Project,
                   MEMBER(projectsHistory, "ProjectInternal/ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  //maximum size of projects history
                   MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_EDIT | DAVA::I_VIEW | DAVA::I_PREFERENCE)
                   )
 

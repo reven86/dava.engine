@@ -239,7 +239,7 @@ void Project::SetIsOpen(bool arg)
         {
             projectsPathes.removeFirst();
         }
-        projectsHistory = projectsPathes.join(':').toStdString();
+        projectsHistory = projectsPathes.join('\n').toStdString();
     }
     emit IsOpenChanged(arg);
 }
@@ -257,7 +257,7 @@ QString Project::GetProjectName() const
 QStringList Project::GetProjectsHistory() const
 {
     QString history = QString::fromStdString(projectsHistory);
-    return history.split(":", QString::SkipEmptyParts);
+    return history.split("\n", QString::SkipEmptyParts);
 }
 
 void Project::SetProjectPath(QString arg)

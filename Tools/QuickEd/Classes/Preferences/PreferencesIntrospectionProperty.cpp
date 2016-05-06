@@ -45,8 +45,6 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     {
         SetName(name.substr(index + 1));
     }
-    DAVA::VariantType value = PreferencesStorage::Instance()->GetValue(member);
-    ValueProperty::SetValue(value);
 }
 
 DAVA::VariantType PreferencesIntrospectionProperty::GetValue() const
