@@ -30,6 +30,7 @@
 
 #include "PathDescriptor.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageFormatInterface.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
 

@@ -26,20 +26,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_CLIPBOARD_H__
+#define __DAVAENGINE_CLIPBOARD_H__
 
-#include "BaseValidator.h"
+#include "Base/BaseTypes.h"
 
-bool BaseValidator::Validate(QVariant& v)
+namespace DAVA
 {
-    bool ret = ValidateInternal(v);
-    if (!ret)
-    {
-        FixupInternal(v);
-        ret = ValidateInternal(v);
-        if (!ret)
-        {
-            ErrorNotifyInternal(v);
-        }
-    }
-    return ret;
+class IClipboardImpl;
+
+/**
+ * \brief Helper to work with system clipboard
+ */
+class Clipboard
+{
+public:
+    /**
+     * \brief Constructor
+     */
+    Clipboard();
+
+    /**
+     * \brief Destructor
+     */
+    ~Clipboard();
+
+    /**
+     * \brief Return status of clipboard helper
+     * \return true if helper ready to work with clipboard
+     */
+    bool IsReadyToUse() const;
+
+    /**
+     * \brief Clear system clipboard
+     * \return true if successful
+     */
+    bool ClearClipboard() const;
+
+    /**
+     * \brief Check that system clipboard contains Unicode text
+     * \return true if system clipboard contains Unicode text
+     */
+    bool HasText() const;
+
+    /**
+     * \brief Copy to system clipboard WideString as Unicode string
+     * \param[in] str input string
+     * \return true if successful
+     */
+    bool SetText(const WideString& str);
+
+    /**
+     * \brief Get from system clipboard Unicode text data as WideString
+     * \return WideString with clipboard content
+     */
+    WideString GetText() const;
+
+private:
+    IClipboardImpl* pImpl;
+};
 }
+
+#endif //__DAVAENGINE_CLIPBOARD_H__

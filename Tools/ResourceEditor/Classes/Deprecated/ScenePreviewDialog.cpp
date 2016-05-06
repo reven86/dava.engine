@@ -50,7 +50,7 @@ ScenePreviewDialog::ScenePreviewDialog()
 
     errorMessage.reset(new DAVA::UIStaticText(preview->GetRect()));
     errorMessage->SetMultiline(true);
-    errorMessage->SetAlign(DAVA::ALIGN_HCENTER | DAVA::ALIGN_VCENTER);
+    errorMessage->SetSpriteAlign(DAVA::ALIGN_HCENTER | DAVA::ALIGN_VCENTER);
     errorMessage->SetTextColor(ControlsFactory::GetColorError());
     errorMessage->SetFont(ControlsFactory::GetFont20());
 
