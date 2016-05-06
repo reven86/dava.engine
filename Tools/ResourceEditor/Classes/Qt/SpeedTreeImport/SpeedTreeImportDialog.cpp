@@ -29,7 +29,9 @@
 
 #include <QMessageBox>
 #include "SpeedTreeImport/SpeedTreeImportDialog.h"
-#include "SpeedTreeImporter.h"
+#if defined(__DAVAENGINE_SPEEDTREE__)
+    #include "SpeedTreeImporter.h"
+#endif
 #include "ui_treeimportdialog.h"
 #include "Qt/Project/ProjectManager.h"
 #include "Qt/Main/mainwindow.h"

@@ -33,12 +33,16 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
+//#include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
+#include "Core/Core.h"
 
 namespace DAVA
 {
-class CoreWin32PlatformQt : public CoreWin32PlatformBase
+class CoreWin32PlatformQt : public Core
 {
+public:
+    void InitArgs();
+    void Quit() override;
 };
 };
 

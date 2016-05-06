@@ -124,7 +124,7 @@
     if (focusedCtrl != nullptr && focusedCtrl == focusedAfterCtrl)
     {
         DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focusedCtrl);
-        if (tf)
+        if (tf && tf->IsEditing())
         {
             if (theEvent.type == NSKeyDown || theEvent.type == NSKeyUp)
             {
@@ -244,6 +244,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 }
 }
 
+@synthesize willQuit;
+
 - (id)init
 {
     self = [super init];
@@ -255,6 +257,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         animationTimer = nil;
         core = 0;
         assertionID = kIOPMNullAssertionID;
+        willQuit = false;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
@@ -375,6 +378,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
+
     float32 scale = DeviceInfo::GetScreenInfo().scale;
     Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scale, scale);
 }
@@ -528,10 +532,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 {
 }
 
-- (void)mouseExited:(NSEvent*)theEvent
-{
-}
-
 - (void)rightMouseDown:(NSEvent*)theEvent
 {
     [openGLView rightMouseDown:theEvent];
@@ -582,7 +582,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)animationTimerFired:(NSTimer*)timer
 {
-    [openGLView setNeedsDisplay:YES];
+    if (willQuit)
+        return;
+
+    DAVA::Core::Instance()->SystemProcessFrame();
 
     if (currFPS != Renderer::GetDesiredFPS())
     {
@@ -648,7 +651,7 @@ bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 
 void CoreMacOSPlatform::Quit()
 {
-    mainWindowController->openGLView.willQuit = true;
+    mainWindowController->willQuit = true;
     [[NSApplication sharedApplication] terminate:nil];
 }
 

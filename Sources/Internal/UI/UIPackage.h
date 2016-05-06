@@ -41,6 +41,8 @@ class UIControlPackageContext;
 class UIPackage : public BaseObject
 {
 public:
+    static const int32 CURRENT_VERSION = 3;
+
     UIPackage();
 
 protected:

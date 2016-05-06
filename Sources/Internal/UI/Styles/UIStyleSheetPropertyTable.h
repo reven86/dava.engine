@@ -33,6 +33,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 namespace DAVA
 {
@@ -46,8 +47,11 @@ public:
     void SetProperties(const Vector<UIStyleSheetProperty>& properties);
     const Vector<UIStyleSheetProperty>& GetProperties() const;
 
+    const UIStyleSheetPropertySet& GetPropertySet() const;
+
 private:
     Vector<UIStyleSheetProperty> properties;
+    UIStyleSheetPropertySet propertySet;
 };
 };
 

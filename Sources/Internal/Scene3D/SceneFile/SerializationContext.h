@@ -165,7 +165,7 @@ public:
 
     void AddLoadedPolygonGroup(PolygonGroup* group, uint32 dataFilePos);
     void AddRequestedPolygonGroupFormat(PolygonGroup* group, int32 format);
-    void LoadPolygonGroupData(File* file);
+    bool LoadPolygonGroupData(File* file);
 
     template <template <typename, typename> class Container, class T, class A>
     void GetDataNodes(Container<T, A>& container);

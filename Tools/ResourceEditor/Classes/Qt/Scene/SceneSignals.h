@@ -32,7 +32,7 @@
 
 #include <QObject>
 
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
@@ -59,22 +59,15 @@ signals:
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
     // entities
-    void SelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
     // mouse
-    void MouseOver(SceneEditor2* scene, const EntityGroup* entities);
-    void MouseOverSelection(SceneEditor2* scene, const EntityGroup* entities);
-
-    // particles - selection
-    void EffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-    void EmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void InnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void LayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void ForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
+    void MouseOver(SceneEditor2* scene, const SelectableGroup* objects);
+    void MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
 
     // particles - value changed
-    void ParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void ParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
     void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
     void ParticleForceValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
@@ -82,12 +75,12 @@ signals:
     void ParticleEffectStateChanged(SceneEditor2* scene, DAVA::Entity* effect, bool isStarted);
 
     // particles - loading/saving.
-    void ParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
-    void ParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void ParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
+    void ParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
     // particles - structure changes.
-    void ParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
-    void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void ParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer);
+    void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
     void DropperHeightChanged(SceneEditor2* scene, double height);
     void CustomColorsTextureShouldBeSaved(SceneEditor2* scene);
@@ -139,7 +132,7 @@ public:
         emit StructureChanged(scene, parent);
     }
 
-    void EmitSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+    void EmitSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
     {
         emit SelectionChanged(scene, selected, deselected);
     }
@@ -172,39 +165,17 @@ public:
         emit RulerToolLengthChanged(scene, length, previewLength);
     }
 
-    void EmitMouseOver(SceneEditor2* scene, const EntityGroup* entities)
+    void EmitMouseOver(SceneEditor2* scene, const SelectableGroup* objects)
     {
-        emit MouseOver(scene, entities);
+        emit MouseOver(scene, objects);
     }
-    void EmitMouseOverSelection(SceneEditor2* scene, const EntityGroup* entities)
+    void EmitMouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects)
     {
-        emit MouseOverSelection(scene, entities);
+        emit MouseOverSelection(scene, objects);
     }
-
-    // Particle Editor Selection signals.
-    void EmitEffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect)
-    {
-        emit EffectSelected(scene, effect);
-    };
-    void EmitEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
-    {
-        emit EmitterSelected(scene, effect, emitter);
-    };
-    void EmitInnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
-    {
-        emit InnerEmitterSelected(scene, effect, emitter);
-    };
-    void EmitLayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
-    {
-        emit LayerSelected(scene, effect, emitter, layer, forceRefresh);
-    };
-    void EmitForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
-    {
-        emit ForceSelected(scene, layer, forceIndex);
-    };
 
     // Particle Editor Value Changed signals.
-    void EmitParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleEmitterValueChanged(scene, emitter);
     }
@@ -224,22 +195,22 @@ public:
         emit ParticleEffectStateChanged(scene, effect, isStarted);
     }
 
-    void EmitParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleEmitterLoaded(scene, emitter);
     }
 
-    void EmitParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleEmitterSaved(scene, emitter);
     }
 
-    void EmitParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer)
+    void EmitParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer)
     {
         emit ParticleLayerAdded(scene, emitter, layer);
     }
 
-    void EmitParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+    void EmitParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter)
     {
         emit ParticleLayerRemoved(scene, emitter);
     }

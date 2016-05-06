@@ -47,14 +47,6 @@ if( DAVA_DISABLE_AUTOTESTS )
     add_definitions ( -DDISABLE_AUTOTESTS )
 endif()
 
-if( WIN32 )
-    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN)
-    list ( APPEND ADDITIONAL_DLL_FILES ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN} )
-elseif( MACOS )
-    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC)
-    list ( APPEND MACOS_DYLIB  ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC} )
-endif()
-
 if ( STEAM_SDK_FOUND )
     add_definitions ( -D__DAVAENGINE_STEAM__ )
     include_directories( ${STEAM_SDK_HEADERS} )
@@ -222,6 +214,7 @@ endif()
 ###
 
 if( DAVA_FOUND )
+
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
@@ -572,8 +565,14 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
+set( DAVA_FOLDERS PARENT_SCOPE )
+
 if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
+
+    if( DAVA_FOUND )
+        add_dependencies(  ${DAVA_LIBRARY} FILE_TREE_${PROJECT_NAME} )
+    endif()
 
 endif()
 

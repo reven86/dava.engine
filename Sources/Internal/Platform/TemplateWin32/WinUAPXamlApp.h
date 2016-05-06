@@ -45,13 +45,14 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
+#include "Platform/DeviceInfo.h"
+
 namespace DAVA
 {
 
 class Thread;
 class CorePlatformWinUAP;
 class DispatcherWinUAP;
-class DeferredScreenMetricEvents;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -75,9 +76,6 @@ public:
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
 
-    bool GetCursorVisible();
-    bool SetCursorVisible(bool isVisible);
-
     bool IsPhoneApiDetected();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
@@ -85,8 +83,6 @@ public:
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
     Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
-    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
     void SetWindowMinimumSize(float32 width, float32 height);
     Vector2 GetWindowMinimumSize() const;
@@ -100,6 +96,7 @@ public:
     void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
     void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
     void UnfocusUIElement();
+    void CaptureTextBox(Windows::UI::Xaml::Controls::Control^ text);
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -116,8 +113,10 @@ private:
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
 
-    // Swap chain panel state change handlers
-    void ScreenMetricsUpdated(float32 widht, float32 height, float32 scaleX, float32 scaleY);
+    // Size and scale changing handlers
+    void OnCoreWindowSizeChanged(::Windows::UI::Core::CoreWindow^ coreWindow, ::Windows::UI::Core::WindowSizeChangedEventArgs^ arg);
+    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs^ arg);
+    void OnSwapChainPanelCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel^ panel, Platform::Object^ obj);
 
     // Mouse and touch handlers
     void OnSwapChainPanelPointerPressed(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
@@ -139,6 +138,7 @@ private:
     void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
+    DeviceInfo::ScreenInfo ObtainScreenInfo();
     void SetupEventHandlers();
     void CreateBaseXamlUI();
 
@@ -155,6 +155,8 @@ private:
     void SendBackKeyEvents();
 
 private:
+    Windows::UI::Xaml::Input::PointerRoutedEventArgs ^pressedEventArgs = nullptr;
+
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
     std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
@@ -164,6 +166,11 @@ private:
     Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
+
+    float32 minWindowWidth = 0.0f;
+    float32 minWindowHeight = 0.0f;
+
+    Windows::UI::Input::PointerPoint ^ mousePointer = nullptr;
 
     Thread* mainLoopThread = nullptr;
 
@@ -186,7 +193,6 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
@@ -206,7 +212,7 @@ private:
     void SetMouseButtonState(UIEvent::MouseButton button, bool value);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-    std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
+
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
@@ -249,16 +255,6 @@ inline void WinUAPXamlApp::SetQuitFlag()
 inline bool WinUAPXamlApp::IsPhoneApiDetected()
 {
     return isPhoneApiDetected;
-}
-
-inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
-{
-    return mouseCaptureMode;
-}
-
-inline bool WinUAPXamlApp::GetCursorVisible()
-{
-    return isMouseCursorShown;
 }
 
 }   // namespace DAVA

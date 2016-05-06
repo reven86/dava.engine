@@ -62,7 +62,7 @@ private slots:
 
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
 
@@ -80,7 +80,7 @@ private slots:
 private:
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
 
-    void EmitParticleSignals(const QItemSelection& selected);
+    void EmitParticleSignals();
 
     void ExpandFilteredItems();
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
@@ -96,13 +96,12 @@ private:
     class ParticleEmitterContextMenu;
     class ParticleInnerEmitterContextMenu;
 
+private:
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
-    SceneTreeDelegate* treeDelegate;
-
-    bool isInSync;
-
-    LazyUpdater* treeUpdater;
+    SceneTreeDelegate* treeDelegate = nullptr;
+    LazyUpdater* treeUpdater = nullptr;
+    bool isInSync = false;
 };
 
 #endif // __QT_SCENE_TREE_H__

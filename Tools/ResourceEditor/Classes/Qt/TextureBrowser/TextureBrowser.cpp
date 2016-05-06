@@ -240,24 +240,28 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
     // second set texture view to appropriate state
     if (NULL != curTexture && NULL != curDescriptor)
     {
-        bool needConvert = true;
-
+        bool needConvert = (convertMode != eTextureConvertMode::CONVERT_NOT_REQUESTED);
         // set empty image to converted image view. it will be visible until
         // conversion done (signal by textureConvertor).
         ui->textureAreaConverted->setImage(QImage());
-        ui->textureAreaConverted->waitbarShow(true);
+        ui->textureAreaConverted->waitbarShow(needConvert);
 
         // set current tab
         ui->viewTabBar->setCurrentIndex(curTextureView);
         ui->textureProperties->setTextureGPU(curTextureView);
+
+        if (!needConvert)
+        {
+            infoConvertedIsUpToDate = true;
+            TextureCache::Instance()->tryToPreloadConverted(curDescriptor, view);
+        }
 
         if (!cacheCleared)
         {
             // try to find image in cache
             const QList<QImage>& images = TextureCache::Instance()->getConverted(curDescriptor, view);
 
-            if (images.size() > 0 &&
-                !images[0].isNull())
+            if (images.size() > 0 && !images[0].isNull())
             {
                 // image already in cache, just draw it
                 updateConvertedImageAndInfo(images, *curDescriptor);
@@ -1073,7 +1077,7 @@ void TextureBrowser::sceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (!isHidden())
     {
