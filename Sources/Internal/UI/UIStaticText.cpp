@@ -184,16 +184,6 @@ bool UIStaticText::GetMultilineBySymbol() const
     return textBlock->GetMultilineBySymbol();
 }
 
-void UIStaticText::SetAlign(int32 _align)
-{
-    UIControl::SetSpriteAlign(_align);
-}
-
-int32 UIStaticText::GetAlign() const
-{
-    return UIControl::GetSpriteAlign();
-}
-
 void UIStaticText::SetTextAlign(int32 _align)
 {
     textBlock->SetAlign(_align);
@@ -573,10 +563,10 @@ void UIStaticText::DrawLocalizationDebug(const UIGeometricData& textGeomData) co
         textGeomData.GetPolygon(polygon);
         RenderSystem2D::Instance()->FillPolygon(polygon, HIGHLIGHT_COLORS[lineBreakError]);
     }
-    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    if (textBlock->GetFittingOption() != 0 && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
         Color color = HIGHLIGHT_COLORS[WHITE];
-        if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
+        if (textBlock->GetFittingOptionUsed() != 0)
         {
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_REDUCE)
                 color = HIGHLIGHT_COLORS[RED];

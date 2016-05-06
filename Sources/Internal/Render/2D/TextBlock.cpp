@@ -105,7 +105,6 @@ TextBlock::TextBlock()
     font = NULL;
     isMultilineEnabled = false;
     useRtlAlign = RTL_DONT_USE;
-    fittingType = FITTING_DISABLED;
 
     align = ALIGN_HCENTER | ALIGN_VCENTER;
     RegisterTextBlock(this);
@@ -116,10 +115,6 @@ TextBlock::TextBlock()
 
     textBlockRender = NULL;
     needPrepareInternal = false;
-#if defined(LOCALIZATION_DEBUG)
-    fittingTypeUsed = FITTING_DISABLED;
-    visualTextCroped = false;
-#endif //LOCALIZATION_DEBUG
 }
 
 TextBlock::TextBlock(const TextBlock& src)
@@ -385,7 +380,7 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         return Vector2();
 
     Vector2 result;
-    if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == FITTING_DISABLED)
+    if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == 0)
     {
         CalculateCacheParamsIfNeed();
         result = cacheTextSize;
@@ -398,7 +393,7 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
 
         requestedSize = Vector2(width, -1.0f);
         rectSize = Vector2(width < 0.0f ? 99999.0f : width, 99999.0f);
-        fittingType = FITTING_DISABLED;
+        fittingType = 0;
         CalculateCacheParams();
 
         result = cacheTextSize;
@@ -448,7 +443,7 @@ void TextBlock::CalculateCacheParams()
     multitlineInfo.clear();
 
 #if defined(LOCALIZATION_DEBUG)
-    fittingTypeUsed = FITTING_DISABLED;
+    fittingTypeUsed = 0;
     visualTextCroped = false;
 #endif
 

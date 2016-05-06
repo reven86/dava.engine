@@ -84,6 +84,8 @@ public:
     QList<QImage> getOriginal(const DAVA::TextureDescriptor* descriptor);
     QList<QImage> getConverted(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu);
 
+    void tryToPreloadConverted(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu);
+
     void getThumbnail(const DAVA::TextureDescriptor* descriptor, QObject* object, const QString& slotName, const QVariant& userData = QVariant());
 
     void clearInsteadThumbnails();

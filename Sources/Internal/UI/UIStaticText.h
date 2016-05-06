@@ -104,12 +104,8 @@ public:
     void SetMargins(const UIControlBackground::UIMargins* margins);
     const UIControlBackground::UIMargins* GetMargins() const;
 
-    void SetFittingOption(int32 fittingType); //may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
+    void SetFittingOption(int32 fittingType); //may be FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
     int32 GetFittingOption() const;
-
-    //for background sprite
-    virtual void SetAlign(int32 _align); // TODO remove legacy methods
-    virtual int32 GetAlign() const;
 
     virtual void SetTextAlign(int32 _align);
     virtual int32 GetTextAlign() const;
