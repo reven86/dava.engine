@@ -62,10 +62,22 @@ namespace DAVA
 {
 struct DecodedFrameBuffer
 {
+    DecodedFrameBuffer(uint32 dataSize, PixelFormat format, float64 pts_)
+        : pts(pts_)
+        , textureFormat(format)
+    {
+        data = new uint8[dataSize];
+
+        // we fill codecContext->width x codecContext->height area, it is smaller than texture size. So fill all the texture by empty color once.
+        // we suppose that next time we will fill same part of the texture.
+        Memset(data, emptyPixelColor, dataSize);
+    }
     ~DecodedFrameBuffer()
     {
         SafeDeleteArray(data);
     }
+
+    const uint8 emptyPixelColor = 255;
 
     float64 frame_last_pts = 0.f;
     float64 pts = 0.f;
@@ -126,6 +138,9 @@ struct DecodedFrameBuffer
 
         PlayState state = STOPPED;
 
+        const float64 AV_SYNC_THRESHOLD = 0.01;
+        const float64 AV_NOSYNC_THRESHOLD = 0.5;
+
         AV::AVFormatContext* CreateContext(const FilePath& path);
 
         static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
@@ -149,7 +164,7 @@ struct DecodedFrameBuffer
         void PrefetchData(uint32 dataSize);
         ConditionVariable prefetchCV;
 
-        float64 synchronize_video(AV::AVFrame* src_frame, float64 pts);
+        float64 SyncVideoClock(AV::AVFrame* src_frame, float64 pts);
         float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
 
         bool isAudioVideoStreamsInited = false;
@@ -161,12 +176,10 @@ struct DecodedFrameBuffer
         Thread* videoDecodingThread = nullptr;
         Thread* readingDataThread = nullptr;
 
-        const uint8 emptyPixelColor = 255;
-
         Texture* videoTexture = nullptr;
         float64 videoFramerate = 0.f;
-        float64 frame_last_pts = 0.f;
-        float64 frame_last_delay = 40e-3;
+        float64 frameLastPts = 0.f;
+        float64 frameLastDelay = 40e-3;
         float64 video_clock = 0.f;
 
         uint32 textureWidth = 0;

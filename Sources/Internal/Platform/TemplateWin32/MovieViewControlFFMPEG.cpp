@@ -136,12 +136,21 @@ namespace DAVA
     void MovieViewControl::CloseMovie()
     {
         audio_clock = 0;
-        frame_last_pts = 0.f;
-        frame_last_delay = 40e-3;
+        frameLastPts = 0.f;
+        frameLastDelay = 40e-3;
         video_clock = 0.f;
         eof = false;
 
-        fmodChannel->stop();
+        if (fmodChannel)
+        {
+            fmodChannel->stop();
+            fmodChannel = nullptr;
+        }
+        if (sound)
+        {
+            sound->release();
+            sound = nullptr;
+        }
 
         if (readingDataThread)
         {
@@ -321,7 +330,6 @@ namespace DAVA
         return FMOD_OK;
     }
 
-
     bool MovieViewControl::InitAudio()
     {
         for (unsigned int i = 0; i < movieContext->nb_streams; i++)
@@ -388,7 +396,7 @@ namespace DAVA
         return GetAudioClock();
     }
 
-    float64 MovieViewControl::synchronize_video(AV::AVFrame* src_frame, float64 pts)
+    float64 MovieViewControl::SyncVideoClock(AV::AVFrame* src_frame, float64 pts)
     {
         float64 frame_delay;
 
@@ -421,37 +429,36 @@ namespace DAVA
         DecodedFrameBuffer* frameBuffer = nullptr;
         if (ret >= 0 && got_picture)
         {
-            frameBuffer = new DecodedFrameBuffer();
-            frameBuffer->data = new uint8[textureBufferSize];
-            // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
-            uint8* rgbTextureBufferHolder[1];
-            rgbTextureBufferHolder[0] = frameBuffer->data;
-            // we fill codecContext->width x codecContext->height area, it is smaller than texture size. So fill all the texture by empty color once.
-            // we suppose that next time we will fill same part of the texture.
-            Memset(frameBuffer->data, emptyPixelColor, textureBufferSize);
-
             // rgbTextureBufferHolder is a pointer to pointer to uint8. Used to obtain data directly to our rgbTextureBuffer
             AV::SwsContext* img_convert_ctx = AV::sws_getContext(videoCodecContext->width, videoCodecContext->height, videoCodecContext->pix_fmt, videoCodecContext->width, videoCodecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
             rgbDecodedScaledFrame = AV::av_frame_alloc();
-            uint8* out_buffer = nullptr;
-            out_buffer = (uint8_t*)AV::av_mallocz(AV::av_image_get_buffer_size(avPixelFormat, videoCodecContext->width, videoCodecContext->height, PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat)));
-            AV::avpicture_fill((AV::AVPicture*)rgbDecodedScaledFrame, out_buffer, avPixelFormat, videoCodecContext->width, videoCodecContext->height);
+
+            uint32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat);
+            const int imgBufferSize = AV::av_image_get_buffer_size(avPixelFormat, videoCodecContext->width, videoCodecContext->height, pixelSize);
+
+            uint8* out_buffer = reinterpret_cast<uint8*>(AV::av_mallocz(imgBufferSize));
+            Memset(out_buffer, imgBufferSize, 1);
+            AV::av_image_fill_arrays(rgbDecodedScaledFrame->data, rgbDecodedScaledFrame->linesize, out_buffer, avPixelFormat, videoCodecContext->width, videoCodecContext->height, 1);
             AV::av_free(out_buffer);
+
+            float64 effectivePTS = GetPTSForFrame(decodedFrame, packet, videoStreamIndex);
+            effectivePTS = SyncVideoClock(decodedFrame, effectivePTS);
+            frameLastPts = effectivePTS;
+
+            // released at UpdateVideo()
+            frameBuffer = new DecodedFrameBuffer(textureBufferSize, textureFormat, effectivePTS);
+            // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
+            uint8* rgbTextureBufferHolder[1];
+            rgbTextureBufferHolder[0] = frameBuffer->data;
 
             const uint32 scaledHeight = AV::sws_scale(img_convert_ctx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, rgbDecodedScaledFrame->linesize);
 
-            sws_freeContext(img_convert_ctx);
-
-            frameBuffer->textureFormat = textureFormat;
-
-            float64 effectivePTS = GetPTSForFrame(decodedFrame, packet, videoStreamIndex);
-            effectivePTS = synchronize_video(decodedFrame, effectivePTS);
-            frame_last_pts = effectivePTS;
-            frameBuffer->pts = effectivePTS;
+            AV::av_frame_free(&rgbDecodedScaledFrame);
+            AV::sws_freeContext(img_convert_ctx);
         }
 
-        av_frame_free(&decodedFrame);
+        AV::av_frame_free(&decodedFrame);
 
         return frameBuffer;
     }
@@ -460,32 +467,27 @@ namespace DAVA
     {
         if (nullptr == frameBuffer)
         {
-            Thread::Sleep(1);
+            Thread::Sleep(0);
             return;
         }
 
-        float64 delay = frameBuffer->pts - frame_last_pts; /* the pts from last time */
+        float64 delay = frameBuffer->pts - frameLastPts; /* the pts from last time */
         if (delay <= 0.0 || delay >= 1.0)
         {
             /* if incorrect delay, use previous one */
-            delay = frame_last_delay;
+            delay = frameLastDelay;
         }
         /* save for next time */
-        frame_last_delay = delay;
-        frame_last_pts = frameBuffer->pts;
+        frameLastDelay = delay;
+        frameLastPts = frameBuffer->pts;
 
         /* update delay to sync to audio */
-        float64 ref_clock = GetMasterClock();
+        float64 referenceClock = GetMasterClock();
 
-        float64 diff = frameBuffer->pts - ref_clock;
-        Logger::Error("RefClock %f pts %f diff %f", ref_clock, frameBuffer->pts, diff);
+        float64 diff = frameBuffer->pts - referenceClock;
 
         /* Skip or repeat the frame. Take delay into account
         FFPlay still doesn't "know if this is the best guess." */
-
-        const float64 AV_SYNC_THRESHOLD = 0.01;
-        const float64 AV_NOSYNC_THRESHOLD = 0.5;
-
         float64 sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
         if (fabs(diff) < AV_NOSYNC_THRESHOLD)
         {
@@ -527,12 +529,12 @@ namespace DAVA
             // rgbTextureBuffer is a rgbTextureBufferHolder[0]
             videoTexture->TexImage(0, textureWidth, textureHeight, frameBuffer->data, textureBufferSize, Texture::INVALID_CUBEMAP_FACE);
         }
+
+        // FRAME BUFFER FREE
         SafeDelete(frameBuffer);
 
         uint32 sleepLessFor = static_cast<uint32>(GetTime() - timeBeforePresent);
-
         uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5) - sleepLessFor;
-        Logger::Error("Frame SLEEP = %d", sleepTime);
         Thread::Sleep(sleepTime);
     }
 
@@ -565,12 +567,11 @@ namespace DAVA
         exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
         exinfo.pcmreadcallback = &MovieViewControl::PcmReadDecodeCallback; /* User callback for reading. */
 
-        FMOD::Sound* sound = nullptr;
         FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
         FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
         sound->setUserData(this);
 
-        system->playSound(FMOD_CHANNEL_FREE, sound, !PLAYING == state, &fmodChannel);
+        system->playSound(FMOD_CHANNEL_FREE, sound, true, &fmodChannel);
         fmodChannel->setLoopCount(-1);
         fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
         fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
@@ -581,6 +582,11 @@ namespace DAVA
         DVASSERT(packet->stream_index == audioStreamIndex);
         int got_data;
         AV::AVFrame* audioFrame = AV::av_frame_alloc();
+        SCOPE_EXIT
+        {
+            AV::av_frame_free(&audioFrame);
+        };
+
         int ret = avcodec_decode_audio4(audioCodecContext, audioFrame, &got_data, packet);
         if (ret < 0)
         {
@@ -620,10 +626,6 @@ namespace DAVA
     void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
     {
         Thread* thread = static_cast<Thread*>(caller);
-
-        AV::AVPacket* audioPacket = nullptr;
-        pcmBuffer->Retain();
-
         do
         {
             if (0 == currentPrefetchedPacketsCount || PAUSED == state || STOPPED == state)
@@ -641,7 +643,7 @@ namespace DAVA
             if (size > 0)
             {
                 audioPacketsMutex.Lock();
-                audioPacket = audioPackets.front();
+                AV::AVPacket* audioPacket = audioPackets.front();
                 audioPackets.pop_front();
                 currentPrefetchedPacketsCount--;
                 audioPacketsMutex.Unlock();
@@ -656,15 +658,12 @@ namespace DAVA
             }
 
         } while (thread && !thread->IsCancelling());
-
-        pcmBuffer->Release();
     }
 
     void MovieViewControl::VideoDecodingThread(BaseObject* caller, void* callerData, void* userData)
     {
         Thread* thread = static_cast<Thread*>(caller);
 
-        AV::AVPacket* videoPacket = nullptr;
         do
         {
             if (PLAYING != state)
@@ -680,7 +679,7 @@ namespace DAVA
             if (size > 0)
             {
                 videoPacketsMutex.Lock();
-                videoPacket = videoPackets.front();
+                AV::AVPacket* videoPacket = videoPackets.front();
                 videoPackets.pop_front();
                 videoPacketsMutex.Unlock();
 
@@ -725,28 +724,17 @@ namespace DAVA
 
         do
         {
-            if (PLAYING != state)
+            if (PLAYING == state && currentPrefetchedPacketsCount < maxAudioPacketsPrefetchedCount - 50)
             {
-                Thread::Sleep(0);
-                continue;
+                PrefetchData(maxAudioPacketsPrefetchedCount - currentPrefetchedPacketsCount);
             }
-
-            if (currentPrefetchedPacketsCount >= maxAudioPacketsPrefetchedCount - 30)
-            {
-                Thread::Sleep(0);
-                continue;
-            }
-
-            PrefetchData(maxAudioPacketsPrefetchedCount - currentPrefetchedPacketsCount);
-
+            Thread::Sleep(0);
         } while (thread && !thread->IsCancelling());
     }
 
     // UIControl update and draw implementation
     void MovieViewControl::Update(float32 timeElapsed)
     {
-        if (!isAudioVideoStreamsInited)
-            return;
     }
 
     float64 MovieViewControl::GetTime()
