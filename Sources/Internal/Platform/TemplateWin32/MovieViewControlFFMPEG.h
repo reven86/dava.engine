@@ -29,6 +29,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_MOVIEVIEWCONTROL_H__
 #define __DAVAENGINE_MOVIEVIEWCONTROL_H__
 
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
 #include "UI/IMovieViewControl.h"
 #include "UI/UIControl.h"
 #include "Render\PixelFormatDescriptor.h"
@@ -206,7 +210,7 @@ struct DecodedFrameBuffer
         const int out_sample_rate = 44100;
         FMOD::Sound* sound = nullptr;
         FMOD::Channel* fmodChannel = nullptr;
-        StreamBuffer* pcmBuffer = nullptr;
+        StreamBuffer pcmBuffer;
         void InitFmod();
 
         Deque<AV::AVPacket*> audioPackets;
@@ -231,6 +235,6 @@ struct DecodedFrameBuffer
     };
 }
 
-
+#endif
 
 #endif

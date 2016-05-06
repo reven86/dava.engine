@@ -27,6 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "MovieViewControlFFMPEG.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
 #include "Sound/SoundSystem.h"
 
 namespace DAVA
@@ -265,7 +268,7 @@ namespace DAVA
         }
         else
         {
-            AV::av_free(packet);
+            AV::av_packet_unref(packet);
         }
     }
 
@@ -304,7 +307,7 @@ namespace DAVA
             }
             videoPackets.clear();
         }
-        SafeRelease(pcmBuffer);
+        pcmBuffer.Flush();
     }
 
     FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
@@ -321,10 +324,7 @@ namespace DAVA
         MovieViewControl* movieControl = reinterpret_cast<MovieViewControl*>(soundData);
         if (nullptr != movieControl)
         {
-            StreamBuffer* buf = SafeRetain(movieControl->pcmBuffer);
-            DVASSERT(nullptr != buf);
-            buf->Read(static_cast<uint8*>(data), datalen);
-            buf->Release();
+            movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
         }
 
         return FMOD_OK;
@@ -382,9 +382,7 @@ namespace DAVA
         AV::swr_init(audioConvertContext);
 
         DVASSERT(nullptr == audioDecodingThread);
-        DVASSERT(nullptr == pcmBuffer);
 
-        pcmBuffer = new StreamBuffer();
         audioDecodingThread = Thread::Create(Message(this, &MovieViewControl::AudioDecodingThread));
         audioDecodingThread->Start();
 
@@ -620,12 +618,13 @@ namespace DAVA
             audio_clock = AV::av_q2d(audioCodecContext->time_base) * pts;
         }
 
-        pcmBuffer->Write(outAudioBuffer, outAudioBufferSize);
+        pcmBuffer.Write(outAudioBuffer, outAudioBufferSize);
     }
 
     void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
     {
         Thread* thread = static_cast<Thread*>(caller);
+
         do
         {
             if (0 == currentPrefetchedPacketsCount || PAUSED == state || STOPPED == state)
@@ -650,7 +649,7 @@ namespace DAVA
 
                 DecodeAudio(audioPacket, 0);
 
-                AV::av_packet_free(&audioPacket);
+                AV::av_packet_unref(audioPacket);
             }
             else
             {
@@ -684,7 +683,7 @@ namespace DAVA
                 videoPacketsMutex.Unlock();
 
                 auto frameBuffer = DecodeVideoPacket(videoPacket);
-                AV::av_packet_free(&videoPacket);
+                AV::av_packet_unref(videoPacket);
 
                 UpdateVideo(frameBuffer);
             }
@@ -709,7 +708,7 @@ namespace DAVA
 
             if (eof)
             {
-                AV::av_free(packet);
+                AV::av_packet_unref(packet);
             }
             else
             {
@@ -773,5 +772,6 @@ namespace DAVA
 
         CloseMovie();
     }
+    }
 
-}
+#endif
