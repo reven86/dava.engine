@@ -28,6 +28,12 @@
 
 #include "Tests/UIMovieTest.h"
 
+namespace
+{
+//FilePath path = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
+FilePath path = "~res://TestData/MovieTest/bunny.m4v";
+}
+
 UIMovieTest::UIMovieTest()
     : BaseScreen("UIMovieTest")
 {
@@ -37,14 +43,8 @@ void UIMovieTest::LoadResources()
 {
     Renderer::SetDesiredFPS(30);
 
-    //movieView = new TheoraPlayer("~res://TestData/MovieTest/WG_Logo.ogg");
-    //movieView->SetRect(Rect(10, 10, 1024, 768));
-
     movieView = new UIMovieView(Rect(10, 10, 940, 600));
-    movieView->OpenMovie("~res://TestData/MovieTest/bunny.m4v", OpenMovieParams());
-    //movieView->OpenMovie("D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v", OpenMovieParams());
-    //movieView->OpenMovie("D:/Projects/Win10/Logo.ogg", OpenMovieParams());
-    //movieView->OpenMovie("D:/1.mov", OpenMovieParams());
+    movieView->OpenMovie(path, OpenMovieParams());
 
     movieView->SetDebugDraw(true);
     AddControl(movieView);
@@ -154,6 +154,6 @@ void UIMovieTest::ScaleButtonPressed(BaseObject* obj, void* data, void* callerDa
     else if (obj == buttonScale3)
         scaleMode = scalingModeFill;
 
-    movieView->OpenMovie("D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v", OpenMovieParams());
+    movieView->OpenMovie(path, OpenMovieParams());
     movieView->Play();
 }
