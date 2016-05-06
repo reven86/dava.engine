@@ -770,10 +770,8 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
 {
     if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
     {
-        // if point inside circle = (x0-x1)(x0-x1) + (y0-y1)(y0-y1) < r*r
-        float32 pointShift((lastClickData.physPoint.x - newEvent->physPoint.x) * (lastClickData.physPoint.x - newEvent->physPoint.x));
-        pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
-        if (static_cast<int32>(pointShift) < doubleClickRadiusSquared)
+        Vector2 point = lastClickData.physPoint - newEvent->physPoint;
+        if (point.SquareLength() < doubleClickRadiusSquared)
         {
             return true;
         }
