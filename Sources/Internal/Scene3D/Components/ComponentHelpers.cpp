@@ -426,12 +426,7 @@ CustomPropertiesComponent* GetOrCreateCustomProperties(Entity* fromEntity)
 KeyedArchive* GetCustomPropertiesArchieve(const Entity* fromEntity)
 {
     CustomPropertiesComponent* comp = GetCustomProperties(fromEntity);
-    if (comp)
-    {
-        return comp->GetArchive();
-    }
-
-    return nullptr;
+    return (comp != nullptr) ? comp->GetArchive() : nullptr;
 }
 
 VariantType* GetCustomPropertiesValueRecursive(Entity* fromEntity, const String& name)

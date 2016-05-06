@@ -39,14 +39,11 @@ template <class T>
 class RefPtr
 {
 public:
-    RefPtr()
-    {
-        _ptr = 0;
-    }
+    RefPtr() = default;
 
     explicit RefPtr(T* p)
+        : _ptr(p)
     {
-        _ptr = p;
     }
 
     /// reinitializes pointer without incrementing reference
@@ -154,6 +151,18 @@ public:
         return _ptr == 0;
     }
 
+    template <typename... Arg>
+    void ConstructInplace(Arg&&... arg)
+    {
+        Set(new T(std::forward<Arg>(arg)...));
+    }
+
+    template <typename... Arg>
+    static RefPtr<T> Construct(Arg&&... arg)
+    {
+        return RefPtr<T>(new T(std::forward<Arg>(arg)...));
+    }
+
 private:
     class Tester
     {
@@ -170,7 +179,7 @@ public:
     }
 
 private:
-    T* _ptr;
+    T* _ptr = nullptr;
 
     template <class Other>
     void assign(const RefPtr<Other>& rp)

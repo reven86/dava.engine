@@ -47,7 +47,7 @@ class QLabel;
 class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
-class EntityGroup;
+class SelectableGroup;
 class Command2;
 class QPushButton;
 class QFrame;
@@ -76,7 +76,7 @@ private slots:
     //scene signals
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
 
     //distance signals

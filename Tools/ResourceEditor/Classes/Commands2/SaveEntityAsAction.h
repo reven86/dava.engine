@@ -31,7 +31,6 @@
 #define __RESOURCEEDITORQT__SAVEENTITYASACTION__
 
 #include "Commands2/Base/CommandAction.h"
-#include "Scene/EntityGroup.h"
 
 #include "FileSystem/FilePath.h"
 
@@ -40,19 +39,19 @@ namespace DAVA
 class Entity;
 }
 
+class SelectableGroup;
 class SaveEntityAsAction : public CommandAction
 {
 public:
-    SaveEntityAsAction(const EntityGroup* entities, const DAVA::FilePath& path);
-    ~SaveEntityAsAction();
+    SaveEntityAsAction(const SelectableGroup* entities, const DAVA::FilePath& path);
 
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     void RemoveLightmapsRecursive(DAVA::Entity* entity) const;
 
 protected:
-    const EntityGroup* entities;
+    const SelectableGroup* entities;
     DAVA::FilePath sc2Path;
 };
 

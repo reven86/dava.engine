@@ -37,19 +37,22 @@
 class ParticleEmitterMoveCommand : public Command2
 {
 public:
-    ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect, DAVA::ParticleEmitter* emitter, DAVA::ParticleEffectComponent* newEffect, int newIndex);
-    ~ParticleEmitterMoveCommand();
+    ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleEffectComponent* newEffect, int newIndex);
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const
-    {
-        return NULL;
-    }
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const override;
 
-    DAVA::ParticleEmitterData emitterData;
-    DAVA::ParticleEffectComponent *oldEffect, *newEffect;
-    int oldIndex, newIndex;
+    DAVA::ParticleEmitterInstance* instance = nullptr;
+    DAVA::ParticleEffectComponent* oldEffect = nullptr;
+    DAVA::ParticleEffectComponent* newEffect = nullptr;
+    DAVA::int32 oldIndex = -1;
+    DAVA::int32 newIndex;
 };
+
+inline DAVA::Entity* ParticleEmitterMoveCommand::GetEntity() const
+{
+    return nullptr;
+}
 
 #endif

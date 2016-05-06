@@ -39,15 +39,17 @@ namespace DAVA
 class ParticleForce : public BaseObject
 {
 public:
-    ParticleForce()
-    {
-    }
+    ParticleForce() = default;
     ParticleForce(RefPtr<PropertyLine<Vector3>> force, RefPtr<PropertyLine<float32>> forceOverLife);
 
     ParticleForce* Clone();
     void GetModifableLines(List<ModifiablePropertyLineBase*>& modifiables);
+
     RefPtr<PropertyLine<Vector3>> force;
     RefPtr<PropertyLine<float32>> forceOverLife;
+
+public:
+    INTROSPECTION_EXTEND(ParticleForce, BaseObject, nullptr)
 };
 };
 
