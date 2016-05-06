@@ -65,7 +65,6 @@ UIMovieView::UIMovieView(const Rect& rect)
 
 UIMovieView::~UIMovieView()
 {
-    RemoveAllControls();
 #if defined(__DAVAENGINE_WIN32__)
     SafeRelease(movieViewControl);
 #endif
