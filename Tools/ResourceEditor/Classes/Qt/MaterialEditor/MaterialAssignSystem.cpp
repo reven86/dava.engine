@@ -28,9 +28,7 @@
 
 
 #include "MaterialAssignSystem.h"
-#include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
-
 
 #include "Commands2/MaterialSwitchParentCommand.h"
 #include "Tools/MimeData/MimeDataHelper2.h"

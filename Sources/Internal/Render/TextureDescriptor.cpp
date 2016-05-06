@@ -990,7 +990,7 @@ ImageFormat TextureDescriptor::GetImageFormatForGPU(const eGPUFamily gpuFamily) 
     }
     else
     {
-        requestedFormat = static_cast<PixelFormat>(compression[gpuFamily].format);
+        requestedFormat = static_cast<PixelFormat>(compression[requestedGPU].format);
     }
 
     if (requestedGPU == GPU_ORIGIN)

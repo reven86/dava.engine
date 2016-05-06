@@ -27,49 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_PARTICLE_GROUP_H_
-#define __DAVAENGINE_PARTICLE_GROUP_H_
+#ifndef __BASE_TRANSFORM_PROXIES_H
+#define __BASE_TRANSFORM_PROXIES_H
 
-#include "ParticleEmitter.h"
-#include "ParticleLayer.h"
-#include "Particle.h"
-#include "Render/Material/NMaterial.h"
+#include "Selectable.h"
 
-namespace DAVA
+class EntityTransformProxy : public Selectable::TransformProxy
 {
-struct ParticleGroup
-{
-    ParticleEmitter* emitter = nullptr;
-    ParticleLayer* layer = nullptr;
-    NMaterial* material = nullptr;
-    Particle* head = nullptr;
-
-    Vector3 spawnPosition;
-
-    int32 positionSource = 0;
-    int32 activeParticleCount = 0;
-
-    float32 time = 0.0f;
-    float32 loopStartTime = 0.0f;
-    float32 loopLyaerStartTime = 0.0f;
-    float32 loopDuration = 0.0f;
-    float32 particlesToGenerate = 0.0f;
-
-    bool finishingGroup = false;
-    bool visibleLod = true;
+public:
+    const DAVA::Matrix4& GetWorldTransform(Selectable::Object* object) override;
+    const DAVA::Matrix4& GetLocalTransform(Selectable::Object* object) override;
+    void SetLocalTransform(Selectable::Object* object, const DAVA::Matrix4& matrix) override;
+    bool SupportsTransformType(Selectable::Object* object, Selectable::TransformType) const override;
+    bool TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const override;
 };
 
-struct ParentInfo
+class EmitterTransformProxy : public Selectable::TransformProxy
 {
-    Vector3 position;
-    Vector2 size;
+public:
+    const DAVA::Matrix4& GetWorldTransform(Selectable::Object* object) override;
+    const DAVA::Matrix4& GetLocalTransform(Selectable::Object* object) override;
+    void SetLocalTransform(Selectable::Object* object, const DAVA::Matrix4& matrix) override;
+    bool SupportsTransformType(Selectable::Object* object, Selectable::TransformType) const override;
+    bool TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const override;
 };
 
-struct ParticleEffectData
-{
-    Vector<ParentInfo> infoSources;
-    List<ParticleGroup> groups;
-};
-}
-
-#endif
+#endif // __BASE_TRANSFORM_PROXIES_H

@@ -250,6 +250,12 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
         ui->viewTabBar->setCurrentIndex(curTextureView);
         ui->textureProperties->setTextureGPU(curTextureView);
 
+        if (!needConvert)
+        {
+            infoConvertedIsUpToDate = true;
+            TextureCache::Instance()->tryToPreloadConverted(curDescriptor, view);
+        }
+
         if (!cacheCleared)
         {
             // try to find image in cache
@@ -269,10 +275,6 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
         {
             // Start convert. Signal will be emitted when conversion done
             TextureConvertor::Instance()->GetConverted(curDescriptor, view, convertMode);
-        }
-        else
-        {
-            infoConvertedIsUpToDate = true;
         }
     }
 
@@ -1075,7 +1077,7 @@ void TextureBrowser::sceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (!isHidden())
     {
