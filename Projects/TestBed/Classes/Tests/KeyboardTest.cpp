@@ -451,7 +451,7 @@ void KeyboardTest::LoadResources()
     customText->SetTextColor(Color::White);
     customText->SetFont(font);
     customText->GetOrCreateComponent<UIFocusComponent>();
-    customText->SetAlign(ALIGN_LEFT | ALIGN_TOP);
+    customText->SetSpriteAlign(ALIGN_LEFT | ALIGN_TOP);
     customText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     customText->SetMultiline(true);
     customText->SetMultilineType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);

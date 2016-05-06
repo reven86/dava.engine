@@ -56,8 +56,8 @@ public:
     void ClearGlobalClasses();
 
 private:
-    bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
-    bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
+    bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);
+    bool SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control);
 
     template <typename CallbackType>
     void DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action);

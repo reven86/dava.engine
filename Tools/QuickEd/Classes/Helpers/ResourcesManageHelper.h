@@ -26,18 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef UIEditor_ResourcesManageHelper_h
-#define UIEditor_ResourcesManageHelper_h
-
-#include "Base/BaseTypes.h"
-#include "Render/2D/FTFont.h"
+#pragma once
 
 class QString;
 class QStringList;
 
-namespace DAVA
-{
 class ResourcesManageHelper
 {
 public:
@@ -46,27 +39,9 @@ public:
     static QStringList GetFontsList();
     // Get path to documentation folder
     static QString GetDocumentationPath();
-    // Get graphics font sprite file path
-    static QString GetGraphicsFontPath(Font* font);
 
     // Resource directory
     static QString GetResourceRootDirectory();
-    // Get sprites data directory
-    static QString GetSpritesDirectory();
-    // Get font sprites data directory
-    static QString GetFontSpritesDirectory();
-    // Get font sprites datasource directory
-    static QString GetFontSpritesDatasourceDirectory();
-    // Get resource folder path
-    static QString GetResourceFolder(const QString& resourcePath);
-    // Validate if selected resource is located inside project
-    static bool ValidateResourcePath(const QString& resourcePath);
-
-    // Get working directory path of last opened sprite
-    static QString GetDefaultSpritesPath(const QString& currentSpritePath);
-    // Get working directory path of last opened font sprite
-    static QString GetDefaultFontSpritesPath(const QString& currentSpritePath);
-
     // Get project title string
     static QString GetProjectTitle();
     // Get project title string
@@ -86,6 +61,3 @@ private:
     static QString projectTitle;
     static QString projectPath;
 };
-};
-
-#endif

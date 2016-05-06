@@ -26,36 +26,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_CLIPBOARD_H__
+#define __DAVAENGINE_CLIPBOARD_H__
 
-#ifndef __UIEditor__LineEditWithButton__
-#define __UIEditor__LineEditWithButton__
+#include "Base/BaseTypes.h"
 
-#include <QLineEdit>
-
-class QToolButton;
-
-class LineEditExt : public QLineEdit
+namespace DAVA
 {
-    Q_OBJECT
+class IClipboardImpl;
+
+/**
+ * \brief Helper to work with system clipboard
+ */
+class Clipboard
+{
 public:
-    explicit LineEditExt(QWidget* parent = NULL);
-    ~LineEditExt();
+    /**
+     * \brief Constructor
+     */
+    Clipboard();
 
-    bool clearButtonEnabled() const;
-    void setClearButtonEnabled(bool enable);
+    /**
+     * \brief Destructor
+     */
+    ~Clipboard();
 
-protected:
-    void resizeEvent(QResizeEvent* event);
+    /**
+     * \brief Return status of clipboard helper
+     * \return true if helper ready to work with clipboard
+     */
+    bool IsReadyToUse() const;
 
-private slots:
-    void updateClearButton(const QString& text);
+    /**
+     * \brief Clear system clipboard
+     * \return true if successful
+     */
+    bool ClearClipboard() const;
+
+    /**
+     * \brief Check that system clipboard contains Unicode text
+     * \return true if system clipboard contains Unicode text
+     */
+    bool HasText() const;
+
+    /**
+     * \brief Copy to system clipboard WideString as Unicode string
+     * \param[in] str input string
+     * \return true if successful
+     */
+    bool SetText(const WideString& str);
+
+    /**
+     * \brief Get from system clipboard Unicode text data as WideString
+     * \return WideString with clipboard content
+     */
+    WideString GetText() const;
 
 private:
-    QString styleSheetForCurrentState() const;
-    QString buttonStyleSheetForCurrentState() const;
-
-    QToolButton* clearButton;
-    bool buttonEnabled;
+    IClipboardImpl* pImpl;
 };
+}
 
-#endif /* defined(__UIEditor__LineEditWithButton__) */
+#endif //__DAVAENGINE_CLIPBOARD_H__

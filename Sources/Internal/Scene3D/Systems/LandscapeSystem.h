@@ -27,38 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __VECTOR2EDIT_H__
-#define __VECTOR2EDIT_H__
+#ifndef __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
+#define __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
 
-#include <QWidget>
-#include <QVector2D>
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#include "Entity/SceneSystem.h"
 
-class QLineEdit;
-
-class Vector2DEdit : public QWidget
+namespace DAVA
 {
-    Q_OBJECT
-    Q_PROPERTY(QVector2D Vector2D READ vector2D WRITE setVector2D USER true);
+class Entity;
+class Landscape;
 
+class LandscapeSystem : public SceneSystem
+{
 public:
-    explicit Vector2DEdit(QWidget* parent = NULL);
-    ~Vector2DEdit();
+    LandscapeSystem(Scene* scene);
+    virtual ~LandscapeSystem();
 
-    QVector2D vector2D() const;
-    void setVector2D(const QVector2D& newValue);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
 
-    QLineEdit* lineEditX() const
-    {
-        return editX;
-    }
-    QLineEdit* lineEditY() const
-    {
-        return editY;
-    }
+    Vector<Landscape*> GetLandscapeObjects();
+    const Vector<Entity*>& GetLandscapeEntities();
 
-private:
-    QLineEdit* editX;
-    QLineEdit* editY;
+protected:
+    void DrawPatchMetrics(Landscape* landscape, uint32 subdivLevel, uint32 x, uint32 y);
+
+    Vector<Entity*> landscapeEntities;
 };
 
-#endif // __VECTOR2EDIT_H__
+} // ns
+
+#endif /* __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__ */

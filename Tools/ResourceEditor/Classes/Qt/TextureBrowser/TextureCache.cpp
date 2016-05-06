@@ -27,13 +27,14 @@
 =====================================================================================*/
 
 
-#include "TextureCache.h"
-#include "TextureConvertor.h"
+#include "TextureBrowser/TextureCache.h"
+#include "TextureBrowser/TextureConvertor.h"
 #include "Main/mainwindow.h"
 
-#include <QPainter>
+#include "ImageTools/ImageTools.h"
 
-#include <QDebug>
+#include <QPainter>
+#include <QFileInfo>
 
 TextureCache::TextureCache()
 {
@@ -139,6 +140,46 @@ QList<QImage> TextureCache::getConverted(const DAVA::TextureDescriptor* descript
     }
 
     return QList<QImage>();
+}
+
+void TextureCache::tryToPreloadConverted(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu)
+{
+    QList<QImage> cachedValue = getConverted(descriptor, gpu);
+    if (cachedValue.empty() && (nullptr != descriptor))
+    {
+        if (descriptor->GetPixelFormatForGPU(gpu) == DAVA::PixelFormat::FORMAT_INVALID)
+        {
+            return;
+        }
+
+        TextureInfo convertedImageInfo;
+        DAVA::Vector<DAVA::Image*> convertedImages;
+
+        DAVA::FilePath compressedTexturePath = descriptor->CreatePathnameForGPU(gpu);
+        DAVA::eErrorCode ret = DAVA::ImageSystem::Instance()->Load(compressedTexturePath, convertedImages);
+        if (ret != DAVA::eErrorCode::SUCCESS || convertedImages.empty())
+        { // we have no compressed file
+            return;
+        }
+
+        convertedImageInfo.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
+        convertedImageInfo.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
+        convertedImageInfo.imageSize.setWidth(convertedImages[0]->GetWidth());
+        convertedImageInfo.imageSize.setHeight(convertedImages[0]->GetHeight());
+
+        for (DAVA::Image* image : convertedImages)
+        {
+            if (image->mipmapLevel == 0)
+            {
+                QImage img = ImageTools::FromDavaImage(image);
+                convertedImageInfo.images.push_back(img);
+            }
+
+            image->Release();
+        }
+
+        setConverted(descriptor, gpu, convertedImageInfo);
+    }
 }
 
 void TextureCache::ClearCache()
@@ -331,7 +372,7 @@ DAVA::uint32 TextureCache::getOriginalFileSize(const DAVA::TextureDescriptor* de
 QSize TextureCache::getOriginalImageSize(const DAVA::TextureDescriptor* descriptor) const
 {
     if (NULL == descriptor)
-        return QSize();
+        return QSize(0, 0);
 
     DAVA::Map<const DAVA::FilePath, CacheEntity>::const_iterator it = cacheOriginal.find(descriptor->pathname);
     if (it != cacheOriginal.end())
@@ -339,7 +380,7 @@ QSize TextureCache::getOriginalImageSize(const DAVA::TextureDescriptor* descript
         return it->second.info.imageSize;
     }
 
-    return QSize();
+    return QSize(0, 0);
 }
 
 DAVA::uint32 TextureCache::getConvertedSize(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu)
@@ -373,7 +414,7 @@ DAVA::uint32 TextureCache::getConvertedFileSize(const DAVA::TextureDescriptor* d
 QSize TextureCache::getConvertedImageSize(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu) const
 {
     if (NULL == descriptor)
-        return QSize();
+        return QSize(0, 0);
 
     DAVA::Map<const DAVA::FilePath, CacheEntity>::const_iterator it = cacheConverted[gpu].find(descriptor->pathname);
     if (it != cacheConverted[gpu].end())
@@ -381,5 +422,5 @@ QSize TextureCache::getConvertedImageSize(const DAVA::TextureDescriptor* descrip
         return it->second.info.imageSize;
     }
 
-    return QSize();
+    return QSize(0, 0);
 }

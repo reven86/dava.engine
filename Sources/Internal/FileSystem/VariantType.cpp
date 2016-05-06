@@ -1059,7 +1059,7 @@ bool VariantType::Write(File* fp) const
 bool VariantType::Read(File* fp)
 {
     int32 read = fp->Read(&type, 1);
-    if (read == 0)
+    if (read != 1)
     {
         return false;
     }
