@@ -31,7 +31,7 @@
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
 #include "Commands2/Base/Command2.h"
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableGroup.h"
 #include "StringConstants.h"
 #include "SystemDelegates.h"
 
@@ -47,23 +47,25 @@
 
 class StructureSystem : public DAVA::SceneSystem
 {
-    friend class SceneEditor2;
+public:
+    using InternalMapping = DAVA::Map<DAVA::Entity*, DAVA::Entity*>;
 
 public:
     StructureSystem(DAVA::Scene* scene);
     ~StructureSystem();
 
-    void Move(const EntityGroup& entityGroup, DAVA::Entity* newParent, DAVA::Entity* newBefore);
-    void Remove(const EntityGroup& entityGroup);
-    void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter);
-    void MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore);
-    void RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters);
+    void Move(const SelectableGroup& objects, DAVA::Entity* newParent, DAVA::Entity* newBefore);
+    void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstance*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter);
+    void MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitterInstance*>& oldEmitters, DAVA::ParticleEmitterInstance* newEmitter, DAVA::ParticleLayer* newBefore);
     void MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer);
-    void RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& layers);
-    EntityGroup ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings = false);
+
+    void Remove(const SelectableGroup& objects);
+
+    SelectableGroup ReloadEntities(const SelectableGroup& objects, bool saveLightmapSettings = false);
+
     // Mapping is link between old entity and new entity
-    void ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, bool saveLightmapSettings = false);
-    EntityGroup ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
+    void ReloadRefs(const DAVA::FilePath& modelPath, InternalMapping& mapping, bool saveLightmapSettings = false);
+    SelectableGroup ReloadEntitiesAs(const SelectableGroup& objects, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
     void Add(const DAVA::FilePath& newModelPath, const DAVA::Vector3 pos = DAVA::Vector3());
 
     void EmitChanged();
@@ -73,8 +75,8 @@ public:
     void AddDelegate(StructureSystemDelegate* delegate);
     void RemoveDelegate(StructureSystemDelegate* delegate);
 
-protected:
-    bool structureChanged;
+private:
+    friend class SceneEditor2;
 
     void Process(DAVA::float32 timeElapsed) override;
 
@@ -83,7 +85,7 @@ protected:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings);
+    void ReloadInternal(InternalMapping& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings);
     DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool clearCached);
 
     bool CopyLightmapSettings(DAVA::Entity* fromState, DAVA::Entity* toState) const;
@@ -94,8 +96,11 @@ protected:
 
     void SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback);
 
+    void RemoveEntities(DAVA::Vector<DAVA::Entity*>& entitiesToRemove);
+
 private:
     DAVA::List<StructureSystemDelegate*> delegates;
+    bool structureChanged = false;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__

@@ -26,20 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Particles/ParticleEmitterInstance.h"
 
-#include "BaseValidator.h"
-
-bool BaseValidator::Validate(QVariant& v)
+namespace DAVA
 {
-    bool ret = ValidateInternal(v);
-    if (!ret)
-    {
-        FixupInternal(v);
-        ret = ValidateInternal(v);
-        if (!ret)
-        {
-            ErrorNotifyInternal(v);
-        }
-    }
-    return ret;
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, bool isInner)
+    : owner(owner_)
+    , isInnerEmitter(isInner)
+{
+}
+
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, ParticleEmitter* emitter_, bool isInner)
+    : owner(owner_)
+    , emitter(SafeRetain(emitter_))
+    , isInnerEmitter(isInner)
+{
+}
+
+ParticleEmitterInstance* ParticleEmitterInstance::Clone() const
+{
+    ScopedPtr<ParticleEmitter> clonedEmitter(emitter->Clone());
+    ParticleEmitterInstance* result = new ParticleEmitterInstance(owner, clonedEmitter.get());
+    result->SetFilePath(GetFilePath());
+    result->SetSpawnPosition(GetSpawnPosition());
+    result->isInnerEmitter = isInnerEmitter;
+    return result;
+}
 }

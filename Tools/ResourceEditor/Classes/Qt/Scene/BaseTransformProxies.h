@@ -27,23 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef __BASE_VALIDATOR_H__
-#define __BASE_VALIDATOR_H__
+#ifndef __BASE_TRANSFORM_PROXIES_H
+#define __BASE_TRANSFORM_PROXIES_H
 
-#include <QVariant>
+#include "Selectable.h"
 
-class BaseValidator
+class EntityTransformProxy : public Selectable::TransformProxy
 {
 public:
-    bool Validate(QVariant& v);
-
-protected:
-    virtual bool ValidateInternal(QVariant& v) = 0;
-    virtual void FixupInternal(QVariant& v) const {};
-
-    virtual void ErrorNotifyInternal(const QVariant& v) const
-    {
-    }
+    const DAVA::Matrix4& GetWorldTransform(Selectable::Object* object) override;
+    const DAVA::Matrix4& GetLocalTransform(Selectable::Object* object) override;
+    void SetLocalTransform(Selectable::Object* object, const DAVA::Matrix4& matrix) override;
+    bool SupportsTransformType(Selectable::Object* object, Selectable::TransformType) const override;
+    bool TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const override;
 };
 
-#endif // __BASE_VALIDATOR_H__
+class EmitterTransformProxy : public Selectable::TransformProxy
+{
+public:
+    const DAVA::Matrix4& GetWorldTransform(Selectable::Object* object) override;
+    const DAVA::Matrix4& GetLocalTransform(Selectable::Object* object) override;
+    void SetLocalTransform(Selectable::Object* object, const DAVA::Matrix4& matrix) override;
+    bool SupportsTransformType(Selectable::Object* object, Selectable::TransformType) const override;
+    bool TransformDependsFromObject(Selectable::Object* dependant, Selectable::Object* dependsOn) const override;
+};
+
+#endif // __BASE_TRANSFORM_PROXIES_H

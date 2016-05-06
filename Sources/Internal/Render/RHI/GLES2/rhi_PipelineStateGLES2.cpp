@@ -256,7 +256,7 @@ VertexDeclGLES2
 
         for (unsigned i = 0; i != elemCount; ++i)
         {
-            if (cur_stream_count != streamCount)
+            if (!VAttrCacheValid || cur_stream_count != streamCount)
             {
                 if (elem[i].streamIndex != stream)
                 {
@@ -290,12 +290,15 @@ VertexDeclGLES2
                     vattr[idx].pointer = static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset));
                 }
 
-                if (!VAttrCacheValid && vattr[idx].divisor != elem[i].attrDivisor)
+                if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
                     GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));
                     #elif defined(__DAVAENGINE_ANDROID__)
-                    GL_CALL(glVertexAttribDivisor_EXT(idx, elem[i].attrDivisor));
+                    if (glVertexAttribDivisor)
+                    {
+                        GL_CALL(glVertexAttribDivisor(idx, elem[i].attrDivisor));
+                    }
                     #elif defined(__DAVAENGINE_MACOS__)
                     GL_CALL(glVertexAttribDivisorARB(idx, elem[i].attrDivisor));
                     #else

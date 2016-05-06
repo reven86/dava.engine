@@ -111,6 +111,7 @@ QualitySettingsComponent* GetQualitySettingsComponent(const Entity* fromEntity);
 CustomPropertiesComponent* GetCustomProperties(const Entity* fromEntity);
 CustomPropertiesComponent* GetOrCreateCustomProperties(Entity* fromEntity);
 KeyedArchive* GetCustomPropertiesArchieve(const Entity* fromEntity);
+VariantType* GetCustomPropertiesValueRecursive(Entity* fromEntity, const String& name);
 
 PathComponent* GetPathComponent(const Entity* fromEntity);
 WaypointComponent* GetWaypointComponent(const Entity* fromEntity);

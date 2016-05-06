@@ -85,7 +85,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     workingPath = new UIStaticText(Rect(border, halfBorder + fileListView->size.y + fileListView->relativePosition.y, size.x - border * 2.0f, cellH));
     workingPath->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     workingPath->SetFont(f);
-    workingPath->SetAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    workingPath->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     workingPath->SetFittingOption(TextBlock::FITTING_REDUCE);
     workingPath->SetText(L"c:");
     AddControl(workingPath);
@@ -476,7 +476,7 @@ UIListCell* UIFileSystemDialog::CellAtIndex(UIList* forList, int32 index)
         text->SetName(FastName("CellText"));
         text->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
         text->SetFittingOption(TextBlock::FITTING_REDUCE);
-        text->SetAlign(ALIGN_LEFT | ALIGN_VCENTER);
+        text->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
 
         Font* f = FTFont::Create(fontPath);
         f->SetSize(static_cast<float32>(cellH) * 2 / 3);
