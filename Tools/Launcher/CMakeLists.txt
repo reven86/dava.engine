@@ -37,7 +37,7 @@ define_source_folders          ( SRC_ROOT "Classes"  )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt"  )
 
 if ( MACOS )
-	set( MACOS_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)
+	set( APP_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)
 endif ()
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
