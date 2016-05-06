@@ -58,7 +58,7 @@ private:
 
 public:
     INTROSPECTION_EXTEND(ColorControl, UIControl,
-                         PROPERTY("backgroundColor", "Central Widget/Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         PROPERTY("backgroundColor", "Preview Widget/Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
                          )
 
     REGISTER_PREFERENCES(ColorControl)
