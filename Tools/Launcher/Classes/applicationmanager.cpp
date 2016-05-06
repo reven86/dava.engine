@@ -38,7 +38,7 @@
 ApplicationManager::ApplicationManager(QObject* parent)
     : QObject(parent)
     , localConfig(0)
-    , remoteConfig(0)
+    , remoteConfig(new ConfigParser())
 {
     localConfigFilePath = FileManager::Instance()->GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
     LoadLocalConfig(localConfigFilePath);
@@ -68,19 +68,18 @@ void ApplicationManager::LoadLocalConfig(const QString& configPath)
 
 void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
 {
-    if (data.size())
+    if (data.isEmpty())
     {
-        SafeDelete(remoteConfig);
-        remoteConfig = new ConfigParser(data);
-
-        QString webPageUrl = remoteConfig->GetWebpageURL();
-        if (!webPageUrl.isEmpty())
-        {
-            localConfig->SetWebpageURL(webPageUrl);
-        }
-        localConfig->CopyStringsAndFavsFromConfig(*remoteConfig);
-        localConfig->SaveToYamlFile(localConfigFilePath);
+        return;
     }
+
+    QString webPageUrl = remoteConfig->GetWebpageURL();
+    if (!webPageUrl.isEmpty())
+    {
+        localConfig->SetWebpageURL(webPageUrl);
+    }
+    localConfig->CopyStringsAndFavsFromConfig(*remoteConfig);
+    localConfig->SaveToYamlFile(localConfigFilePath);
 }
 
 bool ApplicationManager::ShouldShowNews()

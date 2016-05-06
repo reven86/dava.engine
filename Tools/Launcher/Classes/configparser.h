@@ -119,8 +119,8 @@ private:
 class ConfigParser
 {
 public:
-    ConfigParser(const QByteArray& configData);
-
+    ConfigParser();
+    bool Parse(const QByteArray& data);
     void SaveToYamlFile(const QString& filePath);
 
     void InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version);

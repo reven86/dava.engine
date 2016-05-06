@@ -123,11 +123,15 @@ Branch Branch::LoadFromYamlNode(const YAML::Node* node)
     return branch;
 }
 
-ConfigParser::ConfigParser(const QByteArray& configData)
+ConfigParser::ConfigParser()
     : launcherVersion(LAUNCHER_VER)
     , webPageURL("")
     , remoteConfigURL("")
     , newsID("0")
+{
+}
+
+bool ConfigParser::Parse(const QByteArray& configData)
 {
     if (configData.size())
     {
@@ -184,13 +188,16 @@ ConfigParser::ConfigParser(const QByteArray& configData)
             else
             {
                 ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_CONFIG);
+                return false;
             }
         }
         catch (YAML::ParserException& e)
         {
             ErrorMessenger::Instance()->ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
+            return false;
         }
     }
+    return true;
 }
 
 void ConfigParser::CopyStringsAndFavsFromConfig(const ConfigParser& parser)
