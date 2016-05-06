@@ -838,7 +838,6 @@ public class JNITextField {
                                 }
                                 // Cancel physical closing keyboard
                                 readyToClose = false;
-                                lastClosedTextField = NO_ACTIVE_TEXTFIELD;
                             } else // No any focused text fields -> show
                                 // keyboard physically
                             {

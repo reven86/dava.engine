@@ -33,8 +33,7 @@
 #include "../Qt/Scene/SceneSignals.h"
 #include "../Qt/Main/QtUtils.h"
 
-ModifyCustomColorsCommand::ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage,
-                                                     CustomColorsProxy* customColorsProxy_,
+ModifyCustomColorsCommand::ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy_,
                                                      const DAVA::Rect& updatedRect_, bool shouldClear)
     : Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
     , shouldClearTexture(shouldClear)
