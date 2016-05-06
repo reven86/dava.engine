@@ -32,6 +32,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
 #include "Functional/Signal.h"
+#include "Preferences/PreferencesRegistrator.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
@@ -110,7 +111,7 @@ class PackageNode;
 class CanvasSystem;
 class SelectionSystem;
 
-class EditorSystemsManager : PackageListener, DAVA::InspBase
+class EditorSystemsManager : PackageListener, public DAVA::InspBase
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
@@ -185,6 +186,7 @@ public:
     INTROSPECTION(EditorSystemsManager,
                   MEMBER(minimumSize, "Control Transformations/Minimum size", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
+    REGISTER_PREFERENCES(EditorSystemsManager);
 };
 
 template <class OutIt, class Predicate>

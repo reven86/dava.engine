@@ -34,7 +34,11 @@ namespace DAVA
 {
 namespace AssetCache
 {
-const String LOCALHOST = "127.0.0.1";
+const String& GetLocalHost()
+{
+    static DAVA::String localHost("127.0.0.1");
+    return localHost;
+}
 
 String ErrorToString(Error error)
 {

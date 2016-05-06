@@ -40,10 +40,9 @@ namespace DAVA
 namespace AssetCacheClient_local
 {
 InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::TypeInfo(), {
-                                                                                        PREF_ARG("isUsingAssetCache", false),
-                                                                                        PREF_ARG("assetCacheIp", DAVA::AssetCache::LOCALHOST),
-                                                                                        PREF_ARG("assetCachePort", DAVA::AssetCache::ASSET_SERVER_PORT),
-                                                                                        PREF_ARG("assetCacheTimeout", DAVA::uint64(10 * 1000))
+                                                                                        PREF_ARG("ip", DAVA::AssetCache::GetLocalHost()),
+                                                                                        PREF_ARG("port", DAVA::AssetCache::ASSET_SERVER_PORT),
+                                                                                        PREF_ARG("timeoutms", DAVA::uint64(10 * 1000))
                                                                                         });
 };
 

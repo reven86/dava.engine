@@ -119,7 +119,7 @@ private:
 
 public:
     INTROSPECTION(EditorTransformSystem,
-                  MEMBER(magnetRange, "Control Transformations/Magnet range", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(magnetRange, "Control Transformations/Mouse magnet distance", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(moveStepByKeyboard, "Control Transformations/Move distance by keyboard", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(expandedMoveStepByKeyboard, "Control Transformations/Move distance by keyboard alternate", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(borderInParentToMagnet, "Control Transformations/Magnet distance inside", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)

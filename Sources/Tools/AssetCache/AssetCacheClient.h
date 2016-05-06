@@ -75,7 +75,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 public:
     struct ConnectionParams : InspBase
     {
-        String ip = AssetCache::LOCALHOST;
+        String ip = AssetCache::GetLocalHost();
         uint16 port = AssetCache::ASSET_SERVER_PORT;
         uint64 timeoutms = 60 * 1000;
 
