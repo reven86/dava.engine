@@ -79,8 +79,8 @@ int32 TheoraPlayer::BufferData()
 {
     if (file)
     {
-        char* buffer = ogg_sync_buffer(&theoraData->syncState, 512*4096);
-        int32 bytes = file->Read(buffer, 512*4096);
+        char* buffer = ogg_sync_buffer(&theoraData->syncState, 512 * 4096);
+        int32 bytes = file->Read(buffer, 512 * 4096);
         ogg_sync_wrote(&theoraData->syncState, bytes);
         return bytes;
     }

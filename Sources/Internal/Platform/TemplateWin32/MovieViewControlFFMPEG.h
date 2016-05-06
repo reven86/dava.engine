@@ -93,146 +93,145 @@ struct DecodedFrameBuffer
     uint32 height = 0;
 };
 
-    class MovieViewControl : public IMovieViewControl, public UIControl
+class MovieViewControl : public IMovieViewControl, public UIControl
+{
+public:
+    ~MovieViewControl() override;
+
+    // IMovieViewControl Interface implementation
+
+    // Initialize the control.
+    void Initialize(const Rect& rect) override;
+
+    // Position/visibility.
+    void SetRect(const Rect& rect) override
     {
-    public:
-        ~MovieViewControl() override;
-
-        // IMovieViewControl Interface implementation
-
-        // Initialize the control.
-        void Initialize(const Rect& rect) override;
-
-        // Position/visibility.
-        void SetRect(const Rect& rect) override
-        {
-            UIControl::SetRect(rect);
-        };
-        void SetVisible(bool isVisible) override
-        {
-            UIControl::SetVisibilityFlag(isVisible);
-        }
-
-        // Open the Movie.
-        void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
-
-        // Start/stop the video playback.
-        void Play() override;
-        void Stop() override;
-
-        // Pause/resume the playback.
-        void Pause() override;
-        void Resume() override;
-
-        // Whether the movie is being played?
-        bool IsPlaying() const override;
-
-
-        // UIControl update and draw implementation
-        void Update(float32 timeElapsed) override;
-
-    private:
-        enum PlayState : uint32
-        {
-            PLAYING = 0,
-            PREFETCHING,
-            PAUSED,
-            STOPPED,
-        };
-
-        PlayState state = STOPPED;
-
-        const float64 AV_SYNC_THRESHOLD = 0.01;
-        const float64 AV_NOSYNC_THRESHOLD = 0.5;
-
-        AV::AVFormatContext* CreateContext(const FilePath& path);
-
-        static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
-
-        float64 GetMasterClock();
-        bool InitVideo();
-        DecodedFrameBuffer* DecodeVideoPacket(AV::AVPacket* packet);
-        void UpdateVideo(DecodedFrameBuffer* frameBuffer);
-        bool InitAudio();
-        void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
-
-        void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
-        void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
-        void ReadingThread(BaseObject* caller, void* callerData, void* userData);
-        void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
-
-        FilePath moviePath;
-
-        const uint32 maxAudioPacketsPrefetchedCount = 100;
-        std::atomic<uint32> currentPrefetchedPacketsCount = 0;
-        void PrefetchData(uint32 dataSize);
-        ConditionVariable prefetchCV;
-
-        float64 SyncVideoClock(AV::AVFrame* src_frame, float64 pts);
-        float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
-
-        bool isAudioVideoStreamsInited = false;
-
-        FMOD_CREATESOUNDEXINFO exinfo;
-        AV::AVFormatContext* movieContext = nullptr;
-
-        Thread* audioDecodingThread = nullptr;
-        Thread* videoDecodingThread = nullptr;
-        Thread* readingDataThread = nullptr;
-
-        Texture* videoTexture = nullptr;
-        float64 videoFramerate = 0.f;
-        float64 frameLastPts = 0.f;
-        float64 frameLastDelay = 40e-3;
-        float64 video_clock = 0.f;
-
-        uint32 textureWidth = 0;
-        uint32 textureHeight = 0;
-        uint32 frameHeight = 0;
-        uint32 frameWidth = 0;
-        const AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_RGBA;
-        const PixelFormat textureFormat = PixelFormat::FORMAT_RGBA8888;
-        uint32 textureBufferSize = 0;
-
-        unsigned int videoStreamIndex = -1;
-        AV::AVCodecContext* videoCodecContext = nullptr;
-        AV::AVFrame* rgbDecodedScaledFrame = nullptr;
-
-        const uint32 maxAudioFrameSize = 192000; // 1 second of 48khz 32bit audio
-        unsigned int audioStreamIndex = -1;
-        AV::AVCodecContext* audioCodecContext = nullptr;
-
-        AV::SwrContext* audioConvertContext = nullptr;
-        uint32 outAudioBufferSize = 0;
-
-        static bool isFFMGEGInited;
-        int out_channels = -1;
-        const int out_sample_rate = 44100;
-        FMOD::Sound* sound = nullptr;
-        FMOD::Channel* fmodChannel = nullptr;
-        StreamBuffer pcmBuffer;
-        void InitFmod();
-
-        Deque<AV::AVPacket*> audioPackets;
-        Mutex audioPacketsMutex;
-
-        Deque<AV::AVPacket*> videoPackets;
-        Mutex videoPacketsMutex;
-
-        uint32 playTime = 0;
-        float64 frameTimer = 0.f;
-        float64 GetAudioClock();
-
-        uint32 audio_buf_size = 0;
-        std::atomic<float64> audio_clock = 0.f;
-
-        bool eof = false;
-
-        float64 GetTime();
-
-        void FlushBuffers();
-        void CloseMovie();
+        UIControl::SetRect(rect);
     };
+    void SetVisible(bool isVisible) override
+    {
+        UIControl::SetVisibilityFlag(isVisible);
+    }
+
+    // Open the Movie.
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
+
+    // Start/stop the video playback.
+    void Play() override;
+    void Stop() override;
+
+    // Pause/resume the playback.
+    void Pause() override;
+    void Resume() override;
+
+    // Whether the movie is being played?
+    bool IsPlaying() const override;
+
+    // UIControl update and draw implementation
+    void Update(float32 timeElapsed) override;
+
+private:
+    enum PlayState : uint32
+    {
+        PLAYING = 0,
+        PREFETCHING,
+        PAUSED,
+        STOPPED,
+    };
+
+    PlayState state = STOPPED;
+
+    const float64 AV_SYNC_THRESHOLD = 0.01;
+    const float64 AV_NOSYNC_THRESHOLD = 0.5;
+
+    AV::AVFormatContext* CreateContext(const FilePath& path);
+
+    static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
+
+    float64 GetMasterClock();
+    bool InitVideo();
+    DecodedFrameBuffer* DecodeVideoPacket(AV::AVPacket* packet);
+    void UpdateVideo(DecodedFrameBuffer* frameBuffer);
+    bool InitAudio();
+    void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
+
+    void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
+    void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
+    void ReadingThread(BaseObject* caller, void* callerData, void* userData);
+    void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
+
+    FilePath moviePath;
+
+    const uint32 maxAudioPacketsPrefetchedCount = 100;
+    std::atomic<uint32> currentPrefetchedPacketsCount = 0;
+    void PrefetchData(uint32 dataSize);
+    ConditionVariable prefetchCV;
+
+    float64 SyncVideoClock(AV::AVFrame* src_frame, float64 pts);
+    float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
+
+    bool isAudioVideoStreamsInited = false;
+
+    FMOD_CREATESOUNDEXINFO exinfo;
+    AV::AVFormatContext* movieContext = nullptr;
+
+    Thread* audioDecodingThread = nullptr;
+    Thread* videoDecodingThread = nullptr;
+    Thread* readingDataThread = nullptr;
+
+    Texture* videoTexture = nullptr;
+    float64 videoFramerate = 0.f;
+    float64 frameLastPts = 0.f;
+    float64 frameLastDelay = 40e-3;
+    float64 video_clock = 0.f;
+
+    uint32 textureWidth = 0;
+    uint32 textureHeight = 0;
+    uint32 frameHeight = 0;
+    uint32 frameWidth = 0;
+    const AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_RGBA;
+    const PixelFormat textureFormat = PixelFormat::FORMAT_RGBA8888;
+    uint32 textureBufferSize = 0;
+
+    unsigned int videoStreamIndex = -1;
+    AV::AVCodecContext* videoCodecContext = nullptr;
+    AV::AVFrame* rgbDecodedScaledFrame = nullptr;
+
+    const uint32 maxAudioFrameSize = 192000; // 1 second of 48khz 32bit audio
+    unsigned int audioStreamIndex = -1;
+    AV::AVCodecContext* audioCodecContext = nullptr;
+
+    AV::SwrContext* audioConvertContext = nullptr;
+    uint32 outAudioBufferSize = 0;
+
+    static bool isFFMGEGInited;
+    int out_channels = -1;
+    const int out_sample_rate = 44100;
+    FMOD::Sound* sound = nullptr;
+    FMOD::Channel* fmodChannel = nullptr;
+    StreamBuffer pcmBuffer;
+    void InitFmod();
+
+    Deque<AV::AVPacket*> audioPackets;
+    Mutex audioPacketsMutex;
+
+    Deque<AV::AVPacket*> videoPackets;
+    Mutex videoPacketsMutex;
+
+    uint32 playTime = 0;
+    float64 frameTimer = 0.f;
+    float64 GetAudioClock();
+
+    uint32 audio_buf_size = 0;
+    std::atomic<float64> audio_clock = 0.f;
+
+    bool eof = false;
+
+    float64 GetTime();
+
+    void FlushBuffers();
+    void CloseMovie();
+};
 }
 
 #endif

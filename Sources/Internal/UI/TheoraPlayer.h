@@ -90,10 +90,22 @@ public:
 	 \param[in] isPlaying use true to set state to playing, false - to pause
 	 */
     void SetPlaying(bool isPlaying);
-    void Play() { SetPlaying(true); }
-    void Pause() { SetPlaying(false); }
-    void Resume() { SetPlaying(true); }
-    void Stop() { SetPlaying(false); }
+    void Play()
+    {
+        SetPlaying(true);
+    }
+    void Pause()
+    {
+        SetPlaying(false);
+    }
+    void Resume()
+    {
+        SetPlaying(true);
+    }
+    void Stop()
+    {
+        SetPlaying(false);
+    }
 
     /**
 	 \brief return player playing state

@@ -69,7 +69,6 @@ public:
     bool isHardwareSupported;
 };
 
-
 inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat formatID)
 {
     return GetPixelFormatDescriptor(formatID).pixelSize;

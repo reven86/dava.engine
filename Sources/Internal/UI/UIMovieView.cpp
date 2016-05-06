@@ -38,7 +38,7 @@
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
-#elif defined (__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN32__)
 #include "Platform/TemplateWin32/MovieViewControlFFMPEG.h"
 #else
 // UIMovieView is not implemented for this platform yet, using stub one.
@@ -50,106 +50,106 @@
 
 namespace DAVA
 {
-    UIMovieView::UIMovieView(const Rect& rect)
-        : UIControl(rect)
-        , movieViewControl(new MovieViewControl())
-    {
-        Rect actualRect = rect;
+UIMovieView::UIMovieView(const Rect& rect)
+    : UIControl(rect)
+    , movieViewControl(new MovieViewControl())
+{
+    Rect actualRect = rect;
 #if defined(__DAVAENGINE_WIN32__)
-        actualRect.x = 0;
-        actualRect.y = 0;
-        AddControl(movieViewControl);
+    actualRect.x = 0;
+    actualRect.y = 0;
+    AddControl(movieViewControl);
 #endif
-        movieViewControl->Initialize(actualRect);
-    }
+    movieViewControl->Initialize(actualRect);
+}
 
-    UIMovieView::~UIMovieView()
-    {
-        RemoveAllControls();
+UIMovieView::~UIMovieView()
+{
+    RemoveAllControls();
 #if defined(__DAVAENGINE_WIN32__)
-        SafeRelease(movieViewControl);
+    SafeRelease(movieViewControl);
 #endif
-    }
+}
 
-    void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
-    {
-        movieViewControl->OpenMovie(moviePath, params);
-    }
+void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
+{
+    movieViewControl->OpenMovie(moviePath, params);
+}
 
-    void UIMovieView::SetPosition(const Vector2& position)
-    {
-        UIControl::SetPosition(position);
+void UIMovieView::SetPosition(const Vector2& position)
+{
+    UIControl::SetPosition(position);
 
-        Rect newRect = GetRect();
-        movieViewControl->SetRect(newRect);
-    }
+    Rect newRect = GetRect();
+    movieViewControl->SetRect(newRect);
+}
 
-    void UIMovieView::SetSize(const Vector2& newSize)
-    {
-        UIControl::SetSize(newSize);
+void UIMovieView::SetSize(const Vector2& newSize)
+{
+    UIControl::SetSize(newSize);
 
-        Rect newRect = GetRect();
-        movieViewControl->SetRect(newRect);
-    }
+    Rect newRect = GetRect();
+    movieViewControl->SetRect(newRect);
+}
 
-    void UIMovieView::Play()
-    {
-        movieViewControl->Play();
-    }
+void UIMovieView::Play()
+{
+    movieViewControl->Play();
+}
 
-    void UIMovieView::Stop()
-    {
-        movieViewControl->Stop();
-    }
+void UIMovieView::Stop()
+{
+    movieViewControl->Stop();
+}
 
-    void UIMovieView::Pause()
-    {
-        movieViewControl->Pause();
-    }
+void UIMovieView::Pause()
+{
+    movieViewControl->Pause();
+}
 
-    void UIMovieView::Resume()
-    {
-        movieViewControl->Resume();
-    }
+void UIMovieView::Resume()
+{
+    movieViewControl->Resume();
+}
 
-    bool UIMovieView::IsPlaying()
-    {
-        return movieViewControl->IsPlaying();
-    }
+bool UIMovieView::IsPlaying()
+{
+    return movieViewControl->IsPlaying();
+}
 
-    void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
-    {
-        UIControl::SystemDraw(geometricData);
+void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
+{
+    UIControl::SystemDraw(geometricData);
 
 #if defined(DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW)
-        static Color drawColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
+    static Color drawColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 
-        Rect absRect = GetAbsoluteRect();
-        RenderSystem2D::Instance()->DrawRect(absRect, drawColor);
+    Rect absRect = GetAbsoluteRect();
+    RenderSystem2D::Instance()->DrawRect(absRect, drawColor);
 
-        float32 minRadius = Min(GetSize().x, GetSize().y);
-        RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, drawColor);
-        RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, drawColor);
-        RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, drawColor);
+    float32 minRadius = Min(GetSize().x, GetSize().y);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, drawColor);
 #endif
-    }
+}
 
-    void UIMovieView::OnVisible()
-    {
-        UIControl::OnVisible();
-        movieViewControl->SetVisible(true);
-    }
+void UIMovieView::OnVisible()
+{
+    UIControl::OnVisible();
+    movieViewControl->SetVisible(true);
+}
 
-    void UIMovieView::OnInvisible()
-    {
-        UIControl::OnInvisible();
-        movieViewControl->SetVisible(false);
-    }
+void UIMovieView::OnInvisible()
+{
+    UIControl::OnInvisible();
+    movieViewControl->SetVisible(false);
+}
 
-    UIMovieView* UIMovieView::Clone()
-    {
-        UIMovieView* uiMoviewView = new UIMovieView(GetRect());
-        uiMoviewView->CopyDataFrom(this);
-        return uiMoviewView;
-    }
+UIMovieView* UIMovieView::Clone()
+{
+    UIMovieView* uiMoviewView = new UIMovieView(GetRect());
+    uiMoviewView->CopyDataFrom(this);
+    return uiMoviewView;
+}
 } // namespace DAVA

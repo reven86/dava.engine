@@ -37,52 +37,52 @@ B
 
 namespace DAVA
 {
-class MovieViewControl : public IMovieViewControl
-{
-public:
-    MovieViewControl() = default;
-    virtual ~MovieViewControl() = default;
+    class MovieViewControl : public IMovieViewControl
+    {
+    public:
+        MovieViewControl() = default;
+        virtual ~MovieViewControl() = default;
 
-    // Initialize the control.
-    void Initialize(const Rect& rect) override
-    {
-    }
+        // Initialize the control.
+        void Initialize(const Rect& rect) override
+        {
+        }
 
-    // Open the Movie.
-    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override
-    {
-    }
+        // Open the Movie.
+        void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override
+        {
+        }
 
-    // Position/visibility.
-    void SetRect(const Rect& rect) override
-    {
-    }
-    void SetVisible(bool isVisible) override
-    {
-    }
+        // Position/visibility.
+        void SetRect(const Rect& rect) override
+        {
+        }
+        void SetVisible(bool isVisible) override
+        {
+        }
 
-    // Start/stop the video playback.
-    void Play() override
-    {
-    }
-    void Stop() override
-    {
-    }
+        // Start/stop the video playback.
+        void Play() override
+        {
+        }
+        void Stop() override
+        {
+        }
 
-    // Pause/resume the playback.
-    void Pause() override
-    {
-    }
-    void Resume() override
-    {
-    }
+        // Pause/resume the playback.
+        void Pause() override
+        {
+        }
+        void Resume() override
+        {
+        }
 
-    // Whether the movie is being played?
-    bool IsPlaying() override
-    {
-        return false;
-    }
-};
+        // Whether the movie is being played?
+        bool IsPlaying() override
+        {
+            return false;
+        }
+    };
 
 } // namespace DAVA
 
