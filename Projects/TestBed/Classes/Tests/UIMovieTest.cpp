@@ -41,7 +41,8 @@ void UIMovieTest::LoadResources()
     //movieView->SetRect(Rect(10, 10, 1024, 768));
 
     movieView = new UIMovieView(Rect(10, 10, 940, 600));
-    movieView->OpenMovie("D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v", OpenMovieParams());
+    movieView->OpenMovie("~res://TestData/MovieTest/bunny.m4v", OpenMovieParams());
+    //movieView->OpenMovie("D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v", OpenMovieParams());
     //movieView->OpenMovie("D:/Projects/Win10/Logo.ogg", OpenMovieParams());
     //movieView->OpenMovie("D:/1.mov", OpenMovieParams());
 

@@ -54,14 +54,19 @@ namespace DAVA
         : UIControl(rect)
         , movieViewControl(new MovieViewControl())
     {
-        movieViewControl->Initialize(Rect(0,0, rect.dx, rect.dy));
+        movieViewControl->Initialize(rect);
+        
+#if defined(__DAVAENGINE_WIN32__)
         AddControl(movieViewControl);
+#endif
     }
 
     UIMovieView::~UIMovieView()
     {
         RemoveAllControls();
+#if defined(__DAVAENGINE_WIN32__)
         SafeRelease(movieViewControl);
+#endif
     }
 
     void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
