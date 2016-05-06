@@ -54,11 +54,13 @@ namespace DAVA
         : UIControl(rect)
         , movieViewControl(new MovieViewControl())
     {
-        movieViewControl->Initialize(rect);
-        
+        Rect actualRect = rect;
 #if defined(__DAVAENGINE_WIN32__)
+        actualRect.x = 0;
+        actualRect.y = 0;
         AddControl(movieViewControl);
 #endif
+        movieViewControl->Initialize(actualRect);
     }
 
     UIMovieView::~UIMovieView()
