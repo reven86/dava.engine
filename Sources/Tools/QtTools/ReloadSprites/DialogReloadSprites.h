@@ -66,6 +66,9 @@ protected:
 private:
     void BlockingStop();
 
+    DAVA::String GetGeometry() const;
+    void SetGeometry(const DAVA::String& geometry);
+
     DAVA::uint8 GetCurrentGPU() const;
     void SetCurrentGPU(DAVA::uint8 gpu);
 
@@ -87,6 +90,7 @@ private:
 
 public:
     INTROSPECTION(DialogReloadSprites,
+                  PROPERTY("geometry", "DialogReloadSpritesInternal/Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
                   PROPERTY("currentGPU", "DialogReloadSpritesInternal/CurrentGPU", GetCurrentGPU, SetCurrentGPU, DAVA::I_PREFERENCE)
                   PROPERTY("quality", "DialogReloadSpritesInternal/Quality", GetCurrentQuality, SetCurrentQuality, DAVA::I_PREFERENCE)
                   PROPERTY("forceRepackEnabled", "DialogReloadSpritesInternal/ForceRepackEnabled", IsForceRepackEnabled, EnableForceRepack, DAVA::I_PREFERENCE)

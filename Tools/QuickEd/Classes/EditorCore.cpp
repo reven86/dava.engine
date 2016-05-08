@@ -113,7 +113,13 @@ EditorCore::EditorCore(QObject* parent)
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
 }
 
-EditorCore::~EditorCore() = default;
+EditorCore::~EditorCore()
+{
+    if (cacheClient && cacheClient->IsConnected())
+    {
+        cacheClient->Disconnect();
+    }
+}
 
 MainWindow* EditorCore::GetMainWindow() const
 {
@@ -164,18 +170,14 @@ void EditorCore::OnGLWidgedInitialized()
 
 void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
+    DisableCacheClient();
+    if (projectPath.isEmpty())
+    {
+        return;
+    }
     if (assetCacheEnabled)
     {
-        cacheClient.reset(new AssetCacheClient(true));
-        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
-        if (connected != AssetCache::Error::NO_ERRORS)
-        {
-            cacheClient.reset();
-        }
-    }
-    else
-    {
-        cacheClient.reset();
+        EnableCacheClient();
     }
 
     spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
@@ -348,5 +350,39 @@ bool EditorCore::IsUsingAssetCache() const
 
 void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
 {
-    assetCacheEnabled = enabled;
+    if (enabled)
+    {
+        EnableCacheClient();
+    }
+    else
+    {
+        DisableCacheClient();
+        assetCacheEnabled = false;
+    }
+}
+
+void EditorCore::EnableCacheClient()
+{
+    DisableCacheClient();
+    cacheClient.reset(new AssetCacheClient(true));
+    DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
+    if (connected != AssetCache::Error::NO_ERRORS)
+    {
+        cacheClient.reset();
+        Logger::Warning("Asset cache client was not started! Error №%d", connected);
+    }
+    else
+    {
+        Logger::Info("Asset cache client started");
+    }
+    return connected == AssetCache::Error::NO_ERRORS;
+}
+
+void EditorCore::DisableCacheClient()
+{
+    if (cacheClient != nullptr && cacheClient->IsConnected())
+    {
+        cacheClient->Disconnect();
+        cacheClient.reset();
+    }
 }

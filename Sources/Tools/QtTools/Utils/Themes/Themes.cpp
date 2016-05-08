@@ -38,7 +38,6 @@
 #include <QStyle>
 #include <QApplication>
 #include <QStyleFactory>
-#include <QSettings>
 
 ENUM_DECLARE(Themes::eTheme)
 {

@@ -87,6 +87,9 @@ private:
     bool IsUsingAssetCache() const;
     void SetUsingAssetCacheEnabled(bool enabled);
 
+    void EnableCacheClient();
+    void DisableCacheClient();
+
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 
