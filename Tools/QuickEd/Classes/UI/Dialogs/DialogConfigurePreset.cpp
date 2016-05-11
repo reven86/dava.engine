@@ -43,7 +43,7 @@ DialogConfigurePreset::DialogConfigurePreset(const QString& originalPresetNameAr
     pushButton_resetLocale->setToolTip(tr("Reset font for locale"));
 
     lineEdit_currentFontPresetName->setText(originalPresetName);
-    QStringList fontsList = DAVA::ResourcesManageHelper::GetFontsList();
+    QStringList fontsList = ResourcesManageHelper::GetFontsList();
     comboBox_defaultFont->addItems(fontsList);
     comboBox_localizedFont->addItems(fontsList);
 

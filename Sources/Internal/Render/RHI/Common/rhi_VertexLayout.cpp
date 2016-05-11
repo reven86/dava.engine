@@ -382,6 +382,7 @@ bool VertexLayout::MakeCompatible(const VertexLayout& vbLayout, const VertexLayo
 
         compatibleLayout->Clear();
 
+        unsigned last_stream_i = 0;
         for (unsigned v = 0; v != vbLayout.ElementCount(); ++v)
         {
             bool do_pad = true;
@@ -393,6 +394,12 @@ bool VertexLayout::MakeCompatible(const VertexLayout& vbLayout, const VertexLayo
                     do_pad = false;
                     break;
                 }
+            }
+
+            if (last_stream_i != vbLayout.ElementStreamIndex(v))
+            {
+                last_stream_i = vbLayout.ElementStreamIndex(v);
+                compatibleLayout->AddStream(vbLayout.StreamFrequency(last_stream_i));
             }
 
             if (do_pad)

@@ -131,7 +131,7 @@ protected:
     QTableWidget* editTable;
 };
 
-class ParticleEffectPropertiesWidget : public QWidget, public BaseParticleEditorContentWidget
+class ParticleEffectPropertiesWidget : public BaseParticleEditorContentWidget
 {
     Q_OBJECT
 
@@ -176,17 +176,12 @@ public:
         EF_TOTAL
     };
 
-    explicit ParticleEffectPropertiesWidget(QWidget* parent = 0);
-    ~ParticleEffectPropertiesWidget();
+    explicit ParticleEffectPropertiesWidget(QWidget* parent = nullptr);
 
     void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-    DAVA::ParticleEffectComponent* GetEffect()
-    {
-        return particleEffect;
-    };
 
-    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps);
+    void StoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
+    void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
 
 public slots:
     void OnValueChanged();
@@ -231,6 +226,7 @@ protected:
     template <class T>
     bool EditModificationLine(DAVA::RefPtr<DAVA::PropertyLine<T>>& line, bool onAdd)
     {
+        DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
         DAVA::ModifiablePropertyLine<T>* editLine = dynamic_cast<DAVA::ModifiablePropertyLine<T>*>(line.Get());
         EditModificationLineDialog dialog(this);
         dialog.Init(editLine, onAdd);
@@ -240,9 +236,9 @@ protected:
             DAVA::String resName = dialog.GetVariableName();
             if (editLine->GetValueName() != resName)
             {
-                particleEffect->UnRegisterModifiable(editLine);
+                effect->UnRegisterModifiable(editLine);
                 editLine->SetValueName(resName);
-                particleEffect->RegisterModifiable(editLine);
+                effect->RegisterModifiable(editLine);
                 UpdateVaribleTables();
             }
 
@@ -252,8 +248,6 @@ protected:
     }
 
 private:
-    DAVA::ParticleEffectComponent* particleEffect;
-
     QVBoxLayout* mainLayout;
 
     QLabel* effectPlaybackSpeedLabel;
