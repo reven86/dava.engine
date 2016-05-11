@@ -292,32 +292,32 @@ void UIInputSystem::BindGlobalAction(const FastName& actionName, const UIActionM
 
 void UIInputSystem::MoveFocusLeft()
 {
-    focusSystem->MoveFocus(FocusHelpers::Direction::LEFT);
+    focusSystem->MoveFocus(UINavigationComponent::Direction::LEFT);
 }
 
 void UIInputSystem::MoveFocusRight()
 {
-    focusSystem->MoveFocus(FocusHelpers::Direction::RIGHT);
+    focusSystem->MoveFocus(UINavigationComponent::Direction::RIGHT);
 }
 
 void UIInputSystem::MoveFocusUp()
 {
-    focusSystem->MoveFocus(FocusHelpers::Direction::UP);
+    focusSystem->MoveFocus(UINavigationComponent::Direction::UP);
 }
 
 void UIInputSystem::MoveFocusDown()
 {
-    focusSystem->MoveFocus(FocusHelpers::Direction::DOWN);
+    focusSystem->MoveFocus(UINavigationComponent::Direction::DOWN);
 }
 
 void UIInputSystem::MoveFocusForward()
 {
-    focusSystem->MoveFocus(FocusHelpers::TabDirection::FORWARD);
+    focusSystem->MoveFocus(UITabOrderComponent::Direction::FORWARD);
 }
 
 void UIInputSystem::MoveFocusBackward()
 {
-    focusSystem->MoveFocus(FocusHelpers::TabDirection::BACKWARD);
+    focusSystem->MoveFocus(UITabOrderComponent::Direction::BACKWARD);
 }
 
 void UIInputSystem::PerformActionOnControl(UIControl* control)

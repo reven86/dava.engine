@@ -38,6 +38,12 @@ namespace DAVA
 class UITabOrderComponent : public UIBaseComponent<UIComponent::TAB_ORDER_COMPONENT>
 {
 public:
+    enum Direction
+    {
+        FORWARD = 0,
+        BACKWARD,
+    };
+
     UITabOrderComponent();
     UITabOrderComponent(const UITabOrderComponent& src);
 

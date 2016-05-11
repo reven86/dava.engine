@@ -34,6 +34,9 @@
 #include "Math/Vector.h"
 #include "FocusHelpers.h"
 
+#include "UI/Focus/UITabOrderComponent.h"
+#include "UI/Focus/UINavigationComponent.h"
+
 namespace DAVA
 {
 class UIControl;
@@ -55,8 +58,8 @@ public:
     void OnControlVisible(UIControl* control);
     void OnControlInvisible(UIControl* control);
 
-    bool MoveFocus(FocusHelpers::Direction dir);
-    bool MoveFocus(FocusHelpers::TabDirection dir);
+    bool MoveFocus(UINavigationComponent::Direction dir);
+    bool MoveFocus(UITabOrderComponent::Direction dir);
 
 private:
     void ClearFocusState(UIControl* control);

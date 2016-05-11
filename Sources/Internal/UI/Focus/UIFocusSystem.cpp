@@ -158,7 +158,7 @@ void UIFocusSystem::OnControlInvisible(UIControl* control)
     }
 }
 
-bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
+bool UIFocusSystem::MoveFocus(UINavigationComponent::Direction dir)
 {
     if (root.Valid() && focusedControl.Valid())
     {
@@ -173,7 +173,7 @@ bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
     return false;
 }
 
-bool UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
+bool UIFocusSystem::MoveFocus(UITabOrderComponent::Direction dir)
 {
     if (root.Valid() && focusedControl.Valid())
     {

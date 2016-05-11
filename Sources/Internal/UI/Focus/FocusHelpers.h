@@ -40,22 +40,6 @@ class UIControl;
 class FocusHelpers
 {
 public:
-    enum Direction
-    {
-        LEFT = 0,
-        RIGHT,
-        UP,
-        DOWN,
-
-        DIRECTION_COUNT
-    };
-
-    enum TabDirection
-    {
-        FORWARD = 0,
-        BACKWARD,
-    };
-
     static bool CanFocusControl(UIControl* control);
 };
 }

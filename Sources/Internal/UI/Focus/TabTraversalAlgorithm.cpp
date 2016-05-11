@@ -29,7 +29,7 @@
 #include "TabTraversalAlgorithm.h"
 
 #include "UI/UIControl.h"
-#include "UI/Focus/UITabOrderComponent.h"
+#include "UI/Focus/FocusHelpers.h"
 
 namespace DAVA
 {
@@ -42,7 +42,7 @@ TabTraversalAlgorithm::~TabTraversalAlgorithm()
 {
 }
 
-UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, UITabOrderComponent::Direction dir)
 {
     if (focusedControl != nullptr && root != focusedControl)
     {
@@ -54,7 +54,7 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, Focu
             PrepareChildren(parent, children);
 
             UIControl* res = nullptr;
-            if (dir == FocusHelpers::FORWARD)
+            if (dir == UITabOrderComponent::FORWARD)
             {
                 res = FindNextControl(focusedControl, children.begin(), children.end(), dir);
             }
@@ -81,7 +81,7 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, Focu
 }
 
 template <typename It>
-UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It begin, It end, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It begin, It end, UITabOrderComponent::Direction dir)
 {
     auto it = begin;
     while (it != end && *it != focusedControl)
@@ -108,7 +108,7 @@ UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It 
     return nullptr;
 }
 
-UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, UITabOrderComponent::Direction dir)
 {
     if (FocusHelpers::CanFocusControl(control))
     {
@@ -118,7 +118,7 @@ UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, FocusHelp
     Vector<UIControl*> children;
     PrepareChildren(control, children);
 
-    if (dir == FocusHelpers::FORWARD)
+    if (dir == UITabOrderComponent::FORWARD)
     {
         return FindFirstControlRecursive(children.begin(), children.end(), dir);
     }
@@ -129,7 +129,7 @@ UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, FocusHelp
 }
 
 template <typename It>
-UIControl* TabTraversalAlgorithm::FindFirstControlRecursive(It begin, It end, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::FindFirstControlRecursive(It begin, It end, UITabOrderComponent::Direction dir)
 {
     for (auto it = begin; it != end; ++it)
     {

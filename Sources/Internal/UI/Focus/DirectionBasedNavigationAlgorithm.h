@@ -32,7 +32,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Math/Vector.h"
-#include "FocusHelpers.h"
+#include "UI/Focus/UINavigationComponent.h"
 
 namespace DAVA
 {
@@ -46,16 +46,16 @@ public:
     DirectionBasedNavigationAlgorithm(UIControl* root);
     ~DirectionBasedNavigationAlgorithm();
 
-    UIControl* GetNextControl(UIControl* focusedControl, FocusHelpers::Direction dir);
+    UIControl* GetNextControl(UIControl* focusedControl, UINavigationComponent::Direction dir);
 
 private:
     UIControl* FindFirstControl(UIControl* control) const;
-    UIControl* FindNextControl(UIControl* focusedControl, FocusHelpers::Direction dir) const;
-    UIControl* FindNextSpecifiedControl(UIControl* focusedControl, FocusHelpers::Direction dir) const;
-    UIControl* FindNearestControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const;
-    Vector2 CalcNearestPos(const Vector2& pos, UIControl* testControl, FocusHelpers::Direction dir) const;
+    UIControl* FindNextControl(UIControl* focusedControl, UINavigationComponent::Direction dir) const;
+    UIControl* FindNextSpecifiedControl(UIControl* focusedControl, UINavigationComponent::Direction dir) const;
+    UIControl* FindNearestControl(UIControl* focusedControl, UIControl* control, UINavigationComponent::Direction dir) const;
+    Vector2 CalcNearestPos(const Vector2& pos, UIControl* testControl, UINavigationComponent::Direction dir) const;
 
-    bool CanNavigateToControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const;
+    bool CanNavigateToControl(UIControl* focusedControl, UIControl* control, UINavigationComponent::Direction dir) const;
     UIControl* FindFirstControlImpl(UIControl* control, UIControl* candidate) const;
 
     RefPtr<UIControl> root;

@@ -36,7 +36,7 @@ UINavigationComponent::UINavigationComponent()
 
 UINavigationComponent::UINavigationComponent(const UINavigationComponent& src)
 {
-    for (int i = 0; i < FocusHelpers::DIRECTION_COUNT; i++)
+    for (int i = 0; i < DIRECTION_COUNT; i++)
     {
         nextFocusPath[i] = src.nextFocusPath[i];
     }
@@ -53,47 +53,47 @@ UINavigationComponent* UINavigationComponent::Clone() const
 
 const String& UINavigationComponent::GetNextFocusLeft() const
 {
-    return nextFocusPath[FocusHelpers::LEFT];
+    return nextFocusPath[LEFT];
 }
 
 void UINavigationComponent::SetNextFocusLeft(const String& val)
 {
-    nextFocusPath[FocusHelpers::LEFT] = val;
+    nextFocusPath[LEFT] = val;
 }
 
 const String& UINavigationComponent::GetNextFocusRight() const
 {
-    return nextFocusPath[FocusHelpers::RIGHT];
+    return nextFocusPath[RIGHT];
 }
 
 void UINavigationComponent::SetNextFocusRight(const String& val)
 {
-    nextFocusPath[FocusHelpers::RIGHT] = val;
+    nextFocusPath[RIGHT] = val;
 }
 
 const String& UINavigationComponent::GetNextFocusUp() const
 {
-    return nextFocusPath[FocusHelpers::UP];
+    return nextFocusPath[UP];
 }
 
 void UINavigationComponent::SetNextFocusUp(const String& val)
 {
-    nextFocusPath[FocusHelpers::UP] = val;
+    nextFocusPath[UP] = val;
 }
 
 const String& UINavigationComponent::GetNextFocusDown() const
 {
-    return nextFocusPath[FocusHelpers::DOWN];
+    return nextFocusPath[DOWN];
 }
 
 void UINavigationComponent::SetNextFocusDown(const String& val)
 {
-    nextFocusPath[FocusHelpers::DOWN] = val;
+    nextFocusPath[DOWN] = val;
 }
 
-const String& UINavigationComponent::GetNextControlPathInDirection(FocusHelpers::Direction dir)
+const String& UINavigationComponent::GetNextControlPathInDirection(Direction dir)
 {
-    DVASSERT(0 <= dir && dir < FocusHelpers::DIRECTION_COUNT);
+    DVASSERT(0 <= dir && dir < DIRECTION_COUNT);
     return nextFocusPath[dir];
 }
 }

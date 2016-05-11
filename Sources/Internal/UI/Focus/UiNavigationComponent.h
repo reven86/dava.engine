@@ -39,6 +39,16 @@ namespace DAVA
 class UINavigationComponent : public UIBaseComponent<UIComponent::NAVIGATION_COMPONENT>
 {
 public:
+    enum Direction
+    {
+        LEFT = 0,
+        RIGHT,
+        UP,
+        DOWN,
+
+        DIRECTION_COUNT
+    };
+
     UINavigationComponent();
     UINavigationComponent(const UINavigationComponent& src);
 
@@ -63,10 +73,10 @@ public:
     const String& GetNextFocusDown() const;
     void SetNextFocusDown(const String& val);
 
-    const String& GetNextControlPathInDirection(FocusHelpers::Direction dir);
+    const String& GetNextControlPathInDirection(Direction dir);
 
 private:
-    String nextFocusPath[FocusHelpers::DIRECTION_COUNT];
+    String nextFocusPath[DIRECTION_COUNT];
 
 public:
     INTROSPECTION_EXTEND(UINavigationComponent, UIComponent,

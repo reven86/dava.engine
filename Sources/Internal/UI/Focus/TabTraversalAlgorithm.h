@@ -32,7 +32,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Math/Vector.h"
-#include "FocusHelpers.h"
+#include "UI/Focus/UITabOrderComponent.h"
 
 namespace DAVA
 {
@@ -46,15 +46,15 @@ public:
     TabTraversalAlgorithm(UIControl* root);
     ~TabTraversalAlgorithm();
 
-    UIControl* GetNextControl(UIControl* focusedControl, FocusHelpers::TabDirection dir);
+    UIControl* GetNextControl(UIControl* focusedControl, UITabOrderComponent::Direction dir);
 
 private:
     template <typename It>
-    UIControl* FindNextControl(UIControl* focusedControl, It begin, It end, FocusHelpers::TabDirection dir);
+    UIControl* FindNextControl(UIControl* focusedControl, It begin, It end, UITabOrderComponent::Direction dir);
 
-    UIControl* FindFirstControl(UIControl* control, FocusHelpers::TabDirection dir);
+    UIControl* FindFirstControl(UIControl* control, UITabOrderComponent::Direction dir);
     template <typename It>
-    UIControl* FindFirstControlRecursive(It begin, It end, FocusHelpers::TabDirection dir);
+    UIControl* FindFirstControlRecursive(It begin, It end, UITabOrderComponent::Direction dir);
 
     void PrepareChildren(UIControl* control, Vector<UIControl*>& children);
 

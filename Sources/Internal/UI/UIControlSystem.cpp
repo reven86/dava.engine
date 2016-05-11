@@ -199,7 +199,7 @@ UIScreenTransition* UIControlSystem::GetScreenTransition() const
 
 void UIControlSystem::Reset()
 {
-    focusSystem->SetRoot(nullptr);
+    inputSystem->SetCurrentScreen(nullptr);
     SetScreen(nullptr);
 }
 

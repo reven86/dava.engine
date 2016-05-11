@@ -51,7 +51,7 @@ DirectionBasedNavigationAlgorithm::~DirectionBasedNavigationAlgorithm()
 {
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedControl, FocusHelpers::Direction dir)
+UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedControl, UINavigationComponent::Direction dir)
 {
     if (focusedControl != nullptr)
     {
@@ -64,7 +64,7 @@ UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedC
     return nullptr;
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
+UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focusedControl, UINavigationComponent::Direction dir) const
 {
     UIControl* next = FindNextSpecifiedControl(focusedControl, dir);
     if (next != nullptr)
@@ -96,7 +96,7 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focused
     return nullptr;
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
+UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl* focusedControl, UINavigationComponent::Direction dir) const
 {
     UINavigationComponent* navigation = focusedControl->GetComponent<UINavigationComponent>();
     if (navigation != nullptr)
@@ -114,7 +114,7 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl
     return nullptr;
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const
+UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focusedControl, UIControl* control, UINavigationComponent::Direction dir) const
 {
     UIControl* bestControl = nullptr;
     float32 bestDistSq = 0;
@@ -124,19 +124,19 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
 
     switch (dir)
     {
-    case FocusHelpers::Direction::UP:
+    case UINavigationComponent::Direction::UP:
         pos.y = rect.y;
         break;
 
-    case FocusHelpers::Direction::DOWN:
+    case UINavigationComponent::Direction::DOWN:
         pos.y = rect.y + rect.dy;
         break;
 
-    case FocusHelpers::Direction::LEFT:
+    case UINavigationComponent::Direction::LEFT:
         pos.x = rect.x;
         break;
 
-    case FocusHelpers::Direction::RIGHT:
+    case UINavigationComponent::Direction::RIGHT:
         pos.x = rect.x + rect.dx;
         break;
 
@@ -169,11 +169,11 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
     return bestControl;
 }
 
-Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UIControl* testControl, FocusHelpers::Direction dir) const
+Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UIControl* testControl, UINavigationComponent::Direction dir) const
 {
     Rect r = testControl->GetAbsoluteRect();
     Vector2 res = r.GetCenter();
-    if (dir == FocusHelpers::Direction::UP || dir == FocusHelpers::Direction::DOWN)
+    if (dir == UINavigationComponent::Direction::UP || dir == UINavigationComponent::Direction::DOWN)
     {
         if (pos.x > r.x + r.dx)
         {
@@ -204,19 +204,19 @@ Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UI
         }
     }
 
-    if (dir == FocusHelpers::Direction::UP)
+    if (dir == UINavigationComponent::Direction::UP)
     {
         res.y = Min(r.y + r.dy, pos.y);
     }
-    else if (dir == FocusHelpers::Direction::DOWN)
+    else if (dir == UINavigationComponent::Direction::DOWN)
     {
         res.y = Max(r.y, pos.y);
     }
-    else if (dir == FocusHelpers::Direction::LEFT)
+    else if (dir == UINavigationComponent::Direction::LEFT)
     {
         res.x = Min(r.x + r.dx, pos.x);
     }
-    else if (dir == FocusHelpers::Direction::RIGHT)
+    else if (dir == UINavigationComponent::Direction::RIGHT)
     {
         res.x = Max(r.x, pos.x);
     }
@@ -224,7 +224,7 @@ Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UI
     return res;
 }
 
-bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const
+bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedControl, UIControl* control, UINavigationComponent::Direction dir) const
 {
     if (control == focusedControl || !FocusHelpers::CanFocusControl(control))
     {
@@ -241,16 +241,16 @@ bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedC
 
     switch (dir)
     {
-    case FocusHelpers::Direction::UP:
+    case UINavigationComponent::Direction::UP:
         return dy < 0 && Abs(dy) > Abs(dx);
 
-    case FocusHelpers::Direction::DOWN:
+    case UINavigationComponent::Direction::DOWN:
         return dy > 0 && Abs(dy) > Abs(dx);
 
-    case FocusHelpers::Direction::LEFT:
+    case UINavigationComponent::Direction::LEFT:
         return dx < 0 && Abs(dx) > Abs(dy);
 
-    case FocusHelpers::Direction::RIGHT:
+    case UINavigationComponent::Direction::RIGHT:
         return dx > 0 && Abs(dx) > Abs(dy);
 
     default:
