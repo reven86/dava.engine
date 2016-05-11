@@ -103,7 +103,7 @@ private:
 
 public:
     INTROSPECTION(EditorCore,
-                  PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_PREFERENCE)
                   )
 };
 
