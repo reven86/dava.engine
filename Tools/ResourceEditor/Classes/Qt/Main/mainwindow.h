@@ -215,8 +215,8 @@ public slots:
     void RestartParticleEffects();
 
 protected:
-    virtual bool eventFilter(QObject* object, QEvent* event);
-    void closeEvent(QCloseEvent* e);
+    bool eventFilter(QObject* object, QEvent* event) override;
+    bool ShouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
     void SetupToolBars();
@@ -251,7 +251,7 @@ private slots:
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void OnGlobalInvalidateTimeout();
     void EditorLightEnabled(bool enabled);

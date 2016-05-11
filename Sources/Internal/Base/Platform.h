@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(__GNUC__)
 
 #define DAVA_NOINLINE __attribute__((noinline))
-#define DAVA_FORCEINLINE __attribute__((always_inline))
+#define DAVA_FORCEINLINE inline __attribute__((always_inline))
 #define DAVA_ALIGNOF(x) alignof(x)
 #define DAVA_CONSTEXPR constexpr
 #define DAVA_DEPRECATED(func) func __attribute__((deprecated))

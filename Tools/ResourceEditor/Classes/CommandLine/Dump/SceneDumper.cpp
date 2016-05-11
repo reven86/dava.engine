@@ -225,7 +225,7 @@ void SceneDumper::DumpEffect(ParticleEffectComponent* effect, SceneLinks& links)
     const int32 emittersCount = effect->GetEmittersCount();
     for (int32 em = 0; em < emittersCount; ++em)
     {
-        DumpEmitter(effect->GetEmitter(em), links, gfxFolders);
+        DumpEmitter(effect->GetEmitterInstance(em), links, gfxFolders);
     }
 
     for (auto& folder : gfxFolders)
@@ -238,26 +238,25 @@ void SceneDumper::DumpEffect(ParticleEffectComponent* effect, SceneLinks& links)
     }
 }
 
-void SceneDumper::DumpEmitter(DAVA::ParticleEmitter* emitter, SceneLinks& links, SceneLinks& gfxFolders) const
+void SceneDumper::DumpEmitter(DAVA::ParticleEmitterInstance* instance, SceneLinks& links, SceneLinks& gfxFolders) const
 {
-    DVASSERT(nullptr != emitter);
+    DVASSERT(nullptr != instance);
+
+    auto emitter = instance->GetEmitter();
 
     links.insert(emitter->configPath);
-
-    const Vector<ParticleLayer*>& layers = emitter->layers;
-
-    const uint32 count = static_cast<uint32>(layers.size());
-    for (uint32 i = 0; i < count; ++i)
+    for (auto layer : emitter->layers)
     {
-        DVASSERT(nullptr != layers[i]);
+        DVASSERT(nullptr != layer);
 
-        if (layers[i]->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+        if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            DumpEmitter(layers[i]->innerEmitter, links, gfxFolders);
+            ScopedPtr<ParticleEmitterInstance> instance(new ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
+            DumpEmitter(instance, links, gfxFolders);
         }
         else
         {
-            Sprite* sprite = layers[i]->sprite;
+            Sprite* sprite = layer->sprite;
             if (nullptr == sprite)
             {
                 continue;

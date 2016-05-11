@@ -39,38 +39,24 @@ namespace DAVA
 {
 struct ParticleGroup
 {
-    ParticleEmitter* emitter;
-    ParticleLayer* layer;
-    NMaterial* material;
-
-    Particle* head;
-    int32 activeParticleCount;
-
-    bool finishingGroup;
-
-    bool visibleLod;
-
-    float32 time;
-    float32 loopStartTime, loopLyaerStartTime, loopDuration;
-    float32 particlesToGenerate;
-
-    int32 positionSource;
+    ParticleEmitter* emitter = nullptr;
+    ParticleLayer* layer = nullptr;
+    NMaterial* material = nullptr;
+    Particle* head = nullptr;
 
     Vector3 spawnPosition;
 
-    ParticleGroup()
-        : emitter(0)
-        , layer(0)
-        , material(0)
-        , head(0)
-        , activeParticleCount(0)
-        , finishingGroup(false)
-        , visibleLod(true)
-        , time(0)
-        , particlesToGenerate(0)
-        , positionSource(0)
-    {
-    }
+    int32 positionSource = 0;
+    int32 activeParticleCount = 0;
+
+    float32 time = 0.0f;
+    float32 loopStartTime = 0.0f;
+    float32 loopLyaerStartTime = 0.0f;
+    float32 loopDuration = 0.0f;
+    float32 particlesToGenerate = 0.0f;
+
+    bool finishingGroup = false;
+    bool visibleLod = true;
 };
 
 struct ParentInfo

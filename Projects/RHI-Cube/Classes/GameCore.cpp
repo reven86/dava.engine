@@ -780,10 +780,10 @@ void GameCore::OnAppStarted()
     #endif
 
     //    SetupTriangle();
-    //SetupCube();
-    SetupInstancedCube();
+    SetupCube();
+    //SetupInstancedCube();
     //    SetupTank();
-    //SetupRT();
+    SetupRT();
 
     perfQuerySet = rhi::CreatePerfQuerySet(16);
     perfQuerySetFired = false;
@@ -977,7 +977,7 @@ void GameCore::Update(float32 timeElapsed)
     screenshot_ttw -= timeElapsed;
     if (screenshot_ttw < 0)
     {
-        //        rhi::TakeScreenshot(&ScreenShotCallback);
+        rhi::TakeScreenshot(&ScreenShotCallback);
         screenshot_ttw = 5.0f;
     }
 
@@ -1428,8 +1428,8 @@ void GameCore::Draw()
     //    sceneRenderTest->Render();
     //        rhiDraw();
     //manticoreDraw();
-    DrawInstancedCube();
-    //    rtDraw();
+    //DrawInstancedCube();
+    rtDraw();
     //    visibilityTestDraw();
 }
 
@@ -2107,5 +2107,12 @@ void GameCore::ScreenShotCallback(uint32 width, uint32 height, const void* rgba)
     DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, (const uint8*)rgba);
 
     if (img)
-        img->Save("~doc:/screenshot.png");
+    {
+        static int n = 0;
+        char fname[128];
+
+        Snprintf(fname, sizeof(fname) - 1, "~doc:/screenshot-%02i.png", ++n);
+        img->Save(fname);
+        DAVA::Logger::Info("saved screenshot \"%s\"", fname);
+    }
 }

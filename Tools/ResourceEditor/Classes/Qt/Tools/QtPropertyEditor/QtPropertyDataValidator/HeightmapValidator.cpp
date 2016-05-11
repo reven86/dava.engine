@@ -73,9 +73,9 @@ bool HeightMapValidator::ValidateInternal(const QVariant& v)
                 return false;
             }
 
-            if (((size.dx & 1) == 0) || !DAVA::IsPowerOf2(size.dx - 1))
+            if (!DAVA::IsPowerOf2(size.dx))
             {
-                notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap with size (2^n + 1).",
+                notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap with size 2^n.",
                                              path.GetAbsolutePathname().c_str());
                 return false;
             }

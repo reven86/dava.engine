@@ -28,7 +28,6 @@
 
 #include "PropertyPanel.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/Qt/Scene/EntityGroup.h"
 #include "NgtTools/Reflection/ReflectionBridge.h"
 #include "NgtTools/Common/GlobalContext.h"
 
@@ -78,7 +77,7 @@ void PropertyPanel::SetPropertyTree(const ObjectHandle& /*dummyTree*/)
 {
 }
 
-void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (selected->IsEmpty())
     {
@@ -86,7 +85,7 @@ void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup
     }
     else
     {
-        selectedObject = selected->GetFirstEntity();
+        selectedObject = selected->GetFirst().GetContainedObject();
         if (visible)
         {
             SetObject(selectedObject);

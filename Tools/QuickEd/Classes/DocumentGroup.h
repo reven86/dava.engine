@@ -62,6 +62,7 @@ public:
     void AttachSaveAction(QAction* action) const;
     void AttachSaveAllAction(QAction* action) const;
     void AttachCloseDocumentAction(QAction* action) const;
+    void AttachReloadDocumentAction(QAction* action) const;
 
     void ConnectToTabBar(QTabBar* tabBar);
     void DisconnectTabBar(QTabBar* tabBar);
@@ -83,8 +84,9 @@ public slots:
     void CloseDocument(int index);
     void CloseDocument(Document* document);
 
-    void ReloadDocument(int index);
-    void ReloadDocument(Document* document);
+    void ReloadDocument(int index, bool force);
+    void ReloadDocument(Document* document, bool force);
+    void ReloadCurrentDocument();
 
     void SetActiveDocument(int index);
     void SetActiveDocument(Document* document);

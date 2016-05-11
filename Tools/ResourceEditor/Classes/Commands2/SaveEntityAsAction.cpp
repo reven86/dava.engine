@@ -28,6 +28,7 @@
 
 
 #include "SaveEntityAsAction.h"
+#include "Scene/SelectableGroup.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Material/NMaterial.h"
@@ -82,20 +83,16 @@ private:
     Map<DataNode*, uint64> dataNodeIDs;
 };
 
-SaveEntityAsAction::SaveEntityAsAction(const EntityGroup* _entities, const FilePath& _path)
+SaveEntityAsAction::SaveEntityAsAction(const SelectableGroup* entities_, const FilePath& path_)
     : CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
-    , entities(_entities)
-    , sc2Path(_path)
-{
-}
-
-SaveEntityAsAction::~SaveEntityAsAction()
+    , entities(entities_)
+    , sc2Path(path_)
 {
 }
 
 void SaveEntityAsAction::Redo()
 {
-    uint32 count = static_cast<uint32>(entities->Size());
+    uint32 count = static_cast<uint32>(entities->GetSize());
     if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
     {
         const auto RemoveReferenceToOwner = [](Entity* entity) {
@@ -106,15 +103,16 @@ void SaveEntityAsAction::Redo()
             }
         };
 
-        //reset global material because of global material :)
-        ElegantSceneGuard guard(entities->GetFirstEntity()->GetScene());
+        auto firstEntity = entities->GetFirst().AsEntity();
+        DVASSERT(firstEntity != nullptr);
+        ElegantSceneGuard guard(firstEntity->GetScene());
 
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
 
         if (count == 1) // saving of single object
         {
-            container.reset(entities->GetFirstEntity()->Clone());
+            container.reset(firstEntity->Clone());
             RemoveReferenceToOwner(container);
             container->SetLocalTransform(Matrix4::IDENTITY);
         }
@@ -123,9 +121,9 @@ void SaveEntityAsAction::Redo()
             container.reset(new Entity());
 
             const Vector3 oldZero = entities->GetCommonTranslationVector();
-            for (const auto& item : entities->GetContent())
+            for (auto entity : entities->ObjectsOfType<DAVA::Entity>())
             {
-                ScopedPtr<Entity> clone(item.first->Clone());
+                ScopedPtr<Entity> clone(entity->Clone());
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();

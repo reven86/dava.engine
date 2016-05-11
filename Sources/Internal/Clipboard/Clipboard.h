@@ -26,43 +26,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_CLIPBOARD_H__
+#define __DAVAENGINE_CLIPBOARD_H__
 
-#ifndef __DAVAENGINE_PARTCLEEMITTER_NODE_H__
-#define __DAVAENGINE_PARTCLEEMITTER_NODE_H__
-
-#include "Scene3D/Entity.h"
-#include "Particles/ParticleEmitter.h"
-#include "FileSystem/FilePath.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-class ParticleEmitterNode : public Entity
+class IClipboardImpl;
+
+/**
+ * \brief Helper to work with system clipboard
+ */
+class Clipboard
 {
-protected:
-    virtual ~ParticleEmitterNode();
-
 public:
-    ParticleEmitterNode();
+    /**
+     * \brief Constructor
+     */
+    Clipboard();
 
-    ParticleEmitter* GetEmitter();
+    /**
+     * \brief Destructor
+     */
+    ~Clipboard();
 
-    virtual void Update(float32 timeElapsed);
-    void Draw() override;
+    /**
+     * \brief Return status of clipboard helper
+     * \return true if helper ready to work with clipboard
+     */
+    bool IsReadyToUse() const;
 
-    Entity* Clone(Entity* dstNode = nullptr) override;
-    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
-    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    /**
+     * \brief Clear system clipboard
+     * \return true if successful
+     */
+    bool ClearClipboard() const;
 
-    void GetDataNodes(Set<DataNode*>& dataNodes) override;
+    /**
+     * \brief Check that system clipboard contains Unicode text
+     * \return true if system clipboard contains Unicode text
+     */
+    bool HasText() const;
 
-protected:
-    void LoadFromYaml(const FilePath& yamlPath);
+    /**
+     * \brief Copy to system clipboard WideString as Unicode string
+     * \param[in] str input string
+     * \return true if successful
+     */
+    bool SetText(const WideString& str);
+
+    /**
+     * \brief Get from system clipboard Unicode text data as WideString
+     * \return WideString with clipboard content
+     */
+    WideString GetText() const;
 
 private:
-    ParticleEmitter* emitter;
-    FilePath yamlPath;
+    IClipboardImpl* pImpl;
 };
-};
+}
 
-#endif //__DAVAENGINE_PARTCLEEMITTER_NODE_H__
+#endif //__DAVAENGINE_CLIPBOARD_H__
