@@ -34,7 +34,7 @@
 
 namespace DAVA
 {
-class UIInputMap
+class UIInputMap final
 {
 public:
     UIInputMap();

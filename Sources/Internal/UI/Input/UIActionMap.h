@@ -36,8 +36,7 @@
 
 namespace DAVA
 {
-
-class UIActionMap
+class UIActionMap final
 {
 public:
     typedef DAVA::Function<void()> Action;

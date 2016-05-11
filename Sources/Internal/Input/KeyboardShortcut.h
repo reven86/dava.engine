@@ -35,7 +35,7 @@
 
 namespace DAVA
 {
-class KeyboardShortcut
+class KeyboardShortcut final
 {
 public:
     enum Modifier

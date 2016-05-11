@@ -56,17 +56,6 @@ UIInputSystem::UIInputSystem()
 {
     focusSystem = new UIFocusSystem();
 
-    //    BindGlobalShortcut(KeyboardShortcut(Key::LEFT), ACTION_FOCUS_LEFT);
-    //    BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), ACTION_FOCUS_RIGHT);
-    //    BindGlobalShortcut(KeyboardShortcut(Key::UP), ACTION_FOCUS_UP);
-    //    BindGlobalShortcut(KeyboardShortcut(Key::DOWN), ACTION_FOCUS_DOWN);
-    //
-    //    BindGlobalShortcut(KeyboardShortcut(Key::TAB), ACTION_FOCUS_NEXT);
-    //    BindGlobalShortcut(KeyboardShortcut(Key::TAB, KeyboardShortcut::MODIFIER_SHIFT), ACTION_FOCUS_PREV);
-    //
-    //    BindGlobalShortcut(KeyboardShortcut(Key::ENTER), ACTION_PERFORM);
-    //    BindGlobalShortcut(KeyboardShortcut(Key::ESCAPE), ACTION_ESCAPE);
-
     BindGlobalAction(ACTION_FOCUS_LEFT, MakeFunction(this, &UIInputSystem::MoveFocusLeft));
     BindGlobalAction(ACTION_FOCUS_RIGHT, MakeFunction(this, &UIInputSystem::MoveFocusRight));
     BindGlobalAction(ACTION_FOCUS_UP, MakeFunction(this, &UIInputSystem::MoveFocusUp));
