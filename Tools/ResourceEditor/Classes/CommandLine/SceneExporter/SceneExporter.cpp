@@ -361,7 +361,12 @@ bool IsImageValidForFormat(const DAVA::ImageInfo& info, const DAVA::PixelFormat 
     }
 
     return true;
-};
+}
+
+bool IsImageSizeValidForTextures(const DAVA::ImageInfo& info)
+{
+    return ((info.width >= DAVA::Texture::MINIMAL_WIDTH) && (info.height >= DAVA::Texture::MINIMAL_HEIGHT));
+}
 }
 
 namespace SceneExporterLocal
@@ -378,6 +383,25 @@ DAVA::FilePath CompressTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverte
     }
 
     return descriptor.CreateSavePathnameForGPU(gpu);
+}
+
+void CollectSourceImageInfo(const DAVA::TextureDescriptor& descriptor, DAVA::Vector<DAVA::ImageInfo>& sourceImageInfos)
+{
+    Vector<FilePath> imagePathnames;
+    if (descriptor.IsCubeMap())
+    {
+        descriptor.GetFacePathnames(imagePathnames);
+    }
+    else
+    {
+        imagePathnames.push_back(descriptor.GetSourceTexturePathname());
+    }
+
+    sourceImageInfos.reserve(imagePathnames.size());
+    for (const FilePath& path : imagePathnames)
+    {
+        sourceImageInfos.push_back(DAVA::ImageSystem::Instance()->GetImageInfo(path));
+    }
 }
 }
 
@@ -406,41 +430,13 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
 
 bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 {
-    DAVA::FilePath sourceFilePath = descriptor.GetSourceTexturePathname();
-    DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(sourceFilePath);
-
     DAVA::Map<DAVA::eGPUFamily, bool> exportedStatus;
 
-    //    Vector<FilePath> imagePathnames;
-    //    if (descriptor->IsCubeMap())
-    //    {
-    //        descriptor->GetFacePathnames(imagePathnames);
-    //    }
-    //    else
-    //    {
-    //        imagePathnames.push_back(descriptor->GetSourceTexturePathname());
-    //    }
-    //
-    //    for (FilePath& path : imagePathnames)
-    //    {
-    //        DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(path);
-    //        if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
-    //        {
-    //            Logger::Error("Can't export non-square image %s into compression format %s",
-    //                          path.GetStringValue().c_str(),
-    //                          GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format));
-    //            return;
-    //        }
-    //        else if (imgInfo.width < DAVA::Texture::MINIMAL_WIDTH || imgInfo.height < DAVA::Texture::MINIMAL_HEIGHT)
-    //        {
-    //            Logger::Error("Can't export image %s because of small size(%dx%d) of source image", path.GetStringValue().c_str(), imgInfo.width, imgInfo.height);
-    //            return;
-    //        }
-    //    }
-
-    DVASSERT(false && "Check cube");
-
     { // compress images
+
+        DAVA::Vector<DAVA::ImageInfo> sourceImageInfos;
+        SceneExporterLocal::CollectSourceImageInfo(descriptor, sourceImageInfos);
+
         for (DAVA::eGPUFamily gpu : exportingParams.exportForGPUs)
         {
             if (gpu == DAVA::eGPUFamily::GPU_ORIGIN)
@@ -464,16 +460,31 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
                     exportedStatus[gpu] = false;
                     continue;
                 }
-                if (!TextureDescriptorValidator::IsImageValidForFormat(imgInfo, format))
-                {
-                    Logger::Error("Can't export non-square texture %s into compression format %s",
-                                  descriptor.pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(format));
 
-                    exportedStatus[gpu] = false;
-                    continue;
+                for (const DAVA::ImageInfo& imgInfo : sourceImageInfos)
+                {
+                    if (!TextureDescriptorValidator::IsImageValidForFormat(imgInfo, format))
+                    {
+                        Logger::Error("Can't export non-square texture %s into compression format %s",
+                                      descriptor.pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(format));
+
+                        exportedStatus[gpu] = false;
+                        break;
+                    }
+                    else if (!TextureDescriptorValidator::IsImageSizeValidForTextures(imgInfo))
+                    {
+                        Logger::Error("Can't export small sized texture %s into compression format %s",
+                                      descriptor.pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(format));
+
+                        exportedStatus[gpu] = false;
+                        break;
+                    }
                 }
 
-                SceneExporterLocal::CompressTexture(gpu, exportingParams.quality, descriptor);
+                if (exportedStatus.count(gpu) == 0)
+                {
+                    SceneExporterLocal::CompressTexture(gpu, exportingParams.quality, descriptor);
+                }
             }
             else if (gpu != DAVA::eGPUFamily::GPU_ORIGIN)
             {

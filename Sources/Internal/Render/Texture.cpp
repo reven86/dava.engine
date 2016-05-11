@@ -509,7 +509,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 ImageSystem::Instance()->Load(imagePathnames[i], *images, params);
             }
 
-            params.baseMipmap = Max(baseMipMap - singleMipCount, 0u);
+            params.baseMipmap = Max((int32)baseMipMap - (int32)singleMipCount, 0);
             params.firstMipmapIndex = static_cast<uint32>(images->size());
             ImageSystem::Instance()->Load(imagePathnames[singleMipCount], *images, params);
         }
