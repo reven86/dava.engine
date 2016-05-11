@@ -26,43 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_PARTCLEEMITTER_NODE_H__
-#define __DAVAENGINE_PARTCLEEMITTER_NODE_H__
-
-#include "Scene3D/Entity.h"
-#include "Particles/ParticleEmitter.h"
-#include "FileSystem/FilePath.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
+#include "Particles/ParticleEmitterInstance.h"
 
 namespace DAVA
 {
-class ParticleEmitterNode : public Entity
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, bool isInner)
+    : owner(owner_)
+    , isInnerEmitter(isInner)
 {
-protected:
-    virtual ~ParticleEmitterNode();
+}
 
-public:
-    ParticleEmitterNode();
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, ParticleEmitter* emitter_, bool isInner)
+    : owner(owner_)
+    , emitter(SafeRetain(emitter_))
+    , isInnerEmitter(isInner)
+{
+}
 
-    ParticleEmitter* GetEmitter();
-
-    virtual void Update(float32 timeElapsed);
-    void Draw() override;
-
-    Entity* Clone(Entity* dstNode = nullptr) override;
-    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
-    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
-
-    void GetDataNodes(Set<DataNode*>& dataNodes) override;
-
-protected:
-    void LoadFromYaml(const FilePath& yamlPath);
-
-private:
-    ParticleEmitter* emitter;
-    FilePath yamlPath;
-};
-};
-
-#endif //__DAVAENGINE_PARTCLEEMITTER_NODE_H__
+ParticleEmitterInstance* ParticleEmitterInstance::Clone() const
+{
+    ScopedPtr<ParticleEmitter> clonedEmitter(emitter->Clone());
+    ParticleEmitterInstance* result = new ParticleEmitterInstance(owner, clonedEmitter.get());
+    result->SetFilePath(GetFilePath());
+    result->SetSpawnPosition(GetSpawnPosition());
+    result->isInnerEmitter = isInnerEmitter;
+    return result;
+}
+}

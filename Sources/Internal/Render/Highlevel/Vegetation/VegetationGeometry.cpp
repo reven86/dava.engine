@@ -285,16 +285,6 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial* mat, KeyedArch
             else
                 mat->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
         }
-
-        String heightmapScaleKeyName = VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str();
-        if (props->IsKeyExists(heightmapScaleKeyName))
-        {
-            Vector2 heightmapScale = props->GetVector2(heightmapScaleKeyName);
-            if (mat->HasLocalProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE))
-                mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data);
-            else
-                mat->AddProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data, rhi::ShaderProp::TYPE_FLOAT2);
-        }
     }
 }
 

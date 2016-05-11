@@ -363,26 +363,25 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
     if (entityIterator == renderObjectToEntity.end())
         return false;
 
-    DAVA::KeyedArchive* customProps = GetCustomPropertiesArchieve(entityIterator->second);
-    if (customProps)
+    DAVA::String collisionTypeString = "CollisionType";
+    if ((object->GetMaxSwitchIndex() > 0) && (object->GetSwitchIndex() > 0))
     {
-        DAVA::String collisionTypeString = "CollisionType";
-        if ((object->GetMaxSwitchIndex() > 0) && (object->GetSwitchIndex() > 0))
-        {
-            collisionTypeString = "CollisionTypeCrashed";
-        }
+        collisionTypeString = "CollisionTypeCrashed";
+    }
 
-        const DAVA::int32 collisiontype = customProps->GetInt32(collisionTypeString, 0);
+    DAVA::VariantType* collisionValue = GetCustomPropertiesValueRecursive(entityIterator->second, collisionTypeString);
+    if ((collisionValue == nullptr) || (collisionValue->type != DAVA::VariantType::TYPE_INT32))
+        return false;
 
-        if ((ResourceEditor::ESOT_NO_COLISION == collisiontype) ||
-            (ResourceEditor::ESOT_TREE == collisiontype) ||
-            (ResourceEditor::ESOT_BUSH == collisiontype) ||
-            (ResourceEditor::ESOT_FALLING == collisiontype) ||
-            (ResourceEditor::ESOT_FRAGILE_PROJ_INV == collisiontype) ||
-            (ResourceEditor::ESOT_SPEED_TREE == collisiontype))
-        {
-            return false;
-        }
+    const DAVA::int32 collisiontype = collisionValue->AsInt32();
+    if ((ResourceEditor::ESOT_NO_COLISION == collisiontype) ||
+        (ResourceEditor::ESOT_TREE == collisiontype) ||
+        (ResourceEditor::ESOT_BUSH == collisiontype) ||
+        (ResourceEditor::ESOT_FALLING == collisiontype) ||
+        (ResourceEditor::ESOT_FRAGILE_PROJ_INV == collisiontype) ||
+        (ResourceEditor::ESOT_SPEED_TREE == collisiontype))
+    {
+        return false;
     }
 
     return true;

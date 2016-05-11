@@ -94,7 +94,7 @@ SceneEditor2::SceneEditor2()
     modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
     AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-    selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
+    selectionSystem = new SceneSelectionSystem(this);
     AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
@@ -245,8 +245,8 @@ void SceneEditor2::ExtractEditorEntities()
     DAVA::Vector<DAVA::Entity*> allEntities;
     GetChildNodes(allEntities);
 
-    DAVA::uint32 count = allEntities.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    DAVA::size_type count = allEntities.size();
+    for (DAVA::size_type i = 0; i < count; ++i)
     {
         if (allEntities[i]->GetName().find("editor.") != DAVA::String::npos)
         {
@@ -263,7 +263,7 @@ void SceneEditor2::InjectEditorEntities()
     bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
     selectionSystem->EnableSystem(false);
 
-    for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
+    for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
         AddEditorEntity(editorEntities[i]);
         editorEntities[i]->Release();
@@ -782,32 +782,23 @@ void LookAtSelection(SceneEditor2* scene)
 
 void RemoveSelection(SceneEditor2* scene)
 {
-    if (scene != nullptr)
+    if (scene == nullptr)
+        return;
+
+    const auto& selection = scene->selectionSystem->GetSelection();
+
+    SelectableGroup objectsToRemove;
+    for (const auto& item : selection.GetContent())
     {
-        const EntityGroup& selection = scene->selectionSystem->GetSelection();
-
-        EntityGroup objectToRemove;
-        for (const auto& item : selection.GetContent())
+        if ((item.CanBeCastedTo<DAVA::Entity>() == false) || (item.AsEntity()->GetLocked() == false))
         {
-            if (item.first->GetLocked())
-            {
-                DAVA::StringStream ss;
-                ss << "Can not remove entity "
-                   << item.first->GetName().c_str()
-                   << ": entity is locked!"
-                   << PointerSerializer::FromPointer(item.first);
-                DAVA::Logger::Warning("%s", ss.str().c_str());
-            }
-            else
-            {
-                objectToRemove.Add(item.first, item.second);
-            }
+            objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
         }
+    }
 
-        if (!objectToRemove.IsEmpty())
-        {
-            scene->structureSystem->Remove(objectToRemove);
-        }
+    if (objectsToRemove.IsEmpty() == false)
+    {
+        scene->structureSystem->Remove(objectsToRemove);
     }
 }
 

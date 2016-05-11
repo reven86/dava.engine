@@ -428,6 +428,7 @@
     <addaction name="actionImageSplitterForNormals"/>
     <addaction name="actionReplaceTextureMipmap"/>
     <addaction name="menuDump"/>
+    <addaction name="actionToggleUseInstancing"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2166,6 +2167,11 @@
   <action name="actionExport">
    <property name="text">
     <string>Export</string>
+   </property>
+  </action>
+  <action name="actionToggleUseInstancing">
+   <property name="text">
+    <string>Toggle Use Instancing by Landscape</string>
    </property>
   </action>
  </widget>

@@ -382,7 +382,7 @@ void SceneInfo::CollectParticlesData()
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
             ++emittersCount;
-            Vector<ParticleLayer*>& layers = effect->GetEmitter(i)->layers;
+            Vector<ParticleLayer*>& layers = effect->GetEmitterInstance(i)->GetEmitter()->layers;
             for (uint32 lay = 0; lay < layers.size(); ++lay)
             {
                 Sprite* spr = layers[lay]->sprite;
@@ -605,7 +605,7 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     ClearSelectionData();
 
@@ -633,31 +633,37 @@ void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command,
     }
 }
 
-void SceneInfo::CollectSelectedRenderObjects(const EntityGroup* selected)
+void SceneInfo::CollectSelectedRenderObjects(const SelectableGroup* selected)
 {
-    for (const auto& item : selected->GetContent())
+    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
     {
-        CollectSelectedRenderObjectsRecursivly(item.first);
+        CollectSelectedRenderObjectsRecursivly(entity);
     }
 }
 
 void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity* entity)
 {
+    DVASSERT(entity != nullptr);
+
     RenderObject* renderObject = GetRenderObject(entity);
     if (renderObject)
+    {
         selectedRenderObjects.insert(renderObject);
+    }
 
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
+    {
         CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
+    }
 }
 
-void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup* forGroup)
+void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup)
 {
     speedTreeLeafInfo.clear();
 
-    for (const auto& item : forGroup->GetContent())
+    for (auto entity : forGroup->ObjectsOfType<DAVA::Entity>())
     {
-        RenderObject* ro = GetRenderObject(item.first);
+        RenderObject* ro = GetRenderObject(entity);
         if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }

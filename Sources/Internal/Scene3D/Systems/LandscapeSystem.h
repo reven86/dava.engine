@@ -27,23 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __BASE_VALIDATOR_H__
-#define __BASE_VALIDATOR_H__
+#ifndef __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
+#define __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
 
-#include <QVariant>
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#include "Entity/SceneSystem.h"
 
-class BaseValidator
+namespace DAVA
+{
+class Entity;
+class Landscape;
+
+class LandscapeSystem : public SceneSystem
 {
 public:
-    bool Validate(QVariant& v);
+    LandscapeSystem(Scene* scene);
+    virtual ~LandscapeSystem();
+
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
+
+    Vector<Landscape*> GetLandscapeObjects();
+    const Vector<Entity*>& GetLandscapeEntities();
 
 protected:
-    virtual bool ValidateInternal(QVariant& v) = 0;
-    virtual void FixupInternal(QVariant& v) const {};
+    void DrawPatchMetrics(Landscape* landscape, uint32 subdivLevel, uint32 x, uint32 y);
 
-    virtual void ErrorNotifyInternal(const QVariant& v) const
-    {
-    }
+    Vector<Entity*> landscapeEntities;
 };
 
-#endif // __BASE_VALIDATOR_H__
+} // ns
+
+#endif /* __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__ */

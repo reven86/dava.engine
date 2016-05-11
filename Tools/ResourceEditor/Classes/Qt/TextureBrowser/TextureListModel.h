@@ -35,7 +35,6 @@
 #include "Classes/Qt/Scene/SceneEditor2.h"
 
 #include "Scene/SceneHelper.h"
-#include "Scene/EntityGroup.h"
 
 #include <QAbstractListModel>
 #include <QVector>
@@ -57,7 +56,7 @@ public:
     ~TextureListModel();
 
     void setScene(SceneEditor2* scene);
-    void setHighlight(const EntityGroup* nodes);
+    void setHighlight(const SelectableGroup* nodes);
     void setFilter(QString filter);
     void setFilterBySelectedNode(bool enabled);
     void setSortMode(TextureListModel::TextureListSortMode sortMode);
