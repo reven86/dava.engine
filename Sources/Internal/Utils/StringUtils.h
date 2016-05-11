@@ -84,6 +84,27 @@ WideString TrimLeft(const WideString& string);
 WideString TrimRight(const WideString& string);
 
 /**
+ * \brief Trim right.
+ * \param [in] string The string.
+ * \return output string.
+ */
+String Trim(const String& str);
+
+/**
+ * \brief Trim left.
+ * \param [in] string The string.
+ * \return output string.
+ */
+String TrimLeft(const String& string);
+
+/**
+ * \brief Trim right.
+ * \param [in] string The string.
+ * \return output string.
+ */
+String TrimRight(const String& string);
+
+/**
 * \brief Remove from line non-printable characters and replace 
 *        unicode spaces into ASCII space.
 * \param [in] string The string.

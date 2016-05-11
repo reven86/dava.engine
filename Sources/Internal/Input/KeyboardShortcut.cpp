@@ -2,6 +2,7 @@
 
 #include "KeyboardDevice.h"
 #include "InputSystem.h"
+#include "Utils/StringUtils.h"
 #include "Utils/Utils.h"
 
 namespace DAVA

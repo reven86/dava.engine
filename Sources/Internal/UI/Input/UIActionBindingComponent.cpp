@@ -29,6 +29,7 @@
 #include "UIActionBindingComponent.h"
 
 #include "Utils/Utils.h"
+#include "Utils/StringUtils.h"
 
 namespace DAVA
 {
@@ -110,8 +111,8 @@ void UIActionBindingComponent::SetActionsFromString(const String& value)
         Split(actionStr, ",", str);
         if (str.size() > 1 && !str[0].empty())
         {
-            FastName actionName(Trim(str[0]));
-            KeyboardShortcut shortcut(Trim(str[1]));
+            FastName actionName(StringUtils::Trim(str[0]));
+            KeyboardShortcut shortcut(StringUtils::Trim(str[1]));
             actions.push_back(Action(actionName, shortcut));
             if (shortcut.GetKey() != Key::UNKNOWN)
                 inputMap.BindAction(shortcut, actionName);

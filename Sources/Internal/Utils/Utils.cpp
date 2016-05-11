@@ -117,19 +117,6 @@ void Merge(const Vector<String>& tokens, const char delim, String& outString)
     }
 }
 
-String Trim(const String& str, bool trimLeft, bool trimRight)
-{
-    String::size_type pos1 = trimLeft ? str.find_first_not_of(" \t") : 0;
-    String::size_type pos2 = trimRight ? str.find_last_not_of(" \t") : str.length() - 1;
-
-    if (pos1 == String::npos || pos2 == String::npos)
-    {
-        return String("");
-    }
-
-    return str.substr(pos1, pos2 - pos1 + 1);
-}
-
 /* Set a generic reader. */
 int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length)
 {

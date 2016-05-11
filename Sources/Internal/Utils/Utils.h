@@ -63,7 +63,6 @@ void Split(const String& inputString, const String& delims, Vector<String>& toke
 void Merge(const Vector<String>& tokens, const char delim, String& outString);
 void ReplaceBundleName(const String& newBundlePath);
 void Merge(const Vector<String>& tokens, const char delim, String& outString);
-String Trim(const String& str, bool trimLeft = true, bool trimRight = true);
 
 template <class T>
 T ParseStringTo(const String& str);
