@@ -27,35 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __UIEditor__LineEditWithButton__
-#define __UIEditor__LineEditWithButton__
+#ifndef __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
+#define __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__
 
-#include <QLineEdit>
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#include "Entity/SceneSystem.h"
 
-class QToolButton;
-
-class LineEditExt : public QLineEdit
+namespace DAVA
 {
-    Q_OBJECT
-public:
-    explicit LineEditExt(QWidget* parent = NULL);
-    ~LineEditExt();
+class Entity;
+class Landscape;
 
-    bool clearButtonEnabled() const;
-    void setClearButtonEnabled(bool enable);
+class LandscapeSystem : public SceneSystem
+{
+public:
+    LandscapeSystem(Scene* scene);
+    virtual ~LandscapeSystem();
+
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
+
+    Vector<Landscape*> GetLandscapeObjects();
+    const Vector<Entity*>& GetLandscapeEntities();
 
 protected:
-    void resizeEvent(QResizeEvent* event);
+    void DrawPatchMetrics(Landscape* landscape, uint32 subdivLevel, uint32 x, uint32 y);
 
-private slots:
-    void updateClearButton(const QString& text);
-
-private:
-    QString styleSheetForCurrentState() const;
-    QString buttonStyleSheetForCurrentState() const;
-
-    QToolButton* clearButton;
-    bool buttonEnabled;
+    Vector<Entity*> landscapeEntities;
 };
 
-#endif /* defined(__UIEditor__LineEditWithButton__) */
+} // ns
+
+#endif /* __DAVAENGINE_SCENE3D_LANDSCAPESYSTEM_H__ */

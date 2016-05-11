@@ -32,86 +32,89 @@
 CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWorld* word, DAVA::RenderObject* renderObject)
     : CollisionBaseObject(entity, word)
 {
-    if ((renderObject != nullptr) && (word != nullptr))
+    if ((renderObject == nullptr) || (word == nullptr))
+        return;
+
+    DAVA::Matrix4 curEntityTransform = entity->GetWorldTransform();
+
+    int maxVertexCount = 0;
+    int bestLodIndex = 0;
+    int curSwitchIndex = renderObject->GetSwitchIndex();
+
+    // search for best lod index
+    for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
     {
-        DAVA::Matrix4 curEntityTransform = entity->GetWorldTransform();
-
-        int maxVertexCount = 0;
-        int bestLodIndex = 0;
-        int curSwitchIndex = renderObject->GetSwitchIndex();
-
-        // search for best lod index
-        for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+        int batchLodIndex = 0;
+        int batchSwitchIndex = 0;
+        DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
+        int vertexCount = batch->GetPolygonGroup()->GetVertexCount();
+        if ((vertexCount > maxVertexCount) && (curSwitchIndex == batchSwitchIndex))
         {
-            int batchLodIndex = 0;
-            int batchSwitchIndex = 0;
-            DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
-            int vertexCount = batch->GetPolygonGroup()->GetVertexCount();
-            if ((vertexCount > maxVertexCount) && (curSwitchIndex == batchSwitchIndex))
-            {
-                bestLodIndex = batchLodIndex;
-                maxVertexCount = vertexCount;
-            }
+            bestLodIndex = batchLodIndex;
+            maxVertexCount = vertexCount;
         }
+    }
 
-        bool anyPolygonAdded = false;
-        for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+    DAVA::AABBox3 boundingBox;
+    bool anyPolygonAdded = false;
+    for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+    {
+        int batchLodIndex = 0;
+        int batchSwitchIndex = 0;
+        DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
+
+        if ((batchLodIndex == bestLodIndex) && (batchSwitchIndex == curSwitchIndex))
         {
-            int batchLodIndex = 0;
-            int batchSwitchIndex = 0;
-            DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
-
-            if ((batchLodIndex == bestLodIndex) && (batchSwitchIndex == curSwitchIndex))
+            DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
+            if (pg != nullptr)
             {
-                DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
-                if (pg != nullptr)
+                // is this the first polygon in cycle
+                if (!anyPolygonAdded)
                 {
-                    // is this the first polygon in cycle
-                    if (!anyPolygonAdded)
-                    {
-                        anyPolygonAdded = true;
-                        btTriangles = new btTriangleMesh();
-                    }
-
-                    for (int i = 0; i < pg->indexCount; i += 3)
-                    {
-                        DAVA::uint16 index0 = pg->indexArray[i];
-                        DAVA::uint16 index1 = pg->indexArray[i + 1];
-                        DAVA::uint16 index2 = pg->indexArray[i + 2];
-
-                        DAVA::Vector3 v0;
-                        DAVA::Vector3 v1;
-                        DAVA::Vector3 v2;
-                        pg->GetCoord(index0, v0);
-                        pg->GetCoord(index1, v1);
-                        pg->GetCoord(index2, v2);
-
-                        v0 = v0 * curEntityTransform;
-                        v1 = v1 * curEntityTransform;
-                        v2 = v2 * curEntityTransform;
-
-                        btTriangles->addTriangle(btVector3(v0.x, v0.y, v0.z),
-                                                 btVector3(v1.x, v1.y, v1.z),
-                                                 btVector3(v2.x, v2.y, v2.z), false);
-                    }
-
-                    // save original bbox
-                    boundingBox.AddAABBox(pg->GetBoundingBox());
+                    anyPolygonAdded = true;
+                    btTriangles = new btTriangleMesh();
                 }
+
+                for (int i = 0; i < pg->indexCount; i += 3)
+                {
+                    DAVA::uint16 index0 = pg->indexArray[i];
+                    DAVA::uint16 index1 = pg->indexArray[i + 1];
+                    DAVA::uint16 index2 = pg->indexArray[i + 2];
+
+                    DAVA::Vector3 v0;
+                    DAVA::Vector3 v1;
+                    DAVA::Vector3 v2;
+                    pg->GetCoord(index0, v0);
+                    pg->GetCoord(index1, v1);
+                    pg->GetCoord(index2, v2);
+
+                    v0 = v0 * curEntityTransform;
+                    v1 = v1 * curEntityTransform;
+                    v2 = v2 * curEntityTransform;
+
+                    btTriangles->addTriangle(btVector3(v0.x, v0.y, v0.z),
+                                             btVector3(v1.x, v1.y, v1.z),
+                                             btVector3(v2.x, v2.y, v2.z), false);
+                }
+
+                // save original bbox
+                boundingBox.AddAABBox(pg->GetBoundingBox());
             }
         }
+    }
 
-        if (anyPolygonAdded)
-        {
-            // increase bbox a little bit
-            boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
-            boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
+    if (anyPolygonAdded)
+    {
+        // increase bbox a little bit
+        boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
+        boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
 
-            btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
-            btObject = new btCollisionObject();
-            btObject->setCollisionShape(btShape);
-            btWord->addCollisionObject(btObject);
-        }
+        btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
+        btObject = new btCollisionObject();
+        btObject->setCollisionShape(btShape);
+        btWord->addCollisionObject(btObject);
+
+        object.SetBoundingBox(boundingBox);
     }
 }
 
@@ -213,7 +216,7 @@ struct ClassifyTrianglesToMultiplePlanesCallback : public btInternalTriangleInde
 
 CollisionBaseObject::ClassifyPlaneResult CollisionRenderObject::ClassifyToPlane(const DAVA::Plane& plane)
 {
-    if ((btShape == nullptr) || (ClassifyBoundingBoxToPlane(boundingBox, plane) == ClassifyPlaneResult::Behind))
+    if ((btShape == nullptr) || (ClassifyBoundingBoxToPlane(object.GetBoundingBox(), plane) == ClassifyPlaneResult::Behind))
         return ClassifyPlaneResult::Behind;
 
     btBvhTriangleMeshShape* shape = static_cast<btBvhTriangleMeshShape*>(btShape);
@@ -230,7 +233,7 @@ CollisionBaseObject::ClassifyPlanesResult CollisionRenderObject::ClassifyToPlane
 
     for (size_t i = 0; i < numPlanes; ++i)
     {
-        if (ClassifyBoundingBoxToPlane(boundingBox, TransformPlaneToLocalSpace(planes[i])) == ClassifyPlaneResult::Behind)
+        if (ClassifyBoundingBoxToPlane(object.GetBoundingBox(), TransformPlaneToLocalSpace(planes[i])) == ClassifyPlaneResult::Behind)
         {
             return CollisionBaseObject::ClassifyPlanesResult::Outside;
         }

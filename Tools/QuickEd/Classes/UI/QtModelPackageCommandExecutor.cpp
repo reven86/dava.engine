@@ -59,7 +59,7 @@
 #include "Model/ControlProperties/StyleSheetSelectorProperty.h"
 
 #include "Model/YamlPackageSerializer.h"
-#include "Model/EditorUIPackageBuilder.h"
+#include "Model/QuickEdPackageBuilder.h"
 
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
@@ -108,7 +108,7 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
     {
         if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
         {
-            EditorUIPackageBuilder builder;
+            QuickEdPackageBuilder builder;
             if (UIPackageLoader().LoadPackage(path, &builder))
             {
                 RefPtr<PackageNode> importedPackage = builder.BuildPackage();
@@ -547,7 +547,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
         return createdNodes;
     }
 
-    EditorUIPackageBuilder builder;
+    QuickEdPackageBuilder builder;
 
     builder.AddImportedPackage(root);
     for (int32 i = 0; i < root->GetImportedPackagesNode()->GetCount(); i++)

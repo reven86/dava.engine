@@ -47,18 +47,10 @@
 
 CustomColorsPanel::CustomColorsPanel(QWidget* parent)
     : LandscapeEditorBasePanel(parent)
-    , comboColor(NULL)
-    , sliderWidgetBrushSize(NULL)
-    , buttonSaveTexture(NULL)
-    , buttonLoadTexture(NULL)
 {
     InitUI();
     ConnectToSignals();
     InitColors();
-}
-
-CustomColorsPanel::~CustomColorsPanel()
-{
 }
 
 bool CustomColorsPanel::GetEditorEnabled()
@@ -272,12 +264,11 @@ void CustomColorsPanel::LoadTexture()
         currentPath = sceneEditor->GetScenePath().GetDirectory();
     }
 
-    DAVA::FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION,
-                                                      currentPath,
+    DAVA::FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION, currentPath,
                                                       PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
     if (!selectedPathname.IsEmpty())
     {
-        sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
+        sceneEditor->customColorsSystem->LoadTexture(selectedPathname, true);
     }
 }
 

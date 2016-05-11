@@ -42,10 +42,8 @@
 #include <QToolButton>
 #include <QEvent>
 #include <QMouseEvent>
-#include "QtControls/lineeditext.h"
 
 #include "DAVAEngine.h"
-#include "QtControls/Vector2DEdit.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Vector2PropertyDelegate.h"

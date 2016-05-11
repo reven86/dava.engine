@@ -45,6 +45,7 @@ const FastName NMaterialName::TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Mate
 const FastName NMaterialName::DETAIL_ALPHABLEND = FastName("~res:/Materials/Detail.Alphablend.material");
 const FastName NMaterialName::SHADOWRECT = FastName("~res:/Materials/ShadowRect.material");
 const FastName NMaterialName::TILE_MASK = FastName("~res:/Materials/TileMaskAllQualities.material");
+const FastName NMaterialName::TILE_MASK_DEBUG = FastName("~res:/Materials/TileMask.Debug.material");
 const FastName NMaterialName::DETAIL_ALPHATEST = FastName("~res:/Materials/Detail.Alphatest.material");
 const FastName NMaterialName::SHADOW_VOLUME = FastName("~res:/Materials/ShadowVolume.material");
 const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/VertexColor.Alphablend.material");
@@ -92,6 +93,7 @@ const FastName NMaterialTextureName::TEXTURE_LIGHTMAP("lightmap");
 const FastName NMaterialTextureName::TEXTURE_DECAL("decal");
 const FastName NMaterialTextureName::TEXTURE_CUBEMAP("cubemap");
 const FastName NMaterialTextureName::TEXTURE_HEIGHTMAP("heightmap");
+const FastName NMaterialTextureName::TEXTURE_TANGENTSPACE("tangentSpace");
 const FastName NMaterialTextureName::TEXTURE_DECALMASK("decalmask");
 const FastName NMaterialTextureName::TEXTURE_DECALTEXTURE("decaltexture");
 
@@ -182,6 +184,11 @@ const FastName NMaterialFlagName::FLAG_FORCE_2D_MODE = FastName("FORCE_2D_MODE")
 
 const FastName NMaterialFlagName::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
 
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING("LANDSCAPE_USE_INSTANCING");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING("LANDSCAPE_LOD_MORPHING");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR("LANDSCAPE_MORPHING_COLOR");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR("LANDSCAPE_SPECULAR");
+
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_USED = FastName("ILLUMINATION_USED");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("ILLUMINATION_SHADOW_CASTER");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("ILLUMINATION_SHADOW_RECEIVER");
@@ -204,7 +211,12 @@ Vector<FastName> RUNTIME_ONLY_FLAGS =
   NMaterialFlagName::FLAG_VIEWALBEDO,
   NMaterialFlagName::FLAG_VIEWAMBIENT,
   NMaterialFlagName::FLAG_VIEWDIFFUSE,
-  NMaterialFlagName::FLAG_VIEWSPECULAR
+  NMaterialFlagName::FLAG_VIEWSPECULAR,
+
+  NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING,
+  NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING,
+  NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR,
+  NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR,
 };
 
 bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
@@ -213,6 +225,20 @@ bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
         return flag == toFind;
     });
     return it != RUNTIME_ONLY_FLAGS.end();
+}
+
+Vector<FastName> RUNTIME_ONLY_TEXTURES =
+{
+  NMaterialTextureName::TEXTURE_HEIGHTMAP,
+  NMaterialTextureName::TEXTURE_TANGENTSPACE,
+};
+
+bool NMaterialTextureName::IsRuntimeTexture(const FastName& texture)
+{
+    auto it = std::find_if(RUNTIME_ONLY_TEXTURES.begin(), RUNTIME_ONLY_TEXTURES.end(), [&texture](const FastName& toFind) {
+        return texture == toFind;
+    });
+    return it != RUNTIME_ONLY_TEXTURES.end();
 }
 
 const DAVA::String NMaterialSerializationKey::MaterialKey = "materialKey";

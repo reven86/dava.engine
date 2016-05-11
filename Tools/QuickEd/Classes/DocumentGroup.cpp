@@ -34,7 +34,7 @@
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
-#include "Model/EditorUIPackageBuilder.h"
+#include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 
 #include <QUndoGroup>
@@ -109,6 +109,13 @@ void DocumentGroup::AttachCloseDocumentAction(QAction* closeDocumentAction) cons
     closeDocumentAction->setEnabled(CanClose());
     connect(this, &DocumentGroup::CanCloseChanged, closeDocumentAction, &QAction::setEnabled);
     connect(closeDocumentAction, &QAction::triggered, this, &DocumentGroup::TryCloseCurrentDocument);
+}
+
+void DocumentGroup::AttachReloadDocumentAction(QAction* reloadDocumentAction) const
+{
+    reloadDocumentAction->setEnabled(CanClose());
+    connect(this, &DocumentGroup::CanCloseChanged, reloadDocumentAction, &QAction::setEnabled);
+    connect(reloadDocumentAction, &QAction::triggered, this, &DocumentGroup::ReloadCurrentDocument);
 }
 
 void DocumentGroup::ConnectToTabBar(QTabBar* tabBar)
@@ -268,11 +275,21 @@ void DocumentGroup::CloseDocument(Document* document)
     delete document;
 }
 
-void DocumentGroup::ReloadDocument(int index)
+void DocumentGroup::ReloadDocument(int index, bool force)
 {
     DVASSERT(index >= 0 && index < documents.size());
     QString path = documents.at(index)->GetPackageAbsolutePath();
-    CloseDocument(index);
+    if (force)
+    {
+        CloseDocument(index);
+    }
+    else
+    {
+        if (!TryCloseDocument(index))
+        {
+            return;
+        }
+    }
     Document* document = CreateDocument(path);
     if (document != nullptr)
     {
@@ -285,10 +302,16 @@ void DocumentGroup::ReloadDocument(int index)
     }
 }
 
-void DocumentGroup::ReloadDocument(Document* document)
+void DocumentGroup::ReloadDocument(Document* document, bool force)
 {
     DVASSERT(nullptr != document);
-    ReloadDocument(documents.indexOf(document));
+    ReloadDocument(documents.indexOf(document), force);
+}
+
+void DocumentGroup::ReloadCurrentDocument()
+{
+    DVASSERT(nullptr != active);
+    ReloadDocument(active, false);
 }
 
 void DocumentGroup::SetActiveDocument(int index)
@@ -423,7 +446,7 @@ void DocumentGroup::OnFilesChanged(const QList<Document*>& changedFiles)
         }
         if (button == QMessageBox::Yes)
         {
-            ReloadDocument(document);
+            ReloadDocument(document, true);
         }
     }
 }
@@ -560,7 +583,7 @@ void DocumentGroup::InsertDocument(Document* document, int index)
 
 RefPtr<PackageNode> DocumentGroup::OpenPackage(const FilePath& packagePath)
 {
-    EditorUIPackageBuilder builder;
+    QuickEdPackageBuilder builder;
 
     bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
 
