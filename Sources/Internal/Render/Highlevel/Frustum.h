@@ -75,7 +75,7 @@ public:
 
     //! \brief Set view frustum from matrix information
     //! \param viewProjection view * projection matrix
-    void Build(const Matrix4& viewProjection);
+    void Build(const Matrix4& viewProjection, bool zeroBaseClipRange);
 
     //! \brief Check axial aligned bounding box visibility
     //! \param min bounding box minimum point
