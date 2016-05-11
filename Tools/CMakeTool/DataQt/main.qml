@@ -12,7 +12,7 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    property int historyVersion: 1
+    property int historyVersion: 2
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 + wrapper.spacing * 4
