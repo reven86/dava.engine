@@ -151,7 +151,8 @@ struct InvalidTexturesCollector
             const TTexturesMap& localTextures = material->GetLocalTextures();
             for (const TTextureItem& lc : localTextures)
             {
-                if (validTextures.count(lc.first) == 0)
+                // DF-10204, we don't allow change heightmap in material for new Landscape.
+                if (validTextures.count(lc.first) == 0 && lc.first != DAVA::NMaterialTextureName::TEXTURE_HEIGHTMAP)
                 {
                     invalidTextures[lc.first].push_back(lc.second->path);
                 }
@@ -535,7 +536,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(autoExpand()));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(autoExpand()));
 
     // material tree
     QObject::connect(ui->materialTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(materialSelected(const QItemSelection&, const QItemSelection&)));
@@ -1189,7 +1190,7 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint& po
                     bool hasProperty = material->HasLocalProperty(propertyName);
                     if (hasProperty)
                     {
-                        QMenu menu;
+                        QMenu menu(this);
                         menu.addAction("Add to Global Material");
                         QAction* resultAction = menu.exec(ui->materialProperty->viewport()->mapToGlobal(pos));
 

@@ -79,7 +79,6 @@ DAVA_TESTCLASS (TextSizeTest)
                 charsSum += charSizes[i];
             }
 
-            charsSum = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(charsSum);
             TEST_VERIFY_WITH_MESSAGE(fabsf(size.dx - charsSum) < TEST_ACCURACY, testData[k].description);
         }
     }

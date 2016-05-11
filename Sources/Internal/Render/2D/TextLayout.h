@@ -42,6 +42,12 @@ namespace DAVA
 class TextLayout
 {
 public:
+    struct Line
+    {
+        uint32 offset = 0;
+        uint32 length = 0;
+    };
+
     /**
      * \brief Create TextLayout with word wrap and disabled BiDi transformations
      */
@@ -76,6 +82,12 @@ public:
      * \param[in] charSizes characters sizes
      */
     void SetCharSizes(const Vector<float32>& charSizes);
+
+    /**
+     * \brief Return sizes for characters of text
+     * \return characters sizes as vector of float
+     */
+    const Vector<float32>& GetCharSizes() const;
 
     /**
     * \brief Calculate sizes for characters of text from font
@@ -122,6 +134,13 @@ public:
     const bool IsRtlText() const;
 
     /**
+    * \brief Return information about current line (offset of first character
+    *        and length
+    * \return line information
+    */
+    const Line& GetLine() const;
+
+    /**
      * \brief Returns original text
      * \return original text that sets with TextLayout::Reset
      */
@@ -144,14 +163,21 @@ public:
      * \brief Returns internal representation of last split line
      * \return last split line after BiDi transformations without reordering
      */
-    const WideString& GetPreparedLine() const;
+    const WideString GetPreparedLine() const;
+
+    /**
+    * \brief Returns internal representation of last split line
+    * \param[in] line line information
+    * \return last split line after BiDi transformations without reordering
+    */
+    const WideString GetPreparedLine(const Line& line) const;
 
     /**
      * \brief Returns visual representation of last split line
      * \param[in] trimEnd true for trims whitespace characters on line end
      * \return last after BiDi transformations with reordering and removing non-printable characters
      */
-    const WideString GetVisualLine(const bool trimEnd) const;
+    DAVA_DEPRECATED(const WideString GetVisualLine(const bool trimEnd) const);
 
     /**
      * \brief Fill vector of split lines with specified width
@@ -160,7 +186,24 @@ public:
      * \param[in] splitBySymbols true for split only by symbols
      * \param[in] trimEnd true for trims whitespace characters on each line end
      */
-    void FillList(Vector<WideString>& outputList, float32 lineWidth, bool splitBySymbols, bool trimEnd);
+    DAVA_DEPRECATED(void FillList(Vector<WideString>& outputList, float32 lineWidth, bool splitBySymbols, bool trimEnd));
+
+    /**
+    * \brief Returns visual representation of last split line
+    * \param[in] line line information
+    * \param[in] trimEnd true for trims whitespace characters on line end
+    * \return last after BiDi transformations with reordering and removing non-printable characters
+    */
+    const WideString GetVisualLine(const Line& line, const bool trimEnd) const;
+
+    /**
+    * \brief Fill vector of split lines information with specified width
+    * \param[out] outputList vector of slit lines information
+    * \param[in] lineWidth maximum line width in pixels
+    * \param[in] splitBySymbols true for split only by symbols
+    * \param[in] trimEnd true for trims whitespace characters on each line end
+    */
+    void FillList(Vector<Line>& outputList, float32 lineWidth, bool splitBySymbols);
 
 private:
     /**
@@ -178,19 +221,29 @@ private:
 
     WideString inputText;
     WideString preparedText;
-    WideString preparedLine;
 
     bool useBiDi;
     bool isRtl;
+
     Vector<float32> characterSizes;
     Vector<uint8> breaks;
     BiDiHelper bidiHelper;
-    size_t fromPos;
+    Line lineData;
 };
 
-inline const WideString& TextLayout::GetPreparedLine() const
+inline const Vector<float32>& TextLayout::GetCharSizes() const
 {
-    return preparedLine;
+    return characterSizes;
+}
+
+inline const WideString TextLayout::GetPreparedLine() const
+{
+    return GetPreparedLine(GetLine());
+}
+
+inline const WideString TextLayout::GetPreparedLine(const Line& line) const
+{
+    return preparedText.substr(line.offset, line.length);
 }
 
 inline const WideString& TextLayout::GetOriginalText() const
@@ -208,9 +261,19 @@ inline const bool TextLayout::IsRtlText() const
     return useBiDi && isRtl;
 }
 
+inline const TextLayout::Line& TextLayout::GetLine() const
+{
+    return lineData;
+}
+
 inline const uint32 TextLayout::Tell() const
 {
-    return static_cast<uint32>(fromPos);
+    return lineData.offset;
+}
+
+inline const WideString TextLayout::GetVisualLine(const bool trimEnd) const
+{
+    return GetVisualLine(GetLine(), trimEnd);
 }
 }
 

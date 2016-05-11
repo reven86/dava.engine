@@ -483,6 +483,8 @@ static const char* _ShaderHeader_GLES2 =
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 #endif
 
+"#define fmod(x, y) mod( (x), (y) )\n"
+
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"
 
@@ -572,7 +574,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   texture2DLod( VertexTexture##unit, uv, 0.0 )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   texture2DLod( VertexTexture##unit, uv, lod)\n"
 
 "#define FPROG_IN_BEGIN          \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         varying vec##size var_##name;\n"
@@ -732,7 +734,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,lod) )\n"
 
 "#define FPROG_IN_BEGIN                        struct FP_Input {\n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
@@ -897,8 +899,7 @@ static const char* _ShaderDefine_DX11 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-//"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
-"#define VP_TEXTURE2D(unit,uv)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, 0 )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, lod )\n"
 
 "#define FPROG_IN_BEGIN                        struct FP_Input { float4 pos : SV_POSITION; \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"

@@ -14,6 +14,10 @@
 		0214140B181984D600925E51 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 02141406181984D600925E51 /* DAVAClassRegistrator.h */; };
 		0214140C181984D600925E51 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 02141406181984D600925E51 /* DAVAClassRegistrator.h */; };
 		0224B70015989F7400CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B6FF15989F7400CDEF9E /* libtheora_macos.a */; };
+		0249EF1D1CB563660018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */; };
+		0249EF1E1CB563660018A5FC /* LandscapeSubdivision.h in Headers */ = {isa = PBXBuildFile; fileRef = 0249EF1C1CB563660018A5FC /* LandscapeSubdivision.h */; };
+		0249EF2A1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */; };
+		0249EF2B1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */; };
 		028C0D331BD66A6000B2266F /* AnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08191BD66A5D00B2266F /* AnimatedObject.cpp */; };
 		028C0D341BD66A6000B2266F /* AnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08191BD66A5D00B2266F /* AnimatedObject.cpp */; };
 		028C0D351BD66A6000B2266F /* AnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08191BD66A5D00B2266F /* AnimatedObject.cpp */; };
@@ -2792,6 +2796,12 @@
 		028C1B731BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
 		028C1B741BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
 		028C1B751BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
+		02DC4BC61CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */; };
+		02DC4BC71CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */; };
+		02DC4BC81CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */; };
+		02DC4BC91CA3DCDE00F6822D /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */; };
+		02DC4BCA1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */; };
+		02DC4BCB1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */; };
 		0347B7E01C64C211004DB76C /* UITextFieldMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */; };
 		0347B7E11C64C211004DB76C /* UITextFieldMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */; };
 		0347B7E21C64C211004DB76C /* UITextFieldMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */; };
@@ -3032,6 +3042,8 @@
 		02141405181984D600925E51 /* DAVAClassRegistrator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DAVAClassRegistrator.cpp; sourceTree = "<group>"; };
 		02141406181984D600925E51 /* DAVAClassRegistrator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAVAClassRegistrator.h; sourceTree = "<group>"; };
 		0224B6FF15989F7400CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
+		0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeSubdivision.cpp; sourceTree = "<group>"; };
+		0249EF1C1CB563660018A5FC /* LandscapeSubdivision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeSubdivision.h; sourceTree = "<group>"; };
 		028C08191BD66A5D00B2266F /* AnimatedObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimatedObject.cpp; sourceTree = "<group>"; };
 		028C081A1BD66A5D00B2266F /* AnimatedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimatedObject.h; sourceTree = "<group>"; };
 		028C081B1BD66A5D00B2266F /* Animation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Animation.cpp; sourceTree = "<group>"; };
@@ -3961,6 +3973,8 @@
 		028C0D2D1BD66A6000B2266F /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		028C0D2E1BD66A6000B2266F /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		028C0D311BD66A6000B2266F /* UtilsMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UtilsMacOS.mm; sourceTree = "<group>"; };
+		02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeSystem.cpp; sourceTree = "<group>"; };
+		02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeSystem.h; sourceTree = "<group>"; };
 		0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldMacOS.h; sourceTree = "<group>"; };
 		0347B7DF1C64C211004DB76C /* UITextFieldMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldMacOS.mm; sourceTree = "<group>"; };
 		03B249801CBCE81700015637 /* PackArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackArchive.cpp; sourceTree = "<group>"; };
@@ -4913,6 +4927,8 @@
 		028C0AD41BD66A5E00B2266F /* Highlevel */ = {
 			isa = PBXGroup;
 			children = (
+				0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */,
+				0249EF1C1CB563660018A5FC /* LandscapeSubdivision.h */,
 				028C0AD51BD66A5E00B2266F /* Camera.cpp */,
 				028C0AD61BD66A5E00B2266F /* Camera.h */,
 				028C0AD71BD66A5E00B2266F /* CullingSystem.cpp */,
@@ -5268,6 +5284,8 @@
 		028C0C341BD66A5F00B2266F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */,
+				02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */,
 				15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */,
 				15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */,
 				028C0C351BD66A5F00B2266F /* ActionUpdateSystem.cpp */,
@@ -6088,6 +6106,7 @@
 				028C12361BD66A6000B2266F /* ParticlePropertyLine.h in Headers */,
 				03B2498B1CBCE81700015637 /* PackArchive.h in Headers */,
 				028C10441BD66A6000B2266F /* Function.h in Headers */,
+				02DC4BCB1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */,
 				028C10651BD66A6000B2266F /* InputCallback.h in Headers */,
 				028C15A51BD66A6000B2266F /* LibWebPHelper.h in Headers */,
 				028C10C21BD66A6000B2266F /* NeonMath.h in Headers */,
@@ -6706,6 +6725,7 @@
 				028C15BB1BD66A6000B2266F /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				028C10E41BD66A6000B2266F /* Sphere.h in Headers */,
 				028C19811BD66A6000B2266F /* IWebViewControl.h in Headers */,
+				0249EF1E1CB563660018A5FC /* LandscapeSubdivision.h in Headers */,
 				028C0EA41BD66A6000B2266F /* LockGuard.h in Headers */,
 				028C15C11BD66A6000B2266F /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				028C10631BD66A6000B2266F /* InputCallback.h in Headers */,
@@ -6716,6 +6736,7 @@
 				028C1AEC1BD66A6100B2266F /* UISlider.h in Headers */,
 				028C0E8F1BD66A6000B2266F /* Atomic.h in Headers */,
 				028C0E1A1BD66A6000B2266F /* IndexBitVector.h in Headers */,
+				02DC4BC91CA3DCDE00F6822D /* LandscapeSystem.h in Headers */,
 				028C12551BD66A6000B2266F /* MovieViewControlStub.h in Headers */,
 				028C15A91BD66A6000B2266F /* FXCache.h in Headers */,
 				028C0FA01BD66A6000B2266F /* Component.h in Headers */,
@@ -7160,6 +7181,7 @@
 				028C18081BD66A6000B2266F /* PathComponent.h in Headers */,
 				03B2498A1CBCE81700015637 /* PackArchive.h in Headers */,
 				028C12351BD66A6000B2266F /* ParticlePropertyLine.h in Headers */,
+				02DC4BCA1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */,
 				028C10431BD66A6000B2266F /* Function.h in Headers */,
 				028C10641BD66A6000B2266F /* InputCallback.h in Headers */,
 				028C15A41BD66A6000B2266F /* LibWebPHelper.h in Headers */,
@@ -7771,6 +7793,7 @@
 				028C0F751BD66A6000B2266F /* DownloadManager.cpp in Sources */,
 				028C16EF1BD66A6000B2266F /* rhi_VertexBufferGLES2.cpp in Sources */,
 				028C143A1BD66A6000B2266F /* Font.cpp in Sources */,
+				02DC4BC81CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */,
 				028C179A1BD66A6000B2266F /* WASDControllerComponent.cpp in Sources */,
 				028C0F931BD66A6000B2266F /* ZLibStream.cpp in Sources */,
 				028C0DCE1BD66A6000B2266F /* BaseMath.cpp in Sources */,
@@ -7852,6 +7875,7 @@
 				028C16621BD66A6000B2266F /* rhi_ShaderCache.cpp in Sources */,
 				028C18C91BD66A6000B2266F /* DebugRenderSystem.cpp in Sources */,
 				028C1A4C1BD66A6100B2266F /* UIFileSystemDialog.cpp in Sources */,
+				0249EF2B1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				028C1B631BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				15373F241C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C18241BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,
@@ -8105,6 +8129,7 @@
 				028C0F671BD66A6000B2266F /* Downloader.cpp in Sources */,
 				028C1A8C1BD66A6100B2266F /* UIPackage.cpp in Sources */,
 				028C1AD71BD66A6100B2266F /* UIScrollBar.cpp in Sources */,
+				0249EF1D1CB563660018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				028C18851BD66A6000B2266F /* SceneNodeAnimationKey.cpp in Sources */,
 				028C0EC21BD66A6000B2266F /* ThreadPosix.cpp in Sources */,
 				028C17561BD66A6000B2266F /* TextGameObject.cpp in Sources */,
@@ -8225,6 +8250,7 @@
 				028C0F1C1BD66A6000B2266F /* Backtrace.cpp in Sources */,
 				028C18CD1BD66A6000B2266F /* EventSystem.cpp in Sources */,
 				028C0DE11BD66A6000B2266F /* Data.cpp in Sources */,
+				02DC4BC61CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */,
 				028C17DA1BD66A6000B2266F /* StaticOcclusionComponent.cpp in Sources */,
 				321CCA521C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */,
 				028C14E01BD66A6000B2266F /* Light.cpp in Sources */,
@@ -8698,6 +8724,7 @@
 				028C0F741BD66A6000B2266F /* DownloadManager.cpp in Sources */,
 				028C16EE1BD66A6000B2266F /* rhi_VertexBufferGLES2.cpp in Sources */,
 				028C14391BD66A6000B2266F /* Font.cpp in Sources */,
+				02DC4BC71CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */,
 				028C17991BD66A6000B2266F /* WASDControllerComponent.cpp in Sources */,
 				028C0F921BD66A6000B2266F /* ZLibStream.cpp in Sources */,
 				028C0DCD1BD66A6000B2266F /* BaseMath.cpp in Sources */,
@@ -8779,6 +8806,7 @@
 				028C17ED1BD66A6000B2266F /* UpdatableComponent.cpp in Sources */,
 				028C16611BD66A6000B2266F /* rhi_ShaderCache.cpp in Sources */,
 				028C18C81BD66A6000B2266F /* DebugRenderSystem.cpp in Sources */,
+				0249EF2A1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				028C1A4B1BD66A6100B2266F /* UIFileSystemDialog.cpp in Sources */,
 				028C1B621BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				028C18231BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,

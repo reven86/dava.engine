@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QFileInfo>
 
+#include "Scene/SelectableGroup.h"
 #include "Render/PixelFormatDescriptor.h"
 
 TextureListModel::TextureListModel(QObject* parent /* = 0 */)
@@ -195,7 +196,7 @@ void TextureListModel::setScene(SceneEditor2* scene)
     }
 }
 
-void TextureListModel::setHighlight(const EntityGroup* nodes)
+void TextureListModel::setHighlight(const SelectableGroup* nodes)
 {
     beginResetModel();
 
@@ -204,9 +205,9 @@ void TextureListModel::setHighlight(const EntityGroup* nodes)
     if (nullptr != nodes)
     {
         SceneHelper::TextureCollector collector;
-        for (const auto& item : nodes->GetContent())
+        for (auto entity : nodes->ObjectsOfType<DAVA::Entity>())
         {
-            SceneHelper::EnumerateEntityTextures(activeScene, item.first, collector);
+            SceneHelper::EnumerateEntityTextures(activeScene, entity, collector);
         }
         DAVA::TexturesMap& nodeTextures = collector.GetTextures();
 
