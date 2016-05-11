@@ -31,7 +31,7 @@ KeyboardShortcut::KeyboardShortcut(const String& str)
     modifiers = 0;
     for (const String& token : tokens)
     {
-        String t = Trim(token);
+        String t = StringUtils::Trim(token);
         int modifier = 0;
         if (GlobalEnumMap<Modifier>::Instance()->ToValue(token.c_str(), modifier))
         {
