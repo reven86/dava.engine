@@ -38,6 +38,24 @@ PackManagerTest::PackManagerTest()
 {
 }
 
+void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/)
+{
+    if (url == textField)
+    {
+        urlToServerWithPacks = UTF8Utils::EncodeToUTF8(newText);
+        UpdateDescription();
+    }
+}
+
+void PackManagerTest::UpdateDescription()
+{
+    String message = DAVA::Format("type name of pack you want to download\n"
+                                  "Directory to downloaded packs: \"%s\"\nUrl to packs: \"%s\"\n"
+                                  "When you press \"start loading\" full reinitializetion begins",
+                                  folderWithDownloadedPacks.GetAbsolutePathname().c_str(), urlToServerWithPacks.c_str());
+    description->SetText(UTF8Utils::EncodeToWideString(message));
+}
+
 void PackManagerTest::LoadResources()
 {
     BaseScreen::LoadResources();
@@ -51,7 +69,7 @@ void PackManagerTest::LoadResources()
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     packInput->SetInputEnabled(true);
     packInput->GetOrCreateComponent<UIFocusComponent>();
-    packInput->SetDelegate(new UITextFieldDelegate());
+    packInput->SetDelegate(this);
     packInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(packInput);
 
@@ -62,6 +80,22 @@ void PackManagerTest::LoadResources()
     startLoadingButton->SetStateText(0xFF, L"start loading");
     startLoadingButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartDownloadClicked));
     AddControl(startLoadingButton);
+
+    startServerButton = new UIButton(Rect(420, 40, 100, 20));
+    startServerButton->SetDebugDraw(true);
+    startServerButton->SetStateFont(0xFF, font);
+    startServerButton->SetStateFontColor(0xFF, Color::White);
+    startServerButton->SetStateText(0xFF, L"start server");
+    startServerButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
+    AddControl(startServerButton);
+
+    stopServerButton = new UIButton(Rect(420, 70, 100, 20));
+    stopServerButton->SetDebugDraw(true);
+    stopServerButton->SetStateFont(0xFF, font);
+    stopServerButton->SetStateFontColor(0xFF, Color::White);
+    stopServerButton->SetStateText(0xFF, L"stop server");
+    stopServerButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
+    AddControl(stopServerButton);
 
     packNameLoading = new UIStaticText(Rect(5, 300, 500, 20));
     packNameLoading->SetFont(font);
@@ -88,28 +122,32 @@ void PackManagerTest::LoadResources()
     description->SetMultiline(true);
     description->SetDebugDraw(true);
     description->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-    String message = DAVA::Format("type name of pack you want to download\n"
-                                  "Directory to downloaded packs: \"%s\"\nUrl to packs: \"%s\"\n"
-                                  "When you press \"start loading\" full reinitializetion begins",
-                                  folderWithDownloadedPacks.GetAbsolutePathname().c_str(), urlToServerWithPacks.c_str());
-    description->SetText(UTF8Utils::EncodeToWideString(message));
+    UpdateDescription();
     AddControl(description);
+
+    url = new UITextField(Rect(5, 250, 400, 20));
+    url->SetFont(font);
+    url->SetText(UTF8Utils::EncodeToWideString(urlToServerWithPacks));
+    url->SetDebugDraw(true);
+    url->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    url->SetInputEnabled(true);
+    url->GetOrCreateComponent<UIFocusComponent>();
+    url->SetDelegate(this);
+    url->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(url);
 }
 
 void PackManagerTest::UnloadResources()
 {
-    RemoveControl(packInput);
+    RemoveAllControls();
+
     SafeRelease(packInput);
-    RemoveControl(startLoadingButton);
     SafeRelease(startLoadingButton);
-    RemoveControl(packNameLoading);
     SafeRelease(packNameLoading);
-    RemoveControl(redControl);
     SafeRelease(redControl);
-    RemoveControl(greenControl);
     SafeRelease(greenControl);
-    RemoveControl(description);
     SafeRelease(description);
+    SafeRelease(url);
 
     BaseScreen::UnloadResources();
 }
@@ -129,6 +167,10 @@ void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack, DAV
         if (pack.state == PackManager::Pack::Mounted)
         {
             packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
+        }
+        else if (pack.state == PackManager::Pack::ErrorLoading || pack.state == PackManager::Pack::OtherError)
+        {
+            packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
         }
     }
 }
@@ -168,5 +210,17 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     catch (std::exception& ex)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
+    }
+}
+
+void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    if (sender == startServerButton)
+    {
+        std::system("python scripts/start_local_http_server.py");
+    }
+    else if (sender == stopServerButton)
+    {
+        std::system("python scripts/stop_local_http_server.py");
     }
 }

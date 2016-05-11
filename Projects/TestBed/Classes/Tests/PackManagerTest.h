@@ -34,30 +34,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
 
-class PackManagerTest : public BaseScreen
+class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
     PackManagerTest();
 
 private:
+    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/) override;
+    void UpdateDescription();
+
     void LoadResources() override;
     void UnloadResources() override;
 
     void OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
     void OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change);
 
     DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/test.db";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
-    DAVA::String urlToServerWithPacks = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/";
+    DAVA::String urlToServerWithPacks = "http://127.0.0.1:2424/packs/";
 
     DAVA::UIStaticText* packNameLoading = nullptr;
     DAVA::UIButton* startLoadingButton = nullptr;
+
+    DAVA::UIButton* startServerButton = nullptr;
+    DAVA::UIButton* stopServerButton = nullptr;
+
     DAVA::UIControl* progressBar = nullptr;
     DAVA::UITextField* packInput = nullptr;
     DAVA::UIControl* redControl = nullptr;
     DAVA::UIControl* greenControl = nullptr;
     DAVA::UIStaticText* description = nullptr;
+    DAVA::UITextField* url = nullptr;
 };
 
 #endif //__PACKMANAGERTEST_TEST_H__
