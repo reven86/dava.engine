@@ -766,6 +766,19 @@ void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
     }
 }
 
+bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
+{
+    if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
+    {
+        Vector2 point = lastClickData.physPoint - newEvent->physPoint;
+        if (point.SquareLength() < doubleClickRadiusSquared)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
     int32 tapCount = 0;
@@ -777,15 +790,9 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {
-            if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
+            if (CheckTimeAndPosition(newEvent))
             {
-                // if point inside circle = (x0-x1)(x0-x1) + (y0-y1)(y0-y1) < r*r
-                float32 pointShift((lastClickData.physPoint.x - newEvent->physPoint.x) * (lastClickData.physPoint.x - newEvent->physPoint.x));
-                pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
-                if (static_cast<int32>(pointShift) < doubleClickRadiusSquared)
-                {
-                    tapCount = lastClickData.tapCount + 1;
-                }
+                tapCount = lastClickData.tapCount + 1;
             }
         }
         lastClickData.touchId = newEvent->touchId;
@@ -799,6 +806,10 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         if (newEvent->touchId == lastClickData.touchId)
         {
             lastClickData.lastClickEnded = true;
+            if (CheckTimeAndPosition(newEvent))
+            {
+                tapCount = lastClickData.tapCount;
+            }
         }
     }
     return tapCount;
