@@ -204,7 +204,6 @@ private:
     AV::SwrContext* audioConvertContext = nullptr;
     uint32 outAudioBufferSize = 0;
 
-    static bool isFFMGEGInited;
     int out_channels = -1;
     const int out_sample_rate = 44100;
     FMOD::Sound* sound = nullptr;

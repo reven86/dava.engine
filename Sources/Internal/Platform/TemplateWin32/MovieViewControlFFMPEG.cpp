@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-bool MovieViewControl::isFFMGEGInited = false;
 
 MovieViewControl::~MovieViewControl()
 {
@@ -46,6 +45,8 @@ MovieViewControl::~MovieViewControl()
 // Initialize the control.
 void MovieViewControl::Initialize(const Rect& rect)
 {
+    static bool isFFMGEGInited = false;
+
     SetRect(rect);
     if (!isFFMGEGInited)
     {
@@ -179,29 +180,28 @@ void MovieViewControl::CloseMovie()
 
     isAudioVideoStreamsInited = false;
 
-    if (isFFMGEGInited)
+    if (rgbDecodedScaledFrame)
     {
-        if (rgbDecodedScaledFrame)
-        {
-            av_frame_free(&rgbDecodedScaledFrame);
-        }
+        av_frame_free(&rgbDecodedScaledFrame);
+        rgbDecodedScaledFrame = nullptr;
+    }
 
-        if (videoCodecContext)
-        {
-            AV::avcodec_close(videoCodecContext);
-        }
+    if (videoCodecContext)
+    {
+        AV::avcodec_close(videoCodecContext);
+        videoCodecContext = nullptr;
+    }
 
-        if (audioCodecContext)
-        {
-            AV::avcodec_close(audioCodecContext);
-        }
+    if (audioCodecContext)
+    {
+        AV::avcodec_close(audioCodecContext);
+        audioCodecContext = nullptr;
+    }
 
-        if (movieContext)
-        {
-            AV::avformat_close_input(&movieContext);
-        }
-
-        isFFMGEGInited = false;
+    if (movieContext)
+    {
+        AV::avformat_close_input(&movieContext);
+        movieContext = nullptr;
     }
 }
 
@@ -268,7 +268,7 @@ void MovieViewControl::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
     }
     else
     {
-        AV::av_packet_unref(packet);
+        AV::av_packet_free(&packet);
     }
 }
 
@@ -290,7 +290,7 @@ float64 MovieViewControl::GetAudioClock()
 
 void MovieViewControl::FlushBuffers()
 {
-    DVASSERT(PLAYING != state);
+    DVASSERT(PLAYING != state && PAUSED != state);
     {
         LockGuard<Mutex> audioLock(audioPacketsMutex);
         for (AV::AVPacket* packet : audioPackets)
@@ -526,10 +526,8 @@ void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
     {
         // rgbTextureBuffer is a rgbTextureBufferHolder[0]
         videoTexture->TexImage(0, textureWidth, textureHeight, frameBuffer->data, textureBufferSize, Texture::INVALID_CUBEMAP_FACE);
+        Logger::Error("TexImage");
     }
-
-    // FRAME BUFFER FREE
-    SafeDelete(frameBuffer);
 
     uint32 sleepLessFor = static_cast<uint32>(GetTime() - timeBeforePresent);
     uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5) - sleepLessFor;
@@ -558,8 +556,7 @@ void MovieViewControl::InitFmod()
     memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
 
     exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
-    exinfo.decodebuffersize = out_sample_rate; /* Chunk size of stream update in samples.  This will be the amount of data passed to the user callback. */
-    exinfo.length = out_sample_rate * out_channels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
+    exinfo.length = out_sample_rate * out_channels * sizeof(signed short); // *5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
     exinfo.numchannels = out_channels; /* Number of channels in the sound. */
     exinfo.defaultfrequency = out_sample_rate; /* Default playback rate of sound. */
     exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
@@ -619,6 +616,7 @@ void MovieViewControl::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
     }
 
     pcmBuffer.Write(outAudioBuffer, outAudioBufferSize);
+    SafeDeleteArray(outAudioBuffer);
 }
 
 void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
@@ -649,11 +647,11 @@ void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData,
 
             DecodeAudio(audioPacket, 0);
 
-            AV::av_packet_unref(audioPacket);
+            AV::av_packet_free(&audioPacket);
         }
         else
         {
-            Thread::Sleep(1);
+            Thread::Sleep(0);
         }
 
     } while (thread && !thread->IsCancelling());
@@ -683,9 +681,10 @@ void MovieViewControl::VideoDecodingThread(BaseObject* caller, void* callerData,
             videoPacketsMutex.Unlock();
 
             auto frameBuffer = DecodeVideoPacket(videoPacket);
-            AV::av_packet_unref(videoPacket);
+            AV::av_packet_free(&videoPacket);
 
             UpdateVideo(frameBuffer);
+            SafeDelete(frameBuffer);
         }
         else
         {
@@ -698,9 +697,15 @@ void MovieViewControl::VideoDecodingThread(BaseObject* caller, void* callerData,
 void MovieViewControl::PrefetchData(uint32 dataSize)
 {
     int retRead = 0;
-    do
+    while (retRead >= 0 && currentPrefetchedPacketsCount < dataSize)
     {
-        AV::AVPacket* packet = static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
+        AV::AVPacket* packet = AV::av_packet_alloc(); // static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
+        if (nullptr == packet)
+        {
+            Logger::Error("Can't allocate AVPacket!");
+            DVASSERT(false && "Can't allocate AVPacket!");
+            return;
+        }
         av_init_packet(packet);
         retRead = AV::av_read_frame(movieContext, packet);
 
@@ -708,13 +713,13 @@ void MovieViewControl::PrefetchData(uint32 dataSize)
 
         if (eof)
         {
-            AV::av_packet_unref(packet);
+            AV::av_packet_free(&packet);
         }
         else
         {
             SortPacketsByVideoAndAudio(packet);
         }
-    } while (retRead >= 0 && currentPrefetchedPacketsCount < dataSize);
+    }
 }
 
 void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void* userData)
@@ -755,7 +760,8 @@ void MovieViewControl::Pause()
 
 void MovieViewControl::Resume()
 {
-    Play();
+    if (PAUSED == state)
+        Play();
 }
 
 // Whether the movie is being played?
@@ -766,10 +772,11 @@ bool MovieViewControl::IsPlaying() const
 
 void MovieViewControl::Stop()
 {
+    if (STOPPED == state)
+        return;
+
     Pause();
-
     state = STOPPED;
-
     CloseMovie();
 }
 }

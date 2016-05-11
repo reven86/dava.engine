@@ -41,8 +41,6 @@ UIMovieTest::UIMovieTest()
 
 void UIMovieTest::LoadResources()
 {
-    Renderer::SetDesiredFPS(30);
-
     movieView = new UIMovieView(Rect(10, 10, 940, 600));
     movieView->OpenMovie(path, OpenMovieParams());
 
