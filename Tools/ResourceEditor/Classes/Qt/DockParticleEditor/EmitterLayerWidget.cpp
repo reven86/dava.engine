@@ -66,8 +66,7 @@ const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[] =
 };
 
 EmitterLayerWidget::EmitterLayerWidget(QWidget* parent)
-    : QWidget(parent)
-    , BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainBox = new QVBoxLayout;
     this->setLayout(mainBox);
@@ -453,16 +452,14 @@ void EmitterLayerWidget::InitWidget(QWidget* widget)
             SLOT(OnValueChanged()));
 }
 
-void EmitterLayerWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool updateMinimized)
+void EmitterLayerWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect_, DAVA::ParticleEmitterInstance* instance_,
+                              DAVA::ParticleLayer* layer_, bool updateMinimized)
 {
-    if (!emitter || !layer)
+    if ((instance_ == nullptr) || (layer_ == nullptr))
         return;
 
-    this->effect = effect;
-    this->emitter = emitter;
-    this->layer = layer;
-
-    SetActiveScene(scene);
+    layer = layer_;
+    SetObjectsForScene(scene, effect_, instance_);
     Update(updateMinimized);
 }
 
@@ -668,7 +665,8 @@ void EmitterLayerWidget::OnValueChanged()
     DAVA::ParticleLayer::eDegradeStrategy degradeStrategy = DAVA::ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    std::unique_ptr<CommandUpdateParticleLayer> updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(emitter, layer);
+    SceneEditor2* activeScene = GetActiveScene();
+    auto updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(GetEmitterInstance(activeScene), layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,
@@ -714,15 +712,15 @@ void EmitterLayerWidget::OnValueChanged()
                          static_cast<DAVA::float32>(pivotPointXSpinBox->value()),
                          static_cast<DAVA::float32>(pivotPointYSpinBox->value()));
 
-    DVASSERT(activeScene);
-    activeScene->Exec(std::move(updateLayerCmd));
-    activeScene->MarkAsChanged();
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(std::move(updateLayerCmd));
+    GetActiveScene()->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
     {
-        if (!effect->IsStopped())
-            effect->Restart(true);
+        if (!GetEffect(activeScene)->IsStopped())
+            GetEffect(activeScene)->Restart(true);
     }
     emit ValueChanged();
 }
@@ -735,8 +733,8 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     const DAVA::eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
     const DAVA::FilePath spritePath(spritePathLabel->text().toStdString());
 
-    DVASSERT(activeScene);
-    activeScene->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
 
     UpdateLayerSprite();
 
@@ -747,6 +745,7 @@ void EmitterLayerWidget::OnLodsChanged()
 {
     if (blockSignals)
         return;
+
     DAVA::Vector<bool> lods;
     lods.resize(DAVA::LodComponent::MAX_LOD_LAYERS, true);
     for (DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
@@ -754,8 +753,8 @@ void EmitterLayerWidget::OnLodsChanged()
         lods[i] = layerLodsCheckBox[i]->isChecked();
     }
 
-    activeScene->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
-    activeScene->MarkAsChanged();
+    GetActiveScene()->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
+    GetActiveScene()->MarkAsChanged();
     emit ValueChanged();
 }
 

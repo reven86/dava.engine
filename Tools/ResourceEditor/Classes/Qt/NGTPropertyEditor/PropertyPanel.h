@@ -45,7 +45,7 @@ class InspInfo;
 }
 
 class SceneEditor2;
-class EntityGroup;
+class SelectableGroup;
 
 class PropertyPanel : public QObject, public IViewEventListener
 {
@@ -61,7 +61,7 @@ public:
     ObjectHandle GetPropertyTree() const;
     void SetPropertyTree(const ObjectHandle& dummyTree);
 
-    Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SetObject(DAVA::InspBase* object);
 
 private:
