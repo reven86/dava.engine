@@ -932,6 +932,8 @@ metal_Present(Handle syncObject)
             rp->cmdBuf.clear();
         }
 
+        [_Metal_Frame.back().drawable release]; // this additional 'release' is due to workaround
+        [_Metal_Frame.back().drawable release];
         _Metal_Frame.back().drawable = nil;
         _Metal_NewFramePending = true;
         _Metal_Frame.clear();
