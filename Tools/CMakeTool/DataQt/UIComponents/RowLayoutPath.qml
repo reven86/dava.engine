@@ -21,6 +21,14 @@ RowLayout {
                                ? fileSystemHelper.IsDirExists(loader.item.text)
                                : fileSystemHelper.IsFileExists(loader.item.text)
 
+    //refresh exists icon when path is the same
+    function refreshPath()
+    {
+        var txt = loader.item.text;
+        loader.item.text = "";
+        loader.item.text = txt;
+    }
+
     Label {
         id: label
     }
@@ -40,9 +48,8 @@ RowLayout {
         onAccepted: {
             var url = fileDialog.fileUrls[0].toString()
             url = fileSystemHelper.ResolveUrl(url);
-            //workaround to update icon if path is the same
-            loader.item.text = "";
             loader.item.text = url;
+            refreshPath();
         }
     }
 

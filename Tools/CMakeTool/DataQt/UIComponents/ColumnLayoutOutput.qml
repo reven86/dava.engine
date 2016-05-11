@@ -9,8 +9,10 @@ Item {
     Layout.minimumHeight: label.height +  textField_output.height + rowLayout.minimumHeight + rowLayout_output.spacing * 3 + openProjectButton.height
     Layout.minimumWidth: rowLayout.minimumWidth
     property var outputComplete;
-    signal cmakeLaunched();
+    signal cmakeWillBeLaunched();
+    signal cmakeWasLaunched();
     signal buildStarted();
+    signal cleanOutput();
     property alias needClean: checkBox_clean.checked
 
     ColumnLayout {
@@ -41,8 +43,10 @@ Item {
                 text: qsTr("run cmake")
                 enabled: textField_output.text.length !== 0 && outputComplete && !processWrapper.running
                 onClicked: {
-                    cmakeLaunched();
+                    cleanOutput();
+                    cmakeWillBeLaunched();
                     processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))
+                    cmakeWasLaunched();
                 }
             }
             Button {
@@ -51,6 +55,7 @@ Item {
                 text: qsTr("run build")
                 enabled: !processWrapper.running
                 onClicked: {
+                    cleanOutput();
                     buildStarted()
                     var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
                     var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
@@ -71,7 +76,7 @@ Item {
             id: openProjectButton
             iconSource: "qrc:///Icons/openfolder.png"
             tooltip: qsTr("open project file")
-            enabled: rowLayout_buildFolder.pathIsValid
+            enabled: rowLayout_buildFolder.path.length !== 0
             text: qsTr("Open project file");
             onClicked:  {
                 processWrapper.FindAndOpenProjectFile(rowLayout_buildFolder.path);

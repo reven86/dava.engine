@@ -351,13 +351,19 @@ ApplicationWindow {
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
-                    onCmakeLaunched: {
+                    onCmakeWillBeLaunched: {
                         displayHtmlFormat = true;
                         addProjectToHistory();
-                        textArea_processText.text = "";
                     }
+                    onCmakeWasLaunched: {
+                        //we create build folder
+                        rowLayout_buildFolder.refreshPath();
+                    }
+
                     onBuildStarted: {
                         displayHtmlFormat = false;
+                    }
+                    onCleanOutput: {
                         textArea_processText.text = "";
                     }
                 }
