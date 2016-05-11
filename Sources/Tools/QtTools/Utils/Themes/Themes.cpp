@@ -156,7 +156,7 @@ void SetupClassicTheme()
 
     lightPalette.setColor(QPalette::BrightText, Qt::red);
     lightPalette.setColor(QPalette::Link, Qt::blue);
-    lightPalette.setColor(QPalette::Disabled, QPalette::Link, lightDisabledTextColor);
+    lightPalette.setColor(QPalette::Disabled, QPalette::Light, lightWindowColor);
 
     lightPalette.setColor(QPalette::Highlight, QColor(0x43, 0x8B, 0xBF));
     lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor);
@@ -167,7 +167,7 @@ void SetupClassicTheme()
 
     qApp->setPalette(lightPalette);
 
-    qApp->setStyleSheet("");
+    qApp->setStyleSheet("QDockWidget::title { background: #d5d5d5; }");
 }
 
 void SetupDarkTheme()
@@ -203,7 +203,9 @@ void SetupDarkTheme()
 
     qApp->setPalette(darkPalette);
 
-    qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  } QTabBar::close-button { image: url(:/Icons/close.png); }");
+    qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }"
+                        "QTabBar::close-button { image: url(:/Icons/close.png); }"
+                        "QDockWidget::title { background: #454545; }");
 }
 
 const QString& GetCurrentThemeStr()
