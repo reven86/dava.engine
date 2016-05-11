@@ -230,7 +230,6 @@ private:
     Heightmap* heightmap;
     Vector3 worldSize;
     Vector<Vector2> unitWorldSize;
-    Vector2 heightmapScale;
     Vector2 heightmapToVegetationMapScale;
     uint16 halfWidth;
     uint16 halfHeight;

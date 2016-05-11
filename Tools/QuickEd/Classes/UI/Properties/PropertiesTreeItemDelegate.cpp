@@ -42,10 +42,8 @@
 #include <QToolButton>
 #include <QEvent>
 #include <QMouseEvent>
-#include "QtControls/lineeditext.h"
 
 #include "DAVAEngine.h"
-#include "QtControls/Vector2DEdit.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Vector2PropertyDelegate.h"
@@ -81,17 +79,21 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
-    propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
-    propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
-
     propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
+    propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Gradient"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
+    propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
+
+    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-gradient"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-contour"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
@@ -206,24 +208,13 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
         auto propName_iter = propertyNameTypeItemDelegates.find(StringToQString(property->GetName()));
         if (propName_iter != propertyNameTypeItemDelegates.end())
             return propName_iter.value();
-    }
 
-    QVariant editValue = index.data(Qt::EditRole);
-    if (editValue.userType() == QMetaTypeId<DAVA::VariantType>::qt_metatype_id())
-    {
-        DAVA::VariantType variantType = editValue.value<DAVA::VariantType>();
-        QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*>::const_iterator var_iter = variantTypeItemDelegates.find(variantType.GetType());
+        auto var_iter = variantTypeItemDelegates.find(property->GetValueType());
         if (var_iter != variantTypeItemDelegates.end())
             return var_iter.value();
     }
-    else
-    {
-        QMap<QVariant::Type, AbstractPropertyDelegate*>::const_iterator iter = qvariantItemDelegates.find(editValue.type());
-        if (iter != qvariantItemDelegates.end())
-            return iter.value();
-    }
 
-    return NULL;
+    return nullptr;
 }
 
 void PropertiesTreeItemDelegate::emitCommitData(QWidget* editor)

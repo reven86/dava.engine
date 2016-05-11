@@ -42,20 +42,23 @@ class SceneEditor2;
 class ModifyCustomColorsCommand : public Command2
 {
 public:
-    ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy, const DAVA::Rect& updatedRect);
+    ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy,
+                              const DAVA::Rect& updatedRect, bool clearTexture);
     ~ModifyCustomColorsCommand() override;
 
     void Undo() override;
     void Redo() override;
     DAVA::Entity* GetEntity() const override;
 
-protected:
-    CustomColorsProxy* customColorsProxy;
-    DAVA::Image* undoImage;
-    DAVA::Image* redoImage;
-    DAVA::Rect updatedRect;
+private:
+    void ApplyImage(DAVA::Image* image, bool disableBlend);
 
-    void ApplyImage(DAVA::Image* image);
+private:
+    CustomColorsProxy* customColorsProxy = nullptr;
+    DAVA::Image* undoImage = nullptr;
+    DAVA::Image* redoImage = nullptr;
+    DAVA::Rect updatedRect;
+    bool shouldClearTexture = false;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__) */

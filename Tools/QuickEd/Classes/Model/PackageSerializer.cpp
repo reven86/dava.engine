@@ -52,6 +52,8 @@
 #include "ControlProperties/StyleSheetSelectorProperty.h"
 #include "ControlProperties/StyleSheetProperty.h"
 
+#include "UI/UIPackage.h"
+
 using namespace DAVA;
 
 PackageSerializer::PackageSerializer()
@@ -112,7 +114,7 @@ void PackageSerializer::SerializePackageNodes(PackageNode* package, const DAVA::
 void PackageSerializer::VisitPackage(PackageNode* node)
 {
     BeginMap("Header");
-    PutValue("version", Format("%d", CURRENT_VERSION));
+    PutValue("version", Format("%d", UIPackage::CURRENT_VERSION));
     EndMap();
 
     if (!importedPackages.empty())

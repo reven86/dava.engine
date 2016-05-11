@@ -118,29 +118,31 @@ public:
     pointer_size layerSortingKey;
 
     rhi::HVertexBuffer vertexBuffer;
-    uint32 vertexCount;
-    uint32 vertexBase;
+    rhi::HVertexBuffer instanceBuffer;
+    uint32 vertexCount = 0;
+    uint32 vertexBase = 0;
     rhi::HIndexBuffer indexBuffer;
-    uint32 startIndex;
-    uint32 indexCount;
+    uint32 startIndex = 0;
+    uint32 indexCount = 0;
+    uint32 instanceCount = 0;
 
-    rhi::PrimitiveType primitiveType;
-    uint32 vertexLayoutId;
+    rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    uint32 vertexLayoutId = rhi::VertexLayout::InvalidUID;
 
 private:
-    PolygonGroup* dataSource;
+    PolygonGroup* dataSource = nullptr;
 
-    NMaterial* material; // Should be replaced to NMaterial
-    RenderObject* renderObject;
-
-    uint32 sortingKey; //oooookkkk -where o is offset, k is key
+    NMaterial* material = nullptr;
+    RenderObject* renderObject = nullptr;
 
     const static uint32 SORTING_KEY_MASK = 0x0f;
     const static uint32 SORTING_OFFSET_MASK = 0x1f0;
     const static uint32 SORTING_OFFSET_SHIFT = 4;
     const static uint32 SORTING_KEY_DEF_VALUE = 0xf8;
 
-    AABBox3 aabbox;
+    uint32 sortingKey = SORTING_KEY_DEF_VALUE; //oooookkkk - where 'o' is offset, 'k' is key
+
+    AABBox3 aabbox = AABBox3(Vector3(), Vector3());
 
     void InsertDataNode(DataNode* node, Set<DataNode*>& dataNodes);
 
@@ -199,6 +201,8 @@ inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
     {
         packet.vertexStreamCount = 1;
         packet.vertexStream[0] = dataSource->vertexBuffer;
+        packet.vertexStream[1] = rhi::HVertexBuffer();
+        packet.instanceCount = 0;
         packet.baseVertex = 0;
         packet.vertexCount = dataSource->vertexCount;
         packet.indexBuffer = dataSource->indexBuffer;
@@ -209,8 +213,10 @@ inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
     }
     else
     {
-        packet.vertexStreamCount = 1;
+        packet.vertexStreamCount = instanceCount ? 2 : 1;
         packet.vertexStream[0] = vertexBuffer;
+        packet.vertexStream[1] = instanceCount ? instanceBuffer : rhi::HVertexBuffer();
+        packet.instanceCount = instanceCount;
         packet.baseVertex = vertexBase;
         packet.vertexCount = vertexCount;
         packet.indexBuffer = indexBuffer;

@@ -34,18 +34,27 @@
 
 using namespace DAVA;
 
-ValueProperty::ValueProperty(const DAVA::String& propName)
-    : name(propName)
-    , stylePropertyIndex(-1)
-    , overridden(false)
-    , prototypeProperty(nullptr) // weak
+namespace SValueProperty
 {
+static const Vector<String> VECTOR2_COMPONENT_NAMES = { "X", "Y" };
+static const Vector<String> COLOR_COMPONENT_NAMES = { "Red", "Green", "Blue", "Alpha" };
+static const Vector<String> MARGINS_COMPONENT_NAMESs = { "Left", "Top", "Right", "Bottom" };
+}
+
+ValueProperty::ValueProperty(const String& propName, VariantType::eVariantType type, bool builtinSubProps, const InspDesc* desc)
+    : name(propName)
+    , valueType(type)
+    , defaultValue(VariantType::FromType(type))
+    , inspDesc(desc)
+{
+    if (builtinSubProps)
+    {
+        GenerateBuiltInSubProperties();
+    }
 }
 
 ValueProperty::~ValueProperty()
 {
-    for (auto child : children)
-        child->Release();
     children.clear();
 
     prototypeProperty = nullptr; // weak
@@ -60,7 +69,7 @@ AbstractProperty* ValueProperty::GetProperty(int32 index) const
 {
     if (0 <= index && index < static_cast<int32>(children.size()))
     {
-        return children[index];
+        return children[index].Get();
     }
     else
     {
@@ -69,12 +78,12 @@ AbstractProperty* ValueProperty::GetProperty(int32 index) const
     }
 }
 
-void ValueProperty::Refresh(DAVA::int32 refreshFlags)
+void ValueProperty::Refresh(int32 refreshFlags)
 {
     if ((refreshFlags & REFRESH_DEFAULT_VALUE) != 0 && prototypeProperty)
         SetDefaultValue(prototypeProperty->GetValue());
 
-    for (SubValueProperty* prop : children)
+    for (RefPtr<AbstractProperty>& prop : children)
         prop->Refresh(refreshFlags);
 }
 
@@ -117,22 +126,33 @@ bool ValueProperty::HasChanges() const
     return IsOverriddenLocally();
 }
 
-const DAVA::String& ValueProperty::GetName() const
+const String& ValueProperty::GetName() const
 {
     return name;
 }
 
 ValueProperty::ePropertyType ValueProperty::GetType() const
 {
+    auto type = inspDesc ? inspDesc->type : InspDesc::T_UNDEFINED;
+    if (type == InspDesc::T_ENUM)
+        return TYPE_ENUM;
+    else if (type == InspDesc::T_FLAGS)
+        return TYPE_FLAGS;
+
     return TYPE_VARIANT;
+}
+
+DAVA::VariantType::eVariantType ValueProperty::GetValueType() const
+{
+    return valueType;
 }
 
 VariantType ValueProperty::GetValue() const
 {
-    return VariantType();
+    return VariantType::FromType(GetValueType());
 }
 
-void ValueProperty::SetValue(const DAVA::VariantType& newValue)
+void ValueProperty::SetValue(const VariantType& newValue)
 {
     overridden = true;
     ApplyValue(newValue);
@@ -143,8 +163,11 @@ VariantType ValueProperty::GetDefaultValue() const
     return defaultValue;
 }
 
-void ValueProperty::SetDefaultValue(const DAVA::VariantType& newValue)
+void ValueProperty::SetDefaultValue(const VariantType& newValue)
 {
+    VariantType::eVariantType valueType = GetValueType();
+    DVASSERT(newValue.GetType() == valueType);
+
     defaultValue = newValue;
     if (!overridden)
         ApplyValue(newValue);
@@ -152,7 +175,13 @@ void ValueProperty::SetDefaultValue(const DAVA::VariantType& newValue)
 
 const EnumMap* ValueProperty::GetEnumMap() const
 {
-    return NULL;
+    auto type = inspDesc ? inspDesc->type : InspDesc::T_UNDEFINED;
+
+    if (type == InspDesc::T_ENUM ||
+        type == InspDesc::T_FLAGS)
+        return inspDesc->enumMap;
+
+    return nullptr;
 }
 
 void ValueProperty::ResetValue()
@@ -175,22 +204,27 @@ bool ValueProperty::IsOverriddenLocally() const
     return overridden;
 }
 
-VariantType ValueProperty::GetSubValue(int index) const
+VariantType::eVariantType ValueProperty::GetSubValueType(int32 index) const
+{
+    return GetValueTypeComponent(index);
+}
+
+VariantType ValueProperty::GetSubValue(int32 index) const
 {
     return GetValueComponent(GetValue(), index);
 }
 
-void ValueProperty::SetSubValue(int index, const DAVA::VariantType& newValue)
+void ValueProperty::SetSubValue(int32 index, const VariantType& newValue)
 {
     SetValue(ChangeValueComponent(GetValue(), newValue, index));
 }
 
-VariantType ValueProperty::GetDefaultSubValue(int index) const
+VariantType ValueProperty::GetDefaultSubValue(int32 index) const
 {
     return GetValueComponent(defaultValue, index);
 }
 
-void ValueProperty::SetDefaultSubValue(int index, const DAVA::VariantType& newValue)
+void ValueProperty::SetDefaultSubValue(int32 index, const VariantType& newValue)
 {
     SetDefaultValue(ChangeValueComponent(defaultValue, newValue, index));
 }
@@ -200,11 +234,11 @@ int32 ValueProperty::GetStylePropertyIndex() const
     return stylePropertyIndex;
 }
 
-void ValueProperty::ApplyValue(const DAVA::VariantType& value)
+void ValueProperty::ApplyValue(const VariantType& value)
 {
 }
 
-void ValueProperty::SetName(const DAVA::String& newName)
+void ValueProperty::SetName(const String& newName)
 {
     name = newName;
 }
@@ -219,14 +253,17 @@ void ValueProperty::SetStylePropertyIndex(int32 index)
     stylePropertyIndex = index;
 }
 
-void ValueProperty::AddSubValueProperty(SubValueProperty* prop)
+void ValueProperty::AddSubValueProperty(AbstractProperty* prop)
 {
-    children.push_back(SafeRetain(prop));
+    children.push_back(RefPtr<AbstractProperty>(SafeRetain(prop)));
 }
 
 VariantType ValueProperty::ChangeValueComponent(const VariantType& value, const VariantType& component, int32 index) const
 {
-    switch (defaultValue.GetType())
+    VariantType::eVariantType valueType = GetValueType();
+    DVASSERT(defaultValue.GetType() == valueType);
+
+    switch (valueType)
     {
     case VariantType::TYPE_VECTOR2:
     {
@@ -294,9 +331,54 @@ VariantType ValueProperty::ChangeValueComponent(const VariantType& value, const 
     return VariantType();
 }
 
-DAVA::VariantType ValueProperty::GetValueComponent(const DAVA::VariantType& value, DAVA::int32 index) const
+VariantType::eVariantType ValueProperty::GetValueTypeComponent(int32 index) const
 {
-    switch (defaultValue.GetType())
+    VariantType::eVariantType valueType = GetValueType();
+    DVASSERT(defaultValue.GetType() == valueType);
+
+    switch (valueType)
+    {
+    case VariantType::TYPE_VECTOR2:
+    {
+        DVASSERT(index >= 0 && index < 2);
+        return VariantType::TYPE_FLOAT;
+    }
+
+    case VariantType::TYPE_COLOR:
+    {
+        DVASSERT(index >= 0 && index < 4);
+        return VariantType::TYPE_FLOAT;
+    }
+
+    case VariantType::TYPE_VECTOR4:
+    {
+        DVASSERT(index >= 0 && index < 4);
+        return VariantType::TYPE_FLOAT;
+    }
+
+    case VariantType::TYPE_INT32:
+        if (GetType() == TYPE_FLAGS)
+        {
+            return VariantType::TYPE_BOOLEAN;
+        }
+        else
+        {
+            DVASSERT(false);
+            return VariantType::TYPE_NONE;
+        }
+
+    default:
+        DVASSERT(false);
+        return VariantType::TYPE_NONE;
+    }
+}
+
+VariantType ValueProperty::GetValueComponent(const VariantType& value, int32 index) const
+{
+    VariantType::eVariantType valueType = GetValueType();
+    DVASSERT(defaultValue.GetType() == valueType);
+
+    switch (valueType)
     {
     case VariantType::TYPE_VECTOR2:
     {
@@ -334,4 +416,47 @@ DAVA::VariantType ValueProperty::GetValueComponent(const DAVA::VariantType& valu
         DVASSERT(false);
         return VariantType();
     }
+}
+
+void ValueProperty::GenerateBuiltInSubProperties()
+{
+    const Vector<String>* componentNames = nullptr;
+    Vector<SubValueProperty*> subProperties;
+    VariantType::eVariantType valueType = GetValueType();
+    if (valueType == VariantType::TYPE_VECTOR2)
+    {
+        componentNames = &SValueProperty::VECTOR2_COMPONENT_NAMES;
+    }
+    else if (valueType == VariantType::TYPE_COLOR)
+    {
+        componentNames = &SValueProperty::COLOR_COMPONENT_NAMES;
+    }
+    else if (valueType == VariantType::TYPE_VECTOR4)
+    {
+        componentNames = &SValueProperty::MARGINS_COMPONENT_NAMESs;
+    }
+    else if (valueType == VariantType::TYPE_INT32 && inspDesc && inspDesc->type == InspDesc::T_FLAGS)
+    {
+        const EnumMap* map = inspDesc->enumMap;
+        for (size_type i = 0; i < map->GetCount(); ++i)
+        {
+            int val = 0;
+            DVVERIFY(map->GetValue(i, val));
+            subProperties.push_back(new SubValueProperty(i, map->ToString(val)));
+        }
+    }
+
+    if (componentNames != nullptr)
+    {
+        for (size_type i = 0; i < componentNames->size(); ++i)
+            subProperties.push_back(new SubValueProperty(i, componentNames->at(i)));
+    }
+
+    for (SubValueProperty* prop : subProperties)
+    {
+        prop->SetParent(this);
+        AddSubValueProperty(prop);
+        SafeRelease(prop);
+    }
+    subProperties.clear();
 }

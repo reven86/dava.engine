@@ -37,8 +37,6 @@ namespace DAVA
 class UIControl;
 }
 
-class SubValueProperty;
-
 class IntrospectionProperty : public ValueProperty
 {
 public:
@@ -53,7 +51,6 @@ public:
     void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor* visitor) override;
 
-    ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
 
     DAVA::VariantType GetValue() const override;
@@ -62,8 +59,6 @@ public:
     {
         return object;
     }
-
-    const EnumMap* GetEnumMap() const override;
 
     bool IsSameMember(const DAVA::InspMember* aMember) const override
     {

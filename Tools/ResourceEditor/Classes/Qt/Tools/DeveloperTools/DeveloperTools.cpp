@@ -37,6 +37,7 @@
 #include "QtTools/SpyWidget/SpySearch/SpySearch.h"
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
 
 #include <QInputDialog>
 
@@ -214,5 +215,16 @@ void DeveloperTools::OnReplaceTextureMipmap()
     if (isOk)
     {
         MipMapReplacer::ReplaceMipMaps(QtMainWindow::Instance()->GetCurrentScene(), FastName(item.toStdString().c_str()));
+    }
+}
+
+void DeveloperTools::OnToggleLandscapeInstancing()
+{
+    SceneEditor2* currentScene = QtMainWindow::Instance()->GetCurrentScene();
+
+    for (Landscape* l : currentScene->landscapeSystem->GetLandscapeObjects())
+    {
+        l->SetUseInstancing(!l->IsUseInstancing());
+        Logger::FrameworkDebug("Landscape uses instancing: %s", l->IsUseInstancing() ? "true" : "false");
     }
 }
