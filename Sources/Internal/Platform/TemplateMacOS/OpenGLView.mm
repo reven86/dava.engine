@@ -34,7 +34,6 @@
 extern void FrameworkMain(int argc, char* argv[]);
 
 @implementation OpenGLView
-@synthesize willQuit;
 
 - (id)initWithFrame:(NSRect)frameRect
 {
@@ -77,8 +76,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     trackingArea = nil;
     [self enableTrackingArea];
-    isFirstDraw = true;
-    willQuit = false;
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
@@ -144,17 +141,11 @@ extern void FrameworkMain(int argc, char* argv[]);
         float32 scale = DeviceInfo::GetScreenInfo().scale;
         Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
         Core::Instance()->SetNativeView(self);
+
+        Core::Instance()->SystemProcessFrame();
     }
 
     [super reshape];
-}
-
-- (void)drawRect:(NSRect)theRect
-{
-    if (willQuit)
-        return;
-
-    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (BOOL)acceptsFirstResponder
@@ -179,7 +170,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
 
-    if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
@@ -308,27 +299,8 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     }
 }
 
-// For explanation of mouseMoveSkipCounter see CursorMacOS.mm file, Cursor::SetMouseCaptureMode method
-extern int mouseMoveSkipCounter;
-
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
-    NSEventType type = [touch type];
-    switch (type)
-    {
-    case NSMouseMoved:
-    case NSLeftMouseDragged:
-    case NSRightMouseDragged:
-    case NSOtherMouseDragged:
-        if (mouseMoveSkipCounter > 0)
-        {
-            mouseMoveSkipCounter -= 1;
-            return;
-        }
-        break;
-    default:
-        break;
-    }
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
@@ -412,19 +384,6 @@ extern int mouseMoveSkipCounter;
 - (void)mouseDragged:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
-}
-
-void OSXShowCursor();
-
-- (void)mouseExited:(NSEvent*)theEvent
-{
-    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-    if (captureMode != InputSystem::eMouseCaptureMode::PINING)
-    {
-        // This event is sometimes delivered when mouse pinning is on
-        // So do not show cursor while pinning is on
-        OSXShowCursor();
-    }
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent

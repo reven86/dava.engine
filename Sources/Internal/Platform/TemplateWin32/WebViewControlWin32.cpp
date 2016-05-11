@@ -1093,7 +1093,7 @@ void WebViewControl::SetRenderToTexture(bool value)
 
 void WebViewControl::Initialize(const Rect& rect)
 {
-    CoreWin32PlatformBase* core = static_cast<CoreWin32PlatformBase*>(Core::Instance());
+    CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     DVASSERT(core);
 
     int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;
@@ -1223,6 +1223,8 @@ void WebViewControl::SetRect(const Rect& rect)
     VirtualCoordinatesSystem& coordSys = *VirtualCoordinatesSystem::Instance();
 
     Rect convertedRect = coordSys.ConvertVirtualToPhysical(rect);
+    convertedRect.dx = std::max(0.0f, convertedRect.dx);
+    convertedRect.dy = std::max(0.0f, convertedRect.dy);
 
     browserRectTmp.left = static_cast<LONG>(convertedRect.x);
     browserRectTmp.top = static_cast<LONG>(convertedRect.y);

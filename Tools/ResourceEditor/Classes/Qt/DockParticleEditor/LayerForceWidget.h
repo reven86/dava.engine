@@ -38,7 +38,7 @@
 class TimeLineWidget;
 class QVBoxLayout;
 
-class LayerForceWidget : public QWidget, public BaseParticleEditorContentWidget
+class LayerForceWidget : public BaseParticleEditorContentWidget
 {
     Q_OBJECT
 

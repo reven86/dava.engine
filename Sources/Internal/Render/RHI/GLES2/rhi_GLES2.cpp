@@ -224,6 +224,10 @@ gles_check_GL_extensions()
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
         _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
 
+        _GLES2_DeviceCaps.isInstancingSupported =
+        (strstr(ext, "GL_EXT_draw_instanced") || strstr(ext, "GL_ARB_draw_instanced") || strstr(ext, "GL_ARB_draw_elements_base_vertex")) &&
+        (strstr(ext, "GL_EXT_instanced_arrays") || strstr(ext, "GL_ARB_instanced_arrays"));
+
 #if defined(__DAVAENGINE_ANDROID__)
         _GLES2_IsGlDepth24Stencil8Supported = (strstr(ext, "GL_DEPTH24_STENCIL8") != nullptr) || (strstr(ext, "GL_OES_packed_depth_stencil") != nullptr) || (strstr(ext, "GL_EXT_packed_depth_stencil") != nullptr);
 #else
@@ -234,8 +238,6 @@ gles_check_GL_extensions()
 
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
     }
-
-    _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
 
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
@@ -254,13 +256,29 @@ gles_check_GL_extensions()
             {
                 _GLES2_DeviceCaps.is32BitIndicesSupported = true;
                 _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
+                _GLES2_DeviceCaps.isInstancingSupported = true;
             }
+#ifdef __DAVAENGINE_ANDROID__
+            if (majorVersion >= 3)
+            {
+                glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstanced");
+                glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstanced");
+                glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisor");
+            }
+            else
+            {
+                glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
+                glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
+                glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
+            }
+#endif
         }
         else
         {
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
+            _GLES2_DeviceCaps.isInstancingSupported |= (majorVersion > 3) && (minorVersion > 3);
 
             if (majorVersion >= 3)
             {
@@ -287,6 +305,8 @@ gles_check_GL_extensions()
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
+        memcpy(_GLES2_DeviceCaps.deviceDescription, renderer, strlen(renderer));
+
         if (strstr(renderer, "Mali"))
         {
             // drawing from memory is worst case scenario,
@@ -386,6 +406,8 @@ static void
 gles2_InvalidateCache()
 {
     PipelineStateGLES2::InvalidateCache();
+    DepthStencilStateGLES2::InvalidateCache();
+    TextureGLES2::InvalidateCache();
 }
 
 //------------------------------------------------------------------------------
@@ -612,10 +634,12 @@ void gles2_Initialize(const InitParam& param)
         stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
         RECT rc;
-
-        GetClientRect((HWND)_GLES2_Native_Window, &rc);
-        _GLES2_DefaultFrameBuffer_Width = rc.right - rc.left;
-        _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
+        if (_GLES2_Native_Window)
+        {
+            GetClientRect((HWND)_GLES2_Native_Window, &rc);
+            _GLES2_DefaultFrameBuffer_Width = rc.right - rc.left;
+            _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
+        }
 
         InitializeRenderThreadGLES2((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
 

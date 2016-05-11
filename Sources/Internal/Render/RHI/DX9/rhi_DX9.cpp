@@ -407,6 +407,7 @@ void dx9_Initialize(const InitParam& param)
     _DeviceCapsDX9.is32BitIndicesSupported = true;
     _DeviceCapsDX9.isFramebufferFetchSupported = true;
     _DeviceCapsDX9.isVertexTextureUnitsSupported = true;
+    _DeviceCapsDX9.isInstancingSupported = true;
     _DeviceCapsDX9.isUpperLeftRTOrigin = true;
     _DeviceCapsDX9.isZeroBaseClipRange = true;
     _DeviceCapsDX9.isCenterPixelMapping = true;

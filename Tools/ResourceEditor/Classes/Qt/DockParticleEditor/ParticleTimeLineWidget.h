@@ -35,7 +35,7 @@
 #include <QLabel>
 #include <QTimer>
 
-#include <DAVAEngine.h>
+#include "DAVAEngine.h"
 #include "ScrollZoomWidget.h"
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
 #include "Scene/SceneEditor2.h"
@@ -83,24 +83,19 @@ signals:
 
 protected slots:
 
-    // Scene Tree signals - Particles are selected.
-    void OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-    void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-    void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
+    void OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     // Scene Tree signals - values are changed for Particles.
-    void OnParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void OnParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
     void OnParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
     void OnParticleEffectStateChanged(SceneEditor2* scene, DAVA::Entity* effect, bool isStarted);
 
     // Scene Tree signals - Particle Emitter is loaded.
-    void OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
     // Scene Tree signals - structure changes.
-    void OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
-    void OnParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer);
+    void OnParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitterInstance* emitter);
 
     void OnUpdate();
 
@@ -139,7 +134,7 @@ private:
 
     // Handle situation when the Particle Emitter Node is selected (including
     // case when separate Layer node is selected.
-    void HandleEmitterSelected(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
+    void HandleEmitterSelected(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleLayer* layer);
 
     QRect GetSliderRect() const override;
     QRect GetIncreaseRect() const override;
@@ -158,7 +153,7 @@ private:
     QFont nameFont;
 
     DAVA::ParticleEffectComponent* selectedEffect = nullptr;
-    DAVA::ParticleEmitter* selectedEmitter = nullptr;
+    DAVA::ParticleEmitterInstance* selectedEmitter = nullptr;
 
     DAVA::int32 selectedLine;
     DAVA::int32 selectedLineOrigin;

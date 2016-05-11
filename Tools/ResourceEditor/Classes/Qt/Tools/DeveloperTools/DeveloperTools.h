@@ -46,5 +46,6 @@ public slots:
     void OnSpyWidget();
     void OnImageSplitterNormals();
     void OnReplaceTextureMipmap();
+    void OnToggleLandscapeInstancing();
 };
 #endif /* defined(__DEBUG_TOOLS__) */

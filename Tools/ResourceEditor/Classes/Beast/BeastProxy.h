@@ -58,7 +58,7 @@ public:
     }
     virtual DAVA::String GetCurTaskName(BeastManager* manager) const
     {
-        DAVA::String();
+        return DAVA::String();
     }
 
     virtual void Run(BeastManager* manager, DAVA::Scene* scene){};

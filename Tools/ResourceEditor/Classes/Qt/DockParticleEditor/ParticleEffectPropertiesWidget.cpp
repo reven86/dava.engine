@@ -45,10 +45,7 @@ static const int TreeItemTypeForce = QTreeWidgetItem::UserType + 3;
 static const int TreeItemTypeExternal = QTreeWidgetItem::UserType + 4;
 
 ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainLayout = new QVBoxLayout();
     mainLayout->setAlignment(Qt::AlignTop);
@@ -143,13 +140,8 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent)
 
     mainLayout->addStretch();
 
-    particleEffect = NULL;
     blockSignals = false;
     blockTables = false;
-}
-
-ParticleEffectPropertiesWidget::~ParticleEffectPropertiesWidget()
-{
 }
 
 void ParticleEffectPropertiesWidget::InitWidget(QWidget* widget, bool connectWidget)
@@ -162,23 +154,24 @@ void ParticleEffectPropertiesWidget::InitWidget(QWidget* widget, bool connectWid
 void ParticleEffectPropertiesWidget::UpdateVaribleTables()
 {
     blockTables = true;
-    DAVA::Set<DAVA::String> variablesSet = particleEffect->EnumerateVariables();
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DAVA::Set<DAVA::String> variablesSet = effect->EnumerateVariables();
     effectVariables->clearContents();
-    effectVariables->setRowCount(variablesSet.size());
+    effectVariables->setRowCount(static_cast<int>(variablesSet.size()));
     DAVA::int32 i = 0;
     for (DAVA::Set<DAVA::String>::iterator it = variablesSet.begin(), e = variablesSet.end(); it != e; ++it)
     {
         QTableWidgetItem* varName = new QTableWidgetItem(QString((*it).c_str()));
         varName->setFlags(Qt::NoItemFlags);
         effectVariables->setItem(i, 0, varName);
-        QTableWidgetItem* varValue = new QTableWidgetItem(QString::number(particleEffect->GetExternalValue(*it)));
+        QTableWidgetItem* varValue = new QTableWidgetItem(QString::number(effect->GetExternalValue(*it)));
         effectVariables->setItem(i, 1, varValue);
         i++;
     }
 
-    DAVA::Map<DAVA::String, DAVA::float32> globalVariablesSet = particleEffect->GetEntity()->GetScene()->particleEffectSystem->GetGlobalExternals();
+    DAVA::Map<DAVA::String, DAVA::float32> globalVariablesSet = effect->GetEntity()->GetScene()->particleEffectSystem->GetGlobalExternals();
     globalVariables->clearContents();
-    globalVariables->setRowCount(globalVariablesSet.size());
+    globalVariables->setRowCount(static_cast<int>(globalVariablesSet.size()));
     i = 0;
     for (DAVA::Map<DAVA::String, DAVA::float32>::iterator it = globalVariablesSet.begin(), e = globalVariablesSet.end(); it != e; ++it)
     {
@@ -199,7 +192,7 @@ void ParticleEffectPropertiesWidget::OnVariableValueChanged(int row, int col)
         return;
     DAVA::String varNam = effectVariables->item(row, 0)->text().toStdString();
     float varValue = effectVariables->item(row, 1)->text().toFloat();
-    particleEffect->SetExtertnalValue(varNam, varValue);
+    GetEffect(GetActiveScene())->SetExtertnalValue(varNam, varValue);
 }
 
 void ParticleEffectPropertiesWidget::OnGlobalVariableValueChanged(int row, int col)
@@ -208,7 +201,7 @@ void ParticleEffectPropertiesWidget::OnGlobalVariableValueChanged(int row, int c
         return;
     DAVA::String varNam = globalVariables->item(row, 0)->text().toStdString();
     float varValue = globalVariables->item(row, 1)->text().toFloat();
-    particleEffect->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(varNam, varValue);
+    GetEffect(GetActiveScene())->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(varNam, varValue);
     UpdateVaribleTables();
 }
 
@@ -217,7 +210,7 @@ void ParticleEffectPropertiesWidget::OnAddGlobalExternal()
     AddGlobalExternalDialog dialog(this);
     if (dialog.exec())
     {
-        particleEffect->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(dialog.GetVariableName(), dialog.GetVariableValue());
+        GetEffect(GetActiveScene())->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(dialog.GetVariableName(), dialog.GetVariableValue());
         UpdateVaribleTables();
     }
 }
@@ -290,6 +283,8 @@ void ParticleEffectPropertiesWidget::OnTreeItemDoubleClck(QTreeWidgetItem* treeI
 
 void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction* action)
 {
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+
     int commandId = action->data().toInt();
     if (commandId == -1)
     {
@@ -297,19 +292,19 @@ void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction* action)
         int externalId = data.externalParamId;
         if (externalId < EE_TOTAL)
         {
-            particleEffect->UnRegisterModifiable(GetEmitterLine(data.emmiter, EmitterExternals(externalId)));
+            effect->UnRegisterModifiable(GetEmitterLine(data.emmiter, EmitterExternals(externalId)));
             RemoveEmitterLineModifiable(data.emmiter, EmitterExternals(externalId));
             UpdateVaribleTables();
         }
         else if (externalId < EL_TOTAL)
         {
-            particleEffect->UnRegisterModifiable(GetLayerLine(data.layer, LayerExternals(externalId)));
+            effect->UnRegisterModifiable(GetLayerLine(data.layer, LayerExternals(externalId)));
             RemoveLayerLineModifiable(data.layer, LayerExternals(externalId));
             UpdateVaribleTables();
         }
         else
         {
-            particleEffect->UnRegisterModifiable(GetForceLine(data.force, ForceExternals(externalId)));
+            effect->UnRegisterModifiable(GetForceLine(data.force, ForceExternals(externalId)));
             RemoveForceLineModifiable(data.force, ForceExternals(externalId));
             UpdateVaribleTables();
         }
@@ -354,7 +349,7 @@ void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction* action)
         EffectTreeData data = currSelectedTreeItem->data(0, Qt::UserRole).value<EffectTreeData>();
         SetForceLineModifiable(data.force, ForceExternals(commandId));
 
-        particleEffect->RegisterModifiable(GetForceLine(data.force, ForceExternals(commandId)));
+        effect->RegisterModifiable(GetForceLine(data.force, ForceExternals(commandId)));
         UpdateVaribleTables();
 
         if (EditForceModifiable(data.force, ForceExternals(commandId), true))
@@ -377,62 +372,73 @@ void ParticleEffectPropertiesWidget::OnValueChanged()
     if (blockSignals)
         return;
 
-    DVASSERT(particleEffect != 0);
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+
+    DVASSERT(effect != nullptr);
     DAVA::float32 playbackSpeed = ConvertFromSliderValueToPlaybackSpeed(effectPlaybackSpeed->value());
 
-    std::unique_ptr<CommandUpdateEffect> commandUpdateEffect = Command2::Create<CommandUpdateEffect>(particleEffect);
+    std::unique_ptr<CommandUpdateEffect> commandUpdateEffect = Command2::Create<CommandUpdateEffect>(effect);
     commandUpdateEffect->Init(playbackSpeed);
 
-    DVASSERT(activeScene != 0);
-    activeScene->Exec(std::move(commandUpdateEffect));
-    activeScene->MarkAsChanged();
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(std::move(commandUpdateEffect));
+    GetActiveScene()->MarkAsChanged();
 
-    Init(activeScene, particleEffect);
+    Init(GetActiveScene(), effect);
 }
 
 void ParticleEffectPropertiesWidget::OnPlay()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Start();
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Start();
 }
+
 void ParticleEffectPropertiesWidget::OnStop()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Stop(false);
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Stop(false);
 }
+
 void ParticleEffectPropertiesWidget::OnStopAndDelete()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Stop(true);
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Stop(true);
 }
+
 void ParticleEffectPropertiesWidget::OnPause()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Pause(!particleEffect->IsPaused());
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Pause(!effect->IsPaused());
 }
+
 void ParticleEffectPropertiesWidget::OnRestart()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Restart();
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Restart();
 }
+
 void ParticleEffectPropertiesWidget::OnStepForward()
 {
-    DVASSERT(particleEffect != 0);
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
     DAVA::float32 step = 1.0f / static_cast<DAVA::float32>(stepForwardFPSSpin->value());
-    particleEffect->Step(step);
+    effect->Step(step);
 }
 
 void ParticleEffectPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect)
 {
-    DVASSERT(effect != 0);
-    this->particleEffect = effect;
-    this->emitter = NULL;
-    SetActiveScene(scene);
+    DVASSERT(effect != nullptr);
+    SetObjectsForScene(scene, effect, nullptr);
 
     blockSignals = true;
 
     // Normalize Playback Speed to the UISlider range.
-    DAVA::float32 playbackSpeed = particleEffect->GetPlaybackSpeed();
+    DAVA::float32 playbackSpeed = effect->GetPlaybackSpeed();
     effectPlaybackSpeed->setValue(ConvertFromPlaybackSpeedToSliderValue(playbackSpeed));
     UpdatePlaybackSpeedLabel();
     BuildEffectTree();
@@ -842,15 +848,18 @@ bool ParticleEffectPropertiesWidget::EditForceModifiable(DAVA::ParticleForce* fo
 
 void ParticleEffectPropertiesWidget::BuildEffectTree()
 {
-    currSelectedTreeItem = NULL;
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+
+    currSelectedTreeItem = nullptr;
     effectTree->clear();
-    effectTree->setHeaderLabel(QString(particleEffect->GetEntity()->GetName().c_str()));
+    effectTree->setHeaderLabel(QString(effect->GetEntity()->GetName().c_str()));
     QTreeWidgetItem* root = effectTree->invisibleRootItem();
     EffectTreeData data;
-    DAVA::int32 childrenCount = particleEffect->GetEmittersCount();
+    DAVA::int32 childrenCount = effect->GetEmittersCount();
     for (DAVA::int32 emitterId = 0; emitterId < childrenCount; emitterId++)
     {
-        DAVA::ParticleEmitter* emitter = particleEffect->GetEmitter(emitterId);
+        auto instance = effect->GetEmitterInstance(emitterId);
+        auto emitter = instance->GetEmitter();
         data.emmiter = emitter;
         QTreeWidgetItem* emitterItem = new QTreeWidgetItem(root, TreeItemTypeEmitter);
         emitterItem->setText(0, QString(emitter->name.c_str()));
@@ -869,17 +878,17 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
             }
         }
         data.externalParamId = 0;
-        //layers
-        DAVA::int32 numLayers = emitter->layers.size();
-        for (DAVA::int32 layerId = 0; layerId < numLayers; ++layerId)
+
+        // layers
+        for (auto layer : emitter->layers)
         {
-            DAVA::ParticleLayer* layer = emitter->layers[layerId];
             QTreeWidgetItem* layerItem = new QTreeWidgetItem(emitterItem, TreeItemTypeLayer);
             data.layer = layer;
             layerItem->setText(0, QString(layer->layerName.c_str()));
             layerItem->setIcon(0, iconLayer);
             layerItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
-            //externals
+
+            // externals
             for (DAVA::int32 externalId = EE_TOTAL; externalId < EL_TOTAL; ++externalId)
             {
                 if (GetLayerLine(layer, LayerExternals(externalId)))
@@ -892,11 +901,10 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
                 }
             }
             data.externalParamId = 0;
-            //forces
-            DAVA::int32 numForces = layer->forces.size();
-            for (DAVA::int32 forceId = 0; forceId < numForces; ++forceId)
+
+            // forces
+            for (auto force : layer->forces)
             {
-                DAVA::ParticleForce* force = layer->forces[forceId];
                 data.force = force;
                 QTreeWidgetItem* forceItem = new QTreeWidgetItem(layerItem, TreeItemTypeForce);
                 forceItem->setText(0, QString("force"));
@@ -920,18 +928,17 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
         }
         data.layer = NULL;
     }
-    particleEffect->RebuildEffectModifiables();
+    effect->RebuildEffectModifiables();
 }
 
 void ParticleEffectPropertiesWidget::UpdatePlaybackSpeedLabel()
 {
-    if (!particleEffect)
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    if (effect != nullptr)
     {
-        return;
+        DAVA::float32 playbackSpeedValue = effect->GetPlaybackSpeed();
+        effectPlaybackSpeedLabel->setText(QString("playback speed: %1x").arg(playbackSpeedValue));
     }
-
-    DAVA::float32 playbackSpeedValue = particleEffect->GetPlaybackSpeed();
-    effectPlaybackSpeedLabel->setText(QString("playback speed: %1x").arg(playbackSpeedValue));
 }
 
 void ParticleEffectPropertiesWidget::StoreVisualState(DAVA::KeyedArchive* /* visualStateProps */)
