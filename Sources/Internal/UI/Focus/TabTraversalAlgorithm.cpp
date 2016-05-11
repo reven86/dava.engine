@@ -42,7 +42,7 @@ TabTraversalAlgorithm::~TabTraversalAlgorithm()
 {
 }
 
-UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, UITabOrderComponent::Direction dir)
+UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, UITabOrderComponent::Direction dir, bool repeat)
 {
     if (focusedControl != nullptr && root != focusedControl)
     {
@@ -68,13 +68,16 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, UITa
                 return res;
             }
 
-            res = GetNextControl(parent, dir);
+            res = GetNextControl(parent, dir, repeat);
             if (res != nullptr)
             {
                 return res;
             }
 
-            return FindFirstControl(parent, dir);
+            if (repeat)
+            {
+                return FindFirstControl(parent, dir);
+            }
         }
     }
     return nullptr;

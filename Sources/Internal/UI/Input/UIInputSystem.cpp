@@ -312,12 +312,12 @@ void UIInputSystem::MoveFocusDown()
 
 void UIInputSystem::MoveFocusForward()
 {
-    focusSystem->MoveFocus(UITabOrderComponent::Direction::FORWARD);
+    focusSystem->MoveFocus(UITabOrderComponent::Direction::FORWARD, true);
 }
 
 void UIInputSystem::MoveFocusBackward()
 {
-    focusSystem->MoveFocus(UITabOrderComponent::Direction::BACKWARD);
+    focusSystem->MoveFocus(UITabOrderComponent::Direction::BACKWARD, true);
 }
 
 void UIInputSystem::PerformActionOnControl(UIControl* control)

@@ -59,7 +59,7 @@ public:
     void OnControlInvisible(UIControl* control);
 
     bool MoveFocus(UINavigationComponent::Direction dir);
-    bool MoveFocus(UITabOrderComponent::Direction dir);
+    bool MoveFocus(UITabOrderComponent::Direction dir, bool repeat);
 
 private:
     void ClearFocusState(UIControl* control);

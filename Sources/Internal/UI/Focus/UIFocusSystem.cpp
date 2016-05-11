@@ -173,12 +173,12 @@ bool UIFocusSystem::MoveFocus(UINavigationComponent::Direction dir)
     return false;
 }
 
-bool UIFocusSystem::MoveFocus(UITabOrderComponent::Direction dir)
+bool UIFocusSystem::MoveFocus(UITabOrderComponent::Direction dir, bool repeat)
 {
     if (root.Valid() && focusedControl.Valid())
     {
         TabTraversalAlgorithm alg(root.Get());
-        UIControl* next = alg.GetNextControl(focusedControl.Get(), dir);
+        UIControl* next = alg.GetNextControl(focusedControl.Get(), dir, repeat);
         if (next != nullptr && next != focusedControl)
         {
             SetFocusedControl(next);

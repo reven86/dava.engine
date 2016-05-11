@@ -46,7 +46,7 @@ public:
     TabTraversalAlgorithm(UIControl* root);
     ~TabTraversalAlgorithm();
 
-    UIControl* GetNextControl(UIControl* focusedControl, UITabOrderComponent::Direction dir);
+    UIControl* GetNextControl(UIControl* focusedControl, UITabOrderComponent::Direction dir, bool repeat);
 
 private:
     template <typename It>
