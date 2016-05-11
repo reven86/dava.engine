@@ -143,9 +143,16 @@ int32 DeviceInfo::GetCpuCount()
     return GetPrivateImpl()->GetCpuCount();
 }
 
-void DeviceInfo::InitializeScreenInfo()
+void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullInit)
 {
+#if defined(__DAVAENGINE_WIN_UAP__)
+    // Special implementation for WinUAP to get rid of blocking call to UI thread in impl::InitializeScreenInfo
+    GetPrivateImpl()->InitializeScreenInfo(screenInfo, fullInit);
+#else
+    (void)screenInfo;
+    (void)fullInit;
     GetPrivateImpl()->InitializeScreenInfo();
+#endif
 }
 
 bool DeviceInfo::IsTouchPresented()

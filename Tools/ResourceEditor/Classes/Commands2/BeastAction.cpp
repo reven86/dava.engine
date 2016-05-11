@@ -37,9 +37,13 @@
 
 #include "DAVAEngine.h"
 
+#if defined(__DAVAENGINE_BEAST__)
+
+#include "SceneParser.h"
+
 using namespace DAVA;
 
-#if defined(__DAVAENGINE_BEAST__)
+#include "SceneParser.h"
 
 //Beast
 BeastAction::BeastAction(SceneEditor2* scene, const DAVA::FilePath& _outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog)
@@ -61,9 +65,9 @@ BeastAction::~BeastAction()
 
 void BeastAction::Redo()
 {
-    bool canceled = false;
+    bool cancelledManually = false;
 
-    if (NULL != waitDialog)
+    if (waitDialog != nullptr)
     {
         waitDialog->Show("Beast process", "Starting Beast", true, true);
         waitDialog->SetRange(0, 100);
@@ -74,21 +78,17 @@ void BeastAction::Redo()
 
     while (Process() == false)
     {
-        if (canceled)
+        if (cancelledManually)
         {
             BeastProxy::Instance()->Cancel(beastManager);
             break;
         }
-        else
+        else if (waitDialog != nullptr)
         {
-            if (NULL != waitDialog)
-            {
-                waitDialog->SetValue(BeastProxy::Instance()->GetCurTaskProcess(beastManager));
-                waitDialog->SetMessage(BeastProxy::Instance()->GetCurTaskName(beastManager).c_str());
-                waitDialog->EnableCancel(true);
-
-                canceled = waitDialog->WasCanceled();
-            }
+            waitDialog->SetValue(BeastProxy::Instance()->GetCurTaskProcess(beastManager));
+            waitDialog->SetMessage(BeastProxy::Instance()->GetCurTaskName(beastManager).c_str());
+            waitDialog->EnableCancel(true);
+            cancelledManually |= waitDialog->WasCanceled();
         }
 
         if (Core::Instance()->IsConsoleMode())
@@ -98,12 +98,12 @@ void BeastAction::Redo()
         Sleep(15);
     }
 
-    if (NULL != waitDialog)
+    if (waitDialog != nullptr)
     {
         waitDialog->EnableCancel(false);
     }
 
-    Finish(canceled);
+    Finish(cancelledManually | BeastProxy::Instance()->WasCancelled(beastManager));
 
     if (waitDialog != nullptr)
     {
@@ -139,18 +139,7 @@ void BeastAction::Finish(bool canceled)
         PackLightmaps();
     }
 
-    Landscape* land = FindLandscape(workingScene);
-    if (land)
-    {
-        FilePath textureName = land->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
-        if (textureName.Exists())
-        {
-            textureName.ReplaceFilename("temp_beast.png");
-            FileSystem::Instance()->DeleteFile(textureName);
-        }
-    }
-
-    FileSystem::Instance()->DeleteDirectory(FileSystem::Instance()->GetCurrentWorkingDirectory() + "temp_beast/");
+    FileSystem::Instance()->DeleteDirectory(SceneParser::GetTemporaryFolder());
     if (beastMode == BeastProxy::MODE_LIGHTMAPS)
     {
         FileSystem::Instance()->DeleteDirectory(GetLightmapDirectoryPath());

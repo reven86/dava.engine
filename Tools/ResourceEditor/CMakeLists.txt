@@ -27,6 +27,17 @@ endif()
 
 configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
+# This definitions should be before "find_package( DavaFramework REQUIRED )"
+# to force defines into DavaFramework project
+
+add_definitions       (
+-DDISABLE_NATIVE_WEBVIEW
+-DDISABLE_NATIVE_TEXTFIELD
+-DQT_QML_DEBUG_NO_WARNING
+)
+
+# Ngt tool sshould be found before DavaFramework to force specific for NGT defines 
+# into DavaFramework project
 find_package( NgtTools REQUIRED )
 find_package( QT5 REQUIRED)
 find_package( DavaFramework REQUIRED )
@@ -44,7 +55,6 @@ include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/Extern
 
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
-include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 
 include_directories   (.)
 include_directories   ( "../TextureTools" )
@@ -70,9 +80,6 @@ add_definitions       (
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
 -DDAVA_FMOD
--DDISABLE_NATIVE_WEBVIEW
--DDISABLE_NATIVE_TEXTFIELD
--DNGTBUG_WORKAROUND
 )
 
 if (NOT PUBLIC_BUILD)

@@ -124,7 +124,7 @@
     if (focusedCtrl != nullptr && focusedCtrl == focusedAfterCtrl)
     {
         DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focusedCtrl);
-        if (tf)
+        if (tf && tf->IsEditing())
         {
             if (theEvent.type == NSKeyDown || theEvent.type == NSKeyUp)
             {
@@ -244,6 +244,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 }
 }
 
+@synthesize willQuit;
+
 - (id)init
 {
     self = [super init];
@@ -255,6 +257,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         animationTimer = nil;
         core = 0;
         assertionID = kIOPMNullAssertionID;
+        willQuit = false;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
@@ -354,8 +357,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
     }
 
-    Core::Instance()->SetNativeView(openGLView);
-
     // start animation
     currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
@@ -378,13 +379,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
 
-    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
-    rendererParams.window = mainWindowController->openGLView;
-    rendererParams.width = backingSize[0];
-    rendererParams.height = backingSize[1];
-
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
+    float32 scale = DeviceInfo::GetScreenInfo().scale;
+    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scale, scale);
 }
 
 - (void)setMinimumWindowSize:(float32)width height:(float32)height
@@ -536,10 +532,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 {
 }
 
-- (void)mouseExited:(NSEvent*)theEvent
-{
-}
-
 - (void)rightMouseDown:(NSEvent*)theEvent
 {
     [openGLView rightMouseDown:theEvent];
@@ -590,7 +582,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)animationTimerFired:(NSTimer*)timer
 {
-    [openGLView setNeedsDisplay:YES];
+    if (willQuit)
+        return;
+
+    DAVA::Core::Instance()->SystemProcessFrame();
 
     if (currFPS != Renderer::GetDesiredFPS())
     {
@@ -656,7 +651,7 @@ bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 
 void CoreMacOSPlatform::Quit()
 {
-    mainWindowController->openGLView.willQuit = true;
+    mainWindowController->willQuit = true;
     [[NSApplication sharedApplication] terminate:nil];
 }
 
@@ -668,11 +663,9 @@ void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
 
         //This magick needed to correctly 'reshape' GLView and resize back-buffer.
         //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
-        NSSize sz = [mainWindowController->openGLView frame].size;
-        sz.width += 1;
-        [mainWindowController->mainWindow setContentSize:sz];
-        sz.width -= 1;
-        [mainWindowController->mainWindow setContentSize:sz];
+        [mainWindowController->mainWindow setContentView:nil];
+        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+        [mainWindowController->mainWindow makeFirstResponder:mainWindowController->openGLView];
     }
 }
 };

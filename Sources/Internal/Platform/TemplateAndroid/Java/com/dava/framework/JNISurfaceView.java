@@ -9,7 +9,6 @@ import android.graphics.PixelFormat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
-import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -23,7 +22,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 {
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
 
-	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
+	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
@@ -273,7 +272,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			}
 			else if(allEvents.size() != 0) 
 			{
-				nativeOnInput(action, source, groupSize, allEvents, allEvents);
+				nativeOnInput(action, source, groupSize, allEvents);
 			}
 		}
     }
@@ -327,9 +326,10 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     	queueEvent(new KeyInputRunnable(keyCode, true));
     	
     	if (event.isSystem())
-    		return super.onKeyDown(keyCode, event);
-    	else
-    		return true;
+    	{
+    		return super.onKeyDown(keyCode, event);	
+    	}
+    	return true;
     }
     
     @Override
@@ -341,7 +341,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     	
     	queueEvent(new KeyInputRunnable(keyCode, false));
     	
-    	return super.onKeyUp(keyCode, event);
+    	if (event.isSystem())
+    	{
+    		return super.onKeyUp(keyCode, event);	
+    	}
+    	return true;
     }
     
     @Override

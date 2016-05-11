@@ -12,5 +12,6 @@ ComboBox {
     function addString(text) {
         var obj = {"text" : text};
         listModel.append({"text" : text});
+        currentIndex = listModel.count - 1
     }
 }

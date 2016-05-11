@@ -30,7 +30,18 @@
 #ifndef __SCENE_SAVER_H__
 #define __SCENE_SAVER_H__
 
+#include "FileSystem/FilePath.h"
+#include "Render/Texture.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
+
 #include "CommandLine/SceneUtils/SceneUtils.h"
+
+namespace DAVA
+{
+class Entity;
+class Scene;
+class ParticleEmitter;
+}
 
 class SceneSaver
 {
@@ -41,13 +52,13 @@ public:
     void SetInFolder(const DAVA::FilePath& folderPathname);
     void SetOutFolder(const DAVA::FilePath& folderPathname);
 
-    void SaveFile(const DAVA::String& fileName, DAVA::Set<DAVA::String>& errorLog);
-    void ResaveFile(const DAVA::String& fileName, DAVA::Set<DAVA::String>& errorLog);
-    void SaveScene(DAVA::Scene* scene, const DAVA::FilePath& fileName, DAVA::Set<DAVA::String>& errorLog);
+    void SaveFile(const DAVA::String& fileName);
+    void ResaveFile(const DAVA::String& fileName);
+    void SaveScene(DAVA::Scene* scene, const DAVA::FilePath& fileName);
 
     void EnableCopyConverted(bool enabled);
 
-    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog) const;
+    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder) const;
 
 private:
     void ReleaseTextures();
@@ -57,12 +68,12 @@ private:
 
     void CopyReferencedObject(DAVA::Entity* node);
     void CopyEffects(DAVA::Entity* node);
-    void CopyAllParticlesEmitters(const DAVA::ParticleEmitterData& emitterData);
+    void CopyAllParticlesEmitters(DAVA::ParticleEmitterInstance* instance);
     void CopyEmitterByPath(const DAVA::FilePath& emitterConfigPath);
     void CopyEmitter(DAVA::ParticleEmitter* emitter);
     DAVA::Set<DAVA::FilePath> EnumAlternativeEmittersFilepaths(const DAVA::FilePath& originalFilepath) const;
 
-    void CopyCustomColorTexture(DAVA::Scene* scene, const DAVA::FilePath& sceneFolder, DAVA::Set<DAVA::String>& errorLog);
+    void CopyCustomColorTexture(DAVA::Scene* scene, const DAVA::FilePath& sceneFolder);
 
     SceneUtils sceneUtils;
     DAVA::TexturesMap texturesForSave;

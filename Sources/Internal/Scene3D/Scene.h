@@ -68,7 +68,6 @@ class LightUpdateSystem;
 class SwitchSystem;
 class SoundUpdateSystem;
 class ActionUpdateSystem;
-class MaterialSystem;
 class StaticOcclusionSystem;
 class StaticOcclusionDebugDrawSystem;
 class SpeedTreeUpdateSystem;
@@ -77,6 +76,7 @@ class WindSystem;
 class WaveSystem;
 class SkeletonSystem;
 class AnimationSystem;
+class LandscapeSystem;
 
 class UIEvent;
 
@@ -124,7 +124,7 @@ public:
         SCENE_SYSTEM_ACTION_UPDATE_FLAG = 1 << 9,
 
         SCENE_SYSTEM_STATIC_OCCLUSION_FLAG = 1 << 11,
-        //        SCENE_SYSTEM_MATERIAL_FLAG          = 1 << 12,
+        SCENE_SYSTEM_LANDSCAPE_FLAG = 1 << 12,
         SCENE_SYSTEM_FOLIAGE_FLAG = 1 << 13,
         SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG = 1 << 14,
         SCENE_SYSTEM_WIND_UPDATE_FLAG = 1 << 15,
@@ -191,6 +191,7 @@ public:
     AnimationSystem* animationSystem;
     StaticOcclusionDebugDrawSystem* staticOcclusionDebugDrawSystem;
     SkeletonSystem* skeletonSystem;
+    LandscapeSystem* landscapeSystem;
 
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
@@ -274,7 +275,6 @@ protected:
     Vector<Camera*> cameras;
 
     NMaterial* sceneGlobalMaterial;
-    void ImportShadowColor(Entity* rootNode);
 
     Camera* mainCamera;
     Camera* drawCamera;

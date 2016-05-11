@@ -39,6 +39,16 @@ extern void FrameworkWillTerminate();
 
 namespace DAVA
 {
+void CoreWin32PlatformQt::InitArgs()
+{
+    SetCommandLine(GetCommandLineArgs());
+}
+
+void CoreWin32PlatformQt::Quit()
+{
+    PostQuitMessage(0);
+}
+
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
     CoreWin32PlatformQt* core = new CoreWin32PlatformQt();

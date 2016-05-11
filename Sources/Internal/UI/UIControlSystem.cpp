@@ -38,6 +38,8 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Focus/UIFocusSystem.h"
+#include "UI/Focus/UIKeyInputSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -45,6 +47,7 @@
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -60,6 +63,9 @@ UIControlSystem::UIControlSystem()
 
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
+    focusSystem = new UIFocusSystem();
+    keyInputSystem = new UIKeyInputSystem(focusSystem);
+
     screenshoter = new UIScreenshoter();
 
     popupContainer.Set(new UIControl(Rect(0, 0, 1, 1)));
@@ -95,6 +101,8 @@ UIControlSystem::~UIControlSystem()
 
     SafeDelete(styleSheetSystem);
     SafeDelete(layoutSystem);
+    SafeDelete(keyInputSystem);
+    SafeDelete(focusSystem);
     SafeDelete(screenshoter);
 }
 
@@ -189,6 +197,7 @@ UIScreenTransition* UIControlSystem::GetScreenTransition() const
 
 void UIControlSystem::Reset()
 {
+    focusSystem->SetRoot(nullptr);
     SetScreen(nullptr);
 }
 
@@ -251,6 +260,7 @@ void UIControlSystem::ProcessScreenLogic()
         {
             currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
         }
+        focusSystem->SetRoot(currentScreen.Get());
 
         NotifyListenersDidSwitch(currentScreen.Get());
 
@@ -427,6 +437,9 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         return;
     }
 
+    if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
+        return;
+
     if (frameSkip <= 0)
     {
         if (Replay::IsRecord())
@@ -464,9 +477,42 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 
         if (currentScreen)
         {
-            if (!popupContainer->SystemInput(eventToHandle))
+            UIEvent::Phase phase = eventToHandle->phase;
+
+            if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT)
             {
-                currentScreen->SystemInput(eventToHandle);
+                keyInputSystem->HandleKeyEvent(eventToHandle);
+            }
+            else
+            {
+                if (phase == UIEvent::Phase::BEGAN)
+                {
+                    focusedControlWhenTouchBegan = focusSystem->GetFocusedControl();
+                    positionOfTouchWhenTouchBegan = eventToHandle->point;
+                }
+
+                if (!popupContainer->SystemInput(eventToHandle))
+                {
+                    currentScreen->SystemInput(eventToHandle);
+                }
+
+                if (phase == UIEvent::Phase::ENDED)
+                {
+                    UIControl* focusedControl = focusSystem->GetFocusedControl();
+                    if (focusedControl != nullptr)
+                    {
+                        static const float32 draggingThresholdSq = 20.0f * 20.0f;
+                        bool focusWasntChanged = focusedControl == focusedControlWhenTouchBegan;
+
+                        bool touchWasntDragged = (positionOfTouchWhenTouchBegan - eventToHandle->point).SquareLength() < draggingThresholdSq;
+                        bool touchOutsideControl = !focusedControl->IsPointInside(eventToHandle->point);
+                        if (focusWasntChanged && touchWasntDragged && touchOutsideControl)
+                        {
+                            focusedControl->OnTouchOutsideFocus();
+                        }
+                    }
+                    focusedControlWhenTouchBegan = nullptr;
+                }
             }
         }
 
@@ -633,34 +679,29 @@ UIControl* UIControlSystem::GetHoveredControl(UIControl* newHovered)
     return hovered;
 }
 
-void UIControlSystem::SetFocusedControl(UIControl* newFocused, bool forceSet)
+void UIControlSystem::SetFocusedControl(UIControl* newFocused)
 {
-    if (focusedControl)
+    focusSystem->SetFocusedControl(newFocused);
+}
+
+void UIControlSystem::ControlBecomeInvisible(UIControl* control)
+{
+    if (control->GetHover())
     {
-        if (forceSet || focusedControl->IsLostFocusAllowed(newFocused))
-        {
-            focusedControl->SystemOnFocusLost(newFocused);
-            SafeRelease(focusedControl);
-            focusedControl = SafeRetain(newFocused);
-            if (focusedControl)
-            {
-                focusedControl->SystemOnFocused();
-            }
-        }
+        SetHoveredControl(nullptr);
     }
-    else
+
+    if (control->GetInputEnabled())
     {
-        focusedControl = SafeRetain(newFocused);
-        if (focusedControl)
-        {
-            focusedControl->SystemOnFocused();
-        }
+        CancelInputs(control, false);
     }
+
+    focusSystem->ControlBecomInvisible(control);
 }
 
 UIControl* UIControlSystem::GetFocusedControl()
 {
-    return focusedControl;
+    return focusSystem->GetFocusedControl();
 }
 
 const UIGeometricData& UIControlSystem::GetBaseGeometricData() const
@@ -726,6 +767,19 @@ void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
     }
 }
 
+bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
+{
+    if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
+    {
+        Vector2 point = lastClickData.physPoint - newEvent->physPoint;
+        if (point.SquareLength() < doubleClickRadiusSquared)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
     int32 tapCount = 0;
@@ -737,15 +791,9 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {
-            if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
+            if (CheckTimeAndPosition(newEvent))
             {
-                // if point inside circle = (x0-x1)(x0-x1) + (y0-y1)(y0-y1) < r*r
-                float32 pointShift((lastClickData.physPoint.x - newEvent->physPoint.x) * (lastClickData.physPoint.x - newEvent->physPoint.x));
-                pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
-                if (static_cast<int32>(pointShift) < doubleClickRadiusSquared)
-                {
-                    tapCount = lastClickData.tapCount + 1;
-                }
+                tapCount = lastClickData.tapCount + 1;
             }
         }
         lastClickData.touchId = newEvent->touchId;
@@ -759,6 +807,10 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         if (newEvent->touchId == lastClickData.touchId)
         {
             lastClickData.lastClickEnded = true;
+            if (CheckTimeAndPosition(newEvent))
+            {
+                tapCount = lastClickData.tapCount;
+            }
         }
     }
     return tapCount;
@@ -792,6 +844,11 @@ bool UIControlSystem::IsHostControl(const UIControl* control) const
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const
 {
     return layoutSystem;
+}
+
+UIFocusSystem* UIControlSystem::GetFocusSystem() const
+{
+    return focusSystem;
 }
 
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const

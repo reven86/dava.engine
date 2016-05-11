@@ -38,6 +38,8 @@
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Tools/LoggerOutput/LoggerErrorHandler.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 // framework
 #include "Scene3D/Entity.h"
@@ -89,11 +91,11 @@ SceneEditor2::SceneEditor2()
     hoodSystem = new HoodSystem(this, cameraSystem);
     AddSystem(hoodSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-    selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
-    AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
-
     modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
     AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+
+    selectionSystem = new SceneSelectionSystem(this);
+    AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
     AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
@@ -240,8 +242,8 @@ void SceneEditor2::ExtractEditorEntities()
     DAVA::Vector<DAVA::Entity*> allEntities;
     GetChildNodes(allEntities);
 
-    DAVA::uint32 count = allEntities.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    DAVA::size_type count = allEntities.size();
+    for (DAVA::size_type i = 0; i < count; ++i)
     {
         if (allEntities[i]->GetName().find("editor.") != DAVA::String::npos)
         {
@@ -258,7 +260,7 @@ void SceneEditor2::InjectEditorEntities()
     bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
     selectionSystem->EnableSystem(false);
 
-    for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
+    for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
         AddEditorEntity(editorEntities[i]);
         editorEntities[i]->Release();
@@ -275,28 +277,44 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
 
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
-    SceneExporter exporter;
-
-    DAVA::FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
-
-    exporter.SetInFolder(projectPath + DAVA::String("DataSource/3d/"));
-    exporter.SetOutFolder(projectPath + DAVA::String("Data/3d/"));
-    exporter.SetGPUForExporting(newGPU);
-
-    DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
-    exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
-
     DAVA::ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
     {
-        DAVA::Set<DAVA::String> errorLog;
-        exporter.ExportScene(clonedScene, GetScenePath(), errorLog);
-        for (auto& error : errorLog)
+        const DAVA::FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
+        DAVA::FilePath dataFolder = projectPath + "Data/3d/";
+        DAVA::FilePath dataSourceFolder = projectPath + "DataSource/3d/";
+
+        DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
+        DAVA::TextureConverter::eConvertQuality qualityValue = static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32());
+
+        LoggerErrorHandler handler;
+        DAVA::Logger::AddCustomOutput(&handler);
+
+        SceneExporter exporter;
+        exporter.SetFolders(dataFolder, dataSourceFolder);
+        exporter.SetCompressionParams(newGPU, qualityValue);
+        exporter.EnableOptimizations(newGPU != DAVA::GPU_ORIGIN);
+
+        const DAVA::FilePath& scenePathname = GetScenePath();
+        DAVA::FilePath newScenePathname = dataFolder + scenePathname.GetRelativePathname(dataSourceFolder);
+        DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
+
+        SceneExporter::ExportedObjectCollection exportedObjects;
+        exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
+        exporter.ExportObjects(exportedObjects);
+
+        DAVA::Logger::RemoveCustomOutput(&handler);
+        if (handler.HasErrors())
         {
-            DAVA::Logger::Error("Export error: %s", error.c_str());
+            const auto& errorLog = handler.GetErrors();
+            for (auto& error : errorLog)
+            {
+                DAVA::Logger::Error("Export error: %s", error.c_str());
+            }
+            return false;
         }
 
-        return errorLog.empty();
+        return true;
     }
     return false;
 }
@@ -771,4 +789,50 @@ DAVA::uint32 SceneEditor2::GetFramesCount() const
 void SceneEditor2::ResetFramesCount()
 {
     framesCount = 0;
+}
+
+void LookAtSelection(SceneEditor2* scene)
+{
+    if (scene != nullptr)
+    {
+        scene->cameraSystem->MoveToSelection();
+    }
+}
+
+void RemoveSelection(SceneEditor2* scene)
+{
+    if (scene == nullptr)
+        return;
+
+    const auto& selection = scene->selectionSystem->GetSelection();
+
+    SelectableGroup objectsToRemove;
+    for (const auto& item : selection.GetContent())
+    {
+        if ((item.CanBeCastedTo<DAVA::Entity>() == false) || (item.AsEntity()->GetLocked() == false))
+        {
+            objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
+        }
+    }
+
+    if (objectsToRemove.IsEmpty() == false)
+    {
+        scene->structureSystem->Remove(objectsToRemove);
+    }
+}
+
+void LockTransform(SceneEditor2* scene)
+{
+    if (scene != nullptr)
+    {
+        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), true);
+    }
+}
+
+void UnlockTransform(SceneEditor2* scene)
+{
+    if (scene != nullptr)
+    {
+        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), false);
+    }
 }

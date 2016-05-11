@@ -239,5 +239,9 @@ private:
 
 Q_DECLARE_METATYPE(SceneEditor2*)
 
+void LookAtSelection(SceneEditor2* scene);
+void RemoveSelection(SceneEditor2* scene);
+void LockTransform(SceneEditor2* scene);
+void UnlockTransform(SceneEditor2* scene);
 
 #endif // __SCENE_EDITOR_PROXY_H__

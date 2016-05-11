@@ -29,6 +29,8 @@
 
 #include "Scene/SceneTabWidget.h"
 
+#include "UI/Focus/UIFocusComponent.h"
+
 #include "Main/Request.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
@@ -91,7 +93,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(DAVAWidgetDataDropped(const QMimeData*)));
     QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
 
-    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const SelectableGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const SelectableGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Updated(SceneEditor2*)), this, SLOT(SceneUpdated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2*, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2*, bool)));
@@ -142,6 +144,7 @@ void SceneTabWidget::InitDAVAUI()
 {
     dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
     dava3DView->SetInputEnabled(true, true);
+    dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
     davaUIScreen = new DAVA::UIScreen();
     davaUIScreen->AddControl(dava3DView);
@@ -415,7 +418,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData* data)
     }
 }
 
-void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup* entities)
+void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects)
 {
     static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
     static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
@@ -423,20 +426,20 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
 
     auto view = davaWidget->GetGLView();
 
-    if (GetCurrentScene() == scene && nullptr != entities)
+    if ((GetCurrentScene() == scene) && (objects != nullptr))
     {
-        switch (scene->modifSystem->GetModifMode())
+        switch (scene->modifSystem->GetTransformType())
         {
-        case ST_MODIF_MOVE:
+        case Selectable::TransformType::Translation:
             view->setCursor(cursorMove);
             break;
-        case ST_MODIF_ROTATE:
+        case Selectable::TransformType::Rotation:
             view->setCursor(cursorRotate);
             break;
-        case ST_MODIF_SCALE:
+        case Selectable::TransformType::Scale:
             view->setCursor(cursorScale);
             break;
-        case ST_MODIF_OFF:
+        case Selectable::TransformType::Disabled:
         default:
             view->unsetCursor();
             break;

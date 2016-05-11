@@ -81,7 +81,7 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv
 JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 
 //JNISurfaceView
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject allInputs);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
@@ -385,24 +385,20 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
 
 // CALLED FROM JNIGLSurfaceView
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject javaActiveInputs, jobject javaAllInputs)
+void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject javaAllInputs)
 {
     if (core)
     {
-        DAVA::Vector<DAVA::UIEvent> activeInputs;
         DAVA::Vector<DAVA::UIEvent> allInputs;
 
         int allInputsCount = gArrayListSizeMethod(javaAllInputs);
-        int activeInputsCount = gArrayListSizeMethod(javaActiveInputs);
-
-        int inputsCount = DAVA::Max(allInputsCount, activeInputsCount);
+        int inputsCount = allInputsCount;
 
         for (int groupStartIndex = 0; groupStartIndex < inputsCount; groupStartIndex += groupSize)
         {
             int groupEndIndex = groupStartIndex + groupSize;
 
             allInputs.clear();
-            activeInputs.clear();
 
             for (int touchIndex = groupStartIndex; touchIndex < groupEndIndex; ++touchIndex)
             {
@@ -415,17 +411,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
                     env->DeleteLocalRef(jInput);
                 }
-                if (touchIndex < activeInputsCount)
-                {
-                    jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
-
-                    DAVA::UIEvent event = android_details::CreateUIEventFromJavaEvent(env, jInput, action, source);
-                    activeInputs.push_back(event);
-
-                    env->DeleteLocalRef(jInput);
-                }
             }
-            core->OnInput(action, source, activeInputs, allInputs);
+            core->OnInput(allInputs);
         }
     }
 }

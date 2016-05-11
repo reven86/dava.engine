@@ -178,8 +178,7 @@ void TilemaskEditorPanel::ConnectToSignals()
     connect(sliderWidgetStrength, SIGNAL(ValueChanged(int)), this, SLOT(SetStrength(int)));
     connect(comboBrushImage, SIGNAL(currentIndexChanged(int)), this, SLOT(SetToolImage(int)));
     connect(tileTexturePreviewWidget, SIGNAL(SelectionChanged(int)), this, SLOT(SetDrawTexture(int)));
-    connect(tileTexturePreviewWidget, SIGNAL(TileColorChanged(DAVA::int32, Color)),
-            this, SLOT(OnTileColorChanged(DAVA::int32, Color)));
+    connect(tileTexturePreviewWidget, &TileTexturePreviewWidget::TileColorChanged, this, &TilemaskEditorPanel::OnTileColorChanged);
 
     connect(radioDraw, SIGNAL(clicked()), this, SLOT(SetNormalDrawing()));
     connect(radioCopyPaste, SIGNAL(clicked()), this, SLOT(SetCopyPaste()));

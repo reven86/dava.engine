@@ -694,7 +694,14 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
         innerEmitter = new ParticleEmitter();
         // Since Inner Emitter path is stored as Relative, convert it to absolute when loading.
         innerEmitterPath = FilePath(configPath.GetDirectory(), innerEmitterPathNode->AsString());
-        innerEmitter->LoadFromYaml(this->innerEmitterPath, true);
+        if (innerEmitterPath == configPath) // prevent recursion
+        {
+            Logger::Error("Atempt to load inner emitter from super emitter's config will cause recursion");
+        }
+        else
+        {
+            innerEmitter->LoadFromYaml(this->innerEmitterPath, true);
+        }
     }
     if (format == 0) //update old stuff
     {
