@@ -68,5 +68,4 @@ void UIFocusComponent::SetRequestFocus(bool value)
 {
     requestFocus = value;
 }
-
 }
