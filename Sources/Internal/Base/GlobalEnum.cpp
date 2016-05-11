@@ -43,6 +43,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "Input/KeyboardShortcut.h"
 #include "Logger/Logger.h"
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
@@ -365,6 +366,14 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
 {
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT, "LeftToRight");
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
+};
+
+ENUM_DECLARE(KeyboardShortcut::Modifier)
+{
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_SHIFT, "SHIFT");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_CTRL, "CTRL");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_ALT, "ALT");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_WIN, "WIN");
 };
 
 ENUM_DECLARE(rhi::TextureAddrMode)

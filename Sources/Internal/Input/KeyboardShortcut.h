@@ -44,6 +44,8 @@ public:
         MODIFIER_CTRL = 0x02,
         MODIFIER_ALT = 0x04,
         MODIFIER_WIN = 0x08,
+
+        LAST_MODIFIER = 0x08
     };
 
     KeyboardShortcut();
@@ -65,11 +67,6 @@ public:
     static int32 ConvertKeyToModifier(Key key);
 
 private:
-    static const String SHIFT_NAME;
-    static const String CTRL_NAME;
-    static const String ALT_NAME;
-    static const String WIN_NAME;
-
     Key key = Key::UNKNOWN;
     int32 modifiers = 0;
 };

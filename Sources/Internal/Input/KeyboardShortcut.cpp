@@ -6,11 +6,6 @@
 
 namespace DAVA
 {
-const String KeyboardShortcut::SHIFT_NAME("SHIFT");
-const String KeyboardShortcut::CTRL_NAME("CTRL");
-const String KeyboardShortcut::ALT_NAME("ALT");
-const String KeyboardShortcut::WIN_NAME("WIN");
-
 KeyboardShortcut::KeyboardShortcut()
 {
 }
@@ -36,21 +31,10 @@ KeyboardShortcut::KeyboardShortcut(const String& str)
     for (const String& token : tokens)
     {
         String t = Trim(token);
-        if (t == SHIFT_NAME)
+        int modifier = 0;
+        if (GlobalEnumMap<Modifier>::Instance()->ToValue(token.c_str(), modifier))
         {
-            modifiers |= MODIFIER_SHIFT;
-        }
-        else if (t == CTRL_NAME)
-        {
-            modifiers |= MODIFIER_CTRL;
-        }
-        else if (t == ALT_NAME)
-        {
-            modifiers |= MODIFIER_ALT;
-        }
-        else if (t == WIN_NAME)
-        {
-            modifiers |= MODIFIER_WIN;
+            modifiers |= modifier;
         }
         else
         {
@@ -96,21 +80,15 @@ int32 KeyboardShortcut::GetModifiers() const
 String KeyboardShortcut::ToString() const
 {
     StringStream stream;
-    if ((modifiers & MODIFIER_SHIFT) != 0)
+
+    int test = 0x01;
+    while (test <= LAST_MODIFIER)
     {
-        stream << SHIFT_NAME << "+";
-    }
-    if ((modifiers & MODIFIER_CTRL) != 0)
-    {
-        stream << CTRL_NAME << "+";
-    }
-    if ((modifiers & MODIFIER_ALT) != 0)
-    {
-        stream << ALT_NAME << "+";
-    }
-    if ((modifiers & MODIFIER_WIN) != 0)
-    {
-        stream << WIN_NAME << "+";
+        if (test & modifiers)
+        {
+            stream << GlobalEnumMap<Modifier>::Instance()->ToString(test) << "+";
+        }
+        test <<= 1;
     }
 
     stream << InputSystem::Instance()->GetKeyboard().GetKeyName(key);
