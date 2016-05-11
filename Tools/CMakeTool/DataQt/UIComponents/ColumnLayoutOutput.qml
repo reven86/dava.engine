@@ -12,7 +12,6 @@ Item {
     signal cmakeWillBeLaunched();
     signal cmakeWasLaunched();
     signal buildStarted();
-    signal cleanOutput();
     property alias needClean: checkBox_clean.checked
 
     ColumnLayout {
@@ -43,7 +42,6 @@ Item {
                 text: qsTr("run cmake")
                 enabled: textField_output.text.length !== 0 && outputComplete && !processWrapper.running
                 onClicked: {
-                    cleanOutput();
                     cmakeWillBeLaunched();
                     processWrapper.LaunchCmake(textField_output.text, checkBox_clean.checked, fileSystemHelper.NormalizePath(rowLayout_buildFolder.path))
                     cmakeWasLaunched();
@@ -55,7 +53,6 @@ Item {
                 text: qsTr("run build")
                 enabled: !processWrapper.running
                 onClicked: {
-                    cleanOutput();
                     buildStarted()
                     var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
                     var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)

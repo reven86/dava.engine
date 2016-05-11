@@ -353,6 +353,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     onCmakeWillBeLaunched: {
                         displayHtmlFormat = true;
+                        textArea_processText.text = "";
                         addProjectToHistory();
                     }
                     onCmakeWasLaunched: {
@@ -362,9 +363,7 @@ ApplicationWindow {
 
                     onBuildStarted: {
                         displayHtmlFormat = false;
-                    }
-                    onCleanOutput: {
-                        textArea_processText.text = "";
+                        textArea_processText.text = ""
                     }
                 }
             }
