@@ -66,7 +66,7 @@ void InitFromQApplication()
     qApp->setFont(QFont(".SF NS Text", 13));
 #elif defined(Q_OS_WIN)
     //this is default font on Windows
-    qApp->setFont(QFont("MS Shell Dlg 2", 8));
+    qApp->setFont(QFont("MS Shell Dlg 2", 10));
 #else
 #error "unsupported OS"
 #endif //platform
@@ -167,7 +167,9 @@ void SetupClassicTheme()
 
     qApp->setPalette(lightPalette);
 
-    qApp->setStyleSheet("QDockWidget::title { background: #d5d5d5; }");
+    qApp->setStyleSheet("QDockWidget::title { background: #d5d5d5; }"
+                        //workaround for expanded combobox interval
+                        "QComboBox { font: 11px;  }");
 }
 
 void SetupDarkTheme()
@@ -205,7 +207,9 @@ void SetupDarkTheme()
 
     qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }"
                         "QTabBar::close-button { image: url(:/Icons/close.png); }"
-                        "QDockWidget::title { background: #454545; }");
+                        "QDockWidget::title { background: #454545; }"
+                        //workaround for expanded combobox interval
+                        "QComboBox{ font: 11px; }");
 }
 
 const QString& GetCurrentThemeStr()
