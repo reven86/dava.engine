@@ -38,6 +38,7 @@
 #include <core_command_system/command_instance.hpp>
 #include <core_command_system/i_env_system.hpp>
 #include <core_reflection/reflected_object.hpp>
+#include <core_command_system/i_command_manager.hpp>
 
 namespace CommandStackLocal
 {
@@ -64,7 +65,7 @@ public:
         if (commandId == CMDID_BATCH)
         {
             const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-            for (int i = 0; i < batch->Size(); ++i)
+            for (DAVA::uint32 i = 0; i < batch->Size(); ++i)
             {
                 this->operator()(batch->GetCommand(i));
             }
@@ -200,9 +201,7 @@ CommandStack::CommandStack()
 
     ActiveCommandStack::Instance()->CommandStackCreated(this);
 
-    IValueChangeNotifier& indexNotifyer = commandManager->currentIndex();
-    indexDestroyed = indexNotifyer.signalDestructing.connect(std::bind(&CommandStack::HistoryIndexDestroyed, this));
-    indexChanged = indexNotifyer.signalPostDataChanged.connect(std::bind(&CommandStack::HistoryIndexChanged, this));
+    indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&CommandStack::HistoryIndexChanged, this, std::placeholders::_1));
 }
 
 CommandStack::~CommandStack()
@@ -410,22 +409,16 @@ void CommandStack::commandExecuted(const CommandInstance& commandInstance, Comma
     }
 }
 
-void CommandStack::HistoryIndexChanged()
+void CommandStack::HistoryIndexChanged(int currentIndex)
 {
-    nextCommandIndex = commandManager->currentIndex().variantValue().value<DAVA::int32>();
+    nextCommandIndex = currentIndex;
     CleanCheck();
     EmitUndoRedoStateChanged();
-}
-
-void CommandStack::HistoryIndexDestroyed()
-{
-    DisconnectEvents();
 }
 
 void CommandStack::DisconnectEvents()
 {
     indexChanged.disconnect();
-    indexDestroyed.disconnect();
 }
 
 void CommandStack::EnableConections()

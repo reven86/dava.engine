@@ -53,6 +53,7 @@
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
+#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
 #include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
 #include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
 #include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
@@ -73,6 +74,8 @@
 #include "Classes/Deprecated/SceneValidator.h"
 
 #include "Classes/CommandLine/SceneSaver/SceneSaver.h"
+#include "Classes/Commands2/Base/CommandStack.h"
+#include "Classes/Commands2/Base/CommandBatch.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/BeastAction.h"
 #include "Classes/Commands2/ConvertPathCommands.h"
@@ -106,6 +109,8 @@
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 
+#include <core_generic_plugin/interfaces/i_component_context.hpp>
+
 #include <QActionGroup>
 #include <QColorDialog>
 #include <QDesktopServices>
@@ -128,6 +133,7 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
     , ngtContext(ngtContext_)
+    , propertyPanel(new PropertyPanel())
     , spritesPacker(new SpritesPackerModule())
 {
     PathDescriptor::InitializePathDescriptors();
@@ -189,15 +195,16 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     IUIFramework* uiFramework = ngtContext.queryInterface<IUIFramework>();
     DVASSERT(uiApplication != nullptr);
     DVASSERT(uiFramework != nullptr);
-    propertyPanel.Initialize(*uiFramework, *uiApplication);
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, &propertyPanel, &PropertyPanel::SceneSelectionChanged);
+    propertyPanel->Initialize(*uiFramework, *uiApplication);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, propertyPanel.get(), &PropertyPanel::SceneSelectionChanged);
 }
 
 QtMainWindow::~QtMainWindow()
 {
     IUIApplication* uiApplication = ngtContext.queryInterface<IUIApplication>();
     DVASSERT(uiApplication != nullptr);
-    propertyPanel.Finalize(*uiApplication);
+    propertyPanel->Finalize(*uiApplication);
+    propertyPanel.reset();
 
     const auto& logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();

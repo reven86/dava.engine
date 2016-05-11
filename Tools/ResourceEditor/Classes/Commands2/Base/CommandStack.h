@@ -34,9 +34,10 @@
 #include "Commands2/Base/Command2.h"
 #include "Commands2/Base/CommandBatch.h"
 
-#include "Functional/Signal.h"
+#include <core_command_system/i_command_event_listener.hpp>
+#include <core_common/signal.hpp>
 
-#include <core_command_system/i_command_manager.hpp>
+class ICommandManager;
 
 class CommandStack : public CommandNotifyProvider, public ICommandEventListener
 {
@@ -67,8 +68,7 @@ private:
     void commandExecuted(const CommandInstance& commandInstance, CommandOperation operation) override;
     void CleanCheck();
 
-    void HistoryIndexChanged();
-    void HistoryIndexDestroyed();
+    void HistoryIndexChanged(int currentIndex);
 
     void EnableConections();
     void DisableConnections();
@@ -92,7 +92,6 @@ private:
     DAVA::UnorderedSet<DAVA::int32> uncleanCommandIds;
 
     Connection indexChanged;
-    Connection indexDestroyed;
 };
 
 #endif // __COMMAND_STACK_H__

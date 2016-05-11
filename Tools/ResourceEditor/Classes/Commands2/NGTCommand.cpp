@@ -58,19 +58,21 @@ bool NGTCommand::canUndo(const ObjectHandle& arguments) const
     return command->CanUndo();
 }
 
-void NGTCommand::undo(const ObjectHandle& arguments) const
+bool NGTCommand::undo(const ObjectHandle& arguments) const
 {
     Command2* command = arguments.getBase<Command2>();
     DVASSERT(command != nullptr);
     DVASSERT(command->CanUndo() == true);
-    return command->Undo();
+    command->Undo();
+    return true;
 }
 
-void NGTCommand::redo(const ObjectHandle& arguments) const
+bool NGTCommand::redo(const ObjectHandle& arguments) const
 {
     Command2* command = arguments.getBase<Command2>();
     DVASSERT(command != nullptr);
-    return command->Redo();
+    command->Redo();
+    return true;
 }
 
 ObjectHandle NGTCommand::getCommandDescription(const ObjectHandle& arguments) const

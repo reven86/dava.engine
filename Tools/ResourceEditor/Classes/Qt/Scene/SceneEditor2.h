@@ -36,7 +36,6 @@
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
-#include "Commands2/Base/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
 //TODO: move all includes to .cpp file
@@ -71,6 +70,7 @@ class EditorLODSystem;
 class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
+class CommandStack;
 
 class SceneEditor2 : public DAVA::Scene
 {

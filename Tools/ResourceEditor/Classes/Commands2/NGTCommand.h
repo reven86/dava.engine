@@ -41,8 +41,8 @@ public:
     CommandThreadAffinity threadAffinity() const override;
 
     bool canUndo(const ObjectHandle& arguments) const override;
-    void undo(const ObjectHandle& arguments) const override;
-    void redo(const ObjectHandle& arguments) const override;
+    bool undo(const ObjectHandle& arguments) const override;
+    bool redo(const ObjectHandle& arguments) const override;
     ObjectHandle getCommandDescription(const ObjectHandle& arguments) const override;
 };
 
