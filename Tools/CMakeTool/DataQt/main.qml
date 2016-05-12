@@ -12,7 +12,7 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    property int historyVersion: 3
+    property int historyVersion: 4
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 + wrapper.spacing * 4
@@ -111,11 +111,16 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
-        historyToSave.push(newItem);
         if(found) {
+            //add item to top and remove it
+            --i;
             historyToSave.splice(i, 1);
+            historyToSave.push(newItem);
+
         }
-        else{
+        else {
+            historyToSave.push(newItem);
+            //add to combobox and to history
             history.push(newItem)
             rowLayout_sourceFolder.item.addString(source)
         }
