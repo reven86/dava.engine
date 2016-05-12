@@ -192,7 +192,7 @@ include               ( GlobalVariables )
 find_package( PythonInterp   )
 
 if( NOT ANDROID_TOOLCHAIN_NAME )
-    set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.6 )
+    set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-4.9 )
 endif()
 
 if( DEFINED CMAKE_CROSSCOMPILING )
