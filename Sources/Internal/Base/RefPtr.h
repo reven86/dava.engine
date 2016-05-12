@@ -39,7 +39,9 @@ template <class T>
 class RefPtr
 {
 public:
-    RefPtr() = default;
+    RefPtr()
+    {
+    }
 
     explicit RefPtr(T* p)
         : _ptr(p)
