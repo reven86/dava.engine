@@ -129,7 +129,11 @@ int main(int argc, char* argv[])
         {
             RunConsole(argc, argv, cmdLine);
         }
-        else if (argc == 1)
+        else if (argc == 1
+#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 || (argc == 3 && argv[1] == DAVA::String("-NSDocumentRevisionsDebugMode") && argv[2] == DAVA::String("YES"))
+#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 )
         {
             RunGui(argc, argv, cmdLine);
         }
