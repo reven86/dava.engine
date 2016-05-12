@@ -31,7 +31,7 @@
 
 #include "Base/BaseTypes.h"
 #include "AssetCache/CachedItemValue.h"
-#include <ctime>
+#include <chrono>
 
 namespace DAVA
 {
@@ -59,7 +59,7 @@ public:
     void Deserialize(KeyedArchive* archieve);
 
     void UpdateAccessTimestamp();
-    time_t GetTimestamp() const;
+    uint64 GetTimestamp() const;
 
     const CachedItemValue& GetValue() const;
 
@@ -70,15 +70,15 @@ private:
     CachedItemValue value;
 
 private:
-    time_t accessTimestamp = 0;
+    uint64 accessTimestamp = 0;
 };
 
 inline void ServerCacheEntry::UpdateAccessTimestamp()
 {
-    accessTimestamp = time(nullptr);
+    accessTimestamp = std::chrono::steady_clock::now().time_since_epoch().count();
 }
 
-inline time_t ServerCacheEntry::GetTimestamp() const
+inline uint64 ServerCacheEntry::GetTimestamp() const
 {
     return accessTimestamp;
 }
