@@ -551,7 +551,7 @@ PixelFormat MovieViewControl::GetPixelFormat() const
 
 Vector2 MovieViewControl::GetResolution() const
 {
-    return Vector2(frameWidth, frameHeight);
+    return Vector2(static_cast<float32>(frameWidth), static_cast<float32>(frameHeight));
 }
 
 void MovieViewControl::UpdateDrawData(DecodedFrameBuffer* buffer)

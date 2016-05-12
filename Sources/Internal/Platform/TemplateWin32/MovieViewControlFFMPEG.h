@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "UI/IMovieViewControl.h"
 #include "UI/UIControl.h"
-#include "Render\PixelFormatDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 #include "Sound/SoundSystem.h"
 #include "FileSystem/StreamBuffer.h"
 #include "Sound/FMODUtils.h"

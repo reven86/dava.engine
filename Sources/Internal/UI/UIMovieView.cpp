@@ -40,6 +40,7 @@
 #include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
 #elif defined(__DAVAENGINE_WIN32__)
 #include "Platform/TemplateWin32/MovieViewControlFFMPEG.h"
+#include "Render/PixelFormatDescriptor.h"
 #else
 // UIMovieView is not implemented for this platform yet, using stub one.
 #define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
@@ -53,18 +54,22 @@ namespace DAVA
 UIMovieView::UIMovieView(const Rect& rect)
     : UIControl(rect)
     , movieViewControl(new MovieViewControl())
-    , videoBackground(new UIControlBackground())
-{
+{    
+#if defined(__DAVAENGINE_WIN32__)
+    videoBackground = new UIControlBackground();
     videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
     movieViewControl->Initialize(rect);
+#endif
 }
 
 UIMovieView::~UIMovieView()
 {
+#if defined(__DAVAENGINE_WIN32__)
     SafeDelete(movieViewControl);
     SafeRelease(videoBackground);
     SafeRelease(videoTexture);
     SafeDeleteArray(videoTextureBuffer);
+#endif
 }
 
 void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
@@ -92,21 +97,26 @@ void UIMovieView::Play()
 {
     movieViewControl->Play();
 
+#if defined(__DAVAENGINE_WIN32__)
     Vector2 res = movieViewControl->GetResolution();
-    textureWidth = NextPowerOf2(res.dx);
-    textureHeight = NextPowerOf2(res.dy);
+    textureWidth = NextPowerOf2(static_cast<uint32>(res.dx));
+    textureHeight = NextPowerOf2(static_cast<uint32>(res.dy));
     uint32 size = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(movieViewControl->GetPixelFormat());
 
     SafeDeleteArray(videoTextureBuffer);
     videoTextureBuffer = new uint8[size];
 
     Memset(videoTextureBuffer, 0, size);
+#endif
 }
 
 void UIMovieView::Stop()
 {
     movieViewControl->Stop();
+
+#if defined(__DAVAENGINE_WIN32__)
     SafeDeleteArray(videoTextureBuffer);
+#endif
 }
 
 void UIMovieView::Pause()
@@ -126,6 +136,7 @@ bool UIMovieView::IsPlaying()
 
 void UIMovieView::Update(float32 timeElapsed)
 {
+#if defined(__DAVAENGINE_WIN32__)
     if (nullptr == movieViewControl)
         return;
 
@@ -138,7 +149,7 @@ void UIMovieView::Update(float32 timeElapsed)
     if (nullptr == videoTexture)
     {
         videoTexture = Texture::CreateFromData(drawData->format, videoTextureBuffer, textureWidth, textureHeight, false);
-        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, drawData->frameWidth, drawData->frameHeight, drawData->frameWidth, drawData->frameHeight);
+        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, drawData->frameWidth, drawData->frameHeight, static_cast<float32>(drawData->frameWidth), static_cast<float32>(drawData->frameHeight));
         videoBackground->SetSprite(videoSprite);
         videoSprite->Release();
     }
@@ -147,6 +158,7 @@ void UIMovieView::Update(float32 timeElapsed)
         videoTexture->TexImage(0, textureWidth, textureHeight, videoTextureBuffer, drawData->dataSize, Texture::INVALID_CUBEMAP_FACE);
     }
     SafeDelete(drawData);
+#endif
 }
 
 void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
@@ -169,7 +181,9 @@ void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
 void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
 {
     UIControl::Draw(parentGeometricData);
+#if defined(__DAVAENGINE_WIN32__)
     videoBackground->Draw(parentGeometricData);
+#endif
 }
 
 void UIMovieView::OnVisible()
