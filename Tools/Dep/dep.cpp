@@ -242,7 +242,7 @@ int main(int argc, const char* argv[])
                         i++;
                         hashpath = argv[i];
                     }
-                    if (0 == strcmp(argv[i], "-o") && (i + 1) < argc)
+                    else if (0 == strcmp(argv[i], "-o") && (i + 1) < argc)
                     {
                         i++;
                         output.open(argv[i]);

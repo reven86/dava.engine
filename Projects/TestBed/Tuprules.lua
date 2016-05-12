@@ -3,7 +3,7 @@ require("TupState")
 
 tupState = TupState.New({
     outputDir = ".output",
-    outputDbName = "testbed.db"
+    outputDbName = "testbed"
 })
 
 tupState:AddPacks {
@@ -26,9 +26,11 @@ tupState:AddPacks {
         },
     },
     { 
-         name = "gpupack.${gpu}",
+         name = "gpupack",
+         gpu = true,
          rules = {
-            { "Data", "%.*${gpu}" }
+            { "Data", "%.*${gpu}" },
+            { "Data", "%.sc3" }
          }
     },
 }
