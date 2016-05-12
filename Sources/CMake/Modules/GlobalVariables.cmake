@@ -58,10 +58,29 @@ if (WIN32)
 
 	if( X64_MODE )
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
-        set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll fmod_event64.dll glew32.dll TextureConverter.dll )  
+        set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll
+                                        fmod_event64.dll
+                                        glew32.dll
+                                        TextureConverter.dll)  
 	else ()
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
-        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll )  
+        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll
+                                        fmod_event.dll
+                                        glew32.dll
+                                        TextureConverter.dll)
+                                        
+
+    if ( NOT WINDOWS_UAP )
+        list (APPEND DAVA_THIRD_PARTY_LIBS avcodec-57.dll
+                                           avdevice-57.dll
+                                           avfilter-6.dll
+                                           avformat-57.dll
+                                           avutil-55.dll
+                                           postproc-54.dll
+                                           swresample-2.dll
+                                           swscale-4.dll)
+    endif ()
+
 	endif ()
 else ()
 	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )

@@ -33,13 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 StreamBuffer::OneBuffer::OneBuffer()
+    : buffer(DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE))
 {
-    buffer = DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE);
-}
-
-StreamBuffer::OneBuffer::~OneBuffer()
-{
-    SafeRelease(buffer);
 }
 
 uint32 StreamBuffer::OneBuffer::GetRemainSize() const

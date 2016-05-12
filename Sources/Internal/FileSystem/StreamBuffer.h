@@ -45,8 +45,6 @@ private:
     public:
         OneBuffer();
 
-        ~OneBuffer();
-
         uint32 GetRemainSize() const;
 
         uint32 GetSize() const;
@@ -56,7 +54,7 @@ private:
         uint32 Read(uint8* data, uint32 len);
 
     private:
-        DynamicMemoryFile* buffer = nullptr;
+        ScopedPtr<DynamicMemoryFile> buffer;
         uint32 readPos = 0;
         uint32 writePos = 0;
     };
