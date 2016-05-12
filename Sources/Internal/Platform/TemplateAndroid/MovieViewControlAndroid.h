@@ -54,7 +54,7 @@ public:
     void Stop();
     void Pause();
     void Resume();
-    bool IsPlaying();
+    bool IsPlaying() const;
 
 private:
     uint32 id;

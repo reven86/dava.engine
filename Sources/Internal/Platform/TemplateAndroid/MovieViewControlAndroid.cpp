@@ -108,7 +108,7 @@ void JniMovieViewControl::Resume()
     resume(id);
 }
 
-bool JniMovieViewControl::IsPlaying()
+bool JniMovieViewControl::IsPlaying() const
 {
     return isPlaying(id);
 }

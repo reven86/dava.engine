@@ -61,7 +61,7 @@ public:
     virtual void Resume();
 
     // Whether the movie is being played?
-    virtual bool IsPlaying();
+    virtual bool IsPlaying() const;
 
 protected:
     // Convert the DAVA Scaling Mode to platform-specific (iOS) one.
