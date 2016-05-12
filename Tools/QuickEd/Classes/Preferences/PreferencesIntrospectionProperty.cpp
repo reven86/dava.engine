@@ -35,6 +35,17 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     : ValueProperty(aMember->Desc().text, DAVA::VariantType::TypeFromMetaInfo(aMember->Type()), true, &aMember->Desc())
     , member(aMember)
 {
+    DAVA::VariantType value = PreferencesStorage::Instance()->GetDefaultValue(member);
+    if (value.type != VariantType::TYPE_NONE)
+    {
+        ValueProperty::SetDefaultValue(value);
+    }
+    else
+    {
+        DAVA::VariantType::eVariantType type = ValueProperty::GetValueType();
+        ValueProperty::SetDefaultValue(DAVA::VariantType::FromType(type));
+    }
+    PreferencesIntrospectionProperty::SetValue(PreferencesStorage::Instance()->GetValue(member));
     DAVA::String name(aMember->Desc().text);
     DAVA::size_type index = name.find_last_of('/');
     if (index == DAVA::String::npos)
@@ -47,9 +58,22 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     }
 }
 
+void PreferencesIntrospectionProperty::ApplyPreference()
+{
+    if (IsOverriddenLocally())
+    {
+        PreferencesStorage::Instance()->SetValue(member, GetValue());
+    }
+}
+
+void PreferencesIntrospectionProperty::SetValue(const VariantType& val)
+{
+    value = val;
+}
+
 DAVA::VariantType PreferencesIntrospectionProperty::GetValue() const
 {
-    return PreferencesStorage::Instance()->GetValue(member);
+    return value;
 }
 
 const EnumMap* PreferencesIntrospectionProperty::GetEnumMap() const
@@ -77,15 +101,16 @@ bool PreferencesIntrospectionProperty::IsReadOnly() const
 
 bool PreferencesIntrospectionProperty::IsOverriddenLocally() const
 {
-    return false;
+    return PreferencesStorage::Instance()->GetValue(member) != GetValue();
 }
 
-void PreferencesIntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
+DAVA::uint32 PreferencesIntrospectionProperty::GetFlags() const
 {
-    PreferencesStorage::Instance()->SetValue(member, value);
+    DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetDefaultValue(member);
+    return (defaultValue.type != DAVA::VariantType::TYPE_NONE) ? EF_CAN_RESET : EF_NONE;
 }
 
-void PreferencesIntrospectionProperty::Accept(PropertyVisitor* /*visitor*/)
+void PreferencesIntrospectionProperty::ResetValue()
 {
-    //do nothing here
+    SetValue(PreferencesStorage::Instance()->GetDefaultValue(member));
 }

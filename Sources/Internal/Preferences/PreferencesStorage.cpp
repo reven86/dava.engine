@@ -281,6 +281,33 @@ DAVA::VariantType PreferencesStorage::GetValue(const DAVA::InspMember* member) c
     return *value;
 }
 
+DAVA::VariantType PreferencesStorage::GetDefaultValue(const DAVA::InspMember* member) const
+{
+    if (member == nullptr)
+    {
+        DVASSERT(member == nullptr);
+        return DAVA::VariantType();
+    }
+    const DAVA::InspInfo* inspInfo = member->GetParentInsp();
+    DVASSERT(nullptr != inspInfo);
+    auto mapIter = defaultValues.find(inspInfo);
+    if (mapIter == defaultValues.end())
+    {
+        //unregistered introspection. Looks like we trying to get non-preferences membrer or forget to register it
+        DVASSERT(mapIter != defaultValues.end());
+        return DAVA::VariantType();
+    }
+    const DefaultValuesList& defaultValuesList = mapIter->second;
+    const DAVA::FastName& name = member->Name();
+    auto defaultValuesIter = defaultValuesList.find(name);
+    if (defaultValuesIter == defaultValuesList.end())
+    {
+        //this is normal case, default value may noty exists
+        return VariantType();
+    }
+    return defaultValuesIter->second;
+}
+
 const PreferencesStorage::RegisteredIntrospection& PreferencesStorage::GetRegisteredInsp() const
 {
     return registeredInsp;

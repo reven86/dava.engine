@@ -71,6 +71,10 @@ public:
     //when set value by member it saves as preferences value and applys to all registered objects
     void SetValue(const DAVA::InspMember* member, const DAVA::VariantType& value);
 
+    //get default value;
+    //if default value was not set - empty variant type will be returned
+    DAVA::VariantType GetDefaultValue(const DAVA::InspMember* member) const;
+
     //all registered InspInfo to build model
     const RegisteredIntrospection& GetRegisteredInsp() const;
 

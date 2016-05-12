@@ -255,6 +255,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
         {
             VariantType newVal(value != Qt::Unchecked);
             ChangeProperty(property, newVal);
+            UpdateProperty(property);
             return true;
         }
     }
@@ -274,6 +275,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
         }
 
         ChangeProperty(property, newVal);
+        UpdateProperty(property);
         return true;
     }
     break;
@@ -281,6 +283,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     case ResetRole:
     {
         ResetProperty(property);
+        UpdateProperty(property);
         return true;
     }
     break;
@@ -315,19 +318,27 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
 
 void PropertiesModel::UpdateAllChangedProperties()
 {
-    for (auto pair : changedIndexes)
+    for (auto property : changedProperties)
     {
-        emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
+        UpdateProperty(property);
+        property->Release();
     }
-    changedIndexes.clear();
+    changedProperties.clear();
 }
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
+    property->Retain();
+    changedProperties.insert(property);
+    continuousUpdater->Update();
+}
+
+void PropertiesModel::UpdateProperty(AbstractProperty* property)
+{
     QPersistentModelIndex nameIndex = indexByProperty(property, 0);
     QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    continuousUpdater->Update();
+    if (nameIndex.isValid() && valueIndex.isValid())
+        emit dataChanged(nameIndex, valueIndex, QVector<int>() << Qt::DisplayRole);
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index)

@@ -41,6 +41,8 @@ protected:
     ~PreferencesSectionProperty() override;
 
 public:
+    void ApplyPreference();
+
     void AddProperty(PreferencesIntrospectionProperty* property);
     void InsertProperty(PreferencesIntrospectionProperty* property, DAVA::int32 index);
     void RemoveProperty(PreferencesIntrospectionProperty* property);
@@ -85,6 +87,19 @@ inline PreferencesSectionProperty::~PreferencesSectionProperty()
         DVASSERT(prop->GetParent() == this);
         prop->SetParent(nullptr);
         prop->Release();
+    }
+}
+
+inline void PreferencesSectionProperty::ApplyPreference()
+{
+    for (PreferencesIntrospectionProperty* child : children)
+    {
+        child->ApplyPreference();
+    }
+
+    for (PreferencesSectionProperty* section : sections)
+    {
+        section->ApplyPreference();
     }
 }
 

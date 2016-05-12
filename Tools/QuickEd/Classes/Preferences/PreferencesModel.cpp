@@ -36,6 +36,11 @@ PreferencesModel::PreferencesModel(QObject* parent)
     rootProperty = new PreferencesRootProperty();
 }
 
+void PreferencesModel::ApplyAllChangedProperties()
+{
+    DynamicTypeCheck<PreferencesRootProperty*>(rootProperty)->ApplyPreference();
+}
+
 void PreferencesModel::ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value)
 {
     property->SetValue(value);

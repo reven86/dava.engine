@@ -375,7 +375,6 @@ void EditorCore::EnableCacheClient()
     {
         Logger::Info("Asset cache client started");
     }
-    return connected == AssetCache::Error::NO_ERRORS;
 }
 
 void EditorCore::DisableCacheClient()

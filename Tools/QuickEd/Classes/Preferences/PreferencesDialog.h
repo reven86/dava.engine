@@ -34,12 +34,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QDialog>
 
 class QTreeView;
+class PreferencesModel;
 
 class PreferencesDialog : public QDialog, public DAVA::InspBase
 {
 public:
     PreferencesDialog(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
     ~PreferencesDialog();
+
+private slots:
+    void OnButtonBoxAccepted();
+    void OnButtonBoxRejected();
 
 private:
     DAVA::String GetGeometry() const;
@@ -49,6 +54,7 @@ private:
     void SetHeaderState(const DAVA::String& str);
 
     QTreeView* treeView = nullptr;
+    PreferencesModel* preferencesModel = nullptr;
 
 public:
     INTROSPECTION(PreferencesDialog,

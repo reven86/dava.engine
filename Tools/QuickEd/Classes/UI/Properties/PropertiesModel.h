@@ -78,6 +78,7 @@ protected:
 
     // PropertyListener
     void PropertyChanged(AbstractProperty* property) override;
+    void UpdateProperty(AbstractProperty* property);
 
     void ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index) override;
     void ComponentPropertiesWasAdded(RootProperty* root, ComponentPropertiesSection* section, int index) override;
@@ -110,7 +111,7 @@ protected:
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    QSet<QPair<QPersistentModelIndex, QPersistentModelIndex>> changedIndexes;
+    QSet<AbstractProperty*> changedProperties;
     ContinuousUpdater* continuousUpdater = nullptr;
 };
 
