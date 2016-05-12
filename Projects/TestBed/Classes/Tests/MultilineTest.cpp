@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "Tests/MultilineTest.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
 
@@ -103,6 +104,7 @@ void MultilineTest::LoadResources()
     textField1->SetDebugDraw(true);
     textField1->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     textField1->SetDelegate(textDelegate1);
+    textField1->GetOrCreateComponent<UIFocusComponent>();
     textField1->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
 
     textField2 = new UITextField(Rect(5, 80, 400, 60));
@@ -113,6 +115,7 @@ void MultilineTest::LoadResources()
     textField2->SetTextColor(Color(0.0, 0.0, 1.0, 1.0));
     textField2->SetKeyboardType(UITextField::eKeyboardType::KEYBOARD_TYPE_NUMBER_PAD);
     textField2->SetDelegate(textDelegate2);
+    textField2->GetOrCreateComponent<UIFocusComponent>();
     textField2->SetTextAlign(ALIGN_RIGHT | ALIGN_TOP);
 
     textFieldMulti = new UITextField(Rect(450, 10, 400, 120));

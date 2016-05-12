@@ -175,108 +175,81 @@
     {
         return YES;
     }
-
-    // if some emojies was  removed, we should set our changes directly and retutn NO
-    // because if we will return YES - unchenged diff will be applyed.
-    // first change we made - is try to cut emojies.
-    DAVA::WideString input = DAVA::WideStringFromNSString(string);
-    BOOL ignoreDelegateResult = DAVA::StringUtils::RemoveEmoji(input);
-    NSString* difference = DAVA::NSStringFromWideString(input);
-
-    // adapt range to the new input difference string
-    if (range.length > 0)
-    {
-        range.length -= [string length] - [difference length];
-    }
-
+    
     DAVA::int32 maxLength = cppTextField->GetMaxLength();
-
-    NSString* stringWithAppliedDiff = nil;
-    if (maxLength >= 0)
+    // if maxLength didn't set, it equal (-1), it incorrect
+    if (maxLength < 0)
     {
-        // when the last insert was out of bounds, and after that revert button was pressed.
-
-        // for example we have maxLen = 7.
-        // we have string [1 2 3 4 5 _ _ ]
-        // then inserts [6 7 8 9] to the end of the string and it should be [1 2 3 4 5 6 7 8 9].
-        // but we have maxLen = 7. So we need to cut [8 9] and we have [1 2 3 4 5 6 7] and we returns YES.
-        // text field remembers that and Undo will remove 4 symbols but not 2!
-        // then er press undo. It tryes to remove 4 symbols from position 6. We have 2 symbols!
-        // it causes exception inside UITextField.
-        NSString* currentText = [textCtrl valueForKey:@"text"];
-
-        // There are WORKAROUND!
-        // we don't accepts the diff, but we apply it by ourself.
-        if (range.location + range.length > [currentText length])
+        maxLength = 0;
+    }
+    NSUInteger replStrLength = [string length];
+    bool replaceString = (range.length > 0 && replStrLength != 0);
+    bool removeString = (range.length > 0 && replStrLength == 0);
+    bool insertString = (range.length == 0);
+    DVASSERT(removeString != insertString);
+    NSString* newString = nullptr;
+    NSString* origString = [textCtrl valueForKey:@"text"];
+    NSUInteger origStrLength = [origString length];
+    BOOL ignoreDelegateResult = NO;
+    
+    if (removeString || replaceString)
+    {
+        if (range.location + range.length > origStrLength)
         {
-            range.length = [currentText length] - range.location;
+            range.length = origStrLength - range.location;
             ignoreDelegateResult = YES;
         }
-
-        if (range.location + range.length > NSUInteger(maxLength))
-        {
-            range.length = maxLength - static_cast<DAVA::int32>(range.location);
-            DAVA::int32 replaceLocation = static_cast<DAVA::int32>(range.location);
-            ignoreDelegateResult = YES; // return NO at the end of the function
-        }
-
-        stringWithAppliedDiff = [currentText stringByReplacingCharactersInRange:range withString:difference]; // Get string after changing
-
-        NSInteger newLength = [stringWithAppliedDiff length]; // Length in UTF32 charactres
-        // new string is larger than allowed
-        if (newLength > maxLength)
-        {
-            NSUInteger charsToInsert = 0;
-            if (range.length == 0)
-            {
-                // charactres count independent from encoding and bytes per each charracter
-                DAVA::int32 curLength = static_cast<DAVA::int32>([[textCtrl valueForKey:@"text"] length]);
-
-                charsToInsert = maxLength - curLength;
-                DVASSERT(maxLength >= curLength);
-            }
-            else
-            {
-                // Inserting with replace.
-                charsToInsert = range.length;
-            }
-
-            // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
-            // back for decrease string length in UTF32 code points
-            NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
-            char buffer[byteCount];
-            NSUInteger usedBufferCount;
-
-            // Cut difference to make total string not wider than maxLength
-            [difference getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, difference.length) remainingRange:nil];
-
-            NSString* cuttedDifference = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
-            DVASSERT(cuttedDifference && "Error on convert utf32 to NSString");
-
-            NSString* currentText = [textCtrl valueForKey:@"text"];
-            stringWithAppliedDiff = [currentText stringByReplacingCharactersInRange:range withString:cuttedDifference];
-            [cuttedDifference release];
-
-            ignoreDelegateResult = YES; // return NO at the end of the function
-        }
     }
-
+    if (insertString || replaceString)
+    {
+        NSUInteger charsToInsert = [string length];
+        if (charsToInsert > (maxLength - origStrLength))
+        {
+            charsToInsert = maxLength - origStrLength;
+        }
+        // safe remove
+        {
+            // new cut characters
+            NSUInteger position = 0;
+            NSRange rangeCharacter;
+            NSInteger lengthStr = [string length];
+            NSInteger index = 0;
+            do
+            {
+                rangeCharacter = [string rangeOfComposedCharacterSequenceAtIndex:index];
+                if ((rangeCharacter.location + rangeCharacter.length) > charsToInsert)
+                {
+                    position = rangeCharacter.location;
+                    break;
+                }
+                position = rangeCharacter.location + rangeCharacter.length;
+                index++;
+            }
+            while ((rangeCharacter.location + rangeCharacter.length) < charsToInsert);
+            string = [string substringWithRange:NSMakeRange(0, position)];
+        }
+        // safe remove end
+    }
+    
+    newString = [origString stringByReplacingCharactersInRange:range withString:string];
+    ignoreDelegateResult = YES; // return NO at the end of the function
+    
     // Length check OK, continue with the delegate.
     DAVA::WideString repString;
-    const char* cutfstr = [difference cStringUsingEncoding:NSUTF8StringEncoding];
+    const char* cutfstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
     if (nullptr != cutfstr) //cause strlen(nullptr) will crash
     {
         DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
         const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
         DAVA::UTF8Utils::EncodeToWideString(str, len, repString);
     }
-
+    
     BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), repString);
-
+    
     if (ignoreDelegateResult)
     {
         // We need to apply change manually.
-        [textCtrl setValue:stringWithAppliedDiff forKey:@"text"];
+        [textCtrl setValue:newString forKey:@"text"];
         return NO;
     }
     else

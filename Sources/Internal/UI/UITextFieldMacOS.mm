@@ -1415,12 +1415,39 @@ doCommandBySelector:(SEL)commandSelector
     if ([*partialStringPtr length] >= maxLength)
     {
         int spaceLeft = maxLength - [origString length];
-        // we can crop part of string only if user try to add to end
-        if (spaceLeft > 0 && origSelRange.location == [origString length])
+        if (spaceLeft > 0 /*&& origSelRange.location == [origString length]*/)
         {
-            NSRange correctRange = NSMakeRange(origSelRange.location, spaceLeft);
-            NSString* matchSizeStr = [*partialStringPtr substringWithRange:correctRange];
-            NSString* resultStr = [NSString stringWithFormat:@"%@%@", origString, matchSizeStr];
+            // find replacement string
+            NSRange replRange = NSMakeRange(origSelRange.location, [*partialStringPtr length] - [origString length]);
+            NSRange prevRange = NSMakeRange(0, origSelRange.location);
+            NSRange postRange = NSMakeRange(origSelRange.location + replRange.length, [*partialStringPtr length] - (origSelRange.location + replRange.length));
+            NSString* replPath = [*partialStringPtr substringWithRange:replRange];
+            NSString* prevPath = [*partialStringPtr substringWithRange:prevRange];
+            NSString* postPath = [*partialStringPtr substringWithRange:postRange];
+            
+            // safe remove
+            {
+                // new cut characters
+                NSUInteger position = 0;
+                NSRange rangeCharacter;
+                NSInteger index = 0;
+                do
+                {
+                    rangeCharacter = [replPath rangeOfComposedCharacterSequenceAtIndex:index];
+                    if ((rangeCharacter.location + rangeCharacter.length) > spaceLeft)
+                    {
+                        position = rangeCharacter.location;
+                        break;
+                    }
+                    position = rangeCharacter.location + rangeCharacter.length;
+                    index++;
+                }
+                while ((rangeCharacter.location + rangeCharacter.length) < spaceLeft);
+                replPath = [replPath substringWithRange:NSMakeRange(0, position)];
+            }
+            // safe remove end
+            
+            NSString* resultStr = [NSString stringWithFormat:@"%@%@%@", prevPath, replPath, postPath];
             // write back
             *partialStringPtr = resultStr;
             *proposedSelRangePtr = NSMakeRange([resultStr length], 0);
