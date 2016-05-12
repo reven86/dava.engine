@@ -30,6 +30,7 @@
 #include "Render/Highlevel/LandscapeSubdivision.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
+#include "Render/RHI/rhi_Public.h"
 
 namespace DAVA
 {
@@ -63,7 +64,7 @@ void LandscapeSubdivision::PrepareSubdivision(Camera* camera, const Matrix4* wor
 
     cameraPos = camera->GetPosition();
 
-    frustum->Build((*worldTransform) * camera->GetViewProjMatrix());
+    frustum->Build((*worldTransform) * camera->GetViewProjMatrix(), rhi::DeviceCaps().isZeroBaseClipRange);
 
     float32 fovLerp = Clamp((camera->GetFOV() - metrics.zoomFov) / (metrics.normalFov - metrics.zoomFov), 0.f, 1.f);
     maxHeightError = metrics.zoomMaxHeightError + (metrics.normalMaxHeightError - metrics.zoomMaxHeightError) * fovLerp;

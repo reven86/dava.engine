@@ -261,6 +261,7 @@ void metal_Initialize(const InitParam& param)
     _metal_DeviceCaps.isZeroBaseClipRange = true;
     _metal_DeviceCaps.isUpperLeftRTOrigin = true;
     _metal_DeviceCaps.isCenterPixelMapping = false;
+    _metal_DeviceCaps.isInstancingSupported = true;
 }
 
 } // namespace rhi
