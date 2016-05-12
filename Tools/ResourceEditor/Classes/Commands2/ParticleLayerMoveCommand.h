@@ -32,26 +32,29 @@
 
 #include "Commands2/Base/Command2.h"
 #include "Particles/ParticleLayer.h"
-#include "Particles/ParticleEmitter.h"
+#include "Particles/ParticleEmitterInstance.h"
 
 class ParticleLayerMoveCommand : public Command2
 {
 public:
-    ParticleLayerMoveCommand(DAVA::ParticleEmitter* oldEmitter, DAVA::ParticleLayer* layer, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore = NULL);
+    ParticleLayerMoveCommand(DAVA::ParticleEmitterInstance* oldEmitter, DAVA::ParticleLayer* layer, DAVA::ParticleEmitterInstance* newEmitter, DAVA::ParticleLayer* newBefore = NULL);
     ~ParticleLayerMoveCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const
-    {
-        return NULL;
-    }
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const override;
 
-    DAVA::ParticleLayer* layer;
-    DAVA::ParticleEmitter* oldEmitter;
-    DAVA::ParticleLayer* oldBefore;
-    DAVA::ParticleEmitter* newEmitter;
-    DAVA::ParticleLayer* newBefore;
+private:
+    DAVA::ParticleLayer* layer = nullptr;
+    DAVA::ParticleEmitterInstance* oldEmitter = nullptr;
+    DAVA::ParticleLayer* oldBefore = nullptr;
+    DAVA::ParticleEmitterInstance* newEmitter = nullptr;
+    DAVA::ParticleLayer* newBefore = nullptr;
 };
+
+inline DAVA::Entity* ParticleLayerMoveCommand::GetEntity() const
+{
+    return nullptr;
+}
 
 #endif // __PARTICLE_LAYER_MOVE_COMMAND_H__

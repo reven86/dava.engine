@@ -43,6 +43,8 @@
 
 using namespace DAVA;
 
+#include "SceneParser.h"
+
 //Beast
 BeastAction::BeastAction(SceneEditor2* scene, const DAVA::FilePath& _outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog)
     : CommandAction(CMDID_BEAST, "Beast")

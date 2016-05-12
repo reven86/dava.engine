@@ -37,7 +37,7 @@
 #include <QShowEvent>
 
 class SceneEditor2;
-class EntityGroup;
+class SelectableGroup;
 class EditorStatisticsSystem;
 class Command2;
 
@@ -77,7 +77,7 @@ protected slots:
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool isRedo);
 
 private:
@@ -126,8 +126,8 @@ private:
 
     void CollectSceneData(SceneEditor2* scene);
     void CollectParticlesData();
-    void CollectSpeedTreeLeafsSquare(const EntityGroup* forGroup);
-    void CollectSelectedRenderObjects(const EntityGroup* selected);
+    void CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup);
+    void CollectSelectedRenderObjects(const SelectableGroup* selected);
     void CollectSelectedRenderObjectsRecursivly(DAVA::Entity* entity);
 
     void CollectTexture(DAVA::TexturesMap& textures, const DAVA::FilePath& pathname, DAVA::Texture* tex);

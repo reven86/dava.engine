@@ -43,6 +43,11 @@
 
 namespace DAVA
 {
+const Vector2 UIStaticText::NO_REQUIRED_SIZE = Vector2(-1.f, -1.f);
+const Vector2 UIStaticText::REQUIRED_CONTROL_SIZE = Vector2::Zero;
+const Vector2 UIStaticText::REQUIRED_CONTROL_WIDTH = Vector2(0.f, -1.f);
+const Vector2 UIStaticText::REQUIRED_CONTROL_HEIGHT = Vector2(-1.f, 0.f);
+
 #if defined(LOCALIZATION_DEBUG)
 const float32 UIStaticText::LOCALIZATION_RESERVED_PORTION = 0.6f;
 const Color UIStaticText::HIGHLIGHT_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0.4f),
@@ -177,16 +182,6 @@ bool UIStaticText::GetMultiline() const
 bool UIStaticText::GetMultilineBySymbol() const
 {
     return textBlock->GetMultilineBySymbol();
-}
-
-void UIStaticText::SetAlign(int32 _align)
-{
-    UIControl::SetSpriteAlign(_align);
-}
-
-int32 UIStaticText::GetAlign() const
-{
-    return UIControl::GetSpriteAlign();
 }
 
 void UIStaticText::SetTextAlign(int32 _align)
@@ -568,10 +563,10 @@ void UIStaticText::DrawLocalizationDebug(const UIGeometricData& textGeomData) co
         textGeomData.GetPolygon(polygon);
         RenderSystem2D::Instance()->FillPolygon(polygon, HIGHLIGHT_COLORS[lineBreakError]);
     }
-    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    if (textBlock->GetFittingOption() != 0 && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
         Color color = HIGHLIGHT_COLORS[WHITE];
-        if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
+        if (textBlock->GetFittingOptionUsed() != 0)
         {
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_REDUCE)
                 color = HIGHLIGHT_COLORS[RED];
@@ -622,5 +617,21 @@ void UIStaticText::RecalculateDebugColoring()
         }
     }
 }
+
 #endif
+
+DAVA::Font* UIStaticText::GetFont() const
+{
+    return textBlock->GetFont();
+}
+
+DAVA::float32 UIStaticText::GetFontSize() const
+{
+    return textBlock->GetFontSize();
+}
+
+void UIStaticText::SetFontSize(float32 newSize)
+{
+    textBlock->SetFontSize(newSize);
+}
 };

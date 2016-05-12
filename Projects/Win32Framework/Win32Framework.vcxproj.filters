@@ -1715,6 +1715,9 @@
     <ClInclude Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.h">
       <Filter>Internal\Command</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LandscapeSystem.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\MouseDevice.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -3060,6 +3063,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Command\SetPropertyValueCommand.cpp">
       <Filter>Internal\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LandscapeSystem.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp">
       <Filter>Internal\FileSystem</Filter>

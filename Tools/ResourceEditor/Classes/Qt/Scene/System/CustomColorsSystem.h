@@ -40,13 +40,13 @@ class CustomColorsSystem : public LandscapeEditorSystem
 {
 public:
     CustomColorsSystem(DAVA::Scene* scene);
-    virtual ~CustomColorsSystem();
+    ~CustomColorsSystem() override;
 
     LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
     bool DisableLandscapeEdititing(bool saveNeeded = true);
 
-    virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent* event);
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent* event) override;
 
     void SetBrushSize(DAVA::int32 brushSize, bool updateDrawSystem = true);
     DAVA::int32 GetBrushSize();
@@ -54,27 +54,13 @@ public:
     DAVA::int32 GetColor();
 
     void SaveTexture(const DAVA::FilePath& filePath);
-    bool LoadTexture(const DAVA::FilePath& filePath, bool createUndo = true);
+    bool LoadTexture(const DAVA::FilePath& filePath, bool createUndo);
     DAVA::FilePath GetCurrentSaveFileName();
 
     bool ChangesPresent();
 
-protected:
+private:
     bool CouldApplyImage(DAVA::Image* image, const DAVA::String& imageName) const;
-
-    DAVA::int32 curToolSize;
-    DAVA::Texture* toolImageTexture = nullptr;
-
-    DAVA::Texture* loadedTexture = nullptr;
-
-    DAVA::Color drawColor;
-    DAVA::int32 colorIndex = 0;
-
-    DAVA::Rect updatedRectAccumulator;
-
-    bool editingIsEnabled = false;
-
-    DAVA::Image* originalImage = nullptr;
 
     void UpdateToolImage(bool force = false);
     void UpdateBrushTool();
@@ -98,6 +84,16 @@ protected:
     void FinishEditing();
 
     Command2::Pointer CreateSaveFileNameCommand(const DAVA::String& filePath);
+
+private:
+    DAVA::Texture* toolImageTexture = nullptr;
+    DAVA::Texture* loadedTexture = nullptr;
+    DAVA::Image* originalImage = nullptr;
+    DAVA::Color drawColor = DAVA::Color::Transparent;
+    DAVA::int32 colorIndex = 0;
+    DAVA::int32 curToolSize = 120;
+    DAVA::Rect updatedRectAccumulator;
+    bool editingIsEnabled = false;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */
