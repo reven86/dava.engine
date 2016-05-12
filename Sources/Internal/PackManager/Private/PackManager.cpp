@@ -78,11 +78,6 @@ const String& PackManager::FindPack(const FilePath& relativePathInPack) const
     return impl->FindPack(relativePathInPack);
 }
 
-//const PackManager::Pack& PackManager::GetPack(const String& packID) const
-//{
-//    return impl->GetPack(packID);
-//}
-
 const PackManager::Pack& PackManager::RequestPack(const String& packID, float priority)
 {
     return impl->RequestPack(packID, priority);

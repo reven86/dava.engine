@@ -18,7 +18,11 @@ class PackManagerImpl
 public:
     PackManagerImpl() = default;
 
-    void Initialize(const FilePath& dbFile_, const FilePath& localPacksDir_, const String& remotePacksURL_, Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal);
+    void Initialize(const FilePath& dbFile_,
+                    const FilePath& localPacksDir_,
+                    const String& packUrlCommon,
+                    const String& packUrlGpu,
+                    Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal);
 
     bool IsProcessingEnabled() const
     {
@@ -90,7 +94,7 @@ public:
 
     const String& GetRemotePacksURL() const
     {
-        return remotePacksUrl;
+        return packsUrlCommon;
     }
 
     Signal<const PackManager::Pack&, PackManager::Pack::Change>* onPackChange;
@@ -98,7 +102,7 @@ public:
 private:
     FilePath dbFile;
     FilePath localPacksDir;
-    String remotePacksUrl;
+    String packsUrlCommon;
     bool isProcessingEnabled = false;
     PackManager* packManager = nullptr;
     UnorderedMap<String, uint32> packsIndex;

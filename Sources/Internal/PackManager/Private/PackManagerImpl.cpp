@@ -8,11 +8,12 @@ namespace DAVA
 void PackManagerImpl::Initialize(const FilePath& dbFile_,
                                  const FilePath& localPacksDir_,
                                  const String& remotePacksURL_,
+                                 const String& packUrlGpu,
                                  Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal)
 {
     dbFile = dbFile_;
     localPacksDir = localPacksDir_;
-    remotePacksUrl = remotePacksURL_;
+    packsUrlCommon = remotePacksURL_;
     requestManager.reset(new RequestManager(*this));
 
     onPackChange = &signal;

@@ -92,26 +92,18 @@ public:
     // disalbe user request processing
     void DisableProcessing();
 
-    // internal method called per frame in framework
+    // internal method called per frame in framework (can thow exception)
     void Update();
 
     // return unique pack name or empty string
     const String& FindPack(const FilePath& relativePathInArchive) const;
 
-    // return referance to pack or throw exception if no such pack
-    //const Pack& GetPack(const String& packName) const;
-
-    // запрос пака (в случае неверного имени - исключение)
-    // 1. Важно! Если мы уже качаем один пак, и тут приходит заброс с более высоким приоритетом
-    // 2. то мы останавливаем закачку прошлого пака и переключаемся на новый, т.к. это могут быть виртуальные паки
-    // 3. но дополнительно мы проверяем зависимые паки, что бы не переключиться с него, если он нужен в новом запрошеном
+    // thow exception if can't find pack
     const Pack& RequestPack(const String& packName, float priority = 0.0f);
 
-    // получение всех паков их состояний, валидно до следующего вызова Update()
+    // all packs state, valid till next call Update()
     const Vector<Pack>& GetPacks() const;
 
-    // возможность освободить место на устройстве пользователя
-    // удалив скаченный пак (так же отмонтирует его от FS)
     void Delete(const String& packName);
 
     // отслеживание статуса запросов
