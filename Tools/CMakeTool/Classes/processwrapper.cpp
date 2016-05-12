@@ -92,6 +92,36 @@ void ProcessWrapper::FindAndOpenProjectFile(const QString& buildFolder)
     emit processStandardError(tr("Can not find project file!"));
 }
 
+void ProcessWrapper::OpenFolderInExplorer(const QString& folder)
+{
+    QFileInfo fileInfo(folder);
+    if (!fileInfo.exists())
+    {
+        emit processStandardError(tr("build folder are not exists!"));
+        return;
+    }
+    QString path = fileInfo.canonicalFilePath();
+#ifdef Q_OS_MAC
+    QStringList args;
+    args << "-e";
+    args << "tell application \"Finder\"";
+    args << "-e";
+    args << "activate";
+    args << "-e";
+    args << "select POSIX file \"" + path + "\"";
+    args << "-e";
+    args << "end tell";
+    QProcess::startDetached("osascript", args);
+#endif
+#ifdef Q_OS_WIN
+    QString param;
+    param = QLatin1String("/select,");
+    param += QDir::toNativeSeparators(path);
+    QString command = QString("explorer") + " " + param;
+    QProcess::startDetached(command);
+#endif
+}
+
 void ProcessWrapper::BlockingStopAllTasks()
 {
     taskQueue.clear();

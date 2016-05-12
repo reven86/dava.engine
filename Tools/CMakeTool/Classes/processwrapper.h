@@ -45,6 +45,7 @@ public:
 
     Q_INVOKABLE void LaunchCmake(const QString& command, bool needClean, const QString& buildFolder);
     Q_INVOKABLE void FindAndOpenProjectFile(const QString& buildFolder);
+    Q_INVOKABLE void OpenFolderInExplorer(const QString& folderPath);
     Q_INVOKABLE void BlockingStopAllTasks();
     Q_INVOKABLE void KillProcess();
     bool IsRunning() const;

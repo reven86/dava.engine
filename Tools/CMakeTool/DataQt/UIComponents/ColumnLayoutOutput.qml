@@ -30,8 +30,8 @@ Item {
 
         RowLayout {
             id: rowLayout
-            property int minimumHeight: Math.max(button_runCmake.height, checkBox_clean.height)
-            property int minimumWidth: checkBox_clean.width + button_runCmake.width + button_runBuild.width + stopButton.width + spacing * 4
+            property int minimumHeight: Math.max(button_runCmake.height, checkBox_clean.height, button_runBuildDebug.height)
+            property int minimumWidth: checkBox_clean.width + button_runCmake.width + button_runBuildDebug.width + button_runBuildRelease.width + stopButton.width + spacing * 5
             CheckBox {
                 id: checkBox_clean
                 text: qsTr("clean build folder");
@@ -48,15 +48,27 @@ Item {
                 }
             }
             Button {
-                id: button_runBuild
+                id: button_runBuildDebug
                 iconSource: "qrc:///Icons/build.png"
-                text: qsTr("run build")
+                text: qsTr("build debug")
                 enabled: !processWrapper.running
                 onClicked: {
                     buildStarted()
                     var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
                     var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
-                    processWrapper.LaunchCmake(cmakePath + " --build " + buildPath, false, "")
+                    processWrapper.LaunchCmake(cmakePath + " --build " + buildPath + " --config Debug", false, "")
+                }
+            }
+            Button {
+                id: button_runBuildRelease
+                iconSource: "qrc:///Icons/build.png"
+                text: qsTr("build release")
+                enabled: !processWrapper.running
+                onClicked: {
+                    buildStarted()
+                    var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
+                    var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
+                    processWrapper.LaunchCmake(cmakePath + " --build " + buildPath + " --config Release", false, "")
                 }
             }
             Button {
@@ -69,14 +81,31 @@ Item {
                 }
             }
         }
-        Button {
-            id: openProjectButton
-            iconSource: "qrc:///Icons/openfolder.png"
-            tooltip: qsTr("open project file")
-            enabled: rowLayout_buildFolder.path.length !== 0
-            text: qsTr("Open project file");
-            onClicked:  {
-                processWrapper.FindAndOpenProjectFile(rowLayout_buildFolder.path);
+
+        RowLayout {
+            id: rowLayout_openFolders
+            property int minimumHeight: Math.max(openProjectButton.height, openBuildFolderButton.height)
+            property int minimumWidth: openProjectButton.width + openBuildFolderButton.width + spacing * 2
+
+            Button {
+                id: openProjectButton
+                iconSource: "qrc:///Icons/openfolder.png"
+                tooltip: qsTr("open project file")
+                enabled: rowLayout_buildFolder.path.length !== 0
+                text: qsTr("Open project file");
+                onClicked:  {
+                    processWrapper.FindAndOpenProjectFile(rowLayout_buildFolder.path);
+                }
+            }
+            Button {
+                id: openBuildFolderButton
+                iconSource: "qrc:///Icons/openfolder.png"
+                tooltip: qsTr("open build folder")
+                enabled: rowLayout_buildFolder.path.length !== 0
+                text: qsTr("Open build folder");
+                onClicked:  {
+                    processWrapper.OpenFolderInExplorer(rowLayout_buildFolder.path);
+                }
             }
         }
 
