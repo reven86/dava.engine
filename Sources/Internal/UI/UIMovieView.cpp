@@ -53,21 +53,18 @@ namespace DAVA
 UIMovieView::UIMovieView(const Rect& rect)
     : UIControl(rect)
     , movieViewControl(new MovieViewControl())
+    , videoBackground(new UIControlBackground())
 {
-    Rect actualRect = rect;
-#if defined(__DAVAENGINE_WIN32__)
-    actualRect.x = 0;
-    actualRect.y = 0;
-    AddControl(movieViewControl);
-#endif
-    movieViewControl->Initialize(actualRect);
+    videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
+    movieViewControl->Initialize(rect);
 }
 
 UIMovieView::~UIMovieView()
 {
-#if defined(__DAVAENGINE_WIN32__)
-    SafeRelease(movieViewControl);
-#endif
+    SafeDelete(movieViewControl);
+    SafeRelease(videoBackground);
+    SafeRelease(videoTexture);
+    SafeDeleteArray(videoTextureBuffer);
 }
 
 void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
@@ -94,11 +91,22 @@ void UIMovieView::SetSize(const Vector2& newSize)
 void UIMovieView::Play()
 {
     movieViewControl->Play();
+
+    Vector2 res = movieViewControl->GetResolution();
+    textureWidth = NextPowerOf2(res.dx);
+    textureHeight = NextPowerOf2(res.dy);
+    uint32 size = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(movieViewControl->GetPixelFormat());
+
+    SafeDeleteArray(videoTextureBuffer);
+    videoTextureBuffer = new uint8[size];
+
+    Memset(videoTextureBuffer, 0, size);
 }
 
 void UIMovieView::Stop()
 {
     movieViewControl->Stop();
+    SafeDeleteArray(videoTextureBuffer);
 }
 
 void UIMovieView::Pause()
@@ -116,6 +124,31 @@ bool UIMovieView::IsPlaying()
     return movieViewControl->IsPlaying();
 }
 
+void UIMovieView::Update(float32 timeElapsed)
+{
+    if (nullptr == movieViewControl)
+        return;
+
+    MovieViewControl::DrawVideoFrameData* drawData = movieViewControl->GetDrawData();
+
+    if (nullptr == drawData || nullptr == videoTextureBuffer)
+        return;
+
+    Memcpy(videoTextureBuffer, drawData->data, drawData->dataSize);
+    if (nullptr == videoTexture)
+    {
+        videoTexture = Texture::CreateFromData(drawData->format, videoTextureBuffer, textureWidth, textureHeight, false);
+        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, drawData->frameWidth, drawData->frameHeight, drawData->frameWidth, drawData->frameHeight);
+        videoBackground->SetSprite(videoSprite);
+        videoSprite->Release();
+    }
+    else
+    {
+        videoTexture->TexImage(0, textureWidth, textureHeight, videoTextureBuffer, drawData->dataSize, Texture::INVALID_CUBEMAP_FACE);
+    }
+    SafeDelete(drawData);
+}
+
 void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
 {
     UIControl::SystemDraw(geometricData);
@@ -131,6 +164,12 @@ void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
     RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, drawColor);
     RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, drawColor);
 #endif
+}
+
+void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
+{
+    UIControl::Draw(parentGeometricData);
+    videoBackground->Draw(parentGeometricData);
 }
 
 void UIMovieView::OnVisible()

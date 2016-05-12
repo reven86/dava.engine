@@ -93,7 +93,7 @@ struct DecodedFrameBuffer
     uint32 height = 0;
 };
 
-class MovieViewControl : public IMovieViewControl, public UIControl
+class MovieViewControl : public IMovieViewControl
 {
 public:
     ~MovieViewControl() override;
@@ -103,18 +103,12 @@ public:
     // Initialize the control.
     void Initialize(const Rect& rect) override;
 
-    // Position/visibility.
-    void SetRect(const Rect& rect) override
-    {
-        UIControl::SetRect(rect);
-    };
-    void SetVisible(bool isVisible) override
-    {
-        UIControl::SetVisibilityFlag(isVisible);
-    }
-
     // Open the Movie.
     void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
+
+    // Position/visibility.
+    void SetRect(const Rect& rect) override{};
+    void SetVisible(bool isVisible) override{};
 
     // Start/stop the video playback.
     void Play() override;
@@ -127,8 +121,25 @@ public:
     // Whether the movie is being played?
     bool IsPlaying() const override;
 
-    // UIControl update and draw implementation
-    void Update(float32 timeElapsed) override;
+    struct DrawVideoFrameData
+    {
+        ~DrawVideoFrameData()
+        {
+            SafeDeleteArray(data);
+        }
+
+        uint8* data;
+        uint32 dataSize;
+        uint32 frameHeight = 0;
+        uint32 frameWidth = 0;
+        PixelFormat format;
+    };
+
+    // Data getter
+    DrawVideoFrameData* GetDrawData();
+
+    PixelFormat GetPixelFormat() const;
+    Vector2 GetResolution() const;
 
 private:
     enum PlayState : uint32
@@ -179,19 +190,21 @@ private:
     Thread* videoDecodingThread = nullptr;
     Thread* readingDataThread = nullptr;
 
+    void UpdateDrawData(DecodedFrameBuffer* buffer);
+    Mutex lastFrameLocker;
+    DrawVideoFrameData* lastFrameData = nullptr;
     Texture* videoTexture = nullptr;
+    Sprite* videoSprite = nullptr;
     float64 videoFramerate = 0.f;
     float64 frameLastPts = 0.f;
     float64 frameLastDelay = 40e-3;
     float64 video_clock = 0.f;
 
-    uint32 textureWidth = 0;
-    uint32 textureHeight = 0;
     uint32 frameHeight = 0;
     uint32 frameWidth = 0;
     const AV::AVPixelFormat avPixelFormat = AV::AV_PIX_FMT_RGBA;
-    const PixelFormat textureFormat = PixelFormat::FORMAT_RGBA8888;
-    uint32 textureBufferSize = 0;
+    const PixelFormat pixelFormat = PixelFormat::FORMAT_RGBA8888;
+    uint32 frameBufferSize = 0;
 
     unsigned int videoStreamIndex = -1;
     AV::AVCodecContext* videoCodecContext = nullptr;

@@ -55,6 +55,7 @@ public:
     void SetSize(const Vector2& newSize) override;
 
     void SystemDraw(const UIGeometricData& geometricData) override;
+    void Draw(const UIGeometricData& parentGeometricData) override;
 
     void OnVisible() override;
     void OnInvisible() override;
@@ -72,9 +73,16 @@ public:
     // Whether the movie is being played?
     bool IsPlaying();
 
+    void Update(float32 timeElapsed) override;
+
 protected:
     // Platform-specific implementation of the Movie Control.
-    MovieViewControl* movieViewControl;
+    MovieViewControl* movieViewControl = nullptr;
+    Texture* videoTexture = nullptr;
+    UIControlBackground* videoBackground = nullptr;
+    uint8* videoTextureBuffer = nullptr;
+    uint32 textureWidth = 0;
+    uint32 textureHeight = 0;
 
 public:
     INTROSPECTION_EXTEND(UIMovieView, UIControl,

@@ -40,6 +40,7 @@ MovieViewControl::~MovieViewControl()
     Stop();
     CloseMovie();
     SafeRelease(videoTexture);
+    SafeDelete(lastFrameData);
 }
 
 // Initialize the control.
@@ -47,14 +48,11 @@ void MovieViewControl::Initialize(const Rect& rect)
 {
     static bool isFFMGEGInited = false;
 
-    SetRect(rect);
     if (!isFFMGEGInited)
     {
         AV::av_register_all();
         isFFMGEGInited = true;
     }
-
-    GetBackground()->SetBgDrawType(UIControlBackground::DRAW_SCALE_PROPORTIONAL);
 }
 
 AV::AVFormatContext* MovieViewControl::CreateContext(const FilePath& path)
@@ -237,11 +235,9 @@ bool MovieViewControl::InitVideo()
         return false;
     }
 
-    textureWidth = NextPowerOf2(videoCodecContext->width);
-    textureHeight = NextPowerOf2(videoCodecContext->height);
-    textureBufferSize = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(textureFormat);
     frameHeight = videoCodecContext->height;
     frameWidth = videoCodecContext->width;
+    frameBufferSize = frameWidth * frameHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(pixelFormat);
 
     DVASSERT(nullptr == videoDecodingThread)
 
@@ -432,7 +428,7 @@ DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
 
         rgbDecodedScaledFrame = AV::av_frame_alloc();
 
-        uint32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(textureFormat);
+        uint32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(pixelFormat);
         const int imgBufferSize = AV::av_image_get_buffer_size(avPixelFormat, videoCodecContext->width, videoCodecContext->height, pixelSize);
 
         uint8* out_buffer = reinterpret_cast<uint8*>(AV::av_mallocz(imgBufferSize));
@@ -445,7 +441,7 @@ DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
         frameLastPts = effectivePTS;
 
         // released at UpdateVideo()
-        frameBuffer = new DecodedFrameBuffer(textureBufferSize, textureFormat, effectivePTS);
+        frameBuffer = new DecodedFrameBuffer(frameBufferSize, pixelFormat, effectivePTS);
         // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
         uint8* rgbTextureBufferHolder[1];
         rgbTextureBufferHolder[0] = frameBuffer->data;
@@ -510,24 +506,7 @@ void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
 
     float64 timeBeforePresent = GetTime();
 
-    if (nullptr == videoTexture)
-    {
-        // rgbTextureBuffer is a rgbTextureBufferHolder[0]
-        videoTexture = Texture::CreateFromData(frameBuffer->textureFormat, frameBuffer->data, textureWidth, textureHeight, false);
-        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, static_cast<int32>(frameWidth), static_cast<int32>(frameHeight), static_cast<float32>(frameWidth), static_cast<float32>(frameHeight));
-        auto back = GetBackground();
-        if (back)
-        {
-            back->SetSprite(videoSprite, 0);
-        }
-        SafeRelease(videoSprite);
-    }
-    else
-    {
-        // rgbTextureBuffer is a rgbTextureBufferHolder[0]
-        videoTexture->TexImage(0, textureWidth, textureHeight, frameBuffer->data, textureBufferSize, Texture::INVALID_CUBEMAP_FACE);
-        Logger::Error("TexImage");
-    }
+    UpdateDrawData(frameBuffer);
 
     uint32 sleepLessFor = static_cast<uint32>(GetTime() - timeBeforePresent);
     uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5) - sleepLessFor;
@@ -548,6 +527,47 @@ float64 MovieViewControl::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packe
 
     float64 effectivePTS = static_cast<float64>(pts) * AV::av_q2d(videoCodecContext->time_base);
     return effectivePTS;
+}
+
+DAVA::MovieViewControl::DrawVideoFrameData* MovieViewControl::GetDrawData()
+{
+    LockGuard<Mutex> lock(lastFrameLocker);
+
+    if (nullptr == lastFrameData)
+        return nullptr;
+
+    DrawVideoFrameData* data = new DrawVideoFrameData();
+    *data = *lastFrameData;
+    data->data = new uint8[lastFrameData->dataSize];
+    Memcpy(data->data, lastFrameData->data, lastFrameData->dataSize);
+
+    return data;
+}
+
+PixelFormat MovieViewControl::GetPixelFormat() const
+{
+    return pixelFormat;
+}
+
+Vector2 MovieViewControl::GetResolution() const
+{
+    return Vector2(frameWidth, frameHeight);
+}
+
+void MovieViewControl::UpdateDrawData(DecodedFrameBuffer* buffer)
+{
+    LockGuard<Mutex> lock(lastFrameLocker);
+    if (nullptr == lastFrameData)
+    {
+        lastFrameData = new DrawVideoFrameData();
+        lastFrameData->data = new uint8[frameBufferSize];
+    }
+
+    Memcpy(lastFrameData->data, buffer->data, frameBufferSize);
+    lastFrameData->dataSize = frameBufferSize;
+    lastFrameData->format = pixelFormat;
+    lastFrameData->frameHeight = videoCodecContext->height;
+    lastFrameData->frameWidth = videoCodecContext->width;
 }
 
 void MovieViewControl::InitFmod()
@@ -734,11 +754,6 @@ void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void*
         }
         Thread::Sleep(0);
     } while (thread && !thread->IsCancelling());
-}
-
-// UIControl update and draw implementation
-void MovieViewControl::Update(float32 timeElapsed)
-{
 }
 
 float64 MovieViewControl::GetTime()
