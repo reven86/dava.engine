@@ -97,7 +97,7 @@ public:
     virtual void Resume();
 
     // Whether the movie is being played?
-    virtual bool IsPlaying();
+    virtual bool IsPlaying() const;
 
 private:
     JniMovieViewControl jniMovieViewControl;
