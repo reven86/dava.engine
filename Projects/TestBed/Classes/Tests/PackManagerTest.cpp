@@ -143,6 +143,8 @@ void PackManagerTest::UnloadResources()
 
     SafeRelease(packInput);
     SafeRelease(startLoadingButton);
+    SafeRelease(startServerButton);
+    SafeRelease(stopServerButton);
     SafeRelease(packNameLoading);
     SafeRelease(redControl);
     SafeRelease(greenControl);
@@ -189,7 +191,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
                       }
                   });
 
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
+    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     // clear and renew all packs state

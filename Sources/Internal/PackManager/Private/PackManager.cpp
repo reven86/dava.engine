@@ -27,231 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "PackManager/PackManager.h"
-#include "PackManager/Private/PacksDB.h"
-#include "FileSystem/FileList.h"
-#include "DLC/Downloader/DownloadManager.h"
-#include "PackManager/Private/RequestQueue.h"
-#include "Utils/CRC32.h"
+#include "PackManager/Private/PackManagerImpl.h"
 
 namespace DAVA
 {
-struct PackPriorityComparator
-{
-    bool operator()(const PackManager::Pack* lhs, const PackManager::Pack* rhs) const
-    {
-        return lhs->priority < rhs->priority;
-    }
-};
-
-class PackManagerImpl
-{
-public:
-    PackManagerImpl()
-    {
-    }
-
-    void Initialize(PackManager* packManager_, const FilePath& dbFile_, const FilePath& localPacksDir_, const String& remotePacksURL_)
-    {
-        dbFile = dbFile_;
-        localPacksDir = localPacksDir_;
-        remotePacksUrl = remotePacksURL_;
-        packManager = packManager_;
-        queue.reset(new RequestQueue(*packManager));
-
-        // open DB and load packs state then mount all archives to FileSystem
-        db.reset(new PacksDB(dbFile));
-        db->InitializePacks(packs);
-        MountDownloadedPacks();
-    }
-
-    bool IsProcessingEnabled() const
-    {
-        return isProcessingEnabled;
-    }
-
-    void EnableProcessing()
-    {
-        if (!isProcessingEnabled)
-        {
-            isProcessingEnabled = true;
-            queue->Start();
-        }
-    }
-
-    void DisableProcessing()
-    {
-        if (isProcessingEnabled)
-        {
-            isProcessingEnabled = false;
-            queue->Stop();
-        }
-    }
-
-    void Update()
-    {
-        if (isProcessingEnabled)
-        {
-            queue->Update();
-        }
-    }
-
-    const String& FindPack(const FilePath& relativePathInPack) const
-    {
-        return db->FindPack(relativePathInPack);
-    }
-
-    const PackManager::Pack& RequestPack(const String& packID, float32 priority)
-    {
-        priority = std::max(0.f, priority);
-        priority = std::min(1.f, priority);
-
-        auto& pack = GetPack(packID);
-        if (pack.state == PackManager::Pack::NotRequested)
-        {
-            queue->Push(packID, priority);
-        }
-        else
-        {
-            if (queue->IsInQueue(packID))
-            {
-                queue->UpdatePriority(packID, priority);
-            }
-        }
-        return pack;
-    }
-
-    uint32 GetPackIndex(const String& packName)
-    {
-        auto it = packsIndex.find(packName);
-        if (it != end(packsIndex))
-        {
-            return it->second;
-        }
-        throw std::runtime_error("can't find pack with name: " + packName);
-    }
-
-    PackManager::Pack& GetPack(const String& packName)
-    {
-        uint32 index = GetPackIndex(packName);
-        return packs[index];
-    }
-
-    void MountDownloadedPacks()
-    {
-        FileSystem* fs = FileSystem::Instance();
-
-        // build packIndex
-        for (uint32 packIndex = 0; packIndex < packs.size(); ++packIndex)
-        {
-            PackManager::Pack& pack = packs[packIndex];
-            packsIndex[pack.name] = packIndex;
-        }
-
-        ScopedPtr<FileList> fileList(new FileList(localPacksDir, false));
-
-        uint32 numFilesAndDirs = fileList->GetCount();
-
-        for (uint32 fileIndex = 0; fileIndex < numFilesAndDirs; ++fileIndex)
-        {
-            if (fileList->IsDirectory(fileIndex))
-            {
-                continue;
-            }
-            const FilePath& filePath = fileList->GetPathname(fileIndex);
-            String fileName = filePath.GetFilename();
-            auto it = packsIndex.find(fileName);
-            if (it != end(packsIndex))
-            {
-                // check CRC32 meta and try mount this file
-                ScopedPtr<File> metaFile(File::Create(filePath + RequestQueue::crc32Postfix, File::OPEN | File::READ));
-                if (metaFile)
-                {
-                    String content;
-                    metaFile->ReadString(content);
-
-                    unsigned int crc32 = 0;
-                    {
-                        StringStream ss;
-                        ss << std::hex << content;
-                        ss >> crc32;
-                    }
-
-                    PackManager::Pack& pack = packs.at(it->second);
-                    pack.crc32FromMeta = crc32;
-                    if (pack.crc32FromDB != pack.crc32FromMeta)
-                    {
-                        // old Pack file with previous version crc32 - delete it
-                        fs->DeleteFile(filePath);
-                        fs->DeleteFile(filePath + RequestQueue::crc32Postfix);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            fs->Mount(filePath, "Data/");
-                            pack.state = PackManager::Pack::Mounted;
-                        }
-                        catch (std::exception& ex)
-                        {
-                            Logger::Error("%s", ex.what());
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // TODO write what to do with this file? delete it? is it .hash?
-            }
-        } // end for fileIndex
-    }
-
-    void DeletePack(const String& packName)
-    {
-        auto& pack = GetPack(packName);
-        if (pack.state == PackManager::Pack::Mounted)
-        {
-            // first modify DB
-            pack.state = PackManager::Pack::NotRequested;
-            pack.priority = 0.0f;
-            pack.downloadProgress = 0.f;
-
-            // now remove archive from filesystem
-            FileSystem* fs = FileSystem::Instance();
-            FilePath archivePath = localPacksDir + packName;
-            fs->Unmount(archivePath);
-
-            fs->DeleteFile(archivePath);
-            FilePath archiveCrc32Path = archivePath + RequestQueue::crc32Postfix;
-            fs->DeleteFile(archiveCrc32Path);
-        }
-    }
-
-    const Vector<PackManager::Pack>& GetAllState() const
-    {
-        return packs;
-    }
-
-    const FilePath& GetLocalPacksDir() const
-    {
-        return localPacksDir;
-    }
-
-    const String& GetRemotePacksURL() const
-    {
-        return remotePacksUrl;
-    }
-
-private:
-    FilePath dbFile;
-    FilePath localPacksDir;
-    String remotePacksUrl;
-    bool isProcessingEnabled = false;
-    PackManager* packManager = nullptr;
-    UnorderedMap<String, uint32> packsIndex;
-    Vector<PackManager::Pack> packs;
-    std::unique_ptr<RequestQueue> queue;
-    std::unique_ptr<PacksDB> db;
-};
 
 PackManager::PackManager()
 {
@@ -260,12 +39,17 @@ PackManager::PackManager()
 
 PackManager::~PackManager() = default;
 
-void PackManager::Initialize(const FilePath& filesDB_, const FilePath& localPacksDir_, const String& remotePacksUrl)
+void PackManager::Initialize(const FilePath& filesDB_,
+                             const FilePath& localPacksDir_,
+                             const String& remotePacksUrl,
+                             const String& remotePacksGpuUrl)
 {
     DVASSERT(FileSystem::Instance()->IsFile(filesDB_));
     DVASSERT(FileSystem::Instance()->IsDirectory(localPacksDir_));
 
-    impl->Initialize(this, filesDB_, localPacksDir_, remotePacksUrl);
+    // TODO two more params
+
+    impl->Initialize(filesDB_, localPacksDir_, remotePacksUrl, onPackStateChanged);
 }
 
 bool PackManager::IsProcessingEnabled() const
@@ -294,10 +78,10 @@ const String& PackManager::FindPack(const FilePath& relativePathInPack) const
     return impl->FindPack(relativePathInPack);
 }
 
-const PackManager::Pack& PackManager::GetPack(const String& packID) const
-{
-    return impl->GetPack(packID);
-}
+//const PackManager::Pack& PackManager::GetPack(const String& packID) const
+//{
+//    return impl->GetPack(packID);
+//}
 
 const PackManager::Pack& PackManager::RequestPack(const String& packID, float priority)
 {

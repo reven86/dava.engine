@@ -27,8 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef __PACKMANAGERTEST_TEST_H__
-#define __PACKMANAGERTEST_TEST_H__
+#pragma once
 
 #include "Infrastructure/BaseScreen.h"
 #include <FileSystem/FilePath.h>

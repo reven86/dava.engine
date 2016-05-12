@@ -29,17 +29,17 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 
 namespace DAVA
 {
 class PackRequest
 {
 public:
-    PackRequest(PackManager& packManager_, const String& name, float32 priority);
+    PackRequest(PackManagerImpl& packManager_, const String& name, float32 priority);
 
     void Start();
-    void Update(PackManager& packManager);
+    void Update();
     void ChangePriority(float32 newPriority);
     void Pause();
 
@@ -92,16 +92,16 @@ private:
     void MountPack();
     void GoToNextSubRequest();
 
-    PackManager* packManager;
+    PackManagerImpl* packManager;
     String packName;
     float32 priority;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
 };
 
-class RequestQueue
+class RequestManager
 {
 public:
-    explicit RequestQueue(PackManager& packManager_)
+    explicit RequestManager(PackManagerImpl& packManager_)
         : packManager(packManager_)
     {
     }
@@ -123,7 +123,7 @@ public:
 private:
     void CheckRestartLoading();
 
-    PackManager& packManager;
+    PackManagerImpl& packManager;
     String currrentTopLoadingPack;
     Vector<PackRequest> items;
 };

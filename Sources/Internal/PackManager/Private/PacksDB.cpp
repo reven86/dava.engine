@@ -195,7 +195,7 @@ void PacksDB::InitializePacks(Vector<PackManager::Pack>& packs) const
     {
         PackManager::Pack pack;
         pack.name = name;
-        pack.state = PackManager::Pack::NotRequested;
+        pack.state = PackManager::Pack::Status::NotRequested;
 
         uint32 crc32 = 0;
         if (!hash.empty())
@@ -205,7 +205,7 @@ void PacksDB::InitializePacks(Vector<PackManager::Pack>& packs) const
             ss >> crc32;
         }
 
-        pack.crc32FromDB = crc32;
+        pack.hashFromDB = crc32;
 
         packs.push_back(pack);
     };

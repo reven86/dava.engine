@@ -39,14 +39,14 @@ class PackManager final
 public:
     struct Pack
     {
-        enum Status : uint32
+        enum class Status : uint32
         {
-            NotRequested = 0, // не загружен на FS
-            Requested = 1, // поставлен в очередь на загрузку
-            Downloading = 2, // загружается на FS
-            Mounted = 3, // существует на FS и готов к использованию
-            ErrorLoading = 4, // произошла ошибка при скачивании, конкретная ошибка смотрится по полю downloadError
-            OtherError = 5 // ошибка при монтировании, проверке crc32, записи чтении файла и т.д. смотри поле otherErrorMsg
+            NotRequested = 0,
+            Requested = 1,
+            Downloading = 2,
+            Mounted = 3,
+            ErrorLoading = 4, // downloadError - value returned from DLC DownloadManager
+            OtherError = 5 // mount failed, check hash failed, file IO failed see otherErrorMsg
         };
 
         enum class Change : uint32
@@ -56,44 +56,50 @@ public:
             Priority = 4,
         };
 
-        String name; // уникальное имя пака
-        Status state = NotRequested; // NotRequested default;
+        Vector<String> dependency; // names of dependency packs or empty
+
+        String name; // unique pack name
         String remoteUrl; // url used for download archive or empty
+        String otherErrorMsg;
+
         float32 downloadProgress = 0.f; // 0.0f to 1.0f
         float32 priority = 0.f; // 0.0f to 1.0f
-        uint32 crc32FromMeta = 0; // crc32 from sub file or 0 (0 - pack is pure virtual)
-        uint32 crc32FromDB = 0; // crc32 from filesdb (0 - pack is pure virtual - nothing to download - only dependencies)
+
+        uint32 hashFromMeta = 0; // example: tanks.pak -> tanks.pak.hash
+        uint32 hashFromDB = 0;
+
         DownloadError downloadError = DLE_NO_ERROR;
-        String otherErrorMsg;
-        Vector<String> dependency; // names of dependency archive
+        Status state = Status::NotRequested;
+
+        bool isGPU = false;
     };
 
     PackManager();
     ~PackManager();
 
-    // 1. вычитываю данные по всем пакам из бызы
-    // 2. перебираю все паки на файловой системе
-    // 3. рядом с каждым паком лежит мета файл в котором его CRC32 которую сравниваю со значением в базе
-    // 4. монтирую каждый пак у которого совпадает CRC32, если не совпадает, то было обновление игры и этот пак изменился его нужно удалить
-    // 5. если что-то качалось и был краш или выход из игры то мы в любом случае докачиваем из промежуточных временных файлов, если можем, или качаем заново(по запросу)
-    void Initialize(const FilePath& filesDB, const FilePath& localPacksDir, const String& remotePacksUrl);
+    // 1. open local database and read all packs info
+    // 2. list all packs on filesystem
+    // 3. mount all packs which found on filesystem and in database
+    // throw exception if can't initialize with deteils
+    void Initialize(const FilePath& dbFile,
+                    const FilePath& localPacksDir,
+                    const String& commonPacksUrl,
+                    const String& gpuPacksUrl);
 
-    // контроль фоновых загрузок (обработка запросов)
-    // если обработка запросов не включена, то запросы всех паков переключаются в Queued состояние
     bool IsProcessingEnabled() const;
-    // включаем обработку если что-то есть в очереди - стартуем
+    // enable user request processing
     void EnableProcessing();
-    // отключаем обработку запросов и останавливаем закачку если она была
+    // disalbe user request processing
     void DisableProcessing();
 
-    // обновление состояния, всех паков, и т.д. должно вызываться каждый кадр и только из главного потока
+    // internal method called per frame in framework
     void Update();
 
-    // получение имени пака по относительному имени файла внтутри пака (если файл не принадлежит ни одному паку пустая строка)
+    // return unique pack name or empty string
     const String& FindPack(const FilePath& relativePathInArchive) const;
 
-    // получение статуса пака (исключение если неверный айдишник пака?)
-    const Pack& GetPack(const String& packName) const;
+    // return referance to pack or throw exception if no such pack
+    //const Pack& GetPack(const String& packName) const;
 
     // запрос пака (в случае неверного имени - исключение)
     // 1. Важно! Если мы уже качаем один пак, и тут приходит заброс с более высоким приоритетом

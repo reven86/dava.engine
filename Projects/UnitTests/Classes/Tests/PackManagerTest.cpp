@@ -62,7 +62,7 @@ public:
             break;
         }
 
-        DAVA::Logger::Debug("%s", ss.str().c_str());
+        DAVA::Logger::FrameworkDebug("%s", ss.str().c_str());
     }
     DAVA::SigConnectionID sigConnection;
     DAVA::PackManager& packManager;
@@ -81,16 +81,22 @@ DAVA_TESTCLASS (PackManagerTest)
         FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
         FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
-        String urlToServerWithPacks("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/");
+        String commonPacksUrl("http://127.0.0.1:2424/packs/");
+        String gpuPacksUrl("http://127.0.0.1:2424/packs/");
+
+        // TODO start local http server
 
         PackManager& packManager = Core::Instance()->GetPackManager();
-        packManager.Initialize(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
+        packManager.Initialize(sqliteDbFile,
+                               folderWithDownloadedPacks,
+                               commonPacksUrl,
+                               gpuPacksUrl);
 
         GameClient client(packManager);
 
         packManager.EnableProcessing();
 
-        FilePath fileNotInPack("~res:/Data/no_such_file_in_any_pack.txt");
+        FilePath fileNotInPack("~res:/no_such_file_in_any_pack.txt");
 
         String packID = packManager.FindPack(fileNotInPack);
         TEST_VERIFY(packID.empty() && "no such file in any archive");
@@ -106,18 +112,16 @@ DAVA_TESTCLASS (PackManagerTest)
         try
         {
             packName = "unit_test.pak";
-            const PackManager::Pack& packState = packManager.GetPack(packName);
-            TEST_VERIFY(packState.name == packName);
 
             auto& nextState = packManager.RequestPack(packName, 0.1f);
-            if (nextState.state != PackManager::Pack::Mounted)
+            if (nextState.state != PackManager::Pack::Status::Mounted)
             {
-                TEST_VERIFY(nextState.state == PackManager::Pack::Downloading || nextState.state == PackManager::Pack::Requested);
+                TEST_VERIFY(nextState.state == PackManager::Pack::Status::Downloading || nextState.state == PackManager::Pack::Status::Requested);
             }
 
             uint32 maxIter = 30;
 
-            while ((nextState.state == PackManager::Pack::Requested || nextState.state == PackManager::Pack::Downloading) && maxIter-- > 0)
+            while ((nextState.state == PackManager::Pack::Status::Requested || nextState.state == PackManager::Pack::Status::Downloading) && maxIter-- > 0)
             {
                 // wait
                 Thread::Sleep(100);
@@ -126,7 +130,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 packManager.Update();
             }
 
-            TEST_VERIFY(nextState.state == PackManager::Pack::Mounted);
+            TEST_VERIFY(nextState.state == PackManager::Pack::Status::Mounted);
 
             ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
             TEST_VERIFY(file);
@@ -147,5 +151,7 @@ DAVA_TESTCLASS (PackManagerTest)
             Logger::Error("%s", ex.what());
             TEST_VERIFY(false);
         }
+
+        // TODO stop local http server
     }
 };
