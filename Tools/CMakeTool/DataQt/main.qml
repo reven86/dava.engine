@@ -12,7 +12,7 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    property int historyVersion: 2
+    property int historyVersion: 3
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
     minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 + wrapper.spacing * 4
@@ -96,13 +96,13 @@ ApplicationWindow {
     function addProjectToHistory() {
         var found = false;
         var source = rowLayout_sourceFolder.path;
+        source = fileSystemHelper.NormalizePath(source);
         var i = 0;
         for(var length = historyToSave.length; i < length && !found; ++i) {
             if(historyToSave[i].source === source) {
                 found = true;
             }
         }
-
         var newItem = {};
         newItem.source = source
         newItem.needClean = columnLayoutOutput.needClean

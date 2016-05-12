@@ -50,18 +50,19 @@ QString FileSystemHelper::ResolveUrl(const QString& url) const
     return resolvedUrl;
 }
 
-QString FileSystemHelper::NormalizePath(const QString& path) const
+QString FileSystemHelper::NormalizePath(const QString& path)
 {
     if (path.isEmpty())
     {
         return path;
     }
-    QDir dir(path);
-    if (dir.exists())
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
     {
-        return QDir::toNativeSeparators(dir.canonicalPath());
+        return fileInfo.absoluteFilePath();
     }
-    return QDir::toNativeSeparators(path);
+
+    return fileInfo.canonicalFilePath();
 }
 
 bool FileSystemHelper::MkPath(const QString& path)
