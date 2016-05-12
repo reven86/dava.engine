@@ -312,7 +312,7 @@ void CacheDB::Insert(const CacheItemKey& key, ServerCacheEntry&& entry)
 
     fullCache[key] = std::move(entry);
     ServerCacheEntry* insertedEntry = &fullCache[key];
-    const FilePath savedPath = CreateFolderPath(key);
+    FilePath savedPath = CreateFolderPath(key);
     insertedEntry->GetValue().Export(savedPath);
     insertedEntry->UpdateAccessTimestamp();
     occupiedSize += insertedEntry->GetValue().GetSize();
@@ -394,7 +394,7 @@ void CacheDB::RemoveFromFullCache(const CacheMap::iterator& it)
 {
     DVASSERT(it != fullCache.end());
 
-    const FilePath dataPath = CreateFolderPath(it->first);
+    FilePath dataPath = CreateFolderPath(it->first);
     FileSystem::Instance()->DeleteDirectory(dataPath);
     DecreaseOccupiedSize(it->second.GetValue().GetSize());
     fullCache.erase(it);
