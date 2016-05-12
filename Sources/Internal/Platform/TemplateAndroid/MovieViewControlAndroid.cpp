@@ -164,7 +164,7 @@ void MovieViewControl::Resume()
     jniMovieViewControl.Resume();
 }
 
-bool MovieViewControl::IsPlaying()
+bool MovieViewControl::IsPlaying() const
 {
     return jniMovieViewControl.IsPlaying();
 }

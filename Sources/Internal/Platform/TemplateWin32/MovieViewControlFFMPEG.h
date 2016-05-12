@@ -121,6 +121,8 @@ public:
     // Whether the movie is being played?
     bool IsPlaying() const override;
 
+    void Update();
+
     struct DrawVideoFrameData
     {
         ~DrawVideoFrameData()
@@ -128,8 +130,8 @@ public:
             SafeDeleteArray(data);
         }
 
-        uint8* data;
-        uint32 dataSize;
+        uint8* data = nullptr;
+        uint32 dataSize = 0; // = width * height * size of pixel depended on format
         uint32 frameHeight = 0;
         uint32 frameWidth = 0;
         PixelFormat format;
@@ -141,7 +143,6 @@ public:
     PixelFormat GetPixelFormat() const;
     Vector2 GetResolution() const;
 
-private:
     enum PlayState : uint32
     {
         PLAYING = 0,
@@ -150,7 +151,12 @@ private:
         STOPPED,
     };
 
+    PlayState GetState() const;
+
+private:
     PlayState state = STOPPED;
+    bool videoShown = false;
+    bool audioListen = false;
 
     const float64 AV_SYNC_THRESHOLD = 0.01;
     const float64 AV_NOSYNC_THRESHOLD = 0.5;
@@ -159,12 +165,15 @@ private:
 
     static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
 
-    float64 GetMasterClock();
+    float64 GetMasterClock() const;
     bool InitVideo();
     DecodedFrameBuffer* DecodeVideoPacket(AV::AVPacket* packet);
     void UpdateVideo(DecodedFrameBuffer* frameBuffer);
     bool InitAudio();
     void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
+
+    void FlushBuffers();
+    void CloseMovie();
 
     void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
     void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
@@ -193,8 +202,6 @@ private:
     void UpdateDrawData(DecodedFrameBuffer* buffer);
     Mutex lastFrameLocker;
     DrawVideoFrameData* lastFrameData = nullptr;
-    Texture* videoTexture = nullptr;
-    Sprite* videoSprite = nullptr;
     float64 videoFramerate = 0.f;
     float64 frameLastPts = 0.f;
     float64 frameLastDelay = 40e-3;
@@ -232,17 +239,12 @@ private:
 
     uint32 playTime = 0;
     float64 frameTimer = 0.f;
-    float64 GetAudioClock();
-
     uint32 audio_buf_size = 0;
     std::atomic<float64> audio_clock = 0.f;
-
-    bool eof = false;
-
+    float64 GetAudioClock() const;
     float64 GetTime();
 
-    void FlushBuffers();
-    void CloseMovie();
+    bool mediaFileEOF = false;
 };
 }
 

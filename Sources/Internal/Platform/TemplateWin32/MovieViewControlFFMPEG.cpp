@@ -38,8 +38,6 @@ MovieViewControl::~MovieViewControl()
 {
     Stop();
     CloseMovie();
-    SafeRelease(videoTexture);
-    SafeDelete(lastFrameData);
 }
 
 // Initialize the control.
@@ -136,11 +134,13 @@ void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParam
 
 void MovieViewControl::CloseMovie()
 {
+    videoShown = false;
+    audioListen = false;
     audio_clock = 0;
     frameLastPts = 0.f;
     frameLastDelay = 40e-3;
     video_clock = 0.f;
-    eof = false;
+    mediaFileEOF = false;
 
     if (fmodChannel)
     {
@@ -174,6 +174,7 @@ void MovieViewControl::CloseMovie()
     }
 
     FlushBuffers();
+    SafeDelete(lastFrameData);
 
     isAudioVideoStreamsInited = false;
 
@@ -267,7 +268,7 @@ void MovieViewControl::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
     }
 }
 
-float64 MovieViewControl::GetAudioClock()
+float64 MovieViewControl::GetAudioClock() const
 {
     float64 pts = audio_clock; /* maintained in the audio thread */
     uint32 bytes_per_sec = 0;
@@ -384,7 +385,7 @@ bool MovieViewControl::InitAudio()
     return true;
 }
 
-float64 MovieViewControl::GetMasterClock()
+float64 MovieViewControl::GetMasterClock() const
 {
     return GetAudioClock();
 }
@@ -415,6 +416,8 @@ float64 MovieViewControl::SyncVideoClock(AV::AVFrame* src_frame, float64 pts)
 
 DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
 {
+    DVASSERT(nullptr != packet);
+
     int32 got_picture;
     AV::AVFrame* decodedFrame = AV::av_frame_alloc();
     int32 ret = AV::avcodec_decode_video2(videoCodecContext, decodedFrame, &got_picture, packet);
@@ -458,11 +461,9 @@ DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
 
 void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
 {
-    if (nullptr == frameBuffer)
-    {
-        Thread::Sleep(0);
-        return;
-    }
+    DVASSERT(nullptr != frameBuffer);
+
+    float64 timeBeforeCalc = GetTime();
 
     float64 delay = frameBuffer->pts - frameLastPts; /* the pts from last time */
     if (delay <= 0.0 || delay >= 1.0)
@@ -503,11 +504,9 @@ void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
         actual_delay = 0.001;
     }
 
-    float64 timeBeforePresent = GetTime();
-
     UpdateDrawData(frameBuffer);
 
-    uint32 sleepLessFor = static_cast<uint32>(GetTime() - timeBeforePresent);
+    uint32 sleepLessFor = static_cast<uint32>(GetTime() - timeBeforeCalc);
     uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5) - sleepLessFor;
     Thread::Sleep(sleepTime);
 }
@@ -528,7 +527,7 @@ float64 MovieViewControl::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packe
     return effectivePTS;
 }
 
-DAVA::MovieViewControl::DrawVideoFrameData* MovieViewControl::GetDrawData()
+MovieViewControl::DrawVideoFrameData* MovieViewControl::GetDrawData()
 {
     LockGuard<Mutex> lock(lastFrameLocker);
 
@@ -553,9 +552,17 @@ Vector2 MovieViewControl::GetResolution() const
     return Vector2(static_cast<float32>(frameWidth), static_cast<float32>(frameHeight));
 }
 
+MovieViewControl::PlayState MovieViewControl::GetState() const
+{
+    return state;
+}
+
 void MovieViewControl::UpdateDrawData(DecodedFrameBuffer* buffer)
 {
+    DVASSERT(nullptr != buffer);
+
     LockGuard<Mutex> lock(lastFrameLocker);
+
     if (nullptr == lastFrameData)
     {
         lastFrameData = new DrawVideoFrameData();
@@ -646,6 +653,8 @@ void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData,
     {
         if (0 == currentPrefetchedPacketsCount || PAUSED == state || STOPPED == state)
         {
+            if (mediaFileEOF)
+                audioListen = true;
             Thread::Sleep(1);
             continue;
         }
@@ -702,11 +711,16 @@ void MovieViewControl::VideoDecodingThread(BaseObject* caller, void* callerData,
             auto frameBuffer = DecodeVideoPacket(videoPacket);
             AV::av_packet_free(&videoPacket);
 
-            UpdateVideo(frameBuffer);
-            SafeDelete(frameBuffer);
+            if (frameBuffer)
+            {
+                UpdateVideo(frameBuffer);
+                SafeDelete(frameBuffer);
+            }
         }
         else
         {
+            if (mediaFileEOF)
+                videoShown = true;
             Thread::Sleep(0);
         }
 
@@ -728,9 +742,9 @@ void MovieViewControl::PrefetchData(uint32 dataSize)
         av_init_packet(packet);
         retRead = AV::av_read_frame(movieContext, packet);
 
-        eof = retRead < 0;
+        mediaFileEOF = retRead < 0;
 
-        if (eof)
+        if (mediaFileEOF)
         {
             AV::av_packet_free(&packet);
         }
@@ -747,7 +761,7 @@ void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void*
 
     do
     {
-        if (PLAYING == state && currentPrefetchedPacketsCount < maxAudioPacketsPrefetchedCount - 50)
+        if (PLAYING == state && currentPrefetchedPacketsCount < maxAudioPacketsPrefetchedCount)
         {
             PrefetchData(maxAudioPacketsPrefetchedCount - currentPrefetchedPacketsCount);
         }
@@ -782,6 +796,14 @@ void MovieViewControl::Resume()
 bool MovieViewControl::IsPlaying() const
 {
     return PLAYING == state;
+}
+
+void MovieViewControl::Update()
+{
+    if (STOPPED != state && videoShown && audioListen)
+    {
+        Stop();
+    }
 }
 
 void MovieViewControl::Stop()

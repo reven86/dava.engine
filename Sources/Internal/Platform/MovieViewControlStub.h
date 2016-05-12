@@ -78,7 +78,7 @@ namespace DAVA
         }
 
         // Whether the movie is being played?
-        bool IsPlaying() override
+        bool IsPlaying() const override
         {
             return false;
         }

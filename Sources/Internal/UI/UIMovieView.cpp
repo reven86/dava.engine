@@ -116,6 +116,7 @@ void UIMovieView::Stop()
 
 #if defined(__DAVAENGINE_WIN32__)
     SafeDeleteArray(videoTextureBuffer);
+    SafeRelease(videoTexture);
 #endif
 }
 
@@ -129,7 +130,7 @@ void UIMovieView::Resume()
     movieViewControl->Resume();
 }
 
-bool UIMovieView::IsPlaying()
+bool UIMovieView::IsPlaying() const
 {
     return movieViewControl->IsPlaying();
 }
@@ -139,6 +140,11 @@ void UIMovieView::Update(float32 timeElapsed)
 #if defined(__DAVAENGINE_WIN32__)
     if (nullptr == movieViewControl)
         return;
+
+    movieViewControl->Update();
+
+    if (MovieViewControl::STOPPED == movieViewControl->GetState())
+        SafeRelease(videoTexture);
 
     MovieViewControl::DrawVideoFrameData* drawData = movieViewControl->GetDrawData();
 
@@ -182,7 +188,8 @@ void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
 {
     UIControl::Draw(parentGeometricData);
 #if defined(__DAVAENGINE_WIN32__)
-    videoBackground->Draw(parentGeometricData);
+    if (videoTexture)
+        videoBackground->Draw(parentGeometricData);
 #endif
 }
 

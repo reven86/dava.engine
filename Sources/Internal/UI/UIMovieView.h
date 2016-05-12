@@ -71,7 +71,7 @@ public:
     void Resume();
 
     // Whether the movie is being played?
-    bool IsPlaying();
+    bool IsPlaying() const;
 
     void Update(float32 timeElapsed) override;
 
@@ -83,6 +83,7 @@ protected:
     uint8* videoTextureBuffer = nullptr;
     uint32 textureWidth = 0;
     uint32 textureHeight = 0;
+    uint32 textureDataLen = 0;
 
 public:
     INTROSPECTION_EXTEND(UIMovieView, UIControl,
