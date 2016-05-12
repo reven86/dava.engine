@@ -48,7 +48,8 @@ REGISTER_PREFERENCES_ON_START(EditorTransformSystem,
                               PREF_ARG("borderInParentToMagnet", DAVA::Vector2(20.0f, 20.0f)),
                               PREF_ARG("indentOfControlToManget", DAVA::Vector2(5.0f, 5.0f)),
                               PREF_ARG("shareOfSizeToMagnetPivot", DAVA::Vector2(0.25f, 0.25f)),
-                              PREF_ARG("angleSegment", static_cast<DAVA::float32>(15.0f))
+                              PREF_ARG("angleSegment", static_cast<DAVA::float32>(15.0f)),
+                              PREF_ARG("shiftInverted", false)
                               )
 
 const EditorTransformSystem::CornersDirections EditorTransformSystem::cornersDirections =
@@ -209,7 +210,7 @@ bool EditorTransformSystem::ProcessKey(Key key)
     if (!selectedControlNodes.empty())
     {
         float32 step = expandedMoveStepByKeyboard;
-        if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+        if (!IsShiftPressed())
         {
             step = moveStepByKeyboard;
         }
@@ -251,7 +252,7 @@ bool EditorTransformSystem::ProcessDrag(Vector2 pos)
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControls(delta, !IsKeyPressed(KeyboardProxy::KEY_SHIFT));
+        MoveAllSelectedControls(delta, !IsShiftPressed());
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -609,7 +610,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSiz
 {
     Vector<MagnetLineInfo> magnets;
 
-    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_SHIFT) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    bool canAdjustResize = !IsShiftPressed() && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
     Vector2 adjustedDeltaToBorder(deltaSize);
     if (canAdjustResize)
     {
@@ -753,7 +754,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsShiftPressed())
     {
         const float32 maxPivot = 1.0f;
 
@@ -832,7 +833,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
 float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsShiftPressed())
     {
         static const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
@@ -942,4 +943,9 @@ void EditorTransformSystem::ClampAngle()
     Vector<ChangePropertyAction> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
     systemsManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
+}
+
+bool EditorTransformSystem::IsShiftPressed() const
+{
+    return IsKeyPressed(KeyboardProxy::KEY_SHIFT) ^ (shiftInverted);
 }

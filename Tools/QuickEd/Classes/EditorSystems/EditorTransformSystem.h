@@ -92,7 +92,7 @@ private:
     struct MagnetLine;
     DAVA::Vector<MagnetLine> CreateMagnetPairs(const DAVA::Rect& box, const DAVA::UIGeometricData* parentGD, const DAVA::Vector<DAVA::UIControl*>& neighbours, DAVA::Vector2::eAxis axis);
     void ExtractMatchedLines(DAVA::Vector<MagnetLineInfo>& magnets, const DAVA::Vector<MagnetLine>& magnetLines, const DAVA::UIControl* control, DAVA::Vector2::eAxis axis);
-
+    bool IsShiftPressed() const;
     DAVA::size_type currentHash = 0;
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
@@ -116,6 +116,7 @@ private:
     DAVA::Vector2 indentOfControlToManget;
     DAVA::Vector2 shareOfSizeToMagnetPivot;
     DAVA::float32 angleSegment;
+    bool shiftInverted;
 
 public:
     INTROSPECTION(EditorTransformSystem,
@@ -126,6 +127,7 @@ public:
                   MEMBER(indentOfControlToManget, "Control Transformations/Magnet distance outside", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(shareOfSizeToMagnetPivot, "Control Transformations/Pivot magnet share", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(angleSegment, "Control Transformations/Rotate section angle", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(shiftInverted, "Control Transformations/Invert shift button", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 
     REGISTER_PREFERENCES(EditorTransformSystem)
