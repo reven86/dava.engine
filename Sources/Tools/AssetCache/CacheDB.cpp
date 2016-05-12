@@ -59,25 +59,27 @@ CacheDB::~CacheDB()
 
 void CacheDB::UpdateSettings(const FilePath& folderPath, const uint64 size, const uint32 newMaxItemsInMemory, const uint64 _autoSaveTimeout)
 {
-    if (cacheRootFolder != folderPath)
+    FilePath newCacheRootFolder = folderPath;
+    newCacheRootFolder.MakeDirectoryPathname();
+
+    if (cacheRootFolder != newCacheRootFolder)
     {
         if (!cacheRootFolder.IsEmpty())
         {
             Unload();
         }
 
-        cacheRootFolder = folderPath;
-        cacheRootFolder.MakeDirectoryPathname();
+        cacheRootFolder = newCacheRootFolder;
         cacheSettings = cacheRootFolder + DB_FILE_NAME;
 
         Load();
     }
 
-    if (storageSize != size)
+    if (maxStorageSize != size)
     {
-        ReduceFullCacheBySize(size);
+        ReduceFullCacheToSize(size);
 
-        storageSize = size;
+        maxStorageSize = size;
     }
 
     if (maxItemsInMemory != newMaxItemsInMemory)
@@ -122,12 +124,16 @@ void CacheDB::Load()
         return;
     }
 
-    usedSize = header->GetUInt64("usedSize");
+    occupiedSize = header->GetUInt64("usedSize");
     auto cacheSize = header->GetUInt64("itemsCount");
     fullCache.reserve(static_cast<size_t>(cacheSize));
 
     ScopedPtr<KeyedArchive> cache(new KeyedArchive());
-    cache->Load(file);
+    if (!cache->Load(file))
+    {
+        Logger::Error("[%s] Can't load cache file", __FUNCTION__);
+        return;
+    }
 
     for (uint64 index = 0; index < cacheSize; ++index)
     {
@@ -173,7 +179,7 @@ void CacheDB::Save()
     ScopedPtr<KeyedArchive> header(new KeyedArchive());
     header->SetString("signature", "cache");
     header->SetUInt32("version", VERSION);
-    header->SetUInt64("usedSize", usedSize);
+    header->SetUInt64("usedSize", occupiedSize);
     header->SetUInt64("itemsCount", fullCache.size());
     header->Save(file);
 
@@ -193,13 +199,13 @@ void CacheDB::Save()
     lastSaveTime = SystemTimer::Instance()->AbsoluteMS();
 }
 
-void CacheDB::ReduceFullCacheBySize(uint64 toSize)
+void CacheDB::ReduceFullCacheToSize(uint64 toSize)
 {
-    while (usedSize > toSize)
+    while (occupiedSize > toSize)
     {
         const auto& found = std::min_element(fullCache.begin(), fullCache.end(), [](const CacheMap::value_type& left, const CacheMap::value_type& right) -> bool
                                              {
-                                                 return left.second.GetAccesID() < right.second.GetAccesID();
+                                                 return left.second.GetTimestamp() < right.second.GetTimestamp();
                                              });
         if (found != fullCache.end())
         {
@@ -214,7 +220,7 @@ void CacheDB::ReduceFastCacheByCount(uint32 countToRemove)
     {
         const auto& oldestFound = std::min_element(fastCache.begin(), fastCache.end(), [](const FastCacheMap::value_type& left, const FastCacheMap::value_type& right) -> bool
                                                    {
-                                                       return left.second->GetAccesID() < right.second->GetAccesID();
+                                                       return left.second->GetTimestamp() < right.second->GetTimestamp();
                                                    });
 
         if (oldestFound != fastCache.end())
@@ -252,7 +258,7 @@ ServerCacheEntry* CacheDB::Get(const CacheItemKey& key)
         }
     }
 
-    InvalidateAccessToken(entry);
+    UpdateAccessTimestamp(entry);
 
     return entry;
 }
@@ -301,26 +307,23 @@ void CacheDB::Insert(const CacheItemKey& key, ServerCacheEntry&& entry)
     auto found = fullCache.find(key);
     if (found != fullCache.end())
     {
-        IncreaseUsedSize(found->second.GetValue().GetSize());
+        Remove(found);
     }
 
     fullCache[key] = std::move(entry);
-    ServerCacheEntry* entryForFastCache = &fullCache[key];
-
-    entryForFastCache->InvalidateAccesToken(nextItemID++);
-    InsertInFastCache(key, entryForFastCache);
-
-    auto newSize = entryForFastCache->GetValue().GetSize();
-    if (usedSize + newSize > storageSize)
-    {
-        DVASSERT(storageSize > newSize);
-        ReduceFullCacheBySize((usedSize > newSize) ? (usedSize - newSize) : 0);
-    }
-
+    ServerCacheEntry* insertedEntry = &fullCache[key];
     const FilePath savedPath = CreateFolderPath(key);
-    FileSystem::Instance()->DeleteDirectoryFiles(savedPath);
-    entryForFastCache->GetValue().Export(savedPath);
-    usedSize += newSize;
+    insertedEntry->GetValue().Export(savedPath);
+    insertedEntry->UpdateAccessTimestamp();
+    occupiedSize += insertedEntry->GetValue().GetSize();
+
+    InsertInFastCache(key, insertedEntry);
+
+    if (occupiedSize > maxStorageSize)
+    {
+        ReduceFullCacheToSize(maxStorageSize);
+        DVASSERT(fullCache.find(key) != fullCache.end());
+    }
 
     dbStateChanged = true;
 }
@@ -342,7 +345,7 @@ void CacheDB::InsertInFastCache(const CacheItemKey& key, ServerCacheEntry* entry
     fastCache[key] = entry;
 }
 
-void CacheDB::InvalidateAccessToken(const CacheItemKey& key)
+void CacheDB::UpdateAccessTimestamp(const CacheItemKey& key)
 {
     ServerCacheEntry* entry = FindInFastCache(key);
     if (nullptr == entry)
@@ -350,14 +353,14 @@ void CacheDB::InvalidateAccessToken(const CacheItemKey& key)
         entry = FindInFullCache(key);
     }
 
-    InvalidateAccessToken(entry);
+    UpdateAccessTimestamp(entry);
 }
 
-void CacheDB::InvalidateAccessToken(ServerCacheEntry* entry)
+void CacheDB::UpdateAccessTimestamp(ServerCacheEntry* entry)
 {
     if (nullptr != entry)
     {
-        entry->InvalidateAccesToken(nextItemID++);
+        entry->UpdateAccessTimestamp();
         dbStateChanged = true;
     }
 }
@@ -391,7 +394,9 @@ void CacheDB::RemoveFromFullCache(const CacheMap::iterator& it)
 {
     DVASSERT(it != fullCache.end());
 
-    IncreaseUsedSize(it->second.GetValue().GetSize());
+    const FilePath dataPath = CreateFolderPath(it->first);
+    FileSystem::Instance()->DeleteDirectory(dataPath);
+    DecreaseOccupiedSize(it->second.GetValue().GetSize());
     fullCache.erase(it);
 }
 
@@ -404,11 +409,11 @@ void CacheDB::RemoveFromFastCache(const FastCacheMap::iterator& it)
     fastCache.erase(it);
 }
 
-void CacheDB::IncreaseUsedSize(DAVA::uint64 size)
+void CacheDB::DecreaseOccupiedSize(DAVA::uint64 size)
 {
-    DVASSERT(size <= usedSize);
+    DVASSERT(size <= occupiedSize);
 
-    usedSize -= size;
+    occupiedSize -= size;
 }
 
 FilePath CacheDB::CreateFolderPath(const CacheItemKey& key) const

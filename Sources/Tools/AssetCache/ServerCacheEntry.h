@@ -31,6 +31,7 @@
 
 #include "Base/BaseTypes.h"
 #include "AssetCache/CachedItemValue.h"
+#include <ctime>
 
 namespace DAVA
 {
@@ -57,8 +58,8 @@ public:
     void Serialize(KeyedArchive* archieve) const;
     void Deserialize(KeyedArchive* archieve);
 
-    void InvalidateAccesToken(uint64 accessID);
-    const uint64 GetAccesID() const;
+    void UpdateAccessTimestamp();
+    time_t GetTimestamp() const;
 
     const CachedItemValue& GetValue() const;
 
@@ -69,17 +70,17 @@ private:
     CachedItemValue value;
 
 private:
-    uint64 accessID = 0;
+    time_t accessTimestamp = 0;
 };
 
-inline void ServerCacheEntry::InvalidateAccesToken(uint64 newID)
+inline void ServerCacheEntry::UpdateAccessTimestamp()
 {
-    accessID = newID;
+    accessTimestamp = time(nullptr);
 }
 
-inline const uint64 ServerCacheEntry::GetAccesID() const
+inline time_t ServerCacheEntry::GetTimestamp() const
 {
-    return accessID;
+    return accessTimestamp;
 }
 
 inline const CachedItemValue& ServerCacheEntry::GetValue() const

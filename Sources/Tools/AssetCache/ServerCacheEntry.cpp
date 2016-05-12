@@ -48,7 +48,7 @@ ServerCacheEntry::ServerCacheEntry(const CachedItemValue& _value)
 
 ServerCacheEntry::ServerCacheEntry(ServerCacheEntry&& right)
     : value(std::move(right.value))
-    , accessID(right.accessID)
+    , accessTimestamp(right.accessTimestamp)
 {
 }
 
@@ -57,7 +57,7 @@ ServerCacheEntry& ServerCacheEntry::operator=(ServerCacheEntry&& right)
     if (this != &right)
     {
         value = std::move(right.value);
-        accessID = right.accessID;
+        accessTimestamp = right.accessTimestamp;
     }
 
     return (*this);
@@ -65,14 +65,14 @@ ServerCacheEntry& ServerCacheEntry::operator=(ServerCacheEntry&& right)
 
 bool ServerCacheEntry::operator==(const ServerCacheEntry& right) const
 {
-    return (accessID == right.accessID) && (value == right.value);
+    return (accessTimestamp == right.accessTimestamp) && (value == right.value);
 }
 
 void ServerCacheEntry::Serialize(KeyedArchive* archieve) const
 {
     DVASSERT(nullptr != archieve);
 
-    archieve->SetUInt64("accessID", accessID);
+    archieve->SetUInt64("accessID", accessTimestamp);
 
     ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
     value.Serialize(valueArchieve, false);
@@ -83,7 +83,7 @@ void ServerCacheEntry::Deserialize(KeyedArchive* archieve)
 {
     DVASSERT(nullptr != archieve);
 
-    accessID = archieve->GetUInt64("accessID");
+    accessTimestamp = archieve->GetUInt64("accessID");
 
     KeyedArchive* valueArchieve = archieve->GetArchive("value");
     DVASSERT(valueArchieve);
