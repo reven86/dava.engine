@@ -1000,6 +1000,26 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                         }
                         break;
 
+                        case VDT_HALF:
+                        {
+                            switch (psm->layout.ElementDataCount(i))
+                            {
+                            case 1:
+                                //                                fmt = MTLVertexFormatHalf;
+                                break;
+                            case 2:
+                                fmt = MTLVertexFormatHalf2;
+                                break;
+                            case 3:
+                                fmt = MTLVertexFormatHalf3;
+                                break;
+                            case 4:
+                                fmt = MTLVertexFormatHalf4;
+                                break;
+                            }
+                        }
+                        break;
+
                         case VDT_UINT8:
                         case VDT_UINT8N:
                         {
@@ -1031,7 +1051,16 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                         break;
                     }
                 }
-                DVASSERT(attr_set);
+
+                if (!attr_set)
+                {
+                    Logger::Error("vertex-layout mismatch");
+                    Logger::Info("pipeline-state layout:");
+                    psm->layout.Dump();
+                    Logger::Info("packet layout:");
+                    layout->Dump();
+                    DVASSERT(!"kaboom!");
+                }
             }
 
             for (unsigned s = 0; s != layout->StreamCount(); ++s)
