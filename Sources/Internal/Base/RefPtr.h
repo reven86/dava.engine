@@ -77,7 +77,7 @@ public:
         SafeRetain(_ptr);
     }
 
-    static RefPtr<T> ConstructreWithRetain(T* p)
+    static RefPtr<T> ConstructWithRetain(T* p)
     {
         static_assert(std::is_base_of<BaseObject, T>::value, "RefPtr works only with classes, derived from BaseObject!");
         p->Retain();
