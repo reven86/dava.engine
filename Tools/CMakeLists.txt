@@ -7,7 +7,9 @@ macro ( set_deploy_dir TARGET_NAME )
     else()
         set( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app/${TARGET_NAME} )
 
-    endif()    
+    endif()  
+
+    configure_ngt( ${TARGET_NAME} ${TOOL_OUTPUT_DIR} )
 
 endmacro ()
 
@@ -15,11 +17,22 @@ project               ( Megasolution  )
 
 set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
+set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 include               ( CMake-common )
-include               ( NGTMacro )
+include ( NGTMacro )
 
-#configure_ngt(${PROJECT_NAME} ${CMAKE_BINARY_DIR}/app)
+if (DEPLOY)
+    set (DEPLOY_ROOT ${DEPLOY_DIR})
+
+    if ( WIN32 )
+        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+    endif()
+    set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
+endif()
+
+configure_ngt( PROJECT_NAME ${TOOL_OUTPUT_DIR} )
+find_package( NgtTools REQUIRED )
 
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
