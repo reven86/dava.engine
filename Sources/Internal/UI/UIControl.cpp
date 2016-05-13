@@ -978,6 +978,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     name = srcControl->name;
 
     controlState = srcControl->controlState;
+    exclusiveInput = srcControl->exclusiveInput;
     visible = srcControl->visible;
     inputEnabled = srcControl->inputEnabled;
     clipContents = srcControl->clipContents;
