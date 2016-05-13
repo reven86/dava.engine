@@ -1077,7 +1077,7 @@ void TextureBrowser::sceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (!isHidden())
     {

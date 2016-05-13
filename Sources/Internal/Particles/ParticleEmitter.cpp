@@ -36,10 +36,8 @@
 
 namespace DAVA
 {
-
-#define PARTICLE_EMITTER_DEFAULT_LIFE_TIME 100.0f
-
 bool ParticleEmitter::FORCE_DEEP_CLONE = false;
+const float32 ParticleEmitter::PARTICLE_EMITTER_DEFAULT_LIFE_TIME = 100.0f;
 
 PartilceEmitterLoadProxy::PartilceEmitterLoadProxy()
 {
@@ -54,8 +52,6 @@ void PartilceEmitterLoadProxy::Load(KeyedArchive* archive, SerializationContext*
 }
 
 ParticleEmitter::ParticleEmitter()
-    : shortEffect(false)
-    , requireDeepClone(true)
 {
     Cleanup(false);
 }
@@ -157,10 +153,8 @@ ParticleEmitter* ParticleEmitter::Clone()
 
 void ParticleEmitter::AddLayer(ParticleLayer* layer)
 {
-    if (!layer)
-    {
+    if (layer == nullptr)
         return;
-    }
 
     // Don't allow the same layer to be added twice.
     Vector<ParticleLayer*>::iterator layerIter = std::find(layers.begin(), layers.end(), layer);
@@ -170,8 +164,7 @@ void ParticleEmitter::AddLayer(ParticleLayer* layer)
         return;
     }
 
-    layer->Retain();
-    layers.push_back(layer);
+    layers.push_back(SafeRetain(layer));
 }
 
 ParticleLayer* ParticleEmitter::GetNextLayer(ParticleLayer* layer)
@@ -240,6 +233,11 @@ void ParticleEmitter::MoveLayer(ParticleLayer* layer, ParticleLayer* beforeLayer
     // Look for the position again - an iterator might be changed.
     beforeLayerIter = std::find(layers.begin(), layers.end(), beforeLayer);
     layers.insert(beforeLayerIter, layer);
+}
+
+bool ParticleEmitter::ContainsLayer(ParticleLayer* layer)
+{
+    return std::find(layers.begin(), layers.end(), layer) != layers.end();
 }
 
 ParticleEmitter::EmitterCacheMap ParticleEmitter::emitterCache;

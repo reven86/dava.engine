@@ -275,7 +275,7 @@ void SceneCameraSystem::Process(float timeElapsed)
             if (nullptr != curSceneCamera)
             {
                 SceneCollisionSystem* collSystem = ((SceneEditor2*)GetScene())->collisionSystem;
-                collSystem->UpdateCollisionObject(GetEntityFromCamera(curSceneCamera));
+                collSystem->UpdateCollisionObject(Selectable(GetEntityFromCamera(curSceneCamera)));
             }
 
             // remember current scene camera
@@ -509,7 +509,7 @@ void SceneCameraSystem::UpdateDistanceToCamera()
 {
     SceneEditor2* sc = (SceneEditor2*)GetScene();
 
-    DAVA::Vector3 center = sc->selectionSystem->GetSelection().GetCommonBbox().GetCenter();
+    DAVA::Vector3 center = sc->selectionSystem->GetSelection().GetIntegralBoundingBox().GetCenter();
 
     const DAVA::Camera* cam = GetScene()->GetCurrentCamera();
     if (cam)
@@ -617,7 +617,7 @@ void SceneCameraSystem::MoveToSelection()
     if (sceneEditor == nullptr)
         return;
 
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
         LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));
