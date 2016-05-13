@@ -63,7 +63,16 @@ const Type* GetDerefType(std::true_type)
 template <typename T>
 void Type::Init()
 {
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20141030
+    // android old-style way
+    using T0 = typename std::remove_const<T>::type;
+    using T1 = typename std::remove_reference<T0>::type;
+    using DerefT = typename std::remove_pointer<T1>::type;
+#else
+    // standard c++14 way
     using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_const_t<T>>>;
+#endif
+
     static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
 
     name = typeid(T).name();
