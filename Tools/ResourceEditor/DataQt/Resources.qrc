@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="Views">
     <file>PropertyPanel.qml</file>
+    <file>ComponentWithButtons.qml</file>
   </qresource>
   <qresource prefix="/">
     <file>QtIconsTextureDialog/convertallgpu.png</file>

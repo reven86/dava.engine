@@ -31,33 +31,13 @@ Rectangle {
     ColumnExtension {}
     ComponentExtension {}
     TreeExtension {}
+    ButtonsDefinitionExtension {}
     ThumbnailExtension {}
     SelectionExtension {
-      id: treeModelSelection
-      multiSelect: false
+        id: treeModelSelection
+        multiSelect: false
     }
   }
-
-  /*WGFilteredTreeModel {
-    id: reflectedModel
-    source: PropertyTree
-
-    filter: WGTokenizedStringFilter {
-      id: stringFilter
-      filterText: searchBox.text
-      splitterChar: " "
-    }
-
-    ValueExtension {}
-    ColumnExtension {}
-    ComponentExtension {}
-    TreeExtension {}
-    ThumbnailExtension {}
-    SelectionExtension {
-      id: treeModelSelection
-      multiSelect: false
-    }
-  }*/
 
   WGTreeView {
     id: reflectedTreeView
@@ -73,7 +53,7 @@ Rectangle {
 
     property Component propertyDelegate: Loader {
       clip: true
-      sourceComponent: itemData != null ? itemData.Component : null
+      source: "ComponentWithButtons.qml"
     }
   }
 }
