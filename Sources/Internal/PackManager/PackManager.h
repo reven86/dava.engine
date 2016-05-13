@@ -106,7 +106,7 @@ public:
 
     void Delete(const String& packName);
 
-    // отслеживание статуса запросов
+    // signal user about every pack state change
     Signal<const Pack&, Pack::Change> onPackStateChanged;
 
     const FilePath& GetLocalPacksDirectory() const;
