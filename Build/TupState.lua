@@ -29,10 +29,16 @@ function TupState.New(userConf)
     conf.intermediateSqlDir = userConf.intermediateSqlDir or "sql"
     conf.packlistExt = userConf.packlistExt or ".list"
     conf.mergedlistExt = userConf.mergedlistExt or ".mergedlist"
-    conf.gpus = userConf.gpus or { pvr = "pvr$", mali = "mali$", tegra = "tegra$" }
     conf.commonGpu = userConf.commonGpu or "common" 
-    conf.gpuVar = userConf.gpuVar or "${gpu}" 
-
+    conf.gpuVar = userConf.gpuVar or "{gpu}" 
+    conf.gpus = userConf.gpus or { 
+        pvr_ios = "PowerVR_iOS%.",
+        pvr_android = "PowerVR_Android%.", 
+        tegra = "tegra%.",
+        mali = "mali%.",
+        adreno = "adreno%.",
+        dx11 = "dx11%."
+    }
     -- check for gpu names intersection
     if conf.gpus[conf.commonGpu] ~= nil then
         print("GPU name: " .. conf.commonGpu)
@@ -223,135 +229,10 @@ function TupState.BuildLists(self)
             end
         end
     end    
-    
-    --[[
-    local tupFiles = tup.glob("*")
-    local matchedFiles = { }
-    
-    -- go throught files and build
-    -- table { pack_name, { files... } } 
-    for k, file in pairs(tupFiles) do 
-
-        local matchedPacks = { }
-        
-        -- find all packs that match current file
-        for pi, pack in pairs(self.packs) do
-            if pack:Match(self.currentDir, file) then
-                matchedPacks[#matchedPacks + 1] = pack.name
-                if pack.exclusive == true then
-                    break
-                end
-            end
-        end
-        
-        -- check that file match only one pack
-        -- if not - that should be thread as error
-        if #matchedPacks > 1 then
-            print("Packs: " .. matchedPacks[1] .. " and " .. matchedPacks[2])
-            error "File is matching more than one pack"
-        end
-        
-        -- if pack doesn't match any defined
-        -- we will assign it with default "unused" pack 
-        if #matchedPacks == 0 then
-            matchedPacks[#matchedPacks + 1] = self.conf.unusedPackName
-        end
-        
-        -- check if db table exsists
-        -- if not - create one
-        local p = matchedPacks[1]
-        if matchedFiles[p] == nil then
-            matchedFiles[p] = { }
-        end
-        
-        -- add file to matched pack
-        local sz = #matchedFiles[p]
-        matchedFiles[p][sz + 1] = file
-    end
-    
-    for pack, files in pairs(matchedFiles) do
-        local packGroup = self:GetPackGroup(pack)
-            
-        for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
-            local partCmd = self.cmd.fwdep .. " echo -p \"" .. self.currentDir .. "\" %\"f -o %o"
-            local partCmdText = "^ Gen list " .. i .. " for " .. pack .. "^ "
-            local partOutput = self.packlistDir .. "/" .. pack .. self.conf.delimiter 
-                .. self.currentDirString .. "-" .. i .. self.conf.packlistExt
-            
-            tup.rule(part, partCmdText .. partCmd, { partOutput, packGroup })
-        end
-    end
-    ]]
 end
 
 function TupState.BuildPacks(self)
-    --[[
-    local sqlGroup = self.sqlDir .. "/<sql>"
-    
     for pai, pack in pairs(self.packs) do
-        local packGroup = self:GetPackGroup(pack.name)
-
-        -- generate emply lists for each pack
-        -- this will allow cat/type command not fail
-        -- if no lists were generated for pack
-        local emptyPackCmd = self.cmd.fwdep .. " echo -o %o"
-        local emptyPackCmdText = "^ Get empty list for " .. pack.name .. "^ "
-        local emptyPackOutput = self.packlistDir .. "/" .. pack.name .. self.conf.delimiter .. "_empty" .. self.conf.packlistExt 
-        
-        tup.rule(emptyPackCmdText .. emptyPackCmd, { emptyPackOutput })
-        
-        -- merge final pack list
-        local mergePackMask = self.packlistDir .. "/" .. pack.name .. self.conf.delimiter .. "*" .. self.conf.packlistExt
-        local mergePackCmd = self.cmd.cat .. " " .. mergePackMask .. " > %o"
-        local mergePackCmdText = "^ Gen merged list for " .. pack.name .. "^ "
-        local mergePackOutput = self.mergeDir .. "/" .. pack.name .. self.conf.mergedlistExt
-        
-        mergePackCmd = UtilConvertToPlatformPath(self.platform, mergePackCmd)
-         
-	    tup.rule({ mergedPackMask, packGroup, emptyPackOutput }, 
-            mergePackCmdText .. mergePackCmd, mergePackOutput)
-            
-        -- archivate
-        local archiveCmd = self.cmd.fwzip .. " a -bd -bso0 -- %o @%f"
-        local archiveCmdText = "^ Archive " .. pack.name .. "^ "
-        local archiveOutput = self.outputDir .. "/" .. pack.name .. ".pack"
-        tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
-
-        -- generate pack hash
-        local hashCmd = self.cmd.fwdep .. " hash %f -o %o"
-        local hashCmdText = "^ Hash for " .. pack.name .. "^ "
-        local hashOutput = self.outputDir .. "/" .. pack.name .. ".hash"
-        tup.rule(archiveOutput, hashCmdText .. hashCmd, hashOutput)
-        
-        -- generate pack sql
-        local packDepends = table.concat(pack.depends, " ")
-        local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -h " .. hashOutput .. " " .. pack.name .. " " .. packDepends .. " -o %o"
-        local sqlCmdText = "^ SQL for " .. pack.name .. "^ "
-        local sqlOutput = self.sqlDir .. "/" .. pack.name .. ".sql"
-        tup.rule({ mergePackOutput, hashOutput }, sqlCmdText ..sqlCmd, { sqlOutput, sqlGroup })
-    end
-    
-    -- merge final sql
-    local mergeSqlMask = self.sqlDir .. "/*.sql"
-    local mergeSqlCmd = self.cmd.cat .. " " .. mergeSqlMask .. " > %o"
-    local mergeSqlCmdText = "^ Gen merged sql^ "
-    local mergeSqlOutput = self.mergeDir .. "/final.sql" 
-
-    mergeSqlCmd = UtilConvertToPlatformPath(self.platform, mergeSqlCmd)
-        
-    tup.rule({ mergeSqlMask, sqlGroup }, 
-        mergeSqlCmdText .. mergeSqlCmd, mergeSqlOutput)
-        
-    -- generate packs database
-    local dbOutput = self.outputDir .. "/" .. self.conf.outputDbName
-    local dbCmd = self.cmd.fwsql .. ' -cmd ".read ' .. mergeSqlOutput .. '" -cmd ".save ' .. dbOutput .. '" "" ""'
-    local dbCmdText = "^ Gen final packs DB^ "
-    tup.rule(mergeSqlOutput, dbCmdText .. dbCmd, dbOutput)
-    ]]
-    
-    
-    for pai, pack in pairs(self.packs) do
-    
         -- by default gpu list contain only common folder
         local gpus = { }
         gpus[self.conf.commonGpu] = self.conf.commonGpu

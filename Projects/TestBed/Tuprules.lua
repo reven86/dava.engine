@@ -29,7 +29,7 @@ tupState:AddPacks {
          name = "gpupack",
          gpu = true,
          rules = {
-            { "Data", "%.*${gpu}" },
+            { "Data", "%.{gpu}" },
             { "Data", "%.sc3" }
          }
     },

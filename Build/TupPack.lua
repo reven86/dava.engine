@@ -73,44 +73,6 @@ function TupPack.SetRules(self, rules)
         end
 	end
     
-    --[[
-    parsedRules = { }
-    
-    -- check for gpus
-    if #rules > 0 and type(gpuVar) == "string" and type(gpuPattern) == "string" then
-        for k, rule in pairs(rules) do
-            if type(k) == "number" then
-                local hasGpuPattern = false
-            
-                if type(rule) == "string" then
-                    if rule:find(gpuVar) then
-                        hasGpuPattern = true                
-                        parsedRules[#parsedRules + 1] = rule:gsub(gpuVar, gpuPattern)
-                    end
-                elseif type(rule) == "table" then
-                    local dirRule = rule[1]
-                    local fileRule = rule[2]
-                    
-                    if dirRule:find(gpuVar) or fileRule:find(gpuVar) then
-                        hasGpuPattern = true
-                        local d = dirRule:gsub(gpuVar, gpuPattern)
-                        local f = fileRule:gsub(gpuVar, gpuPattern)
-                        parsedRules[#parsedRules + 1] = { d, f }
-                    end
-                end
-                
-                if hasGpuPattern ~= true then
-                    parsedRules[#parsedRules + 1] = rule
-                end
-            end
-        end
-    else
-        parsedRules = rules
-    end
-    
-    -- assign rules
-    self.rules = parsedRules
-    ]]
     -- assign rules
     self.rules = rules
 end
@@ -131,6 +93,9 @@ function TupPack.Match(self, dir, file, gpuName, gpuVar, gpuPattern)
         if gpuVar == nil or gpuPattern == nil then
             error "No gpuVar or gpuPattern specified"
         end
+        
+        -- escape all % symbols in pattern 
+        gpuPattern = gpuPattern:gsub("%%", "%%%%")
     end
     
     -- each pack has multiple rules
