@@ -55,15 +55,6 @@ void PushLogMessage(DAVA::Set<DAVA::String>& messages, DAVA::Entity* object, con
     messages.insert(infoText);
 }
 
-SceneValidator::SceneValidator()
-{
-    pathForChecking = DAVA::String("");
-}
-
-SceneValidator::~SceneValidator()
-{
-}
-
 bool SceneValidator::ValidateSceneAndShowErrors(DAVA::Scene* scene, const DAVA::FilePath& scenePath)
 {
     errorMessages.clear();
@@ -256,34 +247,31 @@ void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity* ownerNode, DA
         DAVA::uint32 count = effect->GetEmittersCount();
         for (DAVA::uint32 i = 0; i < count; ++i)
         {
-            ValidateParticleEmitter(effect->GetEmitter(i), errorsLog, effect->GetEntity());
+            ValidateParticleEmitter(effect->GetEmitterInstance(i), errorsLog, effect->GetEntity());
         }
     }
 }
 
-void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitter* emitter, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const
+void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitterInstance* instance, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const
 {
-    DVASSERT(emitter);
+    DVASSERT(instance);
 
-    if (nullptr == emitter)
-    {
+    if (nullptr == instance)
         return;
-    }
+
+    auto emitter = instance->GetEmitter();
 
     if (emitter->configPath.IsEmpty())
     {
-        PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s",
-                       emitter->name.c_str(), sceneName.c_str());
+        PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s", emitter->name.c_str(), sceneName.c_str());
     }
 
-    const DAVA::Vector<DAVA::ParticleLayer*>& layers = emitter->layers;
-
-    DAVA::uint32 count = static_cast<DAVA::uint32>(layers.size());
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (auto layer : emitter->layers)
     {
-        if (layers[i]->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+        if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            ValidateParticleEmitter(layers[i]->innerEmitter, errorsLog, owner);
+            DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> instance(new DAVA::ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
+            ValidateParticleEmitter(instance, errorsLog, owner);
         }
     }
 }

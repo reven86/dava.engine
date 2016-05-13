@@ -72,7 +72,7 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
 
     connect(ui->eventType, SIGNAL(currentIndexChanged(int)), SLOT(OnTypeChanged()));
     connect(ui->run, SIGNAL(clicked()), SLOT(OnInvoke()));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
 
     const DAVA::ActionComponent::Action::eEvent eventType = static_cast<DAVA::ActionComponent::Action::eEvent>(SettingsManager::Instance()->GetValue(settingsType).AsUInt32());
@@ -103,14 +103,12 @@ void RunActionEventWidget::OnInvoke()
     const DAVA::uint32 switchIndex = ui->switchIndex->value();
     const DAVA::FastName name(ui->name->currentText().toStdString().c_str());
 
-    const EntityGroup& selection = editor->selectionSystem->GetSelection();
-    for (const auto& item : selection.GetContent())
+    const SelectableGroup& selection = editor->selectionSystem->GetSelection();
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
-        DAVA::ActionComponent* component = static_cast<DAVA::ActionComponent*>(item.first->GetComponent(DAVA::Component::ACTION_COMPONENT));
+        DAVA::ActionComponent* component = static_cast<DAVA::ActionComponent*>(entity->GetComponent(DAVA::Component::ACTION_COMPONENT));
         if (component == nullptr)
-        {
             continue;
-        }
 
         const DAVA::uint32 nEvents = component->GetCount();
         for (DAVA::uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
@@ -149,12 +147,12 @@ void RunActionEventWidget::sceneActivated(SceneEditor2* scene_)
     sceneSelectionChanged(scene, NULL, NULL);
 }
 
-void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const EntityGroup* selected, const EntityGroup* deselected)
+void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
 
-    if (scene == NULL)
+    if (scene == nullptr)
     {
         autocompleteModel->setStringList(QStringList());
         return;
@@ -167,12 +165,13 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const Ent
 
     QSet<QString> nameSet;
 
-    const EntityGroup& selection = scene->selectionSystem->GetSelection();
-    for (const auto& item : selection.GetContent())
+    const SelectableGroup& selection = scene->selectionSystem->GetSelection();
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
-        DAVA::ActionComponent* component = static_cast<DAVA::ActionComponent*>(item.first->GetComponent(DAVA::Component::ACTION_COMPONENT));
-        if (!component)
+        DAVA::ActionComponent* component = static_cast<DAVA::ActionComponent*>(entity->GetComponent(DAVA::Component::ACTION_COMPONENT));
+        if (component == nullptr)
             continue;
+
         const DAVA::uint32 nEvents = component->GetCount();
         for (DAVA::uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
         {

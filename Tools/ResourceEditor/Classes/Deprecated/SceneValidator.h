@@ -35,9 +35,6 @@
 class SceneValidator : public DAVA::Singleton<SceneValidator>
 {
 public:
-    SceneValidator();
-    virtual ~SceneValidator();
-
     /*
      \brief Function to validate Scene errors and Displays errors log at Errors Dialog
      \param[in] scene scene for validation
@@ -129,7 +126,7 @@ protected:
     void ValidateRenderBatch(DAVA::Entity* ownerNode, DAVA::RenderBatch* renderBatch, DAVA::Set<DAVA::String>& errorsLog);
 
     void ValidateParticleEffectComponent(DAVA::Entity* ownerNode, DAVA::Set<DAVA::String>& errorsLog) const;
-    void ValidateParticleEmitter(DAVA::ParticleEmitter* emitter, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const;
+    void ValidateParticleEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const;
 
     void ValidateLandscapeTexture(DAVA::Landscape* landscape, const DAVA::FastName& texLevel, DAVA::Set<DAVA::String>& errorsLog);
     void ValidateCustomColorsTexture(DAVA::Entity* landscapeEntity, DAVA::Set<DAVA::String>& errorsLog);

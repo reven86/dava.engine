@@ -411,6 +411,11 @@ function IsVisible(controlName, background)
     return true
 end
 
+local function __IsVisibleNoLog(controlName, background)
+    local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
+    return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
+end
+
 function IsDisabled(controlName)
     Yield()
     local control = GetControl(controlName)
@@ -556,7 +561,7 @@ end
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local result = WaitUntil(waitTime, IsVisible, name)
+    local result = WaitUntil(waitTime, __IsVisibleNoLog, name)
 	if not result then
         Log("Control not found " .. name, "DEBUG")
     end
