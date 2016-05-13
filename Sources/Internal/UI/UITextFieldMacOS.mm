@@ -42,7 +42,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
-
+#include "UI/Focus/FocusHelpers.h"
 // +-----------+          +------+
 // |ObjCWrapper+----------+IField|
 // +-----+-----+          +----+-+
@@ -386,24 +386,21 @@ public:
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView.window makeFirstResponder:nsTextView];
 
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-
-        if (delegate && !isKeyboardOpened)
+        if (!isKeyboardOpened)
         {
             isKeyboardOpened = true;
             Rect emptyRect;
             emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
-            delegate->OnKeyboardShown(emptyRect);
+            davaText->OnKeyboardShown(emptyRect);
         }
     }
 
     void CloseKeyboard() override
     {
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-        if (delegate && isKeyboardOpened)
+        if (isKeyboardOpened)
         {
             isKeyboardOpened = false;
-            delegate->OnKeyboardHidden();
+            davaText->OnKeyboardHidden();
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
@@ -433,6 +430,9 @@ public:
         {
             currentRect = rectSrc;
             NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
+
+            controlRect.size.width = std::max(0.0, controlRect.size.width);
+            controlRect.size.height = std::max(0.0, controlRect.size.height);
 
             [nsScrollView setFrame:controlRect];
             [nsTextView setFrame:controlRect];
@@ -650,14 +650,12 @@ public:
     {
         nsTextField.enabled = YES;
 
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-
-        if (delegate && !isKeyboardOpened)
+        if (!isKeyboardOpened)
         {
             isKeyboardOpened = true;
             Rect emptyRect;
             emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
-            delegate->OnKeyboardShown(emptyRect);
+            davaText->OnKeyboardShown(emptyRect);
         }
 
         [[NSApp keyWindow] makeFirstResponder:nsTextField];
@@ -702,11 +700,10 @@ public:
     void CloseKeyboard() override
     {
         // prevent recursion
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-        if (delegate && isKeyboardOpened)
+        if (isKeyboardOpened)
         {
             isKeyboardOpened = false;
-            delegate->OnKeyboardHidden();
+            davaText->OnKeyboardHidden();
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
@@ -753,7 +750,7 @@ public:
             !insideTextShouldReturn &&
             davaText == UIControlSystem::Instance()->GetFocusedControl())
         {
-            UIControlSystem::Instance()->SetFocusedControl(nullptr, false);
+            davaText->ReleaseFocus();
         }
     }
 
@@ -761,7 +758,7 @@ public:
     {
         // HACK for battle screen
         // check if focus not synced
-        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText);
+        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText) && davaText->IsEditing();
         if (isFocused)
         {
             NSWindow* window = [NSApp keyWindow];
@@ -781,10 +778,9 @@ public:
                 {
                     if (isKeyboardOpened)
                     {
-                        UITextFieldDelegate* delegate = davaText->GetDelegate();
-                        if (delegate && !delegate->IsTextFieldCanLostFocus(davaText))
+                        //                        // select text field
+                        if (davaText->GetStopEditPolicy() == UITextField::STOP_EDIT_WHEN_FOCUS_LOST)
                         {
-                            // select text field
                             [window makeFirstResponder:nsTextField];
                             // remove selection to caret at end
                             if ([[nsTextField stringValue] length] > 0)
@@ -825,6 +821,9 @@ public:
 
         if (!NSEqualRects(nativeControlRect, controlRect))
         {
+            controlRect.size.width = std::max(0.0, controlRect.size.width);
+            controlRect.size.height = std::max(0.0, controlRect.size.height);
+
             [nsTextField setFrame:controlRect];
             nativeControlRect = controlRect;
         }
@@ -1441,10 +1440,11 @@ doCommandBySelector:(SEL)commandSelector
 
         // if user paste text with gesture in native control
         // we need make dava control in sync with focus
-        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl)
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl && DAVA::FocusHelpers::CanFocusControl(davaCtrl))
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl);
         }
+        davaCtrl->StartEdit();
 
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
         if (delegate != nullptr)
@@ -1527,7 +1527,13 @@ doCommandBySelector:(SEL)commandSelector
     DAVA::UITextField* textField = (*text).ctrl->davaText;
     if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
     {
-        DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+        DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
+        {
+            textField->StartEdit();
+        }
+        else
+            return NO;
     }
     return YES;
 }
@@ -1548,6 +1554,15 @@ doCommandBySelector:(SEL)commandSelector
     {
         // call client delegate
         DAVA::UITextField* textField = (*text).ctrl->davaText;
+
+        // if user paste text with gesture in native control
+        // we need make dava control in sync with focus
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
+        }
+        textField->StartEdit();
+
         DAVA::UITextFieldDelegate* delegate = textField->GetDelegate();
         if (delegate)
         {

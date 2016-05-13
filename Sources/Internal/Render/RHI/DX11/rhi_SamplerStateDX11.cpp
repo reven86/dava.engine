@@ -44,10 +44,13 @@ struct
 SamplerStateDX11_t
 {
     uint32 fragmentSamplerCount;
+    uint32 vertexSamplerCount;
     ID3D11SamplerState* fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    ID3D11SamplerState* vertexSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
 
     SamplerStateDX11_t()
         : fragmentSamplerCount(0)
+        , vertexSamplerCount(0)
     {
     }
 };
@@ -135,6 +138,14 @@ dx11_SamplerState_Delete(Handle hstate)
             }
         }
 
+        for (unsigned s = 0; s != state->vertexSamplerCount; ++s)
+        {
+            if (state->vertexSampler[s])
+            {
+                state->vertexSampler[s]->Release();
+            }
+        }
+
         SamplerStateDX11Pool::Free(hstate);
     }
 }
@@ -149,6 +160,7 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
     bool success = true;
 
     memset(state->fragmentSampler, 0, sizeof(state->fragmentSampler));
+    memset(state->vertexSampler, 0, sizeof(state->vertexSampler));
 
     state->fragmentSamplerCount = desc.fragmentSamplerCount;
     for (unsigned s = 0; s != desc.fragmentSamplerCount; ++s)
@@ -170,6 +182,30 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         if (FAILED(hr))
         {
             state->fragmentSampler[s] = nullptr;
+            success = false;
+        }
+    }
+
+    state->vertexSamplerCount = desc.vertexSamplerCount;
+    for (unsigned s = 0; s != desc.vertexSamplerCount; ++s)
+    {
+        D3D11_SAMPLER_DESC s_desc;
+        HRESULT hr;
+
+        s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.vertexSampler[s].minFilter), TextureFilter(desc.vertexSampler[s].magFilter), TextureMipFilter(desc.vertexSampler[s].mipFilter));
+        s_desc.AddressU = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrU));
+        s_desc.AddressV = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrV));
+        s_desc.AddressW = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrW));
+        s_desc.MipLODBias = 0;
+        s_desc.MaxAnisotropy = 0;
+        s_desc.MinLOD = -D3D11_FLOAT32_MAX;
+        s_desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+        hr = _D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s);
+
+        if (FAILED(hr))
+        {
+            state->vertexSampler[s] = nullptr;
             success = false;
         }
     }
@@ -198,6 +234,11 @@ void SetToRHI(Handle hstate, ID3D11DeviceContext* context)
     SamplerStateDX11_t* state = SamplerStateDX11Pool::Get(hstate);
 
     context->PSSetSamplers(0, state->fragmentSamplerCount, state->fragmentSampler);
+
+    if (state->vertexSamplerCount)
+    {
+        context->VSSetSamplers(0, state->vertexSamplerCount, state->vertexSampler);
+    }
 }
 }
 

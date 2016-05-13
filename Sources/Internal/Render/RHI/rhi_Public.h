@@ -47,6 +47,8 @@ InitParam
 {
     uint32 width;
     uint32 height;
+    float32 scaleX;
+    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
     uint32 threadedRenderEnabled : 1;
@@ -75,6 +77,8 @@ InitParam
     InitParam()
         : width(0)
         , height(0)
+        , scaleX(1.f)
+        , scaleY(1.f)
         , window(nullptr)
         , fullScreen(false)
         , threadedRenderEnabled(false)
@@ -104,6 +108,8 @@ ResetParam
 {
     uint32 width;
     uint32 height;
+    float32 scaleX;
+    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
     uint32 vsyncEnabled : 1;
@@ -111,6 +117,8 @@ ResetParam
     ResetParam()
         : width(0)
         , height(0)
+        , scaleX(1.f)
+        , scaleY(1.f)
         , window(nullptr)
         , fullScreen(false)
         , vsyncEnabled(true)
@@ -129,7 +137,7 @@ RenderDeviceCaps
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
 
-    bool instancingSupported = false;
+    bool isInstancingSupported = false;
 
     char deviceDescription[128];
 };

@@ -330,8 +330,6 @@ namespace DAVA
 typedef DAVA::UIWebView DAVAWebView;
 
 //Use unqualified UIWebView and UIScreen from global namespace, i.e. from UIKit
-using ::UIWebView;
-using ::UIScreen;
 
 static const struct
 {
@@ -351,7 +349,7 @@ detectorsMap[] =
 WebViewControl::~WebViewControl()
 {
     SetGestures(NO);
-    UIWebView* innerWebView = (UIWebView*)webViewPtr;
+    ::UIWebView* innerWebView = (::UIWebView*)webViewPtr;
 
     [innerWebView setDelegate:nil];
     [innerWebView stopLoading];
@@ -390,7 +388,7 @@ void WebViewControl::OpenURL(const String& urlToOpen)
     NSURL* url = [NSURL URLWithString:[nsURLPathToOpen stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
     NSURLRequest* requestObj = [NSURLRequest requestWithURL:url];
-    UIWebView* innerWebView = (UIWebView*)webViewPtr;
+    ::UIWebView* innerWebView = (::UIWebView*)webViewPtr;
     [innerWebView stopLoading];
     [innerWebView loadRequest:requestObj];
 }
@@ -400,7 +398,7 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
     NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
 
-    UIWebView* innerWebView = (UIWebView*)webViewPtr;
+    ::UIWebView* innerWebView = (::UIWebView*)webViewPtr;
     [innerWebView stopLoading];
 
     [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
@@ -412,7 +410,7 @@ void WebViewControl::LoadHtmlString(const WideString& htlmString)
                                                          length:htlmString.size() * sizeof(wchar_t)
                                                        encoding:NSUTF32LittleEndianStringEncoding] autorelease];
 
-    [(UIWebView*)webViewPtr loadHTMLString:htmlPageToLoad baseURL:nil];
+    [(::UIWebView*)webViewPtr loadHTMLString:htmlPageToLoad baseURL:nil];
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
@@ -465,7 +463,7 @@ void WebViewControl::ExecuteJScript(const String& scriptString)
     NSString* jScriptString = [NSString stringWithUTF8String:
                                         scriptString.c_str()];
 
-    NSString* resultString = [(UIWebView*)webViewPtr
+    NSString* resultString = [(::UIWebView*)webViewPtr
     stringByEvaluatingJavaScriptFromString:jScriptString];
 
     WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
@@ -479,7 +477,7 @@ void WebViewControl::ExecuteJScript(const String& scriptString)
 
 void WebViewControl::SetRect(const Rect& rect)
 {
-    CGRect webViewRect = [(UIWebView*)webViewPtr frame];
+    CGRect webViewRect = [(::UIWebView*)webViewPtr frame];
 
     VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
 
@@ -507,7 +505,11 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.height /= scaleDivider;
     webViewRect.size.width /= scaleDivider;
 
-    [(UIWebView*)webViewPtr setFrame:webViewRect];
+    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
+    webViewRect.size.width = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.width);
+    webViewRect.size.height = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.height);
+
+    [(::UIWebView*)webViewPtr setFrame:webViewRect];
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
@@ -523,12 +525,12 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 
 void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
 {
-    [(UIWebView*)webViewPtr setScalesPageToFit:isScalesToFit];
+    [(::UIWebView*)webViewPtr setScalesPageToFit:isScalesToFit];
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
-    UIWebView* webView = (UIWebView*)webViewPtr;
+    ::UIWebView* webView = (::UIWebView*)webViewPtr;
     [webView setOpaque:(enabled ? NO : YES)];
 
     UIColor* color = [webView backgroundColor];
@@ -555,7 +557,7 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 void WebViewControl::HideSubviewImages(void* view)
 {
-    UIWebView* webView = (UIWebView*)webViewPtr;
+    ::UIWebView* webView = (::UIWebView*)webViewPtr;
     ::UIScrollView* scrollView = webView.scrollView;
 
     UIView* uiview = (UIView*)view;
@@ -593,13 +595,13 @@ bool WebViewControl::GetBounces() const
         return false;
     }
 
-    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
     return (localWebView.scrollView.bounces == YES);
 }
 
 void WebViewControl::SetBounces(bool value)
 {
-    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
     localWebView.scrollView.bounces = (value == true);
 }
 
@@ -621,7 +623,7 @@ void WebViewControl::SetGestures(bool value)
         [backView addGestureRecognizer:rightSwipeGesture];
         [backView addGestureRecognizer:leftSwipeGesture];
 
-        UIWebView* localWebView = (UIWebView*)webViewPtr;
+        ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
         [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:rightSwipeGesture];
         [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:leftSwipeGesture];
         rightSwipeGesturePtr = rightSwipeGesture;
@@ -655,13 +657,13 @@ void WebViewControl::SetDataDetectorTypes(int32 value)
         }
     }
 
-    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
     localWebView.dataDetectorTypes = systemDetectorTypes;
 }
 
 int32 WebViewControl::GetDataDetectorTypes() const
 {
-    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
     NSUInteger systemDetectorTypes = localWebView.dataDetectorTypes;
 
     int32 davaDetectorTypes = 0;
@@ -688,7 +690,7 @@ void WebViewControl::WillDraw()
     if (isVisible != pendingVisible)
     {
         isVisible = pendingVisible;
-        [(UIWebView*)webViewPtr setHidden:(isVisible ? NO : YES)];
+        [(::UIWebView*)webViewPtr setHidden:(isVisible ? NO : YES)];
     }
 
     if (isRenderToTexture != pendingRenderToTexture)
@@ -705,12 +707,12 @@ void WebViewControl::WillDraw()
             // we have to show window or we can't render web view into texture
             if (!isVisible)
             {
-                [(UIWebView*)webViewPtr setHidden:NO];
+                [(::UIWebView*)webViewPtr setHidden:NO];
             }
             RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
             if (!isVisible)
             {
-                [(UIWebView*)webViewPtr setHidden:YES];
+                [(::UIWebView*)webViewPtr setHidden:YES];
             }
         }
     }

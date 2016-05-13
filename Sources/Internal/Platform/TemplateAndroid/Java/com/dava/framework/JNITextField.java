@@ -841,6 +841,7 @@ public class JNITextField {
                             } else // No any focused text fields -> show
                                 // keyboard physically
                             {
+                                lastClosedTextField = NO_ACTIVE_TEXTFIELD;
                                 InputMethodManager imm = (InputMethodManager) JNIActivity
                                         .GetActivity().getSystemService(
                                                 Context.INPUT_METHOD_SERVICE);

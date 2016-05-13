@@ -65,8 +65,6 @@ QualitySettingsSystem::QualitySettingsSystem()
 
 void QualitySettingsSystem::Load(const FilePath& path)
 {
-    Logger::FrameworkDebug("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
-
     if (FileSystem::Instance()->Exists(path))
     {
         YamlParser* parser = YamlParser::Create(path);
@@ -77,6 +75,7 @@ void QualitySettingsSystem::Load(const FilePath& path)
             textureQualities.clear();
             materialGroups.clear();
             soundQualities.clear();
+            landscapeQualities.clear();
 
             // materials
             const YamlNode* materialGroupsNode = rootNode->Get("materials");
@@ -215,6 +214,71 @@ void QualitySettingsSystem::Load(const FilePath& path)
                     }
                 }
             }
+
+            // landscape
+            const YamlNode* landscapeNode = rootNode->Get("landscape");
+            if (nullptr != landscapeNode)
+            {
+                const YamlNode* defaultNode = landscapeNode->Get("default");
+                const YamlNode* qualitiesNode = landscapeNode->Get("qualities");
+
+                if (nullptr != qualitiesNode)
+                {
+                    FastName defQualityName;
+                    if (nullptr != defaultNode && defaultNode->GetType() == YamlNode::TYPE_STRING)
+                    {
+                        defQualityName = FastName(defaultNode->AsString().c_str());
+                    }
+
+                    landscapeQualities.reserve(qualitiesNode->GetCount());
+                    for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
+                    {
+                        const YamlNode* qualityNode = qualitiesNode->Get(i);
+                        const YamlNode* nameNode = qualityNode->Get("quality");
+                        const YamlNode* morphingNode = qualityNode->Get("morphing");
+                        const YamlNode* metricsNodes[] = {
+                            qualityNode->Get("normalMaxHeightError"),
+                            qualityNode->Get("normalMaxPatchRadiusError"),
+                            qualityNode->Get("normalMaxAbsoluteHeightError"),
+                            qualityNode->Get("zoomMaxHeightError"),
+                            qualityNode->Get("zoomMaxPatchRadiusError"),
+                            qualityNode->Get("zoomMaxAbsoluteHeightError")
+                        };
+
+                        if (nameNode && nameNode->GetType() == YamlNode::TYPE_STRING &&
+                            morphingNode && morphingNode->GetType() == YamlNode::TYPE_STRING)
+                        {
+                            bool metrcisValid = true;
+                            LCQ lcq;
+                            lcq.name = FastName(nameNode->AsString().c_str());
+                            lcq.quality.morphing = morphingNode->AsBool();
+
+                            for (size_t j = 0; j < 6; j++)
+                            {
+                                if (metricsNodes[j] && metricsNodes[j]->GetType() == YamlNode::TYPE_STRING)
+                                {
+                                    lcq.quality.metricsArray[j] = metricsNodes[j]->AsFloat();
+                                }
+                                else
+                                {
+                                    metrcisValid = false;
+                                    break;
+                                }
+                            }
+
+                            if (metrcisValid)
+                            {
+                                landscapeQualities.push_back(lcq);
+                                if (lcq.name == defQualityName)
+                                {
+                                    curLandscapeQuality = i;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // particles
             const YamlNode* particlesNode = rootNode->Get("particles");
             if (nullptr != particlesNode)
@@ -225,8 +289,6 @@ void QualitySettingsSystem::Load(const FilePath& path)
 
         parser->Release();
     }
-
-    Logger::FrameworkDebug("Done. TxQualities: %u, MaGrQualities: %u", textureQualities.size(), materialGroups.size());
 }
 
 size_t QualitySettingsSystem::GetTextureQualityCount() const
@@ -340,6 +402,58 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
     if (index < soundQualities.size())
     {
         ret = soundQualities[index].configPath;
+    }
+
+    return ret;
+}
+
+size_t QualitySettingsSystem::GetLandscapeQualityCount() const
+{
+    return landscapeQualities.size();
+}
+
+FastName QualitySettingsSystem::GetLandscapeQualityName(size_t index) const
+{
+    FastName ret;
+
+    if (index < landscapeQualities.size())
+    {
+        ret = landscapeQualities[index].name;
+    }
+
+    return ret;
+}
+
+FastName QualitySettingsSystem::GetCurLandscapeQuality() const
+{
+    return GetLandscapeQualityName(curLandscapeQuality);
+}
+
+void QualitySettingsSystem::SetCurLandscapeQuality(const FastName& name)
+{
+    for (size_t i = 0; i < landscapeQualities.size(); ++i)
+    {
+        if (landscapeQualities[i].name == name)
+        {
+            curLandscapeQuality = static_cast<int32>(i);
+            return;
+        }
+    }
+
+    DVASSERT(0 && "No such quality");
+}
+
+const LandscapeQuality* QualitySettingsSystem::GetLandscapeQuality(const FastName& name) const
+{
+    const LandscapeQuality* ret = nullptr;
+
+    for (size_t i = 0; i < landscapeQualities.size(); ++i)
+    {
+        if (landscapeQualities[i].name == name)
+        {
+            ret = &landscapeQualities[i].quality;
+            break;
+        }
     }
 
     return ret;

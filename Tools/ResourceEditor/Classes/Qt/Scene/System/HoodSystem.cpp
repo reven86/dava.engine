@@ -44,7 +44,7 @@ HoodSystem::HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys)
     btVector3 worldMax(1000, 1000, 1000);
 
     collConfiguration = new btDefaultCollisionConfiguration();
-    collDispatcher = CreateObjectAligned<btCollisionDispatcher, 16>(collConfiguration);
+    collDispatcher = DAVA::CreateObjectAligned<btCollisionDispatcher, 16>(collConfiguration);
     collBroadphase = new btAxisSweep3(worldMin, worldMax);
     collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
@@ -52,7 +52,7 @@ HoodSystem::HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys)
     collWorld->setDebugDrawer(collDebugDraw);
 
     SetModifAxis(ST_AXIS_X);
-    SetModifMode(ST_MODIF_MOVE);
+    SetTransformType(Selectable::TransformType::Translation);
 
     moveHood.colorX = DAVA::Color(1, 0, 0, 1);
     moveHood.colorY = DAVA::Color(0, 1, 0, 1);
@@ -80,7 +80,7 @@ HoodSystem::~HoodSystem()
     delete collWorld;
     delete collDebugDraw;
     delete collBroadphase;
-    DestroyObjectAligned(collDispatcher);
+    DAVA::DestroyObjectAligned(collDispatcher);
     delete collConfiguration;
 }
 
@@ -172,7 +172,7 @@ DAVA::float32 HoodSystem::GetScale() const
     return curScale;
 }
 
-void HoodSystem::SetModifMode(ST_ModifMode mode)
+void HoodSystem::SetTransformType(Selectable::TransformType mode)
 {
     if (!IsLocked())
     {
@@ -186,13 +186,13 @@ void HoodSystem::SetModifMode(ST_ModifMode mode)
             curMode = mode;
             switch (mode)
             {
-            case ST_MODIF_MOVE:
+            case Selectable::TransformType::Translation:
                 curHood = &moveHood;
                 break;
-            case ST_MODIF_SCALE:
+            case Selectable::TransformType::Scale:
                 curHood = &scaleHood;
                 break;
-            case ST_MODIF_ROTATE:
+            case Selectable::TransformType::Rotation:
                 curHood = &rotateHood;
                 break;
             default:
@@ -213,11 +213,11 @@ void HoodSystem::SetModifMode(ST_ModifMode mode)
     }
 }
 
-ST_ModifMode HoodSystem::GetModifMode() const
+Selectable::TransformType HoodSystem::GetTransformType() const
 {
     if (lockedModif)
     {
-        return ST_MODIF_OFF;
+        return Selectable::TransformType::Disabled;
     }
 
     return curMode;
@@ -342,7 +342,7 @@ void HoodSystem::Draw()
         {
             ST_Axis showAsSelected = curAxis;
 
-            if (curMode != ST_MODIF_OFF)
+            if (GetTransformType() != Selectable::TransformType::Disabled)
             {
                 if (ST_AXIS_NONE != moseOverAxis)
                 {
@@ -353,7 +353,7 @@ void HoodSystem::Draw()
             curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
 
             // zero pos point
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(DAVA::AABBox3(GetPosition(), curHood->objScale * .04f), DAVA::Color::White, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
             // debug draw axis collision word
             //collWorld->debugDrawWorld();
@@ -398,12 +398,12 @@ void HoodSystem::LockAxis(bool lock)
     lockedAxis = lock;
 }
 
-bool HoodSystem::AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection)
+bool HoodSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
 {
-    return !IsVisible() || (ST_MODIF_OFF == GetModifMode()) || (ST_AXIS_NONE == GetPassingAxis());
+    return !IsVisible() || (GetTransformType() == Selectable::TransformType::Disabled) || (ST_AXIS_NONE == GetPassingAxis());
 }
 
-bool HoodSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection)
+bool HoodSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
     return true;
 }

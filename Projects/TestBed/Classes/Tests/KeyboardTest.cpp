@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Tests/KeyboardTest.h"
 #include <Input/InputCallback.h>
+#include <UI/Focus/UIFocusComponent.h>
 
 using namespace DAVA;
 
@@ -71,7 +72,7 @@ public:
         InputSystem::Instance()->RemoveInputCallback(gamepadCallback);
     }
 
-    bool SystemInput(UIEvent* currentInput) override
+    bool SystemProcessInput(UIEvent* currentInput) override
     {
         bool result = false;
         if (currentInput->phase == UIEvent::Phase::GESTURE)
@@ -449,8 +450,8 @@ void KeyboardTest::LoadResources()
     customText->SetDebugDraw(true);
     customText->SetTextColor(Color::White);
     customText->SetFont(font);
-    customText->SetFocusEnabled(true);
-    customText->SetAlign(ALIGN_LEFT | ALIGN_TOP);
+    customText->GetOrCreateComponent<UIFocusComponent>();
+    customText->SetSpriteAlign(ALIGN_LEFT | ALIGN_TOP);
     customText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     customText->SetMultiline(true);
     customText->SetMultilineType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
@@ -463,8 +464,6 @@ void KeyboardTest::LoadResources()
     resetButton->SetStateText(0xFF, L"Reset");
     resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &KeyboardTest::OnResetClick));
     AddControl(resetButton);
-
-    UIControlSystem::Instance()->SetFocusedControl(customText, true);
 
     for (auto& touch : touches)
     {

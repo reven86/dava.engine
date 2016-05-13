@@ -34,6 +34,9 @@
 #include "FileSystem/FileAPIHelper.h"
 
 #include "Utils/StringFormat.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -60,45 +63,96 @@ File::~File()
 
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
-    return FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    File* result = FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
-    for (List<FileSystem::ResourceArchiveItem>::iterator ai = fileSystem->resourceArchiveList.begin();
-         ai != fileSystem->resourceArchiveList.end(); ++ai)
+
+    if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
     {
-        FileSystem::ResourceArchiveItem& item = *ai;
+        String relative = filename.GetRelativePathname("~res:/");
 
-        String filenamecpp = filename.GetAbsolutePathname();
-
-        String::size_type pos = filenamecpp.find(item.attachPath);
-        if (pos == 0)
+        Vector<uint8> contentAndSize;
+        for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
         {
-            String relfilename = filenamecpp.substr(item.attachPath.length());
-            int32 size = item.archive->LoadResource(relfilename, 0);
-            if (size == -1)
+            if (item.archive->LoadFile(relative, contentAndSize))
             {
-                return 0;
+                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }
-
-            uint8* buffer = new uint8[size];
-            item.archive->LoadResource(relfilename, buffer);
-            DynamicMemoryFile* file = DynamicMemoryFile::Create(buffer, size, attributes);
-            SafeDeleteArray(buffer);
-            return file;
         }
-    }
-
-    bool isDirectory = FileSystem::Instance()->IsDirectory(filename);
-    if (isDirectory)
-    {
-        return NULL;
     }
 
     return PureCreate(filename, attributes);
 }
+
+#ifdef __DAVAENGINE_ANDROID__
+
+static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes)
+{
+    int index = zip_name_locate(package, path.c_str(), 0);
+    if (-1 == index)
+    {
+        return nullptr;
+    }
+
+    struct zip_stat stat;
+
+    int32 error = zip_stat_index(package, index, 0, &stat);
+    if (-1 == error)
+    {
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't get file info: %s", path.c_str());
+        return nullptr;
+    }
+
+    zip_file* file = zip_fopen_index(package, index, 0);
+    if (nullptr == file)
+    {
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't open file in the archive: %s", path.c_str());
+        return nullptr;
+    }
+    SCOPE_EXIT
+    {
+        zip_fclose(file);
+    };
+
+    DVASSERT(stat.size >= 0);
+
+    Vector<uint8> data(stat.size, 0);
+
+    if (zip_fread(file, &data[0], stat.size) != stat.size)
+    {
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Error reading file: %s", path.c_str());
+
+        return nullptr;
+    }
+
+    return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
+}
+
+static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
+{
+    static Mutex mutex;
+
+    LockGuard<Mutex> guard(mutex);
+
+    AssetsManager* assetsManager = AssetsManager::Instance();
+    DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
+
+    zip* package = assetsManager->GetApplicationPackage();
+    if (nullptr == package)
+    {
+        DVASSERT_MSG(false, "[CreateFromAPK] Package file should be initialized.");
+        return nullptr;
+    }
+    // TODO in future remove ugly HACK with prefix path
+    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
+    return CreateFromAPKAssetsPath(package, filePath, assetFileStr, attributes);
+}
+
+#endif // __DAVAENGINE_ANDROID__
 
 File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
@@ -118,7 +172,14 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         }
 
         if (!file)
-            return NULL;
+        {
+#ifdef __DAVAENGINE_ANDROID__
+            File* fromAPK = CreateFromAPK(filePath, attributes);
+            return fromAPK; // simpler debugging on android
+#else
+            return nullptr;
+#endif
+        }
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
@@ -127,13 +188,13 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     {
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("wb"));
         if (!file)
-            return NULL;
+            return nullptr;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
         if (!file)
-            return NULL;
+            return nullptr;
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
     }

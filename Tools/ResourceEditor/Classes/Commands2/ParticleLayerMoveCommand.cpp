@@ -29,19 +29,19 @@
 
 #include "Commands2/ParticleLayerMoveCommand.h"
 
-ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleEmitter* _oldEmitter, DAVA::ParticleLayer* _layer, DAVA::ParticleEmitter* _newEmitter, DAVA::ParticleLayer* _newBefore /* = NULL */)
+ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleEmitterInstance* oldEmitter_, DAVA::ParticleLayer* layer_,
+                                                   DAVA::ParticleEmitterInstance* newEmitter_, DAVA::ParticleLayer* newBefore_ /* = nullptr */)
     : Command2(CMDID_PARTICLE_LAYER_MOVE, "Move particle layer")
-    , layer(_layer)
-    , oldEmitter(_oldEmitter)
-    , oldBefore(NULL)
-    , newEmitter(_newEmitter)
-    , newBefore(_newBefore)
+    , layer(layer_)
+    , oldEmitter(oldEmitter_)
+    , newEmitter(newEmitter_)
+    , newBefore(newBefore_)
 {
     SafeRetain(layer);
 
-    if (NULL != layer && NULL != oldEmitter)
+    if ((layer != nullptr) && (oldEmitter != nullptr))
     {
-        oldBefore = oldEmitter->GetNextLayer(layer);
+        oldBefore = oldEmitter->GetEmitter()->GetNextLayer(layer);
     }
 }
 
@@ -52,43 +52,43 @@ ParticleLayerMoveCommand::~ParticleLayerMoveCommand()
 
 void ParticleLayerMoveCommand::Undo()
 {
-    if (NULL != layer)
-    {
-        if (NULL != newEmitter)
-        {
-            newEmitter->RemoveLayer(layer);
-        }
+    if (layer == nullptr)
+        return;
 
-        if (NULL != oldEmitter)
+    if (newEmitter != nullptr)
+    {
+        newEmitter->GetEmitter()->RemoveLayer(layer);
+    }
+
+    if (oldEmitter != nullptr)
+    {
+        if (oldBefore != nullptr)
         {
-            if (NULL != oldBefore)
-            {
-                oldEmitter->InsertLayer(layer, oldBefore);
-            }
-            else
-            {
-                oldEmitter->AddLayer(layer);
-            }
+            oldEmitter->GetEmitter()->InsertLayer(layer, oldBefore);
+        }
+        else
+        {
+            oldEmitter->GetEmitter()->AddLayer(layer);
         }
     }
 }
 
 void ParticleLayerMoveCommand::Redo()
 {
-    if (NULL != layer && NULL != newEmitter)
-    {
-        if (NULL != oldEmitter)
-        {
-            oldEmitter->RemoveLayer(layer);
-        }
+    if ((layer == nullptr) || (newEmitter == nullptr))
+        return;
 
-        if (NULL != newBefore)
-        {
-            newEmitter->InsertLayer(layer, newBefore);
-        }
-        else
-        {
-            newEmitter->AddLayer(layer);
-        }
+    if (nullptr != oldEmitter)
+    {
+        oldEmitter->GetEmitter()->RemoveLayer(layer);
+    }
+
+    if (nullptr != newBefore)
+    {
+        newEmitter->GetEmitter()->InsertLayer(layer, newBefore);
+    }
+    else
+    {
+        newEmitter->GetEmitter()->AddLayer(layer);
     }
 }
