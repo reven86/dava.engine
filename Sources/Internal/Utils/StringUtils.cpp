@@ -147,7 +147,7 @@ bool StringUtils::RemoveEmoji(WideString& string)
             {
                 i++;
                 Memcpy(&sym, data + i, sizeof(int32));
-                if (sym != 0x200D || sym != 0xFE0F)
+                if (sym != 0x200D && sym != 0xFE0F)
                 {
                     i--;
                     break;
