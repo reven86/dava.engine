@@ -175,7 +175,7 @@
     {
         return YES;
     }
-    
+
     DAVA::int32 maxLength = cppTextField->GetMaxLength();
     // if maxLength didn't set, it equal (-1), it incorrect
     if (maxLength < 0)
@@ -191,7 +191,7 @@
     NSString* origString = [textCtrl valueForKey:@"text"];
     NSUInteger origStrLength = [origString length];
     BOOL ignoreDelegateResult = NO;
-    
+
     if (removeString || replaceString)
     {
         if (range.location + range.length > origStrLength)
@@ -230,10 +230,10 @@
         }
         // safe remove end
     }
-    
+
     newString = [origString stringByReplacingCharactersInRange:range withString:string];
     ignoreDelegateResult = YES; // return NO at the end of the function
-    
+
     // Length check OK, continue with the delegate.
     DAVA::WideString repString;
     const char* cutfstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
@@ -243,9 +243,9 @@
         const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
         DAVA::UTF8Utils::EncodeToWideString(str, len, repString);
     }
-    
+
     BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), repString);
-    
+
     if (ignoreDelegateResult)
     {
         // We need to apply change manually.

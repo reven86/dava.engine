@@ -1424,7 +1424,7 @@ doCommandBySelector:(SEL)commandSelector
             NSString* replPath = [*partialStringPtr substringWithRange:replRange];
             NSString* prevPath = [*partialStringPtr substringWithRange:prevRange];
             NSString* postPath = [*partialStringPtr substringWithRange:postRange];
-            
+
             // safe remove
             {
                 // new cut characters
@@ -1446,7 +1446,7 @@ doCommandBySelector:(SEL)commandSelector
                 replPath = [replPath substringWithRange:NSMakeRange(0, position)];
             }
             // safe remove end
-            
+
             NSString* resultStr = [NSString stringWithFormat:@"%@%@%@", prevPath, replPath, postPath];
             // write back
             *partialStringPtr = resultStr;
