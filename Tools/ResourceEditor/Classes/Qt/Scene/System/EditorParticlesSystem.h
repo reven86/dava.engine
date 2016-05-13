@@ -41,31 +41,27 @@ class EditorParticlesSystem : public DAVA::SceneSystem
 
 public:
     EditorParticlesSystem(DAVA::Scene* scene);
-    ~EditorParticlesSystem();
 
-    void SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter);
     void RestartParticleEffects();
 
 private:
     void Draw();
 
-    virtual void AddEntity(DAVA::Entity* entity);
-    virtual void RemoveEntity(DAVA::Entity* entity);
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     void ProcessCommand(const Command2* command, bool redo);
 
+    void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
+    void DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner, bool selected);
+
+    void DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
+    void DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
+    void DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitterInstance* emitter);
+    void DrawVectorArrow(DAVA::ParticleEmitterInstance* emitter, DAVA::Vector3 center);
+
 private:
     DAVA::Vector<DAVA::Entity*> entities;
-
-    void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
-
-    void DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
-    void DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
-    void DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
-    void DrawVectorArrow(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
-
-    DAVA::Entity* selectedEffectEntity;
-    DAVA::ParticleEmitter* selectedEmitter;
 };
 
 

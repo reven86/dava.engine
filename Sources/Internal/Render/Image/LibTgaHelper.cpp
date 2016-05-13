@@ -209,7 +209,7 @@ struct Convert_RGBA5551_to_TgaARGB1555
     }
 };
 
-eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 

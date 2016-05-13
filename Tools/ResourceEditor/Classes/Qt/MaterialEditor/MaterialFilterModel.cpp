@@ -32,7 +32,6 @@
 #include "MaterialItem.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/EntityGroup.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
 #include "Commands2/MaterialSwitchParentCommand.h"
 
@@ -96,7 +95,7 @@ SceneEditor2* MaterialFilteringModel::GetScene()
     return materialModel->GetScene();
 }
 
-void MaterialFilteringModel::SetSelection(const EntityGroup* group)
+void MaterialFilteringModel::SetSelection(const SelectableGroup* group)
 {
     materialModel->SetSelection(group);
 }
@@ -190,8 +189,8 @@ bool MaterialFilteringModel::lessThan(const QModelIndex& left, const QModelIndex
     // global material should always be first
     MaterialItem* lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
     MaterialItem* rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
-    NMaterial* mLeft = lhsItem->GetMaterial();
-    NMaterial* mRight = rhsItem->GetMaterial();
+    DAVA::NMaterial* mLeft = lhsItem->GetMaterial();
+    DAVA::NMaterial* mRight = rhsItem->GetMaterial();
 
     if ((mLeft == nullptr) || (mRight == nullptr))
         return QSortFilterProxyModel::lessThan(left, right);

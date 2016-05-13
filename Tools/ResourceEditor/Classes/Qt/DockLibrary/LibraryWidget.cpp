@@ -100,7 +100,7 @@ LibraryWidget::~LibraryWidget()
 
 void LibraryWidget::SetupFileTypes()
 {
-    UnorderedSet<String> sourceFiles;
+    DAVA::UnorderedSet<DAVA::String> sourceFiles;
     sourceFiles.insert(DAVA::TextureDescriptor::GetDescriptorExtension());
     for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
@@ -117,7 +117,7 @@ void LibraryWidget::SetupFileTypes()
         sourceImagesList << (QString("*") + sf.c_str());
     }
 
-    UnorderedSet<String> compressedFiles;
+    DAVA::UnorderedSet<DAVA::String> compressedFiles;
     for (auto formatType : DAVA::TextureDescriptor::compressedTextureTypes)
     {
         auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
@@ -155,7 +155,7 @@ void LibraryWidget::SetupFileTypes()
 
     for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
-        auto formatHelper = DAVA::ImageSystem::Instance()->GetImageFormatInterface(formatType);
+        DAVA::ImageFormatInterface* formatHelper = DAVA::ImageSystem::Instance()->GetImageFormatInterface(formatType);
         fileTypeValues.push_back(FileType(formatHelper->Name(), GetExtensions(formatType)));
     }
 }

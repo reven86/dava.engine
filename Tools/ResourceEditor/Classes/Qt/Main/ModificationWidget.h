@@ -45,17 +45,18 @@ class ModificationWidget
     Q_OBJECT
 
 public:
-    enum PivotMode : uint32
+    enum PivotMode : DAVA::uint32
     {
         PivotAbsolute,
         PivotRelative,
     };
 
     explicit ModificationWidget(QWidget* parent = nullptr);
-    ~ModificationWidget();
 
     void SetPivotMode(PivotMode pivotMode);
-    void SetModifMode(ST_ModifMode modifMode);
+    void SetTransformType(Selectable::TransformType modifMode);
+
+    void ReloadValues();
 
 public slots:
     void OnSnapToLandscapeChanged();
@@ -63,7 +64,7 @@ public slots:
 private slots:
     void OnSceneActivated(SceneEditor2* scene);
     void OnSceneDeactivated(SceneEditor2* scene);
-    void OnSceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void OnSceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnSceneCommand(SceneEditor2* scene, const Command2* command, bool redo);
 
     void OnXChanged();
@@ -71,7 +72,6 @@ private slots:
     void OnZChanged();
 
 private:
-    void ReloadValues();
     void ApplyValues(ST_Axis axis);
 
 private:
@@ -83,7 +83,7 @@ private:
     DAVAFloat32SpinBox* zAxisModify = nullptr;
     SceneEditor2* curScene = nullptr;
     PivotMode pivotMode = PivotMode::PivotAbsolute;
-    ST_ModifMode modifMode = ST_ModifMode::ST_MODIF_OFF;
+    Selectable::TransformType modifMode = Selectable::TransformType::Disabled;
     bool groupMode = false;
 };
 
@@ -113,6 +113,8 @@ protected slots:
     void textEditingFinished();
 
 protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
+
     DAVA::float32 originalValue;
     QString originalString;
 

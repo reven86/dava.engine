@@ -243,10 +243,10 @@ void TimeLineWidget::paintEvent(QPaintEvent* e)
 
         //draw lines
         bool isLineEnable = false;
-        uint32 lineCount = 0;
+        DAVA::uint32 lineCount = 0;
         for (LINES_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter, ++lineCount)
         {
-            uint32 lineId = iter->first;
+            DAVA::uint32 lineId = iter->first;
             if (drawLine == -1 || drawLine == lineId)
                 DrawLine(&painter, lineId);
 
@@ -261,8 +261,8 @@ void TimeLineWidget::paintEvent(QPaintEvent* e)
 
             //draw drawed colors
             QRect rect = GetLineDrawRect();
-            rect.translate(rect.width() * lineCount / lines.size(), 0);
-            rect.setWidth(rect.width() / lines.size());
+            rect.translate(static_cast<int>(rect.width() * lineCount / lines.size()), 0);
+            rect.setWidth(static_cast<int>(rect.width() / lines.size()));
             if (drawLine == -1)
                 painter.fillRect(rect, iter->second.color);
             else
@@ -290,7 +290,7 @@ void TimeLineWidget::paintEvent(QPaintEvent* e)
     ScrollZoomWidget::paintEvent(e);
 }
 
-void TimeLineWidget::DrawLine(QPainter* painter, uint32 lineId)
+void TimeLineWidget::DrawLine(QPainter* painter, DAVA::uint32 lineId)
 {
     if (lines[lineId].line.size() == 0)
     {
@@ -363,10 +363,10 @@ void TimeLineWidget::DrawLine(QPainter* painter, uint32 lineId)
     painter->drawLine(prevPoint, point);
 }
 
-QPoint TimeLineWidget::GetDrawPoint(const Vector2& point) const
+QPoint TimeLineWidget::GetDrawPoint(const DAVA::Vector2& point) const
 {
-    float32 time = maxTime - minTime;
-    float32 value = maxValue - minValue;
+    DAVA::float32 time = maxTime - minTime;
+    DAVA::float32 value = maxValue - minValue;
     if (time < 0.01f || value < 0.01f)
         return QPoint();
 
@@ -378,13 +378,13 @@ QPoint TimeLineWidget::GetDrawPoint(const Vector2& point) const
     return QPoint(x, y);
 }
 
-Vector2 TimeLineWidget::GetLogicPoint(const QPoint& point) const
+DAVA::Vector2 TimeLineWidget::GetLogicPoint(const QPoint& point) const
 {
     QRect graphRect = GetGraphRect();
 
-    float32 x = (point.x() - graphRect.x()) / (float32)graphRect.width();
+    DAVA::float32 x = (point.x() - graphRect.x()) / static_cast<DAVA::float32>(graphRect.width());
     x = minTime + x * (maxTime - minTime);
-    float32 y = (graphRect.bottom() - point.y()) / (float32)graphRect.height();
+    DAVA::float32 y = (graphRect.bottom() - point.y()) / static_cast<DAVA::float32>(graphRect.height());
     y = minValue + y * (maxValue - minValue);
 
     if (isInteger)
@@ -392,7 +392,7 @@ Vector2 TimeLineWidget::GetLogicPoint(const QPoint& point) const
         y = GetIntValue(y);
     }
 
-    return Vector2(x, y);
+    return DAVA::Vector2(x, y);
 }
 
 QRect TimeLineWidget::GetPointRect(const QPoint& point) const
@@ -400,12 +400,12 @@ QRect TimeLineWidget::GetPointRect(const QPoint& point) const
     return QRect(point.x() - POINT_SIZE, point.y() - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2);
 }
 
-bool TimeLineWidget::SortPoints(const Vector2& i, const Vector2& j)
+bool TimeLineWidget::SortPoints(const DAVA::Vector2& i, const DAVA::Vector2& j)
 {
     return (i.x < j.x);
 }
 
-void TimeLineWidget::Init(float32 minT, float32 maxT, bool updateSizeState, bool aliasLinePoint, bool allowDeleteLine, bool integer)
+void TimeLineWidget::Init(DAVA::float32 minT, DAVA::float32 maxT, bool updateSizeState, bool aliasLinePoint, bool allowDeleteLine, bool integer)
 {
     lines.clear();
 
@@ -417,7 +417,7 @@ void TimeLineWidget::Init(float32 minT, float32 maxT, bool updateSizeState, bool
     ScrollZoomWidget::Init(minT, maxT);
 }
 
-void TimeLineWidget::Init(float32 minT, float32 maxT, float32 generalMinT, float32 generalMaxT, bool updateSizeState, bool aliasLinePoint, bool allowDeleteLine, bool integer)
+void TimeLineWidget::Init(DAVA::float32 minT, DAVA::float32 maxT, DAVA::float32 generalMinT, DAVA::float32 generalMaxT, bool updateSizeState, bool aliasLinePoint, bool allowDeleteLine, bool integer)
 {
     Init(minT, maxT, updateSizeState, aliasLinePoint, allowDeleteLine, integer);
     this->minTime = minT;
@@ -431,21 +431,21 @@ void TimeLineWidget::Init(float32 minT, float32 maxT, float32 generalMinT, float
     UpdateZoomSlider();
 }
 
-void TimeLineWidget::SetMinLimits(float32 minV)
+void TimeLineWidget::SetMinLimits(DAVA::float32 minV)
 {
     minValueLimit = minV;
 }
 
-void TimeLineWidget::SetMaxLimits(float32 maxV)
+void TimeLineWidget::SetMaxLimits(DAVA::float32 maxV)
 {
     maxValueLimit = maxV;
 }
 
-void TimeLineWidget::AddLine(uint32 lineId, const Vector<PropValue<float32>>& line, const QColor& color, const QString& legend)
+void TimeLineWidget::AddLine(DAVA::uint32 lineId, const DAVA::Vector<DAVA::PropValue<DAVA::float32>>& line, const QColor& color, const QString& legend)
 {
     LOGIC_POINTS desLine;
-    for (uint32 i = 0; i < line.size(); ++i)
-        desLine.push_back(Vector2(line[i].t, line[i].v));
+    for (DAVA::uint32 i = 0; i < line.size(); ++i)
+        desLine.push_back(DAVA::Vector2(line[i].t, line[i].v));
     if (desLine.size() == 1) //force correct min time
     {
         desLine[0].x = minTime;
@@ -458,21 +458,21 @@ void TimeLineWidget::AddLine(uint32 lineId, const Vector<PropValue<float32>>& li
     PostAddLine();
 }
 
-void TimeLineWidget::AddLines(const Vector<PropValue<Vector2>>& lines, const Vector<QColor>& colors, const Vector<QString>& legends)
+void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>& lines, const DAVA::Vector<QColor>& colors, const DAVA::Vector<QString>& legends)
 {
     if (colors.size() < 2 || legends.size() < 2)
     {
-        Logger::FrameworkDebug("incorrect number of input arguments");
+        DAVA::Logger::FrameworkDebug("incorrect number of input arguments");
         return;
     }
 
     LOGIC_POINTS desLine[2];
-    for (uint32 i = 0; i < lines.size(); ++i)
+    for (DAVA::uint32 i = 0; i < lines.size(); ++i)
     {
-        desLine[0].push_back(Vector2(lines[i].t, lines[i].v.x));
-        desLine[1].push_back(Vector2(lines[i].t, lines[i].v.y));
+        desLine[0].push_back(DAVA::Vector2(lines[i].t, lines[i].v.x));
+        desLine[1].push_back(DAVA::Vector2(lines[i].t, lines[i].v.y));
     }
-    for (int32 i = 0; i < 2; ++i)
+    for (DAVA::int32 i = 0; i < 2; ++i)
     {
         if (desLine[i].size() == 1) //force correct min time
         {
@@ -480,9 +480,11 @@ void TimeLineWidget::AddLines(const Vector<PropValue<Vector2>>& lines, const Vec
         }
     }
 
-    for (int32 i = 0; i < 2; i++)
+    for (DAVA::int32 i = 0; i < 2; i++)
     {
-        int32 id = this->lines.size();
+        DAVA::size_type id = this->lines.size();
+        // no panic, this->lines - is map<uint32, struct>
+        // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];
@@ -491,22 +493,22 @@ void TimeLineWidget::AddLines(const Vector<PropValue<Vector2>>& lines, const Vec
     PostAddLine();
 }
 
-void TimeLineWidget::AddLines(const Vector<PropValue<Vector3>>& lines, const Vector<QColor>& colors, const Vector<QString>& legends)
+void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>& lines, const DAVA::Vector<QColor>& colors, const DAVA::Vector<QString>& legends)
 {
     if (colors.size() < 3 || legends.size() < 3)
     {
-        Logger::FrameworkDebug("incorrect number of input arguments");
+        DAVA::Logger::FrameworkDebug("incorrect number of input arguments");
         return;
     }
 
     LOGIC_POINTS desLine[3];
-    for (uint32 i = 0; i < lines.size(); ++i)
+    for (DAVA::uint32 i = 0; i < lines.size(); ++i)
     {
-        desLine[0].push_back(Vector2(lines[i].t, lines[i].v.x));
-        desLine[1].push_back(Vector2(lines[i].t, lines[i].v.y));
-        desLine[2].push_back(Vector2(lines[i].t, lines[i].v.z));
+        desLine[0].push_back(DAVA::Vector2(lines[i].t, lines[i].v.x));
+        desLine[1].push_back(DAVA::Vector2(lines[i].t, lines[i].v.y));
+        desLine[2].push_back(DAVA::Vector2(lines[i].t, lines[i].v.z));
     }
-    for (int32 i = 0; i < 3; ++i)
+    for (DAVA::int32 i = 0; i < 3; ++i)
     {
         if (desLine[i].size() == 1) //force correct min time
         {
@@ -514,9 +516,11 @@ void TimeLineWidget::AddLines(const Vector<PropValue<Vector3>>& lines, const Vec
         }
     }
 
-    for (int32 i = 0; i < 3; i++)
+    for (DAVA::int32 i = 0; i < 3; i++)
     {
-        int32 id = this->lines.size();
+        DAVA::size_type id = this->lines.size();
+        // no panic, this->lines - is map<uint32, struct>
+        // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];
@@ -546,39 +550,39 @@ void TimeLineWidget::PostAddLine()
 
 void TimeLineWidget::UpdateLimits()
 {
-    float32 newMinValue = std::numeric_limits<float32>::infinity();
-    float32 newMaxValue = -std::numeric_limits<float32>::infinity();
+    DAVA::float32 newMinValue = std::numeric_limits<DAVA::float32>::infinity();
+    DAVA::float32 newMaxValue = -std::numeric_limits<DAVA::float32>::infinity();
 
     for (LINES_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter)
     {
-        for (uint32 i = 0; i < iter->second.line.size(); ++i)
+        for (DAVA::uint32 i = 0; i < iter->second.line.size(); ++i)
         {
-            newMaxValue = Max(iter->second.line[i].y, newMaxValue);
-            newMinValue = Min(iter->second.line[i].y, newMinValue);
+            newMaxValue = DAVA::Max(iter->second.line[i].y, newMaxValue);
+            newMinValue = DAVA::Min(iter->second.line[i].y, newMinValue);
             /*
 			maxTime = Max(iter->second.line[i].x, maxTime);
 			minTime = Min(iter->second.line[i].x, minTime);*/
         }
     }
 
-    if (newMinValue == std::numeric_limits<float32>::infinity() ||
-        newMaxValue == -std::numeric_limits<float32>::infinity())
+    if (newMinValue == std::numeric_limits<DAVA::float32>::infinity() ||
+        newMaxValue == -std::numeric_limits<DAVA::float32>::infinity())
     {
         newMinValue = newMaxValue = 0;
     }
 
-    newMinValue = Max(newMinValue, minValueLimit);
-    newMaxValue = Min(newMaxValue, maxValueLimit);
+    newMinValue = DAVA::Max(newMinValue, minValueLimit);
+    newMaxValue = DAVA::Min(newMaxValue, maxValueLimit);
 
-    float32 limitDelta = 0;
+    DAVA::float32 limitDelta = 0;
     limitDelta = (newMaxValue - newMinValue) * 0.2f;
     if (limitDelta < 0.01f)
         limitDelta = newMaxValue * 0.2;
     if (limitDelta < 0.01f)
         limitDelta = 1.f;
 
-    if (Abs(maxValue) > Abs(newMaxValue) * 1.2 ||
-        Abs(minValue) < Abs(newMinValue) * 1.2 ||
+    if (DAVA::Abs(maxValue) > DAVA::Abs(newMaxValue) * 1.2 ||
+        DAVA::Abs(minValue) < DAVA::Abs(newMinValue) * 1.2 ||
         newMinValue < minValue ||
         newMaxValue > maxValue)
     {
@@ -602,69 +606,69 @@ void TimeLineWidget::UpdateLimits()
     }
 }
 
-bool TimeLineWidget::GetValue(uint32 lineId, Vector<PropValue<float32>>* line) const
+bool TimeLineWidget::GetValue(DAVA::uint32 lineId, DAVA::Vector<DAVA::PropValue<DAVA::float32>>* line) const
 {
     LINES_MAP::const_iterator iter = lines.find(lineId);
     if (iter == lines.end())
         return false;
 
-    for (uint32 i = 0; i < iter->second.line.size(); ++i)
+    for (DAVA::uint32 i = 0; i < iter->second.line.size(); ++i)
     {
-        line->push_back(PropValue<float32>(iter->second.line[i].x, iter->second.line[i].y));
+        line->push_back(DAVA::PropValue<DAVA::float32>(iter->second.line[i].x, iter->second.line[i].y));
     }
 
     return true;
 }
 
-bool TimeLineWidget::GetValues(Vector<PropValue<Vector2>>* lines)
+bool TimeLineWidget::GetValues(DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>* lines)
 {
     LINES_MAP::const_iterator iter = this->lines.begin();
     if (iter == this->lines.end())
         return false;
 
-    for (uint32 i = 0; i < iter->second.line.size(); ++i)
+    for (DAVA::uint32 i = 0; i < iter->second.line.size(); ++i)
     {
-        Vector2 value;
+        DAVA::Vector2 value;
         value.x = this->lines[0].line[i].y;
         value.y = this->lines[1].line[i].y;
-        lines->push_back(PropValue<Vector2>(this->lines[0].line[i].x, value));
+        lines->push_back(DAVA::PropValue<DAVA::Vector2>(this->lines[0].line[i].x, value));
     }
     return true;
 }
 
-bool TimeLineWidget::GetValues(Vector<PropValue<Vector3>>* lines)
+bool TimeLineWidget::GetValues(DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>* lines)
 {
     LINES_MAP::const_iterator iter = this->lines.begin();
     if (iter == this->lines.end())
         return false;
 
-    for (uint32 i = 0; i < iter->second.line.size(); ++i)
+    for (DAVA::uint32 i = 0; i < iter->second.line.size(); ++i)
     {
-        Vector3 value;
+        DAVA::Vector3 value;
         value.x = this->lines[0].line[i].y;
         value.y = this->lines[1].line[i].y;
         value.z = this->lines[2].line[i].y;
-        lines->push_back(PropValue<Vector3>(this->lines[0].line[i].x, value));
+        lines->push_back(DAVA::PropValue<DAVA::Vector3>(this->lines[0].line[i].x, value));
     }
     return true;
 }
 
-void TimeLineWidget::AddPoint(uint32 lineId, const Vector2& point)
+void TimeLineWidget::AddPoint(DAVA::uint32 lineId, const DAVA::Vector2& point)
 {
     if (aliasLinePoint)
     {
         for (LINES_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter)
         {
             if ((isLockEnable && isLocked) || iter->first == lineId)
-                iter->second.line.push_back(Vector2(point.x, point.y));
+                iter->second.line.push_back(DAVA::Vector2(point.x, point.y));
             else
             {
-                float32 y = GetYFromX(iter->first, point.x);
+                DAVA::float32 y = GetYFromX(iter->first, point.x);
                 if (isInteger)
                 {
                     y = GetIntValue(y);
                 }
-                iter->second.line.push_back(Vector2(point.x, y));
+                iter->second.line.push_back(DAVA::Vector2(point.x, y));
             }
             std::sort(iter->second.line.begin(), iter->second.line.end(), TimeLineWidget::SortPoints);
         }
@@ -677,7 +681,7 @@ void TimeLineWidget::AddPoint(uint32 lineId, const Vector2& point)
     this->update();
 }
 
-bool TimeLineWidget::DeletePoint(uint32 lineId, uint32 pointId)
+bool TimeLineWidget::DeletePoint(DAVA::uint32 lineId, DAVA::uint32 pointId)
 {
     if (!allowDeleteLine &&
         lines[lineId].line.size() < 2)
@@ -701,15 +705,15 @@ bool TimeLineWidget::DeletePoint(uint32 lineId, uint32 pointId)
     return true;
 }
 
-float32 TimeLineWidget::GetYFromX(uint32 lineId, float32 x)
+DAVA::float32 TimeLineWidget::GetYFromX(DAVA::uint32 lineId, DAVA::float32 x)
 {
     LOGIC_POINTS& points = lines.at(lineId).line;
 
     if (points.empty())
         return 0.f;
 
-    uint32 right = (uint32)-1;
-    for (uint32 i = 0; i < points.size(); ++i)
+    DAVA::uint32 right = static_cast<DAVA::uint32>(-1);
+    for (DAVA::uint32 i = 0; i < points.size(); ++i)
     {
         if (points[i].x > x)
         {
@@ -718,12 +722,12 @@ float32 TimeLineWidget::GetYFromX(uint32 lineId, float32 x)
         }
     }
 
-    Vector2 leftPoint;
-    Vector2 rightPoint;
-    if (right == (uint32)-1)
+    DAVA::Vector2 leftPoint;
+    DAVA::Vector2 rightPoint;
+    if (right == static_cast<DAVA::uint32>(-1))
     {
         leftPoint = points.back();
-        rightPoint = points.back() + Vector2(x, 0);
+        rightPoint = points.back() + DAVA::Vector2(x, 0);
     }
     else
     {
@@ -736,7 +740,7 @@ float32 TimeLineWidget::GetYFromX(uint32 lineId, float32 x)
             leftPoint.x = 0;
         }
     }
-    float32 y = Interpolation::Linear(leftPoint.y, rightPoint.y, leftPoint.x, x, rightPoint.x);
+    DAVA::float32 y = DAVA::Interpolation::Linear(leftPoint.y, rightPoint.y, leftPoint.x, x, rightPoint.x);
 
     return y;
 }
@@ -801,7 +805,7 @@ void TimeLineWidget::mousePressEvent(QMouseEvent* event)
         else if (GetLineDrawRect().contains(event->pos()))
         {
             drawLine++;
-            if (drawLine >= (int32)lines.size())
+            if (drawLine >= static_cast<DAVA::int32>(lines.size()))
                 drawLine = -1;
         }
         else
@@ -817,14 +821,14 @@ void TimeLineWidget::mousePressEvent(QMouseEvent* event)
                             if (iter->second.line.size())
                                 iter->second.line.clear(); //clear existing line
                             else
-                                iter->second.line.push_back(Vector2(minTime, (minValue + maxValue) / 2)); //init dafault
+                                iter->second.line.push_back(DAVA::Vector2(minTime, (minValue + maxValue) / 2)); //init default
                     }
                     else
                     {
                         if (iter->second.line.size())
                             iter->second.line.clear(); //clear existing line
                         else
-                            iter->second.line.push_back(Vector2(minTime, (minValue + maxValue) / 2)); //init dafault
+                            iter->second.line.push_back(DAVA::Vector2(minTime, (minValue + maxValue) / 2)); //init default
                     }
                     emit ValueChanged();
                     break;
@@ -842,8 +846,8 @@ void TimeLineWidget::mousePressEvent(QMouseEvent* event)
 
 void TimeLineWidget::GraphRectClick(QMouseEvent* event)
 {
-    int32 pointId = -1;
-    int32 lineId = -1;
+    DAVA::int32 pointId = -1;
+    DAVA::int32 lineId = -1;
     QPoint point = event->pos();
 
     GetClickedPoint(point, pointId, lineId);
@@ -866,7 +870,7 @@ void TimeLineWidget::GraphRectClick(QMouseEvent* event)
                 }
                 AddPoint(selectedLine, newPoint);
                 //find add point
-                for (uint32 i = 0; i < lines[selectedLine].line.size(); ++i)
+                for (DAVA::uint32 i = 0; i < lines[selectedLine].line.size(); ++i)
                 {
                     if (lines[selectedLine].line[i].x == newPoint.x)
                     {
@@ -893,14 +897,14 @@ void TimeLineWidget::mouseMoveEvent(QMouseEvent* event)
     if (sizeState == SIZE_STATE_MINIMIZED)
         return;
 
-    Vector2 point = GetLogicPoint(event->pos());
+    DAVA::Vector2 point = GetLogicPoint(event->pos());
     if (selectedPoint == -1)
     {
         selectedLine = -1;
         //get selected line
         for (LINES_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter)
         {
-            uint32 lineId = iter->first;
+            DAVA::uint32 lineId = iter->first;
             if (drawLine != -1 && drawLine != lineId)
                 continue;
 
@@ -908,11 +912,11 @@ void TimeLineWidget::mouseMoveEvent(QMouseEvent* event)
             if (line.size() == 0)
                 continue;
 
-            Vector2 prevPoint = line[0];
+            DAVA::Vector2 prevPoint = line[0];
             prevPoint.x = minTime;
-            for (uint32 i = 0; i < line.size() + 1; ++i)
+            for (DAVA::uint32 i = 0; i < line.size() + 1; ++i)
             {
-                Vector2 nextPoint;
+                DAVA::Vector2 nextPoint;
                 if (i < line.size())
                     nextPoint = line[i];
                 else
@@ -923,16 +927,16 @@ void TimeLineWidget::mouseMoveEvent(QMouseEvent* event)
 
                 if (prevPoint.x < point.x && point.x < nextPoint.x)
                 {
-                    float32 y = 0;
+                    DAVA::float32 y = 0;
                     if ((nextPoint.x - prevPoint.x) < 0.01f)
                         y = prevPoint.y;
                     else
                         y = (point.x - prevPoint.x) * (nextPoint.y - prevPoint.y) / (nextPoint.x - prevPoint.x) + prevPoint.y;
 
-                    QRect rect = GetPointRect(GetDrawPoint(Vector2(point.x, y)));
+                    QRect rect = GetPointRect(GetDrawPoint(DAVA::Vector2(point.x, y)));
                     if (rect.contains(event->pos()))
                     {
-                        newPoint = Vector2(point.x, y);
+                        newPoint = DAVA::Vector2(point.x, y);
                         selectedLine = lineId;
                         break;
                     }
@@ -966,7 +970,7 @@ void TimeLineWidget::mouseReleaseEvent(QMouseEvent* event)
         {
             if (selectedLine != -1 && selectedPoint != -1)
             {
-                Vector2 point = GetLogicPoint(event->pos());
+                DAVA::Vector2 point = GetLogicPoint(event->pos());
                 SetPointValue(selectedLine, selectedPoint, point, true);
                 emit ValueChanged();
             }
@@ -984,8 +988,8 @@ void TimeLineWidget::mouseDoubleClickEvent(QMouseEvent* event)
 
     if (event->button() == Qt::LeftButton)
     {
-        int32 pointId = -1;
-        int32 lineId = -1;
+        DAVA::int32 pointId = -1;
+        DAVA::int32 lineId = -1;
         GetClickedPoint(event->pos(), pointId, lineId);
 
         if (lineId != -1)
@@ -995,7 +999,7 @@ void TimeLineWidget::mouseDoubleClickEvent(QMouseEvent* event)
     }
 }
 
-void TimeLineWidget::SetPointValue(uint32 lineId, uint32 pointId, Vector2 value, bool deleteSamePoints)
+void TimeLineWidget::SetPointValue(DAVA::uint32 lineId, DAVA::uint32 pointId, DAVA::Vector2 value, bool deleteSamePoints)
 {
     if (lineId >= lines.size())
     {
@@ -1003,12 +1007,12 @@ void TimeLineWidget::SetPointValue(uint32 lineId, uint32 pointId, Vector2 value,
     }
 
     if (pointId > 0)
-        value.x = Max(lines[lineId].line[pointId - 1].x, value.x);
+        value.x = DAVA::Max(lines[lineId].line[pointId - 1].x, value.x);
     if (pointId < (lines[lineId].line.size() - 1))
-        value.x = Min(lines[lineId].line[pointId + 1].x, value.x);
+        value.x = DAVA::Min(lines[lineId].line[pointId + 1].x, value.x);
 
-    value.x = Max(minTime, Min(maxTime, value.x));
-    value.y = Max(minValueLimit, Min(maxValueLimit, value.y));
+    value.x = DAVA::Max(minTime, DAVA::Min(maxTime, value.x));
+    value.y = DAVA::Max(minValueLimit, DAVA::Min(maxValueLimit, value.y));
 
     if (aliasLinePoint)
     {
@@ -1026,7 +1030,7 @@ void TimeLineWidget::SetPointValue(uint32 lineId, uint32 pointId, Vector2 value,
     if (deleteSamePoints)
     {
         //delete same time point
-        for (uint32 i = 1; i < lines[lineId].line.size(); ++i)
+        for (DAVA::uint32 i = 1; i < lines[lineId].line.size(); ++i)
         {
             float x1 = lines[lineId].line[i - 1].x;
             float x2 = lines[lineId].line[i].x;
@@ -1035,7 +1039,7 @@ void TimeLineWidget::SetPointValue(uint32 lineId, uint32 pointId, Vector2 value,
             {
                 if (i < lines[lineId].line.size() - 1)
                 {
-                    if (Abs(x2 - value.x) < 0.01f)
+                    if (DAVA::Abs(x2 - value.x) < 0.01f)
                     {
                         //lines[lineId].line[i - 1].y = value.y;
                         for (LINES_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter)
@@ -1050,7 +1054,7 @@ void TimeLineWidget::SetPointValue(uint32 lineId, uint32 pointId, Vector2 value,
                 }
                 else
                 {
-                    if (Abs(x1 - value.x) < 0.01f)
+                    if (DAVA::Abs(x1 - value.x) < 0.01f)
                     {
                         //lines[lineId].line[i].y = value.y;
                         for (LINES_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter)
@@ -1060,9 +1064,7 @@ void TimeLineWidget::SetPointValue(uint32 lineId, uint32 pointId, Vector2 value,
                         }
                     }
 
-                    //remove first point
-                    //lines[lineId].line.erase(lines[lineId].line.begin() + lines[lineId].line.size() - 2);
-                    DeletePoint(lineId, lines[lineId].line.size() - 2);
+                    DeletePoint(lineId, static_cast<DAVA::uint32>(lines[lineId].line.size() - 2));
                 }
                 i = 0;
             }
@@ -1081,7 +1083,7 @@ void TimeLineWidget::leaveEvent(QEvent*)
     update();
 }
 
-QRect TimeLineWidget::GetLineEnableRect(uint32 lineId) const
+QRect TimeLineWidget::GetLineEnableRect(DAVA::uint32 lineId) const
 {
     /*uint32 lineCount = 0;
 	for (LINES_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter, ++lineCount)
@@ -1096,7 +1098,7 @@ QRect TimeLineWidget::GetLineEnableRect(uint32 lineId) const
 	lineEnableRect.translate(graphRect.left() + 50 + rectSize * 2 * lineCount, this->rect().bottom() - 15);
 	return lineEnableRect;*/
 
-    uint32 lineCount = 0;
+    DAVA::uint32 lineCount = 0;
     for (LINES_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter, ++lineCount)
     {
         if (iter->first == lineId)
@@ -1217,7 +1219,7 @@ void TimeLineWidget::UpdateSizePolicy()
     update();
 }
 
-void TimeLineWidget::GetClickedPoint(const QPoint& point, int32& pointId, int32& lineId) const
+void TimeLineWidget::GetClickedPoint(const QPoint& point, DAVA::int32& pointId, DAVA::int32& lineId) const
 {
     //find point
     for (LINES_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter)
@@ -1225,7 +1227,7 @@ void TimeLineWidget::GetClickedPoint(const QPoint& point, int32& pointId, int32&
         if (drawLine != -1 && drawLine != iter->first)
             continue;
 
-        for (uint32 j = 0; j < iter->second.line.size(); ++j)
+        for (DAVA::uint32 j = 0; j < iter->second.line.size(); ++j)
         {
             QRect rect = GetPointRect(GetDrawPoint(iter->second.line[j]));
             if (rect.contains(point))
@@ -1244,7 +1246,7 @@ void TimeLineWidget::GetClickedPoint(const QPoint& point, int32& pointId, int32&
     lineId = -1;
 }
 
-void TimeLineWidget::ChangePointValueDialog(uint32 pointId, int32 lineId)
+void TimeLineWidget::ChangePointValueDialog(DAVA::uint32 pointId, DAVA::int32 lineId)
 {
     LINES_MAP::iterator iter = lines.find(lineId);
     if (iter == lines.end())
@@ -1255,13 +1257,13 @@ void TimeLineWidget::ChangePointValueDialog(uint32 pointId, int32 lineId)
     SetPointValueDlg dialog(iter->second.line[pointId].x, minTime, maxTime, iter->second.line[pointId].y, minValueLimit, maxValueLimit, this, isInteger);
     if (dialog.exec())
     {
-        float32 value = dialog.GetValue();
+        DAVA::float32 value = dialog.GetValue();
         if (isInteger)
         {
             value = GetIntValue(value);
         }
 
-        SetPointValue(iter->first, pointId, Vector2(dialog.GetTime(), value), true);
+        SetPointValue(iter->first, pointId, DAVA::Vector2(dialog.GetTime(), value), true);
         UpdateLimits();
         emit ValueChanged();
         update();
@@ -1273,7 +1275,7 @@ void TimeLineWidget::EnableLock(bool enable)
     isLockEnable = enable;
 }
 
-void TimeLineWidget::SetVisualState(KeyedArchive* visualStateProps)
+void TimeLineWidget::SetVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
@@ -1285,7 +1287,7 @@ void TimeLineWidget::SetVisualState(KeyedArchive* visualStateProps)
     UpdateSizePolicy();
 }
 
-void TimeLineWidget::GetVisualState(KeyedArchive* visualStateProps)
+void TimeLineWidget::GetVisualState(DAVA::KeyedArchive* visualStateProps)
 {
     if (!visualStateProps)
         return;
@@ -1391,11 +1393,10 @@ void TimeLineWidget::SetYLegendMark(const QString& value)
     this->yLegendMark = value;
 }
 
-SetPointValueDlg::SetPointValueDlg(float32 time, float32 minTime, float32 maxTime, float32 value, float32 minValue, float32 maxValue, QWidget* parent, bool integer)
-    :
-    QDialog(parent)
-    ,
-    isInteger(integer)
+SetPointValueDlg::SetPointValueDlg(DAVA::float32 time, DAVA::float32 minTime, DAVA::float32 maxTime, DAVA::float32 value,
+                                   DAVA::float32 minValue, DAVA::float32 maxValue, QWidget* parent, bool integer)
+    : QDialog(parent)
+    , isInteger(integer)
 {
     QVBoxLayout* mainBox = new QVBoxLayout;
     setLayout(mainBox);
@@ -1430,13 +1431,13 @@ SetPointValueDlg::SetPointValueDlg(float32 time, float32 minTime, float32 maxTim
     timeSpin->setMaximum(maxTime);
     timeSpin->setValue(time);
 
-    maxValue = Min(maxValue, 1000000.f);
+    maxValue = DAVA::Min(maxValue, 1000000.f);
 
     if (isInteger)
     {
-        valueSpinInt->setMinimum((int32)minValue);
-        valueSpinInt->setMaximum((int32)maxValue);
-        valueSpinInt->setValue((int32)value);
+        valueSpinInt->setMinimum(static_cast<DAVA::int32>(minValue));
+        valueSpinInt->setMaximum(static_cast<DAVA::int32>(maxValue));
+        valueSpinInt->setValue(static_cast<DAVA::int32>(value));
     }
     else
     {
@@ -1467,12 +1468,12 @@ SetPointValueDlg::SetPointValueDlg(float32 time, float32 minTime, float32 maxTim
     }
 }
 
-float32 SetPointValueDlg::GetTime() const
+DAVA::float32 SetPointValueDlg::GetTime() const
 {
     return timeSpin->value();
 }
 
-float32 SetPointValueDlg::GetValue() const
+DAVA::float32 SetPointValueDlg::GetValue() const
 {
     if (isInteger)
         return valueSpinInt->value();

@@ -70,6 +70,9 @@
    <property name="windowTitle">
     <string>Properties</string>
    </property>
+   <property name="layoutTags" stdset="0">
+    <string notr="true">dockProperties</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
@@ -215,6 +218,9 @@
      <width>1205</width>
      <height>21</height>
     </rect>
+   </property>
+   <property name="path" stdset="0">
+    <string/>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -471,6 +477,7 @@
     <addaction name="actionImageSplitterForNormals"/>
     <addaction name="actionReplaceTextureMipmap"/>
     <addaction name="menuDump"/>
+    <addaction name="actionToggleUseInstancing"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -607,6 +614,9 @@
   <widget class="QDockWidget" name="dockSceneTree">
    <property name="windowTitle">
     <string>Scene Tree</string>
+   </property>
+   <property name="layoutTags" stdset="0">
+    <string notr="true">default</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -2246,6 +2256,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+R</string>
+   </property>
+  </action>
+  <action name="actionToggleUseInstancing">
+   <property name="text">
+    <string>Toggle Use Instancing by Landscape</string>
    </property>
   </action>
  </widget>

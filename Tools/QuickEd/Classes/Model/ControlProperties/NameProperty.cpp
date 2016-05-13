@@ -37,7 +37,7 @@
 using namespace DAVA;
 
 NameProperty::NameProperty(ControlNode* anControl, const NameProperty* sourceProperty, eCloneType cloneType)
-    : ValueProperty("Name")
+    : ValueProperty("Name", VariantType::TYPE_STRING)
     , control(anControl) // weak ptr
 {
     if (sourceProperty)

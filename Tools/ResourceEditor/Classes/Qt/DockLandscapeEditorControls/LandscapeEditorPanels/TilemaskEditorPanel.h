@@ -36,8 +36,6 @@
 
 #include "Render/UniqueStateSet.h"
 
-using namespace DAVA;
-
 class QComboBox;
 class QRadioButton;
 class SliderWidget;
@@ -63,7 +61,7 @@ private slots:
     void SetToolImage(int imageIndex);
     void SetStrength(int strength);
     void SetDrawTexture(int textureIndex);
-    void OnTileColorChanged(int32 tileNumber, Color color);
+    void OnTileColorChanged(DAVA::int32 tileNumber, DAVA::Color color);
     void SetNormalDrawing();
     void SetCopyPaste();
 
@@ -117,13 +115,13 @@ private:
 
     void UpdateControls();
 
-    int32 BrushSizeUIToSystem(int32 uiValue);
-    int32 BrushSizeSystemToUI(int32 systemValue);
+    DAVA::int32 BrushSizeUIToSystem(DAVA::int32 uiValue);
+    DAVA::int32 BrushSizeSystemToUI(DAVA::int32 systemValue);
 
-    float32 StrengthUIToSystem(int32 uiValue);
-    int32 StrengthSystemToUI(float32 systemValue);
+    DAVA::float32 StrengthUIToSystem(DAVA::int32 uiValue);
+    DAVA::int32 StrengthSystemToUI(DAVA::float32 systemValue);
 
-    void SplitImageToChannels(Image* image, Image*& r, Image*& g, Image*& b, Image*& a);
+    void SplitImageToChannels(DAVA::Image* image, DAVA::Image*& r, DAVA::Image*& g, DAVA::Image*& b, DAVA::Image*& a);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORPANEL__) */

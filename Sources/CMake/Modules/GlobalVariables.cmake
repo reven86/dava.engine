@@ -9,7 +9,7 @@ function ( load_config CONFIG_FILE )
     file( STRINGS ${CONFIG_FILE} ConfigContents )
     foreach( NameAndValue ${ConfigContents} )
         string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
-        string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
+        string( REGEX MATCH "^[^=]+" Name ${NameAndValue} )
         string( REPLACE "${Name}=" "" Value ${NameAndValue} )
         string( STRIP "${Name}" Name)
         string( STRIP "${Value}" Value)
@@ -83,6 +83,7 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH     "${DAVA_THIRD_PARTY_ROOT_PATH}/include"
 
 set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )                                      
 set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast" ) 
+set( DAVA_FOLDERS )
 
 #additional variables for Windows UAP
 if ( WINDOWS_UAP )

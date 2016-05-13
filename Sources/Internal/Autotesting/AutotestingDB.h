@@ -80,6 +80,7 @@ public:
     int32 GetIntTestParameter(const String& deviceName, const String& parameter);
 
     bool SaveKeyedArchiveToDevice(const String& archiveName, KeyedArchive* archive);
+    String YamlToString(const KeyedArchive* archive);
 
     void UploadScreenshot(const String& name, Image* image);
 

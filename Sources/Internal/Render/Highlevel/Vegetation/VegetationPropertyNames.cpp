@@ -33,7 +33,6 @@ namespace DAVA
 {
 const FastName VegetationPropertyNames::UNIFORM_TILEPOS("tilePos");
 const FastName VegetationPropertyNames::UNIFORM_WORLD_SIZE("worldSize");
-const FastName VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE("heightmapScale");
 const FastName VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE("lodSwitchScale");
 const FastName VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE("perturbationForce");
 const FastName VegetationPropertyNames::UNIFORM_PERTURBATION_POINT("perturbationPoint");
