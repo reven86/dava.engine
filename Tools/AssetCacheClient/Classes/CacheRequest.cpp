@@ -52,7 +52,7 @@ AssetCacheClient::ConnectionParams GetConnectionParams(ProgramOptions options)
 CacheRequest::CacheRequest(const String& commandLineOptionName)
     : options(commandLineOptionName)
 {
-    options.AddOption("-ip", VariantType(AssetCache::LOCALHOST), "Set ip adress of Asset Cache Server.");
+    options.AddOption("-ip", VariantType(AssetCache::GetLocalHost()), "Set ip adress of Asset Cache Server.");
     options.AddOption("-p", VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "Set port of Asset Cache Server.");
     options.AddOption("-h", VariantType(String("")), "Hash string of requested data");
     options.AddOption("-v", VariantType(false), "Verbose output.");
