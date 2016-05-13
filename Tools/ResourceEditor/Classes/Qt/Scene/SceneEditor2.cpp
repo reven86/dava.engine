@@ -38,7 +38,6 @@
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
-#include "Tools/LoggerOutput/LoggerErrorHandler.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 // framework
@@ -193,8 +192,8 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         commandStack->SetClean(true);
     }
 
-    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
-    SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
+    SceneValidator::ExtractEmptyRenderObjects(this);
+    SceneValidator::Instance()->ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 
@@ -290,9 +289,6 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
         DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
         DAVA::TextureConverter::eConvertQuality qualityValue = static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32());
 
-        LoggerErrorHandler handler;
-        DAVA::Logger::AddCustomOutput(&handler);
-
         SceneExporter exporter;
         exporter.SetFolders(dataFolder, dataSourceFolder);
         exporter.SetCompressionParams(newGPU, qualityValue);
@@ -303,21 +299,10 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
         DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
 
         SceneExporter::ExportedObjectCollection exportedObjects;
-        exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
+        bool wasExported = exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
         exporter.ExportObjects(exportedObjects);
 
-        DAVA::Logger::RemoveCustomOutput(&handler);
-        if (handler.HasErrors())
-        {
-            const auto& errorLog = handler.GetErrors();
-            for (auto& error : errorLog)
-            {
-                DAVA::Logger::Error("Export error: %s", error.c_str());
-            }
-            return false;
-        }
-
-        return true;
+        return wasExported;
     }
     return false;
 }

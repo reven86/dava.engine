@@ -53,6 +53,8 @@
 #include "Platform/Qt5/QtLayer.h"
 
 #include "ResourceEditorLauncher.h"
+#include "Tools/LoggerOutput/ErrorDialogOutput.h"
+
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
@@ -199,6 +201,8 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 
     DAVA::LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
     DAVA::LocalizationSystem::Instance()->SetCurrentLocale("en");
+
+    DAVA::Logger::AddCustomOutput(new ErrorDialogOutput());
 
     DAVA::int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
     DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);

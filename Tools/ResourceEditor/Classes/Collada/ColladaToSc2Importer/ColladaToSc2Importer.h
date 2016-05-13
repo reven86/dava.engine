@@ -55,9 +55,6 @@ private:
     Mesh* GetMeshFromCollada(ColladaMeshInstance* mesh, const bool isShadow);
 
     ImportLibrary library;
-
-    void ReportError(const String& errMessage);
-    Set<String> errorLogs;
 };
 };
 

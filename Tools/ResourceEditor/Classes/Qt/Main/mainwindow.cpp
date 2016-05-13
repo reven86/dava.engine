@@ -63,7 +63,6 @@
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 #include "Classes/Qt/Tools/QtPosSaver/QtPosSaver.h"
 #include "Classes/Qt/Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
-#include "Classes/Qt/Tools/LoggerOutput/LoggerErrorHandler.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "Classes/Qt/SpeedTreeImport/SpeedTreeImportDialog.h"
@@ -462,6 +461,11 @@ void QtMainWindow::WaitSetMessage(const QString& messsage)
 void QtMainWindow::WaitSetValue(int value)
 {
     waitDialog->SetValue(value);
+}
+
+bool QtMainWindow::IsWaitDialogOnScreen() const
+{
+    return waitDialog->isVisible();
 }
 
 void QtMainWindow::WaitStop()
@@ -1249,7 +1253,7 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     auto scenePathname = scene->GetScenePath();
     if (scenePathname.IsEmpty() || scenePathname.GetType() == DAVA::FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
     {
-        ShowErrorDialog("Can't save not saved scene.");
+        DAVA::Logger::Error("Can't save not saved scene.");
         return;
     }
 
@@ -1269,20 +1273,11 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     sceneSaver.SetOutFolder(folder);
     sceneSaver.EnableCopyConverted(saveWithCompressed);
 
-    LoggerErrorHandler handler;
-    DAVA::Logger::AddCustomOutput(&handler);
-
     SceneEditor2* sceneForSaving = scene->CreateCopyForExport();
     sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath());
     sceneForSaving->Release();
-    DAVA::Logger::RemoveCustomOutput(&handler);
 
     WaitStop();
-
-    if (handler.HasErrors())
-    {
-        ShowErrorDialog(handler.GetErrors());
-    }
 }
 
 void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
@@ -1573,7 +1568,7 @@ void QtMainWindow::OnPlaceOnLandscape()
         DAVA::Entity* landscapeEntity = FindLandscapeEntity(scene);
         if (landscapeEntity == nullptr || GetLandscape(landscapeEntity) == nullptr)
         {
-            ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
+            DAVA::Logger::Error(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE.c_str());
             return;
         }
 
@@ -1589,7 +1584,7 @@ void QtMainWindow::OnSnapToLandscape()
         DAVA::Entity* landscapeEntity = FindLandscapeEntity(scene);
         if (landscapeEntity == nullptr || GetLandscape(landscapeEntity) == nullptr)
         {
-            ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
+            DAVA::Logger::Error(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE.c_str());
             ui->actionModifySnapToLandscape->setChecked(false);
             return;
         }
@@ -2061,7 +2056,7 @@ void QtMainWindow::OnSaveTiledTexture()
     LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
     if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
     {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
+        DAVA::Logger::Error(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError).c_str());
         return;
     }
 
@@ -2196,7 +2191,7 @@ void QtMainWindow::OnBeastAndSave()
             bool success = !scene->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
             if (!success)
             {
-                ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+                DAVA::Logger::Error(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS.c_str());
                 return;
             }
         }
@@ -2321,7 +2316,7 @@ void QtMainWindow::OnCustomColorsEditor()
     {
         if (sceneEditor->pathSystem->IsPathEditEnabled())
         {
-            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            DAVA::Logger::Error("WayEditor should be disabled prior to enabling landscape tools");
             OnLandscapeEditorToggled(sceneEditor);
             return;
         }
@@ -2400,7 +2395,7 @@ void QtMainWindow::OnHeightmapEditor()
     {
         if (sceneEditor->pathSystem->IsPathEditEnabled())
         {
-            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            DAVA::Logger::Error("WayEditor should be disabled prior to enabling landscape tools");
             OnLandscapeEditorToggled(sceneEditor);
             return;
         }
@@ -2432,7 +2427,7 @@ void QtMainWindow::OnRulerTool()
     {
         if (sceneEditor->pathSystem->IsPathEditEnabled())
         {
-            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            DAVA::Logger::Error("WayEditor should be disabled prior to enabling landscape tools");
             OnLandscapeEditorToggled(sceneEditor);
             return;
         }
@@ -2464,7 +2459,7 @@ void QtMainWindow::OnTilemaskEditor()
     {
         if (sceneEditor->pathSystem->IsPathEditEnabled())
         {
-            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            DAVA::Logger::Error("WayEditor should be disabled prior to enabling landscape tools");
             OnLandscapeEditorToggled(sceneEditor);
             return;
         }
@@ -2516,7 +2511,7 @@ void QtMainWindow::OnNotPassableTerrain()
     {
         if (sceneEditor->pathSystem->IsPathEditEnabled())
         {
-            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            DAVA::Logger::Error("WayEditor should be disabled prior to enabling landscape tools");
             OnLandscapeEditorToggled(sceneEditor);
             return;
         }
@@ -2546,7 +2541,7 @@ void QtMainWindow::OnWayEditor()
     DAVA::int32 toolsEnabled = sceneEditor->GetEnabledTools();
     if (toEnable && toolsEnabled)
     {
-        ShowErrorDialog("Landscape tools should be disabled prior to enabling WayEditor");
+        DAVA::Logger::Error("Landscape tools should be disabled prior to enabling WayEditor");
         ui->actionWayEditor->setChecked(false);
         return;
     }

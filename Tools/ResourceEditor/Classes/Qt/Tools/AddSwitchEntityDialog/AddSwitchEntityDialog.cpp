@@ -119,7 +119,7 @@ void AddSwitchEntityDialog::accept()
 
     if (vector.empty())
     {
-        ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_CHILDREN);
+        DAVA::Logger::Error(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_CHILDREN.c_str());
         return;
     }
 
@@ -137,7 +137,7 @@ void AddSwitchEntityDialog::accept()
             canCreateSwitch = false;
             DAVA::Logger::Error("Can't create switch in switch: %s%s", vector[i]->GetName().c_str(),
                                 PointerSerializer::FromPointer(vector[i]).c_str());
-            ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH);
+            DAVA::Logger::Error(ResourceEditor::ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH.c_str());
             return;
         }
         if (!creator.HasRenderObjectsRecursive(vector[i]))
@@ -145,7 +145,7 @@ void AddSwitchEntityDialog::accept()
             canCreateSwitch = false;
             DAVA::Logger::Error("Entity '%s' hasn't mesh render objects%s", vector[i]->GetName().c_str(),
                                 PointerSerializer::FromPointer(vector[i]).c_str());
-            ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS);
+            DAVA::Logger::Error(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS.c_str());
             return;
         }
     }

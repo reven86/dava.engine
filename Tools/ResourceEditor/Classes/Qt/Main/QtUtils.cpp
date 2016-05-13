@@ -61,7 +61,7 @@ FilePath GetOpenFileName(const String& title, const FilePath& pathname, const St
     if (!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
     {
         //Need to Show Error
-        ShowErrorDialog(String(Format("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str())));
+        DAVA::Logger::Error("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str());
         openedPathname = FilePath();
     }
 
@@ -105,48 +105,6 @@ Image* CreateTopLevelImage(const FilePath& imagePathname)
     }
 
     return image;
-}
-
-void ShowErrorDialog(const Set<String>& errors, const String& title /* = "" */)
-{
-    if (errors.empty())
-        return;
-
-    const uint32 maxErrorsPerDialog = 6;
-    uint32 totalErrors = errors.size();
-
-    const String dialogTitle = title + Format(" %u error(s) occured.", totalErrors);
-    const String errorDivideLine("\n--------------------\n");
-
-    String errorMessage;
-    uint32 errorCounter = 0;
-    for (const auto& message : errors)
-    {
-        errorMessage += PointerSerializer::CleanUpString(message) + errorDivideLine;
-        errorCounter++;
-
-        if (errorCounter == maxErrorsPerDialog)
-        {
-            errorMessage += "\n\nSee console log for details.";
-            ShowErrorDialog(errorMessage, dialogTitle);
-            errorMessage.clear();
-            break;
-        }
-    }
-
-    if (!errorMessage.empty())
-        ShowErrorDialog(errorMessage, dialogTitle);
-}
-
-void ShowErrorDialog(const String& errorMessage, const String& title)
-{
-    bool forceClose = CommandLineParser::CommandIsFound(String("-force")) ||
-    CommandLineParser::CommandIsFound(String("-forceclose"));
-
-    if (!forceClose && !Core::Instance()->IsConsoleMode())
-    {
-        QMessageBox::critical(QApplication::activeWindow(), title.c_str(), errorMessage.c_str());
-    }
 }
 
 bool IsKeyModificatorPressed(Key key)

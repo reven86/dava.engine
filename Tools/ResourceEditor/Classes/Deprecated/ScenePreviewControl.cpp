@@ -98,8 +98,7 @@ DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
 
     CreateCamera();
 
-    DAVA::Set<DAVA::String> errorsLogToHideDialog;
-    SceneValidator::Instance()->ValidateScene(editorScene, pathToFile, errorsLogToHideDialog);
+    SceneValidator::Instance()->ValidateScene(editorScene, pathToFile);
 
     return retError;
 }

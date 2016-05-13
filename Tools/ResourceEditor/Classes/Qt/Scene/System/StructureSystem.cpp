@@ -365,7 +365,7 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
             //
             // Перенести в Load и завалидейтить только подгруженную Entity
             // -->
-            SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
+            SceneValidator::Instance()->ValidateScene(sceneEditor, sceneEditor->GetScenePath());
             // <--
 
             EmitChanged();
@@ -473,7 +473,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
             CheckAndMarkSolid(loadedEntity);
 
-            SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(loadedEntity);
+            SceneValidator::ExtractEmptyRenderObjects(loadedEntity);
         }
     }
     else

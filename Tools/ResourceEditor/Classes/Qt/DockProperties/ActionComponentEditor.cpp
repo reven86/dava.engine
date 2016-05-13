@@ -168,7 +168,7 @@ void ActionComponentEditor::OnAddAction()
     bool duplicateAction = IsActionPresent(action);
     if (duplicateAction)
     {
-        ShowErrorDialog("Duplicate actions not allowed!");
+        DAVA::Logger::Error("Duplicate actions not allowed!");
     }
     else
     {

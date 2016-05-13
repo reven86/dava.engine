@@ -26,18 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Tools/LoggerOutput/LoggerErrorHandler.h"
 
-LoggerErrorHandler::~LoggerErrorHandler() = default;
+#pragma once
 
-void LoggerErrorHandler::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
+#include "Concurrency/Mutex.h"
+#include "Logger/Logger.h"
+
+class LazyUpdater;
+class ErrorDialogOutput final : public DAVA::LoggerOutput
 {
-    if (ll < DAVA::Logger::LEVEL_ERROR)
-        return;
+public:
+    ErrorDialogOutput();
+    ~ErrorDialogOutput() override;
 
-    const size_t strLength = strlen(text);
-    if (strLength > 0)
-    {
-        errors.emplace(text, strLength - 1); //remove extra '/n' that Logger was placed into end of text
-    }
-}
+    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
+
+private:
+    void ShowErrorDialog();
+
+    DAVA::UnorderedSet<DAVA::String> errors;
+    DAVA::Mutex errorsLocker;
+
+    LazyUpdater* dialogUpdater = nullptr;
+};

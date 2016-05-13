@@ -120,8 +120,7 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
     //scene->Update(0.1f);
 
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
-    Set<String> dummy_needBeRefactored;
-    SceneValidator::Instance()->ValidateScene(scene, fileName, dummy_needBeRefactored);
+    SceneValidator::Instance()->ValidateScene(scene, fileName);
 
     {
         SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);

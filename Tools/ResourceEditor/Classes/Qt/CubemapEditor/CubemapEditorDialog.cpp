@@ -175,11 +175,8 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, 
     {
         if (!silent)
         {
-            QString message = QString("%1\n is not suitable as current cubemap face!\n%2").
-                              arg(fileName)
-                              .
-                              arg(errorString);
-            ShowErrorDialog(message.toStdString());
+            QString message = QString("%1\n is not suitable as current cubemap face!\n%2").arg(fileName).arg(errorString);
+            DAVA::Logger::Error(message.toStdString().c_str());
         }
 
         result = false;
@@ -343,16 +340,16 @@ void CubemapEditorDialog::LoadCubemap(const QString& path)
 
         if (!cubemapLoadResult)
         {
-            ShowErrorDialog("This cubemap texture seems to be damaged.\nPlease repair it by setting image(s) to empty face(s) and save to disk.");
+            DAVA::Logger::Error("This cubemap texture seems to be damaged.\nPlease repair it by setting image(s) to empty face(s) and save to disk.");
         }
     }
     else if (!texDescriptor)
     {
-        ShowErrorDialog("Failed to load cubemap texture " + path.toStdString());
+        DAVA::Logger::Error("Failed to load cubemap texture %s", path.toStdString().c_str());
     }
     else
     {
-        ShowErrorDialog("Failed to load cubemap texture " + path.toStdString() + ". Seems this is not a cubemap texture.");
+        DAVA::Logger::Error("Failed to load cubemap texture %s. Seems this is not a cubemap texture.", path.toStdString().c_str());
     }
 }
 
@@ -412,7 +409,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 
                         if (!removeResult)
                         {
-                            ShowErrorDialog("Failed to copy texture " + facePathString + " to " + targetFacePathString);
+                            DAVA::Logger::Error("Failed to copy texture %s to %s", facePathString.c_str(), targetFacePathString.c_str());
                             return;
                         }
                     }
@@ -426,7 +423,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 
                 if (!copyResult)
                 {
-                    ShowErrorDialog("Failed to copy texture " + facePathString + " to " + targetFacePathString);
+                    DAVA::Logger::Error("Failed to copy texture %s to %s", facePathString.c_str(), targetFacePathString.c_str());
                     return;
                 }
             }
@@ -548,7 +545,7 @@ void CubemapEditorDialog::OnSave()
     //while file formats specs allows to specify cubemaps partially actual implementations don't allow that
     if (!AllFacesLoaded())
     {
-        ShowErrorDialog("Please specify at least one cube face.");
+        DAVA::Logger::Error("Please specify at least one cube face.");
         return;
     }
 

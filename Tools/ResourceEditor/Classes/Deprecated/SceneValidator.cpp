@@ -47,24 +47,15 @@
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 template <typename... A>
-void PushLogMessage(DAVA::Set<DAVA::String>& messages, DAVA::Entity* object, const char* format, A... args)
+void PushLogMessage(DAVA::Entity* object, const char* format, A... args)
 {
-    auto infoText = DAVA::Format(format, args...);
+    DAVA::String infoText = DAVA::Format(format, args...);
     if (nullptr != object)
         infoText += PointerSerializer::FromPointer(object);
-    messages.insert(infoText);
+    DAVA::Logger::Error(infoText.c_str());
 }
 
-bool SceneValidator::ValidateSceneAndShowErrors(DAVA::Scene* scene, const DAVA::FilePath& scenePath)
-{
-    errorMessages.clear();
-    ValidateScene(scene, scenePath, errorMessages);
-    ShowErrorDialog(errorMessages);
-
-    return (!errorMessages.empty());
-}
-
-void SceneValidator::ValidateScene(DAVA::Scene* scene, const DAVA::FilePath& scenePath, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateScene(DAVA::Scene* scene, const DAVA::FilePath& scenePath)
 {
     if (scene != nullptr)
     {
@@ -76,8 +67,8 @@ void SceneValidator::ValidateScene(DAVA::Scene* scene, const DAVA::FilePath& sce
             sceneName = scenePath.GetFilename();
         }
 
-        ValidateSceneNode(scene, errorsLog);
-        ValidateMaterials(scene, errorsLog);
+        ValidateSceneNode(scene);
+        ValidateMaterials(scene);
 
         for (DAVA::Set<DAVA::Entity*>::iterator it = emptyNodesForDeletion.begin(); it != emptyNodesForDeletion.end(); ++it)
         {
@@ -98,19 +89,19 @@ void SceneValidator::ValidateScene(DAVA::Scene* scene, const DAVA::FilePath& sce
     }
     else
     {
-        PushLogMessage(errorsLog, nullptr, "Scene is not initialized!");
+        PushLogMessage(nullptr, "Scene is not initialized!");
     }
 }
 
-void SceneValidator::ValidateScales(DAVA::Scene* scene, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateScales(DAVA::Scene* scene)
 {
     if (nullptr == scene)
-        PushLogMessage(errorsLog, nullptr, "Scene is not initializedr!");
+        PushLogMessage(nullptr, "Scene is not initializedr!");
     else
-        ValidateScalesInternal(scene, errorsLog);
+        ValidateScalesInternal(scene);
 }
 
-void SceneValidator::ValidateScalesInternal(DAVA::Entity* sceneNode, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateScalesInternal(DAVA::Entity* sceneNode)
 {
     //  Basic algorithm is here
     // 	Matrix4 S, T, R; //Scale Transpose Rotation
@@ -138,18 +129,18 @@ void SceneValidator::ValidateScalesInternal(DAVA::Entity* sceneNode, DAVA::Set<D
 
     if ((!FLOAT_EQUAL(sx, 1.0f)) || (!FLOAT_EQUAL(sy, 1.0f)) || (!FLOAT_EQUAL(sz, 1.0f)))
     {
-        PushLogMessage(errorsLog, sceneNode, "Node %s: has scale (%.3f, %.3f, %.3f) ! Re-design level. Scene: %s",
+        PushLogMessage(sceneNode, "Node %s: has scale (%.3f, %.3f, %.3f) ! Re-design level. Scene: %s",
                        sceneNode->GetName().c_str(), sx, sy, sz, sceneName.c_str());
     }
 
     DAVA::int32 count = sceneNode->GetChildrenCount();
     for (DAVA::int32 i = 0; i < count; ++i)
     {
-        ValidateScalesInternal(sceneNode->GetChild(i), errorsLog);
+        ValidateScalesInternal(sceneNode->GetChild(i));
     }
 }
 
-void SceneValidator::ValidateSceneNode(DAVA::Entity* sceneNode, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateSceneNode(DAVA::Entity* sceneNode)
 {
     if (nullptr == sceneNode)
     {
@@ -161,9 +152,9 @@ void SceneValidator::ValidateSceneNode(DAVA::Entity* sceneNode, DAVA::Set<DAVA::
     {
         DAVA::Entity* node = sceneNode->GetChild(i);
 
-        ValidateRenderComponent(node, errorsLog);
-        ValidateParticleEffectComponent(node, errorsLog);
-        ValidateSceneNode(node, errorsLog);
+        ValidateRenderComponent(node);
+        ValidateParticleEffectComponent(node);
+        ValidateSceneNode(node);
         ValidateNodeCustomProperties(node);
     }
 }
@@ -184,7 +175,7 @@ void SceneValidator::ValidateNodeCustomProperties(DAVA::Entity* sceneNode)
     }
 }
 
-void SceneValidator::ValidateRenderComponent(DAVA::Entity* ownerNode, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateRenderComponent(DAVA::Entity* ownerNode)
 {
     DAVA::RenderComponent* rc = static_cast<DAVA::RenderComponent*>(ownerNode->GetComponent(DAVA::Component::RENDER_COMPONENT));
     if (nullptr == rc)
@@ -202,30 +193,28 @@ void SceneValidator::ValidateRenderComponent(DAVA::Entity* ownerNode, DAVA::Set<
     for (DAVA::uint32 b = 0; b < count; ++b)
     {
         DAVA::RenderBatch* renderBatch = ro->GetRenderBatch(b);
-        ValidateRenderBatch(ownerNode, renderBatch, errorsLog);
+        ValidateRenderBatch(ownerNode, renderBatch);
     }
 
     if (ro->GetType() == DAVA::RenderObject::TYPE_LANDSCAPE)
     {
         ownerNode->SetLocked(true);
-        FixIdentityTransform(ownerNode, errorsLog,
-                             DAVA::Format("Landscape had wrong transform. Please re-save scene: %s", sceneName.c_str()));
+        FixIdentityTransform(ownerNode, DAVA::Format("Landscape had wrong transform. Please re-save scene: %s", sceneName.c_str()));
 
         DAVA::Landscape* landscape = static_cast<DAVA::Landscape*>(ro);
-        ValidateLandscape(landscape, errorsLog);
+        ValidateLandscape(landscape);
 
-        ValidateCustomColorsTexture(ownerNode, errorsLog);
+        ValidateCustomColorsTexture(ownerNode);
     }
 
     if (ro->GetType() == DAVA::RenderObject::TYPE_VEGETATION)
     {
         ownerNode->SetLocked(true);
-        FixIdentityTransform(ownerNode, errorsLog,
-                             DAVA::Format("Vegetation had wrong transform. Please re-save scene: %s", sceneName.c_str()));
+        FixIdentityTransform(ownerNode, DAVA::Format("Vegetation had wrong transform. Please re-save scene: %s", sceneName.c_str()));
     }
 }
 
-void SceneValidator::FixIdentityTransform(DAVA::Entity* ownerNode, DAVA::Set<DAVA::String>& errorsLog, const DAVA::String& errorMessage)
+void SceneValidator::FixIdentityTransform(DAVA::Entity* ownerNode, const DAVA::String& errorMessage)
 {
     if (ownerNode->GetLocalTransform() != DAVA::Matrix4::IDENTITY)
     {
@@ -235,11 +224,11 @@ void SceneValidator::FixIdentityTransform(DAVA::Entity* ownerNode, DAVA::Set<DAV
         {
             sc->MarkAsChanged();
         }
-        PushLogMessage(errorsLog, ownerNode, errorMessage.c_str());
+        PushLogMessage(ownerNode, errorMessage.c_str());
     }
 }
 
-void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity* ownerNode, DAVA::Set<DAVA::String>& errorsLog) const
+void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity* ownerNode) const
 {
     DAVA::ParticleEffectComponent* effect = GetEffectComponent(ownerNode);
     if (effect != nullptr)
@@ -247,12 +236,12 @@ void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity* ownerNode, DA
         DAVA::uint32 count = effect->GetEmittersCount();
         for (DAVA::uint32 i = 0; i < count; ++i)
         {
-            ValidateParticleEmitter(effect->GetEmitterInstance(i), errorsLog, effect->GetEntity());
+            ValidateParticleEmitter(effect->GetEmitterInstance(i), effect->GetEntity());
         }
     }
 }
 
-void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitterInstance* instance, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const
+void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitterInstance* instance, DAVA::Entity* owner) const
 {
     DVASSERT(instance);
 
@@ -263,7 +252,7 @@ void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitterInstance* inst
 
     if (emitter->configPath.IsEmpty())
     {
-        PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s", emitter->name.c_str(), sceneName.c_str());
+        PushLogMessage(owner, "Empty config path for emitter %s. Scene: %s", emitter->name.c_str(), sceneName.c_str());
     }
 
     for (auto layer : emitter->layers)
@@ -271,17 +260,17 @@ void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitterInstance* inst
         if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
             DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> instance(new DAVA::ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
-            ValidateParticleEmitter(instance, errorsLog, owner);
+            ValidateParticleEmitter(instance, owner);
         }
     }
 }
 
-void SceneValidator::ValidateRenderBatch(DAVA::Entity* ownerNode, DAVA::RenderBatch* renderBatch, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateRenderBatch(DAVA::Entity* ownerNode, DAVA::RenderBatch* renderBatch)
 {
     ownerNode->RemoveFlag(DAVA::Entity::NODE_INVALID);
 }
 
-void SceneValidator::ValidateMaterials(DAVA::Scene* scene, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateMaterials(DAVA::Scene* scene)
 {
     DAVA::Set<DAVA::NMaterial*> materials;
     SceneHelper::BuildMaterialList(scene, materials, false);
@@ -357,7 +346,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene, DAVA::Set<DAVA::Strin
 
             if (!qualityGroupIsOk)
             {
-                errorsLog.insert(DAVA::Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
+                DAVA::Logger::Error("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str());
             }
         }
 
@@ -375,7 +364,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene, DAVA::Set<DAVA::Strin
             }
             if (!templateFound)
             {
-                errorsLog.insert(DAVA::Format("Material \"%s\" has non-assignable template", (*it)->GetMaterialName().c_str()));
+                DAVA::Logger::Error("Material \"%s\" has non-assignable template", (*it)->GetMaterialName().c_str());
             }
         }
     }
@@ -383,28 +372,28 @@ void SceneValidator::ValidateMaterials(DAVA::Scene* scene, DAVA::Set<DAVA::Strin
     auto endItTextures = texturesMap.end();
     for (auto it = texturesMap.begin(); it != endItTextures; ++it)
     {
-        ValidateTexture(it->first, it->second, errorsLog);
+        ValidateTexture(it->first, it->second);
     }
 }
 
-void SceneValidator::ValidateLandscape(DAVA::Landscape* landscape, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateLandscape(DAVA::Landscape* landscape)
 {
     if (nullptr == landscape)
         return;
-    ValidateLandscapeTexture(landscape, DAVA::Landscape::TEXTURE_COLOR, errorsLog);
-    ValidateLandscapeTexture(landscape, DAVA::Landscape::TEXTURE_TILE, errorsLog);
-    ValidateLandscapeTexture(landscape, DAVA::Landscape::TEXTURE_TILEMASK, errorsLog);
+    ValidateLandscapeTexture(landscape, DAVA::Landscape::TEXTURE_COLOR);
+    ValidateLandscapeTexture(landscape, DAVA::Landscape::TEXTURE_TILE);
+    ValidateLandscapeTexture(landscape, DAVA::Landscape::TEXTURE_TILEMASK);
 
     //validate heightmap
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), DAVA::String("Landscape. Heightmap."));
     if (!pathIsCorrect)
     {
         DAVA::String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->GetDataSourcePath());
-        PushLogMessage(errorsLog, nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
+        PushLogMessage(nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
     }
 }
 
-void SceneValidator::ValidateLandscapeTexture(DAVA::Landscape* landscape, const DAVA::FastName& texLevel, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateLandscapeTexture(DAVA::Landscape* landscape, const DAVA::FastName& texLevel)
 {
     DAVA::Texture* texture = landscape->GetMaterial()->GetEffectiveTexture(texLevel);
     if (texture)
@@ -415,7 +404,7 @@ void SceneValidator::ValidateLandscapeTexture(DAVA::Landscape* landscape, const 
             texture->SetPathname(DAVA::TextureDescriptor::GetDescriptorPathname(landTexName));
         }
 
-        ValidateTexture(texture, DAVA::Format("Landscape. %s", texLevel.c_str()), errorsLog);
+        ValidateTexture(texture, DAVA::Format("Landscape. %s", texLevel.c_str()));
     }
 }
 
@@ -443,15 +432,7 @@ bool SceneValidator::NodeRemovingDisabled(DAVA::Entity* node)
     return (customProperties && customProperties->IsKeyExists(ResourceEditor::EDITOR_DO_NOT_REMOVE));
 }
 
-void SceneValidator::ValidateTextureAndShowErrors(DAVA::Texture* texture, const DAVA::String& validatedObjectName)
-{
-    errorMessages.clear();
-
-    ValidateTexture(texture, validatedObjectName, errorMessages);
-    ShowErrorDialog(errorMessages);
-}
-
-void SceneValidator::ValidateTexture(DAVA::Texture* texture, const DAVA::String& validatedObjectName, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateTexture(DAVA::Texture* texture, const DAVA::String& validatedObjectName)
 {
     if (nullptr == texture)
     {
@@ -467,13 +448,11 @@ void SceneValidator::ValidateTexture(DAVA::Texture* texture, const DAVA::String&
     {
         if (texturePathname.IsEmpty())
         {
-            PushLogMessage(errorsLog, nullptr, "Texture not set for object: %s. Scene: %s",
-                           validatedObjectName.c_str(), sceneName.c_str());
+            PushLogMessage(nullptr, "Texture not set for object: %s. Scene: %s", validatedObjectName.c_str(), sceneName.c_str());
         }
         else
         {
-            PushLogMessage(errorsLog, nullptr, "Can't load texture: %s. Scene: %s",
-                           textureInfo.c_str(), sceneName.c_str());
+            PushLogMessage(nullptr, "Can't load texture: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str());
         }
         return;
     }
@@ -481,21 +460,18 @@ void SceneValidator::ValidateTexture(DAVA::Texture* texture, const DAVA::String&
     bool pathIsCorrect = ValidatePathname(texturePathname, validatedObjectName);
     if (!pathIsCorrect)
     {
-        PushLogMessage(errorsLog, nullptr, "Wrong path of: %s. Scene: %s",
-                       textureInfo.c_str(), sceneName.c_str());
+        PushLogMessage(nullptr, "Wrong path of: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str());
         return;
     }
 
     if (!DAVA::IsPowerOf2(texture->GetWidth()) || !DAVA::IsPowerOf2(texture->GetHeight()))
     {
-        PushLogMessage(errorsLog, nullptr, "Texture %s has now power of two dimensions. Scene: %s",
-                       textureInfo.c_str(), sceneName.c_str());
+        PushLogMessage(nullptr, "Texture %s has now power of two dimensions. Scene: %s", textureInfo.c_str(), sceneName.c_str());
     }
 
     if ((texture->GetWidth() > 2048) || (texture->GetHeight() > 2048))
     {
-        PushLogMessage(errorsLog, nullptr, "Texture %s is too big. Scene: %s",
-                       textureInfo.c_str(), sceneName.c_str());
+        PushLogMessage(nullptr, "Texture %s is too big. Scene: %s", textureInfo.c_str(), sceneName.c_str());
     }
 }
 
@@ -533,7 +509,7 @@ DAVA::FilePath SceneValidator::SetPathForChecking(const DAVA::FilePath& pathname
     return oldPath;
 }
 
-bool SceneValidator::ValidateTexturePathname(const DAVA::FilePath& pathForValidation, DAVA::Set<DAVA::String>& errorsLog)
+bool SceneValidator::ValidateTexturePathname(const DAVA::FilePath& pathForValidation)
 {
     DVASSERT_MSG(!pathForChecking.IsEmpty(), "Need to set pathname for DataSource folder");
 
@@ -543,21 +519,21 @@ bool SceneValidator::ValidateTexturePathname(const DAVA::FilePath& pathForValida
         DAVA::String textureExtension = pathForValidation.GetExtension();
         if (!DAVA::TextureDescriptor::IsSupportedTextureExtension(textureExtension))
         {
-            PushLogMessage(errorsLog, nullptr, "Path %s has incorrect extension. Scene: %s",
+            PushLogMessage(nullptr, "Path %s has incorrect extension. Scene: %s",
                            pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
             return false;
         }
     }
     else
     {
-        PushLogMessage(errorsLog, nullptr, "Path %s is incorrect for project %s. Scene: %s",
+        PushLogMessage(nullptr, "Path %s is incorrect for project %s. Scene: %s",
                        pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str(), sceneName.c_str());
     }
 
     return pathIsCorrect;
 }
 
-bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForValidation, DAVA::Set<DAVA::String>& errorsLog)
+bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForValidation)
 {
     DVASSERT_MSG(!pathForChecking.IsEmpty(), "Need to set pathname for DataSource folder");
 
@@ -579,7 +555,7 @@ bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForVali
         pathIsCorrect = isSourceTexture || isHeightmap;
         if (!pathIsCorrect)
         {
-            PushLogMessage(errorsLog, nullptr, "Heightmap path %s is wrong. Scene: %s",
+            PushLogMessage(nullptr, "Heightmap path %s is wrong. Scene: %s",
                            pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
             return false;
         }
@@ -597,7 +573,7 @@ bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForVali
 
         if (!pathIsCorrect)
         {
-            PushLogMessage(errorsLog, nullptr, "Can't load Heightmap from path %s. Scene: %s",
+            PushLogMessage(nullptr, "Can't load Heightmap from path %s. Scene: %s",
                            pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
             return false;
         }
@@ -605,7 +581,7 @@ bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForVali
         pathIsCorrect = DAVA::IsPowerOf2(heightmap->Size());
         if (!pathIsCorrect)
         {
-            PushLogMessage(errorsLog, nullptr, "Heightmap %s has wrong size. Scene: %s",
+            PushLogMessage(nullptr, "Heightmap %s has wrong size. Scene: %s",
                            pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
         }
 
@@ -613,7 +589,7 @@ bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForVali
     }
     else
     {
-        PushLogMessage(errorsLog, nullptr, "Path %s is incorrect for project %s.",
+        PushLogMessage(nullptr, "Path %s is incorrect for project %s.",
                        pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str());
     }
 
@@ -696,7 +672,7 @@ bool SceneValidator::IsTextureDescriptorPath(const DAVA::FilePath& path)
     return path.IsEqualToExtension(DAVA::TextureDescriptor::GetDescriptorExtension());
 }
 
-void SceneValidator::ValidateCustomColorsTexture(DAVA::Entity* landscapeEntity, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ValidateCustomColorsTexture(DAVA::Entity* landscapeEntity)
 {
     DAVA::KeyedArchive* customProps = GetCustomPropertiesArchieve(landscapeEntity);
     if (customProps != nullptr && customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP))
@@ -706,15 +682,13 @@ void SceneValidator::ValidateCustomColorsTexture(DAVA::Entity* landscapeEntity, 
 
         if (!DAVA::TextureDescriptor::IsSourceTextureExtension(path.GetExtension()))
         {
-            PushLogMessage(errorsLog, landscapeEntity,
-                           "Custom colors texture has to have .png, .jpeg or .tga extension. Scene: %s", sceneName.c_str());
+            PushLogMessage(landscapeEntity, "Custom colors texture has to have .png, .jpeg or .tga extension. Scene: %s", sceneName.c_str());
         }
 
         DAVA::String::size_type foundPos = currentSaveName.find("DataSource/3d/");
         if (DAVA::String::npos == foundPos)
         {
-            PushLogMessage(errorsLog, landscapeEntity,
-                           "Custom colors texture has to begin from DataSource/3d/. Scene: %s", sceneName.c_str());
+            PushLogMessage(landscapeEntity, "Custom colors texture has to begin from DataSource/3d/. Scene: %s", sceneName.c_str());
         }
     }
 }
@@ -788,28 +762,18 @@ bool SceneValidator::IsObjectHasDifferentLODsCount(DAVA::RenderObject* renderObj
     return ((maxLod[0] != maxLod[1]) && (maxLod[0] != -1 && maxLod[1] != -1));
 }
 
-void SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity* entity)
-{
-    DAVA::Set<DAVA::String> errors;
-    SceneValidator::ExtractEmptyRenderObjects(entity, errors);
-    if (!errors.empty())
-    {
-        ShowErrorDialog(errors);
-    }
-}
-
-void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity* entity, DAVA::Set<DAVA::String>& errorsLog)
+void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity* entity)
 {
     auto renderObject = GetRenderObject(entity);
     if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()) && DAVA::RenderObject::TYPE_MESH == renderObject->GetType())
     {
         entity->RemoveComponent(DAVA::Component::RENDER_COMPONENT);
-        PushLogMessage(errorsLog, entity, "Entity %s has empty render object", entity->GetName().c_str());
+        PushLogMessage(entity, "Entity %s has empty render object", entity->GetName().c_str());
     }
 
     const DAVA::uint32 count = entity->GetChildrenCount();
     for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        ExtractEmptyRenderObjects(entity->GetChild(i), errorsLog);
+        ExtractEmptyRenderObjects(entity->GetChild(i));
     }
 }

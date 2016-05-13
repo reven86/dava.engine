@@ -74,14 +74,14 @@ bool ColladaToSc2Importer::VerifyColladaMesh(ColladaMeshInstance* mesh, const Fa
     {
         if (polygonGroupInstance->material == nullptr)
         {
-            ReportError(Format("[DAE to SC2] Node %s has no material", nodeName.c_str()));
+            Logger::Error("[DAE to SC2] Node %s has no material", nodeName.c_str());
             return false;
         }
 
         auto polyGroup = polygonGroupInstance->polyGroup;
         if ((polyGroup == nullptr) || polyGroup->GetVertices().empty())
         {
-            ReportError(Format("[DAE to SC2] Node %s has no geometric data", nodeName.c_str()));
+            Logger::Error("[DAE to SC2] Node %s has no geometric data", nodeName.c_str());
             return false;
         }
     }
@@ -96,7 +96,7 @@ eColladaErrorCodes ColladaToSc2Importer::VerifyDavaMesh(RenderObject* mesh, cons
     uint32 batchesCount = mesh->GetRenderBatchCount();
     if (0 == batchesCount)
     {
-        ReportError(Format("[DAE to SC2] %s has no render batches.", name.c_str()));
+        Logger::Error("[DAE to SC2] %s has no render batches.", name.c_str());
         retValue = eColladaErrorCodes::COLLADA_ERROR;
     }
     else
@@ -106,20 +106,20 @@ eColladaErrorCodes ColladaToSc2Importer::VerifyDavaMesh(RenderObject* mesh, cons
             auto batch = mesh->GetRenderBatch(i);
             if (nullptr == batch)
             {
-                ReportError(Format("[DAE to SC2] Node %s has no %i render batch", i));
+                Logger::Error("[DAE to SC2] Node %s has no %i render batch", i);
                 retValue = eColladaErrorCodes::COLLADA_ERROR;
             }
 
             auto polygon = batch->GetPolygonGroup();
             if (nullptr == polygon)
             {
-                ReportError(Format("[DAE to SC2] Node %s has no polygon in render batch %i ", i));
+                Logger::Error("[DAE to SC2] Node %s has no polygon in render batch %i ", i);
                 retValue = eColladaErrorCodes::COLLADA_ERROR;
             }
 
             if (0 >= polygon->GetVertexCount())
             {
-                ReportError(Format("[DAE to SC2] Node %s has no geometric data", name.c_str()));
+                Logger::Error("[DAE to SC2] Node %s has no geometric data", name.c_str());
                 retValue = eColladaErrorCodes::COLLADA_ERROR;
             }
         }
@@ -190,13 +190,13 @@ eColladaErrorCodes ColladaToSc2Importer::BuildSceneAsCollada(Entity* root, Colla
         name = Format("UNNAMED");
 
         res = eColladaErrorCodes::COLLADA_ERROR;
-        ReportError(Format("[DAE to SC2] Unnamed node found as a child of %s", root->GetName().c_str()));
+        Logger::Error("[DAE to SC2] Unnamed node found as a child of %s", root->GetName().c_str());
         if (0 < colladaNode->childs.size())
         {
-            ReportError(Format("[DAE to SC2] It's childs:"));
+            Logger::Error("[DAE to SC2] It's childs:");
             for (auto child : colladaNode->childs)
             {
-                ReportError(Format("[DAE to SC2] %s", child->originalNode->GetName().c_str()));
+                Logger::Error("[DAE to SC2] %s", child->originalNode->GetName().c_str());
             }
         }
     }
@@ -271,22 +271,12 @@ eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, con
 
         if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)
         {
-            ReportError(Format("[DAE to SC2] Cannot save SC2. Error %d", saveRes));
+            Logger::Error("[DAE to SC2] Cannot save SC2. Error %d", saveRes);
             convertRes = eColladaErrorCodes::COLLADA_ERROR;
         }
-    }
-
-    if (0 < errorLogs.size())
-    {
-        ShowErrorDialog(errorLogs, "Conversion DAE to SC2 failed.");
     }
 
     return convertRes;
 }
 
-void ColladaToSc2Importer::ReportError(const String& errMessage)
-{
-    errorLogs.insert(errMessage);
-    Logger::Error("%s", errMessage.c_str());
-}
 };

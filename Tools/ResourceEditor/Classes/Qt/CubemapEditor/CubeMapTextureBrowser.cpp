@@ -348,7 +348,7 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
             DAVA::String message = "Failed to remove the following files. Please delete them manually.\n";
             message += fileList;
 
-            ShowErrorDialog(message);
+            DAVA::Logger::Error(message.c_str());
         }
 
         QString path = ui->textRootPath->text();
