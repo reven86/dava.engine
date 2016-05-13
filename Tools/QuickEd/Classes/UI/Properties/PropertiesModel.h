@@ -111,7 +111,7 @@ protected:
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    QSet<AbstractProperty*> changedProperties;
+    DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
     ContinuousUpdater* continuousUpdater = nullptr;
 };
 

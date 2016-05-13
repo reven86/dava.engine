@@ -320,8 +320,7 @@ void PropertiesModel::UpdateAllChangedProperties()
 {
     for (auto property : changedProperties)
     {
-        UpdateProperty(property);
-        property->Release();
+        UpdateProperty(property.Get());
     }
     changedProperties.clear();
 }
@@ -329,7 +328,7 @@ void PropertiesModel::UpdateAllChangedProperties()
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
     property->Retain();
-    changedProperties.insert(property);
+    changedProperties.insert(RefPtr<AbstractProperty>::ConstructreWithRetain(property));
     continuousUpdater->Update();
 }
 
