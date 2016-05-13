@@ -5,7 +5,6 @@
 
 namespace DAVA
 {
-
 template <size_t Count>
 AutoStorage<Count>::~AutoStorage()
 {
