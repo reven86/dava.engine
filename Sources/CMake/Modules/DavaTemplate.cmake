@@ -623,6 +623,8 @@ if( DEPLOY )
    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
 
+   append_property( DEPLOY_DIR_${PROJECT_NAME} ${DEPLOY_DIR} )
+
     if( WIN32 )
         if( APP_DATA )
             get_filename_component( DIR_NAME ${APP_DATA} NAME )
