@@ -26,45 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
+#pragma once
 
-#include "NGTCmdLineParser.h"
+#include "NgtTools/Application/NGTApplication.h"
 
-#include "Base/BaseTypes.h"
-
-#include <core_generic_plugin_manager/generic_plugin_manager.hpp>
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-
-class QMainWindow;
-namespace NGTLayer
-{
-class BaseApplication
+class QtMainWindow;
+class NGTCommand;
+class REApplication: public NGTLayer::BaseApplication
 {
 public:
-    BaseApplication(int argc, char** argv);
-    virtual ~BaseApplication();
+    REApplication(int argc, char** argv);
+    ~REApplication();
 
-    void LoadPlugins();
-    IComponentContext& GetComponentContext();
-    int StartApplication(QMainWindow* appMainWindow);
+    void Run();
 
 protected:
-    virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
-    virtual void OnPostLoadPugins()
-    {
-    }
-    virtual void OnPreUnloadPlugins()
-    {
-    }
+    void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;
+    void OnPostLoadPugins() override;
+    void OnPreUnloadPlugins() override;
 
 private:
-    DAVA::WideString GetPluginsFolder() const;
-
-private:
-    GenericPluginManager pluginManager;
-    NGTCmdLineParser commandLineParser;
+    ICommandManager* commandManager = nullptr;
+    std::unique_ptr<NGTCommand> ngtCommand;
+    QtMainWindow* mainWindow = nullptr;
 };
-} // namespace NGTLayer
-
-#endif // __QTTOOLS_NGTAPPLICATION_H__

@@ -26,9 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __COMMAND_STACK_H__
-#define __COMMAND_STACK_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Commands2/Base/Command2.h"
@@ -80,7 +78,7 @@ private:
     class ActiveCommandStack;
     class ActiveStackGuard;
 
-    ICommandManager* commandManager;
+    ICommandManager* commandManager = nullptr;
     std::unique_ptr<CommandBatch> curBatchCommand;
 
     int enviromentID = 0;
@@ -93,5 +91,3 @@ private:
 
     Connection indexChanged;
 };
-
-#endif // __COMMAND_STACK_H__

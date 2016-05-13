@@ -26,8 +26,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __RESOURCEEDITOR_NGTCOMMAND_H__
-#define __RESOURCEEDITOR_NGTCOMMAND_H__
+#pragma once
 
 #include <core_command_system/command.hpp>
 #include <core_reflection/generic/generic_object.hpp>
@@ -45,5 +44,3 @@ public:
     bool redo(const ObjectHandle& arguments) const override;
     ObjectHandle getCommandDescription(const ObjectHandle& arguments) const override;
 };
-
-#endif // __RESOURCEEDITOR_NGTCOMMAND_H__

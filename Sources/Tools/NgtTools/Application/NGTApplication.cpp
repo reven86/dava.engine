@@ -31,14 +31,14 @@
 
 #include "Debug/DVAssert.h"
 
-#include "core_generic_plugin/interfaces/i_plugin_context_manager.hpp"
-#include "core_generic_plugin/interfaces/i_application.hpp"
-#include "core_generic_plugin/generic_plugin.hpp"
-#include "core_variant/variant.hpp"
-#include "core_ui_framework/i_ui_application.hpp"
-#include "core_qt_common/i_qt_framework.hpp"
+#include <core_generic_plugin/interfaces/i_plugin_context_manager.hpp>
+#include <core_generic_plugin/interfaces/i_application.hpp>
+#include <core_generic_plugin/generic_plugin.hpp>
+#include <core_variant/variant.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
+#include <core_qt_common/i_qt_framework.hpp>
 
-#include "core_qt_common/qt_window.hpp"
+#include <core_qt_common/qt_window.hpp>
 
 #include <QMainWindow>
 #include <QFileInfo>

@@ -383,7 +383,7 @@ void CommandStack::SetClean(bool clean)
     CommandStackLocal::CommandIdsAccumulator functor(uncleanCommandIds);
     DAVA::int32 historySize = static_cast<DAVA::int32>(history.size());
     DVASSERT(nextAfterCleanCommandIndex < historySize);
-    for (int i = nextAfterCleanCommandIndex + 1; i < historySize; ++i)
+    for (DAVA::int32 i = nextAfterCleanCommandIndex + 1; i < historySize; ++i)
     {
         functor(history[i].value<CommandInstancePtr>());
     }

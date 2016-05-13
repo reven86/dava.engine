@@ -41,20 +41,16 @@
 #include "CommandLine/CommandLineManager.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
-#include "Commands2/NGTCommand.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
-#include "NgtTools/Application/NGTApplication.h"
-#include "NgtTools/Common/GlobalContext.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/ControlsFactory.h"
 
 #include "Platform/Qt5/QtLayer.h"
-
-#include "ResourceEditorLauncher.h"
+#include "REApplication.h"
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
@@ -62,81 +58,11 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
-#include <core_command_system/i_command_manager.hpp>
-#include <core_command_system/i_history_panel.h>
-
 void UnpackHelpDoc();
 void FixOSXFonts();
 
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLine);
 void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
-
-class REApplication : public NGTLayer::BaseApplication
-{
-public:
-    REApplication(int argc, char** argv)
-        : BaseApplication(argc, argv)
-    {
-    }
-
-    void Run()
-    {
-        IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
-        if (historyPanel)
-        {
-            historyPanel->setClearButtonVisible(false);
-            historyPanel->setMakeMacroButtonVisible(false);
-        }
-
-
-        // create and init UI
-        ResourceEditorLauncher launcher;
-        mainWindow = new QtMainWindow(GetComponentContext());
-
-        mainWindow->EnableGlobalTimeout(true);
-        DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
-
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
-        StartApplication(mainWindow);
-
-        DAVA::SafeRelease(mainWindow);
-        ControlsFactory::ReleaseFonts();
-    }
-
-protected:
-    void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override
-    {
-        names.push_back(L"plg_reflection");
-        names.push_back(L"plg_variant");
-        names.push_back(L"plg_command_system");
-        names.push_back(L"plg_serialization");
-        names.push_back(L"plg_file_system");
-        names.push_back(L"plg_editor_interaction");
-        names.push_back(L"plg_qt_app");
-        names.push_back(L"plg_qt_common");
-        names.push_back(L"plg_history_ui");
-    }
-
-    void OnPostLoadPugins() override
-    {
-        qApp->setOrganizationName("DAVA");
-        qApp->setApplicationName("Resource Editor");
-
-        commandManager = NGTLayer::queryInterface<ICommandManager>();
-        commandManager->SetHistorySerializationEnabled(false);
-        commandManager->registerCommand(&ngtCommand);
-    }
-
-    void OnPreUnloadPlugins() override
-    {
-        commandManager->deregisterCommand(ngtCommand.getId());
-    }
-
-private:
-    ICommandManager* commandManager = nullptr;
-    NGTCommand ngtCommand;
-    QtMainWindow* mainWindow = nullptr;
-};
 
 int main(int argc, char* argv[])
 {

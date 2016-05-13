@@ -153,6 +153,7 @@ list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Commands2/NGTCommand.cpp")
 list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Commands2/Base/CommandStack.cpp")
 list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Qt/NGTPropertyEditor/PropertyPanel.cpp")
 list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Qt/main.cpp")
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Qt/REApplication.cpp")
 
 DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
                            COPY_WIN32  ${BEAST_DLL}
