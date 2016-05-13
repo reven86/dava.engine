@@ -528,8 +528,8 @@ bool Landscape::GetHeightAtPoint(const Vector3& point, float32& value) const
     uint16 y = static_cast<uint16>(fy);
 
     Vector3 h00 = heightmap->GetPoint(x, y, bbox);
-    Vector3 h01 = heightmap->GetPoint(x, y + 1, bbox);
-    Vector3 h10 = heightmap->GetPoint(x + 1, y, bbox);
+    Vector3 h01 = heightmap->GetPoint(x + 1, y, bbox);
+    Vector3 h10 = heightmap->GetPoint(x, y + 1, bbox);
     Vector3 h11 = heightmap->GetPoint(x + 1, y + 1, bbox);
 
     float32 dx = fx - static_cast<float32>(x);
