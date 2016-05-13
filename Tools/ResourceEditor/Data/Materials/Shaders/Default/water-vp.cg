@@ -170,7 +170,7 @@ VPROG_BEGIN
         #if REAL_REFLECTION
             VP_OUT(eyeDist) = eyeCoordsPosition;
             VP_OUT(normalizedFragPos) = resPosition;                
-			VP_OUT(normalizedFragPos).y *= projectionFlip; 
+            VP_OUT(normalizedFragPos).y *= projectionFlip; 
             #if SPECULAR
                 float3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
                 v.x = dot (toLightDir, t);
@@ -179,9 +179,9 @@ VPROG_BEGIN
                 VP_OUT(varLightVec) = v;       
             #endif
         #else
-            VP_OUT(tbnToWorld0) = inTangent;
-            VP_OUT(tbnToWorld1) = cross(inNormal, inTangent);
-            VP_OUT(tbnToWorld2) = inNormal;            
+            VP_OUT(tbnToWorld0) = half3(inTangent);
+            VP_OUT(tbnToWorld1) = half3(cross(inNormal,inTangent));
+            VP_OUT(tbnToWorld2) = half3(inNormal);            
         #endif       
     #endif
 
