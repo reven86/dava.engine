@@ -176,7 +176,7 @@ void metal_Initialize(const InitParam& param)
 
     _Metal_Layer.device = MTLCreateSystemDefaultDevice();
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
-    _Metal_Layer.framebufferOnly = NO;
+    _Metal_Layer.framebufferOnly = YES;
     _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
 
     _Metal_Device = _Metal_Layer.device;
@@ -261,6 +261,7 @@ void metal_Initialize(const InitParam& param)
     _metal_DeviceCaps.isZeroBaseClipRange = true;
     _metal_DeviceCaps.isUpperLeftRTOrigin = true;
     _metal_DeviceCaps.isCenterPixelMapping = false;
+    _metal_DeviceCaps.isInstancingSupported = true;
 }
 
 } // namespace rhi

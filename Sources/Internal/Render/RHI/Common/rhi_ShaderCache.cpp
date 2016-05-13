@@ -236,11 +236,10 @@ static const char* _ShaderHeader_Metal =
 "inline half3 lerp( half3 a, half3 b, half t ) { return mix( a, b, t ); }\n"
 "inline half4 lerp( half4 a, half4 b, half t ) { return mix( a, b, t ); }\n"
 
-
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
 "#define FP_A8(t) t.a\n"
 
-"#define STEP(edge,x) ((x)<(edge)) ? 0.0 : 1.0\n";
+"#define STEP(edge,x) step((edge), (x))\n";
 
 static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_BEGIN          struct VP_Input {\n"
@@ -363,8 +362,6 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
 "#define VP_IN_BLENDINDEX        (IN.blendindex)\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv, level(0) )\n"
-
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
 
@@ -414,7 +411,7 @@ static const char* _ShaderDefine_Metal =
 "#define FP_TEXTURECUBE(unit,uv) fp_tex##unit.sample( fp_tex##unit##_sampler, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   vp_tex##unit.sample( vp_tex##unit##_sampler, uv )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   vp_tex##unit.sample( vp_tex##unit##_sampler, uv, level(lod) )\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
 

@@ -43,7 +43,7 @@ Frustum::~Frustum()
 
 //! \brief Set view frustum from matrix information
 //! \param viewProjection view * projection matrix
-void Frustum::Build(const Matrix4& viewProjection)
+void Frustum::Build(const Matrix4& viewProjection, bool zeroBaseClipRange)
 {
 	
 #define SETUP_PLANE(plane, x1, x2, x3, x4) \
@@ -78,21 +78,22 @@ void Frustum::Build(const Matrix4& viewProjection)
                 viewProjection._23 - viewProjection._21,
                 viewProjection._33 - viewProjection._31);
 
-// DirectX version
-    
-#ifdef __DAVAENGINE_DIRECTX9__
-    SETUP_PLANE(EFP_NEAR,
-                viewProjection._02,
-                viewProjection._12,
-                viewProjection._22,
-                viewProjection._32);
-#else //opengl
-    SETUP_PLANE(EFP_NEAR,
-                viewProjection._03 + viewProjection._02,
-                viewProjection._13 + viewProjection._12,
-                viewProjection._23 + viewProjection._22,
-                viewProjection._33 + viewProjection._32);
-#endif //__DAVAENGINE_DIRECTX9__
+    if (zeroBaseClipRange)
+    {
+        SETUP_PLANE(EFP_NEAR,
+                    viewProjection._02,
+                    viewProjection._12,
+                    viewProjection._22,
+                    viewProjection._32);
+    }
+    else
+    {
+        SETUP_PLANE(EFP_NEAR,
+                    viewProjection._03 + viewProjection._02,
+                    viewProjection._13 + viewProjection._12,
+                    viewProjection._23 + viewProjection._22,
+                    viewProjection._33 + viewProjection._32);
+    }
 
     // far
     SETUP_PLANE(EFP_FAR,

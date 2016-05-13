@@ -131,7 +131,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
             viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
 
         config.colorBuffer[0].texture = currentTarget.colorAttachment;
-        config.depthStencilBuffer.texture = currentTarget.depthAttachment;
+        config.depthStencilBuffer.texture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
         config.priority = currentTarget.priority + basePriority;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
         config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;

@@ -161,7 +161,7 @@ metal_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
     }
 
     ds_desc.depthWriteEnabled = (desc.depthWriteEnabled) ? YES : NO;
-    ds_desc.depthCompareFunction = _CmpFunc(CmpFunc(desc.depthFunc));
+    ds_desc.depthCompareFunction = (desc.depthTestEnabled) ? _CmpFunc(CmpFunc(desc.depthFunc)) : MTLCompareFunctionAlways;
 
     state->uid = [_Metal_Device newDepthStencilStateWithDescriptor:ds_desc];
     state->stencilEnabled = desc.stencilEnabled;
