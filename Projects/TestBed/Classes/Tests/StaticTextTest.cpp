@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Tests/StaticTextTest.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "Render/2D/TextLayout.h"
 
 using namespace DAVA;
 
@@ -99,6 +100,14 @@ StaticTextTest::StaticTextTest()
 void StaticTextTest::LoadResources()
 {
     BaseScreen::LoadResources();
+
+    RefPtr<Font> arabFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
+    WideString test = L"؜توفيرها (من) قبل DAVA، INC والمساهمين";
+    TextLayout tl(true);
+    tl.Reset(test);
+    tl.CalculateCharSizes(*arabFont);
+    tl.NextByWords(99999);
+    tl.GetVisualText(true);
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
     ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));

@@ -56,10 +56,8 @@ class Font : public BaseObject
 public:
     enum eFontType
     {
-        TYPE_FT = 0 //!< freetype-based
-        ,
-        TYPE_GRAPHIC //!< sprite-based
-        ,
+        TYPE_FT = 0, //!< freetype-based
+        TYPE_GRAPHIC, //!< sprite-based
         TYPE_DISTANCE //!< distance-based
     };
 
@@ -69,17 +67,20 @@ public:
 	*/
     struct StringMetrics
     {
-        inline StringMetrics()
-            : drawRect()
-            , height(0)
-            , width(0)
-            , baseline(0)
-        {
-        }
         Rect2i drawRect;
-        int32 height;
-        int32 width;
-        int32 baseline;
+        int32 height = 0;
+        int32 width = 0;
+        int32 baseline = 0;
+    };
+
+    struct CharMetrics
+    {
+        uint32 index = 0;
+        uint32 codepoint = 0;
+        float32 xoffset = 0.f;
+        float32 yoffset = 0.f;
+        float32 xadvance = 0.f;
+        float32 yadvance = 0.f;
     };
 
 protected:
