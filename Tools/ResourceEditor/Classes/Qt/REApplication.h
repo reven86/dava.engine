@@ -32,7 +32,7 @@
 
 class QtMainWindow;
 class NGTCommand;
-class REApplication: public NGTLayer::BaseApplication
+class REApplication : public NGTLayer::BaseApplication
 {
 public:
     REApplication(int argc, char** argv);
