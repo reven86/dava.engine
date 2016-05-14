@@ -64,23 +64,26 @@ if (WIN32)
         set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll )  
 	endif ()
     
-    # collect cef resources
-    if ( NOT DISABLE_CEF )
-        file ( GLOB CEF_RESOURCES "${DAVA_TOOLS_BIN_DIR}/cef/*" )
-        
-        foreach( ITEM ${CEF_RESOURCES} )
-            STRING( REGEX REPLACE "${DAVA_TOOLS_BIN_DIR}" "" ITEM ${ITEM} )
-            list ( APPEND DAVA_THIRD_PARTY_LIBS "${ITEM}" )
-        endforeach()
-    endif ()
-    
-    if ( NOT WINDOWS_UAP AND NOT DISABLE_CEF )
-        add_definitions ( -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
+    if ( NOT WINDOWS_UAP )
+        set ( ENABLE_CEF true )
     endif ()
     
 else ()
 	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
 endif()
+
+# Enable Chromium Embedded Framework
+if ( ENABLE_CEF )
+    # collect cef resources
+    file ( GLOB CEF_RESOURCES "${DAVA_TOOLS_BIN_DIR}/cef/*" )
+    
+    foreach( ITEM ${CEF_RESOURCES} )
+        STRING( REGEX REPLACE "${DAVA_TOOLS_BIN_DIR}" "" ITEM ${ITEM} )
+        list ( APPEND DAVA_THIRD_PARTY_LIBS "${ITEM}" )
+    endforeach()
+    
+    add_definitions ( -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
+endif ()
 
 set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
 set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )
@@ -121,18 +124,23 @@ if ( WINDOWS_UAP )
     #set extensions version
     set ( WINDOWS_UAP_MOBILE_EXT_SDK_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
     set ( WINDOWS_UAP_IOT_EXT_SDK_VERSION    ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
-
+    
 else ()
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/includes" )
 
 endif()
-                                   
+
+if ( ENABLE_CEF )
+    set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/include/cef" )
+endif ()
+
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
 set( DAVA_BINARY_WIN32_DIR  "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
-if ( NOT DISABLE_CEF )
+if ( ENABLE_CEF )
     list ( APPEND DAVA_BINARY_WIN32_DIR "${DAVA_TOOLS_BIN_DIR}/cef" )
 endif ()
 
