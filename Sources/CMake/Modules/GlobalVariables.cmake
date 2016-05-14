@@ -61,10 +61,20 @@ if (WIN32)
         set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll fmod_event64.dll glew32.dll TextureConverter.dll )  
 	else ()
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
-        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll cef/libcef.dll )  
+        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll )  
 	endif ()
     
-    if ( NOT WINDOWS_UAP )
+    # collect cef resources
+    if ( NOT DISABLE_CEF )
+        file ( GLOB CEF_RESOURCES "${DAVA_TOOLS_BIN_DIR}/cef/*" )
+        
+        foreach( ITEM ${CEF_RESOURCES} )
+            STRING( REGEX REPLACE "${DAVA_TOOLS_BIN_DIR}" "" ITEM ${ITEM} )
+            list ( APPEND DAVA_THIRD_PARTY_LIBS "${ITEM}" )
+        endforeach()
+    endif ()
+    
+    if ( NOT WINDOWS_UAP AND NOT DISABLE_CEF )
         add_definitions ( -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
     endif ()
     
@@ -122,6 +132,10 @@ get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOL
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
 set( DAVA_BINARY_WIN32_DIR  "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+if ( NOT DISABLE_CEF )
+    list ( APPEND DAVA_BINARY_WIN32_DIR "${DAVA_TOOLS_BIN_DIR}/cef" )
+endif ()
+
 set( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
 if( NOT DEPLOY_DIR )
