@@ -38,6 +38,12 @@ struct DAVAProperiesEnum
     };
 };
 
+class PropertyPanelGetExtension: public GetterExtension
+{
+public:
+    Variant getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager & definitionManager) const override;
+};
+
 class EntityChildCreatorExtension : public ChildCreatorExtension
 {
 public:
@@ -49,4 +55,30 @@ class EntityMergeValueExtension: public MergeValuesExtension
 public:
     RefPropertyItem* lookUpItem(const PropertyNode* node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
                                 IDefinitionManager & definitionManager) const override;
+};
+
+class EntityInjectDataExtension: public InjectDataExtension
+{
+public:
+    class Delegate
+    {
+    public:
+        virtual void StartBatch(const DAVA::String& name, DAVA::uint32 commandCount) = 0;
+        virtual void RemoveComponent(DAVA::Component* component) = 0;
+        virtual void EndBatch() = 0;
+        virtual void OpenMaterial(DAVA::NMaterial* material) = 0;
+    };
+
+    EntityInjectDataExtension(Delegate& delegateObj, IDefinitionManager& defManager);
+
+    void inject(const RefPropertyItem* item, const std::function<void(size_t, const Variant&)>& injector) override;
+
+private:
+    void RemoveComponent(const RefPropertyItem* item);
+    void OpenMaterials(const RefPropertyItem* item);
+    void AddCustomProperty(const RefPropertyItem* item);
+
+private:
+    Delegate & delegateObj;
+    IDefinitionManager& defManager;
 };

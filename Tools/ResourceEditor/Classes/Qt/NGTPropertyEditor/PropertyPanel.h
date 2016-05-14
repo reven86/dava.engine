@@ -30,6 +30,7 @@
 #define __RESOURCEEDITOR_PROPERTYPANEL_H__
 
 #include "QtTools/Updaters/LazyUpdater.h"
+#include "Extensions.h"
 
 #include <core_ui_framework/i_view.hpp>
 #include <core_ui_framework/i_ui_framework.hpp>
@@ -49,7 +50,7 @@ class SceneEditor2;
 class EntityGroup;
 class ReflectedPropertyModel;
 
-class PropertyPanel : public QObject, public IViewEventListener
+class PropertyPanel : public QObject, public IViewEventListener, public EntityInjectDataExtension::Delegate
 {
     Q_OBJECT
     DECLARE_REFLECTED
@@ -66,6 +67,7 @@ public:
     Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
     void SetObject(std::vector<DAVA::InspBase*> davaObjects);
 
+
 protected:
     void timerEvent(QTimerEvent* e);
 
@@ -74,6 +76,12 @@ private:
     void onFocusOut(IView* view) override;
 
     void UpdateModel();
+    
+    void StartBatch(const DAVA::String& name, DAVA::uint32 commandCount) override;
+    void RemoveComponent(DAVA::Component * component) override;
+    void EndBatch() override;
+
+    void OpenMaterial(DAVA::NMaterial* material) override;
 
 private:
     std::unique_ptr<IView> view;

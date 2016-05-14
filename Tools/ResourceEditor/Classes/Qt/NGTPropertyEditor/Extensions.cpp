@@ -28,17 +28,23 @@
 
 #include "Extensions.h"
 
+#include "NgtTools/Common/GlobalContext.h"
 #include "Scene3D/Entity.h"
 #include "Render/Material/NMaterial.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
+#include "Render/Highlevel/RenderBatch.h"
 
+#include <core_qt_common/models/buttons_model.hpp>
+#include <core_data_model/i_item_role.hpp>
 #include <core_data_model/reflection/reflected_collection_item.hpp>
+#include <core_data_model/reflection/reflected_property_model.hpp>
 #include <core_reflection/i_definition_manager.hpp>
 #include <core_reflection/metadata/meta_types.hpp>
 #include <core_reflection/metadata/meta_impl.hpp>
 #include <core_reflection/metadata/meta_utilities.hpp>
 #include <core_reflection/base_property.hpp>
+#include <core_reflection/object_handle.hpp>
 #include <core_variant/collection.hpp>
 
 class ProxyProperty : public BaseProperty
@@ -54,6 +60,15 @@ public:
         return handle;
     }
 };
+
+namespace ExtensionsDetails
+{
+const TypeId entityType = TypeId::getType<DAVA::Entity>();
+const TypeId objectHandleType = TypeId::getType<ObjectHandle>();
+const TypeId nmaterialType = TypeId::getType<DAVA::NMaterial*>();
+const TypeId keyedArchive = TypeId::getType<DAVA::KeyedArchive*>();
+const TypeId renderBatchType = TypeId::getType<DAVA::RenderBatch>();
+}
 
 std::string BuildCollectionElementName(const Collection::ConstIterator& iter, IDefinitionManager& defMng)
 {
@@ -75,14 +90,6 @@ std::string BuildCollectionElementName(const Collection::ConstIterator& iter, ID
 
 void EntityChildCreatorExtension::exposeChildren(const PropertyNode& node, std::vector<const PropertyNode*>& children, IDefinitionManager& defMng) const
 {
-#define DEBUG_PROPERTIES_MODEL
-    static TypeId entityType = TypeId::getType<DAVA::Entity>();
-    static TypeId objectHandleType = TypeId::getType<ObjectHandle>();
-    static TypeId nmaterialType = TypeId::getType<DAVA::NMaterial*>();
-
-#if defined(DEBUG_PROPERTIES_MODEL)
-    std::string propertyName = node.propertyInstance->getName();
-#endif
     if (node.propertyType == DAVAProperiesEnum::EntityRoot)
     {
         PropertyNode newNode = node;
@@ -101,7 +108,7 @@ void EntityChildCreatorExtension::exposeChildren(const PropertyNode& node, std::
             }
         }
     }
-    else if (node.object.type() == entityType && node.propertyType == PropertyNode::SelfRoot)
+    else if (node.object.type() == ExtensionsDetails::entityType && node.propertyType == PropertyNode::SelfRoot)
     {
         static IBasePropertyPtr entityProxy = std::make_shared<ProxyProperty>("Entity");
         children.push_back(allocator->createPropertyNode(entityProxy, node.object, DAVAProperiesEnum::EntityRoot));
@@ -129,7 +136,7 @@ void EntityChildCreatorExtension::exposeChildren(const PropertyNode& node, std::
             }
         }
     }
-    else if (node.propertyInstance->getType() == nmaterialType)
+    else if (node.propertyInstance->getType() == ExtensionsDetails::nmaterialType)
     {
         // do not expose material children in property panel
         return;
@@ -144,4 +151,111 @@ RefPropertyItem * EntityMergeValueExtension::lookUpItem(const PropertyNode * nod
                                                         IDefinitionManager & definitionManager) const
 {
     return MergeValuesExtension::lookUpItem(node, items, definitionManager);
+}
+
+Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager & definitionManager) const
+{
+    if (column == 1 && roleId == ValueRole::roleId_)
+    {
+        Variant result = GetterExtension::getValue(item, column, roleId, definitionManager);
+        ObjectHandle handle;
+        if (result.tryCast(handle))
+        {
+            TypeId type = handle.type();
+            if (type.isPointer())
+            {
+                type = type.removePointer();
+            }
+
+            return type.getName();
+        }
+    }
+    return GetterExtension::getValue(item, column, roleId, definitionManager);
+}
+
+EntityInjectDataExtension::EntityInjectDataExtension(Delegate & delegateObj_, IDefinitionManager& defManager_)
+    : delegateObj(delegateObj_)
+    , defManager(defManager_)
+{
+}
+
+void EntityInjectDataExtension::inject(const RefPropertyItem* item, const std::function<void(size_t, const Variant&)>& injector)
+{
+    static TypeId removableComponents[] = { TypeId::getType<DAVA::RenderComponent>(), TypeId::getType<DAVA::ActionComponent>() };
+
+    const PropertyNode* node = item->getObjects().front();
+    Variant value = node->propertyInstance->get(node->object, defManager);
+    ObjectHandle handle;
+    if (value.tryCast(handle))
+    {
+        TypeId type = handle.type();
+        if (type.isPointer())
+            type = type.removePointer();
+
+        if (std::find(std::begin(removableComponents), std::end(removableComponents), type) != std::end(removableComponents))
+        {
+            std::vector<ButtonItem> buttons;
+            buttons.emplace_back(true, "/QtIcons/remove.png",std::bind(&EntityInjectDataExtension::RemoveComponent, this, item));
+            ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
+            injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+        }
+        else if (type == ExtensionsDetails::renderBatchType)
+        {
+            std::vector<ButtonItem> buttons;
+            buttons.emplace_back(true, "/QtIcons/external.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
+            buttons.emplace_back(true, "/QtIcons/shadow.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
+            buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
+            ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
+            injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+        }
+        else if (node->propertyInstance->getType() == ExtensionsDetails::nmaterialType)
+        {
+            std::vector<ButtonItem> buttons;
+            buttons.emplace_back(true, "/QtIcons/3d.png", std::bind(&EntityInjectDataExtension::OpenMaterials, this, item));
+            ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
+            injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+        }
+    }
+    else if (node->propertyInstance->getType() == ExtensionsDetails::keyedArchive)
+    {
+        std::vector<ButtonItem> buttons;
+        buttons.emplace_back(true, "/QtIcons/keyplus.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
+        ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
+        injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+    }
+}
+
+void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
+{
+    const std::vector<const PropertyNode*>& objects = item->getObjects();
+    delegateObj.StartBatch("Remove component", objects.size());
+    for (const PropertyNode* object : objects)
+    {
+        Variant value = object->propertyInstance->get(object->object, defManager);
+        ObjectHandle handle;
+        DVVERIFY(value.tryCast(handle));
+
+        DAVA::Component* component = reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
+        DVASSERT(component != nullptr);
+
+        delegateObj.RemoveComponent(component);
+    }
+    delegateObj.EndBatch();
+}
+
+void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
+{
+    const PropertyNode* node = item->getObjects().front();
+    Variant value = node->propertyInstance->get(node->object, defManager);
+    ObjectHandle handle;
+    DVVERIFY(value.tryCast(handle));
+
+    DAVA::NMaterial * material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
+    DVASSERT(material != nullptr);
+    delegateObj.OpenMaterial(material);
+}
+
+void EntityInjectDataExtension::AddCustomProperty(const RefPropertyItem* item)
+{
+
 }

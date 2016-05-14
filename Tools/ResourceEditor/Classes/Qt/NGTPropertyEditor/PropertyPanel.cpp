@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "PropertyPanel.h"
-#include "Extensions.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/EntityGroup.h"
 #include "NgtTools/Reflection/ReflectionBridge.h"
@@ -52,9 +51,14 @@ PropertyPanel::PropertyPanel()
     IDefinitionManager* definitionManager = NGTLayer::queryInterface<IDefinitionManager>();
     DVASSERT(definitionManager != nullptr);
 
-    model.reset(new ReflectedPropertyModel(*definitionManager, *commandManager));
+    IReflectionController* reflectionController = NGTLayer::queryInterface<IReflectionController>();
+    DVASSERT(reflectionController != nullptr);
+
+    model.reset(new ReflectedPropertyModel(*definitionManager, *commandManager, *reflectionController));
     model->registerExtension(new EntityChildCreatorExtension());
     model->registerExtension(new EntityMergeValueExtension());
+    model->registerExtension(new PropertyPanelGetExtension());
+    model->registerExtension(new EntityInjectDataExtension(*this, *definitionManager));
 }
 
 PropertyPanel::~PropertyPanel()
@@ -169,4 +173,34 @@ void PropertyPanel::onFocusOut(IView* view_)
 void PropertyPanel::UpdateModel()
 {
     model->update();
+}
+
+void PropertyPanel::StartBatch(const DAVA::String& name, DAVA::uint32 commandCount)
+{
+    SceneEditor2 * scene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(scene != nullptr);
+
+    scene->BeginBatch(name, commandCount);
+}
+
+void PropertyPanel::RemoveComponent(DAVA::Component * component)
+{
+    SceneEditor2 * scene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(scene != nullptr);
+
+    scene->Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
+}
+
+void PropertyPanel::EndBatch()
+{
+    SceneEditor2 * scene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(scene != nullptr);
+
+    scene->EndBatch();
+}
+
+void PropertyPanel::OpenMaterial(DAVA::NMaterial* material)
+{
+    QtMainWindow::Instance()->OnMaterialEditor();
+    MaterialEditor::Instance()->SelectMaterial(material);
 }

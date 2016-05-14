@@ -8,17 +8,13 @@ WGExpandingRowLayout
     WGListModel
     {
         id: buttonsModel
+        source: itemData != null ? itemData.ButtonsDefinition : null
         ButtonsModelExtension{}
     }
 
     Repeater
     {
-        Component.onCompleted:
-        {
-            buttonsModel.source = itemData != null ? itemData.ButtonsDefinition : null
-            model = buttonsModel;
-        }
-
+        model: buttonsModel
         delegate: WGPushButton
         {
             id: button
@@ -29,7 +25,7 @@ WGExpandingRowLayout
 
             onClicked:
             {
-                itemData.ButtonClicked = true;
+                ButtonClicked = true;
             }
         }
     }
