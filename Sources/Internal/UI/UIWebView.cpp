@@ -31,7 +31,9 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#if defined(DISABLE_NATIVE_WEBVIEW)
+#if defined(ENABLE_CEF_WEBVIEW)
+#include "UI/Private/CEFWebViewControl.h"
+#elif defined(DISABLE_NATIVE_WEBVIEW)
 #include "WebViewControlStub.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"

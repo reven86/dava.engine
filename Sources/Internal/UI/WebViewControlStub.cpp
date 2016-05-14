@@ -26,7 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#if defined DISABLE_NATIVE_WEBVIEW
+
+#if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 
 #include "WebViewControlStub.h"
 
@@ -91,4 +92,4 @@ bool WebViewControl::IsRenderToTexture() const
     return false;
 }
 
-#endif //DISABLE_NATIVE_WEBVIEW
+#endif //DISABLE_NATIVE_WEBVIEW && !ENABLE_CEF_WEBVIEW
