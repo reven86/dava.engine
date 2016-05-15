@@ -32,22 +32,30 @@
 #include "filemanager.h"
 #include "ziputils.h"
 #include "processhelper.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include <QProcess>
+#include <QPushButton>
 
 namespace SelfUpdater_local
 {
 class SelfUpdaterZipFunctor : public ZipUtils::ZipOperationFunctor
 {
 public:
-    SelfUpdaterZipFunctor() = default;
+    SelfUpdaterZipFunctor(QProgressBar* bar_)
+        : bar(bar_)
+    {
+    }
     ~SelfUpdaterZipFunctor() override = default;
-
 private:
     void OnError(const ZipError& zipError) override
     {
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
     }
+    void OnProgress(int value) override
+    {
+        bar->setValue(value);
+    }
+    QProgressBar* bar = nullptr;
 };
 }
 
@@ -59,21 +67,23 @@ SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessMan
 {
     ui->setupUi(this);
 
-    connect(this, SIGNAL(StartUpdating()), this, SLOT(OnStartUpdating()));
-
-    emit StartUpdating();
+#ifdef Q_OS_MAC
+    //https://bugreports.qt.io/browse/QTBUG-51120
+    ui->progressBar_processing->setTextVisible(true);
+    ui->progressBar_downoading->setTextVisible(true);
+#endif //Q_OS_MAC
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    currentDownload = networkManager->get(QNetworkRequest(QUrl(archiveUrl)));
+    connect(currentDownload, &QNetworkReply::downloadProgress, this, &SelfUpdater::DownloadProgress);
+    connect(currentDownload, &QNetworkReply::finished, this, &SelfUpdater::DownloadFinished);
+    connect(currentDownload, static_cast<void (QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error),
+            this, &SelfUpdater::NetworkError);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, currentDownload, &QNetworkReply::abort);
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
 }
 
 SelfUpdater::~SelfUpdater() = default;
 
-void SelfUpdater::OnStartUpdating()
-{
-    currentDownload = networkManager->get(QNetworkRequest(QUrl(archiveUrl)));
-
-    connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
-    connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
-}
 
 void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
 {
@@ -83,51 +93,109 @@ void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
     currentDownload->deleteLater();
     currentDownload = nullptr;
 }
+struct DirCleaner
+{
+    ~DirCleaner()
+    {
+        FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+        FileManager::DeleteDirectory(FileManager::GetSelfUpdateTempDirectory());
+    }
+};
 
 void SelfUpdater::DownloadFinished()
 {
+    DirCleaner raiiDirCleaner;
     if (currentDownload)
     {
-        FileManager::Instance()->ClearTempDirectory();
+        ui->buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
-        const QString& archiveFilePath = FileManager::Instance()->GetTempDownloadFilepath();
-        const QString& tempDirPath = FileManager::Instance()->GetTempDirectory();
-        const QString& appDirPath = FileManager::Instance()->GetLauncherDirectory();
-        const QString& selfUpdateDirPath = FileManager::Instance()->GetSelfUpdateTempDirectory();
+        const QString& appDirPath = FileManager::GetLauncherDirectory();
+        const QString& tempArchiveFilePath = FileManager::GetTempDownloadFilepath();
+        const QString& backupFilePath = FileManager::GetBackupDirectory();
+        const QString& selfUpdateFilePath = FileManager::GetSelfUpdateTempDirectory();
+        //archive file scope. At the end of the scope file will be closed if necessary
+        {
+            QByteArray data = currentDownload->readAll();
 
-        QFile archiveFile(archiveFilePath);
-        archiveFile.open(QFile::WriteOnly);
-        archiveFile.write(currentDownload->readAll());
-        archiveFile.close();
-
-        currentDownload->deleteLater();
-        currentDownload = nullptr;
+            currentDownload->deleteLater();
+            currentDownload = nullptr;
+            //create an archive with a new version
+            QFile archiveFile(tempArchiveFilePath);
+            if (archiveFile.open(QFile::WriteOnly | QFile::Truncate))
+            {
+                if (archiveFile.write(data) != data.size())
+                {
+                    ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not create launcher archive in the Launcher folder"));
+                    return;
+                }
+            }
+            else
+            {
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not create launcher archive in the Launcher folder"));
+                return;
+            }
+        }
+        SelfUpdater_local::SelfUpdaterZipFunctor functor(ui->progressBar_processing);
 
         ZipUtils::CompressedFilesAndSizes files;
-        SelfUpdater_local::SelfUpdaterZipFunctor functor;
-        if (ZipUtils::GetFileList(archiveFilePath, files, functor)
-            && ZipUtils::TestZipArchive(archiveFilePath, files, functor)
-            && ZipUtils::UnpackZipArchive(archiveFilePath, selfUpdateDirPath, files, functor)
-            )
+
+        //backuping: copy old launcher to temp directory
+        if (!ZipUtils::PackZipArchive(backupFilePath, appDirPath, functor))
         {
-            FileManager::Instance()->MoveFilesOnlyToDirectory(appDirPath, tempDirPath);
-            FileManager::Instance()->MoveFilesOnlyToDirectory(selfUpdateDirPath, appDirPath);
-            FileManager::Instance()->DeleteDirectory(selfUpdateDirPath);
-            FileManager::Instance()->ClearTempDirectory();
-            ErrorMessanger::Instance()->ShowNotificationDlg("Launcher was updated. Please, relaunch application.");
-            qApp->exit();
+            reject();
+            return;
+        }
+
+        //unpack new version
+        if ((ZipUtils::GetFileList(tempArchiveFilePath, files, functor)
+             && ZipUtils::UnpackZipArchive(tempArchiveFilePath, selfUpdateFilePath, files, functor)) == false)
+        {
+            reject();
+            return;
+        }
+
+        //remove old launcher files except download folder, temp folder and update folder
+        if (!FileManager::RemoveLauncherFiles())
+        {
+            //roll back old launcher
+            ZipUtils::GetFileList(tempArchiveFilePath, files, functor);
+            ZipUtils::UnpackZipArchive(tempArchiveFilePath, appDirPath, files, functor);
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not remove old launcher folder!"));
+            reject();
+            return;
+        }
+
+        if (FileManager::CopyLauncherFilesToDirectory(selfUpdateFilePath, appDirPath))
+        {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+            ui->label->setText(tr("Launcher was updated!\nPlease relaunch application!"));
+            connect(this, &QDialog::finished, qApp, &QApplication::quit);
         }
         else
         {
-            FileManager::Instance()->DeleteDirectory(selfUpdateDirPath);
-            setResult(QDialog::Rejected);
-            close();
+            Q_ASSERT(false);
+            reject();
+            return;
         }
     }
+    //network error
     else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {
-        setResult(QDialog::Rejected);
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
-        close();
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
+        reject();
+    }
+    //cancelled
+    else
+    {
+        accept();
+    }
+}
+
+void SelfUpdater::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    if (bytesTotal)
+    {
+        int percentage = (static_cast<double>(bytesReceived) / bytesTotal) * 100;
+        ui->progressBar_downoading->setValue(percentage);
     }
 }

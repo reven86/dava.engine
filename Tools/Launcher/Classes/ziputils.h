@@ -80,6 +80,8 @@ bool LaunchArchiver(const QStringList& arguments, ReadyReadCallback callback = R
 bool GetFileList(const QString& archivePath, CompressedFilesAndSizes& files, ZipOperationFunctor& functor);
 bool TestZipArchive(const QString& archivePath, const CompressedFilesAndSizes& files, ZipOperationFunctor& functor);
 bool UnpackZipArchive(const QString& archivePath, const QString& outDir, const CompressedFilesAndSizes& files, ZipOperationFunctor& onProgress);
+//this function will create archive without compress and progress
+bool PackZipArchive(const QString& archivePath, const QString& outDir, ZipOperationFunctor& onProgress);
 }
 
 #endif // __LAUNCHER_ZIP_LIST_H__

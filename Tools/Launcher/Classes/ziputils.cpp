@@ -35,7 +35,10 @@
 #include <QEventLoop>
 #include <QDir>
 #include <QApplication>
+#include <QDebug>
 #include <numeric>
+
+extern QString InQuotes(const QString& fileName);
 
 const QString& ZipUtils::GetArchiverPath()
 {
@@ -136,7 +139,8 @@ bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback ca
     });
     QEventLoop loop;
     QObject::connect(&zipProcess, static_cast<void (QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit, Qt::QueuedConnection);
-    zipProcess.start(processAddr, arguments);
+
+    zipProcess.start(processAddr + " " + arguments.join(' '));
     if (!zipProcess.waitForStarted(5000))
     {
         err->error = ZipError::PROCESS_FAILED_TO_START;
@@ -159,6 +163,7 @@ bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& 
         functor.OnError(err);
         return false;
     }
+    fileList.clear();
     QRegularExpression regExp("\\s+");
     bool foundOutputData = false;
     ReadyReadCallback callback = [&regExp, &foundOutputData, &fileList, &functor](const QByteArray& line) {
@@ -191,7 +196,7 @@ bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& 
         Q_ASSERT(!fileList.contains(file));
         fileList[file] = size;
     };
-    if (!LaunchArchiver(QStringList() << "l" << archivePath, callback, &err))
+    if (!LaunchArchiver(QStringList() << "l" << InQuotes(archivePath), callback, &err))
     {
         functor.OnError(err);
         return false;
@@ -239,7 +244,7 @@ bool ZipUtils::TestZipArchive(const QString& archivePath, const CompressedFilesA
     };
     QStringList arguments;
     arguments << "t"
-              << "-bb1" << archivePath;
+              << "-bb1" << InQuotes(archivePath);
     functor.OnStart();
     if (!LaunchArchiver(arguments, callback, &err))
     {
@@ -296,7 +301,54 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
     QStringList arguments;
     arguments << "x"
               << "-y"
-              << "-bb1" << archivePath << "-o" + outDirPath;
+              << "-bb1"
+              << InQuotes(archivePath)
+              << "-o" + InQuotes(outDirPath);
+    if (!LaunchArchiver(arguments, callback, &err))
+    {
+        functor.OnError(err);
+        return false;
+    }
+    if (success != true)
+    {
+        functor.OnError(ZipError::ARHIVE_DAMAGED);
+        return false;
+    }
+    functor.OnSuccess();
+    return true;
+}
+
+bool ZipUtils::PackZipArchive(const QString& archivePath, const QString& outDirPath, ZipOperationFunctor& functor)
+{
+    ZipError err;
+    if (!IsArchiveValid(archivePath, &err) && err.error != ZipError::FILE_NOT_EXISTS)
+    {
+        functor.OnError(err);
+        return false;
+    }
+    err.error = ZipError::NO_ERRORS;
+    QDir outDir(outDirPath);
+    if (!outDir.mkpath("."))
+    {
+        functor.OnError(ZipError::OUT_DIRECTORY_NOT_EXISTS);
+        return false;
+    }
+
+    bool success = false;
+    ReadyReadCallback callback = [&success, &functor](const QByteArray& line) {
+        if (line.contains("Everything is Ok"))
+        {
+            success = true;
+        }
+    };
+    QStringList arguments;
+    arguments
+    << "a"
+    << "-y"
+    << "-mx0"
+    << InQuotes(archivePath)
+    << InQuotes(outDirPath);
+
     if (!LaunchArchiver(arguments, callback, &err))
     {
         functor.OnError(err);

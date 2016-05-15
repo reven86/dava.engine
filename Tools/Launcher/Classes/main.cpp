@@ -29,12 +29,12 @@
 
 #include "mainwindow.h"
 #include "filemanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include <QApplication>
 
 void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
-    ErrorMessanger::Instance()->LogMessage(type, msg);
+    ErrorMessenger::LogMessage(type, msg);
 }
 
 int main(int argc, char* argv[])
@@ -51,12 +51,14 @@ int main(int argc, char* argv[])
 #endif // Q_OS_WIN
 
     QApplication a(argc, argv);
-
+    FileManager::Init(&a);
+    //must be initialized after FileManager
+    ErrorMessenger::Init();
+    
 #ifdef Q_OS_WIN
     delete[] argv1;
 #endif // Q_OS_WIN
 
-    ErrorMessanger::Instance();
     qInstallMessageHandler(LogMessageHandler);
 
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);

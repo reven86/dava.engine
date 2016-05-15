@@ -31,7 +31,7 @@
 #include "ui_configdownloader.h"
 #include "filemanager.h"
 #include "processhelper.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "applicationmanager.h"
 #include <QProcess>
 
@@ -73,7 +73,7 @@ void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList<QPair<Q
     {
         if (errorCode != QNetworkReply::OperationCanceledError)
         {
-            ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, errorCode, errorDescr);
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, errorCode, errorDescr);
         }
         reject();
     }

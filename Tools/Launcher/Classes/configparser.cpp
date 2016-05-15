@@ -28,7 +28,7 @@
 
 
 #include "configparser.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include <QFile>
 
 AppVersion AppVersion::LoadFromYamlNode(const YAML::Node* node)
@@ -187,12 +187,12 @@ ConfigParser::ConfigParser(const QByteArray& configData)
             }
             else
             {
-                ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_CONFIG);
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG);
             }
         }
         catch (YAML::ParserException& e)
         {
-            ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
         }
     }
 }

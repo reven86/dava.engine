@@ -36,6 +36,8 @@
 #include "defines.h"
 #include "filemanager.h"
 #include "configdownloader.h"
+#include "errormessenger.h"
+
 #include <QSet>
 #include <QQueue>
 #include <QInputDialog>
@@ -112,12 +114,9 @@ bool VersionListComparator(const QString& left, const QString& right)
 };
 
 MainWindow::MainWindow(QWidget* parent)
-    :
-    QMainWindow(parent)
-    ,
-    ui(new Ui::MainWindow)
-    ,
-    appManager(0)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , appManager(0)
 {
     ui->setupUi(this);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
@@ -146,7 +145,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     UpdateURLValue();
 
-    OnRefreshClicked();
+    //if run this method directly qApp->exec() will be called twice
+    QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()
@@ -230,7 +230,7 @@ void MainWindow::OnRefreshClicked()
     if (appManager->GetLocalConfig()->GetRemoteConfigURL().isEmpty())
         return;
 
-    FileManager::Instance()->ClearTempDirectory();
+    FileManager::ClearTempDirectory();
 
     ConfigDownloader downloader(appManager, networkManager, this);
     downloader.exec();
@@ -412,12 +412,20 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            SelfUpdater updater(tasks.front().version.url, networkManager);
-            updater.setWindowModality(Qt::ApplicationModal);
-            updater.exec();
-            if (updater.result() != QDialog::Rejected)
-                return;
-
+            if (!FileManager::CheckLauncherFolder())
+            {
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not access to launcher directory to update!"));
+            }
+            else
+            {
+                SelfUpdater updater(tasks.front().version.url, networkManager);
+                updater.setWindowModality(Qt::ApplicationModal);
+                updater.exec();
+                if (updater.result() != QDialog::Rejected)
+                {
+                    return;
+                }
+            }
             tasks.dequeue();
         }
         if (!tasks.isEmpty())

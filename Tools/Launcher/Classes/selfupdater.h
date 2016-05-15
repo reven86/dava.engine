@@ -49,13 +49,10 @@ public:
     explicit SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent = 0);
     ~SelfUpdater() override;
 
-signals:
-    void StartUpdating();
-
 private slots:
     void NetworkError(QNetworkReply::NetworkError code);
     void DownloadFinished();
-    void OnStartUpdating();
+    void DownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
     std::unique_ptr<Ui::SelfUpdater> ui;
