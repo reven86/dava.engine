@@ -414,7 +414,7 @@ float64 FfmpegPlayer::SyncVideoClock(AV::AVFrame* srcFrame, float64 pts)
     return pts;
 }
 
-DecodedFrameBuffer* FfmpegPlayer::DecodeVideoPacket(AV::AVPacket* packet)
+FfmpegPlayer::DecodedFrameBuffer* FfmpegPlayer::DecodeVideoPacket(AV::AVPacket* packet)
 {
     DVASSERT(nullptr != packet);
 
@@ -446,7 +446,7 @@ DecodedFrameBuffer* FfmpegPlayer::DecodeVideoPacket(AV::AVPacket* packet)
         frameBuffer = new DecodedFrameBuffer(frameBufferSize, pixelFormat, effectivePTS);
         // a trick to get converted data into one buffer with textureBufferSize because it could be larger than frame frame size.
         uint8* rgbTextureBufferHolder[1];
-        rgbTextureBufferHolder[0] = frameBuffer->data;
+        rgbTextureBufferHolder[0] = frameBuffer->data.data();
 
         const uint32 scaledHeight = AV::sws_scale(imgConvertCtx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, rgbDecodedScaledFrame->linesize);
 
@@ -569,7 +569,7 @@ void FfmpegPlayer::UpdateDrawData(DecodedFrameBuffer* buffer)
         lastFrameData->data = new uint8[frameBufferSize];
     }
 
-    Memcpy(lastFrameData->data, buffer->data, frameBufferSize);
+    Memcpy(lastFrameData->data, buffer->data.data(), frameBufferSize);
     lastFrameData->dataSize = frameBufferSize;
     lastFrameData->format = pixelFormat;
     lastFrameData->frameHeight = videoCodecContext->height;

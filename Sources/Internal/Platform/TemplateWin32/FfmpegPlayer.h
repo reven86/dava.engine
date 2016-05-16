@@ -64,34 +64,6 @@ extern "C"
 
 namespace DAVA
 {
-struct DecodedFrameBuffer
-{
-    DecodedFrameBuffer(uint32 dataSize, PixelFormat format, float64 pts_)
-        : pts(pts_)
-        , textureFormat(format)
-    {
-        data = new uint8[dataSize];
-
-        // we fill codecContext->width x codecContext->height area, it is smaller than texture size. So fill all the texture by empty color once.
-        // we suppose that next time we will fill same part of the texture.
-        Memset(data, emptyPixelColor, dataSize);
-    }
-    ~DecodedFrameBuffer()
-    {
-        SafeDeleteArray(data);
-    }
-
-    const uint8 emptyPixelColor = 255;
-
-    float64 frame_last_pts = 0.f;
-    float64 pts = 0.f;
-    float64 sleepAfterPresent = 0;
-    PixelFormat textureFormat = FORMAT_INVALID;
-    uint8* data;
-    uint32 size = 0;
-    uint32 width = 0;
-    uint32 height = 0;
-};
 
 class FfmpegPlayer : public IMovieViewControl
 {
@@ -154,6 +126,30 @@ public:
     PlayState GetState() const;
 
 private:
+    struct DecodedFrameBuffer
+    {
+        DecodedFrameBuffer(uint32 dataSize, PixelFormat format, float64 pts_)
+            : pts(pts_)
+            , textureFormat(format)
+        {
+            data.reserve(dataSize);
+
+            // we fill codecContext->width x codecContext->height area, it is smaller than texture size. So fill all the texture by empty color once.
+            // we suppose that next time we will fill same part of the texture.
+            Memset(data.data(), emptyPixelColor, dataSize);
+        }
+
+        const uint8 emptyPixelColor = 255;
+
+        float64 frame_last_pts = 0.f;
+        float64 pts = 0.f;
+        float64 sleepAfterPresent = 0;
+        PixelFormat textureFormat = FORMAT_INVALID;
+        Vector<uint8> data;
+        uint32 width = 0;
+        uint32 height = 0;
+    };
+
     PlayState state = STOPPED;
     bool videoShown = false;
     bool audioListen = false;

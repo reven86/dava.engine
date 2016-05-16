@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 #include "StreamBuffer.h"
 
+#include "Debug/DVAssert.h"
 #include "Concurrency/LockGuard.h"
 
 namespace DAVA
@@ -45,12 +46,14 @@ void StreamBuffer::Clear()
 
 void StreamBuffer::Write(uint8* dataIn, uint32 len)
 {
+    DVASSERT(nullptr != dataIn);
     LockGuard<Mutex> lock(interactionsLock);
     WriteInternal(dataIn, len);
 }
 
 uint32 StreamBuffer::Read(uint8* dataOut, uint32 len)
 {
+    DVASSERT(nullptr != dataOut);
     LockGuard<Mutex> lock(interactionsLock);
     uint32 bytesRead = 0;
     uint32 readMore = len;
