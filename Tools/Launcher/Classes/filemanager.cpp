@@ -65,6 +65,24 @@ QStringList OwnDirectories()
                          << path + baseAppDir
                          << path + tempDir;
 }
+
+bool IterateDirectory(const QString& dirPath, std::function<bool(const QFileInfo&, const QString& absPath)> callback)
+{
+    bool success = true;
+    // not empty -- we must empty it first
+    QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+    while (di.hasNext())
+    {
+        di.next();
+        const QFileInfo& fi = di.fileInfo();
+        QString absPath = fi.absoluteFilePath();
+        if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
+        {
+            success &= callback(fi, absPath);
+        }
+    }
+    return success;
+}
 }
 
 QString FileManager::GetDocumentsDirectory()
@@ -106,27 +124,6 @@ QString FileManager::GetTempDownloadFilepath()
 QString FileManager::GetLauncherDirectory()
 {
     return qApp->applicationDirPath() + "/";
-}
-
-namespace
-{
-bool IterateDirectory(const QString& dirPath, std::function<bool(const QFileInfo&, const QString& absPath)> callback)
-{
-    bool success = true;
-    // not empty -- we must empty it first
-    QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
-    while (di.hasNext())
-    {
-        di.next();
-        const QFileInfo& fi = di.fileInfo();
-        QString absPath = fi.absoluteFilePath();
-        if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
-        {
-            success &= callback(fi, absPath);
-        }
-    }
-    return success;
-}
 }
 
 bool FileManager::CheckLauncherFolder(const QString& folder)

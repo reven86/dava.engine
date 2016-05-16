@@ -44,16 +44,16 @@ QString GetLauncherDirectory();
 QString GetSelfUpdateTempDirectory();
 QString GetTempDownloadFilepath();
 
-    bool CheckLauncherFolder(const QString& folder = GetLauncherDirectory());
+bool CheckLauncherFolder(const QString& folder = GetLauncherDirectory());
 
-    bool DeleteDirectory(const QString& path);
-    bool MoveLauncherFilesRecursively(const QString& pathOut, const QString& pathIn);
-    void ClearTempDirectory();
+bool DeleteDirectory(const QString& path);
+bool MoveLauncherFilesRecursively(const QString& pathOut, const QString& pathIn);
+void ClearTempDirectory();
 
-    void MakeDirectory(const QString& path);
+void MakeDirectory(const QString& path);
 
-    QString GetApplicationFolder(const QString& branchID, const QString& appID);
-    QString GetBranchFolder(const QString& branchID);
+QString GetApplicationFolder(const QString& branchID, const QString& appID);
+QString GetBranchFolder(const QString& branchID);
 };
 
 #endif // FILEMANAGER_H
