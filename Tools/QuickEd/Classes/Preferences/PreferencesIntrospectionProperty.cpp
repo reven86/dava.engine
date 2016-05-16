@@ -36,7 +36,7 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     , member(aMember)
 {
     DAVA::VariantType value = PreferencesStorage::Instance()->GetDefaultValue(member);
-    if (value.type != VariantType::TYPE_NONE)
+    if (value.type != DAVA::VariantType::TYPE_NONE)
     {
         ValueProperty::SetDefaultValue(value);
     }
@@ -66,7 +66,7 @@ void PreferencesIntrospectionProperty::ApplyPreference()
     }
 }
 
-void PreferencesIntrospectionProperty::SetValue(const VariantType& val)
+void PreferencesIntrospectionProperty::SetValue(const DAVA::VariantType& val)
 {
     value = val;
 }

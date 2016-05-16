@@ -30,11 +30,13 @@
 #ifndef __QUICKED_PROPERTIES_MODEL_H__
 #define __QUICKED_PROPERTIES_MODEL_H__
 
+#include "Base/RefPtr.h"
+#include "FileSystem/VariantType.h"
+
+#include "Model/ControlProperties/PropertyListener.h"
+
 #include <QAbstractItemModel>
 #include <QSet>
-
-#include "FileSystem/VariantType.h"
-#include "Model/ControlProperties/PropertyListener.h"
 
 namespace DAVA
 {

@@ -37,6 +37,7 @@
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
+#include "QtTools/Utils/Utils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
@@ -49,14 +50,23 @@
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
+using namespace DAVA;
+
 REGISTER_PREFERENCES_ON_START(MainWindow,
                               PREF_ARG("isPixelized", false),
-                              PREF_ARG("state", DAVA::String()),
-                              PREF_ARG("geometry", DAVA::String()),
-                              PREF_ARG("consoleState", DAVA::String())
+                              PREF_ARG("state", String()),
+                              PREF_ARG("geometry", String()),
+                              PREF_ARG("consoleState", String())
                               )
 
-using namespace DAVA;
+namespace MainWindow_local
+{
+void SetColoredIconToAction(QAction* action, QColor color)
+{
+    action->setIcon(CreateIconFromColor(color));
+    action->setData(color);
+}
+}
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -313,12 +323,94 @@ void MainWindow::SetupViewMenu()
 
 void MainWindow::SetupBackgroundMenu()
 {
+    const InspInfo* inspInfo = PreferencesStorage::Instance()->GetInspInfo(FastName("ColorControl"));
+    const InspMember* inspMember = inspInfo->Member(FastName("backgroundColor"));
+    DVASSERT(inspInfo != nullptr && inspMember != nullptr);
+    if (inspMember == nullptr)
+    {
+        return;
+    }
+
     menuView->addSeparator();
     // Setup the Background Color menu.
+    QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
     menuView->addSeparator();
-    QAction* backgroundColorAction = PreferencesActionsFactory::CreateActionForPreference(FastName("ColorControl"), FastName("backgroundColor"), this);
-    backgroundColorAction->setText(tr("Background color"));
-    menuView->addAction(backgroundColorAction);
+    menuView->addMenu(backgroundColorMenu);
+
+    QActionGroup* actionGroup = new QActionGroup(backgroundColorMenu);
+
+    static const struct
+    {
+        QColor color;
+        QString colorName;
+    } colorsMap[] =
+    {
+      { Qt::transparent, "Default" },
+      { Qt::black, "Black" },
+      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
+      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
+      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
+    };
+
+    for (const auto& colorItem : colorsMap)
+    {
+        QAction* colorAction = new QAction(colorItem.colorName, backgroundColorMenu);
+        QColor color(colorItem.color);
+        MainWindow_local::SetColoredIconToAction(colorAction, color);
+
+        actionGroup->addAction(colorAction);
+        backgroundColorMenu->addAction(colorAction);
+        connect(colorAction, &QAction::toggled, [color, inspMember](bool toggled) {
+            if (toggled)
+            {
+                VariantType value(QColorToColor(color));
+                PreferencesStorage::Instance()->SetValue(inspMember, value);
+            }
+        });
+    }
+    QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
+    backgroundColorMenu->addAction(backgroundCustomColorAction);
+    connect(backgroundCustomColorAction, &QAction::triggered, [this, backgroundCustomColorAction, inspMember]() {
+        QColor curColor = backgroundCustomColorAction->data().value<QColor>();
+        QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
+        if (!color.isValid())
+        {
+            //if we launch app with custom color previous color action will be nullptr
+            if (previousBackgroundColorAction != nullptr
+                && previousBackgroundColorAction != backgroundCustomColorAction)
+            {
+                previousBackgroundColorAction->trigger();
+            }
+            return;
+        }
+        MainWindow_local::SetColoredIconToAction(backgroundCustomColorAction, color);
+        VariantType value(QColorToColor(color));
+        PreferencesStorage::Instance()->SetValue(inspMember, value);
+    });
+    actionGroup->addAction(backgroundCustomColorAction);
+
+    for (auto& action : actionGroup->actions())
+    {
+        action->setCheckable(true);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
+        previousBackgroundColorAction = action;
+    });
+
+    DAVA::VariantType loadedValue(PreferencesStorage::Instance()->GetValue(inspMember));
+    QColor color = ColorToQColor(loadedValue.AsColor());
+    for (auto& action : actionGroup->actions())
+    {
+        if (action->data().value<QColor>() == color)
+        {
+            action->trigger();
+        }
+    }
+    if (actionGroup->checkedAction() == nullptr)
+    {
+        MainWindow_local::SetColoredIconToAction(backgroundCustomColorAction, color);
+        backgroundCustomColorAction->setChecked(true);
+    }
 }
 
 void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
@@ -444,37 +536,37 @@ void MainWindow::SetPixelized(bool pixelized)
     actionPixelized->setChecked(pixelized);
 }
 
-DAVA::String MainWindow::GetState() const
+String MainWindow::GetState() const
 {
     QByteArray state = saveState().toBase64();
     return state.toStdString();
 }
 
-void MainWindow::SetState(const DAVA::String& array)
+void MainWindow::SetState(const String& array)
 {
     QByteArray state = QByteArray::fromStdString(array);
     restoreState(QByteArray::fromBase64(state));
 }
 
-DAVA::String MainWindow::GetGeometry() const
+String MainWindow::GetGeometry() const
 {
     QByteArray geometry = saveGeometry().toBase64();
     return geometry.toStdString();
 }
 
-void MainWindow::SetGeometry(const DAVA::String& array)
+void MainWindow::SetGeometry(const String& array)
 {
     QByteArray geometry = QByteArray::fromStdString(array);
     restoreGeometry(QByteArray::fromBase64(geometry));
 }
 
-DAVA::String MainWindow::GetConsoleState() const
+String MainWindow::GetConsoleState() const
 {
     QByteArray consoleState = logWidget->Serialize().toBase64();
     return consoleState.toStdString();
 }
 
-void MainWindow::SetConsoleState(const DAVA::String& array)
+void MainWindow::SetConsoleState(const String& array)
 {
     QByteArray consoleState = QByteArray::fromStdString(array);
     logWidget->Deserialize(QByteArray::fromBase64(consoleState));

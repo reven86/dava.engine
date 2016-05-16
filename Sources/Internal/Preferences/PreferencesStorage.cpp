@@ -303,7 +303,7 @@ DAVA::VariantType PreferencesStorage::GetDefaultValue(const DAVA::InspMember* me
     if (defaultValuesIter == defaultValuesList.end())
     {
         //this is normal case, default value may noty exists
-        return VariantType();
+        return DAVA::VariantType();
     }
     return defaultValuesIter->second;
 }

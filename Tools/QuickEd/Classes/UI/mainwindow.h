@@ -88,9 +88,7 @@ public slots:
 
 private slots:
     void OnShowHelp();
-
     void OnOpenProject();
-
     void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
