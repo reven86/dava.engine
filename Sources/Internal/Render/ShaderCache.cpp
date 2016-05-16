@@ -111,11 +111,10 @@ ShaderSourceCode LoadFromSource(const String& source)
     sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
     sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
 
-    bool loaded = true;
-
     //later move it into FileSystem
 
     //vertex
+    bool loaded = true;
     File* fp = File::Create(sourceCode.vertexProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
@@ -136,7 +135,15 @@ ShaderSourceCode LoadFromSource(const String& source)
     }
     SafeRelease(fp);
 
+    if (!loaded)
+    {
+        SafeDeleteArray(sourceCode.vertexProgText);
+        sourceCode.vertexProgText = new char[1];
+        sourceCode.vertexProgText[0] = 0;
+    }
+
     //fragment
+    loaded = true;
     fp = File::Create(sourceCode.fragmentProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
@@ -157,7 +164,12 @@ ShaderSourceCode LoadFromSource(const String& source)
     }
     SafeRelease(fp);
 
-    DVASSERT_MSG(loaded, "Can't load config files");
+    if (!loaded)
+    {
+        SafeDeleteArray(sourceCode.fragmentProgText);
+        sourceCode.fragmentProgText = new char[1];
+        sourceCode.fragmentProgText[0] = 0;
+    }
 
     return sourceCode;
 }
