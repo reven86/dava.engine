@@ -35,7 +35,6 @@
 class SceneValidator : public DAVA::Singleton<SceneValidator>
 {
 public:
-
     /*
      \brief Function to validate Scene errors
      \param[in] scene scene for validation

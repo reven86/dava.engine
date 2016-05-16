@@ -278,5 +278,4 @@ eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, con
 
     return convertRes;
 }
-
 };
