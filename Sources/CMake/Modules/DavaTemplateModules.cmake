@@ -112,10 +112,10 @@ macro( setup_main_module )
             FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
 
             if( ${NAME}_LIBRARY )
-                list ( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${${NAME}_LIBRARY} )
+                list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${${NAME}_LIBRARY} )
             else()
                 find_package( ${NAME} )
-                list ( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}  ${${NAME}_LIBRARY} )
+                list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${${NAME}_LIBRARY} )
             endif()
         endforeach()        
 
@@ -170,6 +170,7 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
+                STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
                 )
 
         load_property( PROPERTY_LIST 
@@ -178,6 +179,7 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
+                STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
                 )
 
 
@@ -253,7 +255,14 @@ macro( setup_main_module )
                 set( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE ${LIST_SHARED_LIBRARIES_RELEASE} )
             endif()
 
-            target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )  
+            if( LINK_THIRD_PARTY )                 
+                MERGE_STATIC_LIBRARIES( ${NAME_MODULE} ALL "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}}" )
+                MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} DEBUG "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG}" )
+                MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} RELEASE "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE}" )
+            endif()
+
+            target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}}
+                                                     ${STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}} )  
 
             foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG} )
                 target_link_libraries  ( ${NAME_MODULE} debug ${FILE} )
@@ -266,6 +275,7 @@ macro( setup_main_module )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
+            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )            
 
             if ( WINDOWS_UAP )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
