@@ -1,7 +1,7 @@
 #if VERTEX_FOG
 
     float4  FOG_result;
-	
+    
     float fogDistance = length(FOG_view_position);
     
     // calculating fog amoung, depending on distance 
@@ -62,11 +62,11 @@
             FOG_result.xyz = atmosphereColor;
         #else
             min10float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
-            FOG_result.xyz = lerp(fogColor, atmosphereColor, fogAtmosphereAttenuation);
+            FOG_result.xyz = lerp(fogColor, atmosphereColor, float(fogAtmosphereAttenuation));
         #endif
 
     #else
         FOG_result.xyz = fogColor;
     #endif
-	
+    
 #endif
