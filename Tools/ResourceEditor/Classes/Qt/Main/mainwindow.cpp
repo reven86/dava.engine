@@ -169,7 +169,7 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2*, const Command2*, bool)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(SceneActivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(SceneDeactivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
     connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
     connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
@@ -353,7 +353,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
         DAVA::ParticleEffectComponent* effect = GetEffectComponent(entityWithEffect);
         for (DAVA::int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
-            CollectEmittersForSave(effect->GetEmitter(i), emittersForSave, entityName);
+            CollectEmittersForSave(effect->GetEmitterInstance(i)->GetEmitter(), emittersForSave, entityName);
         }
     }
 
@@ -367,7 +367,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
         {
             QString particlesPath = GetSaveFolderForEmitters();
 
-            DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+            DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); // to ensure that folder is created
 
             QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
             QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));
@@ -645,7 +645,7 @@ void QtMainWindow::SetupToolBars()
 void QtMainWindow::SetupStatusBar()
 {
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), ui->statusBar, SLOT(SceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), ui->statusBar, SLOT(StructureChanged(SceneEditor2*, DAVA::Entity*)));
 
@@ -988,7 +988,7 @@ void QtMainWindow::SceneDeactivated(SceneEditor2* scene)
     EnableSceneActions(false);
 }
 
-void QtMainWindow::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)
 {
     UpdateModificationActionsState();
 }
@@ -1086,24 +1086,17 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 void QtMainWindow::UpdateModificationActionsState()
 {
-    bool canModify = false;
-    bool isMultiple = false;
-
     SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
-    {
-        const EntityGroup& selection = scene->selectionSystem->GetSelection();
-        canModify = scene->modifSystem->ModifCanStart(selection);
-        isMultiple = (selection.Size() > 1);
-    }
+    bool isMultiple = (nullptr != scene) && (scene->selectionSystem->GetSelection().GetSize() > 1);
+
+    // modificationWidget determines inside, if values could be modified and enables/disables itself
+    modificationWidget->ReloadValues();
+    bool canModify = modificationWidget->isEnabled();
 
     ui->actionModifyReset->setEnabled(canModify);
     ui->actionModifyPlaceOnLandscape->setEnabled(canModify);
-
     ui->actionCenterPivotPoint->setEnabled(canModify && !isMultiple);
     ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
-
-    modificationWidget->setEnabled(canModify);
 }
 
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
@@ -1505,7 +1498,7 @@ void QtMainWindow::OnSelectMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_OFF);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Disabled);
         LoadModificationState(scene);
     }
 }
@@ -1515,7 +1508,7 @@ void QtMainWindow::OnMoveMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_MOVE);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Translation);
         LoadModificationState(scene);
     }
 }
@@ -1525,7 +1518,7 @@ void QtMainWindow::OnRotateMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_ROTATE);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Rotation);
         LoadModificationState(scene);
     }
 }
@@ -1535,7 +1528,7 @@ void QtMainWindow::OnScaleMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_SCALE);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Scale);
         LoadModificationState(scene);
     }
 }
@@ -1654,7 +1647,7 @@ void QtMainWindow::OnTextureBrowser()
 {
     SceneEditor2* sceneEditor = GetCurrentScene();
 
-    EntityGroup selectedEntities;
+    SelectableGroup selectedEntities;
     if (nullptr != sceneEditor)
     {
         selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
@@ -1928,21 +1921,21 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
         ui->actionModifyRotate->setChecked(false);
         ui->actionModifyScale->setChecked(false);
 
-        ST_ModifMode modifMode = scene->modifSystem->GetModifMode();
-        modificationWidget->SetModifMode(modifMode);
+        auto modifMode = scene->modifSystem->GetTransformType();
+        modificationWidget->SetTransformType(modifMode);
 
         switch (modifMode)
         {
-        case ST_MODIF_OFF:
+        case Selectable::TransformType::Disabled:
             ui->actionModifySelect->setChecked(true);
             break;
-        case ST_MODIF_MOVE:
+        case Selectable::TransformType::Translation:
             ui->actionModifyMove->setChecked(true);
             break;
-        case ST_MODIF_ROTATE:
+        case Selectable::TransformType::Rotation:
             ui->actionModifyRotate->setChecked(true);
             break;
-        case ST_MODIF_SCALE:
+        case Selectable::TransformType::Scale:
             ui->actionModifyScale->setChecked(true);
             break;
         default:
@@ -1966,6 +1959,8 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
 
         // way editor
         ui->actionWayEditor->setChecked(scene->wayEditSystem->IsWayEditEnabled());
+
+        UpdateModificationActionsState();
     }
 }
 
@@ -3097,21 +3092,21 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
             auto vec = conv.GetPointers<DAVA::Entity*>();
             if (!vec.empty())
             {
-                EntityGroup entityGroup;
+                SelectableGroup objects;
                 DAVA::Vector<DAVA::Entity*> allEntities;
                 currentScene->GetChildNodes(allEntities);
                 for (auto entity : vec)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        entityGroup.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
+                        objects.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
                     }
                 }
 
-                if (!entityGroup.IsEmpty())
+                if (!objects.IsEmpty())
                 {
-                    currentScene->selectionSystem->SetSelection(entityGroup);
-                    currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());
+                    currentScene->selectionSystem->SetSelection(objects);
+                    currentScene->cameraSystem->LookAt(objects.GetIntegralBoundingBox());
                 }
             }
         }

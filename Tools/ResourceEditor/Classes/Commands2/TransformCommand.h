@@ -30,20 +30,22 @@
 #ifndef __TRANSFORM_COMMAND_H__
 #define __TRANSFORM_COMMAND_H__
 
+#include "Qt/Scene/Selectable.h"
 #include "Commands2/Base/Command2.h"
 
 class TransformCommand : public Command2
 {
 public:
-    TransformCommand(DAVA::Entity* _entity, const DAVA::Matrix4& _origTransform, const DAVA::Matrix4& _newTransform);
-    ~TransformCommand();
+    TransformCommand(Selectable object, const DAVA::Matrix4& origTransform, const DAVA::Matrix4& newTransform);
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+
+    DAVA::Entity* GetEntity() const override;
+    const Selectable& GetTransformedObject() const;
 
 protected:
-    DAVA::Entity* entity;
+    Selectable object;
     DAVA::Matrix4 undoTransform;
     DAVA::Matrix4 redoTransform;
 };

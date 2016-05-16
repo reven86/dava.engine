@@ -191,6 +191,9 @@ private:
 
     void FillSizeOverlifeXY(RefPtr<PropertyLine<float32>> sizeOverLife);
     void UpdateSizeLine(PropertyLine<Vector2>* line, bool rescaleSize, bool swapXY); //conversion from old format
+
+public:
+    INTROSPECTION_EXTEND(ParticleLayer, BaseObject, nullptr);
 };
 }
 
