@@ -28,7 +28,6 @@
 
 
 #include "mainwindow.h"
-#include "filemanager.h"
 #include "errormessenger.h"
 #include <QApplication>
 
@@ -39,26 +38,8 @@ void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString&
 
 int main(int argc, char* argv[])
 {
-#ifdef Q_OS_WIN
-    char** argv1 = new char*[argc + 2];
-    memcpy(argv1, argv, argc * sizeof(char*));
-
-    argv1[argc] = "-platformpluginpath";
-    argv1[argc + 1] = ".";
-
-    argc += 2;
-    argv = argv1;
-#endif // Q_OS_WIN
-
     QApplication a(argc, argv);
-    FileManager::Init(&a);
-    //must be initialized after FileManager
-    ErrorMessenger::Init();
     
-#ifdef Q_OS_WIN
-    delete[] argv1;
-#endif // Q_OS_WIN
-
     qInstallMessageHandler(LogMessageHandler);
 
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);

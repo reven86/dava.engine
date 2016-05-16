@@ -37,28 +37,23 @@ extern QString InQuotes(const QString& fileName);
 
 namespace FileManager
 {
-void Init(QCoreApplication* app);
-    const QString& GetDocumentsDirectory();
-    const QString& GetBaseAppsDirectory();
-    const QString& GetTempDirectory();
-    const QString& GetLauncherDirectory();
-    const QString& GetBackupDirectory();
-    const QString& GetSelfUpdateTempDirectory();
-
-    const QString& GetTempDownloadFilepath();
+QString GetDocumentsDirectory();
+QString GetBaseAppsDirectory();
+QString GetTempDirectory();
+QString GetLauncherDirectory();
+QString GetSelfUpdateTempDirectory();
+QString GetTempDownloadFilepath();
 
     bool CheckLauncherFolder(const QString& folder = GetLauncherDirectory());
 
     bool DeleteDirectory(const QString& path);
-    bool CopyLauncherFilesToDirectory(const QString& launcherPath, const QString& destPath);
-    bool RemoveLauncherFiles();
+    bool MoveLauncherFilesRecursively(const QString& pathOut, const QString& pathIn);
     void ClearTempDirectory();
 
     void MakeDirectory(const QString& path);
 
     QString GetApplicationFolder(const QString& branchID, const QString& appID);
     QString GetBranchFolder(const QString& branchID);
-
 };
 
 #endif // FILEMANAGER_H

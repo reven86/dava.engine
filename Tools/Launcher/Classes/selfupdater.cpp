@@ -35,6 +35,7 @@
 #include "errormessenger.h"
 #include <QProcess>
 #include <QPushButton>
+#include <QApplication>
 
 namespace SelfUpdater_local
 {
@@ -111,8 +112,7 @@ void SelfUpdater::DownloadFinished()
 
         const QString& appDirPath = FileManager::GetLauncherDirectory();
         const QString& tempArchiveFilePath = FileManager::GetTempDownloadFilepath();
-        const QString& backupFilePath = FileManager::GetBackupDirectory();
-        const QString& selfUpdateFilePath = FileManager::GetSelfUpdateTempDirectory();
+        const QString& selfUpdateDirPath = FileManager::GetSelfUpdateTempDirectory();
         //archive file scope. At the end of the scope file will be closed if necessary
         {
             QByteArray data = currentDownload->readAll();
@@ -135,37 +135,22 @@ void SelfUpdater::DownloadFinished()
                 return;
             }
         }
-        SelfUpdater_local::SelfUpdaterZipFunctor functor(ui->progressBar_processing);
-
-        ZipUtils::CompressedFilesAndSizes files;
-
-        //backuping: copy old launcher to temp directory
-        if (!ZipUtils::PackZipArchive(backupFilePath, appDirPath, functor))
-        {
-            reject();
-            return;
-        }
 
         //unpack new version
+        ZipUtils::CompressedFilesAndSizes files;
+        SelfUpdater_local::SelfUpdaterZipFunctor functor(ui->progressBar_processing);
         if ((ZipUtils::GetFileList(tempArchiveFilePath, files, functor)
-             && ZipUtils::UnpackZipArchive(tempArchiveFilePath, selfUpdateFilePath, files, functor)) == false)
+             && ZipUtils::UnpackZipArchive(tempArchiveFilePath, selfUpdateDirPath, files, functor)) == false)
         {
             reject();
             return;
         }
 
+        FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+        QString tempDir = FileManager::GetTempDirectory(); //create temp directory
         //remove old launcher files except download folder, temp folder and update folder
-        if (!FileManager::RemoveLauncherFiles())
-        {
-            //roll back old launcher
-            ZipUtils::GetFileList(tempArchiveFilePath, files, functor);
-            ZipUtils::UnpackZipArchive(tempArchiveFilePath, appDirPath, files, functor);
-            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not remove old launcher folder!"));
-            reject();
-            return;
-        }
-
-        if (FileManager::CopyLauncherFilesToDirectory(selfUpdateFilePath, appDirPath))
+        if (FileManager::MoveLauncherFilesRecursively(appDirPath, tempDir)
+            && FileManager::MoveLauncherFilesRecursively(selfUpdateDirPath, appDirPath))
         {
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
             ui->label->setText(tr("Launcher was updated!\nPlease relaunch application!"));

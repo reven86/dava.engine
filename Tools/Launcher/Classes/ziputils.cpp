@@ -28,6 +28,7 @@
 
 
 #include "ziputils.h"
+#include "filemanager.h"
 #include <QString>
 #include <QProcess>
 #include <QFile>
@@ -38,7 +39,6 @@
 #include <QDebug>
 #include <numeric>
 
-extern QString InQuotes(const QString& fileName);
 
 const QString& ZipUtils::GetArchiverPath()
 {
@@ -304,51 +304,6 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
               << "-bb1"
               << InQuotes(archivePath)
               << "-o" + InQuotes(outDirPath);
-    if (!LaunchArchiver(arguments, callback, &err))
-    {
-        functor.OnError(err);
-        return false;
-    }
-    if (success != true)
-    {
-        functor.OnError(ZipError::ARHIVE_DAMAGED);
-        return false;
-    }
-    functor.OnSuccess();
-    return true;
-}
-
-bool ZipUtils::PackZipArchive(const QString& archivePath, const QString& outDirPath, ZipOperationFunctor& functor)
-{
-    ZipError err;
-    if (!IsArchiveValid(archivePath, &err) && err.error != ZipError::FILE_NOT_EXISTS)
-    {
-        functor.OnError(err);
-        return false;
-    }
-    err.error = ZipError::NO_ERRORS;
-    QDir outDir(outDirPath);
-    if (!outDir.mkpath("."))
-    {
-        functor.OnError(ZipError::OUT_DIRECTORY_NOT_EXISTS);
-        return false;
-    }
-
-    bool success = false;
-    ReadyReadCallback callback = [&success, &functor](const QByteArray& line) {
-        if (line.contains("Everything is Ok"))
-        {
-            success = true;
-        }
-    };
-    QStringList arguments;
-    arguments
-    << "a"
-    << "-y"
-    << "-mx0"
-    << InQuotes(archivePath)
-    << InQuotes(outDirPath);
-
     if (!LaunchArchiver(arguments, callback, &err))
     {
         functor.OnError(err);

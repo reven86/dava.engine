@@ -45,7 +45,6 @@ enum ErrorID
     ERROR_UPDATE,
     ERROR_COUNT
 };
-void Init();
 void ShowErrorMessage(ErrorID id, const QString& addInfo);
 void ShowErrorMessage(ErrorID id, int errorCode = 0, const QString& addInfo = "");
 int ShowRetryDlg(bool canCancel);

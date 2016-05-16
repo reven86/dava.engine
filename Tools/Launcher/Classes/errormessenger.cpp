@@ -34,11 +34,6 @@
 #include <QDateTime>
 #include <QFile>
 
-namespace ErrorMessenger
-{
-QFile logFile;
-}
-
 namespace
 {
 QString errorsMsg[ErrorMessenger::ERROR_COUNT] = {
@@ -49,12 +44,6 @@ QString errorsMsg[ErrorMessenger::ERROR_COUNT] = {
     "Application is running. Please, close it",
     "Updating error"
 };
-}
-
-void ErrorMessenger::Init()
-{
-    QString logPath = FileManager::GetDocumentsDirectory() + "launcher.log";
-    logFile.setFileName(logPath);
 }
 
 void ErrorMessenger::ShowErrorMessage(ErrorID id, const QString& addInfo)
@@ -113,7 +102,9 @@ void ErrorMessenger::LogMessage(QtMsgType type, const QString& msg)
         typeStr = "FATAL";
         break;
     }
-
+    QFile logFile;
+    QString logPath = FileManager::GetDocumentsDirectory() + "launcher.log";
+    logFile.setFileName(logPath);
     QString time = QDateTime::currentDateTime().toString("[dd.MM.yyyy - hh:mm:ss]");
     if (logFile.open(QIODevice::WriteOnly | QIODevice::Append))
     {
