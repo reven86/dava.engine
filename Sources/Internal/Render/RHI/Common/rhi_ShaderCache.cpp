@@ -230,6 +230,9 @@ static const char* _ShaderHeader_Metal =
 "inline float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
 "inline float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
 "inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
+"inline float2 lerp( float2 a, float2 b, float2 t ) { return mix( a, b, t ); }\n"
+"inline float3 lerp( float3 a, float3 b, float3 t ) { return mix( a, b, t ); }\n"
+"inline float4 lerp( float4 a, float4 b, float4 t ) { return mix( a, b, t ); }\n"
 
 "inline half  lerp( half a, half b, half t ) { return mix( a, b, t ); }\n"
 "inline half2 lerp( half2 a, half2 b, half t ) { return mix( a, b, t ); }\n"
