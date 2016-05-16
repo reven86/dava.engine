@@ -225,7 +225,7 @@ static const char* _ShaderHeader_Metal =
 "float4 mul( float4x4 m, float4 v ) { return v*m; }\n"
 "float3 mul( float3 v, float3x3 m );\n"
 "float3 mul( float3 v, float3x3 m ) { return m*v; }\n"
-
+/*
 "inline float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
 "inline float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
 "inline float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
@@ -238,6 +238,8 @@ static const char* _ShaderHeader_Metal =
 "inline half2 lerp( half2 a, half2 b, half t ) { return mix( a, b, t ); }\n"
 "inline half3 lerp( half3 a, half3 b, half t ) { return mix( a, b, t ); }\n"
 "inline half4 lerp( half4 a, half4 b, half t ) { return mix( a, b, t ); }\n"
+*/
+"#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
 "#define FP_A8(t) t.a\n"
