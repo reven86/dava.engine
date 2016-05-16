@@ -76,28 +76,28 @@ class MovieViewControl : public IMovieViewControl
 {
 public:
     MovieViewControl();
-    virtual ~MovieViewControl();
+    ~MovieViewControl() override;
 
     // Initialize the control.
-    virtual void Initialize(const Rect& rect);
+    void Initialize(const Rect& rect) override;
 
     // Position/visibility.
-    virtual void SetRect(const Rect& rect);
-    virtual void SetVisible(bool isVisible);
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible) override;
 
     // Open the Movie.
-    virtual void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
 
     // Start/stop the video playback.
-    virtual void Play();
-    virtual void Stop();
+    void Play() override;
+    void Stop() override;
 
     // Pause/resume the playback.
-    virtual void Pause();
-    virtual void Resume();
+    void Pause() override;
+    void Resume() override;
 
     // Whether the movie is being played?
-    virtual bool IsPlaying() const;
+    bool IsPlaying() const override;
 
 private:
     JniMovieViewControl jniMovieViewControl;

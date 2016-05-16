@@ -88,24 +88,23 @@ void MovieViewControl::Update()
     if (FfmpegPlayer::STOPPED == ffmpegPlayer->GetState())
         SafeRelease(videoTexture);
 
-    FfmpegPlayer::DrawVideoFrameData* drawData = ffmpegPlayer->GetDrawData();
+    FfmpegPlayer::DrawVideoFrameData drawData = ffmpegPlayer->GetDrawData();
 
-    if (nullptr == drawData || nullptr == videoTextureBuffer)
+    if (nullptr == videoTextureBuffer || PixelFormatDescriptor::TEXTURE_FORMAT_INVALID == drawData.format || 0 == drawData.data.size())
         return;
 
-    Memcpy(videoTextureBuffer, drawData->data, drawData->dataSize);
+    Memcpy(videoTextureBuffer, drawData.data.data(), drawData.data.size());
     if (nullptr == videoTexture)
     {
-        videoTexture = Texture::CreateFromData(drawData->format, videoTextureBuffer, textureWidth, textureHeight, false);
-        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, drawData->frameWidth, drawData->frameHeight, static_cast<float32>(drawData->frameWidth), static_cast<float32>(drawData->frameHeight));
+        videoTexture = Texture::CreateFromData(drawData.format, videoTextureBuffer, textureWidth, textureHeight, false);
+        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, drawData.frameWidth, drawData.frameHeight, static_cast<float32>(drawData.frameWidth), static_cast<float32>(drawData.frameHeight));
         videoBackground->SetSprite(videoSprite);
         videoSprite->Release();
     }
     else
     {
-        videoTexture->TexImage(0, textureWidth, textureHeight, videoTextureBuffer, drawData->dataSize, Texture::INVALID_CUBEMAP_FACE);
+        videoTexture->TexImage(0, textureWidth, textureHeight, videoTextureBuffer, drawData.data.size(), Texture::INVALID_CUBEMAP_FACE);
     }
-    SafeDelete(drawData);
 }
 
 void MovieViewControl::Draw(const UIGeometricData& parentGeometricData)

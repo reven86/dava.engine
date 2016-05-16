@@ -82,7 +82,8 @@ public:
     virtual void Update()
     {
     }
-    virtual void Draw(const class UIGeometricData& parentGeometricData)
+
+    virtual void Draw(const class UIGeometricData&)
     {
     }
 };

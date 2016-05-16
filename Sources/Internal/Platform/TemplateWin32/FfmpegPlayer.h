@@ -97,20 +97,14 @@ public:
 
     struct DrawVideoFrameData
     {
-        ~DrawVideoFrameData()
-        {
-            SafeDeleteArray(data);
-        }
-
-        uint8* data = nullptr;
-        uint32 dataSize = 0; // = width * height * size of pixel depended on format
-        uint32 frameHeight = 0;
-        uint32 frameWidth = 0;
+        Vector<uint8> data;
+        uint32 frameHeight;
+        uint32 frameWidth;
         PixelFormat format;
     };
 
     // Data getter
-    DrawVideoFrameData* GetDrawData();
+    DrawVideoFrameData GetDrawData();
 
     PixelFormat GetPixelFormat() const;
     Vector2 GetResolution() const;
@@ -131,9 +125,8 @@ private:
         DecodedFrameBuffer(uint32 dataSize, PixelFormat format, float64 pts_)
             : pts(pts_)
             , textureFormat(format)
+            , data(dataSize)
         {
-            data.reserve(dataSize);
-
             // we fill codecContext->width x codecContext->height area, it is smaller than texture size. So fill all the texture by empty color once.
             // we suppose that next time we will fill same part of the texture.
             Memset(data.data(), emptyPixelColor, dataSize);
@@ -168,7 +161,7 @@ private:
     bool InitAudio();
     void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
 
-    void FlushBuffers();
+    void ClearBuffers();
     void CloseMovie();
 
     void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
@@ -197,7 +190,7 @@ private:
 
     void UpdateDrawData(DecodedFrameBuffer* buffer);
     Mutex lastFrameLocker;
-    DrawVideoFrameData* lastFrameData = nullptr;
+    DrawVideoFrameData lastFrameData;
     float64 videoFramerate = 0.f;
     float64 frameLastPts = 0.f;
     float64 frameLastDelay = 40e-3;

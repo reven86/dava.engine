@@ -173,8 +173,7 @@ void FfmpegPlayer::CloseMovie()
         SafeRelease(audioDecodingThread);
     }
 
-    FlushBuffers();
-    SafeDelete(lastFrameData);
+    ClearBuffers();
 
     isAudioVideoStreamsInited = false;
 
@@ -284,7 +283,7 @@ float64 FfmpegPlayer::GetAudioClock() const
     return pts;
 }
 
-void FfmpegPlayer::FlushBuffers()
+void FfmpegPlayer::ClearBuffers()
 {
     DVASSERT(PLAYING != state && PAUSED != state);
     {
@@ -304,6 +303,7 @@ void FfmpegPlayer::FlushBuffers()
         videoPackets.clear();
     }
     pcmBuffer.Clear();
+    lastFrameData.data.clear();
 }
 
 FMOD_RESULT F_CALLBACK FfmpegPlayer::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
@@ -527,19 +527,10 @@ float64 FfmpegPlayer::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, u
     return effectivePTS;
 }
 
-FfmpegPlayer::DrawVideoFrameData* FfmpegPlayer::GetDrawData()
+FfmpegPlayer::DrawVideoFrameData FfmpegPlayer::GetDrawData()
 {
     LockGuard<Mutex> lock(lastFrameLocker);
-
-    if (nullptr == lastFrameData)
-        return nullptr;
-
-    DrawVideoFrameData* data = new DrawVideoFrameData();
-    *data = *lastFrameData;
-    data->data = new uint8[lastFrameData->dataSize];
-    Memcpy(data->data, lastFrameData->data, lastFrameData->dataSize);
-
-    return data;
+    return lastFrameData;
 }
 
 PixelFormat FfmpegPlayer::GetPixelFormat() const
@@ -563,17 +554,10 @@ void FfmpegPlayer::UpdateDrawData(DecodedFrameBuffer* buffer)
 
     LockGuard<Mutex> lock(lastFrameLocker);
 
-    if (nullptr == lastFrameData)
-    {
-        lastFrameData = new DrawVideoFrameData();
-        lastFrameData->data = new uint8[frameBufferSize];
-    }
-
-    Memcpy(lastFrameData->data, buffer->data.data(), frameBufferSize);
-    lastFrameData->dataSize = frameBufferSize;
-    lastFrameData->format = pixelFormat;
-    lastFrameData->frameHeight = videoCodecContext->height;
-    lastFrameData->frameWidth = videoCodecContext->width;
+    lastFrameData.data = buffer->data;
+    lastFrameData.format = pixelFormat;
+    lastFrameData.frameHeight = videoCodecContext->height;
+    lastFrameData.frameWidth = videoCodecContext->width;
 }
 
 void FfmpegPlayer::InitFmod()
