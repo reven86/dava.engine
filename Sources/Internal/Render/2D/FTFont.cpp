@@ -125,7 +125,8 @@ private:
     int32 LoadString(const WideString& str);
     void Prepare(FT_Vector* advances);
 
-    inline FT_Pos Round(FT_Pos val);
+    inline int32 FtRound(int32 val);
+    inline int32 FtCeil(int32 val);
 
     static unsigned long StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count);
     static void StreamClose(FT_Stream stream);
@@ -574,8 +575,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
     // Transform width from FT points to pixels
-    // Increase width by 1 for get total size litle larged that summ of length all symbols in float32 (charSizes)
-    metrics.width = (layoutWidth >> ftToPixelShift) + 1;
+    metrics.width = FtCeil(layoutWidth) >> ftToPixelShift;
 
     if (!contentScaleIncluded)
     {
@@ -729,9 +729,14 @@ int32 FTInternalFont::LoadString(const WideString& str)
     return spacesCount;
 }
 
-FT_Pos FTInternalFont::Round(FT_Pos val)
+int32 FTInternalFont::FtRound(int32 val)
 {
     return (((val) + 32) & -64);
+}
+
+inline int32 FTInternalFont::FtCeil(int32 val)
+{
+    return (((val) + 63) & -64);
 }
 
 unsigned long FTInternalFont::StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count)
