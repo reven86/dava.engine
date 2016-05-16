@@ -13,8 +13,6 @@ set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR}
 
 set( INCLUDES_WIN                   ${WINDOWSSDK_LATEST_DIR}/include/shared        
                                     $ENV{DXSDK_DIR}/include )
-
-set( INCLUDES_WINUAP                ${INCLUDES_WIN} )
   
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 
