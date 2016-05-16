@@ -116,7 +116,7 @@ void DeleteLODCommand::Redo()
     lodComponent->lodLayersArray[0].SetNearDistance(0.0f);
 
     //visual part
-    lodComponent->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
+    lodComponent->SetCurrentLod(DAVA::LodComponent::INVALID_LOD_LAYER);
     lodComponent->forceLodLayer = DAVA::LodComponent::INVALID_LOD_LAYER;
 }
 

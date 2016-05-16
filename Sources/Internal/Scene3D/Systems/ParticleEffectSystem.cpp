@@ -186,10 +186,7 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent* effect)
         return;
     }
 
-    Scene* scene = GetScene();
-
-    if (scene)
-        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetCurrentCamera(), 1.0f / 60.0f);
+    //TODO: force lod here
     if (effect->activeLodLevel != effect->desiredLodLevel)
         UpdateActiveLod(effect);
 

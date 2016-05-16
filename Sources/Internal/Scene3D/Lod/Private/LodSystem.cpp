@@ -36,17 +36,13 @@
 #include "Platform/SystemTimer.h"
 #include "Core/PerformanceSettings.h"
 #include "Debug/Stats.h"
+#include "..\LodSystem.h"
 
 namespace DAVA
 {
 LodSystem::LodSystem(Scene* scene)
     : SceneSystem(scene)
 {
-    camera = 0;
-    forceUpdateAll = true;
-
-    partialUpdateIndices.reserve(UPDATE_PART_PER_FRAME + 1);
-    UpdatePartialUpdateIndices();
 }
 
 void LodSystem::Process(float32 timeElapsed)
@@ -57,8 +53,6 @@ void LodSystem::Process(float32 timeElapsed)
         timeElapsed = 0.000001f;
     }
 
-    SetCamera(GetScene()->GetCurrentCamera());
-
     float32 currFps = 1.0f / timeElapsed;
 
     float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS()) / (PerformanceSettings::Instance()->GetPsPerformanceMaxFPS() - PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
@@ -69,80 +63,50 @@ void LodSystem::Process(float32 timeElapsed)
     lodOffset *= lodOffset;
     lodMult *= lodMult;
 
-    if (forceUpdateAll)
+    //update lod
+    int32 objectCount = static_cast<int32>(lodComponents.size());
+    for (int32 i = 0; i < objectCount; ++i)
     {
-        int32 objectCount = static_cast<int32>(entities.size());
-        for (int32 i = 0; i < objectCount; ++i)
+        LodComponent* lodComponent = lodComponents[i];
+        Entity* entity = lodComponent->GetEntity();
+        int32 newLod = RecheckLod(lodComponent, lodOffset, lodMult, GetScene()->GetCurrentCamera());
+        if (lodComponent->currentLod != newLod)
         {
-            Entity* entity = entities[i];
+            lodComponent->currentLod = newLod;
+            ParticleEffectComponent* effect = GetEffectComponent(entity);
+            if (effect)
+            {
+                effect->SetDesiredLodLevel(lodComponent->currentLod);
+            }
+            else
+            {
+                int32 layerNum = lodComponent->currentLod;
+                if (layerNum != LodComponent::LAST_LOD_LAYER)
+                {
+                    DVASSERT(0 <= layerNum && layerNum < LodComponent::MAX_LOD_LAYERS);
+                }
 
-            ProcessEntity(entity, lodOffset, lodMult, camera);
+                SetEntityLod(entity, layerNum);
+            }
         }
-
-        if (objectCount > 0)
-        {
-            forceUpdateAll = false;
-        }
-    }
-    else
-    {
-        for (int32 i = partialUpdateIndices[currentPartialUpdateIndex]; i < partialUpdateIndices[currentPartialUpdateIndex + 1]; ++i)
-        {
-            Entity* entity = entities[i];
-            ProcessEntity(entity, lodOffset, lodMult, camera);
-        }
-
-        currentPartialUpdateIndex = currentPartialUpdateIndex < UPDATE_PART_PER_FRAME - 1 ? currentPartialUpdateIndex + 1 : 0;
     }
 }
-
-void LodSystem::ForceUpdate(Entity* entity, Camera* camera, float32 timeElapsed)
-{
-    float32 currFps = 1.0f / timeElapsed;
-
-    float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS()) / (PerformanceSettings::Instance()->GetPsPerformanceMaxFPS() - PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
-    currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
-    float32 lodOffset = PerformanceSettings::Instance()->GetPsPerformanceLodOffset() * (1 - currPSValue);
-    float32 lodMult = 1.0f + (PerformanceSettings::Instance()->GetPsPerformanceLodMult() - 1.0f) * (1 - currPSValue);
-    /*as we use square values - multiply it too*/
-    lodOffset *= lodOffset;
-    lodMult *= lodMult;
-
-    PorcessEntityRecursive(entity, lodOffset, lodMult, camera);
-}
-
-void LodSystem::PorcessEntityRecursive(Entity* entity, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
-{
-    LodComponent* lod = GetLodComponent(entity);
-    if (lod)
-    {
-        ProcessEntity(entity, psLodOffsetSq, psLodMultSq, camera);
-    }
-
-    int32 childrenCount = entity->GetChildrenCount();
-    for (int32 i = 0; i < childrenCount; ++i)
-    {
-        PorcessEntityRecursive(entity->GetChild(i), psLodOffsetSq, psLodMultSq, camera);
-    }
-}
-
 
 void LodSystem::AddEntity(Entity* entity)
 {
-    entities.push_back(entity);
-    UpdatePartialUpdateIndices();
+    lodComponents.push_back(GetLodComponent(entity));
 }
 
 void LodSystem::RemoveEntity(Entity* entity)
 {
-    uint32 size = static_cast<uint32>(entities.size());
-    for (uint32 i = 0; i < size; ++i)
+    LodComponent* component = GetLodComponent(entity);
+    int32 size = static_cast<int32>(lodComponents.size());
+    for (int32 i = 0; i < size; ++i)
     {
-        if (entities[i] == entity)
+        if (lodComponents[i] == component)
         {
-            entities[i] = entities[size - 1];
-            entities.pop_back();
-            UpdatePartialUpdateIndices();
+            lodComponents[i] = lodComponents[size - 1];
+            lodComponents.pop_back();
             return;
         }
     }
@@ -150,88 +114,29 @@ void LodSystem::RemoveEntity(Entity* entity)
     DVASSERT(0);
 }
 
-void LodSystem::UpdatePartialUpdateIndices()
+int32 LodSystem::RecheckLod(LodComponent* lodComponent, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
 {
-    currentPartialUpdateIndex = 0;
-
-    int32 size = static_cast<int32>(entities.size());
-    int32 partSize = size / UPDATE_PART_PER_FRAME;
-
-    partialUpdateIndices.clear();
-    int32 currentIndex = 0;
-    partialUpdateIndices.push_back(currentIndex);
-    for (int32 i = 0; i < UPDATE_PART_PER_FRAME; ++i)
-    {
-        currentIndex += partSize;
-        partialUpdateIndices.push_back(currentIndex);
-    }
-
-    int32& LastSlot = partialUpdateIndices[partialUpdateIndices.size() - 1];
-    LastSlot = Max(LastSlot, size);
-}
-
-void LodSystem::UpdateLod(Entity* entity, LodComponent* lodComponent, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
-{
-    int32 oldLod = lodComponent->currentLod;
-    if (!RecheckLod(entity, lodComponent, psLodOffsetSq, psLodMultSq, camera))
-    {
-        //		if (oldLod != LodComponent::INVALID_LOD_LAYER)
-        //		{
-        //			lodComponent->SetLayerVisibility(oldLod, false);
-        //		}
-
-        lodComponent->currentLod = LodComponent::INVALID_LOD_LAYER;
-        return;
-    }
-
-    if (oldLod != lodComponent->currentLod)
-    {
-        ParticleEffectComponent* effect = GetEffectComponent(entity);
-        if (effect)
-        {
-            effect->SetDesiredLodLevel(lodComponent->currentLod);
-            return;
-        }
-
-        int32 layerNum = lodComponent->currentLod;
-        if (layerNum != LodComponent::LAST_LOD_LAYER)
-        {
-            DVASSERT(0 <= layerNum && layerNum < LodComponent::MAX_LOD_LAYERS);
-        }
-
-        SetEntityLod(entity, layerNum);
-    }
-}
-
-bool LodSystem::RecheckLod(Entity* entity, LodComponent* lodComponent, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
-{
-    bool usePsSettings = (GetEffectComponent(entity) != NULL);
+    bool usePsSettings = (GetEffectComponent(lodComponent->GetEntity()) != NULL);
 
     if (LodComponent::INVALID_LOD_LAYER != lodComponent->forceLodLayer)
     {
-        lodComponent->currentLod = lodComponent->forceLodLayer;
-        return true;
+        return lodComponent->forceLodLayer;
     }
 
     int32 layersCount = LodComponent::MAX_LOD_LAYERS;
-    float32 dst = CalculateDistanceToCamera(entity, lodComponent, camera);
+    float32 dst = CalculateDistanceToCamera(lodComponent->GetEntity(), lodComponent, camera);
 
     if (usePsSettings)
     {
-        if (dst > lodComponent->GetLodLayerFarSquare(0)) //preserv lod 0 from degrade
+        if (dst > lodComponent->GetLodLayerFarSquare(0)) //preserve lod 0 from degrade
             dst = dst * psLodMultSq + psLodOffsetSq;
     }
 
     int32 layer = FindProperLayer(dst, lodComponent, layersCount);
-    if (layer != lodComponent->currentLod)
-    {
-        lodComponent->currentLod = layer;
-    }
-
-    return (lodComponent->currentLod != LodComponent::INVALID_LOD_LAYER);
+    return layer;
 }
 
-DAVA::float32 LodSystem::CalculateDistanceToCamera(const Entity* entity, const LodComponent* lodComponent, Camera* camera)
+float32 LodSystem::CalculateDistanceToCamera(const Entity* entity, const LodComponent* lodComponent, Camera* camera)
 {
     if (lodComponent->forceDistance != LodComponent::INVALID_DISTANCE) //LodComponent::INVALID_DISTANCE
     {
@@ -271,9 +176,20 @@ int32 LodSystem::FindProperLayer(float32 distance, const LodComponent* lodCompon
     return layer;
 }
 
-void LodSystem::SetCamera(Camera* _camera)
+void LodSystem::SetEntityLod(Entity* entity, int32 currentLod)
 {
-    camera = _camera;
+    RenderObject* ro = GetRenderObject(entity);
+    if (ro)
+    {
+        if (currentLod == LodComponent::LAST_LOD_LAYER)
+        {
+            ro->SetLodIndex(ro->GetMaxLodIndex());
+        }
+        else
+        {
+            ro->SetLodIndex(currentLod);
+        }
+    }
 }
 
 }

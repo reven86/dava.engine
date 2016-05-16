@@ -224,6 +224,16 @@ SwitchComponent* GetSwitchComponent(const Entity* fromEntity)
     return nullptr;
 }
 
+ParticleEffectComponent* GetParticleEffectComponent(const Entity* fromEntity)
+{
+    if (fromEntity)
+    {
+        return static_cast<ParticleEffectComponent*>(fromEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+    }
+
+    return nullptr;
+}
+
 SoundComponent* GetSoundComponent(const Entity* fromEntity)
 {
     if (fromEntity)

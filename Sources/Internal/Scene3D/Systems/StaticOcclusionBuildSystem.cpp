@@ -281,7 +281,6 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
         LodComponent* lodComponent = static_cast<LodComponent*>(lodEntities[k]->GetComponent(Component::LOD_COMPONENT));
         lodComponent->SetForceLodLayer(forceLodIndex);
     }
-    GetScene()->lodSystem->SetForceUpdateAll();
     GetScene()->lodSystem->Process(0.0f);
 }
 

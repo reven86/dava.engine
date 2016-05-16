@@ -71,6 +71,8 @@ public:
                       MEMBER(nearDistanceSq, "Near Distance", I_SAVE | I_VIEW)
                       MEMBER(farDistanceSq, "Far Distance", I_SAVE | I_VIEW)
                       );
+
+    private:
     };
 
 public:
@@ -80,11 +82,12 @@ public:
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    inline float32 GetLodLayerDistance(int32 layerNum) const;
-    inline float32 GetLodLayerNearSquare(int32 layerNum) const;
-    inline float32 GetLodLayerFarSquare(int32 layerNum) const;
+    float32 GetLodLayerDistance(int32 layerNum) const;
+    float32 GetLodLayerNearSquare(int32 layerNum) const;
+    float32 GetLodLayerFarSquare(int32 layerNum) const;
 
-    int32 currentLod;
+    void SetCurrentLod(int32 lod);
+    int32 GetCurrentLod();
     Vector<LodDistance> lodLayersArray;
 
     //force lod - for editors only
@@ -103,6 +106,7 @@ private:
     static float32 GetDefaultDistance(int32 layer);
     float32 forceDistance;
     float32 forceDistanceSq;
+    int32 currentLod;
 
 public:
     INTROSPECTION_EXTEND(LodComponent, Component,
@@ -116,19 +120,29 @@ public:
 
 REGISTER_CLASS(LodComponent);
 
-float32 LodComponent::GetLodLayerDistance(int32 layerNum) const
+inline void LodComponent::SetCurrentLod(int32 lod)
+{
+    currentLod = lod;
+}
+
+inline int32 LodComponent::GetCurrentLod()
+{
+    return currentLod;
+}
+
+inline float32 LodComponent::GetLodLayerDistance(int32 layerNum) const
 {
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
     return lodLayersArray[layerNum].distance;
 }
 
-float32 LodComponent::GetLodLayerNearSquare(int32 layerNum) const
+inline float32 LodComponent::GetLodLayerNearSquare(int32 layerNum) const
 {
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
     return lodLayersArray[layerNum].nearDistanceSq;
 }
 
-float32 LodComponent::GetLodLayerFarSquare(int32 layerNum) const
+inline float32 LodComponent::GetLodLayerFarSquare(int32 layerNum) const
 {
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
     return lodLayersArray[layerNum].farDistanceSq;

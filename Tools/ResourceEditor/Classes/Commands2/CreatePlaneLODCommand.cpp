@@ -71,7 +71,7 @@ void CreatePlaneLODCommand::Undo()
     if (request->lodComponent->forceLodLayer > maxLodIndex)
         request->lodComponent->forceLodLayer = maxLodIndex;
 
-    request->lodComponent->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
+    request->lodComponent->SetCurrentLod(DAVA::LodComponent::INVALID_LOD_LAYER);
     DeleteTextureFiles();
 }
 

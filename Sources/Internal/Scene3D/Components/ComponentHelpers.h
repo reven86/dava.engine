@@ -90,12 +90,12 @@ SoundComponent* GetSoundComponent(const Entity* fromEntity);
 
 LodComponent* GetLodComponent(const Entity* fromEntity);
 SwitchComponent* GetSwitchComponent(const Entity* fromEntity);
+ParticleEffectComponent* GetParticleEffectComponent(const Entity* fromEntity);
 
 uint32 GetLodLayersCount(const Entity* fromEntity);
 uint32 GetLodLayersCount(LodComponent* fromComponent);
 
 void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Entity*, void*));
-void RecursiveProcessLodNode(Entity* curr, int32 lod, void* userData, void (*process)(Entity*, void*));
 
 Entity* FindLandscapeEntity(Entity* rootEntity);
 Landscape* FindLandscape(Entity* rootEntity);

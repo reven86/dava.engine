@@ -43,7 +43,7 @@ class SceneSystem
 {
 public:
     SceneSystem(Scene* scene);
-    virtual ~SceneSystem();
+    virtual ~SceneSystem() = default;
 
     inline void SetRequiredComponents(uint64 requiredComponents);
     inline uint64 GetRequiredComponents() const;

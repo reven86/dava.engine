@@ -122,7 +122,7 @@ void RenderUpdateSystem::UpdateActiveIndexes(Entity* entity, RenderObject* objec
         LodComponent* lc = GetLodComponent(parent);
         if (nullptr != lc)
         {
-            object->SetLodIndex(lc->currentLod);
+            object->SetLodIndex(lc->GetCurrentLod());
             break;
         }
 

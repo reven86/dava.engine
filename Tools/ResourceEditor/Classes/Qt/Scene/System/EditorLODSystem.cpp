@@ -168,13 +168,13 @@ void LODComponentHolder::ApplyForce(const ForceValues& force)
     {
         if (force.flag & ForceValues::APPLY_LAYER)
         {
-            lc->currentLod = LodComponent::INVALID_LOD_LAYER;
+            lc->SetCurrentLod(LodComponent::INVALID_LOD_LAYER);
             lc->SetForceLodLayer(force.layer);
         }
 
         if (force.flag & ForceValues::APPLY_DISTANCE)
         {
-            lc->currentLod = LodComponent::INVALID_LOD_LAYER;
+            lc->SetCurrentLod(LodComponent::INVALID_LOD_LAYER);
             lc->SetForceDistance(force.distance);
         }
     }
