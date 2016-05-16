@@ -835,7 +835,7 @@ float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, floa
     float32 finalAngle = originalAngle + deltaAngle;
     if (!IsShiftPressed())
     {
-        static const int step = angleSegment; //fixed angle step
+        const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
         if ((finalAngle >= 0) ^ (deltaAngle > 0))
         {
