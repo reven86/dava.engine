@@ -48,14 +48,33 @@ public:
     void Process(float32 timeElapsed) override;
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
+    void RegisterComponent(Entity* entity, Component* component) override;
+    void UnregisterComponent(Entity* entity, Component* component) override;
 
 private:
+    struct LodComponentInternal
+    {
+        LodComponentInternal(Entity* entity_,
+                             TransformComponent* transform_,
+                             LodComponent* lod_,
+                             ParticleEffectComponent* effect_,
+                             int32 index_)
+        {
+            entity = entity_;
+            transform = transform_;
+            lod = lod_;
+            effect = effect_;
+            index = index_;
+        }
+        Entity* entity;
+        TransformComponent* transform;
+        LodComponent* lod;
+        ParticleEffectComponent* effect;
+        int32 index;
+    };
+    UnorderedMap<Entity*, LodComponentInternal*> fastMap;
+    Vector<LodComponentInternal> fastVector;
     Vector<LodComponent*> lodComponents;
-
-    static int32 RecheckLod(LodComponent* lodComponent, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera);
-
-    static float32 CalculateDistanceToCamera(const Entity* entity, const LodComponent* lodComponent, Camera* camera);
-    static int32 FindProperLayer(float32 distance, const LodComponent* lodComponent, int32 requestedLayersCount);
 
     static void SetEntityLod(Entity* entity, int32 currentLod);
 

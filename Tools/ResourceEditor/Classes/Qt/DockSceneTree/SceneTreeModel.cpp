@@ -191,7 +191,7 @@ int SceneTreeModel::GetCustomFlags(const QModelIndex& index) const
                 DAVA::LodComponent* lodComp = GetLodComponent(emitter);
                 if (NULL != lodComp)
                 {
-                    if (!layer->IsLodActive(lodComp->currentLod))
+                    if (!layer->IsLodActive(lodComp->GetCurrentLod()))
                     {
                         ret |= CF_Invisible;
                     }
