@@ -123,3 +123,7 @@ if( DAVA_USE_RENDERSTATS )
 endif()
 
 setup_main_module()
+
+if( LINK_THIRD_PARTY )                 
+    MERGE_STATIC_LIBRARIES( ${NAME_MODULE} ALL "${DAVA_STATIC_LIBRARIES_MACOS}" )
+endif()

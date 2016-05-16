@@ -253,12 +253,6 @@ macro( setup_main_module )
                 set( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE ${LIST_SHARED_LIBRARIES_RELEASE} )
             endif()
 
-            if( LINK_THIRD_PARTY )                 
-                MERGE_STATIC_LIBRARIES( ${NAME_MODULE} ALL     ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
-                MERGE_STATIC_LIBRARIES( ${NAME_MODULE} DEBUG   ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG} )
-                MERGE_STATIC_LIBRARIES( ${NAME_MODULE} RELEASE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
-            endif()
-
             target_link_libraries  ( ${NAME_MODULE}  ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )  
 
             foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG} )
