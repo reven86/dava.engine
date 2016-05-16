@@ -35,6 +35,8 @@
 #include "Main/mainwindow.h"
 #include "QtTools/Updaters/LazyUpdater.h"
 
+#include "Settings/SettingsManager.h"
+
 
 #include <QApplication>
 #include <QMessageBox>
@@ -73,8 +75,11 @@ ErrorDialogOutput::~ErrorDialogOutput()
 
 void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    if (ll < DAVA::Logger::LEVEL_ERROR)
+    bool enabled = (SettingsManager::Instance() != nullptr) ? SettingsManager::GetValue(Settings::General_ShowErrorDialog).AsBool() : false;
+    if ((ll < DAVA::Logger::LEVEL_ERROR) || !enabled)
+    {
         return;
+    }
 
     {
         DAVA::LockGuard<DAVA::Mutex> lock(errorsLocker);

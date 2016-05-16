@@ -39,6 +39,7 @@ const FastName Settings::General_RecentProjectsCount = FastName("General/RecentP
 const FastName Settings::General_PreviewEnabled = FastName("General/PreviewEnabled");
 const FastName Settings::General_OpenByDBClick = FastName("General/OpenByDoubleClick");
 const FastName Settings::General_CompressionQuality = FastName("General/CompressionQuality");
+const FastName Settings::General_ShowErrorDialog = FastName("General/ShowDialogOnError");
 const FastName Settings::General_MaterialEditor_SwitchColor0 = FastName("General/MaterialEditor/SwitchColor0");
 const FastName Settings::General_MaterialEditor_SwitchColor1 = FastName("General/MaterialEditor/SwitchColor1");
 const FastName Settings::General_MaterialEditor_LodColor0 = FastName("General/MaterialEditor/LodColor0");
