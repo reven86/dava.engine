@@ -46,14 +46,16 @@
 #include <QComboBox>
 #include <QTimer>
 
-class EmitterLayerWidget : public QWidget, public BaseParticleEditorContentWidget
+class EmitterLayerWidget : public BaseParticleEditorContentWidget
 {
     Q_OBJECT
 
 public:
     explicit EmitterLayerWidget(QWidget* parent = 0);
 
-    void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool updateMinimized);
+    void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter,
+              DAVA::ParticleLayer* layer, bool updateMinimized);
+
     DAVA::ParticleLayer* GetLayer() const
     {
         return layer;
@@ -62,8 +64,8 @@ public:
 
     virtual bool eventFilter(QObject*, QEvent*);
 
-    virtual void StoreVisualState(DAVA::KeyedArchive* visualStateProps);
-    virtual void RestoreVisualState(DAVA::KeyedArchive* visualStateProps);
+    void StoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
+    void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
 
     // Switch from/to SuperEmitter mode.
     void SetSuperemitterMode(bool isSuperemitter);

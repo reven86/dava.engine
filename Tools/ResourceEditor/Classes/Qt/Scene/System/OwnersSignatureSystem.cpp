@@ -74,6 +74,7 @@ void UpdateOwner(DAVA::Entity* entity)
     }
 }
 }
+
 OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
 {

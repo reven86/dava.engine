@@ -29,110 +29,93 @@
 
 #include "DAVAEngine.h"
 
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QColorDialog>
-#include <QShortcut>
-#include <QKeySequence>
-#include <QMetaObject>
-#include <QMetaType>
-#include <QActionGroup>
-
 #include "mainwindow.h"
-#include "QtUtils.h"
-#include "Project/ProjectManager.h"
-#include "Scene/SceneHelper.h"
-#include "Scene/LandscapeThumbnails.h"
-#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-
-#include "TextureBrowser/TextureBrowser.h"
-#include "SoundComponentEditor/FMODSoundBrowser.h"
-#include "TextureBrowser/TextureCache.h"
-#include "MaterialEditor/MaterialEditor.h"
-#include "QualitySwitcher/QualitySwitcher.h"
-
-#include "Qt/Settings/SettingsManager.h"
-#include "Deprecated/EditorConfig.h"
-
-#include "../CubemapEditor/CubemapUtils.h"
-#include "../CubemapEditor/CubemapTextureBrowser.h"
-#include "../ImageSplitterDialog/ImageSplitterDialog.h"
-
-#include "Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
+#include "Classes/Qt/BeastDialog/BeastDialog.h"
+#include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
+#include "Classes/Qt/CubemapEditor/CubemapUtils.h"
+#include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
+#include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
+#include "Classes/Qt/Main/QtUtils.h"
+#include "Classes/Qt/Main/Request.h"
+#include "Classes/Qt/MaterialEditor/MaterialEditor.h"
+#include "Classes/Qt/Project/ProjectManager.h"
+#include "Classes/Qt/QualitySwitcher/QualitySwitcher.h"
+#include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
+#include "Classes/Qt/Scene/LandscapeThumbnails.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Classes/Qt/Settings/SettingsDialog.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
+#include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
+#include "Classes/Qt/TextureBrowser/TextureBrowser.h"
+#include "Classes/Qt/TextureBrowser/TextureCache.h"
+#include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
+#include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
+#include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
+#include "Classes/Qt/Tools/DeveloperTools/DeveloperTools.h"
+#include "Classes/Qt/Tools/HangingObjectsHeight/HangingObjectsHeight.h"
+#include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
+#include "Classes/Qt/Tools/PathDescriptor/PathDescriptor.h"
+#include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
+#include "Classes/Qt/Tools/QtPosSaver/QtPosSaver.h"
+#include "Classes/Qt/Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
+#include "Classes/Qt/Tools/LoggerOutput/LoggerErrorHandler.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "Classes/Qt/SpeedTreeImport/SpeedTreeImportDialog.h"
 #endif
 
-#include "../Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
-
-#include "StringConstants.h"
-#include "Settings/SettingsManager.h"
-#include "Settings/SettingsDialog.h"
-
-#include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/Qt/Main/Request.h"
+#include "Classes/Deprecated/EditorConfig.h"
+#include "Classes/Deprecated/SceneValidator.h"
 
 #include "Classes/CommandLine/SceneSaver/SceneSaver.h"
-
-#include "Classes/Commands2/EntityAddCommand.h"
-#include "Classes/Commands2/BeastAction.h"
-#include "Classes/Commands2/CustomColorsCommands2.h"
-#include "Classes/Commands2/HeightmapEditorCommands2.h"
-#include "Classes/Commands2/TilemaskEditorCommands.h"
 #include "Classes/Commands2/AddComponentCommand.h"
+#include "Classes/Commands2/BeastAction.h"
+#include "Classes/Commands2/ConvertPathCommands.h"
+#include "Classes/Commands2/CustomColorsCommands2.h"
+#include "Classes/Commands2/EntityAddCommand.h"
+#include "Classes/Commands2/HeightmapEditorCommands2.h"
+#include "Classes/Commands2/PaintHeightDeltaAction.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/TilemaskEditorCommands.h"
 #include "Classes/Commands2/LandscapeToolsToggleCommand.h"
 
-#include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
-
-#include "Tools/HangingObjectsHeight/HangingObjectsHeight.h"
-#include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
-#include "Tools/LoggerOutput/LoggerErrorHandler.h"
-
-#include "Scene3D/Components/ActionComponent.h"
-#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Classes/SceneProcessing/SceneProcessor.h"
 
 #include "Classes/Constants.h"
+#include "Classes/StringConstants.h"
 
 #include "TextureCompression/TextureConverter.h"
-#include "Deprecated/SceneValidator.h"
 
-#include "Tools/DeveloperTools/DeveloperTools.h"
-#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
-
-#include "Classes/Qt/BeastDialog/BeastDialog.h"
-#include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
-#include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-
-#include "Tools/HeightDeltaTool/HeightDeltaTool.h"
-#include "Tools/ColorPicker/ColorPicker.h"
-#include "Tools/PathDescriptor/PathDescriptor.h"
-#include "Settings/SettingsManager.h"
-
-#include "SceneProcessing/SceneProcessor.h"
-#include "QtLayer.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-
-#include "Commands2/ConvertPathCommands.h"
-
-#include "Scene3D/Components/Controller/WASDControllerComponent.h"
-#include "Scene3D/Components/Controller/RotationControllerComponent.h"
-
-#include "Scene3D/Systems/StaticOcclusionSystem.h"
-
 #include "QtTools/FileDialog/FileDialog.h"
 
-#include "SpritesPacker/SpritesPackerModule.h"
+#include "Platform/Qt5/QtLayer.h"
 
-QtMainWindow::QtMainWindow(QWidget* parent)
+#include "Scene3D/Components/ActionComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
+
+#include <QActionGroup>
+#include <QColorDialog>
+#include <QDesktopServices>
+#include <QKeySequence>
+#include <QMessageBox>
+#include <QMetaObject>
+#include <QMetaType>
+#include <QShortcut>
+
+QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , waitDialog(nullptr)
@@ -144,6 +127,7 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     , developerTools(new DeveloperTools(this))
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
+    , ngtContext(ngtContext_)
     , spritesPacker(new SpritesPackerModule())
 {
     PathDescriptor::InitializePathDescriptors();
@@ -185,7 +169,7 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2*, const Command2*, bool)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(SceneActivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(SceneDeactivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
     connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
     connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
@@ -200,10 +184,18 @@ QtMainWindow::QtMainWindow(QWidget* parent)
 
     DiableUIForFutureUsing();
     SynchronizeStateWithUI();
+
+    IUIApplication* uiApplication = ngtContext.queryInterface<IUIApplication>();
+    IUIFramework* uiFramework = ngtContext.queryInterface<IUIFramework>();
+    DVASSERT(uiApplication != nullptr);
+    DVASSERT(uiFramework != nullptr);
+    propertyPanel.Initialize(*uiFramework, *uiApplication);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, &propertyPanel, &PropertyPanel::SceneSelectionChanged);
 }
 
 QtMainWindow::~QtMainWindow()
 {
+    propertyPanel.Finalize();
     const auto& logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
 
@@ -361,7 +353,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
         DAVA::ParticleEffectComponent* effect = GetEffectComponent(entityWithEffect);
         for (DAVA::int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
-            CollectEmittersForSave(effect->GetEmitter(i), emittersForSave, entityName);
+            CollectEmittersForSave(effect->GetEmitterInstance(i)->GetEmitter(), emittersForSave, entityName);
         }
     }
 
@@ -375,7 +367,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
         {
             QString particlesPath = GetSaveFolderForEmitters();
 
-            DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+            DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); // to ensure that folder is created
 
             QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
             QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));
@@ -514,6 +506,16 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
             }
         }
     }
+    else if (obj == this)
+    {
+        if (eventType == QEvent::Close)
+        {
+            if (ShouldClose(static_cast<QCloseEvent*>(event)) == false)
+            {
+                event->ignore();
+            }
+        }
+    }
 
     return QMainWindow::eventFilter(obj, event);
 }
@@ -643,7 +645,7 @@ void QtMainWindow::SetupToolBars()
 void QtMainWindow::SetupStatusBar()
 {
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), ui->statusBar, SLOT(SceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), ui->statusBar, SLOT(StructureChanged(SceneEditor2*, DAVA::Entity*)));
 
@@ -871,6 +873,7 @@ void QtMainWindow::SetupActions()
 
     connect(ui->actionImageSplitterForNormals, &QAction::triggered, developerTools, &DeveloperTools::OnImageSplitterNormals);
     connect(ui->actionReplaceTextureMipmap, &QAction::triggered, developerTools, &DeveloperTools::OnReplaceTextureMipmap);
+    connect(ui->actionToggleUseInstancing, &QAction::triggered, developerTools, &DeveloperTools::OnToggleLandscapeInstancing);
 
     connect(ui->actionDumpTextures, &QAction::triggered, [] {
         DAVA::Texture::DumpTextures();
@@ -985,7 +988,7 @@ void QtMainWindow::SceneDeactivated(SceneEditor2* scene)
     EnableSceneActions(false);
 }
 
-void QtMainWindow::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)
 {
     UpdateModificationActionsState();
 }
@@ -1083,24 +1086,17 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 void QtMainWindow::UpdateModificationActionsState()
 {
-    bool canModify = false;
-    bool isMultiple = false;
-
     SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
-    {
-        const EntityGroup& selection = scene->selectionSystem->GetSelection();
-        canModify = scene->modifSystem->ModifCanStart(selection);
-        isMultiple = (selection.Size() > 1);
-    }
+    bool isMultiple = (nullptr != scene) && (scene->selectionSystem->GetSelection().GetSize() > 1);
+
+    // modificationWidget determines inside, if values could be modified and enables/disables itself
+    modificationWidget->ReloadValues();
+    bool canModify = modificationWidget->isEnabled();
 
     ui->actionModifyReset->setEnabled(canModify);
     ui->actionModifyPlaceOnLandscape->setEnabled(canModify);
-
     ui->actionCenterPivotPoint->setEnabled(canModify && !isMultiple);
     ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
-
-    modificationWidget->setEnabled(canModify);
 }
 
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
@@ -1502,7 +1498,7 @@ void QtMainWindow::OnSelectMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_OFF);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Disabled);
         LoadModificationState(scene);
     }
 }
@@ -1512,7 +1508,7 @@ void QtMainWindow::OnMoveMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_MOVE);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Translation);
         LoadModificationState(scene);
     }
 }
@@ -1522,7 +1518,7 @@ void QtMainWindow::OnRotateMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_ROTATE);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Rotation);
         LoadModificationState(scene);
     }
 }
@@ -1532,7 +1528,7 @@ void QtMainWindow::OnScaleMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->modifSystem->SetModifMode(ST_MODIF_SCALE);
+        scene->modifSystem->SetTransformType(Selectable::TransformType::Scale);
         LoadModificationState(scene);
     }
 }
@@ -1651,7 +1647,7 @@ void QtMainWindow::OnTextureBrowser()
 {
     SceneEditor2* sceneEditor = GetCurrentScene();
 
-    EntityGroup selectedEntities;
+    SelectableGroup selectedEntities;
     if (nullptr != sceneEditor)
     {
         selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
@@ -1925,21 +1921,21 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
         ui->actionModifyRotate->setChecked(false);
         ui->actionModifyScale->setChecked(false);
 
-        ST_ModifMode modifMode = scene->modifSystem->GetModifMode();
-        modificationWidget->SetModifMode(modifMode);
+        auto modifMode = scene->modifSystem->GetTransformType();
+        modificationWidget->SetTransformType(modifMode);
 
         switch (modifMode)
         {
-        case ST_MODIF_OFF:
+        case Selectable::TransformType::Disabled:
             ui->actionModifySelect->setChecked(true);
             break;
-        case ST_MODIF_MOVE:
+        case Selectable::TransformType::Translation:
             ui->actionModifyMove->setChecked(true);
             break;
-        case ST_MODIF_ROTATE:
+        case Selectable::TransformType::Rotation:
             ui->actionModifyRotate->setChecked(true);
             break;
-        case ST_MODIF_SCALE:
+        case Selectable::TransformType::Scale:
             ui->actionModifyScale->setChecked(true);
             break;
         default:
@@ -1963,6 +1959,8 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
 
         // way editor
         ui->actionWayEditor->setChecked(scene->wayEditSystem->IsWayEditEnabled());
+
+        UpdateModificationActionsState();
     }
 }
 
@@ -2498,7 +2496,7 @@ void QtMainWindow::OnForceFirstLod(bool enabled)
         return;
     }
 
-    landscape->SetForceFirstLod(enabled);
+    landscape->SetForceMaxSubdiv(enabled);
     scene->visibilityCheckSystem->Recalculate();
 }
 
@@ -2718,23 +2716,15 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
     ui->actionModifySnapToLandscape->setChecked(isSpanToLandscape);
 }
 
-void QtMainWindow::closeEvent(QCloseEvent* e)
+bool QtMainWindow::ShouldClose(QCloseEvent* e)
 {
-    bool changed = IsAnySceneChanged();
-    if (changed)
-    {
-        int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
-                                           QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if (IsAnySceneChanged() == false)
+        return true;
 
-        if (answer == QMessageBox::No)
-        {
-            e->ignore();
-            return;
-        }
-    }
+    int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
+                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
-    e->accept();
-    QMainWindow::closeEvent(e);
+    return (answer == QMessageBox::Yes);
 }
 
 bool QtMainWindow::IsAnySceneChanged()
@@ -3102,21 +3092,21 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
             auto vec = conv.GetPointers<DAVA::Entity*>();
             if (!vec.empty())
             {
-                EntityGroup entityGroup;
+                SelectableGroup objects;
                 DAVA::Vector<DAVA::Entity*> allEntities;
                 currentScene->GetChildNodes(allEntities);
                 for (auto entity : vec)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        entityGroup.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
+                        objects.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
                     }
                 }
 
-                if (!entityGroup.IsEmpty())
+                if (!objects.IsEmpty())
                 {
-                    currentScene->selectionSystem->SetSelection(entityGroup);
-                    currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());
+                    currentScene->selectionSystem->SetSelection(objects);
+                    currentScene->cameraSystem->LookAt(objects.GetIntegralBoundingBox());
                 }
             }
         }

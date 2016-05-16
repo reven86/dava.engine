@@ -409,12 +409,20 @@ CustomPropertiesComponent* GetOrCreateCustomProperties(Entity* fromEntity)
 KeyedArchive* GetCustomPropertiesArchieve(const Entity* fromEntity)
 {
     CustomPropertiesComponent* comp = GetCustomProperties(fromEntity);
-    if (comp)
-    {
-        return comp->GetArchive();
-    }
+    return (comp != nullptr) ? comp->GetArchive() : nullptr;
+}
 
-    return nullptr;
+VariantType* GetCustomPropertiesValueRecursive(Entity* fromEntity, const String& name)
+{
+    if (fromEntity == nullptr)
+        return nullptr;
+
+    KeyedArchive* props = GetCustomPropertiesArchieve(fromEntity);
+    if ((props != nullptr) && (props->Count(name) > 0))
+    {
+        return props->GetVariant(name);
+    }
+    return GetCustomPropertiesValueRecursive(fromEntity->GetParent(), name);
 }
 
 PathComponent* GetPathComponent(const Entity* fromEntity)

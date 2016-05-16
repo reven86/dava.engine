@@ -428,6 +428,7 @@ public:
                          MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
+                         COLLECTION(components, "components", I_VIEW)
                          )
 };
 

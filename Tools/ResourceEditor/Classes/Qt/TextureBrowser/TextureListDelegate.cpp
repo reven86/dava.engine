@@ -188,7 +188,6 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
             painter->drawText(textRect, textureName);
 
             painter->setFont(origFont);
-            painter->setPen(INFO_TEXT_COLOR);
             textRect.adjust(0, nameFontMetrics.height(), 0, 0);
 
             QString infoText = CreateInfoString(index);
@@ -301,7 +300,7 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         if (curModel->isHighlited(index))
         {
             // draw highlight
-            painter->setBrush(QBrush(QColor(255, 255, 200)));
+            painter->setBrush(option.palette.toolTipBase());
         }
         painter->setPen(BORDER_COLOR);
         painter->drawRect(borderRect);

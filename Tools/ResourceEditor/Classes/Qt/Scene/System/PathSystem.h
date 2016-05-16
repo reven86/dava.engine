@@ -85,7 +85,7 @@ protected:
 
     DAVA::Vector<DAVA::Entity*> pathes;
 
-    EntityGroup currentSelection;
+    SelectableGroup currentSelection;
     DAVA::Entity* currentPath;
 
     bool isEditingEnabled;

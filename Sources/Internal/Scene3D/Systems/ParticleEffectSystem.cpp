@@ -139,9 +139,9 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial* material)
 
 void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 {
-    for (auto& emitter : component->emitterDatas)
+    for (auto& emitter : component->emitterInstances)
     {
-        for (auto layer : emitter.emitter->layers)
+        for (auto layer : emitter->GetEmitter()->layers)
         {
             if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
             {
@@ -153,27 +153,23 @@ void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, const Vector3& spawnPosition, int32 positionSource)
 {
-    for (size_t layerId = 0, layersCount = emitter->layers.size(); layerId < layersCount; ++layerId)
+    for (auto layer : emitter->layers)
     {
-        ParticleLayer* layer = emitter->layers[layerId];
         bool isLodActive = layer->IsLodActive(effect->activeLodLevel);
-        if ((!isLodActive) && emitter->shortEffect) //layer could never become active
+        if (!isLodActive && emitter->shortEffect) //layer could never become active
             continue;
+
         ParticleGroup group;
         group.emitter = SafeRetain(emitter);
         group.layer = SafeRetain(layer);
         group.spawnPosition = spawnPosition;
         group.visibleLod = isLodActive;
         group.positionSource = positionSource;
-        //prepare 1st loop info - so even not looped layers will follow common logic
-        group.loopStartTime = 0;
         group.loopLyaerStartTime = group.layer->startTime;
         group.loopDuration = group.layer->endTime;
 
         if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
             group.material = GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
-        else
-            group.material = NULL;
 
         effect->effectData.groups.push_back(group);
     }
@@ -188,14 +184,18 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent* effect)
 
     //TODO: force lod here
     if (effect->activeLodLevel != effect->desiredLodLevel)
-        UpdateActiveLod(effect);
-
-    if (effect->effectData.groups.empty()) //clean position sources
-        effect->effectData.infoSources.resize(1);
-    //create particle groups
-    for (size_t emitterId = 0, emittersCount = effect->emitterDatas.size(); emitterId < emittersCount; ++emitterId)
     {
-        RunEmitter(effect, effect->emitterDatas[emitterId].emitter.Get(), effect->emitterDatas[emitterId].spawnPosition);
+        UpdateActiveLod(effect);
+    }
+
+    if (effect->effectData.groups.empty()) // clean position sources
+    {
+        effect->effectData.infoSources.resize(1);
+    }
+
+    for (const auto& instance : effect->emitterInstances)
+    {
+        RunEmitter(effect, instance->GetEmitter(), instance->GetSpawnPosition());
     }
 
     effect->state = ParticleEffectComponent::STATE_PLAYING;
@@ -415,7 +415,8 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent* effect, float32
     effect->effectData.infoSources[0].position = worldTransformPtr->GetTranslationVector();
 
     AABBox3 bbox;
-    for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e = effect->effectData.groups.end(); it != e;)
+    List<ParticleGroup>::iterator it = effect->effectData.groups.begin();
+    while (it != effect->effectData.groups.end())
     {
         ParticleGroup& group = *it;
         group.activeParticleCount = 0;
@@ -568,15 +569,16 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent* effect, float32
             }
         }
 
-        /*finally*/
-        if (group.finishingGroup && (!group.head))
+        if (group.finishingGroup && (group.head == nullptr))
         {
-            group.emitter->Release();
-            group.layer->Release();
+            DAVA::SafeRelease(group.emitter);
+            DAVA::SafeRelease(group.layer);
             it = effect->effectData.groups.erase(it);
         }
         else
+        {
             ++it;
+        }
     }
     if (bbox.IsEmpty())
     {

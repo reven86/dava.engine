@@ -977,6 +977,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     name = srcControl->name;
 
     controlState = srcControl->controlState;
+    exclusiveInput = srcControl->exclusiveInput;
     visible = srcControl->visible;
     inputEnabled = srcControl->inputEnabled;
     clipContents = srcControl->clipContents;
@@ -1214,7 +1215,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 {
     Vector2 point = _point;
 
-    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;

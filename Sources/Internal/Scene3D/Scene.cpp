@@ -63,6 +63,7 @@
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
 
 #include "Debug/Profiler.h"
 #include "Concurrency/Thread.h"
@@ -330,6 +331,12 @@ void Scene::CreateSystems()
     {
         debugRenderSystem = new DebugRenderSystem(this);
         AddSystem(debugRenderSystem, MAKE_COMPONENT_MASK(Component::DEBUG_RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
+    if (SCENE_SYSTEM_LANDSCAPE_FLAG & systemsMask)
+    {
+        landscapeSystem = new LandscapeSystem(this);
+        AddSystem(landscapeSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_FOLIAGE_FLAG & systemsMask)

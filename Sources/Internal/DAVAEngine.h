@@ -126,7 +126,6 @@
 #include "Render/ShaderCache.h"
 #include "Core/DisplayMode.h"
 #include "Render/RenderHelper.h"
-#include "Render/Cursor.h"
 #include "Render/MipmapReplacer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"

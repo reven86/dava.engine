@@ -214,6 +214,7 @@ endif()
 ###
 
 if( DAVA_FOUND )
+
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
@@ -508,11 +509,8 @@ elseif ( WIN32 )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
     endif()
 
-    if( DEBUG_INFO )
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
-    else()
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
-    endif()
+    # Generate debug info also in release builds
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
 
     list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
 
@@ -564,8 +562,14 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
+set( DAVA_FOLDERS PARENT_SCOPE )
+
 if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
+
+    if( DAVA_FOUND )
+        add_dependencies(  ${DAVA_LIBRARY} FILE_TREE_${PROJECT_NAME} )
+    endif()
 
 endif()
 

@@ -383,6 +383,8 @@ static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
 static uint32 _GLES2_RenderThreadFrameCount = 0;
 
+static DAVA::Mutex _GLES2_SyncObjectsSync;
+
 struct
 FrameGLES2
 {
@@ -870,7 +872,7 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
         cb->text->Initialize(64 * 1024);
     }
 
-    int len = strlen(text);
+    int len = static_cast<int>(strlen(text));
     char* txt = reinterpret_cast<char*>(cb->text->Alloc(len / sizeof(float) + 2));
 
     memcpy(txt, text, len);
@@ -892,11 +894,15 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 static Handle
 gles2_SyncObject_Create()
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     Handle handle = SyncObjectPoolGLES2::Alloc();
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(handle);
 
     sync->is_signaled = false;
     sync->is_used = false;
+
+    _GLES2_SyncObjectsSync.Unlock();
 
     return handle;
 }
@@ -906,7 +912,11 @@ gles2_SyncObject_Create()
 static void
 gles2_SyncObject_Delete(Handle obj)
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     SyncObjectPoolGLES2::Free(obj);
+
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -914,6 +924,11 @@ gles2_SyncObject_Delete(Handle obj)
 static bool
 gles2_SyncObject_IsSignaled(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
+
+    if (!SyncObjectPoolGLES2::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
 
@@ -1715,7 +1730,10 @@ void CommandBufferGLES2_t::Execute()
             #if defined(__DAVAENGINE_IPHONE__)
             GL_CALL(glDrawArraysInstancedEXT(mode, 0, v_cnt, instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
-            GL_CALL(glDrawArraysInstanced_EXT(mode, 0, v_cnt, instCount));
+            if (glDrawArraysInstanced)
+            {
+                GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            }
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
             #else
@@ -1804,7 +1822,10 @@ void CommandBufferGLES2_t::Execute()
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
             DVASSERT(baseInst == 0) // it's not supported in GLES
-            GL_CALL(glDrawElementsInstanced_EXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            if (glDrawElementsInstanced)
+            {
+                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            }
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(uint64(i_off)), instCount, baseInst));
             #else
@@ -2088,11 +2109,13 @@ _GLES2_ExecuteQueuedCommands()
 
     // update sync-objects
 
+    _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -2330,13 +2353,22 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 {
     int err = GL_NO_ERROR;
 
-/*
+#if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
+    #define ACQUIRE_CONTEXT() _GLES2_AcquireContext()
+    #define RELEASE_CONTEXT() _GLES2_ReleaseContext()
+#else
+    #define ACQUIRE_CONTEXT()
+    #define RELEASE_CONTEXT()
+#endif
+
+    /*
     do 
     {
         err = glGetError();
     } 
     while ( err != GL_NO_ERROR );
 */
+    ACQUIRE_CONTEXT();
 
 #if 0
 
@@ -2673,6 +2705,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         }
     }
+    RELEASE_CONTEXT();
 #undef EXEC_GL
 }
 

@@ -68,7 +68,7 @@ private:
 
     void CopyReferencedObject(DAVA::Entity* node);
     void CopyEffects(DAVA::Entity* node);
-    void CopyAllParticlesEmitters(const DAVA::ParticleEmitterData& emitterData);
+    void CopyAllParticlesEmitters(DAVA::ParticleEmitterInstance* instance);
     void CopyEmitterByPath(const DAVA::FilePath& emitterConfigPath);
     void CopyEmitter(DAVA::ParticleEmitter* emitter);
     DAVA::Set<DAVA::FilePath> EnumAlternativeEmittersFilepaths(const DAVA::FilePath& originalFilepath) const;
