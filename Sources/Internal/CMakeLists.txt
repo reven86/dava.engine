@@ -1,5 +1,5 @@
 include ( CMake-common         )
-if( WIN32 AND NOT WINDOWS_UAP  )
+if( WIN32 )
     include( FindWindowsSDK )
 endif()
 include ( DavaLibs             )
