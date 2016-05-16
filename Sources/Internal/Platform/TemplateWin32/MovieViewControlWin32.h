@@ -68,7 +68,7 @@ public:
     void Draw(const class UIGeometricData& parentGeometricData) override;
 
 private:
-    FfmpegPlayer* ffmpegDecoder = nullptr;
+    FfmpegPlayer* ffmpegPlayer = nullptr;
 
     Texture* videoTexture = nullptr;
     UIControlBackground* videoBackground = nullptr;

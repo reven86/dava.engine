@@ -303,7 +303,7 @@ void FfmpegPlayer::FlushBuffers()
         }
         videoPackets.clear();
     }
-    pcmBuffer.Flush();
+    pcmBuffer.Clear();
 }
 
 FMOD_RESULT F_CALLBACK FfmpegPlayer::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)

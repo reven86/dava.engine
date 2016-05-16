@@ -7,16 +7,16 @@
 namespace DAVA
 {
 MovieViewControl::MovieViewControl()
-    : ffmpegDecoder(new FfmpegPlayer())
+    : ffmpegPlayer(new FfmpegPlayer())
     , videoBackground(new UIControlBackground())
 {
-    ffmpegDecoder->Initialize(Rect());
+    ffmpegPlayer->Initialize(Rect());
     videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
 }
 
 MovieViewControl::~MovieViewControl()
 {
-    SafeDelete(ffmpegDecoder);
+    SafeDelete(ffmpegPlayer);
     SafeRelease(videoTexture);
     SafeRelease(videoBackground);
     SafeDeleteArray(videoTextureBuffer);
@@ -24,31 +24,31 @@ MovieViewControl::~MovieViewControl()
 
 void MovieViewControl::Initialize(const Rect& rect)
 {
-    ffmpegDecoder->Initialize(rect);
+    ffmpegPlayer->Initialize(rect);
 }
 
 void MovieViewControl::SetRect(const Rect& rect)
 {
-    ffmpegDecoder->SetRect(rect);
+    ffmpegPlayer->SetRect(rect);
 }
 
 void MovieViewControl::SetVisible(bool isVisible)
 {
-    ffmpegDecoder->SetVisible(isVisible);
+    ffmpegPlayer->SetVisible(isVisible);
 }
 
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
-    ffmpegDecoder->OpenMovie(moviePath, params);
+    ffmpegPlayer->OpenMovie(moviePath, params);
 }
 
 void MovieViewControl::Play()
 {
-    ffmpegDecoder->Play();
-    Vector2 res = ffmpegDecoder->GetResolution();
+    ffmpegPlayer->Play();
+    Vector2 res = ffmpegPlayer->GetResolution();
     textureWidth = NextPowerOf2(static_cast<uint32>(res.dx));
     textureHeight = NextPowerOf2(static_cast<uint32>(res.dy));
-    uint32 size = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(ffmpegDecoder->GetPixelFormat());
+    uint32 size = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(ffmpegPlayer->GetPixelFormat());
 
     SafeDeleteArray(videoTextureBuffer);
     videoTextureBuffer = new uint8[size];
@@ -58,37 +58,37 @@ void MovieViewControl::Play()
 
 void MovieViewControl::Stop()
 {
-    ffmpegDecoder->Stop();
+    ffmpegPlayer->Stop();
     SafeDeleteArray(videoTextureBuffer);
     SafeRelease(videoTexture);
 }
 
 void MovieViewControl::Pause()
 {
-    ffmpegDecoder->Pause();
+    ffmpegPlayer->Pause();
 }
 
 void MovieViewControl::Resume()
 {
-    ffmpegDecoder->Resume();
+    ffmpegPlayer->Resume();
 }
 
 bool MovieViewControl::IsPlaying() const
 {
-    return ffmpegDecoder->IsPlaying();
+    return ffmpegPlayer->IsPlaying();
 }
 
 void MovieViewControl::Update()
 {
-    if (nullptr == ffmpegDecoder)
+    if (nullptr == ffmpegPlayer)
         return;
 
-    ffmpegDecoder->Update();
+    ffmpegPlayer->Update();
 
-    if (FfmpegPlayer::STOPPED == ffmpegDecoder->GetState())
+    if (FfmpegPlayer::STOPPED == ffmpegPlayer->GetState())
         SafeRelease(videoTexture);
 
-    FfmpegPlayer::DrawVideoFrameData* drawData = ffmpegDecoder->GetDrawData();
+    FfmpegPlayer::DrawVideoFrameData* drawData = ffmpegPlayer->GetDrawData();
 
     if (nullptr == drawData || nullptr == videoTextureBuffer)
         return;

@@ -28,65 +28,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "StreamBuffer.h"
 
 #include "Concurrency/LockGuard.h"
-#include "FileSystem/DynamicMemoryFile.h"
 
 namespace DAVA
 {
-StreamBuffer::OneBuffer::OneBuffer()
-    : buffer(DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE))
-{
-}
-
-uint32 StreamBuffer::OneBuffer::GetRemainSize() const
-{
-    return buffer->GetSize() - readPos;
-}
-
-uint32 StreamBuffer::OneBuffer::GetSize() const
-{
-    return buffer->GetSize();
-}
-
-uint32 StreamBuffer::OneBuffer::Write(uint8* data, uint32 len)
-{
-    if (0 == len || !buffer->Seek(writePos, File::SEEK_FROM_START))
-    {
-        return 0;
-    }
-
-    uint32 written = buffer->Write(data, len);
-    writePos += written;
-    return written;
-}
-
-uint32 StreamBuffer::OneBuffer::Read(uint8* data, uint32 len)
-{
-    if (!buffer->Seek(readPos, File::SEEK_FROM_START))
-    {
-        return 0;
-    }
-
-    uint32 read = buffer->Read(data, len);
-    readPos += read;
-    return read;
-}
 
 StreamBuffer::~StreamBuffer()
 {
-    Flush();
+    Clear();
 }
 
-void StreamBuffer::Flush()
+void StreamBuffer::Clear()
 {
     LockGuard<Mutex> lock(interactionsLock);
-    for (OneBuffer* page : pages)
-    {
-        SafeRelease(page);
-    }
-
     pages.clear();
-
-    readPage = 0;
 }
 
 void StreamBuffer::Write(uint8* dataIn, uint32 len)
@@ -105,6 +59,7 @@ uint32 StreamBuffer::Read(uint8* dataOut, uint32 len)
         uint32 readSize = ReadInternal(dataOut + bytesRead, readMore);
         readMore -= readSize;
         bytesRead += readSize;
+        currentPageReadPos += readSize;
     }
 
     size -= bytesRead;
@@ -118,24 +73,31 @@ uint32 StreamBuffer::GetSize()
 
 void StreamBuffer::WriteInternal(uint8* dataIn, uint32 len)
 {
-    writePage = new OneBuffer();
-    pages.push_back(writePage);
-    uint32 written = writePage->Write(dataIn, len);
-    size += written;
+    pages.emplace_back();
+
+    pages.back().resize(len);
+    Memcpy(pages.back().data(), dataIn, len);
+
+    size += len;
 }
 
 uint32 StreamBuffer::ReadInternal(uint8* dataOut, uint32 len)
 {
-    if (nullptr == readPage)
-        readPage = pages.front();
-
-    uint32 read = readPage->Read(dataOut, len);
-    if (readPage->GetRemainSize() == 0)
+    if (pages.size() == 0)
     {
-        pages.remove(readPage);
-        SafeRelease(readPage);
+        return 0;
     }
 
-    return read;
+    uint32 dataSize = pages.front().size() - currentPageReadPos;
+    uint32 sizeToRead = Min(dataSize, len);
+    Memcpy(dataOut, pages.front().data() + currentPageReadPos, sizeToRead);
+
+    if (dataSize == 0)
+    {
+        pages.pop_front();
+        currentPageReadPos = 0;
+    }
+
+    return sizeToRead;
 }
 }

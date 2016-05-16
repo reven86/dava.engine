@@ -30,62 +30,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DAVAENGINE_STREAM_BUFFER_H
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
 #include "Concurrency/Mutex.h"
 
 namespace DAVA
 {
-class DynamicMemoryFile;
-
 class StreamBuffer
 {
-private:
-    class OneBuffer : public BaseObject
-    {
-    public:
-        OneBuffer();
-
-        uint32 GetRemainSize() const;
-
-        uint32 GetSize() const;
-
-        uint32 Write(uint8* data, uint32 len);
-
-        uint32 Read(uint8* data, uint32 len);
-
-    private:
-        ScopedPtr<DynamicMemoryFile> buffer;
-        uint32 readPos = 0;
-        uint32 writePos = 0;
-    };
-
 public:
-    StreamBuffer() = default;
-    StreamBuffer(const StreamBuffer& other) = delete;
-    StreamBuffer(const StreamBuffer&& other) = delete;
-
     ~StreamBuffer();
-
-    void Flush();
-
+    void Clear();
     void Write(uint8* dataIn, uint32 len);
-
     uint32 Read(uint8* dataOut, uint32 len);
-
     uint32 GetSize();
 
 private:
     void WriteInternal(uint8* dataIn, uint32 len);
-
     uint32 ReadInternal(uint8* dataOut, uint32 len);
 
 private:
-    List<OneBuffer*> pages;
-    OneBuffer* readPage = nullptr;
-    OneBuffer* writePage = nullptr;
-    uint32 size = 0;
-
     Mutex interactionsLock;
+    List<Vector<uint8>> pages;
+    uint32 currentPageReadPos = 0;
+    uint32 size = 0;
 };
 }
 
