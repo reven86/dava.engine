@@ -11,7 +11,6 @@ MovieViewControl::MovieViewControl()
     , videoBackground(new UIControlBackground())
 {
     ffmpegPlayer->Initialize(Rect());
-    videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
 }
 
 MovieViewControl::~MovieViewControl()
@@ -40,6 +39,24 @@ void MovieViewControl::SetVisible(bool isVisible)
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
     ffmpegPlayer->OpenMovie(moviePath, params);
+
+    switch (params.scalingMode)
+    {
+    case DAVA::scalingModeNone:
+        videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
+        break;
+    case DAVA::scalingModeAspectFit:
+        videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
+        break;
+    case DAVA::scalingModeAspectFill:
+        videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL_ONE);
+        break;
+    case DAVA::scalingModeFill:
+        videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_TO_RECT);
+        break;
+    default:
+        break;
+    }
 }
 
 void MovieViewControl::Play()

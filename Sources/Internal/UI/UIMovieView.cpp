@@ -54,6 +54,7 @@ UIMovieView::UIMovieView(const Rect& rect)
     : UIControl(rect)
     , movieViewControl(new MovieViewControl())
 {
+    SetClipContents(true);
 }
 
 UIMovieView::~UIMovieView()

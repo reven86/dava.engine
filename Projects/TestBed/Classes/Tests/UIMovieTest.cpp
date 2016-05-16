@@ -152,6 +152,9 @@ void UIMovieTest::ScaleButtonPressed(BaseObject* obj, void* data, void* callerDa
     else if (obj == buttonScale3)
         scaleMode = scalingModeFill;
 
-    movieView->OpenMovie(path, OpenMovieParams());
+    OpenMovieParams params;
+    params.scalingMode = scaleMode;
+
+    movieView->OpenMovie(path, params);
     movieView->Play();
 }
