@@ -282,7 +282,8 @@ function TupState.BuildPacks(self)
             
             -- generate pack sql
             local packDepends = table.concat(pack.depends, " ")
-            local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -h " .. hashOutput .. " " .. pack.name .. " " .. packDepends .. " -o %o"
+            local isGpu = tostring(gpu ~= "common")
+            local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -h " .. hashOutput .. " -g " .. isGpu .. " " .. pack.name .. " " .. packDepends .. " -o %o"
             local sqlCmdText = "^ SQL for " .. pack.name .. gpu .. "^ "
             local sqlOutput = self.sqlDir .. "/" .. gpu .. "/" .. pack.name .. ".sql"
             tup.rule({ mergePackOutput, hashOutput }, sqlCmdText ..sqlCmd, { sqlOutput, sqlGroup })            

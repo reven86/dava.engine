@@ -52,7 +52,9 @@ private:
 
     DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/test.db";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
-    DAVA::String urlToServerWithPacks = "http://127.0.0.1:2424/packs/";
+    DAVA::String urlPacksCommon = "http://127.0.0.1:2424/packs/common/";
+    DAVA::String urlPacksGpu = "http://127.0.0.1:2424/packs/{gpu}/";
+    DAVA::String gpuName;
 
     DAVA::UIStaticText* packNameLoading = nullptr;
     DAVA::UIButton* startLoadingButton = nullptr;
@@ -67,5 +69,3 @@ private:
     DAVA::UIStaticText* description = nullptr;
     DAVA::UITextField* url = nullptr;
 };
-
-#endif //__PACKMANAGERTEST_TEST_H__

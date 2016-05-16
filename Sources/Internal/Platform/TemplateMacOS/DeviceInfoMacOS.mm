@@ -184,7 +184,7 @@ int32 DeviceInfoPrivate::GetZBufferSize()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-    return GPU_POWERVR_IOS;
+    return GPU_DX11;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()

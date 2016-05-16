@@ -298,7 +298,7 @@ WideString DeviceInfoPrivate::GetName()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-    return GPU_INVALID;
+    return GPU_DX11;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()

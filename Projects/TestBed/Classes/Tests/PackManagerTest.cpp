@@ -42,7 +42,7 @@ void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideS
 {
     if (url == textField)
     {
-        urlToServerWithPacks = UTF8Utils::EncodeToUTF8(newText);
+        urlPacksCommon = UTF8Utils::EncodeToUTF8(newText);
         UpdateDescription();
     }
 }
@@ -50,9 +50,12 @@ void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideS
 void PackManagerTest::UpdateDescription()
 {
     String message = DAVA::Format("type name of pack you want to download\n"
-                                  "Directory to downloaded packs: \"%s\"\nUrl to packs: \"%s\"\n"
+                                  "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n"
+                                  "Url to gpu packs: \"%s\"\n"
                                   "When you press \"start loading\" full reinitializetion begins",
-                                  folderWithDownloadedPacks.GetAbsolutePathname().c_str(), urlToServerWithPacks.c_str());
+                                  folderWithDownloadedPacks.GetAbsolutePathname().c_str(),
+                                  urlPacksCommon.c_str(),
+                                  urlPacksGpu.c_str());
     description->SetText(UTF8Utils::EncodeToWideString(message));
 }
 
@@ -60,11 +63,38 @@ void PackManagerTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
+    eGPUFamily gpu = DeviceInfo::GetGPUFamily();
+    switch (gpu)
+    {
+    case GPU_ADRENO:
+        gpuName = "adreno";
+        break;
+    case GPU_DX11:
+        gpuName = "dx11";
+        break;
+    case GPU_MALI:
+        gpuName = "mali";
+        break;
+    case GPU_POWERVR_IOS:
+        gpuName = "pvr_ios";
+        break;
+    case GPU_POWERVR_ANDROID:
+        gpuName = "pvr_android";
+        break;
+    case GPU_TEGRA:
+        gpuName = "tegra";
+        break;
+    default:
+        throw std::runtime_error("unknown gpu famili");
+    }
+
+    urlPacksGpu.replace(urlPacksGpu.find("{gpu}"), 5, gpuName);
+
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"unit_test.pak");
+    packInput->SetText(L"vpack.pack");
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     packInput->SetInputEnabled(true);
@@ -127,7 +157,7 @@ void PackManagerTest::LoadResources()
 
     url = new UITextField(Rect(5, 250, 400, 20));
     url->SetFont(font);
-    url->SetText(UTF8Utils::EncodeToWideString(urlToServerWithPacks));
+    url->SetText(UTF8Utils::EncodeToWideString(urlPacksCommon));
     url->SetDebugDraw(true);
     url->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     url->SetInputEnabled(true);
@@ -166,11 +196,11 @@ void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack, DAV
     }
     else if (change == PackManager::Pack::Change::State)
     {
-        if (pack.state == PackManager::Pack::Mounted)
+        if (pack.state == PackManager::Pack::Status::Mounted)
         {
             packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
         }
-        else if (pack.state == PackManager::Pack::ErrorLoading || pack.state == PackManager::Pack::OtherError)
+        else if (pack.state == PackManager::Pack::Status::ErrorLoading || pack.state == PackManager::Pack::Status::OtherError)
         {
             packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
         }
@@ -185,7 +215,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
     std::for_each(begin(packs), end(packs), [&packManager](const PackManager::Pack& pack)
                   {
-                      if (pack.state == PackManager::Pack::Mounted)
+                      if (pack.state == PackManager::Pack::Status::Mounted)
                       {
                           packManager.Delete(pack.name);
                       }
@@ -195,7 +225,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     // clear and renew all packs state
-    packManager.Initialize(sqliteDbFile, folderWithDownloadedPacks, urlToServerWithPacks);
+    packManager.Initialize(sqliteDbFile, folderWithDownloadedPacks, urlPacksCommon, urlPacksGpu);
     packManager.EnableProcessing();
 
     packManager.onPackStateChanged.DisconnectAll();

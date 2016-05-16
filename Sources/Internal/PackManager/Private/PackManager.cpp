@@ -40,16 +40,14 @@ PackManager::PackManager()
 PackManager::~PackManager() = default;
 
 void PackManager::Initialize(const FilePath& filesDB_,
-                             const FilePath& localPacksDir_,
-                             const String& remotePacksUrl,
-                             const String& remotePacksGpuUrl)
+                             const FilePath& downloadPacksDir_,
+                             const String& packsUrlCommon_,
+                             const String& packsUrlGpu_)
 {
     DVASSERT(FileSystem::Instance()->IsFile(filesDB_));
-    DVASSERT(FileSystem::Instance()->IsDirectory(localPacksDir_));
+    DVASSERT(FileSystem::Instance()->IsDirectory(downloadPacksDir_));
 
-    // TODO two more params
-
-    impl->Initialize(filesDB_, localPacksDir_, remotePacksUrl, onPackStateChanged);
+    impl->Initialize(filesDB_, downloadPacksDir_, packsUrlCommon_, packsUrlGpu_, onPackStateChanged);
 }
 
 bool PackManager::IsProcessingEnabled() const

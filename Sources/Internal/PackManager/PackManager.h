@@ -82,9 +82,9 @@ public:
     // 3. mount all packs which found on filesystem and in database
     // throw exception if can't initialize with deteils
     void Initialize(const FilePath& dbFile,
-                    const FilePath& localPacksDir,
-                    const String& commonPacksUrl,
-                    const String& gpuPacksUrl);
+                    const FilePath& downloadPacksDir,
+                    const String& packsUrlCommon,
+                    const String& packsUrlGpu);
 
     bool IsProcessingEnabled() const;
     // enable user request processing
