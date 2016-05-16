@@ -78,6 +78,13 @@ public:
 
     // Whether the movie is being played?
     virtual bool IsPlaying() const = 0;
+
+    virtual void Update()
+    {
+    }
+    virtual void Draw(const class UIGeometricData& parentGeometricData)
+    {
+    }
 };
 
 } // namespace DAVA

@@ -26,7 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "MovieViewControlFFMPEG.h"
+#include "FfmpegPlayer.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -34,14 +34,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-MovieViewControl::~MovieViewControl()
+FfmpegPlayer::~FfmpegPlayer()
 {
     Stop();
     CloseMovie();
 }
 
 // Initialize the control.
-void MovieViewControl::Initialize(const Rect& rect)
+void FfmpegPlayer::Initialize(const Rect&)
 {
     static bool isFFMGEGInited = false;
 
@@ -52,7 +52,7 @@ void MovieViewControl::Initialize(const Rect& rect)
     }
 }
 
-AV::AVFormatContext* MovieViewControl::CreateContext(const FilePath& path)
+AV::AVFormatContext* FfmpegPlayer::CreateContext(const FilePath& path)
 {
     AV::AVFormatContext* context = AV::avformat_alloc_context();
     bool isSuccess = true;
@@ -77,7 +77,7 @@ AV::AVFormatContext* MovieViewControl::CreateContext(const FilePath& path)
 }
 
 // Start/stop the video playback.
-void MovieViewControl::Play()
+void FfmpegPlayer::Play()
 {
     if (PLAYING == state)
         return;
@@ -110,7 +110,7 @@ void MovieViewControl::Play()
             Thread::Sleep(0);
         }
 
-        readingDataThread = Thread::Create(Message(this, &MovieViewControl::ReadingThread));
+        readingDataThread = Thread::Create(Message(this, &FfmpegPlayer::ReadingThread));
         readingDataThread->Start();
 
         InitFmod();
@@ -126,20 +126,20 @@ void MovieViewControl::Play()
 }
 
 // Open the Movie.
-void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
+void FfmpegPlayer::OpenMovie(const FilePath& moviePath_, const OpenMovieParams&)
 {
     Stop();
-    this->moviePath = moviePath;
+    moviePath = moviePath_;
 }
 
-void MovieViewControl::CloseMovie()
+void FfmpegPlayer::CloseMovie()
 {
     videoShown = false;
     audioListen = false;
-    audio_clock = 0;
+    audioClock = 0;
     frameLastPts = 0.f;
     frameLastDelay = 40e-3;
-    video_clock = 0.f;
+    videoClock = 0.f;
     mediaFileEOF = false;
 
     if (fmodChannel)
@@ -203,7 +203,7 @@ void MovieViewControl::CloseMovie()
     }
 }
 
-bool MovieViewControl::InitVideo()
+bool FfmpegPlayer::InitVideo()
 {
     for (unsigned int i = 0; i < movieContext->nb_streams; i++)
     {
@@ -216,7 +216,7 @@ bool MovieViewControl::InitVideo()
     if (-1 == videoStreamIndex)
     {
         Logger::Error("Didn't find a video stream.\n");
-        return false; // false;
+        return false;
     }
 
     AV::AVRational avfps = movieContext->streams[videoStreamIndex]->avg_frame_rate;
@@ -241,13 +241,13 @@ bool MovieViewControl::InitVideo()
 
     DVASSERT(nullptr == videoDecodingThread)
 
-    videoDecodingThread = Thread::Create(Message(this, &MovieViewControl::VideoDecodingThread));
+    videoDecodingThread = Thread::Create(Message(this, &FfmpegPlayer::VideoDecodingThread));
     videoDecodingThread->Start();
 
     return true;
 }
 
-void MovieViewControl::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
+void FfmpegPlayer::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
 {
     DVASSERT(packet != nullptr);
     if (packet->stream_index == videoStreamIndex)
@@ -268,23 +268,23 @@ void MovieViewControl::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
     }
 }
 
-float64 MovieViewControl::GetAudioClock() const
+float64 FfmpegPlayer::GetAudioClock() const
 {
-    float64 pts = audio_clock; /* maintained in the audio thread */
-    uint32 bytes_per_sec = 0;
+    float64 pts = audioClock; /* maintained in the audio thread */
+    uint32 bytesPerSec = 0;
     uint32 n = audioCodecContext->channels * 2;
     if (movieContext->streams[audioStreamIndex])
     {
-        bytes_per_sec = audioCodecContext->sample_rate * n;
+        bytesPerSec = audioCodecContext->sample_rate * n;
     }
-    if (bytes_per_sec)
+    if (bytesPerSec)
     {
-        pts -= static_cast<float64>(audio_buf_size) / bytes_per_sec;
+        pts -= static_cast<float64>(audioBufSize) / bytesPerSec;
     }
     return pts;
 }
 
-void MovieViewControl::FlushBuffers()
+void FfmpegPlayer::FlushBuffers()
 {
     DVASSERT(PLAYING != state && PAUSED != state);
     {
@@ -306,7 +306,7 @@ void MovieViewControl::FlushBuffers()
     pcmBuffer.Flush();
 }
 
-FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
+FMOD_RESULT F_CALLBACK FfmpegPlayer::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
 {
     Memset(data, 0, datalen);
 
@@ -317,7 +317,7 @@ FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound
     void* soundData;
     reinterpret_cast<FMOD::Sound*>(sound)->getUserData(&soundData);
 
-    MovieViewControl* movieControl = reinterpret_cast<MovieViewControl*>(soundData);
+    FfmpegPlayer* movieControl = reinterpret_cast<FfmpegPlayer*>(soundData);
     if (nullptr != movieControl)
     {
         movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
@@ -326,7 +326,7 @@ FMOD_RESULT F_CALLBACK MovieViewControl::PcmReadDecodeCallback(FMOD_SOUND* sound
     return FMOD_OK;
 }
 
-bool MovieViewControl::InitAudio()
+bool FfmpegPlayer::InitAudio()
 {
     for (unsigned int i = 0; i < movieContext->nb_streams; i++)
     {
@@ -346,7 +346,7 @@ bool MovieViewControl::InitAudio()
     audioCodecContext = movieContext->streams[audioStreamIndex]->codec;
 
     // Find the decoder for the audio stream
-    AV::AVCodec* audioCodec = avcodec_find_decoder(audioCodecContext->codec_id);
+    AV::AVCodec* audioCodec = AV::avcodec_find_decoder(audioCodecContext->codec_id);
     if (audioCodec == nullptr)
     {
         printf("Codec not found.\n");
@@ -361,82 +361,82 @@ bool MovieViewControl::InitAudio()
     }
 
     //Out Audio Param
-    uint64_t out_channel_layout = AV_CH_LAYOUT_STEREO;
+    uint64_t outChannelLayout = AV_CH_LAYOUT_STEREO;
     //nb_samples: AAC-1024 MP3-1152
-    int out_nb_samples = audioCodecContext->frame_size;
-    AV::AVSampleFormat out_sample_fmt = AV::AV_SAMPLE_FMT_S16;
+    int outNbSamples = audioCodecContext->frame_size;
+    AV::AVSampleFormat outSampleFmt = AV::AV_SAMPLE_FMT_S16;
 
-    audio_buf_size = out_sample_rate;
-    out_channels = AV::av_get_channel_layout_nb_channels(out_channel_layout);
+    audioBufSize = outSampleRate;
+    outChannels = AV::av_get_channel_layout_nb_channels(outChannelLayout);
     //Out Buffer Size
-    outAudioBufferSize = static_cast<uint32>(av_samples_get_buffer_size(nullptr, out_channels, out_nb_samples, out_sample_fmt, 1));
+    outAudioBufferSize = static_cast<uint32>(av_samples_get_buffer_size(nullptr, outChannels, outNbSamples, outSampleFmt, 1));
 
     //FIX:Some Codec's Context Information is missing
-    int64_t in_channel_layout = AV::av_get_default_channel_layout(audioCodecContext->channels);
+    int64_t inChannelLayout = AV::av_get_default_channel_layout(audioCodecContext->channels);
 
-    audioConvertContext = AV::swr_alloc_set_opts(audioConvertContext, out_channel_layout, out_sample_fmt, out_sample_rate, in_channel_layout, audioCodecContext->sample_fmt, audioCodecContext->sample_rate, 0, nullptr);
+    audioConvertContext = AV::swr_alloc_set_opts(audioConvertContext, outChannelLayout, outSampleFmt, outSampleRate, inChannelLayout, audioCodecContext->sample_fmt, audioCodecContext->sample_rate, 0, nullptr);
     AV::swr_init(audioConvertContext);
 
     DVASSERT(nullptr == audioDecodingThread);
 
-    audioDecodingThread = Thread::Create(Message(this, &MovieViewControl::AudioDecodingThread));
+    audioDecodingThread = Thread::Create(Message(this, &FfmpegPlayer::AudioDecodingThread));
     audioDecodingThread->Start();
 
     return true;
 }
 
-float64 MovieViewControl::GetMasterClock() const
+float64 FfmpegPlayer::GetMasterClock() const
 {
     return GetAudioClock();
 }
 
-float64 MovieViewControl::SyncVideoClock(AV::AVFrame* src_frame, float64 pts)
+float64 FfmpegPlayer::SyncVideoClock(AV::AVFrame* srcFrame, float64 pts)
 {
-    float64 frame_delay;
+    float64 frameDelay;
 
     if (pts != 0)
     {
         /* if we have pts, set video clock to it */
-        video_clock = pts;
+        videoClock = pts;
     }
     else
     {
         /* if we aren't given a pts, set it to the clock */
-        pts = video_clock;
+        pts = videoClock;
     }
 
     /* update the video clock */
-    frame_delay = AV::av_q2d(videoCodecContext->time_base);
+    frameDelay = AV::av_q2d(videoCodecContext->time_base);
     /* if we are repeating a frame, adjust clock accordingly */
-    frame_delay += src_frame->repeat_pict * (frame_delay * 0.5);
-    video_clock += frame_delay;
+    frameDelay += srcFrame->repeat_pict * (frameDelay * 0.5);
+    videoClock += frameDelay;
 
     return pts;
 }
 
-DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
+DecodedFrameBuffer* FfmpegPlayer::DecodeVideoPacket(AV::AVPacket* packet)
 {
     DVASSERT(nullptr != packet);
 
-    int32 got_picture;
+    int32 gotPicture;
     AV::AVFrame* decodedFrame = AV::av_frame_alloc();
-    int32 ret = AV::avcodec_decode_video2(videoCodecContext, decodedFrame, &got_picture, packet);
+    int32 ret = AV::avcodec_decode_video2(videoCodecContext, decodedFrame, &gotPicture, packet);
 
     DecodedFrameBuffer* frameBuffer = nullptr;
-    if (ret >= 0 && got_picture)
+    if (ret >= 0 && gotPicture)
     {
         // rgbTextureBufferHolder is a pointer to pointer to uint8. Used to obtain data directly to our rgbTextureBuffer
-        AV::SwsContext* img_convert_ctx = AV::sws_getContext(videoCodecContext->width, videoCodecContext->height, videoCodecContext->pix_fmt, videoCodecContext->width, videoCodecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
+        AV::SwsContext* imgConvertCtx = AV::sws_getContext(videoCodecContext->width, videoCodecContext->height, videoCodecContext->pix_fmt, videoCodecContext->width, videoCodecContext->height, avPixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
         rgbDecodedScaledFrame = AV::av_frame_alloc();
 
         uint32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(pixelFormat);
         const int imgBufferSize = AV::av_image_get_buffer_size(avPixelFormat, videoCodecContext->width, videoCodecContext->height, pixelSize);
 
-        uint8* out_buffer = reinterpret_cast<uint8*>(AV::av_mallocz(imgBufferSize));
-        Memset(out_buffer, imgBufferSize, 1);
-        AV::av_image_fill_arrays(rgbDecodedScaledFrame->data, rgbDecodedScaledFrame->linesize, out_buffer, avPixelFormat, videoCodecContext->width, videoCodecContext->height, 1);
-        AV::av_free(out_buffer);
+        uint8* outBuffer = reinterpret_cast<uint8*>(AV::av_mallocz(imgBufferSize));
+        Memset(outBuffer, imgBufferSize, 1);
+        AV::av_image_fill_arrays(rgbDecodedScaledFrame->data, rgbDecodedScaledFrame->linesize, outBuffer, avPixelFormat, videoCodecContext->width, videoCodecContext->height, 1);
+        AV::av_free(outBuffer);
 
         float64 effectivePTS = GetPTSForFrame(decodedFrame, packet, videoStreamIndex);
         effectivePTS = SyncVideoClock(decodedFrame, effectivePTS);
@@ -448,10 +448,10 @@ DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
         uint8* rgbTextureBufferHolder[1];
         rgbTextureBufferHolder[0] = frameBuffer->data;
 
-        const uint32 scaledHeight = AV::sws_scale(img_convert_ctx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, rgbDecodedScaledFrame->linesize);
+        const uint32 scaledHeight = AV::sws_scale(imgConvertCtx, decodedFrame->data, decodedFrame->linesize, 0, frameHeight, rgbTextureBufferHolder, rgbDecodedScaledFrame->linesize);
 
         AV::av_frame_free(&rgbDecodedScaledFrame);
-        AV::sws_freeContext(img_convert_ctx);
+        AV::sws_freeContext(imgConvertCtx);
     }
 
     AV::av_frame_free(&decodedFrame);
@@ -459,7 +459,7 @@ DecodedFrameBuffer* MovieViewControl::DecodeVideoPacket(AV::AVPacket* packet)
     return frameBuffer;
 }
 
-void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
+void FfmpegPlayer::UpdateVideo(DecodedFrameBuffer* frameBuffer)
 {
     DVASSERT(nullptr != frameBuffer);
 
@@ -482,14 +482,14 @@ void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
 
     /* Skip or repeat the frame. Take delay into account
         FFPlay still doesn't "know if this is the best guess." */
-    float64 sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
+    float64 syncThreshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
     if (fabs(diff) < AV_NOSYNC_THRESHOLD)
     {
-        if (diff <= -sync_threshold)
+        if (diff <= -syncThreshold)
         {
             delay = 0;
         }
-        else if (diff >= sync_threshold)
+        else if (diff >= syncThreshold)
         {
             delay = 2 * delay;
         }
@@ -497,21 +497,21 @@ void MovieViewControl::UpdateVideo(DecodedFrameBuffer* frameBuffer)
     frameTimer += delay;
 
     /* computer the REAL delay */
-    float64 actual_delay = frameTimer - GetTime();
-    if (actual_delay < 0.010)
+    float64 actualDelay = frameTimer - GetTime();
+    if (actualDelay < 0.010)
     {
         /* Really it should skip the picture instead */
-        actual_delay = 0.001;
+        actualDelay = 0.001;
     }
 
     UpdateDrawData(frameBuffer);
 
     uint32 sleepLessFor = static_cast<uint32>(GetTime() - timeBeforeCalc);
-    uint32 sleepTime = static_cast<uint32>(actual_delay * 1000 + 0.5) - sleepLessFor;
+    uint32 sleepTime = static_cast<uint32>(actualDelay * 1000 + 0.5) - sleepLessFor;
     Thread::Sleep(sleepTime);
 }
 
-float64 MovieViewControl::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream)
+float64 FfmpegPlayer::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream)
 {
     int64 pts;
     if (packet->dts != AV_NOPTS_VALUE)
@@ -527,7 +527,7 @@ float64 MovieViewControl::GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packe
     return effectivePTS;
 }
 
-MovieViewControl::DrawVideoFrameData* MovieViewControl::GetDrawData()
+FfmpegPlayer::DrawVideoFrameData* FfmpegPlayer::GetDrawData()
 {
     LockGuard<Mutex> lock(lastFrameLocker);
 
@@ -542,22 +542,22 @@ MovieViewControl::DrawVideoFrameData* MovieViewControl::GetDrawData()
     return data;
 }
 
-PixelFormat MovieViewControl::GetPixelFormat() const
+PixelFormat FfmpegPlayer::GetPixelFormat() const
 {
     return pixelFormat;
 }
 
-Vector2 MovieViewControl::GetResolution() const
+Vector2 FfmpegPlayer::GetResolution() const
 {
     return Vector2(static_cast<float32>(frameWidth), static_cast<float32>(frameHeight));
 }
 
-MovieViewControl::PlayState MovieViewControl::GetState() const
+FfmpegPlayer::PlayState FfmpegPlayer::GetState() const
 {
     return state;
 }
 
-void MovieViewControl::UpdateDrawData(DecodedFrameBuffer* buffer)
+void FfmpegPlayer::UpdateDrawData(DecodedFrameBuffer* buffer)
 {
     DVASSERT(nullptr != buffer);
 
@@ -576,17 +576,17 @@ void MovieViewControl::UpdateDrawData(DecodedFrameBuffer* buffer)
     lastFrameData->frameWidth = videoCodecContext->width;
 }
 
-void MovieViewControl::InitFmod()
+void FfmpegPlayer::InitFmod()
 {
     FMOD_CREATESOUNDEXINFO exinfo;
     memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
 
     exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
-    exinfo.length = out_sample_rate * out_channels * sizeof(signed short); // *5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
-    exinfo.numchannels = out_channels; /* Number of channels in the sound. */
-    exinfo.defaultfrequency = out_sample_rate; /* Default playback rate of sound. */
+    exinfo.length = outSampleRate * outChannels * sizeof(signed short); // *5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
+    exinfo.numchannels = outChannels; /* Number of channels in the sound. */
+    exinfo.defaultfrequency = outSampleRate; /* Default playback rate of sound. */
     exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
-    exinfo.pcmreadcallback = &MovieViewControl::PcmReadDecodeCallback; /* User callback for reading. */
+    exinfo.pcmreadcallback = &FfmpegPlayer::PcmReadDecodeCallback; /* User callback for reading. */
 
     FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
     FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
@@ -598,7 +598,7 @@ void MovieViewControl::InitFmod()
     fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
 }
 
-void MovieViewControl::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
+void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
 {
     DVASSERT(packet->stream_index == audioStreamIndex);
     int got_data;
@@ -638,14 +638,14 @@ void MovieViewControl::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
     }
     if (pts != AV_NOPTS_VALUE)
     {
-        audio_clock = AV::av_q2d(audioCodecContext->time_base) * pts;
+        audioClock = AV::av_q2d(audioCodecContext->time_base) * pts;
     }
 
     pcmBuffer.Write(outAudioBuffer, outAudioBufferSize);
     SafeDeleteArray(outAudioBuffer);
 }
 
-void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
+void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Thread* thread = static_cast<Thread*>(caller);
 
@@ -685,7 +685,7 @@ void MovieViewControl::AudioDecodingThread(BaseObject* caller, void* callerData,
     } while (thread && !thread->IsCancelling());
 }
 
-void MovieViewControl::VideoDecodingThread(BaseObject* caller, void* callerData, void* userData)
+void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Thread* thread = static_cast<Thread*>(caller);
 
@@ -727,7 +727,7 @@ void MovieViewControl::VideoDecodingThread(BaseObject* caller, void* callerData,
     } while (thread && !thread->IsCancelling());
 }
 
-void MovieViewControl::PrefetchData(uint32 dataSize)
+void FfmpegPlayer::PrefetchData(uint32 dataSize)
 {
     int retRead = 0;
     while (retRead >= 0 && currentPrefetchedPacketsCount < dataSize)
@@ -755,7 +755,7 @@ void MovieViewControl::PrefetchData(uint32 dataSize)
     }
 }
 
-void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void* userData)
+void FfmpegPlayer::ReadingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Thread* thread = static_cast<Thread*>(caller);
 
@@ -769,13 +769,13 @@ void MovieViewControl::ReadingThread(BaseObject* caller, void* callerData, void*
     } while (thread && !thread->IsCancelling());
 }
 
-float64 MovieViewControl::GetTime()
+float64 FfmpegPlayer::GetTime()
 {
     return (AV::av_gettime() / 1000000.0);
 }
 
 // Pause/resume the playback.
-void MovieViewControl::Pause()
+void FfmpegPlayer::Pause()
 {
     if (PLAYING != state)
         return;
@@ -786,19 +786,19 @@ void MovieViewControl::Pause()
         fmodChannel->setPaused(true);
 }
 
-void MovieViewControl::Resume()
+void FfmpegPlayer::Resume()
 {
     if (PAUSED == state)
         Play();
 }
 
 // Whether the movie is being played?
-bool MovieViewControl::IsPlaying() const
+bool FfmpegPlayer::IsPlaying() const
 {
     return PLAYING == state;
 }
 
-void MovieViewControl::Update()
+void FfmpegPlayer::Update()
 {
     if (STOPPED != state && videoShown && audioListen)
     {
@@ -806,7 +806,7 @@ void MovieViewControl::Update()
     }
 }
 
-void MovieViewControl::Stop()
+void FfmpegPlayer::Stop()
 {
     if (STOPPED == state)
         return;

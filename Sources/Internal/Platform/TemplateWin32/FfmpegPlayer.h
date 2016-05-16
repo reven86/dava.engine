@@ -93,10 +93,10 @@ struct DecodedFrameBuffer
     uint32 height = 0;
 };
 
-class MovieViewControl : public IMovieViewControl
+class FfmpegPlayer : public IMovieViewControl
 {
 public:
-    ~MovieViewControl() override;
+    ~FfmpegPlayer() override;
 
     // IMovieViewControl Interface implementation
 
@@ -205,7 +205,7 @@ private:
     float64 videoFramerate = 0.f;
     float64 frameLastPts = 0.f;
     float64 frameLastDelay = 40e-3;
-    float64 video_clock = 0.f;
+    float64 videoClock = 0.f;
 
     uint32 frameHeight = 0;
     uint32 frameWidth = 0;
@@ -224,8 +224,8 @@ private:
     AV::SwrContext* audioConvertContext = nullptr;
     uint32 outAudioBufferSize = 0;
 
-    int out_channels = -1;
-    const int out_sample_rate = 44100;
+    int outChannels = -1;
+    const int outSampleRate = 44100;
     FMOD::Sound* sound = nullptr;
     FMOD::Channel* fmodChannel = nullptr;
     StreamBuffer pcmBuffer;
@@ -239,8 +239,8 @@ private:
 
     uint32 playTime = 0;
     float64 frameTimer = 0.f;
-    uint32 audio_buf_size = 0;
-    std::atomic<float64> audio_clock = 0.f;
+    uint32 audioBufSize = 0;
+    std::atomic<float64> audioClock = 0.f;
     float64 GetAudioClock() const;
     float64 GetTime();
 

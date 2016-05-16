@@ -37,7 +37,6 @@
 namespace DAVA
 {
 // The purpose of UIMovieView class is to display movies.
-class MovieViewControl;
 class UIMovieView : public UIControl
 {
 public:
@@ -77,13 +76,7 @@ public:
 
 protected:
     // Platform-specific implementation of the Movie Control.
-    MovieViewControl* movieViewControl = nullptr;
-    Texture* videoTexture = nullptr;
-    UIControlBackground* videoBackground = nullptr;
-    uint8* videoTextureBuffer = nullptr;
-    uint32 textureWidth = 0;
-    uint32 textureHeight = 0;
-    uint32 textureDataLen = 0;
+    IMovieViewControl* movieViewControl;
 
 public:
     INTROSPECTION_EXTEND(UIMovieView, UIControl,
