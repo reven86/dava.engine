@@ -1,4 +1,4 @@
-function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath) {
+function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath, customOptions) {
     var outputText = ""; //pass by reference
 
     if(configuration["currentPlatform"] === undefined) {
@@ -33,7 +33,7 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
         outputText = outputText.arg(substrings[i])
     }
     
-    var globalOptions = configuration.globalOptions;
+    var globalOptions = configuration.checkedGlobalOptions;
     if(globalOptions && Array.isArray(globalOptions)) {
         for(var i = 0, length = globalOptions.length; i < length; ++i) {
             outputText += " " + globalOptions[i].value;
@@ -63,7 +63,6 @@ function createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cm
         }
     }
     
-    var customOptions = configuration["customOptions"];
     if(typeof customOptions === "string") {
         outputText += " " + customOptions;
     }
