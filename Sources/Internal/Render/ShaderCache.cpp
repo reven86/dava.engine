@@ -111,6 +111,8 @@ ShaderSourceCode LoadFromSource(const String& source)
     sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
     sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
 
+    bool loaded = true;
+
     //later move it into FileSystem
 
     //vertex
@@ -123,11 +125,13 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
         if (dataRead != fileSize)
         {
+            loaded = false;
             Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
+        loaded = false;
         Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
@@ -142,14 +146,18 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);
         if (dataRead != fileSize)
         {
+            loaded = false;
             Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
+        loaded = false;
         Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
+
+    DVASSERT_MSG(loaded, "Can't load config files");
 
     return sourceCode;
 }
