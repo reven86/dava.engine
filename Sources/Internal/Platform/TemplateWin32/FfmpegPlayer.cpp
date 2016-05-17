@@ -57,13 +57,14 @@ AV::AVFormatContext* FfmpegPlayer::CreateContext(const FilePath& path)
     AV::AVFormatContext* context = AV::avformat_alloc_context();
     bool isSuccess = true;
 
-    if (AV::avformat_open_input(&context, path.GetAbsolutePathname().c_str(), nullptr, nullptr) != 0)
+    int openRes = AV::avformat_open_input(&context, path.GetAbsolutePathname().c_str(), nullptr, nullptr);
+    if (openRes != 0 || !context)
     {
         Logger::FrameworkDebug("Couldn't open input stream.\n");
         isSuccess = false;
     }
 
-    if (AV::avformat_find_stream_info(context, nullptr) < 0)
+    if (!isSuccess || AV::avformat_find_stream_info(context, nullptr) < 0)
     {
         Logger::FrameworkDebug("Couldn't find stream information.\n");
         isSuccess = false;

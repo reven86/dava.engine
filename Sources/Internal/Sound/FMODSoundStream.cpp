@@ -67,7 +67,7 @@ FMODSoundStream::~FMODSoundStream()
         sound = nullptr;
     }
 
-    DataSender = nullptr;
+    dataSender = nullptr;
 }
 
 FMOD_RESULT F_CALLBACK FMODSoundStream::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
