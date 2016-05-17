@@ -592,7 +592,7 @@ void ParticleTimeLineWidget::UpdateLayersExtraInfoValues()
     for (DAVA::List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
          iter != infoColumns.end(); iter++)
     {
-        (*iter)->repaint();
+        (*iter)->update();
     }
 }
 
@@ -620,7 +620,7 @@ void ParticleTimeLineWidget::UpdateSizePolicy()
 {
     //setFixedHeight((lines.size() + 1) * LINE_STEP + BOTTOM_INDENT + TOP_INDENT + PARTICLES_INFO_CONTROL_OFFSET);
     updateGeometry();
-    repaint();
+    update();
 }
 
 void ParticleTimeLineWidget::mouseMoveEvent(QMouseEvent* event)
@@ -876,7 +876,7 @@ void ParticleTimeLineWidget::OnParticleEmitterValueChanged(SceneEditor2* /*scene
     if (maxTime != emitter->GetEmitter()->lifeTime)
     {
         maxTime = emitter->GetEmitter()->lifeTime;
-        repaint();
+        update();
     }
 }
 
@@ -896,27 +896,27 @@ void ParticleTimeLineWidget::OnParticleLayerValueChanged(SceneEditor2* scene, DA
         {
             line.startTime = layer->startTime;
             line.endTime = layer->endTime;
-            repaint();
+            update();
         }
 
         if (line.isLooped != layer->isLooped)
         {
             line.isLooped = layer->isLooped;
-            repaint();
+            update();
         }
 
         if (line.deltaTime != layer->deltaTime || line.loopEndTime != layer->loopEndTime)
         {
             line.deltaTime = layer->deltaTime;
             line.loopEndTime = layer->loopEndTime;
-            repaint();
+            update();
         }
 
         bool hasLoopVariation = (layer->loopVariation > 0) || (layer->deltaVariation > 0);
         if (line.hasLoopVariation != hasLoopVariation)
         {
             line.hasLoopVariation = hasLoopVariation;
-            repaint();
+            update();
         }
 
         break;
