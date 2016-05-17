@@ -71,6 +71,7 @@ void SetColoredIconToAction(QAction* action, QColor color)
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , loggerOutput(new LoggerOutputObject)
+    , bacgroundColorActionGroup(this)
 {
     setupUi(this);
 
@@ -324,12 +325,14 @@ void MainWindow::SetupViewMenu()
 void MainWindow::SetupBackgroundMenu()
 {
     const InspInfo* inspInfo = PreferencesStorage::Instance()->GetInspInfo(FastName("ColorControl"));
-    const InspMember* inspMember = inspInfo->Member(FastName("backgroundColor"));
-    DVASSERT(inspInfo != nullptr && inspMember != nullptr);
-    if (inspMember == nullptr)
+    backGroundColorMemeber = inspInfo->Member(FastName("backgroundColor"));
+    DVASSERT(backGroundColorMemeber != nullptr);
+    if (backGroundColorMemeber == nullptr)
     {
         return;
     }
+
+    PreferencesStorage::Instance()->valueChanged.Connect(this, &MainWindow::OnPreferencesPropertyChanged);
 
     menuView->addSeparator();
     // Setup the Background Color menu.
@@ -337,7 +340,6 @@ void MainWindow::SetupBackgroundMenu()
     menuView->addSeparator();
     menuView->addMenu(backgroundColorMenu);
 
-    QActionGroup* actionGroup = new QActionGroup(backgroundColorMenu);
     using ColorItem = std::pair<QColor, QString>;
     DAVA::Vector<ColorItem> colorsMap = {
         { Qt::transparent, "Default" },
@@ -353,59 +355,26 @@ void MainWindow::SetupBackgroundMenu()
         QColor color(colorItem.first);
         MainWindow_local::SetColoredIconToAction(colorAction, color);
 
-        actionGroup->addAction(colorAction);
+        bacgroundColorActionGroup.addAction(colorAction);
         backgroundColorMenu->addAction(colorAction);
-        connect(colorAction, &QAction::toggled, [color, inspMember](bool toggled) {
-            if (toggled)
-            {
-                VariantType value(QColorToColor(color));
-                PreferencesStorage::Instance()->SetValue(inspMember, value);
-            }
-        });
+        connect(colorAction, &QAction::toggled, this, &MainWindow::OnActionBackgroundColorTriggered);
     }
-    QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
-    backgroundColorMenu->addAction(backgroundCustomColorAction);
-    connect(backgroundCustomColorAction, &QAction::triggered, [this, backgroundCustomColorAction, inspMember]() {
-        QColor curColor = backgroundCustomColorAction->data().value<QColor>();
-        QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
-        if (!color.isValid())
-        {
-            //if we launch app with custom color previous color action will be nullptr
-            if (previousBackgroundColorAction != nullptr
-                && previousBackgroundColorAction != backgroundCustomColorAction)
-            {
-                previousBackgroundColorAction->trigger();
-            }
-            return;
-        }
-        MainWindow_local::SetColoredIconToAction(backgroundCustomColorAction, color);
-        VariantType value(QColorToColor(color));
-        PreferencesStorage::Instance()->SetValue(inspMember, value);
-    });
-    actionGroup->addAction(backgroundCustomColorAction);
+    customBackgroundColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
+    backgroundColorMenu->addAction(customBackgroundColorAction);
+    connect(customBackgroundColorAction, &QAction::triggered, this, &MainWindow::OnActionCustomBackgroundColorTriggered);
+    bacgroundColorActionGroup.addAction(customBackgroundColorAction);
 
-    for (auto& action : actionGroup->actions())
+    for (auto& action : bacgroundColorActionGroup.actions())
     {
         action->setCheckable(true);
     }
-    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
+    connect(&bacgroundColorActionGroup, &QActionGroup::triggered, [this](QAction* action) {
         previousBackgroundColorAction = action;
     });
 
-    DAVA::VariantType loadedValue(PreferencesStorage::Instance()->GetValue(inspMember));
+    DAVA::VariantType loadedValue(PreferencesStorage::Instance()->GetValue(backGroundColorMemeber));
     QColor color = ColorToQColor(loadedValue.AsColor());
-    for (auto& action : actionGroup->actions())
-    {
-        if (action->data().value<QColor>() == color)
-        {
-            action->trigger();
-        }
-    }
-    if (actionGroup->checkedAction() == nullptr)
-    {
-        MainWindow_local::SetColoredIconToAction(backgroundCustomColorAction, color);
-        backgroundCustomColorAction->setChecked(true);
-    }
+    ApplyBackgroundColorToActions(color);
 }
 
 void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
@@ -485,6 +454,64 @@ void MainWindow::UpdateProjectSettings()
 
     // Update window title
     this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(currentProjectPath));
+}
+
+void MainWindow::OnPreferencesPropertyChanged(const DAVA::InspMember* member, const DAVA::VariantType& value)
+{
+    if (member == backGroundColorMemeber)
+    {
+        DAVA::Color davaColor = value.AsColor();
+        QColor color = ColorToQColor(davaColor);
+        ApplyBackgroundColorToActions(color);
+    }
+}
+
+void MainWindow::ApplyBackgroundColorToActions(const QColor& color)
+{
+    for (auto& action : bacgroundColorActionGroup.actions())
+    {
+        if (action != customBackgroundColorAction && action->data().value<QColor>() == color)
+        {
+            action->trigger();
+            return;
+        }
+    }
+    QColor customColor = customBackgroundColorAction->data().value<QColor>();
+    if (color != customColor)
+    {
+        MainWindow_local::SetColoredIconToAction(customBackgroundColorAction, color);
+        customBackgroundColorAction->setChecked(true);
+    }
+}
+
+void MainWindow::OnActionBackgroundColorTriggered(bool toggled)
+{
+    if (toggled)
+    {
+        QAction* senderAction = qobject_cast<QAction*>(sender());
+        QColor color = senderAction->data().value<QColor>();
+        VariantType value(QColorToColor(color));
+        PreferencesStorage::Instance()->SetValue(backGroundColorMemeber, value);
+    }
+}
+
+void MainWindow::OnActionCustomBackgroundColorTriggered()
+{
+    QColor curColor = customBackgroundColorAction->data().value<QColor>();
+    QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
+    if (!color.isValid())
+    {
+        //if we launch app with custom color previous color action will be nullptr
+        if (previousBackgroundColorAction != nullptr
+            && previousBackgroundColorAction != customBackgroundColorAction)
+        {
+            previousBackgroundColorAction->trigger();
+        }
+        return;
+    }
+    MainWindow_local::SetColoredIconToAction(customBackgroundColorAction, color);
+    VariantType value(QColorToColor(color));
+    PreferencesStorage::Instance()->SetValue(backGroundColorMemeber, value);
 }
 
 void MainWindow::OnPixelizationStateChanged(bool isPixelized)

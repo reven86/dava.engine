@@ -52,7 +52,7 @@ class SpritesPacker;
 class LoggerOutputObject;
 class Project;
 
-class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspBase
+class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspBase, public DAVA::TrackedObject
 {
     Q_OBJECT
 
@@ -108,6 +108,10 @@ private:
     void SetupViewMenu();
     void SetupBackgroundMenu();
     void UpdateProjectSettings();
+    void OnPreferencesPropertyChanged(const DAVA::InspMember* member, const DAVA::VariantType& value);
+    void ApplyBackgroundColorToActions(const QColor& color);
+    void OnActionBackgroundColorTriggered(bool toggled);
+    void OnActionCustomBackgroundColorTriggered();
 
     bool IsPixelized() const;
     void SetPixelized(bool pixelized);
@@ -128,6 +132,10 @@ private:
     QComboBox* comboboxLanguage = nullptr;
     QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
     QString currentProjectPath;
+
+    QActionGroup bacgroundColorActionGroup;
+    QAction* customBackgroundColorAction = nullptr;
+    const DAVA::InspMember* backGroundColorMemeber = nullptr;
 
 public:
     INTROSPECTION(MainWindow,
