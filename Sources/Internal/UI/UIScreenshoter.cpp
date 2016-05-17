@@ -72,34 +72,45 @@ void UIScreenshoter::OnFrame()
     }
 }
 
-Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha)
+RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture* screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
+    RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
-    MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha);
+    MakeScreenshotInternal(control, screenshot.Get(), nullptr, clearAlpha);
 
     return screenshot;
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback)
+RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture* screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
+    RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
-    MakeScreenshotInternal(control, screenshot, callback, false);
+    MakeScreenshotInternal(control, screenshot.Get(), callback, clearAlpha);
 
-    SafeRelease(screenshot);
+    return screenshot;
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, bool clearAlpha)
 {
-    MakeScreenshotInternal(control, screenshot, nullptr, false);
+    MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha);
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha)
 {
-    MakeScreenshotInternal(control, screenshot, callback, false);
+    MakeScreenshotInternal(control, screenshot, callback, clearAlpha);
+}
+
+void UIScreenshoter::Unsubscribe(Texture* screenshot)
+{
+    for (auto& waiter : waiters)
+    {
+        if (waiter.texture == screenshot)
+        {
+            waiter.callback = nullptr;
+        }
+    }
 }
 
 void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha)
