@@ -64,8 +64,7 @@ extern "C"
 
 namespace DAVA
 {
-
-class FfmpegPlayer : public IMovieViewControl
+class FfmpegPlayer : public IMovieViewControl, public StreamDelegate
 {
 public:
     ~FfmpegPlayer() override;
@@ -119,6 +118,9 @@ public:
 
     PlayState GetState() const;
 
+    // StreamDelegate
+    void PcmDataCallback(uint8* data, uint32 datalen) override;
+
 private:
     struct DecodedFrameBuffer
     {
@@ -151,8 +153,6 @@ private:
     const float64 AV_NOSYNC_THRESHOLD = 0.5;
 
     AV::AVFormatContext* CreateContext(const FilePath& path);
-
-    static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
 
     float64 GetMasterClock() const;
     bool InitVideo();
@@ -214,11 +214,8 @@ private:
     uint32 outAudioBufferSize = 0;
 
     int outChannels = -1;
-    const int outSampleRate = 44100;
-    FMOD::Sound* sound = nullptr;
-    FMOD::Channel* fmodChannel = nullptr;
+    SoundStream* soundStream = nullptr;
     StreamBuffer pcmBuffer;
-    void InitFmod();
 
     Deque<AV::AVPacket*> audioPackets;
     Mutex audioPacketsMutex;

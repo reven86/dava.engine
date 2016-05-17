@@ -43,7 +43,7 @@ void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParam
     switch (params.scalingMode)
     {
     case DAVA::scalingModeNone:
-        videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
+        videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_ALIGNED);
         break;
     case DAVA::scalingModeAspectFit:
         videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);

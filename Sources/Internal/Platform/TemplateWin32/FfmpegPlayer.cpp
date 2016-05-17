@@ -107,21 +107,20 @@ void FfmpegPlayer::Play()
         PrefetchData(maxAudioPacketsPrefetchedCount);
         while (currentPrefetchedPacketsCount > 0)
         {
-            Thread::Sleep(0);
+            Thread::Yield();
         }
 
         readingDataThread = Thread::Create(Message(this, &FfmpegPlayer::ReadingThread));
         readingDataThread->Start();
 
-        InitFmod();
+        soundStream = SoundSystem::Instance()->CreateSoundStream(this, outChannels);
 
         isAudioVideoStreamsInited = true;
     }
 
     state = PLAYING;
 
-    if (fmodChannel)
-        fmodChannel->setPaused(false);
+    soundStream->Play();
     frameTimer = GetTime();
 }
 
@@ -142,16 +141,7 @@ void FfmpegPlayer::CloseMovie()
     videoClock = 0.f;
     mediaFileEOF = false;
 
-    if (fmodChannel)
-    {
-        fmodChannel->stop();
-        fmodChannel = nullptr;
-    }
-    if (sound)
-    {
-        sound->release();
-        sound = nullptr;
-    }
+    SafeDelete(soundStream);
 
     if (readingDataThread)
     {
@@ -306,24 +296,9 @@ void FfmpegPlayer::ClearBuffers()
     lastFrameData.data.clear();
 }
 
-FMOD_RESULT F_CALLBACK FfmpegPlayer::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
+void FfmpegPlayer::PcmDataCallback(uint8* data, uint32 datalen)
 {
-    Memset(data, 0, datalen);
-
-    if (nullptr == sound)
-        return FMOD_OK;
-
-    // Read from your buffer here...
-    void* soundData;
-    reinterpret_cast<FMOD::Sound*>(sound)->getUserData(&soundData);
-
-    FfmpegPlayer* movieControl = reinterpret_cast<FfmpegPlayer*>(soundData);
-    if (nullptr != movieControl)
-    {
-        movieControl->pcmBuffer.Read(static_cast<uint8*>(data), datalen);
-    }
-
-    return FMOD_OK;
+    pcmBuffer.Read(static_cast<uint8*>(data), datalen);
 }
 
 bool FfmpegPlayer::InitAudio()
@@ -349,15 +324,15 @@ bool FfmpegPlayer::InitAudio()
     AV::AVCodec* audioCodec = AV::avcodec_find_decoder(audioCodecContext->codec_id);
     if (audioCodec == nullptr)
     {
-        printf("Codec not found.\n");
-        //return false;
+        Logger::Error("Audio codec not found.\n");
+        return false;
     }
 
     // Open codec
     if (avcodec_open2(audioCodecContext, audioCodec, nullptr) < 0)
     {
-        printf("Could not open codec.\n");
-        // return false;
+        printf("Could not open audio codec.\n");
+        return false;
     }
 
     //Out Audio Param
@@ -366,6 +341,7 @@ bool FfmpegPlayer::InitAudio()
     int outNbSamples = audioCodecContext->frame_size;
     AV::AVSampleFormat outSampleFmt = AV::AV_SAMPLE_FMT_S16;
 
+    int outSampleRate = static_cast<int>(SoundStream::GetDefaultSampleRate());
     audioBufSize = outSampleRate;
     outChannels = AV::av_get_channel_layout_nb_channels(outChannelLayout);
     //Out Buffer Size
@@ -560,28 +536,6 @@ void FfmpegPlayer::UpdateDrawData(DecodedFrameBuffer* buffer)
     lastFrameData.frameWidth = videoCodecContext->width;
 }
 
-void FfmpegPlayer::InitFmod()
-{
-    FMOD_CREATESOUNDEXINFO exinfo;
-    memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
-
-    exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* required. */
-    exinfo.length = outSampleRate * outChannels * sizeof(signed short); // *5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
-    exinfo.numchannels = outChannels; /* Number of channels in the sound. */
-    exinfo.defaultfrequency = outSampleRate; /* Default playback rate of sound. */
-    exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
-    exinfo.pcmreadcallback = &FfmpegPlayer::PcmReadDecodeCallback; /* User callback for reading. */
-
-    FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
-    FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
-    sound->setUserData(this);
-
-    system->playSound(FMOD_CHANNEL_FREE, sound, true, &fmodChannel);
-    fmodChannel->setLoopCount(-1);
-    fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
-    fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
-}
-
 void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
 {
     DVASSERT(packet->stream_index == audioStreamIndex);
@@ -599,11 +553,12 @@ void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
         return;
     }
 
-    uint8* outAudioBuffer = nullptr;
+    Vector<uint8> outAudioBuffer;
     if (got_data > 0)
     {
-        outAudioBuffer = outAudioBuffer = new uint8[maxAudioFrameSize * 2];
-        AV::swr_convert(audioConvertContext, &outAudioBuffer, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
+        outAudioBuffer.resize(maxAudioFrameSize * 2);
+        uint8* data = outAudioBuffer.data();
+        AV::swr_convert(audioConvertContext, &data, maxAudioFrameSize, (const uint8_t**)audioFrame->data, audioFrame->nb_samples);
     }
     else
     {
@@ -625,8 +580,7 @@ void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
         audioClock = AV::av_q2d(audioCodecContext->time_base) * pts;
     }
 
-    pcmBuffer.Write(outAudioBuffer, outAudioBufferSize);
-    SafeDeleteArray(outAudioBuffer);
+    pcmBuffer.Write(outAudioBuffer.data(), outAudioBufferSize);
 }
 
 void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
@@ -638,8 +592,10 @@ void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, voi
         if (0 == currentPrefetchedPacketsCount || PAUSED == state || STOPPED == state)
         {
             if (mediaFileEOF)
+            {
                 audioListen = true;
-            Thread::Sleep(1);
+            }
+            Thread::Yield();
             continue;
         }
 
@@ -663,7 +619,7 @@ void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, voi
         }
         else
         {
-            Thread::Sleep(0);
+            Thread::Yield();
         }
 
     } while (thread && !thread->IsCancelling());
@@ -677,7 +633,7 @@ void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, voi
     {
         if (PLAYING != state)
         {
-            Thread::Sleep(0);
+            Thread::Yield();
             continue;
         }
 
@@ -704,8 +660,10 @@ void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, voi
         else
         {
             if (mediaFileEOF)
+            {
                 videoShown = true;
-            Thread::Sleep(0);
+            }
+            Thread::Yield();
         }
 
     } while (thread && !thread->IsCancelling());
@@ -749,7 +707,7 @@ void FfmpegPlayer::ReadingThread(BaseObject* caller, void* callerData, void* use
         {
             PrefetchData(maxAudioPacketsPrefetchedCount - currentPrefetchedPacketsCount);
         }
-        Thread::Sleep(0);
+        Thread::Yield();
     } while (thread && !thread->IsCancelling());
 }
 
@@ -762,18 +720,21 @@ float64 FfmpegPlayer::GetTime()
 void FfmpegPlayer::Pause()
 {
     if (PLAYING != state)
+    {
         return;
+    }
 
     state = PAUSED;
 
-    if (fmodChannel)
-        fmodChannel->setPaused(true);
+    soundStream->Pause();
 }
 
 void FfmpegPlayer::Resume()
 {
     if (PAUSED == state)
+    {
         Play();
+    }
 }
 
 // Whether the movie is being played?
@@ -793,7 +754,9 @@ void FfmpegPlayer::Update()
 void FfmpegPlayer::Stop()
 {
     if (STOPPED == state)
+    {
         return;
+    }
 
     Pause();
     state = STOPPED;
