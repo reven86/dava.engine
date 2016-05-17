@@ -101,7 +101,7 @@ bool PreferencesIntrospectionProperty::IsReadOnly() const
 
 bool PreferencesIntrospectionProperty::IsOverriddenLocally() const
 {
-    return PreferencesStorage::Instance()->GetValue(member) != GetValue();
+    return GetDefaultValue() != GetValue();
 }
 
 DAVA::uint32 PreferencesIntrospectionProperty::GetFlags() const

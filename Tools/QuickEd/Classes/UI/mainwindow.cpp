@@ -259,7 +259,7 @@ void MainWindow::InitMenu()
 {
     SetupViewMenu();
 
-    connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProject);
+    connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProjectAction);
     connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
 
     connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
@@ -338,24 +338,19 @@ void MainWindow::SetupBackgroundMenu()
     menuView->addMenu(backgroundColorMenu);
 
     QActionGroup* actionGroup = new QActionGroup(backgroundColorMenu);
-
-    static const struct
-    {
-        QColor color;
-        QString colorName;
-    } colorsMap[] =
-    {
-      { Qt::transparent, "Default" },
-      { Qt::black, "Black" },
-      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
-      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
-      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
+    using ColorItem = std::pair<QColor, QString>;
+    DAVA::Vector<ColorItem> colorsMap = {
+        { Qt::transparent, "Default" },
+        { Qt::black, "Black" },
+        { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
+        { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
+        { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" }
     };
 
-    for (const auto& colorItem : colorsMap)
+    for (const ColorItem& colorItem : colorsMap)
     {
-        QAction* colorAction = new QAction(colorItem.colorName, backgroundColorMenu);
-        QColor color(colorItem.color);
+        QAction* colorAction = new QAction(colorItem.second, backgroundColorMenu);
+        QColor color(colorItem.first);
         MainWindow_local::SetColoredIconToAction(colorAction, color);
 
         actionGroup->addAction(colorAction);
@@ -462,7 +457,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
     }
 }
 
-void MainWindow::OnOpenProject()
+void MainWindow::OnOpenProjectAction()
 {
     QString defaultPath = currentProjectPath;
     if (defaultPath.isNull() || defaultPath.isEmpty())
@@ -522,7 +517,7 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
 
 void MainWindow::OnEditorPreferencesTriggered()
 {
-    PreferencesDialog dialog;
+    PreferencesDialog dialog(this);
     dialog.exec();
 }
 

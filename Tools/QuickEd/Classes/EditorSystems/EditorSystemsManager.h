@@ -32,7 +32,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
 #include "Functional/Signal.h"
-#include "Preferences/PreferencesRegistrator.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
@@ -111,7 +110,7 @@ class PackageNode;
 class CanvasSystem;
 class SelectionSystem;
 
-class EditorSystemsManager : PackageListener, public DAVA::InspBase
+class EditorSystemsManager : PackageListener
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
@@ -182,11 +181,7 @@ private:
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
 
 public:
-    DAVA::Vector2 minimumSize;
-    INTROSPECTION(EditorSystemsManager,
-                  MEMBER(minimumSize, "Control Transformations/Minimum size", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  )
-    REGISTER_PREFERENCES(EditorSystemsManager);
+    DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
 };
 
 template <class OutIt, class Predicate>

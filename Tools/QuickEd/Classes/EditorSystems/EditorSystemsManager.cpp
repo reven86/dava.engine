@@ -43,10 +43,6 @@
 
 using namespace DAVA;
 
-REGISTER_PREFERENCES_ON_START(EditorSystemsManager,
-                              PREF_ARG("minimumSize", DAVA::Vector2(15.0f, 15.0f))
-                              )
-
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
 class EditorSystemsManager::RootControl : public UIControl
