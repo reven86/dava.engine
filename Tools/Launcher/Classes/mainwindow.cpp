@@ -230,7 +230,7 @@ void MainWindow::OnRefreshClicked()
     if (appManager->GetLocalConfig()->GetRemoteConfigURL().isEmpty())
         return;
 
-    FileManager::ClearTempDirectory();
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     ConfigDownloader downloader(appManager, networkManager, this);
     downloader.exec();
@@ -412,7 +412,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            if (!FileManager::CheckLauncherFolder())
+            if (!FileManager::CheckDirectoryPermissionsRecursively())
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not access to launcher directory to update!"));
             }

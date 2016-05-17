@@ -27,8 +27,7 @@
 =====================================================================================*/
 
 
-#ifndef SELFUPDATER_H
-#define SELFUPDATER_H
+#pragma once
 
 #include <QDialog>
 #include <QNetworkAccessManager>
@@ -64,5 +63,3 @@ private:
     int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;
 };
-
-#endif // SELFUPDATER_H

@@ -36,6 +36,7 @@
 #include <QProcess>
 #include <QPushButton>
 #include <QApplication>
+#include <QMessageBox>
 
 namespace SelfUpdater_local
 {
@@ -110,9 +111,9 @@ void SelfUpdater::DownloadFinished()
     {
         ui->buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
-        const QString& appDirPath = FileManager::GetLauncherDirectory();
-        const QString& tempArchiveFilePath = FileManager::GetTempDownloadFilepath();
-        const QString& selfUpdateDirPath = FileManager::GetSelfUpdateTempDirectory();
+        QString appDirPath = FileManager::GetLauncherDirectory();
+        QString tempArchiveFilePath = FileManager::GetTempDownloadFilepath();
+        QString selfUpdateDirPath = FileManager::GetSelfUpdateTempDirectory();
         //archive file scope. At the end of the scope file will be closed if necessary
         {
             QByteArray data = currentDownload->readAll();
@@ -142,15 +143,16 @@ void SelfUpdater::DownloadFinished()
         if ((ZipUtils::GetFileList(tempArchiveFilePath, files, functor)
              && ZipUtils::UnpackZipArchive(tempArchiveFilePath, selfUpdateDirPath, files, functor)) == false)
         {
-            reject();
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+            ui->label->setText(tr("Launcher was not updated!"));
             return;
         }
 
         FileManager::DeleteDirectory(FileManager::GetTempDirectory());
         QString tempDir = FileManager::GetTempDirectory(); //create temp directory
         //remove old launcher files except download folder, temp folder and update folder
-        if (FileManager::MoveLauncherFilesRecursively(appDirPath, tempDir)
-            && FileManager::MoveLauncherFilesRecursively(selfUpdateDirPath, appDirPath))
+        if (FileManager::MoveFilesRecursively(appDirPath, tempDir)
+            && FileManager::MoveFilesRecursively(selfUpdateDirPath, appDirPath))
         {
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
             ui->label->setText(tr("Launcher was updated!\nPlease relaunch application!"));
@@ -158,7 +160,7 @@ void SelfUpdater::DownloadFinished()
         }
         else
         {
-            Q_ASSERT(false);
+            QMessageBox::critical(this, tr("Critical error while updating launcher!"), tr("Critical error uccurred while updating launcher! Install application manually, please!"));
             reject();
             return;
         }
@@ -180,7 +182,7 @@ void SelfUpdater::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     if (bytesTotal)
     {
-        int percentage = (static_cast<double>(bytesReceived) / bytesTotal) * 100;
-        ui->progressBar_downoading->setValue(percentage);
+        double percentage = (static_cast<double>(bytesReceived) / bytesTotal) * 100.0f;
+        ui->progressBar_downoading->setValue(static_cast<int>(percentage));
     }
 }

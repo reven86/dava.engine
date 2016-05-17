@@ -27,13 +27,11 @@
 =====================================================================================*/
 
 
-#ifndef FILEMANAGER_H
-#define FILEMANAGER_H
+#pragma once
 
 #include <QString>
-class QCoreApplication;
 
-extern QString InQuotes(const QString& fileName);
+QString InQuotes(const QString& fileName);
 
 namespace FileManager
 {
@@ -44,16 +42,15 @@ QString GetLauncherDirectory();
 QString GetSelfUpdateTempDirectory();
 QString GetTempDownloadFilepath();
 
-bool CheckLauncherFolder(const QString& folder = GetLauncherDirectory());
+bool CheckDirectoryPermissionsRecursively(const QString& folder = GetLauncherDirectory());
 
 bool DeleteDirectory(const QString& path);
-bool MoveLauncherFilesRecursively(const QString& pathOut, const QString& pathIn);
-void ClearTempDirectory();
+
+//this function move all files and folder except folders, which created by Launcher
+bool MoveFilesRecursively(const QString& pathOut, const QString& pathIn);
 
 void MakeDirectory(const QString& path);
 
-QString GetApplicationFolder(const QString& branchID, const QString& appID);
-QString GetBranchFolder(const QString& branchID);
+QString GetApplicationDirectory(const QString& branchID, const QString& appID);
+QString GetBranchDirectory(const QString& branchID);
 };
-
-#endif // FILEMANAGER_H

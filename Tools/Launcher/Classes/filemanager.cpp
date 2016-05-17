@@ -51,12 +51,12 @@ QString InQuotes(const QString& fileName)
     return result;
 }
 
-namespace
+namespace FileManager
 {
 const QString tempSelfUpdateDir = "/selfupdate/";
 const QString baseAppDir = "/DAVATools/";
 const QString tempDir = "/temp/";
-const QString tempFile = tempDir + "archive.zip";
+const QString tempFile = "archive.zip";
 
 QStringList OwnDirectories()
 {
@@ -66,10 +66,9 @@ QStringList OwnDirectories()
                          << path + tempDir;
 }
 
-bool IterateDirectory(const QString& dirPath, std::function<bool(const QFileInfo&, const QString& absPath)> callback)
+bool IterateDirectory(const QString& dirPath, std::function<bool(const QFileInfo&)> callback)
 {
     bool success = true;
-    // not empty -- we must empty it first
     QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
     while (di.hasNext())
     {
@@ -78,62 +77,59 @@ bool IterateDirectory(const QString& dirPath, std::function<bool(const QFileInfo
         QString absPath = fi.absoluteFilePath();
         if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
         {
-            success &= callback(fi, absPath);
+            success &= callback(fi);
         }
     }
     return success;
 }
-}
 
-QString FileManager::GetDocumentsDirectory()
+QString GetDocumentsDirectory()
 {
     QString docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/DAVALauncher/";
     MakeDirectory(docDir);
     return docDir;
 }
 
-QString FileManager::GetBaseAppsDirectory()
+QString GetBaseAppsDirectory()
 {
     QString path = qApp->applicationDirPath() + baseAppDir;
     MakeDirectory(path);
     return path;
 }
 
-QString FileManager::GetTempDirectory()
+QString GetTempDirectory()
 {
     QString path = qApp->applicationDirPath() + tempDir;
     MakeDirectory(path);
     return path;
 }
 
-QString FileManager::GetSelfUpdateTempDirectory()
+QString GetSelfUpdateTempDirectory()
 {
     QString path = qApp->applicationDirPath() + tempSelfUpdateDir;
     MakeDirectory(path);
     return path;
 }
 
-QString FileManager::GetTempDownloadFilepath()
+QString GetTempDownloadFilepath()
 {
-    QString path = qApp->applicationDirPath() + tempFile;
-    //make temp directory
-    GetTempDirectory();
+    QString path = GetTempDirectory() + tempFile;
     return path;
 }
 
-QString FileManager::GetLauncherDirectory()
+QString GetLauncherDirectory()
 {
     return qApp->applicationDirPath() + "/";
 }
 
-bool FileManager::CheckLauncherFolder(const QString& folder)
+bool CheckDirectoryPermissionsRecursively(const QString& folder)
 {
     QDir dir(folder);
     if (!dir.exists())
     {
         return false;
     }
-    return IterateDirectory(dir.path(), [](const QFileInfo& fi, const QString& absPath) {
+    return IterateDirectory(dir.path(), [](const QFileInfo& fi) {
 #if defined(Q_OS_WIN)
         bool ok = fi.isReadable(); //isWritable == false on Windows doesn't mean that you can not modify or delete the file
 #else
@@ -141,26 +137,28 @@ bool FileManager::CheckLauncherFolder(const QString& folder)
 #endif //platform
         if (fi.isDir())
         {
-            ok &= CheckLauncherFolder(absPath);
+            QString absPath = fi.absoluteFilePath();
+            ok &= CheckDirectoryPermissionsRecursively(absPath);
         }
         return ok;
     });
 }
 
-bool FileManager::DeleteDirectory(const QString& path)
+bool DeleteDirectory(const QString& path)
 {
     QDir dir(path);
     return dir.removeRecursively();
 }
 
-bool FileManager::MoveLauncherFilesRecursively(const QString& pathOut, const QString& pathIn)
+bool MoveFilesRecursively(const QString& pathOut, const QString& pathIn)
 {
     QDir outDir(pathOut);
     if (!outDir.exists())
     {
         return true;
     }
-    return IterateDirectory(outDir.path(), [pathIn, pathOut](const QFileInfo& fi, const QString& absPath) {
+    return IterateDirectory(outDir.path(), [pathIn, pathOut](const QFileInfo& fi) {
+        QString absPath = fi.absoluteFilePath();
         QString relPath = absPath.right(absPath.length() - pathOut.length());
         QString newFilePath = pathIn + relPath;
         if (fi.isDir())
@@ -175,31 +173,27 @@ bool FileManager::MoveLauncherFilesRecursively(const QString& pathOut, const QSt
     });
 }
 
-void FileManager::ClearTempDirectory()
-{
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
-}
-
-void FileManager::MakeDirectory(const QString& path)
+void MakeDirectory(const QString& path)
 {
     if (!QDir(path).exists())
         QDir().mkpath(path);
 }
 
-QString FileManager::GetApplicationFolder(const QString& branchID, const QString& appID)
+QString GetApplicationDirectory(const QString& branchID, const QString& appID)
 {
-    QString path = GetBranchFolder(branchID) + appID + "/";
+    QString path = GetBranchDirectory(branchID) + appID + "/";
     if (!QDir(path).exists())
         QDir().mkpath(path);
 
     return path;
 }
 
-QString FileManager::GetBranchFolder(const QString& branchID)
+QString GetBranchDirectory(const QString& branchID)
 {
-    QString path = qApp->applicationDirPath() + baseAppDir + branchID + "/";
+    QString path = GetBaseAppsDirectory() + branchID + "/";
     if (!QDir(path).exists())
         QDir().mkpath(path);
 
     return path;
+}
 }

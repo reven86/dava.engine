@@ -120,7 +120,7 @@ void UpdateDialog::OnCancelClicked()
         currentDownload->abort();
     outputFile.close();
 
-    FileManager::ClearTempDirectory();
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     close();
 }
@@ -222,7 +222,7 @@ void UpdateDialog::DownloadFinished()
         currentDownload->deleteLater();
         currentDownload = nullptr;
 
-        QString appDir = FileManager::GetApplicationFolder(task.branchID, task.appID);
+        QString appDir = FileManager::GetApplicationDirectory(task.branchID, task.appID);
 
         QString runPath = appDir + task.version.runPath;
         while (ProcessHelper::IsProcessRuning(runPath))
@@ -249,7 +249,7 @@ void UpdateDialog::DownloadFinished()
             BreakLog();
         }
         ui->cancelButton->setEnabled(true);
-        FileManager::ClearTempDirectory();
+        FileManager::DeleteDirectory(FileManager::GetTempDirectory());
     }
     else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {

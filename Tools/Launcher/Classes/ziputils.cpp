@@ -36,7 +36,6 @@
 #include <QEventLoop>
 #include <QDir>
 #include <QApplication>
-#include <QDebug>
 #include <numeric>
 
 
