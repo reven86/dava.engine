@@ -25,18 +25,15 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#pragma once
 
-
-#if !defined __PROFILER_H__
-#define __PROFILER_H__
-
-    #include <Base/BaseTypes.h>
+#include <Base/BaseTypes.h>
 using DAVA::uint32;
 using DAVA::uint64;
-    #include <Base/Hash.h>
+#include <Base/Hash.h>
 
-    #define PROFILER_ENABLED 0
-    #define TRACER_ENABLED 0
+#define PROFILER_ENABLED 1
+#define TRACER_ENABLED 0
 
 namespace profiler
 {
@@ -78,8 +75,7 @@ void StopCounter(uint32 counter_id);
 
 //==============================================================================
 
-struct
-CounterInfo
+struct CounterInfo
 {
     const char* name;
     uint64 timeUs;
@@ -92,8 +88,7 @@ bool GetAverageCounters(std::vector<CounterInfo>* info);
 
 //==============================================================================
 
-struct
-ScopedTiming
+struct ScopedTiming
 {
     ScopedTiming(int id)
         : _id(id)
@@ -105,14 +100,15 @@ ScopedTiming
     {
         profiler::StartCounter(id, name);
     }
+
     ~ScopedTiming()
     {
         profiler::StopCounter(_id);
     }
+
     int _id;
 };
 
-//==============================================================================
 } // namespace profiler
 
 
@@ -182,5 +178,3 @@ void StopTraceEvents();
 
 #endif
 
-
-#endif // __PROFILER_H__
