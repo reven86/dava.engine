@@ -508,40 +508,35 @@ void Landscape::GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3&
      */
 }
 
-bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
+bool Landscape::GetHeightAtPoint(const Vector3& point, float32& value) const
 {
     if ((point.x > bbox.max.x) || (point.x < bbox.min.x) || (point.y > bbox.max.y) || (point.y < bbox.min.y))
     {
         return false;
     }
 
-    const auto hmData = heightmap->Data();
-    if (hmData == nullptr)
+    int32 hmSize = heightmap->Size();
+    if (hmSize == 0)
     {
         Logger::Error("[Landscape::GetHeightAtPoint] Trying to get height at point using empty heightmap data!");
         return false;
     }
 
-    auto hmSize = heightmap->Size();
-    float32 fx = static_cast<float>(hmSize) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
-    float32 fy = static_cast<float>(hmSize) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
-    int32 x = static_cast<int32>(fx);
-    int32 y = static_cast<int32>(fy);
-    int nextX = DAVA::Min(x + 1, hmSize - 1);
-    int nextY = DAVA::Min(y + 1, hmSize - 1);
-    int i00 = x + y * hmSize;
-    int i01 = nextX + y * hmSize;
-    int i10 = x + nextY * hmSize;
-    int i11 = nextX + nextY * hmSize;
-    float h00 = static_cast<float>(hmData[i00]);
-    float h01 = static_cast<float>(hmData[i01]);
-    float h10 = static_cast<float>(hmData[i10]);
-    float h11 = static_cast<float>(hmData[i11]);
-    float dx = fx - static_cast<float>(x);
-    float dy = fy - static_cast<float>(y);
-    float h0 = h00 * (1.0f - dx) + h01 * dx;
-    float h1 = h10 * (1.0f - dx) + h11 * dx;
-    value = (h0 * (1.0f - dy) + h1 * dy) * GetLandscapeHeight() / static_cast<float>(Heightmap::MAX_VALUE);
+    float32 fx = static_cast<float32>(hmSize) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
+    float32 fy = static_cast<float32>(hmSize) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
+    uint16 x = static_cast<uint16>(fx);
+    uint16 y = static_cast<uint16>(fy);
+
+    Vector3 h00 = heightmap->GetPoint(x, y, bbox);
+    Vector3 h01 = heightmap->GetPoint(x + 1, y, bbox);
+    Vector3 h10 = heightmap->GetPoint(x, y + 1, bbox);
+    Vector3 h11 = heightmap->GetPoint(x + 1, y + 1, bbox);
+
+    float32 dx = fx - static_cast<float32>(x);
+    float32 dy = fy - static_cast<float32>(y);
+    float32 h0 = h00.z * (1.0f - dx) + h01.z * dx;
+    float32 h1 = h10.z * (1.0f - dx) + h11.z * dx;
+    value = (h0 * (1.0f - dy) + h1 * dy);
 
     return true;
 }
