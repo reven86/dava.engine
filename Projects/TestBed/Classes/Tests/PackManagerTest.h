@@ -50,7 +50,7 @@ private:
 
     void OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change);
 
-    DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/test.db";
+    DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/packs/testbed_{gpu}.db";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
     DAVA::String urlPacksCommon = "http://127.0.0.1:2424/packs/common/";
     DAVA::String urlPacksGpu = "http://127.0.0.1:2424/packs/{gpu}/";

@@ -189,13 +189,14 @@ void PacksDB::InitializePacks(Vector<PackManager::Pack>& packs) const
 {
     packs.clear();
 
-    auto selectQuery = data->GetDB() << "SELECT name, hash FROM packs";
+    auto selectQuery = data->GetDB() << "SELECT name, hash, is_gpu FROM packs";
 
-    selectQuery >> [&](String name, String hash)
+    selectQuery >> [&](String name, String hash, int32 isGpu)
     {
         PackManager::Pack pack;
         pack.name = name;
         pack.state = PackManager::Pack::Status::NotRequested;
+        pack.isGPU = (isGpu == 1);
 
         uint32 crc32 = 0;
         if (!hash.empty())

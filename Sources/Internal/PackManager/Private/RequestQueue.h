@@ -36,7 +36,7 @@ namespace DAVA
 class PackRequest
 {
 public:
-    PackRequest(PackManagerImpl& packManager_, const String& name, float32 priority);
+    PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_);
 
     void Start();
     void Update();
@@ -45,7 +45,7 @@ public:
 
     bool operator<(const PackRequest& other) const
     {
-        return priority < other.priority;
+        return GetPriority() < other.GetPriority();
     }
 
     struct SubRequest
@@ -61,27 +61,27 @@ public:
             Error = 10
         };
 
-        String packName;
+        PackManager::Pack* pack = nullptr;
         String errorMsg;
         uint32 taskId = 0;
-        Status status = SubRequest::Wait;
+        Status status = Wait;
     };
 
     const String& GetPackName() const
     {
-        return packName;
+        return pack->name;
     }
 
     float32 GetPriority() const
     {
-        return priority;
+        return pack->priority;
     }
     bool IsDone() const;
     bool IsError() const;
     const SubRequest& GetCurrentSubRequest() const;
 
 private:
-    void CollectDownlodbleDependency(const String& packName, Set<const PackManager::Pack*>& dependency);
+    void CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency);
 
     void StartLoadingCRC32File();
     bool DoneLoadingCRC32File();
@@ -92,9 +92,8 @@ private:
     void MountPack();
     void GoToNextSubRequest();
 
-    PackManagerImpl* packManager;
-    String packName;
-    float32 priority;
+    PackManagerImpl* packManager = nullptr;
+    PackManager::Pack* pack = nullptr;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
 };
 
@@ -118,7 +117,9 @@ public:
     void UpdatePriority(const String& packName, float32 newPriority);
     void Pop();
 
-    static const String crc32Postfix;
+    static const String packPostfix;
+    static const String hashPostfix;
+    static const uint32 emptyZipArchiveHash = 0xD7CBC50E;
 
 private:
     void CheckRestartLoading();

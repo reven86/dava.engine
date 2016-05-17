@@ -94,7 +94,7 @@ void PackManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"vpack.pack");
+    packInput->SetText(L"vpack");
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     packInput->SetInputEnabled(true);
@@ -224,8 +224,12 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
+    String dbFile = sqliteDbFile.GetStringValue();
+    dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
+    FilePath dbPath(dbFile);
+
     // clear and renew all packs state
-    packManager.Initialize(sqliteDbFile, folderWithDownloadedPacks, urlPacksCommon, urlPacksGpu);
+    packManager.Initialize(dbPath, folderWithDownloadedPacks, urlPacksCommon, urlPacksGpu);
     packManager.EnableProcessing();
 
     packManager.onPackStateChanged.DisconnectAll();

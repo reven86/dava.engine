@@ -269,7 +269,7 @@ function TupState.BuildPacks(self)
                 mergePackCmdText .. mergePackCmd, mergePackOutput)
 
             -- archivate
-            local archiveCmd = self.cmd.fwzip .. " a -bd -bso0 -- %o @%f"
+            local archiveCmd = self.cmd.fwzip .. " a -bd -tzip %o @%f"
             local archiveCmdText = "^ Archive " .. pack.name .. gpu .. "^ "
             local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".pack"
             tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)

@@ -30,28 +30,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-const String RequestManager::crc32Postfix = ".hash";
+const String RequestManager::packPostfix = ".pack";
+const String RequestManager::hashPostfix = ".hash";
 
-PackRequest::PackRequest(PackManagerImpl& packManager_, const String& name, float32 priority_)
+PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_)
     : packManager(&packManager_)
-    , packName(name)
-    , priority(priority_)
+    , pack(&pack_)
 {
+    DVASSERT(packManager != nullptr);
+    DVASSERT(pack != nullptr);
     // find all dependenciec
     // put it all into vector and put final pack into vector too
+    Set<PackManager::Pack*> dependencySet;
+    CollectDownlodbleDependency(pack->name, dependencySet);
 
-    const PackManager::Pack& pack = packManager->GetPack(name);
-
-    // теперь нужно узнать виртуальный ли это пакет, и первыми поставить на закачку
-    // так как у нас может быть несколько зависимых паков, тоже виртуальными, то
-    // мы должны сначала сделать плоскую структуру всех зависимых паков, всем им
-    // выставить одинаковый приоритет - текущего виртуального пака и добавить
-    // в очередь на скачку в порядке, зависимостей
-    // используем множество, что бы не было дублированых паков, если такие зависимости могут быть
-    Set<const PackManager::Pack*> dependencySet;
-    CollectDownlodbleDependency(name, dependencySet);
-
-    if (pack.hashFromDB != 0) // not fully virtual pack
+    if (pack->hashFromDB != 0) // not fully virtual pack
     {
         dependencies.reserve(dependencySet.size() + 1);
     }
@@ -60,11 +53,11 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, const String& name, floa
         dependencies.reserve(dependencySet.size());
     }
 
-    for (const PackManager::Pack* depPack : dependencySet)
+    for (PackManager::Pack* depPack : dependencySet)
     {
         SubRequest subRequest;
 
-        subRequest.packName = depPack->name;
+        subRequest.pack = depPack;
         subRequest.status = SubRequest::Wait;
         subRequest.taskId = 0;
 
@@ -72,23 +65,23 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, const String& name, floa
     }
 
     // last step download pack itself (if it not virtual)
-    if (pack.hashFromDB != 0)
+    if (pack->hashFromDB != 0)
     {
         SubRequest subRequest;
 
-        subRequest.packName = pack.name;
+        subRequest.pack = pack;
         subRequest.status = SubRequest::Wait;
         subRequest.taskId = 0;
         dependencies.push_back(subRequest);
     }
 }
 
-void PackRequest::CollectDownlodbleDependency(const String& packName, Set<const PackManager::Pack*>& dependency)
+void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency)
 {
     const PackManager::Pack& packState = packManager->GetPack(packName);
     for (const String& dependName : packState.dependency)
     {
-        const PackManager::Pack& dependPack = packManager->GetPack(dependName);
+        PackManager::Pack& dependPack = packManager->GetPack(dependName);
         if (dependPack.hashFromDB != 0 && dependPack.state != PackManager::Pack::Status::Mounted)
         {
             dependency.insert(&dependPack);
@@ -106,8 +99,8 @@ void PackRequest::StartLoadingCRC32File()
 
     // build url to pack_name_crc32_file
 
-    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + subRequest.packName + RequestManager::crc32Postfix;
-    String url = packManager->GetRemotePacksURL() + subRequest.packName + RequestManager::crc32Postfix;
+    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::hashPostfix;
+    String url = packManager->GetRemotePacksURL() + subRequest.pack->name + RequestManager::hashPostfix;
 
     // start downloading file
 
@@ -154,7 +147,7 @@ bool PackRequest::DoneLoadingCRC32File()
             case DLE_UNKNOWN: // we cannot determine the error
                 // inform user about error
                 {
-                    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+                    PackManager::Pack& pack = *subRequest.pack;
 
                     pack.state = PackManager::Pack::Status::ErrorLoading;
                     pack.downloadError = downloadError;
@@ -174,7 +167,7 @@ bool PackRequest::DoneLoadingCRC32File()
         }
         else
         {
-            throw std::runtime_error(Format("can't get download error code for download crc file for pack: %s", subRequest.packName.c_str()));
+            throw std::runtime_error(Format("can't get download error code for download crc file for pack: %s", subRequest.pack->name.c_str()));
         }
     }
     break;
@@ -192,8 +185,8 @@ void PackRequest::StartLoadingPackFile()
 
     // build url to pack file and build filePath to pack file
 
-    FilePath packPath = packManager->GetLocalPacksDir() + subRequest.packName;
-    String url = packManager->GetRemotePacksURL() + subRequest.packName;
+    FilePath packPath = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
+    String url = packManager->GetRemotePacksURL() + subRequest.pack->name + RequestManager::packPostfix;
 
     // start downloading
 
@@ -203,7 +196,7 @@ void PackRequest::StartLoadingPackFile()
     // switch state to LoadingPackFile
     subRequest.status = SubRequest::LoadingPackFile;
 
-    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+    PackManager::Pack& pack = *subRequest.pack;
     pack.state = PackManager::Pack::Status::Downloading;
 
     packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
@@ -217,7 +210,7 @@ bool PackRequest::DoneLoadingPackFile()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+    PackManager::Pack& pack = *subRequest.pack;
 
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
@@ -285,7 +278,7 @@ bool PackRequest::DoneLoadingPackFile()
         }
         else
         {
-            throw std::runtime_error(Format("can't get download error code for pack file for pack: %s", subRequest.packName.c_str()));
+            throw std::runtime_error(Format("can't get download error code for pack file for pack: %s", subRequest.pack->name.c_str()));
         }
     }
     break;
@@ -301,10 +294,10 @@ void PackRequest::StartCheckCRC32()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+    PackManager::Pack& pack = *subRequest.pack;
 
     // build crcMetaFilePath
-    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + subRequest.packName + RequestManager::crc32Postfix;
+    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::hashPostfix;
     // read crc32 from meta file
     ScopedPtr<File> crcFile(File::Create(archiveCrc32Path, File::OPEN | File::READ));
     if (!crcFile)
@@ -321,7 +314,13 @@ void PackRequest::StartCheckCRC32()
         ss >> pack.hashFromMeta;
     }
     // calculate crc32 from PackFile
-    FilePath packPath = packManager->GetLocalPacksDir() + subRequest.packName;
+    FilePath packPath = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
+
+    if (!FileSystem::Instance()->IsFile(packPath))
+    {
+        throw std::runtime_error("can't find just downloaded pack: " + packPath.GetStringValue());
+    }
+
     // TODO if it take lot of time move to job on other thread and wait
     uint32 realCrc32FromPack = CRC32::ForFile(packPath);
 
@@ -357,14 +356,17 @@ void PackRequest::MountPack()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    FilePath packPath = packManager->GetLocalPacksDir() + subRequest.packName;
+    PackManager::Pack& pack = *subRequest.pack;
 
-    FileSystem* fs = FileSystem::Instance();
-    fs->Mount(packPath, "Data/");
+    if (pack.hashFromDB != RequestManager::emptyZipArchiveHash)
+    {
+        FilePath packPath = packManager->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
+        FileSystem* fs = FileSystem::Instance();
+        fs->Mount(packPath, "Data/");
+    }
 
     subRequest.status = SubRequest::Mounted;
 
-    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
     pack.state = PackManager::Pack::Status::Mounted;
 
     packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
@@ -450,7 +452,7 @@ void PackRequest::ChangePriority(float32 newPriority)
 {
     for (SubRequest& subRequest : dependencies)
     {
-        PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager->GetPack(subRequest.packName));
+        PackManager::Pack& pack = *subRequest.pack;
         if (pack.priority < newPriority)
         {
             pack.priority = newPriority;
@@ -512,12 +514,12 @@ void RequestManager::Update()
         else if (request.IsError())
         {
             const PackRequest::SubRequest& subRequest = request.GetCurrentSubRequest();
-            PackManager::Pack& rootPack = const_cast<PackManager::Pack&>(packManager.GetPack(request.GetPackName()));
-            if (rootPack.name != subRequest.packName)
+            if (request.GetPackName() != subRequest.pack->name)
             {
+                PackManager::Pack& rootPack = packManager.GetPack(request.GetPackName());
                 rootPack.state = PackManager::Pack::Status::OtherError;
                 rootPack.otherErrorMsg = Format("can't load (%s) pack becouse dependent (%s) pack error: %s",
-                                                rootPack.name.c_str(), subRequest.packName.c_str(), subRequest.errorMsg.c_str());
+                                                rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.errorMsg.c_str());
 
                 Pop(); // first pop current request and only then inform user
 
@@ -599,13 +601,13 @@ void RequestManager::Push(const String& packName, float32 priority)
         throw std::runtime_error("second time push same pack in queue, pack: " + packName);
     }
 
-    items.emplace_back(packManager, packName, priority);
-    std::push_heap(begin(items), end(items));
-
-    PackManager::Pack& pack = const_cast<PackManager::Pack&>(packManager.GetPack(packName));
+    PackManager::Pack& pack = packManager.GetPack(packName);
 
     pack.state = PackManager::Pack::Status::Requested;
     pack.priority = priority;
+
+    items.emplace_back(packManager, pack);
+    std::push_heap(begin(items), end(items));
 
     packManager.onPackChange->Emit(pack, PackManager::Pack::Change::State);
     packManager.onPackChange->Emit(pack, PackManager::Pack::Change::Priority);

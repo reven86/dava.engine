@@ -71,7 +71,7 @@ void PackManagerImpl::MountDownloadedPacks()
         if (it != end(packsIndex))
         {
             // check CRC32 meta and try mount this file
-            ScopedPtr<File> metaFile(File::Create(filePath + RequestManager::crc32Postfix, File::OPEN | File::READ));
+            ScopedPtr<File> metaFile(File::Create(filePath + RequestManager::hashPostfix, File::OPEN | File::READ));
             if (metaFile)
             {
                 String content;
@@ -90,7 +90,7 @@ void PackManagerImpl::MountDownloadedPacks()
                 {
                     // old Pack file with previous version crc32 - delete it
                     fs->DeleteFile(filePath);
-                    fs->DeleteFile(filePath + RequestManager::crc32Postfix);
+                    fs->DeleteFile(filePath + RequestManager::hashPostfix);
                 }
                 else
                 {
@@ -125,11 +125,11 @@ void PackManagerImpl::DeletePack(const String& packName)
 
         // now remove archive from filesystem
         FileSystem* fs = FileSystem::Instance();
-        FilePath archivePath = localPacksDir + packName;
+        FilePath archivePath = localPacksDir + packName + RequestManager::packPostfix;
         fs->Unmount(archivePath);
 
         fs->DeleteFile(archivePath);
-        FilePath archiveCrc32Path = archivePath + RequestManager::crc32Postfix;
+        FilePath archiveCrc32Path = archivePath + RequestManager::hashPostfix;
         fs->DeleteFile(archiveCrc32Path);
     }
 }

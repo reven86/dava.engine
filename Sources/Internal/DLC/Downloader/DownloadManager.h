@@ -27,8 +27,7 @@
 =====================================================================================*/
 
 
-#ifndef __DATA_DOWNLOAD_MANAGER_H__
-#define __DATA_DOWNLOAD_MANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -149,5 +148,3 @@ private:
     uint64 downloadedTotal = 0;
 };
 }
-
-#endif
