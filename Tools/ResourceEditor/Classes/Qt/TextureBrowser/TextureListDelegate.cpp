@@ -300,7 +300,7 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         if (curModel->isHighlited(index))
         {
             // draw highlight
-            painter->setBrush(QBrush(QColor(255, 255, 200)));
+            painter->setBrush(option.palette.toolTipBase());
         }
         painter->setPen(BORDER_COLOR);
         painter->drawRect(borderRect);

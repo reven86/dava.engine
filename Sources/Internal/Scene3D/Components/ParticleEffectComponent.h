@@ -149,6 +149,7 @@ public: //mostly editor commands
 
     int32 GetEmitterInstanceIndex(ParticleEmitterInstance* emitter) const;
     ParticleEmitterInstance* GetEmitterInstance(uint32 id) const;
+    DAVA_DEPRECATED(ParticleEmitter* GetEmitter(uint32 id) const);
 
     void AddEmitterInstance(ParticleEmitter* emitter);
     void AddEmitterInstance(ParticleEmitterInstance* emitter);
