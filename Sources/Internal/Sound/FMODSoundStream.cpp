@@ -39,6 +39,12 @@ namespace DAVA
 SoundStream* SoundStream::Create(StreamDelegate* streamDelegate, uint32 channelsCount)
 {
     FMODSoundStream* fmodStream = new FMODSoundStream(streamDelegate, channelsCount);
+    bool isInited = fmodStream->Init();
+    if (!isInited)
+    {
+        SafeDelete(fmodStream);
+    }
+
     return fmodStream;
 }
 
@@ -60,6 +66,8 @@ FMODSoundStream::~FMODSoundStream()
         sound->release();
         sound = nullptr;
     }
+
+    DataSender = nullptr;
 }
 
 FMOD_RESULT F_CALLBACK FMODSoundStream::PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen)
@@ -84,8 +92,8 @@ FMOD_RESULT F_CALLBACK FMODSoundStream::PcmReadDecodeCallback(FMOD_SOUND* sound,
 }
 
 FMODSoundStream::FMODSoundStream(StreamDelegate* streamDelegate, uint32 channelsCount)
+    : dataSender(streamDelegate)
 {
-    FMOD_CREATESOUNDEXINFO exinfo;
     memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
 
     int sampleRate = static_cast<int>(SoundStream::GetDefaultSampleRate());
@@ -95,10 +103,13 @@ FMODSoundStream::FMODSoundStream(StreamDelegate* streamDelegate, uint32 channels
     exinfo.defaultfrequency = sampleRate; /* Default playback rate of sound. */
     exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
     exinfo.pcmreadcallback = FMODSoundStream::PcmReadDecodeCallback; /* User callback for reading. */
+}
 
+bool FMODSoundStream::Init()
+{
     FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
     FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
-    sound->setUserData(streamDelegate);
+    sound->setUserData(dataSender);
 
     FMOD_RESULT res = system->playSound(FMOD_CHANNEL_FREE, sound, true, &fmodChannel);
     if (FMOD_OK == res && fmodChannel)
@@ -106,7 +117,9 @@ FMODSoundStream::FMODSoundStream(StreamDelegate* streamDelegate, uint32 channels
         fmodChannel->setLoopCount(-1);
         fmodChannel->setMode(FMOD_LOOP_NORMAL | FMOD_NONBLOCKING);
         fmodChannel->setPosition(0, FMOD_TIMEUNIT_MS); // this flushes the buffer to ensure the loop mode takes effect
+        return true;
     }
+    return false;
 }
 }
 

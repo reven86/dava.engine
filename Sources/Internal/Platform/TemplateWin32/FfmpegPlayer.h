@@ -179,7 +179,8 @@ private:
     float64 SyncVideoClock(AV::AVFrame* src_frame, float64 pts);
     float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);
 
-    bool isAudioVideoStreamsInited = false;
+    bool isVideoSubsystemInited = false;
+    bool isAudioSubsystemInited = false;
 
     FMOD_CREATESOUNDEXINFO exinfo;
     AV::AVFormatContext* movieContext = nullptr;

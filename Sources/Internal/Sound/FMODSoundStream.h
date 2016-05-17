@@ -43,6 +43,8 @@ public:
 
     ~FMODSoundStream();
 
+    bool Init();
+
     // SoundStream interface implementation
     void Play() override
     {
@@ -63,7 +65,9 @@ public:
 private:
     static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
 
+    FMOD_CREATESOUNDEXINFO exinfo;
     FMOD::Sound* sound = nullptr;
     FMOD::Channel* fmodChannel = nullptr;
+    StreamDelegate* dataSender = nullptr;
 };
 }

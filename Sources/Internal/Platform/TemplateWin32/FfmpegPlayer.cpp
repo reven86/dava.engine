@@ -59,13 +59,13 @@ AV::AVFormatContext* FfmpegPlayer::CreateContext(const FilePath& path)
 
     if (AV::avformat_open_input(&context, path.GetAbsolutePathname().c_str(), nullptr, nullptr) != 0)
     {
-        Logger::Error("Couldn't open input stream.\n");
+        Logger::FrameworkDebug("Couldn't open input stream.\n");
         isSuccess = false;
     }
 
     if (AV::avformat_find_stream_info(context, nullptr) < 0)
     {
-        Logger::Error("Couldn't find stream information.\n");
+        Logger::FrameworkDebug("Couldn't find stream information.\n");
         isSuccess = false;
     }
 
@@ -80,47 +80,58 @@ AV::AVFormatContext* FfmpegPlayer::CreateContext(const FilePath& path)
 void FfmpegPlayer::Play()
 {
     if (PLAYING == state)
+    {
         return;
+    }
 
     if (STOPPED == state)
     {
         movieContext = CreateContext(moviePath);
         if (nullptr == movieContext)
         {
-            Logger::Error("Can't Open video.");
+            Logger::FrameworkDebug("Can't Open video.");
+            return;
         }
 
-        bool isVideoSubsystemInited = InitVideo();
+        isVideoSubsystemInited = InitVideo();
         if (!isVideoSubsystemInited)
         {
-            Logger::Error("Can't init video decoder.");
+            Logger::FrameworkDebug("Can't init video decoder.");
         }
 
-        bool isAudioSubsystemInited = InitAudio();
+        isAudioSubsystemInited = InitAudio();
         if (!isAudioSubsystemInited)
         {
-            Logger::Error("Can't init audio decoder.");
+            Logger::FrameworkDebug("Can't init audio decoder.");
         }
 
         state = PREFETCHING;
         // read some packets to fill audio buffers before init fmod
-        PrefetchData(maxAudioPacketsPrefetchedCount);
-        while (currentPrefetchedPacketsCount > 0)
+
+        if (isAudioSubsystemInited || isVideoSubsystemInited)
         {
-            Thread::Yield();
+            PrefetchData(maxAudioPacketsPrefetchedCount);
+            while (currentPrefetchedPacketsCount > 0 && !mediaFileEOF)
+            {
+                Thread::Yield();
+            }
+            readingDataThread = Thread::Create(Message(this, &FfmpegPlayer::ReadingThread));
+            readingDataThread->Start();
         }
 
-        readingDataThread = Thread::Create(Message(this, &FfmpegPlayer::ReadingThread));
-        readingDataThread->Start();
-
-        soundStream = SoundSystem::Instance()->CreateSoundStream(this, outChannels);
-
-        isAudioVideoStreamsInited = true;
+        if (isAudioSubsystemInited)
+        {
+            // could return nullptr. Then we will have no sound.
+            soundStream = SoundSystem::Instance()->CreateSoundStream(this, outChannels);
+        }
     }
 
     state = PLAYING;
 
-    soundStream->Play();
+    if (soundStream)
+    {
+        soundStream->Play();
+    }
     frameTimer = GetTime();
 }
 
@@ -165,8 +176,6 @@ void FfmpegPlayer::CloseMovie()
 
     ClearBuffers();
 
-    isAudioVideoStreamsInited = false;
-
     if (rgbDecodedScaledFrame)
     {
         av_frame_free(&rgbDecodedScaledFrame);
@@ -204,7 +213,7 @@ bool FfmpegPlayer::InitVideo()
     }
     if (-1 == videoStreamIndex)
     {
-        Logger::Error("Didn't find a video stream.\n");
+        Logger::FrameworkDebug("Didn't find a video stream.\n");
         return false;
     }
 
@@ -215,12 +224,12 @@ bool FfmpegPlayer::InitVideo()
     AV::AVCodec* videoCodec = AV::avcodec_find_decoder(videoCodecContext->codec_id);
     if (nullptr == videoCodec)
     {
-        Logger::Error("Codec not found.\n");
+        Logger::FrameworkDebug("Codec not found.\n");
         return false;
     }
     if (AV::avcodec_open2(videoCodecContext, videoCodec, nullptr) < 0)
     {
-        Logger::Error("Could not open codec.\n");
+        Logger::FrameworkDebug("Could not open codec.\n");
         return false;
     }
 
@@ -239,13 +248,14 @@ bool FfmpegPlayer::InitVideo()
 void FfmpegPlayer::SortPacketsByVideoAndAudio(AV::AVPacket* packet)
 {
     DVASSERT(packet != nullptr);
-    if (packet->stream_index == videoStreamIndex)
+    //isVideoSubsystemInited
+    if (packet->stream_index == videoStreamIndex && isVideoSubsystemInited)
     {
         LockGuard<Mutex> locker(videoPacketsMutex);
         videoPackets.push_back(packet);
     }
     else
-    if (packet->stream_index == audioStreamIndex)
+    if (packet->stream_index == audioStreamIndex && isAudioSubsystemInited)
     {
         LockGuard<Mutex> locker(audioPacketsMutex);
         currentPrefetchedPacketsCount++;
@@ -313,7 +323,7 @@ bool FfmpegPlayer::InitAudio()
     }
     if (audioStreamIndex == -1)
     {
-        Logger::Error("Didn't find an audio stream.\n");
+        Logger::FrameworkDebug("Didn't find an audio stream.\n");
         return false; // false;
     }
 
@@ -324,7 +334,7 @@ bool FfmpegPlayer::InitAudio()
     AV::AVCodec* audioCodec = AV::avcodec_find_decoder(audioCodecContext->codec_id);
     if (audioCodec == nullptr)
     {
-        Logger::Error("Audio codec not found.\n");
+        Logger::FrameworkDebug("Audio codec not found.\n");
         return false;
     }
 
@@ -562,7 +572,7 @@ void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
     }
     else
     {
-        Logger::Error("Convert audio NO DATA");
+        Logger::FrameworkDebug("Convert audio NO DATA");
         return;
     }
 
@@ -586,6 +596,11 @@ void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
 void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Thread* thread = static_cast<Thread*>(caller);
+
+    if (!isAudioSubsystemInited)
+    {
+        return;
+    }
 
     do
     {
@@ -629,6 +644,11 @@ void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, voi
 {
     Thread* thread = static_cast<Thread*>(caller);
 
+    if (!isVideoSubsystemInited)
+    {
+        return;
+    }
+
     do
     {
         if (PLAYING != state)
@@ -648,7 +668,7 @@ void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, voi
             videoPackets.pop_front();
             videoPacketsMutex.Unlock();
 
-            auto frameBuffer = DecodeVideoPacket(videoPacket);
+            DecodedFrameBuffer* frameBuffer = DecodeVideoPacket(videoPacket);
             AV::av_packet_free(&videoPacket);
 
             if (frameBuffer)
@@ -677,7 +697,7 @@ void FfmpegPlayer::PrefetchData(uint32 dataSize)
         AV::AVPacket* packet = AV::av_packet_alloc(); // static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
         if (nullptr == packet)
         {
-            Logger::Error("Can't allocate AVPacket!");
+            Logger::FrameworkDebug("Can't allocate AVPacket!");
             DVASSERT(false && "Can't allocate AVPacket!");
             return;
         }
@@ -726,7 +746,10 @@ void FfmpegPlayer::Pause()
 
     state = PAUSED;
 
-    soundStream->Pause();
+    if (soundStream)
+    {
+        soundStream->Pause();
+    }
 }
 
 void FfmpegPlayer::Resume()
