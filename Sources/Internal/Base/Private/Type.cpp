@@ -1,4 +1,4 @@
-#include "../Type.h"
+#include "Base/Type.h"
 #include <cassert>
 
 namespace DAVA
@@ -23,7 +23,7 @@ const Type* Type::Instance(const std::string& permanentName)
     return ret;
 }
 
-void Type::RegisterPermanetName(const std::string& permanentName_) const
+void Type::RegisterPermanentName(const std::string& permanentName_) const
 {
     assert(permanentName.empty()); // already registered?
     assert(0 == nameToTypeMap.count(permanentName_));

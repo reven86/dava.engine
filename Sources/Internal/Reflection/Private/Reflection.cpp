@@ -12,17 +12,17 @@ TypePrinter* GetTypePrinter(const DAVA::Type* type)
 {
     static TypePrinter default_pointer_printer = { DAVA::Type::Instance<void*>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "0x%08p", any.Get<void*>()); } };
 
-    static std::vector<TypePrinter> pointer_printes = {
+    static DAVA::Vector<TypePrinter> pointer_printes = {
         { DAVA::Type::Instance<char*>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%s", any.Get<char*>()); } }
     };
 
-    static std::vector<TypePrinter> printers = {
-        { DAVA::Type::Instance<int32_t>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%d", any.Get<int32_t>()); } },
-        { DAVA::Type::Instance<uint32_t>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%u", any.Get<uint32_t>()); } },
-        { DAVA::Type::Instance<float>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%g", any.Get<float>()); } },
-        { DAVA::Type::Instance<double>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%g", any.Get<double>()); } },
-        { DAVA::Type::Instance<size_t>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%llu", static_cast<uint64_t>(any.Get<size_t>())); } },
-        { DAVA::Type::Instance<std::string>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%s", any.Get<std::string>().c_str()); } }
+    static DAVA::Vector<TypePrinter> printers = {
+        { DAVA::Type::Instance<DAVA::int32>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%d", any.Get<DAVA::int32>()); } },
+        { DAVA::Type::Instance<DAVA::uint32>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%u", any.Get<DAVA::uint32>()); } },
+        { DAVA::Type::Instance<DAVA::float32>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%g", any.Get<DAVA::float32>()); } },
+        { DAVA::Type::Instance<DAVA::float64>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%g", any.Get<DAVA::float64>()); } },
+        { DAVA::Type::Instance<DAVA::size_type>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%llu", static_cast<DAVA::uint64>(any.Get<DAVA::size_type>())); } },
+        { DAVA::Type::Instance<DAVA::String>(), [](char* buf, size_t sz, const DAVA::Any& any) { Snprintf(buf, sz, "%s", any.Get<DAVA::String>().c_str()); } }
     };
 
     TypePrinter* ret = nullptr;

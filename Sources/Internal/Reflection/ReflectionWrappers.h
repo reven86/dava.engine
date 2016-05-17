@@ -15,7 +15,7 @@ struct Field
     Reflection valueRef;
 };
 
-using FieldsList = std::vector<Field>;
+using FieldsList = DAVA::Vector<Field>;
 
 } // namespace Ref
 

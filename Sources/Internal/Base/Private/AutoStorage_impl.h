@@ -27,6 +27,36 @@ AutoStorage<Count>::AutoStorage(const AutoStorage& autoStorage)
 }
 
 template <size_t Count>
+AutoStorage<Count>& AutoStorage<Count>::operator=(const AutoStorage& value)
+{
+    if (this != &value)
+    {
+        if (!IsEmpty())
+        {
+            Clear();
+        }
+        DoCopy(value);
+    }
+
+    return *this;
+}
+
+template <size_t Count>
+AutoStorage<Count>& AutoStorage<Count>::operator=(AutoStorage&& value)
+{
+    if (this != &value)
+    {
+        if (!IsEmpty())
+        {
+            Clear();
+        }
+        DoMove(std::move(value));
+    }
+
+    return *this;
+}
+
+template <size_t Count>
 bool AutoStorage<Count>::IsEmpty() const
 {
     return (StorageType::Empty == type);
@@ -131,36 +161,6 @@ const void* AutoStorage<Count>::GetData() const
     assert(StorageType::Empty != type);
 
     return (StorageType::Simple == type) ? storage.data() : SharedPtr()->get();
-}
-
-template <size_t Count>
-AutoStorage<Count>& AutoStorage<Count>::operator=(const AutoStorage& value)
-{
-    if (this != &value)
-    {
-        if (!IsEmpty())
-        {
-            Clear();
-        }
-        DoCopy(value);
-    }
-
-    return *this;
-}
-
-template <size_t Count>
-AutoStorage<Count>& AutoStorage<Count>::operator=(AutoStorage&& value)
-{
-    if (this != &value)
-    {
-        if (!IsEmpty())
-        {
-            Clear();
-        }
-        DoMove(std::move(value));
-    }
-
-    return *this;
 }
 
 template <size_t Count>

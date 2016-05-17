@@ -18,7 +18,7 @@ protected:                                                  \
     void T::__TypeInitializer()
 
 #define DAVA_TYPE_REGISTER(T)                               \
-    DAVA::Type::Instance<T>()->RegisterPermanetName(#T)
+    DAVA::Type::Instance<T>()->RegisterPermanentName(#T)
 
 namespace DAVA
 {
@@ -32,7 +32,7 @@ public:
     Type(const Type&) = delete;
     Type& operator=(const Type&) = delete;
 
-    void RegisterPermanetName(const std::string& permanentName) const;
+    void RegisterPermanentName(const std::string& permanentName) const;
 
     size_t GetSize() const;
     const char* GetName() const;

@@ -1,6 +1,6 @@
 #pragma once
 #ifndef DAVAENGINE_ANY__H
-#include "../Any.h"
+#include "Base/Any.h"
 #endif
 
 namespace DAVA
@@ -75,7 +75,7 @@ inline T Any::Cast() const
     // TODO: implement
     // ...
 
-    throw Exception::BadCast;
+    throw Exception(Exception::BadCast);
 }
 
 template <typename T>
@@ -91,7 +91,7 @@ template <typename T>
 const T& Any::Get() const
 {
     if (!CanGet<T>())
-        throw Exception::BadGet;
+        throw Exception(Exception::BadGet);
     return storage.GetAuto<T>();
 }
 

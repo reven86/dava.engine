@@ -101,7 +101,7 @@ protected:
         {
         }
 
-        std::string name;
+        DAVA::String name;
         std::unique_ptr<ValueWrapper> vw;
         const ReflectionDB* db;
     };
@@ -133,8 +133,8 @@ protected:
         }
     };
 
-    std::vector<BaseClass> bases;
-    std::vector<ClassField> fields;
+    DAVA::Vector<BaseClass> bases;
+    DAVA::Vector<ClassField> fields;
 };
 
 } // namespace DAVA

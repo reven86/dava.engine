@@ -11,7 +11,7 @@ namespace DAVA
 class Any
 {
 public:
-    using Storage = AutoStorage<2>;
+    using Storage = AutoStorage<>;
     using CompareOP = bool (*)(const void*, const void*);
     using LoadOP = void (*)(Storage&, const void* src);
     using SaveOP = void (*)(const Storage&, void* dst);
@@ -26,13 +26,22 @@ public:
         SaveOP save = nullptr;
     };
 
-    enum class Exception
+    class Exception: public std::runtime_error
     {
-        BadGet,
-        BadCast,
-        BadOperation,
-        BadSize
+    public:
+        enum ErrorCode
+        {
+            BadGet,
+            BadCast,
+            BadOperation,
+            BadSize
+        };
+
+        Exception(ErrorCode code);
+
+        ErrorCode errorCode;
     };
+
 
     Any() = default;
     ~Any() = default;

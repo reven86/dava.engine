@@ -35,9 +35,9 @@ const CtorWrapper* ReflectionDB::GetCtor(const Ref::ParamsList& params) const
     return ret;
 }
 
-std::vector<const CtorWrapper*> ReflectionDB::GetCtors() const
+DAVA::Vector<const CtorWrapper*> ReflectionDB::GetCtors() const
 {
-    std::vector<const CtorWrapper*> ret;
+    DAVA::Vector<const CtorWrapper*> ret;
 
     ret.reserve(ctorWrappers.size());
     for (auto& it : ctorWrappers)

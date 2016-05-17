@@ -8,7 +8,18 @@
 
 namespace DAVA
 {
-template <size_t Count = 1>
+
+struct CountTraits
+{
+    enum: size_t
+    {
+        SharedSize = sizeof(std::shared_ptr<void>),
+        VoidSize = sizeof(void*),
+        Count = static_cast<size_t>((SharedSize + VoidSize - 1) / static_cast<double>(VoidSize))
+    };
+};
+
+template <size_t Count = CountTraits::Count>
 class AutoStorage final
 {
     using StorageT = std::array<void*, Count>;
@@ -26,6 +37,12 @@ public:
 
     AutoStorage(AutoStorage&&);
     AutoStorage(const AutoStorage&);
+    
+    AutoStorage& operator=(const AutoStorage& value);
+    AutoStorage& operator=(AutoStorage&& value);
+
+    bool operator==(const AutoStorage&) const = delete;
+    bool operator!=(const AutoStorage&) const = delete;
 
     bool IsEmpty() const;
     bool IsSimple() const;
@@ -52,12 +69,6 @@ public:
     const T& GetAuto() const;
 
     const void* GetData() const;
-
-    AutoStorage& operator=(const AutoStorage& value);
-    AutoStorage& operator=(AutoStorage&& value);
-
-    bool operator==(const AutoStorage&) const = delete;
-    bool operator!=(const AutoStorage&) const = delete;
 
     template <typename T>
     struct IsSimpleType

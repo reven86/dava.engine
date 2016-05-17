@@ -19,13 +19,13 @@ class ReflectionDB final
 public:
     std::unique_ptr<StructureWrapper> structureWrapper;
     std::unique_ptr<DtorWrapper> dtorWrapper;
-    std::vector<std::unique_ptr<CtorWrapper>> ctorWrappers;
-    std::unordered_multimap<std::string, std::unique_ptr<MethodWrapper>> methodWrappers;
+    DAVA::Vector<std::unique_ptr<CtorWrapper>> ctorWrappers;
+    DAVA::UnorderedMultiMap<DAVA::String, std::unique_ptr<MethodWrapper>> methodWrappers;
 
     const DtorWrapper* GetDtor() const;
     const CtorWrapper* GetCtor() const;
     const CtorWrapper* GetCtor(const Ref::ParamsList& params) const;
-    std::vector<const CtorWrapper*> GetCtors() const;
+    DAVA::Vector<const CtorWrapper*> GetCtors() const;
 
     template <typename T>
     static const ReflectionDB* GetGlobalDB();

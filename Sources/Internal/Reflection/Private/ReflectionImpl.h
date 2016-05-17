@@ -63,7 +63,7 @@ inline const CtorWrapper* Reflection::GetCtor(const Ref::ParamsList& params) con
     return db->GetCtor(params);
 }
 
-inline std::vector<const CtorWrapper*> Reflection::GetCtors() const
+inline DAVA::Vector<const CtorWrapper*> Reflection::GetCtors() const
 {
     return db->GetCtors();
 }
