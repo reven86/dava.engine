@@ -2,6 +2,7 @@ SMALL_TIMEOUT = 3.0
 BIG_TIMEOUT = 30.0 -- Big time out for waiting
 TIMEOUT = 10.0 -- DEFAULT TIMEOUT
 TIMECLICK = 0.2 -- time for simple action
+DOUBLETAP_DELAY = 0.005 --time between two taps
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
@@ -395,6 +396,23 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(controlName, background)
     local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
+    if not control then
+        Log("Control " .. controlName .. " not found")
+        return false
+    end
+    if not (control:GetVisibilityFlag() and control:IsVisible()) then
+        Log("Control " .. controlName .. " is not visible")
+        return false
+    end
+    if not IsOnScreen(controlName, background) then
+        Log("Control " .. controlName .. " is not on screen")
+        return false
+    end
+    return true
+end
+
+local function __IsVisibleNoLog(controlName, background)
+    local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
     return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
 end
 
@@ -429,7 +447,6 @@ function IsReady(controlName, waitTime)
         return false
     end
     if not IsVisible(controlName) then
-        Log("Control " .. controlName .. " is not visible.")
         return false
     end
     if not IsCenterOnScreen(controlName) then
@@ -544,7 +561,7 @@ end
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local result = WaitUntil(waitTime, IsVisible, name)
+    local result = WaitUntil(waitTime, __IsVisibleNoLog, name)
 	if not result then
         Log("Control not found " .. name, "DEBUG")
     end
@@ -793,8 +810,8 @@ function DoubleClick(name, waitTime, touchId)
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
     if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, TIMECLICK, touchId)
-        ClickPosition(position, TIMECLICK, touchId)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
         return true
     end
     return false

@@ -33,8 +33,15 @@
 #include "Render/Image/ImageConvert.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Focus/FocusHelpers.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
+
+extern void CreateTextField(DAVA::UITextField*);
+extern void ReleaseTextField();
+extern void OpenKeyboard();
+extern void CloseKeyboard();
 
 JniTextField::JniTextField(uint32_t id)
     : jniTextField("com/dava/framework/JNITextField")
@@ -479,9 +486,7 @@ TextFieldPlatformImpl* TextFieldPlatformImpl::GetUITextFieldAndroid(uint32_t id)
 
 void TextFieldPlatformImpl::TextFieldKeyboardShown(const Rect& rect)
 {
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardShown(rect);
+    textField->OnKeyboardShown(rect);
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect)
@@ -494,9 +499,7 @@ void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden()
 {
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardHidden();
+    textField->OnKeyboardHidden();
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
@@ -513,16 +516,17 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
     {
         if (hasFocus)
         {
-            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField && FocusHelpers::CanFocusControl(textField))
             {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
             }
+            textField->StartEdit();
         }
         else
         {
             if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
             {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(NULL, false);
+                textField->StopEdit();
             }
         }
     }

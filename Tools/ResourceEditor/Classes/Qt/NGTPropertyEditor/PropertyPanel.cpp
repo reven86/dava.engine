@@ -29,7 +29,6 @@
 #include "PropertyPanel.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/Qt/Scene/EntityGroup.h"
 #include "NgtTools/Reflection/ReflectionBridge.h"
 #include "NgtTools/Common/GlobalContext.h"
 
@@ -98,16 +97,16 @@ void PropertyPanel::SetPropertyTree(const ObjectHandle& /*dummyTree*/)
 {
 }
 
-void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     selectedObjects.clear();
-    const EntityGroup::EntityMap& content = selected->GetContent();
-    for (const EntityGroup::EntityMap::value_type& node : content)
-    {
-        selectedObjects.push_back(node.first);
-    }
+    const SelectableGroup::CollectionType& selectedContent = selected->GetContent();
+    selectedObjects.reserve(selectedContent.size());
+    std::transform(selectedContent.begin(), selectedContent.end(),
+                   std::back_inserter(selectedObjects),
+                   std::bind(&Selectable::GetContainedObject, std::placeholders::_1));
 
-    if (visible)
+    if (visible || selected->IsEmpty())
     {
         SetObject(selectedObjects);
     }
@@ -117,7 +116,7 @@ void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup
     }
 }
 
-void PropertyPanel::SetObject(std::vector<DAVA::InspBase*> davaObjects)
+void PropertyPanel::SetObject(const std::vector<DAVA::InspBase*>& davaObjects)
 {
     DVASSERT(model != nullptr);
 

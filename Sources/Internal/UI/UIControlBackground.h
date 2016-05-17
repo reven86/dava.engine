@@ -180,7 +180,18 @@ public:
      \param[in] drawSprite Sprite path-name.
      \param[in] drawFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(const FilePath& drawSprite, int32 drawFrame);
+    virtual void SetSprite(const FilePath& path, int32 drawFrame);
+
+    /**
+    \brief Sets bg Sprite.
+    \param[in] drawSprite Pointer for a Sprite.
+    */
+    void SetSprite(Sprite* drawSprite);
+    /**
+    \brief Sets bg Sprite.
+    \param[in] drawSprite Sprite path-name.
+    */
+    void SetSprite(const FilePath& path);
     /**
      \brief Sets Sprite align in the control rect you want to use for draw.
      \param[in] drawAlign Sprite eAlign bit mask.
@@ -315,18 +326,18 @@ public:
     NMaterial* GetMaterial() const;
 
 protected:
-    Sprite* spr = nullptr;
-    int32 align;
-    eDrawType type;
-    int32 spriteModification;
-    float32 leftStretchCap;
-    float32 topStretchCap;
-    int colorInheritType;
-    int32 frame;
+    RefPtr<Sprite> spr;
+    int32 align = ALIGN_HCENTER | ALIGN_VCENTER;
+    eDrawType type = DRAW_ALIGNED;
+    int32 spriteModification = 0;
+    float32 leftStretchCap = 0.0f;
+    float32 topStretchCap = 0.0f;
+    eColorInheritType colorInheritType = COLOR_IGNORE_PARENT;
+    int32 frame = 0;
 
     Vector2 lastDrawPos;
 
-    ePerPixelAccuracyType perPixelAccuracyType; //!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
+    ePerPixelAccuracyType perPixelAccuracyType = PER_PIXEL_ACCURACY_DISABLED; //!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
     Sprite* mask = nullptr;
     Sprite* detail = nullptr;
@@ -350,7 +361,7 @@ protected:
     ~UIControlBackground();
     Color drawColor;
 
-    NMaterial* material;    
+    NMaterial* material = nullptr;
 #if defined(LOCALIZATION_DEBUG)
     Sprite::DrawState lastDrawState;
 #endif
@@ -359,9 +370,8 @@ public:
     // for introspection
 
     int32 GetBgDrawType() const;
-    void SetBgDrawType(int type);
+    void SetBgDrawType(int32 type);
     FilePath GetBgSpritePath() const;
-    void SetBgSpriteFromPath(const FilePath& path);
     int32 GetBgColorInherit() const;
     void SetBgColorInherit(int32 type);
     int32 GetBgPerPixelAccuracy() const;
@@ -383,13 +393,13 @@ public:
 
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetSprite, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("mask", "Mask", GetMaskSpritePath, SetMaskSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("detail", "Detail", GetDetailSpritePath, SetDetailSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("gradient", "Gradient", GetGradientSpritePath, SetGradientSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("contour", "Contour", GetContourSpritePath, SetContourSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("spriteModification", "Sprite Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("spriteModification", InspDesc("Sprite Modification", GlobalEnumMap<eSpriteModification>::Instance(), InspDesc::T_FLAGS), GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("gradientMode", InspDesc("Gradient Mode", GlobalEnumMap<eGradientBlendMode>::Instance()), GetGradientBlendMode, SetGradientBlendMode, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
@@ -443,7 +453,7 @@ inline int32 UIControlBackground::GetBgDrawType() const
     return GetDrawType();
 }
 
-inline void UIControlBackground::SetBgDrawType(int type)
+inline void UIControlBackground::SetBgDrawType(int32 type)
 { // TODO: FIXME: type
     SetDrawType(static_cast<UIControlBackground::eDrawType>(type));
 }
@@ -456,14 +466,6 @@ inline FilePath UIControlBackground::GetBgSpritePath() const
         return "";
     else
         return Sprite::GetPathString(GetSprite());
-}
-
-inline void UIControlBackground::SetBgSpriteFromPath(const FilePath& path)
-{
-    if (path == "")
-        SetSprite(NULL, 0);
-    else
-        SetSprite(path, GetFrame());
 }
 
 inline FilePath UIControlBackground::GetMaskSpritePath() const

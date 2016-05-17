@@ -32,6 +32,8 @@
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "Extensions.h"
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+
 #include <core_ui_framework/i_view.hpp>
 #include <core_ui_framework/i_ui_framework.hpp>
 #include <core_ui_framework/i_ui_application.hpp>
@@ -47,13 +49,16 @@ class InspInfo;
 }
 
 class SceneEditor2;
-class EntityGroup;
+class SelectableGroup;
 class ReflectedPropertyModel;
 
 class PropertyPanel : public QObject, public IViewEventListener, public EntityInjectDataExtension::Delegate
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
     DECLARE_REFLECTED
+
 public:
     PropertyPanel();
     ~PropertyPanel();
@@ -64,11 +69,11 @@ public:
     ObjectHandle GetPropertyTree() const;
     void SetPropertyTree(const ObjectHandle& dummyTree);
 
-    Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
-    void SetObject(std::vector<DAVA::InspBase*> davaObjects);
+    Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
+    void SetObject(const std::vector<DAVA::InspBase*>& object);
 
 protected:
-    void timerEvent(QTimerEvent* e);
+    void timerEvent(QTimerEvent* e) override;
 
 private:
     void onFocusIn(IView* view) override;

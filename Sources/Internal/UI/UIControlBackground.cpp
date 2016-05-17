@@ -43,15 +43,7 @@ namespace DAVA
 {
 UIControlBackground::UIControlBackground()
     : color(Color::White)
-    , align(ALIGN_HCENTER | ALIGN_VCENTER)
-    , type(DRAW_ALIGNED)
-    , spriteModification(0)
-    , leftStretchCap(0)
-    , topStretchCap(0)
-    , colorInheritType(COLOR_IGNORE_PARENT)
-    , frame(0)
     , lastDrawPos(0, 0)
-    , perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
     , drawColor(Color::White)
     , material(SafeRetain(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL))
 {
@@ -66,8 +58,7 @@ UIControlBackground* UIControlBackground::Clone()
 
 void UIControlBackground::CopyDataFrom(UIControlBackground* srcBackground)
 {
-    SafeRelease(spr);
-    spr = SafeRetain(srcBackground->spr);
+    spr = srcBackground->spr;
     frame = srcBackground->frame;
     align = srcBackground->align;
 
@@ -86,7 +77,7 @@ void UIControlBackground::CopyDataFrom(UIControlBackground* srcBackground)
 
 UIControlBackground::~UIControlBackground()
 {
-    SafeRelease(spr);
+    spr = nullptr;
     SafeRelease(material);
     SafeDelete(margins);
     ReleaseDrawData();
@@ -116,7 +107,7 @@ bool UIControlBackground::IsEqualTo(const UIControlBackground* back) const
 
 Sprite* UIControlBackground::GetSprite() const
 {
-    return spr;
+    return spr.Get();
 }
 int32 UIControlBackground::GetFrame() const
 {
@@ -134,7 +125,7 @@ int32 UIControlBackground::GetModification() const
 
 UIControlBackground::eColorInheritType UIControlBackground::GetColorInheritType() const
 {
-    return static_cast<eColorInheritType>(colorInheritType);
+    return colorInheritType;
 }
 
 UIControlBackground::eDrawType UIControlBackground::GetDrawType() const
@@ -142,36 +133,41 @@ UIControlBackground::eDrawType UIControlBackground::GetDrawType() const
     return type;
 }
 
-void UIControlBackground::SetSprite(const FilePath& spriteName, int32 drawFrame)
+void UIControlBackground::SetSprite(const FilePath& path, int32 drawFrame)
 {
-    Sprite* tempSpr = Sprite::Create(spriteName);
-    SetSprite(tempSpr, drawFrame);
-    SafeRelease(tempSpr);
+    SetSprite(path);
+    SetFrame(drawFrame);
 }
 
 void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 {
-    if (drawSprite == this->spr)
-    {
-        // Sprite is not changed - update frame only.
-        frame = drawFrame;
-        return;
-    }
-
-    SafeRelease(spr);
-    spr = SafeRetain(drawSprite);
-    frame = drawFrame;
+    SetSprite(drawSprite);
+    SetFrame(drawFrame);
 }
+
+void UIControlBackground::SetSprite(Sprite* drawSprite)
+{
+    spr = drawSprite;
+}
+
+void UIControlBackground::SetSprite(const FilePath& path)
+{
+    RefPtr<Sprite> tempSpr;
+    if (!path.IsEmpty())
+    {
+        tempSpr.Set(Sprite::Create(path));
+    }
+    SetSprite(tempSpr.Get());
+}
+
 void UIControlBackground::SetFrame(int32 drawFrame)
 {
-    DVASSERT(spr != nullptr || drawFrame == 0);
-    int32 maxFrame = (spr != nullptr) ? (spr->GetFrameCount() - 1) : (0);
-    frame = Clamp(drawFrame, 0, maxFrame);
+    frame = drawFrame;
 }
 
 void UIControlBackground::SetFrame(const FastName& frameName)
 {
-    DVASSERT(spr);
+    DVASSERT(spr.Get());
     int32 frameInd = spr->GetFrameByName(frameName);
     if (frameInd != Sprite::INVALID_FRAME_INDEX)
     {
@@ -223,7 +219,7 @@ void UIControlBackground::SetDrawColor(const Color& c)
 
 void UIControlBackground::SetParentColor(const Color& parentColor)
 {
-    switch (static_cast<eColorInheritType>(colorInheritType))
+    switch (colorInheritType)
     {
     case COLOR_MULTIPLY_ON_PARENT:
     {
@@ -264,7 +260,7 @@ void UIControlBackground::SetParentColor(const Color& parentColor)
     }
     break;
     default:
-        DVASSERT_MSG(false, Format("Unknown colorInheritType: %d", colorInheritType).c_str());
+        DVASSERT_MSG(false, Format("Unknown colorInheritType: %d", static_cast<int32>(colorInheritType)).c_str());
         break;
     }
 }
@@ -285,10 +281,10 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
     Sprite::DrawState drawState;
 
     drawState.SetMaterial(material);
-    if (spr)
+    if (spr != nullptr)
     {
         //drawState.SetShader(shader);
-        drawState.frame = frame;
+        drawState.frame = Clamp(frame, 0, (spr->GetFrameCount() - 1));
         if (spriteModification)
         {
             drawState.flags = spriteModification;
@@ -301,7 +297,7 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
     {
     case DRAW_ALIGNED:
     {
-        if (!spr)
+        if (spr == nullptr)
             break;
         if (align & ALIGN_LEFT)
         {
@@ -358,13 +354,13 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
         }
 
         lastDrawPos = drawState.position;
-        RenderSystem2D::Instance()->Draw(spr, &drawState, drawColor);
+        RenderSystem2D::Instance()->Draw(spr.Get(), &drawState, drawColor);
     }
     break;
 
     case DRAW_SCALE_TO_RECT:
     {
-        if (!spr)
+        if (spr == nullptr)
             break;
 
         drawState.position = geometricData.position;
@@ -398,14 +394,14 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
         //			spr->SetPivotPoint(geometricData.pivotPoint.x / (geometricData.size.x / spr->GetSize().dx), geometricData.pivotPoint.y / (geometricData.size.y / spr->GetSize().dy));
         //			spr->SetAngle(geometricData.angle);
 
-        RenderSystem2D::Instance()->Draw(spr, &drawState, drawColor);
+        RenderSystem2D::Instance()->Draw(spr.Get(), &drawState, drawColor);
     }
     break;
 
     case DRAW_SCALE_PROPORTIONAL:
     case DRAW_SCALE_PROPORTIONAL_ONE:
     {
-        if (!spr)
+        if (spr == nullptr)
             break;
         float32 w, h;
         w = drawRect.dx / (spr->GetWidth() * geometricData.scale.x);
@@ -498,7 +494,7 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
 
         lastDrawPos = drawState.position;
 
-        RenderSystem2D::Instance()->Draw(spr, &drawState, drawColor);
+        RenderSystem2D::Instance()->Draw(spr.Get(), &drawState, drawColor);
     }
     break;
 
@@ -519,11 +515,11 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
     case DRAW_STRETCH_BOTH:
     case DRAW_STRETCH_HORIZONTAL:
     case DRAW_STRETCH_VERTICAL:
-        RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData, drawColor);
+        RenderSystem2D::Instance()->DrawStretched(spr.Get(), &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData, drawColor);
         break;
 
     case DRAW_TILED:
-        RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData, drawColor);
+        RenderSystem2D::Instance()->DrawTiled(spr.Get(), &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData, drawColor);
         break;
     case DRAW_TILED_MULTILAYER:
         drawState.SetMaterial(RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL[gradientMode]);
