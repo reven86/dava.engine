@@ -36,6 +36,7 @@ const char Settings::Delimiter = '/';
 const FastName Settings::General_DesinerName = FastName("General/DesignerName");
 const FastName Settings::General_RecentFilesCount = FastName("General/RecentFilesCount");
 const FastName Settings::General_RecentProjectsCount = FastName("General/RecentProjectsCount");
+const FastName Settings::General_ReloadParticlesOnPojectOpening = FastName("General/ReloadParticlesOnProjectOpening");
 const FastName Settings::General_PreviewEnabled = FastName("General/PreviewEnabled");
 const FastName Settings::General_OpenByDBClick = FastName("General/OpenByDoubleClick");
 const FastName Settings::General_CompressionQuality = FastName("General/CompressionQuality");

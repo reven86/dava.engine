@@ -126,7 +126,8 @@ void ProjectManager::OpenProject(const DAVA::FilePath& incomePath)
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();
 
-            if (spritesPacker != nullptr)
+            bool reloadParticles = SettingsManager::GetValue(Settings::General_ReloadParticlesOnPojectOpening).AsBool();
+            if (spritesPacker != nullptr && reloadParticles)
             {
                 //emit ProjectOpened will be done later
                 spritesPacker->RepackImmediately(projectPath, static_cast<DAVA::eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));

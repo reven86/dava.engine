@@ -63,6 +63,7 @@ void SettingsManager::Init()
     CreateValue(Settings::General_DesinerName, DAVA::VariantType(DAVA::String("nobody")));
     CreateValue(Settings::General_RecentFilesCount, DAVA::VariantType(static_cast<DAVA::int32>(5)));
     CreateValue(Settings::General_RecentProjectsCount, DAVA::VariantType(static_cast<DAVA::int32>(5)));
+    CreateValue(Settings::General_ReloadParticlesOnPojectOpening, DAVA::VariantType(true));
     CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
     CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(true));
     CreateValue(Settings::General_CompressionQuality, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::TextureConverter::ECQ_DEFAULT))

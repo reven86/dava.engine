@@ -40,6 +40,7 @@ public:
     static const DAVA::FastName General_DesinerName;
     static const DAVA::FastName General_RecentFilesCount;
     static const DAVA::FastName General_RecentProjectsCount;
+    static const DAVA::FastName General_ReloadParticlesOnPojectOpening;
     static const DAVA::FastName General_PreviewEnabled;
     static const DAVA::FastName General_OpenByDBClick;
     static const DAVA::FastName General_CompressionQuality;
