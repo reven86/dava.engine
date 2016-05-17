@@ -2113,7 +2113,6 @@
 		D7660D221C4D071E00E81868 /* DataStorageApple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */; };
 		D7660D231C4D071E00E81868 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */; };
 		D7660D241C4D071E00E81868 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7660D211C4D071E00E81868 /* ICloudKeyValue.h */; };
-		D7B105A31C720D19008288AF /* ParticleEmitterNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B1059F1C720D19008288AF /* ParticleEmitterNode.cpp */; };
 		D7B105A41C720D19008288AF /* ParticleEmitterNode.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B105A01C720D19008288AF /* ParticleEmitterNode.h */; };
 		E81F2B0516BFF65700C4545E /* libcurl_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E81F2B0416BFF65700C4545E /* libcurl_ios.a */; };
 		E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80116B9326D002BD35F /* DAVAConfig.h */; };
@@ -3206,7 +3205,6 @@
 		D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
 		D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
 		D7660D211C4D071E00E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
-		D7B1059F1C720D19008288AF /* ParticleEmitterNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEmitterNode.cpp; sourceTree = "<group>"; };
 		D7B105A01C720D19008288AF /* ParticleEmitterNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleEmitterNode.h; sourceTree = "<group>"; };
 		E80D2FB2164D51A100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81F2B0416BFF65700C4545E /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
@@ -4265,7 +4263,6 @@
 		02E7C4971BD624A6002F026D /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
-				D7B1059F1C720D19008288AF /* ParticleEmitterNode.cpp */,
 				D7B105A01C720D19008288AF /* ParticleEmitterNode.h */,
 				02E7C4981BD624A6002F026D /* AnimationData.cpp */,
 				02E7C4991BD624A6002F026D /* AnimationData.h */,
@@ -6796,7 +6793,6 @@
 				02E7CAD31BD624A7002F026D /* RenderHierarchy.cpp in Sources */,
 				02E7C69F1BD624A6002F026D /* Message.cpp in Sources */,
 				02E7CC251BD624A7002F026D /* rhi_CommandBufferMetal.mm in Sources */,
-				D7B105A31C720D19008288AF /* ParticleEmitterNode.cpp in Sources */,
 				02E7CAED1BD624A7002F026D /* ShadowVolumeRenderLayer.cpp in Sources */,
 				1D10227C1CC10BCA00AD68BD /* MouseDevice.cpp in Sources */,
 				02E7C6911BD624A6002F026D /* IntrospectionBase.cpp in Sources */,
