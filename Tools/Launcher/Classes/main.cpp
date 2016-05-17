@@ -39,7 +39,7 @@ void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString&
 int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
-    
+
     qInstallMessageHandler(LogMessageHandler);
 
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);

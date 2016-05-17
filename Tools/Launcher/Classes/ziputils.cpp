@@ -38,7 +38,6 @@
 #include <QApplication>
 #include <numeric>
 
-
 const QString& ZipUtils::GetArchiverPath()
 {
     static QString processAddr = qApp->applicationDirPath() +

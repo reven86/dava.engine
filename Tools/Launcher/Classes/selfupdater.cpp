@@ -48,6 +48,7 @@ public:
     {
     }
     ~SelfUpdaterZipFunctor() override = default;
+
 private:
     void OnError(const ZipError& zipError) override
     {
@@ -85,7 +86,6 @@ SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessMan
 }
 
 SelfUpdater::~SelfUpdater() = default;
-
 
 void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
 {
