@@ -94,6 +94,7 @@ private:
     void AddComponentImpl(ControlNode* node, DAVA::int32 type, DAVA::int32 index, ComponentPropertiesSection* prototypeSection);
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
+    static bool IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2);
 
     QUndoStack* GetUndoStack() const;
     void PushCommand(QUndoCommand* cmd);

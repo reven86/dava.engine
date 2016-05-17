@@ -376,18 +376,18 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
                 if (src == dest && index > srcIndex)
                     index--;
 
-                node->Retain();
-                if (MoveControlImpl(node, dest, destIndex))
+                if (MoveControlImpl(node, dest, index))
                 {
                     movedNodes.push_back(node);
                 }
+                //                node->Retain();
                 //                RemoveControlImpl(node);
                 //                if (IsNodeInHierarchy(dest))
                 //                {
                 //                    InsertControlImpl(node, dest, index);
                 //                    movedNodes.push_back(node);
                 //                }
-                node->Release();
+                //                node->Release();
 
                 index++;
             }
@@ -685,80 +685,58 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
 
 bool QtModelPackageCommandExecutor::MoveControlImpl(ControlNode* node, ControlsContainerNode* dest, DAVA::int32 destIndex)
 {
+    node->Retain();
     ControlsContainerNode* src = dynamic_cast<ControlsContainerNode*>(node->GetParent());
+    bool result = false;
     if (src)
     {
         int32 srcIndex = src->GetIndex(node);
-        node->Retain();
-
         PushCommand(new RemoveControlCommand(packageNode, node, src, srcIndex));
+
+        Vector<ControlNode*> instances = node->GetInstances();
+
         if (IsNodeInHierarchy(dest))
         {
             PushCommand(new InsertControlCommand(packageNode, node, dest, destIndex));
-        }
 
-        //PushCommand(new MoveControlCommand(packageNode, node, src, srcIndex, dest, destIndex));
-
-        Vector<ControlNode*> instances = node->GetInstances(); // copy
-
-        ControlNode* destControl = dynamic_cast<ControlNode*>(dest);
-        if (destControl)
-        {
-            for (ControlNode* destInstance : destControl->GetInstances())
+            ControlNode* destControl = dynamic_cast<ControlNode*>(dest);
+            if (destControl)
             {
-                ControlNode* srcInstance = nullptr;
-                auto it = instances.begin();
-                for (; it != instances.end(); ++it)
+                for (ControlNode* destInstance : destControl->GetInstances())
                 {
-                    ControlNode* instance = *it;
-                    bool ok = false;
-                    for (PackageBaseNode* t = instance; t != nullptr && !ok; t = t->GetParent())
-                    {
-                        for (PackageBaseNode* t2 = destControl; t2 != nullptr && !ok; t2 = t2->GetParent())
-                        {
-                            if (t2 == t)
-                            {
-                                ok = true;
-                            }
-                        }
-                    }
-                    if (ok)
-                    {
-                        srcInstance = instance;
-                        break;
-                    }
-                }
+                    auto it = std::find_if(instances.begin(), instances.end(), [destInstance](const ControlNode* node) {
+                        return IsControlNodesHasSameParentControlNode(node, destInstance);
+                    });
 
-                if (it != instances.end())
-                {
-                    instances.erase(it);
-                }
-
-                if (srcInstance)
-                {
-                }
-                else
-                {
-                    ControlNode* copy = ControlNode::CreateFromPrototypeChild(node);
-                    InsertControlImpl(copy, destInstance, destIndex);
-                    SafeRelease(copy);
+                    if (it != instances.end())
+                    {
+                        ControlNode* srcInstance = *it;
+                        instances.erase(it);
+                        MoveControlImpl(srcInstance, destInstance, destIndex);
+                    }
+                    else
+                    {
+                        ControlNode* copy = ControlNode::CreateFromPrototypeChild(node);
+                        InsertControlImpl(copy, destInstance, destIndex);
+                        SafeRelease(copy);
+                    }
                 }
             }
+
+            result = true;
         }
 
         for (ControlNode* instance : instances)
-        {
             RemoveControlImpl(instance);
-        }
 
-        node->Release();
     }
     else
     {
         DVASSERT(false);
     }
 
-    return true;
+    node->Release();
+    return result;
 }
 
 void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode* node, int32 typeIndex, int32 index, ComponentPropertiesSection* prototypeSection)
@@ -808,6 +786,25 @@ bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode* nod
             return true;
         p = p->GetParent();
     }
+    return false;
+}
+
+bool QtModelPackageCommandExecutor::IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2)
+{
+    for (const PackageBaseNode* t1 = n1; t1 != nullptr; t1 = t1->GetParent())
+    {
+        if (t1->GetControl() != nullptr)
+        {
+            for (const PackageBaseNode* t2 = n2; t2 != nullptr; t2 = t2->GetParent())
+            {
+                if (t2 == t1)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
     return false;
 }
 
