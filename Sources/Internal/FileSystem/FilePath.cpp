@@ -140,12 +140,15 @@ void FilePath::InitializeBundleName()
 {
     FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
     FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    SetBundleName(execDirectory);
+    SetBundleName(execDirectory + "Data/");
 
-    FilePath dataDirPath(workingDirectory + "Data/");
-    if (FileSystem::Instance()->Exists(dataDirPath))
+    if (workingDirectory != execDirectory)
     {
-        AddResourcesFolder(dataDirPath);
+        FilePath dataDirPath(workingDirectory + "Data/");
+        if (FileSystem::Instance()->Exists(dataDirPath))
+        {
+            AddResourcesFolder(dataDirPath);
+        }
     }
 
 #if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION)

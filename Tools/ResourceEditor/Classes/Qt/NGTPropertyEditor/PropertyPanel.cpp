@@ -99,6 +99,8 @@ void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const SelectableG
 
 void PropertyPanel::SetObject(DAVA::InspBase* object)
 {
+    return;
+
     std::shared_ptr<ITreeModel> tempTreeModel(model);
 
     IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
