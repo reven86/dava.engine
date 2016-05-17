@@ -313,25 +313,10 @@ void Landscape::RebuildLandscape()
 
 void Landscape::PrepareMaterial(NMaterial* material)
 {
-    if (material->HasLocalFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING) == false)
-    {
-        material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
-    }
-
-    if (material->HasLocalFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING) == false)
-    {
-        material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
-    }
-
-    if (material->HasLocalFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR) == false)
-    {
-        material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
-    }
-
-    if (material->HasLocalFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR) == false)
-    {
-        material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR, isRequireTangentBasis ? 1 : 0);
-    }
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
+    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR, isRequireTangentBasis ? 1 : 0);
 }
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode)
@@ -1378,6 +1363,9 @@ void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationC
             }
         }
 
+        PrepareMaterial(material);
+        material->PreBuildMaterial(PASS_FORWARD);
+
         SetMaterial(material);
     }
 
@@ -1415,12 +1403,6 @@ void Landscape::SetMaterial(NMaterial* material)
 
     for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
-
-    if (landscapeMaterial != nullptr)
-    {
-        PrepareMaterial(landscapeMaterial);
-        landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
-    }
 }
 
 RenderObject* Landscape::Clone(RenderObject* newObject)

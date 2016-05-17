@@ -82,7 +82,7 @@ public:
     const static FastName LANDSCAPE_QUALITY_NAME;
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 
-    enum RenderMode : uint32_t
+    enum RenderMode
     {
         RENDERMODE_NO_INSTANCING,
         RENDERMODE_INSTANCING,
@@ -131,6 +131,7 @@ public:
 
     NMaterial* GetMaterial();
     void SetMaterial(NMaterial* material);
+    void PrepareMaterial(NMaterial* material);
 
     RenderObject* Clone(RenderObject* newObject) override;
     void RecalcBoundingBox() override;
@@ -168,8 +169,6 @@ protected:
     bool BuildHeightmap();
     void RebuildLandscape();
 
-    void PrepareMaterial(NMaterial* material);
-
     void SetDrawWired(bool isWire);
     bool IsDrawWired() const;
 
@@ -197,7 +196,6 @@ protected:
 
     Vector<RestoreBufferData> bufferRestoreData;
 
-    RenderMode renderMode;
 
     FilePath heightmapPath;
     Heightmap* heightmap = nullptr;
@@ -211,8 +209,8 @@ protected:
 
     uint32 drawIndices = 0;
 
+    RenderMode renderMode = RENDERMODE_NO_INSTANCING;
     bool updatable = false;
-
     bool debugDrawMetrics = false;
     bool debugDrawMorphing = false;
 
