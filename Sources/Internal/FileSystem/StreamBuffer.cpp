@@ -91,7 +91,7 @@ uint32 StreamBuffer::ReadInternal(uint8* dataOut, uint32 len)
         return 0;
     }
 
-    uint32 dataSize = pages.front().size() - currentPageReadPos;
+    uint32 dataSize = static_cast<uint32>(pages.front().size()) - currentPageReadPos;
     uint32 sizeToRead = Min(dataSize, len);
     Memcpy(dataOut, pages.front().data() + currentPageReadPos, sizeToRead);
 
