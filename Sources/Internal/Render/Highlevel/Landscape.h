@@ -82,6 +82,13 @@ public:
     const static FastName LANDSCAPE_QUALITY_NAME;
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 
+    enum RenderMode : uint32_t
+    {
+        RENDERMODE_NO_INSTANCING,
+        RENDERMODE_INSTANCING,
+        RENDERMODE_INSTANCING_MORPHING,
+    };
+
     //LandscapeVertex used in GetLevel0Geometry() only
     struct LandscapeVertex
     {
@@ -146,14 +153,10 @@ public:
 
     LandscapeSubdivision* GetSubdivision();
 
-protected:
-    enum RenderMode
-    {
-        RENDERMODE_NO_INSTANCING,
-        RENDERMODE_INSTANCING,
-        RENDERMODE_INSTANCING_MORPHING,
-    };
+    RenderMode GetRenderMode() const;
+    void SetRenderMode(RenderMode mode);
 
+protected:
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
     void AllocateGeometryData();
@@ -337,6 +340,11 @@ inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
 inline LandscapeSubdivision* Landscape::GetSubdivision()
 {
     return subdivision;
+}
+
+inline Landscape::RenderMode Landscape::GetRenderMode() const
+{
+    return renderMode;
 }
 };
 
