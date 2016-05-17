@@ -26,8 +26,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_MOVIE_VIEW_H__
-#define __DAVAENGINE_MOVIE_VIEW_H__
+#pragma once
+
+
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "UI/IMovieViewControl.h"
 
@@ -78,4 +80,5 @@ private:
     uint32 textureDataLen = 0;
 };
 }
-#endif // !DAVAENGINE_MOVIE_VIEW_H
+
+#endif
