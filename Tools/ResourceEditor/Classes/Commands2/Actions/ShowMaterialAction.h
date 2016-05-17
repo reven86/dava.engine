@@ -35,7 +35,7 @@ namespace DAVA
 class NMaterial;
 }
 
-class ShowMaterialAction: public CommandAction
+class ShowMaterialAction : public CommandAction
 {
 public:
     ShowMaterialAction(DAVA::NMaterial* material);
@@ -43,5 +43,4 @@ public:
 
 private:
     DAVA::NMaterial* material;
-
 };

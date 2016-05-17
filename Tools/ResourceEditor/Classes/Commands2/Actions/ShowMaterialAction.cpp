@@ -42,4 +42,3 @@ void ShowMaterialAction::Redo()
     QtMainWindow::Instance()->OnMaterialEditor();
     MaterialEditor::Instance()->SelectMaterial(material);
 }
-

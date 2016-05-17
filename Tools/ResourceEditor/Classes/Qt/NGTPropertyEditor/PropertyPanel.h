@@ -75,9 +75,9 @@ private:
     void onFocusOut(IView* view) override;
 
     void UpdateModel();
-    
+
     void StartBatch(const DAVA::String& name, DAVA::uint32 commandCount) override;
-    void Exec(Command2::Pointer && command) override;
+    void Exec(Command2::Pointer&& command) override;
     void EndBatch() override;
 
 private:

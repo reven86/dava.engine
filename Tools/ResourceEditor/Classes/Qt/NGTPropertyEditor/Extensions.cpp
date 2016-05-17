@@ -28,16 +28,24 @@
 
 #include "Extensions.h"
 
+#include "Classes/Qt/Main/mainwindow.h"
+#include "Classes/Deprecated/EditorConfig.h"
+
+#include "NgtTools/Reflection/NGTCollectionsImpl.h"
 #include "NgtTools/Common/GlobalContext.h"
+
+#include "Commands2/Actions/ShowMaterialAction.h"
+#include "Commands2/ConvertToShadowCommand.h"
+#include "Commands2/KeyedArchiveCommand.h"
+#include "Commands2/DeleteRenderBatchCommand.h"
+#include "Commands2/RebuildTangentSpaceCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
+
 #include "Scene3D/Entity.h"
+#include "Render/Highlevel/RenderBatch.h"
 #include "Render/Material/NMaterial.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
-#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataDavaKeyedArchive.h"
-#include "NgtTools/Reflection/NGTCollectionsImpl.h"
-
-#include "Commands2/Actions/ShowMaterialAction.h"
-#include "Render/Highlevel/RenderBatch.h"
 
 #include <core_qt_common/models/buttons_model.hpp>
 #include <core_data_model/i_item_role.hpp>
@@ -50,8 +58,8 @@
 #include <core_reflection/base_property.hpp>
 #include <core_reflection/object_handle.hpp>
 #include <core_variant/collection.hpp>
-#include "Commands2/ConvertToShadowCommand.h"
-#include "Commands2/KeyedArchiveCommand.h"
+
+#include <QMessageBox>
 
 class ProxyProperty : public BaseProperty
 {
@@ -77,13 +85,13 @@ const TypeId renderBatchType = TypeId::getType<DAVA::RenderBatch>();
 
 DAVA::RenderBatch* ExtractRenderBatch(const RefPropertyItem* item, IDefinitionManager& defManager)
 {
-    const std::vector<const PropertyNode*> & objects = item->getObjects();
+    const std::vector<const PropertyNode*>& objects = item->getObjects();
     DVASSERT(objects.size() == 1);
 
     const PropertyNode* node = objects.front();
     ObjectHandle valueHandle;
     DVVERIFY(node->propertyInstance->get(node->object, defManager).tryCast(valueHandle));
-    DAVA::RenderBatch * batch = valueHandle.getBase<DAVA::RenderBatch>();
+    DAVA::RenderBatch* batch = valueHandle.getBase<DAVA::RenderBatch>();
     DVASSERT(batch != nullptr);
 
     return batch;
@@ -101,13 +109,12 @@ DAVA::Entity* FindEntityWithRenderObject(const RefPropertyItem* item, DAVA::Rend
     const std::vector<const PropertyNode*> objects = item->getObjects();
     DVASSERT(objects.size() == 1);
     const PropertyNode* object = objects.front();
-    DAVA::Entity * entity = object->object.getBase<DAVA::Entity>();
+    DAVA::Entity* entity = object->object.getBase<DAVA::Entity>();
 
     DVASSERT(GetRenderObject(entity) == renderObject);
 
     return entity;
 }
-
 }
 
 std::string BuildCollectionElementName(const Collection::ConstIterator& iter, IDefinitionManager& defMng)
@@ -187,13 +194,13 @@ void EntityChildCreatorExtension::exposeChildren(const PropertyNode& node, std::
     }
 }
 
-RefPropertyItem * EntityMergeValueExtension::lookUpItem(const PropertyNode * node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
-                                                        IDefinitionManager & definitionManager) const
+RefPropertyItem* EntityMergeValueExtension::lookUpItem(const PropertyNode* node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
+                                                       IDefinitionManager& definitionManager) const
 {
     return MergeValuesExtension::lookUpItem(node, items, definitionManager);
 }
 
-Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager & definitionManager) const
+Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager& definitionManager) const
 {
     if (column == 1 && roleId == ValueRole::roleId_)
     {
@@ -213,7 +220,7 @@ Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int col
     return GetterExtension::getValue(item, column, roleId, definitionManager);
 }
 
-EntityInjectDataExtension::EntityInjectDataExtension(Delegate & delegateObj_, IDefinitionManager& defManager_)
+EntityInjectDataExtension::EntityInjectDataExtension(Delegate& delegateObj_, IDefinitionManager& defManager_)
     : delegateObj(delegateObj_)
     , defManager(defManager_)
 {
@@ -235,7 +242,7 @@ void EntityInjectDataExtension::inject(RefPropertyItem* item)
         if (std::find(std::begin(removableComponents), std::end(removableComponents), type) != std::end(removableComponents))
         {
             std::vector<ButtonItem> buttons;
-            buttons.emplace_back(true, "/QtIcons/remove.png",std::bind(&EntityInjectDataExtension::RemoveComponent, this, item));
+            buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::RemoveComponent, this, item));
             ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
             item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
         }
@@ -279,7 +286,7 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
         return;
     }
 
-    const std::vector<const PropertyNode*> & objects = item->getObjects();
+    const std::vector<const PropertyNode*>& objects = item->getObjects();
     DVASSERT(!objects.empty());
 
     bool isSingleSelection = objects.size() == 1;
@@ -296,10 +303,10 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
         {
             bool canConvertToShadow = false;
             bool isRebuildTsEnabled = false;
-            DAVA::RenderBatch * batch = valueHandle.getBase<DAVA::RenderBatch>();
+            DAVA::RenderBatch* batch = valueHandle.getBase<DAVA::RenderBatch>();
             if (batch != nullptr)
             {
-                DAVA::RenderObject * renderObject = batch->GetRenderObject();
+                DAVA::RenderObject* renderObject = batch->GetRenderObject();
                 if (renderObject != nullptr)
                 {
                     canConvertToShadow = ConvertToShadowCommand::CanConvertBatchToShadow(batch);
@@ -350,8 +357,8 @@ void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
     DAVA::RenderObject* renderObject = batch->GetRenderObject();
     DVASSERT(renderObject != nullptr);
 
-    uint32 batchIndex = static_cast<uint32>(-1);
-    for (uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+    DAVA::uint32 batchIndex = static_cast<DAVA::uint32>(-1);
+    for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
     {
         if (renderObject->GetRenderBatch(i) == batch)
         {
@@ -359,7 +366,8 @@ void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
             break;
         }
     }
-    
+    DVASSERT(batchIndex != static_cast<DAVA::uint32>(-1));
+
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, renderObject);
     delegateObj.Exec(Command2::Create<DeleteRenderBatchCommand>(entity, renderObject, batchIndex));
 }
@@ -386,34 +394,34 @@ void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
     ObjectHandle handle;
     DVVERIFY(value.tryCast(handle));
 
-    DAVA::NMaterial * material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
+    DAVA::NMaterial* material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
     DVASSERT(material != nullptr);
     delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
 }
 
 void EntityInjectDataExtension::AddCustomProperty(const RefPropertyItem* item)
 {
-    AddCustomPropertyWidget * w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
+    AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
     w->ValueReady.Connect([this, item](const DAVA::String& name, const DAVA::VariantType& value)
-    {
-        const std::vector<const PropertyNode*> objects = item->getObjects();
-        delegateObj.StartBatch("Add custom property", objects.size());
+                          {
+                              const std::vector<const PropertyNode*> objects = item->getObjects();
+                              delegateObj.StartBatch("Add custom property", objects.size());
 
-        for (const PropertyNode* object : objects)
-        {
-            Collection collectionHandle;
-            if (object->propertyInstance->get(object->object, defManager).tryCast(collectionHandle))
-            {
-                CollectionImplPtr impl = collectionHandle.getImpl();
-                NGTLayer::NGTKeyedArchiveImpl* archImpl = dynamic_cast<NGTLayer::NGTKeyedArchiveImpl*>(impl.get());
-                DVASSERT(archImpl != nullptr);
-                DAVA::KeyedArchive* archive = archImpl->GetArchive();
-                delegateObj.Exec(Command2::Create<KeyedArchiveAddValueCommand>(archive, name, value));
-            }
-        }
+                              for (const PropertyNode* object : objects)
+                              {
+                                  Collection collectionHandle;
+                                  if (object->propertyInstance->get(object->object, defManager).tryCast(collectionHandle))
+                                  {
+                                      CollectionImplPtr impl = collectionHandle.getImpl();
+                                      NGTLayer::NGTKeyedArchiveImpl* archImpl = dynamic_cast<NGTLayer::NGTKeyedArchiveImpl*>(impl.get());
+                                      DVASSERT(archImpl != nullptr);
+                                      DAVA::KeyedArchive* archive = archImpl->GetArchive();
+                                      delegateObj.Exec(Command2::Create<KeyedArchiveAddValueCommand>(archive, name, value));
+                                  }
+                              }
 
-        delegateObj.EndBatch();
-    });
+                              delegateObj.EndBatch();
+                          });
     w->show();
     w->move(300, 300);
 }

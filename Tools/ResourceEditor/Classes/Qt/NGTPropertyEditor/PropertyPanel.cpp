@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "PropertyPanel.h"
+#include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/EntityGroup.h"
 #include "NgtTools/Reflection/ReflectionBridge.h"
@@ -36,11 +37,14 @@
 #include "Debug/DVAssert.h"
 #include "metainfo/PropertyPanel.mpp"
 
+#include <core_command_system/i_command_manager.hpp>
 #include <core_reflection/i_definition_manager.hpp>
 #include <core_reflection/interfaces/i_reflection_controller.hpp>
 #include <core_data_model/reflection/reflected_property_model.hpp>
 #include <core_data_model/i_tree_model.hpp>
 #include <core_qt_common/helpers/qt_helpers.hpp>
+
+#include <QTimerEvent>
 
 PropertyPanel::PropertyPanel()
     : updater(DAVA::MakeFunction(this, &PropertyPanel::UpdateModel))
@@ -177,15 +181,15 @@ void PropertyPanel::UpdateModel()
 
 void PropertyPanel::StartBatch(const DAVA::String& name, DAVA::uint32 commandCount)
 {
-    SceneEditor2 * scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     DVASSERT(scene != nullptr);
 
     scene->BeginBatch(name, commandCount);
 }
 
-void PropertyPanel::Exec(Command2::Pointer && command)
+void PropertyPanel::Exec(Command2::Pointer&& command)
 {
-    SceneEditor2 * scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     DVASSERT(scene != nullptr);
 
     scene->Exec(std::move(command));
@@ -193,7 +197,7 @@ void PropertyPanel::Exec(Command2::Pointer && command)
 
 void PropertyPanel::EndBatch()
 {
-    SceneEditor2 * scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     DVASSERT(scene != nullptr);
 
     scene->EndBatch();

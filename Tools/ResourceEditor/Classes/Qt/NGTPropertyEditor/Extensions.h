@@ -30,8 +30,14 @@
 
 #include "Commands2/Base/Command2.h"
 #include "Functional/Signal.h"
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 #include <core_data_model/reflection/property_model_extensions.hpp>
+
+#include <QWidget>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QPushButton>
 
 struct DAVAProperiesEnum
 {
@@ -41,10 +47,10 @@ struct DAVAProperiesEnum
     };
 };
 
-class PropertyPanelGetExtension: public GetterExtension
+class PropertyPanelGetExtension : public GetterExtension
 {
 public:
-    Variant getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager & definitionManager) const override;
+    Variant getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager& definitionManager) const override;
 };
 
 class EntityChildCreatorExtension : public ChildCreatorExtension
@@ -53,16 +59,18 @@ public:
     void exposeChildren(const PropertyNode& node, std::vector<const PropertyNode*>& children, IDefinitionManager& defMng) const override;
 };
 
-class EntityMergeValueExtension: public MergeValuesExtension
+class EntityMergeValueExtension : public MergeValuesExtension
 {
 public:
     RefPropertyItem* lookUpItem(const PropertyNode* node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
-                                IDefinitionManager & definitionManager) const override;
+                                IDefinitionManager& definitionManager) const override;
 };
 
-class AddCustomPropertyWidget: public QWidget
+class AddCustomPropertyWidget : public QWidget
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT;
+    POP_QT_WARNING_SUPRESSOR
 
 public:
     AddCustomPropertyWidget(int defaultType = DAVA::VariantType::TYPE_STRING, QWidget* parent = NULL);
@@ -83,14 +91,14 @@ private:
     QPushButton* defaultBtn;
 };
 
-class EntityInjectDataExtension: public InjectDataExtension
+class EntityInjectDataExtension : public InjectDataExtension
 {
 public:
     class Delegate
     {
     public:
         virtual void StartBatch(const DAVA::String& name, DAVA::uint32 commandCount) = 0;
-        virtual void Exec(Command2::Pointer && command) = 0;
+        virtual void Exec(Command2::Pointer&& command) = 0;
         virtual void EndBatch() = 0;
     };
 
@@ -101,7 +109,7 @@ public:
 
 private:
     void RemoveComponent(const RefPropertyItem* item);
-    
+
     void RemoveRenderBatch(const RefPropertyItem* item);
     void ConvertBatchToShadow(const RefPropertyItem* item);
     void RebuildTangentSpace(const RefPropertyItem* item);
@@ -110,6 +118,6 @@ private:
     void OpenMaterials(const RefPropertyItem* item);
 
 private:
-    Delegate & delegateObj;
+    Delegate& delegateObj;
     IDefinitionManager& defManager;
 };
