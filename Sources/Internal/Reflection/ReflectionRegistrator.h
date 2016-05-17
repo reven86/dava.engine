@@ -1,6 +1,8 @@
 #include <cassert>
 #include <tuple>
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #include "Functional/Function.h"
 #include "Reflection/ReflectionWrappersDefault.h"
 #include "Reflection/Private/StructureWrapperClass.h"
@@ -160,3 +162,5 @@ protected:
 };
 
 } // namespace DAVA
+
+#endif

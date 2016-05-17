@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #include "Base/Any.h"
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectedObject.h"
@@ -81,3 +83,5 @@ public:
 };
 
 } // namespace DAVA
+
+#endif

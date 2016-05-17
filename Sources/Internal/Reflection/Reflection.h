@@ -4,6 +4,8 @@
 #include <cassert>
 #include <vector>
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #include "Base/Any.h"
 #include "Reflection/ReflectedObject.h"
 #include "Reflection/ReflectionVirt.h"
@@ -74,3 +76,5 @@ private:
 } // namespace DAVA
     
 #include "Private/ReflectionImpl.h"
+
+#endif

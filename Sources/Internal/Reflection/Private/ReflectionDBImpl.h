@@ -1,5 +1,7 @@
 #pragma once
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #ifndef DAVA_REFLECTION_DB__H
 #include "Reflection/ReflectionDB.h"
 #endif
@@ -75,3 +77,5 @@ void ReflectionDB::RegisterBaseClass()
 }
 
 } // namespace DAVA
+
+#endif

@@ -1,6 +1,8 @@
 #pragma once
 #include "Reflection/ReflectionWrappers.h"
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 namespace DAVA
 {
 template <typename C>
@@ -31,3 +33,5 @@ public:
 };
 
 } // namespace DAVA
+
+#endif

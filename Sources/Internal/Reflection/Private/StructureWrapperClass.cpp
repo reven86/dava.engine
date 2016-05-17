@@ -1,5 +1,7 @@
 #include "Reflection/Private/StructureWrapperClass.h"
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 namespace DAVA
 {
 Ref::Field StructureWrapperClass::GetField(const ReflectedObject& object, const Any& key) const
@@ -39,3 +41,5 @@ Ref::FieldsList StructureWrapperClass::GetFields(const ReflectedObject& object) 
 }
 
 } // namespace DAVA
+
+#endif

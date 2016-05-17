@@ -36,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 struct SimpleStruct
 {
     SimpleStruct()
@@ -265,3 +267,5 @@ DAVA_TESTCLASS (TypeReflection)
         }
     }
 };
+
+#endif

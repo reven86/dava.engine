@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 namespace DAVA
 {
 class StructureWrapperClass : public StructureWrapper
@@ -138,3 +140,5 @@ protected:
 };
 
 } // namespace DAVA
+
+#endif

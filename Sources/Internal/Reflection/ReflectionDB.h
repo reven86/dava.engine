@@ -6,6 +6,8 @@
 #include <vector>
 #include <unordered_map>
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #include "Reflection/ReflectionVirt.h"
 #include "Reflection/ReflectionWrappers.h"
 
@@ -44,3 +46,5 @@ protected:
 } // namespace DAVA
 
 #include "Private/ReflectionDBImpl.h"
+
+#endif

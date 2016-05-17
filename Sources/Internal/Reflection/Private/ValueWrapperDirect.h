@@ -2,6 +2,8 @@
 
 #include "Reflection/ReflectionWrappers.h"
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 namespace DAVA
 {
 class ValueWrapperDirect : public ValueWrapper
@@ -69,3 +71,5 @@ protected:
 };
 
 } // namespace DAVA
+
+#endif

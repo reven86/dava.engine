@@ -3,6 +3,8 @@
 #include <cassert>
 #include <map>
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #include "Base/Type.h"
 #include "Reflection/ReflectedMeta.h"
 
@@ -95,3 +97,5 @@ protected:
 };
 
 } // namespace DAVA
+
+#endif
