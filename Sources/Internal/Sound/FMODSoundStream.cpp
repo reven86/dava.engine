@@ -92,6 +92,22 @@ bool FMODSoundStream::Init()
     }
     return false;
 }
+
+void FMODSoundStream::Play()
+{
+    if (fmodChannel)
+    {
+        fmodChannel->setPaused(false);
+    }
+}
+
+void FMODSoundStream::Pause()
+{
+    if (fmodChannel)
+    {
+        fmodChannel->setPaused(true);
+    }
+}
 }
 
 #endif

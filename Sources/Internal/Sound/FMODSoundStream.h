@@ -17,21 +17,8 @@ public:
     bool Init();
 
     // SoundStream interface implementation
-    void Play() override
-    {
-        if (fmodChannel)
-        {
-            fmodChannel->setPaused(false);
-        }
-    }
-
-    void Pause() override
-    {
-        if (fmodChannel)
-        {
-            fmodChannel->setPaused(true);
-        }
-    }
+    void Play() override;
+    void Pause() override;
 
 private:
     static FMOD_RESULT F_CALLBACK PcmReadDecodeCallback(FMOD_SOUND* sound, void* data, unsigned int datalen);
