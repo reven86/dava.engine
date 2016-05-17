@@ -196,7 +196,6 @@ protected:
 
     Vector<RestoreBufferData> bufferRestoreData;
 
-
     FilePath heightmapPath;
     Heightmap* heightmap = nullptr;
     LandscapeSubdivision* subdivision = nullptr;
