@@ -8,7 +8,9 @@ class ReflectionDB;
 
 struct VirtualReflection
 {
-    virtual ~VirtualReflection() {}
+    virtual ~VirtualReflection()
+    {
+    }
     virtual const ReflectionDB* GetVirtualReflectionDB() const = 0;
 };
 

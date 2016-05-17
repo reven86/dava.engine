@@ -26,7 +26,7 @@ public:
         SaveOP save = nullptr;
     };
 
-    class Exception: public std::runtime_error
+    class Exception : public std::runtime_error
     {
     public:
         enum ErrorCode
@@ -41,7 +41,6 @@ public:
 
         ErrorCode errorCode;
     };
-
 
     Any() = default;
     ~Any() = default;

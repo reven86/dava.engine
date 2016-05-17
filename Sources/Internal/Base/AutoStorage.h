@@ -8,10 +8,9 @@
 
 namespace DAVA
 {
-
 struct CountTraits
 {
-    enum: size_t
+    enum : size_t
     {
         SharedSize = sizeof(std::shared_ptr<void>),
         VoidSize = sizeof(void*),
@@ -37,7 +36,7 @@ public:
 
     AutoStorage(AutoStorage&&);
     AutoStorage(const AutoStorage&);
-    
+
     AutoStorage& operator=(const AutoStorage& value);
     AutoStorage& operator=(AutoStorage&& value);
 
