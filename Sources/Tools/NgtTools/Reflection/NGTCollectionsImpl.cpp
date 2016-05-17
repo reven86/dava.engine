@@ -77,6 +77,11 @@ public:
             }
         }
 
+        if (iterator == nullptr)
+        {
+            linearKey = END_ITERATOR_POSITION;
+        }
+
 #ifdef __DAVAENGINE_DEBUG__
         dbg_name = collection->Name().c_str();
 #endif

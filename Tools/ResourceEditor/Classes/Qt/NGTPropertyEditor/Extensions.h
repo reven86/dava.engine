@@ -28,6 +28,9 @@
 
 #pragma once
 
+#include "Commands2/Base/Command2.h"
+#include "Functional/Signal.h"
+
 #include <core_data_model/reflection/property_model_extensions.hpp>
 
 struct DAVAProperiesEnum
@@ -57,6 +60,29 @@ public:
                                 IDefinitionManager & definitionManager) const override;
 };
 
+class AddCustomPropertyWidget: public QWidget
+{
+    Q_OBJECT;
+
+public:
+    AddCustomPropertyWidget(int defaultType = DAVA::VariantType::TYPE_STRING, QWidget* parent = NULL);
+
+    DAVA::Signal<const DAVA::String&, const DAVA::VariantType&> ValueReady;
+
+    void showEvent(QShowEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
+
+protected slots:
+    void OkKeyPressed();
+    void PreSetSelected(int index);
+
+private:
+    QLineEdit* keyWidget;
+    QComboBox* valueWidget;
+    QComboBox* presetWidget;
+    QPushButton* defaultBtn;
+};
+
 class EntityInjectDataExtension: public InjectDataExtension
 {
 public:
@@ -64,19 +90,24 @@ public:
     {
     public:
         virtual void StartBatch(const DAVA::String& name, DAVA::uint32 commandCount) = 0;
-        virtual void RemoveComponent(DAVA::Component* component) = 0;
+        virtual void Exec(Command2::Pointer && command) = 0;
         virtual void EndBatch() = 0;
-        virtual void OpenMaterial(DAVA::NMaterial* material) = 0;
     };
 
     EntityInjectDataExtension(Delegate& delegateObj, IDefinitionManager& defManager);
 
-    void inject(const RefPropertyItem* item, const std::function<void(size_t, const Variant&)>& injector) override;
+    void inject(RefPropertyItem* item) override;
+    void updateInjection(RefPropertyItem* item) override;
 
 private:
     void RemoveComponent(const RefPropertyItem* item);
-    void OpenMaterials(const RefPropertyItem* item);
+    
+    void RemoveRenderBatch(const RefPropertyItem* item);
+    void ConvertBatchToShadow(const RefPropertyItem* item);
+    void RebuildTangentSpace(const RefPropertyItem* item);
+
     void AddCustomProperty(const RefPropertyItem* item);
+    void OpenMaterials(const RefPropertyItem* item);
 
 private:
     Delegate & delegateObj;

@@ -33,6 +33,10 @@
 #include "Render/Material/NMaterial.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
+#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataDavaKeyedArchive.h"
+#include "NgtTools/Reflection/NGTCollectionsImpl.h"
+
+#include "Commands2/Actions/ShowMaterialAction.h"
 #include "Render/Highlevel/RenderBatch.h"
 
 #include <core_qt_common/models/buttons_model.hpp>
@@ -46,6 +50,8 @@
 #include <core_reflection/base_property.hpp>
 #include <core_reflection/object_handle.hpp>
 #include <core_variant/collection.hpp>
+#include "Commands2/ConvertToShadowCommand.h"
+#include "Commands2/KeyedArchiveCommand.h"
 
 class ProxyProperty : public BaseProperty
 {
@@ -68,6 +74,40 @@ const TypeId objectHandleType = TypeId::getType<ObjectHandle>();
 const TypeId nmaterialType = TypeId::getType<DAVA::NMaterial*>();
 const TypeId keyedArchive = TypeId::getType<DAVA::KeyedArchive*>();
 const TypeId renderBatchType = TypeId::getType<DAVA::RenderBatch>();
+
+DAVA::RenderBatch* ExtractRenderBatch(const RefPropertyItem* item, IDefinitionManager& defManager)
+{
+    const std::vector<const PropertyNode*> & objects = item->getObjects();
+    DVASSERT(objects.size() == 1);
+
+    const PropertyNode* node = objects.front();
+    ObjectHandle valueHandle;
+    DVVERIFY(node->propertyInstance->get(node->object, defManager).tryCast(valueHandle));
+    DAVA::RenderBatch * batch = valueHandle.getBase<DAVA::RenderBatch>();
+    DVASSERT(batch != nullptr);
+
+    return batch;
+}
+
+DAVA::Entity* FindEntityWithRenderObject(const RefPropertyItem* item, DAVA::RenderObject* renderObject)
+{
+    const RefPropertyItem* parent = item->getParent();
+    while (parent != nullptr)
+    {
+        item = parent;
+        parent = item->getParent();
+    }
+
+    const std::vector<const PropertyNode*> objects = item->getObjects();
+    DVASSERT(objects.size() == 1);
+    const PropertyNode* object = objects.front();
+    DAVA::Entity * entity = object->object.getBase<DAVA::Entity>();
+
+    DVASSERT(GetRenderObject(entity) == renderObject);
+
+    return entity;
+}
+
 }
 
 std::string BuildCollectionElementName(const Collection::ConstIterator& iter, IDefinitionManager& defMng)
@@ -179,7 +219,7 @@ EntityInjectDataExtension::EntityInjectDataExtension(Delegate & delegateObj_, ID
 {
 }
 
-void EntityInjectDataExtension::inject(const RefPropertyItem* item, const std::function<void(size_t, const Variant&)>& injector)
+void EntityInjectDataExtension::inject(RefPropertyItem* item)
 {
     static TypeId removableComponents[] = { TypeId::getType<DAVA::RenderComponent>(), TypeId::getType<DAVA::ActionComponent>() };
 
@@ -197,23 +237,23 @@ void EntityInjectDataExtension::inject(const RefPropertyItem* item, const std::f
             std::vector<ButtonItem> buttons;
             buttons.emplace_back(true, "/QtIcons/remove.png",std::bind(&EntityInjectDataExtension::RemoveComponent, this, item));
             ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
         }
         else if (type == ExtensionsDetails::renderBatchType)
         {
             std::vector<ButtonItem> buttons;
-            buttons.emplace_back(true, "/QtIcons/external.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
-            buttons.emplace_back(true, "/QtIcons/shadow.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
-            buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
+            buttons.emplace_back(true, "/QtIcons/external.png", std::bind(&EntityInjectDataExtension::RebuildTangentSpace, this, item));
+            buttons.emplace_back(true, "/QtIcons/shadow.png", std::bind(&EntityInjectDataExtension::ConvertBatchToShadow, this, item));
+            buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::RemoveRenderBatch, this, item));
             ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
         }
         else if (node->propertyInstance->getType() == ExtensionsDetails::nmaterialType)
         {
             std::vector<ButtonItem> buttons;
             buttons.emplace_back(true, "/QtIcons/3d.png", std::bind(&EntityInjectDataExtension::OpenMaterials, this, item));
             ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
         }
     }
     else if (node->propertyInstance->getType() == ExtensionsDetails::keyedArchive)
@@ -221,7 +261,68 @@ void EntityInjectDataExtension::inject(const RefPropertyItem* item, const std::f
         std::vector<ButtonItem> buttons;
         buttons.emplace_back(true, "/QtIcons/keyplus.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
         ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-        injector(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+        item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+    }
+}
+
+void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
+{
+    Variant buttons = item->getInjectedData(ButtonsDefinitionRole::roleId_);
+    ObjectHandle modelHandle;
+    if (!buttons.tryCast(modelHandle))
+        return;
+
+    ButtonsModel* model = dynamic_cast<ButtonsModel*>(modelHandle.getBase<IListModel>());
+
+    if (model == nullptr)
+    {
+        return;
+    }
+
+    const std::vector<const PropertyNode*> & objects = item->getObjects();
+    DVASSERT(!objects.empty());
+
+    bool isSingleSelection = objects.size() == 1;
+    const PropertyNode* node = objects.front();
+    ObjectHandle valueHandle;
+
+    if (node->propertyInstance->get(node->object, defManager).tryCast(valueHandle))
+    {
+        TypeId type = valueHandle.type();
+        if (type.isPointer())
+            type = type.removePointer();
+
+        if (type == ExtensionsDetails::renderBatchType)
+        {
+            bool canConvertToShadow = false;
+            bool isRebuildTsEnabled = false;
+            DAVA::RenderBatch * batch = valueHandle.getBase<DAVA::RenderBatch>();
+            if (batch != nullptr)
+            {
+                DAVA::RenderObject * renderObject = batch->GetRenderObject();
+                if (renderObject != nullptr)
+                {
+                    canConvertToShadow = ConvertToShadowCommand::CanConvertBatchToShadow(batch);
+                }
+
+                DAVA::PolygonGroup* group = batch->GetPolygonGroup();
+                if (group != nullptr)
+                {
+                    const DAVA::int32 requiredVertexFormat = (DAVA::EVF_TEXCOORD0 | DAVA::EVF_NORMAL);
+                    isRebuildTsEnabled = (group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
+                    isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
+                }
+            }
+
+            model->setEnabled(0, isSingleSelection && isRebuildTsEnabled);
+            model->setEnabled(1, isSingleSelection && canConvertToShadow);
+            model->setEnabled(2, isSingleSelection);
+        }
+        else if (node->propertyInstance->getType() == ExtensionsDetails::nmaterialType)
+        {
+            // Show material button
+            model->setEnabled(0, isSingleSelection);
+        }
     }
 }
 
@@ -238,9 +339,44 @@ void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
         DAVA::Component* component = reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
         DVASSERT(component != nullptr);
 
-        delegateObj.RemoveComponent(component);
+        delegateObj.Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
     }
     delegateObj.EndBatch();
+}
+
+void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
+{
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
+    DAVA::RenderObject* renderObject = batch->GetRenderObject();
+    DVASSERT(renderObject != nullptr);
+
+    uint32 batchIndex = static_cast<uint32>(-1);
+    for (uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+    {
+        if (renderObject->GetRenderBatch(i) == batch)
+        {
+            batchIndex = i;
+            break;
+        }
+    }
+    
+    DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, renderObject);
+    delegateObj.Exec(Command2::Create<DeleteRenderBatchCommand>(entity, renderObject, batchIndex));
+}
+
+void EntityInjectDataExtension::ConvertBatchToShadow(const RefPropertyItem* item)
+{
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
+
+    DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, batch->GetRenderObject());
+
+    delegateObj.Exec(Command2::Create<ConvertToShadowCommand>(entity, batch));
+}
+
+void EntityInjectDataExtension::RebuildTangentSpace(const RefPropertyItem* item)
+{
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
+    delegateObj.Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
 }
 
 void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
@@ -252,10 +388,180 @@ void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
 
     DAVA::NMaterial * material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
     DVASSERT(material != nullptr);
-    delegateObj.OpenMaterial(material);
+    delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
 }
 
 void EntityInjectDataExtension::AddCustomProperty(const RefPropertyItem* item)
 {
+    AddCustomPropertyWidget * w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
+    w->ValueReady.Connect([this, item](const DAVA::String& name, const DAVA::VariantType& value)
+    {
+        const std::vector<const PropertyNode*> objects = item->getObjects();
+        delegateObj.StartBatch("Add custom property", objects.size());
 
+        for (const PropertyNode* object : objects)
+        {
+            Collection collectionHandle;
+            if (object->propertyInstance->get(object->object, defManager).tryCast(collectionHandle))
+            {
+                CollectionImplPtr impl = collectionHandle.getImpl();
+                NGTLayer::NGTKeyedArchiveImpl* archImpl = dynamic_cast<NGTLayer::NGTKeyedArchiveImpl*>(impl.get());
+                DVASSERT(archImpl != nullptr);
+                DAVA::KeyedArchive* archive = archImpl->GetArchive();
+                delegateObj.Exec(Command2::Create<KeyedArchiveAddValueCommand>(archive, name, value));
+            }
+        }
+
+        delegateObj.EndBatch();
+    });
+    w->show();
+    w->move(300, 300);
+}
+
+AddCustomPropertyWidget::AddCustomPropertyWidget(int defaultType, QWidget* parent /* = NULL */)
+    : QWidget(parent)
+    , presetWidget(nullptr)
+{
+    QGridLayout* grLayout = new QGridLayout();
+    int delautTypeIndex = 0;
+
+    defaultBtn = new QPushButton("Ok", this);
+    keyWidget = new QLineEdit(this);
+    valueWidget = new QComboBox(this);
+
+    int j = 0;
+    for (int type = (DAVA::VariantType::TYPE_NONE + 1); type < DAVA::VariantType::TYPES_COUNT; type++)
+    {
+        // don't allow byte array
+        if (type != DAVA::VariantType::TYPE_BYTE_ARRAY)
+        {
+            valueWidget->addItem(DAVA::VariantType::variantNamesMap[type].variantName.c_str(), type);
+
+            if (type == defaultType)
+            {
+                delautTypeIndex = j;
+            }
+
+            j++;
+        }
+    }
+    valueWidget->setCurrentIndex(delautTypeIndex);
+
+    int row = 0;
+    grLayout->addWidget(new QLabel("Key:", this), row, 0, 1, 1);
+    grLayout->addWidget(keyWidget, row, 1, 1, 2);
+    grLayout->addWidget(new QLabel("Value type:", this), ++row, 0, 1, 1);
+    grLayout->addWidget(valueWidget, row, 1, 1, 2);
+
+    const DAVA::Vector<DAVA::String>& presetValues = EditorConfig::Instance()->GetProjectPropertyNames();
+    if (presetValues.size() > 0)
+    {
+        presetWidget = new QComboBox(this);
+
+        presetWidget->addItem("None", DAVA::VariantType::TYPE_NONE);
+        for (size_t i = 0; i < presetValues.size(); ++i)
+        {
+            presetWidget->addItem(presetValues[i].c_str(), EditorConfig::Instance()->GetPropertyValueType(presetValues[i]));
+        }
+
+        grLayout->addWidget(new QLabel("Preset:", this), ++row, 0, 1, 1);
+        grLayout->addWidget(presetWidget, row, 1, 1, 2);
+
+        QObject::connect(presetWidget, SIGNAL(activated(int)), this, SLOT(PreSetSelected(int)));
+    }
+    presetWidget->setMaxVisibleItems(presetWidget->count());
+
+    grLayout->addWidget(defaultBtn, ++row, 2, 1, 1);
+
+    grLayout->setMargin(5);
+    grLayout->setSpacing(3);
+    setLayout(grLayout);
+
+    setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
+    setWindowOpacity(0.95);
+
+    QObject::connect(defaultBtn, SIGNAL(pressed()), this, SLOT(OkKeyPressed()));
+}
+
+void AddCustomPropertyWidget::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    keyWidget->setFocus();
+}
+
+void AddCustomPropertyWidget::keyPressEvent(QKeyEvent* e)
+{
+    if (!e->modifiers() || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter))
+    {
+        switch (e->key())
+        {
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            defaultBtn->click();
+            break;
+        case Qt::Key_Escape:
+            this->deleteLater();
+            break;
+        default:
+            e->ignore();
+            return;
+        }
+    }
+    else
+    {
+        e->ignore();
+    }
+}
+
+void AddCustomPropertyWidget::OkKeyPressed()
+{
+    DAVA::String key = keyWidget->text().toStdString();
+
+    if (key.empty())
+    {
+        // TODO:
+        // other way to report error without losing focus
+        // ...
+        //
+
+        QMessageBox::warning(nullptr, "Wrong key value", "Key value can't be empty");
+    }
+    else
+    {
+        // preset?
+        int presetType = DAVA::VariantType::TYPE_NONE;
+        if (presetWidget != nullptr)
+        {
+            presetType = presetWidget->itemData(presetWidget->currentIndex()).toInt();
+        }
+
+        if (DAVA::VariantType::TYPE_NONE != presetType)
+        {
+            DAVA::VariantType presetValue = *(EditorConfig::Instance()->GetPropertyDefaultValue(key));
+            ValueReady.Emit(key, presetValue);
+        }
+        else
+        {
+            ValueReady.Emit(key, DAVA::VariantType::FromType(valueWidget->itemData(valueWidget->currentIndex()).toInt()));
+        }
+
+        this->deleteLater();
+    }
+}
+
+void AddCustomPropertyWidget::PreSetSelected(int index)
+{
+    if (presetWidget->itemData(index).toInt() != DAVA::VariantType::TYPE_NONE)
+    {
+        keyWidget->setText(presetWidget->itemText(index));
+        keyWidget->setEnabled(false);
+        valueWidget->setEnabled(false);
+    }
+    else
+    {
+        keyWidget->setText("");
+        keyWidget->setEnabled(true);
+        valueWidget->setEnabled(true);
+    }
 }

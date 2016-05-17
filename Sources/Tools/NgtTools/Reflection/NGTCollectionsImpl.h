@@ -108,6 +108,8 @@ public:
     bool isMapping() const override;
     bool canResize() const override;
 
+    DAVA::KeyedArchive* GetArchive() const { return archive; }
+
 private:
     DAVA::KeyedArchive* archive;
     TypeId keyTypeId;

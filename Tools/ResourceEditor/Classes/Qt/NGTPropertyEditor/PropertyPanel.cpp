@@ -183,12 +183,12 @@ void PropertyPanel::StartBatch(const DAVA::String& name, DAVA::uint32 commandCou
     scene->BeginBatch(name, commandCount);
 }
 
-void PropertyPanel::RemoveComponent(DAVA::Component * component)
+void PropertyPanel::Exec(Command2::Pointer && command)
 {
     SceneEditor2 * scene = QtMainWindow::Instance()->GetCurrentScene();
     DVASSERT(scene != nullptr);
 
-    scene->Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
+    scene->Exec(std::move(command));
 }
 
 void PropertyPanel::EndBatch()
@@ -197,10 +197,4 @@ void PropertyPanel::EndBatch()
     DVASSERT(scene != nullptr);
 
     scene->EndBatch();
-}
-
-void PropertyPanel::OpenMaterial(DAVA::NMaterial* material)
-{
-    QtMainWindow::Instance()->OnMaterialEditor();
-    MaterialEditor::Instance()->SelectMaterial(material);
 }
