@@ -71,6 +71,11 @@ public:
     class StbTextDelegate
     {
     public:
+        /** 
+         * \brief Default destructor
+         */
+        virtual ~StbTextDelegate() = default;
+
         /**
         * \brief Service function for insert text in data structure
         * \param[in] position position of inserting
