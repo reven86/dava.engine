@@ -124,7 +124,7 @@ void MovieViewControl::Update()
     }
     else
     {
-        videoTexture->TexImage(0, textureWidth, textureHeight, videoTextureBuffer, drawData.data.size(), Texture::INVALID_CUBEMAP_FACE);
+        videoTexture->TexImage(0, textureWidth, textureHeight, videoTextureBuffer, static_cast<uint32>(drawData.data.size()), Texture::INVALID_CUBEMAP_FACE);
     }
 }
 
