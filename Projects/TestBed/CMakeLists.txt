@@ -7,6 +7,8 @@ if( NOT DAVA_MEGASOLUTION )
     #set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+add_definitions(-D__DAVAENGINE_COREV2__)
+
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
@@ -54,6 +56,7 @@ if ( WINDOWS_UAP )
 endif ()
 
 setup_main_executable()
+set_property(TARGET TestBed APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
 
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled

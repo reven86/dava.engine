@@ -41,6 +41,56 @@
 #include "Network/Services/MMNet/MMNetServer.h"
 #endif
 
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "Engine/Engine.h"
+
+class TestData;
+class BaseScreen;
+class TestListScreen;
+
+class GameCore : public DAVA::IGame
+{
+public:
+    GameCore();
+    virtual ~GameCore() = default;
+
+    static GameCore* pthis;
+    static GameCore* Instance()
+    {
+        return pthis;
+    };
+
+    void OnGameLoopStarted() override;
+    void OnGameLoopStopped() override;
+
+    void OnUpdate(DAVA::float32 timeElapsed) override;
+
+    void RegisterScreen(BaseScreen* screen);
+    void ShowStartScreen();
+
+protected:
+    void RegisterTests();
+    void RunTests();
+
+    void CreateDocumentsFolder();
+    DAVA::File* CreateDocumentsFile(const DAVA::String& filePathname);
+
+private:
+    void RunOnlyThisTest();
+    void OnError();
+    bool IsNeedSkipTest(const BaseScreen& screen) const;
+
+    DAVA::String runOnlyThisTest;
+
+    BaseScreen* currentScreen;
+    TestListScreen* testListScreen;
+
+    DAVA::Vector<BaseScreen*> screens;
+};
+
+#else
+
 class TestData;
 class BaseScreen;
 class TestListScreen;
@@ -119,6 +169,6 @@ private:
     bool loggerInUse = false;
 };
 
-
+#endif // __DAVAENGINE_COREV2__
 
 #endif // __GAMECORE_H__

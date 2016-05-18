@@ -44,6 +44,11 @@ namespace DAVA
 {
 class ApplicationCore;
 
+namespace Private
+{
+class EngineBackend;
+}
+
 class OcclusionQuery
 {
 public:
@@ -177,6 +182,7 @@ private:
     bool frameBegan;
 
     friend class ApplicationCore;
+    friend class Private::EngineBackend;
 };
 
 /*

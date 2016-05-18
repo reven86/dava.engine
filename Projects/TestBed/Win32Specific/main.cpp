@@ -31,6 +31,8 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine,
@@ -41,6 +43,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
     return DAVA::Core::Run(0, 0, hInstance);
 }
+
+#endif
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 

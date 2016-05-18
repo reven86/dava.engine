@@ -63,6 +63,9 @@ public:
     };
 
     friend void Core::CreateSingletons();
+#if defined(__DAVAENGINE_COREV2__)
+    friend class Engine;
+#endif
 
 protected:
     ~InputSystem();

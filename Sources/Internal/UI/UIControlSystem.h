@@ -315,6 +315,9 @@ private:
     int32 CalculatedTapCount(UIEvent* newEvent);
 
     friend void Core::CreateSingletons();
+#if defined(__DAVAENGINE_COREV2__)
+    friend class Engine;
+#endif
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;

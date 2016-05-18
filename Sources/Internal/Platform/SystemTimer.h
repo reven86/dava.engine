@@ -35,9 +35,15 @@
 
 namespace DAVA
 {
+namespace Private
+{
+class EngineBackend;
+}
+
 class SystemTimer : public Singleton<SystemTimer>
 {
     friend class Core;
+    friend class Private::EngineBackend;
     
 #if defined(__DAVAENGINE_WINDOWS__)
     LARGE_INTEGER liFrequency;
