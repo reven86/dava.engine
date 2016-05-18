@@ -69,7 +69,8 @@ CEFControllerImpl::CEFControllerImpl()
         CefSettings settings;
         settings.no_sandbox = 1;
         settings.windowless_rendering_enabled = 1;
-        settings.log_severity = LOGSEVERITY_DISABLE;
+        // TODO: disable cef logs before merge
+        //settings.log_severity = LOGSEVERITY_DISABLE;
         //settings.log_severity = LOGSEVERITY_VERBOSE;
         CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
