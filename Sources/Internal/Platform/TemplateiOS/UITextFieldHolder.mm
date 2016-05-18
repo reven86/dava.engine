@@ -203,35 +203,38 @@
     if (insertString || replaceString)
     {
         NSUInteger charsToInsert = [string length];
-        if ((maxLength > 0) && (charsToInsert > (maxLength - origStrLength + range.length)))
+        if (maxLength > 0)
         {
-            charsToInsert = maxLength - origStrLength + range.length;
-        }
-        // safe remove
-        {
-            // new cut characters
-            NSUInteger position = 0;
-            NSRange rangeCharacter;
-            NSInteger index = 0;
-            do
+            if (charsToInsert > (maxLength - origStrLength + range.length))
             {
-                rangeCharacter = [string rangeOfComposedCharacterSequenceAtIndex:index];
-                if ((rangeCharacter.location + rangeCharacter.length) > charsToInsert)
-                {
-                    position = rangeCharacter.location;
-                    break;
-                }
-                position = rangeCharacter.location + rangeCharacter.length;
-                index++;
+                charsToInsert = maxLength - origStrLength + range.length;
+                ignoreDelegateResult = YES; // return NO at the end of the function
             }
-            while ((rangeCharacter.location + rangeCharacter.length) < charsToInsert);
-            string = [string substringWithRange:NSMakeRange(0, position)];
+            // safe remove
+            {
+                // new cut characters
+                NSUInteger position = 0;
+                NSRange rangeCharacter;
+                NSInteger index = 0;
+                do
+                {
+                    rangeCharacter = [string rangeOfComposedCharacterSequenceAtIndex:index];
+                    if ((rangeCharacter.location + rangeCharacter.length) > charsToInsert)
+                    {
+                        position = rangeCharacter.location;
+                        break;
+                    }
+                    position = rangeCharacter.location + rangeCharacter.length;
+                    index++;
+                }
+                while ((rangeCharacter.location + rangeCharacter.length) < charsToInsert);
+                string = [string substringWithRange:NSMakeRange(0, position)];
+            }
+            // safe remove end
         }
-        // safe remove end
     }
 
     newString = [origString stringByReplacingCharactersInRange:range withString:string];
-    ignoreDelegateResult = YES; // return NO at the end of the function
 
     // Length check OK, continue with the delegate.
     DAVA::WideString repString;
