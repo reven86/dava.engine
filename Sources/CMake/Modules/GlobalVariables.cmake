@@ -52,16 +52,18 @@ if (WIN32)
 
 	if( ${X64_PROJECT} EQUAL -1 )
 		set ( X64_MODE false )
+                set( DAVA_PROJECT_BIT 32 )
 	else ()
 		set ( X64_MODE true )
+                set( DAVA_PROJECT_BIT 64 )
 	endif ()
 
 	if( X64_MODE )
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
-        set( DAVA_THIRD_PARTY_LIBS      fmodex64.dll fmod_event64.dll glew32.dll TextureConverter.dll )  
+        set( DAVA_THIRD_PARTY_LIBS      glew32.dll TextureConverter.dll )  
 	else ()
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
-        set( DAVA_THIRD_PARTY_LIBS      fmodex.dll fmod_event.dll glew32.dll TextureConverter.dll )  
+        set( DAVA_THIRD_PARTY_LIBS      glew32.dll TextureConverter.dll )  
 	endif ()
     
     if ( NOT WINDOWS_UAP )
@@ -85,8 +87,31 @@ if ( ENABLE_CEF )
     add_definitions ( -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
 endif ()
 
+set( DAVA_PLATFORM_LIST IOS 
+                        MACOS 
+                        ANDROID 
+                        WIN 
+                        WINUAP
+                        )
+
+if( IOS )
+    set( DAVA_PLATFORM_CURENT IOS )
+elseif( MACOS )
+    set( DAVA_PLATFORM_CURENT MACOS )
+elseif( ANDROID )
+    set( DAVA_PLATFORM_CURENT ANDROID )
+elseif( WIN32 AND NOT WINDOWS_UAP )
+    set( DAVA_PLATFORM_CURENT WIN )
+    set( WIN true )
+elseif( WIN32 AND WINDOWS_UAP )
+    set( DAVA_PLATFORM_CURENT WINUAP )
+    set( WINUAP true )
+endif()
+
+
 set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
 set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )
+set( DAVA_EXTERNAL_DIR                  "${DAVA_ROOT_DIR}/Sources/External" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
 set( DAVA_THIRD_PARTY_ROOT_PATH         "${DAVA_ROOT_DIR}/Libs" )
 set( DAVA_CONFIGURE_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
