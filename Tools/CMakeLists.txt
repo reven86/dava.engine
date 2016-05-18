@@ -56,7 +56,8 @@ endif()
 configure_ngt( PROJECT_NAME ${TOOL_OUTPUT_DIR} )
 find_package ( NgtTools REQUIRED )
 
-find_package ( DavaFramework REQUIRED )
+set                   ( DAVA_DISABLE_AUTOTESTS true )
+find_package          ( DavaFramework REQUIRED COMPONENTS ALL )
 find_package ( DavaTools     REQUIRED )
 
 set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp
