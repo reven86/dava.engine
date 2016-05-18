@@ -203,7 +203,7 @@
     if (insertString || replaceString)
     {
         NSUInteger charsToInsert = [string length];
-        if (charsToInsert > (maxLength - origStrLength + range.length))
+        if ((maxLength > 0) && (charsToInsert > (maxLength - origStrLength + range.length)))
         {
             charsToInsert = maxLength - origStrLength + range.length;
         }

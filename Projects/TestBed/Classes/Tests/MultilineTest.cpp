@@ -159,7 +159,7 @@ void MultilineTest::LoadResources()
 
     field = new UITextField(Rect(0, Y_OFFSET + 2 * (CONTROL_HEIGTH + 10), CONTROL_LENGHT, CONTROL_HEIGTH));
     field->SetFont(font);
-    field->SetFocused();
+    //    field->SetFocused();
     field->SetDebugDraw(true);
     field->SetText(L"Test text inside UITextField used for test");
     field->SetDelegate(this);
