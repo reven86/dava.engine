@@ -1450,7 +1450,7 @@ doCommandBySelector:(SEL)commandSelector
             NSString* resultStr = [NSString stringWithFormat:@"%@%@%@", prevPath, replPath, postPath];
             // write back
             *partialStringPtr = resultStr;
-            *proposedSelRangePtr = NSMakeRange([resultStr length], 0);
+            *proposedSelRangePtr = NSMakeRange([prevPath length] + [replPath length], 0);
             result = NO;
         }
         else
