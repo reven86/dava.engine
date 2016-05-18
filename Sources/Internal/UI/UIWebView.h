@@ -88,9 +88,7 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
 
-#if defined(__DAVAENGINE_WIN_UAP__)
     void Update(float32 timeElapsed) override;
-#endif
 
 protected:
     void OnVisible() override;

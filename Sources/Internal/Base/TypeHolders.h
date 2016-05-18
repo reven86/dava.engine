@@ -62,8 +62,13 @@ public:
         }
     }
 
+    uint32 GetReferenceCount()
+    {
+        return refCount.Get();
+    }
+
 private:
-    Atomic<int32> refCount;
+    Atomic<uint32> refCount;
 };
 
 // ====================================================================================================================================================

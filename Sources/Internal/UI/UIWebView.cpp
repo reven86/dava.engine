@@ -27,13 +27,15 @@
 =====================================================================================*/
 
 
+#if defined(ENABLE_CEF_WEBVIEW)
+#include "UI/Private/CEFWebViewControl.h"
+#endif
+
 #include "UIWebView.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#if defined(ENABLE_CEF_WEBVIEW)
-#include "UI/Private/CEFWebViewControl.h"
-#elif defined(DISABLE_NATIVE_WEBVIEW)
+#if defined(DISABLE_NATIVE_WEBVIEW)
 #include "WebViewControlStub.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
@@ -257,11 +259,10 @@ void UIWebView::SystemDraw(const DAVA::UIGeometricData& geometricData)
     webViewControl->DidDraw();
 }
 
-#if defined(__DAVAENGINE_WIN_UAP__)
 void UIWebView::Update(float32 timeElapsed)
 {
     webViewControl->Update();
     UIControl::Update(timeElapsed);
 }
-#endif
-};
+
+} // namespace DAVA

@@ -31,47 +31,36 @@
 
 #if defined(ENABLE_CEF_WEBVIEW)
 
+#include <cef/include/cef_client.h>
+
 #include "UI/IWebViewControl.h"
+#include "UI/Private/CEFController.h"
 
 namespace DAVA
 {
-class Sprite;
-
-// Web View Control for WinUAP
-class WebViewControl : public IWebViewControl
+class WebViewControl : public IWebViewControl, public CefClient, public CefRequestHandler, public CefResourceHandler
 {
 public:
-    WebViewControl(UIWebView& uiWebView)
-    {
-    }
-    virtual ~WebViewControl()
-    {
-    }
+    WebViewControl(UIWebView& uiWebView);
+    ~WebViewControl() override;
 
     // Initialize the control.
-    void Initialize(const Rect& rect) override
-    {
-    }
+    void Initialize(const Rect& rect) override;
 
     // Open the URL requested.
-    void OpenURL(const String& url) override
-    {
-    }
+    void OpenURL(const String& url) override;
+
     // Load html page from string
-    void LoadHtmlString(const WideString& htmlString) override
-    {
-    }
-    void OpenFromBuffer(const String& htmlString, const FilePath& basePath) override
-    {
-    }
+    void LoadHtmlString(const WideString& htmlString) override;
+    void OpenFromBuffer(const String& htmlString, const FilePath& basePath) override;
+
     // Execute javascript string in webview
-    void ExecuteJScript(const String& scriptString) override
-    {
-    }
+    void ExecuteJScript(const String& scriptString) override;
 
     // Delete all cookies associated with target URL
     void DeleteCookies(const String& url) override
     {
+        //CefCookieManager::GetGlobalManager()
     }
     // Get cookie for specific domain and name
     String GetCookie(const String& url, const String& name) const override
@@ -85,12 +74,8 @@ public:
     }
 
     // Size/pos/visibility changes.
-    void SetRect(const Rect& rect) override
-    {
-    }
-    void SetVisible(bool isVisible, bool hierarchic) override
-    {
-    }
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible, bool hierarchic) override;
     void SetBackgroundTransparency(bool enabled) override
     {
     }
@@ -99,19 +84,118 @@ public:
     {
     }
 
-    void SetRenderToTexture(bool value) override
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
+
+    void Update() override;
+
+private:
+    // CefClient interface realization
+    CefRefPtr<CefRenderHandler> GetRenderHandler() override;
+
+    virtual CefRefPtr<CefRequestHandler> GetRequestHandler()
     {
+        return this;
     }
-    bool IsRenderToTexture() const override
+
+    virtual bool OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
+                                CefRefPtr<CefFrame> frame,
+                                CefRefPtr<CefRequest> request,
+                                bool is_redirect)
     {
         return false;
     }
 
-    void Update() override
+    virtual bool OnOpenURLFromTab(CefRefPtr<CefBrowser> browser,
+                                  CefRefPtr<CefFrame> frame,
+                                  const CefString& target_url,
+                                  WindowOpenDisposition target_disposition,
+                                  bool user_gesture)
+    {
+        return false;
+    }
+
+    virtual void OnResourceRedirect(CefRefPtr<CefBrowser> browser,
+                                    CefRefPtr<CefFrame> frame,
+                                    CefRefPtr<CefRequest> request,
+                                    CefString& new_url)
+    {
+        int d = 342;
+    }
+
+    virtual ReturnValue OnBeforeResourceLoad(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefRefPtr<CefRequest> request,
+    CefRefPtr<CefRequestCallback> callback)
+    {
+        return RV_CONTINUE;
+    }
+
+    virtual bool OnResourceResponse(CefRefPtr<CefBrowser> browser,
+                                    CefRefPtr<CefFrame> frame,
+                                    CefRefPtr<CefRequest> request,
+                                    CefRefPtr<CefResponse> response)
+    {
+        return false;
+    }
+
+    virtual CefRefPtr<CefResourceHandler> GetResourceHandler(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefRefPtr<CefRequest> request)
+    {
+        return nullptr;
+    }
+
+    virtual CefRefPtr<CefResponseFilter> GetResourceResponseFilter(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefRefPtr<CefRequest> request,
+    CefRefPtr<CefResponse> response)
+    {
+        return NULL;
+    }
+
+    virtual void OnProtocolExecution(CefRefPtr<CefBrowser> browser,
+                                     const CefString& url,
+                                     bool& allow_os_execution)
+    {
+        int d = 42;
+    }
+
+    bool ProcessRequest(CefRefPtr<CefRequest> request,
+                        CefRefPtr<CefCallback> callback)
+    {
+        return false;
+    }
+
+    void GetResponseHeaders(CefRefPtr<CefResponse> response,
+                            int64& response_length,
+                            CefString& redirectUrl)
+    {
+        int d = 42;
+    }
+
+    bool ReadResponse(void* data_out,
+                      int bytes_to_read,
+                      int& bytes_read,
+                      CefRefPtr<CefCallback> callback)
+    {
+        return false;
+    }
+
+    void Cancel()
     {
     }
 
-private:
+    void LoadHtml(const CefString& html, const CefString& url);
+    IMPLEMENT_REFCOUNTING(WebViewControl);
+
+    UIWebView& webView;
+    CEFController cefController;
+    CefRefPtr<class CefBrowser> cefBrowser;
+    CefRefPtr<class CEFWebPageRender> webPageRender;
 };
 
 } // namespace DAVA

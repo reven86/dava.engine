@@ -29,6 +29,106 @@
 
 #if defined(ENABLE_CEF_WEBVIEW)
 
+#include <cef/include/cef_browser.h>
+#include "UI/Private/CEFWebPageRender.h"
+
 #include "UI/Private/CEFWebViewControl.h"
+#include "UI/UIWebView.h"
+
+namespace DAVA
+{
+WebViewControl::WebViewControl(UIWebView& uiWebView)
+    : webView(uiWebView)
+{
+    AddRef(); // this object will be deleted manually, but ref counting is needed for work
+}
+
+WebViewControl::~WebViewControl()
+{
+    cefBrowser->GetHost()->CloseBrowser(true);
+    cefBrowser = nullptr;
+    webPageRender = nullptr;
+}
+
+void WebViewControl::Initialize(const Rect& rect)
+{
+    webPageRender = new CEFWebPageRender(webView);
+
+    CefWindowInfo windowInfo;
+    windowInfo.windowless_rendering_enabled = 1;
+    windowInfo.transparent_painting_enabled = 1;
+
+    CefBrowserSettings settings;
+    settings.file_access_from_file_urls = STATE_ENABLED;
+    settings.universal_access_from_file_urls = STATE_ENABLED;
+    settings.web_security = STATE_DISABLED;
+
+    cefBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings, nullptr);
+}
+
+void WebViewControl::OpenURL(const String& url)
+{
+    cefBrowser->GetMainFrame()->LoadURL(url);
+}
+
+void WebViewControl::LoadHtmlString(const WideString& htmlString)
+{
+    LoadHtml(htmlString, "file:///");
+}
+
+void WebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
+{
+    String fileUrl = "file:///" + basePath.GetAbsolutePathname();
+    LoadHtml(htmlString, fileUrl);
+}
+
+void WebViewControl::ExecuteJScript(const String& scriptString)
+{
+    cefBrowser->GetMainFrame()->ExecuteJavaScript(scriptString, "", 0);
+}
+
+void WebViewControl::SetRect(const Rect& rect)
+{
+    if (rect.GetSize() != webView.GetSize())
+    {
+        cefBrowser->GetHost()->WasResized();
+    }
+}
+
+void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
+{
+    cefBrowser->GetHost()->WasHidden(!isVisible);
+}
+
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    // Empty realization, always render to texture
+}
+
+bool WebViewControl::IsRenderToTexture() const
+{
+    return true;
+}
+
+void WebViewControl::Update()
+{
+    cefController.Update();
+}
+
+CefRefPtr<CefRenderHandler> WebViewControl::GetRenderHandler()
+{
+    return webPageRender;
+}
+
+void WebViewControl::LoadHtml(const CefString& html, const CefString& url)
+{
+    CefRefPtr<CefFrame> frame = cefBrowser->GetMainFrame();
+
+    // loading of "about:blank" is needed for loading string
+    frame->LoadURL("about:blank");
+    frame->LoadString(html, url);
+}
+
+} // namespace DAVA
 
 #endif // ENABLE_CEF_WEBVIEW
