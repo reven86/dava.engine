@@ -109,9 +109,6 @@ private:
     void SetupBackgroundMenu();
     void UpdateProjectSettings();
     void OnPreferencesPropertyChanged(const DAVA::InspMember* member, const DAVA::VariantType& value);
-    void ApplyBackgroundColorToActions(const QColor& color);
-    void OnActionBackgroundColorTriggered(bool toggled);
-    void OnActionCustomBackgroundColorTriggered();
 
     bool IsPixelized() const;
     void SetPixelized(bool pixelized);
@@ -130,12 +127,11 @@ private:
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QComboBox* comboboxLanguage = nullptr;
-    QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
     QString currentProjectPath;
 
-    QActionGroup bacgroundColorActionGroup;
-    QAction* customBackgroundColorAction = nullptr;
-    const DAVA::InspMember* backGroundColorMemeber = nullptr;
+    const DAVA::InspMember* backgroundIndexMember = nullptr;
+    DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
+    QActionGroup* backgroundActions = nullptr;
 
 public:
     INTROSPECTION(MainWindow,

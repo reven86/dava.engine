@@ -52,19 +52,42 @@ public:
     ~ColorControl() override = default;
 
 private:
-    DAVA::Color GetBackgroundColor() const;
-    void SetBackgroundColor(const DAVA::Color& color);
     void Draw(const UIGeometricData& geometricData) override;
+    DAVA::uint32 GetBackgroundColorIndex() const;
+    void SetBackgroundColorIndex(DAVA::uint32 index);
+
+    DAVA::Color GetBackgroundColor1() const;
+    void SetBackgroundColor1(const DAVA::Color& color);
+
+    DAVA::Color GetBackgroundColor2() const;
+    void SetBackgroundColor2(const DAVA::Color& color);
+
+    DAVA::Color GetBackgroundColor3() const;
+    void SetBackgroundColor3(const DAVA::Color& color);
+
+    Color backgroundColor1;
+    Color backgroundColor2;
+    Color backgroundColor3;
+    DAVA::uint32 backgroundColorIndex = 0;
 
 public:
     INTROSPECTION_EXTEND(ColorControl, UIControl,
-                         PROPERTY("backgroundColor", "Preview Widget/Background color", GetBackgroundColor, SetBackgroundColor, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         PROPERTY("backgroundColor1", "Preview Widget/Background color 1", GetBackgroundColor1, SetBackgroundColor1, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         PROPERTY("backgroundColor2", "Preview Widget/Background color 2", GetBackgroundColor2, SetBackgroundColor2, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         PROPERTY("backgroundColor3", "Preview Widget/Background color 3", GetBackgroundColor3, SetBackgroundColor3, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         PROPERTY("backgroundColorIndex", "Preview Widget/Background color index", GetBackgroundColorIndex, SetBackgroundColorIndex,
+                                  DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
                          )
 
     REGISTER_PREFERENCES(ColorControl)
 };
 
-REGISTER_PREFERENCES_ON_START(ColorControl, PREF_ARG("backgroundColor", Color::Transparent))
+REGISTER_PREFERENCES_ON_START(ColorControl,
+                              PREF_ARG("backgroundColor1", Color::Transparent),
+                              PREF_ARG("backgroundColor2", Color(1.0f, 1.0f, 1.0f, 1.0f)),
+                              PREF_ARG("backgroundColor3", Color(0.0f, 0.0f, 0.0f, 1.0f)),
+                              PREF_ARG("backgroundColorIndex", static_cast<DAVA::uint32>(0))
+                              )
 
 class GridControl : public UIControl
 {
@@ -103,13 +126,71 @@ ColorControl::ColorControl()
     background->SetDrawType(UIControlBackground::DRAW_FILL);
 }
 
-DAVA::Color ColorControl::GetBackgroundColor() const
+DAVA::Color ColorControl::GetBackgroundColor1() const
 {
-    return background->GetColor();
+    return backgroundColor1;
 }
 
-void ColorControl::SetBackgroundColor(const DAVA::Color& color)
+void ColorControl::SetBackgroundColor1(const DAVA::Color& color)
 {
+    backgroundColor1 = color;
+    if (backgroundColorIndex == 1)
+    {
+        background->SetColor(backgroundColor1);
+    }
+}
+
+DAVA::Color ColorControl::GetBackgroundColor2() const
+{
+    return backgroundColor2;
+}
+
+void ColorControl::SetBackgroundColor2(const DAVA::Color& color)
+{
+    backgroundColor2 = color;
+    if (backgroundColorIndex == 1)
+    {
+        background->SetColor(backgroundColor2);
+    }
+}
+
+DAVA::Color ColorControl::GetBackgroundColor3() const
+{
+    return backgroundColor3;
+}
+
+void ColorControl::SetBackgroundColor3(const DAVA::Color& color)
+{
+    backgroundColor3 = color;
+    if (backgroundColorIndex == 1)
+    {
+        background->SetColor(backgroundColor3);
+    }
+}
+
+DAVA::uint32 ColorControl::GetBackgroundColorIndex() const
+{
+    return backgroundColorIndex;
+}
+
+void ColorControl::SetBackgroundColorIndex(DAVA::uint32 index)
+{
+    Color color;
+    switch (index)
+    {
+    case 0:
+        color = backgroundColor1;
+        break;
+    case 1:
+        color = backgroundColor2;
+        break;
+    case 2:
+        color = backgroundColor3;
+        break;
+    default:
+        DVASSERT(false);
+        return;
+    }
     background->SetColor(color);
 }
 
