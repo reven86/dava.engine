@@ -21,7 +21,8 @@ include               ( NGTMacro )
 
 #configure_ngt(${PROJECT_NAME} ${CMAKE_BINARY_DIR}/app)
 
-find_package          ( DavaFramework REQUIRED )
+set                   ( DAVA_DISABLE_AUTOTESTS true )
+find_package          ( DavaFramework REQUIRED COMPONENTS ALL )
 find_package          ( DavaTools     REQUIRED )
 
 set                   ( IGNORE_FILE_TREE_CHECK 1 )#tmp

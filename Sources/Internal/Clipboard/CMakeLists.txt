@@ -1,32 +1,20 @@
-set( ADDED_CPP_PATTERNS *.cpp Private/*.cpp)
-set( ADDED_H_PATTERNS   *.h   Private/*.h)
+set( HPP_FILES *.h   Private/*.h )
+set( CPP_FILES *.cpp Private/*.cpp )
+set( CPP_FILES_APPLE *.mm )
 
-if(ANDROID)
-    list( APPEND ADDED_CPP_PATTERNS Private/android/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/android/*.h)
-endif()
+set( HPP_FILES_ANDROID Private/android/*.cpp )
+set( CPP_FILES_ANDROID Private/android/*.h   )
 
-if(IOS)
-    list( APPEND ADDED_CPP_PATTERNS Private/ios/*.cpp Private/ios/*.mm)
-    list( APPEND ADDED_H_PATTERNS Private/ios/*.h)
-endif()
+set( HPP_FILES_IOS Private/ios/*.h )
+set( CPP_FILES_IOS Private/ios/*.cpp Private/ios/*.mm  )
 
-if(MACOS)
-    list( APPEND ADDED_CPP_PATTERNS Private/osx/*.cpp Private/osx/*.mm)
-    list( APPEND ADDED_H_PATTERNS Private/osx/*.h)
-endif()
+set( HPP_FILES_MACOS Private/osx/*.h )
+set( CPP_FILES_MACOS Private/osx/*.cpp Private/osx/*.mm )
 
-if((WIN32) AND (NOT WINDOWS_UAP))
-    list( APPEND ADDED_CPP_PATTERNS Private/win32/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/win32/*.h)
-endif()
+set( HPP_FILES_WIN Private/win32/*.h )
+set( CPP_FILES_WIN Private/win32/*.cpp )
 
-if(WINDOWS_UAP)
-    list( APPEND ADDED_CPP_PATTERNS Private/uwp/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/uwp/*.h)
-endif()
+set( HPP_FILES_WINUAP Private/uwp/*.h )
+set( CPP_FILES_WINUAP Private/uwp/*.cpp )
 
-define_source_files( PARENT_SCOPE
-  GLOB_CPP_PATTERNS    ${ADDED_CPP_PATTERNS}
-  GLOB_H_PATTERNS      ${ADDED_H_PATTERNS}
-)
+setup_main_module()
