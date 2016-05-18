@@ -186,7 +186,7 @@
     bool replaceString = (range.length > 0 && replStrLength != 0);
     bool removeString = (range.length > 0 && replStrLength == 0);
     bool insertString = (range.length == 0);
-    DVASSERT(removeString != insertString);
+    DVASSERT(!((removeString == true) && (insertString == true))); // assert if removeString == insertString == true
     NSString* newString = nullptr;
     NSString* origString = [textCtrl valueForKey:@"text"];
     NSUInteger origStrLength = [origString length];
@@ -203,16 +203,15 @@
     if (insertString || replaceString)
     {
         NSUInteger charsToInsert = [string length];
-        if (charsToInsert > (maxLength - origStrLength))
+        if (charsToInsert > (maxLength - origStrLength + range.length))
         {
-            charsToInsert = maxLength - origStrLength;
+            charsToInsert = maxLength - origStrLength + range.length;
         }
         // safe remove
         {
             // new cut characters
             NSUInteger position = 0;
             NSRange rangeCharacter;
-            NSInteger lengthStr = [string length];
             NSInteger index = 0;
             do
             {
