@@ -253,6 +253,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "UI/Private/CEFController.cpp"
                                                         "UI/Private/CEFWebViewControl.cpp"
                                                         "UI/Private/CEFWebPageRender.cpp"
+                                                        "UI/Private/CEFDavaResourceHandler.cpp"
                                                         "UI/UIWebView.cpp"
                                                    IGNORE_LIST_APPLE  
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"

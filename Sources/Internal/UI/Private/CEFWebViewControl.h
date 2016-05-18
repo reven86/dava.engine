@@ -38,7 +38,7 @@
 
 namespace DAVA
 {
-class WebViewControl : public IWebViewControl, public CefClient, public CefRequestHandler, public CefResourceHandler
+class WebViewControl : public IWebViewControl, public CefClient
 {
 public:
     WebViewControl(UIWebView& uiWebView);
@@ -92,102 +92,6 @@ public:
 private:
     // CefClient interface realization
     CefRefPtr<CefRenderHandler> GetRenderHandler() override;
-
-    virtual CefRefPtr<CefRequestHandler> GetRequestHandler()
-    {
-        return this;
-    }
-
-    virtual bool OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
-                                CefRefPtr<CefFrame> frame,
-                                CefRefPtr<CefRequest> request,
-                                bool is_redirect)
-    {
-        return false;
-    }
-
-    virtual bool OnOpenURLFromTab(CefRefPtr<CefBrowser> browser,
-                                  CefRefPtr<CefFrame> frame,
-                                  const CefString& target_url,
-                                  WindowOpenDisposition target_disposition,
-                                  bool user_gesture)
-    {
-        return false;
-    }
-
-    virtual void OnResourceRedirect(CefRefPtr<CefBrowser> browser,
-                                    CefRefPtr<CefFrame> frame,
-                                    CefRefPtr<CefRequest> request,
-                                    CefString& new_url)
-    {
-        int d = 342;
-    }
-
-    virtual ReturnValue OnBeforeResourceLoad(
-    CefRefPtr<CefBrowser> browser,
-    CefRefPtr<CefFrame> frame,
-    CefRefPtr<CefRequest> request,
-    CefRefPtr<CefRequestCallback> callback)
-    {
-        return RV_CONTINUE;
-    }
-
-    virtual bool OnResourceResponse(CefRefPtr<CefBrowser> browser,
-                                    CefRefPtr<CefFrame> frame,
-                                    CefRefPtr<CefRequest> request,
-                                    CefRefPtr<CefResponse> response)
-    {
-        return false;
-    }
-
-    virtual CefRefPtr<CefResourceHandler> GetResourceHandler(
-    CefRefPtr<CefBrowser> browser,
-    CefRefPtr<CefFrame> frame,
-    CefRefPtr<CefRequest> request)
-    {
-        return nullptr;
-    }
-
-    virtual CefRefPtr<CefResponseFilter> GetResourceResponseFilter(
-    CefRefPtr<CefBrowser> browser,
-    CefRefPtr<CefFrame> frame,
-    CefRefPtr<CefRequest> request,
-    CefRefPtr<CefResponse> response)
-    {
-        return NULL;
-    }
-
-    virtual void OnProtocolExecution(CefRefPtr<CefBrowser> browser,
-                                     const CefString& url,
-                                     bool& allow_os_execution)
-    {
-        int d = 42;
-    }
-
-    bool ProcessRequest(CefRefPtr<CefRequest> request,
-                        CefRefPtr<CefCallback> callback)
-    {
-        return false;
-    }
-
-    void GetResponseHeaders(CefRefPtr<CefResponse> response,
-                            int64& response_length,
-                            CefString& redirectUrl)
-    {
-        int d = 42;
-    }
-
-    bool ReadResponse(void* data_out,
-                      int bytes_to_read,
-                      int& bytes_read,
-                      CefRefPtr<CefCallback> callback)
-    {
-        return false;
-    }
-
-    void Cancel()
-    {
-    }
 
     void LoadHtml(const CefString& html, const CefString& url);
     IMPLEMENT_REFCOUNTING(WebViewControl);

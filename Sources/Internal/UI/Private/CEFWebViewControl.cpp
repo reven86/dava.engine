@@ -30,6 +30,7 @@
 #if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/cef_browser.h>
+#include <cef/include/cef_scheme.h>
 #include "UI/Private/CEFWebPageRender.h"
 
 #include "UI/Private/CEFWebViewControl.h"
@@ -59,10 +60,6 @@ void WebViewControl::Initialize(const Rect& rect)
     windowInfo.transparent_painting_enabled = 1;
 
     CefBrowserSettings settings;
-    settings.file_access_from_file_urls = STATE_ENABLED;
-    settings.universal_access_from_file_urls = STATE_ENABLED;
-    settings.web_security = STATE_DISABLED;
-
     cefBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings, nullptr);
 }
 
@@ -73,12 +70,12 @@ void WebViewControl::OpenURL(const String& url)
 
 void WebViewControl::LoadHtmlString(const WideString& htmlString)
 {
-    LoadHtml(htmlString, "file:///");
+    LoadHtml(htmlString, "dava:/~res:/");
 }
 
 void WebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
 {
-    String fileUrl = "file:///" + basePath.GetAbsolutePathname();
+    String fileUrl = "dava:/" + basePath.GetStringValue();
     LoadHtml(htmlString, fileUrl);
 }
 

@@ -30,6 +30,7 @@
 #if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/cef_app.h>
+#include "UI/Private/CEFDavaResourceHandler.h"
 
 #include "Base/TypeHolders.h"
 #include "Concurrency/Thread.h"
@@ -68,7 +69,8 @@ CEFControllerImpl::CEFControllerImpl()
         CefSettings settings;
         settings.no_sandbox = 1;
         settings.windowless_rendering_enabled = 1;
-        settings.log_severity = LOGSEVERITY_VERBOSE;
+        settings.log_severity = LOGSEVERITY_DISABLE;
+        //settings.log_severity = LOGSEVERITY_VERBOSE;
         CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
         // CefInitialize replaces thread name, so we need to save it and restore
@@ -80,6 +82,7 @@ CEFControllerImpl::CEFControllerImpl()
     {
     }
 
+    result |= CefRegisterSchemeHandlerFactory("dava", "", new CEFDavaResourceHandlerFactory());
     DVASSERT_MSG(result == true, "CEF cannot be initialized");
 }
 
