@@ -760,9 +760,12 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
 
         Vector2 target;
         Vector2 distanceToTarget;
-        for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += shareOfSizeToMagnetPivot[Vector2::AXIS_X])
+        DAVA::Vector2 shareOfSizeToMagnetPivot_;
+        shareOfSizeToMagnetPivot_.x = shareOfSizeToMagnetPivot.x == 0.0f ? 1.0f : shareOfSizeToMagnetPivot.x;
+        shareOfSizeToMagnetPivot_.y = shareOfSizeToMagnetPivot.y == 0.0f ? 1.0f : shareOfSizeToMagnetPivot.y;
+        for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += shareOfSizeToMagnetPivot_.x)
         {
-            for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += shareOfSizeToMagnetPivot[Vector2::AXIS_Y])
+            for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += shareOfSizeToMagnetPivot_.y)
             {
                 float32 left = targetX - range.dx;
                 float32 right = targetX + range.dx;
