@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Marshall A. Greenblatt. All rights reserved.
+// Copyright (c) 2016 Marshall A. Greenblatt. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,16 +35,16 @@
 #ifndef CEF_INCLUDE_CEF_VERSION_H_
 #define CEF_INCLUDE_CEF_VERSION_H_
 
-#define CEF_VERSION "3.2556.1368.g535c4fb"
+#define CEF_VERSION "3.2623.1401.gb90a3be"
 #define CEF_VERSION_MAJOR 3
-#define CEF_COMMIT_NUMBER 1368
-#define CEF_COMMIT_HASH "535c4fbc309d821cf6dd2229ad481f21b32099e9"
-#define COPYRIGHT_YEAR 2015
+#define CEF_COMMIT_NUMBER 1401
+#define CEF_COMMIT_HASH "b90a3be1860b0647e8a62c218ff7c054390365b1"
+#define COPYRIGHT_YEAR 2016
 
-#define CHROME_VERSION_MAJOR 48
+#define CHROME_VERSION_MAJOR 49
 #define CHROME_VERSION_MINOR 0
-#define CHROME_VERSION_BUILD 2556
-#define CHROME_VERSION_PATCH 0
+#define CHROME_VERSION_BUILD 2623
+#define CHROME_VERSION_PATCH 110
 
 #define DO_MAKE_STRING(p) #p
 #define MAKE_STRING(p) DO_MAKE_STRING(p)
@@ -63,13 +63,13 @@ extern "C" {
 // universal hash value will change if any platform is affected whereas the
 // platform hash values will change only if that particular platform is
 // affected.
-#define CEF_API_HASH_UNIVERSAL "dc0da7c4c85c885ea4d2e72305a139cc25b31466"
+#define CEF_API_HASH_UNIVERSAL "32c1d3523da124f2dea7b80b92c53c4d4a463c65"
 #if defined(OS_WIN)
-#define CEF_API_HASH_PLATFORM "ce5690754c73e6181ade12dde0d64157f849cb76"
+#define CEF_API_HASH_PLATFORM "64b27477b82b44b51ce817522f744fca6768cbbb"
 #elif defined(OS_MACOSX)
-#define CEF_API_HASH_PLATFORM "896f90ebe2affb79388248f6e0e849fb17def83c"
+#define CEF_API_HASH_PLATFORM "e3b9c36454ae5ae4fb3509e17fb6a7d2877c847d"
 #elif defined(OS_LINUX)
-#define CEF_API_HASH_PLATFORM "26a21941c29600d5073510358999f7f0df973a7e"
+#define CEF_API_HASH_PLATFORM "87a195efc055fb9f39c84f5ce8199cc8766290e3"
 #endif
 
 // Returns CEF version information for the libcef library. The |entry|
