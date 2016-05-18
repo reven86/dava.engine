@@ -91,6 +91,8 @@ public:
         PARAM_RCP_VIEWPORT_SIZE, // = 1/PARAM_VIEWPORT_SIZE
         PARAM_VIEWPORT_OFFSET,
 
+        PARAM_LANDSCAPE_HEIGHTMAP_TEXTURE_SIZE,
+
         PARAM_SHADOW_COLOR,
 
         PARAM_PROJECTION_FLIP, //1.0 regular, -1.0 if projection matrix is y-inverted (rendering to RT with lower left origin API)

@@ -137,14 +137,14 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const DA
 {
     const DAVA::Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
 
-    const DAVA::float32 angleCellDistance = landSize.x / static_cast<DAVA::float32>(heightmap->Size() - 1);
+    const DAVA::float32 angleCellDistance = landSize.x / static_cast<DAVA::float32>(heightmap->Size());
     const DAVA::float32 angleHeightDelta = landSize.z / static_cast<DAVA::float32>(DAVA::Heightmap::MAX_VALUE - 1);
     const DAVA::float32 tanCoef = angleHeightDelta / angleCellDistance;
 
     const DAVA::int32 heightmapSize = heightmap->Size();
 
     const DAVA::float32 targetWidth = static_cast<DAVA::float32>(notPassableTexture->GetWidth());
-    const DAVA::float32 dx = targetWidth / static_cast<DAVA::float32>(heightmapSize - 1);
+    const DAVA::float32 dx = targetWidth / static_cast<DAVA::float32>(heightmapSize);
 
     ///////////////////////////////
 
@@ -197,14 +197,13 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const DA
 
                 for (DAVA::int32 y = yRect; (y < yRect + GRID_QUAD_SIZE) && y < heightmapSize; ++y)
                 {
-                    const DAVA::int32 yOffset = y * heightmapSize;
-                    const DAVA::float32 ydx = (heightmapSize - y - 1) * dx;
+                    const DAVA::float32 ydx = (heightmapSize - y) * dx;
 
                     for (DAVA::int32 x = xRect; (x < xRect + GRID_QUAD_SIZE) && x < heightmapSize; ++x)
                     {
-                        const DAVA::uint16 currentPoint = heightmap->Data()[yOffset + x];
-                        const DAVA::uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
-                        const DAVA::uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmapSize];
+                        const DAVA::uint16 currentPoint = heightmap->GetHeightClamp(x, y);
+                        const DAVA::uint16 rightPoint = heightmap->GetHeightClamp(x + 1, y);
+                        const DAVA::uint16 bottomPoint = heightmap->GetHeightClamp(x, y + 1);
 
                         const DAVA::uint16 deltaRight = static_cast<DAVA::uint16>(abs(static_cast<DAVA::int32>(currentPoint) - static_cast<DAVA::int32>(rightPoint)));
                         const DAVA::uint16 deltaBottom = static_cast<DAVA::uint16>(abs(static_cast<DAVA::int32>(currentPoint) - static_cast<DAVA::int32>(bottomPoint)));

@@ -36,10 +36,7 @@
 #include <QSizePolicy>
 
 LayerForceWidget::LayerForceWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainBox = new QVBoxLayout;
     this->setLayout(mainBox);
@@ -74,7 +71,6 @@ void LayerForceWidget::Init(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAV
 
     this->layer = layer;
     this->forceIndex = forceIndex;
-    SetActiveScene(scene);
 
     blockSignals = true;
 
@@ -143,7 +139,8 @@ void LayerForceWidget::OnValueChanged()
     std::unique_ptr<CommandUpdateParticleForce> updateForceCmd = Command2::Create<CommandUpdateParticleForce>(layer, forceIndex);
     updateForceCmd->Init(propForce.GetPropLine(), propForceOverLife.GetPropLine());
 
-    DVASSERT(activeScene);
+    SceneEditor2* activeScene = GetActiveScene();
+    DVASSERT(activeScene != nullptr);
     activeScene->Exec(std::move(updateForceCmd));
     activeScene->MarkAsChanged();
 
@@ -153,5 +150,5 @@ void LayerForceWidget::OnValueChanged()
 
 void LayerForceWidget::Update()
 {
-    Init(activeScene, layer, forceIndex, false);
+    Init(GetActiveScene(), layer, forceIndex, false);
 }

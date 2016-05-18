@@ -38,14 +38,6 @@ enum ST_PivotPoint
     ST_PIVOT_COMMON_CENTER
 };
 
-enum ST_ModifMode
-{
-    ST_MODIF_OFF,
-    ST_MODIF_MOVE,
-    ST_MODIF_ROTATE,
-    ST_MODIF_SCALE,
-};
-
 enum ST_Axis
 {
     ST_AXIS_NONE = 0,

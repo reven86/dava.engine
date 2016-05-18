@@ -41,6 +41,7 @@ class RenderObject;
 class KeyedArchive;
 class ParticleEffectComponent;
 class ParticleEmitter;
+class ParticleEmitterInstance;
 }
 
 class SceneDumper
@@ -59,7 +60,7 @@ private:
     void DumpCustomProperties(DAVA::KeyedArchive* properties, SceneLinks& links) const;
     void DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks& links) const;
     void DumpEffect(DAVA::ParticleEffectComponent* effect, SceneLinks& links) const;
-    void DumpEmitter(DAVA::ParticleEmitter* emitter, SceneLinks& links, SceneLinks& gfxFolders) const;
+    void DumpEmitter(DAVA::ParticleEmitterInstance* emitter, SceneLinks& links, SceneLinks& gfxFolders) const;
 
     DAVA::Scene* scene = nullptr;
     DAVA::FilePath scenePathname;
