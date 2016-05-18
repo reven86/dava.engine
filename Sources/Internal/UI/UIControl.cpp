@@ -30,6 +30,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Focus/FocusHelpers.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -49,7 +50,7 @@
 
 namespace DAVA
 {
-const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover" };
+const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover", "focused" };
 
 static Mutex controlsListMutex;
 static Vector<const UIControl*> controlsList; //weak pointers
@@ -91,7 +92,6 @@ UIControl::UIControl(const Rect& rect)
          */
     inputEnabled = true;
     inputProcessorsCount = 1;
-    focusEnabled = true;
 
     background = new UIControlBackground();
     eventDispatcher = NULL;
@@ -696,11 +696,6 @@ void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic /* = true*/)
     }
 }
 
-void UIControl::SetFocusEnabled(bool isEnabled)
-{
-    focusEnabled = isEnabled;
-}
-
 bool UIControl::GetDisabled() const
 {
     return ((controlState & STATE_DISABLED) != 0);
@@ -982,6 +977,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     name = srcControl->name;
 
     controlState = srcControl->controlState;
+    exclusiveInput = srcControl->exclusiveInput;
     visible = srcControl->visible;
     inputEnabled = srcControl->inputEnabled;
     clipContents = srcControl->clipContents;
@@ -1219,7 +1215,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 {
     Vector2 point = _point;
 
-    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
         point.x = virtScreenSize.dx / 2.f;
@@ -1308,8 +1304,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                 currentInput->touchLocker = this;
                 if (exclusiveInput)
                 {
-                    UIControlSystem::Instance()->SetExclusiveInputLocker(this,
-                                                                         currentInput->touchId);
+                    UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->touchId);
+                }
+
+                if (UIControlSystem::Instance()->GetFocusedControl() != this && FocusHelpers::CanFocusControl(this))
+                {
+                    UIControlSystem::Instance()->SetFocusedControl(this);
                 }
 
                 PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
@@ -1358,8 +1358,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     {
                         if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                         {
-                            currentInput->controlState =
-                            UIEvent::CONTROL_STATE_OUTSIDE;
+                            currentInput->controlState = UIEvent::CONTROL_STATE_OUTSIDE;
                             --touchesInside;
                             if (touchesInside == 0)
                             {
@@ -1400,33 +1399,24 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 #endif
                     }
 
-                    currentInput->controlState =
-                    UIEvent::CONTROL_STATE_RELEASED;
+                    currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
 
                     if (totalTouches == 0)
                     {
                         if (IsPointInside(currentInput->point, true))
                         {
-                            if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
-                            {
-                                UIControlSystem::Instance()->SetFocusedControl(
-                                this, false);
-                            }
-                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE,
-                                                 currentInput);
+                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
                         }
                         else
                         {
-                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE,
-                                                 currentInput);
+                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
                         }
                         controlState &= ~STATE_PRESSED_INSIDE;
                         controlState &= ~STATE_PRESSED_OUTSIDE;
                         controlState |= STATE_NORMAL;
                         if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
                         {
-                            UIControlSystem::Instance()->SetExclusiveInputLocker(
-                            NULL, -1);
+                            UIControlSystem::Instance()->SetExclusiveInputLocker(nullptr, -1);
                         }
                     }
                     else if (touchesInside <= 0)
@@ -1625,19 +1615,6 @@ void UIControl::SystemInvisible()
         return;
     }
 
-    if (GetHover())
-    {
-        UIControlSystem::Instance()->SetHoveredControl(NULL);
-    }
-    if (UIControlSystem::Instance()->GetFocusedControl() == this)
-    {
-        UIControlSystem::Instance()->SetFocusedControl(NULL, true);
-    }
-    if (GetInputEnabled())
-    {
-        UIControlSystem::Instance()->CancelInputs(this, false);
-    }
-
     auto it = children.rbegin();
     isIteratorCorrupted = false;
     while (it != children.rend())
@@ -1659,6 +1636,8 @@ void UIControl::SystemInvisible()
     }
 
     ChangeViewState(eViewState::ACTIVE);
+
+    UIControlSystem::Instance()->ControlBecomeInvisible(this);
 
     OnInvisible();
 }
@@ -2044,28 +2023,29 @@ void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic 
     }
 }
 
-bool UIControl::IsLostFocusAllowed(UIControl* newFocus)
+void UIControl::SystemOnFocusLost()
 {
-    return true;
-}
-
-void UIControl::SystemOnFocusLost(UIControl* newFocus)
-{
+    SetState(GetState() & ~STATE_FOCUSED);
     PerformEvent(EVENT_FOCUS_LOST);
-    OnFocusLost(newFocus);
+    OnFocusLost();
 }
 
 void UIControl::SystemOnFocused()
 {
+    SetState(GetState() | STATE_FOCUSED);
     PerformEvent(EVENT_FOCUS_SET);
     OnFocused();
 }
 
-void UIControl::OnFocusLost(UIControl* newFocus)
+void UIControl::OnFocusLost()
 {
 }
 
 void UIControl::OnFocused()
+{
+}
+
+void UIControl::OnTouchOutsideFocus()
 {
 }
 

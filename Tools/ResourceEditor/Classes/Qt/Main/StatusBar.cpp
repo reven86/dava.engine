@@ -32,7 +32,6 @@
 #include "Platform/SystemTimer.h"
 
 #include "Main/mainwindow.h"
-#include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Commands2/Base/Command2.h"
@@ -95,7 +94,7 @@ void StatusBar::UpdateDistanceToCamera()
 
     if (scene->selectionSystem->GetSelectionCount() > 0)
     {
-        float32 distanceToCamera = scene->cameraSystem->GetDistanceToCamera();
+        DAVA::float32 distanceToCamera = scene->cameraSystem->GetDistanceToCamera();
         SetDistanceToCamera(distanceToCamera);
     }
     else
@@ -111,7 +110,7 @@ void StatusBar::SceneActivated(SceneEditor2* scene)
     UpdateSelectionBoxSize(scene);
 }
 
-void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     UpdateDistanceToCamera();
     UpdateSelectionBoxSize(scene);
@@ -148,15 +147,15 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
         return;
     }
 
-    const EntityGroup& selection = scene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = scene->selectionSystem->GetSelection();
     if (selection.IsEmpty())
     {
-        selectionBoxSize->setText("");
+        selectionBoxSize->setText(QString());
         selectionBoxSize->setVisible(false);
     }
     else
     {
-        DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
+        DAVA::Vector3 size = selection.GetIntegralBoundingBox().GetSize();
         selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
         selectionBoxSize->setVisible(true);
     }

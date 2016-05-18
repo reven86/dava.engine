@@ -7,19 +7,11 @@ elseif (MACOS AND NOT ANDROID)
     add_definitions (-DDARWIN_NO_CARBON)
 endif()
 
-# Igor DO WE NEED next defines?
-add_definitions       ( 
--DSTATIC_MAGICK 
--D_MAGICKLIB_
--D_LIB
-)
-
 include ( CMake-common )
 
 include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
-include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 
 set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
 set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   TextureCompression/*.h   TexturePacker/*.h   )
@@ -36,25 +28,14 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 
 set_project_files_properties( "${CPP_FILES}" )
 generate_source_groups_project ()
+generated_unity_sources        ( CPP_FILES )
 
 add_library                 ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
 if( MACOS AND NOT ANDROID )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )
 elseif( WIN32 )
-	if ( X64_MODE )
-    	target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/win64/IMagickHelper.lib )
-	else ()
-    	target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/win32/IMagickHelper.lib )
-	endif ()
+   	target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} )
 endif()
-
-foreach ( FILE ${DAVA_IMAGE_MAGICK_LIBRARIES_DEBUG} )
-    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
-endforeach ()
-
-foreach ( FILE ${DAVA_IMAGE_MAGICK_LIBRARIES_RELEASE} )
-    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} general ${FILE} )
-endforeach ()
 
 	

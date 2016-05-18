@@ -17,8 +17,12 @@ set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
 
 include               ( CMake-common )
+include               ( NGTMacro )
 
-find_package          ( DavaFramework REQUIRED )
+#configure_ngt(${PROJECT_NAME} ${CMAKE_BINARY_DIR}/app)
+
+set                   ( DAVA_DISABLE_AUTOTESTS true )
+find_package          ( DavaFramework REQUIRED COMPONENTS ALL )
 find_package          ( DavaTools     REQUIRED )
 
 set                   ( IGNORE_FILE_TREE_CHECK 1 )#tmp

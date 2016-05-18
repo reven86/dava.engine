@@ -29,22 +29,12 @@
 
 #include "UI/UITextField.h"
 #include "Input/KeyboardDevice.h"
+#include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 
-// Use NO_REQUIRED_SIZE to notify textFieldImpl->SetText that we don't want
-// to enable of any kind of static text fitting
-static const DAVA::Vector2 NO_REQUIRED_SIZE = DAVA::Vector2(-1, -1);
-
 #if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
-#include "Utils/UTF8Utils.h"
-
-extern void CreateTextField(DAVA::UITextField*);
-extern void ReleaseTextField();
-extern void OpenKeyboard();
-extern void CloseKeyboard();
-
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -52,225 +42,19 @@ extern void CloseKeyboard();
 #elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldMacOS.h"
 #else
-#include "UI/UIStaticText.h"
-#include "Platform/SystemTimer.h"
+#define DAVA_TEXTFIELD_USE_STB
+#include "UI/UITextFieldStb.h"
 namespace DAVA
 {
-// This implementation simulate iOS/Android native contols,
-// so no hierarchy for internal UIStaticText, and call UpdateRect
-// every frame, and render directly in SyctemDraw. This helps
-// to find similar bugs in all implementations
-class TextFieldPlatformImpl
+class TextFieldPlatformImpl : public TextFieldStbImpl
 {
 public:
-    friend class UITextField;
     TextFieldPlatformImpl(UITextField* control)
-        : staticText_(new UIStaticText(Rect(Vector2(0, 0), control->GetSize())))
-        , control_(control)
-    {
-        staticText_->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-    }
-    ~TextFieldPlatformImpl()
-    {
-        SafeRelease(staticText_);
-        control_ = nullptr;
-    }
-    void CopyDataFrom(TextFieldPlatformImpl* t)
-    {
-        staticText_->CopyDataFrom(t->staticText_);
-        cursorTime = t->cursorTime;
-        showCursor = t->showCursor;
-    }
-    void OpenKeyboard()
+        : TextFieldStbImpl(control)
     {
     }
-    void CloseKeyboard()
-    {
-    }
-    void SetRenderToTexture(bool)
-    {
-    }
-    void SetIsPassword(bool)
-    {
-        needRedraw = true;
-    }
-    void SetFontSize(float32)
-    {
-        // TODO: implement in staticText_->SetFontSize(float32);
-    }
-    void SetText(const WideString& text_, const Vector2& requestedTextRectSize = Vector2(0, 0))
-    {
-        WideString prevText = staticText_->GetText();
-        staticText_->SetText(text_, requestedTextRectSize);
-        if (requestedTextRectSize != NO_REQUIRED_SIZE && control_->GetDelegate() && prevText != text_)
-        {
-            control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, prevText);
-        }
-        needRedraw = true;
-    }
-    void UpdateRect(const Rect&)
-    {
-        // see comment for TextFieldPlatformImpl class above
-
-        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
-        {
-            float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
-            cursorTime += timeElapsed;
-
-            if (cursorTime >= 0.5f)
-            {
-                cursorTime = 0;
-                showCursor = !showCursor;
-                needRedraw = true;
-            }
-        }
-        else if (showCursor)
-        {
-            cursorTime = 0;
-            showCursor = false;
-            needRedraw = true;
-        }
-
-        if (!needRedraw)
-        {
-            return;
-        }
-
-        const WideString& txt = control_->GetVisibleText();
-        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
-        {
-            WideString txtWithCursor = txt + (showCursor ? L"_" : L" ");
-            SetText(txtWithCursor, NO_REQUIRED_SIZE);
-        }
-        else
-        {
-            SetText(txt, NO_REQUIRED_SIZE);
-        }
-        needRedraw = false;
-    }
-    void SetAutoCapitalizationType(int32)
-    {
-    }
-    void SetAutoCorrectionType(int32)
-    {
-    }
-    void SetSpellCheckingType(int32)
-    {
-    }
-    void SetKeyboardAppearanceType(int32)
-    {
-    }
-    void SetKeyboardType(int32)
-    {
-    }
-    void SetReturnKeyType(int32)
-    {
-    }
-    void SetEnableReturnKeyAutomatically(int32)
-    {
-    }
-    bool IsRenderToTexture() const
-    {
-        return false;
-    }
-    uint32 GetCursorPos() const
-    {
-        return 0;
-    }
-    void SetCursorPos(int32)
-    {
-    }
-    void SetMaxLength(int32)
-    {
-    }
-    void GetText(WideString&)
-    {
-    }
-    void SetInputEnabled(bool, bool hierarchic = true)
-    {
-    }
-    void SetVisible(bool v)
-    {
-        staticText_->SetVisibilityFlag(v);
-    }
-    void SetFont(Font* f)
-    {
-        staticText_->SetFont(f);
-    }
-    Font* GetFont() const
-    {
-        return staticText_->GetFont();
-    }
-    void SetTextColor(Color c)
-    {
-        staticText_->SetTextColor(c);
-    }
-    void SetShadowOffset(const Vector2& v)
-    {
-        staticText_->SetShadowOffset(v);
-    }
-    void SetShadowColor(Color c)
-    {
-        staticText_->SetShadowColor(c);
-    }
-    void SetTextAlign(int32 align)
-    {
-        staticText_->SetTextAlign(align);
-    }
-    TextBlock::eUseRtlAlign GetTextUseRtlAlign()
-    {
-        return staticText_->GetTextUseRtlAlign();
-    }
-    void SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
-    {
-        staticText_->SetTextUseRtlAlign(align);
-    }
-    void SetSize(const Vector2 vector2)
-    {
-        staticText_->SetSize(vector2);
-    }
-    void SetMultiline(bool is_multiline)
-    {
-        staticText_->SetMultiline(is_multiline);
-    }
-    Color GetTextColor()
-    {
-        return staticText_->GetTextColor();
-    }
-    Vector2 GetShadowOffset()
-    {
-        return staticText_->GetShadowOffset();
-    }
-    Color GetShadowColor()
-    {
-        return staticText_->GetShadowColor();
-    }
-    int32 GetTextAlign()
-    {
-        return staticText_->GetTextAlign();
-    }
-    void SetRect(const Rect& rect)
-    {
-        staticText_->SetSize(rect.GetSize());
-    }
-    void SystemDraw(const UIGeometricData& d)
-    {
-        // see comment for TextFieldPlatformImpl class above
-        staticText_->SystemDraw(d);
-    }
-
-private:
-    UIStaticText* staticText_ = nullptr;
-    UITextField* control_ = nullptr;
-    float32 cursorTime = 0.0f;
-    bool needRedraw = true;
-    bool showCursor = true;
 };
-} // end namespace DAVA
-#endif
-
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_WIN_UAP__)
-#define DAVA_TEXTFIELD_USE_NATIVE
+}
 #endif
 
 namespace DAVA
@@ -315,14 +99,31 @@ UITextField::~UITextField()
     UIControl::RemoveAllControls();
 }
 
-void UITextField::OpenKeyboard()
+bool UITextField::IsEditing() const
 {
-    textFieldImpl->OpenKeyboard();
+    return isEditing;
 }
 
-void UITextField::CloseKeyboard()
+void UITextField::StartEdit()
 {
-    textFieldImpl->CloseKeyboard();
+    if (!isEditing)
+    {
+        isEditing = true;
+        OnStartEditing();
+        SetRenderToTexture(false);
+        textFieldImpl->OpenKeyboard();
+    }
+}
+
+void UITextField::StopEdit()
+{
+    if (isEditing)
+    {
+        isEditing = false;
+        SetRenderToTexture(true);
+        textFieldImpl->CloseKeyboard();
+        OnStopEditing();
+    }
 }
 
 void UITextField::Update(float32 timeElapsed)
@@ -332,11 +133,6 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::OnActive()
 {
-    if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
-    {
-        UIControlSystem::Instance()->SetFocusedControl(this, false);
-    }
-
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->ShowField();
     textFieldImpl->SetVisible(IsVisible());
@@ -352,20 +148,20 @@ void UITextField::OnInactive()
 
 void UITextField::OnFocused()
 {
-    SetRenderToTexture(false);
-    textFieldImpl->OpenKeyboard();
+    if (startEditPolicy == START_EDIT_WHEN_FOCUSED)
+    {
+        StartEdit();
+    }
 }
 
 void UITextField::SetFocused()
 {
-    UIControlSystem::Instance()->SetFocusedControl(this, true);
+    UIControlSystem::Instance()->SetFocusedControl(this);
 }
 
-void UITextField::OnFocusLost(UIControl* newFocus)
+void UITextField::OnFocusLost()
 {
-    SetRenderToTexture(true);
-
-    textFieldImpl->CloseKeyboard();
+    StopEdit();
 
     if (delegate != nullptr)
     {
@@ -373,28 +169,40 @@ void UITextField::OnFocusLost(UIControl* newFocus)
     }
 }
 
-bool UITextField::IsLostFocusAllowed(UIControl* newFocus)
+void UITextField::OnTouchOutsideFocus()
 {
-    if (delegate != nullptr)
+    if (stopEditPolicy == STOP_EDIT_BY_USER_REQUEST)
     {
-        return delegate->IsTextFieldCanLostFocus(this);
+        StopEdit();
     }
-    return true;
+}
+
+void UITextField::SetSelectionColor(const Color& selectionColor)
+{
+#if defined(DAVA_TEXTFIELD_USE_STB)
+    textFieldImpl->SetSelectionColor(selectionColor);
+#endif
+}
+
+const Color& UITextField::GetSelectionColor() const
+{
+#if defined(DAVA_TEXTFIELD_USE_STB)
+    return textFieldImpl->GetSelectionColor();
+#else
+    return Color::Transparent;
+#endif
 }
 
 void UITextField::ReleaseFocus()
 {
-    if (this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        UIControlSystem::Instance()->SetFocusedControl(nullptr, true);
-    }
+    StopEdit();
 }
 
 void UITextField::SetFont(Font* font)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetFont(font);
-#endif // !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#endif // !defined(DAVA_TEXTFIELD_USE_STB)
 }
 
 void UITextField::SetTextColor(const Color& fontColor)
@@ -404,14 +212,14 @@ void UITextField::SetTextColor(const Color& fontColor)
 
 void UITextField::SetShadowOffset(const DAVA::Vector2& offset)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetShadowOffset(offset);
 #endif
 }
 
 void UITextField::SetShadowColor(const Color& color)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetShadowColor(color);
 #endif
 }
@@ -423,19 +231,19 @@ void UITextField::SetTextAlign(int32 align)
 
 TextBlock::eUseRtlAlign UITextField::GetTextUseRtlAlign() const
 {
-#ifdef DAVA_TEXTFIELD_USE_NATIVE
-    return textFieldImpl->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
-#else
+#ifdef DAVA_TEXTFIELD_USE_STB
     return textFieldImpl->GetTextUseRtlAlign();
+#else
+    return textFieldImpl->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #endif
 }
 
 void UITextField::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 {
-#ifdef DAVA_TEXTFIELD_USE_NATIVE
-    textFieldImpl->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
-#else
+#ifdef DAVA_TEXTFIELD_USE_STB
     textFieldImpl->SetTextUseRtlAlign(useRtlAlign);
+#else
+    textFieldImpl->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #endif
 }
 
@@ -475,7 +283,7 @@ void UITextField::SetSpriteAlign(int32 align)
 void UITextField::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->SetSize(newSize);
 #endif
 }
@@ -487,16 +295,16 @@ void UITextField::SetPosition(const DAVA::Vector2& position)
 
 void UITextField::SetMultiline(bool value)
 {
-    if (value != isMultiline_)
+    if (value != isMultiline)
     {
-        isMultiline_ = value;
-        textFieldImpl->SetMultiline(isMultiline_);
+        isMultiline = value;
+        textFieldImpl->SetMultiline(isMultiline);
     }
 }
 
 bool UITextField::IsMultiline() const
 {
-    return isMultiline_;
+    return isMultiline;
 }
 
 void UITextField::SetText(const WideString& text_)
@@ -513,37 +321,37 @@ const WideString& UITextField::GetText()
 
 Font* UITextField::GetFont() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return nullptr;
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetFont();
+#else
+    return nullptr;
 #endif
 }
 
 Color UITextField::GetTextColor() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return Color::White;
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetTextColor();
+#else
+    return Color::White;
 #endif
 }
 
 Vector2 UITextField::GetShadowOffset() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return Vector2(0, 0);
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetShadowOffset();
+#else
+    return Vector2::Zero;
 #endif
 }
 
 Color UITextField::GetShadowColor() const
 {
-#if defined(DAVA_TEXTFIELD_USE_NATIVE)
-    return Color::White;
-#else
+#if defined(DAVA_TEXTFIELD_USE_STB)
     return textFieldImpl->GetShadowColor();
+#else
+    return Color::White;
 #endif
 }
 
@@ -554,64 +362,20 @@ int32 UITextField::GetTextAlign() const
 
 void UITextField::Input(UIEvent* currentInput)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    if (nullptr == delegate)
-    {
-        return;
-    }
+#if defined(DAVA_TEXTFIELD_USE_STB)
+    textFieldImpl->Input(currentInput);
 
+#else
     if (this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-    if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
-        currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
+    if (currentInput->phase == UIEvent::Phase::ENDED)
     {
-        if (currentInput->key == Key::BACKSPACE)
+        if (startEditPolicy == START_EDIT_BY_USER_REQUEST)
         {
-            WideString str;
-            int32 length = static_cast<int32>(GetText().length() - 1);
-            if (delegate->TextFieldKeyPressed(this, length, 1, str))
-            {
-                SetText(GetAppliedChanges(length, 1, str));
-            }
-        }
-        else if (currentInput->key == Key::ENTER)
-        {
-            delegate->TextFieldShouldReturn(this);
-        }
-        else if (currentInput->key == Key::ESCAPE)
-        {
-            delegate->TextFieldShouldCancel(this);
+            StartEdit();
         }
     }
-    else if (currentInput->phase == UIEvent::Phase::CHAR ||
-             currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
-    {
-        if ('\r' == currentInput->keyChar)
-        {
-            if (IsMultiline())
-            {
-                currentInput->keyChar = '\n';
-            }
-            else
-            {
-                currentInput->keyChar = '\0';
-            }
-        }
-        if (currentInput->keyChar != 0 && currentInput->keyChar != '\b' && currentInput->keyChar != 0x7f // 0x7f del key (on mac backspace)
-            && currentInput->keyChar != 0xf728) // on mac fn+backspace
-        {
-            WideString str;
-            str += currentInput->keyChar;
-            int32 length = static_cast<int32>(GetText().length());
-            if (delegate->TextFieldKeyPressed(this, length, 0, str))
-            {
-                SetText(GetAppliedChanges(length, 0, str));
-            }
-        }
-    }
-
-    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 #endif
 }
 
@@ -654,14 +418,13 @@ void UITextField::CopyDataFrom(UIControl* srcControl)
     UIControl::CopyDataFrom(srcControl);
     UITextField* t = static_cast<UITextField*>(srcControl);
 
-    isPassword = t->isPassword;
-    SetText(t->text);
-    SetRect(t->GetRect());
-
-    cursorBlinkingTime = t->cursorBlinkingTime;
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->CopyDataFrom(t->textFieldImpl);
 #endif
+    isPassword = t->isPassword;
+    cursorBlinkingTime = t->cursorBlinkingTime;
+    SetText(t->GetText());
+    SetRect(t->GetRect());
 
     SetAutoCapitalizationType(t->GetAutoCapitalizationType());
     SetAutoCorrectionType(t->GetAutoCorrectionType());
@@ -685,14 +448,13 @@ bool UITextField::IsPassword() const
     return isPassword;
 }
 
-WideString UITextField::GetVisibleText() const
+WideString UITextField::GetVisibleText()
 {
     if (!isPassword)
     {
-        return text;
+        return GetText();
     }
-
-    return WideString(text.length(), L'*');
+    return WideString(GetText().length(), L'*');
 }
 
 int32 UITextField::GetAutoCapitalizationType() const
@@ -761,6 +523,26 @@ void UITextField::SetReturnKeyType(int32 value)
     textFieldImpl->SetReturnKeyType(value);
 }
 
+UITextField::eStartEditPolicy UITextField::GetStartEditPolicy() const
+{
+    return startEditPolicy;
+}
+
+void UITextField::SetStartEditPolicy(eStartEditPolicy policy)
+{
+    startEditPolicy = policy;
+}
+
+UITextField::eStopEditPolicy UITextField::GetStopEditPolicy() const
+{
+    return stopEditPolicy;
+}
+
+void UITextField::SetStopEditPolicy(eStopEditPolicy policy)
+{
+    stopEditPolicy = policy;
+}
+
 bool UITextField::IsEnableReturnKeyAutomatically() const
 {
     return enableReturnKeyAutomatically;
@@ -782,7 +564,7 @@ void UITextField::SetRenderToTexture(bool value)
 {
     // Workaround! Users need scrolling of large texts in
     // multiline mode so we have to disable render into texture
-    if (isMultiline_)
+    if (isMultiline)
     {
         value = false;
     }
@@ -814,6 +596,38 @@ void UITextField::SetMaxLength(int32 newMaxLength)
 int32 UITextField::GetMaxLength() const
 {
     return maxLength;
+}
+
+void UITextField::OnStartEditing()
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnStartEditing();
+    }
+}
+
+void UITextField::OnStopEditing()
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnStopEditing();
+    }
+}
+
+void UITextField::OnKeyboardShown(const Rect& keyboardRect)
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnKeyboardShown(keyboardRect);
+    }
+}
+
+void UITextField::OnKeyboardHidden()
+{
+    if (delegate != nullptr)
+    {
+        delegate->OnKeyboardHidden();
+    }
 }
 
 void UITextField::OnVisible()
@@ -861,6 +675,26 @@ void UITextField::SystemDraw(const UIGeometricData& geometricData)
     UIGeometricData localData = GetLocalGeometricData();
     localData.AddGeometricData(geometricData);
     textFieldImpl->SystemDraw(localData);
+}
+
+int32 UITextField::GetStartEditPolicyAsInt() const
+{
+    return GetStartEditPolicy();
+}
+
+void UITextField::SetStartEditPolicyFromInt(int32 policy)
+{
+    SetStartEditPolicy(static_cast<eStartEditPolicy>(policy));
+}
+
+int32 UITextField::GetStopEditPolicyAsInt() const
+{
+    return GetStopEditPolicy();
+}
+
+void UITextField::SetStopEditPolicyFromInt(int32 policy)
+{
+    SetStopEditPolicy(static_cast<eStopEditPolicy>(policy));
 }
 
 } // namespace DAVA

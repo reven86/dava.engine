@@ -29,6 +29,7 @@
 
 #include "filesystemhelper.h"
 #include <QDir>
+#include <QDirIterator>
 #include <QRegularExpression>
 
 FileSystemHelper::FileSystemHelper(QObject* parent)
@@ -49,18 +50,19 @@ QString FileSystemHelper::ResolveUrl(const QString& url) const
     return resolvedUrl;
 }
 
-QString FileSystemHelper::NormalizePath(const QString& path) const
+QString FileSystemHelper::NormalizePath(const QString& path)
 {
     if (path.isEmpty())
     {
         return path;
     }
-    QDir dir(path);
-    if (dir.exists())
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
     {
-        return QDir::toNativeSeparators(dir.canonicalPath());
+        return fileInfo.absoluteFilePath();
     }
-    return QDir::toNativeSeparators(path);
+
+    return fileInfo.canonicalFilePath();
 }
 
 bool FileSystemHelper::MkPath(const QString& path)
@@ -96,7 +98,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     {
         return "";
     }
-    QString davaPath = path.left(path.indexOf(index + frameworkDirName.length()));
+    QString davaPath = path.left(index + frameworkDirName.length());
     QString cmakePath = davaPath + "/Tools/Bin" +
 #ifdef Q_OS_MAC
     "/CMake.app" + GetAdditionalCMakePath();
@@ -107,7 +109,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     {
         return "";
     }
-    return QDir::toNativeSeparators(cmakePath);
+    return QDir::fromNativeSeparators(cmakePath);
 }
 
 FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString& keyFile)
@@ -121,6 +123,11 @@ FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const 
     {
         return FOLDER_NOT_EXISTS;
     }
+    if (dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries).count() == 0)
+    {
+        return NO_ERRORS;
+    }
+
     if (!dir.exists(keyFile))
     {
         return FOLDER_NOT_CONTAIN_KEY_FILE;

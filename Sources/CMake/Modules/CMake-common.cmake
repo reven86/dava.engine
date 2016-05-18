@@ -16,9 +16,9 @@ if( ANDROID )
     find_package( AndroidTools REQUIRED )
 
     if( WIN32 )
-        set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/windows-x86_64/bin/make.exe ) 
+        set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/windows-x86_64/bin/make.exe )
     elseif( APPLE )
-       set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/darwin-x86_64/bin/make ) 
+       set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/darwin-x86_64/bin/make )
     endif()
 
     file( TO_CMAKE_PATH "${MAKE_PROGRAM}" MAKE_PROGRAM )
@@ -31,6 +31,7 @@ include ( PlatformSettings     )
 include ( MergeStaticLibrarees )
 include ( FileTreeCheck        )
 include ( DavaTemplate         )
+include ( DavaTemplateModules  )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
@@ -75,7 +76,7 @@ endmacro ()
 #  PARENT_SCOPE - Glob source files in current directory but set the result in parent-scope's variable ${DIR}_CPP_FILES and ${DIR}_H_FILES instead
 macro (define_source_files)
     # Parse extra arguments
-    cmake_parse_arguments (ARG "PCH;PARENT_SCOPE" "GROUP" "EXTRA_CPP_FILES;EXTRA_H_FILES;GLOB_CPP_PATTERNS;GLOB_H_PATTERNS;GLOB_ERASE_FILES" ${ARGN})
+    cmake_parse_arguments (ARG "PCH;PARENT_SCOPE" "GROUP" "EXTRA_CPP_FILES;EXTRA_H_FILES;GLOB_RECURSE_CPP_PATTERNS;GLOB_RECURSE_H_PATTERNS;GLOB_CPP_PATTERNS;GLOB_H_PATTERNS;GLOB_ERASE_FILES" ${ARGN})
 
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
@@ -92,11 +93,21 @@ macro (define_source_files)
     set ( CPP_FILES )
     set ( H_FILES )
 
+    set ( CPP_FILES_RECURSE )
+    set ( H_FILES_RECURSE )    
+
     file( GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
     file( GLOB H_FILES ${ARG_GLOB_H_PATTERNS} )
 
+    file( GLOB_RECURSE CPP_FILES_RECURSE ${ARG_GLOB_RECURSE_CPP_PATTERNS} )
+    file( GLOB_RECURSE H_FILES_RECURSE ${ARG_GLOB_RECURSE_H_PATTERNS} )    
+
     list( APPEND CPP_FILES ${ARG_EXTRA_CPP_FILES} )
-    list( APPEND H_FILES ${ARG_EXTRA_H_FILES} )
+    list( APPEND H_FILES ${ARG_EXTRA_H_FILES}  )
+
+    list( APPEND CPP_FILES ${CPP_FILES_RECURSE} )
+    list( APPEND H_FILES   ${H_FILES_RECURSE} )
+      
     set ( SOURCE_FILES ${CPP_FILES} ${H_FILES} )
     
     source_group( "" FILES ${SOURCE_FILES} )
@@ -142,7 +153,7 @@ endmacro ()
 #
 macro (define_source_folders )
 
-    cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;GLOB_ERASE_FOLDERS" ${ARGN})
+    cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;ERASE_FOLDERS" ${ARGN})
     
     IF( NOT ARG_RECURSIVE_CALL )
         set( PROJECT_SOURCE_FILES  ) 
@@ -157,6 +168,8 @@ macro (define_source_folders )
         ELSE()
             list ( APPEND DAVA_FOLDERS ${CMAKE_CURRENT_SOURCE_DIR} ) 
         ENDIF()
+        
+        set( DAVA_FOLDERS ${DAVA_FOLDERS} PARENT_SCOPE )
 
     ENDIF()
     
@@ -193,13 +206,12 @@ macro (define_source_folders )
         list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
 
     ENDIF()
-  
-             
+               
     FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
         IF( IS_DIRECTORY "${FOLDER_ITEM}" )
             get_filename_component ( FOLDER_NAME ${FOLDER_ITEM} NAME ) 
             set( NOT_FIND_ERASE_ITEM 1 )
-            FOREACH( ERASE_ITEM ${ARG_GLOB_ERASE_FOLDERS} )
+            FOREACH( ERASE_ITEM ${ARG_ERASE_FOLDERS} )
                 IF( ${FOLDER_NAME} STREQUAL ${ERASE_ITEM} )
                     set( NOT_FIND_ERASE_ITEM 0 )
                     break()     
@@ -223,7 +235,7 @@ macro (define_source_folders )
                     list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
-                    define_source_folders( SRC_ROOT ${FOLDER_ITEM} GLOB_ERASE_FOLDERS ${ARG_GLOB_ERASE_FOLDERS} RECURSIVE_CALL )
+                    define_source_folders( SRC_ROOT ${FOLDER_ITEM} ERASE_FOLDERS ${ARG_ERASE_FOLDERS} RECURSIVE_CALL )
                 ENDIF()
             ENDIF()
         ENDIF()
@@ -237,7 +249,7 @@ macro ( generate_source_groups_project )
     cmake_parse_arguments ( ARG "RECURSIVE_CALL"  "ROOT_DIR;GROUP_PREFIX" "SRC_ROOT;GROUP_FOLDERS" ${ARGN} )
 
     IF( ARG_ROOT_DIR )
-        get_filename_component ( ROOT_DIR ${ARG_ROOT_DIR} REALPATH ) 
+        get_filename_component ( ROOT_DIR ${ARG_ROOT_DIR} REALPATH )
 
     else()
         set( ROOT_DIR ${CMAKE_CURRENT_LIST_DIR} )
@@ -251,7 +263,7 @@ macro ( generate_source_groups_project )
     ENDIF()
 
 
-    IF( ARG_SRC_ROOT ) 
+    IF( ARG_SRC_ROOT )
         set( SRC_ROOT_LIST  )
 
         FOREACH( SRC_ITEM ${ARG_SRC_ROOT} )
@@ -259,7 +271,7 @@ macro ( generate_source_groups_project )
             IF( "${SRC_ITEM}" STREQUAL "*" )
                 list ( APPEND SRC_ROOT_LIST "*" )
             ELSE()
-                get_filename_component ( SRC_ITEM ${SRC_ITEM} REALPATH ) 
+                get_filename_component ( SRC_ITEM ${SRC_ITEM} REALPATH )
                 list ( APPEND SRC_ROOT_LIST ${SRC_ITEM}/* )
             ENDIF()
         ENDFOREACH()
@@ -271,11 +283,11 @@ macro ( generate_source_groups_project )
 
 
     FOREACH( SRC_ROOT_ITEM ${SRC_ROOT_LIST} )
-      
-        file ( GLOB_RECURSE FILE_LIST ${SRC_ROOT_ITEM} )        
+
+        file ( GLOB_RECURSE FILE_LIST ${SRC_ROOT_ITEM} )
 
         FOREACH( ITEM ${FILE_LIST} )
-            get_filename_component ( FILE_PATH ${ITEM} PATH ) 
+            get_filename_component ( FILE_PATH ${ITEM} PATH )
 
             IF( "${FILE_PATH}" STREQUAL "${ROOT_DIR}" )
                 STRING(REGEX REPLACE "${ROOT_DIR}" "" FILE_GROUP ${FILE_PATH} )
@@ -304,38 +316,6 @@ macro ( generate_source_groups_project )
 endmacro ()
 
 #
-macro ( install_libraries TARGET_NAME )
-
-IF( DAVA_INSTALL )
-
-install(
-        TARGETS
-        ${TARGET_NAME}
-        DESTINATION
-        ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
-
-install(
-        DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION
-        "${DAVA_THIRD_PARTY_ROOT_PATH}/include/${TARGET_NAME}"
-        FILES_MATCHING
-        PATTERN
-        "*.h" )
-
-install(
-        DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION
-        "${DAVA_THIRD_PARTY_ROOT_PATH}/include/${TARGET_NAME}"
-        FILES_MATCHING
-        PATTERN
-        "*.hpp" )
-
-ENDIF()
-
-endmacro ()
-
 macro(add_target_properties _target _name)
   set(_properties)
   foreach(_prop ${ARGN})
@@ -347,6 +327,42 @@ macro(add_target_properties _target _name)
     SET(_old_properties)
   endif(NOT _old_properties)
   set_target_properties(${_target} PROPERTIES ${_name} "${_old_properties} ${_properties}")
+
+endmacro()
+
+#
+function (append_property KEY_PROP  VALUE)
+    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
+    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
+    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
+endfunction()
+
+
+function (reset_property KEY_PROP )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )
+endfunction()
+
+macro( load_property  )
+    cmake_parse_arguments (ARG "" "" "PROPERTY_LIST" ${ARGN})
+    foreach( PROPERTY ${ARG_PROPERTY_LIST} )
+        GET_PROPERTY( VALUE GLOBAL PROPERTY  ${PROPERTY} )
+        if( VALUE )
+            set( ${PROPERTY} ${VALUE} )
+            #message( "load prop ${PROPERTY} -> ${VALUE}" )
+        endif()
+    endforeach()
+endmacro()
+
+macro( save_property  )
+    cmake_parse_arguments (ARG "" "" "PROPERTY_LIST" ${ARGN})
+
+    foreach( PROPERTY ${ARG_PROPERTY_LIST} )
+        if( ${PROPERTY} )
+            append_property( ${PROPERTY}  "${${PROPERTY}}" )  
+            #message( "append_property - ${PROPERTY} ${${PROPERTY}}") 
+        endif()
+    endforeach()
 
 endmacro()
 
@@ -542,11 +558,22 @@ function (link_with_qt5 TARGET)
     target_link_libraries( ${TARGET} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${QT_LINKAGE_LIST_VALUE} )
 endfunction()
 
-function (append_property KEY_PROP  VALUE)
-    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
-    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
-    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
+function (set_delayed_deploy_qt)
+    SET_PROPERTY(GLOBAL PROPERTY DELAYED_DEPLOY_TARGET true)
 endfunction()
 
+function (is_deploy_qt_delayed _IS_DELAYED)
+    GET_PROPERTY(IS_DELAYED_PROP GLOBAL PROPERTY DELAYED_DEPLOY_TARGET)
+    SET(${_IS_DELAYED} ${IS_DELAYED_PROP} PARENT_SCOPE)
+endfunction()
 
+function (append_deploy_dependency _PROJECT_NAME)
+    GET_PROPERTY(DEPENDENT_LIST GLOBAL PROPERTY DEPLOY_DEPENDENCIES)
+    LIST(APPEND DEPENDENT_LIST ${_PROJECT_NAME})
+    SET_PROPERTY(GLOBAL PROPERTY DEPLOY_DEPENDENCIES ${DEPENDENT_LIST})
+endfunction()
 
+function (get_deploy_dependencies OUTPUT_VAR_NAME)
+    GET_PROPERTY(DEPENDENT_LIST GLOBAL PROPERTY DEPLOY_DEPENDENCIES)
+    SET(${OUTPUT_VAR_NAME} ${DEPENDENT_LIST} PARENT_SCOPE)
+endfunction()

@@ -33,9 +33,7 @@
 #include "DAVAEngine.h"
 #include "DraggableDialog.h"
 
-using namespace DAVA;
-
-class ExtendedDialog : public UIControl
+class ExtendedDialog : public DAVA::UIControl
 {
 protected:
     virtual ~ExtendedDialog();
@@ -49,11 +47,11 @@ public:
 
 protected:
     bool IsShown() const;
-    const Rect GetScreenRect() const;
+    const DAVA::Rect GetScreenRect() const;
 
     virtual void UpdateSize();
 
-    virtual const Rect GetDialogRect() const;
+    virtual const DAVA::Rect GetDialogRect() const;
     DraggableDialog* draggableDialog;
 
 private:

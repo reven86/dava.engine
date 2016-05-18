@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 #include "ServerCore.h"
+#include "Platform/DeviceInfo.h"
+#include "Utils/Utils.h"
+
 #include <QTimer>
 
 ServerCore::ServerCore()
@@ -38,7 +41,9 @@ ServerCore::ServerCore()
     server.SetDelegate(&serverLogics);
     client.AddListener(&serverLogics);
     client.AddListener(this);
-    serverLogics.Init(&server, &client, &dataBase);
+
+    DAVA::String serverName = DAVA::WStringToString(DAVA::DeviceInfo::GetName());
+    serverLogics.Init(&server, serverName, &client, &dataBase);
 
     updateTimer = new QTimer(this);
     QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::OnTimerUpdate);

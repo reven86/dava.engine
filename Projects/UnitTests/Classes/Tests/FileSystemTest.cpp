@@ -216,11 +216,19 @@ DAVA_TESTCLASS (FileSystemTest)
         bool isDdriveExist = fs->IsDirectory(externalDrive);
         if (isDdriveExist)
         {
-            String tmpFileName = externalDrive + "test_on_other_drive.file";
-            moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", tmpFileName, true);
-            TEST_VERIFY(moved);
-            moved = fs->MoveFile(tmpFileName, "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
-            TEST_VERIFY(moved);
+            String testWriteFileName = externalDrive + "test_write_on_d_drive.txt";
+            {
+                ScopedPtr<File> testWrite(File::Create(testWriteFileName, File::OPEN | File::WRITE));
+                if (testWrite)
+                {
+                    String tmpFileName = externalDrive + "test_on_other_drive.file";
+                    moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", tmpFileName, true);
+                    TEST_VERIFY(moved);
+                    moved = fs->MoveFile(tmpFileName, "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
+                    TEST_VERIFY(moved);
+                }
+            }
+            FileSystem::Instance()->DeleteFile(testWriteFileName);
         }
 #endif
 

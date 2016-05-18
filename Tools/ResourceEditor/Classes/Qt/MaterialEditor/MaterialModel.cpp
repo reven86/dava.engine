@@ -31,7 +31,7 @@
 #include "MaterialItem.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableGroup.h"
 
 #include "Main/QtUtils.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -186,7 +186,7 @@ DAVA::NMaterial* MaterialModel::GetGlobalMaterial() const
     return ret;
 }
 
-void MaterialModel::SetSelection(const EntityGroup* group)
+void MaterialModel::SetSelection(const SelectableGroup* group)
 {
     QStandardItem* root = invisibleRootItem();
     for (int i = 0; i < root->rowCount(); ++i)
@@ -213,7 +213,7 @@ void MaterialModel::SetSelection(const EntityGroup* group)
     }
 }
 
-bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* group)
+bool MaterialModel::SetItemSelection(MaterialItem* item, const SelectableGroup* group)
 {
     if (group == nullptr)
     {
@@ -225,7 +225,7 @@ bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* grou
     DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
 
     entity = curScene->selectionSystem->GetSelectableEntity(entity);
-    bool shouldSelect = group->ContainsEntity(entity);
+    bool shouldSelect = group->ContainsObject(entity);
     item->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelect);
 
     return shouldSelect;
@@ -237,7 +237,7 @@ void MaterialModel::Sync()
     {
         DAVA::NMaterial* globalMaterial = GetGlobalMaterial();
         const DAVA::Set<DAVA::NMaterial*>& sceneMaterials = curScene->materialSystem->GetTopParents();
-        Map<NMaterial*, bool> processedList;
+        DAVA::Map<DAVA::NMaterial*, bool> processedList;
 
         // init processed list
         for (auto it : sceneMaterials)
@@ -295,7 +295,7 @@ void MaterialModel::Sync()
             }
         }
 
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+        const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
         SetSelection(&selection);
     }
 }
@@ -303,9 +303,9 @@ void MaterialModel::Sync()
 void MaterialModel::Sync(MaterialItem* item)
 {
     DAVA::NMaterial* material = item->GetMaterial();
-    const Vector<NMaterial*>& materialChildren = material->GetChildren();
+    const DAVA::Vector<DAVA::NMaterial*>& materialChildren = material->GetChildren();
 
-    Map<NMaterial*, bool> processedList;
+    DAVA::Map<DAVA::NMaterial*, bool> processedList;
 
     // init processed list
     for (auto it : materialChildren)
@@ -454,12 +454,12 @@ bool MaterialModel::dropMimeData(const QMimeData* data, Qt::DropAction action, i
         MaterialItem* targetMaterialItem = itemFromIndex(targetIndex);
         DAVA::NMaterial* targetMaterial = targetMaterialItem->GetMaterial();
 
-        uint32 count = materials.size();
+        DAVA::uint32 count = materials.size();
         curScene->BeginBatch("Change materials parent", count);
 
         // change parent material
         // NOTE: model synchronization will be done in OnCommandExecuted handler
-        for (uint32 i = 0; i < count; ++i)
+        for (DAVA::uint32 i = 0; i < count; ++i)
         {
             MaterialItem* sourceMaterialItem = itemFromIndex(GetIndex(materials[i]));
             if (NULL != sourceMaterialItem)
@@ -492,7 +492,7 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData* data, Qt::DropAction acti
     if (targetMaterial == NULL)
         return false;
 
-    NMaterial* globalMaterial = curScene->GetGlobalMaterial();
+    DAVA::NMaterial* globalMaterial = curScene->GetGlobalMaterial();
     if (targetMaterial == globalMaterial)
         return false;
 
@@ -500,8 +500,8 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData* data, Qt::DropAction acti
     // we need check this situation and ban it
     for (int i = 0; i < materials.size(); ++i)
     {
-        NMaterial* material = materials[i];
-        NMaterial* materialParent = material->GetParent();
+        DAVA::NMaterial* material = materials[i];
+        DAVA::NMaterial* materialParent = material->GetParent();
         DVASSERT(materialParent != nullptr && materialParent != globalMaterial);
         if (material == targetMaterial)
             return false;

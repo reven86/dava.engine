@@ -28,81 +28,28 @@
 
 
 #include "ResourcesManageHelper.h"
-//
+#include "Core/Core.h"
 #include "EditorSettings.h"
-#include "StringUtils.h"
-#include "FileSystem/FileSystem.h"
-#include "StringConstants.h"
-#include "DAVAEngine.h"
-
-#include <QApplication>
 #include <QString>
 #include <QStringList>
-#include <QFileInfo>
 #include <QDir>
-#include <QMessageBox>
-#include "UI/mainwindow.h"
-#include "Project/Project.h"
-
-/* 
-	Project folders structure:
-	
-	$project - absolute path to project directory.
-	$project/Data/UI/ui.uieditor - path to project file. Each project can have only one project file.
-	$project/Data/UI/ - path to platform root folder. It this folders all available platfroms are stored.
-	
-	$project/DataSource/ - root directory for all unpacked resources.
-	$project/DataSource/Gfx/ - path to unpacked sprites (usually in PSD format).
-	$project/DataSource/Gfx/Fonts/ - path to unpacked graphics fonts sprites
-
-	$project/Data/ - root directory for all project resources (fonts, sprites etc.)
-	$project/Data/Gfx/ - path to packed sprites, which can be used in project.
-	$project/Data/Fonts/ - path to true type fonts.
-	$project/Data/Fontdef/ - path to graphic fonts definition files.
-	$project/DAta/Gfx/Fonts/ - path to packed graphic fonts sprites.
-*/
 
 using namespace DAVA;
 
-namespace
+namespace ResourcesManageHelperLocal
 {
 // True type fonts resource folder path
 const String FONTS_RES_PATH("~res:/Fonts/");
 // Graphics fonts definition resource folder path
 const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
-// Resource folder header
-const QString RES_HEADER = "~res:";
-// Button background image path
-const QString BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
 // Documentation path.
 const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
-
-// Additional text constants
-const QString GFX = "/Gfx/";
-const QString FONTS = "/Fonts/";
-const QString UI = "/UI/";
-// Project DATASOURCE folder
-const QString PROJECT_DATASOURCE = "%1/DataSource";
 // Project DATA folder
 const QString PROJECT_DATA = "%1/Data";
-// Platform directory path
-const QString PROJECT_PLATFORM_PATH = PROJECT_DATA + "/UI/";
 // Project file path
-const QString PROJECT_FILE_PATH = "%1/ui.uieditor";
-// Project GFX folder for sprites psd files
-const QString PROJECT_DATASOURCE_GFX = PROJECT_DATASOURCE + GFX;
-// Project GFX folder for graphics fonts sprites psd files
-const QString PROJECT_DATASOURCE_GRAPHICS_FONTS = PROJECT_DATASOURCE_GFX + FONTS;
-// Project converted sprites folder
-const QString PROJECT_DATA_GFX = PROJECT_DATA + GFX;
-// Project converted graphics fonts sprites folder
-const QString PROJECT_DATA_GRAPHICS_FONTS = PROJECT_DATA_GFX + FONTS;
+const QString PROJECT_FILE_PATH = "%1ui.uieditor";
 // Default project title
 const QString PROJECT_TITLE = "QuickEd";
-
-// Resource wrong location error message
-const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
-
 //Available fonts extensions
 const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
                                                            << "*.otf"
@@ -111,109 +58,24 @@ const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
                                                            << "*.def"
                                                            << "*.df");
 }
+
 QString ResourcesManageHelper::projectTitle;
-
 QString ResourcesManageHelper::projectPath;
-
-QString ResourcesManageHelper::GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont)
-{
-    QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname())
-                                      :
-                                      QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
-    fontPath += resourceFileName;
-
-    return fontPath;
-}
 
 QString ResourcesManageHelper::GetFontRelativePath(const QString& resourceFileName, bool graphicsFont)
 {
+    using namespace ResourcesManageHelperLocal;
     QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname())
                                       :
                                       QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
     fontPath += resourceFileName;
 
     return fontPath;
-}
-
-bool ResourcesManageHelper::ValidateResourcePath(const QString& resourcePath)
-{
-    const QString& resourceFolder = GetResourceRootDirectory();
-    // Check if given resource is located inside resource folder
-    return resourcePath.contains(resourceFolder);
-}
-
-QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
-{
-    if (font && (font->GetFontType() == Font::TYPE_GRAPHIC))
-    {
-        GraphicFont* gFont = dynamic_cast<GraphicFont*>(font);
-        // Get graphics font sprite if it's available
-        Texture* fontTexture = gFont->GetTexture();
-        if (fontTexture)
-        {
-            // Save graphics font sprite path
-            return QString::fromStdString(fontTexture->GetPathname().GetAbsolutePathname());
-        }
-    }
-
-    return QString();
-}
-
-QString ResourcesManageHelper::GetDefaultSpritesPath(const QString& currentSpritePath)
-{
-    // If sprite is already set - we should use its directory as default for file dialog
-    if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
-    {
-        FilePath spriteAbsolutePath(currentSpritePath.toStdString() + ".txt");
-        QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
-        return fileInfo.absoluteDir().absolutePath();
-    }
-
-    return GetSpritesDirectory();
-}
-
-QString ResourcesManageHelper::GetDefaultFontSpritesPath(const QString& currentSpritePath)
-{
-    // If sprite is already set - we should use its directory as default for file dialog
-    if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
-    {
-        FilePath spriteAbsolutePath(currentSpritePath.toStdString());
-        QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
-        return fileInfo.absoluteDir().absolutePath();
-    }
-
-    return GetFontSpritesDirectory();
-}
-
-QString ResourcesManageHelper::GetResourceRelativePath(const QString& resourceAbsolutePath, bool keepFileExtension)
-{
-    QFileInfo fileInfo(resourceAbsolutePath);
-    QString processedResourcePath = resourceAbsolutePath;
-
-    if (fileInfo.exists())
-    {
-        //We should keep file extension if needed
-        if (keepFileExtension)
-            processedResourcePath = resourceAbsolutePath;
-        else
-        {
-            //Remove file extension
-            QString resourceExtension = QString(".%1").arg(fileInfo.suffix());
-            processedResourcePath = TruncateFileExtension(resourceAbsolutePath, resourceExtension);
-        }
-        //Convert absolute path to relative one, if possible.
-        const QString& resourceFolder = GetResourceRootDirectory();
-        if (processedResourcePath.startsWith(resourceFolder, Qt::CaseInsensitive))
-        {
-            processedResourcePath.replace(resourceFolder, RES_HEADER, Qt::CaseInsensitive);
-        }
-    }
-
-    return processedResourcePath;
 }
 
 QStringList ResourcesManageHelper::GetFontsList()
 {
+    using namespace ResourcesManageHelperLocal;
     QStringList filesNamesList;
     // Get true type fonts
     // Get absoulute path
@@ -227,6 +89,7 @@ QStringList ResourcesManageHelper::GetFontsList()
 
 void ResourcesManageHelper::InitInternalResources()
 {
+    using namespace ResourcesManageHelperLocal;
     // Save project default title
     if (DAVA::Core::Instance())
     {
@@ -243,7 +106,7 @@ void ResourcesManageHelper::InitInternalResources()
 
 QString ResourcesManageHelper::GetDocumentationPath()
 {
-    return DOCUMENTATION_PATH;
+    return ResourcesManageHelperLocal::DOCUMENTATION_PATH;
 }
 
 void ResourcesManageHelper::SetProjectPath(const QString& path)
@@ -296,50 +159,12 @@ QString ResourcesManageHelper::GetResourceRootDirectory()
     return GetDataPath(projectPath);
 }
 
-QString ResourcesManageHelper::GetResourceFolder(const QString& resourcePath)
-{
-    QString projectPath = GetProjectPath();
-    if (projectPath.isNull() || projectPath.isEmpty())
-    {
-        return QString();
-    }
-    return QString(resourcePath).arg(projectPath);
-}
-
-QString ResourcesManageHelper::GetSpritesDirectory()
-{
-    return GetResourceFolder(PROJECT_DATA_GFX);
-}
-
-QString ResourcesManageHelper::GetFontSpritesDirectory()
-{
-    return GetResourceFolder(PROJECT_DATA_GRAPHICS_FONTS);
-}
-
-QString ResourcesManageHelper::GetFontSpritesDatasourceDirectory()
-{
-    return GetResourceFolder(PROJECT_DATASOURCE_GRAPHICS_FONTS);
-}
-
 QString ResourcesManageHelper::GetDataPath(const QString& projectPath)
 {
-    return QString(PROJECT_DATA).arg(projectPath);
-}
-
-QString ResourcesManageHelper::GetPlatformRootPath(const QString& projectPath)
-{
-    return QString(PROJECT_PLATFORM_PATH).arg(projectPath);
+    return QString(ResourcesManageHelperLocal::PROJECT_DATA).arg(projectPath);
 }
 
 QString ResourcesManageHelper::GetProjectFilePath(const QString& projectPath)
 {
-    return QString(PROJECT_FILE_PATH).arg(projectPath);
-}
-
-void ResourcesManageHelper::ShowErrorMessage(const QString& messageParam)
-{
-    QMessageBox messageBox;
-    messageBox.setText(QString(RES_WRONG_LOCATION_ERROR_MESSAGE).arg(messageParam));
-    messageBox.setStandardButtons(QMessageBox::Ok);
-    messageBox.exec();
+    return QString(ResourcesManageHelperLocal::PROJECT_FILE_PATH).arg(projectPath);
 }

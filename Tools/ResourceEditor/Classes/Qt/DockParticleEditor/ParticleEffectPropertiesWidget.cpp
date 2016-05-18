@@ -45,10 +45,7 @@ static const int TreeItemTypeForce = QTreeWidgetItem::UserType + 3;
 static const int TreeItemTypeExternal = QTreeWidgetItem::UserType + 4;
 
 ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    BaseParticleEditorContentWidget()
+    : BaseParticleEditorContentWidget(parent)
 {
     mainLayout = new QVBoxLayout();
     mainLayout->setAlignment(Qt::AlignTop);
@@ -143,13 +140,8 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent)
 
     mainLayout->addStretch();
 
-    particleEffect = NULL;
     blockSignals = false;
     blockTables = false;
-}
-
-ParticleEffectPropertiesWidget::~ParticleEffectPropertiesWidget()
-{
 }
 
 void ParticleEffectPropertiesWidget::InitWidget(QWidget* widget, bool connectWidget)
@@ -162,25 +154,26 @@ void ParticleEffectPropertiesWidget::InitWidget(QWidget* widget, bool connectWid
 void ParticleEffectPropertiesWidget::UpdateVaribleTables()
 {
     blockTables = true;
-    Set<String> variablesSet = particleEffect->EnumerateVariables();
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DAVA::Set<DAVA::String> variablesSet = effect->EnumerateVariables();
     effectVariables->clearContents();
-    effectVariables->setRowCount(variablesSet.size());
-    int32 i = 0;
-    for (Set<String>::iterator it = variablesSet.begin(), e = variablesSet.end(); it != e; ++it)
+    effectVariables->setRowCount(static_cast<int>(variablesSet.size()));
+    DAVA::int32 i = 0;
+    for (DAVA::Set<DAVA::String>::iterator it = variablesSet.begin(), e = variablesSet.end(); it != e; ++it)
     {
         QTableWidgetItem* varName = new QTableWidgetItem(QString((*it).c_str()));
         varName->setFlags(Qt::NoItemFlags);
         effectVariables->setItem(i, 0, varName);
-        QTableWidgetItem* varValue = new QTableWidgetItem(QString::number(particleEffect->GetExternalValue(*it)));
+        QTableWidgetItem* varValue = new QTableWidgetItem(QString::number(effect->GetExternalValue(*it)));
         effectVariables->setItem(i, 1, varValue);
         i++;
     }
 
-    Map<String, float32> globalVariablesSet = particleEffect->GetEntity()->GetScene()->particleEffectSystem->GetGlobalExternals();
+    DAVA::Map<DAVA::String, DAVA::float32> globalVariablesSet = effect->GetEntity()->GetScene()->particleEffectSystem->GetGlobalExternals();
     globalVariables->clearContents();
-    globalVariables->setRowCount(globalVariablesSet.size());
+    globalVariables->setRowCount(static_cast<int>(globalVariablesSet.size()));
     i = 0;
-    for (Map<String, float32>::iterator it = globalVariablesSet.begin(), e = globalVariablesSet.end(); it != e; ++it)
+    for (DAVA::Map<DAVA::String, DAVA::float32>::iterator it = globalVariablesSet.begin(), e = globalVariablesSet.end(); it != e; ++it)
     {
         QTableWidgetItem* varName = new QTableWidgetItem(QString((*it).first.c_str()));
         varName->setFlags(Qt::NoItemFlags);
@@ -197,18 +190,18 @@ void ParticleEffectPropertiesWidget::OnVariableValueChanged(int row, int col)
 {
     if (blockTables)
         return;
-    String varNam = effectVariables->item(row, 0)->text().toStdString();
+    DAVA::String varNam = effectVariables->item(row, 0)->text().toStdString();
     float varValue = effectVariables->item(row, 1)->text().toFloat();
-    particleEffect->SetExtertnalValue(varNam, varValue);
+    GetEffect(GetActiveScene())->SetExtertnalValue(varNam, varValue);
 }
 
 void ParticleEffectPropertiesWidget::OnGlobalVariableValueChanged(int row, int col)
 {
     if (blockTables)
         return;
-    String varNam = globalVariables->item(row, 0)->text().toStdString();
+    DAVA::String varNam = globalVariables->item(row, 0)->text().toStdString();
     float varValue = globalVariables->item(row, 1)->text().toFloat();
-    particleEffect->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(varNam, varValue);
+    GetEffect(GetActiveScene())->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(varNam, varValue);
     UpdateVaribleTables();
 }
 
@@ -217,7 +210,7 @@ void ParticleEffectPropertiesWidget::OnAddGlobalExternal()
     AddGlobalExternalDialog dialog(this);
     if (dialog.exec())
     {
-        particleEffect->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(dialog.GetVariableName(), dialog.GetVariableValue());
+        GetEffect(GetActiveScene())->GetEntity()->GetScene()->particleEffectSystem->SetGlobalExtertnalValue(dialog.GetVariableName(), dialog.GetVariableValue());
         UpdateVaribleTables();
     }
 }
@@ -290,6 +283,8 @@ void ParticleEffectPropertiesWidget::OnTreeItemDoubleClck(QTreeWidgetItem* treeI
 
 void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction* action)
 {
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+
     int commandId = action->data().toInt();
     if (commandId == -1)
     {
@@ -297,19 +292,19 @@ void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction* action)
         int externalId = data.externalParamId;
         if (externalId < EE_TOTAL)
         {
-            particleEffect->UnRegisterModifiable(GetEmitterLine(data.emmiter, EmitterExternals(externalId)));
+            effect->UnRegisterModifiable(GetEmitterLine(data.emmiter, EmitterExternals(externalId)));
             RemoveEmitterLineModifiable(data.emmiter, EmitterExternals(externalId));
             UpdateVaribleTables();
         }
         else if (externalId < EL_TOTAL)
         {
-            particleEffect->UnRegisterModifiable(GetLayerLine(data.layer, LayerExternals(externalId)));
+            effect->UnRegisterModifiable(GetLayerLine(data.layer, LayerExternals(externalId)));
             RemoveLayerLineModifiable(data.layer, LayerExternals(externalId));
             UpdateVaribleTables();
         }
         else
         {
-            particleEffect->UnRegisterModifiable(GetForceLine(data.force, ForceExternals(externalId)));
+            effect->UnRegisterModifiable(GetForceLine(data.force, ForceExternals(externalId)));
             RemoveForceLineModifiable(data.force, ForceExternals(externalId));
             UpdateVaribleTables();
         }
@@ -354,7 +349,7 @@ void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction* action)
         EffectTreeData data = currSelectedTreeItem->data(0, Qt::UserRole).value<EffectTreeData>();
         SetForceLineModifiable(data.force, ForceExternals(commandId));
 
-        particleEffect->RegisterModifiable(GetForceLine(data.force, ForceExternals(commandId)));
+        effect->RegisterModifiable(GetForceLine(data.force, ForceExternals(commandId)));
         UpdateVaribleTables();
 
         if (EditForceModifiable(data.force, ForceExternals(commandId), true))
@@ -377,62 +372,73 @@ void ParticleEffectPropertiesWidget::OnValueChanged()
     if (blockSignals)
         return;
 
-    DVASSERT(particleEffect != 0);
-    float32 playbackSpeed = ConvertFromSliderValueToPlaybackSpeed(effectPlaybackSpeed->value());
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
 
-    std::unique_ptr<CommandUpdateEffect> commandUpdateEffect = Command2::Create<CommandUpdateEffect>(particleEffect);
+    DVASSERT(effect != nullptr);
+    DAVA::float32 playbackSpeed = ConvertFromSliderValueToPlaybackSpeed(effectPlaybackSpeed->value());
+
+    std::unique_ptr<CommandUpdateEffect> commandUpdateEffect = Command2::Create<CommandUpdateEffect>(effect);
     commandUpdateEffect->Init(playbackSpeed);
 
-    DVASSERT(activeScene != 0);
-    activeScene->Exec(std::move(commandUpdateEffect));
-    activeScene->MarkAsChanged();
+    DVASSERT(GetActiveScene() != nullptr);
+    GetActiveScene()->Exec(std::move(commandUpdateEffect));
+    GetActiveScene()->MarkAsChanged();
 
-    Init(activeScene, particleEffect);
+    Init(GetActiveScene(), effect);
 }
 
 void ParticleEffectPropertiesWidget::OnPlay()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Start();
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Start();
 }
+
 void ParticleEffectPropertiesWidget::OnStop()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Stop(false);
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Stop(false);
 }
+
 void ParticleEffectPropertiesWidget::OnStopAndDelete()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Stop(true);
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Stop(true);
 }
+
 void ParticleEffectPropertiesWidget::OnPause()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Pause(!particleEffect->IsPaused());
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Pause(!effect->IsPaused());
 }
+
 void ParticleEffectPropertiesWidget::OnRestart()
 {
-    DVASSERT(particleEffect != 0);
-    particleEffect->Restart();
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    effect->Restart();
 }
+
 void ParticleEffectPropertiesWidget::OnStepForward()
 {
-    DVASSERT(particleEffect != 0);
-    float32 step = 1.0f / (float32)stepForwardFPSSpin->value();
-    particleEffect->Step(step);
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    DVASSERT(effect != nullptr);
+    DAVA::float32 step = 1.0f / static_cast<DAVA::float32>(stepForwardFPSSpin->value());
+    effect->Step(step);
 }
 
 void ParticleEffectPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect)
 {
-    DVASSERT(effect != 0);
-    this->particleEffect = effect;
-    this->emitter = NULL;
-    SetActiveScene(scene);
+    DVASSERT(effect != nullptr);
+    SetObjectsForScene(scene, effect, nullptr);
 
     blockSignals = true;
 
     // Normalize Playback Speed to the UISlider range.
-    float32 playbackSpeed = particleEffect->GetPlaybackSpeed();
+    DAVA::float32 playbackSpeed = effect->GetPlaybackSpeed();
     effectPlaybackSpeed->setValue(ConvertFromPlaybackSpeedToSliderValue(playbackSpeed));
     UpdatePlaybackSpeedLabel();
     BuildEffectTree();
@@ -440,187 +446,187 @@ void ParticleEffectPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEff
     blockSignals = false;
 }
 
-ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetEmitterLine(ParticleEmitter* emitter, EmitterExternals lineId)
+DAVA::ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetEmitterLine(DAVA::ParticleEmitter* emitter, EmitterExternals lineId)
 {
     switch (lineId)
     {
     case EE_EMISSION_VECTOR:
-        return dynamic_cast<ModifiablePropertyLineBase*>(emitter->emissionVector.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(emitter->emissionVector.Get());
     case EE_EMISSION_RANGE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(emitter->emissionRange.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(emitter->emissionRange.Get());
     case EE_RADUS:
-        return dynamic_cast<ModifiablePropertyLineBase*>(emitter->radius.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(emitter->radius.Get());
     case EE_SIZE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(emitter->size.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(emitter->size.Get());
     case EE_COLOR_OVER_LIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(emitter->colorOverLife.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(emitter->colorOverLife.Get());
 
     default:
         break;
     }
     return NULL;
 }
-ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetLayerLine(ParticleLayer* layer, LayerExternals lineId)
+DAVA::ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetLayerLine(DAVA::ParticleLayer* layer, LayerExternals lineId)
 {
     switch (lineId)
     {
     case EL_LIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->life.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->life.Get());
     case EL_LIFE_VARIATION:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->lifeVariation.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->lifeVariation.Get());
     case EL_NUMBER:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->number.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->number.Get());
     case EL_NUMBER_VARIATION:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->numberVariation.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->numberVariation.Get());
     case EL_SIZE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->size.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->size.Get());
     case EL_SIZE_VARIATION:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->sizeVariation.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->sizeVariation.Get());
     case EL_SIZE_OVERLIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->sizeOverLifeXY.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->sizeOverLifeXY.Get());
     case EL_VELOCITY:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->velocity.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->velocity.Get());
     case EL_VELOCITY_VARIATON:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->velocityVariation.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->velocityVariation.Get());
     case EL_VELOCITY_OVERLIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->velocityOverLife.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->velocityOverLife.Get());
     case EL_SPIN:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->spin.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->spin.Get());
     case EL_SPIN_VARIATION:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->spinVariation.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->spinVariation.Get());
     case EL_SPIN_OVERLIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->spinOverLife.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->spinOverLife.Get());
     case EL_COLOR:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->colorRandom.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->colorRandom.Get());
     case EL_ALPHA_OVERLIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->alphaOverLife.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->alphaOverLife.Get());
     case EL_COLOR_OVERLIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->colorOverLife.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->colorOverLife.Get());
     case EL_ANGLE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->angle.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->angle.Get());
     case EL_ANGLE_VARIATION:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->angleVariation.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->angleVariation.Get());
     case EL_ANIM_SPEED_OVERLIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(layer->animSpeedOverLife.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(layer->animSpeedOverLife.Get());
 
     default:
         break;
     }
     return NULL;
 }
-ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetForceLine(ParticleForce* force, ForceExternals lineId)
+DAVA::ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetForceLine(DAVA::ParticleForce* force, ForceExternals lineId)
 {
     switch (lineId)
     {
     case EF_FORCE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(force->force.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(force->force.Get());
     case EF_FORCE_OVERLIFE:
-        return dynamic_cast<ModifiablePropertyLineBase*>(force->forceOverLife.Get());
+        return dynamic_cast<DAVA::ModifiablePropertyLineBase*>(force->forceOverLife.Get());
     default:
         break;
     }
     return NULL;
 }
 
-void ParticleEffectPropertiesWidget::SetEmitterLineModifiable(ParticleEmitter* emitter, EmitterExternals lineId)
+void ParticleEffectPropertiesWidget::SetEmitterLineModifiable(DAVA::ParticleEmitter* emitter, EmitterExternals lineId)
 {
     switch (lineId)
     {
     case EE_EMISSION_VECTOR:
-        PropertyLineHelper::MakeModifiable(emitter->emissionVector);
+        DAVA::PropertyLineHelper::MakeModifiable(emitter->emissionVector);
         break;
     case EE_EMISSION_RANGE:
-        PropertyLineHelper::MakeModifiable(emitter->emissionRange);
+        DAVA::PropertyLineHelper::MakeModifiable(emitter->emissionRange);
         break;
     case EE_RADUS:
-        PropertyLineHelper::MakeModifiable(emitter->radius);
+        DAVA::PropertyLineHelper::MakeModifiable(emitter->radius);
         break;
     case EE_SIZE:
-        PropertyLineHelper::MakeModifiable(emitter->size);
+        DAVA::PropertyLineHelper::MakeModifiable(emitter->size);
         break;
     case EE_COLOR_OVER_LIFE:
-        PropertyLineHelper::MakeModifiable(emitter->colorOverLife);
+        DAVA::PropertyLineHelper::MakeModifiable(emitter->colorOverLife);
         break;
 
     default:
         break;
     }
 }
-void ParticleEffectPropertiesWidget::SetLayerLineModifiable(ParticleLayer* layer, LayerExternals lineId)
+void ParticleEffectPropertiesWidget::SetLayerLineModifiable(DAVA::ParticleLayer* layer, LayerExternals lineId)
 {
     switch (lineId)
     {
     case EL_LIFE:
-        PropertyLineHelper::MakeModifiable(layer->life);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->life);
         break;
     case EL_LIFE_VARIATION:
-        PropertyLineHelper::MakeModifiable(layer->lifeVariation);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->lifeVariation);
         break;
     case EL_NUMBER:
-        PropertyLineHelper::MakeModifiable(layer->number);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->number);
         break;
     case EL_NUMBER_VARIATION:
-        PropertyLineHelper::MakeModifiable(layer->numberVariation);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->numberVariation);
         break;
     case EL_SIZE:
-        PropertyLineHelper::MakeModifiable(layer->size);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->size);
         break;
     case EL_SIZE_VARIATION:
-        PropertyLineHelper::MakeModifiable(layer->sizeVariation);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->sizeVariation);
         break;
     case EL_SIZE_OVERLIFE:
-        PropertyLineHelper::MakeModifiable(layer->sizeOverLifeXY);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->sizeOverLifeXY);
         break;
     case EL_VELOCITY:
-        PropertyLineHelper::MakeModifiable(layer->velocity);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->velocity);
         break;
     case EL_VELOCITY_VARIATON:
-        PropertyLineHelper::MakeModifiable(layer->velocityVariation);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->velocityVariation);
         break;
     case EL_VELOCITY_OVERLIFE:
-        PropertyLineHelper::MakeModifiable(layer->velocityOverLife);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->velocityOverLife);
         break;
     case EL_SPIN:
-        PropertyLineHelper::MakeModifiable(layer->spin);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->spin);
         break;
     case EL_SPIN_VARIATION:
-        PropertyLineHelper::MakeModifiable(layer->spinVariation);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->spinVariation);
         break;
     case EL_SPIN_OVERLIFE:
-        PropertyLineHelper::MakeModifiable(layer->spinOverLife);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->spinOverLife);
         break;
     case EL_COLOR:
-        PropertyLineHelper::MakeModifiable(layer->colorRandom);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->colorRandom);
         break;
     case EL_ALPHA_OVERLIFE:
-        PropertyLineHelper::MakeModifiable(layer->alphaOverLife);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->alphaOverLife);
         break;
     case EL_COLOR_OVERLIFE:
-        PropertyLineHelper::MakeModifiable(layer->colorOverLife);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->colorOverLife);
         break;
     case EL_ANGLE:
-        PropertyLineHelper::MakeModifiable(layer->angle);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->angle);
         break;
     case EL_ANGLE_VARIATION:
-        PropertyLineHelper::MakeModifiable(layer->angleVariation);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->angleVariation);
         break;
     case EL_ANIM_SPEED_OVERLIFE:
-        PropertyLineHelper::MakeModifiable(layer->animSpeedOverLife);
+        DAVA::PropertyLineHelper::MakeModifiable(layer->animSpeedOverLife);
         break;
 
     default:
         break;
     }
 }
-void ParticleEffectPropertiesWidget::SetForceLineModifiable(ParticleForce* force, ForceExternals lineId)
+void ParticleEffectPropertiesWidget::SetForceLineModifiable(DAVA::ParticleForce* force, ForceExternals lineId)
 {
     switch (lineId)
     {
     case EF_FORCE:
-        PropertyLineHelper::MakeModifiable(force->force);
+        DAVA::PropertyLineHelper::MakeModifiable(force->force);
         break;
     case EF_FORCE_OVERLIFE:
-        PropertyLineHelper::MakeModifiable(force->forceOverLife);
+        DAVA::PropertyLineHelper::MakeModifiable(force->forceOverLife);
         break;
 
     default:
@@ -628,105 +634,105 @@ void ParticleEffectPropertiesWidget::SetForceLineModifiable(ParticleForce* force
     }
 }
 
-void ParticleEffectPropertiesWidget::RemoveEmitterLineModifiable(ParticleEmitter* emitter, EmitterExternals lineId)
+void ParticleEffectPropertiesWidget::RemoveEmitterLineModifiable(DAVA::ParticleEmitter* emitter, EmitterExternals lineId)
 {
     switch (lineId)
     {
     case EE_EMISSION_VECTOR:
-        PropertyLineHelper::RemoveModifiable(emitter->emissionVector);
+        DAVA::PropertyLineHelper::RemoveModifiable(emitter->emissionVector);
         break;
     case EE_EMISSION_RANGE:
-        PropertyLineHelper::RemoveModifiable(emitter->emissionRange);
+        DAVA::PropertyLineHelper::RemoveModifiable(emitter->emissionRange);
         break;
     case EE_RADUS:
-        PropertyLineHelper::RemoveModifiable(emitter->radius);
+        DAVA::PropertyLineHelper::RemoveModifiable(emitter->radius);
         break;
     case EE_SIZE:
-        PropertyLineHelper::RemoveModifiable(emitter->size);
+        DAVA::PropertyLineHelper::RemoveModifiable(emitter->size);
         break;
     case EE_COLOR_OVER_LIFE:
-        PropertyLineHelper::RemoveModifiable(emitter->colorOverLife);
+        DAVA::PropertyLineHelper::RemoveModifiable(emitter->colorOverLife);
         break;
 
     default:
         break;
     }
 }
-void ParticleEffectPropertiesWidget::RemoveLayerLineModifiable(ParticleLayer* layer, LayerExternals lineId)
+void ParticleEffectPropertiesWidget::RemoveLayerLineModifiable(DAVA::ParticleLayer* layer, LayerExternals lineId)
 {
     switch (lineId)
     {
     case EL_LIFE:
-        PropertyLineHelper::RemoveModifiable(layer->life);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->life);
         break;
     case EL_LIFE_VARIATION:
-        PropertyLineHelper::RemoveModifiable(layer->lifeVariation);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->lifeVariation);
         break;
     case EL_NUMBER:
-        PropertyLineHelper::RemoveModifiable(layer->number);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->number);
         break;
     case EL_NUMBER_VARIATION:
-        PropertyLineHelper::RemoveModifiable(layer->numberVariation);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->numberVariation);
         break;
     case EL_SIZE:
-        PropertyLineHelper::RemoveModifiable(layer->size);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->size);
         break;
     case EL_SIZE_VARIATION:
-        PropertyLineHelper::RemoveModifiable(layer->sizeVariation);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->sizeVariation);
         break;
     case EL_SIZE_OVERLIFE:
-        PropertyLineHelper::RemoveModifiable(layer->sizeOverLifeXY);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->sizeOverLifeXY);
         break;
     case EL_VELOCITY:
-        PropertyLineHelper::RemoveModifiable(layer->velocity);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->velocity);
         break;
     case EL_VELOCITY_VARIATON:
-        PropertyLineHelper::RemoveModifiable(layer->velocityVariation);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->velocityVariation);
         break;
     case EL_VELOCITY_OVERLIFE:
-        PropertyLineHelper::RemoveModifiable(layer->velocityOverLife);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->velocityOverLife);
         break;
     case EL_SPIN:
-        PropertyLineHelper::RemoveModifiable(layer->spin);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->spin);
         break;
     case EL_SPIN_VARIATION:
-        PropertyLineHelper::RemoveModifiable(layer->spinVariation);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->spinVariation);
         break;
     case EL_SPIN_OVERLIFE:
-        PropertyLineHelper::RemoveModifiable(layer->spinOverLife);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->spinOverLife);
         break;
     case EL_COLOR:
-        PropertyLineHelper::RemoveModifiable(layer->colorRandom);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->colorRandom);
         break;
     case EL_ALPHA_OVERLIFE:
-        PropertyLineHelper::RemoveModifiable(layer->alphaOverLife);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->alphaOverLife);
         break;
     case EL_COLOR_OVERLIFE:
-        PropertyLineHelper::RemoveModifiable(layer->colorOverLife);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->colorOverLife);
         break;
     case EL_ANGLE:
-        PropertyLineHelper::RemoveModifiable(layer->angle);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->angle);
         break;
     case EL_ANGLE_VARIATION:
-        PropertyLineHelper::RemoveModifiable(layer->angleVariation);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->angleVariation);
         break;
     case EL_ANIM_SPEED_OVERLIFE:
-        PropertyLineHelper::RemoveModifiable(layer->animSpeedOverLife);
+        DAVA::PropertyLineHelper::RemoveModifiable(layer->animSpeedOverLife);
         break;
 
     default:
         break;
     }
 }
-void ParticleEffectPropertiesWidget::RemoveForceLineModifiable(ParticleForce* force, ForceExternals lineId)
+void ParticleEffectPropertiesWidget::RemoveForceLineModifiable(DAVA::ParticleForce* force, ForceExternals lineId)
 {
     switch (lineId)
     {
     case EF_FORCE:
-        PropertyLineHelper::RemoveModifiable(force->force);
+        DAVA::PropertyLineHelper::RemoveModifiable(force->force);
         break;
     case EF_FORCE_OVERLIFE:
-        PropertyLineHelper::RemoveModifiable(force->forceOverLife);
+        DAVA::PropertyLineHelper::RemoveModifiable(force->forceOverLife);
         break;
 
     default:
@@ -734,7 +740,7 @@ void ParticleEffectPropertiesWidget::RemoveForceLineModifiable(ParticleForce* fo
     }
 }
 
-bool ParticleEffectPropertiesWidget::EditEmitterModifiable(ParticleEmitter* emitter, EmitterExternals lineId, bool onAdd)
+bool ParticleEffectPropertiesWidget::EditEmitterModifiable(DAVA::ParticleEmitter* emitter, EmitterExternals lineId, bool onAdd)
 {
     switch (lineId)
     {
@@ -758,7 +764,7 @@ bool ParticleEffectPropertiesWidget::EditEmitterModifiable(ParticleEmitter* emit
     }
     return false;
 }
-bool ParticleEffectPropertiesWidget::EditLayerModifiable(ParticleLayer* layer, LayerExternals lineId, bool onAdd)
+bool ParticleEffectPropertiesWidget::EditLayerModifiable(DAVA::ParticleLayer* layer, LayerExternals lineId, bool onAdd)
 {
     switch (lineId)
     {
@@ -824,7 +830,7 @@ bool ParticleEffectPropertiesWidget::EditLayerModifiable(ParticleLayer* layer, L
     }
     return false;
 }
-bool ParticleEffectPropertiesWidget::EditForceModifiable(ParticleForce* force, ForceExternals lineId, bool onAdd)
+bool ParticleEffectPropertiesWidget::EditForceModifiable(DAVA::ParticleForce* force, ForceExternals lineId, bool onAdd)
 {
     switch (lineId)
     {
@@ -842,22 +848,25 @@ bool ParticleEffectPropertiesWidget::EditForceModifiable(ParticleForce* force, F
 
 void ParticleEffectPropertiesWidget::BuildEffectTree()
 {
-    currSelectedTreeItem = NULL;
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+
+    currSelectedTreeItem = nullptr;
     effectTree->clear();
-    effectTree->setHeaderLabel(QString(particleEffect->GetEntity()->GetName().c_str()));
+    effectTree->setHeaderLabel(QString(effect->GetEntity()->GetName().c_str()));
     QTreeWidgetItem* root = effectTree->invisibleRootItem();
     EffectTreeData data;
-    int32 childrenCount = particleEffect->GetEmittersCount();
-    for (int32 emitterId = 0; emitterId < childrenCount; emitterId++)
+    DAVA::int32 childrenCount = effect->GetEmittersCount();
+    for (DAVA::int32 emitterId = 0; emitterId < childrenCount; emitterId++)
     {
-        ParticleEmitter* emitter = particleEffect->GetEmitter(emitterId);
+        auto instance = effect->GetEmitterInstance(emitterId);
+        auto emitter = instance->GetEmitter();
         data.emmiter = emitter;
         QTreeWidgetItem* emitterItem = new QTreeWidgetItem(root, TreeItemTypeEmitter);
         emitterItem->setText(0, QString(emitter->name.c_str()));
         emitterItem->setIcon(0, iconEmitter);
         emitterItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
         //externals
-        for (int32 externalId = 0; externalId < EE_TOTAL; ++externalId)
+        for (DAVA::int32 externalId = 0; externalId < EE_TOTAL; ++externalId)
         {
             if (GetEmitterLine(emitter, EmitterExternals(externalId)))
             {
@@ -869,18 +878,18 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
             }
         }
         data.externalParamId = 0;
-        //layers
-        int32 numLayers = emitter->layers.size();
-        for (int32 layerId = 0; layerId < numLayers; ++layerId)
+
+        // layers
+        for (auto layer : emitter->layers)
         {
-            ParticleLayer* layer = emitter->layers[layerId];
             QTreeWidgetItem* layerItem = new QTreeWidgetItem(emitterItem, TreeItemTypeLayer);
             data.layer = layer;
             layerItem->setText(0, QString(layer->layerName.c_str()));
             layerItem->setIcon(0, iconLayer);
             layerItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
-            //externals
-            for (int32 externalId = EE_TOTAL; externalId < EL_TOTAL; ++externalId)
+
+            // externals
+            for (DAVA::int32 externalId = EE_TOTAL; externalId < EL_TOTAL; ++externalId)
             {
                 if (GetLayerLine(layer, LayerExternals(externalId)))
                 {
@@ -892,18 +901,17 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
                 }
             }
             data.externalParamId = 0;
-            //forces
-            int32 numForces = layer->forces.size();
-            for (int32 forceId = 0; forceId < numForces; ++forceId)
+
+            // forces
+            for (auto force : layer->forces)
             {
-                ParticleForce* force = layer->forces[forceId];
                 data.force = force;
                 QTreeWidgetItem* forceItem = new QTreeWidgetItem(layerItem, TreeItemTypeForce);
                 forceItem->setText(0, QString("force"));
                 forceItem->setIcon(0, iconForce);
                 forceItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
                 //externals
-                for (int32 externalId = EL_TOTAL; externalId < EF_TOTAL; ++externalId)
+                for (DAVA::int32 externalId = EL_TOTAL; externalId < EF_TOTAL; ++externalId)
                 {
                     if (GetForceLine(force, ForceExternals(externalId)))
                     {
@@ -920,26 +928,25 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
         }
         data.layer = NULL;
     }
-    particleEffect->RebuildEffectModifiables();
+    effect->RebuildEffectModifiables();
 }
 
 void ParticleEffectPropertiesWidget::UpdatePlaybackSpeedLabel()
 {
-    if (!particleEffect)
+    DAVA::ParticleEffectComponent* effect = GetEffect(GetActiveScene());
+    if (effect != nullptr)
     {
-        return;
+        DAVA::float32 playbackSpeedValue = effect->GetPlaybackSpeed();
+        effectPlaybackSpeedLabel->setText(QString("playback speed: %1x").arg(playbackSpeedValue));
     }
-
-    float32 playbackSpeedValue = particleEffect->GetPlaybackSpeed();
-    effectPlaybackSpeedLabel->setText(QString("playback speed: %1x").arg(playbackSpeedValue));
 }
 
-void ParticleEffectPropertiesWidget::StoreVisualState(KeyedArchive* /* visualStateProps */)
+void ParticleEffectPropertiesWidget::StoreVisualState(DAVA::KeyedArchive* /* visualStateProps */)
 {
     // Nothing to store for now.
 }
 
-void ParticleEffectPropertiesWidget::RestoreVisualState(KeyedArchive* /* visualStateProps */)
+void ParticleEffectPropertiesWidget::RestoreVisualState(DAVA::KeyedArchive* /* visualStateProps */)
 {
     // Nothing to restore for now.
 }
@@ -983,16 +990,16 @@ AddGlobalExternalDialog::AddGlobalExternalDialog(QWidget* parent)
     btnOk->setDefault(true);
 }
 
-String AddGlobalExternalDialog::GetVariableName()
+DAVA::String AddGlobalExternalDialog::GetVariableName()
 {
     return variableName->text().toStdString();
 }
-float32 AddGlobalExternalDialog::GetVariableValue()
+DAVA::float32 AddGlobalExternalDialog::GetVariableValue()
 {
-    return (float32)variableValue->value();
+    return static_cast<DAVA::float32>(variableValue->value());
 }
 
-void EditModificationLineDialog::InitName(const String& name, bool onAdd)
+void EditModificationLineDialog::InitName(const DAVA::String& name, bool onAdd)
 {
     QHBoxLayout* nameLayot = new QHBoxLayout();
     QLabel* varNameLabel = new QLabel("External Variable Name");
@@ -1008,7 +1015,7 @@ void EditModificationLineDialog::InitName(const String& name, bool onAdd)
     }
 }
 
-String EditModificationLineDialog::GetVariableName()
+DAVA::String EditModificationLineDialog::GetVariableName()
 {
     return variableName->text().toStdString();
 }
@@ -1031,102 +1038,102 @@ void EditModificationLineDialog::InitButtons()
 }
 
 template <>
-void EditModificationLineDialog::Init<float32>(ModifiablePropertyLine<float32>* line, bool onAdd)
+void EditModificationLineDialog::Init<DAVA::float32>(DAVA::ModifiablePropertyLine<DAVA::float32>* line, bool onAdd)
 {
     dialogLayout = new QVBoxLayout();
     setLayout(dialogLayout);
     InitName(line->GetValueName(), onAdd);
     timeLine = new TimeLineWidget(this);
     timeLine->Init(0.0f, 1.0f, false);
-    timeLine->AddLine(0, PropLineWrapper<float32>(line->GetModificationLine()).GetProps(), Qt::blue, "");
+    timeLine->AddLine(0, DAVA::PropLineWrapper<DAVA::float32>(line->GetModificationLine()).GetProps(), Qt::blue, "");
     dialogLayout->addWidget(timeLine);
     InitButtons();
 }
 
 template <>
-void EditModificationLineDialog::Init<Vector2>(ModifiablePropertyLine<Vector2>* line, bool onAdd)
+void EditModificationLineDialog::Init<DAVA::Vector2>(DAVA::ModifiablePropertyLine<DAVA::Vector2>* line, bool onAdd)
 {
     dialogLayout = new QVBoxLayout();
     setLayout(dialogLayout);
     InitName(line->GetValueName(), onAdd);
     timeLine = new TimeLineWidget(this);
     timeLine->Init(0.0f, 1.0f, false, true);
-    Vector<QColor> vectorColors;
+    DAVA::Vector<QColor> vectorColors;
     vectorColors.push_back(Qt::red);
     vectorColors.push_back(Qt::darkGreen);
-    Vector<QString> vectorLegends;
+    DAVA::Vector<QString> vectorLegends;
     vectorLegends.push_back("x");
     vectorLegends.push_back("y");
-    timeLine->AddLines(PropLineWrapper<Vector2>(line->GetModificationLine()).GetProps(), vectorColors, vectorLegends);
+    timeLine->AddLines(DAVA::PropLineWrapper<DAVA::Vector2>(line->GetModificationLine()).GetProps(), vectorColors, vectorLegends);
     dialogLayout->addWidget(timeLine);
     InitButtons();
 }
 
 template <>
-void EditModificationLineDialog::Init<Vector3>(ModifiablePropertyLine<Vector3>* line, bool onAdd)
+void EditModificationLineDialog::Init<DAVA::Vector3>(DAVA::ModifiablePropertyLine<DAVA::Vector3>* line, bool onAdd)
 {
     dialogLayout = new QVBoxLayout();
     setLayout(dialogLayout);
     InitName(line->GetValueName(), onAdd);
     timeLine = new TimeLineWidget(this);
     timeLine->Init(0.0f, 1.0f, false, true);
-    Vector<QColor> vectorColors;
+    DAVA::Vector<QColor> vectorColors;
     vectorColors.push_back(Qt::red);
     vectorColors.push_back(Qt::darkGreen);
     vectorColors.push_back(Qt::blue);
-    Vector<QString> vectorLegends;
+    DAVA::Vector<QString> vectorLegends;
     vectorLegends.push_back("x");
     vectorLegends.push_back("y");
     vectorLegends.push_back("z");
-    timeLine->AddLines(PropLineWrapper<Vector3>(line->GetModificationLine()).GetProps(), vectorColors, vectorLegends);
+    timeLine->AddLines(DAVA::PropLineWrapper<DAVA::Vector3>(line->GetModificationLine()).GetProps(), vectorColors, vectorLegends);
     dialogLayout->addWidget(timeLine);
     InitButtons();
 }
 
 template <>
-void EditModificationLineDialog::Init<Color>(ModifiablePropertyLine<Color>* line, bool onAdd)
+void EditModificationLineDialog::Init<DAVA::Color>(DAVA::ModifiablePropertyLine<DAVA::Color>* line, bool onAdd)
 {
     dialogLayout = new QVBoxLayout();
     setLayout(dialogLayout);
     InitName(line->GetValueName(), onAdd);
     gradientLine = new GradientPickerWidget(this);
     gradientLine->Init(0, 1);
-    gradientLine->SetValues(PropLineWrapper<Color>(line->GetModificationLine()).GetProps());
+    gradientLine->SetValues(DAVA::PropLineWrapper<DAVA::Color>(line->GetModificationLine()).GetProps());
     dialogLayout->addWidget(gradientLine);
     InitButtons();
 }
 
 template <>
-void EditModificationLineDialog::UpdateLine<float32>(ModifiablePropertyLine<float32>* line)
+void EditModificationLineDialog::UpdateLine<DAVA::float32>(DAVA::ModifiablePropertyLine<DAVA::float32>* line)
 {
-    PropLineWrapper<float32> lineWrap;
+    DAVA::PropLineWrapper<DAVA::float32> lineWrap;
     if (!timeLine->GetValue(0, lineWrap.GetPropsPtr()))
         return;
     line->SetModificationLine(lineWrap.GetPropLine());
 }
 
 template <>
-void EditModificationLineDialog::UpdateLine<Vector2>(ModifiablePropertyLine<Vector2>* line)
+void EditModificationLineDialog::UpdateLine<DAVA::Vector2>(DAVA::ModifiablePropertyLine<DAVA::Vector2>* line)
 {
-    PropLineWrapper<Vector2> lineWrap;
+    DAVA::PropLineWrapper<DAVA::Vector2> lineWrap;
     if (!timeLine->GetValues(lineWrap.GetPropsPtr()))
         return;
     line->SetModificationLine(lineWrap.GetPropLine());
 }
 
 template <>
-void EditModificationLineDialog::UpdateLine<Vector3>(ModifiablePropertyLine<Vector3>* line)
+void EditModificationLineDialog::UpdateLine<DAVA::Vector3>(DAVA::ModifiablePropertyLine<DAVA::Vector3>* line)
 {
-    PropLineWrapper<Vector3> lineWrap;
+    DAVA::PropLineWrapper<DAVA::Vector3> lineWrap;
     if (!timeLine->GetValues(lineWrap.GetPropsPtr()))
         return;
     line->SetModificationLine(lineWrap.GetPropLine());
 }
 
 template <>
-void EditModificationLineDialog::UpdateLine<Color>(ModifiablePropertyLine<Color>* line)
+void EditModificationLineDialog::UpdateLine<DAVA::Color>(DAVA::ModifiablePropertyLine<DAVA::Color>* line)
 {
-    PropLineWrapper<Color> lineWrap;
+    DAVA::PropLineWrapper<DAVA::Color> lineWrap;
     if (!gradientLine->GetValues(lineWrap.GetPropsPtr()))
         return;
     line->SetModificationLine(lineWrap.GetPropLine());

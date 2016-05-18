@@ -31,22 +31,22 @@
 #define __DAVAENGINE_CORE_PLATFORM_WIN32_H__
 
 #include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "CoreWin32PlatformBase.h"
+#include "Core/Core.h"
 #include "UI/UIEvent.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
-class CoreWin32Platform : public CoreWin32PlatformBase
+class CoreWin32Platform : public Core
 {
 public:
     CoreWin32Platform();
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
     void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
-
-    DisplayMode GetCurrentDisplayMode() override;
 
     bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
     void Run();
@@ -55,6 +55,9 @@ public:
 
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
+
+    void InitArgs();
+    void Quit() override;
 
 private:
     DisplayMode currentMode;
@@ -81,6 +84,8 @@ private:
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
     void LoadWindowMinimumSizeSettings();
 
+    void ClearMouseButtons();
+
     bool willQuit;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
@@ -88,6 +93,8 @@ private:
 
     float32 minWindowWidth = 0.0f;
     float32 minWindowHeight = 0.0f;
+
+    HWND hWindow = nullptr;
 };
 
 } // end namespace DAVA

@@ -32,10 +32,12 @@
 
 #include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
+#include "Base/DllApi.h"
 
 #include <array>
 #include <memory>
 #include <string>
+#include <cstring>
 #include <list>
 #include <map>
 #include <vector>
@@ -217,10 +219,10 @@ inline T Clamp(T val, T a, T b)
 #define Snprintf snprintf
 #endif
 
-#define Memcmp memcmp
-#define Memcpy memcpy
-#define Memset memset
-#define Memmove memmove
+#define Memcmp std::memcmp
+#define Memcpy std::memcpy
+#define Memset std::memset
+#define Memmove std::memmove
 
 template <class TYPE>
 void SafeDelete(TYPE*& d)

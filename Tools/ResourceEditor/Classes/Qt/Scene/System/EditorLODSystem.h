@@ -41,6 +41,9 @@ class Entity;
 class RenderObject;
 }
 
+class Command2;
+class SelectableGroup;
+
 struct ForceValues
 {
     enum eApplyFlag : DAVA::uint32
@@ -100,7 +103,6 @@ protected:
     SceneEditor2* scene = nullptr;
 };
 
-class EntityGroup;
 class EditorLODSystemUIDelegate;
 class EditorLODSystem : public DAVA::SceneSystem
 {
@@ -151,7 +153,7 @@ public:
 
     //scene signals
     void SolidChanged(const DAVA::Entity* entity, bool value);
-    void SelectionChanged(const EntityGroup* selected, const EntityGroup* deselected);
+    void SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void AddDelegate(EditorLODSystemUIDelegate* uiDelegate);
     void RemoveDelegate(EditorLODSystemUIDelegate* uiDelegate);

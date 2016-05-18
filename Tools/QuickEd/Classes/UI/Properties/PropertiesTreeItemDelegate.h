@@ -60,7 +60,6 @@ private:
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    QMap<QVariant::Type, AbstractPropertyDelegate*> qvariantItemDelegates;
     QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate*> propertyItemDelegates;
     QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*> variantTypeItemDelegates;
     QMap<QString, AbstractPropertyDelegate*> propertyNameTypeItemDelegates;

@@ -30,21 +30,22 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QDockWidget>
-#include <QPointer>
-
 #include "ui_mainwindow.h"
-#include "ModificationWidget.h"
-#include "Tools/QtWaitDialog/QtWaitDialog.h"
+
+#include "Classes/Qt/Main/ModificationWidget.h"
+#include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Main/RecentMenuItems.h"
+#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
+#include "Classes/Beast/BeastProxy.h"
 
 #include "DAVAEngine.h"
 
-#include "Scene/SceneEditor2.h"
-#include "Tools/QtPosSaver/QtPosSaver.h"
-#include "Main/RecentMenuItems.h"
+#include "core_generic_plugin/interfaces/i_component_context.hpp"
 
-#include "Beast/BeastProxy.h"
+#include <QMainWindow>
+#include <QDockWidget>
+#include <QPointer>
 
 class AddSwitchEntityDialog;
 class Request;
@@ -70,7 +71,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(QWidget* parent = 0);
+    explicit QtMainWindow(IComponentContext& ngtContext, QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -108,6 +109,7 @@ public slots:
     void OnRecentProjectsTriggered(QAction* recentAction);
     void ExportMenuTriggered(QAction* exportAsAction);
     void OnImportSpeedTreeXML();
+    void RemoveSelection();
 
     void OnUndo();
     void OnRedo();
@@ -211,10 +213,12 @@ public slots:
     void SetupTitle();
 
     void RestartParticleEffects();
+    bool SetVisibilityToolEnabledIfPossible(bool);
+    void SetLandscapeInstancingEnabled(bool);
 
 protected:
-    virtual bool eventFilter(QObject* object, QEvent* event);
-    void closeEvent(QCloseEvent* e);
+    bool eventFilter(QObject* object, QEvent* event) override;
+    bool ShouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
     void SetupToolBars();
@@ -249,7 +253,7 @@ private slots:
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void OnGlobalInvalidateTimeout();
     void EditorLightEnabled(bool enabled);
@@ -310,12 +314,14 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
+    IComponentContext& ngtContext;
+    PropertyPanel propertyPanel;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
     struct EmitterDescriptor
     {
-        EmitterDescriptor(ParticleEmitter* _emitter, ParticleLayer* layer, FilePath path, String name)
+        EmitterDescriptor(DAVA::ParticleEmitter* _emitter, DAVA::ParticleLayer* layer, DAVA::FilePath path, DAVA::String name)
             : emitter(_emitter)
             , ownerLayer(layer)
             , yamlPath(path)
@@ -323,13 +329,13 @@ private:
         {
         }
 
-        ParticleEmitter* emitter = nullptr;
-        ParticleLayer* ownerLayer = nullptr;
-        FilePath yamlPath;
-        String entityName;
+        DAVA::ParticleEmitter* emitter = nullptr;
+        DAVA::ParticleLayer* ownerLayer = nullptr;
+        DAVA::FilePath yamlPath;
+        DAVA::String entityName;
     };
 
-    void CollectEmittersForSave(ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const String& entityName) const;
+    void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const;
 };
 
 

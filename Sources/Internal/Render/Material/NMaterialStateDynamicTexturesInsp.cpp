@@ -94,6 +94,9 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void* ob
     Set<FastName>* data = new Set<FastName>();
     FindMaterialTexturesRecursive(material, *data);
 
+    // DF-10204, we don't allow change heightmap in material for new Landscape.
+    data->erase(NMaterialTextureName::TEXTURE_HEIGHTMAP);
+
     if (filter > 0)
     {
         auto checkAndAdd = [&data](const FastName& name) {
@@ -109,7 +112,6 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void* ob
         checkAndAdd(NMaterialTextureName::TEXTURE_LIGHTMAP);
         checkAndAdd(NMaterialTextureName::TEXTURE_DECAL);
         checkAndAdd(NMaterialTextureName::TEXTURE_CUBEMAP);
-        checkAndAdd(NMaterialTextureName::TEXTURE_HEIGHTMAP);
         checkAndAdd(NMaterialTextureName::TEXTURE_DECALMASK);
         checkAndAdd(NMaterialTextureName::TEXTURE_DECALTEXTURE);
     }

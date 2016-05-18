@@ -105,7 +105,7 @@ DAVA::Key ConvertQtCommandKeysToDava(int qtKey)
 
 void ControlMapper::keyPressEvent(QKeyEvent* e)
 {
-    using namespace DAVA;   
+    using namespace DAVA;
 #ifdef Q_OS_WIN
     uint32 nativeModif = e->nativeModifiers();
     uint32 nativeScanCode = e->nativeScanCode();

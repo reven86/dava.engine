@@ -452,8 +452,8 @@ void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offSc
         xOffset = rect.x + rect.dx + 1000.0f;
         yOffset = rect.y + rect.dy + 1000.0f;
     }
-    nativeWebView->Width = rect.dx;
-    nativeWebView->Height = rect.dy;
+    nativeWebView->Width = std::max(0.0f, rect.dx);
+    nativeWebView->Height = std::max(0.0f, rect.dy);
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 }
 

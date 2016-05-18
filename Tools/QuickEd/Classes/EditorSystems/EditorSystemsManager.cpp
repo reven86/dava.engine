@@ -39,8 +39,11 @@
 #include "EditorSystems/EditorTransformSystem.h"
 
 #include "UI/UIControl.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
+
+const Vector2 minimumSize = Vector2(16.0f, 16.0f);
 
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
@@ -52,6 +55,7 @@ public:
 
 private:
     bool SystemInput(UIEvent* currentInput) override;
+    bool SystemProcessInput(UIEvent* currentInput) override;
 
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
@@ -62,6 +66,7 @@ EditorSystemsManager::RootControl::RootControl(EditorSystemsManager* arg)
     : UIControl()
     , systemManager(arg)
 {
+    GetOrCreateComponent<UIFocusComponent>();
     DVASSERT(nullptr != systemManager);
 }
 
@@ -74,9 +79,19 @@ bool EditorSystemsManager::RootControl::SystemInput(UIEvent* currentInput)
 {
     if (!emulationMode && nullptr != systemManager)
     {
-        return systemManager->OnInput(currentInput);
+        return SystemProcessInput(currentInput);
     }
     return UIControl::SystemInput(currentInput);
+}
+
+bool EditorSystemsManager::RootControl::SystemProcessInput(UIEvent* currentInput)
+{
+    if (!emulationMode && nullptr != systemManager)
+    {
+        return systemManager->OnInput(currentInput);
+    }
+
+    return UIControl::SystemProcessInput(currentInput);
 }
 
 EditorSystemsManager::EditorSystemsManager()

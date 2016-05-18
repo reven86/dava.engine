@@ -12,9 +12,10 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
+    property int historyVersion: 4
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
-    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2
+    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 + wrapper.spacing * 4
     minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
     menuBar: MenuBar {
         Menu {
@@ -26,7 +27,10 @@ ApplicationWindow {
             }
         }
     }
-
+    function processText(text) {
+        return text.replace(/(\r\n|\r|\n)+$/g, "").replace(/(\r\n|\r|\n)+/g, displayHtmlFormat ? "<br>" : "\n");
+    }
+    property bool displayHtmlFormat: true
     Settings {
         id: settings
         property int mainWrapperWidth: 400
@@ -35,7 +39,13 @@ ApplicationWindow {
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
         property string historyStr;
-        Component.onDestruction: historyStr = JSON.stringify(historyToSave)
+        property var sourceFolderCurrentIndex;
+        Component.onDestruction: {
+            historyStr = JSON.stringify(historyToSave)
+            sourceFolderCurrentIndex = rowLayout_sourceFolder.item.currentIndex;
+            historyVersion = applicationWindow.historyVersion;
+        }
+        property int historyVersion: -1
     }
     property var history;
     property var historyToSave; //we need this because combobox with sources and history can be different
@@ -49,11 +59,16 @@ ApplicationWindow {
     }
 
     function loadHistory() {
-        try {
-            history = JSON.parse(settings.historyStr);
-        } catch(e) {
+        if(settings.historyVersion === historyVersion) {
+            try {
+                history = JSON.parse(settings.historyStr);
+            } catch(e) {
+                history = [];
+            }
+        } else {
             history = [];
         }
+
         historyToSave = [];
         if(history && Array.isArray(history) && history.length > 0) {
             for(var i = 0, length = history.length; i < length; ++i) {
@@ -64,14 +79,15 @@ ApplicationWindow {
                     return;
                 }
             }
-            applyProjectSettings(history[0])
+            //make a deep copy
             historyToSave = JSON.parse(JSON.stringify(history));
         }
     }
 
     function onCurrentProjectChaged(index) {
         if(history && Array.isArray(history) && history.length > index) {
-            applyProjectSettings(history[index])
+            var historyItem = history[index];
+            applyProjectSettings(historyItem)
         }
     }
 
@@ -80,17 +96,13 @@ ApplicationWindow {
     function addProjectToHistory() {
         var found = false;
         var source = rowLayout_sourceFolder.path;
+        source = fileSystemHelper.NormalizePath(source);
         var i = 0;
         for(var length = historyToSave.length; i < length && !found; ++i) {
             if(historyToSave[i].source === source) {
                 found = true;
             }
         }
-
-        if(!found) {
-            rowLayout_sourceFolder.item.addString(source)
-        }
-
         var newItem = {};
         newItem.source = source
         newItem.needClean = columnLayoutOutput.needClean
@@ -99,12 +111,21 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
-        historyToSave.unshift(newItem);
         if(found) {
+            //add item to top and remove it
+            --i;
             historyToSave.splice(i, 1);
+            historyToSave.push(newItem);
+
+        }
+        else {
+            historyToSave.push(newItem);
+            //add to combobox and to history
+            history.push(newItem)
+            rowLayout_sourceFolder.item.addString(source)
         }
         if(historyToSave.length > maxHistoryLength) {
-            historyToSave = historyToSave.slice(0, maxHistoryLength);
+            historyToSave = historyToSave.slice(historyToSave.length, maxHistoryLength);
         }
     }
 
@@ -146,8 +167,15 @@ ApplicationWindow {
             var buildPath = fileSystemHelper.NormalizePath(rowLayout_buildFolder.path)
             var cmakePath = fileSystemHelper.NormalizePath(rowLayout_cmakeFolder.path)
             var davaPath = fileSystemHelper.NormalizePath(rowLayout_davaFolder.path)
+            var customOptions = textField_customOptions.text
             try {
-                var outputText = JSTools.createOutput(configuration, fileSystemHelper, sourcePath, buildPath, cmakePath, davaPath);
+                var outputText = JSTools.createOutput(configuration,
+                                                      fileSystemHelper,
+                                                      sourcePath,
+                                                      buildPath,
+                                                      cmakePath,
+                                                      davaPath,
+                                                      customOptions);
                 columnLayoutOutput.outputComplete = true;
                 columnLayoutOutput.outputText = outputText;
             } catch(errorText) {
@@ -162,12 +190,20 @@ ApplicationWindow {
             configuration = JSON.parse(configStorage.GetJSONTextFromConfigFile());
             mutableContent.processConfiguration(configuration);
             loadHistory();
+            var currentIndex = settings.sourceFolderCurrentIndex;
+            if(currentIndex !== undefined)
+            {
+                rowLayout_sourceFolder.item.currentIndex = currentIndex;
+                onCurrentProjectChaged(currentIndex)
+            }
         }
         catch(error) {
             errorDialog.informativeText = error.message;
             errorDialog.critical = true;
             errorDialog.open();
         }
+        applicationWindow.width = Math.max(applicationWindow.width, applicationWindow.minimumWidth)
+        applicationWindow.height = Math.max(applicationWindow.height, applicationWindow.minimumHeight)
     }
 
     MessageDialog {
@@ -208,7 +244,10 @@ ApplicationWindow {
                         onTextChanged: {
                             updateOutputString()
                         }
-                        onCurrentIndexChanged: onCurrentProjectChaged(currentIndex);
+                        onCurrentIndexChanged: {
+                            onCurrentProjectChaged(currentIndex);
+                        }
+
                     }
                 }
 
@@ -222,6 +261,14 @@ ApplicationWindow {
                         placeholderText: qsTr("path to source folder")
                         onTextChanged: {
                             updateOutputString();
+                        }
+                    }
+                    Connections {
+                        target: rowLayout_sourceFolder
+                        onPathChanged: {
+                            var path = rowLayout_sourceFolder.path;
+                            path = path.replace(/(\/|\\)+$/, "");
+                            rowLayout_buildFolder.path = path + "/_build" ;
                         }
                     }
                 }
@@ -283,7 +330,10 @@ ApplicationWindow {
 
                 MutableContentItem {
                     id: mutableContent
-                    onDataUpdated: updateOutputString()
+                    onDataUpdated: {
+                        updateOutputString()
+
+                    }
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                 }
@@ -298,7 +348,6 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         placeholderText: qsTr("your custom options")
                         onTextChanged: {
-                            configuration["customOptions"] = text;
                             updateOutputString();
                         }
                     }
@@ -307,28 +356,48 @@ ApplicationWindow {
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
-                    onCmakeLaunched: {
-                        addProjectToHistory();
+                    onCmakeWillBeLaunched: {
+                        displayHtmlFormat = true;
                         textArea_processText.text = "";
+                        addProjectToHistory();
+                    }
+                    onCmakeWasLaunched: {
+                        //we create build folder
+                        rowLayout_buildFolder.refreshPath();
+                    }
+
+                    onBuildStarted: {
+                        displayHtmlFormat = false;
+                        textArea_processText.text = ""
                     }
                 }
-
             }
         }
 
         TextArea {
             id: textArea_processText
-            textFormat: TextEdit.RichText
+            textFormat: displayHtmlFormat ? TextEdit.RichText : TextEdit.PlainText
             readOnly: true
-            function toHTML(text) {
-                return text.replace(/(\r\n|\r|\n)+$/g, "").replace(/(\r\n|\r|\n)+/g, "<br>");
-            }
+
             Connections {
                 target: processWrapper
-                onProcessStateChanged: textArea_processText.append("<font color=\"DarkGreen\">" + text + "</font>");
-                onProcessErrorChanged: textArea_processText.append("<font color=\"DarkRed\">" + text + "</font>");
-                onProcessStandardOutput: textArea_processText.append(textArea_processText.toHTML(text));
-                onProcessStandardError: textArea_processText.append("<font color=\"DarkRed\">" + textArea_processText.toHTML(text) + "</font>");
+                onProcessStateChanged: textArea_processText.append(displayHtmlFormat
+                                                                   ? "<font color=\"DarkGreen\">" + text + "</font>"
+                                                                   : "****new process state: " + text + " ****");
+                onProcessErrorChanged: textArea_processText.append(displayHtmlFormat
+                                                                   ? "<font color=\"DarkRed\">" + text + "</font>"
+                                                                   : "****process error occurred!: " + text + " ****");
+                onProcessStandardOutput: {
+                    var maxLen = 150;
+                    if(!displayHtmlFormat && text.length > maxLen) {
+                        textArea_processText.append(processText(text.substring(0, maxLen) + "...\n"));
+                    } else {
+                        textArea_processText.append(processText(text));
+                    }
+                }
+                onProcessStandardError: textArea_processText.append(displayHtmlFormat
+                                                                    ? "<font color=\"DarkRed\">" + processText(text) + "</font>"
+                                                                    : processText(text));
             }
         }
     }

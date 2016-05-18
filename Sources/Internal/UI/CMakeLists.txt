@@ -1,30 +1,34 @@
-set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp)  
-set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h)
+set( HPP_FILES *.h   Components/*.h   Layouts/*.h    Styles/*.h   Focus/*.h   Private/*.h )
+set( CPP_FILES *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp Focus/*.cpp Private/*.cpp )
+set( CPP_FILES_APPLE *.mm )
 
-if( NOT ANDROID )
-    list( APPEND ERASE_FILES UITextFieldAndroid.cpp 
-                             UITextFieldAndroid.h
-                             UIScreenManagerAndroid.h 
-                             UIScreenManagerAndroid.cpp )
-endif ()
+set( HPP_FILES_ANDROID Private/android/*.cpp )
+set( CPP_FILES_ANDROID Private/android/*.h   )
 
-if ( ( NOT MACOS ) AND ( NOT WIN32 ) ) 
-    list( APPEND ERASE_FILES UIScreenManagerDefault.h 
-                             UIScreenManagerDefault.cpp )
-endif ()
+set( HPP_FILES_IOS Private/ios/*.h )
+set( CPP_FILES_IOS Private/ios/*.cpp Private/ios/*.mm  )
 
-if( NOT IOS )
-    list( APPEND ERASE_FILES UIScreenManageriPhone.h 
-                             UIScreenManageriPhoneImpl.h )    
-endif()
+set( HPP_FILES_MACOS Private/osx/*.h )
+set( CPP_FILES_MACOS Private/osx/*.cpp Private/osx/*.mm )
 
-if( APPLE )
-    list( APPEND ADDED_CPP_PATTERNS *.mm )    
-endif()
+set( HPP_FILES_WIN Private/win32/*.h )
+set( CPP_FILES_WIN Private/win32/*.cpp )
 
-define_source_files( PARENT_SCOPE 
-  GLOB_CPP_PATTERNS    ${ADDED_CPP_PATTERNS}
-  GLOB_H_PATTERNS      ${ADDED_H_PATTERNS}
-  GLOB_ERASE_FILES     ${ERASE_FILES} 
-)
+set( HPP_FILES_WINUAP Private/uwp/*.h )
+set( CPP_FILES_WINUAP Private/uwp/*.cpp )
 
+set( ERASE_FILES_NOT_ANDROID     UITextFieldAndroid.cpp 
+                                 UITextFieldAndroid.h 
+                                 UIScreenManagerAndroid.h 
+                                 UIScreenManagerAndroid.cpp )
+
+set( ERASE_FILES_NOT_IOS         UIScreenManageriPhone.h 
+                                 UIScreenManageriPhoneImpl.h )
+
+set( ERASE_FILES_NOT_MACOS       UIScreenManagerDefault.h  
+                                 UIScreenManagerDefault.cpp  )
+
+set( ERASE_FILES_NOT_WIN         ${ERASE_FILES_NOT_MACOS} )
+set( ERASE_FILES_NOT_WINUAP      ${ERASE_FILES_NOT_MACOS} )
+
+setup_main_module()

@@ -64,7 +64,7 @@ void SceneSaver::EnableCopyConverted(bool enabled)
     copyConverted = enabled;
 }
 
-void SceneSaver::SaveFile(const String& fileName, Set<String>& errorLog)
+void SceneSaver::SaveFile(const String& fileName)
 {
     Logger::FrameworkDebug("[SceneSaver::SaveFile] %s", fileName.c_str());
 
@@ -74,18 +74,18 @@ void SceneSaver::SaveFile(const String& fileName, Set<String>& errorLog)
     Scene* scene = new Scene();
     if (SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(filePath))
     {
-        SaveScene(scene, filePath, errorLog);
+        SaveScene(scene, filePath);
     }
     else
     {
-        errorLog.insert(Format("[SceneSaver::SaveFile] Can't open file %s", fileName.c_str()));
+        Logger::Error("[SceneSaver::SaveFile] Can't open file %s", fileName.c_str());
     }
 
     SafeRelease(scene);
     RenderObjectsFlusher::Flush();
 }
 
-void SceneSaver::ResaveFile(const String& fileName, Set<String>& errorLog)
+void SceneSaver::ResaveFile(const String& fileName)
 {
     Logger::FrameworkDebug("[SceneSaver::ResaveFile] %s", fileName.c_str());
 
@@ -99,14 +99,14 @@ void SceneSaver::ResaveFile(const String& fileName, Set<String>& errorLog)
     }
     else
     {
-        errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
+        Logger::Error("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str());
     }
 
     SafeRelease(scene);
     RenderObjectsFlusher::Flush();
 }
 
-void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog)
+void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
 {
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
@@ -120,7 +120,8 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName, Set<String>& 
     //scene->Update(0.1f);
 
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
-    SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
+    Set<String> dummy_needBeRefactored;
+    SceneValidator::Instance()->ValidateScene(scene, fileName, dummy_needBeRefactored);
 
     {
         SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
@@ -149,25 +150,25 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName, Set<String>& 
 
     CopyReferencedObject(scene);
     CopyEffects(scene);
-    CopyCustomColorTexture(scene, fileName.GetDirectory(), errorLog);
+    CopyCustomColorTexture(scene, fileName.GetDirectory());
 
     //save scene to new place
     FilePath tempSceneName = sceneUtils.dataSourceFolder + relativeFilename;
     tempSceneName.ReplaceExtension(".saved.sc2");
 
-    sceneUtils.CopyFiles(errorLog);
+    sceneUtils.CopyFiles();
     scene->SaveScene(tempSceneName, false);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
     if (!moved)
     {
-        errorLog.insert(Format("Can't move file %s", fileName.GetAbsolutePathname().c_str()));
+        Logger::Error("Can't move file %s", fileName.GetAbsolutePathname().c_str());
     }
 
     SceneValidator::Instance()->SetPathForChecking(oldPath);
 
     uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-    Logger::Info("Save of %s to folder was done for %ldms", fileName.GetStringValue().c_str(), saveTime);
+    Logger::FrameworkDebug("Save of %s to folder was done for %ldms", fileName.GetStringValue().c_str(), saveTime);
 }
 
 void SceneSaver::CopyTextures(DAVA::Scene* scene)
@@ -192,7 +193,6 @@ void SceneSaver::CopyTexture(const FilePath& texturePathname)
     TextureDescriptor* desc = TextureDescriptor::CreateFromFile(descriptorPathname);
     if (!desc)
     {
-        //errorLog.insert(Format("Can't open file %s", descriptorPathname.GetAbsolutePathname().c_str()));
         Logger::Error("Can't open file %s", descriptorPathname.GetAbsolutePathname().c_str());
         return;
     }
@@ -259,7 +259,7 @@ void SceneSaver::CopyEffects(Entity* node)
     {
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
-            CopyAllParticlesEmitters(effect->GetEmitterData(i));
+            CopyAllParticlesEmitters(effect->GetEmitterInstance(i));
         }
     }
 
@@ -281,14 +281,15 @@ void SceneSaver::CopyEffects(Entity* node)
     effectFolders.clear();
 }
 
-void SceneSaver::CopyAllParticlesEmitters(const ParticleEmitterData& emitterData)
+void SceneSaver::CopyAllParticlesEmitters(ParticleEmitterInstance* instance)
 {
-    const Set<FilePath>& paths = EnumAlternativeEmittersFilepaths(emitterData.originalFilepath);
+    const Set<FilePath>& paths = EnumAlternativeEmittersFilepaths(instance->GetFilePath());
     for (const FilePath& alternativeFilepath : paths)
     {
-        if (alternativeFilepath == emitterData.emitter->configPath)
+        auto emitter = instance->GetEmitter();
+        if (alternativeFilepath == emitter->configPath)
         {
-            CopyEmitter(emitterData.emitter.Get());
+            CopyEmitter(emitter);
         }
         else
         {
@@ -361,7 +362,7 @@ Set<FilePath> SceneSaver::EnumAlternativeEmittersFilepaths(const FilePath& origi
     return qualityFilepaths;
 }
 
-void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder, Set<String>& errorLog)
+void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder)
 {
     Entity* land = FindLandscapeEntity(scene);
     if (!land)
@@ -378,7 +379,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
     FilePath projectPath = ProjectManager::CreateProjectPathFromPath(sceneFolder);
     if (projectPath.IsEmpty())
     {
-        errorLog.insert(Format("Can't copy custom colors texture (%s)", pathname.c_str()));
+        Logger::Error("Can't copy custom colors texture (%s)", pathname.c_str());
         return;
     }
 
@@ -389,7 +390,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
     FilePath newProjectPathname = ProjectManager::CreateProjectPathFromPath(sceneUtils.dataFolder);
     if (newProjectPathname.IsEmpty())
     {
-        errorLog.insert(Format("Can't save custom colors texture (%s)", pathname.c_str()));
+        Logger::Error("Can't save custom colors texture (%s)", pathname.c_str());
         return;
     }
 
@@ -397,7 +398,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
     customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, newTexPathname.GetRelativePathname(newProjectPathname));
 }
 
-void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder, Set<String>& errorLog) const
+void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder) const
 {
     ScopedPtr<FileList> fileList(new FileList(folder));
     for (int32 i = 0; i < fileList->GetCount(); ++i)
@@ -407,18 +408,14 @@ void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder, Set<String>& e
         {
             if (!fileList->IsNavigationDirectory(i))
             {
-                ResaveYamlFilesRecursive(pathname, errorLog);
+                ResaveYamlFilesRecursive(pathname);
             }
         }
-        else
+        else if (pathname.IsEqualToExtension(".yaml"))
         {
-            if (pathname.IsEqualToExtension(".yaml"))
-            {
-                ParticleEmitter* emitter = new ParticleEmitter();
-                emitter->LoadFromYaml(pathname);
-                emitter->SaveToYaml(pathname);
-                SafeRelease(emitter);
-            }
+            ScopedPtr<ParticleEmitter> emitter(new ParticleEmitter());
+            emitter->LoadFromYaml(pathname);
+            emitter->SaveToYaml(pathname);
         }
     }
 }

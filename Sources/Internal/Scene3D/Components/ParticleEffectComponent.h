@@ -38,18 +38,11 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Particles/ParticleGroup.h"
 #include "Particles/ParticleRenderObject.h"
+#include "Particles/ParticleEmitterInstance.h"
 
 namespace DAVA
 {
-class ParticleEmitter;
 class ModifiablePropertyLineBase;
-struct ParticleEmitterData
-{
-    RefPtr<ParticleEmitter> emitter;
-    FilePath originalFilepath;
-    Vector3 spawnPosition;
-};
-
 class ParticleEffectComponent : public Component
 {
     friend class ParticleEffectSystem;
@@ -60,7 +53,7 @@ class ParticleEffectComponent : public Component
 public:
     IMPLEMENT_COMPONENT_TYPE(PARTICLE_EFFECT_COMPONENT);
 
-    enum eState
+    enum eState : uint32
     {
         STATE_PLAYING, //effect is playing
         STATE_STARTING, //effect is starting - on next system update it would be moved to playing state (RunEffect called)
@@ -119,20 +112,6 @@ private:
     void ClearCurrentGroups();
     void SetGroupsFinishing();
 
-    /*effect playback setup       i bit changed logic*/
-    bool stopWhenEmpty; //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
-    float32 effectDuration; //duration for effect
-    uint32 repeatsCount; // note that now it's really count - not depending if effect is stop when empty or by duration - it would be restarted if currRepeatsCount<repetsCount
-    bool clearOnRestart; // when effect is restarted repeatsCount
-
-    float32 playbackSpeed;
-
-    /*state*/
-    float32 time;
-    uint32 currRepeatsCont;
-    bool isPaused;
-    eState state;
-
     /*completion message stuff*/
     Message playbackComplete;
 
@@ -141,18 +120,26 @@ private:
     Map<String, float32> externalValues;
 
     /*Emitters setup*/
-    Vector<ParticleEmitterData> emitterDatas;
+    Vector<RefPtr<ParticleEmitterInstance>> emitterInstances;
 
     ParticleEffectData effectData;
     ParticleRenderObject* effectRenderObject;
 
-    int32 desiredLodLevel, activeLodLevel;
+    eState state = STATE_STOPPED;
+    float32 effectDuration = 100.0f;
+    float32 time = 0.0f;
+    float32 playbackSpeed = 1.0f;
+    uint32 currRepeatsCont = 0;
+    uint32 repeatsCount = -1; // note that now it's really count - not depending if effect is stop when empty or by duration - it would be restarted if currRepeatsCount<repetsCount
+    int32 desiredLodLevel = 1;
+    int32 activeLodLevel = 1;
+
+    bool stopWhenEmpty = false; //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
+    bool clearOnRestart = true; // when effect is restarted repeatsCount
+    bool isPaused = false;
 
 public: //mostly editor commands
-    int32 GetEmittersCount() const;
-    ParticleEmitter* GetEmitter(int32 id) const;
-    int32 GetEmitterId(const ParticleEmitter* emitter) const;
-    void RemoveEmitter(const ParticleEmitter* emitter);
+    uint32 GetEmittersCount() const;
 
     Vector3 GetSpawnPosition(int32 id) const;
     void SetSpawnPosition(int32 id, const Vector3& position);
@@ -160,11 +147,14 @@ public: //mostly editor commands
     FilePath GetOriginalConfigPath(int32 id) const;
     void SetOriginalConfigPath(int32 id, const FilePath& filepath);
 
-    int32 GetEmitterDataId(const ParticleEmitterData& emitter) const;
-    const ParticleEmitterData& GetEmitterData(int32 id) const;
-    void AddEmitterData(const ParticleEmitterData& emitter);
-    void InsertEmitterDataAt(const ParticleEmitterData& emitter, int32 position);
-    void RemoveEmitterData(const ParticleEmitterData& emitter);
+    int32 GetEmitterInstanceIndex(ParticleEmitterInstance* emitter) const;
+    ParticleEmitterInstance* GetEmitterInstance(uint32 id) const;
+    DAVA_DEPRECATED(ParticleEmitter* GetEmitter(uint32 id) const);
+
+    void AddEmitterInstance(ParticleEmitter* emitter);
+    void AddEmitterInstance(ParticleEmitterInstance* emitter);
+    void InsertEmitterInstanceAt(ParticleEmitterInstance* emitter, uint32 position);
+    void RemoveEmitterInstance(ParticleEmitterInstance* emitter);
 
     float32 GetCurrTime();
 
@@ -173,7 +163,7 @@ public: //mostly editor commands
     float32 GetLayerActiveParticlesSquare(ParticleLayer* layer);
 
 public:
-    uint32 loadedVersion;
+    uint32 loadedVersion = 0;
     void CollapseOldEffect(SerializationContext* serializationContext);
 
     INTROSPECTION_EXTEND(ParticleEffectComponent, Component,

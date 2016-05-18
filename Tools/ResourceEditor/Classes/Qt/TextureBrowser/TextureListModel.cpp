@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QFileInfo>
 
+#include "Scene/SelectableGroup.h"
 #include "Render/PixelFormatDescriptor.h"
 
 TextureListModel::TextureListModel(QObject* parent /* = 0 */)
@@ -127,6 +128,18 @@ void TextureListModel::dataReady(const DAVA::TextureDescriptor* desc)
     emit dataChanged(this->index(i), this->index(i));
 }
 
+QModelIndex TextureListModel::getIndex(const DAVA::TextureDescriptor* textureDescriptor)
+{
+    if (textureDescriptor == nullptr)
+        return QModelIndex();
+
+    auto iter = std::find(textureDescriptorsFiltredSorted.begin(), textureDescriptorsFiltredSorted.end(), textureDescriptor);
+    if (iter == textureDescriptorsFiltredSorted.end())
+        return QModelIndex();
+
+    return index(std::distance(textureDescriptorsFiltredSorted.begin(), iter));
+}
+
 void TextureListModel::setFilter(QString filter)
 {
     beginResetModel();
@@ -151,7 +164,7 @@ void TextureListModel::setSortMode(TextureListModel::TextureListSortMode sortMod
     endResetModel();
 }
 
-void TextureListModel::setScene(DAVA::Scene* scene)
+void TextureListModel::setScene(SceneEditor2* scene)
 {
     beginResetModel();
 
@@ -176,9 +189,14 @@ void TextureListModel::setScene(DAVA::Scene* scene)
     applyFilterAndSort();
 
     endResetModel();
+
+    if (activeScene != nullptr)
+    {
+        setHighlight(&activeScene->selectionSystem->GetSelection());
+    }
 }
 
-void TextureListModel::setHighlight(const EntityGroup* nodes)
+void TextureListModel::setHighlight(const SelectableGroup* nodes)
 {
     beginResetModel();
 
@@ -187,9 +205,9 @@ void TextureListModel::setHighlight(const EntityGroup* nodes)
     if (nullptr != nodes)
     {
         SceneHelper::TextureCollector collector;
-        for (const auto& item : nodes->GetContent())
+        for (auto entity : nodes->ObjectsOfType<DAVA::Entity>())
         {
-            SceneHelper::EnumerateEntityTextures(activeScene, item.first, collector);
+            SceneHelper::EnumerateEntityTextures(activeScene, entity, collector);
         }
         DAVA::TexturesMap& nodeTextures = collector.GetTextures();
 

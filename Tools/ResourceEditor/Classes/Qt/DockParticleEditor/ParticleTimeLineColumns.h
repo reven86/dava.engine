@@ -37,13 +37,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////////
 // A specific class to display the per-layer particles info.
-const int32 EXTRA_INFO_DEFAULT_COLUMN_WIDTH = 60;
-const int32 EXTRA_INFO_LEFT_PADDING = 3;
+const DAVA::int32 EXTRA_INFO_DEFAULT_COLUMN_WIDTH = 60;
+const DAVA::int32 EXTRA_INFO_LEFT_PADDING = 3;
 
 // Sizes for specific columns.
-const int32 EXTRA_INFO_COUNT_COLUMN_WIDTH = 40;
-const int32 EXTRA_INFO_MAX_COUNT_COLUMN_WIDTH = 52;
-const int32 EXTRA_INFO_AREA_COLUMN_WIDTH = 50;
+const DAVA::int32 EXTRA_INFO_COUNT_COLUMN_WIDTH = 40;
+const DAVA::int32 EXTRA_INFO_MAX_COUNT_COLUMN_WIDTH = 52;
+const DAVA::int32 EXTRA_INFO_AREA_COLUMN_WIDTH = 50;
 
 class ParticlesExtraInfoColumn : public QWidget
 {
@@ -57,7 +57,7 @@ public:
     virtual void OnLayersListChanged(){};
 
     // This method returns the preferred column's width.
-    virtual int32 GetColumnWidth()
+    virtual DAVA::int32 GetColumnWidth()
     {
         return EXTRA_INFO_DEFAULT_COLUMN_WIDTH;
     };
@@ -70,7 +70,7 @@ protected:
 
     // These methods are to be overriden for derived classes.
     // Get an extra information to be displayed near the line.
-    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+    virtual QString GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
     {
         return QString();
     };
@@ -94,7 +94,7 @@ protected:
     const ParticleTimeLineWidget* timeLineWidget;
 
     // Helper methods.
-    QString FormatFloat(float32 value);
+    QString FormatFloat(DAVA::float32 value);
 };
 
 // Base class for Cumulative Columns.
@@ -108,19 +108,19 @@ public:
 
 protected:
     // Add the value to the Cumulative Data.
-    void UpdateCumulativeData(ParticleLayer* layer, float32 value);
+    void UpdateCumulativeData(DAVA::ParticleLayer* layer, DAVA::float32 value);
 
     // Update the value in Cumulative Data if the new value is bigger than existing one.
-    void UpdateCumulativeDataIfMaximum(ParticleLayer* layer, float32 value);
+    void UpdateCumulativeDataIfMaximum(DAVA::ParticleLayer* layer, DAVA::float32 value);
 
     // Cleanup all the Cumulative Data.
     void CleanupCumulativeData();
 
-    int32 totalParticlesCount;
-    float32 totalParticlesArea;
-    int32 totalUpdatesCount;
+    DAVA::int32 totalParticlesCount;
+    DAVA::float32 totalParticlesArea;
+    DAVA::int32 totalUpdatesCount;
 
-    Map<ParticleLayer*, float32> cumulativeData;
+    DAVA::Map<DAVA::ParticleLayer*, DAVA::float32> cumulativeData;
 };
 
 // Particles Count information.
@@ -131,20 +131,20 @@ public:
     explicit ParticlesCountColumn(const ParticleTimeLineWidget* timeLineWidget,
                                   QWidget* parent = 0);
 
-    virtual int32 GetColumnWidth()
+    virtual DAVA::int32 GetColumnWidth()
     {
         return EXTRA_INFO_COUNT_COLUMN_WIDTH;
     };
 
 protected:
     virtual void OnBeforeGetExtraInfoLoop();
-    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
     virtual QString GetExtraInfoHeader();
     virtual QString GetExtraInfoFooter();
 
 private:
-    int32 totalParticlesCount;
+    DAVA::int32 totalParticlesCount;
 };
 
 class ParticlesAverageCountColumn : public ParticlesExtraInfoCumulativeColumn
@@ -157,7 +157,7 @@ public:
     virtual void Reset();
 
 protected:
-    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
     virtual QString GetExtraInfoHeader();
     virtual QString GetExtraInfoFooter();
@@ -170,7 +170,7 @@ public:
     explicit ParticlesMaxCountColumn(const ParticleTimeLineWidget* timeLineWidget,
                                      QWidget* parent = 0);
 
-    virtual int32 GetColumnWidth()
+    virtual DAVA::int32 GetColumnWidth()
     {
         return EXTRA_INFO_MAX_COUNT_COLUMN_WIDTH;
     };
@@ -178,7 +178,7 @@ public:
     virtual void Reset();
 
 protected:
-    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
     virtual void OnBeforeGetExtraInfoLoop();
     virtual void OnAfterGetExtraInfoLoop();
@@ -187,8 +187,8 @@ protected:
     virtual QString GetExtraInfoFooter();
 
 private:
-    int32 maxParticlesCount;
-    int32 totalParticlesCountOnThisLoop;
+    DAVA::int32 maxParticlesCount;
+    DAVA::int32 totalParticlesCountOnThisLoop;
 };
 
 // Particles Area information.
@@ -198,20 +198,20 @@ class ParticlesAreaColumn : public ParticlesExtraInfoColumn
 public:
     explicit ParticlesAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
                                  QWidget* parent = 0);
-    virtual int32 GetColumnWidth()
+    virtual DAVA::int32 GetColumnWidth()
     {
         return EXTRA_INFO_AREA_COLUMN_WIDTH;
     };
 
 protected:
     virtual void OnBeforeGetExtraInfoLoop();
-    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
     virtual QString GetExtraInfoHeader();
     virtual QString GetExtraInfoFooter();
 
 private:
-    float32 totalParticlesArea;
+    DAVA::float32 totalParticlesArea;
 };
 
 class ParticlesAverageAreaColumn : public ParticlesExtraInfoCumulativeColumn
@@ -223,7 +223,7 @@ public:
     virtual void Reset();
 
 protected:
-    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
     virtual QString GetExtraInfoHeader();
     virtual QString GetExtraInfoFooter();
@@ -239,7 +239,7 @@ public:
     virtual void Reset();
 
 protected:
-    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(DAVA::ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
     virtual void OnBeforeGetExtraInfoLoop();
     virtual void OnAfterGetExtraInfoLoop();
@@ -248,8 +248,8 @@ protected:
     virtual QString GetExtraInfoFooter();
 
 private:
-    float32 maxParticlesArea;
-    float32 totalParticlesAreaOnThisLoop;
+    DAVA::float32 maxParticlesArea;
+    DAVA::float32 totalParticlesAreaOnThisLoop;
 };
 
 
