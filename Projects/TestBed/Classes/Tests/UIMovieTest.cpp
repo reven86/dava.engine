@@ -30,7 +30,7 @@
 
 namespace
 {
-FilePath path = "~res://TestData/MovieTest/bunny.m4v";
+FilePath path = "D:/Projects/Win10/wot.blitz/Data/Video/WG_Logo.m4v";
 }
 
 UIMovieTest::UIMovieTest()

@@ -61,7 +61,6 @@ uint32 StreamBuffer::Read(uint8* dataOut, uint32 len)
         uint32 readSize = ReadInternal(dataOut + bytesRead, readMore);
         readMore -= readSize;
         bytesRead += readSize;
-        currentPageReadPos += readSize;
     }
 
     size -= bytesRead;
@@ -75,9 +74,8 @@ uint32 StreamBuffer::GetSize()
 
 void StreamBuffer::WriteInternal(uint8* dataIn, uint32 len)
 {
-    pages.emplace_back();
+    pages.emplace_back(len);
 
-    pages.back().resize(len);
     Memcpy(pages.back().data(), dataIn, len);
 
     size += len;
@@ -85,16 +83,14 @@ void StreamBuffer::WriteInternal(uint8* dataIn, uint32 len)
 
 uint32 StreamBuffer::ReadInternal(uint8* dataOut, uint32 len)
 {
-    if (pages.size() == 0)
-    {
-        return 0;
-    }
-
-    uint32 dataSize = static_cast<uint32>(pages.front().size()) - currentPageReadPos;
-    uint32 sizeToRead = Min(dataSize, len);
+    const uint32 pageSize = static_cast<uint32>(pages.front().size());
+    const uint32 dataSizeInPage = pageSize - currentPageReadPos;
+    const uint32 sizeToRead = Min(dataSizeInPage, len);
     Memcpy(dataOut, pages.front().data() + currentPageReadPos, sizeToRead);
 
-    if (dataSize == 0)
+    currentPageReadPos += sizeToRead;
+
+    if (pageSize == currentPageReadPos)
     {
         pages.pop_front();
         currentPageReadPos = 0;

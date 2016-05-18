@@ -98,17 +98,23 @@ bool MovieViewControl::IsPlaying() const
 void MovieViewControl::Update()
 {
     if (nullptr == ffmpegPlayer)
+    {
         return;
+    }
 
     ffmpegPlayer->Update();
 
     if (FfmpegPlayer::STOPPED == ffmpegPlayer->GetState())
+    {
         SafeRelease(videoTexture);
+    }
 
     FfmpegPlayer::DrawVideoFrameData drawData = ffmpegPlayer->GetDrawData();
 
     if (PixelFormatDescriptor::TEXTURE_FORMAT_INVALID == drawData.format || 0 == drawData.data.size())
+    {
         return;
+    }
 
     videoTextureBuffer = drawData.data;
     if (nullptr == videoTexture)
