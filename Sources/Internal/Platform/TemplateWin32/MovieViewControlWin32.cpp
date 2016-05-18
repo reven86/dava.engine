@@ -14,7 +14,6 @@ MovieViewControl::MovieViewControl()
     : ffmpegPlayer(new FfmpegPlayer())
     , videoBackground(new UIControlBackground())
 {
-    ffmpegPlayer->Initialize(Rect());
 }
 
 MovieViewControl::~MovieViewControl()

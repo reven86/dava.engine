@@ -131,10 +131,7 @@ public:
     int32 GetChannelsUsed() const;
     int32 GetChannelsMax() const;
 
-    FMOD::System* GetFmodSystem() const
-    {
-        return fmodSystem;
-    }
+    FMOD::System* GetFmodSystem() const;
 
 #ifdef __DAVAENGINE_IPHONE__
     bool IsSystemMusicPlaying();
@@ -171,6 +168,13 @@ protected:
 #endif
 #endif
 };
+
+#ifdef DAVA_FMOD
+inline FMOD::System* SoundSystem::GetFmodSystem() const
+{
+    return fmodSystem;
+}
+#endif
 };
 
 #endif //__DAVAENGINE_SOUND_SYSTEM_H__
