@@ -74,17 +74,58 @@ DAVA_TESTCLASS (PackManagerTest)
     {
         using namespace DAVA;
 
-        FilePath sqliteDbFile("~res:/TestData/SmartDlcTest/test.db");
-        FilePath folderWithDownloadedPacks("~doc:/PackManagerTest/packs/");
+        String dbFile("~res:/TestData/PackManagerTest/packs/testbed_{gpu}.db");
+        FilePath folderWithDownloadedPacks("~doc:/UnitTests/PackManagerTest/packs/");
 
         // every time clear directory to download once again
         FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
         FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
-        String commonPacksUrl("http://127.0.0.1:2424/packs/");
-        String gpuPacksUrl("http://127.0.0.1:2424/packs/");
+        String commonPacksUrl("http://127.0.0.1:2424/packs/common/");
+        String gpuPacksUrl("http://127.0.0.1:2424/packs/{gpu}");
 
-        // TODO start local http server
+        String gpuName = "noname";
+
+        eGPUFamily gpu = DeviceInfo::GetGPUFamily();
+        switch (gpu)
+        {
+        case GPU_ADRENO:
+            gpuName = "adreno";
+            break;
+        case GPU_DX11:
+            gpuName = "dx11";
+            break;
+        case GPU_MALI:
+            gpuName = "mali";
+            break;
+        case GPU_POWERVR_IOS:
+            gpuName = "pvr_ios";
+            break;
+        case GPU_POWERVR_ANDROID:
+            gpuName = "pvr_android";
+            break;
+        case GPU_TEGRA:
+            gpuName = "tegra";
+            break;
+        default:
+            throw std::runtime_error("unknown gpu famili");
+        }
+
+        if (gpu != GPU_DX11)
+        {
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#else
+            // only Win32, MacOs supported
+            return;
+#endif
+        }
+
+        dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
+        gpuPacksUrl.replace(gpuPacksUrl.find("{gpu}"), 5, gpuName);
+
+        FilePath sqliteDbFile(dbFile);
+
+        std::system("python scripts/start_local_http_server.py");
 
         PackManager& packManager = Core::Instance()->GetPackManager();
         packManager.Initialize(sqliteDbFile,
@@ -96,32 +137,21 @@ DAVA_TESTCLASS (PackManagerTest)
 
         packManager.EnableProcessing();
 
-        FilePath fileNotInPack("~res:/no_such_file_in_any_pack.txt");
-
-        String packID = packManager.FindPack(fileNotInPack);
-        TEST_VERIFY(packID.empty() && "no such file in any archive");
-
-        FilePath fileInPack("~res:/TestData/Utf8Test/utf16le.txt");
-
-        String packName = packManager.FindPack(fileInPack);
-
-        TEST_VERIFY(!packName.empty() && "should find file in pack");
-
-        TEST_VERIFY(packName == String("unit_test.pak"));
+        FilePath fileInPack("~res:/Data/3d/Objects/monkey.sc2");
 
         try
         {
-            packName = "unit_test.pak";
+            String packName = "vpack";
 
-            auto& nextState = packManager.RequestPack(packName, 0.1f);
-            if (nextState.state != PackManager::Pack::Status::Mounted)
+            const PackManager::Pack& pack = packManager.RequestPack(packName);
+            if (pack.state != PackManager::Pack::Status::Mounted)
             {
-                TEST_VERIFY(nextState.state == PackManager::Pack::Status::Downloading || nextState.state == PackManager::Pack::Status::Requested);
+                TEST_VERIFY(pack.state == PackManager::Pack::Status::Downloading || pack.state == PackManager::Pack::Status::Requested);
             }
 
             uint32 maxIter = 30;
 
-            while ((nextState.state == PackManager::Pack::Status::Requested || nextState.state == PackManager::Pack::Status::Downloading) && maxIter-- > 0)
+            while ((pack.state == PackManager::Pack::Status::Requested || pack.state == PackManager::Pack::Status::Downloading) && maxIter-- > 0)
             {
                 // wait
                 Thread::Sleep(100);
@@ -130,20 +160,18 @@ DAVA_TESTCLASS (PackManagerTest)
                 packManager.Update();
             }
 
-            TEST_VERIFY(nextState.state == PackManager::Pack::Status::Mounted);
+            TEST_VERIFY(pack.state == PackManager::Pack::Status::Mounted);
 
             ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
             TEST_VERIFY(file);
             if (file)
             {
-                TEST_VERIFY(file->GetSize() == 138); // utf16le.txt - 138 byte
-
                 String fileContent(file->GetSize(), '\0');
                 file->Read(&fileContent[0], static_cast<uint32>(fileContent.size()));
 
                 uint32 crc32 = CRC32::ForBuffer(fileContent.data(), static_cast<uint32>(fileContent.size()));
 
-                TEST_VERIFY(crc32 == 0x60076e58);
+                TEST_VERIFY(crc32 == 0xc8101bca); // crc32 for monkey.sc2
             }
         }
         catch (std::exception& ex)
@@ -152,6 +180,6 @@ DAVA_TESTCLASS (PackManagerTest)
             TEST_VERIFY(false);
         }
 
-        // TODO stop local http server
+        std::system("python scripts/stop_local_http_server.py");
     }
 };
