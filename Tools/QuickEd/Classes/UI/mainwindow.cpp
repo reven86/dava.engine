@@ -498,7 +498,7 @@ void MainWindow::OnActionBackgroundColorTriggered(bool toggled)
 void MainWindow::OnActionCustomBackgroundColorTriggered()
 {
     QColor curColor = customBackgroundColorAction->data().value<QColor>();
-    QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
+    QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::DontUseNativeDialog);
     if (!color.isValid())
     {
         //if we launch app with custom color previous color action will be nullptr
