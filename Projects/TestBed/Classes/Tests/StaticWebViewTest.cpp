@@ -45,7 +45,7 @@ const String htmlCuteCats =
 "      }"
 "    </script>"
 "  </head>"
-"  <body>"
+"  <body text='red'>"
 "      <h1>Cute cats picture</h1><br/>"
 "      <br/>"
 "      <img src='cute-cat-picture.jpg'/>"
