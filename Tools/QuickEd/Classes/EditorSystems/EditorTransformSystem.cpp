@@ -42,7 +42,9 @@
 using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(EditorTransformSystem,
-                              PREF_ARG("magnetRange", DAVA::Vector2(7.0f, 7.0f)),
+                              PREF_ARG("moveMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
+                              PREF_ARG("resizeMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
+                              PREF_ARG("pivotMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("moveStepByKeyboard", static_cast<DAVA::float32>(10.0f)),
                               PREF_ARG("expandedMoveStepByKeyboard", static_cast<DAVA::float32>(1.0f)),
                               PREF_ARG("borderInParentToMagnet", DAVA::Vector2(20.0f, 20.0f)),
@@ -445,8 +447,8 @@ Vector2 EditorTransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<M
         }
 
         MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
-        float32 areaNearLineRight = nearestLine.targetPosition + magnetRange[axis];
-        float32 areaNearLineLeft = nearestLine.targetPosition - magnetRange[axis];
+        float32 areaNearLineRight = nearestLine.targetPosition + moveMagnetRange[axis];
+        float32 areaNearLineLeft = nearestLine.targetPosition - moveMagnetRange[axis];
         if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
         {
             Vector2 oldDelta(delta);
@@ -678,7 +680,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
 
             MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
             float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
-            float32 rangeForPosition = magnetRange[axis] * share;
+            float32 rangeForPosition = resizeMagnetRange[axis] * share;
             float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
             float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
 
@@ -748,7 +750,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     const Vector2 rotatedDeltaPivot(::Rotate(delta, -controlGeometricData.angle));
     Vector2 deltaPivot(rotatedDeltaPivot / controlSize);
 
-    const Vector2 range(magnetRange / controlSize); //range in pivot coordinates
+    const Vector2 range(pivotMagnetRange / controlSize); //range in pivot coordinates
 
     Vector2 origPivot = pivotProperty->GetValue().AsVector2();
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);

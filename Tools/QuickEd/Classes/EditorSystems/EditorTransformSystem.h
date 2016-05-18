@@ -109,7 +109,9 @@ private:
     AbstractProperty* angleProperty = nullptr;
     AbstractProperty* pivotProperty = nullptr;
 
-    DAVA::Vector2 magnetRange;
+    DAVA::Vector2 moveMagnetRange;
+    DAVA::Vector2 resizeMagnetRange;
+    DAVA::Vector2 pivotMagnetRange;
     DAVA::float32 moveStepByKeyboard;
     DAVA::float32 expandedMoveStepByKeyboard;
     DAVA::Vector2 borderInParentToMagnet;
@@ -120,7 +122,9 @@ private:
 
 public:
     INTROSPECTION(EditorTransformSystem,
-                  MEMBER(magnetRange, "Control Transformations/Mouse magnet distance", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(moveMagnetRange, "Control Transformations/Mouse magnet distance on move", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(resizeMagnetRange, "Control Transformations/Mouse magnet distance on resize", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  MEMBER(pivotMagnetRange, "Control Transformations/Mouse magnet distance on move pivot point", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   MEMBER(moveStepByKeyboard, "Control Transformations/Move distance by keyboard", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(expandedMoveStepByKeyboard, "Control Transformations/Move distance by keyboard alternate", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(borderInParentToMagnet, "Control Transformations/Magnet distance inside", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
