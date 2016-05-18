@@ -29,10 +29,12 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "PackManager/PackManager.h"
 
 namespace DAVA
 {
+class PackManagerImpl;
+
 class PackRequest
 {
 public:

@@ -27,6 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "PackManager/Private/RequestQueue.h"
+#include "FileSystem/FileSystem.h"
+#include "Utils/CRC32.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 
 namespace DAVA
 {

@@ -32,6 +32,7 @@
 #include <Utils/CRC32.h>
 #include <DLC/Downloader/DownloadManager.h>
 #include <Core/Core.h>
+#include <Platform/DeviceInfo.h>
 
 #include "UnitTests/UnitTests.h"
 

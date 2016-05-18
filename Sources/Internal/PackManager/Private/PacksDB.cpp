@@ -90,6 +90,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PackManager/Private/PacksDB.h"
 #include <sqlite_modern_cpp.h>
 #include "MemoryManager/MemoryManager.h"
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
