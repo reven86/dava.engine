@@ -31,6 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/Focus/UIFocusComponent.h"
 #include "Render/2D/TextLayout.h"
 
+#include "Utils/TextBox.h"
+
 using namespace DAVA;
 
 namespace
@@ -102,12 +104,20 @@ void StaticTextTest::LoadResources()
     BaseScreen::LoadResources();
 
     RefPtr<Font> arabFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
-    WideString test = L"؜توفيرها (من) قبل DAVA، INC والمساهمين";
-    TextLayout tl(true);
-    tl.Reset(test);
-    tl.CalculateCharSizes(*arabFont);
-    tl.NextByWords(99999);
-    tl.GetVisualText(true);
+    //WideString test = L"؜توفيرها (من) قبل DAVA، INC والمساهمين";
+    WideString test = L"شارات التفوق: وسام الاحتراف";
+    //     TextLayout tl(true);
+    //     tl.Reset(test);
+    //     tl.CalculateCharSizes(*arabFont);
+    //     tl.NextByWords(99999);
+    //     tl.GetVisualText(true);
+
+    TextBox box;
+    box.SetText(test);
+    box.SetFont(arabFont.Get());
+    box.Shape();
+    box.Wrap(100.f);
+    box.Reorder();
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
     ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
