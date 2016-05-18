@@ -67,7 +67,7 @@ void CreateDAVA()
     DAVA::FileSystem::Instance()->SetDefaultDocumentsDirectory();
     DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
-    //new DAVA::LocalizationSystem();
+    new DAVA::LocalizationSystem();
     new DAVA::SystemTimer();
 
     DAVA::Thread::InitMainThread();
