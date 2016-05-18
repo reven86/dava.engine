@@ -35,17 +35,18 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     : ValueProperty(aMember->Desc().text, DAVA::VariantType::TypeFromMetaInfo(aMember->Type()), true, &aMember->Desc())
     , member(aMember)
 {
-    DAVA::VariantType value = PreferencesStorage::Instance()->GetDefaultValue(member);
-    if (value.type != DAVA::VariantType::TYPE_NONE)
+    DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetDefaultValue(member);
+    if (defaultValue.type != DAVA::VariantType::TYPE_NONE)
     {
-        ValueProperty::SetDefaultValue(value);
+        ValueProperty::SetDefaultValue(defaultValue);
     }
     else
     {
         DAVA::VariantType::eVariantType type = ValueProperty::GetValueType();
         ValueProperty::SetDefaultValue(DAVA::VariantType::FromType(type));
     }
-    PreferencesIntrospectionProperty::SetValue(PreferencesStorage::Instance()->GetValue(member));
+    valueOnOpen = PreferencesStorage::Instance()->GetValue(member);
+    value = valueOnOpen;
     DAVA::String name(aMember->Desc().text);
     DAVA::size_type index = name.find_last_of('/');
     if (index == DAVA::String::npos)
@@ -60,7 +61,7 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
 
 void PreferencesIntrospectionProperty::ApplyPreference()
 {
-    if (IsOverriddenLocally())
+    if (value != valueOnOpen)
     {
         PreferencesStorage::Instance()->SetValue(member, GetValue());
     }

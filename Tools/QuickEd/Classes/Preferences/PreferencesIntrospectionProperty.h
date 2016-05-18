@@ -61,5 +61,6 @@ public:
 
 protected:
     DAVA::VariantType value;
+    DAVA::VariantType valueOnOpen;
     const DAVA::InspMember* member;
 };
