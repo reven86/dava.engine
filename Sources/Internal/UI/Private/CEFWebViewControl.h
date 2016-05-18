@@ -86,14 +86,18 @@ public:
 
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
-
+    void Input(UIEvent* currentInput) override;
     void Update() override;
 
 private:
     // CefClient interface realization
     CefRefPtr<CefRenderHandler> GetRenderHandler() override;
-
     void LoadHtml(const CefString& html, const CefString& url);
+
+    void OnMouseMove(UIEvent* input);
+    void OnMouseClick(UIEvent* input);
+    void OnKey(UIEvent* input);
+
     IMPLEMENT_REFCOUNTING(WebViewControl);
 
     UIWebView& webView;

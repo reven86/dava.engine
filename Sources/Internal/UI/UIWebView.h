@@ -87,6 +87,7 @@ public:
     void CopyDataFrom(UIControl* srcControl) override;
 
     void SystemDraw(const UIGeometricData& geometricData) override;
+    void Input(UIEvent* currentInput) override;
 
     void Update(float32 timeElapsed) override;
 

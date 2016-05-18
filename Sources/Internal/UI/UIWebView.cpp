@@ -259,6 +259,12 @@ void UIWebView::SystemDraw(const DAVA::UIGeometricData& geometricData)
     webViewControl->DidDraw();
 }
 
+void UIWebView::Input(UIEvent* currentInput)
+{
+    webViewControl->Input(currentInput);
+    UIControl::Input(currentInput);
+}
+
 void UIWebView::Update(float32 timeElapsed)
 {
     webViewControl->Update();

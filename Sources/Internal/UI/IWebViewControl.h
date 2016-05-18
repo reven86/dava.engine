@@ -144,6 +144,9 @@ public:
     virtual void DidDraw()
     {
     }
+    virtual void Input(class UIEvent* currentInput)
+    {
+    }
 
     virtual void Update()
     {

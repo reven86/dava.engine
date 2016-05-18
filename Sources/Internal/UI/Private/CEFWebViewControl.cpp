@@ -33,6 +33,7 @@
 #include <cef/include/cef_scheme.h>
 #include "UI/Private/CEFWebPageRender.h"
 
+#include "UI/UIEvent.h"
 #include "UI/Private/CEFWebViewControl.h"
 #include "UI/UIWebView.h"
 
@@ -107,6 +108,14 @@ bool WebViewControl::IsRenderToTexture() const
     return true;
 }
 
+void WebViewControl::Input(UIEvent* currentInput)
+{
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        OnMouseClick(currentInput);
+    }
+}
+
 void WebViewControl::Update()
 {
     cefController.Update();
@@ -124,6 +133,19 @@ void WebViewControl::LoadHtml(const CefString& html, const CefString& url)
     // loading of "about:blank" is needed for loading string
     frame->LoadURL("about:blank");
     frame->LoadString(html, url);
+}
+
+void WebViewControl::OnMouseMove(UIEvent* input)
+{
+}
+
+void WebViewControl::OnMouseClick(UIEvent* input)
+{
+    CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
+}
+
+void WebViewControl::OnKey(UIEvent* input)
+{
 }
 
 } // namespace DAVA
