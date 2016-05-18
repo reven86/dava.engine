@@ -28,17 +28,15 @@
 
 
 #include <cef/include/cef_app.h>
+#include "Base/Platform.h"
 
-int main()
+int main(int argc, char* argv[])
 {
+#ifdef __DAVAENGINE_WINDOWS__
     CefMainArgs mainArgs(::GetModuleHandle(nullptr));
+#else
+    CefMainArgs mainArgs(argc, argv);
+#endif
+
     return CefExecuteProcess(mainArgs, nullptr, nullptr);
-}
-
-void FrameworkDidLaunched()
-{
-}
-
-void FrameworkWillTerminate()
-{
 }

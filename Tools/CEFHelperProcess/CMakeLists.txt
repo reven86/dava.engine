@@ -1,17 +1,20 @@
 cmake_minimum_required (VERSION 3.0)
 project ( CEFHelperProcess )
 
-set    ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
-include( CMake-common )
-find_package( DavaFramework REQUIRED )
+if ( X64_MODE )
+    set ( ARCH "x64" )
+else ()
+    set ( ARCH "x86" )
+endif ()
 
-if ( NOT ENABLE_CEF )
-    message( FATAL_ERROR "Chromium Embedded Framework is not enabled" )
-endif()
+set ( DAVA_ENGINE_LIBS "${CMAKE_CURRENT_LIST_DIR}/../../Libs" )
+set ( DAVA_ENGINE_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Internal" )
+set ( CEF_LIBS "${DAVA_ENGINE_LIBS}/lib_CMake/win/${ARCH}/Release" )
+set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT" ) 
 
-define_source_folders ( SRC_ROOT "Classes"  )
-generate_source_groups_project( SRC_ROOT "Classes" )
-setup_main_executable()
+include_directories ( "${DAVA_ENGINE_INCLUDES}" 
+                      "${DAVA_ENGINE_LIBS}/include" 
+                      "${DAVA_ENGINE_LIBS}/include/cef" )
 
-set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE" )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
+add_executable( ${PROJECT_NAME} main.cpp )
+target_link_libraries( ${PROJECT_NAME} "${CEF_LIBS}/libcef.lib" "${CEF_LIBS}/libcef_dll_wrapper.lib" )
