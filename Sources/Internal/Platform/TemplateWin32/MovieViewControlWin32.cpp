@@ -22,7 +22,6 @@ MovieViewControl::~MovieViewControl()
     SafeDelete(ffmpegPlayer);
     SafeRelease(videoTexture);
     SafeRelease(videoBackground);
-    SafeDeleteArray(videoTextureBuffer);
 }
 
 void MovieViewControl::Initialize(const Rect& rect)
@@ -71,16 +70,13 @@ void MovieViewControl::Play()
     textureHeight = NextPowerOf2(static_cast<uint32>(res.dy));
     uint32 size = textureWidth * textureHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(ffmpegPlayer->GetPixelFormat());
 
-    SafeDeleteArray(videoTextureBuffer);
-    videoTextureBuffer = new uint8[size];
-
-    Memset(videoTextureBuffer, 0, size);
+    videoTextureBuffer.resize(size);
+    Memset(videoTextureBuffer.data(), 0, size);
 }
 
 void MovieViewControl::Stop()
 {
     ffmpegPlayer->Stop();
-    SafeDeleteArray(videoTextureBuffer);
     SafeRelease(videoTexture);
 }
 
@@ -111,27 +107,29 @@ void MovieViewControl::Update()
 
     FfmpegPlayer::DrawVideoFrameData drawData = ffmpegPlayer->GetDrawData();
 
-    if (nullptr == videoTextureBuffer || PixelFormatDescriptor::TEXTURE_FORMAT_INVALID == drawData.format || 0 == drawData.data.size())
+    if (PixelFormatDescriptor::TEXTURE_FORMAT_INVALID == drawData.format || 0 == drawData.data.size())
         return;
 
-    Memcpy(videoTextureBuffer, drawData.data.data(), drawData.data.size());
+    videoTextureBuffer = drawData.data;
     if (nullptr == videoTexture)
     {
-        videoTexture = Texture::CreateFromData(drawData.format, videoTextureBuffer, textureWidth, textureHeight, false);
+        videoTexture = Texture::CreateFromData(drawData.format, reinterpret_cast<uint8*>(videoTextureBuffer.data()), textureWidth, textureHeight, false);
         Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, drawData.frameWidth, drawData.frameHeight, static_cast<float32>(drawData.frameWidth), static_cast<float32>(drawData.frameHeight));
         videoBackground->SetSprite(videoSprite);
         videoSprite->Release();
     }
     else
     {
-        videoTexture->TexImage(0, textureWidth, textureHeight, videoTextureBuffer, static_cast<uint32>(drawData.data.size()), Texture::INVALID_CUBEMAP_FACE);
+        videoTexture->TexImage(0, textureWidth, textureHeight, reinterpret_cast<uint8*>(videoTextureBuffer.data()), static_cast<uint32>(drawData.data.size()), Texture::INVALID_CUBEMAP_FACE);
     }
 }
 
 void MovieViewControl::Draw(const UIGeometricData& parentGeometricData)
 {
-    if (videoTexture)
+    if (nullptr != videoTexture)
+    {
         videoBackground->Draw(parentGeometricData);
+    }
 }
 }
 

@@ -68,9 +68,9 @@ public:
     struct DrawVideoFrameData
     {
         Vector<uint8> data;
-        uint32 frameHeight;
-        uint32 frameWidth;
-        PixelFormat format;
+        uint32 frameHeight = 0;
+        uint32 frameWidth = 0;
+        PixelFormat format = PixelFormat::FORMAT_INVALID;
     };
 
     // Data getter

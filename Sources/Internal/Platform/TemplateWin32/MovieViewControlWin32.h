@@ -47,7 +47,7 @@ private:
 
     Texture* videoTexture = nullptr;
     UIControlBackground* videoBackground = nullptr;
-    uint8* videoTextureBuffer = nullptr;
+    Vector<uint8> videoTextureBuffer;
     uint32 textureWidth = 0;
     uint32 textureHeight = 0;
     uint32 textureDataLen = 0;
