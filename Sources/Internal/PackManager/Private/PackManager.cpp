@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PackManager/PackManager.h"
 #include "PackManager/Private/PackManagerImpl.h"
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
