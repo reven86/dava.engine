@@ -154,13 +154,8 @@ gles2_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
     Handle handle = VertexBufferGLES2Pool::Alloc();
     VertexBufferGLES2_t* vb = VertexBufferGLES2Pool::Get(handle);
 
-    if (vb->Create(desc))
-    {
-        VertexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        vb->UpdateCreationDesc(creationDesc);
-    }
-    else
+    vb->UpdateCreationDesc(desc);
+    if (vb->Create(desc) == false)
     {
         VertexBufferGLES2Pool::Free(handle);
         handle = InvalidHandle;

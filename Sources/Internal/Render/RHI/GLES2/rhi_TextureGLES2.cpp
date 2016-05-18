@@ -403,13 +403,8 @@ gles2_Texture_Create(const Texture::Descriptor& desc)
     Handle handle = TextureGLES2Pool::Alloc();
     TextureGLES2_t* tex = TextureGLES2Pool::Get(handle);
 
-    if (tex->Create(desc))
-    {
-        Texture::Descriptor creationDesc(desc);
-        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
-        tex->UpdateCreationDesc(creationDesc);
-    }
-    else
+    tex->UpdateCreationDesc(desc);
+    if (tex->Create(desc) == false)
     {
         TextureGLES2Pool::Free(handle);
         handle = InvalidHandle;

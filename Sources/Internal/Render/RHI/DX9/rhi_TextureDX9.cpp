@@ -346,13 +346,8 @@ dx9_Texture_Create(const Texture::Descriptor& desc)
     Handle handle = TextureDX9Pool::Alloc();
     TextureDX9_t* tex = TextureDX9Pool::Get(handle);
 
-    if (tex->Create(desc))
-    {
-        Texture::Descriptor creationDesc(desc);
-        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
-        tex->UpdateCreationDesc(creationDesc);
-    }
-    else
+    tex->UpdateCreationDesc(desc);
+    if (tex->Create(desc) == false)
     {
         TextureDX9Pool::Free(handle);
         handle = InvalidHandle;

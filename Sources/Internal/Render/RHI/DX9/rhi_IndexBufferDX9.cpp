@@ -157,13 +157,8 @@ dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     Handle handle = IndexBufferDX9Pool::Alloc();
     IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get(handle);
 
-    if (ib->Create(desc))
-    {
-        IndexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        ib->UpdateCreationDesc(creationDesc);
-    }
-    else
+    ib->UpdateCreationDesc(desc);
+    if (ib->Create(desc) == false)
     {
         IndexBufferDX9Pool::Free(handle);
         handle = InvalidHandle;

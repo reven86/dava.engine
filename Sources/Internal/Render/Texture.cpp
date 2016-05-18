@@ -942,12 +942,23 @@ void Texture::RestoreRenderResource()
     Vector<Image*> images;
 
     const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
-    if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
-        relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
-        relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
+    FilePath::ePathType pathType = relativePathname.GetType();
+    if (pathType == FilePath::PATH_IN_FILESYSTEM ||
+        pathType == FilePath::PATH_IN_RESOURCES ||
+        pathType == FilePath::PATH_IN_DOCUMENTS)
     {
         eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);
         LoadImages(gpuForLoading, &images);
+    }
+    else if (pathType == FilePath::PATH_EMPTY) // textures, created from data in memory
+    {
+        Image* img = Image::Create(width, height, FORMAT_RGBA8888);
+        img->cubeFaceID = 0;
+        img->mipmapLevel = 0;
+        img->dataSize = width * height * 4;
+        img->data = new uint8[img->dataSize];
+        std::fill(img->data, img->data + img->dataSize, 0);
+        images.push_back(img);
     }
     else if (isPink)
     {

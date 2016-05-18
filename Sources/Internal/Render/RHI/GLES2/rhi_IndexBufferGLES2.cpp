@@ -179,13 +179,8 @@ gles2_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     Handle handle = IndexBufferGLES2Pool::Alloc();
     IndexBufferGLES2_t* ib = IndexBufferGLES2Pool::Get(handle);
 
-    if (ib->Create(desc))
-    {
-        IndexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        ib->UpdateCreationDesc(creationDesc);
-    }
-    else
+    ib->UpdateCreationDesc(desc);
+    if (ib->Create(desc) == false)
     {
         IndexBufferGLES2Pool::Free(handle);
         handle = InvalidHandle;

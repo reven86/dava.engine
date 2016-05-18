@@ -283,6 +283,7 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
 {
     unsigned count = 0;
 
+    ObjectSync.Lock();
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         DT desc = i->CreationDesc();
@@ -292,6 +293,7 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
         i->MarkNeedRestore();
         ++count;
     }
+    ObjectSync.Unlock();
 
     return count;
 }
@@ -320,7 +322,9 @@ public:
     void UpdateCreationDesc(const DT& desc)
     {
         creationDesc = desc;
+        memset(&creationDesc.initialData, 0, sizeof(creationDesc.initialData));
     }
+
     void MarkNeedRestore()
     {
         if (!needRestore && creationDesc.needRestore)

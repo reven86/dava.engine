@@ -159,13 +159,8 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
     Handle handle = VertexBufferDX9Pool::Alloc();
     VertexBufferDX9_t* vb = VertexBufferDX9Pool::Get(handle);
 
-    if (vb->Create(desc))
-    {
-        VertexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        vb->UpdateCreationDesc(creationDesc);
-    }
-    else
+    vb->UpdateCreationDesc(desc);
+    if (vb->Create(desc) == false)
     {
         VertexBufferDX9Pool::Free(handle);
         handle = InvalidHandle;
