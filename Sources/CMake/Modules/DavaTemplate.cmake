@@ -631,7 +631,7 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
 endforeach ()
 
 
-if (NGT_FOUND)
+if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
     get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
 
     foreach( ITEM   ${NGT_LIBS} ${NGT_PLUGINS} )
