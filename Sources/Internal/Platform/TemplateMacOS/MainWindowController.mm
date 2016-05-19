@@ -35,6 +35,8 @@
 #import <AppKit/NSApplication.h>
 #import "Platform/TemplateMacOS/HelperAppDelegate.h"
 
+using namespace DAVA;
+
 @interface DavaApp : NSApplication
 @end
 
