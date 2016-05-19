@@ -140,16 +140,16 @@ void MovieViewControl::Update()
             {
                 float32 visibleFrameHeight = drawData.frameWidth / drawingRectAspect;
                 float32 dh = drawData.frameHeight - visibleFrameHeight;
-                uint32 dy = dh / 2;
-                textureRectToMap = Rect(0, dy, drawData.frameWidth, visibleFrameHeight);
+                float32 dy = dh / 2;
+                textureRectToMap = Rect(0, dy, static_cast<float32>(drawData.frameWidth), visibleFrameHeight);
             }
             else
             {
                 float32 visibleFrameWidth = drawData.frameHeight * drawingRectAspect;
                 float32 dl = drawData.frameWidth - visibleFrameWidth;
-                uint32 dx = dl / 2;
+                float32 dx = dl / 2;
 
-                textureRectToMap = Rect(dx, 0, visibleFrameWidth, drawData.frameHeight);
+                textureRectToMap = Rect(dx, 0, visibleFrameWidth, static_cast<float32>(drawData.frameHeight));
             }
 
             spriteSizeFill = Vector2(static_cast<float32>(controlRect.dx), static_cast<float32>(controlRect.dy));
@@ -161,12 +161,17 @@ void MovieViewControl::Update()
             break;
         case scalingModeFill:
         case scalingModeAspectFit:
-            textureRectToMap = Rect(0, 0, drawData.frameWidth, drawData.frameHeight);
+            textureRectToMap = Rect(0, 0, static_cast<float32>(drawData.frameWidth), static_cast<float32>(drawData.frameHeight));
             spriteSizeFill = Vector2(static_cast<float32>(drawData.frameWidth), static_cast<float32>(drawData.frameHeight));
             break;
         }
 
-        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, textureRectToMap.x, textureRectToMap.y, textureRectToMap.dx, textureRectToMap.dy, static_cast<float32>(spriteSizeFill.dx), static_cast<float32>(spriteSizeFill.dy));
+        uint32 tx = static_cast<uint32>(textureRectToMap.x);
+        uint32 ty = static_cast<uint32>(textureRectToMap.y);
+        uint32 tdx = static_cast<uint32>(textureRectToMap.dx);
+        uint32 tdy = static_cast<uint32>(textureRectToMap.dy);
+
+        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, tx, ty, tdx, tdy, spriteSizeFill.dx, spriteSizeFill.dy);
         videoBackground->SetSprite(videoSprite);
         videoSprite->Release();
     }
