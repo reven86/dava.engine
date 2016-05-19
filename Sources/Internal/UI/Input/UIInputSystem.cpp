@@ -432,14 +432,16 @@ void UIInputSystem::HandleKeyEvent(UIEvent* event)
         UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
         while (c != nullptr)
         {
-            if (c->SystemProcessInput(event))
+            RefPtr<UIControl> current;
+            current = c;
+            if (current->SystemProcessInput(event))
             {
                 break;
             }
 
             if (phase == UIEvent::Phase::KEY_DOWN)
             {
-                UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
+                UIActionBindingComponent* actionBindingComponent = current->GetComponent<UIActionBindingComponent>();
                 if (actionBindingComponent)
                 {
                     FastName action = actionBindingComponent->GetInputMap().FindAction(shortcut);
@@ -450,11 +452,12 @@ void UIInputSystem::HandleKeyEvent(UIEvent* event)
                 }
             }
 
-            if (c == rootControl)
+            if (current.Get() == rootControl)
             {
                 break;
             }
-            c = c->GetParent();
+
+            c = current->GetParent();
         }
     }
 

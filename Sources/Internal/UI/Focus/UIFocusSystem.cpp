@@ -33,8 +33,6 @@
 #include "UI/Focus/FocusHelpers.h"
 #include "UI/Focus/DirectionBasedNavigationAlgorithm.h"
 #include "UI/Focus/TabTraversalAlgorithm.h"
-#include "UI/Input/UIActionBindingComponent.h" // TODO: Fix dependencies
-#include "UI/Input/UIActionComponent.h" // TODO: Fix dependencies
 
 #include "UI/UIControl.h"
 #include "UI/UIList.h"
