@@ -34,7 +34,20 @@
 #include <Core/Core.h>
 #include <Platform/DeviceInfo.h>
 
+#include <cstdlib>
+
 #include "UnitTests/UnitTests.h"
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+
+void doProcess(const char* commandLine)
+{
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+    std::system(commandLine);
+#else
+    throw std::runtime_error("this test need to start Python local HTTP server it works only on Win32 and MacOs");
+#endif
+}
 
 class GameClient
 {
@@ -112,21 +125,12 @@ DAVA_TESTCLASS (PackManagerTest)
             throw std::runtime_error("unknown gpu famili");
         }
 
-        if (gpu != GPU_DX11)
-        {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-#else
-            // only Win32, MacOs supported
-            return;
-#endif
-        }
-
         dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
         gpuPacksUrl.replace(gpuPacksUrl.find("{gpu}"), 5, gpuName);
 
         FilePath sqliteDbFile(dbFile);
 
-        std::system("python scripts/start_local_http_server.py");
+        doProcess("python scripts/start_local_http_server.py");
 
         PackManager& packManager = Core::Instance()->GetPackManager();
         packManager.Initialize(sqliteDbFile,
@@ -181,6 +185,8 @@ DAVA_TESTCLASS (PackManagerTest)
             TEST_VERIFY(false);
         }
 
-        std::system("python scripts/stop_local_http_server.py");
+        doProcess("python scripts/stop_local_http_server.py");
     }
 };
+
+#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
