@@ -61,53 +61,23 @@
 
 #include "Engine/Engine.h"
 
-struct my_game : public DAVA::IGame
-{
-    void OnGameLoopStarted() override
-    {
-        Logger::Error("my_game::OnGameLoopStarted");
-    }
-    void OnGameLoopStopped() override
-    {
-        Logger::Error("my_game::OnGameLoopStopped");
-    }
-
-    void OnUpdate(float32 timeElapsed) override
-    {
-    }
-
-    void OnNativeCreated(Window* w)
-    {
-        Logger::Error("my_game::OnNativeCreated");
-    }
-    void OnNativeDestroyed(Window* w)
-    {
-        Logger::Error("my_game::OnNativeDestroyed");
-    }
-    void OnVisibilityChanged(Window* w, bool visible)
-    {
-        Logger::Error("my_game::OnVisibilityChanged: visible=%d", visible);
-    }
-    void OnFocusChanged(Window* w, bool focused)
-    {
-        Logger::Error("my_game::OnFocusChanged: focused=%d", focused);
-    }
-    void OnSizeChanged(Window* wnd, float32 w, float32 h)
-    {
-        Logger::Error("my_game::OnSizeChanged: w=%.1f, h=%.1f", w, h);
-    }
-    void OnScaleChanged(Window* wnd, float32 sx, float32 sy)
-    {
-        Logger::Error("my_game::OnScaleChanged: sx=%.1f, sy=%.1f", sx, sy);
-    }
-};
-
 int GameMain(DAVA::Vector<DAVA::String> args)
 {
     DAVA::Engine e;
     e.Init(false, Vector<String>());
 
     GameCore game;
+
+    KeyedArchive* appOptions = new KeyedArchive();
+    appOptions->SetString(String("title"), String("TestBed"));
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+    appOptions->SetInt32("width", 1024);
+    appOptions->SetInt32("height", 768);
+    e.SetOptions(appOptions);
+
     //my_game g;
     //Window* pw = e.PrimaryWindow();
     //pw->signalNativeWindowCreated.Connect(&g, &my_game::OnNativeCreated);
@@ -180,7 +150,9 @@ void GameCore::RegisterTests()
     new WebViewTest();
     new FunctionSignalTest();
     new KeyboardTest();
+#if !defined(__DAVAENGINE_COREV2__)
     new FullscreenTest();
+#endif
     new UIBackgroundTest();
     new ClipTest();
     new InputTest();

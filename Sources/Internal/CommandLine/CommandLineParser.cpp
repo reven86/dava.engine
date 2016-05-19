@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CommandLine/CommandLineParser.h"
 #include "Core/Core.h"
 
+#include "Engine/Public/Engine.h"
+
 #include <stdlib.h>
 #include <cerrno>
 
@@ -144,7 +146,11 @@ bool CommandLineParser::CommandIsFound(const DAVA::String& command)
 
 DAVA::String CommandLineParser::GetCommand(DAVA::uint32 commandPosition)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    const Vector<String>& commandLine = Engine::Instance()->GetCommandLine();
+#else
     const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
+#endif
     if (commandPosition < commandLine.size())
     {
         return commandLine[commandPosition];
@@ -157,7 +163,11 @@ DAVA::int32 CommandLineParser::GetCommandPosition(const DAVA::String& command)
 {
     int32 position = INVALID_POSITION;
 
+#if defined(__DAVAENGINE_COREV2__)
+    const Vector<String>& commandLine = Engine::Instance()->GetCommandLine();
+#else
     const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
+#endif
     for (size_t i = 0; i < commandLine.size(); ++i)
     {
         if (command == commandLine[i])
@@ -192,7 +202,11 @@ String CommandLineParser::GetCommandParamAdditional(const String& command, const
 
 int32 CommandLineParser::GetCommandsCount()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    const Vector<String>& commandLine = Engine::Instance()->GetCommandLine();
+#else
     const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
+#endif
     return static_cast<int32>(commandLine.size());
 }
 };

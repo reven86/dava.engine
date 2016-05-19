@@ -42,7 +42,9 @@ class EngineBackend;
 
 class SystemTimer : public Singleton<SystemTimer>
 {
+#if !defined(__DAVAENGINE_COREV2__)
     friend class Core;
+#endif
     friend class Private::EngineBackend;
     
 #if defined(__DAVAENGINE_WINDOWS__)

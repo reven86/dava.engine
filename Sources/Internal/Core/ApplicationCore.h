@@ -30,6 +30,8 @@
 #ifndef __DAVAENGINE_APPLICATION_CORE__
 #define __DAVAENGINE_APPLICATION_CORE__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseObject.h"
 
 namespace DAVA
@@ -304,4 +306,5 @@ private:
 };
 };
 
+#endif // !__DAVAENGINE_COREV2__
 #endif

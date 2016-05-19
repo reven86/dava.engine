@@ -55,5 +55,7 @@ void CoreTest::UnloadResources()
 
 void CoreTest::Quit(BaseObject* obj, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     Core::Instance()->Quit();
+#endif
 }

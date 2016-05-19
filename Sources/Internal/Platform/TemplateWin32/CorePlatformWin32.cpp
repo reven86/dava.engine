@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -1094,3 +1096,4 @@ void ShowRunningApplication()
 
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
+#endif // !__DAVAENGINE_COREV2__

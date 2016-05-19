@@ -31,10 +31,19 @@ public:
     int Run(IGame* gameObject);
     void Quit();
 
+    // Dummy methods for now
+    uint32 GetGlobalFrameIndex() const;
+    const Vector<String>& GetCommandLine() const;
+    bool IsConsoleMode() const;
+
+    void SetOptions(KeyedArchive* archiveOfOptions);
+    KeyedArchive* GetOptions();
+
     void RunAsyncOnMainThread(const Function<void()>& task);
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
+    KeyedArchive* options = nullptr;
 };
 
 } // namespace DAVA

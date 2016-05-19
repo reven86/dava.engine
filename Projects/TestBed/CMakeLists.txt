@@ -8,6 +8,7 @@ if( NOT DAVA_MEGASOLUTION )
 endif()
 
 add_definitions(-D__DAVAENGINE_COREV2__)
+add_definitions(-DDISABLE_NATIVE_WEBVIEW)
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )

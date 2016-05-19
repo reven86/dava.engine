@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if !defined(__DAVAENGINE_COREV2__)
 
 #include "Core/ApplicationCore.h"
 #include "Animation/AnimationManager.h"
@@ -214,3 +215,5 @@ void ApplicationCore::OnFocusReceived()
     // Default implementation is empty.
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__

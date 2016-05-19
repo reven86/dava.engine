@@ -10,7 +10,6 @@
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
 #include "Core/ApplicationCore.h"
-#include "Core/Core.h"
 #include "Core/PerformanceSettings.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIScreenManager.h"
@@ -73,17 +72,6 @@ void Engine::Init(bool consoleMode, const Vector<String>& modules)
     engineBackend->Init(consoleMode);
 
     // init modules
-    new Core;
-
-    KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString(String("title"), String("TestBed"));
-    appOptions->SetInt32("renderer", rhi::RHI_DX11);
-    appOptions->SetInt32("fullscreen", 0);
-    appOptions->SetInt32("bpp", 32);
-    appOptions->SetInt32("rhi_threaded_frame_count", 2);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
-    Core::Instance()->SetOptions(appOptions);
 
     new Logger();
     new AllocatorFactory();
@@ -147,6 +135,32 @@ void Engine::Quit()
 void Engine::RunAsyncOnMainThread(const Function<void()>& task)
 {
     engineBackend->RunAsyncOnMainThread(task);
+}
+
+uint32 Engine::GetGlobalFrameIndex() const
+{
+    return 0;
+}
+
+const Vector<String>& Engine::GetCommandLine() const
+{
+    static Vector<String> x;
+    return x;
+}
+
+bool Engine::IsConsoleMode() const
+{
+    return false;
+}
+
+void Engine::SetOptions(KeyedArchive* archiveOfOptions)
+{
+    options = archiveOfOptions;
+}
+
+KeyedArchive* Engine::GetOptions()
+{
+    return options;
 }
 
 } // namespace DAVA

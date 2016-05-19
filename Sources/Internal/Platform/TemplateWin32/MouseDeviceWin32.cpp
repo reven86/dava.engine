@@ -33,11 +33,17 @@
 #include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
+#include "Engine/Engine.h"
+
 namespace DAVA
 {
 void MouseDeviceWin32::SetCursorInCenter()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    HWND hWnd = static_cast<HWND>(Engine::Instance()->PrimaryWindow()->NativeHandle());
+#else
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
+#endif
     RECT wndRect;
     GetWindowRect(hWnd, &wndRect);
     int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);

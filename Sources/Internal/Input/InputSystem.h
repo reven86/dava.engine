@@ -56,9 +56,10 @@ public:
         INPUT_DEVICE_JOYSTICK = 1 << 2
     };
 
-    friend void Core::CreateSingletons();
 #if defined(__DAVAENGINE_COREV2__)
     friend class Engine;
+#else
+    friend void Core::CreateSingletons();
 #endif
 
 protected:

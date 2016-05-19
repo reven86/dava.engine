@@ -32,6 +32,8 @@
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"
 
+#include "Engine/Public/Engine.h"
+
 namespace DAVA
 {
 Light::Light()
@@ -219,7 +221,11 @@ uint32 Light::GetFlags()
 
 const Vector4& Light::CalculatePositionDirectionBindVector(Camera* inCamera)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    uint32 globalFrameIndex = Engine::Instance()->GetGlobalFrameIndex();
+#else
     uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+#endif
     if (inCamera != camera || lastUpdatedFrame != globalFrameIndex)
     {
         DVASSERT(inCamera);

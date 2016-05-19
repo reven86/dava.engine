@@ -34,6 +34,8 @@
 #include "Render/Renderer.h"
 #include "Core/Core.h"
 
+#include "Engine/Public/Engine.h"
+
 namespace DAVA
 {
 CollisionObject2::CollisionObject2(eType _type)
@@ -130,7 +132,11 @@ void CollisionObject2::Update(const Sprite::DrawState& state /*const Vector2 & _
 {
     if (!basePolygon)
         return;
+#if defined(__DAVAENGINE_COREV2__)
+    uint32 globalFrameIndex = Engine::Instance()->GetGlobalFrameIndex();
+#else
     uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+#endif
     if (globalFrameIndex == updateFrameIndex)
         return;
     updateFrameIndex = globalFrameIndex;

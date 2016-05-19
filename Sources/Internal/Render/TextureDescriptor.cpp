@@ -31,6 +31,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
 #include "Render/Texture.h"

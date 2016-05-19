@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
@@ -1001,3 +1003,5 @@ Vector2 Core::GetWindowMinimumSize() const
 }
 
 } // namespace DAVA
+
+#endif !__DAVAENGINE_COREV2__

@@ -56,6 +56,8 @@
 #include "Core/Core.h"
 #include "Utils/StringFormat.h"
 
+#include "Engine/Public/Engine.h"
+
 namespace DAVA
 {
 FontManager::FontManager()
@@ -82,8 +84,13 @@ FontManager::~FontManager()
 
 void FontManager::RegisterFont(Font* font)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    if (!Engine::Instance()->GetOptions()->GetBool("trackFont"))
+        return;
+#else
     if (!Core::Instance()->GetOptions()->GetBool("trackFont"))
         return;
+#endif
 
     if (registeredFonts.find(font) == registeredFonts.end())
     {

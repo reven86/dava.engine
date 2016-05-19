@@ -26,6 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if !defined(__DAVAENGINE_COREV2__)
 
 #include "Tests/FullscreenTest.h"
 
@@ -384,3 +385,5 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
 
     return BaseScreen::SystemInput(currentInput);
 }
+
+#endif // !__DAVAENGINE_COREV2__

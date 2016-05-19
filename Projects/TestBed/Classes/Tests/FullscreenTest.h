@@ -26,6 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if !defined(__DAVAENGINE_COREV2__)
 
 #ifndef __FULLSCREENTEST_TEST_H__
 #define __FULLSCREENTEST_TEST_H__
@@ -65,3 +66,5 @@ private:
 };
 
 #endif //__FULLSCREENTEST_TEST_H__
+
+#endif // !__DAVAENGINE_COREV2__

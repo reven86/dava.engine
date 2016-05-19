@@ -30,6 +30,9 @@
 #include "Debug/DVAssertMessage.h"
 #include "Core/Core.h"
 
+#include "Concurrency/Atomic.h"
+#include "Engine/Public/Engine.h"
+
 using namespace DAVA;
 
 namespace
@@ -43,7 +46,11 @@ bool DVAssertMessage::ShowMessage(eModalType modalType, const char8* text, ...)
 {
     bool userClickBreak = false;
     // we don't need to show assert window for console mode
+#if defined(__DAVAENGINE_COREV2__)
+    if (Engine::Instance()->IsConsoleMode())
+#else
     if (Core::Instance()->IsConsoleMode())
+#endif
         return userClickBreak; // TODO what to do here? is loging only in console mode?
 
     va_list vl;
