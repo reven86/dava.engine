@@ -71,7 +71,7 @@ CEFControllerImpl::CEFControllerImpl()
         settings.windowless_rendering_enabled = 1;
         // TODO: disable cef logs before merge
         //settings.log_severity = LOGSEVERITY_DISABLE;
-        //settings.log_severity = LOGSEVERITY_VERBOSE;
+        settings.log_severity = LOGSEVERITY_VERBOSE;
         CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
         // CefInitialize replaces thread name, so we need to save it and restore
