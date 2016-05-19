@@ -78,21 +78,21 @@ QString GetDocumentsDirectory()
 
 QString GetBaseAppsDirectory()
 {
-    QString path = qApp->applicationDirPath() + baseAppDir;
+    QString path = GetLauncherDirectory() + baseAppDir;
     MakeDirectory(path);
     return path;
 }
 
 QString GetTempDirectory()
 {
-    QString path = qApp->applicationDirPath() + tempDir;
+    QString path = GetLauncherDirectory() + tempDir;
     MakeDirectory(path);
     return path;
 }
 
 QString GetSelfUpdateTempDirectory()
 {
-    QString path = qApp->applicationDirPath() + tempSelfUpdateDir;
+    QString path = GetLauncherDirectory() + tempSelfUpdateDir;
     MakeDirectory(path);
     return path;
 }
@@ -105,7 +105,14 @@ QString GetTempDownloadFilepath()
 
 QString GetLauncherDirectory()
 {
-    return qApp->applicationDirPath() + "/";
+    static QString path =
+#if defined(Q_OS_WIN)
+    qApp->applicationDirPath();
+#elif defined(Q_OS_MAC)
+    qApp->applicationDirPath().replace("/Contents/MacOS", "");
+    path = path.left(path.lastIndexOf('/'));
+#endif //platform
+    return path;
 }
 
 bool CheckDirectoryPermissionsRecursively(const QString& folder)
