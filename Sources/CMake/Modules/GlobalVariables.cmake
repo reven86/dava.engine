@@ -74,19 +74,6 @@ else ()
 	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
 endif()
 
-# Enable Chromium Embedded Framework
-if ( ENABLE_CEF )
-    # collect cef resources
-    file ( GLOB CEF_RESOURCES "${DAVA_TOOLS_BIN_DIR}/cef/*" )
-    
-    foreach( ITEM ${CEF_RESOURCES} )
-        STRING( REGEX REPLACE "${DAVA_TOOLS_BIN_DIR}" "" ITEM ${ITEM} )
-        list ( APPEND DAVA_THIRD_PARTY_LIBS "${ITEM}" )
-    endforeach()
-    
-    add_definitions ( -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
-endif ()
-
 set( DAVA_PLATFORM_LIST IOS 
                         MACOS 
                         ANDROID 

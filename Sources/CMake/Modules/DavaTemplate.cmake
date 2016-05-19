@@ -89,6 +89,17 @@ if( STEAM_SDK_FOUND )
 
 endif ()
 
+# Enable Chromium Embedded Framework
+if ( ENABLE_CEF )
+    # collect cef resources
+    file ( GLOB CEF_RESOURCES "${DAVA_TOOLS_BIN_DIR}/cef/*" )
+    
+    foreach( ITEM ${CEF_RESOURCES} )
+        STRING( REGEX REPLACE "${DAVA_TOOLS_BIN_DIR}" "" ITEM ${ITEM} )
+        list ( APPEND DAVA_THIRD_PARTY_LIBS "${ITEM}" )
+    endforeach()
+endif ()
+
 if( ANDROID )
     if( NOT ANDROID_JAVA_SRC )
         list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )
