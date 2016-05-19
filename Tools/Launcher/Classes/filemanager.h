@@ -31,8 +31,6 @@
 
 #include <QString>
 
-QString InQuotes(const QString& fileName);
-
 namespace FileManager
 {
 QString GetDocumentsDirectory();

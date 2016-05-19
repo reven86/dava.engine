@@ -37,20 +37,6 @@
 #include <QProcess>
 #include <functional>
 
-QString InQuotes(const QString& fileName)
-{
-    QString result = fileName;
-    if (!fileName.startsWith('\"'))
-    {
-        result.prepend('\"');
-    }
-    if (!fileName.endsWith('\"'))
-    {
-        result.append('\"');
-    }
-    return result;
-}
-
 namespace FileManager
 {
 const QString tempSelfUpdateDir = "/selfupdate/";
