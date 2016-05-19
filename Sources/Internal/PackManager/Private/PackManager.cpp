@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-
 PackManager::PackManager()
 {
     impl.reset(new PackManagerImpl());
