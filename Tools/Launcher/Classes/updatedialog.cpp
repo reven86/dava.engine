@@ -232,7 +232,7 @@ void UpdateDialog::DownloadFinished()
 
         UpdateLastLogValue(tr("Download Complete!"));
 
-        AddLogValue(tr("Checking archive..."));
+        AddLogValue(tr("Unpacking archive..."));
 
         ui->cancelButton->setEnabled(false);
         ZipUtils::CompressedFilesAndSizes files;
@@ -270,7 +270,6 @@ bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedF
 
 bool UpdateDialog::UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files)
 {
-    AddLogValue(tr("Unpacking archive..."));
     UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Unpacking archive..."), tr("Archive unpacked!"), tr("Unpacking failed!"), this, ui->progressBar_unpacking);
     return ZipUtils::UnpackZipArchive(archivePath, outDir, files, functor);
 }
