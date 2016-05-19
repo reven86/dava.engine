@@ -60,6 +60,9 @@ if(TARGETS STREQUAL "all")
 	set_deploy_dir        ( ResourcePacker )
 	add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourcePacker" ${CMAKE_CURRENT_BINARY_DIR}/ResourcePacker )
 
+	set_deploy_dir        ( ResourcePatcher )
+	add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourcePatcher" ${CMAKE_CURRENT_BINARY_DIR}/ResourcePatcher )
+
 	set_deploy_dir        ( ImageUnpacker )
 	add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ImageUnpacker" ${CMAKE_CURRENT_BINARY_DIR}/ImageUnpacker )
 
@@ -91,6 +94,9 @@ elseif(TARGETS STREQUAL "tools")
 	set_deploy_dir        ( ResourcePacker )
 	add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourcePacker" ${CMAKE_CURRENT_BINARY_DIR}/ResourcePacker )
 
+	set_deploy_dir        ( ResourcePatcher )
+	add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourcePatcher" ${CMAKE_CURRENT_BINARY_DIR}/ResourcePatcher )
+
 	set_deploy_dir        ( ImageUnpacker )
 	add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ImageUnpacker" ${CMAKE_CURRENT_BINARY_DIR}/ImageUnpacker )
 
@@ -99,7 +105,7 @@ elseif(TARGETS STREQUAL "tools")
 
 	set_deploy_dir        ( AssetCacheServer )
 	add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/AssetCacheServer" ${CMAKE_CURRENT_BINARY_DIR}/AssetCacheServer )
-	
+
 else()
 
 	message( FATAL_ERROR "TARGETS param value is incorrect. Please set TARGETS=all or TARGETS=tools")
