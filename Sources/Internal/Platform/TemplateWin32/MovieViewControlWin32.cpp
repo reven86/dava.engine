@@ -18,9 +18,7 @@ MovieViewControl::MovieViewControl()
 
 MovieViewControl::~MovieViewControl()
 {
-    SafeDelete(ffmpegPlayer);
     SafeRelease(videoTexture);
-    SafeRelease(videoBackground);
 }
 
 void MovieViewControl::Initialize(const Rect& rect)

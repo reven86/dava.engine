@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-class StreamDelegate
+class SoundStreamDelegate
 {
 public:
     virtual void PcmDataCallback(uint8* data, uint32 datalen) = 0;
@@ -15,7 +15,7 @@ class SoundStream
 public:
     virtual ~SoundStream() = default;
 
-    static SoundStream* Create(StreamDelegate* streamDelegate, uint32 channelsCount);
+    static SoundStream* Create(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
 
     virtual void Play()
     {

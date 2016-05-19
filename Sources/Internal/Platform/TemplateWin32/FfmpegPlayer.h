@@ -35,7 +35,7 @@ extern "C"
 
 namespace DAVA
 {
-class FfmpegPlayer : public IMovieViewControl, public StreamDelegate
+class FfmpegPlayer : public IMovieViewControl, public SoundStreamDelegate
 {
 public:
     ~FfmpegPlayer() override;
@@ -98,16 +98,12 @@ private:
         DecodedFrameBuffer(uint32 dataSize, PixelFormat format, float64 pts_)
             : pts(pts_)
             , textureFormat(format)
-            , data(dataSize)
+            , data(dataSize, emptyPixelColor)
         {
-            // we fill codecContext->width x codecContext->height area, it is smaller than texture size. So fill all the texture by empty color once.
-            // we suppose that next time we will fill same part of the texture.
-            Memset(data.data(), emptyPixelColor, dataSize);
         }
 
         const uint8 emptyPixelColor = 255;
 
-        float64 frame_last_pts = 0.f;
         float64 pts = 0.f;
         float64 sleepAfterPresent = 0;
         PixelFormat textureFormat = FORMAT_INVALID;

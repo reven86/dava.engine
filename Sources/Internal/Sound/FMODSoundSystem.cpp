@@ -175,7 +175,7 @@ bool SoundSystem::IsDebugModeOn() const
     return debugLevel != FMOD_DEBUG_LEVEL_NONE;
 }
 
-SoundStream* SoundSystem::CreateSoundStream(StreamDelegate* streamDelegate, uint32 channelsCount)
+SoundStream* SoundSystem::CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount)
 {
     SoundStream* stream = SoundStream::Create(streamDelegate, channelsCount);
     return stream;

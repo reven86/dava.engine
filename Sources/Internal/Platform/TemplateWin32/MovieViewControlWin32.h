@@ -5,6 +5,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "UI/IMovieViewControl.h"
+#include "Base/ScopedPtr.h"
 
 namespace DAVA
 {
@@ -43,10 +44,10 @@ public:
     void Draw(const class UIGeometricData& parentGeometricData) override;
 
 private:
-    FfmpegPlayer* ffmpegPlayer = nullptr;
+    std::unique_ptr<FfmpegPlayer> ffmpegPlayer;
 
     Texture* videoTexture = nullptr;
-    UIControlBackground* videoBackground = nullptr;
+    ScopedPtr<UIControlBackground> videoBackground;
     Vector<uint8> videoTextureBuffer;
     uint32 textureWidth = 0;
     uint32 textureHeight = 0;

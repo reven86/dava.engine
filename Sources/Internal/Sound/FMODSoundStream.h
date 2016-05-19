@@ -10,7 +10,7 @@ class FMODSoundStream : public SoundStream
 {
 public:
     FMODSoundStream() = delete;
-    FMODSoundStream(StreamDelegate* streamDelegate, uint32 channelsCount);
+    FMODSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
 
     ~FMODSoundStream();
 
@@ -26,6 +26,6 @@ private:
     FMOD_CREATESOUNDEXINFO exinfo;
     FMOD::Sound* sound = nullptr;
     FMOD::Channel* fmodChannel = nullptr;
-    StreamDelegate* dataSender = nullptr;
+    SoundStreamDelegate* dataSender = nullptr;
 };
 }

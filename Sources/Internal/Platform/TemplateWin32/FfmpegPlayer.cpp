@@ -307,14 +307,14 @@ bool FfmpegPlayer::InitAudio()
     AV::AVCodec* audioCodec = AV::avcodec_find_decoder(audioCodecContext->codec_id);
     if (audioCodec == nullptr)
     {
-        Logger::FrameworkDebug("Audio codec not found.\n");
+        Logger::FrameworkDebug("Audio codec not found.");
         return false;
     }
 
     // Open codec
     if (avcodec_open2(audioCodecContext, audioCodec, nullptr) < 0)
     {
-        printf("Could not open audio codec.\n");
+        Logger::FrameworkDebug("Could not open audio codec.");
         return false;
     }
 
@@ -532,7 +532,7 @@ void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
     int ret = avcodec_decode_audio4(audioCodecContext, audioFrame, &got_data, packet);
     if (ret < 0)
     {
-        printf("Error in decoding audio frame.\n");
+        Logger::FrameworkDebug("Error in decoding audio frame.\n");
         return;
     }
 
@@ -667,7 +667,7 @@ void FfmpegPlayer::PrefetchData(uint32 dataSize)
     int retRead = 0;
     while (retRead >= 0 && currentPrefetchedPacketsCount < dataSize)
     {
-        AV::AVPacket* packet = AV::av_packet_alloc(); // static_cast<AV::AVPacket*>(AV::av_mallocz(sizeof(AV::AVPacket)));
+        AV::AVPacket* packet = AV::av_packet_alloc();
         if (nullptr == packet)
         {
             Logger::FrameworkDebug("Can't allocate AVPacket!");

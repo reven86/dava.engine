@@ -69,7 +69,7 @@ public:
     SoundSystem();
     ~SoundSystem();
 
-    SoundStream* CreateSoundStream(StreamDelegate* streamDelegate, uint32 channelsCount);
+    SoundStream* CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
     uint32 GetDefaultSoundStreamSampleRate() const;
 
     SoundEvent* CreateSoundEventByID(const FastName& eventName, const FastName& groupName);
