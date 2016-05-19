@@ -58,6 +58,7 @@ public:
 
     void OnVisible() override;
     void OnInvisible() override;
+    void OnActive() override;
 
     UIMovieView* Clone() override;
 
@@ -73,6 +74,9 @@ public:
     bool IsPlaying() const;
 
     void Update(float32 timeElapsed) override;
+
+private:
+    void UpdateControlRect();
 
 protected:
     // Platform-specific implementation of the Movie Control.

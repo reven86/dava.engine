@@ -45,13 +45,14 @@ public:
 
 private:
     std::unique_ptr<FfmpegPlayer> ffmpegPlayer;
-
+    Rect controlRect;
     Texture* videoTexture = nullptr;
     ScopedPtr<UIControlBackground> videoBackground;
     Vector<uint8> videoTextureBuffer;
     uint32 textureWidth = 0;
     uint32 textureHeight = 0;
     uint32 textureDataLen = 0;
+    eMovieScalingMode scaling;
 };
 }
 

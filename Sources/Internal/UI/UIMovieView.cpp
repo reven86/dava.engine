@@ -55,6 +55,7 @@ UIMovieView::UIMovieView(const Rect& rect)
     , movieViewControl(new MovieViewControl())
 {
     movieViewControl->Initialize(rect);
+    UpdateControlRect();
 }
 
 UIMovieView::~UIMovieView()
@@ -70,17 +71,13 @@ void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& pa
 void UIMovieView::SetPosition(const Vector2& position)
 {
     UIControl::SetPosition(position);
-
-    Rect newRect = GetRect();
-    movieViewControl->SetRect(newRect);
+    UpdateControlRect();
 }
 
 void UIMovieView::SetSize(const Vector2& newSize)
 {
     UIControl::SetSize(newSize);
-
-    Rect newRect = GetRect();
-    movieViewControl->SetRect(newRect);
+    UpdateControlRect();
 }
 
 void UIMovieView::Play()
@@ -112,6 +109,12 @@ void UIMovieView::Update(float32 timeElapsed)
 {
     UIControl::Update(timeElapsed);
     movieViewControl->Update();
+}
+
+void UIMovieView::UpdateControlRect()
+{
+    Rect rect = GetAbsoluteRect();
+    movieViewControl->SetRect(rect);
 }
 
 void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
@@ -147,6 +150,12 @@ void UIMovieView::OnInvisible()
 {
     UIControl::OnInvisible();
     movieViewControl->SetVisible(false);
+}
+
+void UIMovieView::OnActive()
+{
+    UIControl::OnActive();
+    UpdateControlRect();
 }
 
 UIMovieView* UIMovieView::Clone()

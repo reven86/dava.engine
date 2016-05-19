@@ -23,11 +23,13 @@ MovieViewControl::~MovieViewControl()
 
 void MovieViewControl::Initialize(const Rect& rect)
 {
+    controlRect = rect;
     ffmpegPlayer->Initialize(rect);
 }
 
 void MovieViewControl::SetRect(const Rect& rect)
 {
+    controlRect = rect;
     ffmpegPlayer->SetRect(rect);
 }
 
@@ -38,21 +40,28 @@ void MovieViewControl::SetVisible(bool isVisible)
 
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
+    SafeRelease(videoTexture);
+
     ffmpegPlayer->OpenMovie(moviePath, params);
 
+    scaling = params.scalingMode;
     switch (params.scalingMode)
     {
-    case DAVA::scalingModeNone:
+    case scalingModeNone:
         videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_ALIGNED);
+        videoBackground->SetAlign(ALIGN_LEFT | ALIGN_TOP);
         break;
-    case DAVA::scalingModeAspectFit:
+    case scalingModeAspectFit:
         videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL);
+        videoBackground->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
         break;
-    case DAVA::scalingModeAspectFill:
+    case scalingModeAspectFill:
         videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_PROPORTIONAL_ONE);
+        videoBackground->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
         break;
-    case DAVA::scalingModeFill:
+    case scalingModeFill:
         videoBackground->SetDrawType(UIControlBackground::eDrawType::DRAW_SCALE_TO_RECT);
+        videoBackground->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
         break;
     default:
         break;
@@ -117,7 +126,47 @@ void MovieViewControl::Update()
     if (nullptr == videoTexture)
     {
         videoTexture = Texture::CreateFromData(drawData.format, reinterpret_cast<uint8*>(videoTextureBuffer.data()), textureWidth, textureHeight, false);
-        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, 0, 0, drawData.frameWidth, drawData.frameHeight, static_cast<float32>(drawData.frameWidth), static_cast<float32>(drawData.frameHeight));
+
+        Rect textureRectToMap;
+        Vector2 spriteSizeFill;
+
+        switch (scaling)
+        {
+        case scalingModeAspectFill:
+        {
+            float32 drawingRectAspect = static_cast<float32>(controlRect.dx) / controlRect.dy;
+
+            if (drawingRectAspect > 1)
+            {
+                float32 visibleFrameHeight = drawData.frameWidth / drawingRectAspect;
+                float32 dh = drawData.frameHeight - visibleFrameHeight;
+                uint32 dy = dh / 2;
+                textureRectToMap = Rect(0, dy, drawData.frameWidth, visibleFrameHeight);
+            }
+            else
+            {
+                float32 visibleFrameWidth = drawData.frameHeight * drawingRectAspect;
+                float32 dl = drawData.frameWidth - visibleFrameWidth;
+                uint32 dx = dl / 2;
+
+                textureRectToMap = Rect(dx, 0, visibleFrameWidth, drawData.frameHeight);
+            }
+
+            spriteSizeFill = Vector2(static_cast<float32>(controlRect.dx), static_cast<float32>(controlRect.dy));
+        }
+        break;
+        case scalingModeNone:
+            textureRectToMap = Rect(0, 0, controlRect.dx, controlRect.dy);
+            spriteSizeFill = Vector2(controlRect.dx, controlRect.dy);
+            break;
+        case scalingModeFill:
+        case scalingModeAspectFit:
+            textureRectToMap = Rect(0, 0, drawData.frameWidth, drawData.frameHeight);
+            spriteSizeFill = Vector2(static_cast<float32>(drawData.frameWidth), static_cast<float32>(drawData.frameHeight));
+            break;
+        }
+
+        Sprite* videoSprite = Sprite::CreateFromTexture(videoTexture, textureRectToMap.x, textureRectToMap.y, textureRectToMap.dx, textureRectToMap.dy, static_cast<float32>(spriteSizeFill.dx), static_cast<float32>(spriteSizeFill.dy));
         videoBackground->SetSprite(videoSprite);
         videoSprite->Release();
     }
@@ -131,7 +180,17 @@ void MovieViewControl::Draw(const UIGeometricData& parentGeometricData)
 {
     if (nullptr != videoTexture)
     {
+        Polygon2 poly;
+
+        parentGeometricData.GetPolygon(poly);
+
+        auto sz = videoBackground->GetSprite()->GetSize();
+
+        //videoBackground->GetSprite()->SetClipPolygon(&poly);
+
         videoBackground->Draw(parentGeometricData);
+
+        //videoBackground->GetSprite()->SetClipPolygon(nullptr);
     }
 }
 }
