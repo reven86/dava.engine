@@ -112,7 +112,7 @@ private:
         uint32 height = 0;
     };
 
-    PlayState state = STOPPED;
+    std::atomic<PlayState> state = STOPPED;
     bool videoShown = false;
     bool audioListen = false;
 
@@ -127,6 +127,7 @@ private:
     void UpdateVideo(DecodedFrameBuffer* frameBuffer);
     bool InitAudio();
     void DecodeAudio(AV::AVPacket* packet, float64 timeElapsed);
+    void PlayAudio();
 
     void ClearBuffers();
     void CloseMovie();
@@ -141,7 +142,6 @@ private:
     const uint32 maxAudioPacketsPrefetchedCount = 100;
     std::atomic<uint32> currentPrefetchedPacketsCount = 0;
     void PrefetchData(uint32 dataSize);
-    ConditionVariable prefetchCV;
 
     float64 SyncVideoClock(AV::AVFrame* src_frame, float64 pts);
     float64 GetPTSForFrame(AV::AVFrame* frame, AV::AVPacket* packet, uint32 stream);

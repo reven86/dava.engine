@@ -52,12 +52,9 @@ AV::AVFormatContext* FfmpegPlayer::CreateContext(const FilePath& path)
 // Start/stop the video playback.
 void FfmpegPlayer::Play()
 {
-    if (PLAYING == state)
+    switch (state)
     {
-        return;
-    }
-
-    if (STOPPED == state)
+    case STOPPED:
     {
         movieContext = CreateContext(moviePath);
         if (nullptr == movieContext)
@@ -78,29 +75,32 @@ void FfmpegPlayer::Play()
             Logger::FrameworkDebug("Can't init audio decoder.");
         }
 
-        state = PREFETCHING;
         // read some packets to fill audio buffers before init fmod
+        state = PREFETCHING;
 
         if (isAudioSubsystemInited || isVideoSubsystemInited)
         {
-            PrefetchData(maxAudioPacketsPrefetchedCount);
-            while (currentPrefetchedPacketsCount > 0 && !mediaFileEOF)
-            {
-                Thread::Yield();
-            }
             readingDataThread = Thread::Create(Message(this, &FfmpegPlayer::ReadingThread));
             readingDataThread->Start();
         }
-
-        if (isAudioSubsystemInited)
-        {
-            // could return nullptr. Then we will have no sound.
-            soundStream = SoundSystem::Instance()->CreateSoundStream(this, outChannels);
-        }
     }
+    break;
 
-    state = PLAYING;
+    case PAUSED:
+    {
+        state = PLAYING;
+        PlayAudio();
+    }
+    break;
 
+    case PLAYING:
+    default:
+        break;
+    }
+}
+
+void FfmpegPlayer::PlayAudio()
+{
     if (soundStream)
     {
         soundStream->Play();
@@ -569,8 +569,7 @@ void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
 void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Thread* thread = static_cast<Thread*>(caller);
-
-    if (!isAudioSubsystemInited)
+    if (nullptr == thread)
     {
         return;
     }
@@ -610,14 +609,13 @@ void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, voi
             Thread::Yield();
         }
 
-    } while (thread && !thread->IsCancelling());
+    } while (!thread->IsCancelling());
 }
 
 void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Thread* thread = static_cast<Thread*>(caller);
-
-    if (!isVideoSubsystemInited)
+    if (nullptr == thread)
     {
         return;
     }
@@ -659,7 +657,7 @@ void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, voi
             Thread::Yield();
         }
 
-    } while (thread && !thread->IsCancelling());
+    } while (!thread->IsCancelling());
 }
 
 void FfmpegPlayer::PrefetchData(uint32 dataSize)
@@ -693,15 +691,47 @@ void FfmpegPlayer::PrefetchData(uint32 dataSize)
 void FfmpegPlayer::ReadingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Thread* thread = static_cast<Thread*>(caller);
+    if (nullptr == thread)
+    {
+        return;
+    }
 
     do
     {
-        if (PLAYING == state && currentPrefetchedPacketsCount < maxAudioPacketsPrefetchedCount)
+        switch (state)
         {
-            PrefetchData(maxAudioPacketsPrefetchedCount - currentPrefetchedPacketsCount);
+        case PREFETCHING:
+        {
+            PrefetchData(maxAudioPacketsPrefetchedCount);
+            // wait until just prefetched packets was decoded and moded to pcmBuffer
+            while (currentPrefetchedPacketsCount > 0 && !mediaFileEOF)
+            {
+                if (thread->IsCancelling())
+                {
+                    return;
+                }
+                Thread::Yield();
+            }
+
+            if (isAudioSubsystemInited)
+            {
+                // could return nullptr. Then we will have no sound.
+                soundStream = SoundSystem::Instance()->CreateSoundStream(this, outChannels);
+            }
+
+            state = PLAYING;
+
+            PlayAudio();
         }
+        break;
+        case PLAYING:
+            PrefetchData(maxAudioPacketsPrefetchedCount - currentPrefetchedPacketsCount);
+        default:
+            break;
+        }
+
         Thread::Yield();
-    } while (thread && !thread->IsCancelling());
+    } while (!thread->IsCancelling());
 }
 
 float64 FfmpegPlayer::GetTime()
