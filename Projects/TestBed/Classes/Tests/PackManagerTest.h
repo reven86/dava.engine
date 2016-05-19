@@ -39,7 +39,7 @@ public:
     PackManagerTest();
 
 private:
-    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/) override;
+    void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;
     void UpdateDescription();
 
     void LoadResources() override;
