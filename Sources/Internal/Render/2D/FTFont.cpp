@@ -512,7 +512,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                 int32 realH = Min(height, bufHeight - top);
                 int32 realW = Min(width, bufWidth - left);
                 int32 ind = top * bufWidth + left;
-                DVASSERT(ind >= 0);
+                DVASSERT(((ind >= 0) && (ind < bufWidth * bufHeight)) || (realW * realH == 0));
                 uint8* writeBuf = resultBuf + ind;
 
                 if (glyph.index == 0)

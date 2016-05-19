@@ -77,6 +77,7 @@ RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descr
 bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
     bool success = false;
+    UpdateCreationDesc(desc);
 
     DVASSERT(desc.size);
     if (desc.size)
@@ -179,7 +180,6 @@ gles2_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     Handle handle = IndexBufferGLES2Pool::Alloc();
     IndexBufferGLES2_t* ib = IndexBufferGLES2Pool::Get(handle);
 
-    ib->UpdateCreationDesc(desc);
     if (ib->Create(desc) == false)
     {
         IndexBufferGLES2Pool::Free(handle);

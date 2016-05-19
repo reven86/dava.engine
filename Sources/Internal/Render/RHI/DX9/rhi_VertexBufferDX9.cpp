@@ -84,6 +84,7 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
 {
     DVASSERT(desc.size);
     bool success = false;
+    UpdateCreationDesc(desc);
 
     if (desc.size)
     {
@@ -159,7 +160,6 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
     Handle handle = VertexBufferDX9Pool::Alloc();
     VertexBufferDX9_t* vb = VertexBufferDX9Pool::Get(handle);
 
-    vb->UpdateCreationDesc(desc);
     if (vb->Create(desc) == false)
     {
         VertexBufferDX9Pool::Free(handle);
@@ -219,6 +219,8 @@ dx9_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
 {
     void* ptr = nullptr;
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
+
+    DVASSERT(self->buffer);
     DX9Command cmd = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
 
     DVASSERT(!self->isMapped);

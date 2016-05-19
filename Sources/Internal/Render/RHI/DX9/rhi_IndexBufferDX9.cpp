@@ -83,7 +83,9 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
 bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
     DVASSERT(desc.size);
+
     bool success = false;
+    UpdateCreationDesc(desc);
 
     if (desc.size)
     {
@@ -157,7 +159,6 @@ dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     Handle handle = IndexBufferDX9Pool::Alloc();
     IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get(handle);
 
-    ib->UpdateCreationDesc(desc);
     if (ib->Create(desc) == false)
     {
         IndexBufferDX9Pool::Free(handle);
