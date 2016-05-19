@@ -95,7 +95,7 @@ public:
      \param seekType \ref IO::eFileSeek flag to set type of positioning
      \return true if successful otherwise false.
      */
-    bool Seek(int32 position, uint32 seekType) override;
+    bool Seek(int32 position, eFileSeek seekType) override;
 
     //! return true if end of file reached and false in another case
     bool IsEof() const override;

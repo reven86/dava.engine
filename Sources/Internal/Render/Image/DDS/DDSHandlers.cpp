@@ -1118,7 +1118,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
             uint32 mipHeight = info.height >> mip;
             bytesToSkip += MipSize(mipWidth, mipHeight);
         }
-        if (bytesToSkip > 0 && (file->Seek(File::SEEK_FROM_CURRENT, bytesToSkip) == false))
+        if (bytesToSkip > 0 && (file->Seek(bytesToSkip, File::SEEK_FROM_CURRENT) == false))
         {
             Logger::Error("Can't seek in %s", file->GetFilename().GetStringValue().c_str());
             return false;

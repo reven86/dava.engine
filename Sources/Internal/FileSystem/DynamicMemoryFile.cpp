@@ -144,7 +144,7 @@ uint32 DynamicMemoryFile::GetSize() const
     return static_cast<uint32>(data.size());
 }
 
-bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
+bool DynamicMemoryFile::Seek(int32 position, eFileSeek seekType)
 {
     int32 pos = 0;
     switch (seekType)
