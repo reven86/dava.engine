@@ -34,7 +34,6 @@
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/Commands/InsertControlCommand.h"
 #include "UI/Commands/RemoveControlCommand.h"
-#include "UI/Commands/MoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
 #include "UI/Commands/RemoveImportedPackageCommand.h"
 #include "UI/Commands/AddComponentCommand.h"
@@ -357,8 +356,10 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
     nodesToMove.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
-        if (node->CanRemove() && dest->CanInsertControl(node, destIndex))
+        if (node->CanMoveTo(dest, destIndex))
             nodesToMove.push_back(node);
+        //        if (node->CanRemove() && dest->CanInsertControl(node, destIndex))
+        //            nodesToMove.push_back(node);
     }
     Vector<ControlNode*> movedNodes;
     movedNodes.reserve(nodesToMove.size());
@@ -380,14 +381,6 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
                 {
                     movedNodes.push_back(node);
                 }
-                //                node->Retain();
-                //                RemoveControlImpl(node);
-                //                if (IsNodeInHierarchy(dest))
-                //                {
-                //                    InsertControlImpl(node, dest, index);
-                //                    movedNodes.push_back(node);
-                //                }
-                //                node->Release();
 
                 index++;
             }

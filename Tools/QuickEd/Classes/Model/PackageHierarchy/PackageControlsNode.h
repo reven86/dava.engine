@@ -61,7 +61,7 @@ public:
 
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingControlsSupported() const override;
-    virtual bool CanInsertControl(ControlNode* node, DAVA::int32 pos) const override;
+    virtual bool CanInsertControl(const ControlNode* node, DAVA::int32 pos) const override;
     virtual bool CanRemove() const override;
     virtual bool CanCopy() const override;
 

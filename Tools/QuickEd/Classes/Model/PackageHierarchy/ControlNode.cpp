@@ -271,34 +271,32 @@ bool ControlNode::IsInsertingControlsSupported() const
     return !IsReadOnly() && !ControlClassesWithoutChildren.count(control->GetClassName());
 }
 
-bool ControlNode::CanInsertControl(ControlNode* node, DAVA::int32 pos) const
+bool ControlNode::CanInsertControl(const ControlNode* node, DAVA::int32 pos) const
 {
-    if (node == nullptr)
+    if (node == nullptr || node == this || node->IsParentOf(this))
     {
         return false;
     }
-    const PackageBaseNode* parent = this;
-    while (parent != nullptr)
-    {
-        const ControlNode* parentNode = dynamic_cast<const ControlNode*>(parent);
-        if (parentNode == nullptr)
-        {
-            break;
-        }
-        if (parentNode == node || parentNode->IsInstancedFrom(node))
-        {
-            return false;
-        }
-        parent = parent->GetParent();
-    }
+
     if (!IsInsertingControlsSupported())
+    {
         return false;
+    }
 
     if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+    {
         return false;
+    }
 
-    if (node->IsInstancedFrom(this))
+    if (IsFoo(node))
+    {
         return false;
+    }
+
+    if (node->IsDependsOnPrototype(this))
+    {
+        return false;
+    }
 
     return true;
 }
@@ -311,6 +309,21 @@ bool ControlNode::CanRemove() const
 bool ControlNode::CanCopy() const
 {
     return creationType != CREATED_FROM_PROTOTYPE_CHILD;
+}
+
+bool ControlNode::CanMoveTo(const ControlsContainerNode* container, DAVA::int32 pos) const
+{
+    if (!CanRemove())
+    {
+        return false;
+    }
+
+    if (!container->CanInsertControl(this, pos))
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void ControlNode::RefreshProperties()
@@ -355,26 +368,64 @@ String ControlNode::GetPathToPrototypeChild() const
 
 bool ControlNode::IsInstancedFrom(const ControlNode* prototype) const
 {
-    const ControlNode* test = this;
-
-    while (test)
+    for (const ControlNode* test = this; test != nullptr; test = test->GetPrototype())
     {
-        if (test->GetPrototype() != nullptr)
+        if (test->GetPrototype() == prototype)
         {
-            if (test->GetPrototype() == prototype)
-                return true;
-            test = test->GetPrototype();
+            return true;
         }
-        else
-        {
-            test = nullptr;
-        }
+    }
+
+    return false;
+}
+
+bool ControlNode::IsDependsOnPrototype(const ControlNode* prototype) const
+{
+    if (IsInstancedFrom(prototype))
+    {
+        return true;
     }
 
     for (const ControlNode* child : nodes)
     {
-        if (child->IsInstancedFrom(prototype))
+        if (child->IsDependsOnPrototype(prototype))
             return true;
+    }
+
+    return false;
+}
+
+bool ControlNode::IsParentOf(const ControlNode* node) const
+{
+    for (const PackageBaseNode* parent = node->GetParent(); parent != nullptr; parent = parent->GetParent())
+    {
+        if (parent == this) // || parentNode->IsDependsOnPrototype(node))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool ControlNode::IsFoo(const ControlNode* node) const
+{
+    //    const ControlNode *destNode = dynamic_cast<const ControlNode*>(this);
+    //    for (; destNode != nullptr; destNode = dynamic_cast<const ControlNode*>(destNode->GetParent()))
+    //    {
+    //        if (destNode->IsInstancedFrom(node))
+    //        {
+    //            return true;
+    //        }
+    //    }
+
+    const ControlNode* destNode = dynamic_cast<const ControlNode*>(node);
+    for (; destNode != nullptr; destNode = dynamic_cast<const ControlNode*>(destNode->GetParent()))
+    {
+        if (destNode->IsInstancedFrom(this))
+        {
+            return true;
+        }
     }
 
     return false;
