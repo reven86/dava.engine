@@ -18,3 +18,6 @@ include_directories ( "${DAVA_ENGINE_INCLUDES}"
 
 add_executable( ${PROJECT_NAME} main.cpp )
 target_link_libraries( ${PROJECT_NAME} "${CEF_LIBS}/libcef.lib" "${CEF_LIBS}/libcef_dll_wrapper.lib" )
+
+set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:WINDOWS" )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )

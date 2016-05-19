@@ -30,13 +30,20 @@
 #include <cef/include/cef_app.h>
 #include "Base/Platform.h"
 
-int main(int argc, char* argv[])
-{
 #ifdef __DAVAENGINE_WINDOWS__
-    CefMainArgs mainArgs(::GetModuleHandle(nullptr));
-#else
-    CefMainArgs mainArgs(argc, argv);
-#endif
 
+int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
+{
+    CefMainArgs mainArgs(::GetModuleHandle(nullptr));
     return CefExecuteProcess(mainArgs, nullptr, nullptr);
 }
+
+#else
+
+int main(int argc, char* argv[])
+{
+    CefMainArgs mainArgs(argc, argv);
+    return CefExecuteProcess(mainArgs, nullptr, nullptr);
+}
+
+#endif
