@@ -67,7 +67,7 @@ public:
      * \param format PixelFormat
      * \return target texture
      */
-    Texture* MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha = false);
+    RefPtr<Texture> MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha = false);
 
     /**
      * \brief Render control to texture and call callback when it will rendered
@@ -76,7 +76,7 @@ public:
      * \param format PixelFormat
      * \param callback function which be called after render
      */
-    void MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback);
+    RefPtr<Texture> MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha = false);
 
     /**
      * \brief Render control to target texture
@@ -84,7 +84,7 @@ public:
      * \param control pointer to source UIControl
      * \param screenshot pointer to target Texture
      */
-    void MakeScreenshot(UIControl* control, Texture* screenshot);
+    void MakeScreenshot(UIControl* control, Texture* screenshot, bool clearAlpha = false);
 
     /**
     * \brief Render control to target texture
@@ -93,15 +93,16 @@ public:
     * \param screenshot pointer to target Texture
     * \param callback function which be called after render
     */
-    void MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback);
+    void MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha = false);
+
+    /**
+     * \brief Unsubscribe callback by texture pointer after making screenshot 
+     * 
+     * \param screenshot pointer to screenshot texture
+     */
+    void Unsubscribe(Texture* screenshot);
 
 private:
-    struct Control3dInfo
-    {
-        UI3DView* control = nullptr;
-        rhi::RenderPassConfig scenePassConfig;
-    };
-
     struct ScreenshotWaiter
     {
         Texture* texture = nullptr;
