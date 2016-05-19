@@ -85,10 +85,10 @@ const TypeId renderBatchType = TypeId::getType<DAVA::RenderBatch>();
 
 DAVA::RenderBatch* ExtractRenderBatch(const RefPropertyItem* item, IDefinitionManager& defManager)
 {
-    const std::vector<const PropertyNode*>& objects = item->getObjects();
+    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
     DVASSERT(objects.size() == 1);
 
-    const PropertyNode* node = objects.front();
+    std::shared_ptr<const PropertyNode> node = objects.front();
     ObjectHandle valueHandle;
     DVVERIFY(node->propertyInstance->get(node->object, defManager).tryCast(valueHandle));
     DAVA::RenderBatch* batch = valueHandle.getBase<DAVA::RenderBatch>();
@@ -106,9 +106,9 @@ DAVA::Entity* FindEntityWithRenderObject(const RefPropertyItem* item, DAVA::Rend
         parent = item->getParent();
     }
 
-    const std::vector<const PropertyNode*> objects = item->getObjects();
+    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
     DVASSERT(objects.size() == 1);
-    const PropertyNode* object = objects.front();
+    std::shared_ptr<const PropertyNode> object = objects.front();
     DAVA::Entity* entity = object->object.getBase<DAVA::Entity>();
 
     DVASSERT(GetRenderObject(entity) == renderObject);
@@ -135,38 +135,36 @@ std::string BuildCollectionElementName(const Collection::ConstIterator& iter, ID
     }
 }
 
-void EntityChildCreatorExtension::exposeChildren(const PropertyNode& node, std::vector<const PropertyNode*>& children, IDefinitionManager& defMng) const
+void EntityChildCreatorExtension::exposeChildren(const std::shared_ptr<const PropertyNode>& node, std::vector<std::shared_ptr<const PropertyNode>>& children, IDefinitionManager& defMng) const
 {
-    if (node.propertyType == DAVAProperiesEnum::EntityRoot)
+    if (node->propertyType == DAVAProperiesEnum::EntityRoot)
     {
-        PropertyNode newNode = node;
-        newNode.propertyType = PropertyNode::RealProperty;
+        std::shared_ptr<const PropertyNode> newNode = allocator->createPropertyNode(node->propertyInstance, node->object);
         ChildCreatorExtension::exposeChildren(newNode, children, defMng);
 
         for (auto iter = children.rbegin(); iter != children.rend(); ++iter)
         {
-            const PropertyNode* child = *iter;
+            const std::shared_ptr<const PropertyNode> child = *iter;
             if (strcmp(child->propertyInstance->getName(), "components") == 0)
             {
                 auto forwardIter = (iter + 1).base();
-                allocator->deletePropertyNode(*forwardIter);
                 children.erase(forwardIter);
                 break;
             }
         }
     }
-    else if (node.object.type() == ExtensionsDetails::entityType && node.propertyType == PropertyNode::SelfRoot)
+    else if (node->object.type() == ExtensionsDetails::entityType && node->propertyType == PropertyNode::SelfRoot)
     {
         static IBasePropertyPtr entityProxy = std::make_shared<ProxyProperty>("Entity");
-        children.push_back(allocator->createPropertyNode(entityProxy, node.object, DAVAProperiesEnum::EntityRoot));
-        DAVA::Entity* entity = node.object.getBase<DAVA::Entity>();
+        children.push_back(allocator->createPropertyNode(entityProxy, node->object, DAVAProperiesEnum::EntityRoot));
+        DAVA::Entity* entity = node->object.getBase<DAVA::Entity>();
         DVASSERT(entity != nullptr);
 
-        const IClassDefinition* definition = node.object.getDefinition(defMng);
+        const IClassDefinition* definition = node->object.getDefinition(defMng);
         DVASSERT(definition != nullptr);
         IBasePropertyPtr components = definition->findProperty("components");
         DVASSERT(components != nullptr);
-        Variant componentsCollection = components->get(node.object, defMng);
+        Variant componentsCollection = components->get(node->object, defMng);
 
         Collection collection;
         if (componentsCollection.tryCast(collection))
@@ -183,7 +181,7 @@ void EntityChildCreatorExtension::exposeChildren(const PropertyNode& node, std::
             }
         }
     }
-    else if (node.propertyInstance->getType() == ExtensionsDetails::nmaterialType)
+    else if (node->propertyInstance->getType() == ExtensionsDetails::nmaterialType)
     {
         // do not expose material children in property panel
         return;
@@ -194,7 +192,7 @@ void EntityChildCreatorExtension::exposeChildren(const PropertyNode& node, std::
     }
 }
 
-RefPropertyItem* EntityMergeValueExtension::lookUpItem(const PropertyNode* node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
+RefPropertyItem* EntityMergeValueExtension::lookUpItem(const std::shared_ptr<const PropertyNode>& node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
                                                        IDefinitionManager& definitionManager) const
 {
     return MergeValuesExtension::lookUpItem(node, items, definitionManager);
@@ -230,7 +228,7 @@ void EntityInjectDataExtension::inject(RefPropertyItem* item)
 {
     static TypeId removableComponents[] = { TypeId::getType<DAVA::RenderComponent>(), TypeId::getType<DAVA::ActionComponent>() };
 
-    const PropertyNode* node = item->getObjects().front();
+    std::shared_ptr<const PropertyNode> node = item->getObjects().front();
     Variant value = node->propertyInstance->get(node->object, defManager);
     ObjectHandle handle;
     if (value.tryCast(handle))
@@ -286,11 +284,11 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
         return;
     }
 
-    const std::vector<const PropertyNode*>& objects = item->getObjects();
+    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
     DVASSERT(!objects.empty());
 
     bool isSingleSelection = objects.size() == 1;
-    const PropertyNode* node = objects.front();
+    std::shared_ptr<const PropertyNode> node = objects.front();
     ObjectHandle valueHandle;
 
     if (node->propertyInstance->get(node->object, defManager).tryCast(valueHandle))
@@ -335,9 +333,9 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
 
 void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
 {
-    const std::vector<const PropertyNode*>& objects = item->getObjects();
-    delegateObj.StartBatch("Remove component", objects.size());
-    for (const PropertyNode* object : objects)
+    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
+    delegateObj.StartBatch("Remove component", static_cast<DAVA::uint32>(objects.size()));
+    for (const std::shared_ptr<const PropertyNode>& object : objects)
     {
         Variant value = object->propertyInstance->get(object->object, defManager);
         ObjectHandle handle;
@@ -389,7 +387,7 @@ void EntityInjectDataExtension::RebuildTangentSpace(const RefPropertyItem* item)
 
 void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
 {
-    const PropertyNode* node = item->getObjects().front();
+    std::shared_ptr<const PropertyNode> node = item->getObjects().front();
     Variant value = node->propertyInstance->get(node->object, defManager);
     ObjectHandle handle;
     DVVERIFY(value.tryCast(handle));
@@ -404,10 +402,10 @@ void EntityInjectDataExtension::AddCustomProperty(const RefPropertyItem* item)
     AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
     w->ValueReady.Connect([this, item](const DAVA::String& name, const DAVA::VariantType& value)
                           {
-                              const std::vector<const PropertyNode*> objects = item->getObjects();
-                              delegateObj.StartBatch("Add custom property", objects.size());
+                              const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
+                              delegateObj.StartBatch("Add custom property", static_cast<DAVA::uint32>(objects.size()));
 
-                              for (const PropertyNode* object : objects)
+                              for (const std::shared_ptr<const PropertyNode>& object : objects)
                               {
                                   Collection collectionHandle;
                                   if (object->propertyInstance->get(object->object, defManager).tryCast(collectionHandle))
