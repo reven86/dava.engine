@@ -102,6 +102,11 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
     cefBrowser->GetHost()->WasHidden(!isVisible);
 }
 
+void WebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)
+{
+    delegate = webViewDelegate;
+}
+
 void WebViewControl::SetRenderToTexture(bool value)
 {
     // Empty realization, always render to texture
@@ -128,6 +133,20 @@ void WebViewControl::Update()
 CefRefPtr<CefRenderHandler> WebViewControl::GetRenderHandler()
 {
     return webPageRender;
+}
+
+CefRefPtr<CefLoadHandler> WebViewControl::GetLoadHandler()
+{
+    return this;
+}
+
+void WebViewControl::OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                               CefRefPtr<CefFrame> frame, int httpStatusCode)
+{
+    if (delegate)
+    {
+        delegate->PageLoaded(&webView);
+    }
 }
 
 void WebViewControl::LoadHtml(const CefString& html, const CefString& url)

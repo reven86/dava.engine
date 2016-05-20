@@ -38,7 +38,7 @@
 
 namespace DAVA
 {
-class WebViewControl : public IWebViewControl, public CefClient
+class WebViewControl : public IWebViewControl, public CefClient, public CefLoadHandler
 {
 public:
     WebViewControl(UIWebView& uiWebView);
@@ -80,10 +80,7 @@ public:
     {
     }
 
-    void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView) override
-    {
-    }
-
+    void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView) override;
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
     void Input(UIEvent* currentInput) override;
@@ -92,8 +89,13 @@ public:
 private:
     // CefClient interface realization
     CefRefPtr<CefRenderHandler> GetRenderHandler() override;
-    void LoadHtml(const CefString& html, const CefString& url);
+    CefRefPtr<CefLoadHandler> GetLoadHandler() override;
 
+    // CefLoadHandler interface realization
+    void OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                   CefRefPtr<CefFrame> frame, int httpStatusCode) override;
+
+    void LoadHtml(const CefString& html, const CefString& url);
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);
     void OnKey(UIEvent* input);
@@ -101,6 +103,7 @@ private:
     IMPLEMENT_REFCOUNTING(WebViewControl);
 
     UIWebView& webView;
+    IUIWebViewDelegate* delegate = nullptr;
     CEFController cefController;
     CefRefPtr<class CefBrowser> cefBrowser;
     CefRefPtr<class CEFWebPageRender> webPageRender;
