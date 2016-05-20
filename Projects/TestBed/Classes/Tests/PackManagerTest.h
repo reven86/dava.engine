@@ -52,8 +52,9 @@ private:
 
     DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/packs/testbed_{gpu}.db";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
-    DAVA::String urlPacksCommon = "http://127.0.0.1:2424/packs/common/";
-    DAVA::String urlPacksGpu = "http://127.0.0.1:2424/packs/{gpu}/";
+    // TODO quick and dirty way to test download on all platforms, in future replace with local http server
+    DAVA::String urlPacksCommon = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/common/"; //"http://127.0.0.1:2424/packs/common/";
+    DAVA::String urlPacksGpu = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/{gpu}/"; //"http://127.0.0.1:2424/packs/{gpu}/";
     DAVA::String gpuName;
 
     DAVA::UIStaticText* packNameLoading = nullptr;
