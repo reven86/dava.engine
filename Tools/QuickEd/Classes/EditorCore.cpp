@@ -58,6 +58,7 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
+    qApp->installEventFilter(this);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
     mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
@@ -71,7 +72,6 @@ EditorCore::EditorCore(QObject* parent)
 
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
-    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
     connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
     connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
@@ -384,4 +384,17 @@ void EditorCore::DisableCacheClient()
         cacheClient->Disconnect();
         cacheClient.reset();
     }
+}
+
+bool EditorCore::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == mainWindow.get() && event->type() == QEvent::Close)
+    {
+        if (!CloseProject())
+        {
+            event->ignore();
+        }
+    }
+
+    return QObject::eventFilter(obj, event);
 }

@@ -67,16 +67,12 @@ public:
     QComboBox* GetComboBoxLanguage();
     void RebuildRecentMenu(const QStringList& lastProjectsPathes);
 
-protected:
-    void closeEvent(QCloseEvent* event) override;
-
 signals:
     void CloseProject();
     void ActionExitTriggered();
     void RecentMenuTriggered(QAction*);
     void ActionOpenProjectTriggered(QString projectPath);
     void OpenPackageFile(QString path);
-    bool CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);

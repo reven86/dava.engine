@@ -85,6 +85,7 @@ private:
     void OpenProject(const QString& path);
 
     bool IsUsingAssetCache() const;
+    bool eventFilter(QObject* object, QEvent* event) override;
     void SetUsingAssetCacheEnabled(bool enabled);
 
     void EnableCacheClient();
