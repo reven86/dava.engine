@@ -36,7 +36,37 @@
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
+#include "NgtTools/Application/NGTApplication.h"
+
 #include <QtGlobal>
+
+class QEApplication : public NGTLayer::BaseApplication
+{
+public:
+    QEApplication(int argc, char** argv)
+        : BaseApplication(argc, argv)
+    {
+    }
+
+protected:
+    void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override
+    {
+        names.push_back(L"plg_reflection");
+        names.push_back(L"plg_variant");
+        names.push_back(L"plg_command_system");
+        names.push_back(L"plg_serialization");
+        names.push_back(L"plg_file_system");
+        names.push_back(L"plg_editor_interaction");
+        names.push_back(L"plg_qt_app");
+        names.push_back(L"plg_qt_common");
+    }
+
+    void OnPostLoadPugins() override
+    {
+        qApp->setOrganizationName("DAVA");
+        qApp->setApplicationName("QuickEd");
+    }
+};
 
 void InitPVRTexTool()
 {
@@ -59,16 +89,12 @@ int main(int argc, char* argv[])
     {
         qInstallMessageHandler(DAVAMessageHandler);
 
-        QApplication a(argc, argv);
-        a.setOrganizationName("DAVA");
-        a.setApplicationName("QuickEd");
+        QEApplication a(argc, argv);
+        a.LoadPlugins();
 
         Themes::InitFromQApplication();
         Q_INIT_RESOURCE(QtToolsResources);
 
-        QObject::connect(&a, &QApplication::applicationStateChanged, [&qtLayer](Qt::ApplicationState state) {
-            state == Qt::ApplicationActive ? qtLayer.OnResume() : qtLayer.OnSuspend();
-        });
         InitPVRTexTool();
         {
             // Editor Settings might be used by any singleton below during initialization, so
@@ -78,7 +104,7 @@ int main(int argc, char* argv[])
             EditorCore editorCore;
 
             editorCore.Start();
-            returnCode = a.exec();
+            returnCode = a.StartApplication(editorCore.GetMainWindow());
         }
     }
     return returnCode;
