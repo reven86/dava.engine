@@ -631,11 +631,23 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
 endforeach ()
 
 
+if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
+    get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
+
+    foreach( ITEM   ${NGT_LIBS} ${NGT_PLUGINS}  )
+        add_dependencies( ${PROJECT_NAME} ${ITEM} )
+    endforeach()
+
+endif()
+
+
 ###
 
 if( DEPLOY )
    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+
+   append_property( DEPLOY_DIR_${PROJECT_NAME} ${DEPLOY_DIR} )
 
     if( WIN32 )
         if( APP_DATA )
