@@ -634,7 +634,7 @@ endforeach ()
 if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
     get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
 
-    foreach( ITEM   ${NGT_LIBS} ${NGT_PLUGINS} )
+    foreach( ITEM   ${NGT_LIBS} ${NGT_PLUGINS}  )
         add_dependencies( ${PROJECT_NAME} ${ITEM} )
     endforeach()
 
