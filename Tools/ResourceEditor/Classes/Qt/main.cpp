@@ -102,8 +102,8 @@ int main(int argc, char* argv[])
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
 #endif
 
-    DAVA::Core::Run(argc, argv);
     DAVA::QtLayer qtLayer;
+    DAVA::Core::Run(argc, argv);
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 
     DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");

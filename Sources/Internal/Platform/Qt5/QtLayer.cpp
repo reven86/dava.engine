@@ -38,6 +38,7 @@
 #include "Input/KeyboardDevice.h"
 
 #include "UI/UIControlSystem.h"
+#include "qsurfaceformat.h"
 
 extern void FrameworkWillTerminate();
 extern void FrameworkDidLaunched();
@@ -48,6 +49,11 @@ QtLayer::QtLayer()
     : delegate(nullptr)
     , isDAVAEngineEnabled(true)
 {
+    QSurfaceFormat fmt;
+    fmt.setMajorVersion(3);
+    fmt.setMinorVersion(3);
+    fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
+    QSurfaceFormat::setDefaultFormat(fmt);
 }
 
 QtLayer::~QtLayer()
