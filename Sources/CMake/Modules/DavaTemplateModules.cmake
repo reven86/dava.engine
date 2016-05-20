@@ -42,6 +42,8 @@ DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
 #
 FIND_SYSTEM_LIBRARY                   
 FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
+#
+DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
 )
 #
 macro( setup_main_module )
@@ -171,6 +173,7 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
                 STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
+                DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
                 )
 
         load_property( PROPERTY_LIST 

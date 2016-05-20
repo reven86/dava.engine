@@ -48,6 +48,7 @@ load_property( PROPERTY_LIST
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+        DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
     )
 
 add_definitions( -DDAVA_ENGINE_EXPORTS ) 
@@ -87,17 +88,6 @@ if( STEAM_SDK_FOUND )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/SteamAppid.in
                     ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
 
-endif ()
-
-# Enable Chromium Embedded Framework
-if ( ENABLE_CEF )
-    # collect cef resources
-    file ( GLOB CEF_RESOURCES "${DAVA_TOOLS_BIN_DIR}/cef/*" )
-    
-    foreach( ITEM ${CEF_RESOURCES} )
-        STRING( REGEX REPLACE "${DAVA_TOOLS_BIN_DIR}" "" ITEM ${ITEM} )
-        list ( APPEND DAVA_THIRD_PARTY_LIBS "${ITEM}" )
-    endforeach()
 endif ()
 
 if( ANDROID )
@@ -645,9 +635,16 @@ endforeach ()
 ###
 
 if( DEPLOY )
-   message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
-   execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
 
+    if( DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
+        file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
+        foreach( ITEM ${RESOURCES_LIST} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
+        endforeach()
+    endif()
+    
     if( WIN32 )
         if( APP_DATA )
             get_filename_component( DIR_NAME ${APP_DATA} NAME )
@@ -658,10 +655,6 @@ if( DEPLOY )
             )
 
         endif()
-
-		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
-        endforeach ()
 
         foreach ( ITEM ${ADDITIONAL_DLL_FILES})
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )

@@ -223,6 +223,11 @@ if( WIN )
                                      "delayimp.lib"
                                      "dxgi.lib" )
 
+    set( DAVA_DYNAMIC_LIBRARIES_WIN32 ${DAVA_TOOLS_BIN_DIR}/glew32.dll
+                                      ${DAVA_TOOLS_BIN_DIR}/TextureConverter.dll   )
+
+    set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
+
     set ( DAVA_STATIC_LIBRARIES_WIN64 ${DAVA_STATIC_LIBRARIES_WIN32} )
 
     list ( APPEND DAVA_STATIC_LIBRARIES_WIN32

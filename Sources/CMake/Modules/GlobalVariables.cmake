@@ -59,11 +59,9 @@ if (WIN32)
 	endif ()
 
 	if( X64_MODE )
-		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
-        set( DAVA_THIRD_PARTY_LIBS      glew32.dll TextureConverter.dll )  
+            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
 	else ()
-		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
-        set( DAVA_THIRD_PARTY_LIBS      glew32.dll TextureConverter.dll )  
+            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
 	endif ()
     
     if ( NOT WINDOWS_UAP )
