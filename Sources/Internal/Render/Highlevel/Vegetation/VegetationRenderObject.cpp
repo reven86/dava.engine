@@ -1399,4 +1399,14 @@ uint32 VegetationRenderObject::MapCellSquareToResolutionIndex(uint32 cellSquare)
 
     return index;
 }
+
+void VegetationRenderObject::BindDynamicParameters(Camera* camera)
+{
+    RenderObject::BindDynamicParameters(camera);
+
+    if (heightmap != nullptr)
+    {
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LANDSCAPE_HEIGHTMAP_TEXTURE_SIZE, &heightmapSize, pointer_size(&heightmapSize));
+    }
+}
 };
