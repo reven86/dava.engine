@@ -277,6 +277,7 @@ void FfmpegPlayer::ClearBuffers()
     }
     pcmBuffer.Clear();
     lastFrameData.data.clear();
+    currentPrefetchedPacketsCount = 0;
 }
 
 void FfmpegPlayer::PcmDataCallback(uint8* data, uint32 datalen)

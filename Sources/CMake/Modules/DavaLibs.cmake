@@ -247,14 +247,14 @@ if( WIN )
                                      "delayimp.lib"
                                      "dxgi.lib" )
 
-    set( DAVA_DYNAMIC_LIBRARIES_WIN32 avcodec-57.dll
-                                      avdevice-57.dll
-                                      avfilter-6.dll
-                                      avformat-57.dll
-                                      avutil-55.dll
-                                      postproc-54.dll
-                                      swresample-2.dll
-                                      swscale-4.dll )
+    set( DAVA_DYNAMIC_LIBRARIES_WIN32 "${DAVA_TOOLS_BIN_DIR}/avcodec-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avdevice-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avfilter-6.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avformat-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avutil-55.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/postproc-54.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/swresample-2.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/swscale-4.dll" )
 
     set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
 
