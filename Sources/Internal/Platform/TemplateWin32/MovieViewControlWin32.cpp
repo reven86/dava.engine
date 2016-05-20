@@ -30,12 +30,6 @@ void MovieViewControl::Initialize(const Rect& rect)
 void MovieViewControl::SetRect(const Rect& rect)
 {
     controlRect = rect;
-    ffmpegPlayer->SetRect(rect);
-}
-
-void MovieViewControl::SetVisible(bool isVisible)
-{
-    ffmpegPlayer->SetVisible(isVisible);
 }
 
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
