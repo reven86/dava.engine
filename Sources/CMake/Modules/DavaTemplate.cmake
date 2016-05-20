@@ -48,6 +48,7 @@ load_property( PROPERTY_LIST
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+        DEPLOY_TO_BIN
         DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
     )
 
@@ -638,10 +639,10 @@ if( DEPLOY )
     message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
 
-    if( DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
-        file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
+    if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
+        file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN} ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
         foreach( ITEM ${RESOURCES_LIST} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
+            file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR}" )
         endforeach()
     endif()
     
