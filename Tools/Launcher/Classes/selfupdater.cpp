@@ -112,7 +112,7 @@ void SelfUpdater::DownloadFinished()
         ui->buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
         QString appDirPath = FileManager::GetLauncherDirectory();
-        QString tempArchiveFilePath = FileManager::GetTempDownloadFilepath();
+        QString tempArchiveFilePath = FileManager::GetTempDownloadFilePath();
         QString selfUpdateDirPath = FileManager::GetSelfUpdateTempDirectory();
         //archive file scope. At the end of the scope file will be closed if necessary
         {
@@ -121,18 +121,10 @@ void SelfUpdater::DownloadFinished()
             currentDownload->deleteLater();
             currentDownload = nullptr;
             //create an archive with a new version
-            QFile archiveFile(tempArchiveFilePath);
-            if (archiveFile.open(QFile::WriteOnly | QFile::Truncate))
-            {
-                if (archiveFile.write(data) != data.size())
-                {
-                    ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not create launcher archive in the Launcher folder"));
-                    return;
-                }
-            }
-            else
+            if (!FileManager::CreateFileAndWriteData(tempArchiveFilePath, data))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not create launcher archive in the Launcher folder"));
+                ui->label->setText(tr("Launcher was not updated!"));
                 return;
             }
         }
@@ -151,9 +143,18 @@ void SelfUpdater::DownloadFinished()
         FileManager::DeleteDirectory(FileManager::GetTempDirectory());
         QString tempDir = FileManager::GetTempDirectory(); //create temp directory
         //remove old launcher files except download folder, temp folder and update folder
-        if (FileManager::MoveFilesRecursively(appDirPath, tempDir)
-            && FileManager::MoveFilesRecursively(selfUpdateDirPath, appDirPath))
+        if (FileManager::MoveLauncherRecursively(appDirPath, tempDir)
+            && FileManager::MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
         {
+            QStringList info(files.keys());
+            QByteArray data = info.join('\n').toUtf8().data();
+            if (!FileManager::CreateFileAndWriteData(FileManager::GetPackageInfoFilePath(), data))
+            {
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not create information of launcher build!"));
+                ui->label->setText(tr("Launcher was not updated!"));
+                return;
+            }
+
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
             ui->label->setText(tr("Launcher was updated!\nPlease relaunch application!"));
             connect(this, &QDialog::finished, qApp, &QApplication::quit);

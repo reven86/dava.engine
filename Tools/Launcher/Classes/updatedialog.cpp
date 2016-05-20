@@ -165,7 +165,7 @@ void UpdateDialog::StartNextTask()
         }
         else
         {
-            const QString& archiveFilepath = FileManager::GetTempDownloadFilepath();
+            const QString& archiveFilepath = FileManager::GetTempDownloadFilePath();
 
             outputFile.setFileName(archiveFilepath);
             outputFile.open(QFile::WriteOnly);

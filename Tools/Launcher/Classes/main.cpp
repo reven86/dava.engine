@@ -38,6 +38,13 @@ void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString&
 
 int main(int argc, char* argv[])
 {
+    QDir currentDir(".");
+    if (!currentDir.exists("platforms"))
+    {
+        currentDir.mkpath("platforms");
+        QFile::copy("qwindows.dll", "platforms/qwindows.dll");
+    }
+
     QApplication a(argc, argv);
 
     qInstallMessageHandler(LogMessageHandler);

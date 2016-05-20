@@ -42,7 +42,6 @@ namespace FileManager
 const QString tempSelfUpdateDir = "selfupdate/";
 const QString baseAppDir = "DAVATools/";
 const QString tempDir = "temp/";
-const QString tempFile = "archive.zip";
 
 QStringList OwnDirectories()
 {
@@ -50,23 +49,6 @@ QStringList OwnDirectories()
     return QStringList() << path + tempSelfUpdateDir
                          << path + baseAppDir
                          << path + tempDir;
-}
-
-bool IterateDirectory(const QString& dirPath, std::function<bool(const QFileInfo&)> callback)
-{
-    bool success = true;
-    QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
-    while (di.hasNext())
-    {
-        di.next();
-        const QFileInfo& fi = di.fileInfo();
-        QString absPath = fi.absoluteFilePath();
-        if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
-        {
-            success &= callback(fi);
-        }
-    }
-    return success;
 }
 
 QString GetDocumentsDirectory()
@@ -97,10 +79,9 @@ QString GetSelfUpdateTempDirectory()
     return path;
 }
 
-QString GetTempDownloadFilepath()
+QString GetTempDownloadFilePath()
 {
-    QString path = GetTempDirectory() + tempFile;
-    return path;
+    return GetTempDirectory() + "archive.zip";
 }
 
 QString GetLauncherDirectory()
@@ -115,33 +96,99 @@ QString GetLauncherDirectory()
     return path + "/";
 }
 
+QString GetPackageInfoFilePath()
+{
+    return GetLauncherDirectory() + "Launcher.packageInfo";
+}
+
+bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
+{
+    QFile file(filePath);
+    if (file.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        if (file.write(data) != data.size())
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
 bool DeleteDirectory(const QString& path)
 {
     QDir dir(path);
     return dir.removeRecursively();
 }
 
-bool MoveFilesRecursively(const QString& pathOut, const QString& pathIn)
+bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
 {
     QDir outDir(pathOut);
     if (!outDir.exists())
     {
-        return true;
+        return false;
     }
-    return IterateDirectory(outDir.path(), [pathIn, pathOut](const QFileInfo& fi) {
-        QString absPath = fi.absoluteFilePath();
-        QString relPath = absPath.right(absPath.length() - pathOut.length());
-        QString newFilePath = pathIn + relPath;
-        if (fi.isDir())
+
+    bool success = true;
+    QString infoFilePath = GetPackageInfoFilePath();
+    bool ownFilesOnly = !QFile::exists(infoFilePath);
+    QStringList archiveFiles;
+    if (!ownFilesOnly)
+    {
+        QFile file(infoFilePath);
+        if (file.open(QFile::ReadOnly))
         {
-            QDir dir(newFilePath);
-            return dir.rename(absPath, newFilePath);
+            QString data = QString::fromUtf8(file.readAll());
+            archiveFiles = data.split('\n', QString::SkipEmptyParts);
         }
         else
         {
-            return QFile::rename(absPath, newFilePath);
+            return false;
         }
-    });
+    }
+
+    QDirIterator di(outDir.path(), QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+    while (di.hasNext())
+    {
+        di.next();
+        const QFileInfo& fi = di.fileInfo();
+        QString absPath = fi.absoluteFilePath();
+        if (ownFilesOnly &&
+#if defined(Q_OS_WIN)
+            (fi.suffix() != "dll" || fi.suffix() != "exe") 
+#elif defined(Q_OS_MAC)
+            fi.fileName != "Launcher.app"
+#endif //platform
+            )
+        {
+            continue;
+        }
+        QString relPath = absPath.right(absPath.length() - pathOut.length());
+        if (!ownFilesOnly && !archiveFiles.contains(relPath))
+        {
+            continue;
+        }
+        //return  archiveFiles.contains(path);
+        //else if (!ownFilesOnly && arc
+        if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
+        {
+            QString relPath = absPath.right(absPath.length() - pathOut.length());
+            QString newFilePath = pathIn + relPath;
+            if (fi.isDir())
+            {
+                QDir dir(newFilePath);
+                success &= dir.rename(absPath, newFilePath);
+            }
+            else
+            {
+                success &= QFile::rename(absPath, newFilePath);
+            }
+        }
+    }
+    return success;
 }
 
 void MakeDirectory(const QString& path)
