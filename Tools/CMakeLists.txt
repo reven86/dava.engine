@@ -13,6 +13,7 @@ endmacro ()
 
 project               ( Megasolution  )
 
+set 				  ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
 set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
 
