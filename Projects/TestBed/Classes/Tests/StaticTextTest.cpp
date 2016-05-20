@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
 Copyright (c) 2008, binaryzebra
 All rights reserved.
 
@@ -105,7 +105,8 @@ void StaticTextTest::LoadResources()
 
     RefPtr<Font> arabFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
     //WideString test = L"؜توفيرها (من) قبل DAVA، INC والمساهمين";
-    WideString test = L"شارات التفوق: وسام الاحتراف";
+    WideString test = L"شارات التفوق: وسام لا الاحتراف";
+    //WideString test = L"इस सॉफ़्टवेयर Dava, कांग्रेस द्वारा प्रदत्त";
     //     TextLayout tl(true);
     //     tl.Reset(test);
     //     tl.CalculateCharSizes(*arabFont);
