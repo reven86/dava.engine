@@ -42,14 +42,14 @@
 
 ENUM_DECLARE(Themes::eTheme)
 {
-    ENUM_ADD_DESCR(Themes::Classic, "Classic");
+    ENUM_ADD_DESCR(Themes::Light, "Classic");
     ENUM_ADD_DESCR(Themes::Dark, "Dark");
 };
 
 namespace Themes_local
 {
 const DAVA::FastName themeSettingsKey("ThemeName");
-GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Classic)));
+GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Dark)));
 }
 
 namespace Themes
@@ -61,6 +61,8 @@ QColor lightWindowColor(0xF0, 0xF0, 0xF0);
 QColor darkTextColor(0xF2, 0xF2, 0xF2);
 QColor darkDisabledTextColor(0x75, 0x75, 0x75);
 QColor darkWindowColor(0x32, 0x32, 0x32);
+
+bool themesInitialized = false;
 
 void SetupClassicTheme();
 void SetupDarkTheme();
