@@ -7,23 +7,6 @@
 
 namespace DAVA
 {
-SoundStream* SoundStream::Create(SoundStreamDelegate* streamDelegate, uint32 channelsCount)
-{
-    FMODSoundStream* fmodStream = new FMODSoundStream(streamDelegate, channelsCount);
-    bool isInited = fmodStream->Init();
-    if (!isInited)
-    {
-        SafeDelete(fmodStream);
-    }
-
-    return fmodStream;
-}
-
-uint32 SoundStream::GetDefaultSampleRate()
-{
-    static const uint32 outSampleRate = 44100;
-    return outSampleRate;
-}
 
 FMODSoundStream::~FMODSoundStream()
 {
@@ -76,9 +59,9 @@ FMODSoundStream::FMODSoundStream(SoundStreamDelegate* streamDelegate, uint32 cha
     exinfo.pcmreadcallback = FMODSoundStream::PcmReadDecodeCallback; /* User callback for reading. */
 }
 
-bool FMODSoundStream::Init()
+bool FMODSoundStream::Init(FMOD::System* system)
 {
-    FMOD::System* system = SoundSystem::Instance()->GetFmodSystem();
+    DVASSERT(nullptr != system);
     FMOD_RESULT result = system->createStream(nullptr, FMOD_OPENUSER, &exinfo, &sound);
     sound->setUserData(dataSender);
 

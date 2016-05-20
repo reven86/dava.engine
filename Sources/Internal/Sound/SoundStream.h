@@ -15,14 +15,17 @@ class SoundStream
 public:
     virtual ~SoundStream() = default;
 
-    static SoundStream* Create(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
+    virtual void Play() = 0;
+    virtual void Pause() = 0;
 
-    virtual void Play()
-    {
-    }
-    virtual void Pause()
-    {
-    }
     static uint32 GetDefaultSampleRate();
+
+private:
+    static const uint32 outSampleRate = 44100;
 };
+
+inline uint32 SoundStream::GetDefaultSampleRate()
+{
+    return outSampleRate;
+}
 }

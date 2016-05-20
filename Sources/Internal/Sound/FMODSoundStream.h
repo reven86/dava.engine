@@ -13,7 +13,7 @@ public:
 
     ~FMODSoundStream();
 
-    bool Init();
+    bool Init(FMOD::System* system);
 
     // SoundStream interface implementation
     void Play() override;

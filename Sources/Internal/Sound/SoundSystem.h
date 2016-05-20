@@ -70,7 +70,6 @@ public:
     ~SoundSystem();
 
     SoundStream* CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
-    uint32 GetDefaultSoundStreamSampleRate() const;
 
     SoundEvent* CreateSoundEventByID(const FastName& eventName, const FastName& groupName);
     SoundEvent* CreateSoundEventFromFile(const FilePath& fileName, const FastName& groupName, uint32 createFlags = SoundEvent::SOUND_EVENT_CREATE_DEFAULT, int32 priority = 128);
@@ -131,8 +130,6 @@ public:
     int32 GetChannelsUsed() const;
     int32 GetChannelsMax() const;
 
-    FMOD::System* GetFmodSystem() const;
-
 #ifdef __DAVAENGINE_IPHONE__
     bool IsSystemMusicPlaying();
     void DuckSystemMusic(bool duck);
@@ -168,13 +165,6 @@ protected:
 #endif
 #endif
 };
-
-#ifdef DAVA_FMOD
-inline FMOD::System* SoundSystem::GetFmodSystem() const
-{
-    return fmodSystem;
-}
-#endif
 };
 
 #endif //__DAVAENGINE_SOUND_SYSTEM_H__
