@@ -104,8 +104,10 @@ void StaticTextTest::LoadResources()
     BaseScreen::LoadResources();
 
     RefPtr<Font> arabFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
-    //WideString test = L"؜توفيرها (من) قبل DAVA، INC والمساهمين";
-    WideString test = L"شارات التفوق: وسام لا الاحتراف";
+    //WideString test = L"؜DAVA، INC توفيرها (من) قبل DAVA، INC والمساهمين";
+    WideString test = L"؜ • M46 Patton\n • M48A1 Patton III\n\n• يتم إضافة سلسلة الانتصارات المحققة في جميع المركبات.\n• وتم إضافة الجوائز المستلمة مؤخرًا معًا.";
+    //WideString test = L"شارات التفوق: وسام لا الاحتراف";
+    //WideString test = L"؜- Test الاحتراف\nشارات التفوق: وسام لا الاحتراف";
     //WideString test = L"इस सॉफ़्टवेयर Dava, कांग्रेस द्वारा प्रदत्त";
     //     TextLayout tl(true);
     //     tl.Reset(test);
@@ -113,15 +115,19 @@ void StaticTextTest::LoadResources()
     //     tl.NextByWords(99999);
     //     tl.GetVisualText(true);
 
-    TextBox box;
-    box.SetText(test);
-    box.SetFont(arabFont.Get());
-    box.Shape();
-    box.Wrap(100.f);
-    box.Reorder();
+    //     TextBox box;
+    //     box.SetText(test);
+    //     TextBox::Direction d = box.GetBaseDirection();
+    //     if (d == TextBox::Direction::RTL)
+    //     {
+    //         box.ChangeDirectionMode(TextBox::DirectionMode::STRONG_RTL);
+    //     }
+    //     box.Shape();
+    //     box.Wrap(9999999.f, TextBox::WrapMode::WORD_WRAP);
+    //     box.Reorder();
 
-    ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
-    ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
+    ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
+    ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
     bigFont->SetSize(24.f);
 
     ScopedPtr<UIStaticText> label(new UIStaticText(Rect(20, 5, 400, 20)));

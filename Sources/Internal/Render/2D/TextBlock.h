@@ -43,6 +43,7 @@ namespace DAVA
 class TextBlockRender;
 class TextBlockSoftwareRender;
 class TextBlockGraphicRender;
+class TextBox;
 
 /**
     \ingroup render_2d
@@ -60,7 +61,7 @@ public:
         uint32 length = 0;
         float32 xadvance = 0.f;
         float32 yadvance = 0.f;
-        float32 visibleadvance = 0.f;
+        float32 visiblexadvance = 0.f;
         float32 xoffset = 0.f;
         float32 yoffset = 0.f;
     };
@@ -122,6 +123,7 @@ public:
     virtual const Vector<WideString>& GetMultilineStrings();
     virtual const Vector<Line>& GetMultilineInfo();
     virtual const Vector<float32>& GetCharactersSize();
+    virtual TextBox* GetTextBox() const;
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
@@ -239,7 +241,8 @@ private:
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicRender;
 
-    TextBlockRender* textBlockRender;
+    TextBlockRender* textBlockRender = nullptr;
+    TextBox* textBox = nullptr;
 
     float angle;
     Vector2 pivot;

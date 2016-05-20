@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Input/KeyboardDevice.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringUtils.h"
+#include "Utils/TextBox.h"
 
 #include <numeric>
 
@@ -455,6 +456,18 @@ WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i)
     return text[i];
 }
 
+static float32 calcVisSize(const int32 start, const int32 limit, const TextBox* tb, const float32* charsSizes)
+{
+    float32 sum = 0.f;
+    int32 length = limit - start;
+    for (int32 logicInd = start; logicInd < length; ++logicInd)
+    {
+        int32 visIndex = tb->GetCharacter(logicInd).visualIndex;
+        sum += charsSizes[visIndex];
+    }
+    return sum;
+}
+
 void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 {
     selectionRects.clear();
@@ -464,6 +477,8 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
     {
         const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
         const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
+        const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
+
         for (const TextBlock::Line& line : linesInfo)
         {
             if (selStart >= line.offset + line.length || selEnd <= line.offset)
@@ -476,7 +491,8 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
             r.dy = line.yadvance;
             if (selStart > line.offset)
             {
-                r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
+                //r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
+                r.x += calcVisSize(line.offset, selStart, tb, charsSizes.data());
             }
 
             if (selEnd >= line.offset + line.length)
@@ -485,7 +501,8 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
             }
             else
             {
-                r.dx = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selEnd, 0.f);
+                //r.dx = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selEnd, 0.f);
+                r.dx = calcVisSize(line.offset, selEnd, tb, charsSizes.data());
             }
             r.dx -= r.x;
             r.x += line.xoffset;
@@ -511,6 +528,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
     const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
     const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
+    const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
 
     Rect r;
     r.x = staticTextOffset.x;
@@ -531,7 +549,8 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
             r.dy = line.yadvance;
             if (cursorPos != line.offset)
             {
-                r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
+                //r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
+                r.x += calcVisSize(line.offset, cursorPos, tb, charsSizes.data());
             }
             r.x += line.xoffset;
         }
@@ -540,7 +559,8 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
             const TextBlock::Line& line = *linesInfo.rbegin();
             r.y += line.yoffset;
             r.dy = line.yadvance;
-            r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
+            //r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
+            r.x += calcVisSize(line.offset, line.offset + line.length, tb, charsSizes.data());
             r.x += line.xoffset;
         }
     }

@@ -8,7 +8,6 @@
 #pragma clang diagnostic ignored "-Wheader-hygiene"
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
-#include <unicode/unistr.h>
 #include <unicode/ustring.h>
 #include <unicode/ubidi.h>
 #include <unicode/ushape.h>
@@ -18,25 +17,27 @@
 
 namespace DAVA
 {
-static bool isAlefChar(UChar ch)
+static bool isAlefChar(int32 ch)
 {
     return (ch == 0x0622) || (ch == 0x0623) || (ch == 0x0625) || (ch == 0x0627);
 }
 
-static bool isLamChar(UChar ch)
+static bool isLamChar(int32 ch)
 {
     return ch == 0x0644;
 }
 
-static bool isLamAlefChar(UChar ch)
+static bool isLamAlefChar(int32 ch)
 {
     return (ch >= 0xFEF5) && (ch <= 0xFEFC);
 }
 
-static bool isTashkeelCharFE(UChar ch)
+static bool isTashkeelCharFE(int32 ch)
 {
     return (ch >= 0xFE70) && (ch <= 0xFE7F);
 }
+
+using UCharString = BasicString<UChar>;
 
 static WideString ConvertU2W(const UChar* src, const int32 length)
 {
@@ -51,7 +52,7 @@ static WideString ConvertU2W(const UChar* src, const int32 length)
 
     WideString dst(dstLen, 0);
     errorCode = U_ZERO_ERROR;
-    u_strToWCS(&dst[0], dst.capacity(), 0, src, length, &errorCode);
+    u_strToWCS(const_cast<WideString::value_type*>(dst.data()), dst.capacity(), 0, src, length, &errorCode);
     if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
     {
         Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
@@ -61,7 +62,7 @@ static WideString ConvertU2W(const UChar* src, const int32 length)
     return dst;
 }
 
-static UnicodeString ConvertW2U(const WideString& src)
+static UCharString ConvertW2U(const WideString& src)
 {
     int32 dstLen = 0;
     UErrorCode errorCode = U_ZERO_ERROR;
@@ -69,17 +70,16 @@ static UnicodeString ConvertW2U(const WideString& src)
     if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
     {
         Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
-        return UnicodeString();
+        return UCharString();
     }
 
-    UnicodeString dst;
+    UCharString dst(dstLen, 0);
     errorCode = U_ZERO_ERROR;
-    u_strFromWCS(dst.getBuffer(dstLen), dstLen, 0, src.data(), src.length(), &errorCode);
-    dst.releaseBuffer(dstLen);
+    u_strFromWCS(const_cast<WideString::value_type*>(dst.data()), dst.capacity(), 0, src.data(), src.length(), &errorCode);
     if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
     {
         Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
-        return UnicodeString();
+        return UCharString();
     }
 
     return dst;
@@ -88,68 +88,12 @@ static UnicodeString ConvertW2U(const WideString& src)
 class TextBoxImpl
 {
 public:
-    struct Line
+    enum class Status
     {
-        Line()
-        {
-            para = ubidi_open();
-            DVASSERT_MSG(para != nullptr, "Can't alocate new line");
-            ubidi_setReorderingOptions(para, UBIDI_OPTION_REMOVE_CONTROLS);
-        }
-
-        Line(const Line& copy) = delete;
-
-        Line(Line&& l)
-        {
-            index = l.index;
-            offset = l.offset;
-            length = l.length;
-            para = l.para;
-            reorderedText.fastCopyFrom(l.reorderedText);
-
-            l.index = 0;
-            l.offset = 0;
-            l.length = 0;
-            l.para = nullptr;
-        }
-
-        ~Line()
-        {
-            if (para != nullptr)
-            {
-                ubidi_close(para);
-            }
-        }
-
-        Line& operator=(const Line& l) = delete;
-
-        Line& operator==(Line&& l)
-        {
-            if (this != &l)
-            {
-                if (para != nullptr)
-                {
-                    ubidi_close(para);
-                }
-
-                index = l.index;
-                offset = l.offset;
-                length = l.length;
-                para = l.para;
-                reorderedText.fastCopyFrom(l.reorderedText);
-
-                l.index = 0;
-                l.offset = 0;
-                l.length = 0;
-                l.para = nullptr;
-            }
-        }
-
-        int32 index = 0;
-        int32 offset = 0;
-        int32 length = 0;
-        UBiDi* para = nullptr;
-        UnicodeString reorderedText;
+        RESETED = 0,
+        SHAPED,
+        WRAPED,
+        REORDERER
     };
 
     TextBoxImpl()
@@ -173,34 +117,35 @@ public:
         SetUString(ConvertW2U(str), mode);
     }
 
-    void SetUString(const UnicodeString& str, const TextBox::DirectionMode mode)
+    void SetUString(const UCharString& str, const TextBox::DirectionMode mode)
     {
-        paraText.fastCopyFrom(str);
+        paraText = str;
 
-        switch (mode)
+        uint32 length = uint32(paraText.length());
+        characters.resize(length);
+        for (uint32 i = 0; i < length; ++i)
         {
-        case TextBox::DirectionMode::AUTO:
-        case TextBox::DirectionMode::WEAK_LTR:
-            baseLevel = UBIDI_DEFAULT_LTR;
-            break;
-        case TextBox::DirectionMode::WEAK_RTL:
-            baseLevel = UBIDI_DEFAULT_RTL;
-            break;
-        case TextBox::DirectionMode::STRONG_LTR:
-            baseLevel = UBIDI_LTR;
-            break;
-        case TextBox::DirectionMode::STRONG_RTL:
-            baseLevel = UBIDI_RTL;
-            break;
+            TextBox::Character& c = characters[i];
+            c.codepoint = paraText.at(i);
+            c.logicIndex = i;
+            c.shapedIndex = i;
+            c.visualIndex = i;
         }
 
+        baseLevel = DirectionModeToBiDiLevel(mode);
+        UpdatePara();
+    }
+
+    void ChangeDirectionMode(const TextBox::DirectionMode mode)
+    {
+        baseLevel = DirectionModeToBiDiLevel(mode);
         UpdatePara();
     }
 
     void UpdatePara()
     {
         UErrorCode errorCode = U_ZERO_ERROR;
-        ubidi_setPara(para, paraText.getBuffer(), paraText.length(), baseLevel, nullptr, &errorCode);
+        ubidi_setPara(para, paraText.data(), paraText.length(), baseLevel, nullptr, &errorCode);
         if (errorCode != U_ZERO_ERROR)
         {
             Logger::Error("[TextBox::SetText] errorCode = %d", errorCode);
@@ -225,47 +170,74 @@ public:
             Logger::Error("[TextBox::Shape] errorCode = %d", errorCode);
         }
 
-        UnicodeString output;
+        UCharString output(outputLength, 0);
         errorCode = U_ZERO_ERROR;
-        u_shapeArabic(text, length, output.getBuffer(outputLength), outputLength, shapeOptions, &errorCode);
-        output.releaseBuffer(outputLength);
+        u_shapeArabic(text, length, const_cast<UChar*>(output.data()), outputLength, shapeOptions, &errorCode);
         if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
         {
             Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
         }
 
-        log2vis.resize(length);
-        if (length == outputLength)
-        {
-            // Fill log2vis map from 0 to length-1
-            std::iota(std::begin(log2vis), std::end(log2vis), 0);
-        }
-        else if (length > outputLength)
+        if (length > outputLength)
         {
             // Fix indeces mapping if length of result string reduced
+#if 0 // Direct mapping 
             int32 vi = 0;
-            for (int32 li = 0; li < length; ++li, ++vi)
+            for (int32 li = 0; li < length; ++vi)
             {
-                log2vis[li] = vi;
-                if ((isLamChar(text[li]) && (li + 1 < length) && isAlefChar(text[li + 1])) || isTashkeelCharFE(text[li]))
+                TextBox::Character& c = characters[li++];
+                c.shapedIndex = vi;
+                c.visualIndex = vi;
+
+                bool isLam = isLamChar(c.codepoint);
+                bool isTashkeelFE = isTashkeelCharFE(c.codepoint);
+                if ((isLam || isTashkeelFE) && (li < length))
                 {
-                    log2vis[++li] = -1;
+                    TextBox::Character& next = characters[li++];
+                    if ((isLam && isAlefChar(next.codepoint)) || isTashkeelFE)
+                    {
+                        next.shapedIndex = -1;
+                        next.visualIndex = -1;
+                    }
                 }
             }
             DVASSERT_MSG(vi == outputLength, "Incorrect mapping logical to shaped characters");
+#else // Invert mapping
+            int32 li = 0;
+            for (int32 vi = 0; vi < outputLength; ++vi)
+            {
+                TextBox::Character& c = characters[li++];
+                c.shapedIndex = vi;
+                c.visualIndex = vi;
+
+                if (isLamAlefChar(output.at(vi)))
+                {
+                    TextBox::Character& next = characters[li++];
+                    next.shapedIndex = -1;
+                    next.visualIndex = -1;
+                }
+            }
+            DVASSERT_MSG(li == length, "Incorrect mapping logical to shaped characters");
+#endif
         }
-        else
+        else if (length < outputLength)
         {
             DVASSERT_MSG(false, "Unexpected behaviour");
         }
 
-        paraText.fastCopyFrom(output);
+        // Store shaped text
+        paraText = output;
         UpdatePara();
     }
 
-    const WideString ToWideString() const
+    const WideString AsWideString() const
     {
         return ConvertU2W(ubidi_getText(para), ubidi_getLength(para));
+    }
+
+    const UCharString& AsUCharString() const
+    {
+        return paraText;
     }
 
     const int32 GetLength() const
@@ -275,19 +247,11 @@ public:
 
     const void AddLineRange(int32 start, int32 length)
     {
-        Line l;
+        TextBox::Line l;
         l.index = lines.size();
         l.offset = start;
         l.length = length;
-
-        UErrorCode errorCode = U_ZERO_ERROR;
-        ubidi_setLine(para, start, start + length, l.para, &errorCode);
-        if (errorCode != U_ZERO_ERROR)
-        {
-            Logger::Error("[TextBox::SetText] errorCode = %d", errorCode);
-        }
-
-        lines.push_back(std::move(l));
+        lines.push_back(l);
     }
 
     void ReorderLines()
@@ -295,28 +259,38 @@ public:
         const static int32 reorderingOptions = UBIDI_DO_MIRRORING | UBIDI_REMOVE_BIDI_CONTROLS;
         Vector<int32> l2v;
         UErrorCode errorCode = U_ZERO_ERROR;
-        for (Line& line : lines)
+        UBiDi* lpara = ubidi_open();
+        for (TextBox::Line& line : lines)
         {
+            UErrorCode errorCode = U_ZERO_ERROR;
+            ubidi_setLine(para, line.offset, line.offset + line.length, lpara, &errorCode);
+            if (errorCode != U_ZERO_ERROR)
+            {
+                Logger::Error("[TextBox::SetText] errorCode = %d", errorCode);
+            }
+
             // Write reordered string
             errorCode = U_ZERO_ERROR;
-            int32 visualLength = ubidi_writeReordered(line.para, nullptr, 0, reorderingOptions, &errorCode);
+            int32 visualLength = ubidi_writeReordered(lpara, nullptr, 0, reorderingOptions, &errorCode);
             if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
             {
                 Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
             }
             errorCode = U_ZERO_ERROR;
-            ubidi_writeReordered(line.para, line.reorderedText.getBuffer(visualLength), visualLength, reorderingOptions, &errorCode);
-            line.reorderedText.releaseBuffer(visualLength);
+            UCharString visString(visualLength, 0);
+            ubidi_writeReordered(lpara, const_cast<UChar*>(visString.data()), visualLength, reorderingOptions, &errorCode);
             if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
             {
                 Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
             }
 
+            line.visualString = ConvertU2W(visString.data(), visualLength);
+
             // Get local reordered characters map
-            int32 length = ubidi_getLength(line.para);
+            int32 length = ubidi_getLength(lpara);
             l2v.resize(length);
             errorCode = U_ZERO_ERROR;
-            ubidi_getLogicalMap(line.para, &l2v[0], &errorCode);
+            ubidi_getLogicalMap(lpara, l2v.data(), &errorCode);
             if (errorCode != U_ZERO_ERROR)
             {
                 Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
@@ -326,37 +300,68 @@ public:
             int32 li = line.offset;
             for (int32 i = 0; i < length; ++i)
             {
-                if (log2vis[li] < 0)
+                TextBox::Character* c = &characters[li++];
+                if (c->shapedIndex < 0)
                 {
-                    li++;
+                    c = &characters[li++];
                 }
                 int32 vi = line.offset + l2v[i];
-                log2vis[li++] = vi;
+                c->visualIndex = vi;
             }
         }
+        ubidi_close(lpara);
     }
 
-    TextBox::Direction GetDirection() const
+    const TextBox::Direction GetDirection() const
     {
-        UBiDiDirection dir = ubidi_getDirection(para);
+        return BiDiDirectionToDirection(ubidi_getDirection(para));
+    }
+
+    const TextBox::Direction GetBaseDirection() const
+    {
+        return BiDiDirectionToDirection(ubidi_getBaseDirection(ubidi_getText(para), ubidi_getLength(para)));
+    }
+
+    UCharString paraText;
+    UBiDi* para = nullptr;
+    Vector<TextBox::Line> lines;
+    Vector<TextBox::Character> characters;
+    UBiDiLevel baseLevel = UBIDI_DEFAULT_LTR;
+
+    static UBiDiLevel DirectionModeToBiDiLevel(const TextBox::DirectionMode mode)
+    {
+        switch (mode)
+        {
+        case TextBox::DirectionMode::AUTO:
+        case TextBox::DirectionMode::WEAK_LTR:
+            return UBIDI_DEFAULT_LTR;
+        case TextBox::DirectionMode::WEAK_RTL:
+            return UBIDI_DEFAULT_RTL;
+        case TextBox::DirectionMode::STRONG_LTR:
+            return UBIDI_LTR;
+        case TextBox::DirectionMode::STRONG_RTL:
+            return UBIDI_RTL;
+        }
+        DVASSERT_MSG(false, "Undefined direction mode");
+        return UBIDI_DEFAULT_LTR;
+    }
+
+    static TextBox::Direction BiDiDirectionToDirection(const UBiDiDirection dir)
+    {
         switch (dir)
         {
+        case UBIDI_LTR:
+        case UBIDI_NEUTRAL:
+            return TextBox::Direction::LTR;
         case UBIDI_RTL:
             return TextBox::Direction::RTL;
         case UBIDI_MIXED:
             return TextBox::Direction::MIXED;
-        case UBIDI_LTR:
-        case UBIDI_NEUTRAL:
-        default:
-            return TextBox::Direction::LTR;
         }
+        DVASSERT_MSG(false, "Undefined direction");
+        return TextBox::Direction::LTR;
     }
 
-    UnicodeString paraText;
-    UBiDi* para = nullptr;
-    Vector<Line> lines;
-    Vector<int32> log2vis;
-    UBiDiLevel baseLevel = UBIDI_DEFAULT_LTR;
 };
 
 /******************************************************************************/
@@ -375,7 +380,7 @@ TextBox::~TextBox()
 {
 }
 
-void TextBox::SetText(const WideString& str, const DirectionMode mode = DirectionMode::AUTO)
+void TextBox::SetText(const WideString& str, const DirectionMode mode)
 {
     if (logicalText != str)
     {
@@ -386,49 +391,47 @@ void TextBox::SetText(const WideString& str, const DirectionMode mode = Directio
     }
 }
 
-void TextBox::SetFont(Font* _font)
+void TextBox::ChangeDirectionMode(const DirectionMode mode)
 {
-    font = _font;
+    pImpl->ChangeDirectionMode(mode);
 }
 
 void TextBox::Shape()
 {
     pImpl->Shape();
+    logicalText = pImpl->AsWideString();
 }
 
-void TextBox::Wrap(float32 maxWidth, const WrapMode mode)
+void TextBox::Wrap(const WrapMode mode, float32 maxWidth, const Vector<float32>* characterSizes, const Vector<uint8>* breaks)
 {
     uint32 textLength = uint32(pImpl->GetLength());
-    WideString shapedText = pImpl->ToWideString();
-
-    // Detect breaks
-    Vector<uint8> breaks;
-    StringUtils::GetLineBreaks(shapedText, breaks);
-    DVASSERT_MSG(breaks.size() == textLength, "Incorrect breaks information");
-
-    // Get characters metrics
-    Vector<float32> characterSizes;
-    font->GetStringMetrics(shapedText, &characterSizes);
-    DVASSERT_MSG(characterSizes.size() == textLength, "Incorrect character sizes information");
+    pImpl->ClearLines();
 
     // Wrap
     if (mode != WrapMode::NO_WRAP)
     {
+        if (characterSizes == nullptr || breaks == nullptr)
+        {
+            return;
+        }
+
+        DVASSERT_MSG(breaks->size() == textLength, "Incorrect breaks information");
+        DVASSERT_MSG(characterSizes->size() == textLength, "Incorrect character sizes information");
+
+        const UCharString& shapedText = pImpl->AsUCharString();
         int32 lineOffset = 0;
         int32 lineLength = 0;
         float32 currentWidth = 0;
         uint32 lastPossibleBreak = 0;
-
         for (uint32 pos = 0; pos < textLength; ++pos)
         {
-            char16 ch = logicalText[pos];
-            uint8 canBreak = breaks[pos];
-
-            currentWidth += characterSizes[pos];
+            UChar ch = shapedText[pos];
+            uint8 canBreak = breaks->at(pos);
+            currentWidth += characterSizes->at(pos);
 
             // Check that targetWidth defined and currentWidth less than targetWidth.
             // If symbol is whitespace skip it and go to next (add all whitespace to current line)
-            if (currentWidth <= maxWidth || StringUtils::IsWhitespace(ch))
+            if (currentWidth <= maxWidth || StringUtils::IsWhitespace(char16(ch)))
             {
                 if (canBreak == StringUtils::LB_MUSTBREAK) // If symbol is line breaker then split string
                 {
@@ -487,40 +490,50 @@ const DAVA::WideString& TextBox::GetText() const
     return logicalText;
 }
 
+const WideString TextBox::GetShapedText() const
+{
+    return pImpl->AsWideString();
+}
+
+const TextBox::Direction TextBox::GetBaseDirection() const
+{
+    return pImpl->GetBaseDirection();
+}
+
 const Vector<TextBox::Line>& TextBox::GetLines() const
 {
-    return lines;
+    return pImpl->lines;
 }
 
 const TextBox::Line& TextBox::GetLine(const int32 index) const
 {
-    return lines.at(index);
+    return pImpl->lines.at(index);
 }
 
 const uint32 TextBox::GetLinesCount() const
 {
-    return uint32(lines.size());
+    return uint32(pImpl->lines.size());
 }
 
 const Vector<TextBox::Character>& TextBox::GetCharacters() const
 {
-    return characters;
+    return pImpl->characters;
 }
 
 const TextBox::Character& TextBox::GetCharacter(int32 index) const
 {
     static const Character NONE;
-    int32 visualIndex = pImpl->log2vis.at(index);
+    int32 visualIndex = pImpl->characters.at(index).visualIndex;
     if (visualIndex == -1)
     {
-        visualIndex = pImpl->log2vis.at(index - 1);
+        visualIndex = pImpl->characters.at(index - 1).visualIndex;
     }
-    return characters.at(visualIndex);
+    return pImpl->characters.at(visualIndex);
 }
 
 const uint32 TextBox::GetCharactersCount() const
 {
-    return uint32(characters.size());
+    return uint32(pImpl->characters.size());
 }
 
 }

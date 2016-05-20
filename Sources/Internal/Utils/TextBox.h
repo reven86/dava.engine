@@ -33,10 +33,15 @@ public:
         SYMBOLS_WRAP
     };
 
-    struct Line
+    class Line
     {
+    public:
+        virtual ~Line()
+        {
+        }
+
         int32 index = 0;
-        int32 start = 0;
+        int32 offset = 0;
         int32 length = 0;
         float32 xadvance = 0.f;
         float32 trimxadvance = 0.f;
@@ -47,11 +52,13 @@ public:
         WideString visualString;
     };
 
-    struct Character
+    class Character
     {
+    public:
         int32 codepoint = -1;
-        int32 textIndex = -1;
-        int32 lineIndex = -1;
+        int32 logicIndex = -1;
+        int32 shapedIndex = -1;
+        int32 visualIndex = -1;
         float32 xadvance = 0.f;
         float32 yadvance = 0.f;
         float32 xoffset = 0.f;
@@ -63,15 +70,17 @@ public:
     virtual ~TextBox();
 
     void SetText(const WideString& str, const DirectionMode mode = DirectionMode::AUTO);
-    void SetFont(Font* font);
+    void ChangeDirectionMode(const DirectionMode mode);
     void Shape();
-    void Wrap(float32 maxWidth, const WrapMode mode = WrapMode::WORD_WRAP);
+    void Wrap(const WrapMode mode = WrapMode::NO_WRAP, float32 maxWidth = 0.f, const Vector<float32>* characterSizes = nullptr, const Vector<uint8>* breaks = nullptr);
     void Reorder();
 
     void Measure();
     void CleanUp();
 
     const WideString& GetText() const;
+    const WideString GetShapedText() const;
+    const Direction GetBaseDirection() const;
     const Direction GetDirection() const;
     const Vector<Line>& GetLines() const;
     const Line& GetLine(const int32 index) const;
@@ -81,10 +90,7 @@ public:
     const uint32 GetCharactersCount() const;
 
 private:
-    Font* font = nullptr;
     WideString logicalText;
-    Vector<Line> lines;
-    Vector<Character> characters;
     Direction direction = Direction::LTR;
     std::unique_ptr<TextBoxImpl> pImpl;
 };
