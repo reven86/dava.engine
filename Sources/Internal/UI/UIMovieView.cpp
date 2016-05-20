@@ -105,12 +105,6 @@ bool UIMovieView::IsPlaying() const
     return movieViewControl->IsPlaying();
 }
 
-void UIMovieView::Update(float32 timeElapsed)
-{
-    UIControl::Update(timeElapsed);
-    movieViewControl->Update();
-}
-
 void UIMovieView::UpdateControlRect()
 {
     Rect rect = GetAbsoluteRect();
@@ -138,6 +132,12 @@ void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
 {
     UIControl::Draw(parentGeometricData);
     movieViewControl->Draw(parentGeometricData);
+}
+
+void UIMovieView::Update(float32 timeElapsed)
+{
+    UIControl::Update(timeElapsed);
+    movieViewControl->Update();
 }
 
 void UIMovieView::OnVisible()

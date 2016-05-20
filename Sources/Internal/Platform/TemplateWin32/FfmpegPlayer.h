@@ -35,7 +35,7 @@ extern "C"
 
 namespace DAVA
 {
-class FfmpegPlayer : public IMovieViewControl, public SoundStreamDelegate
+class FfmpegPlayer : public SoundStreamDelegate
 {
 public:
     ~FfmpegPlayer() override;
@@ -43,25 +43,21 @@ public:
     // IMovieViewControl Interface implementation
 
     // Initialize the control.
-    void Initialize(const Rect& rect) override;
+    void Initialize(const Rect& rect);
 
     // Open the Movie.
-    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
-
-    // Position/visibility.
-    void SetRect(const Rect& rect) override{};
-    void SetVisible(bool isVisible) override{};
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
 
     // Start/stop the video playback.
-    void Play() override;
-    void Stop() override;
+    void Play();
+    void Stop();
 
     // Pause/resume the playback.
-    void Pause() override;
-    void Resume() override;
+    void Pause();
+    void Resume();
 
     // Whether the movie is being played?
-    bool IsPlaying() const override;
+    bool IsPlaying() const;
 
     void Update();
 

@@ -55,6 +55,7 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
     void Draw(const UIGeometricData& parentGeometricData) override;
+    void Update(float32 timeElapsed) override;
 
     void OnVisible() override;
     void OnInvisible() override;
@@ -72,8 +73,6 @@ public:
 
     // Whether the movie is being played?
     bool IsPlaying() const;
-
-    void Update(float32 timeElapsed) override;
 
 private:
     void UpdateControlRect();
