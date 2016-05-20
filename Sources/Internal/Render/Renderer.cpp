@@ -44,7 +44,7 @@ namespace Renderer
 {
 namespace //for private variables
 {
-bool ininialized = false;
+bool initialized = false;
 rhi::Api api;
 int32 desiredFPS = 60;
 
@@ -77,7 +77,7 @@ static Mutex renderCmdExecSync;
 
 void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
-    DVASSERT(!ininialized);
+    DVASSERT(!initialized);
 
     api = _api;
 
@@ -98,23 +98,23 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     resetParams.window = params.window;
     resetParams.fullScreen = params.fullScreen;
 
-    ininialized = true;
+    initialized = true;
 }
 
 void Uninitialize()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
 
     FXCache::Uninitialize();
     ShaderDescriptorCache::Uninitialize();
     rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
-    ininialized = false;
+    initialized = false;
 }
 
 bool IsInitialized()
 {
-    return ininialized;
+    return initialized;
 }
 
 void Reset(const rhi::ResetParam& params)
@@ -126,13 +126,13 @@ void Reset(const rhi::ResetParam& params)
 
 bool IsDeviceLost()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
     return false;
 }
 
 rhi::Api GetAPI()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
     return api;
 }
 
@@ -162,7 +162,7 @@ bool IsVSyncEnabled()
 
 RenderOptions* GetOptions()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
     return &renderOptions;
 }
 
