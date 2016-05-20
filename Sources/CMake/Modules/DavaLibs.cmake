@@ -114,7 +114,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/ssleay32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/TextureConverter.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/unibreak_win.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/zlib.lib"   )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/zlib.lib"   
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/sqlite3.lib"   )
 
     set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG
                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/detours.lib"
@@ -144,7 +145,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverterD.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak_wind.lib"  
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/sqlite3.lib" )
 
     set( DAVA_STATIC_LIBRARIES_WIN64_RELEASE
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
@@ -173,7 +175,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/theora_static.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/unibreak.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/uv.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/z.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/z.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/sqlite3.lib" )
 
     set( DAVA_STATIC_LIBRARIES_WIN64_DEBUG
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
@@ -199,7 +202,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverter_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/theora_static_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/z.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/z.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/sqlite3.lib" )
 
 
     set( DAVA_STATIC_LIBRARIES_WIN32 "Wininet.lib"

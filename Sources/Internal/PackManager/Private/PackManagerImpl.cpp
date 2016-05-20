@@ -66,12 +66,16 @@ void PackManagerImpl::MountDownloadedPacks()
             continue;
         }
         const FilePath& filePath = fileList->GetPathname(fileIndex);
-        String fileName = filePath.GetFilename();
+        String fileName = filePath.GetBasename();
         auto it = packsIndex.find(fileName);
-        if (it != end(packsIndex))
+        if (it != end(packsIndex) && filePath.GetExtension() == RequestManager::packPostfix)
         {
             // check CRC32 meta and try mount this file
-            ScopedPtr<File> metaFile(File::Create(filePath + RequestManager::hashPostfix, File::OPEN | File::READ));
+            FilePath packPath(filePath);
+            FilePath hashPath(filePath);
+            hashPath.ReplaceFilename(fileName + RequestManager::hashPostfix);
+
+            ScopedPtr<File> metaFile(File::Create(hashPath, File::OPEN | File::READ));
             if (metaFile)
             {
                 String content;
@@ -89,14 +93,14 @@ void PackManagerImpl::MountDownloadedPacks()
                 if (pack.hashFromDB != pack.hashFromMeta)
                 {
                     // old Pack file with previous version crc32 - delete it
-                    fs->DeleteFile(filePath);
-                    fs->DeleteFile(filePath + RequestManager::hashPostfix);
+                    fs->DeleteFile(packPath);
+                    fs->DeleteFile(hashPath);
                 }
                 else
                 {
                     try
                     {
-                        fs->Mount(filePath, "Data/");
+                        fs->Mount(packPath, "Data/");
                         pack.state = PackManager::Pack::Status::Mounted;
                     }
                     catch (std::exception& ex)
