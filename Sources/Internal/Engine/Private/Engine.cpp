@@ -54,6 +54,9 @@ Engine::Engine()
     //DVASSERT(engineSingleton == nullptr);
     engineSingleton = this;
     engineBackend = Private::EngineBackend::instance;
+    engineBackend->engine = this;
+
+    new Logger();
 }
 
 Engine::~Engine()
@@ -69,11 +72,12 @@ Window* Engine::PrimaryWindow() const
 
 void Engine::Init(bool consoleMode, const Vector<String>& modules)
 {
+    Logger::Debug("****** Engine::Init enter");
+
     engineBackend->Init(consoleMode);
 
     // init modules
 
-    new Logger();
     new AllocatorFactory();
     new JobManager();
     new FileSystem();
@@ -85,10 +89,6 @@ void Engine::Init(bool consoleMode, const Vector<String>& modules)
     new SoundSystem();
     Logger::Info("SoundSystem init finish");
 
-    if (consoleMode)
-    {
-        Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
-    }
     DeviceInfo::InitializeScreenInfo();
 
     new LocalizationSystem();
@@ -119,12 +119,13 @@ void Engine::Init(bool consoleMode, const Vector<String>& modules)
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+
+    Logger::Debug("****** Engine::Init leave");
 }
 
-int Engine::Run(IGame* gameObject)
+int Engine::Run()
 {
-    //DVASSERT(gameObject != nullptr);
-    return engineBackend->Run(gameObject);
+    return engineBackend->Run();
 }
 
 void Engine::Quit()
@@ -153,9 +154,9 @@ bool Engine::IsConsoleMode() const
     return false;
 }
 
-void Engine::SetOptions(KeyedArchive* archiveOfOptions)
+void Engine::SetOptions(KeyedArchive* options_)
 {
-    options = archiveOfOptions;
+    options = options_;
 }
 
 KeyedArchive* Engine::GetOptions()

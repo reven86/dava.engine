@@ -63,11 +63,6 @@
 
 int GameMain(DAVA::Vector<DAVA::String> args)
 {
-    DAVA::Engine e;
-    e.Init(false, Vector<String>());
-
-    GameCore game;
-
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetString(String("title"), String("TestBed"));
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
@@ -76,41 +71,58 @@ int GameMain(DAVA::Vector<DAVA::String> args)
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
     appOptions->SetInt32("width", 1024);
     appOptions->SetInt32("height", 768);
-    e.SetOptions(appOptions);
 
-    //my_game g;
-    //Window* pw = e.PrimaryWindow();
-    //pw->signalNativeWindowCreated.Connect(&g, &my_game::OnNativeCreated);
-    //pw->signalNativeWindowDestroyed.Connect(&g, &my_game::OnNativeDestroyed);
-    //pw->signalVisibilityChanged.Connect(&g, &my_game::OnVisibilityChanged);
-    //pw->signalFocusChanged.Connect(&g, &my_game::OnFocusChanged);
-    //pw->signalSizeChanged.Connect(&g, &my_game::OnSizeChanged);
-    //pw->signalScaleChanged.Connect(&g, &my_game::OnScaleChanged);
-    e.Run(&game);
+    DAVA::Engine e;
+    e.SetOptions(appOptions);
+    e.Init(false, Vector<String>());
+
+    GameCore game(&e);
+    e.signalGameLoopStarted.Connect(&game, &GameCore::OnGameLoopStarted);
+    e.signalGameLoopStopped.Connect(&game, &GameCore::OnGameLoopStopped);
+
+    e.PrimaryWindow()->signalSizeScaleChanged.Connect(&game, &GameCore::OnWindowSizeChanged);
+
+    e.Run();
     return 0;
 }
 
 GameCore* GameCore::pthis = nullptr;
 
-GameCore::GameCore()
-    : currentScreen(nullptr)
+GameCore::GameCore(Engine* eng)
+    : engine(eng)
+    , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
     pthis = this;
 }
 
-void GameCore::OnGameLoopStarted()
+void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "UIScrollViewTest";
+}
+
+void GameCore::OnGameLoopStarted()
+{
+    Logger::Debug("****** GameCore::OnGameLoopStarted");
 
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
     RegisterTests();
     RunTests();
+
+    engine->PrimaryWindow()->Resize(1024, 768);
+    engine->RunAsyncOnMainThread([]() {
+        Logger::Error("******** KABOOM on main thread********");
+    });
+    engine->PrimaryWindow()->RunAsyncOnUIThread([]() {
+        Logger::Error("******** KABOOM on UI thread********");
+    });
 }
 
 void GameCore::OnGameLoopStopped()
 {
+    Logger::Debug("****** GameCore::OnGameLoopStopped");
+
     for (auto testScreen : screens)
     {
         SafeRelease(testScreen);
@@ -119,8 +131,9 @@ void GameCore::OnGameLoopStopped()
     SafeRelease(testListScreen);
 }
 
-void GameCore::OnUpdate(float32 timeElapsed)
+void GameCore::OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
+    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h==%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
 }
 
 void GameCore::RegisterScreen(BaseScreen* screen)
@@ -200,10 +213,6 @@ DAVA::File* GameCore::CreateDocumentsFile(const DAVA::String& filePathname)
     FileSystem::Instance()->CreateDirectory(workingFilepathname.GetDirectory(), true);
     File* retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
     return retFile;
-}
-
-void GameCore::RunOnlyThisTest()
-{
 }
 
 void GameCore::OnError()

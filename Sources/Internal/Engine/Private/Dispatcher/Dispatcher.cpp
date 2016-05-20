@@ -14,19 +14,10 @@ Dispatcher::~Dispatcher() = default;
 void Dispatcher::PostEvent(const DispatcherEvent& e)
 {
     LockGuard<Mutex> lock(mutex);
-    if (e.type == DispatcherEvent::WINDOW_SIZE_CHANGED)
+    if (!CombineSizeChangedEvents(e))
     {
-        Window* w = e.window;
-        auto it = std::find_if(events.begin(), events.end(), [w](const DispatcherEvent& o) -> bool {
-            return o.type == DispatcherEvent::WINDOW_SIZE_CHANGED && w == o.window;
-        });
-        if (it != events.end())
-        {
-            it->sizeEvent = e.sizeEvent;
-            return;
-        }
+        events.push_back(e);
     }
-    events.push_back(e);
 }
 
 void Dispatcher::ProcessEvents(Function<void(const DispatcherEvent&)>& handler)
@@ -41,6 +32,23 @@ void Dispatcher::ProcessEvents(Function<void(const DispatcherEvent&)>& handler)
     {
         handler(e);
     }
+}
+
+bool Dispatcher::CombineSizeChangedEvents(const DispatcherEvent& e)
+{
+    if (e.type == DispatcherEvent::WINDOW_SIZE_SCALE_CHANGED)
+    {
+        Window* w = e.window;
+        auto it = std::find_if(events.begin(), events.end(), [w](const DispatcherEvent& o) -> bool {
+            return o.type == DispatcherEvent::WINDOW_SIZE_SCALE_CHANGED && w == o.window;
+        });
+        if (it != events.end())
+        {
+            it->sizeEvent = e.sizeEvent;
+            return true;
+        }
+    }
+    return false;
 }
 
 } // namespace Private

@@ -17,6 +17,7 @@ class Engine final
     friend class Private::EngineBackend;
 
 public:
+    // TODO: remove this method after all modules and systems will take Engine instance on creation
     static Engine* Instance();
 
     Engine();
@@ -28,7 +29,7 @@ public:
     Window* PrimaryWindow() const;
 
     void Init(bool consoleMode, const Vector<String>& modules);
-    int Run(IGame* gameObject);
+    int Run();
     void Quit();
 
     // Dummy methods for now
@@ -36,10 +37,21 @@ public:
     const Vector<String>& GetCommandLine() const;
     bool IsConsoleMode() const;
 
-    void SetOptions(KeyedArchive* archiveOfOptions);
+    void SetOptions(KeyedArchive* options_);
     KeyedArchive* GetOptions();
 
     void RunAsyncOnMainThread(const Function<void()>& task);
+
+public:
+    // Signals
+    Signal<> signalGameLoopStarted;
+    Signal<> signalGameLoopStopped;
+    Signal<> signalBeginFrame;
+    Signal<float32> signalPreUpdate;
+    Signal<float32> signalUpdate;
+    Signal<float32> signalPostUpdate;
+    Signal<> signalDraw;
+    Signal<> signalEndFrame;
 
 private:
     Private::EngineBackend* engineBackend = nullptr;

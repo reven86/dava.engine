@@ -49,11 +49,11 @@ class TestData;
 class BaseScreen;
 class TestListScreen;
 
-class GameCore : public DAVA::IGame
+class GameCore final
 {
 public:
-    GameCore();
-    virtual ~GameCore() = default;
+    GameCore(DAVA::Engine* eng);
+    ~GameCore() = default;
 
     static GameCore* pthis;
     static GameCore* Instance()
@@ -61,10 +61,10 @@ public:
         return pthis;
     };
 
-    void OnGameLoopStarted() override;
-    void OnGameLoopStopped() override;
+    void OnGameLoopStarted();
+    void OnGameLoopStopped();
 
-    void OnUpdate(DAVA::float32 timeElapsed) override;
+    void OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
 
     void RegisterScreen(BaseScreen* screen);
     void ShowStartScreen();
@@ -81,6 +81,7 @@ private:
     void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
 
+    DAVA::Engine* engine = nullptr;
     DAVA::String runOnlyThisTest;
 
     BaseScreen* currentScreen;

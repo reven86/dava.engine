@@ -25,6 +25,9 @@ public:
     void ProcessEvents(Function<void(const DispatcherEvent&)>& handler);
 
 private:
+    bool CombineSizeChangedEvents(const DispatcherEvent& e);
+
+private:
     Mutex mutex;
     Vector<DispatcherEvent> events;
 };
