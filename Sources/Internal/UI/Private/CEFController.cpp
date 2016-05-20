@@ -42,7 +42,20 @@ namespace DAVA
 RefPtr<class CEFControllerImpl> cefControllerGlobal;
 
 //--------------------------------------------------------------------------------------------------
-//  CEF controller private implementation
+// CEF application delegate
+// Adds custom url scheme to scheme registrar
+//--------------------------------------------------------------------------------------------------
+class CEFDavaApp : public CefApp
+{
+    void OnRegisterCustomSchemes(CefRefPtr<CefSchemeRegistrar> registrar) override
+    {
+        registrar->AddCustomScheme("dava", false, false, false);
+    }
+    IMPLEMENT_REFCOUNTING(CEFDavaApp)
+};
+
+//--------------------------------------------------------------------------------------------------
+// CEF controller private implementation
 //--------------------------------------------------------------------------------------------------
 class CEFControllerImpl : public RefCounter
 {
@@ -54,7 +67,7 @@ public:
     void ForceUpdate();
     void SetUpdateRate(uint32 n);
 
-public:
+private:
     uint64 updateDelta;
     uint64 lastUpdateTime = 0;
 };
@@ -76,13 +89,14 @@ CEFControllerImpl::CEFControllerImpl()
 
         // CefInitialize replaces thread name, so we need to save it and restore
         //String threadName = Thread::GetCurrentThreadName();
-        result = CefInitialize(CefMainArgs(), settings, nullptr, nullptr);
+        result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
         //Thread::SetCurrentThreadName(threadName);
     }
     catch (...)
     {
     }
 
+    // Register custom url scheme for dava-based applications
     result |= CefRegisterSchemeHandlerFactory("dava", "", new CEFDavaResourceHandlerFactory());
     DVASSERT_MSG(result == true, "CEF cannot be initialized");
 }
@@ -114,7 +128,7 @@ void CEFControllerImpl::SetUpdateRate(uint32 n)
 }
 
 //--------------------------------------------------------------------------------------------------
-//  CEF controller public implementation
+// CEF controller public implementation
 //--------------------------------------------------------------------------------------------------
 CEFController::CEFController()
 {
