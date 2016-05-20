@@ -53,7 +53,8 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libvorbisfile_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a 
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_macos.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_macos.a 
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_macos.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_macos.a
                                     )
 
 set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
