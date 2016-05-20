@@ -38,16 +38,15 @@
 class LightmapsPacker : public SpriteResourcesPacker
 {
 public:
-    LightmapsPacker();
-
     void CreateDescriptors();
     void ParseSpriteDescriptors();
     DAVA::Vector<LightmapAtlasingData>* GetAtlasingData();
 
 private:
-    DAVA::Vector<LightmapAtlasingData> atlasingData;
-
     DAVA::Vector2 GetTextureSize(const DAVA::FilePath& filePath);
+
+private:
+    DAVA::Vector<LightmapAtlasingData> atlasingData;
 };
 
 #endif //__LIGHTMAPS_PACKER_H__
