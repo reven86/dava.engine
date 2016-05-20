@@ -38,7 +38,7 @@ namespace DAVA
 class FfmpegPlayer : public SoundStreamDelegate
 {
 public:
-    ~FfmpegPlayer() override;
+    ~FfmpegPlayer();
 
     // IMovieViewControl Interface implementation
 
