@@ -35,10 +35,10 @@
 
 namespace DAVA
 {
-CEFDavaResourceHandler::CEFDavaResourceHandler(const String& url)
-    : path(url.substr(6)) // path after dava:/
+CEFDavaResourceHandler::CEFDavaResourceHandler(const FilePath& path)
+    : davaPath(path)
 {
-    DVASSERT_MSG(FileSystem::Instance()->IsFile(path),
+    DVASSERT_MSG(FileSystem::Instance()->IsFile(davaPath),
                  "CefDavaResourceHandler handles only exist files");
 }
 
@@ -57,7 +57,7 @@ void CEFDavaResourceHandler::GetResponseHeaders(CefRefPtr<CefResponse> response,
     response->SetStatus(200);
 
     uint32 fileSize = 0;
-    FileSystem::Instance()->GetFileSize(path, fileSize);
+    FileSystem::Instance()->GetFileSize(davaPath, fileSize);
     response_length = fileSize;
 }
 
@@ -72,7 +72,7 @@ bool CEFDavaResourceHandler::ReadResponse(void* data_out,
 {
     if (!file)
     {
-        file.Set(File::Create(path, File::OPEN | File::READ));
+        file.Set(File::Create(davaPath, File::OPEN | File::READ));
         if (!file)
         {
             DVASSERT_MSG(false, "Cannot open file");
@@ -91,7 +91,8 @@ CefRefPtr<CefResourceHandler> CEFDavaResourceHandlerFactory::Create(CefRefPtr<Ce
                                                                     CefRefPtr<CefRequest> request)
 {
     String url = request->GetURL().ToString();
-    return new CEFDavaResourceHandler(url);
+    // path after dava:/
+    return new CEFDavaResourceHandler(FilePath(url.substr(6)));
 }
 
 } // namespace DAVA

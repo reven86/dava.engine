@@ -40,7 +40,7 @@ namespace DAVA
 class CEFDavaResourceHandler : public CefResourceHandler
 {
 public:
-    CEFDavaResourceHandler(const String& url);
+    CEFDavaResourceHandler(const FilePath& path);
 
     bool ProcessRequest(CefRefPtr<CefRequest> request, CefRefPtr<CefCallback> callback) override;
 
@@ -54,7 +54,7 @@ public:
 
 private:
     IMPLEMENT_REFCOUNTING(CEFDavaResourceHandler);
-    FilePath path;
+    FilePath davaPath;
     RefPtr<class File> file;
 };
 

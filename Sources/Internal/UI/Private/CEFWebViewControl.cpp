@@ -42,7 +42,11 @@ namespace DAVA
 WebViewControl::WebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
 {
-    AddRef(); // this object will be deleted manually, but ref counting is needed for work
+    // this object will be deleted manually, but ref counting is needed for work
+    // new object in CEF system has 0 references,
+    // so it will be destroyed when all owning CefRefPtr will be destroyed
+    // to avoid premature destruction, increase reference count manually
+    AddRef();
 }
 
 WebViewControl::~WebViewControl()
