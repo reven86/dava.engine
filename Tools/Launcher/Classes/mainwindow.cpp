@@ -412,19 +412,12 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            if (!FileManager::CheckDirectoryPermissionsRecursively())
+            SelfUpdater updater(tasks.front().version.url, networkManager);
+            updater.setWindowModality(Qt::ApplicationModal);
+            updater.exec();
+            if (updater.result() != QDialog::Rejected)
             {
-                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not access to launcher directory to update!"));
-            }
-            else
-            {
-                SelfUpdater updater(tasks.front().version.url, networkManager);
-                updater.setWindowModality(Qt::ApplicationModal);
-                updater.exec();
-                if (updater.result() != QDialog::Rejected)
-                {
-                    return;
-                }
+                return;
             }
             tasks.dequeue();
         }

@@ -39,14 +39,14 @@
 
 namespace FileManager
 {
-const QString tempSelfUpdateDir = "/selfupdate/";
-const QString baseAppDir = "/DAVATools/";
-const QString tempDir = "/temp/";
+const QString tempSelfUpdateDir = "selfupdate/";
+const QString baseAppDir = "DAVATools/";
+const QString tempDir = "temp/";
 const QString tempFile = "archive.zip";
 
 QStringList OwnDirectories()
 {
-    QString path = qApp->applicationDirPath();
+    QString path = GetLauncherDirectory();
     return QStringList() << path + tempSelfUpdateDir
                          << path + baseAppDir
                          << path + tempDir;
@@ -105,36 +105,14 @@ QString GetTempDownloadFilepath()
 
 QString GetLauncherDirectory()
 {
-    static QString path =
+    QString path =
 #if defined(Q_OS_WIN)
     qApp->applicationDirPath();
 #elif defined(Q_OS_MAC)
     qApp->applicationDirPath().replace("/Contents/MacOS", "");
     path = path.left(path.lastIndexOf('/'));
 #endif //platform
-    return path;
-}
-
-bool CheckDirectoryPermissionsRecursively(const QString& folder)
-{
-    QDir dir(folder);
-    if (!dir.exists())
-    {
-        return false;
-    }
-    return IterateDirectory(dir.path(), [](const QFileInfo& fi) {
-#if defined(Q_OS_WIN)
-        bool ok = fi.isReadable(); //isWritable == false on Windows doesn't mean that you can not modify or delete the file
-#else
-        bool ok = fi.isWritable() && fi.isReadable();
-#endif //platform
-        if (fi.isDir())
-        {
-            QString absPath = fi.absoluteFilePath();
-            ok &= CheckDirectoryPermissionsRecursively(absPath);
-        }
-        return ok;
-    });
+    return path + "/";
 }
 
 bool DeleteDirectory(const QString& path)

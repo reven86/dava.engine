@@ -40,8 +40,6 @@ QString GetLauncherDirectory();
 QString GetSelfUpdateTempDirectory();
 QString GetTempDownloadFilepath();
 
-bool CheckDirectoryPermissionsRecursively(const QString& folder = GetLauncherDirectory());
-
 bool DeleteDirectory(const QString& path);
 
 //this function move all files and folder except folders, which created by Launcher
