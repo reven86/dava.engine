@@ -2,7 +2,7 @@ include ( GlobalVariables )
 include ( CMake-common )
 
 if (NOT QT_VERSION)
-    set(QT_VERSION "QT5")
+    set(QT_VERSION "QT56")
 endif()
 
 if( WIN32 )
