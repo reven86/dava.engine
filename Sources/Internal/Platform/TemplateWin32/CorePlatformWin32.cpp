@@ -297,10 +297,10 @@ void CoreWin32Platform::ClearMouseButtons()
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.f);
 
     for (uint32 mouseButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-         mouseButton < static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+         mouseButton <= static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
          mouseButton += 1)
     {
-        if (mouseButtonState[mouseButton])
+        if (mouseButtonState[mouseButton - 1])
         {
             e.mouseButton = static_cast<UIEvent::MouseButton>(mouseButton);
 
@@ -507,11 +507,10 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
     if (mouseButtonState.any())
     {
         for (unsigned buttonIndex = static_cast<unsigned>(UIEvent::MouseButton::LEFT);
-             buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::EXTENDED2);
+             buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::NUM_BUTTONS);
              ++buttonIndex)
         {
-            unsigned bitIndex = buttonIndex - 1;
-            if (mouseButtonState[bitIndex])
+            if (mouseButtonState[buttonIndex - 1])
             {
                 e.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
                 e.phase = UIEvent::Phase::DRAG;
