@@ -9,7 +9,6 @@ namespace DAVA
 class FMODSoundStream : public SoundStream
 {
 public:
-    FMODSoundStream() = delete;
     FMODSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
 
     ~FMODSoundStream();

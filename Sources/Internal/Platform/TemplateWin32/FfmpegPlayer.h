@@ -196,7 +196,7 @@ private:
     uint32 audioBufSize = 0;
     std::atomic<float64> audioClock = 0.f;
     float64 GetAudioClock() const;
-    float64 GetTime();
+    float64 GetTime() const;
 
     bool mediaFileEOF = false;
 };

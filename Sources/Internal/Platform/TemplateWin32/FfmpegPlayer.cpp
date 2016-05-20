@@ -346,7 +346,14 @@ bool FfmpegPlayer::InitAudio()
 
 float64 FfmpegPlayer::GetMasterClock() const
 {
-    return GetAudioClock();
+    if (isAudioSubsystemInited)
+    {
+        return GetAudioClock();
+    }
+    else
+    {
+        return (frameTimer - GetTime());
+    }
 }
 
 float64 FfmpegPlayer::SyncVideoClock(AV::AVFrame* srcFrame, float64 pts)
@@ -734,7 +741,7 @@ void FfmpegPlayer::ReadingThread(BaseObject* caller, void* callerData, void* use
     } while (!thread->IsCancelling());
 }
 
-float64 FfmpegPlayer::GetTime()
+float64 FfmpegPlayer::GetTime() const
 {
     return (AV::av_gettime() / 1000000.0);
 }
