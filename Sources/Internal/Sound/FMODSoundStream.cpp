@@ -7,7 +7,6 @@
 
 namespace DAVA
 {
-
 FMODSoundStream::~FMODSoundStream()
 {
     if (fmodChannel)
