@@ -34,6 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+/*
+    That class is Thread Safe. Current usage wants it. But in the future it could make overhead, so refactor it when needed.
+*/
+
 class StreamBuffer
 {
 public:
