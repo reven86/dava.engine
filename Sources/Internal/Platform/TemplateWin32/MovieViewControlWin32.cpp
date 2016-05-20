@@ -32,6 +32,10 @@ void MovieViewControl::SetRect(const Rect& rect)
     controlRect = rect;
 }
 
+void MovieViewControl::SetVisible(bool isVisible)
+{
+}
+
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
     SafeRelease(videoTexture);
