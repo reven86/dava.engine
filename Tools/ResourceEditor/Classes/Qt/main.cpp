@@ -66,7 +66,6 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
 
 int main(int argc, char* argv[])
 {
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_DELAY_FREE_MEM_DF);
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
 #elif defined(__DAVAENGINE_WIN32__)
