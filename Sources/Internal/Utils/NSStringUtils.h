@@ -32,9 +32,14 @@
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 
 #import <Foundation/Foundation.h>
+#include "UI/UITextField.h"
 
 namespace DAVA
 {
+BOOL NSStringCheck(NSUInteger insertLocation, const NSString* origStr, const NSString* newStr, DAVA::UITextField* cppTextField, NSString** replStr, BOOL& clientApply);
+
+NSString* NSStringSafeCut(const NSString* inStr, NSUInteger newLength);
+
 NSString* NSStringFromString(const DAVA::String& str);
 
 NSString* NSStringFromWideString(const DAVA::WideString& str);
