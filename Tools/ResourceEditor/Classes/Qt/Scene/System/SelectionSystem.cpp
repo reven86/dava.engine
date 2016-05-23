@@ -656,12 +656,12 @@ void SceneSelectionSystem::CancelSelection()
     applyOnPhaseEnd = false;
 }
 
-void SceneSelectionSystem::SetPivotPoint(ST_PivotPoint pp)
+void SceneSelectionSystem::SetPivotPoint(Selectable::TransformPivot pp)
 {
     curPivotPoint = pp;
 }
 
-ST_PivotPoint SceneSelectionSystem::GetPivotPoint() const
+Selectable::TransformPivot SceneSelectionSystem::GetPivotPoint() const
 {
     return curPivotPoint;
 }
@@ -711,7 +711,15 @@ void SceneSelectionSystem::UpdateHoodPos() const
         bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
         hoodSystem->LockModif(modificationEnabled == false);
 
-        auto hoodCenter = (curPivotPoint == ST_PIVOT_ENTITY_CENTER) ? currentSelection.GetFirstTranslationVector() : currentSelection.GetCommonTranslationVector();
+        DAVA::Vector3 hoodCenter;
+        if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
+        {
+            hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
+        }
+        else
+        {
+            hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
+        }
         hoodSystem->SetPosition(hoodCenter);
 
         bool hasNonTransformableObjects = false;
@@ -726,7 +734,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
         hoodSystem->SetVisible(hasNonTransformableObjects == false);
     }
 
-    SceneEditor2* sc = (SceneEditor2*)GetScene();
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
     sc->cameraSystem->UpdateDistanceToCamera();
 }
 

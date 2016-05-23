@@ -91,12 +91,15 @@ protected:
     struct EntityToModify
     {
         Selectable object;
+
         DAVA::Matrix4 inversedParentWorldTransform;
         DAVA::Matrix4 originalParentWorldTransform;
         DAVA::Matrix4 originalTransform;
-        DAVA::Vector3 originalCenter;
-        DAVA::Matrix4 moveToZeroPos;
-        DAVA::Matrix4 moveFromZeroPos;
+
+        DAVA::Matrix4 toLocalZero;
+        DAVA::Matrix4 fromLocalZero;
+        DAVA::Matrix4 toWorldZero;
+        DAVA::Matrix4 fromWorldZero;
     };
 
     enum CloneState : DAVA::uint32
@@ -146,12 +149,9 @@ private:
     DAVA::List<EntityModificationSystemDelegate*> delegates;
 
     // values calculated, when starting modification
-    ST_PivotPoint modifPivotPoint;
     DAVA::Vector3 modifEntitiesCenter;
     DAVA::Vector3 modifStartPos3d;
     DAVA::Vector2 modifStartPos2d;
-    DAVA::Matrix4 moveToZeroPosRelativeCenter;
-    DAVA::Matrix4 moveFromZeroPosRelativeCenter;
     DAVA::Vector2 rotateNormal;
     DAVA::Vector3 rotateAround;
     DAVA::float32 crossXY = 0.0f;

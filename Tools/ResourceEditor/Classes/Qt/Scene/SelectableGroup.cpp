@@ -145,15 +145,7 @@ bool SelectableGroup::SupportsTransformType(Selectable::TransformType transformT
     return true;
 }
 
-DAVA::Vector3 SelectableGroup::GetFirstTranslationVector() const
-{
-    if (objects.empty())
-        return DAVA::Vector3(0.0f, 0.0f, 0.0f);
-
-    return objects.front().GetWorldTransform().GetTranslationVector();
-}
-
-DAVA::Vector3 SelectableGroup::GetCommonTranslationVector() const
+DAVA::Vector3 SelectableGroup::GetCommonWorldSpaceTranslationVector() const
 {
     DAVA::AABBox3 tmp;
     for (const auto& item : objects)

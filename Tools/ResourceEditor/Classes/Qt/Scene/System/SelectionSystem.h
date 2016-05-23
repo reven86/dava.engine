@@ -90,8 +90,8 @@ public:
     size_t GetSelectionCount() const;
     DAVA::Entity* GetFirstSelectionEntity() const;
 
-    void SetPivotPoint(ST_PivotPoint pp);
-    ST_PivotPoint GetPivotPoint() const;
+    void SetPivotPoint(Selectable::TransformPivot pp);
+    Selectable::TransformPivot GetPivotPoint() const;
 
     void ResetSelectionComponentMask();
     void SetSelectionComponentMask(DAVA::uint64 mask);
@@ -172,7 +172,7 @@ private:
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
     DAVA::Vector<SceneSelectionSystemDelegate*> selectionDelegates;
-    ST_PivotPoint curPivotPoint = ST_PIVOT_COMMON_CENTER;
+    Selectable::TransformPivot curPivotPoint = Selectable::TransformPivot::CommonCenter;
     GroupSelectionMode groupSelectionMode = GroupSelectionMode::Replace;
     bool selectionAllowed = true;
     bool applyOnPhaseEnd = false;
