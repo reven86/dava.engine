@@ -33,6 +33,8 @@
 
 extern void FrameworkMain(int argc, char* argv[]);
 
+using namespace DAVA;
+
 @implementation OpenGLView
 
 - (id)initWithFrame:(NSRect)frameRect
@@ -74,8 +76,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", static_cast<unsigned>(rendererID));
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-    trackingArea = nil;
-    [self enableTrackingArea];
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
@@ -103,19 +103,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     return depth;
 }
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-
-- (void)enableTrackingArea
-{
-    [trackingArea release];
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:(NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingActiveInKeyWindow) owner:self userInfo:nil];
-    [self addTrackingArea:trackingArea];
-}
-
-- (void)disableTrackingArea
-{
-    if (trackingArea)
-        [self removeTrackingArea:trackingArea];
-}
 
 - (void)dealloc
 {

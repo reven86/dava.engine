@@ -1235,7 +1235,7 @@ void SceneTree::SyncSelectionToTree()
         selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
     }
 
-    scrollTo(lastValidIndex, QAbstractItemView::PositionAtCenter);
+    scrollTo(lastValidIndex, QAbstractItemView::EnsureVisible);
 }
 
 void SceneTree::SyncSelectionFromTree()

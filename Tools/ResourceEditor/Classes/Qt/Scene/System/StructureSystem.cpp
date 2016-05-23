@@ -303,8 +303,6 @@ void StructureSystem::ReloadInternal(InternalMapping& mapping, const DAVA::FileP
 
                         sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(newEntityInstance, origEntity->GetParent(), before));
                         sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(origEntity));
-
-                        newEntityInstance->Release();
                     }
                 }
 
