@@ -64,6 +64,7 @@ TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
+    staticText->GetTextBlock()->SetMeasureEnable(true);
 }
 
 TextFieldStbImpl::~TextFieldStbImpl()
@@ -492,7 +493,9 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
             if (selStart > line.offset)
             {
                 //r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
-                r.x += calcVisSize(line.offset, selStart, tb, charsSizes.data());
+                //r.x += calcVisSize(line.offset, selStart, tb, charsSizes.data());
+                const TextBox::Character& c = tb->GetCharacter(selStart);
+                r.x += c.xoffset;
             }
 
             if (selEnd >= line.offset + line.length)
@@ -502,7 +505,9 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
             else
             {
                 //r.dx = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selEnd, 0.f);
-                r.dx = calcVisSize(line.offset, selEnd, tb, charsSizes.data());
+                //r.dx = calcVisSize(line.offset, selEnd, tb, charsSizes.data());
+                const TextBox::Character& c = tb->GetCharacter(selEnd);
+                r.x += c.xoffset;
             }
             r.dx -= r.x;
             r.x += line.xoffset;
@@ -526,8 +531,6 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
-    const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
-    const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
     const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
 
     Rect r;
@@ -536,32 +539,47 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
     r.dx = DEFAULT_CURSOR_WIDTH;
 
-    if (!linesInfo.empty())
+    int32 charsCount = tb->GetCharactersCount();
+    if (charsCount > 0)
     {
-        auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [cursorPos](const DAVA::TextBlock::Line& l)
-                                       {
-                                           return l.offset <= cursorPos && cursorPos < l.offset + l.length;
-                                       });
-        if (lineInfoIt != linesInfo.end())
+        if (cursorPos < charsCount)
         {
-            const TextBlock::Line& line = *lineInfoIt;
-            r.y += line.yoffset;
-            r.dy = line.yadvance;
-            if (cursorPos != line.offset)
+            if (cursorPos == 0)
             {
-                //r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
-                r.x += calcVisSize(line.offset, cursorPos, tb, charsSizes.data());
+                const TextBox::Character& c = tb->GetCharacter(cursorPos);
+                r.y += c.yoffset;
+                r.dy = c.yadvance;
+                r.x += c.xoffset;
+                if (c.rtl)
+                {
+                    r.x += c.xadvance;
+                }
+                //r.x += line.xoffset;
             }
-            r.x += line.xoffset;
+            else
+            {
+                const TextBox::Character& c = tb->GetCharacter(cursorPos - 1);
+                r.y += c.yoffset;
+                r.dy = c.yadvance;
+                r.x += c.xoffset;
+                if (!c.rtl)
+                {
+                    r.x += c.xadvance;
+                }
+                //r.x += line.xoffset;
+            }
         }
         else
         {
-            const TextBlock::Line& line = *linesInfo.rbegin();
-            r.y += line.yoffset;
-            r.dy = line.yadvance;
-            //r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
-            r.x += calcVisSize(line.offset, line.offset + line.length, tb, charsSizes.data());
-            r.x += line.xoffset;
+            const TextBox::Character& c = tb->GetCharacter(charsCount - 1);
+            r.y += c.yoffset;
+            r.dy = c.yadvance;
+            r.x += c.xoffset;
+            if (!c.rtl)
+            {
+                r.x += c.xadvance;
+            }
+            //r.x += line.xoffset;
         }
     }
     else

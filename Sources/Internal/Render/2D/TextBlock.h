@@ -170,6 +170,12 @@ public:
     }
     void SetForceBiDiSupportEnabled(bool value);
 
+    bool IsMeasureEnabled() const
+    {
+        return measure;
+    }
+    void SetMeasureEnable(bool measure);
+
     void SetAngle(const float32 _angle);
     void SetPivot(const Vector2& _pivot);
 
@@ -232,6 +238,7 @@ private:
     bool isRtl : 1;
     bool needCalculateCacheParams : 1;
     bool forceBiDiSupport : 1;
+    bool measure : 1;
 
     static bool isBiDiSupportEnabled; //!< true if BiDi transformation support enabled
     static Set<TextBlock*> registredTextBlocks;

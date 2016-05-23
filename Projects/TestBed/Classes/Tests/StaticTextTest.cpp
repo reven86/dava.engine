@@ -104,9 +104,9 @@ void StaticTextTest::LoadResources()
     BaseScreen::LoadResources();
 
     RefPtr<Font> arabFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
-    //WideString test = L"؜DAVA، INC توفيرها (من) قبل DAVA، INC والمساهمين";
-    WideString test = L"؜ • M46 Patton\n • M48A1 Patton III\n\n• يتم إضافة سلسلة الانتصارات المحققة في جميع المركبات.\n• وتم إضافة الجوائز المستلمة مؤخرًا معًا.";
-    //WideString test = L"شارات التفوق: وسام لا الاحتراف";
+    //WideString test = L"؜DAVA، INC توفيرها (لامن) قبللا DAVA، INC والمساهمين";
+    //WideString test = L"؜ • M46 Patton\n • M48A1 Patton III\n\n• يتم إضافة سلسلة الانتصارات المحققة في جميع المركبات.\n• وتم إضافة الجوائز المستلمة مؤخرًا معًا.";
+    WideString test = L"وسام لا الاحتراف";
     //WideString test = L"؜- Test الاحتراف\nشارات التفوق: وسام لا الاحتراف";
     //WideString test = L"इस सॉफ़्टवेयर Dava, कांग्रेस द्वारा प्रदत्त";
     //     TextLayout tl(true);
@@ -123,8 +123,13 @@ void StaticTextTest::LoadResources()
     //         box.ChangeDirectionMode(TextBox::DirectionMode::STRONG_RTL);
     //     }
     //     box.Shape();
-    //     box.Wrap(9999999.f, TextBox::WrapMode::WORD_WRAP);
+    //
+    //     Vector<float32> charSizes;
+    //     Font::StringMetrics m = arabFont->GetStringMetrics(box.GetShapedText(), &charSizes);
+    //
+    //     box.Wrap();
     //     box.Reorder();
+    //     box.Measure(&charSizes);
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
     ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));

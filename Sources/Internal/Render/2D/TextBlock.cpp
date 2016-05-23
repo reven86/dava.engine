@@ -103,6 +103,7 @@ TextBlock::TextBlock()
     , angle(0.f)
     , needCalculateCacheParams(false)
     , forceBiDiSupport(false)
+    , measure(false)
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -157,6 +158,7 @@ TextBlock::TextBlock(const TextBlock& src)
     , needCalculateCacheParams(src.needCalculateCacheParams)
     , needPrepareInternal(src.needPrepareInternal)
     , forceBiDiSupport(src.forceBiDiSupport)
+    , measure(src.measure)
 #if defined(LOCALIZATION_DEBUG)
     , fittingTypeUsed(src.fittingTypeUsed)
     , visualTextCroped(src.visualTextCroped)
@@ -342,6 +344,15 @@ void TextBlock::SetForceBiDiSupportEnabled(bool value)
     if (forceBiDiSupport != value)
     {
         forceBiDiSupport = value;
+        NeedPrepare();
+    }
+}
+
+void TextBlock::SetMeasureEnable(bool value)
+{
+    if (measure != value)
+    {
+        measure = value;
         NeedPrepare();
     }
 }
@@ -701,6 +712,11 @@ void TextBlock::CalculateCacheParams()
 #endif
         }
 
+        if (measure)
+        {
+            textBox->Measure(charactersSizes, float32(textMetrics.height), 0, 1);
+        }
+
         Line lineInfo;
         lineInfo.offset = 0;
         lineInfo.length = uint32(visualText.size());
@@ -836,10 +852,10 @@ void TextBlock::CalculateCacheParams()
         }
 
         // Detect visible lines
+        int32 fromLine = 0;
+        int32 linesCount = int32(lines.size());
         if (textMetrics.height > drawSize.y && requestedSize.y >= 0.f)
         {
-            int32 fromLine = 0;
-            int32 linesCount = int32(lines.size());
             int32 needLines = Min(linesCount, int32(ceilf(drawSize.y / fontHeight)) + 1);
             if (align & ALIGN_TOP)
             {
@@ -852,26 +868,30 @@ void TextBlock::CalculateCacheParams()
             {
                 fromLine = linesCount - needLines;
             }
-            Vector<TextBox::Line>(std::begin(lines) + fromLine, std::begin(lines) + fromLine + needLines).swap(lines);
-            textMetrics.height = textMetrics.drawRect.dy = fontHeight * needLines - yOffset;
+            linesCount = needLines;
+        }
+        textMetrics.height = textMetrics.drawRect.dy = fontHeight * linesCount - yOffset;
+
+        if (measure)
+        {
+            textBox->Measure(charactersSizes, float32(fontHeight), fromLine, linesCount);
         }
 
         // Get lines as visual strings and its metrics
-        uint32 linesCount = static_cast<uint32>(lines.size());
         multitlineInfo.reserve(linesCount);
         stringSizes.reserve(linesCount);
         multilineStrings.reserve(linesCount);
         Line lineInfo;
-        for (uint32 lineInd = 0; lineInd < linesCount; ++lineInd)
+        for (int32 lineInd = 0; lineInd < linesCount; ++lineInd)
         {
-            const TextBox::Line& line = lines[lineInd];
+            const TextBox::Line& line = lines.at(fromLine + lineInd);
             const WideString& visualLine = line.visualString;
             const Font::StringMetrics& stringSize = font->GetStringMetrics(visualLine);
 
-            lineInfo.offset = line.offset;
-            lineInfo.length = line.length;
+            lineInfo.offset = line.shapedOffset;
+            lineInfo.length = line.shapedLength;
             lineInfo.number = lineInd;
-            lineInfo.xadvance = std::accumulate(charactersSizes.begin() + line.offset, charactersSizes.begin() + line.offset + line.length, 0.f); //static_cast<float32>(stringSize.width);
+            lineInfo.xadvance = std::accumulate(charactersSizes.begin() + line.shapedOffset, charactersSizes.begin() + line.shapedOffset + line.shapedLength, 0.f); //static_cast<float32>(stringSize.width);
             lineInfo.visiblexadvance = static_cast<float32>(stringSize.width);
             lineInfo.yadvance = static_cast<float32>(stringSize.height);
             multitlineInfo.push_back(lineInfo);
@@ -1039,6 +1059,7 @@ TextBlock* TextBlock::Clone()
     block->SetFittingOption(fittingType);
     block->SetUseRtlAlign(useRtlAlign);
     block->SetForceBiDiSupportEnabled(forceBiDiSupport);
+    block->SetMeasureEnable(measure);
 
     if (GetFont())
     {

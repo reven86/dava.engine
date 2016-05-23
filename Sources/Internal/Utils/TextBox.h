@@ -41,8 +41,8 @@ public:
         }
 
         int32 index = 0;
-        int32 offset = 0;
-        int32 length = 0;
+        int32 shapedOffset = 0;
+        int32 shapedLength = 0;
         float32 xadvance = 0.f;
         float32 trimxadvance = 0.f;
         float32 yadvance = 0.f;
@@ -55,14 +55,16 @@ public:
     class Character
     {
     public:
-        int32 codepoint = -1;
+        uint32 codepoint = 0;
         int32 logicIndex = -1;
         int32 shapedIndex = -1;
         int32 visualIndex = -1;
+        int32 line = -1;
         float32 xadvance = 0.f;
         float32 yadvance = 0.f;
         float32 xoffset = 0.f;
         float32 yoffset = 0.f;
+        bool rtl = false;
     };
 
     TextBox();
@@ -74,8 +76,7 @@ public:
     void Shape();
     void Wrap(const WrapMode mode = WrapMode::NO_WRAP, float32 maxWidth = 0.f, const Vector<float32>* characterSizes = nullptr, const Vector<uint8>* breaks = nullptr);
     void Reorder();
-
-    void Measure();
+    void Measure(const Vector<float32>& characterSizes, float32 lineHeight, int32 fromLine, int32 toLine);
     void CleanUp();
 
     const WideString& GetText() const;
@@ -91,7 +92,6 @@ public:
 
 private:
     WideString logicalText;
-    Direction direction = Direction::LTR;
     std::unique_ptr<TextBoxImpl> pImpl;
 };
 }
