@@ -21,12 +21,10 @@ struct DavaFile
 ** Write directly to the file passed as the first argument. Even if the
 ** file has a write-buffer (DemoFile.aBuffer), ignore it.
 */
-static int davaDirectWrite(
-DavaFile* p, /* File handle */
-const void* zBuf, /* Buffer containing data to write */
-int iAmt, /* Size of data to write in bytes */
-sqlite_int64 iOfst /* File offset to write to */
-)
+static int davaDirectWrite(DavaFile* p, /* File handle */
+                           const void* zBuf, /* Buffer containing data to write */
+                           int iAmt, /* Size of data to write in bytes */
+                           sqlite_int64 iOfst /* File offset to write to */)
 {
     if (!p->fd->Seek(static_cast<DAVA::int32>(iOfst), DAVA::File::SEEK_FROM_START))
     {
@@ -56,12 +54,7 @@ static int davaClose(sqlite3_file* pFile)
 /*
 ** Read data from a file.
 */
-static int davaRead(
-sqlite3_file* pFile,
-void* zBuf,
-int iAmt,
-sqlite_int64 iOfst
-)
+static int davaRead(sqlite3_file* pFile, void* zBuf, int iAmt, sqlite_int64 iOfst)
 {
     DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
 
@@ -88,12 +81,7 @@ sqlite_int64 iOfst
 /*
 ** Write data to a crash-file.
 */
-static int davaWrite(
-sqlite3_file* pFile,
-const void* zBuf,
-int iAmt,
-sqlite_int64 iOfst
-)
+static int davaWrite(sqlite3_file* pFile, const void* zBuf, int iAmt, sqlite_int64 iOfst)
 {
     DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
 
@@ -187,13 +175,11 @@ static int davaDeviceCharacteristics(sqlite3_file* pFile)
 /*
 ** Open a file handle.
 */
-static int davaOpen(
-sqlite3_vfs* pVfs, /* VFS */
-const char* zName, /* File to open, or 0 for a temp file */
-sqlite3_file* pFile, /* Pointer to DemoFile struct to populate */
-int flags, /* Input SQLITE_OPEN_XXX flags */
-int* pOutFlags /* Output SQLITE_OPEN_XXX flags (or NULL) */
-)
+static int davaOpen(sqlite3_vfs* pVfs, /* VFS */
+                    const char* zName, /* File to open, or 0 for a temp file */
+                    sqlite3_file* pFile, /* Pointer to DemoFile struct to populate */
+                    int flags, /* Input SQLITE_OPEN_XXX flags */
+                    int* pOutFlags /* Output SQLITE_OPEN_XXX flags (or NULL) */)
 {
     static const sqlite3_io_methods davaio = {
         1, /* iVersion */
@@ -281,12 +267,7 @@ static int davaDelete(sqlite3_vfs* pVfs, const char* zPath, int dirSync)
 ** Query the file-system to see if the named file exists, is readable or
 ** is both readable and writable.
 */
-static int davaAccess(
-sqlite3_vfs* pVfs,
-const char* zPath,
-int flags,
-int* pResOut
-)
+static int davaAccess(sqlite3_vfs* pVfs, const char* zPath, int flags, int* pResOut)
 {
     if (!DAVA::FileSystem::Instance()->IsFile(zPath))
     {
@@ -311,12 +292,10 @@ int* pResOut
 **   1. Path components are separated by a '/'. and
 **   2. Full paths begin with a '/' character.
 */
-static int davaFullPathname(
-sqlite3_vfs* pVfs, /* VFS */
-const char* zPath, /* Input path (possibly a relative path) */
-int nPathOut, /* Size of output buffer in bytes */
-char* zPathOut /* Pointer to output buffer */
-)
+static int davaFullPathname(sqlite3_vfs* pVfs, /* VFS */
+                            const char* zPath, /* Input path (possibly a relative path) */
+                            int nPathOut, /* Size of output buffer in bytes */
+                            char* zPathOut /* Pointer to output buffer */)
 {
     DAVA::FilePath path(zPath);
     DAVA::String absolute = path.GetAbsolutePathname();
@@ -405,7 +384,7 @@ static int davaCurrentTime(sqlite3_vfs* pVfs, double* pTime)
 **
 **   sqlite3_vfs_register(sqlite3_demovfs(), 0);
 */
-sqlite3_vfs* sqlite3DavaVFS(void)
+static sqlite3_vfs* sqlite3DavaVFS()
 {
     static sqlite3_vfs demovfs = {
         1, /* iVersion */
