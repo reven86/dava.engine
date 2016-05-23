@@ -727,18 +727,16 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
-    if (!IsShiftPressed())
+    if (!IsShiftPressed() && shareOfSizeToMagnetPivot.x > 0.0f && shareOfSizeToMagnetPivot.y > 0.0f)
     {
         const float32 maxPivot = 1.0f;
 
         Vector2 target;
         Vector2 distanceToTarget;
         DAVA::Vector2 shareOfSizeToMagnetPivot_;
-        shareOfSizeToMagnetPivot_.x = shareOfSizeToMagnetPivot.x == 0.0f ? 1.0f : shareOfSizeToMagnetPivot.x;
-        shareOfSizeToMagnetPivot_.y = shareOfSizeToMagnetPivot.y == 0.0f ? 1.0f : shareOfSizeToMagnetPivot.y;
-        for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += shareOfSizeToMagnetPivot_.x)
+        for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += shareOfSizeToMagnetPivot.x)
         {
-            for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += shareOfSizeToMagnetPivot_.y)
+            for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += shareOfSizeToMagnetPivot.y)
             {
                 float32 left = targetX - range.dx;
                 float32 right = targetX + range.dx;
