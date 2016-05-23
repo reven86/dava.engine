@@ -1056,6 +1056,15 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageSystem.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\DDS\DDSHandlers.h">
+      <Filter>Internal\Render\Image\DDS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\DDS\NvttHelper.h">
+      <Filter>Internal\Render\Image\DDS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\DDS\QualcommHelper.h">
+      <Filter>Internal\Render\Image\DDS</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
@@ -2422,6 +2431,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp">
       <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageConvert.cpp">
+      <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\DDS\DDSHandlers.cpp">
+      <Filter>Internal\Render\Image\DDS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\DDS\NvttHelper.cpp">
+      <Filter>Internal\Render\Image\DDS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\DDS\QualcommHelper.cpp">
+      <Filter>Internal\Render\Image\DDS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp">
       <Filter>Internal\Render\Image</Filter>

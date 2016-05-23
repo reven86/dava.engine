@@ -19,13 +19,13 @@ void PathDescriptor::InitializePathDescriptors()
     {
         QString fileTypeString;
 
-        auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
+        auto extensions = DAVA::ImageSystem::GetExtensionsFor(formatType);
 
         for (auto& ex : extensions)
         {
             if (fileTypeString.isEmpty())
             {
-                fileTypeString = QString(DAVA::ImageSystem::Instance()->GetImageFormatInterface(formatType)->Name()) + " (*";
+                fileTypeString = QString(DAVA::ImageSystem::GetImageFormatInterface(formatType)->GetFormatName().c_str()) + " (*";
             }
             else
             {

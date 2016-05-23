@@ -291,7 +291,7 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath& filePath)
     DAVA::Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
 
     DAVA::Image* image = customColorsTexture->CreateImageFromMemory();
-    DAVA::ImageSystem::Instance()->Save(filePath, image);
+    DAVA::ImageSystem::Save(filePath, image);
     DAVA::SafeRelease(image);
 
     StoreSaveFileName(filePath);
@@ -304,7 +304,7 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
         return false;
 
     DAVA::Vector<DAVA::Image*> images;
-    DAVA::ImageSystem::Instance()->Load(filePath, images);
+    DAVA::ImageSystem::Load(filePath, images);
     if (images.empty())
         return false;
 

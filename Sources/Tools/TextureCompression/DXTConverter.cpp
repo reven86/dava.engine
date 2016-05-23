@@ -14,7 +14,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
     FilePath fileToConvert = descriptor.GetSourceTexturePathname();
 
     Vector<Image*> inputImages;
-    auto loadResult = ImageSystem::Instance()->Load(fileToConvert, inputImages);
+    auto loadResult = ImageSystem::Load(fileToConvert, inputImages);
 
     if (loadResult != eErrorCode::SUCCESS || inputImages.empty())
     {
@@ -87,7 +87,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
         }
     }
 
-    eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, static_cast<PixelFormat>(compression->format));
+    eErrorCode retCode = ImageSystem::Save(outputName, imagesToSave, static_cast<PixelFormat>(compression->format));
     for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
     for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
     if (eErrorCode::SUCCESS == retCode)
@@ -123,7 +123,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
     for (uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
     {
         if (faceNames[i].IsEmpty() ||
-            ImageSystem::Instance()->Load(faceNames[i], imageSets[i]) != DAVA::eErrorCode::SUCCESS ||
+            ImageSystem::Load(faceNames[i], imageSets[i]) != DAVA::eErrorCode::SUCCESS ||
             imageSets[i].empty())
         {
             Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't load %s", fileToConvert.GetAbsolutePathname().c_str());
@@ -223,7 +223,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
             }
         }
 
-        auto saveResult = ImageSystem::Instance()->SaveAsCubeMap(outputName, imageSets, static_cast<PixelFormat>(compression->format));
+        auto saveResult = ImageSystem::SaveAsCubeMap(outputName, imageSets, static_cast<PixelFormat>(compression->format));
         if (saveResult == eErrorCode::SUCCESS)
         {
             LibDdsHelper helper;

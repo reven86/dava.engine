@@ -23,6 +23,7 @@
 #include "WebViewControlWin32.h"
 #include "CorePlatformWin32.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/Image/Image.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIWebView.h"
 
@@ -490,27 +491,17 @@ UIWebView& control)
         uint8* rawData = reinterpret_cast<uint8*>(
         image.GetPixelAddress(0, imageHeight - 1));
         {
-            Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight,
-                                                    FORMAT_BGR888, rawData);
-            DVASSERT(imageBGR);
+            ScopedPtr<Image> rgb888(Image::CreateFromData(imageWidth, imageHeight, FORMAT_RGB888, rawData));
+            DVASSERT(rgb888);
             {
-                Image* imageRGB = Image::Create(imageWidth, imageHeight,
-                                                FORMAT_RGB888);
-                DVASSERT(imageRGB);
-
-                ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
+                ImageConvert::SwapRedBlueChannels(rgb888);
                 {
-                    Sprite* spr = Sprite::CreateFromImage(imageRGB);
-
+                    ScopedPtr<Sprite> spr(Sprite::CreateFromImage(rgb888));
                     control.SetSprite(spr, 0);
-                    SafeRelease(spr);
                 }
                 // CImage in BMP format so we need to flip image
                 control.GetBackground()->SetModification(ESM_VFLIP);
-
-                SafeRelease(imageRGB);
             }
-            SafeRelease(imageBGR);
         }
 
         image.Destroy();
