@@ -38,8 +38,8 @@ namespace ShaderDescriptorCache
 {
 struct ShaderSourceCode
 {
-    char8* vertexProgText;
-    char8* fragmentProgText;
+    char8* vertexProgText = nullptr;
+    char8* fragmentProgText = nullptr;
 
     FilePath vertexProgSourcePath;
     FilePath fragmentProgSourcePath;
@@ -124,6 +124,8 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
         if (dataRead != fileSize)
         {
+            SafeDeleteArray(sourceCode.vertexProgText);
+
             loaded = false;
             Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
         }
@@ -137,7 +139,6 @@ ShaderSourceCode LoadFromSource(const String& source)
 
     if (!loaded)
     {
-        SafeDeleteArray(sourceCode.vertexProgText);
         sourceCode.vertexProgText = new char[1];
         sourceCode.vertexProgText[0] = 0;
     }
@@ -153,6 +154,7 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);
         if (dataRead != fileSize)
         {
+            SafeDeleteArray(sourceCode.fragmentProgText);
             loaded = false;
             Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
         }
@@ -166,7 +168,6 @@ ShaderSourceCode LoadFromSource(const String& source)
 
     if (!loaded)
     {
-        SafeDeleteArray(sourceCode.fragmentProgText);
         sourceCode.fragmentProgText = new char[1];
         sourceCode.fragmentProgText[0] = 0;
     }

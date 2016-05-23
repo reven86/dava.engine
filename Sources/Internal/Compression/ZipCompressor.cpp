@@ -38,7 +38,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MINIZ_NO_STDIO
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
 
-#include <miniz/miniz.c>
+// Disable warning C4334 on VS2015
+#if _MSC_VER >= 1900
+
+    #pragma warning(push)
+    #pragma warning(disable : 4334)
+    #include <miniz/miniz.c>
+    #pragma warning(pop)
+
+#else
+    #include <miniz/miniz.c>
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
