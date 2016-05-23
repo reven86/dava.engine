@@ -108,7 +108,7 @@ void JniMovieViewControl::Resume()
     resume(id);
 }
 
-bool JniMovieViewControl::IsPlaying()
+bool JniMovieViewControl::IsPlaying() const
 {
     return isPlaying(id);
 }
@@ -164,7 +164,7 @@ void MovieViewControl::Resume()
     jniMovieViewControl.Resume();
 }
 
-bool MovieViewControl::IsPlaying()
+bool MovieViewControl::IsPlaying() const
 {
     return jniMovieViewControl.IsPlaying();
 }
