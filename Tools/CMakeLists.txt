@@ -31,56 +31,93 @@ macro ( add_tool TARGET_NAME )
 
 endmacro ()
 
-project               ( Megasolution  )
+macro ( init_project )
 
-set 				  ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
-set                   ( DAVA_USE_QT_WIDGETS true )
-set                   ( DAVA_USE_RENDERSTATS true )
-set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
-set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+	message("Creating " ${PROJECT_NAME} )
 
-include               ( CMake-common )
-include ( NGTMacro )
+	set 	( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
+	set     ( DAVA_USE_QT_WIDGETS true )
+    set     ( DAVA_USE_RENDERSTATS true )
+	set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
+	set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
-if (DEPLOY)
-    set (DEPLOY_ROOT ${DEPLOY_DIR})
+	include ( CMake-common )
+	include ( NGTMacro )
 
-    if ( WIN32 )
-        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
-    endif()
+	if (DEPLOY)
+	    set (DEPLOY_ROOT ${DEPLOY_DIR})
 
-    set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
-   
-    add_custom_target ( NGT_DEPLOY_Megasolution ALL )
+	    if ( WIN32 )
+	        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+	    endif()
+
+	    set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
+	   
+	    add_custom_target ( NGT_DEPLOY_Megasolution ALL )
+
+	endif()
+
+	configure_ngt( PROJECT_NAME ${TOOL_OUTPUT_DIR} )
+	find_package ( NgtTools REQUIRED )
+
+	set          ( DAVA_DISABLE_AUTOTESTS true )
+	find_package ( DavaFramework REQUIRED COMPONENTS ALL )
+	find_package ( DavaTools     REQUIRED )
+
+	set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp
+
+	set          ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+	set          ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+	set          ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+
+endmacro()
+
+set(TARGETS "all" CACHE STRING "")
+
+if(TARGETS STREQUAL "all")
+
+	project      ( Megasolution )
+
+	init_project ()
+	set          ( DAVA_MEGASOLUTION      1 )
+
+	add_tool     ( ResourceEditor   )
+	add_tool     ( QuickEd          )
+	add_tool     ( ResourcePacker   )
+	add_tool     ( ResourcePatcher  )
+	add_tool     ( ImageUnpacker    )
+	add_tool     ( AssetCacheClient )
+	add_tool     ( AssetCacheServer )
+
+	add_tool     ( UnitTests   ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
+	add_tool     ( TestBed     ROOT_DIR "${DAVA_ROOT_DIR}/Projects/TestBed"     )
+	add_tool     ( SceneViewer ROOT_DIR "${DAVA_ROOT_DIR}/Projects/SceneViewer" )
+
+	if ( WIN32 )
+	    add_tool ( UWPRunner )
+	endif ()
+
+elseif(TARGETS STREQUAL "tools")	
+
+	project      ( Tools )
+
+	init_project ()
+
+	add_tool     ( ResourceEditor   )
+	add_tool     ( QuickEd          )
+	add_tool     ( ResourcePacker   )
+	add_tool     ( ResourcePatcher  )
+	add_tool     ( ImageUnpacker    )
+	add_tool     ( AssetCacheClient )
+	add_tool     ( AssetCacheServer )
+
+else()
+
+	message( FATAL_ERROR "TARGETS param value is incorrect. Please set TARGETS=all or TARGETS=tools")
 
 endif()
 
-configure_ngt( PROJECT_NAME ${TOOL_OUTPUT_DIR} )
-find_package ( NgtTools REQUIRED )
 
-set                   ( DAVA_DISABLE_AUTOTESTS true )
-find_package          ( DavaFramework REQUIRED COMPONENTS ALL )
-find_package ( DavaTools     REQUIRED )
 
-set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp
-set          ( DAVA_MEGASOLUTION      1 )
 
-set          ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-set          ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-set          ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-
-add_tool     ( ResourceEditor   )
-add_tool     ( QuickEd          )
-add_tool     ( ResourcePacker   )
-add_tool     ( ImageUnpacker    )
-add_tool     ( AssetCacheClient )
-add_tool     ( AssetCacheServer )
-
-add_tool     ( UnitTests   ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
-add_tool     ( TestBed     ROOT_DIR "${DAVA_ROOT_DIR}/Projects/TestBed"     )
-add_tool     ( SceneViewer ROOT_DIR "${DAVA_ROOT_DIR}/Projects/SceneViewer" )
-
-if ( WIN32 )
-    add_tool ( UWPRunner )
-endif ()
 
