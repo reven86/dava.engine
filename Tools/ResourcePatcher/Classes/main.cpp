@@ -52,8 +52,11 @@ void PrintError(DAVA::PatchFileReader::PatchError error)
     case DAVA::PatchFileReader::ERROR_ORIG_READ:
         printf("ERROR_ORIG_PATH\n");
         break;
-    case DAVA::PatchFileReader::ERROR_ORIG_CRC:
-        printf("ERROR_ORIG_CRC\n");
+    case DAVA::PatchFileReader::ERROR_ORIG_FILE_CRC:
+        printf("ERROR_ORIG_FILE_CRC\n");
+        break;
+    case DAVA::PatchFileReader::ERROR_ORIG_BUFFER_CRC:
+        printf("ERROR_ORIG_BUFFER_CRC\n");
         break;
     case DAVA::PatchFileReader::ERROR_NEW_WRITE:
         printf("ERROR_NEW_PATH\n");
@@ -80,7 +83,7 @@ int DoPatch(DAVA::PatchFileReader* reader, const DAVA::FilePath& origBase, const
 
     if (!reader->Apply(origBase, origPath, newBase, newPath))
     {
-        PrintError(reader->GetLastError());
+        PrintError(reader->GetError());
         ret = 1;
     }
 
@@ -225,7 +228,7 @@ int main(int argc, char* argv[])
                         index++;
                     }
 
-                    PrintError(patchReader.GetLastError());
+                    PrintError(patchReader.GetError());
                 }
             }
         }
@@ -369,7 +372,7 @@ int main(int argc, char* argv[])
                         }
                     }
 
-                    PrintError(patchReader.GetLastError());
+                    PrintError(patchReader.GetError());
                 }
             }
         }
