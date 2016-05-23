@@ -72,7 +72,5 @@ function (configure_ngt _PROJECT_NAME _OUTPUT_PATH)
     
     # NGT build system use this variable on Mac to resolve path where plugins must be copyed
     set( BW_BUNDLE_NAME ${_PROJECT_NAME} CACHE INTERNAL "")
-
-    append_deploy_dependency(${PROJECT_NAME})
-    set_delayed_deploy_qt()
+    append_property( USE_NGT_${_PROJECT_NAME}  true )
 endfunction()

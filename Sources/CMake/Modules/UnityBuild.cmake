@@ -7,7 +7,7 @@ macro( generated_unity_sources SOURCE_FILES )
 
         #"ARG"
         set( CUSTOM_PACK_MAX_NUMBER 20 )        
-        set( ARG_PARAM "IGNORE_LIST;IGNORE_LIST_APPLE;IGNORE_LIST_WIN32"  )
+        set( ARG_PARAM "IGNORE_LIST;IGNORE_LIST_WIN32;IGNORE_LIST_APPLE;IGNORE_LIST_IOS;IGNORE_LIST_MACOS;IGNORE_LIST_ANDROID"  )
         foreach( index RANGE 1 ${CUSTOM_PACK_MAX_NUMBER} )
             set( ARG_PARAM "${ARG_PARAM};CUSTOM_PACK_${index}")
         endforeach()
@@ -162,7 +162,7 @@ macro( generated_unity_sources SOURCE_FILES )
                 
                 list( APPEND ${PTYPE}_PACK_LIST ${${PTYPE}_NAME} )
                 file( WRITE ${${PTYPE}_NAME} ${HEADERS_LIST})
-                message( "generated pack     - ${${PTYPE}_NAME}")
+                #message( "generated pack     - ${${PTYPE}_NAME}")
             endforeach()
 
             math( EXPR PACK_IDX "${PACK_IDX} + ${${PTYPE}_PACK_SIZE}" )

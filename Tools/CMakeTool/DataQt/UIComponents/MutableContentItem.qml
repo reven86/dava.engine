@@ -5,55 +5,64 @@ import QtQuick.Layouts 1.0
 
 Item {
     id: mutableContentItem;
-    property var configuration;
-    onConfigurationChanged: configuration["globalOptions"] = []
     signal dataUpdated();
-
+    property var localConfiguration;
     function processConfiguration(configuration) {
-        mutableContentItem.configuration = configuration;
-        var arrayPlatforms = configuration["platforms"];
+        localConfiguration = configuration;
+        var arrayPlatforms = localConfiguration["platforms"];
         if(arrayPlatforms && Array.isArray(arrayPlatforms)) {
             for(var i = 0, length = arrayPlatforms.length; i < length; ++i) {
                 listModel_platforms.append(arrayPlatforms[i]);
             }
         }
-        var arrayGlobalOptions = configuration["global options"];
+        var arrayGlobalOptions = localConfiguration["global options"];
         if(arrayGlobalOptions && Array.isArray(arrayGlobalOptions)) {
             for(var i = 0, length = arrayGlobalOptions.length; i < length; ++i) {
                 listModel_globalOptions.append(arrayGlobalOptions[i]);
             }
         }
+        localConfiguration["currentOptions"] = [];
+        localConfiguration["checkedGlobalOptions"] = [];
     }
     function loadState(state) {
-        configuration["currentPlatform"] = state.platform;
-        configuration["currentOptions"] = state.currentOptions;
-        configuration["globalOptions"] = state.globalOptions;
+        localConfiguration["currentPlatform"] = state.platform;
+        localConfiguration["currentOptions"] = state.currentOptions;
+        localConfiguration["checkedGlobalOptions"] = state.checkedGlobalOptions;
         impl.configUpdated();
     }
 
     function saveState() {
         var state = {};
-        state.platform = configuration["currentPlatform"];
-        state.currentOptions = configuration["currentOptions"];
-        state.globalOptions = configuration["globalOptions"];
-        return state;
+        state.platform = localConfiguration["currentPlatform"];
+        state.currentOptions = localConfiguration["currentOptions"];
+        state.checkedGlobalOptions = localConfiguration["checkedGlobalOptions"];
+        //make a deep copy
+        return JSON.parse(JSON.stringify(state));
     }
 
     Item {
         id: impl //item to incapsulate private functions
         signal configUpdated();
         function processDataChanged(checked, value, key) {
-            var options = configuration[key];
-            if(checked) {
-                options.push(value)
-            } else {
-                for(var i = 0, count = options.length; i < count; i++) {
-                    if(JSON.stringify(options[i]) === JSON.stringify(value)) {
-                        options.splice(i, 1);
-                        break;
-                    }
+            var options = localConfiguration[key];
+            var valueStr = JSON.stringify(value);
+            var itemIndex = -1;
+            for(var i = 0, count = options.length; i < count; i++) {
+                if(JSON.stringify(options[i]) === valueStr) {
+                    itemIndex = i;
+                    break;
                 }
             }
+            if(checked) {
+                if(itemIndex === -1) {
+                    options.push(value)
+                }
+            } else {
+                if(itemIndex !== -1) {
+                    options.splice(itemIndex, 1)
+                }
+            }
+
             dataUpdated();
         }
 
@@ -101,23 +110,23 @@ Item {
                             Connections {
                                 target: impl
                                 onConfigUpdated:  {
-                                    if(index === configuration["currentPlatform"]) {
+                                    if(index === localConfiguration["currentPlatform"]) {
                                          checked = true;
                                      }
                                 }
                             }
 
                             onCheckedChanged: {
-                                if(checked && configuration) {
-                                    configuration["currentPlatform"] = index;
-                                    configuration["currentOptions"] = [];
+                                if(checked && localConfiguration) {
+                                    localConfiguration["currentPlatform"] = index;
                                     listModel_localOptions.clear();
-                                    var localObject = configuration["platforms"][index];
+                                    var localObject = localConfiguration["platforms"][index];
                                     var options = JSON.parse(JSON.stringify(localObject["options"])); //make a copy
                                     if(options && Array.isArray(options)) {
                                         for(var i = 0, length = options.length; i < length; ++i) {
                                             options[i]["parentIndex"] = index
                                             listModel_localOptions.append(options[i]);
+                                            impl.configUpdated();
                                         }
                                     }
                                     dataUpdated();
@@ -159,11 +168,12 @@ Item {
                             Connections {
                                 target: impl
                                 onConfigUpdated:  {
-                                    var obj = configuration["currentOptions"];
+                                    var obj = localConfiguration["currentOptions"];
                                     var currentObj = loaderDelegate.createObj();
+                                    var currentObjStr = JSON.stringify(currentObj);
                                     var found = false;
                                     for(var i = 0, length = obj.length; i < length && !found; ++i) {
-                                        if(JSON.stringify(obj[i]) === JSON.stringify(currentObj)) {
+                                        if(JSON.stringify(obj[i]) === currentObjStr) {
                                             found = true;
                                         }
                                     }
@@ -221,17 +231,22 @@ Item {
                     CheckBox {
                         text: model.name
                         onCheckedChanged: {
-                            impl.processDataChanged(checked, {"value": model.value}, "globalOptions");
+                            impl.processDataChanged(checked, {"value": model.value}, "checkedGlobalOptions");
 
                         }
                         Connections {
                             target: impl
                             onConfigUpdated:  {
-                                var obj = configuration["globalOptions"];
+                                var obj = localConfiguration["checkedGlobalOptions"];
+                                if(obj === undefined) {
+                                    return;
+                                }
+
                                 var currentObj = {"value": model.value};
+                                var currentObjStr = JSON.stringify(currentObj);
                                 var found = false;
-                                for(var i = 0, length = obj.length; i < length && !found; ++i) {
-                                    if(JSON.stringify(obj[i]) === JSON.stringify(currentObj)) {
+                                for(var i = 0, objLength = obj.length; i < objLength && !found; ++i) {
+                                    if(JSON.stringify(obj[i]) === currentObjStr) {
                                         found = true;
                                     }
                                 }

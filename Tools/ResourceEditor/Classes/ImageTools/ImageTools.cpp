@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "ImageTools/ImageTools.h"
 
 #include "TextureCompression/TextureConverter.h"
@@ -48,7 +19,19 @@ void Channels::ReleaseImages()
     DAVA::SafeRelease(alpha);
 }
 
-uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
+namespace ImageTools
+{
+void SaveImage(Image* image, const FilePath& pathname)
+{
+    ImageSystem::Save(pathname, image, image->format);
+}
+
+Image* LoadImage(const FilePath& pathname)
+{
+    return CreateTopLevelImage(pathname);
+}
+
+uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
 {
     uint32 size = 0;
 
@@ -75,7 +58,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, c
     for (size_t i = 0; i < files.size(); ++i)
     {
         const FilePath& imagePathname = files[i];
-        ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePathname);
+        ImageInfo info = ImageSystem::GetImageInfo(imagePathname);
         if (!info.isEmpty())
         {
             const auto formatSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
@@ -91,14 +74,14 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, c
         }
         else
         {
-            Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
+            Logger::Error("ImageTools::[GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
         }
     }
 
     return size;
 }
 
-void ImageTools::ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality)
+void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality)
 {
     if (!descriptor || descriptor->compression[forGPU].format == FORMAT_INVALID)
     {
@@ -108,7 +91,7 @@ void ImageTools::ConvertImage(const DAVA::TextureDescriptor* descriptor, const D
     TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
-bool ImageTools::SplitImage(const FilePath& pathname)
+bool SplitImage(const FilePath& pathname)
 {
     Image* loadedImage = CreateTopLevelImage(pathname);
     if (!loadedImage)
@@ -137,7 +120,7 @@ bool ImageTools::SplitImage(const FilePath& pathname)
     return true;
 }
 
-bool ImageTools::MergeImages(const FilePath& folder)
+bool MergeImages(const FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -166,23 +149,13 @@ bool ImageTools::MergeImages(const FilePath& folder)
 
     Image* mergedImage = CreateMergedImage(channels);
 
-    ImageSystem::Instance()->Save(folder + "merged.png", mergedImage);
+    ImageSystem::Save(folder + "merged.png", mergedImage);
     channels.ReleaseImages();
     SafeRelease(mergedImage);
     return true;
 }
 
-void ImageTools::SaveImage(Image* image, const FilePath& pathname)
-{
-    ImageSystem::Instance()->Save(pathname, image, image->format);
-}
-
-Image* ImageTools::LoadImage(const FilePath& pathname)
-{
-    return CreateTopLevelImage(pathname);
-}
-
-Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
+Channels CreateSplittedImages(DAVA::Image* originalImage)
 {
     DAVA::Image* r = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
     DAVA::Image* g = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
@@ -202,7 +175,7 @@ Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
     return Channels(r, g, b, a);
 }
 
-DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
+DAVA::Image* CreateMergedImage(const Channels& channels)
 {
     if (!channels.ChannelesResolutionEqual() || !channels.HasFormat(FORMAT_A8))
     {
@@ -222,7 +195,7 @@ DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
     return mergedImage;
 }
 
-void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
+void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
 {
     if (image->format != FORMAT_RGBA8888)
     {
@@ -237,7 +210,7 @@ void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::u
     }
 }
 
-QImage ImageTools::FromDavaImage(const DAVA::FilePath& pathname)
+QImage FromDavaImage(const DAVA::FilePath& pathname)
 {
     auto image = LoadImage(pathname);
     if (image)
@@ -251,83 +224,35 @@ QImage ImageTools::FromDavaImage(const DAVA::FilePath& pathname)
     return QImage();
 }
 
-QImage ImageTools::FromDavaImage(Image* image)
+QImage FromDavaImage(const Image* image)
 {
-    QImage qtImage;
+    DVASSERT(image != nullptr);
 
-    if (nullptr != image)
+    if (image->format == FORMAT_RGBA8888)
     {
-        switch (image->format)
+        QImage qtImage(image->width, image->height, QImage::Format_RGBA8888);
+        Memcpy(qtImage.bits(), image->data, image->dataSize);
+        return qtImage;
+    }
+    else if (ImageConvert::CanConvertFromTo(image->format, FORMAT_RGBA8888))
+    {
+        ScopedPtr<Image> newImage(Image::Create(image->width, image->height, FORMAT_RGBA8888));
+        bool converted = ImageConvert::ConvertImage(image, newImage);
+        if (converted)
         {
-        case FORMAT_DXT1:
-        case FORMAT_DXT1A:
-        case FORMAT_DXT3:
-        case FORMAT_DXT5:
-        case FORMAT_DXT5NM:
-        case FORMAT_ATC_RGB:
-        case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
-        case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
-        {
-            Vector<Image*> vec;
-            LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
-            if (vec.size() == 1)
-            {
-                qtImage = FromDavaImage(vec.front());
-            }
-            else
-            {
-                DAVA::Logger::Error("Error during conversion from DDS to QImage.");
-            }
-
-            for_each(vec.begin(), vec.end(), SafeRelease<DAVA::Image>);
-
-            break;
+            return FromDavaImage(newImage);
         }
-        case FORMAT_PVR4:
-        case FORMAT_PVR2:
-        case FORMAT_PVR2_2:
-        case FORMAT_PVR4_2:
-        case FORMAT_ETC1:
-        case FORMAT_EAC_R11_UNSIGNED:
-        case FORMAT_EAC_R11_SIGNED:
-        case FORMAT_EAC_RG11_UNSIGNED:
-        case FORMAT_EAC_RG11_SIGNED:
-        case FORMAT_ETC2_RGB:
-        case FORMAT_ETC2_RGBA:
-        case FORMAT_ETC2_RGB_A1:
-        case FORMAT_RGBA8888:
+        else
         {
-            qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
-            Memcpy(qtImage.bits(), image->data, image->dataSize);
-            break;
-        }
-
-        case FORMAT_RGBA5551:
-        case FORMAT_RGBA4444:
-        case FORMAT_RGB565:
-        case FORMAT_A8:
-        case FORMAT_A16:
-        case FORMAT_RGB888:
-        case FORMAT_BGR888:
-        case FORMAT_BGRA8888:
-        case FORMAT_RGBA16161616:
-        case FORMAT_RGBA32323232:
-        {
-            qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
-
-            auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
-            auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-            ImageConvert::ConvertImageDirect(image->format, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
-            break;
-        }
-
-        default:
-        {
-            Logger::Error("[%s] Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
-            break;
-        }
+            Logger::Error("[%s]: Error converting from %s", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
+            return QImage();
         }
     }
-
-    return qtImage;
+    else
+    {
+        Logger::Error("[%s]: Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
+        return QImage();
+    }
 }
+
+} // namespace ImageTools
