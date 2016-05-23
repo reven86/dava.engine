@@ -613,12 +613,9 @@ void gles2_Initialize(const InitParam& param)
         Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 #if 1
-        if (glDebugMessageControl && glDebugMessageCallback)
-        {
-            glEnable(GL_DEBUG_OUTPUT);
-            glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-            glDebugMessageCallback(&_OGLErrorCallback, 0);
-        }
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+        glDebugMessageCallback(&_OGLErrorCallback, 0);
 
 #endif
         if (_GLES2_IsSeamlessCubmapSupported)
