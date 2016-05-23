@@ -71,7 +71,7 @@ def process_files(arg, dirname, names):
 			
 	return
 
-export_script_dir = os.getcwd() + "../../../";
+export_script_dir = os.getcwd() + "/../../../";
 os.path.walk(export_script_dir, process_files, None);
 
 excludeLogFile.close();

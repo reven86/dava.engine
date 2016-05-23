@@ -1,4 +1,3 @@
-
 #ifndef __QUICKED_TRANSFORM_SYSTEM_H__
 #define __QUICKED_TRANSFORM_SYSTEM_H__
 
