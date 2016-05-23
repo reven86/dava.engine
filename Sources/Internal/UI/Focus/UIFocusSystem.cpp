@@ -83,6 +83,22 @@ UIControl* UIFocusSystem::GetFocusedControl() const
 void UIFocusSystem::SetFocusedControl(UIControl* control)
 {
     bool textFieldWasEditing = false;
+
+    if (control)
+    {
+        UIControl* c = control;
+        while (c && c != root.Get())
+        {
+            c = c->GetParent();
+        }
+
+        if (c != root.Get())
+        {
+            DVASSERT(false);
+            return;
+        }
+    }
+
     if (control != focusedControl.Get())
     {
         if (focusedControl.Valid())
