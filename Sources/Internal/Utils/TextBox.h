@@ -33,9 +33,8 @@ public:
         SYMBOLS_WRAP
     };
 
-    class Line
+    struct Line
     {
-    public:
         virtual ~Line()
         {
         }
@@ -52,9 +51,8 @@ public:
         WideString visualString;
     };
 
-    class Character
+    struct Character
     {
-    public:
         int32 codepoint = -1;
         int32 logicIndex = -1;
         int32 shapedIndex = -1;
