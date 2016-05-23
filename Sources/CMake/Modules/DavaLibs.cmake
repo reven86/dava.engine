@@ -113,7 +113,15 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/ssleay32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/TextureConverter.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/unibreak_win.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/zlib.lib"   )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/zlib.lib"   
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swscale.lib")                       
 
     set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG
                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/detours.lib"
@@ -143,7 +151,15 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverterD.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak_wind.lib"  
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib" 
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swscale.lib" )
 
     set( DAVA_STATIC_LIBRARIES_WIN64_RELEASE
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
@@ -172,7 +188,15 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/theora_static.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/unibreak.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/uv.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/z.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/z.lib" 
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swscale.lib")
 
     set( DAVA_STATIC_LIBRARIES_WIN64_DEBUG
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
@@ -198,7 +222,15 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverter_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/theora_static_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/z.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/z.lib" 
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swscale.lib" )
 
 
     set( DAVA_STATIC_LIBRARIES_WIN32 "Wininet.lib"
@@ -214,6 +246,18 @@ if( WIN )
                                      "userenv.lib"
                                      "delayimp.lib"
                                      "dxgi.lib" )
+
+    set( DAVA_DYNAMIC_LIBRARIES_WIN32 "${DAVA_TOOLS_BIN_DIR}/avcodec-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avdevice-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avfilter-6.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avformat-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avutil-55.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/postproc-54.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/swresample-2.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/swscale-4.dll" )
+
+    set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
+
 
     set ( DAVA_STATIC_LIBRARIES_WIN64 ${DAVA_STATIC_LIBRARIES_WIN32} )
 
