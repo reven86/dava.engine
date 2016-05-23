@@ -31,7 +31,7 @@
 
 #include "Base/Platform.h"
 
-#if !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_WIN32__)
 
 #include "UI/IMovieViewControl.h"
 
@@ -78,7 +78,7 @@ public:
     }
 
     // Whether the movie is being played?
-    bool IsPlaying() override
+    bool IsPlaying() const override
     {
         return false;
     }

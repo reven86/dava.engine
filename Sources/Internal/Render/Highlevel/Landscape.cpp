@@ -297,7 +297,7 @@ void Landscape::RebuildLandscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (!landscapeMaterial)
+    if (landscapeMaterial == nullptr)
     {
         landscapeMaterial = new NMaterial();
         landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
@@ -1479,13 +1479,7 @@ bool Landscape::IsDrawWired() const
 void Landscape::SetUseInstancing(bool isUse)
 {
     RenderMode newRenderMode = (isUse && rhi::DeviceCaps().isInstancingSupported) ? RENDERMODE_INSTANCING : RENDERMODE_NO_INSTANCING;
-    if (renderMode != newRenderMode)
-    {
-        renderMode = newRenderMode;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_INSTANCING) ? 1 : 0);
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, 0);
-        RebuildLandscape();
-    }
+    SetRenderMode(newRenderMode);
 }
 
 bool Landscape::IsUseInstancing() const
@@ -1497,18 +1491,25 @@ void Landscape::SetUseMorphing(bool useMorph)
 {
     RenderMode newRenderMode = useMorph ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
     newRenderMode = rhi::DeviceCaps().isInstancingSupported ? newRenderMode : RENDERMODE_NO_INSTANCING;
-    if (renderMode != newRenderMode)
-    {
-        renderMode = newRenderMode;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, 1);
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
-        RebuildLandscape();
-    }
+    SetRenderMode(newRenderMode);
 }
 
 bool Landscape::IsUseMorphing() const
 {
     return (renderMode == RENDERMODE_INSTANCING_MORPHING);
+}
+
+void Landscape::SetRenderMode(RenderMode newRenderMode)
+{
+    if (renderMode == newRenderMode)
+        return;
+
+    renderMode = newRenderMode;
+    RebuildLandscape();
+
+    landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
+    landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
+    landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 void Landscape::SetDrawMorphing(bool drawMorph)
