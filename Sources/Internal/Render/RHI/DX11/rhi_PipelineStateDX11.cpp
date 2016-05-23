@@ -201,11 +201,22 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
 
         if (vb_elem_i != DAVA::InvalidIndex)
         {
+            unsigned stream_i = vprogLayout.ElementStreamIndex(i);
+
             elem[elemCount].AlignedByteOffset = (UINT)(vbLayout.ElementOffset(vb_elem_i));
             elem[elemCount].SemanticIndex = vprogLayout.ElementSemanticsIndex(i);
-            elem[elemCount].InputSlot = 0;
-            elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-            elem[elemCount].InstanceDataStepRate = 0;
+            elem[elemCount].InputSlot = stream_i;
+
+            if (vprogLayout.StreamFrequency(stream_i) == VDF_PER_INSTANCE)
+            {
+                elem[elemCount].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+                elem[elemCount].InstanceDataStepRate = 1;
+            }
+            else
+            {
+                elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                elem[elemCount].InstanceDataStepRate = 0;
+            }
 
             switch (vbLayout.ElementSemantics(vb_elem_i))
             {

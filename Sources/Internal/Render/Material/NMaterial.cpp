@@ -184,6 +184,8 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.cullMode = activeVariantInstance->cullMode;
     if (activeVariantInstance->wireFrame)
         target.options |= rhi::Packet::OPT_WIREFRAME;
+    else
+        target.options &= ~rhi::Packet::OPT_WIREFRAME;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -967,7 +969,6 @@ void NMaterial::RebuildTextureBindings()
                 textureDescr.vertexTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(vertexSamplerList[i].type);
                 samplerDescr.vertexSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(vertexSamplerList[i].type);
             }
-            samplerDescr.vertexSampler[i].mipFilter = rhi::TEXMIPFILTER_NONE;
         }
 
         currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
@@ -1069,7 +1070,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
     for (auto it = config.localTextures.begin(), itEnd = config.localTextures.end(); it != itEnd; ++it)
     {
-        if (!it->second->path.IsEmpty())
+        if (!NMaterialTextureName::IsRuntimeTexture(it->first) && !it->second->path.IsEmpty())
         {
             String textureRelativePath = it->second->path.GetRelativePathname(serializationContext->GetScenePath());
             if (textureRelativePath.size() > 0)

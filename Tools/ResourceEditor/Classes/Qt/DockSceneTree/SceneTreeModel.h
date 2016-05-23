@@ -72,10 +72,7 @@ public:
     void SetScene(SceneEditor2* scene);
     SceneEditor2* GetScene() const;
 
-    QModelIndex GetIndex(DAVA::Entity* entity) const;
-    QModelIndex GetIndex(DAVA::ParticleEmitter* emitter) const;
-    QModelIndex GetIndex(DAVA::ParticleLayer* layer) const;
-    QModelIndex GetIndex(DAVA::ParticleForce* force) const;
+    QModelIndex GetIndex(Selectable::Object* object) const;
 
     SceneTreeItem* GetItem(const QModelIndex& index) const;
 
@@ -118,14 +115,11 @@ private:
 
     Qt::DropActions supportedDragActions() const override;
 
-    SceneEditor2* curScene;
-    bool dropAccepted;
+private:
+    SceneEditor2* curScene = nullptr;
+    DAVA::Map<Selectable::Object*, QModelIndex> indexesCache;
     QString filterText;
-
-    QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
-    QMap<DAVA::ParticleEmitter*, QModelIndex> indexesCacheEmitters;
-    QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
-    QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
+    bool dropAccepted = false;
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel

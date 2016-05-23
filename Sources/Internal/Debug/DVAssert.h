@@ -155,7 +155,7 @@ inline void DavaDebugBreak()
                                        assertType, expr, msg, file, line, \
                                        DAVA::Debug::BacktraceToString(backtrace, DVASSERT_UI_BACKTRACE_DEPTH).c_str())
 #else //ENABLE_ASSERT_MESSAGE
-#define MessageFunction(messagetype, assertType, expr, msg, file, line) \
+#define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
     false
 #endif //ENABLE_ASSERT_MESSAGE
 

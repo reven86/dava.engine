@@ -1,30 +1,30 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+	* Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	* Neither the name of the binaryzebra nor the
+	names of its contributors may be used to endorse or promote products
+	derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	=====================================================================================*/
 
 #include "Debug/DVAssert.h"
 
@@ -33,7 +33,6 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/LodComponent.h"
 
-#include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
@@ -44,8 +43,7 @@ struct TrianglesData
 {
     Vector<uint32> storedTriangles;
     Vector<uint32> visibleTriangles;
-    Vector<uint32> temporaryTriangles;
-    Vector<RenderComponent*> renderComponents;
+    Vector<RenderObject*> renderObjects;
 };
 
 namespace EditorStatisticsSystemInternal
@@ -84,11 +82,11 @@ void EnumerateTriangles(RenderObject* renderObject, Vector<uint32>& triangles, V
             PolygonGroup* pg = rb->GetPolygonGroup();
             if (nullptr != pg)
             {
-                int32 indexCount = pg->GetIndexCount() / 3;
-                triangles[lodIndex] += indexCount;
+                int32 trianglesCount = pg->GetIndexCount() / 3;
+                triangles[lodIndex] += trianglesCount;
                 if (batchIsVisible)
                 {
-                    visibleTriangles[lodIndex] += indexCount;
+                    visibleTriangles[lodIndex] += trianglesCount;
                 }
             }
         }
@@ -97,19 +95,18 @@ void EnumerateTriangles(RenderObject* renderObject, Vector<uint32>& triangles, V
 
 void EnumerateTriangles(TrianglesData& triangles)
 {
-    std::fill(triangles.temporaryTriangles.begin(), triangles.temporaryTriangles.end(), 0);
+    std::fill(triangles.storedTriangles.begin(), triangles.storedTriangles.end(), 0);
     std::fill(triangles.visibleTriangles.begin(), triangles.visibleTriangles.end(), 0);
-    for (auto& rc : triangles.renderComponents)
+    for (RenderObject* ro : triangles.renderObjects)
     {
-        RenderObject* ro = rc->GetRenderObject();
         if (ro && (ro->GetType() == RenderObject::TYPE_MESH || ro->GetType() == RenderObject::TYPE_SPEED_TREE))
         {
-            EnumerateTriangles(ro, triangles.temporaryTriangles, triangles.visibleTriangles);
+            EnumerateTriangles(ro, triangles.storedTriangles, triangles.visibleTriangles);
         }
     }
 }
 
-void EnumerateRenderComponentsRecursive(Entity* entity, Vector<RenderComponent*>& renderComponents, bool recursive)
+void EnumerateRenderObjectsRecursive(Entity* entity, Vector<RenderObject*>& renderObjects, bool recursive)
 {
     if (HasComponent(entity, Component::RENDER_COMPONENT))
     {
@@ -117,9 +114,12 @@ void EnumerateRenderComponentsRecursive(Entity* entity, Vector<RenderComponent*>
         for (uint32 c = 0; c < componentsCount; ++c)
         {
             RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT, c));
-            DVASSERT(std::find(renderComponents.begin(), renderComponents.end(), rc) == renderComponents.end());
-
-            renderComponents.push_back(rc);
+            RenderObject* ro = rc->GetRenderObject();
+            if (ro != nullptr)
+            {
+                DVASSERT(std::find(renderObjects.begin(), renderObjects.end(), ro) == renderObjects.end());
+                renderObjects.push_back(ro);
+            }
         }
     }
 
@@ -128,31 +128,27 @@ void EnumerateRenderComponentsRecursive(Entity* entity, Vector<RenderComponent*>
         uint32 count = entity->GetChildrenCount();
         for (uint32 c = 0; c < count; ++c)
         {
-            EnumerateRenderComponentsRecursive(entity->GetChild(c), renderComponents, recursive);
+            EnumerateRenderObjectsRecursive(entity->GetChild(c), renderObjects, recursive);
         }
     }
 }
 
-void EnumerateRenderComponents(const EntityGroup& entities, Vector<RenderComponent*>& renderComponents)
+void EnumerateRenderObjects(const SelectableGroup& group, Vector<RenderObject*>& renderObjects)
 {
-    renderComponents.clear();
-    uint32 count = entities.Size();
-    if (count > 0)
-    {
-        renderComponents.reserve(count);
+    renderObjects.clear();
+    if (group.IsEmpty())
+        return;
 
-        const bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
-        const auto& entitiesContent = entities.GetContent();
-        for (auto& it : entitiesContent)
-        {
-            Entity* entity = it.first;
-            bool recursive = entity->GetSolid() || !ignoreChildren;
-            EnumerateRenderComponentsRecursive(entity, renderComponents, recursive);
-        }
+    renderObjects.reserve(group.GetSize());
+
+    const bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
+    for (auto entity : group.ObjectsOfType<DAVA::Entity>())
+    {
+        bool recursive = entity->GetSolid() || !ignoreChildren;
+        EnumerateRenderObjectsRecursive(entity, renderObjects, recursive);
     }
 }
 }
-
 EditorStatisticsSystem::EditorStatisticsSystem(Scene* scene)
     : SceneSystem(scene)
 {
@@ -161,7 +157,6 @@ EditorStatisticsSystem::EditorStatisticsSystem(Scene* scene)
     {
         triangles[m].storedTriangles.resize(EditorStatisticsSystemInternal::SIZE_OF_TRIANGLES, 0);
         triangles[m].visibleTriangles.resize(EditorStatisticsSystemInternal::SIZE_OF_TRIANGLES, 0);
-        triangles[m].temporaryTriangles.resize(EditorStatisticsSystemInternal::SIZE_OF_TRIANGLES, 0);
     }
 }
 
@@ -183,23 +178,10 @@ void EditorStatisticsSystem::RemoveEntity(Entity* entity)
 
 void EditorStatisticsSystem::AddComponent(Entity* entity, Component* component)
 {
-    if (component->GetType() == Component::RENDER_COMPONENT)
-    {
-        Vector<RenderComponent*>& renderComponents = triangles[eEditorMode::MODE_ALL_SCENE].renderComponents;
-
-        RenderComponent* newComponent = static_cast<RenderComponent*>(component);
-        DVASSERT(std::find(renderComponents.begin(), renderComponents.end(), newComponent) == renderComponents.end());
-        renderComponents.push_back(newComponent);
-    }
 }
 
 void EditorStatisticsSystem::RemoveComponent(Entity* entity, Component* component)
 {
-    if (component->GetType() == Component::RENDER_COMPONENT)
-    {
-        RenderComponent* removedComponent = static_cast<RenderComponent*>(component);
-        FindAndRemoveExchangingWithLast(triangles[eEditorMode::MODE_ALL_SCENE].renderComponents, removedComponent);
-    }
 }
 
 const Vector<uint32>& EditorStatisticsSystem::GetTriangles(eEditorMode mode, bool allTriangles) const
@@ -220,23 +202,33 @@ void EditorStatisticsSystem::Process(float32 timeElapsed)
 
 void EditorStatisticsSystem::CalculateTriangles()
 {
-    SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+    auto CalculateTrianglesForMode = [this](eEditorMode mode)
+    {
+        Vector<uint32> storedTriangles = triangles[mode].storedTriangles;
+        Vector<uint32> visibleTriangles = triangles[mode].visibleTriangles;
 
-    auto CalculateTrianglesForMode = [this](eEditorMode mode) {
         EditorStatisticsSystemInternal::EnumerateTriangles(triangles[mode]);
-        if (triangles[mode].storedTriangles != triangles[mode].temporaryTriangles)
+        if (triangles[mode].storedTriangles != storedTriangles || triangles[mode].visibleTriangles != visibleTriangles)
         {
-            triangles[mode].storedTriangles.swap(triangles[mode].temporaryTriangles);
             EmitInvalidateUI(FLAG_TRIANGLES);
         }
     };
 
+    SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+
     //Scene
+    triangles[eEditorMode::MODE_ALL_SCENE].renderObjects.clear();
+    Camera* drawCamera = editorScene->GetDrawCamera();
+    if (drawCamera != nullptr)
+    {
+        uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
+        editorScene->renderSystem->GetRenderHierarchy()->Clip(drawCamera, triangles[eEditorMode::MODE_ALL_SCENE].renderObjects, currVisibilityCriteria);
+    }
     CalculateTrianglesForMode(eEditorMode::MODE_ALL_SCENE);
 
     //Selection
-    triangles[eEditorMode::MODE_SELECTION].renderComponents.clear();
-    EditorStatisticsSystemInternal::EnumerateRenderComponents(editorScene->selectionSystem->GetSelection(), triangles[eEditorMode::MODE_SELECTION].renderComponents);
+    triangles[eEditorMode::MODE_SELECTION].renderObjects.clear();
+    EditorStatisticsSystemInternal::EnumerateRenderObjects(editorScene->selectionSystem->GetSelection(), triangles[eEditorMode::MODE_SELECTION].renderObjects);
     CalculateTrianglesForMode(eEditorMode::MODE_SELECTION);
 }
 

@@ -32,7 +32,6 @@
 #include "MaterialItem.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/EntityGroup.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
 #include "Commands2/MaterialSwitchParentCommand.h"
 
@@ -96,7 +95,7 @@ SceneEditor2* MaterialFilteringModel::GetScene()
     return materialModel->GetScene();
 }
 
-void MaterialFilteringModel::SetSelection(const EntityGroup* group)
+void MaterialFilteringModel::SetSelection(const SelectableGroup* group)
 {
     materialModel->SetSelection(group);
 }

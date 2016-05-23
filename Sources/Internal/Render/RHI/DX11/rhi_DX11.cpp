@@ -420,11 +420,11 @@ void dx11_Initialize(const InitParam& param)
 
     _DeviceCapsDX11.is32BitIndicesSupported = true;
     _DeviceCapsDX11.isFramebufferFetchSupported = true;
-    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0);
+    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
     _DeviceCapsDX11.isUpperLeftRTOrigin = true;
     _DeviceCapsDX11.isZeroBaseClipRange = true;
     _DeviceCapsDX11.isCenterPixelMapping = false;
-    _DeviceCapsDX11.instancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    _DeviceCapsDX11.isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
 }
 
 //==============================================================================
