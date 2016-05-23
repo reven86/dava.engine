@@ -130,7 +130,7 @@ void MovieViewControl::Resume()
     [(MPMoviePlayerController*)moviePlayerController play];
 }
 
-bool MovieViewControl::IsPlaying()
+bool MovieViewControl::IsPlaying() const
 {
     MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
     return (player.playbackState == MPMoviePlaybackStatePlaying);

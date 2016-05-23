@@ -56,7 +56,7 @@ struct OpenMovieParams
 class IMovieViewControl
 {
 public:
-    virtual ~IMovieViewControl(){};
+    virtual ~IMovieViewControl() = default;
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;
@@ -77,7 +77,15 @@ public:
     virtual void Resume() = 0;
 
     // Whether the movie is being played?
-    virtual bool IsPlaying() = 0;
+    virtual bool IsPlaying() const = 0;
+
+    virtual void Update()
+    {
+    }
+
+    virtual void Draw(const class UIGeometricData&)
+    {
+    }
 };
 
 } // namespace DAVA
