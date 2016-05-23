@@ -736,16 +736,10 @@ void TextBlock::CalculateCacheParams()
     }
     else //if(!isMultilineEnabled)
     {
-        int32 yOffset = font->GetVerticalSpacing();
-        int32 fontHeight = 0;
-        textMetrics.width = textMetrics.drawRect.dx = 0;
-
-        //Vector<TextLayout::Line> lines;
-        //textLayout.Seek(0);
-        //textLayout.FillList(lines, drawSize.dx, isMultilineBySymbolEnabled);
         Vector<TextBox::Line> lines = textBox->GetLines();
-
-        fontHeight = font->GetFontHeight() + yOffset;
+        int32 yOffset = font->GetVerticalSpacing();
+        int32 fontHeight = font->GetFontHeight() + yOffset;
+        textMetrics.width = textMetrics.drawRect.dx = 0;
         textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(lines.size()) - yOffset;
 
         DVASSERT_MSG(!lines.empty(), "Empty lines information");
@@ -770,11 +764,6 @@ void TextBlock::CalculateCacheParams()
                         {
                             renderSize = lastSize;
                             font->SetSize(renderSize);
-                            //lines.clear();
-                            //textLayout.CalculateCharSizes(*font);
-                            //textLayout.Seek(0);
-                            //textLayout.FillList(lines, drawSize.dx, isMultilineBySymbolEnabled);
-                            //charactersSizes = textLayout.GetCharSizes();
                             font->GetStringMetrics(visualText, &charactersSizes);
                             textBox->Wrap(isMultilineBySymbolEnabled ? TextBox::WrapMode::SYMBOLS_WRAP : TextBox::WrapMode::WORD_WRAP, drawSize.dx, &charactersSizes, &breaks);
 
@@ -835,12 +824,6 @@ void TextBlock::CalculateCacheParams()
 
                 renderSize = finalSize;
                 font->SetSize(renderSize);
-
-                //                 lines.clear();
-                //                 textLayout.CalculateCharSizes(*font);
-                //                 textLayout.Seek(0);
-                //                 textLayout.FillList(lines, drawSize.dx, isMultilineBySymbolEnabled);
-                //                 charactersSizes = textLayout.GetCharSizes();
                 font->GetStringMetrics(visualText, &charactersSizes);
                 textBox->Wrap(isMultilineBySymbolEnabled ? TextBox::WrapMode::SYMBOLS_WRAP : TextBox::WrapMode::WORD_WRAP, drawSize.dx, &charactersSizes, &breaks);
                 textBox->Reorder();

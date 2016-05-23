@@ -184,9 +184,10 @@ public:
 #if 1
             for (int32 i = 0; i < length; ++i)
             {
-                UChar outputChar = output[i];
                 TextBox::Character& c = characters[i];
-                if (c.codepoint != uint32(' ') && outputChar == ' ')
+                UChar outputChar = output[i];
+                UChar inputChar = text[i];
+                if (inputChar != ' ' && outputChar == ' ') // According shaping options all merged symbols replace with spaces
                 {
                     // Merging!
                     c.shapedIndex = -1;
