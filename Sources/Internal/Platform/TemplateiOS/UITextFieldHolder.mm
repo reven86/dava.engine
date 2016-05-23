@@ -174,25 +174,12 @@
     NSString* replStr = string;
     NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
 
-    // if user paste text with gesture in native control
-    // we need make dava control in sync with focus
-    if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
-    {
-        DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
-    }
-    cppTextField->StartEdit();
-
     BOOL clientApply = NO;
     BOOL applyChanges = NO;
     applyChanges = DAVA::NSStringCheck(range.location, origString, newString, cppTextField, &replStr, clientApply);
     if (clientApply)
     {
         newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
-        DAVA::WideString oldStr = cppTextField->GetText();
-        DAVA::WideString newStr;
-        const char* cstr = [newString cStringUsingEncoding:NSUTF8StringEncoding];
-        DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
-        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newStr, oldStr);
         if (!applyChanges)
         {
             [textCtrl setValue:newString forKey:@"text"];

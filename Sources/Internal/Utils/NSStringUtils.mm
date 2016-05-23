@@ -29,6 +29,7 @@
 
 #include "NSStringUtils.h"
 #include "UTF8Utils.h"
+#include "UI/UIControlSystem.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 
@@ -44,7 +45,18 @@ namespace DAVA
 // return YES - if need apply changes, or NO
 BOOL NSStringCheck(NSUInteger insertLocation, const NSString* origStr, const NSString* newStr, DAVA::UITextField* cppTextField, NSString** replStr, BOOL& clientApply)
 {
+    // if user paste text with gesture in native control
+    // we need make dava control in sync with focus
+    if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
+    {
+        DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
+    }
+
     BOOL applyChanges = YES;
+    if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
+    {
+        return applyChanges;
+    }
     NSUInteger replStrLength = [*replStr length];
     NSUInteger origStrLength = [origStr length];
     NSUInteger finalStrLength = [newStr length];
@@ -78,7 +90,16 @@ BOOL NSStringCheck(NSUInteger insertLocation, const NSString* origStr, const NSS
         return NO;
     }
     clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(insertLocation), static_cast<DAVA::int32>(removeSymbols), clientString);
-    if (!clientApply)
+    if (clientApply)
+    {
+        NSString* newClientStr = [origStr stringByReplacingCharactersInRange:NSMakeRange(insertLocation, removeSymbols) withString:*replStr];
+        DAVA::WideString oldStr = cppTextField->GetText();
+        DAVA::WideString newStr;
+        const char* cstr = [newClientStr cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
+        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newStr, oldStr);
+    }
+    else
     {
         return NO;
     }

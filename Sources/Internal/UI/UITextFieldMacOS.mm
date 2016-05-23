@@ -1487,13 +1487,7 @@ doCommandBySelector:(SEL)commandSelector
     NSString* newString = [[aTextView string] stringByReplacingCharactersInRange:affectedCharRange withString:replacementString];
     NSString* replStr = replacementString;
     DAVA::UITextField* cppTextField = (*text).ctrl->davaText;
-
-    // if user paste text with gesture in native control
-    // we need make dava control in sync with focus
-    if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
-    {
-        DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
-    }
+    // this hack, need info from Leonid
     cppTextField->StartEdit();
 
     BOOL clientApply = NO;
@@ -1502,11 +1496,9 @@ doCommandBySelector:(SEL)commandSelector
     if (clientApply)
     {
         newString = [origString stringByReplacingCharactersInRange:affectedCharRange withString:replStr];
-        DAVA::WideString oldStr = cppTextField->GetText();
         DAVA::WideString newStr;
         const char* cstr = [newString cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
-        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newStr, oldStr);
         if (!applyChanges)
         {
             (*text).ctrl->SetText(newStr);
