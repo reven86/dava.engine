@@ -457,6 +457,11 @@ ParticleEmitterInstance* ParticleEffectComponent::GetEmitterInstance(uint32 id) 
     return emitterInstances[id].Get();
 }
 
+ParticleEmitter* ParticleEffectComponent::GetEmitter(uint32 id) const
+{
+    return GetEmitterInstance(id)->GetEmitter();
+}
+
 void ParticleEffectComponent::AddEmitterInstance(ParticleEmitter* emitter)
 {
     emitterInstances.emplace_back(new ParticleEmitterInstance(this, emitter));

@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_UAP_NETWORK_HELPER_H__
 #define __DAVAENGINE_UAP_NETWORK_HELPER_H__
 
-#include "Base/BaseTypes.h"
 #include "Network/Base/Endpoint.h"
 #include "Network/NetworkCommon.h"
 

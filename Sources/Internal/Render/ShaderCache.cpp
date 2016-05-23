@@ -38,8 +38,8 @@ namespace ShaderDescriptorCache
 {
 struct ShaderSourceCode
 {
-    char8* vertexProgText;
-    char8* fragmentProgText;
+    char8* vertexProgText = nullptr;
+    char8* fragmentProgText = nullptr;
 
     FilePath vertexProgSourcePath;
     FilePath fragmentProgSourcePath;
@@ -114,6 +114,7 @@ ShaderSourceCode LoadFromSource(const String& source)
     //later move it into FileSystem
 
     //vertex
+    bool loaded = true;
     File* fp = File::Create(sourceCode.vertexProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
@@ -123,16 +124,27 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
         if (dataRead != fileSize)
         {
+            SafeDeleteArray(sourceCode.vertexProgText);
+
+            loaded = false;
             Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
+        loaded = false;
         Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
 
+    if (!loaded)
+    {
+        sourceCode.vertexProgText = new char[1];
+        sourceCode.vertexProgText[0] = 0;
+    }
+
     //fragment
+    loaded = true;
     fp = File::Create(sourceCode.fragmentProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
@@ -142,14 +154,23 @@ ShaderSourceCode LoadFromSource(const String& source)
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);
         if (dataRead != fileSize)
         {
+            SafeDeleteArray(sourceCode.fragmentProgText);
+            loaded = false;
             Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
+        loaded = false;
         Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
+
+    if (!loaded)
+    {
+        sourceCode.fragmentProgText = new char[1];
+        sourceCode.fragmentProgText[0] = 0;
+    }
 
     return sourceCode;
 }

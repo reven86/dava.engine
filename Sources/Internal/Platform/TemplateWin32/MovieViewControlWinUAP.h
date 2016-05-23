@@ -63,7 +63,7 @@ public:
     void Resume() override;
 
     // Whether the movie is being played?
-    bool IsPlaying() override;
+    bool IsPlaying() const override;
 
 private:
     std::shared_ptr<PrivateMovieViewWinUAP> privateImpl;

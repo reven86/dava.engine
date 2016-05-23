@@ -771,7 +771,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
     QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
-    QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(toggled(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
+    QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(triggered(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
 
     QObject::connect(ui->actionRefreshVisibilitySystem, SIGNAL(triggered()), this, SLOT(OnRefreshVisibilitySystem()));
     QObject::connect(ui->actionFixCurrentFrame, SIGNAL(triggered()), this, SLOT(OnFixVisibilityFrame()));
@@ -1451,11 +1451,9 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 
 void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
 {
-    DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
-    if (enabled)
+    if (SetVisibilityToolEnabledIfPossible(enabled))
     {
-        ui->actionForceFirstLODonLandscape->setChecked(true);
-        OnForceFirstLod(true);
+        SetLandscapeInstancingEnabled(false);
     }
 }
 
@@ -2278,35 +2276,41 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
 
     UpdateConflictingActionsState(tools == 0);
 
-    bool shouldEnableFirstLod = false;
+    bool anyEditorEnabled = false;
     if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
     {
         ui->actionCustomColorsEditor->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
         ui->actionHeightMapEditor->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_RULER)
     {
         ui->actionRulerTool->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
         ui->actionTileMapEditor->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
     {
         ui->actionShowNotPassableLandscape->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
 
-    ui->actionForceFirstLODonLandscape->setChecked(shouldEnableFirstLod);
-    OnForceFirstLod(shouldEnableFirstLod);
+    if (anyEditorEnabled)
+    {
+        SetVisibilityToolEnabledIfPossible(false);
+    }
+    SetLandscapeInstancingEnabled(anyEditorEnabled);
+
+    ui->actionForceFirstLODonLandscape->setChecked(anyEditorEnabled);
+    OnForceFirstLod(anyEditorEnabled);
 }
 
 void QtMainWindow::OnCustomColorsEditor()
@@ -3184,4 +3188,38 @@ void QtMainWindow::RestartParticleEffects()
 void QtMainWindow::RemoveSelection()
 {
     ::RemoveSelection(GetCurrentScene());
+}
+
+bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
+{
+    SceneEditor2* scene = GetCurrentScene();
+    DAVA::int32 enabledTools = scene->GetEnabledTools();
+    if (enabled && (enabledTools != 0))
+    {
+        ShowErrorDialog("Please disable Landscape editing tools before enabling Visibility Check System");
+        enabled = false;
+    }
+
+    DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
+
+    if (enabled)
+    {
+        ui->actionForceFirstLODonLandscape->setChecked(true);
+        OnForceFirstLod(true);
+    }
+
+    ui->actionEnableVisibilitySystem->setChecked(enabled);
+    return enabled;
+}
+
+void QtMainWindow::SetLandscapeInstancingEnabled(bool enabled)
+{
+    DAVA::Landscape* landscape = FindLandscape(GetCurrentScene());
+
+    if (landscape == nullptr)
+        return;
+
+    landscape->SetRenderMode(enabled ?
+                             DAVA::Landscape::RenderMode::RENDERMODE_INSTANCING_MORPHING :
+                             DAVA::Landscape::RenderMode::RENDERMODE_NO_INSTANCING);
 }
