@@ -75,7 +75,7 @@ static UCharString ConvertW2U(const WideString& src)
 
     UCharString dst(dstLen, 0);
     errorCode = U_ZERO_ERROR;
-    u_strFromWCS(const_cast<WideString::value_type*>(dst.data()), dst.capacity(), 0, src.data(), src.length(), &errorCode);
+    u_strFromWCS(const_cast<UCharString::value_type*>(dst.data()), dst.capacity(), 0, src.data(), src.length(), &errorCode);
     if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
     {
         Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
@@ -279,7 +279,7 @@ public:
         UBiDi* lpara = ubidi_open();
         for (TextBox::Line& line : lines)
         {
-            UErrorCode errorCode = U_ZERO_ERROR;
+            errorCode = U_ZERO_ERROR;
             ubidi_setLine(para, line.shapedOffset, line.shapedOffset + line.shapedLength, lpara, &errorCode);
             if (errorCode != U_ZERO_ERROR)
             {
