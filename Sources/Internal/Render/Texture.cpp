@@ -955,8 +955,6 @@ void Texture::RestoreRenderResource()
         Image* img = Image::Create(width, height, FORMAT_RGBA8888);
         img->cubeFaceID = 0;
         img->mipmapLevel = 0;
-        img->dataSize = width * height * 4;
-        img->data = new uint8[img->dataSize];
         std::fill(img->data, img->data + img->dataSize, 0);
         images.push_back(img);
     }
