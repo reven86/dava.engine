@@ -106,16 +106,12 @@ bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
     QFile file(filePath);
     if (file.open(QFile::WriteOnly | QFile::Truncate))
     {
-        if (file.write(data) != data.size())
+        if (file.write(data) == data.size())
         {
-            return false;
+            return true;
         }
     }
-    else
-    {
-        return false;
-    }
-    return true;
+    return false;
 }
 
 bool DeleteDirectory(const QString& path)
@@ -134,9 +130,9 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
 
     bool success = true;
     QString infoFilePath = GetPackageInfoFilePath();
-    bool ownFilesOnly = !QFile::exists(infoFilePath);
+    bool moveFilesFromInfoList = QFile::exists(infoFilePath);
     QStringList archiveFiles;
-    if (!ownFilesOnly)
+    if (moveFilesFromInfoList)
     {
         QFile file(infoFilePath);
         if (file.open(QFile::ReadOnly))
@@ -156,18 +152,19 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         di.next();
         const QFileInfo& fi = di.fileInfo();
         QString absPath = fi.absoluteFilePath();
-        if (ownFilesOnly &&
-#if defined(Q_OS_WIN)
-            (fi.suffix() != "dll" || fi.suffix() != "exe") 
-#elif defined(Q_OS_MAC)
-            fi.fileName != "Launcher.app"
-#endif //platform
-            )
+        QString relPath = absPath.right(absPath.length() - pathOut.length());
+
+        if (moveFilesFromInfoList && !archiveFiles.contains(relPath))
         {
             continue;
         }
-        QString relPath = absPath.right(absPath.length() - pathOut.length());
-        if (!ownFilesOnly && !archiveFiles.contains(relPath))
+        else if (!moveFilesFromInfoList &&
+#if defined(Q_OS_WIN)
+                 (fi.suffix() != "dll" || fi.suffix() != "exe")
+#elif defined(Q_OS_MAC)
+                 fi.fileName != "Launcher.app"
+#endif //platform
+                 )
         {
             continue;
         }
@@ -175,7 +172,6 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         //else if (!ownFilesOnly && arc
         if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
         {
-            QString relPath = absPath.right(absPath.length() - pathOut.length());
             QString newFilePath = pathIn + relPath;
             if (fi.isDir())
             {
