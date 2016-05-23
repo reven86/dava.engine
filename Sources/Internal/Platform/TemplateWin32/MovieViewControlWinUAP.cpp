@@ -58,7 +58,7 @@ void MovieViewControl::Resume()
     privateImpl->Resume();
 }
 
-bool MovieViewControl::IsPlaying()
+bool MovieViewControl::IsPlaying() const
 {
     return privateImpl->IsPlaying();
 }

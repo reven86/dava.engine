@@ -50,11 +50,9 @@ private slots:
     void OnNewProject();
 
 private:
-    void ApplyFileChanges();
-    Document* GetDocument(const QString& path) const;
     void OpenProject(const QString& path);
 
-    int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;

@@ -7,6 +7,7 @@
 #include "Sound/FMODUtils.h"
 #include "Sound/FMODFileSoundEvent.h"
 #include "Sound/FMODSoundEvent.h"
+#include "Sound/FMODSoundStream.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Debug/Stats.h"
@@ -144,6 +145,18 @@ bool SoundSystem::IsDebugModeOn() const
     FMOD_DEBUGLEVEL debugLevel = 0;
     FMOD::Debug_GetLevel(&debugLevel);
     return debugLevel != FMOD_DEBUG_LEVEL_NONE;
+}
+
+SoundStream* SoundSystem::CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount)
+{
+    FMODSoundStream* fmodStream = new FMODSoundStream(streamDelegate, channelsCount);
+    bool isInited = fmodStream->Init(fmodSystem);
+    if (!isInited)
+    {
+        SafeDelete(fmodStream);
+    }
+
+    return fmodStream;
 }
 
 SoundEvent* SoundSystem::CreateSoundEventByID(const FastName& eventName, const FastName& groupName)

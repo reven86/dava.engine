@@ -30,9 +30,6 @@
     bool isLoading;
     bool isLoaded;
 
-    DAVA::Vector<DAVA::UIEvent> totalTouches;
-    DAVA::Vector<DAVA::UIEvent> activeTouches;
-
     DAVA::int32 currFPS;
 
     // Yuri Coder, 2013/02/06. This flag can be used to block drawView() call

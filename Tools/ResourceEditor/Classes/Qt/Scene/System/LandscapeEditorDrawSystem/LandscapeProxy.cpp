@@ -30,6 +30,7 @@ LandscapeProxy::LandscapeProxy(DAVA::Landscape* landscape, DAVA::Entity* node)
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_CURSOR, 0);
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_TOOL_MIX, 0);
     landscapeEditorMaterial->AddProperty(LANDSCAPE_PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
+    landscape->PrepareMaterial(landscapeEditorMaterial);
 
     DAVA::ScopedPtr<DAVA::Texture> texture(DAVA::Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex"));
     texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);

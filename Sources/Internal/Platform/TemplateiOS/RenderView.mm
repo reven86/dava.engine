@@ -227,13 +227,12 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
 
 - (void)process:(int)touchType touch:(NSArray*)active withEvent:(NSArray*)total
 {
+    DAVA::Vector<DAVA::UIEvent> activeTouches;
     MoveTouchsToVector(active, &activeTouches);
     for (auto& t : activeTouches)
     {
         DAVA::UIControlSystem::Instance()->OnInput(&t);
     }
-    activeTouches.clear();
-    totalTouches.clear();
 }
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event

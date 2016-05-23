@@ -353,7 +353,7 @@ void MovieViewControl::Resume()
     Play();
 }
 
-bool MovieViewControl::IsPlaying()
+bool MovieViewControl::IsPlaying() const
 {
     return [static_cast<MoviePlayerHelper*>(moviePlayerHelper) isPlaying];
 }

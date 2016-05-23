@@ -26,9 +26,12 @@ public:
     void SetSize(const Vector2& newSize) override;
 
     void SystemDraw(const UIGeometricData& geometricData) override;
+    void Draw(const UIGeometricData& parentGeometricData) override;
+    void Update(float32 timeElapsed) override;
 
     void OnVisible() override;
     void OnInvisible() override;
+    void OnActive() override;
 
     UIMovieView* Clone() override;
 
@@ -41,7 +44,10 @@ public:
     void Resume();
 
     // Whether the movie is being played?
-    bool IsPlaying();
+    bool IsPlaying() const;
+
+private:
+    void UpdateControlRect();
 
 protected:
     // Platform-specific implementation of the Movie Control.

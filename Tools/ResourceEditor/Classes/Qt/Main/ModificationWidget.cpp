@@ -20,7 +20,8 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     horizontalLayout->addWidget(xLabel);
 
     xAxisModify = new DAVAFloat32SpinBox(this);
-    xAxisModify->setMinimumSize(QSize(70, 0));
+    xAxisModify->setMinimumSize(QSize(80, 0));
+    xAxisModify->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     horizontalLayout->addWidget(xAxisModify);
 
     yLabel = new QLabel("Y:", this);
@@ -28,7 +29,8 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     horizontalLayout->addWidget(yLabel);
 
     yAxisModify = new DAVAFloat32SpinBox(this);
-    yAxisModify->setMinimumSize(QSize(70, 0));
+    yAxisModify->setMinimumSize(QSize(80, 0));
+    yAxisModify->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     horizontalLayout->addWidget(yAxisModify);
 
     zLabel = new QLabel("Z:", this);
@@ -36,7 +38,8 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     horizontalLayout->addWidget(zLabel);
 
     zAxisModify = new DAVAFloat32SpinBox(this);
-    zAxisModify->setMinimumSize(QSize(70, 0));
+    zAxisModify->setMinimumSize(QSize(80, 0));
+    zAxisModify->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     horizontalLayout->addWidget(zAxisModify);
 
     connect(xAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnXChanged);

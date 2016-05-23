@@ -53,6 +53,13 @@ public:
     const static FastName LANDSCAPE_QUALITY_NAME;
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 
+    enum RenderMode
+    {
+        RENDERMODE_NO_INSTANCING,
+        RENDERMODE_INSTANCING,
+        RENDERMODE_INSTANCING_MORPHING,
+    };
+
     //LandscapeVertex used in GetLevel0Geometry() only
     struct LandscapeVertex
     {
@@ -95,6 +102,7 @@ public:
 
     NMaterial* GetMaterial();
     void SetMaterial(NMaterial* material);
+    void PrepareMaterial(NMaterial* material);
 
     RenderObject* Clone(RenderObject* newObject) override;
     void RecalcBoundingBox() override;
@@ -117,14 +125,10 @@ public:
 
     LandscapeSubdivision* GetSubdivision();
 
-protected:
-    enum RenderMode
-    {
-        RENDERMODE_NO_INSTANCING,
-        RENDERMODE_INSTANCING,
-        RENDERMODE_INSTANCING_MORPHING,
-    };
+    RenderMode GetRenderMode() const;
+    void SetRenderMode(RenderMode mode);
 
+protected:
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
     void AllocateGeometryData();
@@ -135,8 +139,6 @@ protected:
     void SetLandscapeSize(const Vector3& newSize);
     bool BuildHeightmap();
     void RebuildLandscape();
-
-    void PrepareMaterial(NMaterial* material);
 
     void SetDrawWired(bool isWire);
     bool IsDrawWired() const;
@@ -165,8 +167,6 @@ protected:
 
     Vector<RestoreBufferData> bufferRestoreData;
 
-    RenderMode renderMode;
-
     FilePath heightmapPath;
     Heightmap* heightmap = nullptr;
     LandscapeSubdivision* subdivision = nullptr;
@@ -179,8 +179,8 @@ protected:
 
     uint32 drawIndices = 0;
 
+    RenderMode renderMode = RENDERMODE_NO_INSTANCING;
     bool updatable = false;
-
     bool debugDrawMetrics = false;
     bool debugDrawMorphing = false;
 
@@ -308,6 +308,11 @@ inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
 inline LandscapeSubdivision* Landscape::GetSubdivision()
 {
     return subdivision;
+}
+
+inline Landscape::RenderMode Landscape::GetRenderMode() const
+{
+    return renderMode;
 }
 };
 

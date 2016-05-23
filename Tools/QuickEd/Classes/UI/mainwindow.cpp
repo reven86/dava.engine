@@ -435,18 +435,6 @@ void MainWindow::OnBackgroundCustomColorClicked()
     EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 
-void MainWindow::closeEvent(QCloseEvent* ev)
-{
-    if (!CloseRequested()) //we cannot access to EditorCore directly by parent
-    {
-        ev->ignore();
-    }
-    else
-    {
-        ev->accept();
-    }
-}
-
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);

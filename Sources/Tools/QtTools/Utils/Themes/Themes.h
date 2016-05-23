@@ -9,7 +9,7 @@ namespace Themes
 {
 enum eTheme : int
 {
-    Classic,
+    Light,
     Dark
 };
 void InitFromQApplication();
@@ -18,6 +18,7 @@ void SetCurrentTheme(const QString& theme);
 void SetCurrentTheme(eTheme theme);
 const QString& GetCurrentThemeStr();
 eTheme GetCurrentTheme();
+
 QColor GetViewLineAlternateColor();
 QColor GetChangedPropertyColor();
 QColor GetPrototypeColor();

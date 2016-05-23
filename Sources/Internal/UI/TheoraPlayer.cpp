@@ -48,10 +48,14 @@ TheoraPlayer::~TheoraPlayer()
 
 int32 TheoraPlayer::BufferData()
 {
-    char* buffer = ogg_sync_buffer(&theoraData->syncState, 4096);
-    int32 bytes = file->Read(buffer, 4096);
-    ogg_sync_wrote(&theoraData->syncState, bytes);
-    return bytes;
+    if (file)
+    {
+        char* buffer = ogg_sync_buffer(&theoraData->syncState, 512 * 4096);
+        int32 bytes = file->Read(buffer, 512 * 4096);
+        ogg_sync_wrote(&theoraData->syncState, bytes);
+        return bytes;
+    }
+    return 0;
 }
 
 void TheoraPlayer::ReleaseData()
@@ -89,6 +93,9 @@ void TheoraPlayer::OpenFile(const FilePath& path)
     filePath = path;
 
     file = File::Create(path, File::OPEN | File::READ);
+    if (!file)
+        return;
+
     ogg_sync_init(&theoraData->syncState);
     th_info_init(&theoraData->thInfo);
     th_comment_init(&theoraData->thComment);

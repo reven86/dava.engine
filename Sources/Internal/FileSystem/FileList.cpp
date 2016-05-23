@@ -216,7 +216,7 @@ bool FileList::IsHidden(int32 index) const
 
 uint32 FileList::GetFileSize(uint32 index) const
 {
-    DVASSERT(index < (uint32)fileList.size());
+    DVASSERT(index < static_cast<uint32>(fileList.size()));
     return fileList[index].size;
 }
 

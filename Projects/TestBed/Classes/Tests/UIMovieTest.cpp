@@ -1,5 +1,10 @@
 #include "Tests/UIMovieTest.h"
 
+namespace
+{
+FilePath path = "~res://TestData/MovieTest/bunny.m4v";
+}
+
 UIMovieTest::UIMovieTest()
     : BaseScreen("UIMovieTest")
 {
@@ -8,7 +13,8 @@ UIMovieTest::UIMovieTest()
 void UIMovieTest::LoadResources()
 {
     movieView = new UIMovieView(Rect(10, 10, 940, 600));
-    movieView->OpenMovie("~res://TestData/MovieTest/bunny.m4v", OpenMovieParams());
+    movieView->OpenMovie(path, OpenMovieParams());
+
     movieView->SetDebugDraw(true);
     AddControl(movieView);
 
@@ -117,6 +123,9 @@ void UIMovieTest::ScaleButtonPressed(BaseObject* obj, void* data, void* callerDa
     else if (obj == buttonScale3)
         scaleMode = scalingModeFill;
 
-    movieView->OpenMovie("~res://TestData/MovieTest/bunny.m4v", OpenMovieParams(scaleMode));
+    OpenMovieParams params;
+    params.scalingMode = scaleMode;
+
+    movieView->OpenMovie(path, params);
     movieView->Play();
 }

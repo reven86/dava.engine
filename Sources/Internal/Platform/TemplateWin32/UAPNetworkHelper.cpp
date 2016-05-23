@@ -1,6 +1,9 @@
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #include "Platform/DeviceInfo.h"
 
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
 namespace DAVA
 {
 const char* UAPNetworkHelper::UAP_IP_ADDRESS = "127.0.0.1";
@@ -52,3 +55,5 @@ Net::Endpoint UAPNetworkHelper::GetEndPoint(Net::eNetworkRole role)
 }
 
 } // namespace DAVA
+
+#endif

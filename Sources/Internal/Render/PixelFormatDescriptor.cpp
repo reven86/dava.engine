@@ -86,22 +86,6 @@ void PixelFormatDescriptor::SetHardwareSupportedFormats()
     }
 }
 
-int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat formatID)
-{
-    return GetPixelFormatDescriptor(formatID).pixelSize;
-}
-
-int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat formatID)
-{
-    int32 bits = GetPixelFormatSizeInBits(formatID);
-    if (bits < 8)
-    { // To detect wrong situations
-        Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
-    }
-
-    return bits / 8;
-}
-
 const char* PixelFormatDescriptor::GetPixelFormatString(const PixelFormat formatID)
 {
     return GetPixelFormatDescriptor(formatID).name.c_str();

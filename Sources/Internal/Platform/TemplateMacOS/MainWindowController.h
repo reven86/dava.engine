@@ -7,12 +7,12 @@
 @interface MainWindowController : NSWindowController<NSWindowDelegate, NSFileManagerDelegate>
 {
 @public
-    float32 currFPS;
+    DAVA::float32 currFPS;
     OpenGLView* openGLView;
     NSWindow* mainWindow;
     NSTimer* animationTimer;
 
-    ApplicationCore* core;
+    DAVA::ApplicationCore* core;
     bool fullScreen;
     bool willQuit;
 

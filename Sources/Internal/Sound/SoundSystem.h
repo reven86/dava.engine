@@ -10,6 +10,7 @@
 #include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
 #include "Concurrency/Mutex.h"
+#include "Sound/SoundStream.h"
 
 #ifdef DAVA_FMOD
 namespace FMOD
@@ -38,6 +39,8 @@ class SoundSystem : public Singleton<SoundSystem>
 public:
     SoundSystem();
     ~SoundSystem();
+
+    SoundStream* CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
 
     SoundEvent* CreateSoundEventByID(const FastName& eventName, const FastName& groupName);
     SoundEvent* CreateSoundEventFromFile(const FilePath& fileName, const FastName& groupName, uint32 createFlags = SoundEvent::SOUND_EVENT_CREATE_DEFAULT, int32 priority = 128);

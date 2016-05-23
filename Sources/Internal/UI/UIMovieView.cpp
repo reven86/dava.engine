@@ -10,6 +10,8 @@
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
+#elif defined(__DAVAENGINE_WIN32__)
+#include "Platform/TemplateWin32/MovieViewControlWin32.h"
 #else
 // UIMovieView is not implemented for this platform yet, using stub one.
 #define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
@@ -25,6 +27,7 @@ UIMovieView::UIMovieView(const Rect& rect)
     , movieViewControl(new MovieViewControl())
 {
     movieViewControl->Initialize(rect);
+    UpdateControlRect();
 }
 
 UIMovieView::~UIMovieView()
@@ -40,17 +43,13 @@ void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& pa
 void UIMovieView::SetPosition(const Vector2& position)
 {
     UIControl::SetPosition(position);
-
-    Rect newRect = GetRect();
-    movieViewControl->SetRect(newRect);
+    UpdateControlRect();
 }
 
 void UIMovieView::SetSize(const Vector2& newSize)
 {
     UIControl::SetSize(newSize);
-
-    Rect newRect = GetRect();
-    movieViewControl->SetRect(newRect);
+    UpdateControlRect();
 }
 
 void UIMovieView::Play()
@@ -73,9 +72,15 @@ void UIMovieView::Resume()
     movieViewControl->Resume();
 }
 
-bool UIMovieView::IsPlaying()
+bool UIMovieView::IsPlaying() const
 {
     return movieViewControl->IsPlaying();
+}
+
+void UIMovieView::UpdateControlRect()
+{
+    Rect rect = GetAbsoluteRect();
+    movieViewControl->SetRect(rect);
 }
 
 void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
@@ -95,6 +100,18 @@ void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
 #endif
 }
 
+void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
+{
+    UIControl::Draw(parentGeometricData);
+    movieViewControl->Draw(parentGeometricData);
+}
+
+void UIMovieView::Update(float32 timeElapsed)
+{
+    UIControl::Update(timeElapsed);
+    movieViewControl->Update();
+}
+
 void UIMovieView::OnVisible()
 {
     UIControl::OnVisible();
@@ -107,11 +124,16 @@ void UIMovieView::OnInvisible()
     movieViewControl->SetVisible(false);
 }
 
+void UIMovieView::OnActive()
+{
+    UIControl::OnActive();
+    UpdateControlRect();
+}
+
 UIMovieView* UIMovieView::Clone()
 {
     UIMovieView* uiMoviewView = new UIMovieView(GetRect());
     uiMoviewView->CopyDataFrom(this);
     return uiMoviewView;
 }
-
 } // namespace DAVA

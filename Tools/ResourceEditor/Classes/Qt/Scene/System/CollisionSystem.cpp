@@ -460,6 +460,11 @@ void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
     if (entity == nullptr)
         return;
 
+    if (DAVA::GetLandscape(entity) != nullptr)
+    {
+        curLandscapeEntity = entity;
+    }
+
     objectsToRemove.erase(entity);
     objectsToAdd.insert(entity);
 
@@ -474,6 +479,11 @@ void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
 {
     if (entity == nullptr)
         return;
+
+    if (curLandscapeEntity == entity)
+    {
+        curLandscapeEntity = nullptr;
+    }
 
     objectsToAdd.erase(entity);
     objectsToRemove.insert(entity);
@@ -501,14 +511,10 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
     DAVA::float32 debugBoxWaypointScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
     DAVA::float32 debugBoxParticleScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
 
-    bool isLandscape = false;
-
     DAVA::Landscape* landscape = DAVA::GetLandscape(entity);
     if (landscape != nullptr)
     {
-        isLandscape = true;
         cObj = new CollisionLandscape(entity, landCollWorld, landscape);
-        curLandscapeEntity = entity;
     }
 
     DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
@@ -563,11 +569,6 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
 
 void SceneCollisionSystem::DestroyFromObject(Selectable::Object* entity)
 {
-    if (curLandscapeEntity == entity)
-    {
-        curLandscapeEntity = nullptr;
-    }
-
     CollisionBaseObject* cObj = objectToCollision[entity];
     if (cObj != nullptr)
     {

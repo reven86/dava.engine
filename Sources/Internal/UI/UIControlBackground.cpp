@@ -123,8 +123,12 @@ void UIControlBackground::SetSprite(Sprite* drawSprite)
 
 void UIControlBackground::SetSprite(const FilePath& path)
 {
-    ScopedPtr<Sprite> tempSpr(Sprite::PureCreate(path));
-    SetSprite(tempSpr);
+    RefPtr<Sprite> tempSpr;
+    if (!path.IsEmpty())
+    {
+        tempSpr.Set(Sprite::Create(path));
+    }
+    SetSprite(tempSpr.Get());
 }
 
 void UIControlBackground::SetFrame(int32 drawFrame)

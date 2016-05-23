@@ -184,6 +184,8 @@ public slots:
     void SetupTitle();
 
     void RestartParticleEffects();
+    bool SetVisibilityToolEnabledIfPossible(bool);
+    void SetLandscapeInstancingEnabled(bool);
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;

@@ -6,6 +6,8 @@
 
 #import "HelperAppDelegate.h"
 
+using namespace DAVA;
+
 extern void FrameworkWillTerminate();
 
 @implementation HelperAppDelegate
