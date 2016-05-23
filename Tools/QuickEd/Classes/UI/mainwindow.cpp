@@ -343,7 +343,7 @@ void MainWindow::SetupBackgroundMenu()
         QString str(member->Name().c_str());
         if (str.contains(QRegExp("backgroundColor\\d+")))
         {
-            QAction* colorAction = new QAction(QString("Background color %1").arg(index + 1), backgroundColorMenu);
+            QAction* colorAction = new QAction(QString("Background color %1").arg(index), backgroundColorMenu);
             backgroundActions->addAction(colorAction);
             colorAction->setCheckable(true);
             colorAction->setData(QVariant::fromValue<const InspMember*>(member));
@@ -440,7 +440,7 @@ void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const Va
     if (member == backgroundIndexMember)
     {
         uint32 index = value.AsUInt32();
-        DVASSERT(index >= 0 && actions.size() > index);
+        DVASSERT(actions.size() > index);
         actions.at(index)->setChecked(true);
         return;
     }
