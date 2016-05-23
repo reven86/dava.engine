@@ -90,6 +90,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlite_modern_cpp.h>
 #include "MemoryManager/MemoryManager.h"
 #include "FileSystem/FileSystem.h"
+#include "PackManager/Private/VirtualFileSystemSqliteWraper.h"
 
 namespace DAVA
 {
@@ -141,6 +142,9 @@ public:
         };
         int32 result = sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
 #endif // DAVA_MEMORY_PROFILING_ENABLE
+
+        RegisterDavaVFSForSqlite3();
+
         if (FileSystem::Instance()->IsFile(dbPath))
         {
             db.reset(new sqlite::database(dbPath));
@@ -149,6 +153,10 @@ public:
         {
             throw std::runtime_error("can't find db file: " + dbPath);
         }
+    }
+    ~PacksDBData()
+    {
+        UnregisterDavaVFSForSqlite3();
     }
     sqlite::database& GetDB()
     {

@@ -409,6 +409,8 @@ void PackRequest::Pause()
                 subRequest.status = SubRequest::Wait;
             }
             break;
+            default:
+                break;
             }
         }
     }
