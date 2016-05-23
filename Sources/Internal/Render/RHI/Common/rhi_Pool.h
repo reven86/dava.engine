@@ -3,6 +3,7 @@
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
+#include "Concurrency/LockGuard.h"
 #include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
@@ -130,10 +131,9 @@ template <class T, ResourceType RT, class DT, bool nr>
 inline Handle
 ResourcePool<T, RT, DT, nr>::Alloc()
 {
-    uint32 handle = InvalidHandle;
-
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
 
+    uint32 handle = InvalidHandle;
     if (!Object)
     {
         DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_RESOURCE_POOL);
@@ -184,11 +184,11 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
     Entry* e = Object + index;
     DVASSERT(e->allocated);
 
-    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
-
+    ObjectSync.Lock();
     e->nextObjectIndex = HeadIndex;
     HeadIndex = index;
     e->allocated = false;
+    ObjectSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -245,9 +245,9 @@ template <class T, ResourceType RT, typename DT, bool nr>
 inline unsigned
 ResourcePool<T, RT, DT, nr>::ReCreateAll()
 {
-    unsigned count = 0;
-
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
+
+    unsigned count = 0;
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         DT desc = i->CreationDesc();
@@ -257,7 +257,6 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
         i->MarkNeedRestore();
         ++count;
     }
-
     return count;
 }
 
