@@ -174,6 +174,9 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
+    bool cameraLightState = editorLightSystem->GetCameraLightEnabled();
+    editorLightSystem->SetCameraLightEnabled(false);
+
     ExtractEditorEntities();
 
     DAVA::ScopedPtr<DAVA::Texture> tilemaskTexture(nullptr);
@@ -203,6 +206,8 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
     }
 
     InjectEditorEntities();
+
+    editorLightSystem->SetCameraLightEnabled(cameraLightState);
 
     SceneSignals::Instance()->EmitSaved(this);
 
