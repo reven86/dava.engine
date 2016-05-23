@@ -100,6 +100,7 @@ public:
     void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
+    void BindDynamicParameters(Camera* camera) override;
     void PrepareToRender(Camera* camera) override;
     void RecalcBoundingBox() override;
 
@@ -233,6 +234,7 @@ private:
     Vector2 heightmapToVegetationMapScale;
     uint16 halfWidth;
     uint16 halfHeight;
+    float32 heightmapSize;
 
     //Vector<float32> shaderScaleDensityUniforms;
 
@@ -366,6 +368,7 @@ inline void VegetationRenderObject::SetHeightmap(Heightmap* _heightmap)
 
         if (heightmap)
         {
+            heightmapSize = static_cast<float32>(heightmap->Size());
             InitHeightTextureFromHeightmap(heightmap);
         }
 
