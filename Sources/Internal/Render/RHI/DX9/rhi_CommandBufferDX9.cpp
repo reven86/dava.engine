@@ -1787,7 +1787,7 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
             _DX9_PendingImmediateCmdSync.Unlock();
 
             _DX9_FrameSync.Lock();
-            do_wait = !(_DX9_Frame.size() && _DX9_Frame.begin()->readyToExecute);
+            do_wait = !(_DX9_Frame.size() && _DX9_Frame.begin()->readyToExecute || _DX9_ResetPending);
             _DX9_FrameSync.Unlock();
         } while (do_wait);
 
