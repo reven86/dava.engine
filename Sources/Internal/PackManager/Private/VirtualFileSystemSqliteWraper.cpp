@@ -11,28 +11,25 @@
 ** When using this VFS, the sqlite3_file* handles that SQLite uses are
 ** actually pointers to instances of type DavaFile.
 */
-struct DavaFile
+struct WrapFile
 {
     sqlite3_file base; /* Base class. Must be first. */
-    DAVA::File* fd; /* File descriptor */
+    DAVA::File* file; /* File descriptor */
 };
 
-/*
-** Write directly to the file passed as the first argument. Even if the
-** file has a write-buffer (DemoFile.aBuffer), ignore it.
-*/
-static int davaDirectWrite(DavaFile* p, /* File handle */
-                           const void* zBuf, /* Buffer containing data to write */
-                           int iAmt, /* Size of data to write in bytes */
-                           sqlite_int64 iOfst /* File offset to write to */)
+static int Write(sqlite3_file* pFile, /* File handle */
+                 const void* zBuf, /* Buffer containing data to write */
+                 int iAmt, /* Size of data to write in bytes */
+                 sqlite_int64 iOfst /* File offset to write to */)
 {
-    if (!p->fd->Seek(static_cast<DAVA::int32>(iOfst), DAVA::File::SEEK_FROM_START))
+    WrapFile* f = reinterpret_cast<WrapFile*>(pFile);
+    if (!f->file->Seek(static_cast<DAVA::int32>(iOfst), DAVA::File::SEEK_FROM_START))
     {
         return SQLITE_IOERR_WRITE;
     }
 
     DAVA::uint32 sizeToWrite = static_cast<DAVA::uint32>(iAmt);
-    DAVA::uint32 result = p->fd->Write(zBuf, sizeToWrite);
+    DAVA::uint32 result = f->file->Write(zBuf, sizeToWrite);
     if (result != sizeToWrite)
     {
         return SQLITE_IOERR_WRITE;
@@ -41,76 +38,48 @@ static int davaDirectWrite(DavaFile* p, /* File handle */
     return SQLITE_OK;
 }
 
-/*
-** Close a file.
-*/
-static int davaClose(sqlite3_file* pFile)
+static int Close(sqlite3_file* pFile)
 {
-    DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
-    DAVA::SafeRelease(p->fd);
+    WrapFile* p = reinterpret_cast<WrapFile*>(pFile);
+    DAVA::SafeRelease(p->file);
     return SQLITE_OK;
 }
 
-/*
-** Read data from a file.
-*/
-static int davaRead(sqlite3_file* pFile, void* zBuf, int iAmt, sqlite_int64 iOfst)
+static int Read(sqlite3_file* pFile, void* zBuf, int iAmt, sqlite_int64 iOfst)
 {
-    DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
+    WrapFile* f = reinterpret_cast<WrapFile*>(pFile);
 
-    if (!p->fd->Seek(static_cast<DAVA::int32>(iOfst), DAVA::File::SEEK_FROM_START))
+    if (!f->file->Seek(static_cast<DAVA::int32>(iOfst), DAVA::File::SEEK_FROM_START))
     {
         return SQLITE_IOERR_WRITE;
     }
     DAVA::uint32 bufSize = static_cast<DAVA::uint32>(iAmt);
-    DAVA::uint32 sizeRead = p->fd->Read(zBuf, bufSize);
+    DAVA::uint32 sizeRead = f->file->Read(zBuf, bufSize);
 
     if (bufSize == sizeRead)
     {
         return SQLITE_OK;
     }
 
-    if (sizeRead >= 0)
-    {
-        SQLITE_IOERR_SHORT_READ;
-    }
-
     return SQLITE_IOERR_READ;
 }
 
-/*
-** Write data to a crash-file.
-*/
-static int davaWrite(sqlite3_file* pFile, const void* zBuf, int iAmt, sqlite_int64 iOfst)
+static int Truncate(sqlite3_file* pFile, sqlite_int64 size)
 {
-    DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
-
-    return davaDirectWrite(p, zBuf, iAmt, iOfst);
-}
-
-/*
-** Truncate a file. This is a no-op for this VFS (see header comments at
-** the top of the file).
-*/
-static int davaTruncate(sqlite3_file* pFile, sqlite_int64 size)
-{
-    DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
+    WrapFile* p = reinterpret_cast<WrapFile*>(pFile);
     DAVA::uint32 newSize = static_cast<DAVA::uint32>(size);
-    if (!p->fd->Truncate(newSize))
+    if (!p->file->Truncate(newSize))
     {
         return SQLITE_IOERR_TRUNCATE;
     }
     return SQLITE_OK;
 }
 
-/*
-** Sync the contents of the file to the persistent media.
-*/
-static int davaSync(sqlite3_file* pFile, int flags)
+static int Sync(sqlite3_file* pFile, int /*flags*/)
 {
-    DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
+    WrapFile* p = reinterpret_cast<WrapFile*>(pFile);
 
-    if (!p->fd->Flush())
+    if (!p->file->Flush())
     {
         return SQLITE_IOERR_FSYNC;
     }
@@ -120,11 +89,11 @@ static int davaSync(sqlite3_file* pFile, int flags)
 /*
 ** Write the size of the file in bytes to *pSize.
 */
-static int davaFileSize(sqlite3_file* pFile, sqlite_int64* pSize)
+static int FileSize(sqlite3_file* pFile, sqlite_int64* pSize)
 {
-    DavaFile* p = reinterpret_cast<DavaFile*>(pFile);
+    WrapFile* p = reinterpret_cast<WrapFile*>(pFile);
 
-    DAVA::uint32 fileSize = p->fd->GetSize();
+    DAVA::uint32 fileSize = p->file->GetSize();
 
     *pSize = static_cast<sqlite_int64>(fileSize);
     return SQLITE_OK;
@@ -136,15 +105,15 @@ static int davaFileSize(sqlite3_file* pFile, sqlite_int64* pSize)
 ** a reserved lock on the database file. This ensures that if a hot-journal
 ** file is found in the file-system it is rolled back.
 */
-static int davaLock(sqlite3_file* pFile, int eLock)
+static int Lock(sqlite3_file* /*pFile*/, int /*eLock*/)
 {
     return SQLITE_OK;
 }
-static int davaUnlock(sqlite3_file* pFile, int eLock)
+static int Unlock(sqlite3_file* pFile, int eLock)
 {
     return SQLITE_OK;
 }
-static int davaCheckReservedLock(sqlite3_file* pFile, int* pResOut)
+static int CheckReservedLock(sqlite3_file* /*pFile*/, int* pResOut)
 {
     *pResOut = 0;
     return SQLITE_OK;
@@ -153,7 +122,7 @@ static int davaCheckReservedLock(sqlite3_file* pFile, int* pResOut)
 /*
 ** No xFileControl() verbs are implemented by this VFS.
 */
-static int davaFileControl(sqlite3_file* pFile, int op, void* pArg)
+static int FileControl(sqlite3_file* /*pFile*/, int /*op*/, void* /*pArg*/)
 {
     return SQLITE_OK;
 }
@@ -163,11 +132,12 @@ static int davaFileControl(sqlite3_file* pFile, int op, void* pArg)
 ** may return special values allowing SQLite to optimize file-system
 ** access to some extent. But it is also safe to simply return 0.
 */
-static int davaSectorSize(sqlite3_file* pFile)
+static int SectorSize(sqlite3_file* pFile)
 {
     return 0;
 }
-static int davaDeviceCharacteristics(sqlite3_file* pFile)
+
+static int DeviceCharacteristics(sqlite3_file* pFile)
 {
     return 0;
 }
@@ -175,29 +145,29 @@ static int davaDeviceCharacteristics(sqlite3_file* pFile)
 /*
 ** Open a file handle.
 */
-static int davaOpen(sqlite3_vfs* pVfs, /* VFS */
-                    const char* zName, /* File to open, or 0 for a temp file */
-                    sqlite3_file* pFile, /* Pointer to DemoFile struct to populate */
-                    int flags, /* Input SQLITE_OPEN_XXX flags */
-                    int* pOutFlags /* Output SQLITE_OPEN_XXX flags (or NULL) */)
+static int Open(sqlite3_vfs* pVfs, /* VFS */
+                const char* zName, /* File to open, or 0 for a temp file */
+                sqlite3_file* pFile, /* Pointer to DemoFile struct to populate */
+                int flags, /* Input SQLITE_OPEN_XXX flags */
+                int* pOutFlags /* Output SQLITE_OPEN_XXX flags (or NULL) */)
 {
     static const sqlite3_io_methods davaio = {
         1, /* iVersion */
-        davaClose, /* xClose */
-        davaRead, /* xRead */
-        davaWrite, /* xWrite */
-        davaTruncate, /* xTruncate */
-        davaSync, /* xSync */
-        davaFileSize, /* xFileSize */
-        davaLock, /* xLock */
-        davaUnlock, /* xUnlock */
-        davaCheckReservedLock, /* xCheckReservedLock */
-        davaFileControl, /* xFileControl */
-        davaSectorSize, /* xSectorSize */
-        davaDeviceCharacteristics /* xDeviceCharacteristics */
+        Close, /* xClose */
+        Read, /* xRead */
+        Write, /* xWrite */
+        Truncate, /* xTruncate */
+        Sync, /* xSync */
+        FileSize, /* xFileSize */
+        Lock, /* xLock */
+        Unlock, /* xUnlock */
+        CheckReservedLock, /* xCheckReservedLock */
+        FileControl, /* xFileControl */
+        SectorSize, /* xSectorSize */
+        DeviceCharacteristics /* xDeviceCharacteristics */
     };
 
-    DavaFile* p = reinterpret_cast<DavaFile*>(pFile); /* Populate this structure */
+    WrapFile* p = reinterpret_cast<WrapFile*>(pFile); /* Populate this structure */
     int oflags = 0; /* eFileAttributes */
 
     if (zName == nullptr)
@@ -229,9 +199,9 @@ static int davaOpen(sqlite3_vfs* pVfs, /* VFS */
         oflags |= (DAVA::File::READ | DAVA::File::WRITE | DAVA::File::OPEN);
     }
 
-    memset(p, 0, sizeof(DavaFile));
-    p->fd = DAVA::File::Create(zName, oflags);
-    if (p->fd == nullptr)
+    memset(p, 0, sizeof(WrapFile));
+    p->file = DAVA::File::Create(zName, oflags);
+    if (p->file == nullptr)
     {
         return SQLITE_CANTOPEN;
     }
@@ -249,7 +219,7 @@ static int davaOpen(sqlite3_vfs* pVfs, /* VFS */
 ** is non-zero, then ensure the file-system modification to delete the
 ** file has been synced to disk before returning.
 */
-static int davaDelete(sqlite3_vfs* pVfs, const char* zPath, int dirSync)
+static int Delete(sqlite3_vfs* pVfs, const char* zPath, int dirSync)
 {
     if (!DAVA::FileSystem::Instance()->DeleteFile(zPath))
     {
@@ -267,7 +237,7 @@ static int davaDelete(sqlite3_vfs* pVfs, const char* zPath, int dirSync)
 ** Query the file-system to see if the named file exists, is readable or
 ** is both readable and writable.
 */
-static int davaAccess(sqlite3_vfs* pVfs, const char* zPath, int flags, int* pResOut)
+static int Access(sqlite3_vfs* /*pVfs*/, const char* zPath, int flags, int* pResOut)
 {
     if (!DAVA::FileSystem::Instance()->IsFile(zPath))
     {
@@ -292,10 +262,10 @@ static int davaAccess(sqlite3_vfs* pVfs, const char* zPath, int flags, int* pRes
 **   1. Path components are separated by a '/'. and
 **   2. Full paths begin with a '/' character.
 */
-static int davaFullPathname(sqlite3_vfs* pVfs, /* VFS */
-                            const char* zPath, /* Input path (possibly a relative path) */
-                            int nPathOut, /* Size of output buffer in bytes */
-                            char* zPathOut /* Pointer to output buffer */)
+static int FullPathname(sqlite3_vfs* pVfs, /* VFS */
+                        const char* zPath, /* Input path (possibly a relative path) */
+                        int nPathOut, /* Size of output buffer in bytes */
+                        char* zPathOut /* Pointer to output buffer */)
 {
     DAVA::FilePath path(zPath);
     DAVA::String absolute = path.GetAbsolutePathname();
@@ -324,20 +294,23 @@ static int davaFullPathname(sqlite3_vfs* pVfs, /* VFS */
 ** extensions compiled as shared objects. This simple VFS does not support
 ** this functionality, so the following functions are no-ops.
 */
-static void* davaDlOpen(sqlite3_vfs* pVfs, const char* zPath)
+static void* DlOpen(sqlite3_vfs* /*pVfs*/, const char* /*zPath*/)
 {
     return nullptr;
 }
-static void davaDlError(sqlite3_vfs* pVfs, int nByte, char* zErrMsg)
+
+static void DlError(sqlite3_vfs* /*pVfs*/, int nByte, char* zErrMsg)
 {
     sqlite3_snprintf(nByte, zErrMsg, "Loadable extensions are not supported");
     zErrMsg[nByte - 1] = '\0';
 }
-static void (*davaDlSym(sqlite3_vfs* pVfs, void* pH, const char* z))(void)
+
+static void (*DlSym(sqlite3_vfs* /*pVfs*/, void* /*pH*/, const char* /*z*/))(void)
 {
     return nullptr;
 }
-static void davaDlClose(sqlite3_vfs* pVfs, void* pHandle)
+
+static void DlClose(sqlite3_vfs* pVfs, void* pHandle)
 {
 }
 
@@ -345,7 +318,7 @@ static void davaDlClose(sqlite3_vfs* pVfs, void* pHandle)
 ** Parameter zByte points to a buffer nByte bytes in size. Populate this
 ** buffer with pseudo-random data.
 */
-static int davaRandomness(sqlite3_vfs* pVfs, int nByte, char* zByte)
+static int Randomness(sqlite3_vfs* pVfs, int nByte, char* zByte)
 {
     return SQLITE_OK;
 }
@@ -354,7 +327,7 @@ static int davaRandomness(sqlite3_vfs* pVfs, int nByte, char* zByte)
 ** Sleep for at least nMicro microseconds. Return the (approximate) number
 ** of microseconds slept for.
 */
-static int davaSleep(sqlite3_vfs* pVfs, int nMicro)
+static int Sleep(sqlite3_vfs* pVfs, int nMicro)
 {
     DAVA::Thread::Sleep(nMicro / 1000);
     return nMicro;
@@ -371,7 +344,7 @@ static int davaSleep(sqlite3_vfs* pVfs, int nMicro)
 ** value, it will stop working some time in the year 2038 AD (the so-called
 ** "year 2038" problem that afflicts systems that store time this way).
 */
-static int davaCurrentTime(sqlite3_vfs* pVfs, double* pTime)
+static int CurrentTime(sqlite3_vfs* /*pVfs*/, double* pTime)
 {
     time_t t = std::time(nullptr);
     *pTime = t / 86400.0 + 2440587.5;
@@ -388,22 +361,22 @@ static sqlite3_vfs* sqlite3DavaVFS()
 {
     static sqlite3_vfs demovfs = {
         1, /* iVersion */
-        sizeof(DavaFile), /* szOsFile */
+        sizeof(WrapFile), /* szOsFile */
         512, /* mxPathname */
         nullptr, /* pNext */
         "dava_vfs", /* zName */
         nullptr, /* pAppData */
-        davaOpen, /* xOpen */
-        davaDelete, /* xDelete */
-        davaAccess, /* xAccess */
-        davaFullPathname, /* xFullPathname */
-        davaDlOpen, /* xDlOpen */
-        davaDlError, /* xDlError */
-        davaDlSym, /* xDlSym */
-        davaDlClose, /* xDlClose */
-        davaRandomness, /* xRandomness */
-        davaSleep, /* xSleep */
-        davaCurrentTime, /* xCurrentTime */
+        Open, /* xOpen */
+        Delete, /* xDelete */
+        Access, /* xAccess */
+        FullPathname, /* xFullPathname */
+        DlOpen, /* xDlOpen */
+        DlError, /* xDlError */
+        DlSym, /* xDlSym */
+        DlClose, /* xDlClose */
+        Randomness, /* xRandomness */
+        Sleep, /* xSleep */
+        CurrentTime, /* xCurrentTime */
     };
     return &demovfs;
 }
