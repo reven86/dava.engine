@@ -30,6 +30,7 @@ set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_ios.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/sqlite3_ios.a
                                     )
 
 set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColladaS.a
