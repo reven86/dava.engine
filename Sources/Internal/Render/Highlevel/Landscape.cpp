@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
@@ -245,7 +216,7 @@ bool Landscape::BuildHeightmap()
     if (DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image*> imageSet;
-        ImageSystem::Instance()->Load(heightmapPath, imageSet);
+        ImageSystem::Load(heightmapPath, imageSet);
         if (0 != imageSet.size())
         {
             if ((imageSet[0]->GetPixelFormat() != FORMAT_A8) && (imageSet[0]->GetPixelFormat() != FORMAT_A16))
@@ -297,7 +268,7 @@ void Landscape::RebuildLandscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (!landscapeMaterial)
+    if (landscapeMaterial == nullptr)
     {
         landscapeMaterial = new NMaterial();
         landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
@@ -508,40 +479,35 @@ void Landscape::GetTangentBasis(uint32 x, uint32 y, Vector3& normalOut, Vector3&
      */
 }
 
-bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
+bool Landscape::GetHeightAtPoint(const Vector3& point, float32& value) const
 {
     if ((point.x > bbox.max.x) || (point.x < bbox.min.x) || (point.y > bbox.max.y) || (point.y < bbox.min.y))
     {
         return false;
     }
 
-    const auto hmData = heightmap->Data();
-    if (hmData == nullptr)
+    int32 hmSize = heightmap->Size();
+    if (hmSize == 0)
     {
         Logger::Error("[Landscape::GetHeightAtPoint] Trying to get height at point using empty heightmap data!");
         return false;
     }
 
-    auto hmSize = heightmap->Size();
-    float32 fx = static_cast<float>(hmSize) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
-    float32 fy = static_cast<float>(hmSize) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
-    int32 x = static_cast<int32>(fx);
-    int32 y = static_cast<int32>(fy);
-    int nextX = DAVA::Min(x + 1, hmSize - 1);
-    int nextY = DAVA::Min(y + 1, hmSize - 1);
-    int i00 = x + y * hmSize;
-    int i01 = nextX + y * hmSize;
-    int i10 = x + nextY * hmSize;
-    int i11 = nextX + nextY * hmSize;
-    float h00 = static_cast<float>(hmData[i00]);
-    float h01 = static_cast<float>(hmData[i01]);
-    float h10 = static_cast<float>(hmData[i10]);
-    float h11 = static_cast<float>(hmData[i11]);
-    float dx = fx - static_cast<float>(x);
-    float dy = fy - static_cast<float>(y);
-    float h0 = h00 * (1.0f - dx) + h01 * dx;
-    float h1 = h10 * (1.0f - dx) + h11 * dx;
-    value = (h0 * (1.0f - dy) + h1 * dy) * GetLandscapeHeight() / static_cast<float>(Heightmap::MAX_VALUE);
+    float32 fx = static_cast<float32>(hmSize) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
+    float32 fy = static_cast<float32>(hmSize) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
+    uint16 x = static_cast<uint16>(fx);
+    uint16 y = static_cast<uint16>(fy);
+
+    Vector3 h00 = heightmap->GetPoint(x, y, bbox);
+    Vector3 h01 = heightmap->GetPoint(x + 1, y, bbox);
+    Vector3 h10 = heightmap->GetPoint(x, y + 1, bbox);
+    Vector3 h11 = heightmap->GetPoint(x + 1, y + 1, bbox);
+
+    float32 dx = fx - static_cast<float32>(x);
+    float32 dy = fy - static_cast<float32>(y);
+    float32 h0 = h00.z * (1.0f - dx) + h01.z * dx;
+    float32 h1 = h10.z * (1.0f - dx) + h11.z * dx;
+    value = (h0 * (1.0f - dy) + h1 * dy);
 
     return true;
 }
@@ -974,6 +940,7 @@ void Landscape::AllocateGeometryDataInstancing()
         rhi::VertexBuffer::Descriptor instanceBufferDesc;
         instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
         instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+        instanceBufferDesc.needRestore = false;
 
         InstanceDataBuffer* instanceDataBuffer = new InstanceDataBuffer();
         instanceDataBuffer->bufferSize = instanceBufferDesc.size;
@@ -1483,13 +1450,7 @@ bool Landscape::IsDrawWired() const
 void Landscape::SetUseInstancing(bool isUse)
 {
     RenderMode newRenderMode = (isUse && rhi::DeviceCaps().isInstancingSupported) ? RENDERMODE_INSTANCING : RENDERMODE_NO_INSTANCING;
-    if (renderMode != newRenderMode)
-    {
-        renderMode = newRenderMode;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_INSTANCING) ? 1 : 0);
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, 0);
-        RebuildLandscape();
-    }
+    SetRenderMode(newRenderMode);
 }
 
 bool Landscape::IsUseInstancing() const
@@ -1501,18 +1462,25 @@ void Landscape::SetUseMorphing(bool useMorph)
 {
     RenderMode newRenderMode = useMorph ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
     newRenderMode = rhi::DeviceCaps().isInstancingSupported ? newRenderMode : RENDERMODE_NO_INSTANCING;
-    if (renderMode != newRenderMode)
-    {
-        renderMode = newRenderMode;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, 1);
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
-        RebuildLandscape();
-    }
+    SetRenderMode(newRenderMode);
 }
 
 bool Landscape::IsUseMorphing() const
 {
     return (renderMode == RENDERMODE_INSTANCING_MORPHING);
+}
+
+void Landscape::SetRenderMode(RenderMode newRenderMode)
+{
+    if (renderMode == newRenderMode)
+        return;
+
+    renderMode = newRenderMode;
+    RebuildLandscape();
+
+    landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
+    landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
+    landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 void Landscape::SetDrawMorphing(bool drawMorph)
