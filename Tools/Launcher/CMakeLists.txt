@@ -6,7 +6,7 @@ project               ( Launcher )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
-find_package          ( QT5 REQUIRED  COMPONENTS Network WebKitWidgets)
+find_package          ( QT5 REQUIRED  COMPONENTS Network )
 
 add_subdirectory      ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/yaml" ${CMAKE_CURRENT_BINARY_DIR}/yaml )
 

@@ -120,6 +120,43 @@ bool DeleteDirectory(const QString& path)
     return dir.removeRecursively();
 }
 
+namespace FileManager_local
+{
+bool MoveEntry(const QFileInfo& fileInfo, const QString& newFilePath)
+{
+    QString absPath = fileInfo.absoluteFilePath();
+
+    QFileInfo destFi(newFilePath);
+    if (destFi.exists())
+    {
+        if (fileInfo.isDir())
+        {
+            QDir dir(newFilePath);
+            if (!dir.remove("."))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (!QFile::remove(newFilePath))
+            {
+                return false;
+            }
+        }
+    }
+    if (fileInfo.isDir())
+    {
+        QDir dir(newFilePath);
+        return dir.rename(absPath, newFilePath);
+    }
+    else
+    {
+        return QFile::rename(absPath, newFilePath);
+    }
+}
+}
+
 bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
 {
     QDir outDir(pathOut);
@@ -153,35 +190,25 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         const QFileInfo& fi = di.fileInfo();
         QString absPath = fi.absoluteFilePath();
         QString relPath = absPath.right(absPath.length() - pathOut.length());
-
         if (moveFilesFromInfoList && !archiveFiles.contains(relPath))
         {
             continue;
         }
+        //this code need for compability with previous launcher versions
         else if (!moveFilesFromInfoList &&
 #if defined(Q_OS_WIN)
-                 (fi.suffix() != "dll" || fi.suffix() != "exe")
+                 (fi.suffix() != "dll" && fi.suffix() != "exe")
 #elif defined(Q_OS_MAC)
-                 fi.fileName != "Launcher.app"
+                 fi.fileName() != "Launcher.app"
 #endif //platform
                  )
         {
             continue;
         }
-        //return  archiveFiles.contains(path);
-        //else if (!ownFilesOnly && arc
+        QString newFilePath = pathIn + relPath;
         if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
         {
-            QString newFilePath = pathIn + relPath;
-            if (fi.isDir())
-            {
-                QDir dir(newFilePath);
-                success &= dir.rename(absPath, newFilePath);
-            }
-            else
-            {
-                success &= QFile::rename(absPath, newFilePath);
-            }
+            success &= FileManager_local::MoveEntry(fi, newFilePath);
         }
     }
     return success;

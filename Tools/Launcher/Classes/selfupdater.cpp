@@ -104,6 +104,43 @@ struct DirCleaner
     }
 };
 
+SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
+{
+    QString appDirPath = FileManager::GetLauncherDirectory();
+    QString tempArchiveFilePath = FileManager::GetTempDownloadFilePath();
+    QString selfUpdateDirPath = FileManager::GetSelfUpdateTempDirectory();
+
+    ZipUtils::CompressedFilesAndSizes files;
+    SelfUpdater_local::SelfUpdaterZipFunctor functor(ui->progressBar_processing);
+    if ((ZipUtils::GetFileList(tempArchiveFilePath, files, functor)
+         && ZipUtils::UnpackZipArchive(tempArchiveFilePath, selfUpdateDirPath, files, functor)) == false)
+    {
+        return ARCHIVE_ERROR;
+    }
+
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+    QString tempDir = FileManager::GetTempDirectory(); //create temp directory
+    //remove old launcher files except download folder, temp folder and update folder
+    if (!FileManager::MoveLauncherRecursively(appDirPath, tempDir))
+    {
+        return MOVE_FILES_ERROR;
+    }
+    QStringList info(files.keys());
+    QByteArray data = info.join('\n').toUtf8().data();
+    if (!FileManager::CreateFileAndWriteData(FileManager::GetPackageInfoFilePath(), data))
+    {
+        return INFO_FILE_ERROR;
+    }
+    if (FileManager::MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
+    {
+        return NO_ERRORS;
+    }
+    else
+    {
+        return MOVE_FILES_ERROR;
+    }
+}
+
 void SelfUpdater::DownloadFinished()
 {
     DirCleaner raiiDirCleaner;
@@ -111,9 +148,8 @@ void SelfUpdater::DownloadFinished()
     {
         ui->buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
-        QString appDirPath = FileManager::GetLauncherDirectory();
         QString tempArchiveFilePath = FileManager::GetTempDownloadFilePath();
-        QString selfUpdateDirPath = FileManager::GetSelfUpdateTempDirectory();
+        UpdateError err = NO_ERRORS;
         //archive file scope. At the end of the scope file will be closed if necessary
         {
             QByteArray data = currentDownload->readAll();
@@ -123,46 +159,23 @@ void SelfUpdater::DownloadFinished()
             //create an archive with a new version
             if (!FileManager::CreateFileAndWriteData(tempArchiveFilePath, data))
             {
-                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not create launcher archive in the Launcher folder"));
-                ui->label->setText(tr("Launcher was not updated!"));
-                return;
+                err = ARCHIVE_ERROR;
             }
         }
-
-        //unpack new version
-        ZipUtils::CompressedFilesAndSizes files;
-        SelfUpdater_local::SelfUpdaterZipFunctor functor(ui->progressBar_processing);
-        if ((ZipUtils::GetFileList(tempArchiveFilePath, files, functor)
-             && ZipUtils::UnpackZipArchive(tempArchiveFilePath, selfUpdateDirPath, files, functor)) == false)
+        if (err == NO_ERRORS)
         {
-            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-            ui->label->setText(tr("Launcher was not updated!"));
-            return;
+            err = ProcessLauncherUpdate();
         }
-
-        FileManager::DeleteDirectory(FileManager::GetTempDirectory());
-        QString tempDir = FileManager::GetTempDirectory(); //create temp directory
-        //remove old launcher files except download folder, temp folder and update folder
-        if (FileManager::MoveLauncherRecursively(appDirPath, tempDir)
-            && FileManager::MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+        if (err == NO_ERRORS)
         {
-            QStringList info(files.keys());
-            QByteArray data = info.join('\n').toUtf8().data();
-            if (!FileManager::CreateFileAndWriteData(FileManager::GetPackageInfoFilePath(), data))
-            {
-                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Can not create information of launcher build!"));
-                ui->label->setText(tr("Launcher was not updated!"));
-                return;
-            }
-
-            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
             ui->label->setText(tr("Launcher was updated!\nPlease relaunch application!"));
             connect(this, &QDialog::finished, qApp, &QApplication::quit);
         }
         else
         {
-            QMessageBox::critical(this, tr("Critical error while updating launcher!"), tr("Critical error uccurred while updating launcher! Install application manually, please!"));
-            reject();
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UPDATE, tr("Error occurred while updating launcher:\n%1").arg(ErrorString(err)));
+            ui->label->setText(tr("Launcher was not updated!"));
             return;
         }
     }
@@ -186,4 +199,20 @@ void SelfUpdater::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
         double percentage = (static_cast<double>(bytesReceived) / bytesTotal) * 100.0f;
         ui->progressBar_downoading->setValue(static_cast<int>(percentage));
     }
+}
+
+QString SelfUpdater::ErrorString(UpdateError err) const
+{
+    switch (err)
+    {
+    case NO_ERRORS:
+        return "";
+    case ARCHIVE_ERROR:
+        return tr("Error occurred while work with new version archive");
+    case MOVE_FILES_ERROR:
+        return tr("Can not move launcher files! It can be critical, call administrator please");
+    case INFO_FILE_ERROR:
+        return tr("Can not create file with launcher info");
+    }
+    return tr("Unrecognized error");
 }

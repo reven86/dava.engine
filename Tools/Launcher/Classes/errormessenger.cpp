@@ -52,8 +52,8 @@ void ShowErrorMessage(ErrorID id, const QString& addInfo)
 
 void ShowErrorMessage(ErrorID id, int errorCode, const QString& addInfo)
 {
-    QString errorMessage = errorsMsg[(int)id];
-
+    QString title = errorsMsg[(int)id];
+    QString errorMessage;
     if (errorCode)
         errorMessage += QString("\nError Code: %1").arg(errorCode);
 
@@ -62,7 +62,7 @@ void ShowErrorMessage(ErrorID id, int errorCode, const QString& addInfo)
 
     LogMessage(QtDebugMsg, errorMessage.toStdString().c_str());
 
-    QMessageBox msgBox(QMessageBox::Critical, "Error", errorMessage, QMessageBox::Ok);
+    QMessageBox msgBox(QMessageBox::Critical, title, errorMessage, QMessageBox::Ok);
     msgBox.exec();
 }
 
