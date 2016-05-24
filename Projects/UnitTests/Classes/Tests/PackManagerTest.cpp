@@ -26,6 +26,10 @@ public:
         {
         case DAVA::PackManager::Pack::Change::State:
             ss << "new state - " << static_cast<unsigned>(pack.state);
+            if (pack.state == DAVA::PackManager::Pack::Status::ErrorLoading)
+            {
+                ss << '\n' << pack.otherErrorMsg;
+            }
             break;
         case DAVA::PackManager::Pack::Change::DownloadProgress:
             ss << "download progress - " << pack.downloadProgress;
@@ -111,7 +115,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 TEST_VERIFY(pack.state == PackManager::Pack::Status::Downloading || pack.state == PackManager::Pack::Status::Requested);
             }
 
-            uint32 maxIter = 60;
+            uint32 maxIter = 360;
 
             while ((pack.state == PackManager::Pack::Status::Requested || pack.state == PackManager::Pack::Status::Downloading) && maxIter-- > 0)
             {
