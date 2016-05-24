@@ -859,9 +859,9 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         UIControlSystem::Instance()->OnInput(&ev);
 
         keyboard.OnKeyUnpressed(ev.key);
+        // Do not pass message to DefWindowProc to prevent system from sending WM_SYSCOMMAND when Alt is pressed
+        return 0;
     }
-    break;
-
     case WM_SYSKEYDOWN:
     // no break;
     case WM_KEYDOWN:
