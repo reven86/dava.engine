@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
 #include "AssetCache/AssetCacheClient.h"
@@ -394,19 +366,6 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
 
         for (FilePath& path : imagePathnames)
         {
-            DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(path);
-            if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
-            {
-                Logger::Error("Can't export non-square image %s into compression format %s",
-                              path.GetStringValue().c_str(),
-                              GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format));
-                return;
-            }
-            else if (imgInfo.width < DAVA::Texture::MINIMAL_WIDTH || imgInfo.height < DAVA::Texture::MINIMAL_HEIGHT)
-            {
-                Logger::Error("Can't export image %s because of small size(%dx%d) of source image", path.GetStringValue().c_str(), imgInfo.width, imgInfo.height);
-                return;
-            }
         }
 
         FilePath compressedTexturePathname = CompressTexture(*descriptor);

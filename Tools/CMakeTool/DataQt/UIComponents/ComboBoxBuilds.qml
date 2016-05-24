@@ -14,4 +14,13 @@ ComboBox {
         listModel.append({"text" : text});
         currentIndex = listModel.count - 1
     }
+    onTextChanged: {
+        for(var i = 0, length = listModel.count; i < length; ++i) {
+            var obj = listModel.get(i);
+            if(obj && obj.text && obj.text === text) {
+                currentIndex = i;
+                break;
+            }
+        }
+    }
 }
