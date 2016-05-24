@@ -32,6 +32,8 @@
 
 class QtMainWindow;
 class NGTCommand;
+class ICommandManager;
+
 class REApplication : public NGTLayer::BaseApplication
 {
 public:

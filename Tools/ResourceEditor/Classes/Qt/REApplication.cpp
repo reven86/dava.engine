@@ -35,6 +35,8 @@
 #include "NgtTools/Common/GlobalContext.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
+#include "Deprecated/ControlsFactory.h"
+
 #include <core_command_system/i_command_manager.hpp>
 #include <core_command_system/i_history_panel.h>
 

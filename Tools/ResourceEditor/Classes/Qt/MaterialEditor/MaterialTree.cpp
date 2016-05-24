@@ -6,6 +6,7 @@
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/Base/CommandBatch.h"
 #include "Entity/Component.h"
 
 #include <QDragMoveEvent>
